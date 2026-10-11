@@ -299,3 +299,25 @@ def test_windows_job_kills_owned_children_and_refuses_duplicate_supervisor(tmp_p
                 owner.kill()
                 owner.communicate(timeout=5)
             game.process = None
+
+
+def test_communication_config_queries_windows_once_per_process(monkeypatch):
+    calls = []
+
+    def fake_output(command, **kwargs):
+        calls.append((command, kwargs.get("timeout")))
+        if command[0] == "wslpath":
+            return "/mnt/c/Users/test/AppData/Local\n"
+        return "C:\\Users\\test\\AppData\\Local\n"
+
+    runtime.communication_config.cache_clear()
+    monkeypatch.setattr(runtime.subprocess, "check_output", fake_output)
+    try:
+        first = runtime.communication_config()
+        assert runtime.communication_config() == first
+    finally:
+        runtime.communication_config.cache_clear()
+    assert first == Path(
+        "/mnt/c/Users/test/AppData/Local/ModTheSpire/CommunicationMod/config.properties"
+    )
+    assert [timeout for command, timeout in calls if command[0] != "wslpath"] == [30]

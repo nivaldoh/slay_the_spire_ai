@@ -1,5 +1,6 @@
 """Local Windows game setup and bounded process ownership from WSL."""
 
+import functools
 import hashlib
 import ipaddress
 import json
@@ -105,11 +106,17 @@ def wsl_bridge_host() -> str:
         raise RuntimeError("Cannot discover one usable private IPv4 address on WSL eth0") from exc
 
 
+@functools.cache
 def communication_config() -> Path:
+    """Resolve the per-user config path once per process.
+
+    The Windows interop call can stall under host memory pressure; a long training
+    job therefore makes it once rather than before every game.
+    """
     output = subprocess.check_output(
         [str(WINDOWS_PYTHON), "-c", "import os; print(os.environ['LOCALAPPDATA'])"],
         text=True,
-        timeout=10,
+        timeout=30,
     ).strip()
     local = subprocess.check_output(["wslpath", "-u", output], text=True).strip()
     return Path(local) / "ModTheSpire/CommunicationMod/config.properties"
