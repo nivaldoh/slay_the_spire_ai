@@ -128,7 +128,12 @@ def prepare_runtime(host: str, port: int, *, timeout: float = 120) -> dict:
     temporary = config.with_suffix(".properties.tmp")
     temporary.write_text(content, encoding="ascii")
     os.replace(temporary, config)
-    return {"mods": hashes, "config": str(config), "runtime": str(RUNTIME_DIR)}
+    return {
+        "mods": hashes,
+        "config": str(config),
+        "runtime": str(RUNTIME_DIR),
+        "relay": {"host": host, "port": port, "timeout": timeout},
+    }
 
 
 class OwnedGame:
@@ -145,6 +150,8 @@ class OwnedGame:
         self.info = None
         self._entered = False
         self.supervisor_stderr = ""
+        self.relay_stderr = GAME_DIR / "communication_mod_errors.log"
+        self._relay_stderr_offset = None
 
     def __enter__(self):
         if self._entered:
@@ -164,6 +171,11 @@ class OwnedGame:
         ]
         # Python.exe needs a Windows script path even though its executable is a WSL path.
         command[1] = "C:/spire-agent/windows_game.py"
+        # CommunicationMod appends all relay stderr to one game-directory file.
+        # Capture only this launch's suffix before a later launch can obscure it.
+        self._relay_stderr_offset = (
+            self.relay_stderr.stat().st_size if self.relay_stderr.exists() else 0
+        )
         self.process = subprocess.Popen(
             command,
             stdin=subprocess.PIPE,
@@ -211,9 +223,21 @@ class OwnedGame:
                 process.kill()
                 _, self.supervisor_stderr = process.communicate(timeout=5)
             finally:
+                self.log_path.parent.mkdir(parents=True, exist_ok=True)
                 if self.windows_log.exists():
-                    self.log_path.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(self.windows_log, self.log_path)
+                if self._relay_stderr_offset is not None and self.relay_stderr.exists():
+                    with self.relay_stderr.open("rb") as source:
+                        # A reset/truncated log belongs wholly to this launch.
+                        if self.relay_stderr.stat().st_size >= self._relay_stderr_offset:
+                            source.seek(self._relay_stderr_offset)
+                        self.log_path.with_name("communication-mod.stderr.log").write_bytes(
+                            source.read()
+                        )
+                if self.supervisor_stderr:
+                    self.log_path.with_name("supervisor.stderr.log").write_text(
+                        self.supervisor_stderr
+                    )
 
     def __exit__(self, *_):
         self.close()

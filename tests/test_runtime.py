@@ -58,6 +58,24 @@ def test_owned_game_force_stops_only_its_supervisor(tmp_path):
     assert game.process is None
 
 
+@pytest.mark.parametrize("truncate", [False, True])
+def test_owned_game_preserves_only_current_relay_stderr(tmp_path, truncate):
+    game = runtime.OwnedGame(tmp_path / "episode" / "game.log")
+    game.relay_stderr = tmp_path / "communication_mod_errors.log"
+    old = b"an earlier episode disconnected\n"
+    game.relay_stderr.write_bytes(old)
+    game._relay_stderr_offset = len(old)
+    error = b"WinError 10061\n"
+    game.relay_stderr.write_bytes(error if truncate else old + error)
+    process = Mock()
+    process.communicate.return_value = ("", "supervisor exited\n")
+    game.process = process
+    game.close()
+    assert (game.log_path.parent / "communication-mod.stderr.log").read_bytes() == error
+    assert (game.log_path.parent / "supervisor.stderr.log").read_text() == "supervisor exited\n"
+    assert game.relay_stderr.read_bytes() == (error if truncate else old + error)
+
+
 def test_episode_logs_are_unique_even_in_same_controller(tmp_path):
     first = runtime.OwnedGame(tmp_path / "first.log")
     second = runtime.OwnedGame(tmp_path / "second.log")
