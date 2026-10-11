@@ -2,22 +2,46 @@
 
 Updated 2026-10-11, during the authorized unattended bootstrap session.
 
-## Active jobs (last verified 06:21 UTC)
+## Active jobs (last verified 07:11 UTC)
 
-Repaired trained evaluation session `61555` finished exit0. No game currently runs.
-Next command, already preregistered in [research.md](research.md):
+No game or training process is currently active. The long PPO controller (PID 296926,
+session 11796) and frozen evaluation (PID 310081, session 44728) both exited successfully.
+The next original-engine job is the preregistered bounded development inventory,
+after integrating and verifying the prepared code. Never start a second game runner.
 
-```bash
-uv run --extra train python -m spire train --suite configs/suites/louse_diagnostic_development_v1.json --output runs/ppo-budget64-seed0-20261011 --episodes 64 --batch-steps 64 --updates 16 --time-budget 3000 --seed 0
-```
+The larger trial at source `7b4cc31` completed all 64 combats (64 wins), 12 updates,
+and 827 consumed transitions in 2,298.47 seconds. No transitions remain pending.
+All 30 applicable training-audit checks pass; all 3,201 actor elements changed.
+Its final artifact is
+`runs/ppo-budget64-seed0-20261011/artifacts/policy-0012-03ca30dc29154b968686a918efb0d4579d99c3142461ee2507a33138b18bbd22.json`.
+Frozen evaluation completed 8/8 wins, HP [80,66,76,78,71,53,80,72], mean 72.0.
+The exact same initial model scored 72.75, and the heuristic scored 77. The budget-only
+change is rejected as an improvement on this diagnostic. Six paired action sequences
+were identical; two differed, with one six-HP regression and one unchanged outcome.
+These are eight sampling seeds on one game scenario, not independent encounters.
+See [comparison](results/ppo-budget64-development-v1.json),
+[paired traces](results/ppo-budget64-paired-evaluation.json), and
+[training audit](results/ppo-budget64-training-audit.json).
 
-The trial starts from the same seed-0 initialization with a new explicit budget;
-it does not extend the completed pilot. Expected collection is roughly 34 minutes
-at the measured 31.99 seconds/episode; hard limit 50 minutes. Evaluate the final
-export on the same eight-attempt suite afterward. Do not edit tracked source,
-configuration or dependencies while a live training/evaluation batch owns them.
-An independent agent is implementing scenario catalogs in an isolated worktree;
-no broader encounters are admitted until original-engine inventory/replays exist.
+Catalog evaluation/training, a bounded inventory runner, public demonstration export,
+and local language evaluation were integrated from `/tmp/spire-catalog-cli`. All 569
+tests pass with retained original-engine evidence; only the optional Windows cleanup
+probe is skipped. Ruff is clean. Successful and failed language completions have explicit
+provenance checks. `/root/doctor` owns bounded real-data SFT, reviewed by `/root/transport`. Do not launch SFT before
+the unchanged pretrained model's engine evaluation. No broader encounters are admitted
+until inventory and exact original-engine repeats exist.
+
+Qwen3-0.6B at revision `c1899de289a04d12100db370d81485cdf75e47ca` passed a synthetic
+LoRA smoke in 7.83 seconds at `699f641`. Peak reserved CUDA memory was 3,414 MiB; minimum
+available RAM 3,457.5 MiB. Weights/logits changed and adapter serialization matched.
+Its one-example loss 0.50518→0.02792 is computational evidence only. A later single
+recorded public-state inference at `3fc7aaf` verified actual PEFT reload, 715 prompt tokens,
+six generated tokens, strict JSON parsing and exact candidate identity in 0.699 seconds.
+Both workers exited; no language-policy engine evaluation or real-data SFT has run.
+Evidence is preserved in `runs/language-smoke-20261011-0649` and
+`runs/language-inference-20261011-0705`, with originals in `/tmp/spire-language-smoke`.
+Base weights are cached under `/home/niv/.cache/spire-models`; about 2.2 GiB was downloaded
+for model/packages, without paid services. Main `.venv` remains CPU; CUDA is isolated.
 
 The accepted pilot used 8 attempts (7 completed and 1 intentional interruption),
 2 PPO updates, and 92 audited transitions. All 3,201 actor parameters changed, and
@@ -44,7 +68,7 @@ Milestone B is verified for the narrow fixed-encounter diagnostic: declared star
 state, engine mechanics fixtures, repeated resets, measured throughput, and matched
 baselines. Milestone C is verified as a computational learning loop on this fixed diagnostic,
 including frozen development evaluation; policy improvement is unproven. D–F remain
-incomplete. The computational neural pilot is complete; no GPU job has run.
+incomplete. The computational neural pilot is complete; GPU smoke checks are also complete, without a language-gameplay claim.
 
 `runs/first-random-v2-20261011/manifest.json` records source `deba4b7`, the configuration,
 environment, and two random-policy episodes on `SPIREAI1`, Ironclad, Ascension 0.
@@ -122,7 +146,7 @@ results will be published in `docs/`; proprietary jars, saves, and assets stay o
   each deployment record. Workshop copies are rechecked on every launch.
 - Loopback Windows-to-WSL TCP forwarding works. CommunicationMod config is at
   `%LOCALAPPDATA%/ModTheSpire/CommunicationMod/config.properties`.
-- RTX 3060 12 GB is available; WSL memory is 7.7 GiB. No GPU allocation yet.
+- RTX 3060 12 GB is available; WSL memory is 7.7 GiB. Measured GPU smoke jobs have exited.
 - Steam is running, but the directly launched JVM reports Steam API initialization
   failure. Gameplay works; Steam integration is not claimed.
 - Runtime `isModded=true` and local engine inspection confirm metrics/crash-upload
@@ -151,13 +175,14 @@ that natural-language deadline.
 
 ## Next useful actions
 
-1. Launch and monitor the predeclared larger trial; inspect actual process
-   ownership and metrics before resuming or starting anything else.
-2. Audit its stopped checkpoint with `scripts/audit_training.py`, then evaluate
-   the exact final export on the unchanged suite. Report negative results honestly.
-3. Choose a larger training budget from results, or fix any observed data-flow issue.
-4. Investigate faster engine resets independently; adopting them requires a new
-   versioned protocol and demonstrated replay equivalence. Do not alter this pilot.
+1. Launch the integrated bounded inventory after recording its frozen source.
+2. Run the fixed development inventory from [research.md](research.md), preserving
+   every rejection, repeat and sentinel; source must remain frozen during collection.
+3. Follow [the declared language experiment](language-experiment.md): evaluate the
+   unchanged pretrained model, train on public heuristic demonstrations, and evaluate
+   the final frozen adapter.
+4. Use admitted original-engine scenarios for broader development comparisons.
+   Neither existing PPO trial establishes generalization or independent training variation.
 
 Current limitations: starter cards only, no potion actions or noncombat policy,
 Neow prefixes outside max HP/100 gold unsupported, no arbitrary snapshots, no live

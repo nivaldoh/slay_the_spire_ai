@@ -1,0 +1,200 @@
+{
+  "all_action_sequences_equal": false,
+  "all_public_transitions_equal": false,
+  "decision": "reject",
+  "decision_scope": "Reject the budget-only change as an improvement on this fixed development diagnostic; retain valid computational evidence.",
+  "exact_artifact_snapshots_verified": true,
+  "initial_run": "runs/ppo-pilot-initial-eval-20261011",
+  "mean_hp_difference": -0.75,
+  "pairs": [
+    {
+      "all_public_transitions_equal": true,
+      "differences": [],
+      "episodes": [
+        0,
+        0
+      ],
+      "first_different_action": null,
+      "full_action_sequence_equal": true,
+      "hp_difference": 0,
+      "initial_combat_actions": 9,
+      "initial_hp": 80,
+      "initial_state_equal": true,
+      "policy_seed": 1000,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 9,
+      "trained_combat_actions": 9,
+      "trained_hp": 80
+    },
+    {
+      "all_public_transitions_equal": true,
+      "differences": [],
+      "episodes": [
+        1,
+        1
+      ],
+      "first_different_action": null,
+      "full_action_sequence_equal": true,
+      "hp_difference": 0,
+      "initial_combat_actions": 14,
+      "initial_hp": 66,
+      "initial_state_equal": true,
+      "policy_seed": 1001,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 14,
+      "trained_combat_actions": 14,
+      "trained_hp": 66
+    },
+    {
+      "all_public_transitions_equal": true,
+      "differences": [],
+      "episodes": [
+        2,
+        2
+      ],
+      "first_different_action": null,
+      "full_action_sequence_equal": true,
+      "hp_difference": 0,
+      "initial_combat_actions": 15,
+      "initial_hp": 76,
+      "initial_state_equal": true,
+      "policy_seed": 1002,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 15,
+      "trained_combat_actions": 15,
+      "trained_hp": 76
+    },
+    {
+      "all_public_transitions_equal": true,
+      "differences": [],
+      "episodes": [
+        3,
+        3
+      ],
+      "first_different_action": null,
+      "full_action_sequence_equal": true,
+      "hp_difference": 0,
+      "initial_combat_actions": 12,
+      "initial_hp": 78,
+      "initial_state_equal": true,
+      "policy_seed": 1003,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 12,
+      "trained_combat_actions": 12,
+      "trained_hp": 78
+    },
+    {
+      "all_public_transitions_equal": false,
+      "differences": [],
+      "episodes": [
+        4,
+        4
+      ],
+      "first_different_action": {
+        "initial_command": "play 1",
+        "same_public_state": true,
+        "step": 3,
+        "trained_command": "play 3 1"
+      },
+      "full_action_sequence_equal": false,
+      "hp_difference": -6,
+      "initial_combat_actions": 13,
+      "initial_hp": 77,
+      "initial_state_equal": true,
+      "policy_seed": 1004,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 3,
+      "trained_combat_actions": 7,
+      "trained_hp": 71
+    },
+    {
+      "all_public_transitions_equal": false,
+      "differences": [],
+      "episodes": [
+        5,
+        5
+      ],
+      "first_different_action": {
+        "initial_command": "end",
+        "same_public_state": true,
+        "step": 18,
+        "trained_command": "play 1 1"
+      },
+      "full_action_sequence_equal": false,
+      "hp_difference": 0,
+      "initial_combat_actions": 20,
+      "initial_hp": 53,
+      "initial_state_equal": true,
+      "policy_seed": 1005,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 18,
+      "trained_combat_actions": 19,
+      "trained_hp": 53
+    },
+    {
+      "all_public_transitions_equal": true,
+      "differences": [],
+      "episodes": [
+        6,
+        6
+      ],
+      "first_different_action": null,
+      "full_action_sequence_equal": true,
+      "hp_difference": 0,
+      "initial_combat_actions": 9,
+      "initial_hp": 80,
+      "initial_state_equal": true,
+      "policy_seed": 1006,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 9,
+      "trained_combat_actions": 9,
+      "trained_hp": 80
+    },
+    {
+      "all_public_transitions_equal": true,
+      "differences": [],
+      "episodes": [
+        7,
+        7
+      ],
+      "first_different_action": null,
+      "full_action_sequence_equal": true,
+      "hp_difference": 0,
+      "initial_combat_actions": 8,
+      "initial_hp": 72,
+      "initial_state_equal": true,
+      "policy_seed": 1007,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 8,
+      "trained_combat_actions": 8,
+      "trained_hp": 72
+    }
+  ],
+  "same_initial_model_verified": true,
+  "schema_version": 1,
+  "scope": "Eight policy sampling seeds on one fixed game scenario. Same initialization and first update as pilot; no independent training-seed or scenario generalization claim.",
+  "source_evidence_sha256": {
+    "runs/ppo-budget64-seed0-20261011-audit.json": "b5351c73c71355b1c111b77b3de9500acd4fa18de67d807f9f39ce4eee85a097",
+    "runs/ppo-budget64-seed0-20261011/metrics.json": "68788453a36f335a63d981ca105f367eaf042c22b124cd1b0d35b5889d79a451",
+    "runs/ppo-budget64-seed0-20261011/training.json": "e3f966f270d5f85f1c76246dbc29e8f1911a62b735cb0ee04afb978c69979d7b",
+    "runs/ppo-budget64-seed0-eval-20261011/evaluation.json": "99d1ffe4b63a8d6d3eb49ee8887d4f059c1bae4702df3a9537335f4cfc898170",
+    "runs/ppo-budget64-seed0-eval-20261011/manifest.json": "77ebbe4bf9f13bcf9775f93238a738ac0f2952f14bede0c5541f46e2397f3579",
+    "runs/ppo-pilot-initial-eval-20261011/evaluation.json": "421d4e83187b5a8351bbccfac16cac7d403b65262fdcfd29c76b4a58fddcfce2",
+    "runs/ppo-pilot-initial-eval-20261011/manifest.json": "851c79708eddd70cfdcc440f48c0e013da7f9d05dd57abe9631c66ea10fdf7ad",
+    "runs/summarize_budget64.py": "b7ecd85aa596a04da661d2f5eb9aa5c97fb61dc051db843ed317203fa2183b2a"
+  },
+  "trained_run": "runs/ppo-budget64-seed0-eval-20261011",
+  "training_outcomes": {
+    "won": 64
+  },
+  "training_run": "runs/ppo-budget64-seed0-20261011",
+  "training_source_revision": "7b4cc314f9ecc543e4b35d6edb52bfd675a73de3"
+}
