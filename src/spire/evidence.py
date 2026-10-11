@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
 from collections import Counter
 from collections.abc import Iterable, Mapping
 from pathlib import Path
@@ -95,6 +96,62 @@ def _successor(
     except ProtocolError:
         return None, None
     return next_decision.to_dict()["observation"], None
+
+
+def _language_behavior(decision, selected, behavior) -> None:
+    """Check public choice linkage; the evaluator also replays tokenizer decoding."""
+    from spire.demonstrations import FORMAT_VERSION, parse_completion, render_prompt
+
+    _require(isinstance(behavior, dict), "Missing language behavior metadata")
+    for name, expected in (
+        ("type", "language"),
+        ("prompt_format", FORMAT_VERSION),
+        ("parser_version", "single-json-choice-v1"),
+    ):
+        _require(behavior.get(name) == expected, f"Unsupported language behavior {name}")
+    _require(
+        behavior.get("prompt_sha256")
+        == hashlib.sha256(render_prompt(decision).encode("utf-8")).hexdigest(),
+        "Language prompt differs from public decision",
+    )
+    chat_hash = behavior.get("chat_prompt_sha256")
+    _require(
+        isinstance(chat_hash, str) and re.fullmatch(r"[a-f0-9]{64}", chat_hash) is not None,
+        "Invalid language chat prompt hash",
+    )
+    _require(
+        type(behavior.get("max_prompt_tokens")) is int and behavior["max_prompt_tokens"] == 2048,
+        "Unsupported language context limit",
+    )
+    _require(
+        type(behavior.get("prompt_tokens")) is int and 1 <= behavior["prompt_tokens"] <= 2048,
+        "Invalid language prompt token count",
+    )
+    count = behavior.get("completion_tokens")
+    _require(type(count) is int and 1 <= count <= 12, "Invalid language completion token count")
+    tokens = behavior.get("completion_token_ids")
+    _require(
+        isinstance(tokens, list)
+        and len(tokens) == count
+        and all(type(token) is int and token >= 0 for token in tokens),
+        "Invalid language completion token IDs",
+    )
+    _require(isinstance(behavior.get("raw_completion"), str), "Missing raw language completion")
+    _require(isinstance(behavior.get("completion"), str), "Missing parsed language completion")
+    _require(
+        parse_completion(decision, behavior["completion"]) == selected,
+        "Language completion selects a different action",
+    )
+    _require(
+        type(behavior.get("selected_index")) is int
+        and behavior["selected_index"] == decision.candidates.index(selected),
+        "Language selected index differs from recorded action",
+    )
+    inference = behavior.get("inference_seconds")
+    _require(
+        type(inference) in (int, float) and math.isfinite(inference) and inference >= 0,
+        "Invalid language inference duration",
+    )
 
 
 def _inspect_episode(directory: Path, config: dict | None) -> dict:
@@ -192,6 +249,8 @@ def _inspect_episode(directory: Path, config: dict | None) -> dict:
             expected = decision_from_message(latest["raw"], session_id=session, sequence=sequence)
             _require(event.get("decision") == expected.to_dict(), "Decision differs from raw state")
             selected = validate_action(expected, event.get("selected_action_id"))
+            if result.get("policy") == "language":
+                _language_behavior(expected, selected, event.get("behavior"))
             selected_decision = expected.to_dict()
             if first_decision is None:
                 first_decision = selected_decision
@@ -320,36 +379,48 @@ def _inspect_episode(directory: Path, config: dict | None) -> dict:
         elif kind == "policy_failure":
             from spire.demonstrations import parse_completion, render_prompt
 
-            _require(latest is not None and pending is None and selected is None
-                     and not needs_execution, "Policy failure outside an available decision")
+            _require(
+                latest is not None and pending is None and selected is None and not needs_execution,
+                "Policy failure outside an available decision",
+            )
             _require(result.get("policy") == "language", "Policy failure requires language policy")
             expected = decision_from_message(latest["raw"], session_id=session, sequence=sequence)
-            _require(event.get("decision") == expected.to_dict(),
-                     "Failed decision differs from raw state")
+            _require(
+                event.get("decision") == expected.to_dict(),
+                "Failed decision differs from raw state",
+            )
             failure = event.get("failure")
             _require(isinstance(failure, dict), "Missing policy failure metadata")
-            _require(failure.get("prompt_sha256") == hashlib.sha256(
-                render_prompt(expected).encode("utf-8")
-            ).hexdigest(), "Failed prompt differs from public decision")
+            _require(
+                failure.get("prompt_sha256")
+                == hashlib.sha256(render_prompt(expected).encode("utf-8")).hexdigest(),
+                "Failed prompt differs from public decision",
+            )
             for name in ("prompt_tokens", "max_prompt_tokens", "completion_tokens"):
-                _require(type(failure.get(name)) is int and failure[name] >= 0,
-                         f"Invalid policy failure {name}")
-            _require(failure["max_prompt_tokens"] == 2048,
-                     "Unsupported language context limit")
+                _require(
+                    type(failure.get(name)) is int and failure[name] >= 0,
+                    f"Invalid policy failure {name}",
+                )
+            _require(failure["max_prompt_tokens"] == 2048, "Unsupported language context limit")
             inference = failure.get("inference_seconds")
-            _require(type(inference) in (int, float) and math.isfinite(inference)
-                     and inference >= 0,
-                     "Invalid policy inference duration")
+            _require(
+                type(inference) in (int, float) and math.isfinite(inference) and inference >= 0,
+                "Invalid policy inference duration",
+            )
             if failure.get("kind") == "context_limit":
-                _require(failure["prompt_tokens"] > failure["max_prompt_tokens"]
-                         and failure.get("completion") is None
-                         and failure["completion_tokens"] == 0,
-                         "Context failure does not exceed the declared limit")
+                _require(
+                    failure["prompt_tokens"] > failure["max_prompt_tokens"]
+                    and failure.get("completion") is None
+                    and failure["completion_tokens"] == 0,
+                    "Context failure does not exceed the declared limit",
+                )
             elif failure.get("kind") == "invalid_completion":
                 _require(isinstance(failure.get("completion"), str), "Missing failed completion")
-                _require(failure["prompt_tokens"] <= failure["max_prompt_tokens"]
-                         and failure["completion_tokens"] <= 12,
-                         "Failed completion exceeds the declared inference budget")
+                _require(
+                    failure["prompt_tokens"] <= failure["max_prompt_tokens"]
+                    and failure["completion_tokens"] <= 12,
+                    "Failed completion exceeds the declared inference budget",
+                )
                 try:
                     parse_completion(expected, failure["completion"])
                 except ProtocolError:
@@ -374,11 +445,15 @@ def _inspect_episode(directory: Path, config: dict | None) -> dict:
             raise EvidenceError(f"Unknown trace event: {kind}")
 
     _require(final_seen, "Trace has no final result; episode was interrupted or truncated on disk")
-    _require((status == "policy_failure") == (policy_failure is not None),
-             "Policy failure status/event mismatch")
+    _require(
+        (status == "policy_failure") == (policy_failure is not None),
+        "Policy failure status/event mismatch",
+    )
     if policy_failure is not None:
-        _require(result.get("policy_failure") == policy_failure,
-                 "Policy failure result differs from event")
+        _require(
+            result.get("policy_failure") == policy_failure,
+            "Policy failure result differs from event",
+        )
     else:
         _require("policy_failure" not in result, "Policy failure metadata lacks its event")
     if combat_floor is not None and latest is not None and "error" not in latest["raw"]:
@@ -728,7 +803,12 @@ def summarize_run(directory: Path) -> dict:
 
 
 def load_transitions(directories: Path | Iterable[Path]) -> list[dict]:
-    """Load supported, completed transitions exactly once, rejecting invalid runs."""
+    """Load each acknowledged supported transition once, rejecting invalid runs.
+
+    Valid interrupted or policy-failed attempts can retain acknowledged prefixes.
+    This does not certify a complete training episode: PPO and demonstration
+    callers must require an engine-confirmed complete outcome before ingestion.
+    """
     if isinstance(directories, (str, Path)):
         directories = [Path(directories)]
     transitions = []

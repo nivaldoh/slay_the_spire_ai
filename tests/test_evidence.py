@@ -238,29 +238,88 @@ def test_verified_win_yields_one_safe_unique_transition(run):
     assert "move_id" not in serialized
 
 
-def make_policy_failure(run, *, kind="invalid_completion", **changes):
+def language_behavior(decision, selected_index=0):
+    from spire.demonstrations import FORMAT_VERSION, render_prompt
+
+    prompt = render_prompt(decision)
+    completion = json.dumps({"a": selected_index}, separators=(",", ":"))
+    return {
+        "type": "language",
+        "prompt_format": FORMAT_VERSION,
+        "parser_version": "single-json-choice-v1",
+        "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
+        "chat_prompt_sha256": hashlib.sha256(("fake chat" + prompt).encode()).hexdigest(),
+        "prompt_tokens": 100,
+        "max_prompt_tokens": 2048,
+        "completion_tokens": 6,
+        "completion_token_ids": [1, 2, 3, 4, 5, 6],
+        "completion": completion,
+        "raw_completion": completion + "<eos>",
+        "selected_index": selected_index,
+        "inference_seconds": 0.1,
+    }
+
+
+def make_language_success(run):
+    directory = run / "episode-0000"
+    trace = events(directory)
+    decision = decision_from_message(trace[3]["raw"], session_id="session-0", sequence=2)
+    trace[5]["behavior"] = language_behavior(decision)
+    write_events(directory, trace)
+    manifest = read(run / "manifest.json")
+    manifest["config"]["policy"] = "language"
+    write(run / "manifest.json", manifest)
+    set_result(run, policy="language")
+
+
+def make_policy_failure(run, *, kind="invalid_completion", after_action=False, **changes):
     from spire.demonstrations import render_prompt
 
     directory = run / "episode-0000"
     trace = events(directory)
-    decision = decision_from_message(trace[3]["raw"], session_id="session-0", sequence=2)
+    if after_action:
+        first = decision_from_message(trace[3]["raw"], session_id="session-0", sequence=2)
+        trace[5]["behavior"] = language_behavior(first)
+        trace[7]["raw"] = copy.deepcopy(trace[3]["raw"])
+        trace[7]["raw"]["game_state"]["combat_state"]["turn"] = 2
+    decision = decision_from_message(
+        trace[7 if after_action else 3]["raw"],
+        session_id="session-0",
+        sequence=3 if after_action else 2,
+    )
+    invalid = kind == "invalid_completion"
     failure = {
         "kind": kind,
-        "completion": "I would attack" if kind == "invalid_completion" else None,
+        "completion": "I would attack" if invalid else None,
+        "raw_completion": "I would attack<eos>" if invalid else None,
+        "completion_token_ids": [1, 2, 3, 4] if invalid else [],
         "prompt_sha256": hashlib.sha256(render_prompt(decision).encode()).hexdigest(),
-        "prompt_tokens": 100 if kind == "invalid_completion" else 2049,
+        "prompt_tokens": 100 if invalid else 2049,
         "max_prompt_tokens": 2048,
-        "completion_tokens": 4 if kind == "invalid_completion" else 0,
+        "completion_tokens": 4 if invalid else 0,
         "inference_seconds": 0.1,
         **changes,
     }
     result = read(directory / "result.json")
-    result.update(status="policy_failure", policy="language", actions=1, combat_actions=0,
-                  policy_failure=failure)
+    result.update(
+        status="policy_failure",
+        policy="language",
+        actions=2 if after_action else 1,
+        combat_actions=int(after_action),
+        turns=2 if after_action else 1,
+        policy_failure=failure,
+    )
     result.pop("ending_hp")
-    trace = [*trace[:5], {"kind": "policy_failure", "elapsed": 2.3,
-                         "decision": decision.to_dict(), "failure": failure},
-             {"kind": "result", "elapsed": 5.0, "result": result}]
+    trace = [
+        *trace[: 9 if after_action else 5],
+        {
+            "kind": "policy_failure",
+            "elapsed": 4.2 if after_action else 2.3,
+            "decision": decision.to_dict(),
+            "failure": failure,
+        },
+        {"kind": "result", "elapsed": 5.0, "result": result},
+    ]
     write_events(directory, trace)
     write(directory / "result.json", result)
     manifest = read(run / "manifest.json")
@@ -268,6 +327,79 @@ def make_policy_failure(run, *, kind="invalid_completion", **changes):
     manifest["episodes"][0] = result
     write(run / "manifest.json", manifest)
     return failure
+
+
+def test_successful_language_action_requires_verifiable_public_behavior(run):
+    make_language_success(run)
+    audit = audit_run(run)
+    assert audit["valid"], audit["issues"]
+    assert audit["metrics"]["wins"] == audit["metrics"]["policy_attempts"] == 1
+    assert audit["metrics"]["policy_failures"] == 0
+    assert len(load_transitions(run)) == 1
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        None,
+        {"type": "heuristic"},
+        {"prompt_format": "unknown"},
+        {"parser_version": "unknown"},
+        {"prompt_sha256": "0" * 64},
+        {"chat_prompt_sha256": "not-a-hash"},
+        {"chat_prompt_sha256": "G" * 64},
+        {"max_prompt_tokens": True},
+        {"max_prompt_tokens": 2049},
+        {"prompt_tokens": True},
+        {"prompt_tokens": 0},
+        {"prompt_tokens": 2049},
+        {"completion_tokens": True},
+        {"completion_tokens": 0},
+        {"completion_tokens": 13},
+        {"completion_token_ids": [1, 2]},
+        {"completion_token_ids": [1, 2, 3, 4, 5, True]},
+        {"completion_token_ids": [1, 2, 3, 4, 5, -1]},
+        {"completion_token_ids": "123456"},
+        {"raw_completion": None},
+        {"completion": None},
+        {"completion": '{"a":1}'},
+        {"completion": '{"a":0} explanation'},
+        {"selected_index": True},
+        {"selected_index": 1},
+        {"inference_seconds": True},
+        {"inference_seconds": -1},
+        {"inference_seconds": float("inf")},
+    ],
+)
+def test_language_success_cannot_hide_missing_or_inconsistent_behavior(run, change):
+    make_language_success(run)
+    directory = run / "episode-0000"
+    trace = events(directory)
+    if change is None:
+        trace[5].pop("behavior")
+    else:
+        trace[5]["behavior"].update(change)
+    write_events(directory, trace)
+    audit = audit_run(run)
+    assert not audit["valid"]
+    assert audit["metrics"]["wins"] == audit["metrics"]["policy_attempts"] == 0
+
+
+def test_policy_failure_retains_acknowledged_prefix_but_ppo_requires_complete_episode(run):
+    make_policy_failure(run, after_action=True)
+    audit = audit_run(run)
+    assert audit["valid"], audit["issues"]
+    assert audit["episodes"][0]["starting_hp"] == 80
+    assert audit["episodes"][0]["turns"] == 2
+    assert audit["metrics"]["policy_attempts"] == audit["metrics"]["policy_failures"] == 1
+    assert audit["metrics"]["valid_gameplay_episodes"] == 0
+    (transition,) = load_transitions(run)
+    assert transition["ingestible"] and not transition["terminal"]
+    pytest.importorskip("torch")
+    from spire.training import _join_episode
+
+    with pytest.raises(EvidenceError, match="Training requires one audited complete episode"):
+        _join_episode(run, None)
 
 
 @pytest.mark.parametrize("kind", ["invalid_completion", "context_limit"])
@@ -286,11 +418,19 @@ def test_policy_failure_preserves_start_and_counts_separately(run, kind):
     assert not load_transitions(run)
 
 
-@pytest.mark.parametrize("change", [
-    {"completion": '{"a":0}'}, {"prompt_sha256": "0" * 64}, {"prompt_tokens": True},
-    {"completion_tokens": 13}, {"max_prompt_tokens": 9999}, {"inference_seconds": -1},
-    {"kind": "invented_failure"}, {"completion": None},
-])
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"completion": '{"a":0}'},
+        {"prompt_sha256": "0" * 64},
+        {"prompt_tokens": True},
+        {"completion_tokens": 13},
+        {"max_prompt_tokens": 9999},
+        {"inference_seconds": -1},
+        {"kind": "invented_failure"},
+        {"completion": None},
+    ],
+)
 def test_policy_failure_cannot_hide_legal_output_or_invalid_metadata(run, change):
     make_policy_failure(run, **change)
     assert not audit_run(run)["valid"]
