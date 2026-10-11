@@ -61,10 +61,23 @@ The v1 learner still omits monster identity, as documented in the expansion revi
   writing files. Malformed or missing parent declarations raise an exception;
   child evidence failures produce an invalid report with issues.
 
-For training integration, round-robin selection can follow the ordered scenarios
-and resolve each through its first schedule entry. Persist the chosen scenario,
-schedule index and cursor in the pending reservation. Training sampling must keep
-its checkpointed RNG instead of resetting it from evaluation `policy_seed`.
+Training accepts schema 2 through its existing suite path. The
+`round_robin_scenarios_v1` schedule cycles unique scenarios in declaration order,
+resolving each through its first evaluation schedule entry. Evaluation repetition
+counts therefore do not change training weights. Before attempt files or a game
+exist, the checkpoint reserves the cursor, scenario ID and schedule index. Every
+reserved attempt advances the cursor, including an interrupted or failed attempt;
+resume preserves that assignment and the original absolute deadline. A completed
+recovered episode restores its sampling state from audited public decisions; an
+incomplete attempt remains recorded and excluded from training.
+
+The training sampler keeps its external checkpointed RNG and never uses the
+evaluation schedule's policy seed. Scenario context belongs to checkpoint,
+manifest and environment metadata, outside policy observations. Before ingestion
+and batch reuse, training verifies the assigned scenario, public start fingerprint
+and ordered monster IDs. The saved-training auditor independently checks scenario
+reservations throughout checkpoint history and child evidence. Schema-1 training
+retains its existing format and behavior.
 
 ## Evaluation evidence and scoring
 
