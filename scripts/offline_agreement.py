@@ -2,8 +2,10 @@
 
 Reads an exported demonstration dataset, rebuilds every public Decision from its
 audited origin trace, and asks the frozen policy for one greedy choice per unique
-prompt. No game is launched and no weights change. Agreement with a teacher label
-is a diagnostic of imitation, not a gameplay score.
+prompt. It also scores every canonical legal completion to report the normalized
+candidate distribution: its argmax, the teacher label's probability and entropy.
+No game is launched and no weights change. Agreement with a teacher label is a
+diagnostic of imitation, not a gameplay score.
 
     PYTHONPATH=src /path/to/cuda-env/bin/python scripts/offline_agreement.py \
         --declaration policy.json --dataset runs/dataset --split test --output report.json
@@ -14,6 +16,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import time
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -102,13 +105,15 @@ def load_examples(dataset: Path, split: str) -> list[dict]:
     return list(unique.values())
 
 
-FIELDS = ("prompts", "rows", "agree", "agree_rows", "failures")
+FIELDS = ("prompts", "rows", "agree", "agree_rows", "failures", "argmax_agree")
+SUMS = ("label_probability", "entropy", "max_probability")
 
 
 def evaluate(declaration: Path, dataset: Path, split: str, training: Path | None = None) -> dict:
     disjoint = None if training is None else check_disjoint(dataset, training)
     examples = load_examples(dataset, split)
     by_start = defaultdict(Counter)
+    candidate = defaultdict(lambda: dict.fromkeys(SUMS, 0.0))
     confusion = Counter()
     failures = Counter()
     started = time.monotonic()
@@ -127,6 +132,12 @@ def evaluate(declaration: Path, dataset: Path, split: str, training: Path | None
             if choice == label:
                 counts["agree"] += 1
                 counts["agree_rows"] += example["rows"]
+            probabilities = [math.exp(value) for value in policy.candidate_log_probs(decision)]
+            counts["argmax_agree"] += probabilities.index(max(probabilities)) == label
+            sums = candidate[example["start"]]
+            sums["label_probability"] += probabilities[label]
+            sums["entropy"] -= sum(p * math.log(p) for p in probabilities if p > 0)
+            sums["max_probability"] += max(probabilities)
             kind = decision.candidates[label]
             confusion[
                 (
@@ -141,6 +152,7 @@ def evaluate(declaration: Path, dataset: Path, split: str, training: Path | None
     total = Counter()
     for counts in by_start.values():
         total.update(counts)
+    totals = {key: sum(item[key] for item in candidate.values()) for key in SUMS}
     return {
         "schema_version": 1,
         "scope": "Offline greedy agreement with heuristic labels; not a gameplay score",
@@ -156,10 +168,13 @@ def evaluate(declaration: Path, dataset: Path, split: str, training: Path | None
         "prompt_agreement": total["agree"] / total["prompts"],
         "row_agreement": total["agree_rows"] / total["rows"],
         "policy_failures": dict(failures),
+        "candidate_argmax_agreement": total["argmax_agree"] / total["prompts"],
+        **{f"mean_{key}": totals[key] / total["prompts"] for key in SUMS},
         "by_public_start": {
             start: {
                 **{field: counts[field] for field in FIELDS},
                 "prompt_agreement": counts["agree"] / counts["prompts"],
+                **{f"mean_{key}": candidate[start][key] / counts["prompts"] for key in SUMS},
             }
             for start, counts in sorted(by_start.items())
         },
@@ -195,6 +210,9 @@ def main() -> None:
                     "prompt_agreement",
                     "row_agreement",
                     "policy_failures",
+                    "candidate_argmax_agreement",
+                    "mean_label_probability",
+                    "mean_entropy",
                     "seconds",
                 )
             }

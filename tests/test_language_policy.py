@@ -296,3 +296,47 @@ def test_actual_cpu_peft_reload_rejects_missing_serialized_tensor(tmp_path, monk
         restored = language._load_adapter(transformers.Qwen3ForCausalLM(config), str(directory))
         language._verify_adapter_tensors(peft.get_peft_model_state_dict(restored), saved)
         assert all(not parameter.requires_grad for parameter in restored.parameters())
+
+
+def test_candidate_completions_are_canonical_choice_tokens_plus_eos():
+    class CharacterTokenizer:
+        eos_token_id = 99
+
+        def __call__(self, text, *, add_special_tokens):
+            assert add_special_tokens is False
+            return {"input_ids": [ord(character) for character in text]}
+
+    tokens = language.candidate_completions(CharacterTokenizer(), 11)
+    assert tokens[0] == [*map(ord, '{"a":0}'), 99]
+    assert tokens[10] == [*map(ord, '{"a":10}'), 99]
+    with pytest.raises(ValueError, match="at least one"):
+        language.candidate_completions(CharacterTokenizer(), 0)
+
+
+def test_batched_candidate_scores_equal_unpadded_per_completion_sums():
+    transformers = pytest.importorskip("transformers")
+    torch.manual_seed(0)
+    config = transformers.Qwen3Config(
+        vocab_size=32,
+        hidden_size=16,
+        intermediate_size=32,
+        num_hidden_layers=2,
+        num_attention_heads=2,
+        num_key_value_heads=1,
+        head_dim=8,
+    )
+    model = transformers.Qwen3ForCausalLM(config).eval()
+    prompt = [3, 5, 7, 11, 13]
+    completions = [[1, 2, 31], [4, 31], [6, 8, 9, 31]]
+    with torch.no_grad():
+        batched = language.candidate_log_probs(model, prompt, completions)
+        for index, tokens in enumerate(completions):
+            logits = model(input_ids=torch.tensor([prompt + tokens])).logits[0].float()
+            expected = sum(
+                torch.log_softmax(logits[len(prompt) - 1 + offset], dim=-1)[token]
+                for offset, token in enumerate(tokens)
+            )
+            assert torch.allclose(batched[index], expected, atol=1e-5)
+    scores = language.candidate_log_probs(model, prompt, completions)
+    torch.log_softmax(scores, dim=0)[0].backward()
+    assert any(parameter.grad is not None for parameter in model.parameters())

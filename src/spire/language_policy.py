@@ -187,6 +187,54 @@ def decode_completion(tokenizer, token_ids: list[int]) -> tuple[str, str]:
     )
 
 
+def candidate_completions(tokenizer, count: int) -> list[list[int]]:
+    """Token IDs of each canonical ``{"a":N}`` completion followed by the training EOS."""
+    if type(count) is not int or count < 1:
+        raise ValueError("Candidate scoring requires at least one legal choice")
+    return [
+        tokenizer(json.dumps({"a": index}, separators=(",", ":")), add_special_tokens=False)[
+            "input_ids"
+        ]
+        + [tokenizer.eos_token_id]
+        for index in range(count)
+    ]
+
+
+def candidate_log_probs(model, prompt_ids: list[int], completions: list[list[int]]):
+    """Return each completion's summed token log-probability after one shared prompt.
+
+    Sequences are right-padded so every completion starts at the same position; only
+    the logits that predict completion tokens are materialized. Gradients flow unless
+    the caller disables them. Normalizing the result over legal choices gives a policy
+    whose sampling and probability calculations use the same masked candidate set.
+    """
+    import torch
+
+    device = next(model.parameters()).device
+    width = max(len(tokens) for tokens in completions)
+    rows = [prompt_ids + tokens + [tokens[-1]] * (width - len(tokens)) for tokens in completions]
+    mask = [
+        [1] * (len(prompt_ids) + len(tokens)) + [0] * (width - len(tokens))
+        for tokens in completions
+    ]
+    output = model(
+        input_ids=torch.tensor(rows, device=device),
+        attention_mask=torch.tensor(mask, device=device),
+        logits_to_keep=width + 1,
+    )
+    # Kept position j predicts token len(prompt) + j; the last kept position is unused.
+    log_probs = torch.log_softmax(output.logits[:, :width].float(), dim=-1)
+    targets = torch.tensor(
+        [tokens + [0] * (width - len(tokens)) for tokens in completions], device=device
+    )
+    picked = log_probs.gather(-1, targets.unsqueeze(-1)).squeeze(-1)
+    valid = torch.tensor(
+        [[1.0] * len(tokens) + [0.0] * (width - len(tokens)) for tokens in completions],
+        device=device,
+    )
+    return (picked * valid).sum(dim=-1)
+
+
 def _verify_adapter_tensors(restored: dict, saved: dict) -> None:
     """PEFT permits missing keys; require complete, exactly restored adapter values."""
     import torch
@@ -309,6 +357,19 @@ class LanguagePolicy:
         )
         encoded = self.tokenizer(prompt, add_special_tokens=False, return_tensors="pt")
         return rendered, prompt, encoded
+
+    def candidate_log_probs(self, decision: Decision) -> list[float]:
+        """Normalized log-probabilities over the decision's legal choices, without sampling."""
+        import torch
+
+        _, _, encoded = self.encode_decision(decision)
+        prompt = encoded["input_ids"][0].tolist()
+        if len(prompt) > MAX_PROMPT_TOKENS:
+            raise ValueError("Language prompt exceeds 2048 tokens")
+        completions = candidate_completions(self.tokenizer, len(decision.candidates))
+        with torch.inference_mode():
+            scores = candidate_log_probs(self.model, prompt, completions)
+        return torch.log_softmax(scores, dim=0).tolist()
 
     def choose(self, decision: Decision):
         import torch
