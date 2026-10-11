@@ -1,9 +1,10 @@
 # Original-engine starter mechanics evidence
 
 The [captured fixture](../tests/fixtures/engine_starter_transitions.json) contains
-11 transitions from two completed original-engine combats on 2026-10-11:
+12 transitions from three completed original-engine combats on 2026-10-11:
 `runs/first-random-v2-20261011/episode-0000` and
-`runs/heuristic-replay-20261011/episode-0000`. Both are Ironclad, Ascension 0,
+`runs/heuristic-replay-20261011/episode-0000`, plus
+`runs/loss-restart-probe-20261011/episode-0000`. All are Ironclad, Ascension 0,
 with unupgraded starter cards and the same `FuzzyLouseNormal` /
 `FuzzyLouseDefensive` encounter. They are examples from one encounter, not
 independent coverage of different encounter distributions.
@@ -32,6 +33,7 @@ decompiled source and is under 50 KB.
 | `weak_strike` | With Weak 2, an unblocked Strike changes target HP 8 → 4. |
 | `victory_heals_six` | The engine reports the same monster room `COMPLETE`; Burning Blood is present and HP changes 64 → 70. |
 | `victory_heal_capped` | A second engine terminal observation changes HP 78 → maximum 80 with Burning Blood present. |
+| `end_turn_engine_death` | END changes HP 1 → 0 and produces `GAME_OVER` / `DEATH` with `victory=false`, even though `room_phase` remains `COMBAT`. |
 
 The [regressions](../tests/test_engine_regressions.py) feed these captured states
 through the adapter. They check observed commands against its legal candidates,
@@ -49,18 +51,29 @@ Run the fixture regressions from the repository:
 uv run pytest tests/test_engine_regressions.py
 ```
 
-When the ignored original runs are present, two additional provenance checks
+When the ignored original runs are present, three additional provenance checks
 verify the complete trace hashes, implementation revisions, line references,
 action linkage, and every projected field against the source observations.
-Those two checks skip in a fresh checkout without local evidence. To verify
+Those three checks skip in a fresh checkout without local evidence. To verify
 against artifacts in another checkout:
 
 ```bash
 SPIRE_EVIDENCE_ROOT=/path/to/slay_the_spire_ai uv run pytest tests/test_engine_regressions.py
 ```
 
-Initial validation: **26 tests passed**, including both complete source-trace
+Validation after adding the loss capture: **29 tests passed**, including all three source-trace
 checks. Ruff passed for the regression module.
+
+The loss probe completed two consecutive end-turn-only episodes, each ending
+in an engine-reported death at zero HP. Both recorded the same settled
+combat-start fingerprint,
+`177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4`,
+after choosing the 100-gold Neow option. The second episode demonstrates a
+seeded restart after a genuine gameplay loss. Its recorded profile snapshot
+still shows Ironclad unlock progress 817, matching the first episode's snapshot;
+the terminal screen's score is 5. Do not infer unlock-progress changes from the
+displayed score alone. This verifies the observed two-episode case, not every
+profile or unlock boundary.
 
 ## Limits and observed caveat
 
@@ -70,9 +83,9 @@ unknown intent without substituting private damage values. This is a real
 initial-state visibility/timing limitation; these tests do not certify that
 every command-ready observation already contains the intent visible on screen.
 
-There is no captured original-engine loss in this artifact. Death recognition
-still has synthetic contract tests only. Terminal responses omit combat state,
-so this artifact does not assert the final card's post-play energy, precise
+The captured death supplements the synthetic terminal contract tests; other
+game-over screen variants remain outside this evidence. Victory responses omit
+combat state, so this artifact does not assert the final card's post-play energy, precise
 overkill damage, or enemy death animation state. Burning Blood attribution is
 supported by the relic and health observations in this narrow setup, not by a
 separate callback from the engine.

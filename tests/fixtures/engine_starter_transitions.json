@@ -1,1449 +1,1550 @@
 {
-  "schema_version": 1,
-  "capture_date": "2026-10-11",
-  "observation_contract": "ironclad-starter-combat-v1",
-  "scope": "Ironclad Ascension 0 starter cards against one red/green Louse pair; engine observations only",
-  "engine_sha256": "cfad868ac8d65a88e71a0bf096fb09f78811e553effe0787c5309a655e081673",
-  "mods": {
-    "BaseMod.jar": {"version": "5.56.0", "sha256": "c3353c10e64c621b723e9fd7d0502dfa796f828b101b68513594a5f5ef83fbaf"},
-    "CommunicationMod.jar": {"version": "1.2.1", "sha256": "12b99249eccfd5245ddb0b6b7575e1a1dfba0ce0ed6fad5bd5bbd4a303897ef5"},
-    "ModTheSpire.jar": {"version": "3.30.3", "sha256": "541b5e8a875d2a404a5a6d54f4a6f814284b0cf71acb9245239d9c5ef50ea604"}
-  },
-  "sources": {
-    "first-random-v2-20261011/episode-0000": {"trace_path": "runs/first-random-v2-20261011/episode-0000/trace.jsonl", "trace_sha256": "309cb690d44b54d761e71deab93c8fc1f5c0747260e43486e9e2cd9fc94be953", "source_revision": "deba4b72a72a7dc9f8a667e52260603a72153e87", "policy": "random", "episode_status": "won"},
-    "heuristic-replay-20261011/episode-0000": {"trace_path": "runs/heuristic-replay-20261011/episode-0000/trace.jsonl", "trace_sha256": "d3e301c33ad978430360a5efb088d57cd545fc9c01d8db01c0d54582e4aecc7f", "source_revision": "6bc02ad1e14a7e2f7433e7612f7e31c6361a5097", "policy": "heuristic", "episode_status": "won"}
-  },
-  "transitions": [
-    {
-      "id": "strike_triggers_curl_up",
-      "source": "first-random-v2-20261011/episode-0000",
-      "before_line": 16,
-      "action_line": 19,
-      "after_line": 20,
-      "before_sequence": 6,
-      "after_sequence": 7,
-      "command": "play 5 0",
-      "selected_action": {"kind": "play", "hand_index": 4, "target_index": 0, "card_id": "Strike_R"},
-      "before": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 80,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 1,
-            "player": {
-              "current_hp": 80,
-              "max_hp": 80,
-              "block": 0,
-              "energy": 3,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Bash", "cost": 2, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 14,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "DEBUG",
-                "powers": [
-                  {"id": "Curl Up", "amount": 7}
-                ]
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 14,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "DEBUG",
-                "powers": [
-                  {"id": "Curl Up", "amount": 4}
-                ]
-              }
-            ]
-          }
-        }
+ "schema_version": 1,
+ "capture_date": "2026-10-11",
+ "observation_contract": "ironclad-starter-combat-v1",
+ "scope": "Ironclad Ascension 0 starter cards against one red/green Louse pair; engine observations only",
+ "engine_sha256": "cfad868ac8d65a88e71a0bf096fb09f78811e553effe0787c5309a655e081673",
+ "mods": {
+  "BaseMod.jar": {"version": "5.56.0", "sha256": "c3353c10e64c621b723e9fd7d0502dfa796f828b101b68513594a5f5ef83fbaf"},
+  "CommunicationMod.jar": {"version": "1.2.1", "sha256": "12b99249eccfd5245ddb0b6b7575e1a1dfba0ce0ed6fad5bd5bbd4a303897ef5"},
+  "ModTheSpire.jar": {"version": "3.30.3", "sha256": "541b5e8a875d2a404a5a6d54f4a6f814284b0cf71acb9245239d9c5ef50ea604"}
+ },
+ "sources": {
+  "first-random-v2-20261011/episode-0000": {"trace_path": "runs/first-random-v2-20261011/episode-0000/trace.jsonl", "trace_sha256": "309cb690d44b54d761e71deab93c8fc1f5c0747260e43486e9e2cd9fc94be953", "source_revision": "deba4b72a72a7dc9f8a667e52260603a72153e87", "policy": "random", "episode_status": "won"},
+  "heuristic-replay-20261011/episode-0000": {"trace_path": "runs/heuristic-replay-20261011/episode-0000/trace.jsonl", "trace_sha256": "d3e301c33ad978430360a5efb088d57cd545fc9c01d8db01c0d54582e4aecc7f", "source_revision": "6bc02ad1e14a7e2f7433e7612f7e31c6361a5097", "policy": "heuristic", "episode_status": "won"},
+  "loss-restart-probe-20261011/episode-0000": {"trace_path": "runs/loss-restart-probe-20261011/episode-0000/trace.jsonl", "trace_sha256": "b03200f72ae57e675aaf93e9d1dd401877156bbdf00eebc599ee3fbe26024e2b", "source_revision": "d8e40aaa49e209929681b5184aee8c234e232a43", "policy": "end_turn", "episode_status": "lost"}
+ },
+ "transitions": [
+  {
+   "id": "strike_triggers_curl_up",
+   "source": "first-random-v2-20261011/episode-0000",
+   "before_line": 16,
+   "action_line": 19,
+   "after_line": 20,
+   "before_sequence": 6,
+   "after_sequence": 7,
+   "command": "play 5 0",
+   "selected_action": {"kind": "play", "hand_index": 4, "target_index": 0, "card_id": "Strike_R"},
+   "before": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 80,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 1,
+      "player": {
+       "current_hp": 80,
+       "max_hp": 80,
+       "block": 0,
+       "energy": 3,
+       "powers": []
       },
-      "after": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 80,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 1,
-            "player": {
-              "current_hp": 80,
-              "max_hp": 80,
-              "block": 0,
-              "energy": 2,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Bash", "cost": 2, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 8,
-                "max_hp": 14,
-                "block": 7,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "BUFF",
-                "powers": []
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 14,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 7,
-                "move_hits": 1,
-                "powers": [
-                  {"id": "Curl Up", "amount": 4}
-                ]
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "id": "defend_adds_block",
-      "source": "first-random-v2-20261011/episode-0000",
-      "before_line": 28,
-      "action_line": 31,
-      "after_line": 32,
-      "before_sequence": 9,
-      "after_sequence": 10,
-      "command": "play 1",
-      "selected_action": {"kind": "play", "hand_index": 0, "target_index": null, "card_id": "Defend_R"},
-      "before": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 73,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 2,
-            "player": {
-              "current_hp": 73,
-              "max_hp": 80,
-              "block": 0,
-              "energy": 2,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 2,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 8,
-                "move_hits": 1,
-                "powers": [
-                  {"id": "Strength", "amount": 3}
-                ]
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 14,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 7,
-                "move_hits": 1,
-                "powers": [
-                  {"id": "Curl Up", "amount": 4}
-                ]
-              }
-            ]
-          }
-        }
-      },
-      "after": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 73,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 2,
-            "player": {
-              "current_hp": 73,
-              "max_hp": 80,
-              "block": 5,
-              "energy": 1,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 2,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 8,
-                "move_hits": 1,
-                "powers": [
-                  {"id": "Strength", "amount": 3}
-                ]
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 14,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 7,
-                "move_hits": 1,
-                "powers": [
-                  {"id": "Curl Up", "amount": 4}
-                ]
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "id": "partial_block_end_turn",
-      "source": "first-random-v2-20261011/episode-0000",
-      "before_line": 36,
-      "action_line": 39,
-      "after_line": 40,
-      "before_sequence": 11,
-      "after_sequence": 12,
-      "command": "end",
-      "selected_action": {"kind": "end", "hand_index": null, "target_index": null, "card_id": null},
-      "before": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 73,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 2,
-            "player": {
-              "current_hp": 73,
-              "max_hp": 80,
-              "block": 5,
-              "energy": 0,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": false},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": false}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 0,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": true,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 8,
-                "move_hits": 1,
-                "powers": [
-                  {"id": "Strength", "amount": 3}
-                ]
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 14,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 7,
-                "move_hits": 1,
-                "powers": [
-                  {"id": "Curl Up", "amount": 4}
-                ]
-              }
-            ]
-          }
-        }
-      },
-      "after": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 71,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 3,
-            "player": {
-              "current_hp": 71,
-              "max_hp": 80,
-              "block": 0,
-              "energy": 3,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 0,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": true,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 5,
-                "move_hits": 1,
-                "powers": []
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 14,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "DEBUFF",
-                "powers": [
-                  {"id": "Curl Up", "amount": 4}
-                ]
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "id": "target_one_after_target_zero_died",
-      "source": "first-random-v2-20261011/episode-0000",
-      "before_line": 44,
-      "action_line": 47,
-      "after_line": 48,
-      "before_sequence": 13,
-      "after_sequence": 14,
-      "command": "play 3 1",
-      "selected_action": {"kind": "play", "hand_index": 2, "target_index": 1, "card_id": "Strike_R"},
-      "before": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 71,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 3,
-            "player": {
-              "current_hp": 71,
-              "max_hp": 80,
-              "block": 5,
-              "energy": 2,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 0,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": true,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 5,
-                "move_hits": 1,
-                "powers": []
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 14,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "DEBUFF",
-                "powers": [
-                  {"id": "Curl Up", "amount": 4}
-                ]
-              }
-            ]
-          }
-        }
-      },
-      "after": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 71,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 3,
-            "player": {
-              "current_hp": 71,
-              "max_hp": 80,
-              "block": 5,
-              "energy": 1,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 0,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": true,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 5,
-                "move_hits": 1,
-                "powers": []
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 8,
-                "max_hp": 14,
-                "block": 4,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "DEBUFF",
-                "powers": []
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "id": "weak_strike",
-      "source": "first-random-v2-20261011/episode-0000",
-      "before_line": 52,
-      "action_line": 55,
-      "after_line": 56,
-      "before_sequence": 15,
-      "after_sequence": 16,
-      "command": "play 3 1",
-      "selected_action": {"kind": "play", "hand_index": 2, "target_index": 1, "card_id": "Strike_R"},
-      "before": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 71,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 4,
-            "player": {
-              "current_hp": 71,
-              "max_hp": 80,
-              "block": 0,
-              "energy": 3,
-              "powers": [
-                {"id": "Weakened", "amount": 2}
-              ]
-            },
-            "hand": [
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Bash", "cost": 2, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 0,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": true,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 5,
-                "move_hits": 1,
-                "powers": []
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 8,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 7,
-                "move_hits": 1,
-                "powers": []
-              }
-            ]
-          }
-        }
-      },
-      "after": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 71,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 4,
-            "player": {
-              "current_hp": 71,
-              "max_hp": 80,
-              "block": 0,
-              "energy": 2,
-              "powers": [
-                {"id": "Weakened", "amount": 2}
-              ]
-            },
-            "hand": [
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Bash", "cost": 2, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 0,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": true,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 5,
-                "move_hits": 1,
-                "powers": []
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 4,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 7,
-                "move_hits": 1,
-                "powers": []
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "id": "victory_heals_six",
-      "source": "first-random-v2-20261011/episode-0000",
-      "before_line": 60,
-      "action_line": 63,
-      "after_line": 64,
-      "before_sequence": 17,
-      "after_sequence": 18,
-      "command": "play 2 1",
-      "selected_action": {"kind": "play", "hand_index": 1, "target_index": 1, "card_id": "Strike_R"},
-      "before": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 64,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 5,
-            "player": {
-              "current_hp": 64,
-              "max_hp": 80,
-              "block": 0,
-              "energy": 3,
-              "powers": [
-                {"id": "Weakened", "amount": 1}
-              ]
-            },
-            "hand": [
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Bash", "cost": 2, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 0,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": true,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 5,
-                "move_hits": 1,
-                "powers": []
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 4,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 7,
-                "move_hits": 1,
-                "powers": []
-              }
-            ]
-          }
-        }
-      },
-      "after": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["choose", "proceed", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 70,
-          "max_hp": 80,
-          "room_phase": "COMPLETE",
-          "room_type": "MonsterRoom",
-          "screen_type": "COMBAT_REWARD",
-          "screen_name": "COMBAT_REWARD",
-          "is_screen_up": true,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ]
-        }
-      }
-    },
-    {
-      "id": "strength_and_vulnerable_tick",
-      "source": "heuristic-replay-20261011/episode-0000",
-      "before_line": 24,
-      "action_line": 27,
-      "after_line": 28,
-      "before_sequence": 8,
-      "after_sequence": 9,
-      "command": "end",
-      "selected_action": {"kind": "end", "hand_index": null, "target_index": null, "card_id": null},
-      "before": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 80,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 1,
-            "player": {
-              "current_hp": 80,
-              "max_hp": 80,
-              "block": 5,
-              "energy": 0,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": false},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": false},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": false}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 6,
-                "max_hp": 14,
-                "block": 7,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "BUFF",
-                "powers": [
-                  {"id": "Vulnerable", "amount": 2}
-                ]
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 14,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 7,
-                "move_hits": 1,
-                "powers": [
-                  {"id": "Curl Up", "amount": 4}
-                ]
-              }
-            ]
-          }
-        }
-      },
-      "after": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 78,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 2,
-            "player": {
-              "current_hp": 78,
-              "max_hp": 80,
-              "block": 0,
-              "energy": 3,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 6,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 8,
-                "move_hits": 1,
-                "powers": [
-                  {"id": "Vulnerable", "amount": 1},
-                  {"id": "Strength", "amount": 3}
-                ]
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 14,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 7,
-                "move_hits": 1,
-                "powers": [
-                  {"id": "Curl Up", "amount": 4}
-                ]
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "id": "full_block_end_turn",
-      "source": "heuristic-replay-20261011/episode-0000",
-      "before_line": 40,
-      "action_line": 43,
-      "after_line": 44,
-      "before_sequence": 12,
-      "after_sequence": 13,
-      "command": "end",
-      "selected_action": {"kind": "end", "hand_index": null, "target_index": null, "card_id": null},
-      "before": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 78,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 2,
-            "player": {
-              "current_hp": 78,
-              "max_hp": 80,
-              "block": 10,
-              "energy": 0,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": false},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": false}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 0,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": true,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 8,
-                "move_hits": 1,
-                "powers": [
-                  {"id": "Vulnerable", "amount": 1},
-                  {"id": "Strength", "amount": 3}
-                ]
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 14,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 7,
-                "move_hits": 1,
-                "powers": [
-                  {"id": "Curl Up", "amount": 4}
-                ]
-              }
-            ]
-          }
-        }
-      },
-      "after": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 78,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 3,
-            "player": {
-              "current_hp": 78,
-              "max_hp": 80,
-              "block": 0,
-              "energy": 3,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Bash", "cost": 2, "upgrades": 0, "has_target": true, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 0,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": true,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 5,
-                "move_hits": 1,
-                "powers": []
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 14,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "DEBUFF",
-                "powers": [
-                  {"id": "Curl Up", "amount": 4}
-                ]
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "id": "bash_adds_vulnerable",
-      "source": "heuristic-replay-20261011/episode-0000",
-      "before_line": 44,
-      "action_line": 47,
-      "after_line": 48,
-      "before_sequence": 13,
-      "after_sequence": 14,
-      "command": "play 5 1",
-      "selected_action": {"kind": "play", "hand_index": 4, "target_index": 1, "card_id": "Bash"},
-      "before": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 78,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 3,
-            "player": {
-              "current_hp": 78,
-              "max_hp": 80,
-              "block": 0,
-              "energy": 3,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Bash", "cost": 2, "upgrades": 0, "has_target": true, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 0,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": true,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 5,
-                "move_hits": 1,
-                "powers": []
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 14,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "DEBUFF",
-                "powers": [
-                  {"id": "Curl Up", "amount": 4}
-                ]
-              }
-            ]
-          }
-        }
-      },
-      "after": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 78,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 3,
-            "player": {
-              "current_hp": 78,
-              "max_hp": 80,
-              "block": 0,
-              "energy": 1,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 0,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": true,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 5,
-                "move_hits": 1,
-                "powers": []
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 6,
-                "max_hp": 14,
-                "block": 4,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "DEBUFF",
-                "powers": [
-                  {"id": "Vulnerable", "amount": 2}
-                ]
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "id": "vulnerable_strike_through_block",
-      "source": "heuristic-replay-20261011/episode-0000",
-      "before_line": 48,
-      "action_line": 51,
-      "after_line": 52,
-      "before_sequence": 14,
-      "after_sequence": 15,
-      "command": "play 1 1",
-      "selected_action": {"kind": "play", "hand_index": 0, "target_index": 1, "card_id": "Strike_R"},
-      "before": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 78,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 3,
-            "player": {
-              "current_hp": 78,
-              "max_hp": 80,
-              "block": 0,
-              "energy": 1,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 0,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": true,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 5,
-                "move_hits": 1,
-                "powers": []
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 6,
-                "max_hp": 14,
-                "block": 4,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "DEBUFF",
-                "powers": [
-                  {"id": "Vulnerable", "amount": 2}
-                ]
-              }
-            ]
-          }
-        }
-      },
-      "after": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 78,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 3,
-            "player": {
-              "current_hp": 78,
-              "max_hp": 80,
-              "block": 0,
-              "energy": 0,
-              "powers": []
-            },
-            "hand": [
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": false},
-              {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": false},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": false}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 0,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": true,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 5,
-                "move_hits": 1,
-                "powers": []
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 1,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "DEBUFF",
-                "powers": [
-                  {"id": "Vulnerable", "amount": 2}
-                ]
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "id": "victory_heal_capped",
-      "source": "heuristic-replay-20261011/episode-0000",
-      "before_line": 64,
-      "action_line": 67,
-      "after_line": 68,
-      "before_sequence": 18,
-      "after_sequence": 19,
-      "command": "play 1 1",
-      "selected_action": {"kind": "play", "hand_index": 0, "target_index": 1, "card_id": "Strike_R"},
-      "before": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["play", "end", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 78,
-          "max_hp": 80,
-          "room_phase": "COMBAT",
-          "room_type": "MonsterRoom",
-          "screen_type": "NONE",
-          "screen_name": "NONE",
-          "is_screen_up": false,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ],
-          "combat_state": {
-            "turn": 4,
-            "player": {
-              "current_hp": 78,
-              "max_hp": 80,
-              "block": 10,
-              "energy": 1,
-              "powers": [
-                {"id": "Weakened", "amount": 2}
-              ]
-            },
-            "hand": [
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
-              {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
-            ],
-            "monsters": [
-              {
-                "id": "FuzzyLouseNormal",
-                "current_hp": 0,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": true,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 5,
-                "move_hits": 1,
-                "powers": []
-              },
-              {
-                "id": "FuzzyLouseDefensive",
-                "current_hp": 1,
-                "max_hp": 14,
-                "block": 0,
-                "is_gone": false,
-                "half_dead": false,
-                "intent": "ATTACK",
-                "move_adjusted_damage": 7,
-                "move_hits": 1,
-                "powers": [
-                  {"id": "Vulnerable", "amount": 1}
-                ]
-              }
-            ]
-          }
-        }
-      },
-      "after": {
-        "ready_for_command": true,
-        "in_game": true,
-        "available_commands": ["choose", "proceed", "key", "click", "wait", "state"],
-        "game_state": {
-          "class": "IRONCLAD",
-          "ascension_level": 0,
-          "floor": 1,
-          "current_hp": 80,
-          "max_hp": 80,
-          "room_phase": "COMPLETE",
-          "room_type": "MonsterRoom",
-          "screen_type": "COMBAT_REWARD",
-          "screen_name": "COMBAT_REWARD",
-          "is_screen_up": true,
-          "relics": [
-            {"id": "Burning Blood", "counter": -1}
-          ]
-        }
-      }
+      "hand": [
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Bash", "cost": 2, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 14,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "DEBUG",
+        "powers": [
+         {"id": "Curl Up", "amount": 7}
+        ]
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 14,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "DEBUG",
+        "powers": [
+         {"id": "Curl Up", "amount": 4}
+        ]
+       }
+      ]
+     }
     }
-  ]
+   },
+   "after": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 80,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 1,
+      "player": {
+       "current_hp": 80,
+       "max_hp": 80,
+       "block": 0,
+       "energy": 2,
+       "powers": []
+      },
+      "hand": [
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Bash", "cost": 2, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 8,
+        "max_hp": 14,
+        "block": 7,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "BUFF",
+        "powers": []
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 14,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 7,
+        "move_hits": 1,
+        "powers": [
+         {"id": "Curl Up", "amount": 4}
+        ]
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "defend_adds_block",
+   "source": "first-random-v2-20261011/episode-0000",
+   "before_line": 28,
+   "action_line": 31,
+   "after_line": 32,
+   "before_sequence": 9,
+   "after_sequence": 10,
+   "command": "play 1",
+   "selected_action": {"kind": "play", "hand_index": 0, "target_index": null, "card_id": "Defend_R"},
+   "before": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 73,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 2,
+      "player": {
+       "current_hp": 73,
+       "max_hp": 80,
+       "block": 0,
+       "energy": 2,
+       "powers": []
+      },
+      "hand": [
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 2,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 8,
+        "move_hits": 1,
+        "powers": [
+         {"id": "Strength", "amount": 3}
+        ]
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 14,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 7,
+        "move_hits": 1,
+        "powers": [
+         {"id": "Curl Up", "amount": 4}
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "after": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 73,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 2,
+      "player": {
+       "current_hp": 73,
+       "max_hp": 80,
+       "block": 5,
+       "energy": 1,
+       "powers": []
+      },
+      "hand": [
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 2,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 8,
+        "move_hits": 1,
+        "powers": [
+         {"id": "Strength", "amount": 3}
+        ]
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 14,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 7,
+        "move_hits": 1,
+        "powers": [
+         {"id": "Curl Up", "amount": 4}
+        ]
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "partial_block_end_turn",
+   "source": "first-random-v2-20261011/episode-0000",
+   "before_line": 36,
+   "action_line": 39,
+   "after_line": 40,
+   "before_sequence": 11,
+   "after_sequence": 12,
+   "command": "end",
+   "selected_action": {"kind": "end", "hand_index": null, "target_index": null, "card_id": null},
+   "before": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 73,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 2,
+      "player": {
+       "current_hp": 73,
+       "max_hp": 80,
+       "block": 5,
+       "energy": 0,
+       "powers": []
+      },
+      "hand": [
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": false},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": false}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 0,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": true,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 8,
+        "move_hits": 1,
+        "powers": [
+         {"id": "Strength", "amount": 3}
+        ]
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 14,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 7,
+        "move_hits": 1,
+        "powers": [
+         {"id": "Curl Up", "amount": 4}
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "after": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 71,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 3,
+      "player": {
+       "current_hp": 71,
+       "max_hp": 80,
+       "block": 0,
+       "energy": 3,
+       "powers": []
+      },
+      "hand": [
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 0,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": true,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 5,
+        "move_hits": 1,
+        "powers": []
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 14,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "DEBUFF",
+        "powers": [
+         {"id": "Curl Up", "amount": 4}
+        ]
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "target_one_after_target_zero_died",
+   "source": "first-random-v2-20261011/episode-0000",
+   "before_line": 44,
+   "action_line": 47,
+   "after_line": 48,
+   "before_sequence": 13,
+   "after_sequence": 14,
+   "command": "play 3 1",
+   "selected_action": {"kind": "play", "hand_index": 2, "target_index": 1, "card_id": "Strike_R"},
+   "before": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 71,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 3,
+      "player": {
+       "current_hp": 71,
+       "max_hp": 80,
+       "block": 5,
+       "energy": 2,
+       "powers": []
+      },
+      "hand": [
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 0,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": true,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 5,
+        "move_hits": 1,
+        "powers": []
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 14,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "DEBUFF",
+        "powers": [
+         {"id": "Curl Up", "amount": 4}
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "after": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 71,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 3,
+      "player": {
+       "current_hp": 71,
+       "max_hp": 80,
+       "block": 5,
+       "energy": 1,
+       "powers": []
+      },
+      "hand": [
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 0,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": true,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 5,
+        "move_hits": 1,
+        "powers": []
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 8,
+        "max_hp": 14,
+        "block": 4,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "DEBUFF",
+        "powers": []
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "weak_strike",
+   "source": "first-random-v2-20261011/episode-0000",
+   "before_line": 52,
+   "action_line": 55,
+   "after_line": 56,
+   "before_sequence": 15,
+   "after_sequence": 16,
+   "command": "play 3 1",
+   "selected_action": {"kind": "play", "hand_index": 2, "target_index": 1, "card_id": "Strike_R"},
+   "before": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 71,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 4,
+      "player": {
+       "current_hp": 71,
+       "max_hp": 80,
+       "block": 0,
+       "energy": 3,
+       "powers": [
+        {"id": "Weakened", "amount": 2}
+       ]
+      },
+      "hand": [
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Bash", "cost": 2, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 0,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": true,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 5,
+        "move_hits": 1,
+        "powers": []
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 8,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 7,
+        "move_hits": 1,
+        "powers": []
+       }
+      ]
+     }
+    }
+   },
+   "after": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 71,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 4,
+      "player": {
+       "current_hp": 71,
+       "max_hp": 80,
+       "block": 0,
+       "energy": 2,
+       "powers": [
+        {"id": "Weakened", "amount": 2}
+       ]
+      },
+      "hand": [
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Bash", "cost": 2, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 0,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": true,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 5,
+        "move_hits": 1,
+        "powers": []
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 4,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 7,
+        "move_hits": 1,
+        "powers": []
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "victory_heals_six",
+   "source": "first-random-v2-20261011/episode-0000",
+   "before_line": 60,
+   "action_line": 63,
+   "after_line": 64,
+   "before_sequence": 17,
+   "after_sequence": 18,
+   "command": "play 2 1",
+   "selected_action": {"kind": "play", "hand_index": 1, "target_index": 1, "card_id": "Strike_R"},
+   "before": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 64,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 5,
+      "player": {
+       "current_hp": 64,
+       "max_hp": 80,
+       "block": 0,
+       "energy": 3,
+       "powers": [
+        {"id": "Weakened", "amount": 1}
+       ]
+      },
+      "hand": [
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Bash", "cost": 2, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 0,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": true,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 5,
+        "move_hits": 1,
+        "powers": []
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 4,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 7,
+        "move_hits": 1,
+        "powers": []
+       }
+      ]
+     }
+    }
+   },
+   "after": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["choose", "proceed", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 70,
+     "max_hp": 80,
+     "room_phase": "COMPLETE",
+     "room_type": "MonsterRoom",
+     "screen_type": "COMBAT_REWARD",
+     "screen_name": "COMBAT_REWARD",
+     "is_screen_up": true,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ]
+    }
+   }
+  },
+  {
+   "id": "strength_and_vulnerable_tick",
+   "source": "heuristic-replay-20261011/episode-0000",
+   "before_line": 24,
+   "action_line": 27,
+   "after_line": 28,
+   "before_sequence": 8,
+   "after_sequence": 9,
+   "command": "end",
+   "selected_action": {"kind": "end", "hand_index": null, "target_index": null, "card_id": null},
+   "before": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 80,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 1,
+      "player": {
+       "current_hp": 80,
+       "max_hp": 80,
+       "block": 5,
+       "energy": 0,
+       "powers": []
+      },
+      "hand": [
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": false},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": false},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": false}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 6,
+        "max_hp": 14,
+        "block": 7,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "BUFF",
+        "powers": [
+         {"id": "Vulnerable", "amount": 2}
+        ]
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 14,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 7,
+        "move_hits": 1,
+        "powers": [
+         {"id": "Curl Up", "amount": 4}
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "after": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 78,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 2,
+      "player": {
+       "current_hp": 78,
+       "max_hp": 80,
+       "block": 0,
+       "energy": 3,
+       "powers": []
+      },
+      "hand": [
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 6,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 8,
+        "move_hits": 1,
+        "powers": [
+         {"id": "Vulnerable", "amount": 1},
+         {"id": "Strength", "amount": 3}
+        ]
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 14,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 7,
+        "move_hits": 1,
+        "powers": [
+         {"id": "Curl Up", "amount": 4}
+        ]
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "full_block_end_turn",
+   "source": "heuristic-replay-20261011/episode-0000",
+   "before_line": 40,
+   "action_line": 43,
+   "after_line": 44,
+   "before_sequence": 12,
+   "after_sequence": 13,
+   "command": "end",
+   "selected_action": {"kind": "end", "hand_index": null, "target_index": null, "card_id": null},
+   "before": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 78,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 2,
+      "player": {
+       "current_hp": 78,
+       "max_hp": 80,
+       "block": 10,
+       "energy": 0,
+       "powers": []
+      },
+      "hand": [
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": false},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": false}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 0,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": true,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 8,
+        "move_hits": 1,
+        "powers": [
+         {"id": "Vulnerable", "amount": 1},
+         {"id": "Strength", "amount": 3}
+        ]
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 14,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 7,
+        "move_hits": 1,
+        "powers": [
+         {"id": "Curl Up", "amount": 4}
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "after": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 78,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 3,
+      "player": {
+       "current_hp": 78,
+       "max_hp": 80,
+       "block": 0,
+       "energy": 3,
+       "powers": []
+      },
+      "hand": [
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Bash", "cost": 2, "upgrades": 0, "has_target": true, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 0,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": true,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 5,
+        "move_hits": 1,
+        "powers": []
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 14,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "DEBUFF",
+        "powers": [
+         {"id": "Curl Up", "amount": 4}
+        ]
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "bash_adds_vulnerable",
+   "source": "heuristic-replay-20261011/episode-0000",
+   "before_line": 44,
+   "action_line": 47,
+   "after_line": 48,
+   "before_sequence": 13,
+   "after_sequence": 14,
+   "command": "play 5 1",
+   "selected_action": {"kind": "play", "hand_index": 4, "target_index": 1, "card_id": "Bash"},
+   "before": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 78,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 3,
+      "player": {
+       "current_hp": 78,
+       "max_hp": 80,
+       "block": 0,
+       "energy": 3,
+       "powers": []
+      },
+      "hand": [
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Bash", "cost": 2, "upgrades": 0, "has_target": true, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 0,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": true,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 5,
+        "move_hits": 1,
+        "powers": []
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 14,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "DEBUFF",
+        "powers": [
+         {"id": "Curl Up", "amount": 4}
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "after": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 78,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 3,
+      "player": {
+       "current_hp": 78,
+       "max_hp": 80,
+       "block": 0,
+       "energy": 1,
+       "powers": []
+      },
+      "hand": [
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 0,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": true,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 5,
+        "move_hits": 1,
+        "powers": []
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 6,
+        "max_hp": 14,
+        "block": 4,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "DEBUFF",
+        "powers": [
+         {"id": "Vulnerable", "amount": 2}
+        ]
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "vulnerable_strike_through_block",
+   "source": "heuristic-replay-20261011/episode-0000",
+   "before_line": 48,
+   "action_line": 51,
+   "after_line": 52,
+   "before_sequence": 14,
+   "after_sequence": 15,
+   "command": "play 1 1",
+   "selected_action": {"kind": "play", "hand_index": 0, "target_index": 1, "card_id": "Strike_R"},
+   "before": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 78,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 3,
+      "player": {
+       "current_hp": 78,
+       "max_hp": 80,
+       "block": 0,
+       "energy": 1,
+       "powers": []
+      },
+      "hand": [
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 0,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": true,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 5,
+        "move_hits": 1,
+        "powers": []
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 6,
+        "max_hp": 14,
+        "block": 4,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "DEBUFF",
+        "powers": [
+         {"id": "Vulnerable", "amount": 2}
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "after": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 78,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 3,
+      "player": {
+       "current_hp": 78,
+       "max_hp": 80,
+       "block": 0,
+       "energy": 0,
+       "powers": []
+      },
+      "hand": [
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": false},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": false},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": false}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 0,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": true,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 5,
+        "move_hits": 1,
+        "powers": []
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 1,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "DEBUFF",
+        "powers": [
+         {"id": "Vulnerable", "amount": 2}
+        ]
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "victory_heal_capped",
+   "source": "heuristic-replay-20261011/episode-0000",
+   "before_line": 64,
+   "action_line": 67,
+   "after_line": 68,
+   "before_sequence": 18,
+   "after_sequence": 19,
+   "command": "play 1 1",
+   "selected_action": {"kind": "play", "hand_index": 0, "target_index": 1, "card_id": "Strike_R"},
+   "before": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 78,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 4,
+      "player": {
+       "current_hp": 78,
+       "max_hp": 80,
+       "block": 10,
+       "energy": 1,
+       "powers": [
+        {"id": "Weakened", "amount": 2}
+       ]
+      },
+      "hand": [
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 0,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": true,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 5,
+        "move_hits": 1,
+        "powers": []
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 1,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 7,
+        "move_hits": 1,
+        "powers": [
+         {"id": "Vulnerable", "amount": 1}
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "after": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["choose", "proceed", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 80,
+     "max_hp": 80,
+     "room_phase": "COMPLETE",
+     "room_type": "MonsterRoom",
+     "screen_type": "COMBAT_REWARD",
+     "screen_name": "COMBAT_REWARD",
+     "is_screen_up": true,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ]
+    }
+   }
+  },
+  {
+   "id": "end_turn_engine_death",
+   "source": "loss-restart-probe-20261011/episode-0000",
+   "before_line": 47,
+   "action_line": 50,
+   "after_line": 51,
+   "before_sequence": 14,
+   "after_sequence": 15,
+   "command": "end",
+   "selected_action": {"kind": "end", "hand_index": null, "target_index": null, "card_id": null},
+   "before": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["play", "end", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 1,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "NONE",
+     "screen_name": "NONE",
+     "is_screen_up": false,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "combat_state": {
+      "turn": 8,
+      "player": {
+       "current_hp": 1,
+       "max_hp": 80,
+       "block": 0,
+       "energy": 3,
+       "powers": [
+        {"id": "Weakened", "amount": 1}
+       ]
+      },
+      "hand": [
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Strike_R", "cost": 1, "upgrades": 0, "has_target": true, "is_playable": true},
+       {"id": "Defend_R", "cost": 1, "upgrades": 0, "has_target": false, "is_playable": true}
+      ],
+      "monsters": [
+       {
+        "id": "FuzzyLouseNormal",
+        "current_hp": 14,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "BUFF",
+        "powers": [
+         {"id": "Curl Up", "amount": 7},
+         {"id": "Strength", "amount": 9}
+        ]
+       },
+       {
+        "id": "FuzzyLouseDefensive",
+        "current_hp": 14,
+        "max_hp": 14,
+        "block": 0,
+        "is_gone": false,
+        "half_dead": false,
+        "intent": "ATTACK",
+        "move_adjusted_damage": 7,
+        "move_hits": 1,
+        "powers": [
+         {"id": "Curl Up", "amount": 4}
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "after": {
+    "ready_for_command": true,
+    "in_game": true,
+    "available_commands": ["proceed", "key", "click", "wait", "state"],
+    "game_state": {
+     "class": "IRONCLAD",
+     "ascension_level": 0,
+     "floor": 1,
+     "current_hp": 0,
+     "max_hp": 80,
+     "room_phase": "COMBAT",
+     "room_type": "MonsterRoom",
+     "screen_type": "GAME_OVER",
+     "screen_name": "DEATH",
+     "is_screen_up": true,
+     "relics": [
+      {"id": "Burning Blood", "counter": -1}
+     ],
+     "screen_state": {"victory": false, "score": 5}
+    }
+   }
+  }
+ ]
 }

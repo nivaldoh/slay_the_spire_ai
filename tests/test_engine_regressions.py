@@ -51,7 +51,7 @@ def test_observed_commands_retain_card_and_target_identity(case):
         assert card["is_playable"] is True
         assert card["cost"] <= before.observation["combat_state"]["player"]["energy"]
 
-    if case["after"]["game_state"]["room_phase"] == "COMBAT":
+    if combat_outcome(case["after"], combat_floor=1) is None:
         after = decision(case, "after")
         with pytest.raises(StaleActionError):
             validate_action(after, selected)
@@ -188,6 +188,20 @@ def test_initial_debug_intent_is_retained_without_hidden_damage():
     monsters = combat("strike_triggers_curl_up", "before")["monsters"]
     assert all(monster["intent"] == "DEBUG" for monster in monsters)
     assert all("move_adjusted_damage" not in monster for monster in monsters)
+
+
+def test_engine_death_is_terminal_even_when_room_phase_remains_combat():
+    case = CASES["end_turn_engine_death"]
+    before = decision(case, "before").observation
+    after = case["after"]["game_state"]
+    assert case["command"] == "end"
+    assert before["current_hp"] == 1
+    assert after["current_hp"] == 0
+    assert after["room_phase"] == "COMBAT"
+    assert after["screen_type"] == "GAME_OVER" and after["screen_name"] == "DEATH"
+    assert after["screen_state"] == {"victory": False, "score": 5}
+    assert combat_outcome(case["before"], combat_floor=1) is None
+    assert combat_outcome(case["after"], combat_floor=1) == "lost"
 
 
 def test_committed_fixture_excludes_private_fields_and_stays_small():
