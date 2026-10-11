@@ -11,14 +11,32 @@ dependencies = []
 
 [project.optional-dependencies]
 train = ["torch==2.13.0"]
+llm = [
+    "torch==2.13.0",
+    "transformers==5.19.0",
+    "peft==0.21.2",
+    "accelerate==1.15.0",
+    "safetensors==0.8.0",
+]
+
+[tool.uv]
+conflicts = [[{ extra = "train" }, { extra = "llm" }]]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
 [tool.uv.sources]
-torch = { index = "pytorch-cpu" }
+torch = [
+    { index = "pytorch-cpu", extra = "train" },
+    { index = "pytorch-cu130", extra = "llm" },
+]
 
 [dependency-groups]
 dev = ["pytest>=8.4,<10", "ruff>=0.14,<1"]
