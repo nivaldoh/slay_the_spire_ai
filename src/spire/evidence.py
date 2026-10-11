@@ -251,6 +251,13 @@ def _inspect_episode(directory: Path, config: dict | None) -> dict:
             selected = validate_action(expected, event.get("selected_action_id"))
             if result.get("policy") == "language":
                 _language_behavior(expected, selected, event.get("behavior"))
+            elif result.get("policy") == "language_sample":
+                from spire.language_sampling import check_sampled_behavior
+
+                try:
+                    check_sampled_behavior(expected, selected, event.get("behavior"))
+                except ValueError as error:
+                    raise EvidenceError(str(error)) from error
             selected_decision = expected.to_dict()
             if first_decision is None:
                 first_decision = selected_decision

@@ -302,9 +302,10 @@ def rollout(output: Path, config: dict, *, policy_factory: Callable | None = Non
     """Every new invocation gets a fresh directory; completed evidence is never overwritten."""
     if not config["game_seed"].isalnum():
         raise ValueError("game seed must be alphanumeric")
-    if config["policy"] not in {"random", "heuristic", "end_turn", "neural", "language"}:
+    learned = {"neural", "language", "language_sample"}
+    if config["policy"] not in {"random", "heuristic", "end_turn", *learned}:
         raise ValueError("unknown policy")
-    if (config["policy"] in {"neural", "language"}) != (policy_factory is not None):
+    if (config["policy"] in learned) != (policy_factory is not None):
         raise ValueError(
             "neural/language rollouts require a policy factory, only for these policies"
         )
