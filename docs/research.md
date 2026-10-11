@@ -66,9 +66,13 @@ that observation as an invariant for all runs.
 Planned run: `runs/ppo-pilot-seed0-20261011`. Source is frozen at the integrated training
 revision before launch. Initialization seed 0; CPU set encoder/candidate scorer, 12,498
 parameters; PPO defaults documented in [learning.md](learning.md). Collect complete
-episodes only, update after at least 64 transitions, with ceilings of 8 attempts,
+episodes only, normally update after at least 64 transitions, with ceilings of 8 attempts,
 2 updates, and 900 seconds from the original start (resuming does not replenish time).
 The deliberate interruption during a later attempt counts against the attempt budget.
+The already implemented collector flushes a smaller complete-episode tail batch when
+the attempt ceiling is reached, provided time and update budget remain. It does not
+flush after the wall-clock deadline or consume an incomplete episode. This clarification
+describes the original implementation: the pilot's updates used 81 and 11 transitions.
 
 Baseline evidence is the completed eight-attempt suite for random and heuristic under
 `louse-diagnostic-development-v1`: both 8/8 wins, random mean final HP68 (range50–80),
@@ -101,16 +105,18 @@ trace, reproduced the interrupted prefix, and excluded its samples. The exported
 final tensor hash is `0aef9e7e0bebaab135f2621d42d743606cb9c6d129c37c1aed9c0e2fb540d52b`.
 
 The [computational audit](results/ppo-pilot-training-audit.json) supports real weight
-training and recovery. Frozen initial/final evaluations are now running at source
-`70b08b0` with unchanged suite and rollout semantics. That source adds stricter
-report-comparability and suite-declaration validation. Do not infer gameplay
+training and recovery. Frozen initial evaluation completed at `70b08b0`; the repaired
+full trained evaluation completed at `acb1bd3`, as recorded below. The former adds
+stricter report-comparability and suite-declaration validation; the latter repairs
+relay startup while preserving the suite and gameplay semantics. Do not infer gameplay
 improvement from tensor changes or training wins.
 
 ## Next budget increase (declared before launch)
 
 Conditional on valid frozen pilot evaluations, the next run is
 `runs/ppo-budget64-seed0-20261011`: fresh seed-0 initialization, the same network,
-PPO defaults, 64-transition batches, reward, fixed scenario and canonical evaluation.
+PPO defaults, a 64-transition collection threshold with the existing attempt-limit
+tail-batch flush described above, reward, fixed scenario and canonical evaluation.
 Only the training budget increases, to at most 64 attempts, 16 updates and 3,000
 wall-clock seconds, whichever limit arrives first. No deliberate interruption is
 planned. The initial model hash must match the pilot's initial artifact; this repeats
@@ -166,3 +172,73 @@ The computational pilot is accepted: actual actor/probability changes, finite PP
 audited behavior data, interruption/resume, and frozen evaluation all work. The
 next declared budget increase can now run. The heuristic remains the strongest
 measured policy on this fixed diagnostic; no generalization result exists.
+
+## Proposed bounded development inventory (not launched)
+
+After the active long trial and its frozen evaluation finish, inventory additional
+public first-combat starts under the existing engine/mod pins, observation contract,
+fresh-JVM reset and settled-v2 prefix. This proposal does not change the active trial,
+its final-artifact selection, or v1 results. Freeze an inventory manifest/source revision
+before collection; no neural policy or performance-guided seed selection is involved.
+
+Use this exact discovery order, without substitutions:
+`SPIREINV01`, `SPIREINV02`, `SPIREINV03`, `SPIREINV04`, `SPIREINV05`, `SPIREINV06`,
+`SPIREINV07`, `SPIREINV08`, `SPIREINV09`, `SPIREINV10`, `SPIREINV11`, `SPIREINV12`.
+These are proposed inputs, not claims that any seed produces an eligible encounter.
+
+Cap the entire inventory at **24 fresh-JVM attempts and 1,800 wall-clock seconds**,
+whichever comes first. Each attempt retains the current 500-action, 180-second episode
+and 45-second bridge limits, clipped to the remaining overall time. Reserve attempts
+in this order:
+
+1. One deterministic heuristic sentinel on existing `SPIREAI1`, requiring the frozen
+   v1 start and replay. Abort inventory if that known condition differs.
+2. One deterministic heuristic discovery fight per listed seed, in order. Record every
+   rejection and infrastructure attempt. A gameplay loss is a completed observation,
+   not a reason to exclude a seed.
+3. Select the first two preliminarily eligible seeds in discovery order per family
+   (`cultist`, `jaw_worm`, `two_louses`), at most six. Repeat one full deterministic
+   heuristic fight for each, retaining this selection even if a repeat fails. Do not
+   backfill from later seeds based on outcomes.
+4. One end-turn-only diagnostic per represented family, on its first admitted seed,
+   at most three. These probes collect public enemy-power timing and DEATH evidence;
+   their rewards never enter training or a policy performance comparison.
+5. Repeat the existing v1 heuristic sentinel after the probes, checking that loss/reset
+   activity has preserved its known start and public replay.
+
+This uses at most 23 planned attempts. One additional attempt is reserved for the
+first infrastructure failure only, immediately retrying the same assignment with the
+same policy. Retain both records; a second infrastructure failure stops collection.
+Unsupported gameplay, wrong conditions and unstable repeats receive no retry. A time
+limit leaves explicit unattempted assignments and an incomplete inventory, rather than
+silently shrinking a denominator. No additional seeds are searched to fill missing families.
+
+Preliminary eligibility requires the normal original-engine first-floor MonsterRoom,
+Ironclad A0, settled known intents, **80/80 HP**, 199 gold from the existing 100-gold
+Neow choice, exactly five unupgraded Strike_R, four unupgraded Defend_R and one unupgraded
+Bash, only Burning Blood, and empty potion slots. Keep the existing prefix's max-HP
+preference: if it chooses max HP, record the variant as ineligible for this inventory;
+do not change choices to manufacture eligibility. Allowed ordered monster IDs are
+exactly `[Cultist]`, `[JawWorm]`, or two entries drawn from `FuzzyLouseNormal` and
+`FuzzyLouseDefensive`. Preserve order and composition rather than pooling Louse variants.
+
+Admission additionally requires an audited complete fight using only supported actions,
+no private policy fields, and a repeated settled-start fingerprint with identical full
+heuristic commands and public transitions. Record prefix commands, profile snapshots,
+source revision, engine/mod hashes, discovery/repeat trace hashes and the public start
+for each candidate. An unsupported card, choice or potion-dependent state, unexplained
+state difference, mismatched composition, or invalid evidence prevents admission;
+terminal health and win/loss do not determine eligibility.
+
+Extract only actually observed minimal public mechanics: Cultist Ritual appearance,
+Strength changes and subsequent displayed attack damage; Jaw Worm block, Strength and
+mixed intents across turns; added Louse compositions' Curl Up, Weak/Strength and target
+slot identity after a death. Also retain energy/card effects, block clearing, engine
+terminal status and Burning Blood healing where observed. End-turn probes may not expose
+every mechanic; report missing evidence instead of changing seeds or inventing coverage.
+
+All admitted scenarios remain **development**. Freeze an explicit schema-2 catalog only
+after checking discovery evidence, with no placeholder fingerprints. This inventory
+does not create a held-out evaluation: a later contract must separate unseen seeds
+within familiar families from entirely held-out encounter families before training or
+tuning on the resulting catalog. See [scenario-expansion.md](scenario-expansion.md).
