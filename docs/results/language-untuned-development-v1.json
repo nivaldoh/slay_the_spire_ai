@@ -1,0 +1,351 @@
+{
+  "audit_metrics": {
+    "attempts": 8,
+    "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+    "infrastructure_failures": 0,
+    "interrupted": 0,
+    "invalid_actions": 0,
+    "invalid_evidence": 0,
+    "losses": 0,
+    "mean_combat_seconds": 6.607186832499792,
+    "mean_elapsed_seconds": 21.13476727274974,
+    "mean_ending_hp": null,
+    "mean_net_hp_lost": null,
+    "mean_reset_seconds": 14.527576391499679,
+    "mean_starting_hp": null,
+    "mean_turns": null,
+    "policy_attempt_win_rate": 0.0,
+    "policy_attempts": 8,
+    "policy_failures": 8,
+    "truncated": 0,
+    "unsupported": 0,
+    "valid_evidence_episodes": 8,
+    "valid_gameplay_episodes": 0,
+    "validated_transitions": 24,
+    "win_rate": null,
+    "wins": 0
+  },
+  "consistency_errors": [],
+  "metrics": {
+    "attempted_episodes": 8,
+    "completed_gameplay": 0,
+    "context_failures": 0,
+    "infrastructure_failures": 0,
+    "invalid_completions": 8,
+    "losses": 0,
+    "policy_attempt_win_rate": 0.0,
+    "policy_attempts": 8,
+    "policy_failures": 8,
+    "unattempted_episodes": 0,
+    "win_rate": null,
+    "wins": 0
+  },
+  "policy_artifact": {
+    "adapter_snapshot_path": null,
+    "declaration": {
+      "adapter": null,
+      "base": {
+        "directory": "/home/niv/.cache/spire-models/models--Qwen--Qwen3-0.6B/snapshots/c1899de289a04d12100db370d81485cdf75e47ca",
+        "files": {
+          "LICENSE": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+          "README.md": "1ab64a26fcb3b461423b89a433a8c858f1bf8d4086f979cbb3ff878d47cf20e9",
+          "config.json": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd",
+          "generation_config.json": "2325da0f15bb848e018c5ae071b7943332e9f871d6b60e2ed22ca97d4cb993d2",
+          "merges.txt": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
+          "model.safetensors": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+          "tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+          "tokenizer_config.json": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101",
+          "vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+        },
+        "id": "Qwen/Qwen3-0.6B",
+        "revision": "c1899de289a04d12100db370d81485cdf75e47ca"
+      },
+      "decoder": {
+        "do_sample": false,
+        "enable_thinking": false,
+        "eos_token_ids": [
+          151645,
+          151643
+        ],
+        "max_new_tokens": 12,
+        "num_beams": 1,
+        "skip_special_tokens": false,
+        "strip_one_terminal_eos": true
+      },
+      "max_prompt_tokens": 2048,
+      "parser_version": "single-json-choice-v1",
+      "prompt_format": "public-card-table-choice-v1",
+      "provenance": {
+        "experiment_contract": "docs/language-experiment.md",
+        "experiment_contract_sha256": "b90ac569a12dc726897968d61c86131e7bc4552e70e6a21111cf0d2e1557d823",
+        "purpose": "unchanged_pretrained_baseline",
+        "scope": "Fixed Louse diagnostic development; no held-out claim",
+        "source_revision": "2a734383f540baa7c60f974366cab0ba0644d04d",
+        "supersedes_unexecuted_declaration_sha256": "7a035639677a9b8f7171892ffbe9ad91182b4421b2a953e43077a592de3ea1a7"
+      },
+      "schema_version": 1,
+      "type": "language"
+    },
+    "dependencies": {
+      "accelerate": "1.15.0",
+      "peft": "0.21.2",
+      "safetensors": "0.8.0",
+      "torch": "2.13.0+cu130",
+      "transformers": "5.19.0"
+    },
+    "model_sha256": "bda00e3e09e7e35c6c6950cfb2673117052c3e8718dfc47ed35f7db9c5405c94",
+    "name": "language",
+    "path": "/home/niv/repos/slay_the_spire_ai/runs/qwen3-0.6b-untuned-declaration-v2-20261011.json",
+    "pretrained_base_only": true,
+    "sampling": "greedy",
+    "sha256": "b689e0d880f11b6ffee787a2c627b4d4da33ef2f7f190a9882df4302628af0b6",
+    "snapshot_path": "frozen-language/declaration.json",
+    "type": "language"
+  },
+  "results": [
+    {
+      "combat_actions": 3,
+      "elapsed_seconds": 21.31786809199548,
+      "episode": 0,
+      "failure": {
+        "completion": "{\"a\": \"1\"}",
+        "completion_token_ids": [
+          4913,
+          64,
+          788,
+          330,
+          16,
+          9207,
+          151645
+        ],
+        "completion_tokens": 7,
+        "inference_seconds": 0.44598516300175106,
+        "kind": "invalid_completion",
+        "max_prompt_tokens": 2048,
+        "prompt_sha256": "6f12b5197a5c2e0b8d497e1f5291cdaa7479ccfcff1be562c3c793435af55961",
+        "prompt_tokens": 737,
+        "raw_completion": "{\"a\": \"1\"}<|im_end|>"
+      },
+      "inference_seconds": 1.7321933070052182,
+      "policy_seed": 1000,
+      "status": "policy_failure",
+      "turns": 2
+    },
+    {
+      "combat_actions": 3,
+      "elapsed_seconds": 20.642853185003332,
+      "episode": 1,
+      "failure": {
+        "completion": "{\"a\": \"1\"}",
+        "completion_token_ids": [
+          4913,
+          64,
+          788,
+          330,
+          16,
+          9207,
+          151645
+        ],
+        "completion_tokens": 7,
+        "inference_seconds": 0.4899717360021896,
+        "kind": "invalid_completion",
+        "max_prompt_tokens": 2048,
+        "prompt_sha256": "6f12b5197a5c2e0b8d497e1f5291cdaa7479ccfcff1be562c3c793435af55961",
+        "prompt_tokens": 737,
+        "raw_completion": "{\"a\": \"1\"}<|im_end|>"
+      },
+      "inference_seconds": 1.4430648809939157,
+      "policy_seed": 1001,
+      "status": "policy_failure",
+      "turns": 2
+    },
+    {
+      "combat_actions": 3,
+      "elapsed_seconds": 21.458351450994087,
+      "episode": 2,
+      "failure": {
+        "completion": "{\"a\": \"1\"}",
+        "completion_token_ids": [
+          4913,
+          64,
+          788,
+          330,
+          16,
+          9207,
+          151645
+        ],
+        "completion_tokens": 7,
+        "inference_seconds": 0.47214677299780305,
+        "kind": "invalid_completion",
+        "max_prompt_tokens": 2048,
+        "prompt_sha256": "6f12b5197a5c2e0b8d497e1f5291cdaa7479ccfcff1be562c3c793435af55961",
+        "prompt_tokens": 737,
+        "raw_completion": "{\"a\": \"1\"}<|im_end|>"
+      },
+      "inference_seconds": 1.5308279409946408,
+      "policy_seed": 1002,
+      "status": "policy_failure",
+      "turns": 2
+    },
+    {
+      "combat_actions": 3,
+      "elapsed_seconds": 21.32739340599801,
+      "episode": 3,
+      "failure": {
+        "completion": "{\"a\": \"1\"}",
+        "completion_token_ids": [
+          4913,
+          64,
+          788,
+          330,
+          16,
+          9207,
+          151645
+        ],
+        "completion_tokens": 7,
+        "inference_seconds": 0.4940808400060632,
+        "kind": "invalid_completion",
+        "max_prompt_tokens": 2048,
+        "prompt_sha256": "6f12b5197a5c2e0b8d497e1f5291cdaa7479ccfcff1be562c3c793435af55961",
+        "prompt_tokens": 737,
+        "raw_completion": "{\"a\": \"1\"}<|im_end|>"
+      },
+      "inference_seconds": 1.5079964149990701,
+      "policy_seed": 1003,
+      "status": "policy_failure",
+      "turns": 2
+    },
+    {
+      "combat_actions": 3,
+      "elapsed_seconds": 20.904230719002953,
+      "episode": 4,
+      "failure": {
+        "completion": "{\"a\": \"1\"}",
+        "completion_token_ids": [
+          4913,
+          64,
+          788,
+          330,
+          16,
+          9207,
+          151645
+        ],
+        "completion_tokens": 7,
+        "inference_seconds": 0.5038826210002298,
+        "kind": "invalid_completion",
+        "max_prompt_tokens": 2048,
+        "prompt_sha256": "6f12b5197a5c2e0b8d497e1f5291cdaa7479ccfcff1be562c3c793435af55961",
+        "prompt_tokens": 737,
+        "raw_completion": "{\"a\": \"1\"}<|im_end|>"
+      },
+      "inference_seconds": 1.4019648430185043,
+      "policy_seed": 1004,
+      "status": "policy_failure",
+      "turns": 2
+    },
+    {
+      "combat_actions": 3,
+      "elapsed_seconds": 21.067130494004232,
+      "episode": 5,
+      "failure": {
+        "completion": "{\"a\": \"1\"}",
+        "completion_token_ids": [
+          4913,
+          64,
+          788,
+          330,
+          16,
+          9207,
+          151645
+        ],
+        "completion_tokens": 7,
+        "inference_seconds": 0.5508838699970511,
+        "kind": "invalid_completion",
+        "max_prompt_tokens": 2048,
+        "prompt_sha256": "6f12b5197a5c2e0b8d497e1f5291cdaa7479ccfcff1be562c3c793435af55961",
+        "prompt_tokens": 737,
+        "raw_completion": "{\"a\": \"1\"}<|im_end|>"
+      },
+      "inference_seconds": 1.4815616900086752,
+      "policy_seed": 1005,
+      "status": "policy_failure",
+      "turns": 2
+    },
+    {
+      "combat_actions": 3,
+      "elapsed_seconds": 21.069599415000994,
+      "episode": 6,
+      "failure": {
+        "completion": "{\"a\": \"1\"}",
+        "completion_token_ids": [
+          4913,
+          64,
+          788,
+          330,
+          16,
+          9207,
+          151645
+        ],
+        "completion_tokens": 7,
+        "inference_seconds": 0.4573859999945853,
+        "kind": "invalid_completion",
+        "max_prompt_tokens": 2048,
+        "prompt_sha256": "6f12b5197a5c2e0b8d497e1f5291cdaa7479ccfcff1be562c3c793435af55961",
+        "prompt_tokens": 737,
+        "raw_completion": "{\"a\": \"1\"}<|im_end|>"
+      },
+      "inference_seconds": 1.4584130049988744,
+      "policy_seed": 1006,
+      "status": "policy_failure",
+      "turns": 2
+    },
+    {
+      "combat_actions": 3,
+      "elapsed_seconds": 21.290670903996215,
+      "episode": 7,
+      "failure": {
+        "completion": "{\"a\": \"1\"}",
+        "completion_token_ids": [
+          4913,
+          64,
+          788,
+          330,
+          16,
+          9207,
+          151645
+        ],
+        "completion_tokens": 7,
+        "inference_seconds": 0.5309422679929412,
+        "kind": "invalid_completion",
+        "max_prompt_tokens": 2048,
+        "prompt_sha256": "6f12b5197a5c2e0b8d497e1f5291cdaa7479ccfcff1be562c3c793435af55961",
+        "prompt_tokens": 737,
+        "raw_completion": "{\"a\": \"1\"}<|im_end|>"
+      },
+      "inference_seconds": 1.5213073919949238,
+      "policy_seed": 1007,
+      "status": "policy_failure",
+      "turns": 2
+    }
+  ],
+  "run": "runs/qwen3-0.6b-untuned-eval-20261011",
+  "schema_version": 1,
+  "scope": "Greedy unchanged pretrained model, eight repeats of one fixed diagnostic scenario; no independent-scenario or sampling-variability claim.",
+  "source_evidence_sha256": {
+    "runs/qwen3-0.6b-untuned-eval-20261011/evaluation.json": "cd98d256d3c6c715a95f42f516ccff9cd0951ac0ff4f92bfe8fd27fcb2cc3be1",
+    "runs/qwen3-0.6b-untuned-eval-20261011/manifest.json": "402e0e900d46ba3161e8651a3016ed838d1797e4f560f8d3e395802610ee6d16"
+  },
+  "source_revision": "a8286454090b8d14ad700995160eb7619f151f9d",
+  "suite": {
+    "description": "Fixed original-engine two-Louse first combat, starter Ironclad, Ascension 0, 80 HP, Burning Blood, 100-gold Neow reward, initial intents settled. Repeated stochastic-policy attempts on one scenario; no held-out seed or encounter claim.",
+    "episodes": 8,
+    "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+    "game_seed": "SPIREAI1",
+    "id": "louse-diagnostic-development-v1",
+    "policy_seed": 1000,
+    "purpose": "development",
+    "schema_version": 1
+  },
+  "suite_sha256": "665df78b5fd928cf4a4c3ee996eb4f8cf72fdf5912dd62fd613fc4036ce27b4c",
+  "valid": true
+}

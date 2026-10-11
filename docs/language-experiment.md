@@ -68,3 +68,37 @@ completion/wins, or improve ending HP without reducing completion/wins. Reject a
 unchanged or worse result as an improvement; mark a broken evidence contract invalid.
 Small changes remain inconclusive about general ability. Any claim beyond this one
 scenario requires new declared development comparisons and later held-out evaluation.
+
+## Preserved infrastructure failure and bounded rerun
+
+The first trained evaluation, `runs/qwen3-0.6b-sft-eval-20261011`, stopped after two
+wins at HP77 and one relay-startup failure, leaving five scheduled attempts unrun.
+The two completed fights exactly reproduced the teacher's commands and public
+transitions. The third attempt had zero observations/actions and failed while Linux
+waited for the Windows relay connection; relay stderr reported WinError10054.
+Its trace evidence is valid, but the eight-attempt evaluation is incomplete and
+cannot establish the declared full-suite improvement. Preserve its separate
+[result](results/language-sft-incomplete-development-v1.json), runtime and costs.
+
+Before any new game, declare this recovery sequence: implement and check a narrow
+transport mitigation that connects Windows directly to the current WSL guest IPv4
+address instead of its localhost forwarder. Keep port19876, timeouts and fail-closed
+session semantics. This bypasses a suspected intermediary; bounded socket probes
+did not reproduce the intermittent failure and do not prove its exact cause.
+
+First run `runs/direct-relay-control-20261011`: two canonical SPIREAI1 public-heuristic
+fights, 500 actions/180 seconds per episode, 45-second bridge timeout and a 300-second
+process limit. Require both original-engine outcomes, exact settled starts and full
+command/public-transition agreement with the existing heuristic reference. Stop on
+failure; these are infrastructure controls, not new training demonstrations.
+
+If those controls pass, run the same final update64 adapter (declaration SHA-256
+`70d19d51a5578ca3ce4e64e0f3f8646c9034ab6e14cf9f84baa2002268a248d6`) on the unchanged
+eight-attempt suite as `runs/qwen3-0.6b-sft-eval-v2-20261011`, with the existing
+1,600-second batch limit. No new training, checkpoint selection, prompt/parser change,
+response repair or automatic retry. This is one explicitly declared infrastructure
+rerun after preserving the first batch, not a continuation that overwrites it. Report
+both batches and their combined attempted-game/infrastructure cost, while scoring the
+new complete suite separately. The untuned baseline and its archived original
+contract remain unchanged. If the rerun fails, retain it and diagnose again rather
+than silently relaunching.

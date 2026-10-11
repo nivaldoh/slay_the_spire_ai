@@ -1,0 +1,88 @@
+{
+  "changed_adapter_elements": 2293759,
+  "charged_tokens": 527360,
+  "checkpoint": {
+    "deadline_unix": 1791704551.3096194,
+    "generation": 129,
+    "path": "checkpoints/000129-b2281346a63a7944bb9f4f2c64b3f1f3839d15bbcc97e1da6e83335d72dcd1bc.pt",
+    "sha256": "b2281346a63a7944bb9f4f2c64b3f1f3839d15bbcc97e1da6e83335d72dcd1bc",
+    "updates": 64
+  },
+  "checkpoint_count": 129,
+  "checks": {
+    "canonical_checkpoint_accounting_rng_and_optimizer": true,
+    "checkpoint_ancestry": true,
+    "evidence_unchanged_during_audit": true,
+    "finite_adapter_and_optimizer": true,
+    "frozen_contract_and_archived_source": true,
+    "independent_dataset_and_pinned_base": true,
+    "initial_to_final_changes_verified": true,
+    "published_exports_match_checkpoint_and_job": true,
+    "reserved_before_updates": true,
+    "summary_matches_committed_stop": true,
+    "summary_within_final_supervised_invocation": true,
+    "supervisor_budgets_and_resource_guards": true
+  },
+  "committed_tokens": 527360,
+  "consumed_examples": 256,
+  "dataset_manifest_sha256": "d4ce9b1c1d94109eb6acfaacf9217d79d6ebc85b2aa4ea3e326b45231ead5a71",
+  "deadline_unix": 1791704551.3096194,
+  "errors": [],
+  "exports": [
+    {
+      "adapter_sha256": "bf708e4a541167f2808c40989fc595d2c9a6114e441c5de66752097b063f32ac",
+      "checkpoint_sha256": "b2281346a63a7944bb9f4f2c64b3f1f3839d15bbcc97e1da6e83335d72dcd1bc",
+      "declaration": "/home/niv/repos/slay_the_spire_ai/runs/qwen3-0.6b-heuristic-sft-20261011/artifacts/update-000064-b2281346a63a7944bb9f4f2c64b3f1f3839d15bbcc97e1da6e83335d72dcd1bc/policy.json",
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/qwen3-0.6b-heuristic-sft-20261011/artifacts/update-000064-b2281346a63a7944bb9f4f2c64b3f1f3839d15bbcc97e1da6e83335d72dcd1bc",
+      "files": {
+        "adapter/adapter_config.json": "d5b8b5caefef3288fbb86ee2b1bbbcfd6e3474588ae4a2999d356855c9bcede2",
+        "adapter/adapter_model.safetensors": "cb769776c3fd9c220747b81275779c209995a2dc5eabdd8ea0f208ff052d585e",
+        "policy.json": "70d19d51a5578ca3ce4e64e0f3f8646c9034ab6e14cf9f84baa2002268a248d6"
+      }
+    }
+  ],
+  "full_audit_path": "runs/qwen3-0.6b-heuristic-sft-independent-audit-20261011.json",
+  "full_audit_sha256": "788935d760c4b5791477c35ddbf13f4ab626b693eb96d5b22565044c99a0f57a",
+  "history_summary": {
+    "actual_input_tokens": 177321,
+    "supervised_tokens": 1536,
+    "updates": 64
+  },
+  "invocations": [
+    {
+      "cleanup_overrun_seconds": 0,
+      "deadline_unix": 1791704551.3096194,
+      "elapsed_seconds": 398.4551224708557,
+      "exit_code": 0,
+      "file": "watchdog-1791704349764770338.json",
+      "finalize_only": false,
+      "maximum_gpu_used_mib": 7087.0,
+      "minimum_available_mib": 3522.97265625,
+      "polls": 667,
+      "schema_version": 1,
+      "scope": "Resource supervision; no gameplay evaluation",
+      "sha256": "77db2aedf6cebc17cf8ceaaad1c7fd8fac25c291aa8e1c6c17179f7e0c61cf16",
+      "started_unix": 1791703951.3096194,
+      "stop_reason": "worker_exit",
+      "supervision_deadline_unix": 1791704551.3096194
+    }
+  ],
+  "reservations": {
+    "abandoned_before_commit": 0,
+    "committed": 64,
+    "reserved": 0
+  },
+  "resources": {
+    "available_mib": 3753.58984375,
+    "cuda_peak_allocated_mib": 5541.2216796875,
+    "cuda_peak_reserved_mib": 5814.0,
+    "process_peak_rss_kib": 2389984
+  },
+  "run": "/home/niv/repos/slay_the_spire_ai/runs/qwen3-0.6b-heuristic-sft-20261011",
+  "schema_version": 1,
+  "scope": "Saved supervised-imitation integrity; no learning or gameplay-quality claim",
+  "source_revision": "a8286454090b8d14ad700995160eb7619f151f9d",
+  "stop_reason": "update_limit",
+  "updates": 64,
+  "valid": true
+}

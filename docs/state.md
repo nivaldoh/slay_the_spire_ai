@@ -2,23 +2,69 @@
 
 Updated 2026-10-11, during the authorized unattended bootstrap session.
 
-## Active jobs (last verified 07:27 UTC)
+## Active work (last verified 07:50 UTC)
 
-No game or GPU process is currently active. Inventory controller PID 313645/session 86612
-exited successfully; it completed 18 attempts in 576.17 seconds under the original
-24-attempt/1,800-second limits. `runs/starter-inventory-20261011` preserves all evidence.
-Two scenarios were admitted after exact replays: Cultist `SPIREINV07` and Jaw Worm
-`SPIREINV09`. End-turn probes both lost; the final control reproduced exactly. All child
-file hashes and trace audits were independently rechecked. No infrastructure failures
-or retries occurred. The fixed discovery list also produced four excluded 88-HP fights
-and six unsupported attempts; no replacement seeds were sampled.
+No game or GPU job is active. Trained evaluation session `4043` exited with code 1: two wins at
+HP77, then a relay-startup infrastructure failure with zero observations/actions,
+leaving five attempts unrun. The two wins exactly match the teacher's commands and
+public transitions; all three traces audit correctly, but the suite is incomplete.
+Preserved output: `runs/qwen3-0.6b-sft-eval-20261011`, source `a828645`; see
+[incomplete result](results/language-sft-incomplete-development-v1.json). The failed
+Linux accept timed out; Windows relay stderr reports WinError10054. Do not count
+this as a gameplay loss or a completed eight-attempt comparison.
 
-The next game job is the unchanged pretrained language model's eight-attempt canonical
-Louse evaluation, before real-data SFT. The integrated source includes strict PEFT
-adapter restoration, a configurable recorded PPO learning rate, and bounded resumable
-SFT. Full CPU checks: 620 passed, 7 skipped (six optional language-library cases plus the
-optional Windows probe). The 89 combined optional language tests passed in the CUDA
-environment using CPU models only. No real-data fine-tuning has started.
+An isolated agent is implementing direct WSL guest-address transport after 40 bounded
+socket probes succeeded (loopback/direct NAT, disposable/fixed 19876 ports). The exact
+intermittent localhost failure was not reproduced; direct routing is a mitigation,
+not a proven causal diagnosis. Before any game rerun, the
+[declared recovery sequence](language-experiment.md) requires two exact heuristic
+control fights under a 300-second batch ceiling. Only if they pass, evaluate the same
+final adapter in `runs/qwen3-0.6b-sft-eval-v2-20261011`, eight attempts/1,600 seconds,
+preserving the first batch and all operational costs. No prompt/parser/weights change.
+
+Real-data SFT finished all 64 updates, 527,360 charged/committed padded tokens and
+256 example occurrences in 398.46 seconds, with no pending reservation or resume.
+Session `52953`, worker `320214` and watchdog `320211` exited successfully before
+the original 07:42:31 UTC deadline. Peak allocated/reserved CUDA memory was
+5,541.22/5,814 MiB; peak total GPU use was 7,087 MiB and minimum available WSL RAM
+3,522.97 MiB. Root's CPU preflight independently verified canonical checkpoint
+accounting/finite tensors, source pins, dataset re-export, exact adapter tensor/config
+serialization, declaration and supervisor bounds. Evidence:
+`runs/qwen3-0.6b-heuristic-sft-20261011-preflight-audit.json`. Adapter tensor SHA-256:
+`bf708e4a541167f2808c40989fc595d2c9a6114e441c5de66752097b063f32ac`;
+declaration SHA-256 `70d19d51a5578ca3ce4e64e0f3f8646c9034ab6e14cf9f84baa2002268a248d6`.
+The independent full ancestry audit passed all 12 checks, including 129 immutable
+checkpoints and 2,293,759 changed adapter elements. Its auditor and catalog evidence
+docs are integrated at `4a7e4f4`; 27 focused integrated audit tests passed and Ruff is
+clean. See [compact training audit](results/language-sft-training-audit.json).
+No gameplay result or CUDA resume-equivalence claim follows from training alone.
+
+The unchanged-model baseline exited successfully and passed independent trace/metric
+audit: all eight scheduled attempts ended on the same malformed string-valued index
+`{"a": "1"}` after three legal actions. There were zero wins/completed games, eight
+policy failures, and zero infrastructure failures or invalid commands. HP and win rate
+over completed games are undefined; wins per policy attempt is 0/8. Greedy repeats of
+this fixed scenario are correlated. All 24 acknowledged prefix transitions remain
+evidence but are excluded from whole-episode training data. See
+[baseline result](results/language-untuned-development-v1.json) and raw evidence in
+`runs/qwen3-0.6b-untuned-eval-20261011`. No repair or retry was used.
+
+Inventory PID 313645/session 86612 exited successfully: 18 attempts in 576.17 seconds,
+with Cultist `SPIREINV07` and Jaw Worm `SPIREINV09` admitted after exact replays.
+Both end-turn probes lost; both control fights matched the reference. Every child
+hash and original trace audit was independently rechecked. No infrastructure failure
+or retry occurred. Four discovery fights had excluded 88-HP starts and six were
+unsupported. All evidence remains in `runs/starter-inventory-20261011`.
+
+Integrated CPU checks: 620 passed, 7 skipped (six optional language-library cases plus
+Windows cleanup). All 89 combined optional language checks passed on CPU using the
+CUDA environment. The added/existing original-engine mechanics checks also passed
+73/73. Actual-tokenizer preflight verified all 42 SFT rows: 644–723 prompt tokens,
+5 JSON tokens plus 1 EOS per target, masks exact, sequences within 2060. Evidence:
+`runs/qwen3-0.6b-sft-tokenization-20261011.json`, SHA-256
+`48144de4ec81a611a26073d94646e768b847fe67cd4ff4f28991e0c1535c74d1`.
+Further source work uses isolated worktrees: language catalog evaluation and the
+relay mitigation. A read-only PPO diagnosis is evaluating the next controlled change.
 
 The larger trial at source `7b4cc31` completed all 64 combats (64 wins), 12 updates,
 and 827 consumed transitions in 2,298.47 seconds. No transitions remain pending.
@@ -51,7 +97,8 @@ available RAM 3,457.5 MiB. Weights/logits changed and adapter serialization matc
 Its one-example loss 0.50518→0.02792 is computational evidence only. A later single
 recorded public-state inference at `3fc7aaf` verified actual PEFT reload, 715 prompt tokens,
 six generated tokens, strict JSON parsing and exact candidate identity in 0.699 seconds.
-Both workers exited; no language-policy engine evaluation or real-data SFT has run.
+Both smoke workers exited; the unchanged-model evaluation and completed real-data
+SFT are described above.
 Prepared source-verified data: `runs/heuristic-language-training-data-20261011`, with
 42 training rows, 21 unique examples and no validation/test rows. Manifest SHA-256:
 `d4ce9b1c1d94109eb6acfaacf9217d79d6ebc85b2aa4ea3e326b45231ead5a71`.
@@ -204,10 +251,10 @@ that natural-language deadline.
 
 ## Next useful actions
 
-1. Evaluate the unchanged language model using its prepared v2 declaration and the
-   canonical eight-attempt suite, with a 1,600-second process bound.
-2. Run the bounded SFT config only after that baseline, then evaluate the final adapter
-   without checkpoint selection. Preserve any parser/context failures explicitly.
+1. Integrate/check the direct-address relay mitigation, then run the two declared
+   original-engine controls. Preserve the incomplete first SFT evaluation.
+2. If controls pass, evaluate the exact final adapter in the separate declared v2 batch;
+   audit and report both batches before making a controlled-comparison claim.
 3. Run random/heuristic/initial-neural/final-neural catalog comparisons under the
    [declared development contract](research.md), with 12 attempts and 1,200 seconds per
    policy. Catalog: `configs/suites/starter_three_encounter_development_v1.json`.

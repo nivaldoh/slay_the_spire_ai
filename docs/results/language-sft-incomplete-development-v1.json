@@ -1,0 +1,225 @@
+{
+  "attempts": [
+    {
+      "actions": 27,
+      "combat_actions": 21,
+      "combat_seconds": 32.572706745006144,
+      "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+      "elapsed_seconds": 47.136112323001726,
+      "ending_hp": 77,
+      "episode": 0,
+      "floor": 1,
+      "inference_seconds": 8.71993361900968,
+      "invalid_actions": 0,
+      "policy": "language",
+      "policy_rng": "per_episode_seed",
+      "policy_seed": 1000,
+      "reset_seconds": 14.563406823996047,
+      "seed": "SPIREAI1",
+      "session_id": "476ad3a9c270429580183f58e8d2fcad",
+      "starting_hp": 80,
+      "status": "won",
+      "turns": 6
+    },
+    {
+      "actions": 27,
+      "combat_actions": 21,
+      "combat_seconds": 32.31691927599604,
+      "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+      "elapsed_seconds": 46.753304853999,
+      "ending_hp": 77,
+      "episode": 1,
+      "floor": 1,
+      "inference_seconds": 8.391540819007787,
+      "invalid_actions": 0,
+      "policy": "language",
+      "policy_rng": "per_episode_seed",
+      "policy_seed": 1001,
+      "reset_seconds": 14.436386934001348,
+      "seed": "SPIREAI1",
+      "session_id": "5023343790634118b325d50b4d6aeebf",
+      "starting_hp": 80,
+      "status": "won",
+      "turns": 6
+    },
+    {
+      "actions": 0,
+      "combat_actions": 0,
+      "elapsed_seconds": 46.209452363997116,
+      "episode": 2,
+      "error": "timed out waiting for relay connection",
+      "error_type": "BridgeTimeout",
+      "inference_seconds": 0.0,
+      "invalid_actions": 0,
+      "policy": "language",
+      "policy_rng": "per_episode_seed",
+      "policy_seed": 1002,
+      "seed": "SPIREAI1",
+      "session_id": "7ebe23193d81400fb6cee94d6ea5548f",
+      "status": "infrastructure_failure"
+    }
+  ],
+  "audit_metrics": {
+    "attempts": 3,
+    "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+    "infrastructure_failures": 1,
+    "interrupted": 0,
+    "invalid_actions": 0,
+    "invalid_evidence": 0,
+    "losses": 0,
+    "mean_combat_seconds": 32.44481301050109,
+    "mean_elapsed_seconds": 46.69962764133379,
+    "mean_ending_hp": 77,
+    "mean_net_hp_lost": 3,
+    "mean_reset_seconds": 14.499896878998698,
+    "mean_starting_hp": 80,
+    "mean_turns": 6,
+    "policy_attempt_win_rate": 1.0,
+    "policy_attempts": 2,
+    "policy_failures": 0,
+    "truncated": 0,
+    "unsupported": 0,
+    "valid_evidence_episodes": 3,
+    "valid_gameplay_episodes": 2,
+    "validated_transitions": 42,
+    "win_rate": 1.0,
+    "wins": 2
+  },
+  "completed_teacher_pairs": [
+    {
+      "all_teacher_public_transitions_equal": true,
+      "ending_hp": 77,
+      "full_teacher_commands_equal": true,
+      "policy_seed": 1000
+    },
+    {
+      "all_teacher_public_transitions_equal": true,
+      "ending_hp": 77,
+      "full_teacher_commands_equal": true,
+      "policy_seed": 1001
+    }
+  ],
+  "decision": "incomplete",
+  "decision_scope": "Infrastructure failure stopped the declared eight-attempt comparison after three attempts. Preserve two wins but do not accept a full-suite improvement claim.",
+  "diagnosis_observed": {
+    "failed_before_first_observation": true,
+    "hypothesis": "Intermittent Windows-to-WSL localhost forwarding; not yet proven",
+    "linux_error": "timed out waiting for relay connection",
+    "policy_retries": 0,
+    "relay_address": "127.0.0.1:19876",
+    "windows_error": "WinError 10054: existing connection forcibly closed by remote host"
+  },
+  "evaluation_valid": false,
+  "metrics": {
+    "attempted_episodes": 3,
+    "completed_gameplay": 2,
+    "context_failures": 0,
+    "infrastructure_failures": 1,
+    "invalid_completions": 0,
+    "losses": 0,
+    "policy_attempt_win_rate": 1.0,
+    "policy_attempts": 2,
+    "policy_failures": 0,
+    "unattempted_episodes": 5,
+    "win_rate": 1.0,
+    "wins": 2
+  },
+  "policy_artifact": {
+    "adapter_snapshot_path": "frozen-language/adapter",
+    "declaration": {
+      "adapter": {
+        "directory": "/home/niv/repos/slay_the_spire_ai/runs/qwen3-0.6b-heuristic-sft-20261011/artifacts/update-000064-b2281346a63a7944bb9f4f2c64b3f1f3839d15bbcc97e1da6e83335d72dcd1bc/adapter",
+        "files": {
+          "adapter_config.json": "d5b8b5caefef3288fbb86ee2b1bbbcfd6e3474588ae4a2999d356855c9bcede2",
+          "adapter_model.safetensors": "cb769776c3fd9c220747b81275779c209995a2dc5eabdd8ea0f208ff052d585e"
+        }
+      },
+      "base": {
+        "directory": "/home/niv/.cache/spire-models/models--Qwen--Qwen3-0.6B/snapshots/c1899de289a04d12100db370d81485cdf75e47ca",
+        "files": {
+          "LICENSE": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+          "README.md": "1ab64a26fcb3b461423b89a433a8c858f1bf8d4086f979cbb3ff878d47cf20e9",
+          "config.json": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd",
+          "generation_config.json": "2325da0f15bb848e018c5ae071b7943332e9f871d6b60e2ed22ca97d4cb993d2",
+          "merges.txt": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
+          "model.safetensors": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+          "tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+          "tokenizer_config.json": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101",
+          "vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+        },
+        "id": "Qwen/Qwen3-0.6B",
+        "revision": "c1899de289a04d12100db370d81485cdf75e47ca"
+      },
+      "decoder": {
+        "do_sample": false,
+        "enable_thinking": false,
+        "eos_token_ids": [
+          151645,
+          151643
+        ],
+        "max_new_tokens": 12,
+        "num_beams": 1,
+        "skip_special_tokens": false,
+        "strip_one_terminal_eos": true
+      },
+      "max_prompt_tokens": 2048,
+      "parser_version": "single-json-choice-v1",
+      "prompt_format": "public-card-table-choice-v1",
+      "provenance": {
+        "adapter_sha256": "bf708e4a541167f2808c40989fc595d2c9a6114e441c5de66752097b063f32ac",
+        "consumed_example_ids_sha256": "fa4303f33f4ef20e9a23afc1985416d4c603659a2f5a168e45e6aec8a7e4780e",
+        "dataset_manifest_sha256": "d4ce9b1c1d94109eb6acfaacf9217d79d6ebc85b2aa4ea3e326b45231ead5a71",
+        "scope": "Public heuristic imitation; no gameplay performance claim",
+        "source_files_sha256": "4ff3364e222560f2c30bbb0eeb0f3cb96b25c7a23e061212162d5cf41eaaae23",
+        "source_revision": "a8286454090b8d14ad700995160eb7619f151f9d",
+        "trainer_version": "public-heuristic-completion-lora-v1",
+        "training_checkpoint_sha256": "b2281346a63a7944bb9f4f2c64b3f1f3839d15bbcc97e1da6e83335d72dcd1bc",
+        "training_job_sha256": "e734010e627d6db382d1b2bc621ecf6b9c619b291f16a096016627ecfb4c9591",
+        "updates": 64
+      },
+      "schema_version": 1,
+      "type": "language"
+    },
+    "dependencies": {
+      "accelerate": "1.15.0",
+      "peft": "0.21.2",
+      "safetensors": "0.8.0",
+      "torch": "2.13.0+cu130",
+      "transformers": "5.19.0"
+    },
+    "model_sha256": "b620fa2e3f44a0bd7e7f38646f28a51cf1d33a9fa7ec8062d18b2d02c1be496c",
+    "name": "language",
+    "path": "/home/niv/repos/slay_the_spire_ai/runs/qwen3-0.6b-heuristic-sft-20261011/artifacts/update-000064-b2281346a63a7944bb9f4f2c64b3f1f3839d15bbcc97e1da6e83335d72dcd1bc/policy.json",
+    "pretrained_base_only": false,
+    "sampling": "greedy",
+    "sha256": "70d19d51a5578ca3ce4e64e0f3f8646c9034ab6e14cf9f84baa2002268a248d6",
+    "snapshot_path": "frozen-language/declaration.json",
+    "type": "language"
+  },
+  "run": "runs/qwen3-0.6b-sft-eval-20261011",
+  "schema_version": 1,
+  "scope": "One training seed and one fixed Louse scenario reused by training. Two deterministic successful repeats do not establish independent scenario coverage.",
+  "source_evidence_sha256": {
+    "runs/qwen3-0.6b-sft-eval-20261011/episode-0002/communication-mod.stderr.log": "599e179a974f4d24a34fece9bca1fee46783c8a6fd2ff5d9728a57a689979bab",
+    "runs/qwen3-0.6b-sft-eval-20261011/episode-0002/deployment.json": "f5cf9b5e70114b5459cfd8f4edaac49a6ab3e374f58ed39524b011d6ec5350b0",
+    "runs/qwen3-0.6b-sft-eval-20261011/episode-0002/game.log": "28341525023ae2963b8634110f4fc354a47bb500d845743be450fc8208eadb75",
+    "runs/qwen3-0.6b-sft-eval-20261011/episode-0002/profile.json": "fdc705c9ed30fd3590266bec2775821aa1a7ab143db281b546803672a7623979",
+    "runs/qwen3-0.6b-sft-eval-20261011/episode-0002/result.json": "cc2f3606f2adfe7f140363ab71982869eb7a64e50c3cf7ff38c4a00c9c4e96ff",
+    "runs/qwen3-0.6b-sft-eval-20261011/episode-0002/trace.jsonl": "deab5c1b6b7c6140999ce21f7f20af81a47f6d0d1c9d05c4d5ab50cb2fe77c5a",
+    "runs/qwen3-0.6b-sft-eval-20261011/evaluation.json": "2d18f5d2ad47e0c7e96b2d3d932dd4844f3be21d0dc646032432bbecb9ef6f12",
+    "runs/qwen3-0.6b-sft-eval-20261011/manifest.json": "31aa2734537087930f842686f019dddd8f2f213ee8aa69a1ee0c4b73c7736db3"
+  },
+  "source_revision": "a8286454090b8d14ad700995160eb7619f151f9d",
+  "suite": {
+    "description": "Fixed original-engine two-Louse first combat, starter Ironclad, Ascension 0, 80 HP, Burning Blood, 100-gold Neow reward, initial intents settled. Repeated stochastic-policy attempts on one scenario; no held-out seed or encounter claim.",
+    "episodes": 8,
+    "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+    "game_seed": "SPIREAI1",
+    "id": "louse-diagnostic-development-v1",
+    "policy_seed": 1000,
+    "purpose": "development",
+    "schema_version": 1
+  },
+  "suite_sha256": "665df78b5fd928cf4a4c3ee996eb4f8cf72fdf5912dd62fd613fc4036ce27b4c",
+  "trace_evidence_valid": true
+}
