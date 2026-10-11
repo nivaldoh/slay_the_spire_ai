@@ -1,9 +1,10 @@
 # Slay the Spire AI
 
 An original-engine interface and reproducible learning experiments for Slay the Spire 1.
-Original-engine wins, losses, seeded restarts, and eight-attempt random/heuristic
-baselines are verified. A real PPO pilot verified weight updates and interruption recovery. Initial and
-trained policies tied in frozen evaluation; no gameplay improvement is established.
+Original-engine wins, losses, seeded restarts, and frozen random/heuristic baselines
+are verified. Budgeted PPO verified weight updates and interruption recovery, without
+improving this fixed combat. A trained Qwen3-0.6B LoRA reproduced the teacher on the
+reused scenario; broader encounter and held-out results remain unproven.
 Start with [current state](docs/state.md) and the [operating guide](SLAY_THE_SPIRE_AGENT_GUIDE.md).
 
 ## Development
@@ -79,13 +80,22 @@ The frozen diagnostic results are:
 | Starter heuristic | 8/8 | 77.00 |
 | Initial neural policy | 8/8 | 72.75 |
 | Neural policy after two PPO updates | 8/8 | 72.75 |
+| Neural policy after twelve PPO updates | 8/8 | 72.00 |
 
-Initial and trained neural policies selected identical actions across these eight
-sampling seeds despite changed probabilities. This pilot validates the learning
-loop, not policy improvement. All attempts use one game scenario. See the
-[audited comparison](docs/results/ppo-pilot-development-v1.json) and
-[paired traces](docs/results/ppo-pilot-paired-evaluation.json). An earlier partial
-trained evaluation failed at relay startup and remains separately recorded.
+The two-update pilot selected the same actions as its initial model. The larger
+64-combat trial changed two paired trajectories and reduced mean HP by 0.75. These
+results verify the learning loop but do not establish improved play. All attempts
+use one game scenario and one neural initialization. See the
+[audited comparison](docs/results/ppo-budget64-development-v1.json) and
+[paired traces](docs/results/ppo-budget64-paired-evaluation.json). Earlier incomplete
+evaluations remain separately recorded as infrastructure failures.
+
+The language-model diagnostic used 42 public-heuristic rows (21 unique prompts),
+64 actual LoRA updates and 527,360 padded training tokens. The unchanged model had
+eight policy failures and no completed games; its final trained adapter won 8/8 at
+HP77, exactly matching the teacher. This is imitation on reused data conditions,
+not held-out generalization or a compute-matched comparison to PPO. See the
+[language experiment, results and reproduction details](docs/language-experiment.md).
 
 ## Budgeted learning
 
