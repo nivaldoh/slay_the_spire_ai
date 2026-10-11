@@ -108,3 +108,29 @@ with seven completed combats and one deliberately interrupted attempt. All actor
 weights changed; interrupted data was excluded and the original deadline survived
 resume. See the [training audit](docs/results/ppo-pilot-training-audit.json).
 Weight updates alone do not establish improved gameplay.
+
+## Reproduce saved-result figures
+
+[HP samples and paired differences](docs/figures/fixed-louse-hp.svg) and
+[PPO probability/gradient diagnostics](docs/figures/ppo-movement.svg) are generated
+from the explicit saved JSON inputs below. [Plot data](docs/figures/plot-data.json)
+records all plotted points, input/script SHA-256 hashes, source/model identities,
+and rendering versions. These are eight policy samples on one fixed development
+scenario, with no error bars or generalization claim. Incomplete evaluations are
+rejected; this script consumes saved audited summaries rather than re-auditing traces.
+
+The verified renderer is the existing external `/home/niv/miniconda3/bin/python`
+(Python 3.13.5, Matplotlib 3.11.0, NumPy 2.3.3, Pillow 12.3.0); the locked game/training
+environment and dependencies are unchanged. Run from the repository root in that
+environment, or an external environment with those versions:
+
+```bash
+python scripts/plot_results.py \
+  --comparison docs/results/ppo-budget64-development-v1.json \
+  --distribution docs/results/ppo-budget64-distribution-diagnostic.json \
+  --gradients docs/results/ppo-budget64-gradient-diagnostic.json \
+  --output docs/figures --png-directory runs/diagnostic-figures
+```
+
+SVGs have fixed metadata and element IDs for reproducible output. PNGs stay in
+ignored `runs/`; rendering loads no game, model, GPU, or original bulky trajectory.

@@ -1,0 +1,650 @@
+{
+  "comparison_contract": {
+    "config": {
+      "bridge_timeout": 45,
+      "episode_timeout": 180,
+      "episodes": 8,
+      "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+      "game_seed": "SPIREAI1",
+      "max_actions": 500,
+      "policy_seed": 1000
+    },
+    "engine": "original",
+    "engine_sha256": "cfad868ac8d65a88e71a0bf096fb09f78811e553effe0787c5309a655e081673",
+    "evaluation_suite": {
+      "description": "Fixed original-engine two-Louse first combat, starter Ironclad, Ascension 0, 80 HP, Burning Blood, 100-gold Neow reward, initial intents settled. Repeated stochastic-policy attempts on one scenario; no held-out seed or encounter claim.",
+      "episodes": 8,
+      "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+      "game_seed": "SPIREAI1",
+      "id": "louse-diagnostic-development-v1",
+      "policy_seed": 1000,
+      "purpose": "development",
+      "schema_version": 1
+    },
+    "mod_sha256": {
+      "BaseMod.jar": "c3353c10e64c621b723e9fd7d0502dfa796f828b101b68513594a5f5ef83fbaf",
+      "CommunicationMod.jar": "12b99249eccfd5245ddb0b6b7575e1a1dfba0ce0ed6fad5bd5bbd4a303897ef5",
+      "ModTheSpire.jar": "541b5e8a875d2a404a5a6d54f4a6f814284b0cf71acb9245239d9c5ef50ea604"
+    },
+    "observation_version": "ironclad-starter-combat-v1",
+    "observed_start_contracts": [
+      [
+        "IRONCLAD",
+        0,
+        "ironclad-starter-combat-v1"
+      ]
+    ],
+    "policy_observation_contract": "ironclad-starter-combat-v1",
+    "prefix_version": "neow-maxhp-or-gold-leftmost-settled-v2",
+    "reset": "owned_jvm_restart_then_seeded_start",
+    "scope": "first_combat",
+    "suite_sha256": "665df78b5fd928cf4a4c3ee996eb4f8cf72fdf5912dd62fd613fc4036ce27b4c"
+  },
+  "distribution": {
+    "changed_greedy_choices": 74,
+    "final_model_sha256": "03ca30dc29154b968686a918efb0d4579d99c3142461ee2507a33138b18bbd22",
+    "initial_model_sha256": "1d60fa62ccd3ba50a70c174b9c1d9933d7a26c97f013f6d7d2a592cac883d4f0",
+    "max_probability_change": 0.030082792043685913,
+    "max_total_variation": 0.03334163874387741,
+    "mean_final_entropy_fraction": 0.9990317828771544,
+    "mean_final_heuristic_probability": 0.31167683981359007,
+    "mean_initial_entropy_fraction": 0.9999999825547381,
+    "mean_initial_heuristic_probability": 0.31705153845250605,
+    "mean_kl_initial_to_final": 0.0014130326150916517,
+    "mean_total_variation": 0.021880688555538656,
+    "schema_version": 1,
+    "scope": "Read-only diagnostic on initial evaluation public states; correlated trajectory states and repeated game scenario, not independent performance samples. Exact-match heuristic probabilities exclude equivalent duplicate-card choices.",
+    "source_states": "runs/ppo-pilot-initial-eval-20261011",
+    "states": 100
+  },
+  "gradients": {
+    "config": {
+      "clip_coef": 0.2,
+      "entropy_coef": 0.01,
+      "epochs": 4,
+      "gae_lambda": 0.95,
+      "gamma": 1.0,
+      "learning_rate": 0.0003,
+      "max_grad_norm": 0.5,
+      "minibatch_size": 32,
+      "target_kl": 0.02,
+      "value_coef": 0.5
+    },
+    "scope": "Read-only CPU differentiation at each frozen pre-update model on its full audited batch. No optimizer steps, new training, game, or GPU; not actual minibatch gradients or causal proof.",
+    "training_episodes": 64,
+    "training_source_revision": "7b4cc314f9ecc543e4b35d6edb52bfd675a73de3",
+    "transitions": 827,
+    "updates": [
+      {
+        "full_batch_kl": 1.7092618095993213e-06,
+        "gradient_norms": {
+          "policy": {
+            "actor": 0.024037521332502365,
+            "all": 0.024039199575781822,
+            "critic": 0.0,
+            "shared": 0.00028405452030710876
+          },
+          "weighted_entropy": {
+            "actor": 1.3289820799400331e-07,
+            "all": 1.3290106437580107e-07,
+            "critic": 0.0,
+            "shared": 8.698451958721876e-10
+          },
+          "weighted_value": {
+            "actor": 0.0,
+            "all": 0.5418211817741394,
+            "critic": 0.4972255229949951,
+            "shared": 0.21526019275188446
+          }
+        },
+        "logged_approx_kl": 4.86771266849928e-07,
+        "update": 1
+      },
+      {
+        "full_batch_kl": 3.465321035698501e-06,
+        "gradient_norms": {
+          "policy": {
+            "actor": 0.039721447974443436,
+            "all": 0.0397292785346508,
+            "critic": 0.0,
+            "shared": 0.0007888301042839885
+          },
+          "weighted_entropy": {
+            "actor": 2.592305463622324e-06,
+            "all": 2.5929612093023024e-06,
+            "critic": 0.0,
+            "shared": 5.830991867128432e-08
+          },
+          "weighted_value": {
+            "actor": 0.0,
+            "all": 0.5255258083343506,
+            "critic": 0.48302823305130005,
+            "shared": 0.2070293128490448
+          }
+        },
+        "logged_approx_kl": 1.0154520471890767e-06,
+        "update": 2
+      },
+      {
+        "full_batch_kl": 2.734770844524194e-06,
+        "gradient_norms": {
+          "policy": {
+            "actor": 0.028093954548239708,
+            "all": 0.028119156137108803,
+            "critic": 0.0,
+            "shared": 0.0011902396799996495
+          },
+          "weighted_entropy": {
+            "actor": 7.812759577063844e-06,
+            "all": 7.818649464752525e-06,
+            "critic": 0.0,
+            "shared": 3.0340225976033253e-07
+          },
+          "weighted_value": {
+            "actor": 0.0,
+            "all": 0.4589225947856903,
+            "critic": 0.4178156852722168,
+            "shared": 0.18984198570251465
+          }
+        },
+        "logged_approx_kl": 9.007958906200505e-07,
+        "update": 3
+      },
+      {
+        "full_batch_kl": 1.1748439270320432e-06,
+        "gradient_norms": {
+          "policy": {
+            "actor": 0.04329521581530571,
+            "all": 0.043351173400878906,
+            "critic": 0.0,
+            "shared": 0.0022019019816070795
+          },
+          "weighted_entropy": {
+            "actor": 1.3024910003878176e-05,
+            "all": 1.3041600141150411e-05,
+            "critic": 0.0,
+            "shared": 6.595919899154978e-07
+          },
+          "weighted_value": {
+            "actor": 0.0,
+            "all": 0.37792372703552246,
+            "critic": 0.33867526054382324,
+            "shared": 0.16770635545253754
+          }
+        },
+        "logged_approx_kl": 3.1315721571445465e-07,
+        "update": 4
+      },
+      {
+        "full_batch_kl": 2.801758819259703e-06,
+        "gradient_norms": {
+          "policy": {
+            "actor": 0.027872148901224136,
+            "all": 0.027909358963370323,
+            "critic": 0.0,
+            "shared": 0.001440713880583644
+          },
+          "weighted_entropy": {
+            "actor": 1.6420279280282557e-05,
+            "all": 1.644700205361005e-05,
+            "critic": 0.0,
+            "shared": 9.372143381369824e-07
+          },
+          "weighted_value": {
+            "actor": 0.0,
+            "all": 0.3748992085456848,
+            "critic": 0.3343547284603119,
+            "shared": 0.16957680881023407
+          }
+        },
+        "logged_approx_kl": 7.493007435262674e-07,
+        "update": 5
+      },
+      {
+        "full_batch_kl": 7.238128664664133e-06,
+        "gradient_norms": {
+          "policy": {
+            "actor": 0.038900915533304214,
+            "all": 0.03897523134946823,
+            "critic": 0.0,
+            "shared": 0.002405713777989149
+          },
+          "weighted_entropy": {
+            "actor": 2.535690327931661e-05,
+            "all": 2.540482637414243e-05,
+            "critic": 0.0,
+            "shared": 1.5596679077134468e-06
+          },
+          "weighted_value": {
+            "actor": 0.0,
+            "all": 0.2296917587518692,
+            "critic": 0.20317520201206207,
+            "shared": 0.10713611543178558
+          }
+        },
+        "logged_approx_kl": 2.009104230612143e-06,
+        "update": 6
+      },
+      {
+        "full_batch_kl": 1.781203656122019e-05,
+        "gradient_norms": {
+          "policy": {
+            "actor": 0.045446377247571945,
+            "all": 0.045554421842098236,
+            "critic": 0.0,
+            "shared": 0.0031356418039649725
+          },
+          "weighted_entropy": {
+            "actor": 3.5312863474246114e-05,
+            "all": 3.538928649504669e-05,
+            "critic": 0.0,
+            "shared": 2.324511115148198e-06
+          },
+          "weighted_value": {
+            "actor": 0.0,
+            "all": 0.1413293182849884,
+            "critic": 0.12488026171922684,
+            "shared": 0.06617321819067001
+          }
+        },
+        "logged_approx_kl": 4.085815596373739e-06,
+        "update": 7
+      },
+      {
+        "full_batch_kl": 3.337361921518068e-05,
+        "gradient_norms": {
+          "policy": {
+            "actor": 0.02255510725080967,
+            "all": 0.02262692153453827,
+            "critic": 0.0,
+            "shared": 0.0018013196531683207
+          },
+          "weighted_entropy": {
+            "actor": 6.075630153645761e-05,
+            "all": 6.09304552199319e-05,
+            "critic": 0.0,
+            "shared": 4.603485194820678e-06
+          },
+          "weighted_value": {
+            "actor": 0.0,
+            "all": 0.03271276876330376,
+            "critic": 0.0283860731869936,
+            "shared": 0.01625903509557247
+          }
+        },
+        "logged_approx_kl": 9.479673783137818e-06,
+        "update": 8
+      },
+      {
+        "full_batch_kl": 1.9760293677488033e-05,
+        "gradient_norms": {
+          "policy": {
+            "actor": 0.03317755088210106,
+            "all": 0.03331352397799492,
+            "critic": 0.0,
+            "shared": 0.0030068301130086184
+          },
+          "weighted_entropy": {
+            "actor": 9.284653788199648e-05,
+            "all": 9.321212564827874e-05,
+            "critic": 0.0,
+            "shared": 8.247405276051722e-06
+          },
+          "weighted_value": {
+            "actor": 0.0,
+            "all": 0.03437875211238861,
+            "critic": 0.029388388618826866,
+            "shared": 0.017838753759860992
+          }
+        },
+        "logged_approx_kl": 5.2299971381823225e-06,
+        "update": 9
+      },
+      {
+        "full_batch_kl": 2.8939218415568274e-05,
+        "gradient_norms": {
+          "policy": {
+            "actor": 0.035984642803668976,
+            "all": 0.036234691739082336,
+            "critic": 0.0,
+            "shared": 0.004249498248100281
+          },
+          "weighted_entropy": {
+            "actor": 0.00012688263086602092,
+            "all": 0.00012749455345328897,
+            "critic": 0.0,
+            "shared": 1.2476436495489907e-05
+          },
+          "weighted_value": {
+            "actor": 0.0,
+            "all": 0.012962610460817814,
+            "critic": 0.009722685441374779,
+            "shared": 0.008573135361075401
+          }
+        },
+        "logged_approx_kl": 8.372350104461171e-06,
+        "update": 10
+      },
+      {
+        "full_batch_kl": 3.914835374766531e-05,
+        "gradient_norms": {
+          "policy": {
+            "actor": 0.06770318001508713,
+            "all": 0.06807507574558258,
+            "critic": 0.0,
+            "shared": 0.007105965632945299
+          },
+          "weighted_entropy": {
+            "actor": 0.0001775172568159178,
+            "all": 0.00017847638810053468,
+            "critic": 0.0,
+            "shared": 1.8478242054698057e-05
+          },
+          "weighted_value": {
+            "actor": 0.0,
+            "all": 0.009667673148214817,
+            "critic": 0.006197124253958464,
+            "shared": 0.007420211099088192
+          }
+        },
+        "logged_approx_kl": 9.365069369475046e-06,
+        "update": 11
+      },
+      {
+        "full_batch_kl": 4.824194260627816e-06,
+        "gradient_norms": {
+          "policy": {
+            "actor": 0.04677087068557739,
+            "all": 0.047052133828401566,
+            "critic": 0.0,
+            "shared": 0.005137007217854261
+          },
+          "weighted_entropy": {
+            "actor": 0.00025197648210451007,
+            "all": 0.00025352108059450984,
+            "critic": 0.0,
+            "shared": 2.7942396627622657e-05
+          },
+          "weighted_value": {
+            "actor": 0.0,
+            "all": 0.011199301108717918,
+            "critic": 0.0093658696860075,
+            "shared": 0.006140427198261023
+          }
+        },
+        "logged_approx_kl": 2.6366859557924727e-06,
+        "update": 12
+      }
+    ]
+  },
+  "input_sha256": {
+    "docs/results/ppo-budget64-development-v1.json": "88b466b03f17c09672da259ea976c75cc04989e99aa99b63d0c2edc986d50f97",
+    "docs/results/ppo-budget64-distribution-diagnostic.json": "a0266d7a9eb3dc73b8644920b594ac4d05a034ec1e94688a0b128a39b1eea9e4",
+    "docs/results/ppo-budget64-gradient-diagnostic.json": "323ac787ae20a59be0ddd5e6f9c7b24de65bd758b886074f4cbbb8d8811c0e7d"
+  },
+  "paired_neural": [
+    {
+      "hp_difference": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "label": "PPO: 2 updates",
+      "policy_seeds": [
+        1000,
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007
+      ]
+    },
+    {
+      "hp_difference": [
+        0,
+        0,
+        0,
+        0,
+        -6,
+        0,
+        0,
+        0
+      ],
+      "label": "PPO: 12 updates",
+      "policy_seeds": [
+        1000,
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007
+      ]
+    }
+  ],
+  "render_environment": {
+    "backend": "Agg",
+    "font": "DejaVu Sans",
+    "freetype": "2.14.3",
+    "matplotlib": "3.11.0",
+    "python": "3.13.5"
+  },
+  "schema_version": 1,
+  "scope": "8 policy samples on one fixed development scenario; not independent game scenarios",
+  "script_sha256": "f29ed022fdae74d97d18787565d9373db5baf7eb86978be049b5f7826d9537d3",
+  "series": [
+    {
+      "artifact": {},
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011",
+      "ending_hp": [
+        75,
+        66,
+        50,
+        69,
+        71,
+        60,
+        73,
+        80
+      ],
+      "label": "Random",
+      "mean_ending_hp": 68,
+      "policy": "random",
+      "policy_seeds": [
+        1000,
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007
+      ],
+      "source_revision": "4b5506360bb0a820ac519a00b573d70bc8c8f7d3",
+      "wins": 8
+    },
+    {
+      "artifact": {},
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011",
+      "ending_hp": [
+        77,
+        77,
+        77,
+        77,
+        77,
+        77,
+        77,
+        77
+      ],
+      "label": "Heuristic",
+      "mean_ending_hp": 77,
+      "policy": "heuristic",
+      "policy_seeds": [
+        1000,
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007
+      ],
+      "source_revision": "7c08a25585b519f7877456e0a692979d1797cb30",
+      "wins": 8
+    },
+    {
+      "artifact": {
+        "behavior_version": "initial",
+        "consumed_transitions": 0,
+        "encoder_version": "starter-set-scorer-v1",
+        "learner_version": "complete-episode-ppo-v1",
+        "model_sha256": "1d60fa62ccd3ba50a70c174b9c1d9933d7a26c97f013f6d7d2a592cac883d4f0",
+        "name": "neural",
+        "path": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-seed0-20261011/artifacts/policy-0000-1d60fa62ccd3ba50a70c174b9c1d9933d7a26c97f013f6d7d2a592cac883d4f0.pt",
+        "randomly_initialized": true,
+        "record_path": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-seed0-20261011/artifacts/policy-0000-1d60fa62ccd3ba50a70c174b9c1d9933d7a26c97f013f6d7d2a592cac883d4f0.json",
+        "record_sha256": "63e39b13087be9dc26d590fe0a92a77cd743b36b8b5e314f627b7384aa9f27f6",
+        "reward_version": "combat-terminal-health-v1",
+        "sampling": "stochastic_per_episode_seed",
+        "sha256": "d3e51e39312029127e3afc03d65d6ba0fed2762cf18ebd7bb5a2fe89a8c9018a",
+        "snapshot_path": "frozen-artifact/policy-0000-1d60fa62ccd3ba50a70c174b9c1d9933d7a26c97f013f6d7d2a592cac883d4f0.pt",
+        "source_revision": "741d96aafd176da201105f06f4527ce9126392e7",
+        "training_checkpoint_sha256": "429bab30e11c8749926439270ea1f235ebfdd9d15dd04f6a405188c0384eaf50",
+        "training_suite_sha256": "665df78b5fd928cf4a4c3ee996eb4f8cf72fdf5912dd62fd613fc4036ce27b4c",
+        "type": "neural",
+        "updates": 0
+      },
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011",
+      "ending_hp": [
+        80,
+        66,
+        76,
+        78,
+        77,
+        53,
+        80,
+        72
+      ],
+      "label": "Initial NN",
+      "mean_ending_hp": 72.75,
+      "policy": "neural",
+      "policy_seeds": [
+        1000,
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007
+      ],
+      "source_revision": "70b08b058a59d9adcee870b0868b8a2fe281d4a7",
+      "wins": 8
+    },
+    {
+      "artifact": {
+        "behavior_version": "ppo-update-2",
+        "consumed_transitions": 92,
+        "encoder_version": "starter-set-scorer-v1",
+        "learner_version": "complete-episode-ppo-v1",
+        "model_sha256": "0aef9e7e0bebaab135f2621d42d743606cb9c6d129c37c1aed9c0e2fb540d52b",
+        "name": "neural",
+        "path": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-seed0-20261011/artifacts/policy-0002-0aef9e7e0bebaab135f2621d42d743606cb9c6d129c37c1aed9c0e2fb540d52b.pt",
+        "randomly_initialized": false,
+        "record_path": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-seed0-20261011/artifacts/policy-0002-0aef9e7e0bebaab135f2621d42d743606cb9c6d129c37c1aed9c0e2fb540d52b.json",
+        "record_sha256": "b215d5367cfe5c79b9c667f2dc7c208282672c2ec5880895c1a860d7e0ec87fc",
+        "reward_version": "combat-terminal-health-v1",
+        "sampling": "stochastic_per_episode_seed",
+        "sha256": "e9a759540cc85eca09e2ec17f77330a0f53bc66c96d89637a470d1a38987c84c",
+        "snapshot_path": "frozen-artifact/policy-0002-0aef9e7e0bebaab135f2621d42d743606cb9c6d129c37c1aed9c0e2fb540d52b.pt",
+        "source_revision": "741d96aafd176da201105f06f4527ce9126392e7",
+        "training_checkpoint_sha256": "32ef46cb8a39848ab4e486ca4a7cf4d2a92f56fd7561d217072d4d3e9897f268",
+        "training_suite_sha256": "665df78b5fd928cf4a4c3ee996eb4f8cf72fdf5912dd62fd613fc4036ce27b4c",
+        "type": "neural",
+        "updates": 2
+      },
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011",
+      "ending_hp": [
+        80,
+        66,
+        76,
+        78,
+        77,
+        53,
+        80,
+        72
+      ],
+      "label": "PPO: 2 updates",
+      "mean_ending_hp": 72.75,
+      "policy": "neural",
+      "policy_seeds": [
+        1000,
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007
+      ],
+      "source_revision": "acb1bd3e0086153e87fe999dc4d64ea899bbc3da",
+      "wins": 8
+    },
+    {
+      "artifact": {
+        "behavior_version": "ppo-update-12",
+        "consumed_transitions": 827,
+        "encoder_version": "starter-set-scorer-v1",
+        "learner_version": "complete-episode-ppo-v1",
+        "model_sha256": "03ca30dc29154b968686a918efb0d4579d99c3142461ee2507a33138b18bbd22",
+        "name": "neural",
+        "path": "/home/niv/repos/slay_the_spire_ai/runs/ppo-budget64-seed0-20261011/artifacts/policy-0012-03ca30dc29154b968686a918efb0d4579d99c3142461ee2507a33138b18bbd22.pt",
+        "randomly_initialized": false,
+        "record_path": "/home/niv/repos/slay_the_spire_ai/runs/ppo-budget64-seed0-20261011/artifacts/policy-0012-03ca30dc29154b968686a918efb0d4579d99c3142461ee2507a33138b18bbd22.json",
+        "record_sha256": "d2f346590d2bceca08a77a16a9b6db73aeeadbad57ee1d78f7fcf47665ed21fd",
+        "reward_version": "combat-terminal-health-v1",
+        "sampling": "stochastic_per_episode_seed",
+        "sha256": "0ead639ca4a2fb69c2b8745d20204f2967f2ea28b625de9760211db87372d2e0",
+        "snapshot_path": "frozen-artifact/policy-0012-03ca30dc29154b968686a918efb0d4579d99c3142461ee2507a33138b18bbd22.pt",
+        "source_revision": "7b4cc314f9ecc543e4b35d6edb52bfd675a73de3",
+        "training_checkpoint_sha256": "07761d9f96d6b5461ba8fb0b8315b76e610901da8077d4ecc490671731af7a4e",
+        "training_suite_sha256": "665df78b5fd928cf4a4c3ee996eb4f8cf72fdf5912dd62fd613fc4036ce27b4c",
+        "type": "neural",
+        "updates": 12
+      },
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/ppo-budget64-seed0-eval-20261011",
+      "ending_hp": [
+        80,
+        66,
+        76,
+        78,
+        71,
+        53,
+        80,
+        72
+      ],
+      "label": "PPO: 12 updates",
+      "mean_ending_hp": 72,
+      "policy": "neural",
+      "policy_seeds": [
+        1000,
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007
+      ],
+      "source_revision": "7b4cc314f9ecc543e4b35d6edb52bfd675a73de3",
+      "wins": 8
+    }
+  ]
+}
