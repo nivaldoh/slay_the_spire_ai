@@ -22,6 +22,14 @@ class ProtocolError(ValueError):
     """Malformed or unsupported bridge data; never a gameplay loss."""
 
 
+class PolicyFailure(ProtocolError):
+    """A policy output/context failure before any command was selected."""
+
+    def __init__(self, message: str, *, failure: dict):
+        super().__init__(message)
+        self.failure = failure
+
+
 class NotReadyError(ProtocolError):
     """A message is not a stable decision state."""
 

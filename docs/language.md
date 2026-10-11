@@ -135,3 +135,41 @@ resuming. Compare untouched and trained artifacts on the same admitted suite,
 reporting parser failures, wins, final HP, turns, inference cost and every attempt.
 Current scope is the admitted two-Louse development scenario. Neither a validation
 loss decrease nor better scores there establishes unseen-encounter performance.
+
+## Frozen public-decision policy and evaluation
+
+`spire.language_policy.create_declaration(base_snapshot, adapter_directory=None,
+provenance=None)` returns a schema-one declaration with type `language`. Save it
+outside the optional PEFT adapter directory. The declaration pins the exact public
+Qwen revision and all nine snapshot file hashes, optional adapter file inventory,
+public renderer/parser versions, and decoding limits. Use provenance to identify
+the training dataset, checkpoint and update count; mark a synthetic adapter as
+synthetic. An absent adapter means the unchanged pretrained model, not a randomly
+initialized policy.
+
+`LanguagePolicy.from_declaration(path)` is a context manager with `choose(Decision)`,
+`choice_metadata(decision_id)` and `verify_frozen()`. The real loader holds a
+nonblocking process-wide GPU file lease until context exit or explicit `close()`;
+the trainer shares `gpu_lease()`. All parameters are frozen. Files and exact model
+tensor contents are checked before and after collection and between episodes.
+The base stays in its pinned external snapshot; evaluations preserve a read-only
+copy of the declaration and adapter before launching the first game.
+
+The public policy uses `public-card-table-choice-v1` as a single user chat message.
+It caps the complete chat prompt at 2,048 tokens and generation at 12 additional
+tokens (at most 2,060 total). There is no truncation, sampling, retry or fallback.
+Greedy decoding disables thinking and uses the pinned Qwen EOS IDs 151645/151643.
+Only one terminal EOS token is removed before strict JSON parsing; embedded role,
+reasoning and other special tokens remain visible and cause rejection. Evidence
+records the full raw decode, parser input, token IDs/counts, prompt hashes and
+inference duration. Evaluation re-tokenizes and re-decodes that evidence without
+calling generation again.
+
+`spire.language_evaluation.evaluate_language(declaration_path, suite_path, output)`
+uses the existing schema-one development suite. A parser or prompt-limit failure
+is an audited `policy_failure` with no game command or invalid-action increment.
+It continues to the next scheduled policy seed, never retrying the failed attempt.
+Infrastructure failure, unsupported state or episode truncation still stops the
+run. Reports retain both the win rate among completed games and wins divided by
+completed games plus policy failures. Catalog evaluation is not supported by this
+first language-policy path.

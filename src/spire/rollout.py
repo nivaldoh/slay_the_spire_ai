@@ -19,6 +19,7 @@ from spire.doctor import collect_profile
 from spire.policies import EndTurnPolicy, RandomPolicy, StarterHeuristicPolicy
 from spire.protocol import (
     BridgeCommandError,
+    PolicyFailure,
     ProtocolError,
     combat_outcome,
     decision_from_message,
@@ -226,7 +227,17 @@ def run_episode(
                                         "Combat start differs from the frozen suite"
                                     )
                             inference_start = time.monotonic()
-                            action = validate_action(decision, policy.choose(decision))
+                            result["turns"] = state.get("combat_state", {}).get("turn")
+                            try:
+                                action = validate_action(decision, policy.choose(decision))
+                            except PolicyFailure as exc:
+                                result["inference_seconds"] += time.monotonic() - inference_start
+                                event(
+                                    "policy_failure",
+                                    decision=decision.to_dict(),
+                                    failure=exc.failure,
+                                )
+                                raise
                             result["inference_seconds"] += time.monotonic() - inference_start
                             pending = action.id
                             command = action.command
@@ -242,7 +253,6 @@ def run_episode(
                                 behavior=metadata,
                             )
                             result["combat_actions"] += 1
-                            result["turns"] = state.get("combat_state", {}).get("turn")
                         else:
                             if combat_floor is not None:
                                 raise ProtocolError(
@@ -265,6 +275,13 @@ def run_episode(
                 result.update(
                     status="infrastructure_failure", error=str(exc), error_type=type(exc).__name__
                 )
+        except PolicyFailure as exc:
+            result.update(
+                status="policy_failure",
+                error=str(exc),
+                error_type=type(exc).__name__,
+                policy_failure=exc.failure,
+            )
         except ProtocolError as exc:
             result.update(
                 status="unsupported_or_invalid", error=str(exc), error_type=type(exc).__name__
@@ -286,10 +303,12 @@ def rollout(output: Path, config: dict, *, policy_factory: Callable | None = Non
     """Every new invocation gets a fresh directory; completed evidence is never overwritten."""
     if not config["game_seed"].isalnum():
         raise ValueError("game seed must be alphanumeric")
-    if config["policy"] not in {"random", "heuristic", "end_turn", "neural"}:
+    if config["policy"] not in {"random", "heuristic", "end_turn", "neural", "language"}:
         raise ValueError("unknown policy")
-    if (config["policy"] == "neural") != (policy_factory is not None):
-        raise ValueError("neural rollouts require a policy factory, used only with neural policy")
+    if (config["policy"] in {"neural", "language"}) != (policy_factory is not None):
+        raise ValueError(
+            "neural/language rollouts require a policy factory, only for these policies"
+        )
     for key in ("episodes", "max_actions", "episode_timeout", "bridge_timeout"):
         if not math.isfinite(config[key]) or config[key] <= 0:
             raise ValueError(f"{key} must be positive")
@@ -327,6 +346,9 @@ def rollout(output: Path, config: dict, *, policy_factory: Callable | None = Non
         "episodes": [],
     }
     write_json(output / "manifest.json", manifest)
+    completed_statuses = {"won", "lost"}
+    if config["policy"] == "language":
+        completed_statuses.add("policy_failure")
     try:
         for index in range(config["episodes"]):
             if source_fingerprints() != manifest["source_files"]:
@@ -347,13 +369,13 @@ def rollout(output: Path, config: dict, *, policy_factory: Callable | None = Non
             manifest["episodes"].append(result)
             write_json(output / "manifest.json", manifest)
             print(json.dumps(result, sort_keys=True), flush=True)
-            if result["status"] not in {"won", "lost"}:
+            if result["status"] not in completed_statuses:
                 # Preserve a failed attempt and diagnose; never silently retry a failure.
                 break
         manifest["status"] = (
             "completed"
             if len(manifest["episodes"]) == config["episodes"]
-            and all(r["status"] in {"won", "lost"} for r in manifest["episodes"])
+            and all(r["status"] in completed_statuses for r in manifest["episodes"])
             else "stopped"
         )
     finally:
