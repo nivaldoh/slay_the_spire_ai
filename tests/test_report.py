@@ -78,6 +78,18 @@ def test_identical_suite_allows_different_policies_weights_and_source_revisions(
     assert "not a controlled comparison" not in report.render_report(result)
 
 
+def test_language_report_keeps_failed_answers_in_policy_denominator(runs):
+    paths, summaries = runs
+    summaries[paths[1]]["provenance"]["config"]["policy"] = "language"
+    summaries[paths[1]]["metrics"].update(
+        policy_failures=1, policy_attempts=2, policy_attempt_win_rate=0.5, attempts=2
+    )
+    rendered = report.render_report(report.compare_runs(paths))
+    assert "Wins / policy attempts" in rendered
+    assert "| language | 1 / 1 | 1 / 2 | 1 | 2 |" in rendered
+    assert "include recorded model failures" in rendered
+
+
 @pytest.mark.parametrize("field,value", [
     ("game_seed", "XYZ"), ("expected_start_sha256", "e" * 64), ("policy_seed", 2000),
     ("episodes", 2), ("max_actions", 10), ("episode_timeout", 30), ("bridge_timeout", 5),

@@ -1,6 +1,7 @@
 """Adversarial record checks, independent of proof that a real engine ran."""
 
 import copy
+import hashlib
 import json
 
 import pytest
@@ -235,6 +236,83 @@ def test_verified_win_yields_one_safe_unique_transition(run):
     assert '"seed"' not in serialized
     assert "private-card-id" not in serialized
     assert "move_id" not in serialized
+
+
+def make_policy_failure(run, *, kind="invalid_completion", **changes):
+    from spire.demonstrations import render_prompt
+
+    directory = run / "episode-0000"
+    trace = events(directory)
+    decision = decision_from_message(trace[3]["raw"], session_id="session-0", sequence=2)
+    failure = {
+        "kind": kind,
+        "completion": "I would attack" if kind == "invalid_completion" else None,
+        "prompt_sha256": hashlib.sha256(render_prompt(decision).encode()).hexdigest(),
+        "prompt_tokens": 100 if kind == "invalid_completion" else 2049,
+        "max_prompt_tokens": 2048,
+        "completion_tokens": 4 if kind == "invalid_completion" else 0,
+        "inference_seconds": 0.1,
+        **changes,
+    }
+    result = read(directory / "result.json")
+    result.update(status="policy_failure", policy="language", actions=1, combat_actions=0,
+                  policy_failure=failure)
+    result.pop("ending_hp")
+    trace = [*trace[:5], {"kind": "policy_failure", "elapsed": 2.3,
+                         "decision": decision.to_dict(), "failure": failure},
+             {"kind": "result", "elapsed": 5.0, "result": result}]
+    write_events(directory, trace)
+    write(directory / "result.json", result)
+    manifest = read(run / "manifest.json")
+    manifest["config"]["policy"] = "language"
+    manifest["episodes"][0] = result
+    write(run / "manifest.json", manifest)
+    return failure
+
+
+@pytest.mark.parametrize("kind", ["invalid_completion", "context_limit"])
+def test_policy_failure_preserves_start_and_counts_separately(run, kind):
+    make_policy_failure(run, kind=kind)
+    audit = audit_run(run)
+    assert audit["valid"], audit["issues"]
+    metrics = audit["metrics"]
+    assert metrics["policy_failures"] == metrics["policy_attempts"] == 1
+    assert metrics["policy_attempt_win_rate"] == 0
+    assert metrics["wins"] == metrics["losses"] == metrics["infrastructure_failures"] == 0
+    assert metrics["invalid_actions"] == metrics["unsupported"] == 0
+    assert metrics["win_rate"] is None
+    assert audit["episodes"][0]["starting_hp"] == 80
+    assert audit["episodes"][0]["combat_start_sha256"]
+    assert not load_transitions(run)
+
+
+@pytest.mark.parametrize("change", [
+    {"completion": '{"a":0}'}, {"prompt_sha256": "0" * 64}, {"prompt_tokens": True},
+    {"completion_tokens": 13}, {"max_prompt_tokens": 9999}, {"inference_seconds": -1},
+    {"kind": "invented_failure"}, {"completion": None},
+])
+def test_policy_failure_cannot_hide_legal_output_or_invalid_metadata(run, change):
+    make_policy_failure(run, **change)
+    assert not audit_run(run)["valid"]
+
+
+def test_context_failure_requires_actual_declared_overflow(run):
+    make_policy_failure(run, kind="context_limit", prompt_tokens=2048)
+    assert not audit_run(run)["valid"]
+
+
+def test_policy_failure_requires_bound_decision_and_matching_result(run):
+    make_policy_failure(run)
+    directory = run / "episode-0000"
+    trace = events(directory)
+    trace[-2]["decision"]["id"] = "another-session:2"
+    write_events(directory, trace)
+    assert not audit_run(run)["valid"]
+
+
+def test_policy_failure_status_cannot_replace_missing_event(run):
+    set_result(run, status="policy_failure")
+    assert not audit_run(run)["valid"]
 
 
 def test_external_policy_rng_does_not_claim_an_episode_seed(run):

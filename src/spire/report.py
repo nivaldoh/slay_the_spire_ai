@@ -138,17 +138,24 @@ def render_report(report: dict) -> str:
         "",
         report["scope"],
         "",
-        "| Run | Policy | Wins / valid games | Attempts | Mean final HP | Evidence valid |",
-        "|---|---|---:|---:|---:|---|",
+        "| Run | Policy | Wins / valid games | Wins / policy attempts | Policy failures | "
+        "Attempts | Mean final HP | Evidence valid |",
+        "|---|---|---:|---:|---:|---:|---:|---|",
     ]
     for run in report["runs"]:
         metrics = run["metrics"]
         policy = run["provenance"]["config"]["policy"]
         hp = metrics["mean_ending_hp"]
         hp_text = f"{hp:.2f}" if hp is not None else "—"
+        # Saved reports from before language policies have only completed-game counts.
+        failures = metrics.get("policy_failures", 0 if policy != "language" else "—")
+        attempts = metrics.get(
+            "policy_attempts", metrics["valid_gameplay_episodes"] if policy != "language" else "—"
+        )
         lines.append(
             f"| [{Path(run['directory']).name}]({run['evidence'].get('manifest.json', '')}) "
             f"| {policy} | {metrics['wins']} / {metrics['valid_gameplay_episodes']} "
+            f"| {metrics['wins']} / {attempts} | {failures} "
             f"| {metrics['attempts']} | {hp_text} | {run['valid']} |"
         )
         if run["issues"]:
@@ -158,6 +165,8 @@ def render_report(report: dict) -> str:
             "",
             "HP includes engine postcombat healing. Infrastructure failures, unsupported states,",
             "limits, and interruptions remain attempts but do not become gameplay losses.",
+            "Policy-attempt denominators include recorded model failures; final HP and gameplay "
+            "win rates include only verified game endings.",
         ]
     )
     if not report["same_protocol"]:

@@ -111,6 +111,7 @@ def _inspect_episode(directory: Path, config: dict | None) -> dict:
             "unsupported_or_invalid",
             "truncated",
             "interrupted",
+            "policy_failure",
         },
         f"Unknown result status: {status}",
     )
@@ -150,6 +151,7 @@ def _inspect_episode(directory: Path, config: dict | None) -> dict:
     launch_seen = False
     action_count = combat_count = rejected_count = 0
     settle_count = 0
+    policy_failure = None
     turns = None
     terminal_hp = None
 
@@ -161,6 +163,7 @@ def _inspect_episode(directory: Path, config: dict | None) -> dict:
         elapsed = timestamp
         kind = event["kind"]
         _require(terminal is None or kind == "result", "Events follow the terminal outcome")
+        _require(policy_failure is None or kind == "result", "Events follow a policy failure")
         if kind == "launch":
             _require(offset == 0 and not launch_seen, "Launch must appear once at trace start")
             launch_seen = True
@@ -314,6 +317,54 @@ def _inspect_episode(directory: Path, config: dict | None) -> dict:
                 "Terminal outcome is not supported by engine state",
             )
             terminal_hp = latest["raw"]["game_state"].get("current_hp")
+        elif kind == "policy_failure":
+            from spire.demonstrations import parse_completion, render_prompt
+
+            _require(latest is not None and pending is None and selected is None
+                     and not needs_execution, "Policy failure outside an available decision")
+            _require(result.get("policy") == "language", "Policy failure requires language policy")
+            expected = decision_from_message(latest["raw"], session_id=session, sequence=sequence)
+            _require(event.get("decision") == expected.to_dict(),
+                     "Failed decision differs from raw state")
+            failure = event.get("failure")
+            _require(isinstance(failure, dict), "Missing policy failure metadata")
+            _require(failure.get("prompt_sha256") == hashlib.sha256(
+                render_prompt(expected).encode("utf-8")
+            ).hexdigest(), "Failed prompt differs from public decision")
+            for name in ("prompt_tokens", "max_prompt_tokens", "completion_tokens"):
+                _require(type(failure.get(name)) is int and failure[name] >= 0,
+                         f"Invalid policy failure {name}")
+            _require(failure["max_prompt_tokens"] == 2048,
+                     "Unsupported language context limit")
+            inference = failure.get("inference_seconds")
+            _require(type(inference) in (int, float) and math.isfinite(inference)
+                     and inference >= 0,
+                     "Invalid policy inference duration")
+            if failure.get("kind") == "context_limit":
+                _require(failure["prompt_tokens"] > failure["max_prompt_tokens"]
+                         and failure.get("completion") is None
+                         and failure["completion_tokens"] == 0,
+                         "Context failure does not exceed the declared limit")
+            elif failure.get("kind") == "invalid_completion":
+                _require(isinstance(failure.get("completion"), str), "Missing failed completion")
+                _require(failure["prompt_tokens"] <= failure["max_prompt_tokens"]
+                         and failure["completion_tokens"] <= 12,
+                         "Failed completion exceeds the declared inference budget")
+                try:
+                    parse_completion(expected, failure["completion"])
+                except ProtocolError:
+                    pass
+                else:
+                    raise EvidenceError("A legal completion was labelled a policy failure")
+            else:
+                raise EvidenceError("Unknown policy failure kind")
+            policy_failure = failure
+            if first_decision is None:
+                first_decision = expected.to_dict()
+                combat_floor = latest["raw"]["game_state"]["floor"]
+                first_combat_observation_time = latest["elapsed"]
+                first_decision_time = timestamp
+            turns = expected.observation["combat_state"].get("turn")
         elif kind == "result":
             _require(selected is None, "Selected decision has no corresponding action")
             _require(not needs_execution, "Final result omits an execution linkage")
@@ -323,6 +374,13 @@ def _inspect_episode(directory: Path, config: dict | None) -> dict:
             raise EvidenceError(f"Unknown trace event: {kind}")
 
     _require(final_seen, "Trace has no final result; episode was interrupted or truncated on disk")
+    _require((status == "policy_failure") == (policy_failure is not None),
+             "Policy failure status/event mismatch")
+    if policy_failure is not None:
+        _require(result.get("policy_failure") == policy_failure,
+                 "Policy failure result differs from event")
+    else:
+        _require("policy_failure" not in result, "Policy failure metadata lacks its event")
     if combat_floor is not None and latest is not None and "error" not in latest["raw"]:
         _require(
             combat_outcome(latest["raw"], combat_floor=combat_floor) == terminal,
@@ -492,6 +550,7 @@ def _metrics(episodes: list[dict]) -> dict:
     valid = [episode for episode in episodes if episode["valid"]]
     scored = [episode for episode in valid if episode["status"] in ("won", "lost")]
     counts = Counter(episode["status"] for episode in episodes)
+    policy_attempts = len(scored) + counts["policy_failure"]
     stats = {
         "attempts": len(episodes),
         "valid_evidence_episodes": len(valid),
@@ -499,6 +558,9 @@ def _metrics(episodes: list[dict]) -> dict:
         "wins": counts["won"],
         "losses": counts["lost"],
         "infrastructure_failures": counts["infrastructure_failure"],
+        "policy_failures": counts["policy_failure"],
+        "policy_attempts": policy_attempts,
+        "policy_attempt_win_rate": counts["won"] / policy_attempts if policy_attempts else None,
         "unsupported": counts["unsupported"],
         "invalid_actions": counts["invalid_action"],
         "truncated": counts["truncated"],
@@ -568,9 +630,12 @@ def audit_run(directory: Path) -> dict:
             issues.append(f"Manifest episode {index} is missing on disk")
         if manifest.get("status") == "completed":
             _require(len(episodes) == config["episodes"], "Completed manifest has missing attempts")
+            endings = {"won", "lost"}
+            if config.get("policy") == "language":
+                endings.add("policy_failure")
             _require(
-                all(e["valid"] and e["status"] in ("won", "lost") for e in episodes),
-                "Completed manifest contains unverified gameplay",
+                all(e["valid"] and e["status"] in endings for e in episodes),
+                "Completed manifest contains an unverified ending",
             )
         sessions = [e["session_id"] for e in episodes if e["valid"]]
         _require(len(set(sessions)) == len(sessions), "Episode session ID reused")
