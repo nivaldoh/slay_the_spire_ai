@@ -66,6 +66,46 @@ PyTorch's allocator to 70% of device memory. Free RAM alone is not the guard:
 reclaimable file cache is included in `MemAvailable`. Every failure is retained.
 No second worker, engine process, policy retry or fallback is launched.
 
+The first smoke completed on 2026-10-11 from clean source
+`699f6414080dcd954c130573ce543ea83823c1af` in 7.83 seconds on the RTX 3060.
+Its ignored evidence is
+`runs/language-smoke-20261011-0649/{manifest.json,metrics.json,resources.jsonl,worker.log}`
+in the isolated `/tmp/spire-language-smoke` worktree. The manifest pins every base
+and tokenizer file, dependencies, source files, command, decoder, and saved adapter.
+The base snapshot and source remained unchanged through the run.
+
+| Measured item | Result |
+| --- | --- |
+| Unique model / trainable LoRA parameters | 596,049,920 / 2,293,760 |
+| Prompt / target including EOS / padded sequence tokens | 237 / 6 / 1,024 |
+| Model load / greedy generation / update and checks | 0.60 s / 0.90 s / 1.15 s |
+| Completion-only loss before / after | 0.50518 / 0.027922 |
+| Finite pre-clipping gradient norm | 17.522 |
+| Changed adapter elements / maximum logit change | 2,293,760 / 21.71875 |
+| Peak CUDA allocated / reserved memory | 3,294.6 / 3,414 MiB |
+| Highest sampled total GPU usage | 5,534 MiB |
+| Lowest recorded WSL available RAM | 3,457.5 MiB |
+
+The frozen adapter round-tripped exactly, with weight SHA-256
+`db289d8138057ccb1ccec407b616eccf4df9cc8de7e552450ba38a38a44b6d51`.
+The worker exited and released its CUDA allocation. The synthetic untuned response
+was `{"a": 1}`: legal JSON with whitespace, choosing Defend when Strike would win.
+The smoke's exact canonical-string flag is therefore false; this is separate from
+the future versioned gameplay parser. One-example loss improvement only verifies
+that local optimization and artifact saving work. This adapter is synthetic and
+must not be presented as a policy trained on original-engine demonstrations.
+
+The verified loader uses `AutoTokenizer.from_pretrained(snapshot,
+local_files_only=True)` and `AutoModelForCausalLM.from_pretrained(snapshot,
+local_files_only=True, dtype=torch.bfloat16, device_map={"": "cuda:0"},
+attn_implementation="sdpa", trust_remote_code=False)`. Apply the tokenizer's chat
+template with `enable_thinking=False`, `add_generation_prompt=True`; tokenize
+with `add_special_tokens=False`, then call `generate` with `do_sample=False`,
+`max_new_tokens=12`, an explicit attention mask and EOS as the padding token.
+Decode only tokens after the input. Preserve the complete raw decoded text.
+The smoke verifies saving and loading adapter tensors; loading that adapter into
+a second model instance was outside this single-worker experiment.
+
 ## Proposed first untuned-versus-SFT contract
 
 Use the demonstration exporter's versioned public rendering for the eventual
