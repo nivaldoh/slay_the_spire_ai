@@ -99,7 +99,8 @@ def _json_preferences(path: Path) -> tuple[dict[str, Any], str | None]:
         return {}, type(exc).__name__
 
 
-def _profile(game_dir: Path) -> dict[str, Any]:
+def collect_profile(game_dir: Path) -> dict[str, Any]:
+    """Read only the allowlisted profile facts needed to attribute an episode."""
     preferences = game_dir / "preferences"
     slots, slots_error = _json_preferences(preferences / "STSSaveSlots")
     slot = str(slots.get("DEFAULT_SLOT", "0"))
@@ -253,7 +254,7 @@ def collect_diagnostics(game_dir: Path | None = None, mods_dir: Path | None = No
     except (OSError, UnicodeError):
         game["steam_build_id"] = None
     mods = {name: _jar_info(mods_dir / name, expected) for name, expected in PINNED_MODS.items()}
-    profile = _profile(game_dir)
+    profile = collect_profile(game_dir)
     configuration = _configuration()
     blockers = []
 

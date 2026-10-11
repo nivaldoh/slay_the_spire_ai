@@ -43,7 +43,7 @@ The [CommunicationMod protocol](https://github.com/ForgottenArbiter/Communicatio
 starts an external subprocess and waits for `ready` on its stdout. Messages in
 both directions end with a newline. Stdout contains protocol messages only;
 diagnostics go elsewhere. Windows runs a standard-library relay; WSL owns
-policy selection and evidence collection. Local relay authentication does not
+policy selection and evidence collection. Loopback binding does not
 make raw game state suitable for policy input.
 
 - `START IRONCLAD 0 <seed>` operates from the main menu. It is a seeded full-run

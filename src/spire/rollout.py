@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import subprocess
 import time
@@ -12,6 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from spire.bridge import BridgeError, BridgeServer
+from spire.doctor import collect_profile
 from spire.policies import RandomPolicy, StarterHeuristicPolicy
 from spire.protocol import (
     BridgeCommandError,
@@ -20,7 +22,7 @@ from spire.protocol import (
     decision_from_message,
     validate_action,
 )
-from spire.runtime import OwnedGame, prepare_runtime
+from spire.runtime import GAME_DIR, OwnedGame, prepare_runtime
 
 
 def write_json(path: Path, value: dict) -> None:
@@ -78,7 +80,9 @@ def run_episode(directory: Path, config: dict, episode: int) -> dict:
         "actions": 0,
         "combat_actions": 0,
         "invalid_actions": 0,
+        "inference_seconds": 0.0,
     }
+    write_json(directory / "profile.json", collect_profile(GAME_DIR))
     write_json(directory / "result.json", result)
     policy = (
         RandomPolicy(result["policy_seed"])
@@ -109,9 +113,6 @@ def run_episode(directory: Path, config: dict, episode: int) -> dict:
                     while True:
                         if time.monotonic() >= deadline:
                             result.update(status="truncated", reason="episode_time_limit")
-                            break
-                        if result["actions"] >= config["max_actions"]:
-                            result.update(status="truncated", reason="action_limit")
                             break
                         message = bridge.receive()
                         sequence += 1
@@ -147,6 +148,11 @@ def run_episode(directory: Path, config: dict, episode: int) -> dict:
                                 result.update(status=outcome, ending_hp=state.get("current_hp"))
                                 event("terminal", outcome=outcome, sequence=sequence)
                                 break
+                        # Consume the final permitted action's response before checking the
+                        # limit: it may be a killing blow or an engine-reported defeat.
+                        if result["actions"] >= config["max_actions"]:
+                            result.update(status="truncated", reason="action_limit")
+                            break
                         if state.get("room_phase") == "COMBAT":
                             decision = decision_from_message(
                                 message, session_id=session_id, sequence=sequence
@@ -162,7 +168,9 @@ def run_episode(directory: Path, config: dict, episode: int) -> dict:
                                     reset_seconds=combat_started - started,
                                     combat_start_sha256=_fingerprint(public),
                                 )
+                            inference_start = time.monotonic()
                             action = validate_action(decision, policy.choose(decision))
+                            result["inference_seconds"] += time.monotonic() - inference_start
                             pending = action.id
                             command = action.command
                             event(
@@ -186,9 +194,12 @@ def run_episode(directory: Path, config: dict, episode: int) -> dict:
                         bridge.send(command)
                         result["actions"] += 1
         except BridgeError as exc:
-            result.update(
-                status="infrastructure_failure", error=str(exc), error_type=type(exc).__name__
-            )
+            if time.monotonic() >= deadline:
+                result.update(status="truncated", reason="episode_time_limit", error=str(exc))
+            else:
+                result.update(
+                    status="infrastructure_failure", error=str(exc), error_type=type(exc).__name__
+                )
         except ProtocolError as exc:
             result.update(
                 status="unsupported_or_invalid", error=str(exc), error_type=type(exc).__name__
@@ -213,8 +224,16 @@ def rollout(output: Path, config: dict) -> dict:
     if config["policy"] not in {"random", "heuristic"}:
         raise ValueError("unknown policy")
     for key in ("episodes", "max_actions", "episode_timeout", "bridge_timeout"):
-        if config[key] <= 0:
+        if not math.isfinite(config[key]) or config[key] <= 0:
             raise ValueError(f"{key} must be positive")
+    source_paths = ["src", "scripts", "configs", "pyproject.toml", "uv.lock", ".python-version"]
+    source_status = subprocess.check_output(
+        ["git", "status", "--porcelain", "--", *source_paths], text=True
+    )
+    if source_status:
+        raise ValueError(
+            "Commit implementation changes before attributable rollouts: " + source_status
+        )
     output.mkdir(parents=True, exist_ok=False)
     from spire.doctor import collect_diagnostics
 
