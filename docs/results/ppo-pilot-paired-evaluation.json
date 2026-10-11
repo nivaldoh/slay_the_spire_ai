@@ -1,0 +1,141 @@
+{
+  "all_action_sequences_equal": true,
+  "all_public_transitions_equal": true,
+  "exact_artifact_snapshots_verified": true,
+  "initial_run": "runs/ppo-pilot-initial-eval-20261011",
+  "mean_hp_difference": 0.0,
+  "pairs": [
+    {
+      "differences": [],
+      "episodes": [
+        0,
+        0
+      ],
+      "full_action_sequence_equal": true,
+      "hp_difference": 0,
+      "initial_hp": 80,
+      "initial_state_equal": true,
+      "policy_seed": 1000,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 9,
+      "trained_hp": 80
+    },
+    {
+      "differences": [],
+      "episodes": [
+        1,
+        1
+      ],
+      "full_action_sequence_equal": true,
+      "hp_difference": 0,
+      "initial_hp": 66,
+      "initial_state_equal": true,
+      "policy_seed": 1001,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 14,
+      "trained_hp": 66
+    },
+    {
+      "differences": [],
+      "episodes": [
+        2,
+        2
+      ],
+      "full_action_sequence_equal": true,
+      "hp_difference": 0,
+      "initial_hp": 76,
+      "initial_state_equal": true,
+      "policy_seed": 1002,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 15,
+      "trained_hp": 76
+    },
+    {
+      "differences": [],
+      "episodes": [
+        3,
+        3
+      ],
+      "full_action_sequence_equal": true,
+      "hp_difference": 0,
+      "initial_hp": 78,
+      "initial_state_equal": true,
+      "policy_seed": 1003,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 12,
+      "trained_hp": 78
+    },
+    {
+      "differences": [],
+      "episodes": [
+        4,
+        4
+      ],
+      "full_action_sequence_equal": true,
+      "hp_difference": 0,
+      "initial_hp": 77,
+      "initial_state_equal": true,
+      "policy_seed": 1004,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 13,
+      "trained_hp": 77
+    },
+    {
+      "differences": [],
+      "episodes": [
+        5,
+        5
+      ],
+      "full_action_sequence_equal": true,
+      "hp_difference": 0,
+      "initial_hp": 53,
+      "initial_state_equal": true,
+      "policy_seed": 1005,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 20,
+      "trained_hp": 53
+    },
+    {
+      "differences": [],
+      "episodes": [
+        6,
+        6
+      ],
+      "full_action_sequence_equal": true,
+      "hp_difference": 0,
+      "initial_hp": 80,
+      "initial_state_equal": true,
+      "policy_seed": 1006,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 9,
+      "trained_hp": 80
+    },
+    {
+      "differences": [],
+      "episodes": [
+        7,
+        7
+      ],
+      "full_action_sequence_equal": true,
+      "hp_difference": 0,
+      "initial_hp": 72,
+      "initial_state_equal": true,
+      "policy_seed": 1007,
+      "prefix_equal": true,
+      "shared_action_states_equal": true,
+      "shared_combat_actions": 8,
+      "trained_hp": 72
+    }
+  ],
+  "same_protocol": true,
+  "schema_version": 1,
+  "scope": "Eight paired policy sampling seeds on one fixed game scenario. No independent-scenario or generalization claim. The prior invalid partial trained evaluation is retained separately.",
+  "trained_run": "runs/ppo-pilot-trained-eval-v2-20261011"
+}

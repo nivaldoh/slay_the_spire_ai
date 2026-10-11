@@ -1,0 +1,2258 @@
+{
+  "comparison_contracts": [
+    {
+      "config": {
+        "bridge_timeout": 45,
+        "episode_timeout": 180,
+        "episodes": 8,
+        "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+        "game_seed": "SPIREAI1",
+        "max_actions": 500,
+        "policy_seed": 1000
+      },
+      "engine": "original",
+      "engine_sha256": "cfad868ac8d65a88e71a0bf096fb09f78811e553effe0787c5309a655e081673",
+      "evaluation_suite": {
+        "description": "Fixed original-engine two-Louse first combat, starter Ironclad, Ascension 0, 80 HP, Burning Blood, 100-gold Neow reward, initial intents settled. Repeated stochastic-policy attempts on one scenario; no held-out seed or encounter claim.",
+        "episodes": 8,
+        "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+        "game_seed": "SPIREAI1",
+        "id": "louse-diagnostic-development-v1",
+        "policy_seed": 1000,
+        "purpose": "development",
+        "schema_version": 1
+      },
+      "mod_sha256": {
+        "BaseMod.jar": "c3353c10e64c621b723e9fd7d0502dfa796f828b101b68513594a5f5ef83fbaf",
+        "CommunicationMod.jar": "12b99249eccfd5245ddb0b6b7575e1a1dfba0ce0ed6fad5bd5bbd4a303897ef5",
+        "ModTheSpire.jar": "541b5e8a875d2a404a5a6d54f4a6f814284b0cf71acb9245239d9c5ef50ea604"
+      },
+      "observation_version": "ironclad-starter-combat-v1",
+      "observed_start_contracts": [
+        [
+          "IRONCLAD",
+          0,
+          "ironclad-starter-combat-v1"
+        ]
+      ],
+      "policy_observation_contract": "ironclad-starter-combat-v1",
+      "prefix_version": "neow-maxhp-or-gold-leftmost-settled-v2",
+      "reset": "owned_jvm_restart_then_seeded_start",
+      "scope": "first_combat",
+      "suite_sha256": "665df78b5fd928cf4a4c3ee996eb4f8cf72fdf5912dd62fd613fc4036ce27b4c"
+    },
+    {
+      "config": {
+        "bridge_timeout": 45,
+        "episode_timeout": 180,
+        "episodes": 8,
+        "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+        "game_seed": "SPIREAI1",
+        "max_actions": 500,
+        "policy_seed": 1000
+      },
+      "engine": "original",
+      "engine_sha256": "cfad868ac8d65a88e71a0bf096fb09f78811e553effe0787c5309a655e081673",
+      "evaluation_suite": {
+        "description": "Fixed original-engine two-Louse first combat, starter Ironclad, Ascension 0, 80 HP, Burning Blood, 100-gold Neow reward, initial intents settled. Repeated stochastic-policy attempts on one scenario; no held-out seed or encounter claim.",
+        "episodes": 8,
+        "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+        "game_seed": "SPIREAI1",
+        "id": "louse-diagnostic-development-v1",
+        "policy_seed": 1000,
+        "purpose": "development",
+        "schema_version": 1
+      },
+      "mod_sha256": {
+        "BaseMod.jar": "c3353c10e64c621b723e9fd7d0502dfa796f828b101b68513594a5f5ef83fbaf",
+        "CommunicationMod.jar": "12b99249eccfd5245ddb0b6b7575e1a1dfba0ce0ed6fad5bd5bbd4a303897ef5",
+        "ModTheSpire.jar": "541b5e8a875d2a404a5a6d54f4a6f814284b0cf71acb9245239d9c5ef50ea604"
+      },
+      "observation_version": "ironclad-starter-combat-v1",
+      "observed_start_contracts": [
+        [
+          "IRONCLAD",
+          0,
+          "ironclad-starter-combat-v1"
+        ]
+      ],
+      "policy_observation_contract": "ironclad-starter-combat-v1",
+      "prefix_version": "neow-maxhp-or-gold-leftmost-settled-v2",
+      "reset": "owned_jvm_restart_then_seeded_start",
+      "scope": "first_combat",
+      "suite_sha256": "665df78b5fd928cf4a4c3ee996eb4f8cf72fdf5912dd62fd613fc4036ce27b4c"
+    },
+    {
+      "config": {
+        "bridge_timeout": 45,
+        "episode_timeout": 180,
+        "episodes": 8,
+        "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+        "game_seed": "SPIREAI1",
+        "max_actions": 500,
+        "policy_seed": 1000
+      },
+      "engine": "original",
+      "engine_sha256": "cfad868ac8d65a88e71a0bf096fb09f78811e553effe0787c5309a655e081673",
+      "evaluation_suite": {
+        "description": "Fixed original-engine two-Louse first combat, starter Ironclad, Ascension 0, 80 HP, Burning Blood, 100-gold Neow reward, initial intents settled. Repeated stochastic-policy attempts on one scenario; no held-out seed or encounter claim.",
+        "episodes": 8,
+        "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+        "game_seed": "SPIREAI1",
+        "id": "louse-diagnostic-development-v1",
+        "policy_seed": 1000,
+        "purpose": "development",
+        "schema_version": 1
+      },
+      "mod_sha256": {
+        "BaseMod.jar": "c3353c10e64c621b723e9fd7d0502dfa796f828b101b68513594a5f5ef83fbaf",
+        "CommunicationMod.jar": "12b99249eccfd5245ddb0b6b7575e1a1dfba0ce0ed6fad5bd5bbd4a303897ef5",
+        "ModTheSpire.jar": "541b5e8a875d2a404a5a6d54f4a6f814284b0cf71acb9245239d9c5ef50ea604"
+      },
+      "observation_version": "ironclad-starter-combat-v1",
+      "observed_start_contracts": [
+        [
+          "IRONCLAD",
+          0,
+          "ironclad-starter-combat-v1"
+        ]
+      ],
+      "policy_observation_contract": "ironclad-starter-combat-v1",
+      "prefix_version": "neow-maxhp-or-gold-leftmost-settled-v2",
+      "reset": "owned_jvm_restart_then_seeded_start",
+      "scope": "first_combat",
+      "suite_sha256": "665df78b5fd928cf4a4c3ee996eb4f8cf72fdf5912dd62fd613fc4036ce27b4c"
+    },
+    {
+      "config": {
+        "bridge_timeout": 45,
+        "episode_timeout": 180,
+        "episodes": 8,
+        "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+        "game_seed": "SPIREAI1",
+        "max_actions": 500,
+        "policy_seed": 1000
+      },
+      "engine": "original",
+      "engine_sha256": "cfad868ac8d65a88e71a0bf096fb09f78811e553effe0787c5309a655e081673",
+      "evaluation_suite": {
+        "description": "Fixed original-engine two-Louse first combat, starter Ironclad, Ascension 0, 80 HP, Burning Blood, 100-gold Neow reward, initial intents settled. Repeated stochastic-policy attempts on one scenario; no held-out seed or encounter claim.",
+        "episodes": 8,
+        "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+        "game_seed": "SPIREAI1",
+        "id": "louse-diagnostic-development-v1",
+        "policy_seed": 1000,
+        "purpose": "development",
+        "schema_version": 1
+      },
+      "mod_sha256": {
+        "BaseMod.jar": "c3353c10e64c621b723e9fd7d0502dfa796f828b101b68513594a5f5ef83fbaf",
+        "CommunicationMod.jar": "12b99249eccfd5245ddb0b6b7575e1a1dfba0ce0ed6fad5bd5bbd4a303897ef5",
+        "ModTheSpire.jar": "541b5e8a875d2a404a5a6d54f4a6f814284b0cf71acb9245239d9c5ef50ea604"
+      },
+      "observation_version": "ironclad-starter-combat-v1",
+      "observed_start_contracts": [
+        [
+          "IRONCLAD",
+          0,
+          "ironclad-starter-combat-v1"
+        ]
+      ],
+      "policy_observation_contract": "ironclad-starter-combat-v1",
+      "prefix_version": "neow-maxhp-or-gold-leftmost-settled-v2",
+      "reset": "owned_jvm_restart_then_seeded_start",
+      "scope": "first_combat",
+      "suite_sha256": "665df78b5fd928cf4a4c3ee996eb4f8cf72fdf5912dd62fd613fc4036ce27b4c"
+    }
+  ],
+  "comparison_issues": [],
+  "protocol_differences": [],
+  "runs": [
+    {
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011",
+      "episodes": [
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 75,
+          "episode": 0,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0000/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0000/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0000/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0000/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0000/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 5,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 66,
+          "episode": 1,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0001/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0001/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0001/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0001/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0001/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 6,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 50,
+          "episode": 2,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0002/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0002/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0002/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0002/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0002/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 6,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 69,
+          "episode": 3,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0003/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0003/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0003/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0003/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0003/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 3,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 71,
+          "episode": 4,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0004/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0004/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0004/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0004/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0004/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 5,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 60,
+          "episode": 5,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0005/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0005/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0005/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0005/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0005/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 6,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 73,
+          "episode": 6,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0006/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0006/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0006/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0006/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0006/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 4,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 80,
+          "episode": 7,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0007/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0007/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0007/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0007/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0007/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 6,
+          "valid": true
+        }
+      ],
+      "evidence": {
+        "environment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/environment.json",
+        "manifest.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/manifest.json",
+        "source.patch": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/source.patch"
+      },
+      "issues": [],
+      "metrics": {
+        "attempts": 8,
+        "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+        "infrastructure_failures": 0,
+        "interrupted": 0,
+        "invalid_actions": 0,
+        "invalid_evidence": 0,
+        "losses": 0,
+        "mean_combat_seconds": 19.267203732749294,
+        "mean_elapsed_seconds": 33.822658185250475,
+        "mean_ending_hp": 68,
+        "mean_net_hp_lost": 12,
+        "mean_reset_seconds": 14.555449321251217,
+        "mean_starting_hp": 80,
+        "mean_turns": 5.125,
+        "truncated": 0,
+        "unsupported": 0,
+        "valid_evidence_episodes": 8,
+        "valid_gameplay_episodes": 8,
+        "validated_transitions": 115,
+        "win_rate": 1.0,
+        "wins": 8
+      },
+      "provenance": {
+        "config": {
+          "bridge_timeout": 45,
+          "episode_timeout": 180,
+          "episodes": 8,
+          "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "game_seed": "SPIREAI1",
+          "max_actions": 500,
+          "policy": "random",
+          "policy_seed": 1000
+        },
+        "engine": "original",
+        "observation_version": "ironclad-starter-combat-v1",
+        "prefix_version": "neow-maxhp-or-gold-leftmost-settled-v2",
+        "reset": "owned_jvm_restart_then_seeded_start",
+        "scope": "first_combat",
+        "source_revision": "4b5506360bb0a820ac519a00b573d70bc8c8f7d3",
+        "source_status": "?? docs/results/loss-restart-audit.json\n",
+        "status": "completed"
+      },
+      "reset_comparison": {
+        "all_initial_states_equal": true,
+        "comparisons": [
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              1
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              2
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 1
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              2
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 1
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 1
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              4,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              4,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              4,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              5,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              5,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              6,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          }
+        ],
+        "eligible_episodes": 8,
+        "initial_state_hashes": [
+          "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4"
+        ],
+        "scope": "Public state equality; does not establish hidden-state equivalence"
+      },
+      "valid": true,
+      "verification_scope": "Recorded protocol, terminal, and manifest consistency"
+    },
+    {
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011",
+      "episodes": [
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 77,
+          "episode": 0,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0000/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0000/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0000/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0000/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0000/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 6,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 77,
+          "episode": 1,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0001/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0001/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0001/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0001/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0001/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 6,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 77,
+          "episode": 2,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0002/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0002/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0002/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0002/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0002/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 6,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 77,
+          "episode": 3,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0003/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0003/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0003/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0003/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0003/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 6,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 77,
+          "episode": 4,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0004/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0004/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0004/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0004/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0004/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 6,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 77,
+          "episode": 5,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0005/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0005/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0005/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0005/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0005/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 6,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 77,
+          "episode": 6,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0006/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0006/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0006/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0006/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0006/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 6,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 77,
+          "episode": 7,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0007/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0007/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0007/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0007/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0007/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 6,
+          "valid": true
+        }
+      ],
+      "evidence": {
+        "environment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/environment.json",
+        "manifest.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/manifest.json",
+        "source.patch": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/source.patch"
+      },
+      "issues": [],
+      "metrics": {
+        "attempts": 8,
+        "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+        "infrastructure_failures": 0,
+        "interrupted": 0,
+        "invalid_actions": 0,
+        "invalid_evidence": 0,
+        "losses": 0,
+        "mean_combat_seconds": 23.950927353250336,
+        "mean_elapsed_seconds": 38.293398999499914,
+        "mean_ending_hp": 77,
+        "mean_net_hp_lost": 3,
+        "mean_reset_seconds": 14.342468319501677,
+        "mean_starting_hp": 80,
+        "mean_turns": 6,
+        "truncated": 0,
+        "unsupported": 0,
+        "valid_evidence_episodes": 8,
+        "valid_gameplay_episodes": 8,
+        "validated_transitions": 168,
+        "win_rate": 1.0,
+        "wins": 8
+      },
+      "provenance": {
+        "config": {
+          "bridge_timeout": 45,
+          "episode_timeout": 180,
+          "episodes": 8,
+          "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "game_seed": "SPIREAI1",
+          "max_actions": 500,
+          "policy": "heuristic",
+          "policy_seed": 1000
+        },
+        "engine": "original",
+        "observation_version": "ironclad-starter-combat-v1",
+        "prefix_version": "neow-maxhp-or-gold-leftmost-settled-v2",
+        "reset": "owned_jvm_restart_then_seeded_start",
+        "scope": "first_combat",
+        "source_revision": "7c08a25585b519f7877456e0a692979d1797cb30",
+        "source_status": "",
+        "status": "completed"
+      },
+      "reset_comparison": {
+        "all_initial_states_equal": true,
+        "comparisons": [
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              1
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              2
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              2
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              4,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              4,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              4,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              5,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              5,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          },
+          {
+            "differences": [],
+            "episodes": [
+              6,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 21
+          }
+        ],
+        "eligible_episodes": 8,
+        "initial_state_hashes": [
+          "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4"
+        ],
+        "scope": "Public state equality; does not establish hidden-state equivalence"
+      },
+      "valid": true,
+      "verification_scope": "Recorded protocol, terminal, and manifest consistency"
+    },
+    {
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011",
+      "episodes": [
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 80,
+          "episode": 0,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0000/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0000/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0000/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0000/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0000/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 3,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 66,
+          "episode": 1,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0001/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0001/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0001/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0001/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0001/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 5,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 76,
+          "episode": 2,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0002/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0002/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0002/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0002/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0002/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 4,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 78,
+          "episode": 3,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0003/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0003/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0003/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0003/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0003/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 4,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 77,
+          "episode": 4,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0004/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0004/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0004/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0004/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0004/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 5,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 53,
+          "episode": 5,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0005/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0005/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0005/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0005/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0005/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 10,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 80,
+          "episode": 6,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0006/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0006/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0006/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0006/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0006/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 3,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 72,
+          "episode": 7,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0007/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0007/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0007/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0007/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/episode-0007/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 3,
+          "valid": true
+        }
+      ],
+      "evidence": {
+        "environment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/environment.json",
+        "manifest.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/manifest.json",
+        "source.patch": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-initial-eval-20261011/source.patch"
+      },
+      "issues": [],
+      "metrics": {
+        "attempts": 8,
+        "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+        "infrastructure_failures": 0,
+        "interrupted": 0,
+        "invalid_actions": 0,
+        "invalid_evidence": 0,
+        "losses": 0,
+        "mean_combat_seconds": 17.581030043875217,
+        "mean_elapsed_seconds": 31.99180567937401,
+        "mean_ending_hp": 72.75,
+        "mean_net_hp_lost": 7.25,
+        "mean_reset_seconds": 14.4107717351244,
+        "mean_starting_hp": 80,
+        "mean_turns": 4.625,
+        "truncated": 0,
+        "unsupported": 0,
+        "valid_evidence_episodes": 8,
+        "valid_gameplay_episodes": 8,
+        "validated_transitions": 100,
+        "win_rate": 1.0,
+        "wins": 8
+      },
+      "provenance": {
+        "config": {
+          "bridge_timeout": 45,
+          "episode_timeout": 180,
+          "episodes": 8,
+          "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "game_seed": "SPIREAI1",
+          "max_actions": 500,
+          "policy": "neural",
+          "policy_artifact": {
+            "behavior_version": "initial",
+            "consumed_transitions": 0,
+            "encoder_version": "starter-set-scorer-v1",
+            "learner_version": "complete-episode-ppo-v1",
+            "model_sha256": "1d60fa62ccd3ba50a70c174b9c1d9933d7a26c97f013f6d7d2a592cac883d4f0",
+            "name": "neural",
+            "path": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-seed0-20261011/artifacts/policy-0000-1d60fa62ccd3ba50a70c174b9c1d9933d7a26c97f013f6d7d2a592cac883d4f0.pt",
+            "randomly_initialized": true,
+            "record_path": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-seed0-20261011/artifacts/policy-0000-1d60fa62ccd3ba50a70c174b9c1d9933d7a26c97f013f6d7d2a592cac883d4f0.json",
+            "record_sha256": "63e39b13087be9dc26d590fe0a92a77cd743b36b8b5e314f627b7384aa9f27f6",
+            "reward_version": "combat-terminal-health-v1",
+            "sampling": "stochastic_per_episode_seed",
+            "sha256": "d3e51e39312029127e3afc03d65d6ba0fed2762cf18ebd7bb5a2fe89a8c9018a",
+            "snapshot_path": "frozen-artifact/policy-0000-1d60fa62ccd3ba50a70c174b9c1d9933d7a26c97f013f6d7d2a592cac883d4f0.pt",
+            "source_revision": "741d96aafd176da201105f06f4527ce9126392e7",
+            "training_checkpoint_sha256": "429bab30e11c8749926439270ea1f235ebfdd9d15dd04f6a405188c0384eaf50",
+            "training_suite_sha256": "665df78b5fd928cf4a4c3ee996eb4f8cf72fdf5912dd62fd613fc4036ce27b4c",
+            "type": "neural",
+            "updates": 0
+          },
+          "policy_seed": 1000
+        },
+        "engine": "original",
+        "observation_version": "ironclad-starter-combat-v1",
+        "prefix_version": "neow-maxhp-or-gold-leftmost-settled-v2",
+        "reset": "owned_jvm_restart_then_seeded_start",
+        "scope": "first_combat",
+        "source_revision": "70b08b058a59d9adcee870b0868b8a2fe281d4a7",
+        "source_status": " M docs/state.md\n",
+        "status": "completed"
+      },
+      "reset_comparison": {
+        "all_initial_states_equal": true,
+        "comparisons": [
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              1
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              2
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              2
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 1
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 1
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              4,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 1
+          },
+          {
+            "differences": [],
+            "episodes": [
+              4,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              4,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              5,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              5,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              6,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          }
+        ],
+        "eligible_episodes": 8,
+        "initial_state_hashes": [
+          "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4"
+        ],
+        "scope": "Public state equality; does not establish hidden-state equivalence"
+      },
+      "valid": true,
+      "verification_scope": "Recorded protocol, terminal, and manifest consistency"
+    },
+    {
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011",
+      "episodes": [
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 80,
+          "episode": 0,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0000/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0000/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0000/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0000/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0000/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 3,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 66,
+          "episode": 1,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0001/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0001/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0001/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0001/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0001/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 5,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 76,
+          "episode": 2,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0002/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0002/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0002/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0002/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0002/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 4,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 78,
+          "episode": 3,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0003/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0003/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0003/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0003/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0003/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 4,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 77,
+          "episode": 4,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0004/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0004/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0004/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0004/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0004/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 5,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 53,
+          "episode": 5,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0005/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0005/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0005/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0005/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0005/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 10,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 80,
+          "episode": 6,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0006/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0006/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0006/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0006/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0006/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 3,
+          "valid": true
+        },
+        {
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "ending_hp": 72,
+          "episode": 7,
+          "evidence": {
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0007/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0007/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0007/game.log",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0007/result.json",
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/episode-0007/trace.jsonl"
+          },
+          "issues": [],
+          "starting_hp": 80,
+          "status": "won",
+          "turns": 3,
+          "valid": true
+        }
+      ],
+      "evidence": {
+        "environment.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/environment.json",
+        "manifest.json": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/manifest.json",
+        "source.patch": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-trained-eval-v2-20261011/source.patch"
+      },
+      "issues": [],
+      "metrics": {
+        "attempts": 8,
+        "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+        "infrastructure_failures": 0,
+        "interrupted": 0,
+        "invalid_actions": 0,
+        "invalid_evidence": 0,
+        "losses": 0,
+        "mean_combat_seconds": 17.62519957387576,
+        "mean_elapsed_seconds": 31.765275165126695,
+        "mean_ending_hp": 72.75,
+        "mean_net_hp_lost": 7.25,
+        "mean_reset_seconds": 14.140071716376042,
+        "mean_starting_hp": 80,
+        "mean_turns": 4.625,
+        "truncated": 0,
+        "unsupported": 0,
+        "valid_evidence_episodes": 8,
+        "valid_gameplay_episodes": 8,
+        "validated_transitions": 100,
+        "win_rate": 1.0,
+        "wins": 8
+      },
+      "provenance": {
+        "config": {
+          "bridge_timeout": 45,
+          "episode_timeout": 180,
+          "episodes": 8,
+          "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "game_seed": "SPIREAI1",
+          "max_actions": 500,
+          "policy": "neural",
+          "policy_artifact": {
+            "behavior_version": "ppo-update-2",
+            "consumed_transitions": 92,
+            "encoder_version": "starter-set-scorer-v1",
+            "learner_version": "complete-episode-ppo-v1",
+            "model_sha256": "0aef9e7e0bebaab135f2621d42d743606cb9c6d129c37c1aed9c0e2fb540d52b",
+            "name": "neural",
+            "path": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-seed0-20261011/artifacts/policy-0002-0aef9e7e0bebaab135f2621d42d743606cb9c6d129c37c1aed9c0e2fb540d52b.pt",
+            "randomly_initialized": false,
+            "record_path": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-seed0-20261011/artifacts/policy-0002-0aef9e7e0bebaab135f2621d42d743606cb9c6d129c37c1aed9c0e2fb540d52b.json",
+            "record_sha256": "b215d5367cfe5c79b9c667f2dc7c208282672c2ec5880895c1a860d7e0ec87fc",
+            "reward_version": "combat-terminal-health-v1",
+            "sampling": "stochastic_per_episode_seed",
+            "sha256": "e9a759540cc85eca09e2ec17f77330a0f53bc66c96d89637a470d1a38987c84c",
+            "snapshot_path": "frozen-artifact/policy-0002-0aef9e7e0bebaab135f2621d42d743606cb9c6d129c37c1aed9c0e2fb540d52b.pt",
+            "source_revision": "741d96aafd176da201105f06f4527ce9126392e7",
+            "training_checkpoint_sha256": "32ef46cb8a39848ab4e486ca4a7cf4d2a92f56fd7561d217072d4d3e9897f268",
+            "training_suite_sha256": "665df78b5fd928cf4a4c3ee996eb4f8cf72fdf5912dd62fd613fc4036ce27b4c",
+            "type": "neural",
+            "updates": 2
+          },
+          "policy_seed": 1000
+        },
+        "engine": "original",
+        "observation_version": "ironclad-starter-combat-v1",
+        "prefix_version": "neow-maxhp-or-gold-leftmost-settled-v2",
+        "reset": "owned_jvm_restart_then_seeded_start",
+        "scope": "first_combat",
+        "source_revision": "acb1bd3e0086153e87fe999dc4d64ea899bbc3da",
+        "source_status": "",
+        "status": "completed"
+      },
+      "reset_comparison": {
+        "all_initial_states_equal": true,
+        "comparisons": [
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              1
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              2
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              0,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              2
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 1
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              1,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              2,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 1
+          },
+          {
+            "differences": [],
+            "episodes": [
+              3,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              4,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 1
+          },
+          {
+            "differences": [],
+            "episodes": [
+              4,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              4,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              5,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              5,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          },
+          {
+            "differences": [],
+            "episodes": [
+              6,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_action_states_equal": true,
+            "shared_combat_actions": 0
+          }
+        ],
+        "eligible_episodes": 8,
+        "initial_state_hashes": [
+          "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4"
+        ],
+        "scope": "Public state equality; does not establish hidden-state equivalence"
+      },
+      "valid": true,
+      "verification_scope": "Recorded protocol, terminal, and manifest consistency"
+    }
+  ],
+  "same_protocol": true,
+  "schema_version": 1,
+  "scope": "Recorded original-engine combat attempts; no generalization claim",
+  "valid": true
+}

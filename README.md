@@ -2,8 +2,8 @@
 
 An original-engine interface and reproducible learning experiments for Slay the Spire 1.
 Original-engine wins, losses, seeded restarts, and eight-attempt random/heuristic
-baselines are verified. A real PPO pilot verified weight updates and interruption recovery. Frozen policy
-evaluation is in progress; no gameplay improvement is established yet.
+baselines are verified. A real PPO pilot verified weight updates and interruption recovery. Initial and
+trained policies tied in frozen evaluation; no gameplay improvement is established.
 Start with [current state](docs/state.md) and the [operating guide](SLAY_THE_SPIRE_AGENT_GUIDE.md).
 
 ## Development
@@ -25,7 +25,7 @@ The Windows game and Workshop mod jars stay outside Git. Local run evidence goes
 
 Ironclad, Ascension 0, combat first. Policy inputs must contain only player-visible
 information. Infrastructure failures and interrupted episodes are separate from game losses.
-The initial adapter will start seeded games from the main menu; arbitrary combat snapshots
+The adapter starts seeded games from the main menu; arbitrary combat snapshots
 are not yet supported.
 
 ## Verified original-engine loop
@@ -64,9 +64,21 @@ eight policy attempts. It is a learning diagnostic, not a held-out generalizatio
 A changed starting state stops the evaluation. The report reconstructs decisions and
 terminal outcomes from saved evidence rather than trusting reported scores.
 
-The canonical baseline has eight wins for each policy: random mean terminal HP68
-(range50–80), heuristic HP77 throughout. See the
-[audited comparison](docs/results/baselines-development-v1.json).
+The frozen diagnostic results are:
+
+| Policy | Wins | Mean final HP |
+| --- | ---: | ---: |
+| Uniform random | 8/8 | 68.00 |
+| Starter heuristic | 8/8 | 77.00 |
+| Initial neural policy | 8/8 | 72.75 |
+| Neural policy after two PPO updates | 8/8 | 72.75 |
+
+Initial and trained neural policies selected identical actions across these eight
+sampling seeds despite changed probabilities. This pilot validates the learning
+loop, not policy improvement. All attempts use one game scenario. See the
+[audited comparison](docs/results/ppo-pilot-development-v1.json) and
+[paired traces](docs/results/ppo-pilot-paired-evaluation.json). An earlier partial
+trained evaluation failed at relay startup and remains separately recorded.
 
 ## Budgeted learning
 

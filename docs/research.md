@@ -145,3 +145,24 @@ evaluation uses all eight original sampling seeds after 50 socket round trips an
 305 passing tests. Preserve the original six attempts (five games plus startup
 failure) alongside the rerun; do not pool repeated games as independent samples.
 The larger training trial remains gated on completing this frozen comparison.
+
+## Accepted pilot outcome
+
+The repaired full trained evaluation at `acb1bd3` completed all eight attempts,
+with no infrastructure failure or invalid action. Initial and trained artifacts
+both won 8/8 and ended at HP [80,66,76,78,77,53,80,72], mean72.75. All 100 paired
+actions and their public transitions matched exactly (`compare_resets` over the
+independently audited corresponding episodes); ending-health differences were zero.
+The fixed transport port preserved the normalized game behavior in these traces.
+
+Random baseline mean HP68 and heuristic HP77 use the same declared protocol and
+suite. The initialized network's higher point estimate than uniform random is not
+evidence of training, and the two-update policy shows no improvement over its own
+initial control. Every frozen snapshot hash matches the expected exported artifact.
+[Comparison](results/ppo-pilot-development-v1.json) and
+[paired evidence](results/ppo-pilot-paired-evaluation.json) are generated from traces.
+
+The computational pilot is accepted: actual actor/probability changes, finite PPO,
+audited behavior data, interruption/resume, and frozen evaluation all work. The
+next declared budget increase can now run. The heuristic remains the strongest
+measured policy on this fixed diagnostic; no generalization result exists.

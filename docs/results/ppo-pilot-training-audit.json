@@ -396,7 +396,7 @@
   "reproduction_command": "uv run --extra train python scripts/audit_training.py runs/ppo-pilot-seed0-20261011 /tmp/ppo-training-audit.json",
   "run": "/home/niv/repos/slay_the_spire_ai/runs/ppo-pilot-seed0-20261011",
   "schema_version": 1,
-  "scope": "Original-engine computational learning/resume pilot; eight-attempt initial eval complete, trained evaluation incomplete after relay startup failure.",
+  "scope": "Original-engine computational learning/resume pilot; initial and repaired full trained evaluations both completed. Neither demonstrates gameplay improvement.",
   "source_revision": "741d96aafd176da201105f06f4527ce9126392e7",
   "status": "completed",
   "supplemental": {

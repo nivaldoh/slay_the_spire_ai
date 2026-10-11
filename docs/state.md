@@ -2,37 +2,39 @@
 
 Updated 2026-10-11, during the authorized unattended bootstrap session.
 
-## Active jobs (last verified 06:15 UTC)
+## Active jobs (last verified 06:21 UTC)
 
-No game is live. Frozen evaluation session `99330` finished: initial evaluation
-succeeded (8/8 wins, HP [80,66,76,78,77,53,80,72], mean72.75); trained evaluation
-failed before any game action in episode5. The first five outcomes matched initial.
-The incomplete trained suite is invalid and remains preserved at
-`runs/ppo-pilot-trained-eval-20261011`; never present its partial mean as a full-suite
-comparison. See [failure audit](results/relay-startup-failure-audit.json).
+Repaired trained evaluation session `61555` finished exit0. No game currently runs.
+Next command, already preregistered in [research.md](research.md):
 
-The relay tried port53899, inside Windows' excluded TCP range53849–53948. Native
-Windows bind returned WinError10013. Fixed loopback19876 passed 50 Windows↔WSL
-round trips; the runner now uses that port and supports ordinary TCP address reuse.
-It still accepts one relay session and never reconnects to a partially played game.
-Every new episode records the deployed address and its appended relay stderr.
-Source `637ae98` passes 305 tests (one optional Windows probe skipped) and Ruff.
+```bash
+uv run --extra train python -m spire train --suite configs/suites/louse_diagnostic_development_v1.json --output runs/ppo-budget64-seed0-20261011 --episodes 64 --batch-steps 64 --updates 16 --time-budget 3000 --seed 0
+```
 
-Next launch: repeat the complete trained-artifact eight-attempt evaluation in
-`runs/ppo-pilot-trained-eval-v2-20261011`, preserving all failed earlier attempts.
-Do not edit source/configuration/dependencies during collection. After completion,
-audit and compare the full four-policy results; launch the predeclared 64-attempt,
-16-update, 3,000-second trial only after this computational pilot is accepted.
+The trial starts from the same seed-0 initialization with a new explicit budget;
+it does not extend the completed pilot. Expected collection is roughly 34 minutes
+at the measured 31.99 seconds/episode; hard limit 50 minutes. Evaluate the final
+export on the same eight-attempt suite afterward. Do not edit tracked source,
+configuration or dependencies while a live training/evaluation batch owns them.
+An independent agent is implementing scenario catalogs in an isolated worktree;
+no broader encounters are admitted until original-engine inventory/replays exist.
 
-The training pilot session `86421` finished exit0. It used 8 attempts, 7 completed
-combats, 2 PPO updates, and 92 transitions in 310.94 seconds including interruption
-and recovery. All 3,201 actor parameters changed. The reusable verifier passes all
-32 checks, including unique ingestion, interrupted data exclusion, source and suite
-provenance, pending-batch accounting, unchanged deadline, and actual exported tensor
-ancestry. Reproduce with `uv run --extra train python scripts/audit_training.py
-runs/ppo-pilot-seed0-20261011 /tmp/ppo-audit.json`. The
-[training audit](results/ppo-pilot-training-audit.json) includes exact artifact hashes.
-Do not resume the completed pilot to extend its declared budget.
+The accepted pilot used 8 attempts (7 completed and 1 intentional interruption),
+2 PPO updates, and 92 audited transitions. All 3,201 actor parameters changed, and
+all 32 reusable verifier checks pass. Its fixed-port frozen evaluation now completed
+8/8 wins with mean HP72.75, exactly equal to the initial policy. Every one of 100
+paired commands and public transitions matched. This verifies the learning loop;
+it provides no gameplay improvement. The heuristic remains best at mean HP77.
+See [comparison](results/ppo-pilot-development-v1.json),
+[paired traces](results/ppo-pilot-paired-evaluation.json), and
+[training audit](results/ppo-pilot-training-audit.json).
+
+The first trained evaluation remains invalid after 5 games plus 1 startup failure.
+Its random port 53899 was inside Windows' excluded range 53849–53948. Fixed
+loopback 19876 passed 50 socket round trips and now 8 full game episodes. Each episode
+records its deployed address and appended relay stderr. No reconnection or hidden
+gameplay retry was added. All earlier artifacts are preserved; see
+[failure audit](results/relay-startup-failure-audit.json).
 
 ## Current evidence
 
@@ -40,7 +42,8 @@ Milestone A is verified: recorded wins and losses, automatic seeded restarts,
 matching fixed-action replays, independent trace audits, and process-tree cleanup.
 Milestone B is verified for the narrow fixed-encounter diagnostic: declared start
 state, engine mechanics fixtures, repeated resets, measured throughput, and matched
-baselines. Real training/resume is verified; Milestone C awaits frozen development evaluation; D–F remain
+baselines. Milestone C is verified as a computational learning loop on this fixed diagnostic,
+including frozen development evaluation; policy improvement is unproven. D–F remain
 incomplete. The computational neural pilot is complete; no GPU job has run.
 
 `runs/first-random-v2-20261011/manifest.json` records source `deba4b7`, the configuration,
@@ -148,10 +151,10 @@ that natural-language deadline.
 
 ## Next useful actions
 
-1. Run and audit the repaired full trained-policy evaluation, then generate the
-   four-policy comparison with full protocol checks.
-2. Launch the predeclared larger trial after pilot acceptance; keep the exact
-   final export for the same frozen development evaluation.
+1. Launch and monitor the predeclared larger trial; inspect actual process
+   ownership and metrics before resuming or starting anything else.
+2. Audit its stopped checkpoint with `scripts/audit_training.py`, then evaluate
+   the exact final export on the unchanged suite. Report negative results honestly.
 3. Choose a larger training budget from results, or fix any observed data-flow issue.
 4. Investigate faster engine resets independently; adopting them requires a new
    versioned protocol and demonstrated replay equivalence. Do not alter this pilot.
