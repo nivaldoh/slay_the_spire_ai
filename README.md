@@ -1,8 +1,9 @@
 # Slay the Spire AI
 
 An original-engine interface and reproducible learning experiments for Slay the Spire 1.
-Two original-engine combat episodes and automatic seeded restarts are verified.
-No learned-policy result is established yet.
+Original-engine wins, losses, seeded restarts, and eight-attempt random/heuristic
+baselines are verified. Resumable PPO is implemented; no learned-policy result is
+established yet.
 Start with [current state](docs/state.md) and the [operating guide](SLAY_THE_SPIRE_AGENT_GUIDE.md).
 
 ## Development
@@ -63,6 +64,25 @@ eight policy attempts. It is a learning diagnostic, not a held-out generalizatio
 A changed starting state stops the evaluation. The report reconstructs decisions and
 terminal outcomes from saved evidence rather than trusting reported scores.
 
-Optional learner dependencies use `uv sync --locked --extra train`; run learner tests
-with `uv run --extra train pytest`. The first learner is being implemented; the `train`
-CLI and engine-trained artifacts are not available yet.
+The canonical baseline has eight wins for each policy: random mean terminal HP68
+(range50–80), heuristic HP77 throughout. See the
+[audited comparison](docs/results/baselines-development-v1.json).
+
+## Budgeted learning
+
+The optional learner is a 12,498-parameter CPU actor-critic with masked PPO.
+Install it with `uv sync --locked --extra train`; test with
+`uv run --extra train pytest`.
+
+```bash
+uv run --extra train python -m spire train --suite configs/suites/louse_diagnostic_development_v1.json --output runs/ppo-example --episodes 8 --batch-steps 64 --updates 2 --time-budget 900 --seed 0
+uv run --extra train python -m spire train --resume --output runs/ppo-example
+uv run --extra train python -m spire evaluate --checkpoint <exported-policy.json> --suite configs/suites/louse_diagnostic_development_v1.json --output runs/ppo-evaluation
+```
+
+Resume preserves the original absolute deadline, optimizer, RNGs, and consumed
+episode identities. Interrupted combat is recorded and excluded from training;
+the next attempt starts a fresh game. `training.json` identifies immutable initial
+and current policy artifacts for frozen evaluation. See [learning details](docs/learning.md)
+and the [pilot contract](docs/research.md). These commands are implemented and unit
+tested; original-engine learning and interruption recovery are being validated.

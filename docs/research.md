@@ -2,9 +2,10 @@
 
 ## Current question
 
-Can we repeatedly start the same Ironclad Ascension 0 game, enter its first combat,
-execute state-bound legal actions, record the engine outcome, and restart automatically?
-This is infrastructure validation, not a policy-performance claim.
+Can a small randomly initialized masked PPO policy improve terminal health over uniform
+random play on the verified fixed two-Louse combat? The immediate pilot tests correct
+weight updates, original-engine collection, interruption/resume, and frozen evaluation.
+It does not test unseen encounters or independent game seeds.
 
 ## Initial scope
 
@@ -16,9 +17,9 @@ This is infrastructure validation, not a policy-performance claim.
 - Record terminal gameplay outcomes separately from limits and bridge failures.
 - Preserve every attempt and attribute observations/actions to a unique decision state.
 
-No training or final evaluation suite is established yet. Do not interpret debugging seeds
-as a held-out benchmark. Milestone B requires a declared start distribution, mechanic
-coverage, repeat-reset evidence, measured throughput, and baseline results.
+The fixed development suite supports the initial training diagnostic. No held-out final
+evaluation suite is established yet. Milestone B evidence for this narrow case now
+includes the declared start, mechanic coverage, repeat resets, throughput, and baselines.
 
 ## Bootstrap findings, 2026-10-11
 
@@ -59,3 +60,33 @@ combat-start hash. The engine's seeded Neow path chooses four options from seed-
 reward categories rather than profile eligibility. Profile unlock progress was 817
 before, between, and after these two losses; continue recording it rather than treating
 that observation as an invariant for all runs.
+
+## First original-engine learning pilot contract
+
+Planned run: `runs/ppo-pilot-seed0-20261011`. Source is frozen at the integrated training
+revision before launch. Initialization seed 0; CPU set encoder/candidate scorer, 12,498
+parameters; PPO defaults documented in [learning.md](learning.md). Collect complete
+episodes only, update after at least 64 transitions, with ceilings of 8 attempts,
+2 updates, and 900 seconds from the original start (resuming does not replenish time).
+The deliberate interruption during a later attempt counts against the attempt budget.
+
+Baseline evidence is the completed eight-attempt suite for random and heuristic under
+`louse-diagnostic-development-v1`: both 8/8 wins, random mean final HP68 (range50–80),
+heuristic HP77 in every episode. No rejected actions or infrastructure failures. The
+random suite yielded 115 validated transitions in 270.58 episode-seconds; heuristic 168
+in306.35 seconds. These repetitions share one game scenario; the random outcome range
+is policy sampling variation, and repeated heuristic outputs do not add independent
+scenario coverage. Canonical evaluation uses eight fixed policy seeds starting at 1000.
+
+Pilot acceptance requires: audited engine transitions matched to logged behavior
+probabilities and candidate identities; nonzero actor-weight changes and finite
+optimization; completed evidence preserved across intentional interruption; no repeated
+transition ingestion; original absolute deadline preserved; and evaluation loading the
+exact frozen exported artifact. Save/evaluate the initial artifact as well as the trained
+one. An unchanged or worse gameplay score remains a valid computational pilot, but no
+policy improvement will be claimed from it. A metadata, resume, or optimizer failure
+invalidates the affected experiment and must be repaired before extending training.
+
+The initial result will decide whether to increase the budget or fix a measured data-flow
+or learning problem. It will not select on a held-out final test. Broader mechanics and
+encounter generalization remain separate later experiments.

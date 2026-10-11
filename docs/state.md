@@ -2,36 +2,28 @@
 
 Updated 2026-10-11, during the authorized unattended bootstrap session.
 
-## Active jobs (last verified 05:37 UTC)
+## Active jobs (last verified 05:52 UTC)
 
-One sequential baseline job is live in tool session `58891`, WSL shell PID `283480`.
-The random evaluator Python PID was `283524`; inspect current ownership with
-`pgrep -af 'python3 -m spire evaluate'` before sending signals. It runs random 8 episodes
-then heuristic 8 episodes, on the frozen development suite. Each episode has a 180-second
-hard Windows watchdog and a 500-action cap. Stop the current Python controller with
-`kill -INT <verified PID>`; it records interruption and closes its owned Windows job.
-The second evaluator is queued in the same shell, so stopping the first with a nonzero
-exit prevents the second from launching.
+Baseline session `58891` finished successfully. No game job is currently live.
+The next job is the original-engine PPO pilot `runs/ppo-pilot-seed0-20261011`:
+8 total attempts, 2 optimizer updates, 64-transition batches, 900 seconds from the
+original start, initialization seed 0. One later attempt will be intentionally
+interrupted, preserved, and excluded from training to test recovery. Resume must
+retain the original deadline. Inspect live ownership before sending any signal;
+never restart a job solely because this document is stale.
 
-Evidence directories: `runs/baseline-random-settled-20261011` and
-`runs/baseline-heuristic-settled-20261011`. Last inspection: two random wins (HP75/66),
-third attempt live. Re-poll the actual tool session/process; do not restart based on
-an old manifest alone. **Do not change source/configuration/dependency files or merge
-code while this batch is live**: source fingerprints intentionally stop a changed run.
-Documentation edits are safe.
-
-Parallel implementation lives in isolated worktrees. Learner commit `976cc23` on
-`feature/learning` is ready to cherry-pick after baseline completion; it provides a
-12,498-parameter CPU network and PPO with 22 passing correctness tests. Training
-orchestration is still being implemented on `feature/training` in `/tmp/spire-training`.
-These are unmerged and no weight training against the engine is claimed.
+**Do not edit source/configuration/dependency files or merge code during a live
+batch**: source fingerprints intentionally stop a changed run. Documentation edits
+are safe. Independent agents use isolated worktrees.
 
 ## Current evidence
 
 Milestone A is verified: recorded wins and losses, automatic seeded restarts,
 matching fixed-action replays, independent trace audits, and process-tree cleanup.
-Milestone B baseline evaluation is running. Milestones B–F remain incomplete; no
-neural training or GPU job has run.
+Milestone B is verified for the narrow fixed-encounter diagnostic: declared start
+state, engine mechanics fixtures, repeated resets, measured throughput, and matched
+baselines. Milestone C awaits real training/resume and frozen evaluation; D–F remain
+incomplete. No neural training or GPU job has run yet.
 
 `runs/first-random-v2-20261011/manifest.json` records source `deba4b7`, the configuration,
 environment, and two random-policy episodes on `SPIREAI1`, Ironclad, Ascension 0.
@@ -69,6 +61,16 @@ Compact committed audits: [bootstrap](results/bootstrap-audit.json) and
 [loss/restart](results/loss-restart-audit.json). Mechanics fixtures cover 11 observed
 starter-card/Louse transitions, with trace hashes and [coverage limits](mechanics.md).
 
+## Canonical baseline results
+
+Both frozen evaluations completed without invalid actions or infrastructure failures.
+Random: 8/8 wins, terminal HP [75, 66, 50, 69, 71, 60, 73, 80], mean68, 115 audited
+transitions, 270.58 total episode-seconds (33.82 seconds/episode). Heuristic: 8/8 wins,
+HP77 throughout, 168 transitions, 306.35 seconds (38.29 seconds/episode). Mean JVM
+reset/start time was 14.56 seconds for random and 14.34 for heuristic. Timing includes
+process cleanup. These repeat one scenario; stochastic sampling varies but no unseen
+encounter or game-seed performance is claimed. See [comparison](results/baselines-development-v1.json).
+
 ## Completed attempts
 
 - `runs/bootstrap-probe/`: Windows launch, relay handshake, main-menu observation,
@@ -83,6 +85,8 @@ starter-card/Louse transitions, with trace hashes and [coverage limits](mechanic
   leaves state unchanged. Probe source and observations preserved locally.
 - `runs/heuristic-settled-20261011/`: two matching corrected replays, HP77, 6 turns.
 - `runs/loss-restart-probe-20261011/`: two verified deaths and identical subsequent start.
+- `runs/baseline-random-settled-20261011/`: eight canonical random attempts, audit valid.
+- `runs/baseline-heuristic-settled-20261011/`: eight canonical heuristic attempts, audit valid.
 
 Raw trajectories and game logs are local ignored artifacts. Selected compact audit
 results will be published in `docs/`; proprietary jars, saves, and assets stay out of Git.
@@ -126,19 +130,19 @@ that natural-language deadline.
 
 ## Next useful actions
 
-1. Poll the live baseline session `58891` and audit both completed evaluations. This
-   establishes matched baseline numbers for Milestone B's fixed-encounter diagnostic.
-2. Cherry-pick learner `976cc23` only after collection completes; integrate and test
-   training orchestration when its agent returns. Keep complete episode batches tied
-   to one frozen behavior policy. Add frozen-artifact evaluation support.
-3. Run a bounded first neural pilot, verify actual actor updates, save optimizer/RNG/
-   budget state, test resume, and evaluate the exact saved artifact against baselines.
-4. Expand beyond one encounter only after this learning loop is verified. Current
-   development repetitions are one fixed scenario, not held-out seed generalization.
+1. Run the bounded neural pilot, deliberately interrupt after a completed episode,
+   verify preserved evidence and resume under the same deadline. Compare initial
+   and updated actor tensors, check finite updates and unique consumed transitions.
+2. Evaluate both exact exported artifacts on the unchanged eight-attempt suite;
+   compare against the completed random/heuristic baselines, with narrow scope.
+3. Choose a larger training budget from results, or fix any observed data-flow issue.
+4. Investigate faster engine resets independently; adopting them requires a new
+   versioned protocol and demonstrated replay equivalence. Do not alter this pilot.
 
 Current limitations: starter cards only, no potion actions or noncombat policy,
 Neow prefixes outside max HP/100 gold unsupported, no arbitrary snapshots, no live
-combat resume, and no engine-trained policy yet. Root tests: 173 pass, one optional
-Windows process probe skipped by default; that probe was independently run and passed.
-Use `uv run --extra train pytest` when testing learner code. The same locked environment
-has optional PyTorch 2.13.0 CPU installed; baseline collection needs only the core stdlib.
+combat resume, and no engine-trained policy yet. Root checks at `698db0d`: 232 tests
+passed, one optional Windows process probe skipped by default; that probe was
+independently run and passed. Ruff is clean. Use `uv run --extra train pytest` for
+learner coverage. Optional PyTorch 2.13.0 CPU is locked and installed; tiny-network
+training is deliberately CPU because original-engine collection dominates runtime.

@@ -1,0 +1,1028 @@
+{
+  "schema_version": 1,
+  "valid": true,
+  "same_protocol": true,
+  "scope": "Recorded original-engine combat attempts; no generalization claim",
+  "runs": [
+    {
+      "valid": true,
+      "issues": [],
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011",
+      "verification_scope": "Recorded protocol, terminal, and manifest consistency",
+      "metrics": {
+        "attempts": 8,
+        "valid_evidence_episodes": 8,
+        "valid_gameplay_episodes": 8,
+        "wins": 8,
+        "losses": 0,
+        "infrastructure_failures": 0,
+        "unsupported": 0,
+        "invalid_actions": 0,
+        "truncated": 0,
+        "interrupted": 0,
+        "invalid_evidence": 0,
+        "win_rate": 1.0,
+        "validated_transitions": 115,
+        "mean_starting_hp": 80,
+        "mean_ending_hp": 68,
+        "mean_net_hp_lost": 12,
+        "mean_turns": 5.125,
+        "mean_reset_seconds": 14.555449321251217,
+        "mean_combat_seconds": 19.267203732749294,
+        "mean_elapsed_seconds": 33.822658185250475,
+        "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing"
+      },
+      "reset_comparison": {
+        "eligible_episodes": 8,
+        "initial_state_hashes": [
+          "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4"
+        ],
+        "all_initial_states_equal": true,
+        "comparisons": [
+          {
+            "episodes": [
+              0,
+              1
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              0,
+              2
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              0,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              0,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 1,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              0,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              0,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              0,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              1,
+              2
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              1,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              1,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              1,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              1,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              1,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 1,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              2,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              2,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              2,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              2,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              2,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              3,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              3,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 1,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              3,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              3,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              4,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              4,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              4,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              5,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              5,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              6,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          }
+        ],
+        "scope": "Public state equality; does not establish hidden-state equivalence"
+      },
+      "evidence": {
+        "manifest.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/manifest.json",
+        "environment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/environment.json",
+        "source.patch": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/source.patch"
+      },
+      "provenance": {
+        "source_revision": "4b5506360bb0a820ac519a00b573d70bc8c8f7d3",
+        "source_status": "?? docs/results/loss-restart-audit.json\n",
+        "config": {
+          "bridge_timeout": 45,
+          "episode_timeout": 180,
+          "episodes": 8,
+          "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "game_seed": "SPIREAI1",
+          "max_actions": 500,
+          "policy": "random",
+          "policy_seed": 1000
+        },
+        "engine": "original",
+        "scope": "first_combat",
+        "observation_version": "ironclad-starter-combat-v1",
+        "prefix_version": "neow-maxhp-or-gold-leftmost-settled-v2",
+        "reset": "owned_jvm_restart_then_seeded_start",
+        "status": "completed"
+      },
+      "episodes": [
+        {
+          "episode": 0,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 75,
+          "turns": 5,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0000/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0000/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0000/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0000/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0000/game.log"
+          }
+        },
+        {
+          "episode": 1,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 66,
+          "turns": 6,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0001/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0001/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0001/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0001/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0001/game.log"
+          }
+        },
+        {
+          "episode": 2,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 50,
+          "turns": 6,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0002/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0002/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0002/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0002/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0002/game.log"
+          }
+        },
+        {
+          "episode": 3,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 69,
+          "turns": 3,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0003/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0003/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0003/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0003/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0003/game.log"
+          }
+        },
+        {
+          "episode": 4,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 71,
+          "turns": 5,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0004/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0004/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0004/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0004/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0004/game.log"
+          }
+        },
+        {
+          "episode": 5,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 60,
+          "turns": 6,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0005/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0005/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0005/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0005/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0005/game.log"
+          }
+        },
+        {
+          "episode": 6,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 73,
+          "turns": 4,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0006/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0006/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0006/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0006/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0006/game.log"
+          }
+        },
+        {
+          "episode": 7,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 80,
+          "turns": 6,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0007/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0007/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0007/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0007/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-random-settled-20261011/episode-0007/game.log"
+          }
+        }
+      ]
+    },
+    {
+      "valid": true,
+      "issues": [],
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011",
+      "verification_scope": "Recorded protocol, terminal, and manifest consistency",
+      "metrics": {
+        "attempts": 8,
+        "valid_evidence_episodes": 8,
+        "valid_gameplay_episodes": 8,
+        "wins": 8,
+        "losses": 0,
+        "infrastructure_failures": 0,
+        "unsupported": 0,
+        "invalid_actions": 0,
+        "truncated": 0,
+        "interrupted": 0,
+        "invalid_evidence": 0,
+        "win_rate": 1.0,
+        "validated_transitions": 168,
+        "mean_starting_hp": 80,
+        "mean_ending_hp": 77,
+        "mean_net_hp_lost": 3,
+        "mean_turns": 6,
+        "mean_reset_seconds": 14.342468319501677,
+        "mean_combat_seconds": 23.950927353250336,
+        "mean_elapsed_seconds": 38.293398999499914,
+        "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing"
+      },
+      "reset_comparison": {
+        "eligible_episodes": 8,
+        "initial_state_hashes": [
+          "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4"
+        ],
+        "all_initial_states_equal": true,
+        "comparisons": [
+          {
+            "episodes": [
+              0,
+              1
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              0,
+              2
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              0,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              0,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              0,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              0,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              0,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              1,
+              2
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              1,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              1,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              1,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              1,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              1,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              2,
+              3
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              2,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              2,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              2,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              2,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              3,
+              4
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              3,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              3,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              3,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              4,
+              5
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              4,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              4,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              5,
+              6
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              5,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          },
+          {
+            "episodes": [
+              6,
+              7
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          }
+        ],
+        "scope": "Public state equality; does not establish hidden-state equivalence"
+      },
+      "evidence": {
+        "manifest.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/manifest.json",
+        "environment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/environment.json",
+        "source.patch": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/source.patch"
+      },
+      "provenance": {
+        "source_revision": "7c08a25585b519f7877456e0a692979d1797cb30",
+        "source_status": "",
+        "config": {
+          "bridge_timeout": 45,
+          "episode_timeout": 180,
+          "episodes": 8,
+          "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "game_seed": "SPIREAI1",
+          "max_actions": 500,
+          "policy": "heuristic",
+          "policy_seed": 1000
+        },
+        "engine": "original",
+        "scope": "first_combat",
+        "observation_version": "ironclad-starter-combat-v1",
+        "prefix_version": "neow-maxhp-or-gold-leftmost-settled-v2",
+        "reset": "owned_jvm_restart_then_seeded_start",
+        "status": "completed"
+      },
+      "episodes": [
+        {
+          "episode": 0,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 77,
+          "turns": 6,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0000/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0000/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0000/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0000/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0000/game.log"
+          }
+        },
+        {
+          "episode": 1,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 77,
+          "turns": 6,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0001/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0001/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0001/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0001/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0001/game.log"
+          }
+        },
+        {
+          "episode": 2,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 77,
+          "turns": 6,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0002/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0002/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0002/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0002/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0002/game.log"
+          }
+        },
+        {
+          "episode": 3,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 77,
+          "turns": 6,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0003/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0003/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0003/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0003/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0003/game.log"
+          }
+        },
+        {
+          "episode": 4,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 77,
+          "turns": 6,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0004/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0004/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0004/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0004/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0004/game.log"
+          }
+        },
+        {
+          "episode": 5,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 77,
+          "turns": 6,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0005/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0005/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0005/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0005/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0005/game.log"
+          }
+        },
+        {
+          "episode": 6,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 77,
+          "turns": 6,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0006/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0006/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0006/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0006/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0006/game.log"
+          }
+        },
+        {
+          "episode": 7,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 77,
+          "turns": 6,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0007/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0007/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0007/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0007/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/baseline-heuristic-settled-20261011/episode-0007/game.log"
+          }
+        }
+      ]
+    }
+  ]
+}
