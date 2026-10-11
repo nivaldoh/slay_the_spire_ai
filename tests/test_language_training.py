@@ -177,6 +177,24 @@ def test_reexport_validates_real_audited_public_teacher(tmp_path, run):
         training.verify_dataset(directory)
 
 
+def test_reexport_accepts_heuristic_relabels_of_other_behavior(tmp_path, run):
+    test_demonstrations.non_heuristic_behavior(run)
+    directory = tmp_path / "dataset"
+    export_demonstrations(
+        directory,
+        [DemonstrationSource(run, "train", "heuristic_relabel", "public")],
+        purpose="supervised_finetuning",
+    )
+    examples, _ = training.verify_dataset(directory)
+    assert examples[0]["completion"] == '{"a":0}'
+    assert examples[0]["origin"]["behavior_policy"] == "random"
+    manifest = json.loads((directory / "manifest.json").read_text())
+    manifest["sources"][0]["teacher_information"] = "verified_public_builtin"
+    (directory / "manifest.json").write_text(json.dumps(manifest))
+    with pytest.raises(ValueError, match="public heuristic"):
+        training.verify_dataset(directory)
+
+
 @pytest.mark.parametrize("change", ["smoke", "privileged", "random", "held_out"])
 def test_rejects_ineligible_dataset_declarations_before_loading(tmp_path, run, change):
     directory = tmp_path / "dataset"

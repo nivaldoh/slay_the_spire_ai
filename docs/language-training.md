@@ -20,8 +20,9 @@ weight decay 0.01, default betas/epsilon, and global gradient clipping at 1.
 
 `verify_dataset(path)` reconstructs the demonstration export from its original
 engine evidence using the current exporter. The manifest and every exported file
-must match. Only source-verified public heuristic origins are accepted; smoke,
-random, privileged, test-split and held-out-origin declarations are rejected.
+must match. Only source-verified public heuristic origins or public heuristic
+relabels are accepted; smoke, random, privileged, test-split and held-out-origin
+declarations are rejected.
 Only `train.jsonl` supplies examples. Validation rows, if present, are unused.
 All original source paths must remain available, including catalog parent suite
 evidence. A source's prior purpose and development reuse flag remain recorded;

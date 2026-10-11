@@ -23,8 +23,8 @@ manifest = export_demonstrations(
 ```
 
 The output must be new and outside every source run. `purpose` is explicitly
-`smoke` (only a train split) or `supervised_finetuning`; source split assignments
-are explicit `train`, `validation` or `test`. Validation finishes before output
+`smoke` (only a train split), `supervised_finetuning`, or `offline_evaluation` (only
+a test split); source split assignments are explicit `train`, `validation` or `test`. Validation finishes before output
 creation. A final `manifest.json` marks a completed export; a partial filesystem
 write without this manifest is not a completed dataset.
 
@@ -91,6 +91,20 @@ cannot be described as an independent held-out comparison. Test, final-test and
 held-out evaluation origins cannot supply train or validation examples. Their
 purpose is not inferred from a filename. Input hashes are checked again before
 writing to catch evidence changes during export.
+
+## Heuristic relabeling
+
+Source role `heuristic_relabel` labels every audited public state in a complete run
+with the current `StarterHeuristicPolicy`, whatever policy chose the recorded
+actions: random, neural, heuristic or end-turn. The heuristic reads only the public
+Decision, so the label is exact and needs no game access. The run's recorded
+`protocol.py` must match its Git blob and the current known public implementation.
+Its recorded status may change only documentation or run files, never `src/`,
+`scripts/`, `configs/` or dependency locks. The current `policies.py` and historical
+`protocol.py` bytes are copied into `teacher_sources/`. Origins add
+`behavior_policy` and `behavior_action`; neither enters model text. The training
+loader accepts these sources with `teacher_information="public_builtin_relabel"`.
+See [the relabel experiment](language-relabel-experiment.md).
 
 ## Split boundaries and duplicates
 

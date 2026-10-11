@@ -137,16 +137,19 @@ def verify_dataset(directory: Path) -> tuple[list[dict], dict]:
     _require(manifest.get("purpose") == "supervised_finetuning", "A smoke dataset cannot train")
     sources = manifest["sources"]
     _require(bool(sources), "No demonstration sources")
+    teachers = {
+        "heuristic": "verified_public_builtin",
+        "heuristic_relabel": "public_builtin_relabel",
+    }
     for source in sources:
         _require(
-            source["source_role"] == "heuristic"
-            and source["teacher_information"] == "verified_public_builtin"
+            teachers.get(source["source_role"]) == source["teacher_information"]
             and source["split"] != "test"
             and source["original_purpose"] in {"rollout", "training", "development"},
             "Only public heuristic origins without held-out evidence may train",
         )
     declared = [
-        DemonstrationSource(Path(item["run"]), item["split"], "heuristic", "public")
+        DemonstrationSource(Path(item["run"]), item["split"], item["source_role"], "public")
         for item in sources
     ]
     with tempfile.TemporaryDirectory(prefix="spire-sft-audit-") as temporary:

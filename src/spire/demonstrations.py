@@ -1,7 +1,9 @@
 """Audited public-action demonstrations, with origin-level split boundaries.
 
-Only known builtin public teachers are supported. This exporter neither trains
-nor evaluates a language model, and never generates reasoning targets.
+Only known builtin public teachers are supported. A ``heuristic_relabel`` source
+labels public states visited by any recorded behavior policy with the current public
+heuristic. This exporter neither trains nor evaluates a language model, and never
+generates reasoning targets.
 """
 
 from __future__ import annotations
@@ -34,6 +36,15 @@ PROMPT = (
 )
 SPLITS = ("train", "validation", "test")
 TEACHERS = {"heuristic": StarterHeuristicPolicy, "random": RandomPolicy}
+RELABEL = "heuristic_relabel"
+IMPLEMENTATION_PATHS = (
+    "src/",
+    "scripts/",
+    "configs/",
+    "pyproject.toml",
+    "uv.lock",
+    ".python-version",
+)
 CARD_FIELDS = {
     "id",
     "name",
@@ -276,6 +287,36 @@ def _verify_teacher(manifest: dict, run: Path, role: str) -> dict[str, bytes]:
     return snapshots
 
 
+def _verify_observer(manifest: dict, run: Path) -> dict[str, bytes]:
+    """Relabel sources need committed observation code, not a particular behavior policy."""
+    status = manifest.get("source_status")
+    _require(isinstance(status, str), "Relabel source requires recorded source status")
+    _require(
+        not any(line[3:].startswith(IMPLEMENTATION_PATHS) for line in status.splitlines()),
+        "Relabel source requires committed implementation files",
+    )
+    _require(
+        manifest.get("teacher_information", "public") == "public"
+        and manifest.get("privileged_teacher", False) is False,
+        "Privileged behavior evidence is outside the public relabel contract",
+    )
+    relative = "src/spire/protocol.py"
+    saved = _source_bytes(manifest["source_revision"], relative)
+    _require(
+        manifest.get("source_files", {}).get(relative) == _sha(saved),
+        f"Observation source hash differs from manifest: {relative}",
+    )
+    _require(
+        _known_ast(saved, policies=False)
+        == _known_ast(Path(__file__).with_name("protocol.py").read_bytes(), policies=False),
+        "Unknown public observation implementation",
+    )
+    return {
+        relative: saved,
+        "src/spire/policies.py": Path(__file__).with_name("policies.py").read_bytes(),
+    }
+
+
 def _suite_snapshot(run: Path, manifest: dict, record: dict) -> bytes:
     """Recover frozen suite bytes from evidence or the recorded Git revision."""
     expected = record.get("suite_sha256")
@@ -303,7 +344,9 @@ def _suite_snapshot(run: Path, manifest: dict, record: dict) -> bytes:
     raise EvidenceError("Preserved evaluation suite bytes unavailable or hash differs")
 
 
-def _original_purpose(run: Path, manifest: dict, episodes: list[dict]) -> tuple[str, bytes | None]:
+def _original_purpose(
+    run: Path, manifest: dict, episodes: list[dict], *, builtin_teacher: bool = True
+) -> tuple[str, bytes | None]:
     evaluation = run / "evaluation.json"
     suite_bytes = None
     declared_evaluation = (
@@ -384,11 +427,14 @@ def _original_purpose(run: Path, manifest: dict, episodes: list[dict]) -> tuple[
         )
         artifact = record.get("policy_artifact", {})
         _require(
-            artifact.get("type") == "builtin"
-            and artifact.get("name") == manifest["config"]["policy"]
-            and artifact.get("source_revision") == manifest["source_revision"]
-            and artifact.get("policy_source_sha256")
-            == manifest["source_files"]["src/spire/policies.py"],
+            not builtin_teacher
+            or (
+                artifact.get("type") == "builtin"
+                and artifact.get("name") == manifest["config"]["policy"]
+                and artifact.get("source_revision") == manifest["source_revision"]
+                and artifact.get("policy_source_sha256")
+                == manifest["source_files"]["src/spire/policies.py"]
+            ),
             "Evaluation teacher provenance differs from originating run",
         )
     else:
@@ -440,14 +486,17 @@ def export_demonstrations(
 ) -> dict:
     """Export complete audited origins with explicit, nonrandom split assignments.
 
-    Purpose is ``smoke`` (train split only) or ``supervised_finetuning``. Exact
-    duplicates remain separate rows. Source role is ``heuristic`` or ``random``;
-    each declared public teacher is source-verified and replayed independently.
+    Purpose is ``smoke`` (train split only), ``supervised_finetuning`` or
+    ``offline_evaluation`` (test split only). Exact duplicates remain separate rows.
+    Source role is ``heuristic`` or ``random``, each source-verified and replayed
+    independently, or ``heuristic_relabel``, which labels every audited public state
+    with the current public heuristic regardless of the recorded behavior policy.
     """
     output = Path(output).resolve()
     _require(not output.exists(), "Dataset output already exists")
     _require(
-        purpose in {"smoke", "supervised_finetuning"}, "Explicit supported dataset purpose required"
+        purpose in {"smoke", "supervised_finetuning", "offline_evaluation"},
+        "Explicit supported dataset purpose required",
     )
     _require(bool(sources), "Dataset requires at least one source")
     rows = {split: [] for split in SPLITS}
@@ -474,6 +523,11 @@ def export_demonstrations(
         _require(
             purpose != "smoke" or source.split == "train", "Smoke datasets have one train split"
         )
+        _require(
+            purpose != "offline_evaluation" or source.split == "test",
+            "Offline evaluation datasets have one test split",
+        )
+        relabel = source.source_role == RELABEL
         _require(source.teacher_information == "public", "Privileged teacher sources are rejected")
         run = Path(source.run).resolve()
         _require(not output.is_relative_to(run), "Dataset output must be outside source runs")
@@ -487,8 +541,14 @@ def export_demonstrations(
             and all(item["status"] in ("won", "lost") for item in audited["episodes"]),
             "Only complete originating runs may supply demonstrations",
         )
-        verified = _verify_teacher(manifest, run, source.source_role)
-        original_purpose, suite_bytes = _original_purpose(run, manifest, audited["episodes"])
+        verified = (
+            _verify_observer(manifest, run)
+            if relabel
+            else _verify_teacher(manifest, run, source.source_role)
+        )
+        original_purpose, suite_bytes = _original_purpose(
+            run, manifest, audited["episodes"], builtin_teacher=not relabel
+        )
         if suite_bytes is not None:
             suite_snapshots[_sha(suite_bytes)] = suite_bytes
         _require(
@@ -511,7 +571,10 @@ def export_demonstrations(
                 "run_sha256": run_id,
                 "split": source.split,
                 "source_role": source.source_role,
-                "teacher_information": "verified_public_builtin",
+                "teacher_information": (
+                    "public_builtin_relabel" if relabel else "verified_public_builtin"
+                ),
+                **({"behavior_policy": manifest["config"]["policy"]} if relabel else {}),
                 "original_purpose": original_purpose,
                 "evaluation_suite_sha256": _sha(suite_bytes) if suite_bytes is not None else None,
                 "development_reuse": original_purpose == "development",
@@ -546,9 +609,10 @@ def export_demonstrations(
                     transition["observation"],
                     tuple(Action(**item) for item in transition["candidates"]),
                 )
-                selected = validate_action(decision, transition["action_id"])
+                behavior = validate_action(decision, transition["action_id"])
+                selected = teacher.choose(decision)
                 _require(
-                    teacher.choose(decision) == selected,
+                    relabel or selected == behavior,
                     "Recorded action differs from replayed public teacher",
                 )
                 selected_index = decision.candidates.index(selected)
@@ -580,6 +644,14 @@ def export_demonstrations(
                         "outcome": episode["status"],
                         "ending_hp": episode["ending_hp"],
                         "selected_action": selected.to_dict(),
+                        **(
+                            {
+                                "behavior_policy": manifest["config"]["policy"],
+                                "behavior_action": behavior.to_dict(),
+                            }
+                            if relabel
+                            else {}
+                        ),
                     }
                 )
     _require(any(rows.values()), "No demonstrated public actions")

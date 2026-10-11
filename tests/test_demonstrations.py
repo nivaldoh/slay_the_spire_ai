@@ -475,3 +475,92 @@ def test_policy_failure_origins_never_become_demonstrations(tmp_path, run, after
     assert len(load_transitions(run)) == int(after_action)
     with pytest.raises(EvidenceError, match="Only complete originating runs"):
         demos.export_demonstrations(tmp_path / "dataset", [source(run)], purpose="smoke")
+
+
+def non_heuristic_behavior(run):
+    """Record a legal random-policy choice that differs from the heuristic's choice."""
+    manifest = read(run / "manifest.json")
+    manifest["config"].update(policy="random", policy_seed=7)
+    write(run / "manifest.json", manifest)
+    test_evidence.set_result(run, policy="random", policy_seed=7)
+    events = test_evidence.events(run / "episode-0000")
+    selected = events[5]["decision"]["candidates"][-1]
+    events[5]["selected_action_id"] = selected["id"]
+    events[6].update(action_id=selected["id"], command=selected["command"])
+    events[7]["previous_action_id"] = selected["id"]
+    events[8]["action_id"] = selected["id"]
+    test_evidence.write_events(run / "episode-0000", events)
+    assert audit_run(run)["valid"]
+    return selected
+
+
+def test_relabel_uses_public_heuristic_label_and_keeps_behavior_in_metadata(tmp_path, run):
+    behavior = non_heuristic_behavior(run)
+    result = demos.export_demonstrations(
+        tmp_path / "dataset", [source(run, role=demos.RELABEL)], purpose="supervised_finetuning"
+    )
+    assert result["sources"][0]["teacher_information"] == "public_builtin_relabel"
+    assert result["sources"][0]["behavior_policy"] == "random"
+    assert lines(tmp_path / "dataset" / "train.jsonl")[0]["completion"] == '{"a":0}'
+    origin = lines(tmp_path / "dataset" / "origins.jsonl")[0]
+    assert origin["behavior_policy"] == "random"
+    assert origin["behavior_action"]["id"] == behavior["id"] != origin["selected_action"]["id"]
+    snapshots = {path.read_bytes() for path in (tmp_path / "dataset/teacher_sources").iterdir()}
+    root = Path(__file__).resolve().parents[1]
+    assert (root / "src/spire/policies.py").read_bytes() in snapshots
+
+
+@pytest.mark.parametrize(
+    "status", [" M src/spire/rollout.py\n", "?? scripts/new.py\n", " M uv.lock\n", None]
+)
+def test_relabel_requires_committed_implementation(tmp_path, run, status):
+    manifest = read(run / "manifest.json")
+    manifest["source_status"] = status
+    write(run / "manifest.json", manifest)
+    with pytest.raises(EvidenceError, match="source status|committed implementation"):
+        demos.export_demonstrations(
+            tmp_path / "dataset", [source(run, role=demos.RELABEL)], purpose="smoke"
+        )
+
+
+def test_relabel_allows_documentation_only_changes(tmp_path, run):
+    manifest = read(run / "manifest.json")
+    manifest["source_status"] = " M docs/state.md\n?? docs/results/new.json\n"
+    write(run / "manifest.json", manifest)
+    result = demos.export_demonstrations(
+        tmp_path / "dataset", [source(run, role=demos.RELABEL)], purpose="smoke"
+    )
+    assert result["rows"]["train"] == 1
+
+
+def test_relabel_rejects_unknown_observation_code(tmp_path, run, monkeypatch):
+    original = demos._source_bytes
+    altered = original(read(run / "manifest.json")["source_revision"], "src/spire/protocol.py")
+    altered += b"\nPRIVATE_DRAW_ORDER = True\n"
+    manifest = read(run / "manifest.json")
+    manifest["source_files"]["src/spire/protocol.py"] = hashlib.sha256(altered).hexdigest()
+    write(run / "manifest.json", manifest)
+    monkeypatch.setattr(
+        demos,
+        "_source_bytes",
+        lambda revision, filename: (
+            altered if filename.endswith("protocol.py") else original(revision, filename)
+        ),
+    )
+    with pytest.raises(EvidenceError, match="Unknown public observation implementation"):
+        demos.export_demonstrations(
+            tmp_path / "dataset", [source(run, role=demos.RELABEL)], purpose="smoke"
+        )
+
+
+def test_offline_evaluation_exports_only_a_test_split(tmp_path, run):
+    with pytest.raises(EvidenceError, match="one test split"):
+        demos.export_demonstrations(
+            tmp_path / "train", [source(run, role=demos.RELABEL)], purpose="offline_evaluation"
+        )
+    result = demos.export_demonstrations(
+        tmp_path / "test",
+        [source(run, split="test", role=demos.RELABEL)],
+        purpose="offline_evaluation",
+    )
+    assert result["rows"] == {"train": 0, "validation": 0, "test": 1}
