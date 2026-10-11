@@ -25,9 +25,20 @@ def main() -> int:
     report.add_argument("runs", type=Path, nargs="+")
     report.add_argument("--output", type=Path, help="Write a .json or Markdown report")
     evaluate = commands.add_parser("evaluate", help="Evaluate a fixed baseline on a frozen suite")
-    evaluate.add_argument("--policy", choices=["random", "heuristic"], required=True)
+    artifact = evaluate.add_mutually_exclusive_group(required=True)
+    artifact.add_argument("--policy", choices=["random", "heuristic"])
+    artifact.add_argument("--checkpoint", type=Path, help="Frozen neural policy artifact")
     evaluate.add_argument("--suite", type=Path, required=True)
     evaluate.add_argument("--output", type=Path, required=True)
+    train = commands.add_parser("train", help="Run budgeted, resumable original-engine PPO")
+    train.add_argument("--output", type=Path, required=True)
+    train.add_argument("--resume", action="store_true", help="Resume with the original budget")
+    train.add_argument("--suite", type=Path)
+    train.add_argument("--episodes", type=int)
+    train.add_argument("--batch-steps", type=int)
+    train.add_argument("--updates", type=int)
+    train.add_argument("--time-budget", type=float, help="Total wall budget in seconds")
+    train.add_argument("--seed", type=int)
     args = parser.parse_args()
     if args.command == "doctor":
         from spire.doctor import collect_diagnostics, exit_code, render_diagnostics
@@ -61,10 +72,44 @@ def main() -> int:
     if args.command == "evaluate":
         from spire.evaluation import evaluate
 
-        result = evaluate(args.policy, args.suite, args.output)
+        result = evaluate(
+            args.policy or "neural", args.suite, args.output, checkpoint=args.checkpoint
+        )
         print(json.dumps(result["audit"]["metrics"], indent=2))
         print(f"Evaluation: {args.output.resolve() / 'evaluation.json'}")
         return 0 if result["valid"] else 1
+    if args.command == "train":
+        choices = [
+            args.suite,
+            args.episodes,
+            args.batch_steps,
+            args.updates,
+            args.time_budget,
+            args.seed,
+        ]
+        if args.resume and any(value is not None for value in choices):
+            parser.error("--resume reuses the recorded configuration; omit training overrides")
+        if not args.resume and any(value is None for value in choices[:5]):
+            parser.error(
+                "new training requires --suite, --episodes, --batch-steps, --updates, --time-budget"
+            )
+        from spire.training import train
+
+        config = (
+            None
+            if args.resume
+            else {
+                "suite_path": str(args.suite),
+                "total_episodes": args.episodes,
+                "batch_steps": args.batch_steps,
+                "max_updates": args.updates,
+                "time_budget_seconds": args.time_budget,
+                "seed": args.seed or 0,
+            }
+        )
+        result = train(args.output, config, resume=args.resume)
+        print(json.dumps(result, indent=2))
+        return 0 if result["status"] in {"completed", "budget_exhausted"} else 1
     return 2
 
 
