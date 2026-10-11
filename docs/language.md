@@ -173,3 +173,15 @@ Infrastructure failure, unsupported state or episode truncation still stops the
 run. Reports retain both the win rate among completed games and wins divided by
 completed games plus policy failures. Catalog evaluation is not supported by this
 first language-policy path.
+
+A subsequent read-only inference on one retained public engine decision completed
+from source `3fc7aafb7c9600b7cd8f2e63e30e6aeb93bfe8bd`. It loaded the synthetic
+smoke adapter through the actual PEFT inference path, verified frozen tensors
+before/after generation, and exited without launching a game. Evidence is
+`/tmp/spire-language-smoke/runs/language-inference-20261011-0705/manifest.json`.
+The complete public chat prompt used 715 tokens; the model generated six tokens
+including EOS in 0.70 seconds. Parser input `{"a":0}` selected the exact current
+Defend candidate; raw output `{"a":0}<|im_end|>` and all token IDs were retained.
+Peak CUDA reserved memory was 1,606 MiB; minimum sampled WSL available RAM was
+3,923 MiB. This verifies real adapter loading, formatting and action identity,
+without executing that action or establishing its gameplay quality.
