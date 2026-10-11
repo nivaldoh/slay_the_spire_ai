@@ -45,6 +45,11 @@
   "full_audit_sha256": "788935d760c4b5791477c35ddbf13f4ab626b693eb96d5b22565044c99a0f57a",
   "history_summary": {
     "actual_input_tokens": 177321,
+    "first_training_batch_loss": 0.5777396634221077,
+    "last_training_batch_loss": 1.3127624924891279e-05,
+    "max_training_batch_loss": 0.878682496258989,
+    "min_training_batch_loss": 1.3127624924891279e-05,
+    "scope": "Different shuffled training batches; these losses are not held-out validation.",
     "supervised_tokens": 1536,
     "updates": 64
   },

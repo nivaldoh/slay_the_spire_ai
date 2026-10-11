@@ -2,81 +2,71 @@
 
 Updated 2026-10-11, during the authorized unattended bootstrap session.
 
-## Active work (last verified 07:56 UTC)
+## Active work (last verified 08:15 UTC)
 
-No game or GPU job is active. The two direct-address original-engine controls
-completed at source `f0736a7`; session `42973` exited successfully. Both won at HP77
-in 39.17/38.91 seconds, with all commands and public transitions matching the existing
-heuristic reference exactly. Output: `runs/direct-relay-control-20261011`; see
-[control audit](results/direct-relay-control-20261011.json). Both deployed
-`172.18.34.183:19876`. This satisfies the declared gate for the separate frozen
-SFT evaluation rerun; it does not establish the original failure's exact cause.
+All game and GPU jobs have exited. The frozen SFT v2 evaluation completed at source
+`e829c1c`; tool session `71199` exited successfully and PIDs `337234`/`337233` are gone.
+It won all eight canonical fights at HP77, with 168 audited transitions and no policy,
+context, command or infrastructure failures. Every command and public transition
+exactly matches the public heuristic. Independent CPU audit reconstructed all 168
+prompts and completions and verified dataset, declarations, adapter/checkpoint files,
+base-model files and historical source hashes. The recorded full-model tensor hash
+was not independently recomputed by loading another model.
 
-The previous trained evaluation session `4043` exited with code 1: two wins at
-HP77, then a relay-startup infrastructure failure with zero observations/actions,
-leaving five attempts unrun. The two wins exactly match the teacher's commands and
-public transitions; all three traces audit correctly, but the suite is incomplete.
-Preserved output: `runs/qwen3-0.6b-sft-eval-20261011`, source `a828645`; see
-[incomplete result](results/language-sft-incomplete-development-v1.json). The failed
-Linux accept timed out; Windows relay stderr reports WinError10054. Do not count
-this as a gameplay loss or a completed eight-attempt comparison.
+The controlled unchanged-model baseline had zero completed games and eight policy
+failures; the final LoRA completed eight wins. Decision: keep for this same-scenario
+imitation diagnostic. Training used 42 rows / 21 unique public prompts, directly
+reusing this scenario; eight greedy repeats are correlated, and there is no held-out
+or compute-matched PPO claim. See [controlled result](results/language-sft-development-v1.json)
+and [experiment contract](language-experiment.md). Mean measured inference/total time
+was 8.266/46.595 seconds per fight on the shared workstation.
 
-Direct WSL guest-address transport is integrated after 40 bounded
-socket probes succeeded (loopback/direct NAT, disposable/fixed 19876 ports). The exact
-intermittent localhost failure was not reproduced; direct routing is a mitigation,
-not a proven causal diagnosis. Five additional exchanges using the real relay script
-passed, as did 106 focused integrated tests (one optional Windows test skipped),
-Ruff and independent review. Before any model evaluation rerun, the
-[declared recovery sequence](language-experiment.md) requires two exact heuristic
-control fights under a 300-second batch ceiling. Only if they pass, evaluate the same
-final adapter in `runs/qwen3-0.6b-sft-eval-v2-20261011`, eight attempts/1,600 seconds,
-preserving the first batch and all operational costs. No prompt/parser/weights change.
+The first trained batch remains separately preserved: two wins at HP77, one relay
+startup failure with zero observations/actions, and five unattempted slots. Its
+trace evidence is valid but its suite is incomplete. Across both trained batches,
+11 attempts produced 10 wins and one infrastructure failure; those operational
+totals do not replace the complete eight-attempt score. See
+[incomplete result](results/language-sft-incomplete-development-v1.json).
 
-Real-data SFT finished all 64 updates, 527,360 charged/committed padded tokens and
-256 example occurrences in 398.46 seconds, with no pending reservation or resume.
-Session `52953`, worker `320214` and watchdog `320211` exited successfully before
-the original 07:42:31 UTC deadline. Peak allocated/reserved CUDA memory was
-5,541.22/5,814 MiB; peak total GPU use was 7,087 MiB and minimum available WSL RAM
-3,522.97 MiB. Root's CPU preflight independently verified canonical checkpoint
-accounting/finite tensors, source pins, dataset re-export, exact adapter tensor/config
-serialization, declaration and supervisor bounds. Evidence:
-`runs/qwen3-0.6b-heuristic-sft-20261011-preflight-audit.json`. Adapter tensor SHA-256:
-`bf708e4a541167f2808c40989fc595d2c9a6114e441c5de66752097b063f32ac`;
-declaration SHA-256 `70d19d51a5578ca3ce4e64e0f3f8646c9034ab6e14cf9f84baa2002268a248d6`.
-The independent full ancestry audit passed all 12 checks, including 129 immutable
-checkpoints and 2,293,759 changed adapter elements. Its auditor and catalog evidence
-docs are integrated at `4a7e4f4`; 27 focused integrated audit tests passed and Ruff is
-clean. See [compact training audit](results/language-sft-training-audit.json).
-No gameplay result or CUDA resume-equivalence claim follows from training alone.
+Direct WSL guest-address transport passed 40 socket exchanges, five actual-relay
+probes and two declared original-engine heuristic controls. Both controls won at
+HP77 and exactly reproduced all 21 commands and transitions, satisfying the gate for
+the separate SFT rerun. The intermittent localhost failure was not reproduced;
+direct routing is a mitigation, not a proven diagnosis. Runtime queries the current
+WSL address per launch; these controls used `172.18.34.183:19876`. See
+[control audit](results/direct-relay-control-20261011.json) and
+[transport evidence](relay-startup-mitigation.md).
 
-The unchanged-model baseline exited successfully and passed independent trace/metric
-audit: all eight scheduled attempts ended on the same malformed string-valued index
-`{"a": "1"}` after three legal actions. There were zero wins/completed games, eight
-policy failures, and zero infrastructure failures or invalid commands. HP and win rate
-over completed games are undefined; wins per policy attempt is 0/8. Greedy repeats of
-this fixed scenario are correlated. All 24 acknowledged prefix transitions remain
-evidence but are excluded from whole-episode training data. See
-[baseline result](results/language-untuned-development-v1.json) and raw evidence in
-`runs/qwen3-0.6b-untuned-eval-20261011`. No repair or retry was used.
+Real-data SFT completed 64 updates, 527,360 charged/committed padded tokens and 256
+example occurrences in 398.46 seconds, with no pending reservation or resume.
+Peak allocated/reserved CUDA memory was 5,541.22/5,814 MiB, peak total GPU use
+7,087 MiB, and minimum available WSL RAM 3,522.97 MiB. The independent training audit
+passed all 12 checks, covering 129 immutable checkpoints, data lineage and budgets,
+finite optimizer/parameter tensors, exact serialization and 2,293,759 changed adapter
+elements. CUDA resume equivalence remains unproven. See
+[training audit](results/language-sft-training-audit.json).
+Final declaration SHA-256:
+`70d19d51a5578ca3ce4e64e0f3f8646c9034ab6e14cf9f84baa2002268a248d6`.
 
-Inventory PID 313645/session 86612 exited successfully: 18 attempts in 576.17 seconds,
-with Cultist `SPIREINV07` and Jaw Worm `SPIREINV09` admitted after exact replays.
-Both end-turn probes lost; both control fights matched the reference. Every child
-hash and original trace audit was independently rechecked. No infrastructure failure
-or retry occurred. Four discovery fights had excluded 88-HP starts and six were
-unsupported. All evidence remains in `runs/starter-inventory-20261011`.
+The three-scenario catalog is admitted from original-engine inventory and repeat
+traces. The declared next comparison is random, heuristic, initial neural and final
+budget-64 neural: 12 attempts / 1,200 seconds per policy, 48 reserved attempts total.
+No catalog policy score has yet been collected. A bounded launcher is prepared at
+`runs/run_declared_catalog_comparison.py`; it stops at the first incomplete policy
+batch, preserves all unattempted policies and does not retry.
 
-Integrated CPU checks: 620 passed, 7 skipped (six optional language-library cases plus
-Windows cleanup). All 89 combined optional language checks passed on CPU using the
-CUDA environment. The added/existing original-engine mechanics checks also passed
-73/73. Actual-tokenizer preflight verified all 42 SFT rows: 644–723 prompt tokens,
-5 JSON tokens plus 1 EOS per target, masks exact, sequences within 2060. Evidence:
-`runs/qwen3-0.6b-sft-tokenization-20261011.json`, SHA-256
-`48144de4ec81a611a26073d94646e768b847fe67cd4ff4f28991e0c1535c74d1`.
-Further source work uses an isolated worktree for language catalog evaluation.
-A read-only PPO gradient diagnosis supports the newly declared tenfold-learning-rate
-test, to run only after the existing four-policy encounter comparison. See
-[research contract](research.md) for the optional clock-gated seed-1 paired replication.
+Language catalog evaluation is integrated at `2d3afb1`, with one frozen model owner
+across scheduled children, independent saved-trace auditing and explicit partial
+failure accounting. Combined-tree validation passed 703 CPU tests (20 optional or
+local-evidence skips) and all 139 optional language checks on CPU in the CUDA
+environment; Ruff and independent review passed. No live language catalog score
+has been collected. The previously verified 73 original-engine mechanics checks
+cover byte-unchanged mechanics/protocol fixtures.
+
+The read-only PPO gradient diagnosis and declared tenfold-learning-rate experiment
+are ready. Run that intervention only after the four-policy encounter comparison;
+see [research contract](research.md) for the clock-gated seed-1 paired replication.
+No higher-learning-rate game has been run.
 
 The larger trial at source `7b4cc31` completed all 64 combats (64 wins), 12 updates,
 and 827 consumed transitions in 2,298.47 seconds. No transitions remain pending.
@@ -155,8 +145,10 @@ matching fixed-action replays, independent trace audits, and process-tree cleanu
 Milestone B is verified for the narrow fixed-encounter diagnostic: declared start
 state, engine mechanics fixtures, repeated resets, measured throughput, and matched
 baselines. Milestone C is verified as a computational learning loop on this fixed diagnostic,
-including frozen development evaluation; policy improvement is unproven. D–F remain
-incomplete. The computational neural pilot is complete; GPU smoke checks are also complete, without a language-gameplay claim.
+including frozen development evaluation; neural PPO improvement is unproven.
+Milestone E is verified narrowly: identified public data, actual LoRA updates, an
+unchanged-model baseline and a controlled same-scenario imitation result. D and F
+remain incomplete; no held-out generalization or Act 1 performance is claimed.
 
 `runs/first-random-v2-20261011/manifest.json` records source `deba4b7`, the configuration,
 environment, and two random-policy episodes on `SPIREAI1`, Ironclad, Ascension 0.
@@ -232,7 +224,7 @@ results will be published in `docs/`; proprietary jars, saves, and assets stay o
 - Pinned ModTheSpire 3.30.3, BaseMod 5.56.0, CommunicationMod 1.2.1 at
   `C:/spire-agent/mods`; local game mods are verified copies. Hashes are in code and
   each deployment record. Workshop copies are rechecked on every launch.
-- Loopback Windows-to-WSL TCP forwarding works. CommunicationMod config is at
+- Game transport connects Windows to the current WSL guest IPv4 address. CommunicationMod config is at
   `%LOCALAPPDATA%/ModTheSpire/CommunicationMod/config.properties`.
 - RTX 3060 12 GB is available; WSL memory is 7.7 GiB. Measured GPU smoke jobs have exited.
 - Steam is running, but the directly launched JVM reports Steam API initialization
@@ -263,20 +255,21 @@ that natural-language deadline.
 
 ## Next useful actions
 
-1. Controls passed. Start the exact final adapter in the separate declared v2 batch,
-   with eight canonical attempts and the 1,600-second process ceiling.
-2. Monitor its process/session to terminal;
-   audit and report both batches before making a controlled-comparison claim.
-3. Run random/heuristic/initial-neural/final-neural catalog comparisons under the
-   [declared development contract](research.md), with 12 attempts and 1,200 seconds per
-   policy. Catalog: `configs/suites/starter_three_encounter_development_v1.json`.
-4. Use measured behavior to choose a single controlled PPO intervention, then repeat
-   training initializations and separately define later held-out evaluation.
+1. Commit the completed SFT result and generated figures, then launch the declared
+   random/heuristic/initial-neural/final-neural catalog comparison: 12 attempts and
+   1,200 seconds per policy. Freeze source/HEAD until all four policies terminate.
+2. Audit and report per-scenario scores and the equal-scenario macro result, retaining
+   every failed or unattempted slot. Catalog:
+   `configs/suites/starter_three_encounter_development_v1.json`.
+3. Run the already declared PPO learning-rate intervention and its clock-gated matched
+   seed-1 replication, with frozen final-artifact evaluations; no outcome-driven retries.
+4. Declare separate broader language-model comparisons, held-out evaluation and the
+   smallest supported noncombat expansion before collecting their results.
 
 Current limitations: starter cards only, no potion actions or noncombat policy,
 Neow prefixes outside max HP/100 gold unsupported, no arbitrary snapshots, no live
-combat resume, and no demonstrated gameplay improvement yet. Integrated checks: 620 CPU tests passed, with six optional language-library cases and
-the Windows process probe skipped. The combined optional language cases passed separately
-on CPU with the CUDA environment; the Windows probe passed earlier. Ruff is clean. Use `uv run --extra train pytest` for
-learner coverage. Optional PyTorch 2.13.0 CPU is locked and installed; tiny-network
-training is deliberately CPU because original-engine collection dominates runtime.
+combat resume, and no demonstrated neural PPO improvement. Use
+`uv run --extra train pytest` for learner coverage. Optional PyTorch 2.13.0 CPU is
+locked and installed; tiny-network training uses CPU because original-engine
+collection dominates runtime. CUDA dependencies remain isolated in their locked
+mutually exclusive extra.

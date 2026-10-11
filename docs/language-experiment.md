@@ -102,3 +102,46 @@ both batches and their combined attempted-game/infrastructure cost, while scorin
 new complete suite separately. The untuned baseline and its archived original
 contract remain unchanged. If the rerun fails, retain it and diagnose again rather
 than silently relaunching.
+
+## Controlled diagnostic result
+
+Real-data training completed all 64 updates in 398.46 seconds, charging 527,360
+padded tokens and consuming 256 example occurrences from 42 rows (21 unique public
+prompts). The independent saved-training audit passed all 12 checks: 129 immutable
+checkpoints, finite parameters and optimizer state, exact exported tensors and data
+lineage, unchanged budgets, and no pending or abandoned reservations. Peak total GPU
+use was 7,087 MiB; minimum available WSL RAM was 3,522.97 MiB. CUDA resume equivalence
+has not been demonstrated. See [training audit](results/language-sft-training-audit.json).
+
+The two declared direct-address control fights passed, each exactly reproducing the
+reference's 21 commands and public transitions. The frozen v2 evaluation then
+completed all eight scheduled attempts at source `e829c1c`:
+
+| Policy | Wins / policy attempts | Policy failures | Completed games | Mean final HP |
+| --- | ---: | ---: | ---: | ---: |
+| Unchanged Qwen3-0.6B | 0 / 8 | 8 | 0 | undefined |
+| Final public-heuristic LoRA | 8 / 8 | 0 | 8 | 77 |
+
+Every trained fight matched the teacher's full command sequence and public
+transitions, ending on turn 6. There were no invalid commands, context failures or
+infrastructure failures in the complete rerun. Mean measured inference time was
+8.266 seconds per fight; mean total episode time was 46.595 seconds, including
+14.530 seconds of reset/startup. These are observed workstation timings, with
+occasional concurrent CPU audit/test work, not an isolated throughput benchmark.
+
+Decision: **keep for this imitation diagnostic**. Actual parameter training changed
+the unchanged model's malformed string-valued responses into the teacher's legal
+trajectory on the reused scenario. The model tensor hash loaded for evaluation was
+`b620fa2e3f44a0bd7e7f38646f28a51cf1d33a9fa7ec8062d18b2d02c1be496c`, linked to the exact
+declared final adapter. This is a successful memorization/integration result with
+pretraining advantage, one training initialization and eight correlated greedy
+repeats. It is not evidence of unseen-scenario competence or a compute-matched
+improvement over PPO from scratch.
+
+The initial incomplete batch remains separate: two wins, one infrastructure failure
+and five unattempted slots. Across both trained batches, 11 game attempts produced
+10 wins and one startup failure; these totals do not replace the canonical eight-game
+score. See [comparison and paired traces](results/language-sft-development-v1.json).
+Regenerate that compact result with `uv run python runs/summarize_language_diagnostic.py`
+when the retained local raw runs are available. Multi-encounter language evaluation
+is now implemented, but no such gameplay score has been collected yet.
