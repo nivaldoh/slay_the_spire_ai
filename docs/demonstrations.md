@@ -64,13 +64,15 @@ fields. A model adapter must measure and reject oversized prompts explicitly.
 
 Each entire originating run must independently pass `audit_run`, finish with status
 `completed`, and contain only complete engine-confirmed wins or losses. Interrupted,
-truncated, unsupported, rejected or corrupt runs cannot contribute a convenient
+truncated, unsupported, rejected, model-failure or corrupt runs cannot contribute a convenient
 completed subset. Every exported action must be one of the audited legal candidates.
 
 The recorded teacher must match the caller's role, have clean preserved source,
 and have manifest source hashes equal the historical Git blobs for `policies.py`
 and `protocol.py`. Those blobs must match the known public implementations' ASTs;
-the exact known later `EndTurnPolicy` addition is allowed for older collections.
+the exact known later `EndTurnPolicy` and independent `PolicyFailure` exception
+additions are allowed for older collections. Their implementations must match
+exactly, with no duplicate class or other source change.
 The exporter never executes historical code. It independently replays every
 heuristic choice or seeded random choice and rejects disagreement. The verified
 source bytes are copied into the dataset. A caller's `teacher_information="public"`

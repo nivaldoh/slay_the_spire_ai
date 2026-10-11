@@ -412,3 +412,111 @@ def test_boolean_is_not_evaluation_schema_version(tmp_path, run, where):
     write(run / "evaluation.json", record)
     with pytest.raises(EvidenceError, match="Unsupported evaluation .* schema"):
         demos.export_demonstrations(tmp_path / "dataset", [source(run)], purpose="smoke")
+
+
+POLICY_FAILURE_DECLARATION = b'''
+class PolicyFailure(ProtocolError):
+    """A policy output/context failure before any command was selected."""
+
+    def __init__(self, message: str, *, failure: dict):
+        super().__init__(message)
+        self.failure = failure
+'''
+
+
+@pytest.mark.parametrize("damage", [None, "implementation", "other_code", "duplicate"])
+def test_only_exact_independent_policy_failure_class_is_compatible(
+    tmp_path, run, monkeypatch, damage
+):
+    original = demos._source_bytes
+    manifest = read(run / "manifest.json")
+    saved = original(manifest["source_revision"], "src/spire/protocol.py")
+    # This fixture also works after the new exception is integrated in protocol.py.
+    saved = saved.replace(POLICY_FAILURE_DECLARATION, b"")
+    addition = POLICY_FAILURE_DECLARATION
+    if damage == "implementation":
+        addition = addition.replace(b"self.failure = failure", b"self.failure = {}")
+    elif damage == "other_code":
+        addition += b"\nprivate_game_seed = 123\n"
+    elif damage == "duplicate":
+        addition *= 2
+    saved += addition
+    manifest["source_files"]["src/spire/protocol.py"] = hashlib.sha256(saved).hexdigest()
+    write(run / "manifest.json", manifest)
+    monkeypatch.setattr(
+        demos,
+        "_source_bytes",
+        lambda revision, filename: (
+            saved if filename.endswith("protocol.py") else original(revision, filename)
+        ),
+    )
+    if damage is None:
+        result = demos.export_demonstrations(tmp_path / "dataset", [source(run)], purpose="smoke")
+        assert result["rows"]["train"] == 1
+    else:
+        with pytest.raises(EvidenceError, match="Unknown"):
+            demos.export_demonstrations(tmp_path / "dataset", [source(run)], purpose="smoke")
+
+
+def policy_failure_after_action(run):
+    """Keep one acknowledged public action before an invalid model completion."""
+    directory = run / "episode-0000"
+    events = test_evidence.events(directory)
+    first = decision_from_message(events[3]["raw"], session_id="session-0", sequence=2)
+    public_prompt = demos.render_prompt(first)
+    events[5]["behavior"] = {
+        "type": "language",
+        "prompt_format": demos.FORMAT_VERSION,
+        "parser_version": "single-json-choice-v1",
+        "prompt_sha256": hashlib.sha256(public_prompt.encode()).hexdigest(),
+        "chat_prompt_sha256": hashlib.sha256(("fake chat" + public_prompt).encode()).hexdigest(),
+        "prompt_tokens": 100,
+        "completion_tokens": 6,
+        "max_prompt_tokens": 2048,
+        "raw_completion": '{"a":0}',
+        "completion_with_special_tokens": '{"a":0}<eos>',
+        "inference_seconds": 0.1,
+        "selected_index": 0,
+    }
+    events[7]["raw"] = copy.deepcopy(events[3]["raw"])
+    events[7]["raw"]["game_state"]["combat_state"]["turn"] = 2
+    decision = decision_from_message(events[7]["raw"], session_id="session-0", sequence=3)
+    failure = {
+        "kind": "invalid_completion",
+        "completion": "attack now",
+        "prompt_sha256": hashlib.sha256(demos.render_prompt(decision).encode()).hexdigest(),
+        "prompt_tokens": 100,
+        "max_prompt_tokens": 2048,
+        "completion_tokens": 3,
+        "inference_seconds": 0.1,
+    }
+    result = read(directory / "result.json")
+    result.update(status="policy_failure", policy="language", turns=2, policy_failure=failure)
+    result.pop("ending_hp")
+    events[-2] = {
+        "kind": "policy_failure",
+        "elapsed": 4.2,
+        "decision": decision.to_dict(),
+        "failure": failure,
+    }
+    events[-1]["result"] = result
+    test_evidence.write_events(directory, events)
+    write(directory / "result.json", result)
+    manifest = read(run / "manifest.json")
+    manifest["config"]["policy"] = "language"
+    manifest["episodes"] = [result]
+    write(run / "manifest.json", manifest)
+
+
+@pytest.mark.parametrize("after_action", [False, True])
+def test_policy_failure_origins_never_become_demonstrations(tmp_path, run, after_action):
+    from spire.evidence import load_transitions
+
+    if after_action:
+        policy_failure_after_action(run)
+    else:
+        test_evidence.make_policy_failure(run)
+    assert audit_run(run)["valid"]
+    assert len(load_transitions(run)) == int(after_action)
+    with pytest.raises(EvidenceError, match="Only complete originating runs"):
+        demos.export_demonstrations(tmp_path / "dataset", [source(run)], purpose="smoke")

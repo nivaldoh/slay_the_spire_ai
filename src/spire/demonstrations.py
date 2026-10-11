@@ -213,22 +213,36 @@ def _source_bytes(revision: str, filename: str) -> bytes:
 
 def _known_ast(source: bytes, *, policies: bool) -> str:
     tree = ast.parse(source)
-    # This diagnostic class was added after the first heuristic collection. Its
-    # presence does not change either accepted teacher; all other code must match.
+    # These exact independent classes were added after the first teacher runs.
+    # Normalize only their absence/presence; every public projection and teacher
+    # statement, import and other declaration still has to match the known source.
+    optional_name = "EndTurnPolicy" if policies else "PolicyFailure"
     if policies:
         reference = ast.parse(Path(__file__).with_name("policies.py").read_bytes())
-        diagnostic = next(
+        optional = next(
             item
             for item in reference.body
-            if isinstance(item, ast.ClassDef) and item.name == "EndTurnPolicy"
+            if isinstance(item, ast.ClassDef) and item.name == optional_name
         )
-        retained = []
-        for item in tree.body:
-            if isinstance(item, ast.ClassDef) and item.name == "EndTurnPolicy":
-                _require(ast.dump(item) == ast.dump(diagnostic), "Unknown diagnostic teacher code")
-            else:
-                retained.append(item)
-        tree.body = retained
+    else:
+        optional = ast.parse('''class PolicyFailure(ProtocolError):
+    """A policy output/context failure before any command was selected."""
+
+    def __init__(self, message: str, *, failure: dict):
+        super().__init__(message)
+        self.failure = failure
+''').body[0]
+    retained, found = [], False
+    for item in tree.body:
+        if isinstance(item, ast.ClassDef) and item.name == optional_name:
+            _require(
+                not found and ast.dump(item) == ast.dump(optional),
+                f"Unknown optional {optional_name} declaration",
+            )
+            found = True
+        else:
+            retained.append(item)
+    tree.body = retained
     return ast.dump(tree, include_attributes=False)
 
 
