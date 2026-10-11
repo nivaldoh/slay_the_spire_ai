@@ -1,0 +1,48 @@
+{
+  "pairs": [
+    {
+      "all_reference_public_transitions_equal": true,
+      "elapsed_seconds": 39.17061266500241,
+      "ending_hp": 77,
+      "episode": 0,
+      "full_reference_commands_equal": true,
+      "relay": {
+        "host": "172.18.34.183",
+        "port": 19876,
+        "timeout": 45.0
+      },
+      "status": "won",
+      "transitions": 21
+    },
+    {
+      "all_reference_public_transitions_equal": true,
+      "elapsed_seconds": 38.90503580600489,
+      "ending_hp": 77,
+      "episode": 1,
+      "full_reference_commands_equal": true,
+      "relay": {
+        "host": "172.18.34.183",
+        "port": 19876,
+        "timeout": 45.0
+      },
+      "status": "won",
+      "transitions": 21
+    }
+  ],
+  "reference": "runs/baseline-heuristic-settled-20261011",
+  "run": "runs/direct-relay-control-20261011",
+  "schema_version": 1,
+  "scope": "Two original-engine controls passed on direct WSL address. This validates the changed transport on these attempts; it does not prove the intermittent localhost failure cause or future reliability.",
+  "source_evidence_sha256": {
+    "runs/direct-relay-control-20261011/environment.json": "dbff089c4e1e335e10cc6a351d490342a1cf4dc8bcc70db1b60010b9bd470cd6",
+    "runs/direct-relay-control-20261011/episode-0000/deployment.json": "daa11463732b7ed306c5417592ec94a2370a7dbf98da0d139e5887e73141f9c2",
+    "runs/direct-relay-control-20261011/episode-0000/result.json": "1df41cd2ba4af8af4650bf006fa85f2c40f205ea85fc63584a15a1f15856d2b2",
+    "runs/direct-relay-control-20261011/episode-0000/trace.jsonl": "f56855b58a79bf83e2958ac16efe174ebe48da444cb9ce5f58060aa2a35bb0dc",
+    "runs/direct-relay-control-20261011/episode-0001/deployment.json": "daa11463732b7ed306c5417592ec94a2370a7dbf98da0d139e5887e73141f9c2",
+    "runs/direct-relay-control-20261011/episode-0001/result.json": "76d2f4112189959da41dea41dec64429ac116003f08549a018fc189008664434",
+    "runs/direct-relay-control-20261011/episode-0001/trace.jsonl": "9ab26f583ad41ce9ff9ba2e8f6311d2d1da6ffe31ebe601bdd2a52f31bd47975",
+    "runs/direct-relay-control-20261011/manifest.json": "f13b2ab6e059e711e078e510083739021eaba0d67c06f3c4b884f23bac2c5854"
+  },
+  "source_revision": "f0736a71009c13ecff8e33beb5bb868f3286f358",
+  "valid": true
+}

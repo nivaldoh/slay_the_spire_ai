@@ -2,9 +2,17 @@
 
 Updated 2026-10-11, during the authorized unattended bootstrap session.
 
-## Active work (last verified 07:50 UTC)
+## Active work (last verified 07:56 UTC)
 
-No game or GPU job is active. Trained evaluation session `4043` exited with code 1: two wins at
+No game or GPU job is active. The two direct-address original-engine controls
+completed at source `f0736a7`; session `42973` exited successfully. Both won at HP77
+in 39.17/38.91 seconds, with all commands and public transitions matching the existing
+heuristic reference exactly. Output: `runs/direct-relay-control-20261011`; see
+[control audit](results/direct-relay-control-20261011.json). Both deployed
+`172.18.34.183:19876`. This satisfies the declared gate for the separate frozen
+SFT evaluation rerun; it does not establish the original failure's exact cause.
+
+The previous trained evaluation session `4043` exited with code 1: two wins at
 HP77, then a relay-startup infrastructure failure with zero observations/actions,
 leaving five attempts unrun. The two wins exactly match the teacher's commands and
 public transitions; all three traces audit correctly, but the suite is incomplete.
@@ -13,10 +21,12 @@ Preserved output: `runs/qwen3-0.6b-sft-eval-20261011`, source `a828645`; see
 Linux accept timed out; Windows relay stderr reports WinError10054. Do not count
 this as a gameplay loss or a completed eight-attempt comparison.
 
-An isolated agent is implementing direct WSL guest-address transport after 40 bounded
+Direct WSL guest-address transport is integrated after 40 bounded
 socket probes succeeded (loopback/direct NAT, disposable/fixed 19876 ports). The exact
 intermittent localhost failure was not reproduced; direct routing is a mitigation,
-not a proven causal diagnosis. Before any game rerun, the
+not a proven causal diagnosis. Five additional exchanges using the real relay script
+passed, as did 106 focused integrated tests (one optional Windows test skipped),
+Ruff and independent review. Before any model evaluation rerun, the
 [declared recovery sequence](language-experiment.md) requires two exact heuristic
 control fights under a 300-second batch ceiling. Only if they pass, evaluate the same
 final adapter in `runs/qwen3-0.6b-sft-eval-v2-20261011`, eight attempts/1,600 seconds,
@@ -63,8 +73,10 @@ CUDA environment. The added/existing original-engine mechanics checks also passe
 5 JSON tokens plus 1 EOS per target, masks exact, sequences within 2060. Evidence:
 `runs/qwen3-0.6b-sft-tokenization-20261011.json`, SHA-256
 `48144de4ec81a611a26073d94646e768b847fe67cd4ff4f28991e0c1535c74d1`.
-Further source work uses isolated worktrees: language catalog evaluation and the
-relay mitigation. A read-only PPO diagnosis is evaluating the next controlled change.
+Further source work uses an isolated worktree for language catalog evaluation.
+A read-only PPO gradient diagnosis supports the newly declared tenfold-learning-rate
+test, to run only after the existing four-policy encounter comparison. See
+[research contract](research.md) for the optional clock-gated seed-1 paired replication.
 
 The larger trial at source `7b4cc31` completed all 64 combats (64 wins), 12 updates,
 and 827 consumed transitions in 2,298.47 seconds. No transitions remain pending.
@@ -251,9 +263,9 @@ that natural-language deadline.
 
 ## Next useful actions
 
-1. Integrate/check the direct-address relay mitigation, then run the two declared
-   original-engine controls. Preserve the incomplete first SFT evaluation.
-2. If controls pass, evaluate the exact final adapter in the separate declared v2 batch;
+1. Controls passed. Start the exact final adapter in the separate declared v2 batch,
+   with eight canonical attempts and the 1,600-second process ceiling.
+2. Monitor its process/session to terminal;
    audit and report both batches before making a controlled-comparison claim.
 3. Run random/heuristic/initial-neural/final-neural catalog comparisons under the
    [declared development contract](research.md), with 12 attempts and 1,200 seconds per

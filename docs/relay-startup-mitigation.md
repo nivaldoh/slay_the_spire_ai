@@ -73,6 +73,11 @@ produce a recorded infrastructure failure rather than an alternate route.
 Focused validation: **106 tests passed, one optional Windows process-ownership
 test skipped**, covering discovery failures, unchanged standalone bridge
 behavior, exact listener/deployment agreement and discovery again for each
-episode. Five actual standalone relay exchanges additionally passed. Root-owned
-original-engine startup/control validation is still required after integration;
-socket tests alone do not establish game startup reliability.
+episode. Five actual standalone relay exchanges additionally passed.
+
+Root's two declared original-engine controls then passed at source `f0736a7`:
+both won at HP77 in 39.17/38.91 seconds, with all 21 commands and every public
+transition exactly matching the existing heuristic reference. Both deployed the
+direct guest address at port19876. See [control audit](results/direct-relay-control-20261011.json).
+This verifies the changed transport on those complete fights. It does not prove
+the original failure's exact cause or guarantee future startup reliability.
