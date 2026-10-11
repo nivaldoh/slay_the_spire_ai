@@ -508,6 +508,11 @@ class PPOTrainer:
                     error_if_nonfinite=True,
                 )
                 self.optimizer.step()
+                detached_ratio = ratio.detach()
+                clip_fraction = (
+                    (detached_ratio < 1 - self.config["clip_coef"])
+                    | (detached_ratio > 1 + self.config["clip_coef"])
+                ).float().mean()
                 metrics.append(
                     {
                         "loss": float(loss.detach()),
@@ -515,6 +520,7 @@ class PPOTrainer:
                         "value_loss": float(value_loss.detach()),
                         "entropy": float(entropy.detach()),
                         "approx_kl": float(approximate_kl.detach()),
+                        "clip_fraction": float(clip_fraction),
                         "gradient_norm": float(gradient_norm),
                     }
                 )

@@ -271,6 +271,45 @@ def test_ppo_changes_weights_on_complete_behavior_episodes_with_finite_metrics()
         trainer.update(episodes)
 
 
+@pytest.mark.parametrize("target_kl", [10.0, 0.0001])
+def test_clip_fraction_counts_only_executed_minibatches(monkeypatch, target_kl):
+    policy = NeuralPolicy(CandidateActorCritic(seed=9), seed=22)
+    trainer = PPOTrainer(
+        policy, epochs=3, minibatch_size=4, learning_rate=0.02,
+        clip_coef=0.001, target_kl=target_kl,
+    )
+    episodes = [collect(policy, count=3), collect(policy, first_sequence=10, count=4, reward=-1)]
+    transitions = {item.decision.id: item for episode in episodes for item in episode}
+    original_batch = policy.model.batch
+    observed, executed = [], []
+
+    def record_probabilities(decisions):
+        result = original_batch(decisions)
+        probabilities = result[0].detach().softmax(dim=-1)
+        outside = []
+        for row, decision in zip(probabilities, decisions, strict=True):
+            transition = transitions[decision.id]
+            index = transition.candidate_ids.index(transition.action_id)
+            ratio = float(row[index]) / math.exp(transition.old_logprob)
+            outside.append(not 1 - trainer.config["clip_coef"] <= ratio
+                           <= 1 + trainer.config["clip_coef"])
+        observed.append(sum(outside) / len(outside))
+        return result
+
+    monkeypatch.setattr(policy.model, "batch", record_probabilities)
+    hook = trainer.optimizer.register_step_post_hook(lambda *_: executed.append(observed[-1]))
+    result = trainer.update(episodes)
+    hook.remove()
+    assert math.isfinite(result["clip_fraction"])
+    assert 0 <= result["clip_fraction"] <= 1
+    assert result["clip_fraction"] == pytest.approx(sum(executed) / len(executed))
+    assert len(executed) == result["optimizer_steps"]
+    if target_kl == 10:
+        assert result["clip_fraction"] > 0 and len(executed) == 6
+    else:
+        assert result["early_stop_kl"] and len(observed) > len(executed)
+
+
 @pytest.mark.parametrize("corruption", ["logprob", "value", "mapping", "duplicate", "hash"])
 def test_behavior_corruption_rejected_before_any_optimizer_step(corruption):
     policy = NeuralPolicy(CandidateActorCritic(seed=3))

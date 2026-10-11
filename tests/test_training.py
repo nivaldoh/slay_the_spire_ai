@@ -240,6 +240,8 @@ def test_actual_neural_update_creates_audited_data_and_stable_artifact(tmp_path,
     record = read(Path(result["artifact_record"]))
     assert training._digest(Path(result["artifact_path"])) == record["sha256"]
     state, payload, _ = training._load_checkpoint(output)
+    assert 0 <= result["update_history"][0]["clip_fraction"] <= 1
+    assert state["update_history"] == read(output / "training.json")["update_history"]
     assert len(state["consumed_ids"]) == len(set(state["consumed_ids"])) == 2
     assert payload["learner"]["optimizer"]["state"]
     assert "python_rng" in payload and "torch_rng" in payload

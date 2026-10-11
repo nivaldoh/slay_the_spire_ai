@@ -69,6 +69,15 @@ that rate and rejects overrides. Older checkpoints that omit the runner field
 retain their original 0.0003 default. Changing this option alone does not establish
 better learning; compare the final artifact under a fixed evaluation contract.
 
+Update diagnostics include `clip_fraction`: the fraction of selected-action
+probability ratios strictly outside `[1 - clip_coef, 1 + clip_coef]` before each
+executed optimizer step. It is computed from detached ratios and averaged equally
+across executed minibatches, matching the existing loss/KL metric weighting; a
+short final minibatch receives the same weight as a full one. A minibatch rejected
+by the KL guard contributes no metric. This instrumentation does not change the
+objective, optimizer, random generators, or update decisions. Older runs did not
+record this field; a missing historical value is unknown, not zero.
+
 `PPOTrainer.state_dict()` returns an independent snapshot containing model,
 optimizer, policy sampling RNG, minibatch RNG, CPU torch RNG, update counter,
 configuration, and version contracts. `load_state_dict` restores these and
