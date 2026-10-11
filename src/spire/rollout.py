@@ -10,6 +10,7 @@ import subprocess
 import sys
 import time
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -74,7 +75,14 @@ def source_fingerprints() -> dict[str, str]:
     return {str(path.relative_to(root)): sha256(path) for path in sorted(paths)}
 
 
-def run_episode(directory: Path, config: dict, episode: int, *, policy=None) -> dict:
+def run_episode(
+    directory: Path,
+    config: dict,
+    episode: int,
+    *,
+    policy=None,
+    policy_seed: int | None = None,
+) -> dict:
     directory.mkdir(exist_ok=False)
     started = time.monotonic()
     deadline = started + config["episode_timeout"]
@@ -85,8 +93,10 @@ def run_episode(directory: Path, config: dict, episode: int, *, policy=None) -> 
         "status": "interrupted",
         "seed": config["game_seed"],
         "policy": config["policy"],
-        "policy_seed": config["policy_seed"] + episode if policy is None else None,
-        "policy_rng": "per_episode_seed" if policy is None else "externally_checkpointed",
+        "policy_seed": config["policy_seed"] + episode if policy is None else policy_seed,
+        "policy_rng": "per_episode_seed"
+        if policy is None or policy_seed is not None
+        else "externally_checkpointed",
         "actions": 0,
         "combat_actions": 0,
         "invalid_actions": 0,
@@ -265,12 +275,14 @@ def run_episode(directory: Path, config: dict, episode: int, *, policy=None) -> 
     return result
 
 
-def rollout(output: Path, config: dict) -> dict:
+def rollout(output: Path, config: dict, *, policy_factory: Callable | None = None) -> dict:
     """Every new invocation gets a fresh directory; completed evidence is never overwritten."""
     if not config["game_seed"].isalnum():
         raise ValueError("game seed must be alphanumeric")
-    if config["policy"] not in {"random", "heuristic", "end_turn"}:
+    if config["policy"] not in {"random", "heuristic", "end_turn", "neural"}:
         raise ValueError("unknown policy")
+    if (config["policy"] == "neural") != (policy_factory is not None):
+        raise ValueError("neural rollouts require a policy factory, used only with neural policy")
     for key in ("episodes", "max_actions", "episode_timeout", "bridge_timeout"):
         if not math.isfinite(config[key]) or config[key] <= 0:
             raise ValueError(f"{key} must be positive")
@@ -314,7 +326,17 @@ def rollout(output: Path, config: dict) -> dict:
                 raise RuntimeError(
                     "Implementation changed during rollout; stopped before next launch"
                 )
-            result = run_episode(output / f"episode-{index:04d}", config, index)
+            if policy_factory is None:
+                result = run_episode(output / f"episode-{index:04d}", config, index)
+            else:
+                seed = config["policy_seed"] + index
+                result = run_episode(
+                    output / f"episode-{index:04d}",
+                    config,
+                    index,
+                    policy=policy_factory(seed),
+                    policy_seed=seed,
+                )
             manifest["episodes"].append(result)
             write_json(output / "manifest.json", manifest)
             print(json.dumps(result, sort_keys=True), flush=True)
