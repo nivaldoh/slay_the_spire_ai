@@ -118,7 +118,12 @@ def _inspect_episode(directory: Path, config: dict | None) -> dict:
         for field, expected in (
             ("seed", config["game_seed"]),
             ("policy", config["policy"]),
-            ("policy_seed", config["policy_seed"] + result["episode"]),
+            (
+                "policy_seed",
+                None
+                if result.get("policy_rng") == "externally_checkpointed"
+                else config["policy_seed"] + result["episode"],
+            ),
         ):
             _require(result.get(field) == expected, f"Result {field} disagrees with configuration")
     text = (directory / "trace.jsonl").read_text(encoding="utf-8")

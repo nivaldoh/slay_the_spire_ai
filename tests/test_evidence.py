@@ -237,6 +237,13 @@ def test_verified_win_yields_one_safe_unique_transition(run):
     assert "move_id" not in serialized
 
 
+def test_external_policy_rng_does_not_claim_an_episode_seed(run):
+    set_result(run, policy_rng="externally_checkpointed", policy_seed=None)
+    assert audit_run(run)["valid"]
+    set_result(run, policy_seed=0)
+    assert not audit_run(run)["valid"]
+
+
 @pytest.mark.parametrize("change", ["outcome", "hp", "counts", "time"])
 def test_changing_all_result_copies_cannot_override_engine_evidence(run, change):
     changes = {
