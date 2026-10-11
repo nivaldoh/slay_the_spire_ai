@@ -102,6 +102,7 @@ def run_episode(directory: Path, config: dict, episode: int) -> dict:
     combat_started = None
     pending = None
     sequence = 0
+    settle_count = 0
     with (directory / "trace.jsonl").open("x", buffering=1) as trace:
 
         def event(kind: str, **fields) -> None:
@@ -162,6 +163,29 @@ def run_episode(directory: Path, config: dict, episode: int) -> dict:
                         if result["actions"] >= config["max_actions"]:
                             result.update(status="truncated", reason="action_limit")
                             break
+                        if combat_floor is None and state.get("room_phase") == "COMBAT":
+                            monsters = state.get("combat_state", {}).get("monsters", [])
+                            if any(
+                                monster.get("intent") == "DEBUG"
+                                and monster.get("current_hp", 0) > 0
+                                for monster in monsters
+                            ):
+                                if settle_count >= 3 or "wait" not in message.get(
+                                    "available_commands", []
+                                ):
+                                    raise ProtocolError("Initial enemy intents did not settle")
+                                pending = f"{session_id}:{sequence}:settle"
+                                event(
+                                    "action",
+                                    action_id=pending,
+                                    sequence=sequence,
+                                    command="WAIT 60",
+                                    role="settle",
+                                )
+                                bridge.send("WAIT 60")
+                                result["actions"] += 1
+                                settle_count += 1
+                                continue
                         if state.get("room_phase") == "COMBAT":
                             decision = decision_from_message(
                                 message, session_id=session_id, sequence=sequence
@@ -177,6 +201,11 @@ def run_episode(directory: Path, config: dict, episode: int) -> dict:
                                     reset_seconds=combat_started - started,
                                     combat_start_sha256=_fingerprint(public),
                                 )
+                                expected = config.get("expected_start_sha256")
+                                if expected and result["combat_start_sha256"] != expected:
+                                    raise ProtocolError(
+                                        "Combat start differs from the frozen suite"
+                                    )
                             inference_start = time.monotonic()
                             action = validate_action(decision, policy.choose(decision))
                             result["inference_seconds"] += time.monotonic() - inference_start
@@ -263,7 +292,7 @@ def rollout(output: Path, config: dict) -> dict:
         "engine": "original",
         "scope": "first_combat",
         "observation_version": "ironclad-starter-combat-v1",
-        "prefix_version": "neow-maxhp-or-gold-leftmost-v1",
+        "prefix_version": "neow-maxhp-or-gold-leftmost-settled-v2",
         "reset": "owned_jvm_restart_then_seeded_start",
         "status": "running",
         "episodes": [],
@@ -291,5 +320,10 @@ def rollout(output: Path, config: dict) -> dict:
     finally:
         if manifest["status"] == "running":
             manifest["status"] = "interrupted"
+        linked = {result["episode"] for result in manifest["episodes"]}
+        for result_path in sorted(output.glob("episode-*/result.json")):
+            result = json.loads(result_path.read_text())
+            if result["episode"] not in linked:
+                manifest["episodes"].append(result)
         write_json(output / "manifest.json", manifest)
     return manifest

@@ -193,6 +193,22 @@ def test_step_truncation_records_response_but_sends_no_extra_action(tmp_path, co
     assert not any(event["kind"] == "terminal" for event in trace)
 
 
+def test_initial_debug_intent_settles_before_policy_decision(tmp_path, config, harness):
+    initial = combat_message()
+    initial["available_commands"].append("wait")
+    initial["game_state"]["combat_state"]["monsters"][0]["intent"] = "DEBUG"
+    harness.sessions = [[initial, combat_message(), terminal_message()]]
+    result = rollout.run_episode(tmp_path / "episode", config, 0)
+    assert result["status"] == "won"
+    assert harness.bridges[0].commands == ["WAIT 60", "play 1 0"]
+    trace = read_trace(tmp_path / "episode")
+    decisions = [event for event in trace if event["kind"] == "decision"]
+    assert len(decisions) == 1
+    assert (
+        decisions[0]["decision"]["observation"]["combat_state"]["monsters"][0]["intent"] == "BUFF"
+    )
+
+
 def test_bridge_disconnect_keeps_pending_action_evidence_and_is_not_loss(tmp_path, config, harness):
     harness.sessions = [[combat_message(), BridgeDisconnected("connection lost")]]
     directory = tmp_path / "episode"
@@ -267,7 +283,7 @@ def test_interruption_preserves_completed_episode_and_records_partial_episode(
     complete_path = output / "episode-0000/result.json"
     completed_bytes = complete_path.read_bytes()
     assert manifest["status"] == "interrupted"
-    assert [episode["status"] for episode in manifest["episodes"]] == ["won"]
+    assert [episode["status"] for episode in manifest["episodes"]] == ["won", "interrupted"]
     assert json.loads(completed_bytes)["status"] == "won"
     partial = json.loads((output / "episode-0001/result.json").read_text())
     assert partial["status"] == "interrupted"
