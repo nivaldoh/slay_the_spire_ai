@@ -2,12 +2,23 @@
 
 Updated 2026-10-11, during the authorized unattended bootstrap session.
 
-## Active jobs (last verified 07:11 UTC)
+## Active jobs (last verified 07:24 UTC)
 
-No game or training process is currently active. The long PPO controller (PID 296926,
-session 11796) and frozen evaluation (PID 310081, session 44728) both exited successfully.
-The next original-engine job is the preregistered bounded development inventory,
-after integrating and verifying the prepared code. Never start a second game runner.
+No game or GPU process is currently active. Inventory controller PID 313645/session 86612
+exited successfully; it completed 18 attempts in 576.17 seconds under the original
+24-attempt/1,800-second limits. `runs/starter-inventory-20261011` preserves all evidence.
+Two scenarios were admitted after exact replays: Cultist `SPIREINV07` and Jaw Worm
+`SPIREINV09`. End-turn probes both lost; the final control reproduced exactly. All child
+file hashes and trace audits were independently rechecked. No infrastructure failures
+or retries occurred. The fixed discovery list also produced four excluded 88-HP fights
+and six unsupported attempts; no replacement seeds were sampled.
+
+The next game job is the unchanged pretrained language model's eight-attempt canonical
+Louse evaluation, before real-data SFT. The integrated source includes strict PEFT
+adapter restoration, a configurable recorded PPO learning rate, and bounded resumable
+SFT. Full CPU checks: 620 passed, 7 skipped (six optional language-library cases plus the
+optional Windows probe). The 89 combined optional language tests passed in the CUDA
+environment using CPU models only. No real-data fine-tuning has started.
 
 The larger trial at source `7b4cc31` completed all 64 combats (64 wins), 12 updates,
 and 827 consumed transitions in 2,298.47 seconds. No transitions remain pending.
@@ -19,17 +30,20 @@ The exact same initial model scored 72.75, and the heuristic scored 77. The budg
 change is rejected as an improvement on this diagnostic. Six paired action sequences
 were identical; two differed, with one six-HP regression and one unchanged outcome.
 These are eight sampling seeds on one game scenario, not independent encounters.
+A read-only comparison on all 100 initial-evaluation public states found mean probability
+mass displacement 0.02188, maximum individual probability change 0.03008, and mean final
+entropy 0.99903 of the uniform maximum. The policy remains nearly uniform despite its
+weight changes. The [distribution diagnostic](results/ppo-budget64-distribution-diagnostic.json)
+is explanatory development evidence, not another independent gameplay evaluation.
 See [comparison](results/ppo-budget64-development-v1.json),
 [paired traces](results/ppo-budget64-paired-evaluation.json), and
 [training audit](results/ppo-budget64-training-audit.json).
 
-Catalog evaluation/training, a bounded inventory runner, public demonstration export,
-and local language evaluation were integrated from `/tmp/spire-catalog-cli`. All 569
-tests pass with retained original-engine evidence; only the optional Windows cleanup
-probe is skipped. Ruff is clean. Successful and failed language completions have explicit
-provenance checks. `/root/doctor` owns bounded real-data SFT, reviewed by `/root/transport`. Do not launch SFT before
-the unchanged pretrained model's engine evaluation. No broader encounters are admitted
-until inventory and exact original-engine repeats exist.
+The three-scenario catalog now pins the existing Louses plus both inventory admissions.
+Its declared comparison uses random, heuristic, initial neural and final budget-64
+neural policies, with four sampling seeds per scenario. Actual catalog policy scores
+have not been collected. Successful and failed language completions have explicit
+provenance checks; real-data SFT has passed independent review.
 
 Qwen3-0.6B at revision `c1899de289a04d12100db370d81485cdf75e47ca` passed a synthetic
 LoRA smoke in 7.83 seconds at `699f641`. Peak reserved CUDA memory was 3,414 MiB; minimum
@@ -38,6 +52,18 @@ Its one-example loss 0.50518→0.02792 is computational evidence only. A later s
 recorded public-state inference at `3fc7aaf` verified actual PEFT reload, 715 prompt tokens,
 six generated tokens, strict JSON parsing and exact candidate identity in 0.699 seconds.
 Both workers exited; no language-policy engine evaluation or real-data SFT has run.
+Prepared source-verified data: `runs/heuristic-language-training-data-20261011`, with
+42 training rows, 21 unique examples and no validation/test rows. Manifest SHA-256:
+`d4ce9b1c1d94109eb6acfaacf9217d79d6ebc85b2aa4ea3e326b45231ead5a71`.
+The source predates formal suite labels; the experiment explicitly treats reuse of its
+scenario as diagnostic development. Untuned declaration (adapter absent):
+`runs/qwen3-0.6b-untuned-declaration-20261011.json`, SHA-256
+`7a035639677a9b8f7171892ffbe9ad91182b4421b2a953e43077a592de3ea1a7`.
+The loader now rejects partially restored PEFT adapters. Real-data SFT passed independent
+review and is integrated. Its prepared config is
+`runs/qwen3-0.6b-heuristic-sft-config-20261011.json` (64 updates, 600,000 padded tokens,
+600 seconds, 4 examples/update, 2,060 sequence tokens, learning rate 0.0002).
+New minimal Cultist/Jaw Worm mechanics fixtures are being finalized separately.
 Evidence is preserved in `runs/language-smoke-20261011-0649` and
 `runs/language-inference-20261011-0705`, with originals in `/tmp/spire-language-smoke`.
 Base weights are cached under `/home/niv/.cache/spire-models`; about 2.2 GiB was downloaded
@@ -175,19 +201,20 @@ that natural-language deadline.
 
 ## Next useful actions
 
-1. Launch the integrated bounded inventory after recording its frozen source.
-2. Run the fixed development inventory from [research.md](research.md), preserving
-   every rejection, repeat and sentinel; source must remain frozen during collection.
-3. Follow [the declared language experiment](language-experiment.md): evaluate the
-   unchanged pretrained model, train on public heuristic demonstrations, and evaluate
-   the final frozen adapter.
-4. Use admitted original-engine scenarios for broader development comparisons.
-   Neither existing PPO trial establishes generalization or independent training variation.
+1. Finish mechanics evidence integration, commit/push, then evaluate the unchanged
+   language model using its prepared declaration and canonical eight-attempt suite.
+2. Run the bounded SFT config only after that baseline, then evaluate the final adapter
+   without checkpoint selection. Preserve any parser/context failures explicitly.
+3. Run random/heuristic/initial-neural/final-neural catalog comparisons under the
+   [declared development contract](research.md), with 12 attempts and 1,200 seconds per
+   policy. Catalog: `configs/suites/starter_three_encounter_development_v1.json`.
+4. Use measured behavior to choose a single controlled PPO intervention, then repeat
+   training initializations and separately define later held-out evaluation.
 
 Current limitations: starter cards only, no potion actions or noncombat policy,
 Neow prefixes outside max HP/100 gold unsupported, no arbitrary snapshots, no live
-combat resume, and no demonstrated gameplay improvement yet. Root checks at `637ae98`: 305 tests
-passed, one optional Windows process probe skipped by default; that probe was
-independently run and passed. Ruff is clean. Use `uv run --extra train pytest` for
+combat resume, and no demonstrated gameplay improvement yet. Integrated checks: 620 CPU tests passed, with six optional language-library cases and
+the Windows process probe skipped. The combined optional language cases passed separately
+on CPU with the CUDA environment; the Windows probe passed earlier. Ruff is clean. Use `uv run --extra train pytest` for
 learner coverage. Optional PyTorch 2.13.0 CPU is locked and installed; tiny-network
 training is deliberately CPU because original-engine collection dominates runtime.

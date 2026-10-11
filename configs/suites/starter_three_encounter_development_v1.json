@@ -1,0 +1,94 @@
+{
+  "schema_version": 2,
+  "purpose": "development",
+  "id": "starter-three-encounter-development-v1",
+  "description": "Three verified 80-HP starter scenarios: existing mixed Louses plus inventory-admitted Cultist and Jaw Worm, with four policy sampling seeds per scenario. Development only.",
+  "character": "IRONCLAD",
+  "ascension": 0,
+  "observation_contract": "ironclad-starter-combat-v1",
+  "reset": "owned_jvm_restart_then_seeded_start",
+  "prefix_version": "neow-maxhp-or-gold-leftmost-settled-v2",
+  "scenarios": [
+    {
+      "id": "spireai1",
+      "game_seed": "SPIREAI1",
+      "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+      "encounter_family": "two_louses",
+      "monster_ids": [
+        "FuzzyLouseNormal",
+        "FuzzyLouseDefensive"
+      ],
+      "discovery_trace_sha256": "4c38202bb1eef6c46e675252d5588a5efd7924f1b1d702431b07f80c66085ba4"
+    },
+    {
+      "discovery_trace_sha256": "43827745040a78663e1d9b9027c3a9804d9a21ebead230b0aad66d20037704b5",
+      "encounter_family": "cultist",
+      "expected_start_sha256": "0a52c8f998d1d2e93f56b35dd1b45cb4f7f7a7f5b3af0014a56a917b614ffd14",
+      "game_seed": "SPIREINV07",
+      "id": "spireinv07",
+      "monster_ids": [
+        "Cultist"
+      ]
+    },
+    {
+      "discovery_trace_sha256": "5653575822f181ed2c5d5a41742b816acca337700f1fec07b2254b9bfe5f0286",
+      "encounter_family": "jaw_worm",
+      "expected_start_sha256": "182dfee045292733b2a7c0006872ee7d4e919648b0f279fcfaa3910d2ebc4c5d",
+      "game_seed": "SPIREINV09",
+      "id": "spireinv09",
+      "monster_ids": [
+        "JawWorm"
+      ]
+    }
+  ],
+  "schedule": [
+    {
+      "scenario_id": "spireai1",
+      "policy_seed": 2000
+    },
+    {
+      "scenario_id": "spireinv07",
+      "policy_seed": 2000
+    },
+    {
+      "scenario_id": "spireinv09",
+      "policy_seed": 2000
+    },
+    {
+      "scenario_id": "spireai1",
+      "policy_seed": 2001
+    },
+    {
+      "scenario_id": "spireinv07",
+      "policy_seed": 2001
+    },
+    {
+      "scenario_id": "spireinv09",
+      "policy_seed": 2001
+    },
+    {
+      "scenario_id": "spireai1",
+      "policy_seed": 2002
+    },
+    {
+      "scenario_id": "spireinv07",
+      "policy_seed": 2002
+    },
+    {
+      "scenario_id": "spireinv09",
+      "policy_seed": 2002
+    },
+    {
+      "scenario_id": "spireai1",
+      "policy_seed": 2003
+    },
+    {
+      "scenario_id": "spireinv07",
+      "policy_seed": 2003
+    },
+    {
+      "scenario_id": "spireinv09",
+      "policy_seed": 2003
+    }
+  ]
+}

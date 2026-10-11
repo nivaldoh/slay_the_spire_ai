@@ -207,7 +207,7 @@ audited behavior data, interruption/resume, and frozen evaluation all work. The
 next declared budget increase can now run. The heuristic remains the strongest
 measured policy on this fixed diagnostic; no generalization result exists.
 
-## Proposed bounded development inventory (not launched)
+## Bounded development inventory contract (declared before launch)
 
 After the active long trial and its frozen evaluation finish, inventory additional
 public first-combat starts under the existing engine/mod pins, observation contract,
@@ -276,3 +276,44 @@ after checking discovery evidence, with no placeholder fingerprints. This invent
 does not create a held-out evaluation: a later contract must separate unseen seeds
 within familiar families from entirely held-out encounter families before training or
 tuning on the resulting catalog. See [scenario-expansion.md](scenario-expansion.md).
+
+## Completed bounded inventory and next development comparison
+
+The inventory ran at `cbe09ed` for 576.17 seconds and completed its fixed schedule
+in 18 attempts: 10 wins, two deliberate end-turn losses, and six unsupported attempts.
+These counts include discovery, exact repeats and sentinels; they are not policy win-rate
+estimates. Of 12 discovery seeds, four completed with excluded 88-HP starts, six were
+unsupported, and two met the declared 80-HP conditions. No infrastructure failure or
+retry occurred. Both final admissions reproduced their entire heuristic public traces:
+`SPIREINV07` (Cultist) and `SPIREINV09` (Jaw Worm). Both end-turn probes reached engine
+DEATH, and the final v1 sentinel matched the initial/reference trace exactly.
+
+An independent post-run check verified every child file hash and original trace audit,
+both admission replays and both sentinel comparisons. The compact
+[inventory record](results/starter-inventory-20261011.json) retains all rejections,
+limits, provenance and admitted start/trace hashes. No additional seed replaced a
+rejection. The 88-HP fights can support separately labelled mechanics observations,
+but are excluded from this inventory's 80-HP development catalog.
+
+The new `starter-three-encounter-development-v1` catalog combines the existing
+`SPIREAI1` mixed Louses with these two admissions. Every scenario has four explicitly
+scheduled policy sampling seeds, 2000–2003, in seed-major round-robin order (12 attempts
+per policy). All start at 80/80 HP with the unupgraded starter deck, Burning Blood and
+empty potion slots. Preserve exact monster order and public start hashes. These are
+three game scenarios, not twelve independent environment samples.
+
+Next comparison, declared before running catalog policies: uniform random, the public
+heuristic, the seed-0 initial neural artifact `1d60fa62…`, and the final budget-64 neural
+artifact `03ca30dc…`. The question is whether the fixed Louse-trained policy's behavior
+transfers to the two newly verified encounters. No new training or intermediate
+checkpoint selection precedes this comparison. Report each scenario and equal-scenario
+macro metrics, all attempts/failures, ending HP, turns and inference/runtime cost. The
+same 500-action/180-second episode limits apply, with a separate 1,200-second maximum
+per policy batch; incomplete batches remain incomplete and cannot yield a full macro
+score. Reserve all four policies, up to 48 attempts, with no outcome-conditioned reruns.
+
+The Cultist and Jaw Worm were absent from this policy's training, but this is still a
+small development comparison with one training initialization. It does not establish
+robust held-out performance. Broader training, repeated initialization seeds and a
+separately declared held-out split remain later work. The language imitation diagnostic
+keeps its original fixed-Louse suite and cannot be scored as this catalog experiment.

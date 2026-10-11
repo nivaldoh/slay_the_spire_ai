@@ -1,0 +1,1266 @@
+{
+  "admissions": [
+    {
+      "discovery_directory": "runs/attempt-0007",
+      "discovery_id": "discovery-SPIREINV07",
+      "discovery_trace_sha256": "43827745040a78663e1d9b9027c3a9804d9a21ebead230b0aad66d20037704b5",
+      "encounter_family": "cultist",
+      "expected_start_sha256": "0a52c8f998d1d2e93f56b35dd1b45cb4f7f7a7f5b3af0014a56a917b614ffd14",
+      "game_seed": "SPIREINV07",
+      "id": "spireinv07",
+      "monster_ids": [
+        "Cultist"
+      ],
+      "repeat_directory": "runs/attempt-0013"
+    },
+    {
+      "discovery_directory": "runs/attempt-0009",
+      "discovery_id": "discovery-SPIREINV09",
+      "discovery_trace_sha256": "5653575822f181ed2c5d5a41742b816acca337700f1fec07b2254b9bfe5f0286",
+      "encounter_family": "jaw_worm",
+      "expected_start_sha256": "182dfee045292733b2a7c0006872ee7d4e919648b0f279fcfaa3910d2ebc4c5d",
+      "game_seed": "SPIREINV09",
+      "id": "spireinv09",
+      "monster_ids": [
+        "JawWorm"
+      ],
+      "repeat_directory": "runs/attempt-0014"
+    }
+  ],
+  "admissions_valid": true,
+  "assignments": [
+    {
+      "attempts": [
+        0
+      ],
+      "game_seed": "SPIREAI1",
+      "id": "sentinel-before",
+      "stage": "sentinel",
+      "status": "verified"
+    },
+    {
+      "attempts": [
+        1
+      ],
+      "game_seed": "SPIREINV01",
+      "id": "discovery-SPIREINV01",
+      "reason": [
+        "Starting current_hp differs",
+        "Starting max_hp differs",
+        "Starting gold differs",
+        "Prefix did not choose 100 gold",
+        "Prefix chose a max-HP variant"
+      ],
+      "stage": "discovery",
+      "status": "rejected"
+    },
+    {
+      "attempts": [
+        2
+      ],
+      "game_seed": "SPIREINV02",
+      "id": "discovery-SPIREINV02",
+      "reason": [
+        "Neow has multiple choices without max HP or 100 gold; unsupported"
+      ],
+      "stage": "discovery",
+      "status": "rejected"
+    },
+    {
+      "attempts": [
+        3
+      ],
+      "game_seed": "SPIREINV03",
+      "id": "discovery-SPIREINV03",
+      "reason": [
+        "Neow has multiple choices without max HP or 100 gold; unsupported"
+      ],
+      "stage": "discovery",
+      "status": "rejected"
+    },
+    {
+      "attempts": [
+        4
+      ],
+      "game_seed": "SPIREINV04",
+      "id": "discovery-SPIREINV04",
+      "reason": [
+        "Starting current_hp differs",
+        "Starting max_hp differs",
+        "Starting gold differs",
+        "Prefix did not choose 100 gold",
+        "Prefix chose a max-HP variant"
+      ],
+      "stage": "discovery",
+      "status": "rejected"
+    },
+    {
+      "attempts": [
+        5
+      ],
+      "game_seed": "SPIREINV05",
+      "id": "discovery-SPIREINV05",
+      "reason": [
+        "Starting current_hp differs",
+        "Starting max_hp differs",
+        "Starting gold differs",
+        "Prefix did not choose 100 gold",
+        "Prefix chose a max-HP variant"
+      ],
+      "stage": "discovery",
+      "status": "rejected"
+    },
+    {
+      "attempts": [
+        6
+      ],
+      "game_seed": "SPIREINV06",
+      "id": "discovery-SPIREINV06",
+      "reason": [
+        "Playable card outside starter contract: Slimed"
+      ],
+      "stage": "discovery",
+      "status": "rejected"
+    },
+    {
+      "attempts": [
+        7
+      ],
+      "game_seed": "SPIREINV07",
+      "id": "discovery-SPIREINV07",
+      "stage": "discovery",
+      "status": "eligible"
+    },
+    {
+      "attempts": [
+        8
+      ],
+      "game_seed": "SPIREINV08",
+      "id": "discovery-SPIREINV08",
+      "reason": [
+        "Unsupported prefix screen CARD_REWARD: ['choose', 'skip', 'key', 'click', 'wait', 'state']"
+      ],
+      "stage": "discovery",
+      "status": "rejected"
+    },
+    {
+      "attempts": [
+        9
+      ],
+      "game_seed": "SPIREINV09",
+      "id": "discovery-SPIREINV09",
+      "stage": "discovery",
+      "status": "eligible"
+    },
+    {
+      "attempts": [
+        10
+      ],
+      "game_seed": "SPIREINV10",
+      "id": "discovery-SPIREINV10",
+      "reason": [
+        "Neow has multiple choices without max HP or 100 gold; unsupported"
+      ],
+      "stage": "discovery",
+      "status": "rejected"
+    },
+    {
+      "attempts": [
+        11
+      ],
+      "game_seed": "SPIREINV11",
+      "id": "discovery-SPIREINV11",
+      "reason": [
+        "Starting current_hp differs",
+        "Starting max_hp differs",
+        "Starting gold differs",
+        "Prefix did not choose 100 gold",
+        "Prefix chose a max-HP variant"
+      ],
+      "stage": "discovery",
+      "status": "rejected"
+    },
+    {
+      "attempts": [
+        12
+      ],
+      "game_seed": "SPIREINV12",
+      "id": "discovery-SPIREINV12",
+      "reason": [
+        "Unsupported prefix screen GRID: ['choose', 'key', 'click', 'wait', 'state']"
+      ],
+      "stage": "discovery",
+      "status": "rejected"
+    },
+    {
+      "attempts": [
+        13
+      ],
+      "discovery_id": "discovery-SPIREINV07",
+      "family": "cultist",
+      "game_seed": "SPIREINV07",
+      "id": "repeat-cultist-0",
+      "slot": 0,
+      "stage": "repeat",
+      "status": "admitted"
+    },
+    {
+      "attempts": [],
+      "family": "cultist",
+      "game_seed": null,
+      "id": "repeat-cultist-1",
+      "reason": "No selected candidate for slot",
+      "slot": 1,
+      "stage": "repeat",
+      "status": "not_scheduled"
+    },
+    {
+      "attempts": [
+        14
+      ],
+      "discovery_id": "discovery-SPIREINV09",
+      "family": "jaw_worm",
+      "game_seed": "SPIREINV09",
+      "id": "repeat-jaw_worm-0",
+      "slot": 0,
+      "stage": "repeat",
+      "status": "admitted"
+    },
+    {
+      "attempts": [],
+      "family": "jaw_worm",
+      "game_seed": null,
+      "id": "repeat-jaw_worm-1",
+      "reason": "No selected candidate for slot",
+      "slot": 1,
+      "stage": "repeat",
+      "status": "not_scheduled"
+    },
+    {
+      "attempts": [],
+      "family": "two_louses",
+      "game_seed": null,
+      "id": "repeat-two_louses-0",
+      "reason": "No selected candidate for slot",
+      "slot": 0,
+      "stage": "repeat",
+      "status": "not_scheduled"
+    },
+    {
+      "attempts": [],
+      "family": "two_louses",
+      "game_seed": null,
+      "id": "repeat-two_louses-1",
+      "reason": "No selected candidate for slot",
+      "slot": 1,
+      "stage": "repeat",
+      "status": "not_scheduled"
+    },
+    {
+      "attempts": [
+        15
+      ],
+      "discovery_id": "discovery-SPIREINV07",
+      "family": "cultist",
+      "game_seed": "SPIREINV07",
+      "id": "probe-cultist",
+      "stage": "probe",
+      "status": "verified"
+    },
+    {
+      "attempts": [
+        16
+      ],
+      "discovery_id": "discovery-SPIREINV09",
+      "family": "jaw_worm",
+      "game_seed": "SPIREINV09",
+      "id": "probe-jaw_worm",
+      "stage": "probe",
+      "status": "verified"
+    },
+    {
+      "attempts": [],
+      "family": "two_louses",
+      "game_seed": null,
+      "id": "probe-two_louses",
+      "reason": "No admitted scenario in family",
+      "stage": "probe",
+      "status": "not_scheduled"
+    },
+    {
+      "attempts": [
+        17
+      ],
+      "game_seed": "SPIREAI1",
+      "id": "sentinel-after",
+      "stage": "sentinel",
+      "status": "verified"
+    }
+  ],
+  "attempts": [
+    {
+      "assignment_id": "sentinel-before",
+      "audit": {
+        "audit_valid": true,
+        "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+        "eligibility": {
+          "eligible": true,
+          "family": "two_louses",
+          "monster_ids": [
+            "FuzzyLouseNormal",
+            "FuzzyLouseDefensive"
+          ],
+          "reasons": []
+        },
+        "issues": [],
+        "prefix": [
+          {
+            "command": "START IRONCLAD 0 SPIREAI1",
+            "screen_type": null
+          },
+          {
+            "choice": "talk",
+            "choice_text": "[Talk]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "obtain 100 gold",
+            "choice_text": "[ Obtain 100 Gold ]",
+            "command": "CHOOSE 1",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "leave",
+            "choice_text": "[Leave]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "x=0",
+            "command": "CHOOSE 0",
+            "event_id": null,
+            "screen_type": "MAP"
+          },
+          {
+            "command": "WAIT 60",
+            "role": "settle",
+            "screen_type": "NONE"
+          }
+        ],
+        "reported_error": null,
+        "status": "won"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0000",
+      "finished_unix": 1791702683.470913,
+      "index": 0,
+      "retry_of": null,
+      "started_unix": 1791702640.882445,
+      "status": "won"
+    },
+    {
+      "assignment_id": "discovery-SPIREINV01",
+      "audit": {
+        "audit_valid": true,
+        "combat_start_sha256": "583857a95e7df9820de8116d1f19595827b425e189a08691c948115995c072e9",
+        "eligibility": {
+          "eligible": false,
+          "family": "cultist",
+          "monster_ids": [
+            "Cultist"
+          ],
+          "reasons": [
+            "Starting current_hp differs",
+            "Starting max_hp differs",
+            "Starting gold differs",
+            "Prefix did not choose 100 gold",
+            "Prefix chose a max-HP variant"
+          ]
+        },
+        "issues": [],
+        "prefix": [
+          {
+            "command": "START IRONCLAD 0 SPIREINV01",
+            "screen_type": null
+          },
+          {
+            "choice": "talk",
+            "choice_text": "[Talk]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "max hp +8",
+            "choice_text": "[ Max HP +8 ]",
+            "command": "CHOOSE 1",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "leave",
+            "choice_text": "[Leave]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "x=0",
+            "command": "CHOOSE 0",
+            "event_id": null,
+            "screen_type": "MAP"
+          },
+          {
+            "command": "WAIT 60",
+            "role": "settle",
+            "screen_type": "NONE"
+          }
+        ],
+        "reported_error": null,
+        "status": "won"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0001",
+      "finished_unix": 1791702719.861528,
+      "index": 1,
+      "retry_of": null,
+      "started_unix": 1791702683.5097468,
+      "status": "won"
+    },
+    {
+      "assignment_id": "discovery-SPIREINV02",
+      "audit": {
+        "audit_valid": true,
+        "issues": [],
+        "reported_error": "Neow has multiple choices without max HP or 100 gold; unsupported",
+        "status": "unsupported"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0002",
+      "finished_unix": 1791702736.6328642,
+      "index": 2,
+      "retry_of": null,
+      "started_unix": 1791702719.906056,
+      "status": "unsupported"
+    },
+    {
+      "assignment_id": "discovery-SPIREINV03",
+      "audit": {
+        "audit_valid": true,
+        "issues": [],
+        "reported_error": "Neow has multiple choices without max HP or 100 gold; unsupported",
+        "status": "unsupported"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0003",
+      "finished_unix": 1791702750.8203323,
+      "index": 3,
+      "retry_of": null,
+      "started_unix": 1791702736.6531465,
+      "status": "unsupported"
+    },
+    {
+      "assignment_id": "discovery-SPIREINV04",
+      "audit": {
+        "audit_valid": true,
+        "combat_start_sha256": "2ce9eecbdba41f58ca3c8528c7fe7670e16d4659c08e500bf7a36272c8e89e7c",
+        "eligibility": {
+          "eligible": false,
+          "family": "jaw_worm",
+          "monster_ids": [
+            "JawWorm"
+          ],
+          "reasons": [
+            "Starting current_hp differs",
+            "Starting max_hp differs",
+            "Starting gold differs",
+            "Prefix did not choose 100 gold",
+            "Prefix chose a max-HP variant"
+          ]
+        },
+        "issues": [],
+        "prefix": [
+          {
+            "command": "START IRONCLAD 0 SPIREINV04",
+            "screen_type": null
+          },
+          {
+            "choice": "talk",
+            "choice_text": "[Talk]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "max hp +8",
+            "choice_text": "[ Max HP +8 ]",
+            "command": "CHOOSE 1",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "leave",
+            "choice_text": "[Leave]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "x=1",
+            "command": "CHOOSE 0",
+            "event_id": null,
+            "screen_type": "MAP"
+          },
+          {
+            "command": "WAIT 60",
+            "role": "settle",
+            "screen_type": "NONE"
+          }
+        ],
+        "reported_error": null,
+        "status": "won"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0004",
+      "finished_unix": 1791702795.6274185,
+      "index": 4,
+      "retry_of": null,
+      "started_unix": 1791702750.8621957,
+      "status": "won"
+    },
+    {
+      "assignment_id": "discovery-SPIREINV05",
+      "audit": {
+        "audit_valid": true,
+        "combat_start_sha256": "706a1dac00ca8d203cb8fd5c60592a4c232b65ec9de9ef766776a90f2c771093",
+        "eligibility": {
+          "eligible": false,
+          "family": "two_louses",
+          "monster_ids": [
+            "FuzzyLouseNormal",
+            "FuzzyLouseNormal"
+          ],
+          "reasons": [
+            "Starting current_hp differs",
+            "Starting max_hp differs",
+            "Starting gold differs",
+            "Prefix did not choose 100 gold",
+            "Prefix chose a max-HP variant"
+          ]
+        },
+        "issues": [],
+        "prefix": [
+          {
+            "command": "START IRONCLAD 0 SPIREINV05",
+            "screen_type": null
+          },
+          {
+            "choice": "talk",
+            "choice_text": "[Talk]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "max hp +8",
+            "choice_text": "[ Max HP +8 ]",
+            "command": "CHOOSE 1",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "leave",
+            "choice_text": "[Leave]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "x=0",
+            "command": "CHOOSE 0",
+            "event_id": null,
+            "screen_type": "MAP"
+          },
+          {
+            "command": "WAIT 60",
+            "role": "settle",
+            "screen_type": "NONE"
+          }
+        ],
+        "reported_error": null,
+        "status": "won"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0005",
+      "finished_unix": 1791702830.6887574,
+      "index": 5,
+      "retry_of": null,
+      "started_unix": 1791702795.6712465,
+      "status": "won"
+    },
+    {
+      "assignment_id": "discovery-SPIREINV06",
+      "audit": {
+        "audit_valid": true,
+        "combat_start_sha256": "8a477e309ed9812320c7c71cdb8100258c55c604d7b1d21ea10aab5584243611",
+        "issues": [],
+        "prefix": [
+          {
+            "command": "START IRONCLAD 0 SPIREINV06",
+            "screen_type": null
+          },
+          {
+            "choice": "talk",
+            "choice_text": "[Talk]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "obtain 100 gold",
+            "choice_text": "[ Obtain 100 Gold ]",
+            "command": "CHOOSE 1",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "leave",
+            "choice_text": "[Leave]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "x=0",
+            "command": "CHOOSE 0",
+            "event_id": null,
+            "screen_type": "MAP"
+          },
+          {
+            "command": "WAIT 60",
+            "role": "settle",
+            "screen_type": "NONE"
+          }
+        ],
+        "reported_error": "Playable card outside starter contract: Slimed",
+        "status": "unsupported"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0006",
+      "finished_unix": 1791702858.475196,
+      "index": 6,
+      "retry_of": null,
+      "started_unix": 1791702830.7262447,
+      "status": "unsupported"
+    },
+    {
+      "assignment_id": "discovery-SPIREINV07",
+      "audit": {
+        "audit_valid": true,
+        "combat_start_sha256": "0a52c8f998d1d2e93f56b35dd1b45cb4f7f7a7f5b3af0014a56a917b614ffd14",
+        "eligibility": {
+          "eligible": true,
+          "family": "cultist",
+          "monster_ids": [
+            "Cultist"
+          ],
+          "reasons": []
+        },
+        "issues": [],
+        "prefix": [
+          {
+            "command": "START IRONCLAD 0 SPIREINV07",
+            "screen_type": null
+          },
+          {
+            "choice": "talk",
+            "choice_text": "[Talk]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "obtain 100 gold",
+            "choice_text": "[ Obtain 100 Gold ]",
+            "command": "CHOOSE 1",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "leave",
+            "choice_text": "[Leave]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "x=3",
+            "command": "CHOOSE 0",
+            "event_id": null,
+            "screen_type": "MAP"
+          },
+          {
+            "command": "WAIT 60",
+            "role": "settle",
+            "screen_type": "NONE"
+          }
+        ],
+        "reported_error": null,
+        "status": "won"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0007",
+      "finished_unix": 1791702906.051165,
+      "index": 7,
+      "retry_of": null,
+      "started_unix": 1791702858.529547,
+      "status": "won"
+    },
+    {
+      "assignment_id": "discovery-SPIREINV08",
+      "audit": {
+        "audit_valid": true,
+        "issues": [],
+        "reported_error": "Unsupported prefix screen CARD_REWARD: ['choose', 'skip', 'key', 'click', 'wait', 'state']",
+        "status": "unsupported"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0008",
+      "finished_unix": 1791702919.776484,
+      "index": 8,
+      "retry_of": null,
+      "started_unix": 1791702906.1174333,
+      "status": "unsupported"
+    },
+    {
+      "assignment_id": "discovery-SPIREINV09",
+      "audit": {
+        "audit_valid": true,
+        "combat_start_sha256": "182dfee045292733b2a7c0006872ee7d4e919648b0f279fcfaa3910d2ebc4c5d",
+        "eligibility": {
+          "eligible": true,
+          "family": "jaw_worm",
+          "monster_ids": [
+            "JawWorm"
+          ],
+          "reasons": []
+        },
+        "issues": [],
+        "prefix": [
+          {
+            "command": "START IRONCLAD 0 SPIREINV09",
+            "screen_type": null
+          },
+          {
+            "choice": "talk",
+            "choice_text": "[Talk]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "obtain 100 gold",
+            "choice_text": "[ Obtain 100 Gold ]",
+            "command": "CHOOSE 1",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "leave",
+            "choice_text": "[Leave]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "x=0",
+            "command": "CHOOSE 0",
+            "event_id": null,
+            "screen_type": "MAP"
+          },
+          {
+            "command": "WAIT 60",
+            "role": "settle",
+            "screen_type": "NONE"
+          }
+        ],
+        "reported_error": null,
+        "status": "won"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0009",
+      "finished_unix": 1791702972.4109335,
+      "index": 9,
+      "retry_of": null,
+      "started_unix": 1791702919.8023913,
+      "status": "won"
+    },
+    {
+      "assignment_id": "discovery-SPIREINV10",
+      "audit": {
+        "audit_valid": true,
+        "issues": [],
+        "reported_error": "Neow has multiple choices without max HP or 100 gold; unsupported",
+        "status": "unsupported"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0010",
+      "finished_unix": 1791702986.4468117,
+      "index": 10,
+      "retry_of": null,
+      "started_unix": 1791702972.476462,
+      "status": "unsupported"
+    },
+    {
+      "assignment_id": "discovery-SPIREINV11",
+      "audit": {
+        "audit_valid": true,
+        "combat_start_sha256": "6137be4da6060b7f2ea106f1ae16ec46fd08d57ed32ac39dc5dcc33be30b1821",
+        "eligibility": {
+          "eligible": false,
+          "family": "two_louses",
+          "monster_ids": [
+            "FuzzyLouseDefensive",
+            "FuzzyLouseDefensive"
+          ],
+          "reasons": [
+            "Starting current_hp differs",
+            "Starting max_hp differs",
+            "Starting gold differs",
+            "Prefix did not choose 100 gold",
+            "Prefix chose a max-HP variant"
+          ]
+        },
+        "issues": [],
+        "prefix": [
+          {
+            "command": "START IRONCLAD 0 SPIREINV11",
+            "screen_type": null
+          },
+          {
+            "choice": "talk",
+            "choice_text": "[Talk]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "max hp +8",
+            "choice_text": "[ Max HP +8 ]",
+            "command": "CHOOSE 1",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "leave",
+            "choice_text": "[Leave]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "x=1",
+            "command": "CHOOSE 0",
+            "event_id": null,
+            "screen_type": "MAP"
+          },
+          {
+            "command": "WAIT 60",
+            "role": "settle",
+            "screen_type": "NONE"
+          }
+        ],
+        "reported_error": null,
+        "status": "won"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0011",
+      "finished_unix": 1791703020.8775156,
+      "index": 11,
+      "retry_of": null,
+      "started_unix": 1791702986.4769313,
+      "status": "won"
+    },
+    {
+      "assignment_id": "discovery-SPIREINV12",
+      "audit": {
+        "audit_valid": true,
+        "issues": [],
+        "reported_error": "Unsupported prefix screen GRID: ['choose', 'key', 'click', 'wait', 'state']",
+        "status": "unsupported"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0012",
+      "finished_unix": 1791703034.9542353,
+      "index": 12,
+      "retry_of": null,
+      "started_unix": 1791703020.921486,
+      "status": "unsupported"
+    },
+    {
+      "assignment_id": "repeat-cultist-0",
+      "audit": {
+        "audit_valid": true,
+        "combat_start_sha256": "0a52c8f998d1d2e93f56b35dd1b45cb4f7f7a7f5b3af0014a56a917b614ffd14",
+        "eligibility": {
+          "eligible": true,
+          "family": "cultist",
+          "monster_ids": [
+            "Cultist"
+          ],
+          "reasons": []
+        },
+        "issues": [],
+        "prefix": [
+          {
+            "command": "START IRONCLAD 0 SPIREINV07",
+            "screen_type": null
+          },
+          {
+            "choice": "talk",
+            "choice_text": "[Talk]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "obtain 100 gold",
+            "choice_text": "[ Obtain 100 Gold ]",
+            "command": "CHOOSE 1",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "leave",
+            "choice_text": "[Leave]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "x=3",
+            "command": "CHOOSE 0",
+            "event_id": null,
+            "screen_type": "MAP"
+          },
+          {
+            "command": "WAIT 60",
+            "role": "settle",
+            "screen_type": "NONE"
+          }
+        ],
+        "reported_error": null,
+        "status": "won"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0013",
+      "finished_unix": 1791703082.711268,
+      "index": 13,
+      "retry_of": null,
+      "started_unix": 1791703034.9943037,
+      "status": "won"
+    },
+    {
+      "assignment_id": "repeat-jaw_worm-0",
+      "audit": {
+        "audit_valid": true,
+        "combat_start_sha256": "182dfee045292733b2a7c0006872ee7d4e919648b0f279fcfaa3910d2ebc4c5d",
+        "eligibility": {
+          "eligible": true,
+          "family": "jaw_worm",
+          "monster_ids": [
+            "JawWorm"
+          ],
+          "reasons": []
+        },
+        "issues": [],
+        "prefix": [
+          {
+            "command": "START IRONCLAD 0 SPIREINV09",
+            "screen_type": null
+          },
+          {
+            "choice": "talk",
+            "choice_text": "[Talk]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "obtain 100 gold",
+            "choice_text": "[ Obtain 100 Gold ]",
+            "command": "CHOOSE 1",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "leave",
+            "choice_text": "[Leave]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "x=0",
+            "command": "CHOOSE 0",
+            "event_id": null,
+            "screen_type": "MAP"
+          },
+          {
+            "command": "WAIT 60",
+            "role": "settle",
+            "screen_type": "NONE"
+          }
+        ],
+        "reported_error": null,
+        "status": "won"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0014",
+      "finished_unix": 1791703132.2545862,
+      "index": 14,
+      "retry_of": null,
+      "started_unix": 1791703082.7788208,
+      "status": "won"
+    },
+    {
+      "assignment_id": "probe-cultist",
+      "audit": {
+        "audit_valid": true,
+        "combat_start_sha256": "0a52c8f998d1d2e93f56b35dd1b45cb4f7f7a7f5b3af0014a56a917b614ffd14",
+        "eligibility": {
+          "eligible": true,
+          "family": "cultist",
+          "monster_ids": [
+            "Cultist"
+          ],
+          "reasons": []
+        },
+        "issues": [],
+        "prefix": [
+          {
+            "command": "START IRONCLAD 0 SPIREINV07",
+            "screen_type": null
+          },
+          {
+            "choice": "talk",
+            "choice_text": "[Talk]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "obtain 100 gold",
+            "choice_text": "[ Obtain 100 Gold ]",
+            "command": "CHOOSE 1",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "leave",
+            "choice_text": "[Leave]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "x=3",
+            "command": "CHOOSE 0",
+            "event_id": null,
+            "screen_type": "MAP"
+          },
+          {
+            "command": "WAIT 60",
+            "role": "settle",
+            "screen_type": "NONE"
+          }
+        ],
+        "reported_error": null,
+        "status": "lost"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0015",
+      "finished_unix": 1791703171.6394184,
+      "index": 15,
+      "retry_of": null,
+      "started_unix": 1791703132.317347,
+      "status": "lost"
+    },
+    {
+      "assignment_id": "probe-jaw_worm",
+      "audit": {
+        "audit_valid": true,
+        "combat_start_sha256": "182dfee045292733b2a7c0006872ee7d4e919648b0f279fcfaa3910d2ebc4c5d",
+        "eligibility": {
+          "eligible": true,
+          "family": "jaw_worm",
+          "monster_ids": [
+            "JawWorm"
+          ],
+          "reasons": []
+        },
+        "issues": [],
+        "prefix": [
+          {
+            "command": "START IRONCLAD 0 SPIREINV09",
+            "screen_type": null
+          },
+          {
+            "choice": "talk",
+            "choice_text": "[Talk]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "obtain 100 gold",
+            "choice_text": "[ Obtain 100 Gold ]",
+            "command": "CHOOSE 1",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "leave",
+            "choice_text": "[Leave]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "x=0",
+            "command": "CHOOSE 0",
+            "event_id": null,
+            "screen_type": "MAP"
+          },
+          {
+            "command": "WAIT 60",
+            "role": "settle",
+            "screen_type": "NONE"
+          }
+        ],
+        "reported_error": null,
+        "status": "lost"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0016",
+      "finished_unix": 1791703225.6883025,
+      "index": 16,
+      "retry_of": null,
+      "started_unix": 1791703171.7014673,
+      "status": "lost"
+    },
+    {
+      "assignment_id": "sentinel-after",
+      "audit": {
+        "audit_valid": true,
+        "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+        "eligibility": {
+          "eligible": true,
+          "family": "two_louses",
+          "monster_ids": [
+            "FuzzyLouseNormal",
+            "FuzzyLouseDefensive"
+          ],
+          "reasons": []
+        },
+        "issues": [],
+        "prefix": [
+          {
+            "command": "START IRONCLAD 0 SPIREAI1",
+            "screen_type": null
+          },
+          {
+            "choice": "talk",
+            "choice_text": "[Talk]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "obtain 100 gold",
+            "choice_text": "[ Obtain 100 Gold ]",
+            "command": "CHOOSE 1",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "leave",
+            "choice_text": "[Leave]",
+            "command": "CHOOSE 0",
+            "event_id": "Neow Event",
+            "screen_type": "EVENT"
+          },
+          {
+            "choice": "x=0",
+            "command": "CHOOSE 0",
+            "event_id": null,
+            "screen_type": "MAP"
+          },
+          {
+            "command": "WAIT 60",
+            "role": "settle",
+            "screen_type": "NONE"
+          }
+        ],
+        "reported_error": null,
+        "status": "won"
+      },
+      "collector_overrun_seconds": 0.0,
+      "directory": "runs/attempt-0017",
+      "finished_unix": 1791703268.2165647,
+      "index": 17,
+      "retry_of": null,
+      "started_unix": 1791703225.73642,
+      "status": "won"
+    }
+  ],
+  "contract_sha256": "72d14fc6f5bbe7765479572806431f142260dc553d2da5d7bdc648976a43f972",
+  "deadline_unix": 1791704440.8762467,
+  "driver_sha256": "dda99104c33b2a5f40e56c2e1c203c25cfcb5ddc36de0c3b4db4cc86b3c323ad",
+  "elapsed_seconds": 576.165379414997,
+  "engine_pins": {
+    "game": "cfad868ac8d65a88e71a0bf096fb09f78811e553effe0787c5309a655e081673",
+    "mods": {
+      "BaseMod.jar": "c3353c10e64c621b723e9fd7d0502dfa796f828b101b68513594a5f5ef83fbaf",
+      "CommunicationMod.jar": "12b99249eccfd5245ddb0b6b7575e1a1dfba0ce0ed6fad5bd5bbd4a303897ef5",
+      "ModTheSpire.jar": "541b5e8a875d2a404a5a6d54f4a6f814284b0cf71acb9245239d9c5ef50ea604"
+    }
+  },
+  "independent_recheck": {
+    "admission_full_replays": true,
+    "all_child_file_hashes": true,
+    "all_original_trace_audits": true,
+    "both_sentinels_match_reference": true
+  },
+  "infrastructure_failures": 0,
+  "outcomes": {
+    "lost": 2,
+    "unsupported": 6,
+    "won": 10
+  },
+  "post_deadline_seconds": 0.0,
+  "reference_sha256": "a6a67e9f24f733c084f9d4548e873cc1236ad08ef6a2a130f8e70acbca4c6dde",
+  "research_sha256": "a55e48a2040d2281d6d6335ad21655dd92332d2766e7c60a59321706a44385bd",
+  "retry_used": false,
+  "schema_version": 1,
+  "scope": "Development inventory with outcome-independent eligibility, not an evaluation of policy quality or independent generalization.",
+  "selected": [
+    "discovery-SPIREINV07",
+    "discovery-SPIREINV09"
+  ],
+  "source_evidence_sha256": {
+    "runs/starter-inventory-20261011/contract.json": "72d14fc6f5bbe7765479572806431f142260dc553d2da5d7bdc648976a43f972",
+    "runs/starter-inventory-20261011/inventory.json": "b2bd3789be73be6c33d85108c8cd63bf9dcf8aff4fb8257742e0e83a3a30d12c",
+    "runs/starter-inventory-20261011/reference.json": "a6a67e9f24f733c084f9d4548e873cc1236ad08ef6a2a130f8e70acbca4c6dde",
+    "runs/summarize_inventory.py": "88af6994802ee98edc9a9c4eb00e1d6c24f9e516722c0fcb05afcd1605c21f65"
+  },
+  "source_revision": "cbe09ed9a361c8c7df447bc08ec1fe61a5540cd8",
+  "started_unix": 1791702640.8762467,
+  "status": "completed",
+  "stop_reason": "schedule_complete",
+  "unattempted": []
+}

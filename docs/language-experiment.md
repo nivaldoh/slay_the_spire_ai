@@ -17,7 +17,8 @@ artifact. Do not select an intermediate checkpoint by gameplay score.
 
 Both evaluations use `configs/suites/louse_diagnostic_development_v1.json`: the same
 original engine, Ironclad A0, seeded settled start, eight scheduled policy seeds and
-per-episode limits as the neural/random/heuristic comparisons. Greedy decoding is
+per-episode limits as the neural/random/heuristic comparisons, with a separate
+1,600-second process deadline per evaluation batch. Greedy decoding is
 deterministic; eight repeats of the same scenario do not give eight independent
 situations or eight language-policy sampling draws. Report this duplication explicitly.
 
