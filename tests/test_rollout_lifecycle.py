@@ -1,6 +1,7 @@
 """Runner lifecycle regressions; these mocked states do not certify the engine."""
 
 import json
+from contextlib import nullcontext
 from copy import deepcopy
 from types import SimpleNamespace
 from unittest.mock import Mock
@@ -132,6 +133,7 @@ def harness(monkeypatch):
 
     monkeypatch.setattr(rollout, "BridgeServer", FakeBridge)
     monkeypatch.setattr(rollout, "OwnedGame", FakeGame)
+    monkeypatch.setattr(rollout, "RuntimeLock", nullcontext)
     monkeypatch.setattr(rollout, "prepare_runtime", Mock(return_value={"mods": {}}))
     monkeypatch.setattr(
         rollout,
