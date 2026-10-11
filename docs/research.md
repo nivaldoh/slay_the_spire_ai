@@ -138,6 +138,39 @@ headroom is 396 GiB; the first pilot occupied 7.6 MiB including checkpoints and 
 CPU inference/update cost is small relative to game collection. New training uses
 an independent run directory and deadline; it does not extend the completed pilot.
 
+## Budget-64 result
+
+The declared budget-only trial at7b4cc31 completed64attempts, all wins,12PPOupdates
+and827audited transitions in2,298.47seconds. The final57-transition tail batch follows
+the existing attempt-limit rule. All30applicable verifier checks pass, including
+behavior probabilities, optimizer state, data lineage, unique ingestion, source pins,
+and finite updates. The first update exactly reproduced the pilot from the same
+initialization and first81transitions; this is not an independent training replicate.
+
+The final export `03ca30dc29154b968686a918efb0d4579d99c3142461ee2507a33138b18bbd22`
+was evaluated without checkpoint selection. Result:8/8wins, endingHP
+[80,66,76,78,71,53,80,72], mean72.0, compared with72.75 for the exactly matching
+initial tensor artifact,72.75 for the pilot,68 for random, and77 for the heuristic.
+There were no invalid actions or infrastructure failures. Six paired command/public
+transition sequences were identical. Sampling seed1004 first diverged at turn2,
+selecting a Strike at the second Louse instead of Defend from the same public state;
+the subsequent trajectory ended sixHP lower. Seed1005 differed at a later action but
+ended at the same53HP. Shared command prefixes had identical public transitions.
+These observations locate behavioral differences, not a counterfactual causal test
+of a single action, since subsequent actions and random-event streams may diverge.
+
+Decision: **reject** the increased budget as an improvement on this fixed diagnostic.
+Keep its valid learning/evaluation evidence. A0Louse wins are saturated and the
+health term produces only a small optimization signal; this is a plausible limitation,
+not a measured cause or a reason to alter reward within the completed experiment.
+The next work broadens verified development conditions under the inventory below,
+while a separate pretrained-model imitation diagnostic tests the language track.
+No unseen-scenario performance or robust improvement is claimed.
+
+See the generated [comparison](results/ppo-budget64-development-v1.json),
+[paired evidence](results/ppo-budget64-paired-evaluation.json), and
+[training audit](results/ppo-budget64-training-audit.json). Raw artifacts remain local.
+
 ## Evaluation infrastructure interruption
 
 Initial evaluation finished 8/8 wins, mean HP72.75. The first trained evaluation
