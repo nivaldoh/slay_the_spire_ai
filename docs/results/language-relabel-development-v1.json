@@ -1,0 +1,997 @@
+{
+  "catalog": {
+    "heuristic": {
+      "macro": {
+        "complete": true,
+        "mean_ending_hp": 76,
+        "mean_net_hp_lost": 4,
+        "mean_turns": 7,
+        "policy_attempt_win_rate": 1.0,
+        "weighting": "equal_scenario",
+        "win_rate": 1.0
+      },
+      "scenarios": {
+        "spireai1": {
+          "attempts": 4,
+          "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+          "infrastructure_failures": 0,
+          "interrupted": 0,
+          "invalid_actions": 0,
+          "invalid_evidence": 0,
+          "losses": 0,
+          "mean_combat_seconds": 24.92175970449898,
+          "mean_elapsed_seconds": 39.42527885575146,
+          "mean_ending_hp": 77,
+          "mean_net_hp_lost": 3,
+          "mean_reset_seconds": 14.503515567750583,
+          "mean_starting_hp": 80,
+          "mean_turns": 6,
+          "policy_attempt_win_rate": 1.0,
+          "policy_attempts": 4,
+          "policy_failures": 0,
+          "truncated": 0,
+          "unsupported": 0,
+          "valid_evidence_episodes": 4,
+          "valid_gameplay_episodes": 4,
+          "validated_transitions": 84,
+          "win_rate": 1.0,
+          "wins": 4
+        },
+        "spireinv07": {
+          "attempts": 4,
+          "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+          "infrastructure_failures": 0,
+          "interrupted": 0,
+          "invalid_actions": 0,
+          "invalid_evidence": 0,
+          "losses": 0,
+          "mean_combat_seconds": 26.285193906500353,
+          "mean_elapsed_seconds": 40.326114430001326,
+          "mean_ending_hp": 71,
+          "mean_net_hp_lost": 9,
+          "mean_reset_seconds": 14.040916207750342,
+          "mean_starting_hp": 80,
+          "mean_turns": 7,
+          "policy_attempt_win_rate": 1.0,
+          "policy_attempts": 4,
+          "policy_failures": 0,
+          "truncated": 0,
+          "unsupported": 0,
+          "valid_evidence_episodes": 4,
+          "valid_gameplay_episodes": 4,
+          "validated_transitions": 96,
+          "win_rate": 1.0,
+          "wins": 4
+        },
+        "spireinv09": {
+          "attempts": 4,
+          "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+          "infrastructure_failures": 0,
+          "interrupted": 0,
+          "invalid_actions": 0,
+          "invalid_evidence": 0,
+          "losses": 0,
+          "mean_combat_seconds": 31.38104703574936,
+          "mean_elapsed_seconds": 45.58684878174972,
+          "mean_ending_hp": 80,
+          "mean_net_hp_lost": 0,
+          "mean_reset_seconds": 14.205797812250239,
+          "mean_starting_hp": 80,
+          "mean_turns": 8,
+          "policy_attempt_win_rate": 1.0,
+          "policy_attempts": 4,
+          "policy_failures": 0,
+          "truncated": 0,
+          "unsupported": 0,
+          "valid_evidence_episodes": 4,
+          "valid_gameplay_episodes": 4,
+          "validated_transitions": 108,
+          "win_rate": 1.0,
+          "wins": 4
+        }
+      }
+    },
+    "louse21": {
+      "evaluation_sha256": "c206f893555b76e2845efb1834fa1d5531aa79116ed152d4c0e57ab58f1551f9",
+      "macro": {
+        "complete": true,
+        "mean_ending_hp": 76.33333333333333,
+        "mean_net_hp_lost": 3.6666666666666665,
+        "mean_turns": 6.333333333333333,
+        "policy_attempt_win_rate": 1.0,
+        "weighting": "equal_scenario",
+        "win_rate": 1.0
+      },
+      "scenarios": {
+        "spireai1": {
+          "attempts": 4,
+          "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+          "infrastructure_failures": 0,
+          "interrupted": 0,
+          "invalid_actions": 0,
+          "invalid_evidence": 0,
+          "losses": 0,
+          "mean_combat_seconds": 31.251749615501467,
+          "mean_elapsed_seconds": 45.456118126996444,
+          "mean_ending_hp": 77,
+          "mean_net_hp_lost": 3,
+          "mean_reset_seconds": 14.204364528995939,
+          "mean_starting_hp": 80,
+          "mean_turns": 6,
+          "policy_attempt_win_rate": 1.0,
+          "policy_attempts": 4,
+          "policy_failures": 0,
+          "truncated": 0,
+          "unsupported": 0,
+          "valid_evidence_episodes": 4,
+          "valid_gameplay_episodes": 4,
+          "validated_transitions": 84,
+          "win_rate": 1.0,
+          "wins": 4
+        },
+        "spireinv07": {
+          "attempts": 4,
+          "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+          "infrastructure_failures": 0,
+          "interrupted": 0,
+          "invalid_actions": 0,
+          "invalid_evidence": 0,
+          "losses": 0,
+          "mean_combat_seconds": 29.4949459749987,
+          "mean_elapsed_seconds": 43.55970788349441,
+          "mean_ending_hp": 74,
+          "mean_net_hp_lost": 6,
+          "mean_reset_seconds": 14.064756173498608,
+          "mean_starting_hp": 80,
+          "mean_turns": 6,
+          "policy_attempt_win_rate": 1.0,
+          "policy_attempts": 4,
+          "policy_failures": 0,
+          "truncated": 0,
+          "unsupported": 0,
+          "valid_evidence_episodes": 4,
+          "valid_gameplay_episodes": 4,
+          "validated_transitions": 92,
+          "win_rate": 1.0,
+          "wins": 4
+        },
+        "spireinv09": {
+          "attempts": 4,
+          "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+          "infrastructure_failures": 0,
+          "interrupted": 0,
+          "invalid_actions": 0,
+          "invalid_evidence": 0,
+          "losses": 0,
+          "mean_combat_seconds": 36.28268371950617,
+          "mean_elapsed_seconds": 50.362172788249154,
+          "mean_ending_hp": 78,
+          "mean_net_hp_lost": 2,
+          "mean_reset_seconds": 14.079484937745292,
+          "mean_starting_hp": 80,
+          "mean_turns": 7,
+          "policy_attempt_win_rate": 1.0,
+          "policy_attempts": 4,
+          "policy_failures": 0,
+          "truncated": 0,
+          "unsupported": 0,
+          "valid_evidence_episodes": 4,
+          "valid_gameplay_episodes": 4,
+          "validated_transitions": 108,
+          "win_rate": 1.0,
+          "wins": 4
+        }
+      },
+      "source_revision": "7314779e99c219af8d0955488bae1e0bef73d5b8"
+    },
+    "relabel": {
+      "evaluation_sha256": "935c0d891eeec3a5d5a37596461239f3d0fb50382eab97b4803f6d704aa577dd",
+      "macro": {
+        "complete": true,
+        "mean_ending_hp": 63.666666666666664,
+        "mean_net_hp_lost": 16.333333333333332,
+        "mean_turns": 7.666666666666667,
+        "policy_attempt_win_rate": 1.0,
+        "weighting": "equal_scenario",
+        "win_rate": 1.0
+      },
+      "scenarios": {
+        "spireai1": {
+          "attempts": 4,
+          "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+          "infrastructure_failures": 0,
+          "interrupted": 0,
+          "invalid_actions": 0,
+          "invalid_evidence": 0,
+          "losses": 0,
+          "mean_combat_seconds": 31.411211153754266,
+          "mean_elapsed_seconds": 46.38868058974913,
+          "mean_ending_hp": 77,
+          "mean_net_hp_lost": 3,
+          "mean_reset_seconds": 14.977464065250388,
+          "mean_starting_hp": 80,
+          "mean_turns": 6,
+          "policy_attempt_win_rate": 1.0,
+          "policy_attempts": 4,
+          "policy_failures": 0,
+          "truncated": 0,
+          "unsupported": 0,
+          "valid_evidence_episodes": 4,
+          "valid_gameplay_episodes": 4,
+          "validated_transitions": 84,
+          "win_rate": 1.0,
+          "wins": 4
+        },
+        "spireinv07": {
+          "attempts": 4,
+          "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+          "infrastructure_failures": 0,
+          "interrupted": 0,
+          "invalid_actions": 0,
+          "invalid_evidence": 0,
+          "losses": 0,
+          "mean_combat_seconds": 45.470723675000045,
+          "mean_elapsed_seconds": 59.731400789249165,
+          "mean_ending_hp": 41,
+          "mean_net_hp_lost": 39,
+          "mean_reset_seconds": 14.260672499498469,
+          "mean_starting_hp": 80,
+          "mean_turns": 9,
+          "policy_attempt_win_rate": 1.0,
+          "policy_attempts": 4,
+          "policy_failures": 0,
+          "truncated": 0,
+          "unsupported": 0,
+          "valid_evidence_episodes": 4,
+          "valid_gameplay_episodes": 4,
+          "validated_transitions": 132,
+          "win_rate": 1.0,
+          "wins": 4
+        },
+        "spireinv09": {
+          "attempts": 4,
+          "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+          "infrastructure_failures": 0,
+          "interrupted": 0,
+          "invalid_actions": 0,
+          "invalid_evidence": 0,
+          "losses": 0,
+          "mean_combat_seconds": 41.70965551874542,
+          "mean_elapsed_seconds": 55.89249273150199,
+          "mean_ending_hp": 73,
+          "mean_net_hp_lost": 7,
+          "mean_reset_seconds": 14.18283185825203,
+          "mean_starting_hp": 80,
+          "mean_turns": 8,
+          "policy_attempt_win_rate": 1.0,
+          "policy_attempts": 4,
+          "policy_failures": 0,
+          "truncated": 0,
+          "unsupported": 0,
+          "valid_evidence_episodes": 4,
+          "valid_gameplay_episodes": 4,
+          "validated_transitions": 120,
+          "win_rate": 1.0,
+          "wins": 4
+        }
+      },
+      "source_revision": "b170f84279177d9633aa54531a310ad5cac417a7"
+    }
+  },
+  "choice_zero_test_row_agreement": 0.592,
+  "decision_rule": {
+    "adopt_relabel_adapter": true,
+    "test_prompt_agreement": {
+      "louse21": 0.7212475633528265,
+      "relabel": 0.7524366471734892
+    },
+    "unseen_family_wins": {
+      "louse21": 8,
+      "relabel": 8
+    }
+  },
+  "offline_agreement": {
+    "base-test": {
+      "by_public_start": {
+        "0a52c8f998d1d2e93f56b35dd1b45cb4f7f7a7f5b3af0014a56a917b614ffd14": {
+          "failures": 16,
+          "prompt_agreement": 0.3696969696969697,
+          "prompts": 165
+        },
+        "182dfee045292733b2a7c0006872ee7d4e919648b0f279fcfaa3910d2ebc4c5d": {
+          "failures": 28,
+          "prompt_agreement": 0.3049645390070922,
+          "prompts": 282
+        },
+        "2ce9eecbdba41f58ca3c8528c7fe7670e16d4659c08e500bf7a36272c8e89e7c": {
+          "failures": 2,
+          "prompt_agreement": 0.36363636363636365,
+          "prompts": 22
+        },
+        "583857a95e7df9820de8116d1f19595827b425e189a08691c948115995c072e9": {
+          "failures": 2,
+          "prompt_agreement": 0.3125,
+          "prompts": 16
+        },
+        "6137be4da6060b7f2ea106f1ae16ec46fd08d57ed32ac39dc5dcc33be30b1821": {
+          "failures": 3,
+          "prompt_agreement": 0.21428571428571427,
+          "prompts": 14
+        },
+        "706a1dac00ca8d203cb8fd5c60592a4c232b65ec9de9ef766776a90f2c771093": {
+          "failures": 3,
+          "prompt_agreement": 0.42857142857142855,
+          "prompts": 14
+        }
+      },
+      "candidate_argmax_agreement": 0.3489278752436647,
+      "declaration_sha256": "b689e0d880f11b6ffee787a2c627b4d4da33ef2f7f190a9882df4302628af0b6",
+      "disjoint_from_training": {
+        "prompt_sha256": 0,
+        "public_start_sha256": 0,
+        "scenario_seed_family_sha256": 0,
+        "training_manifest_sha256": "42f84493de40d273d74060f0097bd71d58d809070bd14b22c2becf4fabe49912"
+      },
+      "label_vs_choice": [
+        {
+          "choice": "Bash",
+          "label": "Bash",
+          "prompts": 3
+        },
+        {
+          "choice": "Defend_R",
+          "label": "Bash",
+          "prompts": 5
+        },
+        {
+          "choice": "Strike_R",
+          "label": "Bash",
+          "prompts": 6
+        },
+        {
+          "choice": "failure",
+          "label": "Bash",
+          "prompts": 10
+        },
+        {
+          "choice": "Bash",
+          "label": "Defend_R",
+          "prompts": 21
+        },
+        {
+          "choice": "Defend_R",
+          "label": "Defend_R",
+          "prompts": 100
+        },
+        {
+          "choice": "Strike_R",
+          "label": "Defend_R",
+          "prompts": 119
+        },
+        {
+          "choice": "end",
+          "label": "Defend_R",
+          "prompts": 6
+        },
+        {
+          "choice": "failure",
+          "label": "Defend_R",
+          "prompts": 23
+        },
+        {
+          "choice": "Bash",
+          "label": "Strike_R",
+          "prompts": 5
+        },
+        {
+          "choice": "Defend_R",
+          "label": "Strike_R",
+          "prompts": 29
+        },
+        {
+          "choice": "Strike_R",
+          "label": "Strike_R",
+          "prompts": 62
+        },
+        {
+          "choice": "end",
+          "label": "Strike_R",
+          "prompts": 8
+        },
+        {
+          "choice": "failure",
+          "label": "Strike_R",
+          "prompts": 21
+        },
+        {
+          "choice": "end",
+          "label": "end",
+          "prompts": 95
+        }
+      ],
+      "mean_entropy": 0.48413275071630524,
+      "mean_label_probability": 0.3738879155639729,
+      "mean_max_probability": 0.8187920741059502,
+      "model_sha256": "bda00e3e09e7e35c6c6950cfb2673117052c3e8718dfc47ed35f7db9c5405c94",
+      "policy_failures": {
+        "invalid_completion": 54
+      },
+      "prompt_agreement": 0.32943469785575047,
+      "prompts": 513,
+      "row_agreement": 0.3311827956989247,
+      "rows": 930,
+      "sha256": "9b36a70f4d82ace0bd11d408873a873152fba10d2a3c9cd74977e60a10e9939f"
+    },
+    "louse21-test": {
+      "by_public_start": {
+        "0a52c8f998d1d2e93f56b35dd1b45cb4f7f7a7f5b3af0014a56a917b614ffd14": {
+          "failures": 0,
+          "prompt_agreement": 0.806060606060606,
+          "prompts": 165
+        },
+        "182dfee045292733b2a7c0006872ee7d4e919648b0f279fcfaa3910d2ebc4c5d": {
+          "failures": 0,
+          "prompt_agreement": 0.6702127659574468,
+          "prompts": 282
+        },
+        "2ce9eecbdba41f58ca3c8528c7fe7670e16d4659c08e500bf7a36272c8e89e7c": {
+          "failures": 0,
+          "prompt_agreement": 0.7272727272727273,
+          "prompts": 22
+        },
+        "583857a95e7df9820de8116d1f19595827b425e189a08691c948115995c072e9": {
+          "failures": 0,
+          "prompt_agreement": 0.8125,
+          "prompts": 16
+        },
+        "6137be4da6060b7f2ea106f1ae16ec46fd08d57ed32ac39dc5dcc33be30b1821": {
+          "failures": 0,
+          "prompt_agreement": 0.6428571428571429,
+          "prompts": 14
+        },
+        "706a1dac00ca8d203cb8fd5c60592a4c232b65ec9de9ef766776a90f2c771093": {
+          "failures": 0,
+          "prompt_agreement": 0.7142857142857143,
+          "prompts": 14
+        }
+      },
+      "candidate_argmax_agreement": 0.7153996101364523,
+      "declaration_sha256": "70d19d51a5578ca3ce4e64e0f3f8646c9034ab6e14cf9f84baa2002268a248d6",
+      "disjoint_from_training": {
+        "prompt_sha256": 0,
+        "public_start_sha256": 0,
+        "scenario_seed_family_sha256": 0,
+        "training_manifest_sha256": "42f84493de40d273d74060f0097bd71d58d809070bd14b22c2becf4fabe49912"
+      },
+      "label_vs_choice": [
+        {
+          "choice": "Defend_R",
+          "label": "Bash",
+          "prompts": 10
+        },
+        {
+          "choice": "Strike_R",
+          "label": "Bash",
+          "prompts": 14
+        },
+        {
+          "choice": "Bash",
+          "label": "Defend_R",
+          "prompts": 9
+        },
+        {
+          "choice": "Defend_R",
+          "label": "Defend_R",
+          "prompts": 225
+        },
+        {
+          "choice": "Strike_R",
+          "label": "Defend_R",
+          "prompts": 35
+        },
+        {
+          "choice": "Defend_R",
+          "label": "Strike_R",
+          "prompts": 68
+        },
+        {
+          "choice": "Strike_R",
+          "label": "Strike_R",
+          "prompts": 57
+        },
+        {
+          "choice": "end",
+          "label": "end",
+          "prompts": 95
+        }
+      ],
+      "mean_entropy": 0.06990879713975663,
+      "mean_label_probability": 0.7149028155910647,
+      "mean_max_probability": 0.9704938571527731,
+      "model_sha256": "b620fa2e3f44a0bd7e7f38646f28a51cf1d33a9fa7ec8062d18b2d02c1be496c",
+      "policy_failures": {},
+      "prompt_agreement": 0.7212475633528265,
+      "prompts": 513,
+      "row_agreement": 0.7290322580645161,
+      "rows": 930,
+      "sha256": "52fe54ca4e09413ad217c2b731963579b91a683f825f7f42ae96bd75951eda6c"
+    },
+    "louse21-train": {
+      "by_public_start": {
+        "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4": {
+          "failures": 0,
+          "prompt_agreement": 0.6695437731196054,
+          "prompts": 811
+        }
+      },
+      "candidate_argmax_agreement": 0.6658446362515413,
+      "declaration_sha256": "70d19d51a5578ca3ce4e64e0f3f8646c9034ab6e14cf9f84baa2002268a248d6",
+      "disjoint_from_training": null,
+      "label_vs_choice": [
+        {
+          "choice": "Bash",
+          "label": "Bash",
+          "prompts": 3
+        },
+        {
+          "choice": "Defend_R",
+          "label": "Bash",
+          "prompts": 33
+        },
+        {
+          "choice": "Strike_R",
+          "label": "Bash",
+          "prompts": 17
+        },
+        {
+          "choice": "Bash",
+          "label": "Defend_R",
+          "prompts": 9
+        },
+        {
+          "choice": "Defend_R",
+          "label": "Defend_R",
+          "prompts": 356
+        },
+        {
+          "choice": "Strike_R",
+          "label": "Defend_R",
+          "prompts": 106
+        },
+        {
+          "choice": "end",
+          "label": "Defend_R",
+          "prompts": 1
+        },
+        {
+          "choice": "Bash",
+          "label": "Strike_R",
+          "prompts": 2
+        },
+        {
+          "choice": "Defend_R",
+          "label": "Strike_R",
+          "prompts": 73
+        },
+        {
+          "choice": "Strike_R",
+          "label": "Strike_R",
+          "prompts": 80
+        },
+        {
+          "choice": "end",
+          "label": "Strike_R",
+          "prompts": 5
+        },
+        {
+          "choice": "end",
+          "label": "end",
+          "prompts": 126
+        }
+      ],
+      "mean_entropy": 0.05285073973610123,
+      "mean_label_probability": 0.6717271038971383,
+      "mean_max_probability": 0.9799410162116742,
+      "model_sha256": "b620fa2e3f44a0bd7e7f38646f28a51cf1d33a9fa7ec8062d18b2d02c1be496c",
+      "policy_failures": {},
+      "prompt_agreement": 0.6695437731196054,
+      "prompts": 811,
+      "row_agreement": 0.806745182012848,
+      "rows": 1868,
+      "sha256": "b55566cf36866a0d58236c44cd56645fbb915b14d352cfbe62106b7a8cb1aa7a"
+    },
+    "relabel-test": {
+      "by_public_start": {
+        "0a52c8f998d1d2e93f56b35dd1b45cb4f7f7a7f5b3af0014a56a917b614ffd14": {
+          "failures": 0,
+          "prompt_agreement": 0.8909090909090909,
+          "prompts": 165
+        },
+        "182dfee045292733b2a7c0006872ee7d4e919648b0f279fcfaa3910d2ebc4c5d": {
+          "failures": 0,
+          "prompt_agreement": 0.6737588652482269,
+          "prompts": 282
+        },
+        "2ce9eecbdba41f58ca3c8528c7fe7670e16d4659c08e500bf7a36272c8e89e7c": {
+          "failures": 0,
+          "prompt_agreement": 0.7727272727272727,
+          "prompts": 22
+        },
+        "583857a95e7df9820de8116d1f19595827b425e189a08691c948115995c072e9": {
+          "failures": 0,
+          "prompt_agreement": 0.625,
+          "prompts": 16
+        },
+        "6137be4da6060b7f2ea106f1ae16ec46fd08d57ed32ac39dc5dcc33be30b1821": {
+          "failures": 0,
+          "prompt_agreement": 0.7857142857142857,
+          "prompts": 14
+        },
+        "706a1dac00ca8d203cb8fd5c60592a4c232b65ec9de9ef766776a90f2c771093": {
+          "failures": 0,
+          "prompt_agreement": 0.7857142857142857,
+          "prompts": 14
+        }
+      },
+      "candidate_argmax_agreement": 0.7504873294346979,
+      "declaration_sha256": "3cfbd9c9534b4a9dbc768cddae96f6eab8b1623733495daf4a094196b1174d0a",
+      "disjoint_from_training": {
+        "prompt_sha256": 0,
+        "public_start_sha256": 0,
+        "scenario_seed_family_sha256": 0,
+        "training_manifest_sha256": "42f84493de40d273d74060f0097bd71d58d809070bd14b22c2becf4fabe49912"
+      },
+      "label_vs_choice": [
+        {
+          "choice": "Bash",
+          "label": "Bash",
+          "prompts": 1
+        },
+        {
+          "choice": "Defend_R",
+          "label": "Bash",
+          "prompts": 17
+        },
+        {
+          "choice": "Strike_R",
+          "label": "Bash",
+          "prompts": 6
+        },
+        {
+          "choice": "Bash",
+          "label": "Defend_R",
+          "prompts": 8
+        },
+        {
+          "choice": "Defend_R",
+          "label": "Defend_R",
+          "prompts": 248
+        },
+        {
+          "choice": "Strike_R",
+          "label": "Defend_R",
+          "prompts": 13
+        },
+        {
+          "choice": "Defend_R",
+          "label": "Strike_R",
+          "prompts": 81
+        },
+        {
+          "choice": "Strike_R",
+          "label": "Strike_R",
+          "prompts": 44
+        },
+        {
+          "choice": "end",
+          "label": "end",
+          "prompts": 95
+        }
+      ],
+      "mean_entropy": 0.41400973312084016,
+      "mean_label_probability": 0.7000684844315215,
+      "mean_max_probability": 0.8435964744329569,
+      "model_sha256": "f4e556494a4ba0266776d39387506f6ed1cc15b43f6b574235081eedf91b768b",
+      "policy_failures": {},
+      "prompt_agreement": 0.7524366471734892,
+      "prompts": 513,
+      "row_agreement": 0.7709677419354839,
+      "rows": 930,
+      "sha256": "2535ac3d198a8b1a5a16d36df8c68beddd3925986ab16fb23e57059ab30c0695"
+    },
+    "relabel-train": {
+      "by_public_start": {
+        "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4": {
+          "failures": 0,
+          "prompt_agreement": 0.8187422934648582,
+          "prompts": 811
+        }
+      },
+      "candidate_argmax_agreement": 0.8162762022194822,
+      "declaration_sha256": "3cfbd9c9534b4a9dbc768cddae96f6eab8b1623733495daf4a094196b1174d0a",
+      "disjoint_from_training": null,
+      "label_vs_choice": [
+        {
+          "choice": "Bash",
+          "label": "Bash",
+          "prompts": 10
+        },
+        {
+          "choice": "Defend_R",
+          "label": "Bash",
+          "prompts": 32
+        },
+        {
+          "choice": "Strike_R",
+          "label": "Bash",
+          "prompts": 11
+        },
+        {
+          "choice": "Defend_R",
+          "label": "Defend_R",
+          "prompts": 457
+        },
+        {
+          "choice": "Strike_R",
+          "label": "Defend_R",
+          "prompts": 15
+        },
+        {
+          "choice": "Bash",
+          "label": "Strike_R",
+          "prompts": 2
+        },
+        {
+          "choice": "Defend_R",
+          "label": "Strike_R",
+          "prompts": 82
+        },
+        {
+          "choice": "Strike_R",
+          "label": "Strike_R",
+          "prompts": 76
+        },
+        {
+          "choice": "end",
+          "label": "end",
+          "prompts": 126
+        }
+      ],
+      "mean_entropy": 0.26935865179001167,
+      "mean_label_probability": 0.7979060266896659,
+      "mean_max_probability": 0.8914180560528143,
+      "model_sha256": "f4e556494a4ba0266776d39387506f6ed1cc15b43f6b574235081eedf91b768b",
+      "policy_failures": {},
+      "prompt_agreement": 0.8187422934648582,
+      "prompts": 811,
+      "row_agreement": 0.9063169164882227,
+      "rows": 1868,
+      "sha256": "c6408f5d7b249952131ec3a1258beefdfb4125c2bcfc5108d0881b65ebbfb496"
+    }
+  },
+  "relabel_paired_with_heuristic": [
+    {
+      "decisions": 21,
+      "first_disagreement": null,
+      "heuristic_agreement": 21,
+      "index": 0,
+      "scenario_id": "spireai1"
+    },
+    {
+      "decisions": 33,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Defend_R",
+          null
+        ],
+        "decision": 1,
+        "energy": 3,
+        "heuristic": [
+          "play",
+          "Bash",
+          0
+        ],
+        "player_block": 0,
+        "turn": 1
+      },
+      "heuristic_agreement": 28,
+      "index": 1,
+      "scenario_id": "spireinv07"
+    },
+    {
+      "decisions": 30,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Defend_R",
+          null
+        ],
+        "decision": 9,
+        "energy": 3,
+        "heuristic": [
+          "play",
+          "Bash",
+          0
+        ],
+        "player_block": 0,
+        "turn": 3
+      },
+      "heuristic_agreement": 24,
+      "index": 2,
+      "scenario_id": "spireinv09"
+    },
+    {
+      "decisions": 21,
+      "first_disagreement": null,
+      "heuristic_agreement": 21,
+      "index": 3,
+      "scenario_id": "spireai1"
+    },
+    {
+      "decisions": 33,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Defend_R",
+          null
+        ],
+        "decision": 1,
+        "energy": 3,
+        "heuristic": [
+          "play",
+          "Bash",
+          0
+        ],
+        "player_block": 0,
+        "turn": 1
+      },
+      "heuristic_agreement": 28,
+      "index": 4,
+      "scenario_id": "spireinv07"
+    },
+    {
+      "decisions": 30,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Defend_R",
+          null
+        ],
+        "decision": 9,
+        "energy": 3,
+        "heuristic": [
+          "play",
+          "Bash",
+          0
+        ],
+        "player_block": 0,
+        "turn": 3
+      },
+      "heuristic_agreement": 24,
+      "index": 5,
+      "scenario_id": "spireinv09"
+    },
+    {
+      "decisions": 21,
+      "first_disagreement": null,
+      "heuristic_agreement": 21,
+      "index": 6,
+      "scenario_id": "spireai1"
+    },
+    {
+      "decisions": 33,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Defend_R",
+          null
+        ],
+        "decision": 1,
+        "energy": 3,
+        "heuristic": [
+          "play",
+          "Bash",
+          0
+        ],
+        "player_block": 0,
+        "turn": 1
+      },
+      "heuristic_agreement": 28,
+      "index": 7,
+      "scenario_id": "spireinv07"
+    },
+    {
+      "decisions": 30,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Defend_R",
+          null
+        ],
+        "decision": 9,
+        "energy": 3,
+        "heuristic": [
+          "play",
+          "Bash",
+          0
+        ],
+        "player_block": 0,
+        "turn": 3
+      },
+      "heuristic_agreement": 24,
+      "index": 8,
+      "scenario_id": "spireinv09"
+    },
+    {
+      "decisions": 21,
+      "first_disagreement": null,
+      "heuristic_agreement": 21,
+      "index": 9,
+      "scenario_id": "spireai1"
+    },
+    {
+      "decisions": 33,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Defend_R",
+          null
+        ],
+        "decision": 1,
+        "energy": 3,
+        "heuristic": [
+          "play",
+          "Bash",
+          0
+        ],
+        "player_block": 0,
+        "turn": 1
+      },
+      "heuristic_agreement": 28,
+      "index": 10,
+      "scenario_id": "spireinv07"
+    },
+    {
+      "decisions": 30,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Defend_R",
+          null
+        ],
+        "decision": 9,
+        "energy": 3,
+        "heuristic": [
+          "play",
+          "Bash",
+          0
+        ],
+        "player_block": 0,
+        "turn": 3
+      },
+      "heuristic_agreement": 24,
+      "index": 11,
+      "scenario_id": "spireinv09"
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Development diagnostic: one seed, Louse-only relabeled training data, offline agreement on six other public starts, and correlated greedy catalog repeats",
+  "source_evidence_sha256": {
+    "runs/language-three-encounter-comparison-20261011/final-lora/catalog-evaluation.json": "c206f893555b76e2845efb1834fa1d5531aa79116ed152d4c0e57ab58f1551f9",
+    "runs/qwen3-0.6b-relabel-sft-20261011/training.json": "87c7048f682669266b71fb3c54a36dd2430b6212c027e93df852b3042829ce48",
+    "runs/qwen3-0.6b-relabel-sft-catalog-20261011/catalog-evaluation.json": "935c0d891eeec3a5d5a37596461239f3d0fb50382eab97b4803f6d704aa577dd",
+    "runs/qwen3-0.6b-relabel-sft-independent-audit-20261011.json": "b626c1ab10dda666f994de2889d617b69541d73bd9ce11bc1e4643e3ebb57646",
+    "runs/summarize_relabel_experiment.py": "2972590e6336106f8c35f216f6ff635486290f52598c2776d98806edac8162ea"
+  },
+  "training": {
+    "adapter_sha256": "658bf0c61fe5d4973c395b2a92643a6fda23340e677735c245e43018ff3d1c69",
+    "charged_tokens": 2935296,
+    "consumed_examples": 3744,
+    "dataset_manifest_sha256": "42f84493de40d273d74060f0097bd71d58d809070bd14b22c2becf4fabe49912",
+    "elapsed_seconds": 1719.5969197750092,
+    "source_revision": "0ca07b3213736e0b78d5a2946620403a0d4a3ed6",
+    "updates": 234
+  },
+  "training_audit_valid": true
+}

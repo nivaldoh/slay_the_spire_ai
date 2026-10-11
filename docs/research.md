@@ -400,3 +400,40 @@ trajectories. On Cultist it opens with Strike rather than Bash and ends three HP
 on Jaw Worm it attacks on turn 2 where the heuristic blocks, and ends two HP lower.
 Outcomes transfer to these easy unseen families; the teacher's decision rule only
 partly does. See [contract](language-catalog-experiment.md) and [compact result](results/language-catalog-development-v1.json).
+
+## Heuristic-relabel SFT result (adopted by declared rule)
+
+Training completed all 234 updates (3,744 example occurrences, 2,935,296 padded tokens)
+in 1,719.6 seconds; the independent training audit passed all 12 checks. Offline greedy
+agreement with the heuristic on 513 unique states from six public starts absent from
+training (no prompt, start or seed overlap):
+
+| Adapter | Test prompts / rows | Label probability | Entropy | Train prompts / rows |
+| --- | --- | ---: | ---: | --- |
+| Relabeled (811 Louse states) | 75.2% / 77.1% | 0.700 | 0.414 | 81.9% / 90.6% |
+| Louse-only (21 prompts) | 72.1% / 72.9% | 0.715 | 0.070 | 67.0% / 80.7% |
+| Unchanged base | 32.9% / 33.1% (54 invalid) | 0.374 | 0.484 | not run |
+
+Always answering choice 0 agrees with 59.2% of test rows. Catalog gameplay (12 slots,
+valid audit, no failures): the relabeled adapter won 12/12 with macro HP
+63.67 (Louses 77, Cultist 41, Jaw Worm 73), against
+76.33 (77/74/78) for the Louse-only adapter and 76.00 (77/71/80) for the heuristic.
+
+The declared rule adopts the relabeled adapter: higher held-out agreement than the
+first adapter and the choice-0 baseline, equal unseen-family wins (8/8), no failures.
+The rule did not include HP, and gameplay HP regressed on both unseen families.
+Traces show why: against the Cultist's non-attacking first turn the adapter plays Defend
+instead of Bash, then over-blocks, letting Ritual Strength accumulate. Defend is 62% of
+the relabeled training labels, and the model under-fits its own training states (82% of
+unique prompts). Better average label agreement did not mean better play in the states
+that decide these fights. See [result](results/language-relabel-development-v1.json).
+
+## Outcome-based post-training launch record
+
+Base: the adopted relabeled adapter (declaration SHA-256
+`3cfbd9c9534b4a9dbc768cddae96f6eab8b1623733495daf4a094196b1174d0a`). Temperature rule
+measured on its 336 greedy catalog decisions: mean probability of leaving the greedy
+choice 0.118 at T=1 (Louses 0.034, Cultist 0.152, Jaw Worm 0.139), so **T = 1**. Before any
+collection, the whole-job budget in the [RL contract](language-rl-experiment.md) was raised
+from 4,500 to 5,400 seconds: this adapter's measured fights take 46–59 seconds, and five
+12-combat iterations plus updates would not fit the original cap.

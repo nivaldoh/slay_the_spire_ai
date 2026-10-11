@@ -1,0 +1,19 @@
+{
+  "catalog_run": "/home/niv/repos/slay_the_spire_ai/runs/qwen3-0.6b-relabel-sft-catalog-20261011",
+  "chosen_temperature": 1.0,
+  "decisions": 336,
+  "declaration_sha256": "3cfbd9c9534b4a9dbc768cddae96f6eab8b1623733495daf4a094196b1174d0a",
+  "mean_leave_greedy_at_t1_by_scenario": {
+    "spireai1": 0.03361031812799341,
+    "spireinv07": 0.15233956552205202,
+    "spireinv09": 0.1393557316660254
+  },
+  "mean_leave_greedy_probability": {
+    "1.0": 0.11802016264464887,
+    "1.5": 0.17767145530092254,
+    "2.0": 0.2305745458309692,
+    "3.0": 0.3170753633298212
+  },
+  "rule": "smallest T in {1,1.5,2,3} with mean P(leave greedy) >= 0.05; else 3",
+  "script_sha256": "d5989dad0d4dbcc02b8161d83a39d7f33a71eeb2c7f9e2e46be8c855fa349a84"
+}

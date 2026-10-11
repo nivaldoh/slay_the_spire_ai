@@ -2,7 +2,7 @@
 
 Updated 2026-10-11, during the authorized unattended bootstrap session.
 
-## Active work (last verified 14:55 UTC)
+## Active work (last verified 18:10 UTC)
 
 Owner direction (2026-10-11 afternoon): pause the pure-RL/PPO route and advance LLM
 post-training. The declared PPO learning-rate launchers stay unrun; the seed-1 clock
@@ -29,9 +29,18 @@ training-unseen families the adapter matches only 36 of 50 heuristic decisions a
 own trajectories, so outcomes transfer more than the decision rule. See
 [result](results/language-catalog-development-v1.json) and research.md.
 
-Next declared language experiment: [heuristic-relabeled state coverage](language-relabel-experiment.md),
-training on 1,868 relabeled Louse states (811 unique) and testing offline agreement on
-513 unique states from six other public starts, then catalog gameplay.
+The [heuristic-relabel experiment](language-relabel-experiment.md) is complete: 234
+audited updates on 1,868 relabeled Louse states. Held-out greedy agreement rose to 75.2%
+of unique prompts (Louse-only adapter 72.1%, unchanged base 32.9%), but catalog macro HP
+fell to 63.67 (Louses 77, Cultist 41, Jaw Worm 73; still 12/12 wins). The declared rule
+adopted it on agreement and wins; HP was not part of the rule. See research.md and
+[result](results/language-relabel-development-v1.json).
+
+LIVE: the declared [outcome-based post-training](language-rl-experiment.md) job
+(`scripts/train_language_rl.py`, output `runs/language-rl-relabel-20261011`) starts from
+that adapter at T=1: 5 iterations × 12 sampled catalog combats, one REINFORCE step each,
+5,400-second job cap. It owns the GPU lease and the game; start no other game or GPU job.
+Keep source and HEAD frozen until it stops (rollouts refuse changed implementation).
 
 The frozen SFT v2 evaluation completed at source
 `e829c1c`; tool session `71199` exited successfully and PIDs `337234`/`337233` are gone.
@@ -282,11 +291,11 @@ that natural-language deadline.
 
 ## Next useful actions
 
-1. Run the declared [relabel experiment](language-relabel-experiment.md): export with
-   `scripts/export_relabel_datasets.py`, train 234 updates, audit, then offline
-   agreement (`scripts/offline_agreement.py`) and one catalog evaluation.
-2. Then declare outcome-based LLM post-training on combat results, starting from the
-   adopted supervised adapter.
+1. When the RL job stops: `scripts/train_language_rl.py --audit`, then evaluate the final
+   iteration's `policy.json` once on the catalog with the frozen greedy evaluator and
+   apply the contract's improvement rule against the base (macro HP 63.67, 12/12).
+2. Then decide between more outcome-based iterations, a better supervised base, or
+   held-out scenarios for the language track.
 3. PPO learning-rate work is paused by owner direction; re-declare before resuming.
 4. Declare held-out evaluation and the smallest supported noncombat expansion before
    collecting their results.

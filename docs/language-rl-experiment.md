@@ -31,7 +31,7 @@ language adapter on the scenarios it trains on.
   1) on `−Σ A·log π(a|s) / decisions`. Only the scored completion tokens of the chosen
   legal choice carry the loss; the prompt text is never trained. Record the loss,
   gradient norm, changed elements and mean behavior-to-updated KL over the batch.
-- **Budget:** 5 iterations (60 combats), at most 4,500 seconds for the whole job,
+- **Budget:** 5 iterations (60 combats), at most 5,400 seconds for the whole job,
   under an outer process limit. There is no resume and no retry. Each completed
   iteration saves its adapter and declaration. The last completed iteration is the
   final artifact; no intermediate checkpoint is selected by score.
