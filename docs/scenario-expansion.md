@@ -1,10 +1,13 @@
-# Proposed starter encounter expansion
+# Starter encounter expansion
 
-Read-only review of revision `741d96aafd176da201105f06f4527ce9126392e7` on
-2026-10-11. No new seeds were sampled, games launched, suites changed, or policies
-trained. Preserve the single-scenario v1 suite and its results. The next useful
-step is an explicit catalog of independently verified first-combat scenarios,
-using the existing fresh-JVM reset and public-information boundary.
+The original read-only review covered revision
+`741d96aafd176da201105f06f4527ce9126392e7` on 2026-10-11 without launching games
+or training policies. Subsequent [inventory evidence](results/starter-inventory-20261011.json)
+admitted Cultist `SPIREINV07` and Jaw Worm `SPIREINV09` after exact public-trace
+replays. The [three-scenario catalog](../configs/suites/starter_three_encounter_development_v1.json)
+combines them with the existing mixed Louses under the same fresh-JVM reset and
+public-information boundary. It remains development-only; catalog policy scores
+have not yet been collected. The single-scenario v1 suite and its results are preserved.
 
 ## Coverage and concrete limits
 
@@ -17,15 +20,19 @@ Curl Up and Ritual, including mixed attack/buff/defend intents.
 
 | Candidate encounter | Relevant public features | Current evidence |
 | --- | --- | --- |
-| Cultist | Ritual and subsequent Strength; visible attack intent/damage | Adapter/model accept a synthetic public example. No captured engine regression for Ritual timing or this encounter. |
-| Jaw Worm | Block, Strength, attack and mixed defensive/buff intents | Adapter/model accept a synthetic public example. No captured engine regression for its block/buff transitions. |
-| Other Louse compositions | Curl Up, Strength, Weak, per-target health/block/intent; stable target slots | The existing mixed `FuzzyLouseNormal` / `FuzzyLouseDefensive` capture covers these powers and a surviving index-1 target. Other compositions/seeds remain unverified. |
+| Cultist | Ritual and subsequent Strength; visible attack intent/damage | `SPIREINV07` has an exact heuristic replay and captured Ritual appearance, Strength ticks, displayed attack damage and engine death. |
+| Jaw Worm | Block, Strength, attack and mixed defensive/buff intents | `SPIREINV09` has an exact heuristic replay and captured block/Strength transitions, displayed attack damage and engine death. |
+| Other Louse compositions | Curl Up, Strength, Weak, per-target health/block/intent; stable target slots | Captured same-species normal and defensive Louses supplement the original mixed-Louse evidence. Both new captured variants started at 88 HP and remain excluded from the 80-HP catalog. |
 
 Public monster names and the Ritual/Curl Up/Weak/Strength tooltip meanings were
 checked against the installed engine's English localization resources, under the
 engine hash in [integration.md](integration.md). No enemy move probabilities,
-private move history, RNG state or future draw order were used. The table describes
-interface coverage, not proof of original-engine compatibility for new encounters.
+private move history, RNG state or future draw order were used. The
+[inventory fixture](../tests/fixtures/engine_inventory_transitions.json) and its
+[regressions](../tests/test_inventory_engine_regressions.py) preserve 16 exact public
+transitions. These observations do not establish general mechanics formulas or
+admit unseen seeds. Four 88-HP discoveries and six unsupported attempts remain
+excluded, with no replacement seeds sampled.
 
 Actual limitations found:
 
@@ -49,11 +56,15 @@ Actual limitations found:
   Thus an arbitrary seed is not automatically an eligible scenario. Initial HP,
   deck, relics, actual Neow choice and settled intent must be recorded and pinned.
 
-Verification: **52 protocol/learning tests passed**. Additional read-only synthetic
+At the original review, **52 protocol/learning tests passed**. Read-only synthetic
 checks demonstrated the identity aliases, accepted the Cultist/Jaw Worm examples,
 and confirmed Slimed rejection. These checks do not replace live transitions.
 
-## Smallest catalog extension
+## Original catalog proposal
+
+Schema 2 now implements development catalogs, round-robin training reservations
+and grouped evaluation; [catalogs.md](catalogs.md) defines the current API. The
+proposal below records the design rationale. Held-out purposes remain unimplemented.
 
 Introduce a new catalog schema while keeping each scenario a single-seed run
 under the existing adapter/reset/prefix contracts. Evaluation can initially invoke

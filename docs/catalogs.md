@@ -2,9 +2,12 @@
 
 Schema 2 adds explicit development scenarios without changing schema 1 suites or
 their saved results. It is a declaration and evidence format, not certification
-that a seed works. No executable catalog is supplied: new seeds still require
-original-engine inventory and admission under [scenario-expansion.md](scenario-expansion.md).
-The existing single-scenario v1 benchmark remains unchanged.
+that a seed works. The committed [three-scenario development catalog](../configs/suites/starter_three_encounter_development_v1.json)
+contains the existing mixed Louses, Cultist `SPIREINV07` and Jaw Worm `SPIREINV09`.
+The latter two passed the [bounded original-engine inventory](results/starter-inventory-20261011.json)
+and exact public-trace replays. New seeds still require admission under
+[scenario-expansion.md](scenario-expansion.md). The single-scenario v1 benchmark
+remains unchanged; catalog policy scores have not yet been collected.
 
 The catalog is a JSON object with these required fields:
 
@@ -42,8 +45,12 @@ The discovery hash is a required reference to separately retained evidence. The
 loader checks its format, not the existence or contents of that external trace.
 Admission must verify that evidence, repeated settled starts, prefix choices,
 profile, starter deck/Burning Blood conditions and complete supported combat.
-Only the captured mixed-Louse scenario currently has real mechanics evidence;
-acceptance of Cultist/Jaw Worm declarations does not establish engine coverage.
+The [inventory fixture](../tests/fixtures/engine_inventory_transitions.json) adds
+16 exact public transitions for Cultist Ritual/Strength, Jaw Worm block/Strength,
+Louse variants and both admitted encounters' engine-reported deaths. These captures
+support only the observed transitions, not general mechanics coverage. The captured
+88-HP Louse variants remain excluded from the 80-HP development catalog; accepting
+a family declaration alone does not admit another seed.
 The v1 learner still omits monster identity, as documented in the expansion review.
 
 ## Python API
