@@ -135,3 +135,19 @@ Keep the first experiment on the original action loop with the existing Fast
 Mode setting and MTS launcher/intro bypasses. Measure seeded restart and combat
 throughput before choosing acceleration. Any future snapshot/fast-execution
 slice needs its own runtime compatibility and differential validation gate.
+
+## Windows excluded-port regression
+
+One frozen evaluation could not connect before gameplay: Linux selected port53899
+from its ephemeral range, while Windows excludes TCP53849–53948. Native Windows
+bind failed with10013 and relay connect logged10061. The runner now uses loopback
+19876 under the existing exclusive ownership lock; TCP address reuse supports
+consecutive clean episodes. Fifty Windows-to-WSL socket round trips passed. This
+fix does not reconnect or retry commands within a game. A future local port
+collision still fails instead of taking over another process.
+
+Each launch now records the intended relay address and captures only the new suffix
+of CommunicationMod's shared stderr log. See the preserved
+[failure and probe evidence](results/relay-startup-failure-audit.json). The policy
+evaluation was restarted in a new directory with the same frozen artifact and
+suite; earlier partial evidence remains invalid for a full-suite score.

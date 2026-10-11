@@ -2,8 +2,8 @@
 
 An original-engine interface and reproducible learning experiments for Slay the Spire 1.
 Original-engine wins, losses, seeded restarts, and eight-attempt random/heuristic
-baselines are verified. Resumable PPO is implemented; no learned-policy result is
-established yet.
+baselines are verified. A real PPO pilot verified weight updates and interruption recovery. Frozen policy
+evaluation is in progress; no gameplay improvement is established yet.
 Start with [current state](docs/state.md) and the [operating guide](SLAY_THE_SPIRE_AGENT_GUIDE.md).
 
 ## Development
@@ -84,5 +84,8 @@ Resume preserves the original absolute deadline, optimizer, RNGs, and consumed
 episode identities. Interrupted combat is recorded and excluded from training;
 the next attempt starts a fresh game. `training.json` identifies immutable initial
 and current policy artifacts for frozen evaluation. See [learning details](docs/learning.md)
-and the [pilot contract](docs/research.md). These commands are implemented and unit
-tested; original-engine learning and interruption recovery are being validated.
+and the [pilot contract](docs/research.md). The first original-engine pilot completed two updates from 92 audited transitions,
+with seven completed combats and one deliberately interrupted attempt. All actor
+weights changed; interrupted data was excluded and the original deadline survived
+resume. See the [training audit](docs/results/ppo-pilot-training-audit.json).
+Weight updates alone do not establish improved gameplay.

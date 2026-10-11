@@ -90,3 +90,58 @@ invalidates the affected experiment and must be repaired before extending traini
 The initial result will decide whether to increase the budget or fix a measured data-flow
 or learning problem. It will not select on a held-out final test. Broader mechanics and
 encounter generalization remain separate later experiments.
+
+## Pilot computational result
+
+The seed-0 pilot at source `741d96a` completed in 310.94 seconds, with 8 attempts
+(7 verified wins and one deliberate interruption), 92 unique audited transitions,
+and 2 updates. All 3,201 actor parameters changed; values, parameters, and optimizer
+state are finite. Resume preserved the original 900-second deadline and completed
+trace, reproduced the interrupted prefix, and excluded its samples. The exported
+final tensor hash is `0aef9e7e0bebaab135f2621d42d743606cb9c6d129c37c1aed9c0e2fb540d52b`.
+
+The [computational audit](results/ppo-pilot-training-audit.json) supports real weight
+training and recovery. Frozen initial/final evaluations are now running at source
+`70b08b0` with unchanged suite and rollout semantics. That source adds stricter
+report-comparability and suite-declaration validation. Do not infer gameplay
+improvement from tensor changes or training wins.
+
+## Next budget increase (declared before launch)
+
+Conditional on valid frozen pilot evaluations, the next run is
+`runs/ppo-budget64-seed0-20261011`: fresh seed-0 initialization, the same network,
+PPO defaults, 64-transition batches, reward, fixed scenario and canonical evaluation.
+Only the training budget increases, to at most 64 attempts, 16 updates and 3,000
+wall-clock seconds, whichever limit arrives first. No deliberate interruption is
+planned. The initial model hash must match the pilot's initial artifact; this repeats
+its initial sampling stream and is not an independent training replicate.
+
+Hypothesis: more complete-episode updates will produce a useful action-distribution
+change and higher ending health on the fixed development suite. Pilot initial control:
+8/8 wins, mean HP72.75, range53–80. Evaluate the final budget-limited export, without
+selecting among checkpoints by evaluation score, on the same eight sampling seeds.
+Check wins and infrastructure counts as well as HP; unchanged/worse scores or lower
+win rate count against improvement. This comparison remains development on one game
+scenario. It cannot establish unseen-seed ability or robustness across initialization
+seeds. No reward, encoder, environment or scoring change is bundled into this trial.
+
+The initial neural evaluation averaged 31.99 seconds per episode, so 64 attempts
+would take about 34 minutes at that rate. The 50-minute hard budget permits ordinary
+variation; a separate eight-attempt frozen evaluation is reserved afterward. Disk
+headroom is 396 GiB; the first pilot occupied 7.6 MiB including checkpoints and traces.
+CPU inference/update cost is small relative to game collection. New training uses
+an independent run directory and deadline; it does not extend the completed pilot.
+
+## Evaluation infrastructure interruption
+
+Initial evaluation finished 8/8 wins, mean HP72.75. The first trained evaluation
+matched its first five outcomes, then failed at relay startup before policy action
+on sampling seed1005. Random WSL port53899 was Windows-reserved. This is an
+infrastructure failure, not a loss; the partial evaluation remains invalid.
+
+The fixed-port repair changes transport setup and diagnostics, preserving game,
+mods, observations, policy artifact, prefix, scoring and suite. A new full trained
+evaluation uses all eight original sampling seeds after 50 socket round trips and
+305 passing tests. Preserve the original six attempts (five games plus startup
+failure) alongside the rerun; do not pool repeated games as independent samples.
+The larger training trial remains gated on completing this frozen comparison.

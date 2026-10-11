@@ -2,19 +2,37 @@
 
 Updated 2026-10-11, during the authorized unattended bootstrap session.
 
-## Active jobs (last verified 05:52 UTC)
+## Active jobs (last verified 06:15 UTC)
 
-Baseline session `58891` finished successfully. No game job is currently live.
-The next job is the original-engine PPO pilot `runs/ppo-pilot-seed0-20261011`:
-8 total attempts, 2 optimizer updates, 64-transition batches, 900 seconds from the
-original start, initialization seed 0. One later attempt will be intentionally
-interrupted, preserved, and excluded from training to test recovery. Resume must
-retain the original deadline. Inspect live ownership before sending any signal;
-never restart a job solely because this document is stale.
+No game is live. Frozen evaluation session `99330` finished: initial evaluation
+succeeded (8/8 wins, HP [80,66,76,78,77,53,80,72], mean72.75); trained evaluation
+failed before any game action in episode5. The first five outcomes matched initial.
+The incomplete trained suite is invalid and remains preserved at
+`runs/ppo-pilot-trained-eval-20261011`; never present its partial mean as a full-suite
+comparison. See [failure audit](results/relay-startup-failure-audit.json).
 
-**Do not edit source/configuration/dependency files or merge code during a live
-batch**: source fingerprints intentionally stop a changed run. Documentation edits
-are safe. Independent agents use isolated worktrees.
+The relay tried port53899, inside Windows' excluded TCP range53849–53948. Native
+Windows bind returned WinError10013. Fixed loopback19876 passed 50 Windows↔WSL
+round trips; the runner now uses that port and supports ordinary TCP address reuse.
+It still accepts one relay session and never reconnects to a partially played game.
+Every new episode records the deployed address and its appended relay stderr.
+Source `637ae98` passes 305 tests (one optional Windows probe skipped) and Ruff.
+
+Next launch: repeat the complete trained-artifact eight-attempt evaluation in
+`runs/ppo-pilot-trained-eval-v2-20261011`, preserving all failed earlier attempts.
+Do not edit source/configuration/dependencies during collection. After completion,
+audit and compare the full four-policy results; launch the predeclared 64-attempt,
+16-update, 3,000-second trial only after this computational pilot is accepted.
+
+The training pilot session `86421` finished exit0. It used 8 attempts, 7 completed
+combats, 2 PPO updates, and 92 transitions in 310.94 seconds including interruption
+and recovery. All 3,201 actor parameters changed. The reusable verifier passes all
+32 checks, including unique ingestion, interrupted data exclusion, source and suite
+provenance, pending-batch accounting, unchanged deadline, and actual exported tensor
+ancestry. Reproduce with `uv run --extra train python scripts/audit_training.py
+runs/ppo-pilot-seed0-20261011 /tmp/ppo-audit.json`. The
+[training audit](results/ppo-pilot-training-audit.json) includes exact artifact hashes.
+Do not resume the completed pilot to extend its declared budget.
 
 ## Current evidence
 
@@ -22,8 +40,8 @@ Milestone A is verified: recorded wins and losses, automatic seeded restarts,
 matching fixed-action replays, independent trace audits, and process-tree cleanup.
 Milestone B is verified for the narrow fixed-encounter diagnostic: declared start
 state, engine mechanics fixtures, repeated resets, measured throughput, and matched
-baselines. Milestone C awaits real training/resume and frozen evaluation; D–F remain
-incomplete. No neural training or GPU job has run yet.
+baselines. Real training/resume is verified; Milestone C awaits frozen development evaluation; D–F remain
+incomplete. The computational neural pilot is complete; no GPU job has run.
 
 `runs/first-random-v2-20261011/manifest.json` records source `deba4b7`, the configuration,
 environment, and two random-policy episodes on `SPIREAI1`, Ironclad, Ascension 0.
@@ -130,18 +148,17 @@ that natural-language deadline.
 
 ## Next useful actions
 
-1. Run the bounded neural pilot, deliberately interrupt after a completed episode,
-   verify preserved evidence and resume under the same deadline. Compare initial
-   and updated actor tensors, check finite updates and unique consumed transitions.
-2. Evaluate both exact exported artifacts on the unchanged eight-attempt suite;
-   compare against the completed random/heuristic baselines, with narrow scope.
+1. Run and audit the repaired full trained-policy evaluation, then generate the
+   four-policy comparison with full protocol checks.
+2. Launch the predeclared larger trial after pilot acceptance; keep the exact
+   final export for the same frozen development evaluation.
 3. Choose a larger training budget from results, or fix any observed data-flow issue.
 4. Investigate faster engine resets independently; adopting them requires a new
    versioned protocol and demonstrated replay equivalence. Do not alter this pilot.
 
 Current limitations: starter cards only, no potion actions or noncombat policy,
 Neow prefixes outside max HP/100 gold unsupported, no arbitrary snapshots, no live
-combat resume, and no engine-trained policy yet. Root checks at `698db0d`: 232 tests
+combat resume, and no demonstrated gameplay improvement yet. Root checks at `637ae98`: 305 tests
 passed, one optional Windows process probe skipped by default; that probe was
 independently run and passed. Ruff is clean. Use `uv run --extra train pytest` for
 learner coverage. Optional PyTorch 2.13.0 CPU is locked and installed; tiny-network
