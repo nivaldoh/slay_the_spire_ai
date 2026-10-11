@@ -64,6 +64,13 @@ eight policy attempts. It is a learning diagnostic, not a held-out generalizatio
 A changed starting state stops the evaluation. The report reconstructs decisions and
 terminal outcomes from saved evidence rather than trusting reported scores.
 
+The same `evaluate --suite` interface also accepts [schema-2 development
+catalogs](docs/catalogs.md): an explicit list of scenarios and policy seeds, with
+per-scenario results and an equally weighted scenario average. `report` audits saved
+catalog directories and compares matching catalogs. Report single-scenario runs
+separately. New scenarios require original-engine discovery and repeatability
+evidence before admission; the catalog schema alone does not establish coverage.
+
 The frozen diagnostic results are:
 
 | Policy | Wins | Mean final HP |

@@ -42,7 +42,9 @@ def test_resume_uses_saved_configuration(monkeypatch):
     assert train.call_args.kwargs == {"resume": True}
 
 
-def test_evaluation_passes_checkpoint_without_importing_training(monkeypatch):
+def test_evaluation_passes_checkpoint_without_importing_training(monkeypatch, tmp_path):
+    suite = tmp_path / "suite.json"
+    suite.write_text('{"schema_version": 1}')
     evaluate = Mock(return_value={"valid": True, "audit": {"metrics": {}}})
     monkeypatch.setitem(sys.modules, "spire.evaluation", SimpleNamespace(evaluate=evaluate))
     monkeypatch.setattr(
@@ -54,7 +56,7 @@ def test_evaluation_passes_checkpoint_without_importing_training(monkeypatch):
             "--checkpoint",
             "artifact.pt",
             "--suite",
-            "suite.json",
+            str(suite),
             "--output",
             "runs/example",
         ],

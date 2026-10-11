@@ -24,11 +24,15 @@ def main() -> int:
     report = commands.add_parser("report", help="Audit and compare saved combat evidence")
     report.add_argument("runs", type=Path, nargs="+")
     report.add_argument("--output", type=Path, help="Write a .json or Markdown report")
-    evaluate = commands.add_parser("evaluate", help="Evaluate a fixed baseline on a frozen suite")
+    evaluate = commands.add_parser(
+        "evaluate", help="Evaluate a frozen policy on a suite or catalog"
+    )
     artifact = evaluate.add_mutually_exclusive_group(required=True)
     artifact.add_argument("--policy", choices=["random", "heuristic"])
     artifact.add_argument("--checkpoint", type=Path, help="Frozen neural policy artifact")
-    evaluate.add_argument("--suite", type=Path, required=True)
+    evaluate.add_argument(
+        "--suite", type=Path, required=True, help="Schema-1 suite or schema-2 catalog"
+    )
     evaluate.add_argument("--output", type=Path, required=True)
     train = commands.add_parser("train", help="Run budgeted, resumable original-engine PPO")
     train.add_argument("--output", type=Path, required=True)
@@ -58,10 +62,24 @@ def main() -> int:
         print(f"Evidence: {output.resolve()}")
         return 0 if manifest["status"] == "completed" else 1
     if args.command == "report":
-        from spire.report import compare_runs, render_report
+        catalog_runs = [
+            any((run / name).exists() for name in (
+                "catalog.json", "catalog-manifest.json", "catalog-evaluation.json"
+            ))
+            for run in args.runs
+        ]
+        if any(catalog_runs):
+            if not all(catalog_runs):
+                parser.error("Report catalogs and single-scenario runs separately")
+            from spire.catalog_report import compare_catalogs, render_catalog_report
 
-        report = compare_runs(args.runs)
-        rendered = render_report(report)
+            report = compare_catalogs(args.runs)
+            rendered = render_catalog_report(report)
+        else:
+            from spire.report import compare_runs, render_report
+
+            report = compare_runs(args.runs)
+            rendered = render_report(report)
         if args.output:
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(
@@ -70,13 +88,31 @@ def main() -> int:
         print(rendered)
         return 0 if report["valid"] else 1
     if args.command == "evaluate":
-        from spire.evaluation import evaluate
+        try:
+            declaration = json.loads(args.suite.read_text())
+        except (OSError, ValueError) as error:
+            parser.error(f"Cannot read suite: {error}")
+        schema = declaration.get("schema_version") if isinstance(declaration, dict) else None
+        if type(schema) is not int or schema not in {1, 2}:
+            parser.error("Evaluation requires a schema-1 suite or schema-2 catalog")
+        if schema == 2:
+            from spire.catalog import evaluate_catalog
 
-        result = evaluate(
-            args.policy or "neural", args.suite, args.output, checkpoint=args.checkpoint
-        )
-        print(json.dumps(result["audit"]["metrics"], indent=2))
-        print(f"Evaluation: {args.output.resolve() / 'evaluation.json'}")
+            result = evaluate_catalog(
+                args.policy or "neural", args.suite, args.output, checkpoint=args.checkpoint
+            )
+            metrics = {"metrics": result["metrics"], "macro": result["macro"]}
+            filename = "catalog-evaluation.json"
+        else:
+            from spire.evaluation import evaluate
+
+            result = evaluate(
+                args.policy or "neural", args.suite, args.output, checkpoint=args.checkpoint
+            )
+            metrics = result["audit"]["metrics"]
+            filename = "evaluation.json"
+        print(json.dumps(metrics, indent=2))
+        print(f"Evaluation: {args.output.resolve() / filename}")
         return 0 if result["valid"] else 1
     if args.command == "train":
         choices = [
