@@ -260,8 +260,12 @@ def _load_training_suite(path: Path) -> dict:
     if isinstance(declaration, dict) and declaration.get("schema_version") == 2:
         from spire.catalog import load_catalog
 
-        return load_catalog(path)
-    return load_suite(path)
+        suite = load_catalog(path)
+    else:
+        suite = load_suite(path)
+    if suite["purpose"] != "development":
+        raise ValueError("Held-out evaluation suites cannot be used for training")
+    return suite
 
 
 def _scenario_assignment(catalog: dict, cursor: int) -> dict:
@@ -608,6 +612,8 @@ def train(output: Path, config: dict | None = None, resume: bool = False) -> dic
     with _training_lock():
         if resume:
             state, payload, checkpoint = _load_checkpoint(output)
+            if state["suite"].get("purpose") != "development":
+                raise EvidenceError("Held-out evaluation suites cannot be resumed as training")
             config = state["config"] if config is None else _resolve_config(config)
             if config != state["config"]:
                 raise ValueError("Resume configuration differs from checkpoint")

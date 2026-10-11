@@ -149,6 +149,8 @@ def _audit(root: Path, report: dict) -> None:
     require(
         read_json(root / "suite.json") == state["suite"], "Captured suite differs from checkpoint"
     )
+    require(state["suite"].get("purpose") == "development",
+            "Held-out evaluation suites cannot be accepted as training evidence")
     current = payload["learner"]["policy"]
     current_hash = model_sha256(load_policy(current).model)
     report.update(
@@ -167,6 +169,8 @@ def _audit(root: Path, report: dict) -> None:
         actual = digest(path)
         saved = torch.load(path, map_location="cpu", weights_only=True)
         stage = saved["training"]
+        require(stage["suite"].get("purpose") == "development",
+                "Held-out evaluation suite in training checkpoint history")
         require(
             path.name == f"{stage['generation']:06d}-{actual}.pt",
             f"Checkpoint filename/digest mismatch: {path.name}",

@@ -67,7 +67,9 @@ def validate_catalog(value: dict) -> dict:
             {"description", *DECLARATIONS}, "catalog")
     _require(type(value["schema_version"]) is int and value["schema_version"] == 2,
              "Only schema-2 catalogs are supported")
-    _require(value["purpose"] == "development", "Only development catalogs are supported")
+    _require(type(value["purpose"]) is str
+             and value["purpose"] in {"development", "held_out_evaluation"},
+             "Only development or held-out evaluation catalogs are supported")
     _identifier(value["id"], "catalog id")
     if "description" in value:
         _require(type(value["description"]) is str and bool(value["description"].strip()),
@@ -144,7 +146,7 @@ def resolve_child_suite(catalog: dict, schedule_index: int) -> dict:
     entry = catalog["schedule"][schedule_index]
     scenario = next(s for s in catalog["scenarios"] if s["id"] == entry["scenario_id"])
     return {
-        "schema_version": 1, "purpose": "development",
+        "schema_version": 1, "purpose": catalog["purpose"],
         "id": f"{catalog['id']}-{scenario['id']}-{schedule_index:04d}",
         "game_seed": scenario["game_seed"],
         "expected_start_sha256": scenario["expected_start_sha256"],
@@ -361,7 +363,12 @@ def audit_catalog(output: Path, *, _tokenizer=None) -> dict:
         "scheduled_attempts": len(catalog["schedule"]), "attempts_started": len(records),
         "unattempted": len(catalog["schedule"]) - len(records),
         "orchestration_failures": sum(bool(c.get("error")) for c in records),
-        "scope": "Declared development scenarios; no held-out generalization claim",
+        "scope": (
+            "Declared held-out evaluation scenarios; "
+            "training separation requires independent evidence"
+            if catalog["purpose"] == "held_out_evaluation" else
+            "Declared development scenarios; no held-out generalization claim"
+        ),
     }
 
 

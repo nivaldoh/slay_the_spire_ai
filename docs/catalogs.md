@@ -1,6 +1,6 @@
-# Development scenario catalogs
+# Scenario catalogs
 
-Schema 2 adds explicit development scenarios without changing schema 1 suites or
+Schema 2 declares development or held-out evaluation scenarios alongside schema 1 suites and
 their saved results. It is a declaration and evidence format, not certification
 that a seed works. The committed [three-scenario development catalog](../configs/suites/starter_three_encounter_development_v1.json)
 contains the existing mixed Louses, Cultist `SPIREINV07` and Jaw Worm `SPIREINV09`.
@@ -14,7 +14,7 @@ The catalog is a JSON object with these required fields:
 | Field | Contract |
 | --- | --- |
 | `schema_version` | Integer `2`. |
-| `purpose` | `development`; held-out purposes are not implemented. |
+| `purpose` | `development` or `held_out_evaluation`. The latter is evaluation-only. |
 | `id` | Stable lowercase identifier containing letters, digits, `_` or `-`; starts with a letter, at most 80 characters. |
 | `scenarios` | Nonempty ordered list of the scenario objects below. |
 | `schedule` | Nonempty ordered list of exact `{scenario_id, policy_seed}` assignments. |
@@ -59,7 +59,7 @@ The v1 learner still omits monster identity, as documented in the expansion revi
 - `load_catalog(path)` loads strict JSON and validates it. Call the existing
   `evaluation.load_suite(path)` for schema 1; schema dispatch is the caller's job.
 - `resolve_child_suite(catalog, schedule_index)` returns an ordinary schema-1
-  development suite with exactly one episode and the selected game seed, expected
+  suite preserving the parent purpose, with exactly one episode and the selected game seed, expected
   public start and policy RNG seed. It leaves its input unchanged.
 - `evaluate_catalog(policy, catalog_path, output, *, checkpoint=None, language_artifact=None)` invokes the
   existing evaluator once per frozen assignment. Supported policies are `random`,
@@ -69,7 +69,7 @@ The v1 learner still omits monster identity, as documented in the expansion revi
   writing files. Malformed or missing parent declarations raise an exception;
   child evidence failures produce an invalid report with issues.
 
-Training accepts schema 2 through its existing suite path. The
+Training accepts development schema 2 through its existing suite path. The
 `round_robin_scenarios_v1` schedule cycles unique scenarios in declaration order,
 resolving each through its first evaluation schedule entry. Evaluation repetition
 counts therefore do not change training weights. Before attempt files or a game
@@ -171,3 +171,26 @@ Validation: catalog tests use the actual schema-1 evaluator and trace auditor wi
 mocked game communication, including provenance tampering, engine changes,
 interruption and unequal schedule weights. They perform no game launches and do
 not establish original-engine compatibility for uninventoried seeds.
+
+## Held-out evaluation boundary
+
+Schema-1 suites and schema-2 catalogs accept `purpose="held_out_evaluation"` through
+existing builtin, neural and language evaluation commands. Catalog children retain
+that exact purpose; saved audits and comparison reports do not relabel them as
+development. The PPO training entry point rejects this purpose before creating
+artifacts or launching collection, and resume rejects a checkpoint with this purpose
+before restoring its optimizer. The demonstration exporter accepts these origins
+only in an explicit `test` split, never `train` or `validation`.
+
+This is an operational label and ingestion boundary, not proof that a scenario was
+unseen. It does not detect a user copying a held-out seed into a newly labeled
+training suite. Existing dataset byte-integrity and re-export checks still apply. A real study
+must freeze training membership, tested artifacts, admissions, schedule and scoring
+before collecting test outcomes, and independently verify origin/run/start/prompt
+separation. Preserve both accepted and rejected inventory attempts. A label cannot
+turn previously used development scenarios into an untouched test.
+
+No held-out catalog is committed or evaluated by this capability change. The current
+three-encounter catalog remains development. Historical development report shapes
+and scores are unchanged. These guards and label propagation are checked with
+synthetic engine boundaries; original-engine held-out study evidence remains pending.

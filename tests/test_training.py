@@ -793,3 +793,27 @@ def test_catalog_pending_batch_is_revalidated_before_optimizer(
     state, _, _ = training._load_checkpoint(output)
     assert state["consumed_ids"] == [] and state["updates"] == 0
     assert len(calls) == 1
+
+
+def test_held_out_suite_cannot_start_or_create_training_artifacts(tmp_path, setup):
+    config, calls = setup
+    suite = read(Path(config['suite_path']))
+    suite['purpose'] = 'held_out_evaluation'
+    write(Path(config['suite_path']), suite)
+    output = tmp_path / 'held-out-training'
+    with pytest.raises(ValueError, match='Held-out evaluation suites cannot'):
+        training.train(output, config)
+    assert not output.exists() and calls == []
+
+
+def test_held_out_checkpoint_cannot_resume_into_training(tmp_path, setup, monkeypatch):
+    config, calls = setup
+    output = tmp_path / 'training'
+    training.train(output, config)
+    state, payload, pointer = training._load_checkpoint(output)
+    state['suite']['purpose'] = 'held_out_evaluation'
+    monkeypatch.setattr(training, '_load_checkpoint', lambda path: (state, payload, pointer))
+    monkeypatch.setattr(training, '_make_trainer', lambda value: pytest.fail('Optimizer restored'))
+    with pytest.raises(EvidenceError, match='Held-out evaluation suites cannot be resumed'):
+        training.train(output, resume=True)
+    assert len(calls) == 2

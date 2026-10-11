@@ -90,12 +90,19 @@ def compare_catalogs(directories: list[Path]) -> dict:
         differences.append("language_policy_contract")
     issues = [f"{Path(run['directory']).name}: {issue}"
               for run in runs for issue in run["comparison_issues"]]
+    purposes = {run.get("catalog", {}).get("purpose") for run in runs}
+    scope = "Declared development scenarios; no held-out generalization claim"
+    if purposes == {"held_out_evaluation"}:
+        scope = ("Declared held-out evaluation scenarios; "
+                 "training separation requires independent evidence")
+    elif "held_out_evaluation" in purposes:
+        scope = "Mixed development and held-out declarations; no controlled comparison"
     return {
         "schema_version": 1, "kind": "catalog_comparison",
         "valid": bool(runs) and all(run["valid"] for run in runs),
         "same_protocol": bool(runs) and not differences and not issues,
         "protocol_differences": differences, "comparison_issues": issues,
-        "scope": "Declared development scenarios; no held-out generalization claim",
+        "scope": scope,
         "runs": runs,
     }
 

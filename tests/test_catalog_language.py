@@ -302,3 +302,17 @@ def test_out_of_range_tokenizer_error_is_invalid_saved_evidence(language_setup, 
     result = catalog.audit_catalog(output)
     assert not result["valid"]
     assert all("out of range" in child["issues"][0] for child in result["children"])
+
+
+def test_held_out_language_catalog_keeps_purpose_in_every_child(language_setup):
+    path, output, _, _, _, _, _, loaded, closed = language_setup
+    data = json.loads(path.read_text())
+    data['purpose'] = 'held_out_evaluation'
+    path.write_text(json.dumps(data))
+    result = evaluate(language_setup)
+    assert result['valid'] and len(loaded) == len(closed) == 1
+    assert 'held-out evaluation' in result['scope']
+    for child in result['children']:
+        record = json.loads((output / child['directory'] / 'evaluation.json').read_text())
+        assert record['suite']['purpose'] == 'held_out_evaluation'
+    assert catalog.audit_catalog(output) == result

@@ -360,3 +360,37 @@ def test_refreshed_snapshot_inventory_cannot_replace_policy_identity(run_setup):
     report = catalog.audit_catalog(output)
     assert not report["valid"]
     assert any("Frozen policy identity" in issue for issue in report["issues"])
+
+
+def test_held_out_purpose_survives_catalog_children_and_audit(run_setup):
+    from spire.catalog_report import compare_catalogs
+
+    path, output, _ = run_setup
+    data = json.loads(path.read_text())
+    data['purpose'] = 'held_out_evaluation'
+    write(path, data)
+    result = catalog.evaluate_catalog('random', path, output)
+    assert result['valid']
+    assert 'held-out evaluation' in result['scope']
+    for child in result['children']:
+        record = json.loads((output / child['directory'] / 'evaluation.json').read_text())
+        assert record['suite']['purpose'] == 'held_out_evaluation'
+    assert catalog.audit_catalog(output) == result
+    comparison = compare_catalogs([output])
+    assert comparison['valid'] and comparison['same_protocol']
+    assert 'held-out evaluation' in comparison['scope']
+
+
+def test_held_out_catalog_cannot_start_training(tmp_path, declaration, monkeypatch):
+    pytest.importorskip('torch')
+    from spire import training
+
+    declaration['purpose'] = 'held_out_evaluation'
+    path = tmp_path / 'held-out.json'
+    write(path, declaration)
+    output = tmp_path / 'training'
+    monkeypatch.setattr(training, '_provenance', lambda: pytest.fail('Training initialized'))
+    with pytest.raises(ValueError, match='Held-out evaluation suites cannot'):
+        training.train(output, {'suite_path': str(path), 'total_episodes': 1,
+                                'max_updates': 1, 'time_budget_seconds': 60})
+    assert not output.exists()

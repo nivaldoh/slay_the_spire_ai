@@ -50,3 +50,11 @@ def test_suite_accepts_explicit_supported_character_and_observation_contract(tmp
     path = tmp_path / "suite.json"
     path.write_text(json.dumps(suite))
     assert load_suite(path) == suite
+
+
+def test_held_out_suite_preserves_its_explicit_purpose(tmp_path):
+    suite = json.loads(SUITE.read_text())
+    suite['purpose'] = 'held_out_evaluation'
+    path = tmp_path / 'held-out.json'
+    path.write_text(json.dumps(suite))
+    assert load_suite(path) == suite

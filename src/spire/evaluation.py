@@ -1,4 +1,4 @@
-"""Frozen, narrowly scoped original-engine development suites."""
+"""Frozen original-engine development and held-out evaluation suites."""
 
 import hashlib
 import io
@@ -32,8 +32,13 @@ def load_suite(path: Path) -> dict:
     for key, expected in supported_declarations.items():
         if key in suite and (type(suite[key]) is not type(expected) or suite[key] != expected):
             raise ValueError(f"Unsupported suite {key}: expected {expected!r}")
-    if suite.get("schema_version") != 1 or suite.get("purpose") != "development":
-        raise ValueError("Only declared schema-1 development suites are implemented")
+    if (suite.get("schema_version") != 1 or type(suite.get("purpose")) is not str
+            or suite.get("purpose") not in {
+        "development", "held_out_evaluation",
+    }):
+        raise ValueError(
+            "Only schema-1 development or held-out evaluation suites are supported"
+        )
     if not isinstance(suite.get("id"), str) or not suite["id"]:
         raise ValueError("Suite requires a stable identifier")
     if not re.fullmatch(r"[A-Z0-9]+", suite.get("game_seed", "")):

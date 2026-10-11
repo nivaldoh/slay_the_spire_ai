@@ -377,3 +377,13 @@ def test_coherent_catalog_episode_with_wrong_actual_start_is_rejected(saved_cata
     report = audit_script.audit_training(saved_catalog_run)
     assert not report["valid"]
     assert "Actual combat start differs from assigned scenario" in report["errors"][0]
+
+
+def test_held_out_purpose_is_rejected_even_when_suite_and_checkpoint_agree(saved_run):
+    suite = read(saved_run / 'suite.json')
+    suite['purpose'] = 'held_out_evaluation'
+    write(saved_run / 'suite.json', suite)
+    rewrite_checkpoint(saved_run, lambda payload: payload['training'].update(suite=suite))
+    result = audit_script.audit_training(saved_run)
+    assert not result['valid']
+    assert any('Held-out evaluation suites cannot' in e for e in result['errors'])

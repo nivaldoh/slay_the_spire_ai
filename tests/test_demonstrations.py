@@ -475,3 +475,22 @@ def test_policy_failure_origins_never_become_demonstrations(tmp_path, run, after
     assert len(load_transitions(run)) == int(after_action)
     with pytest.raises(EvidenceError, match="Only complete originating runs"):
         demos.export_demonstrations(tmp_path / "dataset", [source(run)], purpose="smoke")
+
+
+@pytest.mark.parametrize('split', ['train', 'validation'])
+def test_held_out_evaluation_is_excluded_from_finetuning_splits(tmp_path, run, split):
+    evaluation_source(run, 'held_out_evaluation')
+    output = tmp_path / 'dataset'
+    with pytest.raises(EvidenceError, match='Held-out evaluation origins'):
+        demos.export_demonstrations(output, [source(run, split)], purpose='supervised_finetuning')
+    assert not output.exists()
+
+
+def test_held_out_evaluation_can_only_supply_an_explicit_test_split(tmp_path, run):
+    evaluation_source(run, 'held_out_evaluation')
+    result = demos.export_demonstrations(
+        tmp_path / 'dataset', [source(run, 'test')], purpose='supervised_finetuning',
+    )
+    assert result['rows']['train'] == result['rows']['validation'] == 0
+    assert result['rows']['test'] > 0
+    assert result['sources'][0]['original_purpose'] == 'held_out_evaluation'
