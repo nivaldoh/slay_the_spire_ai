@@ -140,32 +140,33 @@ an independent run directory and deadline; it does not extend the completed pilo
 
 ## Budget-64 result
 
-The declared budget-only trial at7b4cc31 completed64attempts, all wins,12PPOupdates
-and827audited transitions in2,298.47seconds. The final57-transition tail batch follows
-the existing attempt-limit rule. All30applicable verifier checks pass, including
-behavior probabilities, optimizer state, data lineage, unique ingestion, source pins,
-and finite updates. The first update exactly reproduced the pilot from the same
-initialization and first81transitions; this is not an independent training replicate.
+The declared budget-only trial at `7b4cc31` completed 64 attempts, all wins, 12 PPO
+updates and 827 audited transitions in 2,298.47 seconds. The final 57-transition tail
+batch follows the existing attempt-limit rule. All 30 applicable verifier checks pass,
+including behavior probabilities, optimizer state, data lineage, unique ingestion,
+source pins, and finite updates. The first update exactly reproduced the pilot from
+the same initialization and first 81 transitions; this is not an independent replicate.
 
 The final export `03ca30dc29154b968686a918efb0d4579d99c3142461ee2507a33138b18bbd22`
-was evaluated without checkpoint selection. Result:8/8wins, endingHP
-[80,66,76,78,71,53,80,72], mean72.0, compared with72.75 for the exactly matching
-initial tensor artifact,72.75 for the pilot,68 for random, and77 for the heuristic.
-There were no invalid actions or infrastructure failures. Six paired command/public
-transition sequences were identical. Sampling seed1004 first diverged at turn2,
-selecting a Strike at the second Louse instead of Defend from the same public state;
-the subsequent trajectory ended sixHP lower. Seed1005 differed at a later action but
-ended at the same53HP. Shared command prefixes had identical public transitions.
-These observations locate behavioral differences, not a counterfactual causal test
-of a single action, since subsequent actions and random-event streams may diverge.
+was evaluated without checkpoint selection. Result: 8/8 wins, ending HP
+[80, 66, 76, 78, 71, 53, 80, 72], mean 72.0, compared with 72.75 for the exactly
+matching initial tensor artifact, 72.75 for the pilot, 68 for random, and 77 for the
+heuristic. There were no invalid actions or infrastructure failures. Six paired
+command/public transition sequences were identical. Sampling seed 1004 first diverged
+at turn 2, selecting a Strike at the second Louse instead of Defend from the same public
+state; the subsequent trajectory ended six HP lower. Seed 1005 differed at a later
+action but ended at the same 53 HP. Shared command prefixes had identical public
+transitions. These observations locate behavioral differences, not a counterfactual
+causal test of a single action, since subsequent actions and random-event streams may
+diverge.
 
 Decision: **reject** the increased budget as an improvement on this fixed diagnostic.
-Keep its valid learning/evaluation evidence. A0Louse wins are saturated and the
-health term produces only a small optimization signal; this is a plausible limitation,
-not a measured cause or a reason to alter reward within the completed experiment.
-The next work broadens verified development conditions under the inventory below,
-while a separate pretrained-model imitation diagnostic tests the language track.
-No unseen-scenario performance or robust improvement is claimed.
+Keep its valid learning/evaluation evidence. A0 Louse wins are saturated and the health
+term produces only a small optimization signal; this is a plausible limitation, not a
+measured cause or a reason to alter reward within the completed experiment. The next
+work broadens verified development conditions under the inventory below, while a
+separate pretrained-model imitation diagnostic tests the language track. No unseen-
+scenario performance or robust improvement is claimed.
 
 See the generated [comparison](results/ppo-budget64-development-v1.json),
 [paired evidence](results/ppo-budget64-paired-evaluation.json), and
