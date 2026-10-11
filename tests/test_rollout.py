@@ -40,6 +40,18 @@ def test_prefix_refuses_a_changed_start_distribution():
         prefix_command(message)
 
 
+def test_neow_four_option_profile_can_preserve_starter_deck():
+    # Observed original-engine failure: profile offers four choices, no max HP.
+    message = neow(
+        [
+            {"label": "Choose a Card to obtain", "choice_index": 0},
+            {"label": "Obtain 100 Gold", "choice_index": 1},
+            {"label": "Take 24 damage Gain 250 Gold", "choice_index": 2},
+        ]
+    )
+    assert prefix_command(message) == "CHOOSE 1"
+
+
 def test_prefix_uses_only_neow_event():
     message = neow([{"text": "Leave", "choice_index": 0}])
     message["game_state"]["screen_state"]["event_id"] = "Other Event"

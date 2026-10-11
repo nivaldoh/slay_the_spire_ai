@@ -30,7 +30,7 @@ def write_json(path: Path, value: dict) -> None:
 
 
 def prefix_command(message: dict) -> str:
-    """Fixed, logged Neow/max-HP and leftmost-map prefix, outside the policy."""
+    """Logged Neow/max-HP-or-gold and leftmost-map prefix, outside the policy."""
     commands = message.get("available_commands", [])
     state = message.get("game_state", {})
     screen = state.get("screen_type")
@@ -44,9 +44,14 @@ def prefix_command(message: dict) -> str:
         hp = [option for option in enabled if "max hp" in option.get("text", "").lower()]
         if hp:
             return f"CHOOSE {hp[0]['choice_index']}"
+        gold = [
+            option for option in enabled if option.get("label", "").lower() == "obtain 100 gold"
+        ]
+        if gold:
+            return f"CHOOSE {gold[0]['choice_index']}"
         if len(enabled) == 1:
             return f"CHOOSE {enabled[0]['choice_index']}"
-        raise ProtocolError("Neow has multiple choices without max HP; prefix not supported")
+        raise ProtocolError("Neow has multiple choices without max HP or 100 gold; unsupported")
     if screen == "MAP" and "choose" in commands:
         return "CHOOSE 0"
     if "proceed" in commands:
@@ -227,8 +232,8 @@ def rollout(output: Path, config: dict) -> dict:
         "config": config,
         "engine": "original",
         "scope": "first_combat",
-        "observation_version": "starter-v1",
-        "prefix_version": "neow-maxhp-leftmost-v1",
+        "observation_version": "ironclad-starter-combat-v1",
+        "prefix_version": "neow-maxhp-or-gold-leftmost-v1",
         "reset": "owned_jvm_restart_then_seeded_start",
         "status": "running",
         "episodes": [],
