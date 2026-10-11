@@ -36,11 +36,16 @@ fell to 63.67 (Louses 77, Cultist 41, Jaw Worm 73; still 12/12 wins). The declar
 adopted it on agreement and wins; HP was not part of the rule. See research.md and
 [result](results/language-relabel-development-v1.json).
 
-LIVE: the declared [outcome-based post-training](language-rl-experiment.md) job
-(`scripts/train_language_rl.py`, output `runs/language-rl-relabel-20261011`) starts from
-that adapter at T=1: 5 iterations × 12 sampled catalog combats, one REINFORCE step each,
-5,400-second job cap. It owns the GPU lease and the game; start no other game or GPU job.
-Keep source and HEAD frozen until it stops (rollouts refuse changed implementation).
+The first [outcome-based post-training](language-rl-experiment.md) job completed one
+REINFORCE iteration (12 sampled combats, audited update), then stopped on a transient
+Windows interop timeout before iteration 1. Its one-update adapter improved greedy
+catalog macro HP from 63.67 to 66.67 (Cultist 41 → 50; it now finishes a 3-HP Cultist
+instead of blocking), 12/12 wins: the contract's improvement rule is met on trained
+development scenarios. See research.md and [result](results/language-rl-development-v1.json).
+
+LIVE: declared continuation `runs/language-rl-relabel-continued-20261011` from that
+adapter (4 iterations, seed 1, fresh AdamW, 4,500-second cap) after the interop
+mitigation. It owns the GPU lease and the game; keep source and HEAD frozen until it stops.
 
 The frozen SFT v2 evaluation completed at source
 `e829c1c`; tool session `71199` exited successfully and PIDs `337234`/`337233` are gone.
@@ -291,9 +296,9 @@ that natural-language deadline.
 
 ## Next useful actions
 
-1. When the RL job stops: `scripts/train_language_rl.py --audit`, then evaluate the final
-   iteration's `policy.json` once on the catalog with the frozen greedy evaluator and
-   apply the contract's improvement rule against the base (macro HP 63.67, 12/12).
+1. When the continuation stops: `scripts/train_language_rl.py --audit`, then evaluate its
+   final `policy.json` once on the catalog (frozen greedy evaluator) and compare with the
+   base (63.67) and the one-update adapter (66.67).
 2. Then decide between more outcome-based iterations, a better supervised base, or
    held-out scenarios for the language track.
 3. PPO learning-rate work is paused by owner direction; re-declare before resuming.

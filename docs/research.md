@@ -437,3 +437,44 @@ choice 0.118 at T=1 (Louses 0.034, Cultist 0.152, Jaw Worm 0.139), so **T = 1**.
 collection, the whole-job budget in the [RL contract](language-rl-experiment.md) was raised
 from 4,500 to 5,400 seconds: this adapter's measured fights take 46–59 seconds, and five
 12-combat iterations plus updates would not fit the original cap.
+
+### First REINFORCE job: one completed iteration, then infrastructure stop
+
+`runs/language-rl-relabel-20261011` (source `e8d0b86`) completed iteration 0: 12 sampled
+combats, all won (Louses HP 79/79/77/79, Cultist 69/66/61/69, Jaw Worm 75/52/78/58),
+all three groups with nonzero advantages. The update recomputed all 331 behavior
+log-probability vectors within 8.9e-7 of the recorded values, changed all 2,293,759
+adapter elements, and moved the policy by a mean behavior-to-updated KL of 0.031 per
+decision. Before iteration 1's first game, the per-game Windows interop query for
+`LOCALAPPDATA` timed out after 10 seconds, so that slot is an infrastructure failure
+with zero actions. Per the contract the job stopped without retry. A read-only
+`audit_language_rl` passed. The final artifact is iteration 0's adapter
+(`af13a8a2…`, declaration SHA-256 `f184598519a6b8a2aac4545e263f7e959f68844fbc7709b56871e27b41724f9c`).
+The same query took 0.05 seconds when repeated; WSL swap was nearly full at the time.
+That is a plausible contributor, not a measured cause.
+
+Frozen greedy evaluation of that one-update adapter (12 slots, valid audit, no failures):
+12/12 wins, Louses HP77, Cultist HP50, Jaw Worm HP73, macro **66.67** against the base's
+63.67 (+3.00), so the contract's improvement rule is met. Paired with the base's traces,
+the Louse and Jaw Worm action sequences are identical. The Cultist line matches until
+turn 8, when the Cultist has 3 HP: the base, like the heuristic teacher, blocks three
+times and takes a hit, while the updated adapter plays Strike and ends the fight 9 HP
+higher. One outcome-based update corrected a mistake inherited from the teacher in a
+trained scenario. It is one decision on a deterministic seed that training also used,
+not evidence of a general rule. See [result](results/language-rl-development-v1.json).
+
+### Declared continuation (before any further collection)
+
+Infrastructure mitigation `e9ab10c`: the fixed per-user config path is resolved once
+per process (30-second cap) instead of before every game. Game, observation, policy,
+reward and retry semantics are unchanged.
+
+Continuation job `runs/language-rl-relabel-continued-20261011`: the same contract
+(T = 1, group 4, learning rate 1e-4, three catalog scenarios, one REINFORCE step per
+iteration), starting from iteration 0's exact adapter, for **4 iterations** with
+`seed = 1` so no sampling seed repeats, and a 4,500-second cap. AdamW state is not
+carried over: the optimizer restarts, so this chain is not identical to one
+uninterrupted 5-iteration job. Evaluate its final iteration once with the frozen
+greedy evaluator, and compare it with the base (63.67) and the one-update result under
+the contract's improvement rule. No checkpoint is selected by score. A failure stops
+this job too, and its last completed iteration is the final artifact.
