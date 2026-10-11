@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository is at the bootstrap stage: `SLAY_THE_SPIRE_AGENT_GUIDE.md` is the project reference; no implementation, tests, or dependency configuration exists yet. Consult its relevant sections before implementing a milestone.
+Read `docs/state.md` for current evidence and next steps. `SLAY_THE_SPIRE_AGENT_GUIDE.md` is the project reference; consult relevant sections before implementing a milestone.
 
 Create the planned layout as needed:
 
@@ -15,7 +15,7 @@ Create the planned layout as needed:
 
 ## Build, Test, and Development Commands
 
-No build, test, or runnable application commands are available yet. Bootstrap one locked `uv` environment and document verified commands in `README.md`.
+Use `uv sync --locked`, `uv run pytest`, and `uv run ruff check .`. `uv run python -m spire doctor` and `rollout` are implemented; see `README.md` for reproduction commands. Commit implementation changes before attributable live rollouts. Never run two game controllers concurrently.
 
 Planned CLI commands, to implement incrementally:
 
@@ -27,20 +27,20 @@ Planned CLI commands, to implement incrementally:
 
 ## Coding Style & Naming Conventions
 
-For new Python code, use four-space indentation, `snake_case` functions/modules, `PascalCase` classes, and `UPPER_SNAKE_CASE` constants. Separate protocol handling from policy logic. Reserve bridge stdout for protocol traffic; send diagnostics elsewhere. No formatter or linter is configured; document tooling when adopted.
+For new Python code, use four-space indentation, `snake_case` functions/modules, `PascalCase` classes, and `UPPER_SNAKE_CASE` constants. Separate protocol handling from policy logic. Reserve bridge stdout for protocol traffic; send diagnostics elsewhere. Ruff checks imports and basic errors; use `uv run ruff format` for formatting.
 
 ## General Guidelines
 Aim for simplicity and readability. Avoid slop and overengineering.
 
 ## Testing Guidelines
 
-No testing framework or coverage threshold is established. Prefer `pytest` with `tests/test_*.py`; after configuring it, document `uv run pytest` as the test command.
+Use pytest with `tests/test_*.py`; run `uv run pytest`. No arbitrary coverage threshold is required.
 
 Prioritize action/target identity, stale observations, terminal transitions, reproducible resets, and bridge failures. Add regressions for observed failures. Validate supported mechanics against the original engine; fixtures alone do not demonstrate working game integration.
 
 ## Commit & Pull Request Guidelines
 
-There is no Git history or established commit convention. Use concise, imperative subjects, such as `Add bridge readiness handshake`. Keep changes focused.
+Use concise, imperative commit subjects, such as `Add bridge readiness handshake`. Keep changes focused. The owner authorizes commits and pushes to `main`.
 
 PRs should explain the problem, behavior changes, validation commands/results, and limitations. Link relevant issues and experiment artifacts when applicable.
 

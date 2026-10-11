@@ -7,6 +7,7 @@ import json
 import math
 import os
 import subprocess
+import sys
 import time
 import uuid
 from datetime import datetime, timezone
@@ -22,7 +23,7 @@ from spire.protocol import (
     decision_from_message,
     validate_action,
 )
-from spire.runtime import GAME_DIR, OwnedGame, prepare_runtime
+from spire.runtime import GAME_DIR, OwnedGame, RuntimeLock, prepare_runtime, sha256
 
 
 def write_json(path: Path, value: dict) -> None:
@@ -65,6 +66,14 @@ def _fingerprint(value: dict) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
 
 
+def source_fingerprints() -> dict[str, str]:
+    root = Path(__file__).resolve().parents[2]
+    paths = list((root / "src").rglob("*.py")) + list((root / "scripts").rglob("*.py"))
+    paths += list((root / "configs").rglob("*.json"))
+    paths += [root / name for name in ("pyproject.toml", "uv.lock", ".python-version")]
+    return {str(path.relative_to(root)): sha256(path) for path in sorted(paths)}
+
+
 def run_episode(directory: Path, config: dict, episode: int) -> dict:
     directory.mkdir(exist_ok=False)
     started = time.monotonic()
@@ -105,7 +114,7 @@ def run_episode(directory: Path, config: dict, episode: int) -> dict:
             trace.flush()
 
         try:
-            with BridgeServer(timeout=config["bridge_timeout"]) as bridge:
+            with RuntimeLock(), BridgeServer(timeout=config["bridge_timeout"]) as bridge:
                 deployment = prepare_runtime(*bridge.address, timeout=config["bridge_timeout"])
                 write_json(directory / "deployment.json", deployment)
                 with OwnedGame(directory / "game.log", timeout=config["episode_timeout"]) as game:
@@ -248,6 +257,8 @@ def rollout(output: Path, config: dict) -> dict:
         "created_at": datetime.now(timezone.utc).isoformat(),
         "source_revision": revision,
         "source_status": dirty,
+        "source_files": source_fingerprints(),
+        "command": [sys.executable, *sys.argv],
         "config": config,
         "engine": "original",
         "scope": "first_combat",
@@ -260,6 +271,10 @@ def rollout(output: Path, config: dict) -> dict:
     write_json(output / "manifest.json", manifest)
     try:
         for index in range(config["episodes"]):
+            if source_fingerprints() != manifest["source_files"]:
+                raise RuntimeError(
+                    "Implementation changed during rollout; stopped before next launch"
+                )
             result = run_episode(output / f"episode-{index:04d}", config, index)
             manifest["episodes"].append(result)
             write_json(output / "manifest.json", manifest)
