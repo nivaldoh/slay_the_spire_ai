@@ -21,14 +21,19 @@ far behind: frontier models won **0 of 25** zero-shot Slay the Spire 2 runs at A
 agent won 6 of 10, not significantly better than its 3 of 10 baseline
 ([AgenticSTS](https://arxiv.org/abs/2607.02255)), and a Qwen3.5-9B fine-tuned on about 40k
 search-bot decisions reached a mean floor of 19.5 without a win. For this project the
-deciding constraint is **engine time, not GPU or money**: the original engine yields roughly
-1,400–2,900 combats a day on its single controller (estimate), while the RL successes worth
-copying used from about 15,000 simulated runs to hundreds of millions of games. That argues for four moves in order: tighten the evaluation
-(held-out and harder scenarios, HP-based paired comparisons); improve the local language policy
-with the changes that have direct evidence (MLP-inclusive LoRA, turn-level credit, a 2–4B
-Qwen3.5 base); add a frontier model as a measured baseline and offline teacher; and, if the goal
-becomes the full game, validate a fast simulator against the project's audited traces before
-training on it. Paid services buy bigger models, not more samples. The project's distinctive
+deciding constraint is **engine wall-clock, not GPU or money**, and that wall-clock is mostly not
+game logic: in the project's traces, about 61% of a heuristic fight is animation timers the engine
+plays out in real time and 26% is starting a fresh JVM. Today the engine yields roughly
+1,400–2,900 combats a day on one controller (estimate). JVM reuse, a fixed-step no-render mod and
+3–4 parallel instances could raise that 10–40×, and a parity-checked C++ engine such as
+sts_lightspeed by 10^2.5× or more (estimates); a JAX port is not worth its cost for a rule-heavy
+game. The RL successes worth copying used from about 15,000 simulated runs to hundreds of
+millions of games. That argues for five moves in order: tighten the evaluation (held-out and
+harder scenarios, HP-based paired comparisons); speed up the real engine behind a parity gate;
+improve the local language policy with the changes that have direct evidence (MLP-inclusive LoRA,
+turn-level credit, a 2–4B Qwen3.5 base); add a frontier model as a measured baseline and offline
+teacher; and, if the goal becomes the full game, validate a fast simulator against the project's
+audited traces before training on it. Paid services buy bigger models, not more samples. The project's distinctive
 asset is its honest-information, audited, real-engine evaluator: the notes found no
 peer-reviewed Slay the Spire paper with real-engine RL results and no published RL-trained LLM
 for the game.
@@ -37,7 +42,7 @@ for the game.
 
 | Path | What it is | Frontier example (date) | Slay the Spire prior work | What this project would need | Rough cost / time (estimates unless noted) | Main risk |
 |---|---|---|---|---|---|---|
-| 1. Pure RL and search | Policy/value nets trained on environment reward; MCTS or Gumbel search over a simulator; world models | Ataraxos, superhuman Stratego for under $8k on 16 H100s for a week (2025–26); Generals.io, #1 on a human ladder after 4×H200 × 4 days (Jun 2026) | heart1 82.5% A0 wins in simulator; sts-ironclad-agent 50.1% A20 Heart (self-reported); six failed attempts to distill MCTS combat into a network | Python binding to an sts_lightspeed fork, parity check against audited traces, HP or run-value reward, entity-based masked policy | ~$0 on the local GPU; real-engine RL beyond one fight is infeasible (a 50k-step single-fight budget is ~15–40 h of engine time) | Simulator fidelity unquantified; RNG-aware teachers leak hidden information |
+| 1. Pure RL and search | Policy/value nets trained on environment reward; MCTS or Gumbel search over a simulator; world models | Ataraxos, superhuman Stratego for under $8k on 16 H100s for a week (2025–26); Generals.io, #1 on a human ladder after 4×H200 × 4 days (Jun 2026) | heart1 82.5% A0 wins in simulator; sts-ironclad-agent 50.1% A20 Heart (self-reported); six failed attempts to distill MCTS combat into a network | Python binding to an sts_lightspeed fork, parity check against audited traces, HP or run-value reward, entity-based masked policy | ~$0 on the local GPU; a 50k-step single-fight budget is ~15–40 h on today's engine, ~0.4–4 h if the 10–40× real-engine speedups hold; full-game RL needs a simulator | Simulator fidelity unquantified; RNG-aware teachers leak hidden information |
 | 2. Local small-LLM fine-tuning | LoRA SFT, then on-policy RL (GRPO family, turn-level credit) on a ≤4B model | GiGPO: Qwen2.5-1.5B 86–87% on ALFWorld vs 48% for prompted GPT-4o (NeurIPS 2025) | Orak: Llama-3.2-3B 0 → 10.7 after SFT; 9B LoRA reached floor 19.5, 0 wins; this project 12/12 at macro HP 76.33 | MLP-inclusive LoRA, Qwen3.5-2B/4B, turn-level advantages, harder and held-out scenarios | $0 cash; ~6–12 min engine time per 12-combat iteration; 1,000 combats = 8.3–16.7 h | Sample starvation; memorizing fixed seeded lines |
 | 3. Frontier inference with scaffolding | A closed model picks each action from a bounded prompt with notes, game knowledge and tools | BalatroBench: Gemini 3 Pro 9/15 wins at $11.16/run (Feb 2026); AgenticSTS 6/10 at StS2 A0 (Jul 2026) | Orak StS1 best normalized score 51.9 (Gemini-2.5-pro); SpireBench StS2 0/25 | Full-run controller (map, events, shops, potions), candidate-index prompt, caching, cost logging | $0.50–5 per full run (cheap tier) to $18–90 (Claude Opus 5.5); 1–10 h per run | Low, uncertain win rate with wide confidence intervals; cost of enough runs |
 | 4. Remote fine-tuning/RL services | Rent the trainer (Tinker, Fireworks Training API, rented GPUs) while the game loop stays local | Tinker client-side training loop; Fireworks Training API GA 2026-08-31 | None found | A client-side-loop API (the Windows game cannot be hosted) and a ≥4B base model | ~$29–80 per 1,000 combats on Tinker; rented RTX 4090 $6–15 per 17 h | Buys model size, not throughput; heavy vendor churn in 2026 |
@@ -79,6 +84,110 @@ experiment contracts, with commit-before-run, independent trace audits and hard 
 
 The owner has paused PPO, and the language track is the current focus
 ([language-rl-experiment.md](language-rl-experiment.md)).
+
+## Engine speed: where the time goes, and how much can be recovered
+
+Almost none of the 30–60 s per fight is game logic. The saved traces split it between animation
+timers the engine plays out in real time and restarting the JVM for every fight. Both can be cut
+on the real engine, by roughly 10–40× together (estimate), and a parity-checked reimplementation
+removes them entirely. A JAX port is the one rebuild option the evidence does not support.
+
+**Where the time goes.** The table below is computed here from the project's saved traces
+(`trace.jsonl` timestamps; every action is paired with the next engine message). The runner adds
+no sleeps of its own: it waits for CommunicationMod's next stable state.
+
+| Phase (mean per fight) | Heuristic, 8 Louse fights | Qwen LoRA, 12 catalog fights |
+|---|---:|---:|
+| JVM start, ModTheSpire patching, asset load, to main menu | 9.9 s (26%) | 9.9 s (21%) |
+| Seeded `START`, Neow, map choice, one settling `WAIT 60` | 4.4 s (12%) | 4.9 s (10%) |
+| Card plays | 8.3 s (16.0 plays × 0.52 s) | 8.3 s (18.3 × 0.45 s) |
+| End turns, including the enemy turn | 15.1 s (5.0 × 3.03 s) | 14.8 s (5.3 × 2.78 s) |
+| Policy inference | 0.02 s | 8.7 s (19%) |
+| After the engine outcome | 0.5 s | 0.5 s |
+| **Total** | **38.3 s** | **46.5 s** |
+
+The mechanism explains these numbers. CommunicationMod reports a combat state only when the
+action queue is empty and it is the player's turn; it waits for actions, not for visual effects
+([GameStateListener.java](https://github.com/ForgottenArbiter/CommunicationMod/blob/master/src/main/java/communicationmod/GameStateListener.java)).
+The engine advances one update per rendered frame (60 FPS with vsync in the owner's
+configuration), runs at most one action per frame, and each action counts down its timer in real
+elapsed time. The game's Fast Mode, already on, shortens those timers but does not remove them:
+waits are capped at 0.1 s, the intent flash takes 0.5 s per monster, each card draw 0.1 s, and the
+monster start-of-turn and gain-block actions 0.25 s each. Those timers add up to about 2.75 s for a
+two-Louse enemy turn, against 3.03 s measured. (These engine facts come from a local decompile of
+the pinned game jar for research; nothing decompiled is committed.) Inside combat, then, the time
+is animation and timers. Per fight, though, about 37% is restart and
+prefix, which removing animations does not touch: with a fresh JVM per fight, even a zero-time
+combat caps the gain at about 2.6× (derived). The rules themselves are cheap: sts_lightspeed's
+original benchmark ran about 12,500 random Act 1 attempts per second per thread (2021).
+
+**Speeding up the real engine.** Every lever below runs the original Java game code, though some
+patch it. Speedups
+are per instance, relative to today's ~94 fights an hour, and are estimates unless noted.
+
+| Lever | What changes | Speedup (estimate) | Risks and costs |
+|---|---|---|---|
+| JVM reuse | Start new seeded runs from the main menu, restarting the JVM every N fights; spirecomm already loops `START` in one JVM | ~1.2–1.3× alone, but required for everything below | State carried across runs; keep the combat-start hash gate. Abandoned runs add deaths to profile stats |
+| Display settings | Uncapped frame rate, vsync off | ~1.1× | Low |
+| [SuperFastMode](https://github.com/Skrelpoid/SuperFastMode) | MIT, declares the 12-18-2022 build, last commit 2023-01-14, 188k Workshop subscribers; multiplies each frame's time step, up to 10× | ~4–5× with JVM reuse | Still one frame per action; fades stay real-time. Users report gameplay bugs (Dual Wield copies, effects not applying at high speed, a missing hand in the Hexaghost fight; [issue #38](https://github.com/Skrelpoid/SuperFastMode/issues/38)) |
+| A small project-owned fixed-step mod | Feed the game a constant 1/60 s per update, skip drawing, uncap the loop; keep the original action loop and CommunicationMod's stability rules | ≥10× with JVM reuse; the upper bound depends on the unmeasured cost of an update without drawing | New mod code, but the most faithful fast option |
+| Parallel instances | Steam is not required and the game code has no single-instance lock. Each instance needs its own copy of the game directory, its own `LOCALAPPDATA`, its own relay port and windowed mode; destire-mio ran 4, then 8 instances with a 384 MB heap ([runbook](https://github.com/destire-mio/sts-ironclad-agent/blob/main/live_original/README.md)) | ~3–4× aggregate on this 6-core, 16 GB host | Requires the owner to relax the one-controller rule; per-instance ownership locks |
+| Savestate stack ([LudicrousSpeed](https://github.com/boardengineer/LudicrousSpeed), [STSStateSaver](https://github.com/boardengineer/STSStateSaver), BattleAiMod) | Replaces the action loop with about 130 patches; resets to saved mid-combat states | Little beyond the levers above for first-floor fights | No licence; built for the 11-30-2020 game; Save State Mod changes the potion pool (a user reported different potion drops for the same seed, 2025-11-11). Keep out of scored evaluation |
+| Headless game classes | Run the game's own classes under OpenJDK with graphics mocked, with no window and no CommunicationMod. [rusted-spire](https://github.com/lhy-loveworld/rusted-spire) does this as a combat oracle for this exact build | Unpublished; potentially the fastest real-logic option | A new harness. Use only the locally installed, licensed jar; never redistribute game classes |
+
+Combined, JVM reuse, a fixed-step mod and 3–4 instances would take today's ~94 fights an hour to
+roughly 1,000–3,800, or about 22,000–90,000 fights a day (estimate). The per-lever factors do not
+simply multiply, because instances compete for the same 6 CPU cores and 16 GB of RAM. Each change needs a
+differential replay gate: the same seed and commands on the stock and modded engines must produce
+identical public observations, with mod hashes and display settings recorded as part of the
+engine's identity. The reference is the project's pinned modded stack, not the vanilla game,
+since BaseMod already changes how one end-of-turn shuffle is seeded
+([sts-ironclad-agent](https://github.com/destire-mio/sts-ironclad-agent)). Once combat time
+collapses, the policy becomes the bottleneck on the language track: the Qwen LoRA spends 8.7 s per
+fight (about 0.3 s per decision), so batching decisions across parallel games becomes the next
+lever.
+
+**Rebuilding the game.** Several fast StS1 engines already exist. None has a published parity rate
+against the real game.
+
+| Engine | Language, licence | Coverage | Reported speed | Parity evidence |
+|---|---|---|---|---|
+| [sts_lightspeed](https://github.com/gamerpuppy/sts_lightspeed) | C++, MIT; ~34k lines; upstream last commit 2024-08-10 | All Ironclad and colorless cards (121 card cases), all enemies and relics; bit-exact port of the game's xorshift128+ RNG | 1M random Act 1 playouts in 5 s on 16 threads (2021; the benchmark code has since been deleted) | None published; 40 fix PRs filed in September 2026. Python bindings are run-level, and forks add combat bindings |
+| daniel-ziegler fork ("Silver Automaton") | C++ | 692 commits ahead of upstream, with a live real-game bridge and divergence catalogues | ~83% Heart kills at A0 in its simulator (self-reported) | Merges combat RNG into one stream, so seeded replay against the real game is impossible |
+| [SpeedTheSpire](https://github.com/degraffa/SpeedTheSpire) (degraffa, 2026) | C++20, no licence | Full-game rewrite in progress | 60,323 random one-monster combats per second per core on a 5800X3D under WSL ([report](https://github.com/degraffa/SpeedTheSpire/blob/HEAD/docs/verification/s245-throughput.md)) | Has a CommunicationMod differential harness; no published rate |
+| [mini-spire](https://github.com/rob-pitkin/mini-spire) | C++ | All Ironclad cards, Act 1 enemies | 438k engine steps/s; ~4.3k inside SB3 PPO | Built from the wiki, not checked against the game |
+| [rusted-spire](https://github.com/lhy-loveworld/rusted-spire) | Rust + PyO3, no licence | Ironclad combat subset (29 card IDs, 21 enemies) | Unpublished | Matches 530 decision-boundary snapshots from this project's exact build ([COMBAT_TRACES.md](https://github.com/lhy-loveworld/rusted-spire/blob/HEAD/docs/COMBAT_TRACES.md)) |
+
+A JAX port is the wrong tool for this game. JAX pays off when the whole loop (environment, small
+policy and search) stays on the GPU: Craftax runs 267k–406k steps per second during PPO on an RTX
+4090 ([Matthews et al.](https://arxiv.org/abs/2402.16801v1)), and the Generals.io result in section 1
+rests on a JAX simulator. Slay the Spire is a rule-heavy event system, and that is where JAX
+struggles. Under `vmap`, every branch of a `lax.cond` or `lax.switch` runs for every game
+([JAX docs](https://docs.jax.dev/en/latest/_autosummary/jax.lax.cond.html)), so a per-card switch
+costs the sum of all card effects on every step. Compile time grows super-linearly with the number
+of switch options ([JAX issue #4453](https://github.com/jax-ml/jax/issues/4453)), Pgx dropped full mahjong over compile cost
+([Pgx](https://arxiv.org/abs/2303.17503)), and a full-fidelity JAX NetHack found that "a single
+GPU roughly matches *one* CPU core" ([NetHax benchmark](https://github.com/rsiegemit/NetHax/blob/main/docs/benchmark.md)).
+The game's RNG needs 64-bit integers, which JAX disables by default, and JAX GPU support on WSL2
+is listed as experimental ([JAX installation](https://docs.jax.dev/en/latest/installation.html)).
+No Slay the Spire or deckbuilder exists in JAX; the closest, an unfinished Balatro engine, runs at
+about 191k steps per second on CPU only ([balatro-rl](https://github.com/Michael-OvO/balatro-rl)).
+
+| Route | Effort for this project's slice (estimate) | Effort for all of Act 1, Ironclad (estimate) | Speed over the real engine (estimate) |
+|---|---|---|---|
+| Faster real engine (levers above) | Days to weeks | Already covers everything | ~10–40× |
+| Wrap sts_lightspeed with a PyTorch policy in the loop | 3–7 days, including a parity replay on existing traces | Already implemented; the cost is fixing divergences | ~10^2.5–10^4.5× end to end; >10^5× engine only |
+| Batched C/C++ slice environment (PufferLib or EnvPool style) with GPU PPO | 1–2 weeks to bit-exact RNG | 3–6 months | ~10^5.5–10^6.5× |
+| JAX slice environment with PureJaxRL PPO on the RTX 3060 | 2–4 weeks | 4–9 months, with branch-cost risk | ~10^5.5–10^6×, only 1–5× better than a good C++ batch environment |
+| Full JAX port | — | Not recommended | — |
+
+The first floor makes parity cheap to check: sts_lightspeed reseeds the combat RNG streams from
+`seed + floor`, so a floor-1 fight should depend only on the seed, the encounter, the deck and the
+actions (an inference from its code, still to be verified). The project's traces already record
+the seed, ordered piles, monster move IDs, intents, powers and HP, enough to replay each fight and
+diff the state after every action. For the language track, a simulator's main value is not raw
+speed but many parallel, resettable games, because LLM inference stays at about 0.3 s per
+decision unless batched across games.
 
 ## 1. Pure RL and search: the strongest bots, built on a simulator this project lacks
 
@@ -164,7 +273,8 @@ AlphaZero-style self-play loop, which nobody has published for this game yet"
 
 Most of this work runs on [sts_lightspeed](https://github.com/gamerpuppy/sts_lightspeed), an
 MIT-licensed C++ engine that implements all enemies and relics but only Ironclad and colorless
-cards, claims "1M random playouts in 5s with 16 threads", and describes itself as "Designed to
+cards, claims "1M random playouts in 5s with 16 threads" (a playout being one random Act 1
+attempt; see the engine-speed section), and describes itself as "Designed to
 be 100% RNG accurate*" with the asterisk never explained. Upstream has been dormant since
 2024-08-10, forks are active in 2026 (daniel-ziegler, Attemory, Jialeiv's patches), and no
 published parity rate against the real engine exists. At single-fight scale there is a clean
@@ -177,14 +287,18 @@ budget-64 PPO run consumed 827 transitions ([state.md](state.md)), about 60× fe
 mini-spire's ~50k steps, on a fight (the Louses) that gives no win/loss signal because random
 play wins it. Mini-spire's budget is reachable for one fight: at the measured 21–28 decisions per
 fight, 50k steps is about 1,800–2,400 combats, or roughly 15–40 hours of continuous engine time
-(computed here from the measured figures; one research note calls even this budget out of reach).
-Full-game RL is not reachable. The learned non-combat layer that gained 11 floors needed 15k
+(computed here from the measured figures; one research note calls even this budget out of reach),
+and roughly 0.4–4 hours if the real-engine speedups in the engine-speed section hold (estimate).
+Full-game RL is a different matter. The learned non-combat layer that gained 11 floors needed 15k
 simulated games ([Jialeiv model card](https://huggingface.co/Jialeiv/sts-rl-agent)); at about 27
-combats per run (estimate) that is roughly 400k combats, or about 140–290 days of engine time.
+combats per run (estimate) that is roughly 400k combats: about 140–290 days on today's engine and
+still about 4–18 days at 22,000–90,000 accelerated fights a day (estimates), for one training run.
 
-The path therefore runs through a simulator, in a fixed order. The first job is a Python binding
-to a maintained sts_lightspeed fork; pybind11 bindings exist upstream but are undocumented, and
-Jialeiv's patches add legal-action listing and pause hooks. The second is **parity before
+Full-game RL therefore runs through a simulator, in a fixed order. The first job is a Python
+binding to sts_lightspeed. For parity work, pin upstream (commit `7476a81`) plus its RNG-relevant
+fix PRs rather than the daniel-ziegler fork, whose merged combat RNG stream rules out seeded
+replay; upstream's pybind11 bindings are run-level and undocumented, and forks (Jialeiv's patches
+among them) add combat-level stepping and legal-action listing. The second is **parity before
 training**: replay the project's audited CommunicationMod traces (same seed, same actions)
 through the simulator, diff the public states, and publish a divergence rate, since the fork's
 target version relative to the 12-18-2022 build is undocumented. The third is the information
@@ -289,8 +403,10 @@ and early states repeat exactly across a group. Adapters should be selected by o
 agreement: the heuristic-relabel adapter raised held-out agreement to 75.2% but cut macro HP from
 76.33 to 63.67 ([language-relabel-experiment.md](language-relabel-experiment.md)). And with 7.7
 GiB of WSL RAM, plain HF generation is safer than colocating vLLM (untested). Engine time is the
-budget: one 12-combat iteration costs about 6–12 minutes, 1,000 combats take 8.3–16.7 hours
-(estimate), and GiGPO-scale episode counts would take weeks.
+budget today: one 12-combat iteration costs about 6–12 minutes, 1,000 combats take 8.3–16.7 hours
+(estimate), and GiGPO-scale episode counts would take weeks. The engine-speed levers above would
+shrink the engine share, after which the model's own 8.7 s per fight dominates unless decisions
+are batched across parallel games.
 
 **Risks.** Three deterministic scenarios invite memorization. Headroom is small: macro HP can
 reach at most 80 after Burning Blood, and the best result is 76.33. Small groups risk the Echo
@@ -449,7 +565,7 @@ Qwen3.5-4B, $29 for Qwen3-8B and $80 for Qwen3.5-9B**, assuming 30 decisions per
 hours of engine time, while renting an RTX 4090 for 17 hours costs about $6–15 and an A100 80GB
 about $20–42 (estimates). **Compute is cheap next to engine wall-clock**: paying buys model size,
 meaning 4B–30B models that do not fit in 12 GB, and does not buy throughput, because the single
-game controller remains the bottleneck. Moving to Tinker also means changing the base model,
+game controller remains the bottleneck; throughput comes from the engine-speed levers instead. Moving to Tinker also means changing the base model,
 since Qwen3-0.6B is not offered, and rerunning SFT on Qwen3.5-4B. The WSL controller would stay
 the client and call the remote sampler for every decision, a round trip the notes did not
 measure. Under the project's contracts, remote spend should be declared as a budget alongside
@@ -593,8 +709,9 @@ project's heuristic is itself a code policy built by Claude Code, and it is stil
 **What it would take here.** At about 38 s per combat the real engine gives about 95 combats an
 hour, so a budget of 8 combats per candidate allows **about 12 candidates an hour and about 100
 overnight**. A 150-generation ShinkaEvolve run at 8 combats per generation needs about 1,200
-combats, or about 12.6 hours, while AlphaEvolve-scale searches with thousands of candidates are
-infeasible without a simulator (all estimates). The project's infrastructure already supplies the
+combats, or about 12.6 hours on today's engine and roughly 20–75 minutes if the 10–40×
+real-engine speedups hold, while AlphaEvolve-scale searches with thousands of candidates still
+need a simulator (all estimates). The project's infrastructure already supplies the
 loop's discipline: commit-before-run, live commands that refuse uncommitted `src/` changes,
 read-only catalogs, and scores recomputed offline from traces by `evidence.py` and `report.py`.
 Three pieces are missing. The loop needs a hidden held-out catalog whose scores the agent never
@@ -682,9 +799,10 @@ worktrees implement variants and run engine-free checks (unit tests, offline rep
 traces); a clean-context judge prunes variants before they spend engine time; and one runner
 drains a serialized queue, screening catalogs first, which amounts to successive halving under a
 fixed engine budget. A 3–5 teammate team costs about 7× a single session, and no dollar figure is
-published for a run of this size. With a fast simulator the calculation flips, and one agent per
-simulator instance, population-based training and exploiter-style scenario search become real
-parallel speedups.
+published for a run of this size. Parallel game instances on the real engine (engine-speed
+section) would loosen this bottleneck 3–4×, and a fast simulator flips the calculation: one agent
+per instance, population-based training and exploiter-style scenario search become real parallel
+speedups.
 
 **Risks.** Tokens multiply while engine-hours stay fixed. Sequential tasks degrade, parallel
 writers make conflicting choices, and agents optimize whatever the verifier rewards, so a
@@ -789,8 +907,8 @@ research, and learned-policy work on its real engine is comparatively empty.
 
 ## 10. Recommended sequence for this project
 
-The ordering follows from the constraints above: engine time is scarce, the language track is
-current, and money is now available but mainly buys model size.
+The ordering follows from the constraints above: engine time is scarce but mostly recoverable,
+the language track is current, and money is now available but mainly buys model size.
 
 **First, make the evaluator worth optimizing against** (no cash, little engine time). Add
 encounters where random play loses and the heuristic does not saturate, declare a held-out
@@ -799,39 +917,47 @@ metrics and confidence intervals. Everything later depends on this; the 2026 aut
 literature attributes most false progress to evaluation noise, and the relabel result already
 showed agreement and outcome diverging.
 
-**Second, spend the next language-track runs on the changes with direct evidence** (local, $0):
+**Second, speed up the real engine behind a parity gate** (days to weeks, $0). Reuse one JVM
+across fights, then add a small fixed-step, no-render mod (or evaluate SuperFastMode), and accept
+each change only if the same seeds and commands reproduce identical public observations on the
+stock and modded engines. Parallel instances add another 3–4× but need the owner to relax the
+one-controller rule. This multiplies every later step, and its measured speedup and divergence
+report would be a useful result in its own right.
+
+**Third, spend the next language-track runs on the changes with direct evidence** (local, $0):
 MLP-inclusive LoRA, a Qwen3.5-2B or 4B base with thinking disabled, turn-level HP rewards with
 anchor-state grouping, and training only on scenarios that carry gradient. Report each change
 against the frozen 76.33 SFT adapter; the unevaluated two-update REINFORCE adapter is the natural
 first evaluation ([state.md](state.md)).
 
-**Third, measure a frontier model on the same catalog** (tens of dollars). Run one cheap and one
+**Fourth, measure a frontier model on the same catalog** (tens of dollars). Run one cheap and one
 flagship model as policies under the existing `Decision` boundary, logging dollars and seconds per
 fight and invalid outputs. If either beats the heuristic, relabel saved states through a batch API
 (about $175 per 10,000 decisions on Sonnet 5.5, estimate) and distill; if neither does, the
 heuristic remains the better teacher, which is itself a reportable result.
 
-**Fourth, run an autoresearch loop on the heuristic, gated by the held-out catalog** (overnight).
+**Fifth, run an autoresearch loop on the heuristic, gated by the held-out catalog** (overnight).
 Edits are confined to the policy module, every candidate is committed before it runs, kept or
-reset, and re-audited offline. About 100 candidates fit in a night, and no comparable experiment
-is published for the game.
+reset, and re-audited offline. About 100 candidates fit in a night on today's engine, and an
+order of magnitude more on an accelerated one (estimate); no comparable experiment is published
+for the game.
 
-**Fifth, decide on the full game, and if the answer is yes, start with simulator parity, not
-training.** Bind an sts_lightspeed fork, replay audited traces, publish a divergence rate, and only
+**Sixth, decide on the full game, and if the answer is yes, start with simulator parity, not
+training.** Bind upstream sts_lightspeed, replay audited traces, publish a divergence rate, and only
 then follow the section 1 recipe (behavior cloning from the heuristic, masked PPO, determinized
 search) with the real engine as final judge. Non-combat decisions could start with a frontier LLM,
 at the hybrid costs in section 3, and later move to a card-pick model trained on human or
 simulator runs.
 
-**Sixth, use paid remote training only when model size is the hypothesis**, for example on-policy
+**Seventh, use paid remote training only when model size is the hypothesis**, for example on-policy
 distillation from Qwen3.5-9B on Tinker at an estimated $29–80 per 1,000 combats, with the loop
 written against the Tinker-style API so it can move between local, rented and hosted GPUs.
 
-**Seventh, treat a multi-agent builder setup as an experiment, not a default**, and if it is
+**Eighth, treat a multi-agent builder setup as an experiment, not a default**, and if it is
 tried, run and report the single-agent-versus-team ablation on a fixed engine budget.
 
-On the evidence above, this guide would not pursue world models, equilibrium solvers, gameplay
-debate or mixed-model ensembles, RNG-reading teachers, or distillation from a frontier teacher
+On the evidence above, this guide would not pursue a full JAX port, world models, equilibrium
+solvers, gameplay debate or mixed-model ensembles, RNG-reading teachers, or distillation from a frontier teacher
 that has not first been measured as a policy. OpenAI fine-tuning is not an option for a new
 account in any case.
 
@@ -842,7 +968,9 @@ converged: generic policy gradient, low-rank LoRA, group baselines and determini
 work. What separates the 2026 successes is cheap, trustworthy evaluation, whether a fast simulator
 for RL, an automatic verifier for program search or a near-perfect oracle for an agent swarm. This
 project has the opposite profile, with evaluation that is slow, serialized and expensive but
-unusually trustworthy: original engine, public information only, audited traces. That makes
+unusually trustworthy: original engine, public information only, audited traces. Much of that
+slowness is animation and process restarts rather than game logic, so a parity-gated fast mode
+and parallel instances can recover an order of magnitude without giving up the real engine. That makes
 sample efficiency and evaluation design the project's real research problems, and they are the
 parts of the field the notes found least covered for Slay the Spire.
 
@@ -857,6 +985,26 @@ reference points of 9% across all StS1 runs in 2020 and 16% at StS2 A0.
 
 All links below are cited in this guide and appear in the research notes. They are grouped by the
 section where each is first cited.
+
+### Engine speed and reimplementations
+
+- [ForgottenArbiter/CommunicationMod, GameStateListener.java (stability rules)](https://github.com/ForgottenArbiter/CommunicationMod/blob/master/src/main/java/communicationmod/GameStateListener.java)
+- [Skrelpoid/SuperFastMode (MIT, 12-18-2022 build)](https://github.com/Skrelpoid/SuperFastMode)
+- [SuperFastMode issue #38](https://github.com/Skrelpoid/SuperFastMode/issues/38)
+- [boardengineer/LudicrousSpeed](https://github.com/boardengineer/LudicrousSpeed)
+- [boardengineer/STSStateSaver](https://github.com/boardengineer/STSStateSaver)
+- [destire-mio/sts-ironclad-agent, live-original runbook (parallel instances)](https://github.com/destire-mio/sts-ironclad-agent/blob/main/live_original/README.md)
+- [lhy-loveworld/rusted-spire (Rust + PyO3, headless oracle)](https://github.com/lhy-loveworld/rusted-spire)
+- [rusted-spire COMBAT_TRACES.md (530 snapshots from the 12-18-2022 jar)](https://github.com/lhy-loveworld/rusted-spire/blob/HEAD/docs/COMBAT_TRACES.md)
+- [degraffa/SpeedTheSpire (C++20 reimplementation)](https://github.com/degraffa/SpeedTheSpire)
+- [SpeedTheSpire throughput report](https://github.com/degraffa/SpeedTheSpire/blob/HEAD/docs/verification/s245-throughput.md)
+- [rob-pitkin/mini-spire](https://github.com/rob-pitkin/mini-spire)
+- [JAX `lax.cond` documentation (both branches traced under vmap)](https://docs.jax.dev/en/latest/_autosummary/jax.lax.cond.html)
+- [JAX issue #4453, lax.switch compile time super-linear in switch options (2020)](https://github.com/jax-ml/jax/issues/4453)
+- [JAX installation (WSL2 GPU support experimental)](https://docs.jax.dev/en/latest/installation.html)
+- [Koyamada et al., Pgx, arXiv 2303.17503 (NeurIPS 2023)](https://arxiv.org/abs/2303.17503)
+- [NetHax benchmark](https://github.com/rsiegemit/NetHax/blob/main/docs/benchmark.md)
+- [Michael-OvO/balatro-rl (JAX Balatro engine)](https://github.com/Michael-OvO/balatro-rl)
 
 ### Pure RL, search and Slay the Spire bots
 
