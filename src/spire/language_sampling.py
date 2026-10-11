@@ -60,8 +60,8 @@ class CandidateSampler:
     def choose(self, decision: Decision) -> Action:
         started = time.monotonic()
         scores, prompt_tokens = self.scorer(decision)
-        if len(scores) != len(decision.candidates):
-            raise ProtocolError("Candidate scores differ from legal choices")
+        if len(scores) != len(decision.candidates) or not all(map(math.isfinite, scores)):
+            raise ProtocolError("Candidate scores differ from legal choices or are nonfinite")
         log_probs = normalized(scores, self.temperature)
         draw = self._random.random()
         index = sample_index(log_probs, draw)

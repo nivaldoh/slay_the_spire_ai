@@ -105,7 +105,7 @@ def load_examples(dataset: Path, split: str) -> list[dict]:
     return list(unique.values())
 
 
-FIELDS = ("prompts", "rows", "agree", "agree_rows", "failures", "argmax_agree")
+FIELDS = ("prompts", "rows", "agree", "agree_rows", "failures", "scored", "argmax_agree")
 SUMS = ("label_probability", "entropy", "max_probability")
 
 
@@ -123,21 +123,27 @@ def evaluate(declaration: Path, dataset: Path, split: str, training: Path | None
             counts = by_start[example["start"]]
             counts["prompts"] += 1
             counts["rows"] += example["rows"]
+            failed = None
             try:
                 choice = decision.candidates.index(policy.choose(decision))
             except PolicyFailure as error:
-                failures[error.failure["kind"]] += 1
+                failed = error.failure["kind"]
+                failures[failed] += 1
                 counts["failures"] += 1
                 choice = None
             if choice == label:
                 counts["agree"] += 1
                 counts["agree_rows"] += example["rows"]
-            probabilities = [math.exp(value) for value in policy.candidate_log_probs(decision)]
-            counts["argmax_agree"] += probabilities.index(max(probabilities)) == label
-            sums = candidate[example["start"]]
-            sums["label_probability"] += probabilities[label]
-            sums["entropy"] -= sum(p * math.log(p) for p in probabilities if p > 0)
-            sums["max_probability"] += max(probabilities)
+            if failed != "context_limit":
+                # Context-limit prompts have no scores; they stay out of the scored count.
+                scores = policy.candidate_log_probs(decision)
+                probabilities = [math.exp(value) for value in scores]
+                counts["scored"] += 1
+                counts["argmax_agree"] += probabilities.index(max(probabilities)) == label
+                sums = candidate[example["start"]]
+                sums["label_probability"] += probabilities[label]
+                sums["entropy"] -= sum(p * math.log(p) for p in probabilities if p > 0)
+                sums["max_probability"] += max(probabilities)
             kind = decision.candidates[label]
             confusion[
                 (
@@ -168,13 +174,13 @@ def evaluate(declaration: Path, dataset: Path, split: str, training: Path | None
         "prompt_agreement": total["agree"] / total["prompts"],
         "row_agreement": total["agree_rows"] / total["rows"],
         "policy_failures": dict(failures),
-        "candidate_argmax_agreement": total["argmax_agree"] / total["prompts"],
-        **{f"mean_{key}": totals[key] / total["prompts"] for key in SUMS},
+        "candidate_argmax_agreement": total["argmax_agree"] / max(1, total["scored"]),
+        **{f"mean_{key}": totals[key] / max(1, total["scored"]) for key in SUMS},
         "by_public_start": {
             start: {
                 **{field: counts[field] for field in FIELDS},
                 "prompt_agreement": counts["agree"] / counts["prompts"],
-                **{f"mean_{key}": candidate[start][key] / counts["prompts"] for key in SUMS},
+                **{f"mean_{key}": candidate[start][key] / max(1, counts["scored"]) for key in SUMS},
             }
             for start, counts in sorted(by_start.items())
         },

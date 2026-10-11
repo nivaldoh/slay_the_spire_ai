@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import math
+import random
 import time
 from pathlib import Path
 
@@ -40,6 +41,7 @@ from spire.rollout import rollout, write_json
 VERSION = "language-candidate-reinforce-v1"
 REWARD = "won_one_plus_quarter_hp_fraction_else_minus_one_v1"
 ASSOCIATION_TOLERANCE = 0.05
+UPDATE_RESERVE_SECONDS = 300
 REQUIRED = {
     "initial_declaration",
     "catalog",
@@ -67,7 +69,10 @@ def validate_config(value: dict) -> dict:
     )
     for key in ("seed", "iterations", "group_size"):
         _require(type(value[key]) is int and value[key] >= (0 if key == "seed" else 1), key)
-    _require(value["group_size"] >= 2, "Group-centered advantages need at least two episodes")
+    _require(
+        2 <= value["group_size"] <= 100 and value["iterations"] <= 999,
+        "Group size must be 2-100 and iterations at most 999 for distinct seeds",
+    )
     for key in ("temperature", "learning_rate", "time_budget_seconds"):
         number = value[key]
         _require(type(number) in (int, float) and math.isfinite(number) and number > 0, key)
@@ -157,23 +162,32 @@ class Scorer:
         return scores.float().tolist(), len(ids)
 
 
-def reinforce_step(scorer, optimizer, batch, *, tolerance=ASSOCIATION_TOLERANCE) -> dict:
+def reinforce_step(
+    scorer, optimizer, batch, *, expected_adapter: str, tolerance=ASSOCIATION_TOLERANCE
+) -> dict:
     """One step on -sum(A * log pi(a|s)) / decisions, after checking behavior association.
 
-    ``batch`` holds (decision, chosen action, behavior record, advantage) tuples.
+    ``batch`` holds (decision, chosen action, behavior record, advantage) tuples. The
+    learner's adapter must be the collection adapter before anything is recomputed.
     """
     model = scorer.model
     trainable = [p for p in model.parameters() if p.requires_grad]
+    before = _adapter(model)
+    _require(tensor_hash(before) == expected_adapter, "Learner adapter differs from collection")
     deviation = 0.0
     model.eval()
     with torch.no_grad():
         for decision, _, behavior, _ in batch:
             current = scorer.log_policy(decision).float().tolist()
             recorded = behavior["candidate_log_probs"]
+            _require(
+                len(current) == len(recorded)
+                and all(math.isfinite(value) for value in [*current, *recorded]),
+                "Nonfinite or misaligned behavior log-probabilities",
+            )
             deviation = max(deviation, *(abs(a - b) for a, b in zip(current, recorded)))
     _require(deviation <= tolerance, f"Recomputed behavior log-probabilities differ: {deviation}")
     signal = [item for item in batch if item[3] != 0]
-    before = _adapter(model)
     result = {
         "decisions": len(batch),
         "signal_decisions": len(signal),
@@ -275,6 +289,7 @@ def train_language_rl(output: Path, config: dict) -> dict:
     validate_declaration(declaration)
     _require(declaration["adapter"] is not None, "RL starts from a supervised adapter")
     catalog = load_catalog(Path(config["catalog"]))
+    _require(len(catalog["scenarios"]) <= 10, "At most ten scenarios keep seeds distinct")
     job = {
         "schema_version": 1,
         "version": VERSION,
@@ -353,7 +368,7 @@ def _iteration(output, job, scorer, optimizer, iteration, adapter_sha) -> dict:
         group = []
         for member in range(config["group_size"]):
             remaining = job["deadline_unix"] - time.time()
-            if remaining < 240:
+            if remaining < 180 + UPDATE_RESERVE_SECONDS:
                 record["status"] = "budget_exhausted"
                 return record
             run = directory / f"{scenario['id']}-{member:02d}"
@@ -412,69 +427,128 @@ def _iteration(output, job, scorer, optimizer, iteration, adapter_sha) -> dict:
                 decisions=len(decisions),
             )
             batch.extend((d, chosen, behavior, advantage) for d, chosen, behavior in decisions)
-    record["update"] = reinforce_step(scorer, optimizer, batch)
-    _require(
-        record["update"]["adapter_before_sha256"] == adapter_sha,
-        "Learner adapter differs from collection adapter",
-    )
+    record["update"] = reinforce_step(scorer, optimizer, batch, expected_adapter=adapter_sha)
     record["status"] = "completed"
     write_json(directory / "iteration.json", record)
     return record
 
 
+def _audit_iteration(output: Path, job: dict, record: dict, adapter: str) -> None:
+    config = job["config"]
+    iteration = record["iteration"]
+    directory = output / f"iteration-{iteration:03d}"
+    _require(
+        [group["scenario_id"] for group in record["groups"]]
+        == [scenario["id"] for scenario in job["scenarios"]],
+        "Iteration does not cover every declared scenario in order",
+    )
+    decisions_total = 0
+    for index, (scenario, group) in enumerate(zip(job["scenarios"], record["groups"], strict=True)):
+        members = group["members"]
+        _require(len(members) == config["group_size"], "Scenario group has missing members")
+        episodes = []
+        for member, item in enumerate(members):
+            seed = policy_seed(config, iteration, index, member)
+            run = directory / f"{scenario['id']}-{member:02d}"
+            _require(
+                item["policy_seed"] == seed and Path(item["run"]) == run,
+                "Member seed or run path differs from the declared schedule",
+            )
+            run_config = _read(run / "manifest.json")["config"]
+            _require(
+                run_config["game_seed"] == scenario["game_seed"]
+                and run_config["expected_start_sha256"] == scenario["expected_start_sha256"]
+                and run_config["policy_seed"] == seed
+                and run_config["policy_artifact"]
+                == {
+                    "type": "language_sample",
+                    "trainer_version": VERSION,
+                    "job_sha256": file_sha256(output / "job.json"),
+                    "iteration": iteration,
+                    "adapter_sha256": adapter,
+                    "temperature": config["temperature"],
+                },
+                "Collected run configuration differs from the iteration",
+            )
+            episode, decisions = sampled_decisions(run)
+            rng = random.Random(seed)
+            _require(
+                all(
+                    behavior["draw"] == rng.random()
+                    and behavior["model_sha256"] == adapter
+                    and behavior["temperature"] == config["temperature"]
+                    for _, _, behavior in decisions
+                ),
+                "Behavior draws, adapter or temperature differ from the seeded schedule",
+            )
+            episodes.append((item, episode, decisions))
+        rewards = [episode_reward(episode) for _, episode, _ in episodes]
+        for (item, _, decisions), reward, advantage in zip(
+            episodes, rewards, group_advantages(rewards), strict=True
+        ):
+            _require(
+                item["reward"] == reward
+                and item["advantage"] == advantage
+                and item["decisions"] == len(decisions),
+                "Recorded reward, advantage or decision count differs from audited evidence",
+            )
+            decisions_total += len(decisions)
+    update = record["update"]
+    _require(update["decisions"] == decisions_total, "Update did not use the whole batch")
+    _require(
+        update["adapter_before_sha256"] == adapter
+        and update["updated"] == (update["adapter_after_sha256"] != adapter),
+        "Update identity disagrees with the adapter chain",
+    )
+    export = record["export"]
+    _require(
+        file_sha256(Path(export["declaration"])) == export["declaration_sha256"],
+        "Exported declaration changed",
+    )
+    from safetensors.torch import load_file
+
+    saved = load_file(str(directory / "adapter/adapter_model.safetensors"))
+    _require(
+        tensor_hash(saved) == update["adapter_after_sha256"],
+        "Saved adapter differs from the committed update",
+    )
+
+
 def audit_language_rl(output: Path) -> dict:
     """Read-only recheck of saved evidence; loads no model and takes no GPU lease."""
+    from safetensors.torch import load_file
+
     output = Path(output).resolve()
     errors = []
     job = _read(output / "job.json")
     summary = _read(output / "training.json")
     adapter = summary["initial_adapter_sha256"]
+    try:
+        _require(summary["job_sha256"] == file_sha256(output / "job.json"), "Job file changed")
+        initial = Path(job["config"]["initial_declaration"])
+        _require(
+            file_sha256(initial) == job["initial_declaration_sha256"],
+            "Initial declaration changed",
+        )
+        directory = Path(_read(initial)["adapter"]["directory"])
+        _require(
+            tensor_hash(load_file(str(directory / "adapter_model.safetensors"))) == adapter,
+            "Initial adapter tensors differ from the trained starting point",
+        )
+        _require(
+            [record["iteration"] for record in summary["iterations"]]
+            == list(range(len(summary["iterations"]))),
+            "Iterations are missing or out of order",
+        )
+    except (OSError, ValueError, KeyError) as error:
+        errors.append(f"job: {error}")
     for record in summary["iterations"]:
         try:
             _require(record["adapter_before_sha256"] == adapter, "Adapter chain is broken")
             if record["status"] != "completed":
                 continue
-            for group in record["groups"]:
-                episodes = [sampled_decisions(Path(m["run"])) for m in group["members"]]
-                rewards = [episode_reward(episode) for episode, _ in episodes]
-                for member, reward, advantage, (_, decisions) in zip(
-                    group["members"], rewards, group_advantages(rewards), episodes, strict=True
-                ):
-                    _require(
-                        member["reward"] == reward and member["advantage"] == advantage,
-                        "Recorded reward or advantage differs from audited evidence",
-                    )
-                    _require(
-                        all(
-                            behavior["model_sha256"] == adapter
-                            and behavior["temperature"] == job["config"]["temperature"]
-                            for _, _, behavior in decisions
-                        ),
-                        "Behavior identity differs from the iteration's adapter",
-                    )
-            update = record["update"]
-            _require(
-                update["updated"] == (update["adapter_after_sha256"] != adapter),
-                "Update flag disagrees with adapter change",
-            )
-            export = record["export"]
-            _require(
-                file_sha256(Path(export["declaration"])) == export["declaration_sha256"],
-                "Exported declaration changed",
-            )
-            from safetensors.torch import load_file
-
-            saved = load_file(
-                str(
-                    output
-                    / f"iteration-{record['iteration']:03d}/adapter/adapter_model.safetensors"
-                )
-            )
-            _require(
-                tensor_hash(saved) == update["adapter_after_sha256"],
-                "Saved adapter differs from the committed update",
-            )
-            adapter = update["adapter_after_sha256"]
+            _audit_iteration(output, job, record, adapter)
+            adapter = record["update"]["adapter_after_sha256"]
         except (OSError, ValueError, KeyError) as error:
             errors.append(f"iteration {record['iteration']}: {error}")
     return {"valid": not errors, "errors": errors, "final_adapter_sha256": adapter}

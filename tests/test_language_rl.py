@@ -87,6 +87,10 @@ def batch_item(scorer, decision, index, advantage):
     return decision, decision.candidates[index], {"candidate_log_probs": recorded}, advantage
 
 
+def adapter_hash(scorer):
+    return tensor_hash(_adapter(scorer.model))
+
+
 def decision():
     """Three distinct choices; the scorer only needs their count and identities."""
     original = decision_from_message(combat_message(), session_id="s", sequence=1)
@@ -100,7 +104,7 @@ def test_positive_advantage_raises_chosen_probability(toy):
     current = decision()
     item = batch_item(scorer, current, 0, 1.0)
     before = math.exp(item[2]["candidate_log_probs"][0])
-    result = rl.reinforce_step(scorer, optimizer, [item])
+    result = rl.reinforce_step(scorer, optimizer, [item], expected_adapter=adapter_hash(scorer))
     with torch.no_grad():
         after = math.exp(scorer.log_policy(current)[0])
     assert result["updated"] and result["changed_elements"] > 0
@@ -113,7 +117,9 @@ def test_zero_advantages_leave_adapter_unchanged(toy):
     scorer, optimizer = toy
     current = decision()
     before = tensor_hash(_adapter(scorer.model))
-    result = rl.reinforce_step(scorer, optimizer, [batch_item(scorer, current, 0, 0.0)])
+    result = rl.reinforce_step(
+        scorer, optimizer, [batch_item(scorer, current, 0, 0.0)], expected_adapter=before
+    )
     assert not result["updated"] and result["adapter_after_sha256"] == before
     assert tensor_hash(_adapter(scorer.model)) == before
 
@@ -126,7 +132,7 @@ def test_behavior_from_other_weights_is_rejected_before_update(toy):
     item[2]["candidate_log_probs"] = [-math.log(width)] * width
     before = tensor_hash(_adapter(scorer.model))
     with pytest.raises(ValueError, match="Recomputed behavior"):
-        rl.reinforce_step(scorer, optimizer, [item])
+        rl.reinforce_step(scorer, optimizer, [item], expected_adapter=adapter_hash(scorer))
     assert tensor_hash(_adapter(scorer.model)) == before
 
 
@@ -137,3 +143,18 @@ def test_saved_adapter_hash_matches_committed_tensors(toy, tmp_path):
     scorer.model.save_pretrained(tmp_path / "adapter")
     saved = load_file(str(tmp_path / "adapter/adapter_model.safetensors"))
     assert tensor_hash(saved) == tensor_hash(_adapter(scorer.model))
+
+
+def test_learner_must_hold_the_collection_adapter_before_any_recompute(toy):
+    scorer, optimizer = toy
+    item = batch_item(scorer, decision(), 0, 1.0)
+    with pytest.raises(ValueError, match="Learner adapter differs"):
+        rl.reinforce_step(scorer, optimizer, [item], expected_adapter="0" * 64)
+
+
+def test_nonfinite_recorded_behavior_cannot_pass_association(toy):
+    scorer, optimizer = toy
+    item = batch_item(scorer, decision(), 0, 0.0)
+    item[2]["candidate_log_probs"][1] = float("nan")
+    with pytest.raises(ValueError, match="Nonfinite"):
+        rl.reinforce_step(scorer, optimizer, [item], expected_adapter=adapter_hash(scorer))
