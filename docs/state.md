@@ -2,7 +2,7 @@
 
 Updated 2026-10-11, during the authorized unattended bootstrap session.
 
-## Active jobs (last verified 07:24 UTC)
+## Active jobs (last verified 07:27 UTC)
 
 No game or GPU process is currently active. Inventory controller PID 313645/session 86612
 exited successfully; it completed 18 attempts in 576.17 seconds under the original
@@ -57,13 +57,16 @@ Prepared source-verified data: `runs/heuristic-language-training-data-20261011`,
 `d4ce9b1c1d94109eb6acfaacf9217d79d6ebc85b2aa4ea3e326b45231ead5a71`.
 The source predates formal suite labels; the experiment explicitly treats reuse of its
 scenario as diagnostic development. Untuned declaration (adapter absent):
-`runs/qwen3-0.6b-untuned-declaration-20261011.json`, SHA-256
-`7a035639677a9b8f7171892ffbe9ad91182b4421b2a953e43077a592de3ea1a7`.
+`runs/qwen3-0.6b-untuned-declaration-v2-20261011.json`, SHA-256
+`b689e0d880f11b6ffee787a2c627b4d4da33ef2f7f190a9882df4302628af0b6`.
 The loader now rejects partially restored PEFT adapters. Real-data SFT passed independent
 review and is integrated. Its prepared config is
 `runs/qwen3-0.6b-heuristic-sft-config-20261011.json` (64 updates, 600,000 padded tokens,
 600 seconds, 4 examples/update, 2,060 sequence tokens, learning rate 0.0002).
-New minimal Cultist/Jaw Worm mechanics fixtures are being finalized separately.
+The mechanics fixture is integrated: 16 exact public transitions, including both deaths,
+with 73 new/existing engine regression checks passing. The superseded unexecuted
+untuned declaration is retained; v2 pins the contract that explicitly adds a 1,600-second
+evaluation batch deadline. No baseline result was observed before that clarification.
 Evidence is preserved in `runs/language-smoke-20261011-0649` and
 `runs/language-inference-20261011-0705`, with originals in `/tmp/spire-language-smoke`.
 Base weights are cached under `/home/niv/.cache/spire-models`; about 2.2 GiB was downloaded
@@ -201,8 +204,8 @@ that natural-language deadline.
 
 ## Next useful actions
 
-1. Finish mechanics evidence integration, commit/push, then evaluate the unchanged
-   language model using its prepared declaration and canonical eight-attempt suite.
+1. Evaluate the unchanged language model using its prepared v2 declaration and the
+   canonical eight-attempt suite, with a 1,600-second process bound.
 2. Run the bounded SFT config only after that baseline, then evaluate the final adapter
    without checkpoint selection. Preserve any parser/context failures explicitly.
 3. Run random/heuristic/initial-neural/final-neural catalog comparisons under the
