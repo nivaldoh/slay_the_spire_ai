@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "valid": true,
+  "same_protocol": true,
+  "scope": "Recorded original-engine combat attempts; no generalization claim",
+  "runs": [
+    {
+      "valid": true,
+      "issues": [],
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/loss-restart-probe-20261011",
+      "verification_scope": "Recorded protocol, terminal, and manifest consistency",
+      "metrics": {
+        "attempts": 2,
+        "valid_evidence_episodes": 2,
+        "valid_gameplay_episodes": 2,
+        "wins": 0,
+        "losses": 2,
+        "infrastructure_failures": 0,
+        "unsupported": 0,
+        "invalid_actions": 0,
+        "truncated": 0,
+        "interrupted": 0,
+        "invalid_evidence": 0,
+        "win_rate": 0.0,
+        "validated_transitions": 16,
+        "mean_starting_hp": 80,
+        "mean_ending_hp": 0,
+        "mean_net_hp_lost": 80,
+        "mean_turns": 8,
+        "mean_reset_seconds": 14.366695935499592,
+        "mean_combat_seconds": 30.420090478499333,
+        "mean_elapsed_seconds": 44.78678938949815,
+        "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing"
+      },
+      "reset_comparison": {
+        "eligible_episodes": 2,
+        "initial_state_hashes": [
+          "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4"
+        ],
+        "all_initial_states_equal": true,
+        "comparisons": [
+          {
+            "episodes": [
+              0,
+              1
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 8,
+            "shared_action_states_equal": true,
+            "differences": []
+          }
+        ],
+        "scope": "Public state equality; does not establish hidden-state equivalence"
+      },
+      "evidence": {
+        "manifest.json": "/home/niv/repos/slay_the_spire_ai/runs/loss-restart-probe-20261011/manifest.json",
+        "environment.json": "/home/niv/repos/slay_the_spire_ai/runs/loss-restart-probe-20261011/environment.json",
+        "source.patch": "/home/niv/repos/slay_the_spire_ai/runs/loss-restart-probe-20261011/source.patch"
+      },
+      "provenance": {
+        "source_revision": "d8e40aaa49e209929681b5184aee8c234e232a43",
+        "source_status": "",
+        "config": {
+          "bridge_timeout": 90,
+          "episode_timeout": 180.0,
+          "episodes": 2,
+          "game_seed": "SPIREAI1",
+          "max_actions": 500,
+          "policy": "end_turn",
+          "policy_seed": 0
+        },
+        "engine": "original",
+        "scope": "first_combat",
+        "observation_version": "ironclad-starter-combat-v1",
+        "prefix_version": "neow-maxhp-or-gold-leftmost-settled-v2",
+        "reset": "owned_jvm_restart_then_seeded_start",
+        "status": "completed"
+      },
+      "episodes": [
+        {
+          "episode": 0,
+          "valid": true,
+          "status": "lost",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 0,
+          "turns": 8,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/loss-restart-probe-20261011/episode-0000/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/loss-restart-probe-20261011/episode-0000/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/loss-restart-probe-20261011/episode-0000/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/loss-restart-probe-20261011/episode-0000/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/loss-restart-probe-20261011/episode-0000/game.log"
+          }
+        },
+        {
+          "episode": 1,
+          "valid": true,
+          "status": "lost",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 0,
+          "turns": 8,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/loss-restart-probe-20261011/episode-0001/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/loss-restart-probe-20261011/episode-0001/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/loss-restart-probe-20261011/episode-0001/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/loss-restart-probe-20261011/episode-0001/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/loss-restart-probe-20261011/episode-0001/game.log"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -2,11 +2,36 @@
 
 Updated 2026-10-11, during the authorized unattended bootstrap session.
 
+## Active jobs (last verified 05:37 UTC)
+
+One sequential baseline job is live in tool session `58891`, WSL shell PID `283480`.
+The random evaluator Python PID was `283524`; inspect current ownership with
+`pgrep -af 'python3 -m spire evaluate'` before sending signals. It runs random 8 episodes
+then heuristic 8 episodes, on the frozen development suite. Each episode has a 180-second
+hard Windows watchdog and a 500-action cap. Stop the current Python controller with
+`kill -INT <verified PID>`; it records interruption and closes its owned Windows job.
+The second evaluator is queued in the same shell, so stopping the first with a nonzero
+exit prevents the second from launching.
+
+Evidence directories: `runs/baseline-random-settled-20261011` and
+`runs/baseline-heuristic-settled-20261011`. Last inspection: two random wins (HP75/66),
+third attempt live. Re-poll the actual tool session/process; do not restart based on
+an old manifest alone. **Do not change source/configuration/dependency files or merge
+code while this batch is live**: source fingerprints intentionally stop a changed run.
+Documentation edits are safe.
+
+Parallel implementation lives in isolated worktrees. Learner commit `976cc23` on
+`feature/learning` is ready to cherry-pick after baseline completion; it provides a
+12,498-parameter CPU network and PPO with 22 passing correctness tests. Training
+orchestration is still being implemented on `feature/training` in `/tmp/spire-training`.
+These are unmerged and no weight training against the engine is claimed.
+
 ## Current evidence
 
-Milestone A has two completed original-engine first-combat episodes and an automatic
-seeded reset. Independent trace auditing and a fixed-action replay are in progress.
-Milestones B–F remain incomplete. No neural training or GPU job has run.
+Milestone A is verified: recorded wins and losses, automatic seeded restarts,
+matching fixed-action replays, independent trace audits, and process-tree cleanup.
+Milestone B baseline evaluation is running. Milestones B–F remain incomplete; no
+neural training or GPU job has run.
 
 `runs/first-random-v2-20261011/manifest.json` records source `deba4b7`, the configuration,
 environment, and two random-policy episodes on `SPIREAI1`, Ironclad, Ascension 0.
@@ -32,6 +57,18 @@ map node. It stops at an engine-confirmed combat outcome. There is no arbitrary 
 snapshot reset. Profile history affects Neow options, so actual prefix and initial
 combat state are evidence, not assumptions.
 
+Settled observation contract: initial engine `DEBUG` intents are resolved with a logged
+`WAIT 60` before policy inference. The frozen suite pins normalized start SHA-256
+`177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4`.
+Two heuristic replays under this contract won at HP77 in 6 turns, with every observed
+public transition matching. An end-turn-only diagnostic then lost twice at HP0 in
+8 turns; the same seeded start still reproduced after defeat. Unlock progress was
+observed unchanged at 817 in this probe (do not assume all future runs preserve it).
+
+Compact committed audits: [bootstrap](results/bootstrap-audit.json) and
+[loss/restart](results/loss-restart-audit.json). Mechanics fixtures cover 11 observed
+starter-card/Louse transitions, with trace hashes and [coverage limits](mechanics.md).
+
 ## Completed attempts
 
 - `runs/bootstrap-probe/`: Windows launch, relay handshake, main-menu observation,
@@ -40,6 +77,12 @@ combat state are evidence, not assumptions.
   choices without max HP. The runner stopped before combat. Added an exact 100-gold
   fallback and a regression; did not count this attempt as a gameplay loss.
 - `runs/first-random-v2-20261011/`: two completed combat attempts described above.
+- `runs/heuristic-replay-20261011/`: two deterministic replays; all 13 public decisions
+  and 18 commands identical, HP80. Initial intents still DEBUG; not a settled baseline.
+- `runs/intent-probe/`: diagnosed initial DEBUG intent; WAIT60 resolves it, second wait
+  leaves state unchanged. Probe source and observations preserved locally.
+- `runs/heuristic-settled-20261011/`: two matching corrected replays, HP77, 6 turns.
+- `runs/loss-restart-probe-20261011/`: two verified deaths and identical subsequent start.
 
 Raw trajectories and game logs are local ignored artifacts. Selected compact audit
 results will be published in `docs/`; proprietary jars, saves, and assets stay out of Git.
@@ -62,9 +105,10 @@ results will be published in `docs/`; proprietary jars, saves, and assets stay o
   [integration audit](integration.md).
 - Windows AC sleep timeout is zero (disabled), verified with `powercfg`.
 
-All rollout processes have episode and action limits. Normal cleanup stops only the
-owned JVM. A Windows supervisor also stops it on controller EOF or deadline; stronger
-process-tree ownership and overlap prevention are under test. No game process from a
+All rollout processes have episode and action limits. A Windows Job Object stops the owned
+JVM and relay descendants on controller EOF, deadline, or supervisor death. A WSL lock
+and Windows mutex prevent overlap, and pre-existing game processes cause a refusal.
+Forced child/grandchild cleanup was tested with disposable Windows processes. No game process from a
 completed attempt is intentionally left running.
 
 ## Owner decisions and boundaries
@@ -82,15 +126,19 @@ that natural-language deadline.
 
 ## Next useful actions
 
-1. Audit completed traces and replay one deterministic heuristic action sequence twice.
-2. Verify owned process-tree cleanup, bounded stopping, interruption evidence, and no
-   concurrent game/deployment race.
-3. Define the first-combat development suite and mechanic coverage from real traces;
-   measure random and heuristic baselines before neural training.
-4. Investigate the measured throughput bottleneck. Acceleration mods are not adopted:
-   compatibility is unverified and STSStateSaver mutates potion pools when loaded.
+1. Poll the live baseline session `58891` and audit both completed evaluations. This
+   establishes matched baseline numbers for Milestone B's fixed-encounter diagnostic.
+2. Cherry-pick learner `976cc23` only after collection completes; integrate and test
+   training orchestration when its agent returns. Keep complete episode batches tied
+   to one frozen behavior policy. Add frozen-artifact evaluation support.
+3. Run a bounded first neural pilot, verify actual actor updates, save optimizer/RNG/
+   budget state, test resume, and evaluate the exact saved artifact against baselines.
+4. Expand beyond one encounter only after this learning loop is verified. Current
+   development repetitions are one fixed scenario, not held-out seed generalization.
 
 Current limitations: starter cards only, no potion actions or noncombat policy,
-Neow prefixes outside max HP/100 gold unsupported, no resume of a live combat, no
-learning, and no held-out evaluation. Seventy-five tests currently pass; fixtures alone
-are not the proof of integration—the saved original-engine traces are.
+Neow prefixes outside max HP/100 gold unsupported, no arbitrary snapshots, no live
+combat resume, and no engine-trained policy yet. Root tests: 173 pass, one optional
+Windows process probe skipped by default; that probe was independently run and passed.
+Use `uv run --extra train pytest` when testing learner code. The same locked environment
+has optional PyTorch 2.13.0 CPU installed; baseline collection needs only the core stdlib.

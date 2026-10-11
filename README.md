@@ -50,3 +50,19 @@ that generated them. This is an initial combat experiment interface, not a compl
 See [integration notes](docs/integration.md) for dependencies, information boundaries, and
 known limitations. The initial two-episode random smoke run verified automatic original-engine
 interaction; it does not establish learned performance.
+
+## Auditing and development evaluation
+
+```bash
+uv run python -m spire report runs/random-example runs/heuristic-example
+uv run python -m spire evaluate --policy random --suite configs/suites/louse_diagnostic_development_v1.json --output runs/random-development
+```
+
+The suite fixes one two-Louse combat and its normalized starting state, then repeats
+eight policy attempts. It is a learning diagnostic, not a held-out generalization test.
+A changed starting state stops the evaluation. The report reconstructs decisions and
+terminal outcomes from saved evidence rather than trusting reported scores.
+
+Optional learner dependencies use `uv sync --locked --extra train`; run learner tests
+with `uv run --extra train pytest`. The first learner is being implemented; the `train`
+CLI and engine-trained artifacts are not available yet.

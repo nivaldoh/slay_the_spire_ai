@@ -39,7 +39,7 @@ Pre-fix results remain infrastructure evidence; rerun baselines under the settle
 The next learning question is intentionally small: can a randomly initialized, public-
 information candidate-action scorer improve terminal health over random play on this
 fixed encounter? A successful pilot proves data flow and weight training, not unseen-seed
-or unseen-encounter ability. The deterministic heuristic provides a disclosed ceiling
+or unseen-encounter ability. The deterministic heuristic provides a disclosed reference
 comparison for this case. Development repetitions share the same game seed and therefore
 are not independent game scenarios; report their scope and stochastic-policy variability.
 
@@ -53,3 +53,9 @@ Use optional pinned PyTorch 2.13.0 CPU for the small first learner. Original-eng
 collection takes roughly 30 seconds per combat and dominates a <50,000-parameter network;
 GPU use is unnecessary for this pilot. The RTX 3060 remains available for later measured
 workloads. No Gymnasium/CleanRL runtime dependency or extra simulator is introduced.
+
+An end-turn-only loss probe verified DEATH→seeded-restart twice with the same settled
+combat-start hash. The engine's seeded Neow path chooses four options from seed-driven
+reward categories rather than profile eligibility. Profile unlock progress was 817
+before, between, and after these two losses; continue recording it rather than treating
+that observation as an invariant for all runs.
