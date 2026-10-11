@@ -276,3 +276,104 @@ def test_pending_batch_cannot_include_consumed_episode(saved_run):
     assert not report["valid"]
     assert not report["checks"]["pending_disjoint_from_consumed"]
     assert not report["checks"]["pending_behavior_matches_current_model"]
+
+
+@pytest.fixture
+def saved_catalog_run(tmp_path, training_setup, monkeypatch):
+    config, _ = training_setup
+    config = test_training.make_catalog_config(config, monkeypatch)
+    output = tmp_path / "catalog-training"
+    training.train(output, config)
+    return output
+
+
+def test_catalog_audit_reconstructs_round_robin_reservations_and_child_scenarios(saved_catalog_run):
+    report = audit_script.audit_training(saved_catalog_run)
+    assert report["valid"], report["errors"]
+    assert report["checks"]["catalog_reservations_match_checkpoints"]
+    assert report["checks"]["summary_catalog_matches_checkpoint"]
+    assert report["consumed_transitions"] == 2
+
+
+@pytest.mark.parametrize("damage", ["cursor", "assignment", "schedule", "path"])
+def test_catalog_checkpoint_assignment_forgery_is_rejected(saved_catalog_run, damage):
+    def mutate(payload):
+        state = payload["training"]
+        if damage == "cursor":
+            state["scenario_cursor"] += 1
+        elif damage == "assignment":
+            state["attempts"][0]["scenario"]["scenario_id"] = "cultist-second"
+        elif damage == "schedule":
+            state["attempts"][0]["scenario"]["schedule_index"] = 1
+        else:
+            state["attempts"][0]["run"] = "runs/attempt-0001"
+
+    rewrite_checkpoint(saved_catalog_run, mutate)
+    report = audit_script.audit_training(saved_catalog_run)
+    assert not report["valid"]
+    assert any(
+        "cursor" in error.lower() or "assignment" in error.lower() for error in report["errors"]
+    )
+
+
+@pytest.mark.parametrize("filename", ["manifest.json", "environment.json"])
+def test_catalog_child_assignment_provenance_cannot_drift(saved_catalog_run, filename):
+    path = saved_catalog_run / "runs/attempt-0000" / filename
+    record = read(path)
+    record["scenario"]["scenario_id"] = "cultist-second"
+    write(path, record)
+    report = audit_script.audit_training(saved_catalog_run)
+    assert not report["valid"]
+    assert "scenario differs from reserved catalog assignment" in report["errors"][0]
+
+
+def test_catalog_pending_reservation_forgery_in_historical_checkpoint_rejected(saved_catalog_run):
+    checkpoint = None
+    for path in sorted((saved_catalog_run / "checkpoints").glob("*.pt")):
+        payload = torch.load(path, map_location="cpu", weights_only=True)
+        if payload["training"]["pending_scenario"] is not None:
+            checkpoint = path
+            break
+    assert checkpoint is not None
+    payload["training"]["pending_scenario"]["scenario_id"] = "cultist-second"
+    temporary = checkpoint.with_suffix(".tmp")
+    torch.save(payload, temporary)
+    actual = hashlib.sha256(temporary.read_bytes()).hexdigest()
+    replacement = checkpoint.with_name(f"{payload['training']['generation']:06d}-{actual}.pt")
+    temporary.rename(replacement)
+    checkpoint.unlink()
+    report = audit_script.audit_training(saved_catalog_run)
+    assert not report["valid"]
+    assert "Pending scenario differs from round-robin reservation" in report["errors"][0]
+
+
+def test_coherent_catalog_episode_with_wrong_actual_start_is_rejected(saved_catalog_run):
+    run = saved_catalog_run / "runs/attempt-0000"
+    episode = run / "episode-0000"
+    trace = episode / "trace.jsonl"
+    events = [json.loads(line) for line in trace.read_text().splitlines()]
+    result = read(episode / "result.json")
+    start = next(
+        event for event in events if event["kind"] == "observation" and event["sequence"] == 2
+    )
+    start["raw"]["game_state"]["current_hp"] = 79
+    start["raw"]["game_state"]["combat_state"]["player"]["current_hp"] = 79
+    public = test_training.decision_from_message(
+        start["raw"], session_id=result["session_id"], sequence=2
+    ).to_dict()
+    next(event for event in events if event["kind"] == "decision")["decision"] = public
+    result["starting_hp"] = 79
+    result["combat_start_sha256"] = test_training.normalized_observation_fingerprint(
+        public["observation"]
+    )
+    events[-1]["result"] = result
+    trace.write_text("".join(json.dumps(event) + "\n" for event in events))
+    write(episode / "result.json", result)
+    write(episode / "combat_start.json", public["observation"])
+    manifest = read(run / "manifest.json")
+    manifest["episodes"] = [result]
+    write(run / "manifest.json", manifest)
+    assert audit_script.audit_run(run)["valid"]  # Coherent; wrong for its assigned scenario.
+    report = audit_script.audit_training(saved_catalog_run)
+    assert not report["valid"]
+    assert "Actual combat start differs from assigned scenario" in report["errors"][0]

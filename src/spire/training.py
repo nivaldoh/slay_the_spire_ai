@@ -22,8 +22,16 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from spire.evaluation import load_suite
-from spire.evidence import EvidenceError, audit_run, load_transitions
+from spire.evidence import (
+    EvidenceError,
+    audit_run,
+    load_transitions,
+    normalized_observation_fingerprint,
+)
 from spire.rollout import run_episode, source_fingerprints, write_json
+
+_TRAINING_LOCK_PATH = Path(f"/tmp/spire-training-{os.getuid()}.lock")
+_SCENARIO_SCHEDULE = "round_robin_scenarios_v1"
 
 
 class _TrainingDeadline(TimeoutError):
@@ -80,8 +88,7 @@ def _resolve_config(config: dict) -> dict:
 
 @contextmanager
 def _training_lock():
-    path = Path(f"/tmp/spire-training-{os.getuid()}.lock")
-    with path.open("a+") as handle:
+    with _TRAINING_LOCK_PATH.open("a+") as handle:
         try:
             fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError as exc:
@@ -245,8 +252,78 @@ def _ensure_artifact(output: Path, state: dict, trainer, checkpoint: dict) -> bo
     return True
 
 
+def _load_training_suite(path: Path) -> dict:
+    declaration = json.loads(path.read_text())
+    if isinstance(declaration, dict) and declaration.get("schema_version") == 2:
+        from spire.catalog import load_catalog
+
+        return load_catalog(path)
+    return load_suite(path)
+
+
+def _scenario_assignment(catalog: dict, cursor: int) -> dict:
+    scenario = catalog["scenarios"][cursor % len(catalog["scenarios"])]
+    schedule_index = next(
+        index
+        for index, entry in enumerate(catalog["schedule"])
+        if entry["scenario_id"] == scenario["id"]
+    )
+    return {"cursor": cursor, "scenario_id": scenario["id"], "schedule_index": schedule_index}
+
+
+def _scenario_context(state: dict) -> dict:
+    return {
+        "catalog_id": state["suite"]["id"],
+        **state["pending_scenario"],
+        "training_policy_rng": "externally_checkpointed",
+        "uses_evaluation_policy_seeds": False,
+    }
+
+
+def _validate_scenario_state(state: dict) -> None:
+    if state["suite"]["schema_version"] != 2:
+        return
+    from spire.catalog import validate_catalog
+
+    validate_catalog(state["suite"])
+    cursor = state["scenario_cursor"]
+    pending = state["pending_scenario"]
+    if (
+        type(cursor) is not int
+        or cursor != state["next_attempt"]
+        or cursor < 0
+        or state["scenario_schedule"] != _SCENARIO_SCHEDULE
+        or (pending is None) != (state["pending_episode"] is None)
+        or len(state["attempts"]) != cursor - int(pending is not None)
+    ):
+        raise EvidenceError("Catalog scenario cursor differs from reserved attempts")
+    for index, attempt in enumerate(state["attempts"]):
+        expected = {
+            "catalog_id": state["suite"]["id"],
+            **_scenario_assignment(state["suite"], index),
+            "training_policy_rng": "externally_checkpointed",
+            "uses_evaluation_policy_seeds": False,
+        }
+        if attempt.get("scenario") != expected or attempt["run"] != f"runs/attempt-{index:04d}":
+            raise EvidenceError("Recorded catalog scenario differs from round-robin assignment")
+    if pending is not None and (
+        pending != _scenario_assignment(state["suite"], cursor - 1)
+        or state["pending_episode"] != f"runs/attempt-{cursor - 1:04d}"
+    ):
+        raise EvidenceError("Pending catalog scenario differs from reserved assignment")
+
+
+def _attempt_suite(state: dict) -> dict:
+    if state["suite"]["schema_version"] != 2:
+        return state["suite"]
+    from spire.catalog import resolve_child_suite
+
+    _validate_scenario_state(state)
+    return resolve_child_suite(state["suite"], state["pending_scenario"]["schedule_index"])
+
+
 def _episode_config(state: dict, remaining: float) -> dict:
-    config, suite = state["config"], state["suite"]
+    config, suite = state["config"], _attempt_suite(state)
     return {
         "policy": "neural",
         "policy_seed": config["seed"],
@@ -261,6 +338,10 @@ def _episode_config(state: dict, remaining: float) -> dict:
 
 def _prepare_attempt(output: Path, state: dict) -> Path:
     index = state["next_attempt"]
+    if state["suite"]["schema_version"] == 2:
+        _validate_scenario_state(state)
+        state["pending_scenario"] = _scenario_assignment(state["suite"], state["scenario_cursor"])
+        state["scenario_cursor"] += 1
     directory = output / "runs" / f"attempt-{index:04d}"
     state["next_attempt"] += 1
     state["pending_episode"] = str(directory.relative_to(output))
@@ -295,8 +376,12 @@ def _initialize_attempt(directory: Path, state: dict, trainer, remaining: float)
             )
         },
     }
+    environment = dict(provenance["environment"])
+    if state["suite"]["schema_version"] == 2:
+        manifest["scenario"] = _scenario_context(state)
+        environment["scenario"] = dict(manifest["scenario"])
     write_json(directory / "manifest.json", manifest)
-    write_json(directory / "environment.json", provenance["environment"])
+    write_json(directory / "environment.json", environment)
     (directory / "source.patch").write_text("")
 
 
@@ -382,12 +467,48 @@ def _join_episode(directory: Path, trainer) -> tuple[list, list[str], list[dict]
     return episode, identities, replay
 
 
+def _validate_catalog_episode(directory: Path, state: dict, scenario: dict, episode: list) -> None:
+    from spire.catalog import resolve_child_suite
+
+    suite = resolve_child_suite(state["suite"], scenario["schedule_index"])
+    manifest = json.loads((directory / "manifest.json").read_text())
+    environment = json.loads((directory / "environment.json").read_text())
+    if (
+        manifest.get("scenario") != scenario
+        or environment.get("scenario") != scenario
+        or any(
+            manifest["config"][key] != suite[key] for key in ("game_seed", "expected_start_sha256")
+        )
+    ):
+        raise EvidenceError("Completed attempt differs from assigned catalog scenario")
+    public = episode[0].decision.to_dict()["observation"]
+    if normalized_observation_fingerprint(public) != suite["expected_start_sha256"]:
+        raise EvidenceError("Actual combat start differs from assigned catalog scenario")
+    declared = next(
+        item for item in state["suite"]["scenarios"] if item["id"] == scenario["scenario_id"]
+    )
+    if [monster["id"] for monster in public["combat_state"]["monsters"]] != declared["monster_ids"]:
+        raise EvidenceError("Observed monsters differ from assigned catalog scenario")
+
+
 def _accept_attempt(output: Path, state: dict, trainer, *, recovering: bool) -> bool:
     relative = state["pending_episode"]
     directory = output / relative
+    scenario = None
+    if state["suite"]["schema_version"] == 2:
+        _validate_scenario_state(state)
+        scenario = _scenario_context(state)
+        manifest_path = directory / "manifest.json"
+        if (
+            manifest_path.exists()
+            and json.loads(manifest_path.read_text()).get("scenario") != scenario
+        ):
+            raise EvidenceError("Attempt scenario differs from checkpoint reservation")
     result = _close_attempt(directory)
     if result and result["status"] in ("won", "lost"):
         episode, ids, replay = _join_episode(directory, trainer)
+        if scenario is not None:
+            _validate_catalog_episode(directory, state, scenario, episode)
         if set(ids) & set(state["consumed_ids"]):
             raise EvidenceError("Recovered episode was already consumed")
         if relative in state["batch_runs"]:
@@ -417,6 +538,9 @@ def _accept_attempt(output: Path, state: dict, trainer, *, recovering: bool) -> 
             }
         )
         accepted = False
+    if scenario is not None:
+        state["attempts"][-1]["scenario"] = scenario
+        state["pending_scenario"] = None
     state["pending_episode"] = None
     state["phase"] = "ready"
     return accepted
@@ -461,6 +585,14 @@ def _summary(output: Path, state: dict, checkpoint: dict) -> dict:
         },
         "scope": "Training on a diagnostic development scenario; no held-out performance claim",
     }
+    if state["suite"]["schema_version"] == 2:
+        result.update(
+            catalog_id=state["suite"]["id"],
+            scenario_schedule=state["scenario_schedule"],
+            scenario_cursor=state["scenario_cursor"],
+            training_policy_rng="externally_checkpointed",
+            uses_evaluation_policy_seeds=False,
+        )
     write_json(output / "training.json", result)
     return result
 
@@ -478,6 +610,7 @@ def train(output: Path, config: dict | None = None, resume: bool = False) -> dic
                 raise ValueError("Resume configuration differs from checkpoint")
             if _digest(Path(config["suite_path"])) != state["suite_sha256"]:
                 raise EvidenceError("Suite changed since training started")
+            _validate_scenario_state(state)
             trainer = _make_trainer(config)
             trainer.load_state_dict(payload["learner"])
             random.setstate(payload["python_rng"])
@@ -487,7 +620,7 @@ def train(output: Path, config: dict | None = None, resume: bool = False) -> dic
                 raise ValueError("A new training run requires an explicit configuration")
             config = _resolve_config(config)
             started = time.time()
-            suite = load_suite(Path(config["suite_path"]))
+            suite = _load_training_suite(Path(config["suite_path"]))
             provenance = _provenance()
             output.mkdir(parents=True, exist_ok=False)
             for name in ("checkpoints", "artifacts", "runs"):
@@ -517,6 +650,10 @@ def train(output: Path, config: dict | None = None, resume: bool = False) -> dic
                 "artifact": None,
                 "initial_artifact": None,
             }
+            if suite["schema_version"] == 2:
+                state.update(
+                    scenario_schedule=_SCENARIO_SCHEDULE, scenario_cursor=0, pending_scenario=None
+                )
             checkpoint = _save_checkpoint(output, state, trainer)
         if source_fingerprints() != state["provenance"]["source_files"]:
             raise EvidenceError("Source files changed since the training checkpoint")
@@ -548,6 +685,13 @@ def train(output: Path, config: dict | None = None, resume: bool = False) -> dic
                     batch, batch_ids = [], []
                     for relative in state["batch_runs"]:
                         episode, ids, _ = _join_episode(output / relative, trainer)
+                        if state["suite"]["schema_version"] == 2:
+                            attempt = next(
+                                item for item in state["attempts"] if item["run"] == relative
+                            )
+                            _validate_catalog_episode(
+                                output / relative, state, attempt["scenario"], episode
+                            )
                         batch.append(episode)
                         batch_ids.extend(ids)
                     if len(batch_ids) != len(set(batch_ids)) or set(batch_ids) & set(

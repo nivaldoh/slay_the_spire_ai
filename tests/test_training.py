@@ -183,6 +183,7 @@ def synthetic_collector(directory, config, episode, *, policy):
 
 @pytest.fixture
 def setup(tmp_path, monkeypatch):
+    monkeypatch.setattr(training, "_TRAINING_LOCK_PATH", tmp_path / "training.lock")
     suite_path = tmp_path / "suite.json"
     public = decision_from_message(raw_combat(), session_id="x", sequence=1).to_dict()[
         "observation"
@@ -427,7 +428,7 @@ def test_changed_source_stops_before_next_collection(tmp_path, setup, monkeypatc
     assert result["updates"] == 0
 
 
-def test_training_lock_rejects_second_owner():
+def test_training_lock_rejects_second_owner(setup):
     with training._training_lock():
         with pytest.raises(RuntimeError, match="Another training process"):
             with training._training_lock():
@@ -515,3 +516,248 @@ def test_orphan_artifact_preserves_original_checkpoint_ancestry(tmp_path, setup,
     assert initial_record["training_checkpoint_sha256"] == original_ancestry
     assert orphan.read_bytes() == original_bytes
     assert result["updates"] == 1
+
+
+def make_catalog_config(config, monkeypatch):
+    """Two synthetic seeded scenarios; this is not an executable engine catalog."""
+    original_raw = raw_combat
+
+    def cultist_combat():
+        raw = original_raw()
+        raw["game_state"]["combat_state"]["monsters"][0].update(id="Cultist", name="Cultist")
+        return raw
+
+    monkeypatch.setitem(globals(), "raw_combat", cultist_combat)
+    suite = read(Path(config["suite_path"]))
+    suite["expected_start_sha256"] = normalized_observation_fingerprint(
+        decision_from_message(cultist_combat(), session_id="fixture", sequence=1).to_dict()[
+            "observation"
+        ]
+    )
+    write(Path(config["suite_path"]), suite)
+    catalog = {
+        "schema_version": 2,
+        "purpose": "development",
+        "id": "synthetic-catalog",
+        "scenarios": [
+            {
+                "id": name,
+                "game_seed": seed,
+                "expected_start_sha256": suite["expected_start_sha256"],
+                "encounter_family": "cultist",
+                "monster_ids": ["Cultist"],
+                "discovery_trace_sha256": "0123456789abcdef" * 4,
+            }
+            for name, seed in (("cultist-first", "ABC"), ("cultist-second", "DEF"))
+        ],
+        "schedule": [
+            {"scenario_id": "cultist-first", "policy_seed": 9000},
+            {"scenario_id": "cultist-first", "policy_seed": 9001},
+            {"scenario_id": "cultist-second", "policy_seed": 9002},
+        ],
+    }
+    path = Path(config["suite_path"]).with_name("catalog.json")
+    write(path, catalog)
+    return {**config, "suite_path": str(path)}
+
+
+@pytest.fixture
+def catalog_setup(setup, monkeypatch):
+    config, calls = setup
+    return make_catalog_config(config, monkeypatch), calls
+
+
+def test_catalog_assignments_cycle_unique_scenarios_without_policy_metadata(
+    tmp_path, catalog_setup
+):
+    config, calls = catalog_setup
+    config.update(total_episodes=5, batch_steps=5)
+    output = tmp_path / "catalog-training"
+    result = training.train(output, config)
+    state, _, _ = training._load_checkpoint(output)
+    assert len(calls) == result["scenario_cursor"] == 5
+    assert result["uses_evaluation_policy_seeds"] is False
+    assert result["training_policy_rng"] == "externally_checkpointed"
+    assert state["pending_scenario"] is None
+    assert [item["scenario"]["scenario_id"] for item in state["attempts"]] == [
+        "cultist-first",
+        "cultist-second",
+        "cultist-first",
+        "cultist-second",
+        "cultist-first",
+    ]
+    for index, attempt in enumerate(state["attempts"]):
+        run = output / attempt["run"]
+        manifest, environment = read(run / "manifest.json"), read(run / "environment.json")
+        assert manifest["schema_version"] == 1
+        assert manifest["scenario"] == environment["scenario"] == attempt["scenario"]
+        assert manifest["scenario"]["cursor"] == index
+        assert manifest["scenario"]["schedule_index"] == (0 if index % 2 == 0 else 2)
+        assert manifest["config"]["game_seed"] == ("ABC" if index % 2 == 0 else "DEF")
+        assert manifest["config"]["policy_seed"] == config["seed"]
+        events = [
+            json.loads(line) for line in (run / "episode-0000/trace.jsonl").read_text().splitlines()
+        ]
+        for event in events:
+            if event["kind"] == "decision":
+                public = json.dumps(event["decision"])
+                assert "scenario_id" not in public and "game_seed" not in public
+                assert "cultist-first" not in public and "cultist-second" not in public
+
+
+def test_catalog_schedule_policy_seeds_do_not_reseed_training_sampler(
+    tmp_path, setup, catalog_setup
+):
+    single_config, _ = setup
+    catalog_config, _ = catalog_setup
+    single = training.train(tmp_path / "single", single_config)
+    catalog = training.train(tmp_path / "catalog", catalog_config)
+    assert single["model_sha256"] == catalog["model_sha256"]
+    single_state, _, _ = training._load_checkpoint(tmp_path / "single")
+    assert "scenario_cursor" not in single_state
+    assert "scenario_schedule" not in single
+
+
+def test_catalog_reservation_survives_crash_before_attempt_files(
+    tmp_path, catalog_setup, monkeypatch
+):
+    config, calls = catalog_setup
+    config.update(total_episodes=4, batch_steps=4)
+    original = training._initialize_attempt
+
+    def interrupt(*args, **kwargs):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(training, "_initialize_attempt", interrupt)
+    output = tmp_path / "resumed"
+    with pytest.raises(KeyboardInterrupt):
+        training.train(output, config)
+    before, _, _ = training._load_checkpoint(output)
+    assert before["scenario_cursor"] == 1
+    assert before["pending_scenario"] == {
+        "cursor": 0,
+        "scenario_id": "cultist-first",
+        "schedule_index": 0,
+    }
+    assert not (output / "runs/attempt-0000").exists()
+    monkeypatch.setattr(training, "_initialize_attempt", original)
+    result = training.train(output, resume=True)
+    after, _, _ = training._load_checkpoint(output)
+    assert result["completed_episodes"] == len(calls) == 3
+    assert result["scenario_cursor"] == 4
+    assert result["deadline_unix"] == before["deadline_unix"]
+    assert [attempt["scenario"]["scenario_id"] for attempt in after["attempts"]] == [
+        "cultist-first",
+        "cultist-second",
+        "cultist-first",
+        "cultist-second",
+    ]
+    assert after["attempts"][0]["status"] == "interrupted"
+
+
+def test_catalog_completed_recovery_restores_sampler_and_assignment_exactly(
+    tmp_path, catalog_setup, monkeypatch
+):
+    config, calls = catalog_setup
+    reference = training.train(tmp_path / "reference", config)
+    collect = training.run_episode
+    crashed = False
+
+    def interrupt(*args, **kwargs):
+        nonlocal crashed
+        result = collect(*args, **kwargs)
+        if not crashed:
+            crashed = True
+            raise KeyboardInterrupt
+        return result
+
+    monkeypatch.setattr(training, "run_episode", interrupt)
+    output = tmp_path / "resumed"
+    with pytest.raises(KeyboardInterrupt):
+        training.train(output, config)
+    before, _, _ = training._load_checkpoint(output)
+    result = training.train(output, resume=True)
+    assert result["model_sha256"] == reference["model_sha256"]
+    assert result["consumed_transitions"] == 2
+    assert result["scenario_cursor"] == 2
+    assert result["deadline_unix"] == before["deadline_unix"]
+    assert len(calls) == 4
+
+
+def test_catalog_recovery_rejects_changed_reserved_scenario(tmp_path, catalog_setup, monkeypatch):
+    config, _ = catalog_setup
+    collect = training.run_episode
+
+    def interrupt(*args, **kwargs):
+        collect(*args, **kwargs)
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(training, "run_episode", interrupt)
+    output = tmp_path / "resumed"
+    with pytest.raises(KeyboardInterrupt):
+        training.train(output, config)
+    path = output / "runs/attempt-0000/manifest.json"
+    manifest = read(path)
+    manifest["scenario"]["scenario_id"] = "cultist-second"
+    write(path, manifest)
+    with pytest.raises(EvidenceError, match="differs from checkpoint reservation"):
+        training.train(output, resume=True)
+    state, _, _ = training._load_checkpoint(output)
+    assert state["consumed_ids"] == [] and state["updates"] == 0
+
+
+def test_catalog_monster_declaration_is_checked_before_ingestion(tmp_path, catalog_setup):
+    config, _ = catalog_setup
+    path = Path(config["suite_path"])
+    catalog = read(path)
+    catalog["scenarios"][0].update(encounter_family="jaw_worm", monster_ids=["JawWorm"])
+    write(path, catalog)
+    output = tmp_path / "mismatched"
+    with pytest.raises(EvidenceError, match="Observed monsters"):
+        training.train(output, config)
+    state, _, _ = training._load_checkpoint(output)
+    assert state["consumed_ids"] == [] and state["updates"] == 0
+
+
+def test_catalog_actual_start_pin_is_checked_before_ingestion(tmp_path, catalog_setup):
+    config, _ = catalog_setup
+    path = Path(config["suite_path"])
+    catalog = read(path)
+    catalog["scenarios"][0]["expected_start_sha256"] = "1234567890abcdef" * 4
+    write(path, catalog)
+    output = tmp_path / "wrong-start"
+    with pytest.raises(EvidenceError, match="Actual combat start differs"):
+        training.train(output, config)
+    state, _, _ = training._load_checkpoint(output)
+    assert state["consumed_ids"] == [] and state["updates"] == 0
+
+
+def test_catalog_pending_batch_is_revalidated_before_optimizer(
+    tmp_path, catalog_setup, monkeypatch
+):
+    config, calls = catalog_setup
+    config["batch_steps"] = 1
+    save = training._save_checkpoint
+    crashed = False
+
+    def interrupt_after_accept(output, state, trainer):
+        nonlocal crashed
+        pointer = save(output, state, trainer)
+        if state["batch_runs"] and not crashed:
+            crashed = True
+            raise KeyboardInterrupt
+        return pointer
+
+    monkeypatch.setattr(training, "_save_checkpoint", interrupt_after_accept)
+    output = tmp_path / "resumed"
+    with pytest.raises(KeyboardInterrupt):
+        training.train(output, config)
+    path = output / "runs/attempt-0000/manifest.json"
+    manifest = read(path)
+    manifest["scenario"]["scenario_id"] = "cultist-second"
+    write(path, manifest)
+    with pytest.raises(EvidenceError, match="Completed attempt differs"):
+        training.train(output, resume=True)
+    state, _, _ = training._load_checkpoint(output)
+    assert state["consumed_ids"] == [] and state["updates"] == 0
+    assert len(calls) == 1

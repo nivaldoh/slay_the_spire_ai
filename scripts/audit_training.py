@@ -85,6 +85,56 @@ def parameter_changes(initial: dict, current: dict) -> dict:
     return changes
 
 
+def catalog_assignment(catalog: dict, cursor: int) -> tuple[dict, dict]:
+    from spire.catalog import resolve_child_suite
+
+    scenario_id = catalog["scenarios"][cursor % len(catalog["scenarios"])]["id"]
+    schedule_index = next(
+        index
+        for index, item in enumerate(catalog["schedule"])
+        if item["scenario_id"] == scenario_id
+    )
+    context = {
+        "catalog_id": catalog["id"],
+        "cursor": cursor,
+        "scenario_id": scenario_id,
+        "schedule_index": schedule_index,
+        "training_policy_rng": "externally_checkpointed",
+        "uses_evaluation_policy_seeds": False,
+    }
+    return context, resolve_child_suite(catalog, schedule_index)
+
+
+def audit_catalog_reservations(state: dict, expected_catalog: dict) -> None:
+    require(state["suite"] == expected_catalog, "Checkpoint catalog changed")
+    cursor, pending = state["scenario_cursor"], state["pending_scenario"]
+    require(
+        type(cursor) is int and cursor == state["next_attempt"] and cursor >= 0,
+        "Catalog cursor differs from reserved attempts",
+    )
+    require(state["scenario_schedule"] == "round_robin_scenarios_v1", "Unknown scenario schedule")
+    require(
+        (pending is None) == (state["pending_episode"] is None), "Pending scenario/episode mismatch"
+    )
+    require(
+        len(state["attempts"]) == cursor - int(pending is not None),
+        "Catalog cursor omits attempt records",
+    )
+    for index, attempt in enumerate(state["attempts"]):
+        expected, _ = catalog_assignment(expected_catalog, index)
+        require(
+            attempt["scenario"] == expected and attempt["run"] == f"runs/attempt-{index:04d}",
+            "Attempt differs from round-robin scenario assignment",
+        )
+    if pending is not None:
+        context, _ = catalog_assignment(expected_catalog, cursor - 1)
+        require(
+            pending == {key: context[key] for key in ("cursor", "scenario_id", "schedule_index")}
+            and state["pending_episode"] == f"runs/attempt-{cursor - 1:04d}",
+            "Pending scenario differs from round-robin reservation",
+        )
+
+
 def _audit(root: Path, report: dict) -> None:
     pointer = read_json(root / "training-state.json")
     checkpoint_path = run_path(root, pointer["path"])
@@ -128,6 +178,14 @@ def _audit(root: Path, report: dict) -> None:
     earliest = min(checkpoints.values(), key=lambda item: item["payload"]["training"]["generation"])
     original = earliest["payload"]["training"]
     checks = report["checks"]
+    catalog = state["suite"] if state["suite"]["schema_version"] == 2 else None
+    if catalog is not None:
+        from spire.catalog import validate_catalog
+
+        validate_catalog(catalog)
+        for item in checkpoints.values():
+            audit_catalog_reservations(item["payload"]["training"], catalog)
+        checks["catalog_reservations_match_checkpoints"] = True
     checks["deadline_retained"] = all(
         item["payload"]["training"]["deadline_unix"] == original["deadline_unix"]
         and item["payload"]["training"]["started_unix"] == original["started_unix"]
@@ -268,8 +326,22 @@ def _audit(root: Path, report: dict) -> None:
     checks["consumed_runs_linked"] = set(consumed_runs) <= set(attempt_runs)
     transitions_by_run, behavior_by_run, completed_ids, excluded_actions = {}, {}, [], []
     audits, logprob_errors, value_errors = [], [], []
-    for attempt in state["attempts"]:
+    for attempt_index, attempt in enumerate(state["attempts"]):
         run = run_path(root, attempt["run"])
+        scenario_suite = state["suite"]
+        if catalog is not None:
+            context, scenario_suite = catalog_assignment(catalog, attempt_index)
+            manifest_path, environment_path = run / "manifest.json", run / "environment.json"
+            if manifest_path.exists():
+                require(
+                    read_json(manifest_path).get("scenario") == context,
+                    "Episode scenario differs from reserved catalog assignment",
+                )
+            if environment_path.exists() or attempt["status"] in ("won", "lost"):
+                require(
+                    read_json(environment_path).get("scenario") == context,
+                    "Environment scenario differs from reserved catalog assignment",
+                )
         audited = audit_run(run)
         audits.append(
             {
@@ -302,8 +374,8 @@ def _audit(root: Path, report: dict) -> None:
             "policy": "neural",
             "policy_seed": state["config"]["seed"],
             "episodes": 1,
-            "game_seed": state["suite"]["game_seed"],
-            "expected_start_sha256": state["suite"]["expected_start_sha256"],
+            "game_seed": scenario_suite["game_seed"],
+            "expected_start_sha256": scenario_suite["expected_start_sha256"],
             "max_actions": state["config"]["max_actions"],
         }
         require(
@@ -313,6 +385,23 @@ def _audit(root: Path, report: dict) -> None:
         result = read_json(run / "episode-0000" / "result.json")
         require(result["status"] == attempt["status"], "Attempt/result outcome mismatch")
         transitions = load_transitions(run)
+        if catalog is not None:
+            require(
+                audited["episodes"][0]["combat_start_sha256"]
+                == scenario_suite["expected_start_sha256"],
+                "Actual combat start differs from assigned scenario",
+            )
+            declared = next(
+                item for item in catalog["scenarios"] if item["id"] == context["scenario_id"]
+            )
+            require(
+                [
+                    monster["id"]
+                    for monster in transitions[0]["observation"]["combat_state"]["monsters"]
+                ]
+                == declared["monster_ids"],
+                "Observed monsters differ from assigned scenario",
+            )
         ids = [transition["transition_id"] for transition in transitions]
         transitions_by_run[attempt["run"]] = ids
         completed_ids.extend(ids)
@@ -446,6 +535,14 @@ def _audit(root: Path, report: dict) -> None:
         and summary["pending_batch_steps"] == state["batch_steps"]
         and summary["update_history"] == state["update_history"]
     )
+    if catalog is not None:
+        checks["summary_catalog_matches_checkpoint"] = (
+            summary["catalog_id"] == catalog["id"]
+            and summary["scenario_cursor"] == state["scenario_cursor"]
+            and summary["scenario_schedule"] == state["scenario_schedule"]
+            and summary["training_policy_rng"] == "externally_checkpointed"
+            and summary["uses_evaluation_policy_seeds"] is False
+        )
     report["status"] = expected_status
     probe = root / "interruption-probe.json"
     if probe.exists():
