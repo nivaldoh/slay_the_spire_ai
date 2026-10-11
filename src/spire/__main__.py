@@ -46,6 +46,9 @@ def main() -> int:
     train.add_argument("--updates", type=int)
     train.add_argument("--time-budget", type=float, help="Total wall budget in seconds")
     train.add_argument("--seed", type=int)
+    train.add_argument(
+        "--learning-rate", type=float, help="PPO Adam learning rate (default: 0.0003)"
+    )
     args = parser.parse_args()
     if args.command == "doctor":
         from spire.doctor import collect_diagnostics, exit_code, render_diagnostics
@@ -133,6 +136,7 @@ def main() -> int:
             args.updates,
             args.time_budget,
             args.seed,
+            args.learning_rate,
         ]
         if args.resume and any(value is not None for value in choices):
             parser.error("--resume reuses the recorded configuration; omit training overrides")
@@ -152,6 +156,7 @@ def main() -> int:
                 "max_updates": args.updates,
                 "time_budget_seconds": args.time_budget,
                 "seed": args.seed or 0,
+                "learning_rate": args.learning_rate if args.learning_rate is not None else 3e-4,
             }
         )
         result = train(args.output, config, resume=args.resume)

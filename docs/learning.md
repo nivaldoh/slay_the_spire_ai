@@ -62,6 +62,13 @@ implementation follows the algorithmic ideas illustrated in
 with new code specialized to variable candidate sets and complete episodes;
 CleanRL is not a runtime dependency.
 
+The runner exposes `train --learning-rate VALUE` for a declared optimizer-rate
+experiment; omission keeps 0.0003. It records the resolved rate in the run
+configuration, learner checkpoint and Adam parameter groups. Resume preserves
+that rate and rejects overrides. Older checkpoints that omit the runner field
+retain their original 0.0003 default. Changing this option alone does not establish
+better learning; compare the final artifact under a fixed evaluation contract.
+
 `PPOTrainer.state_dict()` returns an independent snapshot containing model,
 optimizer, policy sampling RNG, minibatch RNG, CPU torch RNG, update counter,
 configuration, and version contracts. `load_state_dict` restores these and

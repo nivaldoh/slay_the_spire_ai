@@ -257,6 +257,38 @@ def test_resume_completed_job_never_recollects_or_reingests(tmp_path, setup):
     assert resumed["artifact_path"] == original["artifact_path"]
 
 
+def test_recorded_learning_rate_controls_optimizer_and_cannot_change_on_resume(tmp_path, setup):
+    config, calls = setup
+    config["learning_rate"] = 0.003
+    output = tmp_path / "train"
+    result = training.train(output, config)
+    state, payload, _ = training._load_checkpoint(output)
+    assert state["config"]["learning_rate"] == 0.003
+    assert payload["learner"]["config"]["learning_rate"] == 0.003
+    assert {group["lr"] for group in payload["learner"]["optimizer"]["param_groups"]} == {0.003}
+    resumed = training.train(output, resume=True)
+    assert resumed["model_sha256"] == result["model_sha256"]
+    assert len(calls) == 2
+    with pytest.raises(ValueError, match="Resume configuration differs"):
+        training.train(output, {**config, "learning_rate": 0.0003}, resume=True)
+
+
+@pytest.mark.parametrize("rate", [0, -0.1, float("nan"), float("inf"), True, "0.003"])
+def test_invalid_learning_rate_is_rejected_before_creating_run(tmp_path, setup, rate):
+    config, calls = setup
+    output = tmp_path / "train"
+    with pytest.raises(ValueError, match="learning_rate"):
+        training.train(output, {**config, "learning_rate": rate})
+    assert not output.exists()
+    assert calls == []
+
+
+def test_legacy_unconfigured_learning_rate_preserves_trainer_default():
+    trainer = training._make_trainer({"seed": 0, "torch_num_threads": 1})
+    assert trainer.config["learning_rate"] == 0.0003
+    assert trainer.optimizer.param_groups[0]["lr"] == 0.0003
+
+
 def test_completed_uncheckpointed_episode_restores_sampler_and_optimizer_exactly(
     tmp_path, setup, monkeypatch
 ):

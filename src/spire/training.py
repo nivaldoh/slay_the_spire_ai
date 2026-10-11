@@ -71,13 +71,14 @@ def _resolve_config(config: dict) -> dict:
         "max_actions": 500,
         "seed": 0,
         "torch_num_threads": 1,
+        "learning_rate": 3e-4,
         **config,
     }
     resolved["suite_path"] = str(Path(resolved["suite_path"]).resolve())
     for key in ("total_episodes", "batch_steps", "max_updates", "max_actions", "torch_num_threads"):
         if type(resolved.get(key)) is not int or resolved[key] <= 0:
             raise ValueError(f"{key} must be a positive integer")
-    for key in ("time_budget_seconds", "episode_timeout", "bridge_timeout"):
+    for key in ("time_budget_seconds", "episode_timeout", "bridge_timeout", "learning_rate"):
         value = resolved.get(key)
         if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
             raise ValueError(f"{key} must be positive and finite")
@@ -124,6 +125,8 @@ def _make_trainer(config: dict):
     return PPOTrainer(
         NeuralPolicy(CandidateActorCritic(config["seed"]), seed=config["seed"]),
         seed=config["seed"],
+        # Older checkpoints predate this exposed option and used the same default.
+        learning_rate=config.get("learning_rate", 3e-4),
     )
 
 
