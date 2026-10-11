@@ -61,9 +61,10 @@ The v1 learner still omits monster identity, as documented in the expansion revi
 - `resolve_child_suite(catalog, schedule_index)` returns an ordinary schema-1
   development suite with exactly one episode and the selected game seed, expected
   public start and policy RNG seed. It leaves its input unchanged.
-- `evaluate_catalog(policy, catalog_path, output, *, checkpoint=None)` invokes the
+- `evaluate_catalog(policy, catalog_path, output, *, checkpoint=None, language_artifact=None)` invokes the
   existing evaluator once per frozen assignment. Supported policies are `random`,
-  `heuristic`, `end_turn`, and `neural`; only `neural` requires a frozen checkpoint.
+  `heuristic`, `end_turn`, `neural`, and `language`. Neural policies require a frozen
+  checkpoint; language policies require their separate declaration format.
 - `audit_catalog(output)` re-derives the saved report without launching a game or
   writing files. Malformed or missing parent declarations raise an exception;
   child evidence failures produce an invalid report with issues.
@@ -89,8 +90,9 @@ retains its existing format and behavior.
 ## Evaluation evidence and scoring
 
 Evaluation requires a clean implementation checkout and a new output directory.
-It freezes exact catalog bytes, source revision/fingerprints, and policy source or
-neural artifact/export record. Each child retains ordinary schema-1 evidence:
+It freezes exact catalog bytes, source revision/fingerprints, and policy source,
+neural export, or language declaration/adapter. Each child retains ordinary
+schema-1 evidence:
 
 ```text
 catalog.json                 frozen input bytes
@@ -126,6 +128,44 @@ resume API. New evaluation uses a new output directory.
 The implementation does not alter features, train a policy, or establish held-out
 generalization. Freeze and compare the same catalog and schedule across policies;
 different policy RNG seeds alone do not create new environment scenarios.
+
+## Frozen language policies
+
+The same catalog interface accepts an untouched pretrained language declaration or
+a frozen LoRA declaration. Use the locked optional `llm` environment described in
+[language.md](language.md); no download occurs during evaluation:
+
+```bash
+python -m spire evaluate --language-artifact /path/to/policy.json --suite configs/suites/starter_three_encounter_development_v1.json --output runs/language-catalog-example
+python -m spire report runs/language-catalog-example
+```
+
+The parent freezes the original declaration bytes/hash and adapter files once in
+`frozen-policy/`. A separately hashed execution declaration changes only the adapter
+directory to that parent snapshot; its `source_declaration` metadata retains the
+original identity. The large base remains in its pinned external snapshot. One frozen
+model and GPU lease span the schedule, with file/tensor checks before and after every
+child. Children reuse that model without closing it, retain ordinary schema-1 language
+evidence, and never reload an adapter per decision. The parent releases the model and
+lease on success, interruption or error. Standalone schema-1 evaluation is unchanged.
+
+Greedy, nonthinking decoding, the 2,048-token prompt cap, 12-token output limit and
+strict JSON parser remain fixed. Parser/context failures count as policy attempts;
+the next scheduled independent attempt runs without retry or fallback. Infrastructure,
+unsupported-state, truncation and evidence failures still stop the schedule. Reports
+show both wins/completed games and wins/policy attempts. Equal-scenario policy-attempt
+win rate requires the entire audited schedule. Conditional gameplay/HP macro scores
+remain null if any scenario has no completed games, so a failed scenario cannot vanish
+from an average.
+
+Saved catalog audits load only the pinned local tokenizer, check recorded token IDs,
+counts and decoded text, and verify parent/child artifact linkage and snapshot hashes.
+They require the recorded language dependencies and the external base files, but load
+no model weights and take no GPU lease. Language-to-language comparisons additionally
+match base, prompt, parser, decoding, context and dependency contracts while allowing
+different frozen adapters. This capability does not add language policies to the
+already declared four-policy development comparison; a language catalog experiment
+requires its own declaration. No catalog language-policy scores are established here.
 
 Validation: catalog tests use the actual schema-1 evaluator and trace auditor with
 mocked game communication, including provenance tampering, engine changes,

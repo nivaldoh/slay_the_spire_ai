@@ -22,6 +22,16 @@ def _run(directory: Path) -> dict:
         catalog = _read(directory / "catalog.json")
         result["catalog"] = catalog
         result["policy"] = manifest["policy"]
+        if manifest["policy"] == "language":
+            artifact = manifest["policy_artifact"]
+            declaration = artifact["declaration"]
+            result["language_policy_contract"] = {
+                "base": {key: declaration["base"][key] for key in ("id", "revision", "files")},
+                **{key: declaration[key] for key in (
+                    "prompt_format", "parser_version", "decoder", "max_prompt_tokens",
+                )},
+                "dependencies": artifact["dependencies"],
+            }
         contract = {
             "catalog_sha256": result["catalog_sha256"], "catalog": catalog,
             "engine_pins": manifest["engine_pins"],
@@ -73,6 +83,11 @@ def compare_catalogs(directories: list[Path]) -> dict:
         key for key in {key for contract in contracts for key in contract}
         if any(contract.get(key) != contracts[0].get(key) for contract in contracts[1:])
     )
+    language_contracts = [run["language_policy_contract"] for run in runs
+                          if "language_policy_contract" in run]
+    if language_contracts and any(value != language_contracts[0]
+                                  for value in language_contracts[1:]):
+        differences.append("language_policy_contract")
     issues = [f"{Path(run['directory']).name}: {issue}"
               for run in runs for issue in run["comparison_issues"]]
     return {
@@ -93,9 +108,10 @@ def render_catalog_report(report: dict) -> str:
     lines = [
         "# Catalog evidence report", "", report["scope"], "",
         "Macro scores weight each scenario equally and require a complete audited schedule.", "",
-        "| Run | Policy | Macro win rate | Macro final HP | Wins / valid games | "
+        "| Run | Policy | Macro win rate | Macro policy-attempt win rate | Macro final HP | "
+        "Wins / valid games | Wins / policy attempts | Policy failures | "
         "Started / scheduled | Infra failures | Orchestration failures | Unattempted | Valid |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|---|",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
     ]
     for run in report["runs"]:
         directory = Path(run["directory"])
@@ -104,16 +120,20 @@ def render_catalog_report(report: dict) -> str:
         lines.append(
             f"| [{directory.name}]({directory / 'catalog-manifest.json'}) "
             f"| {run.get('policy', '—')} | {_number(macro.get('win_rate'))} "
+            f"| {_number(macro.get('policy_attempt_win_rate'))} "
             f"| {_number(macro.get('mean_ending_hp'))} "
             f"| {metrics.get('wins', '—')} / {metrics.get('valid_gameplay_episodes', '—')} "
+            f"| {metrics.get('wins', '—')} / {metrics.get('policy_attempts', '—')} "
+            f"| {metrics.get('policy_failures', '—')} "
             f"| {run.get('attempts_started', '—')} / {run.get('scheduled_attempts', '—')} "
             f"| {metrics.get('infrastructure_failures', '—')} "
             f"| {run.get('orchestration_failures', '—')} | {run.get('unattempted', '—')} "
             f"| {run['valid']} |"
         )
     lines.extend([
-        "", "| Run | Scenario | Family | Wins / valid games | Mean final HP | Attempts | "
-        "Infra failures |", "|---|---|---|---:|---:|---:|---:|",
+        "", "| Run | Scenario | Family | Wins / valid games | Wins / policy attempts | "
+        "Policy failures | Mean final HP | Attempts | Infra failures |",
+        "|---|---|---|---:|---:|---:|---:|---:|---:|",
     ])
     for run in report["runs"]:
         definitions = {s["id"]: s for s in run.get("catalog", {}).get("scenarios", [])}
@@ -123,12 +143,16 @@ def render_catalog_report(report: dict) -> str:
                 f"| {Path(run['directory']).name} | {name} "
                 f"| {definitions.get(name, {}).get('encounter_family', '—')} "
                 f"| {metrics['wins']} / {metrics['valid_gameplay_episodes']} "
+                f"| {metrics['wins']} / {metrics['policy_attempts']} "
+                f"| {metrics['policy_failures']} "
                 f"| {_number(metrics['mean_ending_hp'])} | {metrics['attempts']} "
                 f"| {metrics['infrastructure_failures']} |"
             )
     lines.extend([
         "", "HP includes engine postcombat healing. Infrastructure and orchestration failures "
         "remain attempts; they are not gameplay losses.",
+        "Policy-attempt win rates include language parser/context failures. Gameplay and HP "
+        "macro scores require completed gameplay in every scenario; failures are never retried.",
     ])
     if not report["same_protocol"]:
         lines.extend(["", "A shared complete protocol is not established; "

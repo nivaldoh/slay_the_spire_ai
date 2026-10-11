@@ -315,3 +315,27 @@ def test_failure_after_a_successful_action_remains_linked_and_counts_once(setup)
     assert manifest["episodes"][0]["turns"] == 2
     assert manifest["episodes"][0]["invalid_actions"] == 0
     assert result["metrics"]["policy_failures"] == 2
+
+
+def test_borrowed_policy_stays_open_after_child_and_requires_matching_declaration(setup):
+    from spire.language_policy import LanguagePolicy
+
+    declaration_path, suite_path, output, runtime = setup
+    runtime.sessions = [session(), session()]
+    with LanguagePolicy.from_declaration(
+        declaration_path, loader=lambda _: (TinyModel(), TinyTokenizer())
+    ) as policy:
+        result = language_evaluation.evaluate_language(
+            declaration_path, suite_path, output, _policy=policy
+        )
+        assert result["valid"] and policy.model is not None
+        policy.verify_frozen()
+        changed = json.loads(declaration_path.read_bytes())
+        changed["provenance"]["different"] = True
+        declaration_path.write_text(json.dumps(changed))
+        with pytest.raises(ValueError, match="differs from declaration"):
+            language_evaluation.evaluate_language(
+                declaration_path, suite_path, output.parent / "different", _policy=policy
+            )
+        assert policy.model is not None
+    assert policy.model is None

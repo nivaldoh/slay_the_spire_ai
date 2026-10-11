@@ -11,6 +11,7 @@ import hashlib
 import json
 import re
 import subprocess
+from contextlib import ExitStack
 from pathlib import Path
 from statistics import mean
 
@@ -195,13 +196,23 @@ def _engine(directory: Path) -> dict:
 
 def _artifact_identity(artifact: dict) -> dict:
     return {key: value for key, value in artifact.items()
-            if key not in {"path", "record_path", "snapshot_path"}}
+            if key not in {"path", "record_path", "snapshot_path", "adapter_snapshot_path"}}
 
 
 def _verify_policy(output: Path, manifest: dict) -> None:
     directory = output / "frozen-policy"
     policy = manifest["policy"]
-    _require(policy in {"random", "heuristic", "end_turn", "neural"}, "Unknown policy")
+    _require(policy in {"random", "heuristic", "end_turn", "neural", "language"}, "Unknown policy")
+    if policy == "language":
+        from spire.language_evaluation import verify_language_snapshot
+
+        artifact = manifest["policy_artifact"]
+        _require("source_declaration" in artifact, "Missing original language declaration")
+        adapter = artifact["declaration"]["adapter"]
+        _require(adapter is None or Path(adapter["directory"]) == (directory / "adapter").resolve(),
+                 "Language execution adapter is not the frozen parent snapshot")
+        verify_language_snapshot(directory, artifact)
+        return
     if policy == "neural":
         paths = list(directory.glob("*.pt"))
         _require(len(paths) == 1, "Expected one frozen neural artifact")
@@ -214,10 +225,12 @@ def _verify_policy(output: Path, manifest: dict) -> None:
              "Frozen policy identity differs from manifest")
 
 
-def audit_catalog(output: Path) -> dict:
+def audit_catalog(output: Path, *, _tokenizer=None) -> dict:
     """Re-audit saved child traces and frozen evidence; never launch or modify a run."""
     output = Path(output)
     manifest = _json((output / "catalog-manifest.json").read_bytes())
+    if manifest["policy"] == "language":
+        from spire import language_evaluation
     _require(manifest["schema_version"] == 1, "Unsupported catalog run schema")
     _require(manifest["status"] in {"running", "completed", "stopped", "interrupted"},
              "Unknown catalog run status")
@@ -228,9 +241,19 @@ def audit_catalog(output: Path) -> dict:
         issues.append("Catalog snapshot hash changed")
     if _files(output / "frozen-policy") != manifest["policy_files"]:
         issues.append("Frozen policy snapshot changed")
+    language_verified = False
     try:
         _verify_policy(output, manifest)
-    except (OSError, ValueError, KeyError, TypeError) as exc:
+        if manifest["policy"] == "language":
+            language_verified = True
+            _require(language_evaluation.dependency_versions()
+                     == manifest["policy_artifact"]["dependencies"],
+                     "Language tokenizer verification requires recorded dependencies")
+            if _tokenizer is None:
+                _tokenizer = language_evaluation.load_tokenizer(
+                    manifest["policy_artifact"]["declaration"]
+                )
+    except (OSError, ValueError, KeyError, TypeError, ImportError) as exc:
         issues.append(f"Frozen policy: {exc}")
     grouped = {s["id"]: [] for s in catalog["scenarios"]}
     children, sessions = [], set()
@@ -263,6 +286,22 @@ def audit_catalog(output: Path) -> dict:
                      == _artifact_identity(manifest["policy_artifact"]),
                      "Child policy identity mismatch")
             config = audited["manifest"]["config"]
+            if manifest["policy"] == "language":
+                _require(_artifact_identity(config["policy_artifact"])
+                         == _artifact_identity(manifest["policy_artifact"]),
+                         "Child manifest language policy identity mismatch")
+                language_evaluation.verify_language_snapshot(
+                    directory / "frozen-language", result["policy_artifact"],
+                    verify_external_base=not language_verified,
+                )
+                _require(result["snapshot_files"] == {
+                    f"frozen-language/{name}": value
+                    for name, value in _files(directory / "frozen-language").items()
+                }, "Child language snapshot inventory mismatch")
+                _require(not result["consistency_errors"],
+                         "Child language consistency check failed")
+                _require(_tokenizer is not None, "Language tokenizer could not be verified")
+                language_evaluation.check_recorded_tokens(directory, _tokenizer)
             for key, value in {
                 "engine": "original", "scope": "first_combat",
                 "observation_version": OBSERVATION_CONTRACT,
@@ -275,7 +314,10 @@ def audit_catalog(output: Path) -> dict:
                 _require(config[key] == expected[key], f"Child config {key} mismatch")
             _require(len(audited["episodes"]) == 1, "Child must contain exactly one attempt")
             episode = audited["episodes"][0]
-            _require(episode["status"] in {"won", "lost"}, "Child did not complete gameplay")
+            statuses = {"won", "lost"}
+            if manifest["policy"] == "language":
+                statuses.add("policy_failure")
+            _require(episode["status"] in statuses, "Child did not complete a policy attempt")
             _require(episode["combat_start_sha256"] == scenario["expected_start_sha256"],
                      "Audited combat start differs from scenario fingerprint")
             _require(episode["session_id"] not in sessions, "Session reused across children")
@@ -289,7 +331,7 @@ def audit_catalog(output: Path) -> dict:
         for episode in audited["episodes"]:
             episode = copy.deepcopy(episode)
             episode["episode"] = index  # Unique parent identity for reset comparisons.
-            if child_issues and episode["status"] in {"won", "lost"}:
+            if child_issues and episode["status"] in {"won", "lost", "policy_failure"}:
                 episode.update(valid=False, status="invalid_evidence")
             grouped[scenario["id"]].append(episode)
             child_episodes.append(episode)
@@ -303,9 +345,11 @@ def audit_catalog(output: Path) -> dict:
         for name, episodes in grouped.items()
     }
     valid = complete and not issues
-    fields = ("win_rate", "mean_ending_hp", "mean_net_hp_lost", "mean_turns")
-    macro = {field: mean(s["metrics"][field] for s in scenarios.values()) if valid else None
-             for field in fields}
+    fields = ("win_rate", "policy_attempt_win_rate", "mean_ending_hp",
+              "mean_net_hp_lost", "mean_turns")
+    macro = {field: mean(s["metrics"][field] for s in scenarios.values())
+             if valid and all(s["metrics"][field] is not None for s in scenarios.values())
+             else None for field in fields}
     return {
         "schema_version": 1, "valid": valid, "status": manifest["status"], "issues": issues,
         "catalog_sha256": manifest["catalog_sha256"],
@@ -322,17 +366,48 @@ def audit_catalog(output: Path) -> dict:
 
 
 def evaluate_catalog(policy: str, catalog_path: Path, output: Path,
-                     *, checkpoint: Path | None = None) -> dict:
+                     *, checkpoint: Path | None = None,
+                     language_artifact: Path | None = None, loader=None) -> dict:
+    """Own one frozen language model across the schedule, releasing it on every exit."""
+    with ExitStack() as stack:
+        return _evaluate_catalog(policy, catalog_path, output, checkpoint=checkpoint,
+                                 language_artifact=language_artifact, loader=loader, stack=stack)
+
+
+def _evaluate_catalog(
+    policy, catalog_path, output, *, checkpoint, language_artifact, loader, stack,
+):
     """Evaluate the frozen schedule once, stopping on failure; no retries or resume."""
     catalog_path, output = Path(catalog_path).resolve(), Path(output).resolve()
     data = catalog_path.read_bytes()
     catalog = validate_catalog(_json(data))
-    _require(policy in {"random", "heuristic", "end_turn", "neural"}, "Unknown policy")
+    _require(policy in {"random", "heuristic", "end_turn", "neural", "language"}, "Unknown policy")
     _require((policy == "neural") == (checkpoint is not None), "Policy/checkpoint mismatch")
+    _require((policy == "language") == (language_artifact is not None),
+             "Policy/language artifact mismatch")
+    _require(loader is None or policy == "language", "Model loader requires language policy")
     source = _source()
     watched = {catalog_path: data}
     policy_files = {}
-    if checkpoint is not None:
+    source_declaration = shared_policy = None
+    if language_artifact is not None:
+        from spire import language_evaluation
+        from spire.language_policy import LanguagePolicy
+
+        original = Path(language_artifact).resolve()
+        _, policy_files = language_evaluation.language_snapshot(original, None)
+        source_declaration = policy_files.pop("declaration.json")
+        policy_files["source-declaration.json"] = source_declaration
+        declaration = _json(source_declaration)
+        watched[original] = source_declaration
+        if declaration["adapter"] is not None:
+            original_adapter = Path(declaration["adapter"]["directory"])
+            watched.update({original_adapter / name: policy_files[f"adapter/{name}"]
+                            for name in declaration["adapter"]["files"]})
+            declaration["adapter"]["directory"] = str(output / "frozen-policy/adapter")
+        policy_files["declaration.json"] = (json.dumps(declaration, sort_keys=True, indent=2)
+                                             + "\n").encode()
+    elif checkpoint is not None:
         _, artifact, binary, original, record, record_bytes = (
             evaluation._neural_artifact(checkpoint)
         )
@@ -356,9 +431,23 @@ def evaluate_catalog(policy: str, catalog_path: Path, output: Path,
     watched[output / "catalog.json"] = data
     for name, content in policy_files.items():
         path = output / "frozen-policy" / name
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
         watched[path] = content
     frozen = output / "frozen-policy" / original.name if checkpoint is not None else None
+    if language_artifact is not None:
+        frozen = output / "frozen-policy/declaration.json"
+        shared_policy = stack.enter_context(LanguagePolicy(declaration, loader=loader))
+        artifact, _ = language_evaluation.language_snapshot(
+            frozen, shared_policy.model_sha256, source_declaration=source_declaration
+        )
+        artifact["snapshot_path"] = "frozen-policy/declaration.json"
+        artifact["adapter_snapshot_path"] = (
+            "frozen-policy/adapter" if declaration["adapter"] is not None else None
+        )
+        for path in (output / "frozen-policy").rglob("*"):
+            if path.is_file():
+                path.chmod(0o444)
     manifest = {"schema_version": 1, "catalog_sha256": _digest(data), **source,
                 "policy": policy, "policy_artifact": artifact,
                 "policy_files": _files(output / "frozen-policy"),
@@ -369,12 +458,17 @@ def evaluate_catalog(policy: str, catalog_path: Path, output: Path,
         _require(_source() == source, "Evaluation source changed")
         _require(all(path.is_file() and path.read_bytes() == content
                      for path, content in watched.items()), "Frozen catalog or policy changed")
+        if shared_policy is not None:
+            shared_policy.verify_frozen()
+
+    def audit():
+        return audit_catalog(output, _tokenizer=shared_policy.tokenizer if shared_policy else None)
 
     try:
         for index, entry in enumerate(catalog["schedule"]):
             unchanged()
             if manifest["children"]:
-                _require(not audit_catalog(output)["issues"], "Earlier child evidence changed")
+                _require(not audit()["issues"], "Earlier child evidence changed")
             suite_path = output / "suites" / f"attempt-{index:04d}.json"
             write_json(suite_path, resolve_child_suite(catalog, index))
             child = {"index": index, "scenario_id": entry["scenario_id"],
@@ -383,7 +477,13 @@ def evaluate_catalog(policy: str, catalog_path: Path, output: Path,
             write_json(output / "catalog-manifest.json", manifest)
             directory = output / child["directory"]
             try:
-                evaluation.evaluate(policy, suite_path, directory, checkpoint=frozen)
+                if shared_policy is not None:
+                    language_evaluation.evaluate_language(
+                        frozen, suite_path, directory, _policy=shared_policy,
+                        _source_declaration=source_declaration,
+                    )
+                else:
+                    evaluation.evaluate(policy, suite_path, directory, checkpoint=frozen)
                 if manifest["engine_pins"] is None:
                     manifest["engine_pins"] = _engine(directory)
                 unchanged()
@@ -392,7 +492,7 @@ def evaluate_catalog(policy: str, catalog_path: Path, output: Path,
             finally:
                 child["files"] = _files(directory)
                 write_json(output / "catalog-manifest.json", manifest)
-            report = audit_catalog(output)
+            report = audit()
             if report["issues"]:
                 manifest["status"] = "stopped"
                 break
@@ -403,6 +503,6 @@ def evaluate_catalog(policy: str, catalog_path: Path, output: Path,
         raise
     finally:
         write_json(output / "catalog-manifest.json", manifest)
-    result = audit_catalog(output)
+    result = audit()
     write_json(output / "catalog-evaluation.json", result)
     return result

@@ -101,9 +101,7 @@ def main() -> int:
         schema = declaration.get("schema_version") if isinstance(declaration, dict) else None
         if type(schema) is not int or schema not in {1, 2}:
             parser.error("Evaluation requires a schema-1 suite or schema-2 catalog")
-        if args.language_artifact:
-            if schema != 1:
-                parser.error("Language-policy evaluation currently requires a schema-1 suite")
+        if args.language_artifact and schema == 1:
             from spire.language_evaluation import evaluate_language
 
             result = evaluate_language(args.language_artifact, args.suite, args.output)
@@ -113,7 +111,9 @@ def main() -> int:
             from spire.catalog import evaluate_catalog
 
             result = evaluate_catalog(
-                args.policy or "neural", args.suite, args.output, checkpoint=args.checkpoint
+                args.policy or ("language" if args.language_artifact else "neural"),
+                args.suite, args.output, checkpoint=args.checkpoint,
+                **({"language_artifact": args.language_artifact} if args.language_artifact else {}),
             )
             metrics = {"metrics": result["metrics"], "macro": result["macro"]}
             filename = "catalog-evaluation.json"
