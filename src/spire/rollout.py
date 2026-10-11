@@ -74,7 +74,7 @@ def source_fingerprints() -> dict[str, str]:
     return {str(path.relative_to(root)): sha256(path) for path in sorted(paths)}
 
 
-def run_episode(directory: Path, config: dict, episode: int) -> dict:
+def run_episode(directory: Path, config: dict, episode: int, *, policy=None) -> dict:
     directory.mkdir(exist_ok=False)
     started = time.monotonic()
     deadline = started + config["episode_timeout"]
@@ -85,7 +85,8 @@ def run_episode(directory: Path, config: dict, episode: int) -> dict:
         "status": "interrupted",
         "seed": config["game_seed"],
         "policy": config["policy"],
-        "policy_seed": config["policy_seed"] + episode,
+        "policy_seed": config["policy_seed"] + episode if policy is None else None,
+        "policy_rng": "per_episode_seed" if policy is None else "externally_checkpointed",
         "actions": 0,
         "combat_actions": 0,
         "invalid_actions": 0,
@@ -93,11 +94,12 @@ def run_episode(directory: Path, config: dict, episode: int) -> dict:
     }
     write_json(directory / "profile.json", collect_profile(GAME_DIR))
     write_json(directory / "result.json", result)
-    policy = {
-        "random": lambda: RandomPolicy(result["policy_seed"]),
-        "heuristic": StarterHeuristicPolicy,
-        "end_turn": EndTurnPolicy,
-    }[config["policy"]]()
+    if policy is None:
+        policy = {
+            "random": lambda: RandomPolicy(result["policy_seed"]),
+            "heuristic": StarterHeuristicPolicy,
+            "end_turn": EndTurnPolicy,
+        }[config["policy"]]()
     combat_floor = None
     combat_started = None
     pending = None
@@ -211,8 +213,16 @@ def run_episode(directory: Path, config: dict, episode: int) -> dict:
                             result["inference_seconds"] += time.monotonic() - inference_start
                             pending = action.id
                             command = action.command
+                            metadata = (
+                                policy.choice_metadata(decision.id)
+                                if hasattr(policy, "choice_metadata")
+                                else {}
+                            )
                             event(
-                                "decision", decision=decision.to_dict(), selected_action_id=pending
+                                "decision",
+                                decision=decision.to_dict(),
+                                selected_action_id=pending,
+                                behavior=metadata,
                             )
                             result["combat_actions"] += 1
                             result["turns"] = state.get("combat_state", {}).get("turn")
