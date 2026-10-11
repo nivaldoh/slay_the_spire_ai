@@ -163,3 +163,43 @@ one tiny CPU Qwen/PEFT continuation case when those optional packages are absent
 They can also run with the locked CUDA
 interpreter while using CPU toy models exclusively; no test launches a game,
 loads Qwen weights or acquires the production GPU lease.
+
+## Read-only acceptance audit
+
+After the worker and supervisor stop, run the saved-evidence auditor with a
+source-compatible interpreter containing Torch and safetensors. It performs CPU
+deserialization and file hashing; it does not instantiate a language model,
+initialize CUDA, take the GPU lease, modify the run, or launch a game:
+
+```bash
+PYTHONPATH="$PWD/src" /path/to/cuda-env/bin/python scripts/audit_language_training.py \
+  /absolute/runs/language-sft /absolute/runs/language-sft-audit.json
+```
+
+The optional JSON report must be outside the input run. `audit_language_training`
+also returns a JSON-serializable object with `valid`, `errors`, and named `checks`;
+exit code 1 means invalid or incomplete acceptance evidence. A running summary,
+missing supervisor record, or evidence changing during the read fails closed.
+
+The audit reuses canonical checkpoint validation and independently re-exports
+the dataset from its original traces. It checks recorded source fingerprints
+against the saved Git revision, the pinned base files, finite adapter/AdamW
+state and counters, token/sample accounting, the actual initial-to-final tensor
+change, all committed update tensor ancestors, and durable reservation snapshots.
+Every published export must reproduce its checkpoint's tensors/configuration and
+the exact declaration's base/data/source provenance. Watchdog invocations must
+retain the original deadline, respect the separate 30-second CPU finalization
+window, report consistent cleanup time, and account for resource-limit stops.
+The bounded cleanup tolerance includes the supervisor's two-second GPU query,
+poll interval, interrupt grace and kill/reap grace; it does not authorize another
+update. Checkpoint files left by an interrupted pointer publication remain
+evidence, rather than being deleted by the auditor.
+
+Valid token/deadline stops need not reach `max_updates`. Honest interrupted
+checkpoints can retain pending reservations and lack a final export; their
+summary must still agree with the authoritative pointer. Counts of committed,
+pending and abandoned reservations remain separate. A zero-update stopped job
+can have valid integrity without changed weights. A valid report establishes
+saved evidence consistency, not improved loss, action quality or gameplay. It
+cannot authenticate a completely rewritten history or establish bit-exact CUDA
+continuation, and it does not replace frozen original-engine evaluation.
