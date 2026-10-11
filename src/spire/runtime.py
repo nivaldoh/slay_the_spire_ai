@@ -7,6 +7,8 @@ import os
 import select
 import shutil
 import subprocess
+import time
+import uuid
 from pathlib import Path
 
 GAME_DIR = Path("/mnt/c/Program Files (x86)/Steam/steamapps/common/SlayTheSpire")
@@ -27,6 +29,37 @@ PINS = {
         "12b99249eccfd5245ddb0b6b7575e1a1dfba0ce0ed6fad5bd5bbd4a303897ef5",
     ),
 }
+
+
+class RuntimeLock:
+    """Exclusive WSL ownership covering deployment as well as the game lifetime.
+
+    Hold this context around prepare_runtime and OwnedGame. The kernel releases
+    it if the controller dies; file existence or a remembered PID is not a lock.
+    """
+
+    def __init__(self):
+        self._file = None
+
+    def __enter__(self):
+        import fcntl
+
+        if self._file is not None:
+            raise RuntimeError("runtime lock context cannot be reentered")
+        RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
+        self._file = (RUNTIME_DIR / "owner.lock").open("a+")
+        try:
+            fcntl.flock(self._file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError as exc:
+            self._file.close()
+            self._file = None
+            raise RuntimeError("another controller owns the game runtime") from exc
+        return self
+
+    def __exit__(self, *_):
+        if self._file is not None:
+            self._file.close()
+            self._file = None
 
 
 def sha256(path: Path) -> str:
@@ -52,6 +85,8 @@ def prepare_runtime(host: str, port: int, *, timeout: float = 120) -> dict:
     """Verify pinned jars, deploy scripts, and configure the authorized game bridge."""
     if any(character.isspace() for character in host) or not 0 < port < 65536:
         raise ValueError("invalid bridge address")
+    if not math.isfinite(timeout) or timeout <= 0:
+        raise ValueError("timeout must be positive and finite")
     source_root = Path(__file__).resolve().parents[2]
     mods_dir = RUNTIME_DIR / "mods"
     mods_dir.mkdir(parents=True, exist_ok=True)
@@ -104,12 +139,17 @@ class OwnedGame:
             raise ValueError("timeout must be positive and finite")
         # Windows writes logs to the local runtime folder; copy the final log to evidence.
         self.log_path = log_path
-        self.windows_log = RUNTIME_DIR / f"game-{os.getpid()}.log"
+        self.windows_log = RUNTIME_DIR / f"game-{os.getpid()}-{uuid.uuid4().hex}.log"
         self.timeout = timeout
         self.process = None
         self.info = None
+        self._entered = False
+        self.supervisor_stderr = ""
 
     def __enter__(self):
+        if self._entered:
+            raise RuntimeError("OwnedGame contexts cannot be reused")
+        self._entered = True
         command = [
             str(WINDOWS_PYTHON),
             str(RUNTIME_DIR / "windows_game.py"),
@@ -132,29 +172,48 @@ class OwnedGame:
             text=True,
         )
         try:
-            readable, _, _ = select.select([self.process.stdout], [], [], 15)
-            if not readable:
-                raise TimeoutError("Windows supervisor did not report startup within 15 seconds")
-            line = self.process.stdout.readline()
-            if not line:
-                raise RuntimeError("Windows supervisor failed: " + self.process.stderr.read())
-            self.info = json.loads(line)
+            self.info = self._startup_message()
+            if not isinstance(self.info, dict) or not isinstance(self.info.get("pid"), int):
+                raise RuntimeError("Windows supervisor returned an invalid startup message")
             return self
-        except BaseException:
+        except BaseException as exc:
             self.close()
+            if isinstance(exc, Exception) and self.supervisor_stderr.strip():
+                raise RuntimeError(f"{exc}: {self.supervisor_stderr.strip()}") from exc
             raise
+
+    def _startup_message(self, timeout: float = 15) -> dict:
+        """Bound the complete handshake, including malformed partial output."""
+        deadline = time.monotonic() + timeout
+        line = bytearray()
+        while b"\n" not in line:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("Windows supervisor did not report startup before deadline")
+            readable, _, _ = select.select([self.process.stdout], [], [], remaining)
+            if not readable:
+                raise TimeoutError("Windows supervisor did not report startup before deadline")
+            chunk = os.read(self.process.stdout.fileno(), 4096)
+            if not chunk:
+                # Do not block reading stderr from a process which only closed stdout.
+                raise RuntimeError("Windows supervisor closed stdout before reporting startup")
+            line.extend(chunk)
+            if len(line) > 65536:
+                raise RuntimeError("Windows supervisor startup message exceeds byte limit")
+        return json.loads(line.split(b"\n", 1)[0])
 
     def close(self) -> None:
         if self.process is not None:
+            process, self.process = self.process, None
             try:
-                self.process.communicate("stop\n", timeout=15)
+                _, self.supervisor_stderr = process.communicate("stop\n", timeout=15)
             except subprocess.TimeoutExpired:
-                self.process.kill()
-                self.process.communicate(timeout=5)
-            if self.windows_log.exists():
-                self.log_path.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(self.windows_log, self.log_path)
-            self.process = None
+                process.kill()
+                _, self.supervisor_stderr = process.communicate(timeout=5)
+            finally:
+                if self.windows_log.exists():
+                    self.log_path.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(self.windows_log, self.log_path)
 
     def __exit__(self, *_):
         self.close()
