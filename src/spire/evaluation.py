@@ -7,11 +7,31 @@ import re
 from pathlib import Path
 
 from spire.evidence import summarize_run
+from spire.protocol import OBSERVATION_CONTRACT
 from spire.rollout import rollout, write_json
 
 
 def load_suite(path: Path) -> dict:
     suite = json.loads(path.read_text())
+    if not isinstance(suite, dict):
+        raise ValueError("Suite must be a JSON object")
+    supported_declarations = {
+        "character": "IRONCLAD",
+        "class": "IRONCLAD",
+        "ascension": 0,
+        "ascension_level": 0,
+        "observation_version": OBSERVATION_CONTRACT,
+        "observation_contract": OBSERVATION_CONTRACT,
+    }
+    allowed = {
+        "schema_version", "purpose", "id", "description", "game_seed", "policy_seed",
+        "episodes", "expected_start_sha256", *supported_declarations,
+    }
+    if extra := suite.keys() - allowed:
+        raise ValueError(f"Unsupported suite fields: {', '.join(sorted(extra))}")
+    for key, expected in supported_declarations.items():
+        if key in suite and (type(suite[key]) is not type(expected) or suite[key] != expected):
+            raise ValueError(f"Unsupported suite {key}: expected {expected!r}")
     if suite.get("schema_version") != 1 or suite.get("purpose") != "development":
         raise ValueError("Only declared schema-1 development suites are implemented")
     if not isinstance(suite.get("id"), str) or not suite["id"]:
