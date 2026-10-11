@@ -478,3 +478,9 @@ uninterrupted 5-iteration job. Evaluate its final iteration once with the frozen
 greedy evaluator, and compare it with the base (63.67) and the one-update result under
 the contract's improvement rule. No checkpoint is selected by score. A failure stops
 this job too, and its last completed iteration is the final artifact.
+
+### Continuation stopped by owner request
+
+The continuation completed one iteration (the second update overall), with a valid audit,
+then was interrupted on request before iteration 1's first game. Its adapter has not been
+evaluated; no claim is made about it. See docs/state.md for the artifact path and hash.

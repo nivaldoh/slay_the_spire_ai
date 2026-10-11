@@ -2,7 +2,9 @@
 
 Updated 2026-10-11, during the authorized unattended bootstrap session.
 
-## Active work (last verified 18:10 UTC)
+## Active work (last verified 19:00 UTC)
+
+No game, GPU or training job is running. Source and HEAD are free.
 
 Owner direction (2026-10-11 afternoon): pause the pure-RL/PPO route and advance LLM
 post-training. The declared PPO learning-rate launchers stay unrun; the seed-1 clock
@@ -43,9 +45,16 @@ catalog macro HP from 63.67 to 66.67 (Cultist 41 → 50; it now finishes a 3-HP 
 instead of blocking), 12/12 wins: the contract's improvement rule is met on trained
 development scenarios. See research.md and [result](results/language-rl-development-v1.json).
 
-LIVE: declared continuation `runs/language-rl-relabel-continued-20261011` from that
-adapter (4 iterations, seed 1, fresh AdamW, 4,500-second cap) after the interop
-mitigation. It owns the GPU lease and the game; keep source and HEAD frozen until it stops.
+The declared continuation `runs/language-rl-relabel-continued-20261011` (4 iterations,
+seed 1, fresh AdamW) was stopped by owner request after its first iteration. That
+iteration completed and saved: Louses 77×4 (no signal), Cultist 61/73/50/55, Jaw Worm
+68/73/73/65 sampled HP; behavior recomputation within 1.3e-6; KL 0.048. The interrupt
+landed during iteration 1's pre-game probe, so that slot is empty and no game launched.
+`audit_language_rl` is valid. Its two-update adapter
+(`iteration-000/policy.json`, SHA-256
+`7870257b67607b5d7f5de319d4c6819d037dfd4cf56b20b8dd03ae65bf6ef84c`) has **not** been evaluated.
+The best evaluated language artifact is still the Louse-only SFT adapter (macro 76.33); the
+REINFORCE result is a +3.00 improvement over its own relabeled base, not over that adapter.
 
 The frozen SFT v2 evaluation completed at source
 `e829c1c`; tool session `71199` exited successfully and PIDs `337234`/`337233` are gone.
@@ -296,11 +305,11 @@ that natural-language deadline.
 
 ## Next useful actions
 
-1. When the continuation stops: `scripts/train_language_rl.py --audit`, then evaluate its
-   final `policy.json` once on the catalog (frozen greedy evaluator) and compare with the
-   base (63.67) and the one-update adapter (66.67).
-2. Then decide between more outcome-based iterations, a better supervised base, or
-   held-out scenarios for the language track.
+1. Evaluate the stopped continuation's two-update adapter once on the catalog with the
+   frozen greedy evaluator; compare with the base (63.67) and the one-update adapter (66.67).
+2. Decide the language track's next question (owner review pending): more outcome-based
+   iterations, RL from the stronger Louse-only adapter, or new held-out scenarios so
+   post-training gains are not measured on the seeds used for training.
 3. PPO learning-rate work is paused by owner direction; re-declare before resuming.
 4. Declare held-out evaluation and the smallest supported noncombat expansion before
    collecting their results.
