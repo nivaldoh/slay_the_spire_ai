@@ -1,0 +1,513 @@
+{
+  "contract_sha256": "406f2a6c6c281025504b4d446bb4ecebaf6b6828c6c3f704ed905539c3fb56a7",
+  "elapsed_seconds": 1307.1568400859833,
+  "heuristic_reference": {
+    "evaluation_sha256": "0e1c0786cdb49ab0dffe44ffbbe671ce7d1600c2533ef45b96b409e9c7669dd5",
+    "macro": {
+      "complete": true,
+      "mean_ending_hp": 76,
+      "mean_net_hp_lost": 4,
+      "mean_turns": 7,
+      "policy_attempt_win_rate": 1.0,
+      "weighting": "equal_scenario",
+      "win_rate": 1.0
+    },
+    "scenarios": {
+      "spireai1": 77,
+      "spireinv07": 71,
+      "spireinv09": 80
+    }
+  },
+  "paired_with_heuristic": [
+    {
+      "decisions": 21,
+      "first_disagreement": null,
+      "heuristic_agreement": 21,
+      "heuristic_ending_hp": 77,
+      "identical_commands": true,
+      "index": 0,
+      "lora_ending_hp": 77,
+      "scenario_id": "spireai1"
+    },
+    {
+      "decisions": 23,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Strike_R",
+          0
+        ],
+        "decision": 1,
+        "energy": 3,
+        "heuristic": [
+          "play",
+          "Bash",
+          0
+        ],
+        "player_block": 0,
+        "turn": 1
+      },
+      "heuristic_agreement": 18,
+      "heuristic_ending_hp": 71,
+      "identical_commands": false,
+      "index": 1,
+      "lora_ending_hp": 74,
+      "scenario_id": "spireinv07"
+    },
+    {
+      "decisions": 27,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Strike_R",
+          0
+        ],
+        "decision": 6,
+        "energy": 2,
+        "heuristic": [
+          "play",
+          "Defend_R",
+          null
+        ],
+        "player_block": 5,
+        "turn": 2
+      },
+      "heuristic_agreement": 18,
+      "heuristic_ending_hp": 80,
+      "identical_commands": false,
+      "index": 2,
+      "lora_ending_hp": 78,
+      "scenario_id": "spireinv09"
+    },
+    {
+      "decisions": 21,
+      "first_disagreement": null,
+      "heuristic_agreement": 21,
+      "heuristic_ending_hp": 77,
+      "identical_commands": true,
+      "index": 3,
+      "lora_ending_hp": 77,
+      "scenario_id": "spireai1"
+    },
+    {
+      "decisions": 23,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Strike_R",
+          0
+        ],
+        "decision": 1,
+        "energy": 3,
+        "heuristic": [
+          "play",
+          "Bash",
+          0
+        ],
+        "player_block": 0,
+        "turn": 1
+      },
+      "heuristic_agreement": 18,
+      "heuristic_ending_hp": 71,
+      "identical_commands": false,
+      "index": 4,
+      "lora_ending_hp": 74,
+      "scenario_id": "spireinv07"
+    },
+    {
+      "decisions": 27,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Strike_R",
+          0
+        ],
+        "decision": 6,
+        "energy": 2,
+        "heuristic": [
+          "play",
+          "Defend_R",
+          null
+        ],
+        "player_block": 5,
+        "turn": 2
+      },
+      "heuristic_agreement": 18,
+      "heuristic_ending_hp": 80,
+      "identical_commands": false,
+      "index": 5,
+      "lora_ending_hp": 78,
+      "scenario_id": "spireinv09"
+    },
+    {
+      "decisions": 21,
+      "first_disagreement": null,
+      "heuristic_agreement": 21,
+      "heuristic_ending_hp": 77,
+      "identical_commands": true,
+      "index": 6,
+      "lora_ending_hp": 77,
+      "scenario_id": "spireai1"
+    },
+    {
+      "decisions": 23,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Strike_R",
+          0
+        ],
+        "decision": 1,
+        "energy": 3,
+        "heuristic": [
+          "play",
+          "Bash",
+          0
+        ],
+        "player_block": 0,
+        "turn": 1
+      },
+      "heuristic_agreement": 18,
+      "heuristic_ending_hp": 71,
+      "identical_commands": false,
+      "index": 7,
+      "lora_ending_hp": 74,
+      "scenario_id": "spireinv07"
+    },
+    {
+      "decisions": 27,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Strike_R",
+          0
+        ],
+        "decision": 6,
+        "energy": 2,
+        "heuristic": [
+          "play",
+          "Defend_R",
+          null
+        ],
+        "player_block": 5,
+        "turn": 2
+      },
+      "heuristic_agreement": 18,
+      "heuristic_ending_hp": 80,
+      "identical_commands": false,
+      "index": 8,
+      "lora_ending_hp": 78,
+      "scenario_id": "spireinv09"
+    },
+    {
+      "decisions": 21,
+      "first_disagreement": null,
+      "heuristic_agreement": 21,
+      "heuristic_ending_hp": 77,
+      "identical_commands": true,
+      "index": 9,
+      "lora_ending_hp": 77,
+      "scenario_id": "spireai1"
+    },
+    {
+      "decisions": 23,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Strike_R",
+          0
+        ],
+        "decision": 1,
+        "energy": 3,
+        "heuristic": [
+          "play",
+          "Bash",
+          0
+        ],
+        "player_block": 0,
+        "turn": 1
+      },
+      "heuristic_agreement": 18,
+      "heuristic_ending_hp": 71,
+      "identical_commands": false,
+      "index": 10,
+      "lora_ending_hp": 74,
+      "scenario_id": "spireinv07"
+    },
+    {
+      "decisions": 27,
+      "first_disagreement": {
+        "chose": [
+          "play",
+          "Strike_R",
+          0
+        ],
+        "decision": 6,
+        "energy": 2,
+        "heuristic": [
+          "play",
+          "Defend_R",
+          null
+        ],
+        "player_block": 5,
+        "turn": 2
+      },
+      "heuristic_agreement": 18,
+      "heuristic_ending_hp": 80,
+      "identical_commands": false,
+      "index": 11,
+      "lora_ending_hp": 78,
+      "scenario_id": "spireinv09"
+    }
+  ],
+  "policies": {
+    "final-lora": {
+      "declaration_sha256": "70d19d51a5578ca3ce4e64e0f3f8646c9034ab6e14cf9f84baa2002268a248d6",
+      "macro": {
+        "complete": true,
+        "mean_ending_hp": 76.33333333333333,
+        "mean_net_hp_lost": 3.6666666666666665,
+        "mean_turns": 6.333333333333333,
+        "policy_attempt_win_rate": 1.0,
+        "weighting": "equal_scenario",
+        "win_rate": 1.0
+      },
+      "metrics": {
+        "attempts": 12,
+        "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+        "infrastructure_failures": 0,
+        "interrupted": 0,
+        "invalid_actions": 0,
+        "invalid_evidence": 0,
+        "losses": 0,
+        "mean_combat_seconds": 32.343126436668776,
+        "mean_elapsed_seconds": 46.459332932913334,
+        "mean_ending_hp": 76.33333333333333,
+        "mean_net_hp_lost": 3.6666666666666665,
+        "mean_reset_seconds": 14.116201880079947,
+        "mean_starting_hp": 80,
+        "mean_turns": 6.333333333333333,
+        "policy_attempt_win_rate": 1.0,
+        "policy_attempts": 12,
+        "policy_failures": 0,
+        "truncated": 0,
+        "unsupported": 0,
+        "valid_evidence_episodes": 12,
+        "valid_gameplay_episodes": 12,
+        "validated_transitions": 284,
+        "win_rate": 1.0,
+        "wins": 12
+      },
+      "model_sha256": "b620fa2e3f44a0bd7e7f38646f28a51cf1d33a9fa7ec8062d18b2d02c1be496c",
+      "scenarios": {
+        "spireai1": {
+          "attempts": 4,
+          "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+          "infrastructure_failures": 0,
+          "interrupted": 0,
+          "invalid_actions": 0,
+          "invalid_evidence": 0,
+          "losses": 0,
+          "mean_combat_seconds": 31.251749615501467,
+          "mean_elapsed_seconds": 45.456118126996444,
+          "mean_ending_hp": 77,
+          "mean_net_hp_lost": 3,
+          "mean_reset_seconds": 14.204364528995939,
+          "mean_starting_hp": 80,
+          "mean_turns": 6,
+          "policy_attempt_win_rate": 1.0,
+          "policy_attempts": 4,
+          "policy_failures": 0,
+          "truncated": 0,
+          "unsupported": 0,
+          "valid_evidence_episodes": 4,
+          "valid_gameplay_episodes": 4,
+          "validated_transitions": 84,
+          "win_rate": 1.0,
+          "wins": 4
+        },
+        "spireinv07": {
+          "attempts": 4,
+          "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+          "infrastructure_failures": 0,
+          "interrupted": 0,
+          "invalid_actions": 0,
+          "invalid_evidence": 0,
+          "losses": 0,
+          "mean_combat_seconds": 29.4949459749987,
+          "mean_elapsed_seconds": 43.55970788349441,
+          "mean_ending_hp": 74,
+          "mean_net_hp_lost": 6,
+          "mean_reset_seconds": 14.064756173498608,
+          "mean_starting_hp": 80,
+          "mean_turns": 6,
+          "policy_attempt_win_rate": 1.0,
+          "policy_attempts": 4,
+          "policy_failures": 0,
+          "truncated": 0,
+          "unsupported": 0,
+          "valid_evidence_episodes": 4,
+          "valid_gameplay_episodes": 4,
+          "validated_transitions": 92,
+          "win_rate": 1.0,
+          "wins": 4
+        },
+        "spireinv09": {
+          "attempts": 4,
+          "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+          "infrastructure_failures": 0,
+          "interrupted": 0,
+          "invalid_actions": 0,
+          "invalid_evidence": 0,
+          "losses": 0,
+          "mean_combat_seconds": 36.28268371950617,
+          "mean_elapsed_seconds": 50.362172788249154,
+          "mean_ending_hp": 78,
+          "mean_net_hp_lost": 2,
+          "mean_reset_seconds": 14.079484937745292,
+          "mean_starting_hp": 80,
+          "mean_turns": 7,
+          "policy_attempt_win_rate": 1.0,
+          "policy_attempts": 4,
+          "policy_failures": 0,
+          "truncated": 0,
+          "unsupported": 0,
+          "valid_evidence_episodes": 4,
+          "valid_gameplay_episodes": 4,
+          "validated_transitions": 108,
+          "win_rate": 1.0,
+          "wins": 4
+        }
+      }
+    },
+    "untouched-base": {
+      "declaration_sha256": "b689e0d880f11b6ffee787a2c627b4d4da33ef2f7f190a9882df4302628af0b6",
+      "macro": {
+        "complete": true,
+        "mean_ending_hp": null,
+        "mean_net_hp_lost": null,
+        "mean_turns": null,
+        "policy_attempt_win_rate": 0.0,
+        "weighting": "equal_scenario",
+        "win_rate": null
+      },
+      "metrics": {
+        "attempts": 12,
+        "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+        "infrastructure_failures": 0,
+        "interrupted": 0,
+        "invalid_actions": 0,
+        "invalid_evidence": 0,
+        "losses": 0,
+        "mean_combat_seconds": 5.978318915002698,
+        "mean_elapsed_seconds": 20.539209633912833,
+        "mean_ending_hp": null,
+        "mean_net_hp_lost": null,
+        "mean_reset_seconds": 14.560887232662935,
+        "mean_starting_hp": null,
+        "mean_turns": null,
+        "policy_attempt_win_rate": 0.0,
+        "policy_attempts": 12,
+        "policy_failures": 12,
+        "truncated": 0,
+        "unsupported": 0,
+        "valid_evidence_episodes": 12,
+        "valid_gameplay_episodes": 0,
+        "validated_transitions": 40,
+        "win_rate": null,
+        "wins": 0
+      },
+      "model_sha256": "bda00e3e09e7e35c6c6950cfb2673117052c3e8718dfc47ed35f7db9c5405c94",
+      "scenarios": {
+        "spireai1": {
+          "attempts": 4,
+          "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+          "infrastructure_failures": 0,
+          "interrupted": 0,
+          "invalid_actions": 0,
+          "invalid_evidence": 0,
+          "losses": 0,
+          "mean_combat_seconds": 6.233725374997448,
+          "mean_elapsed_seconds": 21.60111821099781,
+          "mean_ending_hp": null,
+          "mean_net_hp_lost": null,
+          "mean_reset_seconds": 15.36738910799977,
+          "mean_starting_hp": null,
+          "mean_turns": null,
+          "policy_attempt_win_rate": 0.0,
+          "policy_attempts": 4,
+          "policy_failures": 4,
+          "truncated": 0,
+          "unsupported": 0,
+          "valid_evidence_episodes": 4,
+          "valid_gameplay_episodes": 0,
+          "validated_transitions": 12,
+          "win_rate": null,
+          "wins": 0
+        },
+        "spireinv07": {
+          "attempts": 4,
+          "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+          "infrastructure_failures": 0,
+          "interrupted": 0,
+          "invalid_actions": 0,
+          "invalid_evidence": 0,
+          "losses": 0,
+          "mean_combat_seconds": 0.8537076122520375,
+          "mean_elapsed_seconds": 15.010201079247054,
+          "mean_ending_hp": null,
+          "mean_net_hp_lost": null,
+          "mean_reset_seconds": 14.15649019999546,
+          "mean_starting_hp": null,
+          "mean_turns": null,
+          "policy_attempt_win_rate": 0.0,
+          "policy_attempts": 4,
+          "policy_failures": 4,
+          "truncated": 0,
+          "unsupported": 0,
+          "valid_evidence_episodes": 4,
+          "valid_gameplay_episodes": 0,
+          "validated_transitions": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "spireinv09": {
+          "attempts": 4,
+          "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing",
+          "infrastructure_failures": 0,
+          "interrupted": 0,
+          "invalid_actions": 0,
+          "invalid_evidence": 0,
+          "losses": 0,
+          "mean_combat_seconds": 10.847523757758609,
+          "mean_elapsed_seconds": 25.006309611493634,
+          "mean_ending_hp": null,
+          "mean_net_hp_lost": null,
+          "mean_reset_seconds": 14.158782389993576,
+          "mean_starting_hp": null,
+          "mean_turns": null,
+          "policy_attempt_win_rate": 0.0,
+          "policy_attempts": 4,
+          "policy_failures": 4,
+          "truncated": 0,
+          "unsupported": 0,
+          "valid_evidence_episodes": 4,
+          "valid_gameplay_episodes": 0,
+          "validated_transitions": 28,
+          "win_rate": null,
+          "wins": 0
+        }
+      }
+    }
+  },
+  "schema_version": 1,
+  "scope": "Development transfer diagnostic: one Louse-only SFT adapter, three catalog scenarios, four correlated greedy repeats each; Cultist and Jaw Worm absent from the adapter's training data; not a held-out test",
+  "source_evidence_sha256": {
+    "runs/language-three-encounter-comparison-20261011/batch.json": "c3d73496975854f9218e16ff4a6e185086ca1caa59793955247c392aa23bfb93",
+    "runs/language-three-encounter-comparison-20261011/final-lora/catalog-evaluation.json": "c206f893555b76e2845efb1834fa1d5531aa79116ed152d4c0e57ab58f1551f9",
+    "runs/language-three-encounter-comparison-20261011/untouched-base/catalog-evaluation.json": "8d22cf25ac9a5443c194bc40be616f977f545826fa784d5e62d3566edf0de824",
+    "runs/starter-three-encounter-comparison-20261011/heuristic/catalog-evaluation.json": "0e1c0786cdb49ab0dffe44ffbbe671ce7d1600c2533ef45b96b409e9c7669dd5",
+    "runs/summarize_language_catalog.py": "14988fbd9f6688a4aea1e0d6b1f1a118a0119110f8cba4dae193a472aa309b4c"
+  },
+  "source_revision": "7314779e99c219af8d0955488bae1e0bef73d5b8"
+}

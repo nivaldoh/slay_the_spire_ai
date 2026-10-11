@@ -21,6 +21,18 @@ The declared four-policy catalog comparison completed at source `01f2984` with a
 The Louse-trained PPO policy shows no transfer improvement over its own initialization
 and stays below random on HP. See [comparison](results/starter-three-encounter-development-v1.json).
 
+The adopted [language catalog comparison](language-catalog-experiment.md) completed at
+`7314779` (24/24 slots, valid audits, no infrastructure failures). Unchanged Qwen3-0.6B:
+0/12, all invalid completions. Louse-only SFT LoRA: 12/12 wins, macro HP 76.33 (Louses
+77, Cultist 74, Jaw Worm 78) against the heuristic's 76.00 (77/71/80). On the two
+training-unseen families the adapter matches only 36 of 50 heuristic decisions along its
+own trajectories, so outcomes transfer more than the decision rule. See
+[result](results/language-catalog-development-v1.json) and research.md.
+
+Next declared language experiment: [heuristic-relabeled state coverage](language-relabel-experiment.md),
+training on 1,868 relabeled Louse states (811 unique) and testing offline agreement on
+513 unique states from six other public starts, then catalog gameplay.
+
 The frozen SFT v2 evaluation completed at source
 `e829c1c`; tool session `71199` exited successfully and PIDs `337234`/`337233` are gone.
 It won all eight canonical fights at HP77, with 168 audited transitions and no policy,
@@ -270,11 +282,11 @@ that natural-language deadline.
 
 ## Next useful actions
 
-1. Run the adopted [language catalog contract](language-catalog-experiment.md):
-   unchanged Qwen3-0.6B, then the final Louse-only SFT LoRA, on the three-scenario
-   catalog (`runs/run_language_catalog_comparison.py`, 24 slots, 3,600-second cap).
-2. Broaden SFT data beyond 21 memorized Louse prompts and test transfer to encounter
-   families absent from training, before any outcome-based LLM post-training.
+1. Run the declared [relabel experiment](language-relabel-experiment.md): export with
+   `scripts/export_relabel_datasets.py`, train 234 updates, audit, then offline
+   agreement (`scripts/offline_agreement.py`) and one catalog evaluation.
+2. Then declare outcome-based LLM post-training on combat results, starting from the
+   adopted supervised adapter.
 3. PPO learning-rate work is paused by owner direction; re-declare before resuming.
 4. Declare held-out evaluation and the smallest supported noncombat expansion before
    collecting their results.

@@ -380,3 +380,23 @@ It evaluates the unchanged Qwen3-0.6B and then the existing final Louse-only SFT
 on `starter-three-encounter-development-v1`, 12 slots each, with no new training,
 checkpoint choice, prompt change or retry. Cultist and Jaw Worm are absent from the
 adapter's training data; all three scenarios remain development evidence.
+
+### Result
+
+Completed at source `7314779` in 1,307 seconds: all 24 slots, valid independent
+audits, no infrastructure, unsupported, truncated or invalid-evidence attempts.
+
+| Policy | Wins / policy attempts | Louses | Cultist | Jaw Worm | Macro HP |
+| --- | ---: | --- | --- | --- | ---: |
+| Unchanged Qwen3-0.6B | 0 / 12 (12 invalid completions) | 0/4 | 0/4 | 0/4 | undefined |
+| Louse-only SFT LoRA | 12 / 12 | 4/4, HP77 | 4/4, HP74 | 4/4, HP78 | 76.33 |
+| Heuristic reference (four-policy batch) | 12 / 12 | 4/4, HP77 | 4/4, HP71 | 4/4, HP80 | 76.00 |
+
+The trained-minus-untuned difference is +12 wins over 12 policy attempts, measured on
+four correlated greedy repeats of each of three scenarios. Paired with the heuristic's
+traces, the adapter reproduces all 21 Louse decisions but agrees with the heuristic's
+choice on only 18 of 23 Cultist and 18 of 27 Jaw Worm decisions along its own
+trajectories. On Cultist it opens with Strike rather than Bash and ends three HP higher;
+on Jaw Worm it attacks on turn 2 where the heuristic blocks, and ends two HP lower.
+Outcomes transfer to these easy unseen families; the teacher's decision rule only
+partly does. See [contract](language-catalog-experiment.md) and [compact result](results/language-catalog-development-v1.json).
