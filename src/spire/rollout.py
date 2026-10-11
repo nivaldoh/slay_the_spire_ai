@@ -25,11 +25,10 @@ from spire.protocol import (
     decision_from_message,
     validate_action,
 )
-from spire.runtime import GAME_DIR, OwnedGame, RuntimeLock, prepare_runtime, sha256
+from spire.runtime import GAME_DIR, OwnedGame, RuntimeLock, prepare_runtime, sha256, wsl_bridge_host
 
-# Linux ephemeral ports overlap Windows excluded ranges, which prevent WSL's
-# localhost forwarding despite a successful Linux bind. The exclusive runtime
-# owns this fixed port, below both systems' default ephemeral ranges.
+# Retain the exclusive runtime's fixed port below both ephemeral ranges. The
+# exact WSL eth0 address bypasses Windows localhost forwarding for game runs.
 BRIDGE_PORT = 19876
 
 
@@ -134,7 +133,7 @@ def run_episode(
 
         try:
             with RuntimeLock(), BridgeServer(
-                port=BRIDGE_PORT, timeout=config["bridge_timeout"]
+                host=wsl_bridge_host(), port=BRIDGE_PORT, timeout=config["bridge_timeout"]
             ) as bridge:
                 deployment = prepare_runtime(*bridge.address, timeout=config["bridge_timeout"])
                 write_json(directory / "deployment.json", deployment)

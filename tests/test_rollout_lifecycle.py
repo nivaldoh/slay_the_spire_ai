@@ -93,9 +93,8 @@ def harness(monkeypatch):
     state = SimpleNamespace(sessions=[], bridges=[], games=[], received=0, clock=0.0)
 
     class FakeBridge:
-        address = ("127.0.0.1", 12345)
-
         def __init__(self, **kwargs):
+            self.address = (kwargs["host"], kwargs["port"])
             self.messages = iter(state.sessions.pop(0))
             self.commands = []
             self.closed = False
@@ -135,6 +134,7 @@ def harness(monkeypatch):
     monkeypatch.setattr(rollout, "BridgeServer", FakeBridge)
     monkeypatch.setattr(rollout, "OwnedGame", FakeGame)
     monkeypatch.setattr(rollout, "RuntimeLock", nullcontext)
+    monkeypatch.setattr(rollout, "wsl_bridge_host", Mock(return_value="172.18.34.183"))
     monkeypatch.setattr(rollout, "prepare_runtime", Mock(return_value={"mods": {}}))
     monkeypatch.setattr(
         rollout,
@@ -230,6 +230,7 @@ def test_occupied_bridge_port_records_failure_before_deployment_or_game_launch(
         occupied.bind(("127.0.0.1", 0))
         occupied.listen(1)
         monkeypatch.setattr(rollout, "BRIDGE_PORT", occupied.getsockname()[1])
+        monkeypatch.setattr(rollout, "wsl_bridge_host", lambda: "127.0.0.1")
         monkeypatch.setattr(rollout, "BridgeServer", BridgeServer)
         result = rollout.run_episode(tmp_path / "episode", config, 0)
     assert result["status"] == "infrastructure_failure"
@@ -238,6 +239,41 @@ def test_occupied_bridge_port_records_failure_before_deployment_or_game_launch(
     assert not harness.games
     rollout.prepare_runtime.assert_not_called()
     assert not any(event["kind"] == "launch" for event in read_trace(tmp_path / "episode"))
+
+
+def test_endpoint_discovery_failure_preserves_zero_action_attempt_without_launch(
+    tmp_path, config, harness, monkeypatch
+):
+    monkeypatch.setattr(
+        rollout, "wsl_bridge_host", Mock(side_effect=RuntimeError("eth0 is ambiguous"))
+    )
+    directory = tmp_path / "episode"
+    result = rollout.run_episode(directory, config, 0)
+    assert result["status"] == "infrastructure_failure" and result["actions"] == 0
+    assert result["error"] == "eth0 is ambiguous"
+    assert not harness.bridges and not harness.games
+    rollout.prepare_runtime.assert_not_called()
+    assert [event["kind"] for event in read_trace(directory)] == ["result"]
+
+
+def test_each_episode_rediscovers_endpoint_and_deploys_exact_bound_address(
+    tmp_path, config, harness
+):
+    rollout.wsl_bridge_host.side_effect = ["172.18.34.183", "172.18.35.192"]
+    harness.sessions = [[BridgeDisconnected("probe")], [BridgeDisconnected("probe")]]
+    for index in range(2):
+        rollout.run_episode(tmp_path / f"episode-{index}", config, index)
+    assert rollout.wsl_bridge_host.call_count == 2
+    assert [bridge.address for bridge in harness.bridges] == [
+        ("172.18.34.183", 19876), ("172.18.35.192", 19876),
+    ]
+    assert [call.args for call in rollout.prepare_runtime.call_args_list] == [
+        bridge.address for bridge in harness.bridges
+    ]
+    assert all(
+        call.kwargs == {"timeout": config["bridge_timeout"]}
+        for call in rollout.prepare_runtime.call_args_list
+    )
 
 
 def test_watchdog_disconnect_at_deadline_is_time_truncation(tmp_path, config, harness):

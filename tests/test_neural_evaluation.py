@@ -291,6 +291,7 @@ def test_standalone_envelope_does_not_invent_training_source(
 def test_injected_episode_records_evaluation_seed_in_result_and_trace(tmp_path, monkeypatch):
     monkeypatch.setattr(rollout, "collect_profile", lambda *args: {})
     monkeypatch.setattr(rollout, "RuntimeLock", nullcontext)
+    monkeypatch.setattr(rollout, "wsl_bridge_host", lambda: "172.18.34.183")
     monkeypatch.setattr(rollout, "BridgeServer", Mock(side_effect=BridgeDisconnected("test stop")))
     config = {
         "policy": "neural",

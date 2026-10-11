@@ -1,0 +1,125 @@
+{
+  "diagnosis": "Relay completed Windows TCP connect and emitted ready, while Linux accept timed out. Localhost forwarding lifecycle is a hypothesis; disposable probes did not reproduce failure.",
+  "direct_host": "172.18.34.183",
+  "failed_run": "runs/qwen3-0.6b-sft-eval-20261011",
+  "failure_evidence_sha256": {
+    "runs/qwen3-0.6b-sft-eval-20261011/episode-0002/communication-mod.stderr.log": "599e179a974f4d24a34fece9bca1fee46783c8a6fd2ff5d9728a57a689979bab",
+    "runs/qwen3-0.6b-sft-eval-20261011/episode-0002/deployment.json": "f5cf9b5e70114b5459cfd8f4edaac49a6ab3e374f58ed39524b011d6ec5350b0",
+    "runs/qwen3-0.6b-sft-eval-20261011/episode-0002/game.log": "28341525023ae2963b8634110f4fc354a47bb500d845743be450fc8208eadb75",
+    "runs/qwen3-0.6b-sft-eval-20261011/episode-0002/result.json": "cc2f3606f2adfe7f140363ab71982869eb7a64e50c3cf7ff38c4a00c9c4e96ff",
+    "runs/qwen3-0.6b-sft-eval-20261011/episode-0002/trace.jsonl": "deab5c1b6b7c6140999ce21f7f20af81a47f6d0d1c9d05c4d5ab50cb2fe77c5a",
+    "runs/qwen3-0.6b-sft-eval-20261011/evaluation.json": "2d18f5d2ad47e0c7e96b2d3d932dd4844f3be21d0dc646032432bbecb9ef6f12",
+    "runs/qwen3-0.6b-sft-eval-20261011/manifest.json": "31aa2734537087930f842686f019dddd8f2f213ee8aa69a1ee0c4b73c7736db3"
+  },
+  "failure_timeline_utc": {
+    "initial_menu_state_written": "2026-10-11T07:42:14.910Z",
+    "relay_child_died": "2026-10-11T07:42:40.215Z",
+    "relay_ready": "2026-10-11T07:42:10.182Z"
+  },
+  "implementation_relay_probes": [
+    {
+      "bidirectional_utf8_match": true,
+      "elapsed_seconds": 3.0286371509937453,
+      "expected_stdin_eof_exit": 1,
+      "host": "172.18.34.183",
+      "port": 19876,
+      "trial": 0
+    },
+    {
+      "bidirectional_utf8_match": true,
+      "elapsed_seconds": 2.907795728002384,
+      "expected_stdin_eof_exit": 1,
+      "host": "172.18.34.183",
+      "port": 19876,
+      "trial": 1
+    },
+    {
+      "bidirectional_utf8_match": true,
+      "elapsed_seconds": 2.924589764996199,
+      "expected_stdin_eof_exit": 1,
+      "host": "172.18.34.183",
+      "port": 19876,
+      "trial": 2
+    },
+    {
+      "bidirectional_utf8_match": true,
+      "elapsed_seconds": 2.9248777870016056,
+      "expected_stdin_eof_exit": 1,
+      "host": "172.18.34.183",
+      "port": 19876,
+      "trial": 3
+    },
+    {
+      "bidirectional_utf8_match": true,
+      "elapsed_seconds": 2.9731487140015815,
+      "expected_stdin_eof_exit": 1,
+      "host": "172.18.34.183",
+      "port": 19876,
+      "trial": 4
+    }
+  ],
+  "initial_probe_method": "Ten sequential Windows create_connection -> nonce send -> Linux accept/close listener -> matching nonce reply -> clean close/rebind cycles per mode. Disposable mode chooses one Linux port then reuses it. Timings include process startup, not isolated network latency.",
+  "initial_socket_lifecycle_probes": [
+    {
+      "accepted": 10,
+      "host": "127.0.0.1",
+      "max_seconds": 0.5831082169970614,
+      "mode": "loopback-disposable",
+      "passed": 10,
+      "port": 34011,
+      "trials": 10
+    },
+    {
+      "accepted": 10,
+      "host": "172.18.34.183",
+      "max_seconds": 0.10028717300156131,
+      "mode": "nat-disposable",
+      "passed": 10,
+      "port": 33381,
+      "trials": 10
+    },
+    {
+      "accepted": 10,
+      "host": "127.0.0.1",
+      "max_seconds": 0.5542948720030836,
+      "mode": "loopback-fixed",
+      "passed": 10,
+      "port": 19876,
+      "trials": 10
+    },
+    {
+      "accepted": 10,
+      "host": "172.18.34.183",
+      "max_seconds": 0.09853347299940651,
+      "mode": "nat-fixed",
+      "passed": 10,
+      "port": 19876,
+      "trials": 10
+    }
+  ],
+  "mitigation": "Bind the single current private global IPv4 on active WSL eth0 and pass the identical endpoint to Windows relay. Keep fixed19876, one connection, no reconnect/retry/fallback.",
+  "original_engine_validation": "Pending root-owned startup/control run after merge; socket probes are not game reliability evidence.",
+  "preserved_outcome": {
+    "attempted": 3,
+    "failed_attempt_actions": 0,
+    "infrastructure_failures": 1,
+    "losses": 0,
+    "manifest_status": "stopped",
+    "mean_terminal_hp_completed_games": 77,
+    "scheduled_attempts": 8,
+    "unattempted": 5,
+    "wins": 2
+  },
+  "raw_probe_summary": {
+    "path": "/tmp/spire-direct-wsl-network-proof-20261011.json",
+    "sha256": "8791507a9988e62e5c737622e3ee664181f9a6f2821094caf0941688680d304a"
+  },
+  "schema_version": 1,
+  "scope": "Disposable Windows Python socket/relay probes only; no game or model loaded; no failure reproduced",
+  "source_revision": "4a7e4f48ac15145c544c3414d00d0c3542d13189",
+  "tested_source_sha256": {
+    "scripts/windows_relay.py": "98879d9393bf9b4f72ca0cde598b9d58f81167b2f1f2cfd3a6630873573768a4",
+    "src/spire/bridge.py": "6b5b70156812e392b4daff8b7b6977c2bf12dc46bae9e850a973ad6e09708c93",
+    "src/spire/runtime.py": "a9b59a4b2be58aa6d5f33f28337db083244f2a67b93b6987598cb832841b5b7b"
+  }
+}

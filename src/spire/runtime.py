@@ -1,6 +1,7 @@
 """Local Windows game setup and bounded process ownership from WSL."""
 
 import hashlib
+import ipaddress
 import json
 import math
 import os
@@ -69,6 +70,39 @@ def sha256(path: Path) -> str:
 
 def windows_path(path: Path) -> str:
     return subprocess.check_output(["wslpath", "-w", str(path.resolve())], text=True).strip()
+
+
+def wsl_bridge_host() -> str:
+    """Discover the current WSL NAT endpoint without using localhost forwarding.
+
+    The supported runtime has one private global IPv4 address on active eth0.
+    Reject missing or ambiguous endpoints before deployment; never fall back to
+    loopback or bind every interface. Query each episode because WSL IPs change.
+    """
+    try:
+        interfaces = json.loads(subprocess.check_output(
+            ["ip", "-4", "-j", "address", "show", "dev", "eth0"],
+            text=True, stderr=subprocess.PIPE, timeout=5,
+        ))
+        if (
+            not isinstance(interfaces, list) or len(interfaces) != 1
+            or interfaces[0]["ifname"] != "eth0" or "UP" not in interfaces[0]["flags"]
+        ):
+            raise ValueError("eth0 is absent or inactive")
+        addresses = [
+            item["local"] for item in interfaces[0]["addr_info"]
+            if item["family"] == "inet" and item["scope"] == "global"
+        ]
+        if len(addresses) != 1 or not isinstance(addresses[0], str):
+            raise ValueError("eth0 requires one global IPv4 address")
+        address = ipaddress.IPv4Address(addresses[0])
+        if not any(address in ipaddress.IPv4Network(network) for network in (
+            "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16",
+        )):
+            raise ValueError("eth0 requires a private NAT address")
+        return str(address)
+    except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError) as exc:
+        raise RuntimeError("Cannot discover one usable private IPv4 address on WSL eth0") from exc
 
 
 def communication_config() -> Path:

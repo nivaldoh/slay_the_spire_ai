@@ -18,6 +18,80 @@ WINDOWS_GAME = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(WINDOWS_GAME)
 
 
+def interface(address="172.18.34.183"):
+    return {
+        "ifname": "eth0", "flags": ["UP"],
+        "addr_info": [{"family": "inet", "scope": "global", "local": address}],
+    }
+
+
+def test_wsl_endpoint_discovers_current_private_eth0_address_each_time(monkeypatch):
+    query = Mock(side_effect=[
+        json.dumps([interface("172.18.34.183")]),
+        json.dumps([interface("10.1.2.3")]),
+    ])
+    monkeypatch.setattr(runtime.subprocess, "check_output", query)
+    assert runtime.wsl_bridge_host() == "172.18.34.183"
+    assert runtime.wsl_bridge_host() == "10.1.2.3"
+    assert query.call_count == 2
+    query.assert_called_with(
+        ["ip", "-4", "-j", "address", "show", "dev", "eth0"],
+        text=True, stderr=subprocess.PIPE, timeout=5,
+    )
+
+
+@pytest.mark.parametrize("data", [
+    [], {}, [None], [interface(), interface()],
+    [{**interface(), "ifname": "lo"}],
+    [{**interface(), "flags": []}],
+    [{**interface(), "addr_info": []}],
+    [{**interface(), "addr_info": interface()["addr_info"] * 2}],
+    [{**interface(), "addr_info": [{"family": "inet6", "scope": "global", "local": "::1"}]}],
+    [{**interface(), "addr_info": [{"family": "inet", "scope": "host", "local": "127.0.0.1"}]}],
+    [interface(None)], [interface(1)], [interface("invalid")], [interface("0.0.0.0")],
+    [interface("127.0.0.1")], [interface("169.254.1.2")], [interface("224.0.0.1")],
+    [interface("8.8.8.8")], [interface("::1")],
+])
+def test_wsl_endpoint_rejects_missing_ambiguous_or_unsupported_address(monkeypatch, data):
+    monkeypatch.setattr(
+        runtime.subprocess, "check_output", lambda *args, **kwargs: json.dumps(data)
+    )
+    with pytest.raises(RuntimeError, match="usable private IPv4"):
+        runtime.wsl_bridge_host()
+
+
+@pytest.mark.parametrize("problem", [
+    FileNotFoundError("ip"), subprocess.TimeoutExpired("ip", 5),
+    subprocess.CalledProcessError(1, "ip"),
+])
+def test_wsl_endpoint_query_failure_has_no_fallback(monkeypatch, problem):
+    query = Mock(side_effect=problem)
+    monkeypatch.setattr(runtime.subprocess, "check_output", query)
+    with pytest.raises(RuntimeError, match="usable private IPv4"):
+        runtime.wsl_bridge_host()
+    query.assert_called_once()
+
+
+def test_wsl_endpoint_rejects_malformed_json(monkeypatch):
+    monkeypatch.setattr(runtime.subprocess, "check_output", lambda *args, **kwargs: "not json")
+    with pytest.raises(RuntimeError, match="usable private IPv4"):
+        runtime.wsl_bridge_host()
+
+
+def test_deployment_config_and_record_use_exact_listener_endpoint(tmp_path, monkeypatch):
+    game = tmp_path / "game"
+    game.mkdir()
+    monkeypatch.setattr(runtime, "GAME_DIR", game)
+    monkeypatch.setattr(runtime, "RUNTIME_DIR", tmp_path / "runtime")
+    monkeypatch.setattr(runtime, "PINS", {})
+    config = tmp_path / "communication/config.properties"
+    monkeypatch.setattr(runtime, "communication_config", lambda: config)
+    deployment = runtime.prepare_runtime("172.18.34.183", 19876, timeout=45)
+    assert deployment["relay"] == {"host": "172.18.34.183", "port": 19876, "timeout": 45}
+    assert "--host 172.18.34.183 --port 19876 --timeout 45\n" in config.read_text()
+    assert "127.0.0.1" not in config.read_text() and "0.0.0.0" not in config.read_text()
+
+
 def test_runtime_lock_uses_kernel_ownership_and_releases_on_exception(tmp_path, monkeypatch):
     monkeypatch.setattr(runtime, "RUNTIME_DIR", tmp_path)
     with pytest.raises(LookupError):
