@@ -16,8 +16,8 @@ the recorded public Decision. The recorded behavior action stays in origin metad
 and never becomes model input. This is DAgger-style aggregation of exploratory states
 under a fixed teacher, not imitation of the behavior policies.
 
-Selection is a fixed rule over `runs/`, with no outcome, return or policy-quality
-filtering. Include every complete audited run with a single public start. Exclude
+Selection is a fixed rule over `runs/` (`scripts/export_relabel_datasets.py`), with
+no outcome, return or policy-quality filtering. Include every complete audited run with a single public start. Exclude
 language-policy behavior, incomplete runs and pre-settle `SPIREAI1` starts:
 
 - **Train:** every run starting at the pinned settled `SPIREAI1` two-Louse start
@@ -56,6 +56,7 @@ checkpoint is selected. Export, resume and audit rules are unchanged
    labels on every unique test prompt and every unique training prompt. Report it by
    public start, as row-weighted and prompt-weighted values, with policy failures and
    a label-versus-choice table. No game runs, and weights are verified frozen.
+   `--training-dataset` rejects any prompt, public-start or seed-family overlap.
 2. **Catalog gameplay:** run the new adapter once on
    `starter-three-encounter-development-v1` (12 slots, existing decoding/parser,
    1,800-second process cap, no retry). Compare it with the first adapter and the

@@ -291,8 +291,11 @@ def _verify_observer(manifest: dict, run: Path) -> dict[str, bytes]:
     """Relabel sources need committed observation code, not a particular behavior policy."""
     status = manifest.get("source_status")
     _require(isinstance(status, str), "Relabel source requires recorded source status")
+    paths = [
+        path.strip().strip('"') for line in status.splitlines() for path in line[3:].split(" -> ")
+    ]
     _require(
-        not any(line[3:].startswith(IMPLEMENTATION_PATHS) for line in status.splitlines()),
+        not any(path.startswith(IMPLEMENTATION_PATHS) for path in paths),
         "Relabel source requires committed implementation files",
     )
     _require(

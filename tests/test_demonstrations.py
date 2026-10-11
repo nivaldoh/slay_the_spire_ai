@@ -511,7 +511,15 @@ def test_relabel_uses_public_heuristic_label_and_keeps_behavior_in_metadata(tmp_
 
 
 @pytest.mark.parametrize(
-    "status", [" M src/spire/rollout.py\n", "?? scripts/new.py\n", " M uv.lock\n", None]
+    "status",
+    [
+        " M src/spire/rollout.py\n",
+        "?? scripts/new.py\n",
+        " M uv.lock\n",
+        "R  docs/a.md -> src/spire/protocol.py\n",
+        '?? "src/spire/a b.py"\n',
+        None,
+    ],
 )
 def test_relabel_requires_committed_implementation(tmp_path, run, status):
     manifest = read(run / "manifest.json")
