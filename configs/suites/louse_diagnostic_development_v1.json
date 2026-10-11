@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "louse-diagnostic-development-v1",
+  "purpose": "development",
+  "description": "Fixed original-engine two-Louse first combat, starter Ironclad, Ascension 0, 80 HP, Burning Blood, 100-gold Neow reward, initial intents settled. Repeated stochastic-policy attempts on one scenario; no held-out seed or encounter claim.",
+  "game_seed": "SPIREAI1",
+  "policy_seed": 1000,
+  "episodes": 8,
+  "expected_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4"
+}

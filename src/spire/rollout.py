@@ -15,7 +15,7 @@ from pathlib import Path
 
 from spire.bridge import BridgeError, BridgeServer
 from spire.doctor import collect_profile
-from spire.policies import RandomPolicy, StarterHeuristicPolicy
+from spire.policies import EndTurnPolicy, RandomPolicy, StarterHeuristicPolicy
 from spire.protocol import (
     BridgeCommandError,
     ProtocolError,
@@ -93,11 +93,11 @@ def run_episode(directory: Path, config: dict, episode: int) -> dict:
     }
     write_json(directory / "profile.json", collect_profile(GAME_DIR))
     write_json(directory / "result.json", result)
-    policy = (
-        RandomPolicy(result["policy_seed"])
-        if config["policy"] == "random"
-        else StarterHeuristicPolicy()
-    )
+    policy = {
+        "random": lambda: RandomPolicy(result["policy_seed"]),
+        "heuristic": StarterHeuristicPolicy,
+        "end_turn": EndTurnPolicy,
+    }[config["policy"]]()
     combat_floor = None
     combat_started = None
     pending = None
@@ -259,7 +259,7 @@ def rollout(output: Path, config: dict) -> dict:
     """Every new invocation gets a fresh directory; completed evidence is never overwritten."""
     if not config["game_seed"].isalnum():
         raise ValueError("game seed must be alphanumeric")
-    if config["policy"] not in {"random", "heuristic"}:
+    if config["policy"] not in {"random", "heuristic", "end_turn"}:
         raise ValueError("unknown policy")
     for key in ("episodes", "max_actions", "episode_timeout", "bridge_timeout"):
         if not math.isfinite(config[key]) or config[key] <= 0:

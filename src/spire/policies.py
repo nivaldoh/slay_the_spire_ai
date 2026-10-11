@@ -22,6 +22,16 @@ class RandomPolicy:
         return self._random.choice(decision.candidates)
 
 
+class EndTurnPolicy:
+    """Diagnostic failure policy used to verify engine defeat and restart handling."""
+
+    def choose(self, decision: Decision) -> Action:
+        for candidate in decision.candidates:
+            if candidate.kind == "end":
+                return candidate
+        raise IllegalActionError("End-turn diagnostic requires an available end action")
+
+
 class StarterHeuristicPolicy:
     """Block visible incoming damage, then Bash/Strike the weakest enemy.
 

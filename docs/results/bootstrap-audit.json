@@ -1,0 +1,338 @@
+{
+  "schema_version": 1,
+  "valid": true,
+  "same_protocol": false,
+  "scope": "Recorded original-engine combat attempts; no generalization claim",
+  "runs": [
+    {
+      "valid": true,
+      "issues": [],
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/first-random-v2-20261011",
+      "verification_scope": "Recorded protocol, terminal, and manifest consistency",
+      "metrics": {
+        "attempts": 2,
+        "valid_evidence_episodes": 2,
+        "valid_gameplay_episodes": 2,
+        "wins": 2,
+        "losses": 0,
+        "infrastructure_failures": 0,
+        "unsupported": 0,
+        "invalid_actions": 0,
+        "truncated": 0,
+        "interrupted": 0,
+        "invalid_evidence": 0,
+        "win_rate": 1.0,
+        "validated_transitions": 20,
+        "mean_starting_hp": 80,
+        "mean_ending_hp": 73,
+        "mean_net_hp_lost": 7,
+        "mean_turns": 4,
+        "mean_reset_seconds": 13.221755991500686,
+        "mean_combat_seconds": 14.331704952499422,
+        "mean_elapsed_seconds": 27.553466634999495,
+        "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing"
+      },
+      "reset_comparison": {
+        "eligible_episodes": 2,
+        "initial_state_hashes": [
+          "976a1cde16a54125d6b8466f0d562a8150e4f5811f8cf2e6146ae9cf157ed48b"
+        ],
+        "all_initial_states_equal": true,
+        "comparisons": [
+          {
+            "episodes": [
+              0,
+              1
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 0,
+            "shared_action_states_equal": true,
+            "differences": []
+          }
+        ],
+        "scope": "Public state equality; does not establish hidden-state equivalence"
+      },
+      "evidence": {
+        "manifest.json": "/home/niv/repos/slay_the_spire_ai/runs/first-random-v2-20261011/manifest.json",
+        "environment.json": "/home/niv/repos/slay_the_spire_ai/runs/first-random-v2-20261011/environment.json",
+        "source.patch": "/home/niv/repos/slay_the_spire_ai/runs/first-random-v2-20261011/source.patch"
+      },
+      "provenance": {
+        "source_revision": "deba4b72a72a7dc9f8a667e52260603a72153e87",
+        "source_status": "",
+        "config": {
+          "bridge_timeout": 90,
+          "episode_timeout": 600,
+          "episodes": 2,
+          "game_seed": "SPIREAI1",
+          "max_actions": 500,
+          "policy": "random",
+          "policy_seed": 0
+        },
+        "engine": "original",
+        "scope": "first_combat",
+        "observation_version": "ironclad-starter-combat-v1",
+        "prefix_version": "neow-maxhp-or-gold-leftmost-v1",
+        "reset": "owned_jvm_restart_then_seeded_start",
+        "status": "completed"
+      },
+      "episodes": [
+        {
+          "episode": 0,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 70,
+          "turns": 5,
+          "combat_start_sha256": "976a1cde16a54125d6b8466f0d562a8150e4f5811f8cf2e6146ae9cf157ed48b",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/first-random-v2-20261011/episode-0000/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/first-random-v2-20261011/episode-0000/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/first-random-v2-20261011/episode-0000/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/first-random-v2-20261011/episode-0000/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/first-random-v2-20261011/episode-0000/game.log"
+          }
+        },
+        {
+          "episode": 1,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 76,
+          "turns": 3,
+          "combat_start_sha256": "976a1cde16a54125d6b8466f0d562a8150e4f5811f8cf2e6146ae9cf157ed48b",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/first-random-v2-20261011/episode-0001/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/first-random-v2-20261011/episode-0001/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/first-random-v2-20261011/episode-0001/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/first-random-v2-20261011/episode-0001/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/first-random-v2-20261011/episode-0001/game.log"
+          }
+        }
+      ]
+    },
+    {
+      "valid": true,
+      "issues": [],
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-replay-20261011",
+      "verification_scope": "Recorded protocol, terminal, and manifest consistency",
+      "metrics": {
+        "attempts": 2,
+        "valid_evidence_episodes": 2,
+        "valid_gameplay_episodes": 2,
+        "wins": 2,
+        "losses": 0,
+        "infrastructure_failures": 0,
+        "unsupported": 0,
+        "invalid_actions": 0,
+        "truncated": 0,
+        "interrupted": 0,
+        "invalid_evidence": 0,
+        "win_rate": 1.0,
+        "validated_transitions": 26,
+        "mean_starting_hp": 80,
+        "mean_ending_hp": 80,
+        "mean_net_hp_lost": 0,
+        "mean_turns": 4,
+        "mean_reset_seconds": 13.481688782499987,
+        "mean_combat_seconds": 15.459819847499602,
+        "mean_elapsed_seconds": 28.941511723001895,
+        "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing"
+      },
+      "reset_comparison": {
+        "eligible_episodes": 2,
+        "initial_state_hashes": [
+          "976a1cde16a54125d6b8466f0d562a8150e4f5811f8cf2e6146ae9cf157ed48b"
+        ],
+        "all_initial_states_equal": true,
+        "comparisons": [
+          {
+            "episodes": [
+              0,
+              1
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 13,
+            "shared_action_states_equal": true,
+            "differences": []
+          }
+        ],
+        "scope": "Public state equality; does not establish hidden-state equivalence"
+      },
+      "evidence": {
+        "manifest.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-replay-20261011/manifest.json",
+        "environment.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-replay-20261011/environment.json",
+        "source.patch": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-replay-20261011/source.patch"
+      },
+      "provenance": {
+        "source_revision": "6bc02ad1e14a7e2f7433e7612f7e31c6361a5097",
+        "source_status": "",
+        "config": {
+          "bridge_timeout": 90,
+          "episode_timeout": 600,
+          "episodes": 2,
+          "game_seed": "SPIREAI1",
+          "max_actions": 500,
+          "policy": "heuristic",
+          "policy_seed": 0
+        },
+        "engine": "original",
+        "scope": "first_combat",
+        "observation_version": "ironclad-starter-combat-v1",
+        "prefix_version": "neow-maxhp-or-gold-leftmost-v1",
+        "reset": "owned_jvm_restart_then_seeded_start",
+        "status": "completed"
+      },
+      "episodes": [
+        {
+          "episode": 0,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 80,
+          "turns": 4,
+          "combat_start_sha256": "976a1cde16a54125d6b8466f0d562a8150e4f5811f8cf2e6146ae9cf157ed48b",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-replay-20261011/episode-0000/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-replay-20261011/episode-0000/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-replay-20261011/episode-0000/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-replay-20261011/episode-0000/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-replay-20261011/episode-0000/game.log"
+          }
+        },
+        {
+          "episode": 1,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 80,
+          "turns": 4,
+          "combat_start_sha256": "976a1cde16a54125d6b8466f0d562a8150e4f5811f8cf2e6146ae9cf157ed48b",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-replay-20261011/episode-0001/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-replay-20261011/episode-0001/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-replay-20261011/episode-0001/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-replay-20261011/episode-0001/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-replay-20261011/episode-0001/game.log"
+          }
+        }
+      ]
+    },
+    {
+      "valid": true,
+      "issues": [],
+      "directory": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-settled-20261011",
+      "verification_scope": "Recorded protocol, terminal, and manifest consistency",
+      "metrics": {
+        "attempts": 2,
+        "valid_evidence_episodes": 2,
+        "valid_gameplay_episodes": 2,
+        "wins": 2,
+        "losses": 0,
+        "infrastructure_failures": 0,
+        "unsupported": 0,
+        "invalid_actions": 0,
+        "truncated": 0,
+        "interrupted": 0,
+        "invalid_evidence": 0,
+        "win_rate": 1.0,
+        "validated_transitions": 42,
+        "mean_starting_hp": 80,
+        "mean_ending_hp": 77,
+        "mean_net_hp_lost": 3,
+        "mean_turns": 6,
+        "mean_reset_seconds": 14.434996081003192,
+        "mean_combat_seconds": 23.707900411496666,
+        "mean_elapsed_seconds": 38.14289937000285,
+        "hp_scope": "Combat-start HP minus engine-terminal HP, including postcombat healing"
+      },
+      "reset_comparison": {
+        "eligible_episodes": 2,
+        "initial_state_hashes": [
+          "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4"
+        ],
+        "all_initial_states_equal": true,
+        "comparisons": [
+          {
+            "episodes": [
+              0,
+              1
+            ],
+            "initial_state_equal": true,
+            "prefix_equal": true,
+            "shared_combat_actions": 21,
+            "shared_action_states_equal": true,
+            "differences": []
+          }
+        ],
+        "scope": "Public state equality; does not establish hidden-state equivalence"
+      },
+      "evidence": {
+        "manifest.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-settled-20261011/manifest.json",
+        "environment.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-settled-20261011/environment.json",
+        "source.patch": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-settled-20261011/source.patch"
+      },
+      "provenance": {
+        "source_revision": "71d6b2df4fbf3152d722f9222dad3a8a27d5fe57",
+        "source_status": "",
+        "config": {
+          "bridge_timeout": 90,
+          "episode_timeout": 600,
+          "episodes": 2,
+          "game_seed": "SPIREAI1",
+          "max_actions": 500,
+          "policy": "heuristic",
+          "policy_seed": 0
+        },
+        "engine": "original",
+        "scope": "first_combat",
+        "observation_version": "ironclad-starter-combat-v1",
+        "prefix_version": "neow-maxhp-or-gold-leftmost-settled-v2",
+        "reset": "owned_jvm_restart_then_seeded_start",
+        "status": "completed"
+      },
+      "episodes": [
+        {
+          "episode": 0,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 77,
+          "turns": 6,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-settled-20261011/episode-0000/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-settled-20261011/episode-0000/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-settled-20261011/episode-0000/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-settled-20261011/episode-0000/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-settled-20261011/episode-0000/game.log"
+          }
+        },
+        {
+          "episode": 1,
+          "valid": true,
+          "status": "won",
+          "issues": [],
+          "starting_hp": 80,
+          "ending_hp": 77,
+          "turns": 6,
+          "combat_start_sha256": "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4",
+          "evidence": {
+            "trace.jsonl": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-settled-20261011/episode-0001/trace.jsonl",
+            "result.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-settled-20261011/episode-0001/result.json",
+            "combat_start.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-settled-20261011/episode-0001/combat_start.json",
+            "deployment.json": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-settled-20261011/episode-0001/deployment.json",
+            "game.log": "/home/niv/repos/slay_the_spire_ai/runs/heuristic-settled-20261011/episode-0001/game.log"
+          }
+        }
+      ]
+    }
+  ]
+}
