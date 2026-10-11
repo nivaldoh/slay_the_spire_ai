@@ -1,0 +1,1300 @@
+{
+  "optimizer_steps": 136,
+  "parameter_changes": {
+    "actor": {
+      "final_norm": 3.3777284622192383,
+      "initial_norm": 3.2915854454040527,
+      "l2_delta": 0.6557223200798035,
+      "relative_l2_delta": 0.1992117017507553
+    },
+    "cards": {
+      "final_norm": 2.491154670715332,
+      "initial_norm": 2.4580917358398438,
+      "l2_delta": 0.19951334595680237,
+      "relative_l2_delta": 0.08116594702005386
+    },
+    "context": {
+      "final_norm": 4.772000312805176,
+      "initial_norm": 4.606033802032471,
+      "l2_delta": 1.2126331329345703,
+      "relative_l2_delta": 0.2632705569267273
+    },
+    "critic": {
+      "final_norm": 3.527139902114868,
+      "initial_norm": 3.3654887676239014,
+      "l2_delta": 0.8583971858024597,
+      "relative_l2_delta": 0.2550587058067322
+    },
+    "monsters": {
+      "final_norm": 2.437566041946411,
+      "initial_norm": 2.3911795616149902,
+      "l2_delta": 0.2967734932899475,
+      "relative_l2_delta": 0.12411175668239594
+    }
+  },
+  "run": "/home/niv/repos/slay_the_spire_ai/runs/ppo-budget64-seed0-20261011",
+  "saved_optimizer_config": {
+    "clip_coef": 0.2,
+    "entropy_coef": 0.01,
+    "epochs": 4,
+    "gae_lambda": 0.95,
+    "gamma": 1.0,
+    "learning_rate": 0.0003,
+    "max_grad_norm": 0.5,
+    "minibatch_size": 32,
+    "target_kl": 0.02,
+    "value_coef": 0.5
+  },
+  "schema_version": 1,
+  "scope": "Read-only CPU differentiation at each frozen pre-update model on its full audited batch. No optimizer steps, new training, game, or GPU; not actual minibatch gradients or causal proof.",
+  "source_evidence_sha256": {
+    "/tmp/spire-ppo-grad-diagnostic.py": "c7fb51180e3a20b9eed0fa0b29a061aae1db214db781d0f6dc1b524218d525e2",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000015-4cf0ce864d014d6330746e1770fc313b747c04543fb0a3971890c73e4d5c6958.pt": "4cf0ce864d014d6330746e1770fc313b747c04543fb0a3971890c73e4d5c6958",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000016-1336f65a2ed05855580ebe0ee93b9d9d42562ea98b5a401e40362ddfa29c4dde.pt": "1336f65a2ed05855580ebe0ee93b9d9d42562ea98b5a401e40362ddfa29c4dde",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000030-36aaff57815bea3507c0c2b2918e52f79cc8129ba304abcae8b649d7924681ee.pt": "36aaff57815bea3507c0c2b2918e52f79cc8129ba304abcae8b649d7924681ee",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000031-b3073caa4b059fe79a6db63ba6a36b0a353f8acc01f243e9fc30f3e3a1daa957.pt": "b3073caa4b059fe79a6db63ba6a36b0a353f8acc01f243e9fc30f3e3a1daa957",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000045-0908fbc8584092cde5e8b25194d74452a8ead207267998688356fd0519319ffe.pt": "0908fbc8584092cde5e8b25194d74452a8ead207267998688356fd0519319ffe",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000046-14adfd2d10651c9e34d4737ab650a507a3a925e84500e478086056ebc85a2944.pt": "14adfd2d10651c9e34d4737ab650a507a3a925e84500e478086056ebc85a2944",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000056-062cc4d377421bf50a19c76ce87096d4b21dfc5067c7b2616f68baab5caca917.pt": "062cc4d377421bf50a19c76ce87096d4b21dfc5067c7b2616f68baab5caca917",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000057-23187ec26c9174d50252c9ccb3031a1504bc43e2a0085bb67744c3c6fbb4d080.pt": "23187ec26c9174d50252c9ccb3031a1504bc43e2a0085bb67744c3c6fbb4d080",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000071-998a11d1bd6607e6c0859a18587c2bf1ed21fbdcf752431f64ccc77d06a31d6d.pt": "998a11d1bd6607e6c0859a18587c2bf1ed21fbdcf752431f64ccc77d06a31d6d",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000072-ae5ab6146797a494ab0f96af6e19beb40b584ee1f181cd3686a794199f703a28.pt": "ae5ab6146797a494ab0f96af6e19beb40b584ee1f181cd3686a794199f703a28",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000084-892e43a84dad7815f62c387bf1a3c00b4ae5a3a107eca3d8f326a5f60837473b.pt": "892e43a84dad7815f62c387bf1a3c00b4ae5a3a107eca3d8f326a5f60837473b",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000085-a10ce98c8e3e62ee22a47e9d112bd80e1bb08657bd3c90dfc448965dae7b0f07.pt": "a10ce98c8e3e62ee22a47e9d112bd80e1bb08657bd3c90dfc448965dae7b0f07",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000097-eb0497a04bb2e560b59cfaeda5ce07753995083beab6a2d9f46970ec35441f57.pt": "eb0497a04bb2e560b59cfaeda5ce07753995083beab6a2d9f46970ec35441f57",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000098-727832b785f714575d9198e7116e21ead83aa084dcd2e6a16d85da3c3815f0c6.pt": "727832b785f714575d9198e7116e21ead83aa084dcd2e6a16d85da3c3815f0c6",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000112-758786c638be4b118428e16d6870fc80cbaf9356e19b116c34257b63c7af8ee8.pt": "758786c638be4b118428e16d6870fc80cbaf9356e19b116c34257b63c7af8ee8",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000113-406427c48fadcddd12cf42eb15e4e95d348fef57ddc6d6a4eaa5d91afeaff3d5.pt": "406427c48fadcddd12cf42eb15e4e95d348fef57ddc6d6a4eaa5d91afeaff3d5",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000125-07520f31dedc0ecde3aa5cb9df0382df1e864d74da3b598fd5f514f5293c9a6e.pt": "07520f31dedc0ecde3aa5cb9df0382df1e864d74da3b598fd5f514f5293c9a6e",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000126-db32880de2295f13ef82974f418dafe6c66d3f84f6b10ffecb4f09c8570ba841.pt": "db32880de2295f13ef82974f418dafe6c66d3f84f6b10ffecb4f09c8570ba841",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000140-b2a3a7d33cb1400bf240018f9b17567057f932544df4423b3dffa120f445b146.pt": "b2a3a7d33cb1400bf240018f9b17567057f932544df4423b3dffa120f445b146",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000141-cb9fc6f88d0a47294495395cd62a9f08b9800138acf3f6b9b932851e9d26d9bb.pt": "cb9fc6f88d0a47294495395cd62a9f08b9800138acf3f6b9b932851e9d26d9bb",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000153-b1552ce33cabf17e2002a9e2ed1984a2d036acc27d52d885393a6c1dcd59dd96.pt": "b1552ce33cabf17e2002a9e2ed1984a2d036acc27d52d885393a6c1dcd59dd96",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000154-ed2469969ee8a7d560981ea9c50b30d2d0a54b408bac4dbcb45b8e42bfbbfb06.pt": "ed2469969ee8a7d560981ea9c50b30d2d0a54b408bac4dbcb45b8e42bfbbfb06",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000164-2626feeed48514b4f21fa604cce3a2655e5bbfce4fc6470ef610bc9ab58c9e77.pt": "2626feeed48514b4f21fa604cce3a2655e5bbfce4fc6470ef610bc9ab58c9e77",
+    "runs/ppo-budget64-seed0-20261011/checkpoints/000165-07761d9f96d6b5461ba8fb0b8315b76e610901da8077d4ecc490671731af7a4e.pt": "07761d9f96d6b5461ba8fb0b8315b76e610901da8077d4ecc490671731af7a4e",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0000/episode-0000/trace.jsonl": "360fd7c4ee7af800c85e712d143b7a903ffa1fdc5b16e3a8c6ab0c5a917bcfb0",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0001/episode-0000/trace.jsonl": "1a6ccc435dec00100940dcc51110d6e561054551533d6469cb69dc58c44b4330",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0002/episode-0000/trace.jsonl": "5001c71600a081e802099c9a2399c42737967820f2743aacdf012dc857ad0883",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0003/episode-0000/trace.jsonl": "5597f04928c4e3c627a48fc1a70761b49f5aa4a75bdbd85969a95797f0a03cfa",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0004/episode-0000/trace.jsonl": "8bc1f068393a4953f7730b7964f26afeb8cc8cf7d793781a37c3d789fdbddd7d",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0005/episode-0000/trace.jsonl": "59eb8df8630fe0ebde67d32c5322dbd33b8ec9bf64241a89a594acdad1af03bb",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0006/episode-0000/trace.jsonl": "6dead079be6b64f2a70f0fc4772e97512395cce27672102406160bd45c16f7f1",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0007/episode-0000/trace.jsonl": "2491836c456c280929d77788b1c3e45f18ac6de0ab2badbfc6d82bdf7ddaaf4b",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0008/episode-0000/trace.jsonl": "365598a50f28d61078877fb7c05a52117c467df37c974eed99bdeaad4ce11a29",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0009/episode-0000/trace.jsonl": "b3ce78e372a27c3579701f2202eb11288dbf628604d860707851b6353a5eac50",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0010/episode-0000/trace.jsonl": "28f51eddded2a9f1024375bb9c775e051f820d91f7de6c18b8946db9b0211d98",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0011/episode-0000/trace.jsonl": "8289f624803698636b301d559a5dcefb0b4ba35ff66053c1ace677083a8cc2eb",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0012/episode-0000/trace.jsonl": "61674dca4fef07d591fcd8824952b21c670e9dab2c2054ccf2fc38f98a4c5236",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0013/episode-0000/trace.jsonl": "8f24a2ce3c7e76ca3aa4c82f27b4e0e4dc9d84103e26275dcb311b189a67f0ea",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0014/episode-0000/trace.jsonl": "64b25b1ae6e5e241c9f05cb9ac87cb5d15df19d29b091c5a063a216e1294ead9",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0015/episode-0000/trace.jsonl": "2c67ea923dbd255e01ec9c110f62809d8bec5f6e0af90b75ab259e0d1e4946bf",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0016/episode-0000/trace.jsonl": "01bc8a590d8830358e51569baf241c6a92c3ec878fab81c32adee527beedf463",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0017/episode-0000/trace.jsonl": "e41160bb1416fb04f38730278ce3f12cd4ea07c08fc1b66e01edef54dea163a2",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0018/episode-0000/trace.jsonl": "cabe6756330a5d3977f27ae0fb4e4f146542ccc87d785e4fa04d7f651cbf4198",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0019/episode-0000/trace.jsonl": "f23028477bcbeeecf84c906aa25e815b3a15d2466653f7e7190d5d06a258fa0a",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0020/episode-0000/trace.jsonl": "032db3e5d3e185aef010857738f62ef6ebb7c7a7a721e50e5db8e92376100db7",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0021/episode-0000/trace.jsonl": "0264017da47101a72e898d4354d1bee6b1799376786e66cb33567f7a7d326f62",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0022/episode-0000/trace.jsonl": "4ae0241c9cd22b4d0142a45105c6b4a7754b1044adb53b068a1bd05e5743dcba",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0023/episode-0000/trace.jsonl": "5c1d0f7063f9277f674b8a96371939fcbf2cc311a258ae66fa350179262584dc",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0024/episode-0000/trace.jsonl": "ae3a30576a88d1e9dc66df4b6811ba041ac5ecb599ec40973defd9f13aa1a0bf",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0025/episode-0000/trace.jsonl": "d5de43262f0356683db0d7458c326b45a0a2da9bc90f8af3e44d4759b56c94c7",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0026/episode-0000/trace.jsonl": "527b4e238290f77f162d586030aada42e03ce3eb47b0d39d551bbbb4db647de0",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0027/episode-0000/trace.jsonl": "ba0e75a85ae609257415da50b2606515301573d441a0518445d002e98a6d1ae4",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0028/episode-0000/trace.jsonl": "76ff88a6b2fbc1adc0d604e64ff077305ac66324a14cf866d4c6e9386df07abf",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0029/episode-0000/trace.jsonl": "dc2994ee30207b3651e5efa7744e4b7094a29237d5cb16897a5bcc294af71eb4",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0030/episode-0000/trace.jsonl": "baa5ae834e568cb993258f813b7a008af697bb64ca13f2269b0d20bdbfd3c80c",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0031/episode-0000/trace.jsonl": "566159d16b1ef22b68b16051cb661461f3a85e9313035b7e06b96841bf0f8722",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0032/episode-0000/trace.jsonl": "cf95e55ca670f69ca636caad2932c28bdff450cc2e273a3b559ea4723325237e",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0033/episode-0000/trace.jsonl": "64f5c410b464bee1c09e74127d7da72e44e8a9dbe27bf005adec55d8e706fe10",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0034/episode-0000/trace.jsonl": "f17dfed39a225355e0005083de595f5f545239fccd72a5a5d977f1724a7600d4",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0035/episode-0000/trace.jsonl": "f3c045ce2eb381ba2b22bb530bf30d8c4576587458b8eb9aaed531723b94eef6",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0036/episode-0000/trace.jsonl": "9d35f035664e2163f692dd9919b5ec8c77b66c01057bb1c06ed10e7c2f6f6067",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0037/episode-0000/trace.jsonl": "4f73d5fabba0370cc99511ea7dafcf5b0a5c2db5a3e809cdc2855d42bfd43496",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0038/episode-0000/trace.jsonl": "2f4cda0cefda953cd639b0813dbe63f818af13387a230330fdf191fef45bb24e",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0039/episode-0000/trace.jsonl": "5be3b8a753cd87a9edfa48baa641a024647f8c8cbb36dc34c6cdd4cd4fc0bfbc",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0040/episode-0000/trace.jsonl": "9b328f1c9803a140f2811bae13ea3d1aac0f92284a377e438d868695bde90a34",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0041/episode-0000/trace.jsonl": "4114f3ae141aade841630aea2eadf4017bd53f9967412cb1cbeb4af673fef6bf",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0042/episode-0000/trace.jsonl": "12e31975a88237cd6c6a1efe9c92785718d58b583dab3668ae3cd4243e795b00",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0043/episode-0000/trace.jsonl": "c0979dd6b4cd34ce327783899bb809c6ab31f580da6731c58ddb84e30919d50a",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0044/episode-0000/trace.jsonl": "f503979d28dd1aedc02ca7ac2419d2fe14156e3922d70e31098fabe0d7795bfa",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0045/episode-0000/trace.jsonl": "2215644bcdb517bbca09c60f029574306a333c1012f83324e6a0760a5ce5e872",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0046/episode-0000/trace.jsonl": "78148b23a468c8fd857dd9a007bec16e8de7304587f10a51fb936754716090ca",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0047/episode-0000/trace.jsonl": "b03de7b53f590af9d2b891efe7334c9b2b63091d30670a885b62f9bfd2808dd8",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0048/episode-0000/trace.jsonl": "abb7384fcb8bb9ea6cd8580479cc7973d9962f7eb0202d42a45c17042c698030",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0049/episode-0000/trace.jsonl": "dd3e8d4322e6c1e1494b04fe632dd3d1dc2302f53ef5806c29a20e3479215bf0",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0050/episode-0000/trace.jsonl": "9b345090bdfadb62055caadc7d895ac827f371c8ecaafe8a6e297d878eee1331",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0051/episode-0000/trace.jsonl": "920c68c8c4094cc6018690480850e6a4616e5459ffb001724ef98106417cf99d",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0052/episode-0000/trace.jsonl": "14e81afa6c407a8f1aff5f03fbcf54394dd077861a31d4fd5b98f14a2cb56ba8",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0053/episode-0000/trace.jsonl": "667737b9bae85b5baed887b660636d6da103516c2a89305984ab0ddfe0fc337f",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0054/episode-0000/trace.jsonl": "c280312f590236814fc21d6771eb4f6465bed09767aa3dea2b3581e12600cf29",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0055/episode-0000/trace.jsonl": "a10fc0ec9553bd187fd92d06de94d932029647eb5a05caa70b1b82e344ef9d3e",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0056/episode-0000/trace.jsonl": "522761e4904f84ca559362da796defe4e05601d9b850ffd70ebec8840d823585",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0057/episode-0000/trace.jsonl": "ea659d1b5647fc0cd5a81f6e9266963818e73bbb352bb749cbf0c6ad1136413e",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0058/episode-0000/trace.jsonl": "5873d2b30b2d134f7fb659dd5e18690c92dee9a5918afa11eaefe4ac491725dc",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0059/episode-0000/trace.jsonl": "df1089e7b8f11891526a78e10cbe7adc601afbf38a07825a9270074b101de4a4",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0060/episode-0000/trace.jsonl": "7051dfeb5d81b97b8064a80029e7907ab0220dbc37285d46f884f9149175c075",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0061/episode-0000/trace.jsonl": "177a69137718ac21cfb7b19f06d66b1d3778d4074b7bd137ea4ece3b3e8c14cd",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0062/episode-0000/trace.jsonl": "0e2a601afe1fd21743164818c21b3602af478fa3a52d5d4b2d9c6aaca311dcb4",
+    "runs/ppo-budget64-seed0-20261011/runs/attempt-0063/episode-0000/trace.jsonl": "86704fba375547dfe9dfd25a31835c749a0aee23d7e02a42ee001c17a7dfe02e",
+    "runs/ppo-budget64-seed0-20261011/training.json": "e3f966f270d5f85f1c76246dbc29e8f1911a62b735cb0ee04afb978c69979d7b",
+    "src/spire/learning.py": "c872232d735383dba6a73d2743b4da5990ddce28aeec92b11b7a4442445dced8"
+  },
+  "source_revision": "a8286454090b8d14ad700995160eb7619f151f9d",
+  "total_single_candidate_states": 129,
+  "training_source_revision": "7b4cc314f9ecc543e4b35d6edb52bfd675a73de3",
+  "training_terminal_hp": {
+    "max": 80,
+    "mean": 66.25,
+    "min": 32,
+    "std": 9.684071974123283
+  },
+  "training_terminal_reward": {
+    "max": 1.25,
+    "mean": 1.20703125,
+    "min": 1.1,
+    "std": 0.030262724919135262
+  },
+  "updates": [
+    {
+      "actor_output_weight_norm_after": 0.01656092144548893,
+      "actor_output_weight_norm_before": 0.009999998845160007,
+      "actual_update_kl": {
+        "max": 3.025124897249043e-06,
+        "mean": 1.7092618095993213e-06,
+        "min": 0.0,
+        "std": 9.00600215140366e-07
+      },
+      "actual_update_tv": {
+        "max": 0.0011843293905258179,
+        "mean": 0.0007175656472459251,
+        "min": 0.0,
+        "std": 0.000354872542151659
+      },
+      "after_entropy_fraction": 0.9999988885486827,
+      "after_value": {
+        "max": 0.2936294376850128,
+        "mean": 0.2758136178240364,
+        "min": 0.2553265690803528,
+        "std": 0.009261835792132838
+      },
+      "before_value": {
+        "max": 0.18280291557312012,
+        "mean": 0.15799863581304197,
+        "min": 0.13452363014221191,
+        "std": 0.01145311312019029
+      },
+      "behavior_ratio_max_error": 2.384185791015625e-07,
+      "episodes": 6,
+      "gradient_norms": {
+        "policy": {
+          "actor": 0.024037521332502365,
+          "all": 0.024039199575781822,
+          "critic": 0.0,
+          "shared": 0.00028405452030710876
+        },
+        "weighted_entropy": {
+          "actor": 1.3289820799400331e-07,
+          "all": 1.3290106437580107e-07,
+          "critic": 0.0,
+          "shared": 8.698451958721876e-10
+        },
+        "weighted_value": {
+          "actor": 0.0,
+          "all": 0.5418211817741394,
+          "critic": 0.4972255229949951,
+          "shared": 0.21526019275188446
+        }
+      },
+      "logged": {
+        "approx_kl": 4.86771266849928e-07,
+        "early_stop_kl": false,
+        "entropy": 1.544659783442815,
+        "gradient_norm": 0.5036256909370422,
+        "optimizer_steps": 12,
+        "value_loss": 0.265317181746165
+      },
+      "loss_terms_at_behavior": {
+        "policy": 6.475566038943725e-08,
+        "weighted_entropy": -0.0155399851500988,
+        "weighted_value": 0.15301835536956787
+      },
+      "policy_value_shared_gradient_cosine": 0.007383004762232304,
+      "raw_advantage": {
+        "max": 1.099945306777954,
+        "mean": 0.7622648959542498,
+        "min": 0.4237707257270813,
+        "std": 0.17614114307156156
+      },
+      "raw_advantage_correlation_remaining_actions": -0.9903075197947541,
+      "raw_advantage_correlation_terminal_hp": 0.25669227290608176,
+      "single_candidate_states": 13,
+      "target_return": {
+        "max": 1.240625023841858,
+        "mean": 0.9202635288238525,
+        "min": 0.5895564556121826,
+        "std": 0.16865125091528602
+      },
+      "terminal_hp": {
+        "max": 77,
+        "mean": 65,
+        "min": 60,
+        "std": 6.137317546507323
+      },
+      "terminal_hp_variation_component_std": 0.01418623048812151,
+      "terminal_reward": {
+        "max": 1.240625,
+        "mean": 1.203125,
+        "min": 1.1875,
+        "std": 0.01917911733283539
+      },
+      "transitions": 81,
+      "update": 1
+    },
+    {
+      "actor_output_weight_norm_after": 0.027867978438735008,
+      "actor_output_weight_norm_before": 0.01656092144548893,
+      "actual_update_kl": {
+        "max": 5.619542207568884e-06,
+        "mean": 3.465321035698501e-06,
+        "min": -5.296169547364116e-08,
+        "std": 1.8314996362642748e-06
+      },
+      "actual_update_tv": {
+        "max": 0.0016870126128196716,
+        "mean": 0.0010941000373074503,
+        "min": 0.0,
+        "std": 0.0005515119537279561
+      },
+      "after_entropy_fraction": 0.9999940568750555,
+      "after_value": {
+        "max": 0.41805773973464966,
+        "mean": 0.4033590948039835,
+        "min": 0.3690640330314636,
+        "std": 0.013577576657281163
+      },
+      "before_value": {
+        "max": 0.2938660681247711,
+        "mean": 0.27803468929998804,
+        "min": 0.2593842148780823,
+        "std": 0.008446206386815246
+      },
+      "behavior_ratio_max_error": 1.1920928955078125e-07,
+      "episodes": 6,
+      "gradient_norms": {
+        "policy": {
+          "actor": 0.039721447974443436,
+          "all": 0.0397292785346508,
+          "critic": 0.0,
+          "shared": 0.0007888301042839885
+        },
+        "weighted_entropy": {
+          "actor": 2.592305463622324e-06,
+          "all": 2.5929612093023024e-06,
+          "critic": 0.0,
+          "shared": 5.830991867128432e-08
+        },
+        "weighted_value": {
+          "actor": 0.0,
+          "all": 0.5255258083343506,
+          "critic": 0.48302823305130005,
+          "shared": 0.2070293128490448
+        }
+      },
+      "logged": {
+        "approx_kl": 1.0154520471890767e-06,
+        "early_stop_kl": false,
+        "entropy": 1.6547435025374095,
+        "gradient_norm": 0.5076507975657781,
+        "optimizer_steps": 12,
+        "value_loss": 0.2413465455174446
+      },
+      "loss_terms_at_behavior": {
+        "policy": -1.7158913578896318e-07,
+        "weighted_entropy": -0.01595669984817505,
+        "weighted_value": 0.13826632499694824
+      },
+      "policy_value_shared_gradient_cosine": -0.009247749112546444,
+      "raw_advantage": {
+        "max": 0.9795792102813721,
+        "mean": 0.7325281112483053,
+        "min": 0.5099508762359619,
+        "std": 0.12832699533189867
+      },
+      "raw_advantage_correlation_remaining_actions": -0.9870448621552184,
+      "raw_advantage_correlation_terminal_hp": 0.25711010590822925,
+      "single_candidate_states": 11,
+      "target_return": {
+        "max": 1.25,
+        "mean": 1.0105627991936423,
+        "min": 0.797261655330658,
+        "std": 0.12364211470254705
+      },
+      "terminal_hp": {
+        "max": 80,
+        "mean": 69,
+        "min": 61,
+        "std": 8.04155872120988
+      },
+      "terminal_hp_variation_component_std": 0.0197609793394804,
+      "terminal_reward": {
+        "max": 1.25,
+        "mean": 1.215625,
+        "min": 1.190625,
+        "std": 0.025129871003780852
+      },
+      "transitions": 66,
+      "update": 2
+    },
+    {
+      "actor_output_weight_norm_after": 0.03739576041698456,
+      "actor_output_weight_norm_before": 0.027867978438735008,
+      "actual_update_kl": {
+        "max": 4.421279300004244e-06,
+        "mean": 2.734770844524194e-06,
+        "min": 0.0,
+        "std": 1.4212371369598036e-06
+      },
+      "actual_update_tv": {
+        "max": 0.0014478564262390137,
+        "mean": 0.0009737649666411536,
+        "min": 0.0,
+        "std": 0.00046384515463847623
+      },
+      "after_entropy_fraction": 0.9999855191020642,
+      "after_value": {
+        "max": 0.5790736675262451,
+        "mean": 0.5513310968875885,
+        "min": 0.4996960759162903,
+        "std": 0.022253979226172442
+      },
+      "before_value": {
+        "max": 0.41805773973464966,
+        "mean": 0.4032512924500874,
+        "min": 0.3698216676712036,
+        "std": 0.012930935961377543
+      },
+      "behavior_ratio_max_error": 1.1920928955078125e-07,
+      "episodes": 6,
+      "gradient_norms": {
+        "policy": {
+          "actor": 0.028093954548239708,
+          "all": 0.028119156137108803,
+          "critic": 0.0,
+          "shared": 0.0011902396799996495
+        },
+        "weighted_entropy": {
+          "actor": 7.812759577063844e-06,
+          "all": 7.818649464752525e-06,
+          "critic": 0.0,
+          "shared": 3.0340225976033253e-07
+        },
+        "weighted_value": {
+          "actor": 0.0,
+          "all": 0.4589225947856903,
+          "critic": 0.4178156852722168,
+          "shared": 0.18984198570251465
+        }
+      },
+      "logged": {
+        "approx_kl": 9.007958906200505e-07,
+        "early_stop_kl": false,
+        "entropy": 1.5682726899782817,
+        "gradient_norm": 0.43129880477984744,
+        "optimizer_steps": 12,
+        "value_loss": 0.15270534406105676
+      },
+      "loss_terms_at_behavior": {
+        "policy": 2.792903330828267e-07,
+        "weighted_entropy": -0.01577412523329258,
+        "weighted_value": 0.09483468532562256
+      },
+      "policy_value_shared_gradient_cosine": -0.0026583210565149784,
+      "raw_advantage": {
+        "max": 0.8256376385688782,
+        "mean": 0.6038533696106502,
+        "min": 0.3380230963230133,
+        "std": 0.12124297603397158
+      },
+      "raw_advantage_correlation_remaining_actions": -0.9785295252390506,
+      "raw_advantage_correlation_terminal_hp": 0.3726611351502891,
+      "single_candidate_states": 11,
+      "target_return": {
+        "max": 1.240625023841858,
+        "mean": 1.0071046607834953,
+        "min": 0.7560808062553406,
+        "std": 0.11856621233178213
+      },
+      "terminal_hp": {
+        "max": 77,
+        "mean": 62.666666666666664,
+        "min": 54,
+        "std": 8.459051693633013
+      },
+      "terminal_hp_variation_component_std": 0.020346200093626976,
+      "terminal_reward": {
+        "max": 1.240625,
+        "mean": 1.1958333333333333,
+        "min": 1.16875,
+        "std": 0.02643453654260319
+      },
+      "transitions": 70,
+      "update": 3
+    },
+    {
+      "actor_output_weight_norm_after": 0.04323405399918556,
+      "actor_output_weight_norm_before": 0.03739576041698456,
+      "actual_update_kl": {
+        "max": 2.1611558622680604e-06,
+        "mean": 1.1748439270320432e-06,
+        "min": 0.0,
+        "std": 6.490549594020187e-07
+      },
+      "actual_update_tv": {
+        "max": 0.0009264647960662842,
+        "mean": 0.0006002112640999258,
+        "min": 0.0,
+        "std": 0.0002935249590525903
+      },
+      "after_entropy_fraction": 0.9999789761172401,
+      "after_value": {
+        "max": 0.7078275680541992,
+        "mean": 0.6671775570139289,
+        "min": 0.5921055674552917,
+        "std": 0.029409997506520246
+      },
+      "before_value": {
+        "max": 0.5831378698348999,
+        "mean": 0.5515820421278477,
+        "min": 0.498062402009964,
+        "std": 0.02161750215796251
+      },
+      "behavior_ratio_max_error": 1.1920928955078125e-07,
+      "episodes": 4,
+      "gradient_norms": {
+        "policy": {
+          "actor": 0.04329521581530571,
+          "all": 0.043351173400878906,
+          "critic": 0.0,
+          "shared": 0.0022019019816070795
+        },
+        "weighted_entropy": {
+          "actor": 1.3024910003878176e-05,
+          "all": 1.3041600141150411e-05,
+          "critic": 0.0,
+          "shared": 6.595919899154978e-07
+        },
+        "weighted_value": {
+          "actor": 0.0,
+          "all": 0.37792372703552246,
+          "critic": 0.33867526054382324,
+          "shared": 0.16770635545253754
+        }
+      },
+      "logged": {
+        "approx_kl": 3.1315721571445465e-07,
+        "early_stop_kl": false,
+        "entropy": 1.5572667717933655,
+        "gradient_norm": 0.3520265445113182,
+        "optimizer_steps": 8,
+        "value_loss": 0.08814671263098717
+      },
+      "loss_terms_at_behavior": {
+        "policy": -1.0989606380462646e-07,
+        "weighted_entropy": -0.015572703443467617,
+        "weighted_value": 0.054323360323905945
+      },
+      "policy_value_shared_gradient_cosine": 0.010798300616443157,
+      "raw_advantage": {
+        "max": 0.6689582467079163,
+        "mean": 0.4492507427930832,
+        "min": 0.18881842494010925,
+        "std": 0.1243673335836158
+      },
+      "raw_advantage_correlation_remaining_actions": -0.9657556791119963,
+      "raw_advantage_correlation_terminal_hp": 0.18872697595052862,
+      "single_candidate_states": 10,
+      "target_return": {
+        "max": 1.2312500476837158,
+        "mean": 1.0008327858522534,
+        "min": 0.7608450055122375,
+        "std": 0.12010859708916248
+      },
+      "terminal_hp": {
+        "max": 74,
+        "mean": 65.5,
+        "min": 56,
+        "std": 6.726812023536855
+      },
+      "terminal_hp_variation_component_std": 0.014616088010370731,
+      "terminal_reward": {
+        "max": 1.23125,
+        "mean": 1.2046875,
+        "min": 1.175,
+        "std": 0.021021287573552646
+      },
+      "transitions": 64,
+      "update": 4
+    },
+    {
+      "actor_output_weight_norm_after": 0.04897019639611244,
+      "actor_output_weight_norm_before": 0.04323405399918556,
+      "actual_update_kl": {
+        "max": 5.162321031093597e-06,
+        "mean": 2.801758819259703e-06,
+        "min": 0.0,
+        "std": 1.4495471413080708e-06
+      },
+      "actual_update_tv": {
+        "max": 0.0014936849474906921,
+        "mean": 0.000969450335417475,
+        "min": 0.0,
+        "std": 0.00047004688668909943
+      },
+      "after_entropy_fraction": 0.9999667769771511,
+      "after_value": {
+        "max": 0.9245083332061768,
+        "mean": 0.8622070167745862,
+        "min": 0.7600629925727844,
+        "std": 0.0430749825328771
+      },
+      "before_value": {
+        "max": 0.7078245282173157,
+        "mean": 0.6632038159029824,
+        "min": 0.5951157808303833,
+        "std": 0.02999900427791328
+      },
+      "behavior_ratio_max_error": 2.384185791015625e-07,
+      "episodes": 6,
+      "gradient_norms": {
+        "policy": {
+          "actor": 0.027872148901224136,
+          "all": 0.027909358963370323,
+          "critic": 0.0,
+          "shared": 0.001440713880583644
+        },
+        "weighted_entropy": {
+          "actor": 1.6420279280282557e-05,
+          "all": 1.644700205361005e-05,
+          "critic": 0.0,
+          "shared": 9.372143381369824e-07
+        },
+        "weighted_value": {
+          "actor": 0.0,
+          "all": 0.3748992085456848,
+          "critic": 0.3343547284603119,
+          "shared": 0.16957680881023407
+        }
+      },
+      "logged": {
+        "approx_kl": 7.493007435262674e-07,
+        "early_stop_kl": false,
+        "entropy": 1.5380650560061138,
+        "gradient_norm": 0.32160651683807373,
+        "optimizer_steps": 12,
+        "value_loss": 0.06096999440342188
+      },
+      "loss_terms_at_behavior": {
+        "policy": -1.7029899268550253e-08,
+        "weighted_entropy": -0.015660574659705162,
+        "weighted_value": 0.044831812381744385
+      },
+      "policy_value_shared_gradient_cosine": 0.036273445934057236,
+      "raw_advantage": {
+        "max": 0.589083731174469,
+        "mean": 0.41427421803985326,
+        "min": 0.21468697488307953,
+        "std": 0.0877730648219019
+      },
+      "raw_advantage_correlation_remaining_actions": -0.9005593821153136,
+      "raw_advantage_correlation_terminal_hp": 0.19783850836297,
+      "single_candidate_states": 11,
+      "target_return": {
+        "max": 1.2218749523162842,
+        "mean": 1.0774780401161739,
+        "min": 0.9050108194351196,
+        "std": 0.08159939964141162
+      },
+      "terminal_hp": {
+        "max": 71,
+        "mean": 66,
+        "min": 49,
+        "std": 7.637626158259733
+      },
+      "terminal_hp_variation_component_std": 0.018858619034290314,
+      "terminal_reward": {
+        "max": 1.221875,
+        "mean": 1.20625,
+        "min": 1.153125,
+        "std": 0.023867581744561675
+      },
+      "transitions": 70,
+      "update": 5
+    },
+    {
+      "actor_output_weight_norm_after": 0.05666263401508331,
+      "actor_output_weight_norm_before": 0.04897019639611244,
+      "actual_update_kl": {
+        "max": 1.123256515711546e-05,
+        "mean": 7.238128664664133e-06,
+        "min": 0.0,
+        "std": 3.179412260857119e-06
+      },
+      "actual_update_tv": {
+        "max": 0.0022947564721107483,
+        "mean": 0.001571969116387302,
+        "min": 0.0,
+        "std": 0.0006625693225857427
+      },
+      "after_entropy_fraction": 0.9999363832175732,
+      "after_value": {
+        "max": 1.1274871826171875,
+        "mean": 1.0619350034896642,
+        "min": 0.9151210188865662,
+        "std": 0.05233757143864953
+      },
+      "before_value": {
+        "max": 0.9240396022796631,
+        "mean": 0.8697806964181873,
+        "min": 0.752173662185669,
+        "std": 0.04088437438445721
+      },
+      "behavior_ratio_max_error": 1.1920928955078125e-07,
+      "episodes": 5,
+      "gradient_norms": {
+        "policy": {
+          "actor": 0.038900915533304214,
+          "all": 0.03897523134946823,
+          "critic": 0.0,
+          "shared": 0.002405713777989149
+        },
+        "weighted_entropy": {
+          "actor": 2.535690327931661e-05,
+          "all": 2.540482637414243e-05,
+          "critic": 0.0,
+          "shared": 1.5596679077134468e-06
+        },
+        "weighted_value": {
+          "actor": 0.0,
+          "all": 0.2296917587518692,
+          "critic": 0.20317520201206207,
+          "shared": 0.10713611543178558
+        }
+      },
+      "logged": {
+        "approx_kl": 2.009104230612143e-06,
+        "early_stop_kl": false,
+        "entropy": 1.6116979618867238,
+        "gradient_norm": 0.1602503660445412,
+        "optimizer_steps": 12,
+        "value_loss": 0.013282269821502268
+      },
+      "loss_terms_at_behavior": {
+        "policy": -2.710786475290661e-07,
+        "weighted_entropy": -0.016192281618714333,
+        "weighted_value": 0.013796613551676273
+      },
+      "policy_value_shared_gradient_cosine": 0.057509951293468475,
+      "raw_advantage": {
+        "max": 0.4126698672771454,
+        "mean": 0.2215630771872932,
+        "min": 0.05864003673195839,
+        "std": 0.07807853130378735
+      },
+      "raw_advantage_correlation_remaining_actions": -0.6967517253515353,
+      "raw_advantage_correlation_terminal_hp": 0.6517790394640913,
+      "single_candidate_states": 9,
+      "target_return": {
+        "max": 1.2312500476837158,
+        "mean": 1.091343774370951,
+        "min": 0.9559366106987,
+        "std": 0.06765405546987144
+      },
+      "terminal_hp": {
+        "max": 74,
+        "mean": 58.8,
+        "min": 32,
+        "std": 15.210522673465235
+      },
+      "terminal_hp_variation_component_std": 0.0359165221452713,
+      "terminal_reward": {
+        "max": 1.23125,
+        "mean": 1.18375,
+        "min": 1.1,
+        "std": 0.04753288335457884
+      },
+      "transitions": 73,
+      "update": 6
+    },
+    {
+      "actor_output_weight_norm_after": 0.0687241405248642,
+      "actor_output_weight_norm_before": 0.05666263401508331,
+      "actual_update_kl": {
+        "max": 2.9824674129486084e-05,
+        "mean": 1.781203656122019e-05,
+        "min": 0.0,
+        "std": 9.81119206976936e-06
+      },
+      "actual_update_tv": {
+        "max": 0.003853902220726013,
+        "mean": 0.002451758108921905,
+        "min": 0.0,
+        "std": 0.0013064115672227741
+      },
+      "after_entropy_fraction": 0.9998710924928839,
+      "after_value": {
+        "max": 1.2699368000030518,
+        "mean": 1.1844898764766865,
+        "min": 1.0327649116516113,
+        "std": 0.06169772568131823
+      },
+      "before_value": {
+        "max": 1.1313179731369019,
+        "mean": 1.0531276758037396,
+        "min": 0.9180774688720703,
+        "std": 0.05633605040964327
+      },
+      "behavior_ratio_max_error": 1.1920928955078125e-07,
+      "episodes": 5,
+      "gradient_norms": {
+        "policy": {
+          "actor": 0.045446377247571945,
+          "all": 0.045554421842098236,
+          "critic": 0.0,
+          "shared": 0.0031356418039649725
+        },
+        "weighted_entropy": {
+          "actor": 3.5312863474246114e-05,
+          "all": 3.538928649504669e-05,
+          "critic": 0.0,
+          "shared": 2.324511115148198e-06
+        },
+        "weighted_value": {
+          "actor": 0.0,
+          "all": 0.1413293182849884,
+          "critic": 0.12488026171922684,
+          "shared": 0.06617321819067001
+        }
+      },
+      "logged": {
+        "approx_kl": 4.085815596373739e-06,
+        "early_stop_kl": false,
+        "entropy": 1.4458305339018505,
+        "gradient_norm": 0.11693070239077012,
+        "optimizer_steps": 12,
+        "value_loss": 0.005509250836136441
+      },
+      "loss_terms_at_behavior": {
+        "policy": 4.6260321795443815e-08,
+        "weighted_entropy": -0.014937092550098896,
+        "weighted_value": 0.005034404806792736
+      },
+      "policy_value_shared_gradient_cosine": 0.06443416327238083,
+      "raw_advantage": {
+        "max": 0.28719624876976013,
+        "mean": 0.12404188222196232,
+        "min": 0.00276574888266623,
+        "std": 0.06892919109506225
+      },
+      "raw_advantage_correlation_remaining_actions": -0.42309555941488575,
+      "raw_advantage_correlation_terminal_hp": 0.4480739296621828,
+      "single_candidate_states": 12,
+      "target_return": {
+        "max": 1.25,
+        "mean": 1.1771695578276222,
+        "min": 1.1135916709899902,
+        "std": 0.03447643255642392
+      },
+      "terminal_hp": {
+        "max": 80,
+        "mean": 72,
+        "min": 59,
+        "std": 7.615773105863909
+      },
+      "terminal_hp_variation_component_std": 0.018677791580557823,
+      "terminal_reward": {
+        "max": 1.25,
+        "mean": 1.225,
+        "min": 1.184375,
+        "std": 0.023799290955824753
+      },
+      "transitions": 67,
+      "update": 7
+    },
+    {
+      "actor_output_weight_norm_after": 0.08370548486709595,
+      "actor_output_weight_norm_before": 0.0687241405248642,
+      "actual_update_kl": {
+        "max": 5.143927410244942e-05,
+        "mean": 3.337361921518068e-05,
+        "min": -1.1085649020969868e-07,
+        "std": 1.7274199348761058e-05
+      },
+      "actual_update_tv": {
+        "max": 0.005067154765129089,
+        "mean": 0.00341100629363487,
+        "min": 0.0,
+        "std": 0.001734874652298535
+      },
+      "after_entropy_fraction": 0.9997426005346435,
+      "after_value": {
+        "max": 1.2993438243865967,
+        "mean": 1.2263912638621544,
+        "min": 1.078778862953186,
+        "std": 0.0575857081968837
+      },
+      "before_value": {
+        "max": 1.2552632093429565,
+        "mean": 1.1815289650390397,
+        "min": 1.0335315465927124,
+        "std": 0.05897128379799338
+      },
+      "behavior_ratio_max_error": 2.384185791015625e-07,
+      "episodes": 6,
+      "gradient_norms": {
+        "policy": {
+          "actor": 0.02255510725080967,
+          "all": 0.02262692153453827,
+          "critic": 0.0,
+          "shared": 0.0018013196531683207
+        },
+        "weighted_entropy": {
+          "actor": 6.075630153645761e-05,
+          "all": 6.09304552199319e-05,
+          "critic": 0.0,
+          "shared": 4.603485194820678e-06
+        },
+        "weighted_value": {
+          "actor": 0.0,
+          "all": 0.03271276876330376,
+          "critic": 0.0283860731869936,
+          "shared": 0.01625903509557247
+        }
+      },
+      "logged": {
+        "approx_kl": 9.479673783137818e-06,
+        "early_stop_kl": false,
+        "entropy": 1.6009741226832073,
+        "gradient_norm": 0.09332948674758275,
+        "optimizer_steps": 12,
+        "value_loss": 0.0021220285792272384
+      },
+      "loss_terms_at_behavior": {
+        "policy": -3.202637799404329e-08,
+        "weighted_entropy": -0.015287071466445923,
+        "weighted_value": 0.001260906457901001
+      },
+      "policy_value_shared_gradient_cosine": 0.09597071260213852,
+      "raw_advantage": {
+        "max": 0.20298264920711517,
+        "mean": 0.028142440469879935,
+        "min": -0.07220519334077835,
+        "std": 0.06520451108187407
+      },
+      "raw_advantage_correlation_remaining_actions": -0.11430995597709996,
+      "raw_advantage_correlation_terminal_hp": 0.3960299373806099,
+      "single_candidate_states": 11,
+      "target_return": {
+        "max": 1.25,
+        "mean": 1.2096713994865986,
+        "min": 1.171605110168457,
+        "std": 0.021873916894026832
+      },
+      "terminal_hp": {
+        "max": 80,
+        "mean": 70.66666666666667,
+        "min": 55,
+        "std": 8.259674462242579
+      },
+      "terminal_hp_variation_component_std": 0.020579762756824493,
+      "terminal_reward": {
+        "max": 1.25,
+        "mean": 1.2208333333333332,
+        "min": 1.171875,
+        "std": 0.025811482694508055
+      },
+      "transitions": 67,
+      "update": 8
+    },
+    {
+      "actor_output_weight_norm_after": 0.0941227525472641,
+      "actor_output_weight_norm_before": 0.08370548486709595,
+      "actual_update_kl": {
+        "max": 3.433600068092346e-05,
+        "mean": 1.9760293677488033e-05,
+        "min": 0.0,
+        "std": 1.0835475474870766e-05
+      },
+      "actual_update_tv": {
+        "max": 0.004139959812164307,
+        "mean": 0.002574317157268524,
+        "min": 0.0,
+        "std": 0.001380743877527597
+      },
+      "after_entropy_fraction": 0.9996250775353662,
+      "after_value": {
+        "max": 1.2941564321517944,
+        "mean": 1.2121209237310622,
+        "min": 1.0766539573669434,
+        "std": 0.056423896058548625
+      },
+      "before_value": {
+        "max": 1.3143787384033203,
+        "mean": 1.2286371654934354,
+        "min": 1.0819400548934937,
+        "std": 0.06211996786449596
+      },
+      "behavior_ratio_max_error": 2.384185791015625e-07,
+      "episodes": 5,
+      "gradient_norms": {
+        "policy": {
+          "actor": 0.03317755088210106,
+          "all": 0.03331352397799492,
+          "critic": 0.0,
+          "shared": 0.0030068301130086184
+        },
+        "weighted_entropy": {
+          "actor": 9.284653788199648e-05,
+          "all": 9.321212564827874e-05,
+          "critic": 0.0,
+          "shared": 8.247405276051722e-06
+        },
+        "weighted_value": {
+          "actor": 0.0,
+          "all": 0.03437875211238861,
+          "critic": 0.029388388618826866,
+          "shared": 0.017838753759860992
+        }
+      },
+      "logged": {
+        "approx_kl": 5.2299971381823225e-06,
+        "early_stop_kl": false,
+        "entropy": 1.503900537888209,
+        "gradient_norm": 0.0635504851428171,
+        "optimizer_steps": 12,
+        "value_loss": 0.002397859013096119
+      },
+      "loss_terms_at_behavior": {
+        "policy": -9.934107758624577e-09,
+        "weighted_entropy": -0.01516939327120781,
+        "weighted_value": 0.0013538884231820703
+      },
+      "policy_value_shared_gradient_cosine": -0.09765458106994629,
+      "raw_advantage": {
+        "max": 0.1538456231355667,
+        "mean": -0.02285142928020731,
+        "min": -0.1489323377609253,
+        "std": 0.06995259378326396
+      },
+      "raw_advantage_correlation_remaining_actions": 0.06074513983833273,
+      "raw_advantage_correlation_terminal_hp": 0.4167421822994681,
+      "single_candidate_states": 14,
+      "target_return": {
+        "max": 1.243289589881897,
+        "mean": 1.2057857380972967,
+        "min": 1.140625,
+        "std": 0.027434360352523196
+      },
+      "terminal_hp": {
+        "max": 77,
+        "mean": 63.6,
+        "min": 45,
+        "std": 11.62067123706716
+      },
+      "terminal_hp_variation_component_std": 0.02671150676906109,
+      "terminal_reward": {
+        "max": 1.240625,
+        "mean": 1.19875,
+        "min": 1.140625,
+        "std": 0.036314597615834894
+      },
+      "transitions": 72,
+      "update": 9
+    },
+    {
+      "actor_output_weight_norm_after": 0.10414398461580276,
+      "actor_output_weight_norm_before": 0.0941227525472641,
+      "actual_update_kl": {
+        "max": 4.829093813896179e-05,
+        "mean": 2.8939218415568274e-05,
+        "min": 0.0,
+        "std": 1.4484366778578897e-05
+      },
+      "actual_update_tv": {
+        "max": 0.00474722683429718,
+        "mean": 0.0031190939744313558,
+        "min": 0.0,
+        "std": 0.0014885818141849307
+      },
+      "after_entropy_fraction": 0.9994566468521953,
+      "after_value": {
+        "max": 1.2775262594223022,
+        "mean": 1.204818345705668,
+        "min": 1.0716540813446045,
+        "std": 0.04694705287861643
+      },
+      "before_value": {
+        "max": 1.2921664714813232,
+        "mean": 1.2165972900390625,
+        "min": 1.0726386308670044,
+        "std": 0.051953917654208225
+      },
+      "behavior_ratio_max_error": 2.384185791015625e-07,
+      "episodes": 6,
+      "gradient_norms": {
+        "policy": {
+          "actor": 0.035984642803668976,
+          "all": 0.036234691739082336,
+          "critic": 0.0,
+          "shared": 0.004249498248100281
+        },
+        "weighted_entropy": {
+          "actor": 0.00012688263086602092,
+          "all": 0.00012749455345328897,
+          "critic": 0.0,
+          "shared": 1.2476436495489907e-05
+        },
+        "weighted_value": {
+          "actor": 0.0,
+          "all": 0.012962610460817814,
+          "critic": 0.009722685441374779,
+          "shared": 0.008573135361075401
+        }
+      },
+      "logged": {
+        "approx_kl": 8.372350104461171e-06,
+        "early_stop_kl": false,
+        "entropy": 1.554249495267868,
+        "gradient_norm": 0.05274671704197923,
+        "optimizer_steps": 12,
+        "value_loss": 0.0014643800871757169
+      },
+      "loss_terms_at_behavior": {
+        "policy": -6.357828929992593e-09,
+        "weighted_entropy": -0.015614635311067104,
+        "weighted_value": 0.0008241593022830784
+      },
+      "policy_value_shared_gradient_cosine": -0.09483346343040466,
+      "raw_advantage": {
+        "max": 0.15673188865184784,
+        "mean": -0.005961656502137582,
+        "min": -0.10104110836982727,
+        "std": 0.057106005990640224
+      },
+      "raw_advantage_correlation_remaining_actions": 0.0460157823187557,
+      "raw_advantage_correlation_terminal_hp": 0.3981352363032325,
+      "single_candidate_states": 11,
+      "target_return": {
+        "max": 1.2379029989242554,
+        "mean": 1.2106356302897134,
+        "min": 1.171875,
+        "std": 0.014460486200903852
+      },
+      "terminal_hp": {
+        "max": 76,
+        "mean": 67,
+        "min": 55,
+        "std": 6.60807586719967
+      },
+      "terminal_hp_variation_component_std": 0.01572982221841812,
+      "terminal_reward": {
+        "max": 1.2375,
+        "mean": 1.209375,
+        "min": 1.171875,
+        "std": 0.020650237084998985
+      },
+      "transitions": 75,
+      "update": 10
+    },
+    {
+      "actor_output_weight_norm_after": 0.11442319303750992,
+      "actor_output_weight_norm_before": 0.10414398461580276,
+      "actual_update_kl": {
+        "max": 6.065843626856804e-05,
+        "mean": 3.914835374766531e-05,
+        "min": 0.0,
+        "std": 1.817135687836036e-05
+      },
+      "actual_update_tv": {
+        "max": 0.005308747291564941,
+        "mean": 0.0036762432410166815,
+        "min": 0.0,
+        "std": 0.0016323885028114507
+      },
+      "after_entropy_fraction": 0.9991940909198352,
+      "after_value": {
+        "max": 1.2661794424057007,
+        "mean": 1.199009607388423,
+        "min": 1.0753223896026611,
+        "std": 0.044897140817305656
+      },
+      "before_value": {
+        "max": 1.2745065689086914,
+        "mean": 1.2042860471285306,
+        "min": 1.0721837282180786,
+        "std": 0.04865620284432997
+      },
+      "behavior_ratio_max_error": 1.1920928955078125e-07,
+      "episodes": 5,
+      "gradient_norms": {
+        "policy": {
+          "actor": 0.06770318001508713,
+          "all": 0.06807507574558258,
+          "critic": 0.0,
+          "shared": 0.007105965632945299
+        },
+        "weighted_entropy": {
+          "actor": 0.0001775172568159178,
+          "all": 0.00017847638810053468,
+          "critic": 0.0,
+          "shared": 1.8478242054698057e-05
+        },
+        "weighted_value": {
+          "actor": 0.0,
+          "all": 0.009667673148214817,
+          "critic": 0.006197124253958464,
+          "shared": 0.007420211099088192
+        }
+      },
+      "logged": {
+        "approx_kl": 9.365069369475046e-06,
+        "early_stop_kl": false,
+        "entropy": 1.7254295746485393,
+        "gradient_norm": 0.1149760796688497,
+        "optimizer_steps": 12,
+        "value_loss": 0.0012956093329800449
+      },
+      "loss_terms_at_behavior": {
+        "policy": 7.335956286880219e-09,
+        "weighted_entropy": -0.01629197597503662,
+        "weighted_value": 0.0009119330788962543
+      },
+      "policy_value_shared_gradient_cosine": -0.05398116260766983,
+      "raw_advantage": {
+        "max": 0.1539662480354309,
+        "mean": -0.0026440271086847554,
+        "min": -0.12284863740205765,
+        "std": 0.060338552343468424
+      },
+      "raw_advantage_correlation_remaining_actions": -0.07955177274278005,
+      "raw_advantage_correlation_terminal_hp": 0.5361084913918848,
+      "single_candidate_states": 9,
+      "target_return": {
+        "max": 1.240625023841858,
+        "mean": 1.201642023600065,
+        "min": 1.1375000476837158,
+        "std": 0.02464780749763467
+      },
+      "terminal_hp": {
+        "max": 77,
+        "mean": 65.8,
+        "min": 44,
+        "std": 11.408768557561329
+      },
+      "terminal_hp_variation_component_std": 0.027800846844911575,
+      "terminal_reward": {
+        "max": 1.240625,
+        "mean": 1.205625,
+        "min": 1.1375,
+        "std": 0.03565240174237919
+      },
+      "transitions": 65,
+      "update": 11
+    },
+    {
+      "actor_output_weight_norm_after": 0.11764298379421234,
+      "actor_output_weight_norm_before": 0.11442319303750992,
+      "actual_update_kl": {
+        "max": 7.51507468521595e-06,
+        "mean": 4.824194260627816e-06,
+        "min": 0.0,
+        "std": 2.07845172936592e-06
+      },
+      "actual_update_tv": {
+        "max": 0.0018986836075782776,
+        "mean": 0.0013478663668297884,
+        "min": 0.0,
+        "std": 0.0005568025340875098
+      },
+      "after_entropy_fraction": 0.9989901018142701,
+      "after_value": {
+        "max": 1.275810718536377,
+        "mean": 1.2071726991419207,
+        "min": 1.082641839981079,
+        "std": 0.04030240682935304
+      },
+      "before_value": {
+        "max": 1.2747794389724731,
+        "mean": 1.2042981260701229,
+        "min": 1.0753223896026611,
+        "std": 0.04202754811935601
+      },
+      "behavior_ratio_max_error": 2.384185791015625e-07,
+      "episodes": 4,
+      "gradient_norms": {
+        "policy": {
+          "actor": 0.04677087068557739,
+          "all": 0.047052133828401566,
+          "critic": 0.0,
+          "shared": 0.005137007217854261
+        },
+        "weighted_entropy": {
+          "actor": 0.00025197648210451007,
+          "all": 0.00025352108059450984,
+          "critic": 0.0,
+          "shared": 2.7942396627622657e-05
+        },
+        "weighted_value": {
+          "actor": 0.0,
+          "all": 0.011199301108717918,
+          "critic": 0.0093658696860075,
+          "shared": 0.006140427198261023
+        }
+      },
+      "logged": {
+        "approx_kl": 2.6366859557924727e-06,
+        "early_stop_kl": false,
+        "entropy": 1.5798305124044418,
+        "gradient_norm": 0.055109871784225106,
+        "optimizer_steps": 8,
+        "value_loss": 0.0010785582780954428
+      },
+      "loss_terms_at_behavior": {
+        "policy": 8.365564241330503e-09,
+        "weighted_entropy": -0.015865806490182877,
+        "weighted_value": 0.0005463818670250475
+      },
+      "policy_value_shared_gradient_cosine": -0.12463107705116272,
+      "raw_advantage": {
+        "max": 0.16218982636928558,
+        "mean": 0.009442074814088349,
+        "min": -0.06350152939558029,
+        "std": 0.04578618361745666
+      },
+      "raw_advantage_correlation_remaining_actions": 0.1689420997652871,
+      "raw_advantage_correlation_terminal_hp": 0.411883053761549,
+      "single_candidate_states": 7,
+      "target_return": {
+        "max": 1.2505444288253784,
+        "mean": 1.213740210784109,
+        "min": 1.1843750476837158,
+        "std": 0.018965302172354506
+      },
+      "terminal_hp": {
+        "max": 80,
+        "mean": 68.75,
+        "min": 59,
+        "std": 7.495832175282475
+      },
+      "terminal_hp_variation_component_std": 0.017364738509058952,
+      "terminal_reward": {
+        "max": 1.25,
+        "mean": 1.21484375,
+        "min": 1.184375,
+        "std": 0.023424475547757742
+      },
+      "transitions": 57,
+      "update": 12
+    }
+  ]
+}

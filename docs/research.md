@@ -317,3 +317,56 @@ small development comparison with one training initialization. It does not estab
 robust held-out performance. Broader training, repeated initialization seeds and a
 separately declared held-out split remain later work. The language imitation diagnostic
 keeps its original fixed-Louse suite and cannot be scored as this catalog experiment.
+
+## Optimization-scale diagnosis and next comparison
+
+Read-only reconstruction of the saved budget-64 batches found 136 Adam steps across
+12 updates. Logged mean approximate KL never exceeded 9.48e-6 against the 0.02 stop
+threshold; full-batch before/after KL peaked at 3.91e-5. Weighted entropy gradients
+were 0.00055% of policy gradients at the first update and 0.54% at the last. Entropy
+dominance is therefore not supported by these measured batches. Critic value loss
+fell from 0.2653 to 0.001079, while the final actor remained nearly uniform on the
+fixed 100-state diagnostic. See the source/checkpoint/trace-linked
+[gradient diagnostic](results/ppo-budget64-gradient-diagnostic.json).
+
+Early raw advantages strongly correlated with actions remaining until termination
+(-0.990 in the first batch). All 64 training games won, and terminal rewards ranged
+from 1.10 to 1.25. Critic fitting and delayed health credit are plausible limitations.
+Gradient magnitudes alone do not prove a cause: advantages are normalized and Adam
+rescales updates. Do not change reward, GAE or initialization alongside the next test.
+
+After completing the already declared four-policy catalog comparison, test only
+Adam learning rate **0.0003 → 0.003**. Run a fresh seed-0 initialization under the same
+64-attempt, 16-update and 3,000-second ceilings, 64-transition batch threshold,
+existing tail flush, fixed Louse training suite, reward, feature encoder, PPO epochs,
+clipping, entropy, value weight, gradient cap and KL stop. No deliberate interruption
+or checkpoint selection. Evaluate the final budget-limited artifact on the unchanged
+eight policy seeds 1000–1007, with a 1,200-second evaluation process limit.
+
+The initial tensor hash must equal `1d60fa62ccd3ba50a70c174b9c1d9933d7a26c97f013f6d7d2a592cac883d4f0`.
+Default-LR seed-0 evidence is the preserved 64-attempt run and final artifact
+`03ca30dc29154b968686a918efb0d4579d99c3142461ee2507a33138b18bbd22`. The question is whether
+larger steps produce useful behavior, not merely larger tensor differences. Reuse
+the same frozen 100 public states for an explanatory probability comparison. Declare
+mean total-variation distance of at least 0.05 as a noticeable distribution response
+(old result 0.02188); it is not a gameplay-success threshold.
+
+Directional gameplay support requires no loss of the eight wins or command legality,
+and ending HP above both the same initial policy's 72.75 and default-LR final policy's
+72.0. Greater probability movement without better HP rejects the simple step-size
+quality hypothesis for this diagnostic. An isolated positive result remains exploratory;
+record all attempts, failures, clipping/KL stops and outcomes, not just the favorable metric.
+
+For a second independent initialization, reserve a matched seed-1 pair: default LR then
+high LR, each with the same training ceilings; evaluate seed 1's initial artifact once
+and both finals on the unchanged suite. Require the two seed-1 initial hashes to match.
+Start this whole pair only if at least 175 minutes remain before 10:00 local time,
+based on the clock before either arm starts, independently of seed 0's score. Otherwise
+leave it unrun and report the seed-0 result as a single-initialization experiment. Do not
+start only a potentially favorable arm. The 175-minute reservation covers 100 minutes
+of training caps, 60 minutes for three evaluation caps and 15 minutes for cleanup.
+For repeatability, require positive high-minus-default HP differences in both seed 0
+and seed 1 without reduced wins; report the two paired effects individually. Eight
+policy samples per initialization do not become eight independent training replicates.
+The original pilot and default seed-0 run share initialization and are not replicates.
+All of this remains development; broader held-out evaluation and Act 1 are unfinished.
