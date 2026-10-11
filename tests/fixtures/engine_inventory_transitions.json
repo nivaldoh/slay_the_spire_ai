@@ -1,0 +1,3289 @@
+{
+  "contract_sha256": "72d14fc6f5bbe7765479572806431f142260dc553d2da5d7bdc648976a43f972",
+  "engine_pins": {
+    "game": "cfad868ac8d65a88e71a0bf096fb09f78811e553effe0787c5309a655e081673",
+    "mods": {
+      "BaseMod.jar": "c3353c10e64c621b723e9fd7d0502dfa796f828b101b68513594a5f5ef83fbaf",
+      "CommunicationMod.jar": "12b99249eccfd5245ddb0b6b7575e1a1dfba0ce0ed6fad5bd5bbd4a303897ef5",
+      "ModTheSpire.jar": "541b5e8a875d2a404a5a6d54f4a6f814284b0cf71acb9245239d9c5ef50ea604"
+    }
+  },
+  "inventory_path": "runs/starter-inventory-20261011/inventory.json",
+  "inventory_sha256": "b2bd3789be73be6c33d85108c8cd63bf9dcf8aff4fb8257742e0e83a3a30d12c",
+  "inventory_status_at_extraction": "completed",
+  "repeats": [
+    {
+      "discovery_source": "attempt_0007",
+      "matching_combat_actions": 24,
+      "repeat_manifest_sha256": "dbe3088dc0a3e3a3a96aed92eed7d68bd924c0c14b19c57d1457ed6a961a01bc",
+      "repeat_trace_path": "runs/starter-inventory-20261011/runs/attempt-0013/episode-0000/trace.jsonl",
+      "repeat_trace_sha256": "ba13634b4f5ee06c392ea1f47bc0241c7d0965b54367a129be17cca29132531d",
+      "scenario_id": "spireinv07"
+    },
+    {
+      "discovery_source": "attempt_0009",
+      "matching_combat_actions": 27,
+      "repeat_manifest_sha256": "9c45d3a334a98d08aaa72fc2631cbc63bb0b4e7206c91af96520c8f8988307e6",
+      "repeat_trace_path": "runs/starter-inventory-20261011/runs/attempt-0014/episode-0000/trace.jsonl",
+      "repeat_trace_sha256": "96f47438243083f333d8792f69a8ee84e281dc196ecaa85ec22cbacb761f8752",
+      "scenario_id": "spireinv09"
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Minimal public original-engine observations; no simulated mechanics or catalog admission claim",
+  "sources": {
+    "attempt_0005": {
+      "assignment_id": "discovery-SPIREINV05",
+      "attempt_index": 5,
+      "catalog_eligible": false,
+      "catalog_exclusion_reasons": [
+        "Starting current_hp differs",
+        "Starting max_hp differs",
+        "Starting gold differs",
+        "Prefix did not choose 100 gold",
+        "Prefix chose a max-HP variant"
+      ],
+      "catalog_scenario_id": null,
+      "combat_start_sha256": "706a1dac00ca8d203cb8fd5c60592a4c232b65ec9de9ef766776a90f2c771093",
+      "episode_status": "won",
+      "manifest_sha256": "2f7127ca4b3a14eb89a940c3c1c2c59e87866d5a60a451a29fa7cc4e877e5fff",
+      "max_hp": 88,
+      "monster_ids": [
+        "FuzzyLouseNormal",
+        "FuzzyLouseNormal"
+      ],
+      "policy": "heuristic",
+      "protocol_source_sha256": "3f6caab2c80d8e75e762bb408ba0a21e3a97d26f8331a377f9fd13fa091f40bc",
+      "source_patch_sha256": "24fee3974858fba2a3bbfb0534fe6aa95e5a4967fe0fcdbfd4513eb4ba74b000",
+      "source_revision": "cbe09ed9a361c8c7df447bc08ec1fe61a5540cd8",
+      "source_status": " M docs/state.md\n",
+      "starting_gold": 99,
+      "starting_hp": 88,
+      "trace_path": "runs/starter-inventory-20261011/runs/attempt-0005/episode-0000/trace.jsonl",
+      "trace_sha256": "d5a657c825bbbcf9b5013270ea1c5ec46fa0bab8023ca1be3bb99edfe6cf306c"
+    },
+    "attempt_0007": {
+      "assignment_id": "discovery-SPIREINV07",
+      "attempt_index": 7,
+      "catalog_eligible": true,
+      "catalog_exclusion_reasons": [],
+      "catalog_scenario_id": "spireinv07",
+      "combat_start_sha256": "0a52c8f998d1d2e93f56b35dd1b45cb4f7f7a7f5b3af0014a56a917b614ffd14",
+      "episode_status": "won",
+      "manifest_sha256": "1be458b4f13c5e0c4c7afa7acce935b2c8f61fc76686400b948d431356c74ce4",
+      "max_hp": 80,
+      "monster_ids": [
+        "Cultist"
+      ],
+      "policy": "heuristic",
+      "protocol_source_sha256": "3f6caab2c80d8e75e762bb408ba0a21e3a97d26f8331a377f9fd13fa091f40bc",
+      "source_patch_sha256": "24fee3974858fba2a3bbfb0534fe6aa95e5a4967fe0fcdbfd4513eb4ba74b000",
+      "source_revision": "cbe09ed9a361c8c7df447bc08ec1fe61a5540cd8",
+      "source_status": " M docs/state.md\n?? docs/results/ppo-budget64-distribution-diagnostic.json\n",
+      "starting_gold": 199,
+      "starting_hp": 80,
+      "trace_path": "runs/starter-inventory-20261011/runs/attempt-0007/episode-0000/trace.jsonl",
+      "trace_sha256": "43827745040a78663e1d9b9027c3a9804d9a21ebead230b0aad66d20037704b5"
+    },
+    "attempt_0009": {
+      "assignment_id": "discovery-SPIREINV09",
+      "attempt_index": 9,
+      "catalog_eligible": true,
+      "catalog_exclusion_reasons": [],
+      "catalog_scenario_id": "spireinv09",
+      "combat_start_sha256": "182dfee045292733b2a7c0006872ee7d4e919648b0f279fcfaa3910d2ebc4c5d",
+      "episode_status": "won",
+      "manifest_sha256": "f44b66fd6b71eec673c87c625e3aeb8311cf4eddff2bb8b86066ae539c552786",
+      "max_hp": 80,
+      "monster_ids": [
+        "JawWorm"
+      ],
+      "policy": "heuristic",
+      "protocol_source_sha256": "3f6caab2c80d8e75e762bb408ba0a21e3a97d26f8331a377f9fd13fa091f40bc",
+      "source_patch_sha256": "24fee3974858fba2a3bbfb0534fe6aa95e5a4967fe0fcdbfd4513eb4ba74b000",
+      "source_revision": "cbe09ed9a361c8c7df447bc08ec1fe61a5540cd8",
+      "source_status": " M docs/state.md\n?? docs/results/ppo-budget64-distribution-diagnostic.json\n",
+      "starting_gold": 199,
+      "starting_hp": 80,
+      "trace_path": "runs/starter-inventory-20261011/runs/attempt-0009/episode-0000/trace.jsonl",
+      "trace_sha256": "5653575822f181ed2c5d5a41742b816acca337700f1fec07b2254b9bfe5f0286"
+    },
+    "attempt_0011": {
+      "assignment_id": "discovery-SPIREINV11",
+      "attempt_index": 11,
+      "catalog_eligible": false,
+      "catalog_exclusion_reasons": [
+        "Starting current_hp differs",
+        "Starting max_hp differs",
+        "Starting gold differs",
+        "Prefix did not choose 100 gold",
+        "Prefix chose a max-HP variant"
+      ],
+      "catalog_scenario_id": null,
+      "combat_start_sha256": "6137be4da6060b7f2ea106f1ae16ec46fd08d57ed32ac39dc5dcc33be30b1821",
+      "episode_status": "won",
+      "manifest_sha256": "6794c13c8362b1eb5afdb0faf8840745128b385b0d16e2be546b06abf9dba463",
+      "max_hp": 88,
+      "monster_ids": [
+        "FuzzyLouseDefensive",
+        "FuzzyLouseDefensive"
+      ],
+      "policy": "heuristic",
+      "protocol_source_sha256": "3f6caab2c80d8e75e762bb408ba0a21e3a97d26f8331a377f9fd13fa091f40bc",
+      "source_patch_sha256": "83965336fe87e1d23ff990052d4e3c29d4a70708554f4c657f196a1f2e764178",
+      "source_revision": "cbe09ed9a361c8c7df447bc08ec1fe61a5540cd8",
+      "source_status": " M docs/state.md\n?? docs/results/ppo-budget64-distribution-diagnostic.json\n",
+      "starting_gold": 99,
+      "starting_hp": 88,
+      "trace_path": "runs/starter-inventory-20261011/runs/attempt-0011/episode-0000/trace.jsonl",
+      "trace_sha256": "3b368b9feb0f3cc1a0056a6e9a3a252a5e758ce17a1e96f55a78fd94577037d8"
+    },
+    "attempt_0015": {
+      "assignment_id": "probe-cultist",
+      "attempt_index": 15,
+      "catalog_eligible": true,
+      "catalog_exclusion_reasons": [],
+      "catalog_scenario_id": "spireinv07",
+      "combat_start_sha256": "0a52c8f998d1d2e93f56b35dd1b45cb4f7f7a7f5b3af0014a56a917b614ffd14",
+      "episode_status": "lost",
+      "manifest_sha256": "9518da13a295c337e61deae585d85fd63d7ba62e7b0f6cec8680d80dfb74d899",
+      "max_hp": 80,
+      "monster_ids": [
+        "Cultist"
+      ],
+      "policy": "end_turn",
+      "protocol_source_sha256": "3f6caab2c80d8e75e762bb408ba0a21e3a97d26f8331a377f9fd13fa091f40bc",
+      "source_patch_sha256": "9b4979e80f783c120caabf024a9cbfab79430a2cf4db7909dc082015a910b907",
+      "source_revision": "cbe09ed9a361c8c7df447bc08ec1fe61a5540cd8",
+      "source_status": " M docs/state.md\n?? docs/results/ppo-budget64-distribution-diagnostic.json\n",
+      "starting_gold": 199,
+      "starting_hp": 80,
+      "trace_path": "runs/starter-inventory-20261011/runs/attempt-0015/episode-0000/trace.jsonl",
+      "trace_sha256": "421d70d3579e8d92cb443055200e324918de2b3da224c0fd0f33534b2564a7cb"
+    },
+    "attempt_0016": {
+      "assignment_id": "probe-jaw_worm",
+      "attempt_index": 16,
+      "catalog_eligible": true,
+      "catalog_exclusion_reasons": [],
+      "catalog_scenario_id": "spireinv09",
+      "combat_start_sha256": "182dfee045292733b2a7c0006872ee7d4e919648b0f279fcfaa3910d2ebc4c5d",
+      "episode_status": "lost",
+      "manifest_sha256": "42683c8447643939afcbb3ae6cb3c8b1953f4923a5519bd3cacc2610496fdd56",
+      "max_hp": 80,
+      "monster_ids": [
+        "JawWorm"
+      ],
+      "policy": "end_turn",
+      "protocol_source_sha256": "3f6caab2c80d8e75e762bb408ba0a21e3a97d26f8331a377f9fd13fa091f40bc",
+      "source_patch_sha256": "9b4979e80f783c120caabf024a9cbfab79430a2cf4db7909dc082015a910b907",
+      "source_revision": "cbe09ed9a361c8c7df447bc08ec1fe61a5540cd8",
+      "source_status": " M docs/state.md\n?? docs/results/ppo-budget64-distribution-diagnostic.json\n",
+      "starting_gold": 199,
+      "starting_hp": 80,
+      "trace_path": "runs/starter-inventory-20261011/runs/attempt-0016/episode-0000/trace.jsonl",
+      "trace_sha256": "a58a1c345a6d004fa63dc81f847c5f74a1687905a94ce19b05578b39d982d8a2"
+    }
+  },
+  "transitions": [
+    {
+      "action_line": 30,
+      "after": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 36,
+                "half_dead": false,
+                "id": "Cultist",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 53,
+                "move_adjusted_damage": 6,
+                "move_hits": 1,
+                "name": "Cultist",
+                "powers": [
+                  {
+                    "amount": 1,
+                    "id": "Vulnerable",
+                    "name": "Vulnerable"
+                  },
+                  {
+                    "amount": 3,
+                    "id": "Ritual",
+                    "name": "Ritual"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 80,
+              "energy": 3,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 2
+          },
+          "current_hp": 80,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 31,
+      "after_sequence": 10,
+      "before": {
+        "available_commands": [
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 36,
+                "half_dead": false,
+                "id": "Cultist",
+                "intent": "BUFF",
+                "is_gone": false,
+                "max_hp": 53,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Cultist",
+                "powers": [
+                  {
+                    "amount": 2,
+                    "id": "Vulnerable",
+                    "name": "Vulnerable"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 80,
+              "energy": 0,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 1
+          },
+          "current_hp": 80,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 27,
+      "before_sequence": 9,
+      "command": "end",
+      "decision_line": 29,
+      "execution_line": 32,
+      "id": "cultist_ritual_appears",
+      "selected_action": {
+        "card_id": null,
+        "hand_index": null,
+        "kind": "end",
+        "target_index": null
+      },
+      "source": "attempt_0007"
+    },
+    {
+      "action_line": 46,
+      "after": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 27,
+                "half_dead": false,
+                "id": "Cultist",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 53,
+                "move_adjusted_damage": 9,
+                "move_hits": 1,
+                "name": "Cultist",
+                "powers": [
+                  {
+                    "amount": 3,
+                    "id": "Ritual",
+                    "name": "Ritual"
+                  },
+                  {
+                    "amount": 3,
+                    "id": "Strength",
+                    "name": "Strength"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 80,
+              "energy": 3,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 3
+          },
+          "current_hp": 80,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 47,
+      "after_sequence": 14,
+      "before": {
+        "available_commands": [
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": false,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 27,
+                "half_dead": false,
+                "id": "Cultist",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 53,
+                "move_adjusted_damage": 6,
+                "move_hits": 1,
+                "name": "Cultist",
+                "powers": [
+                  {
+                    "amount": 1,
+                    "id": "Vulnerable",
+                    "name": "Vulnerable"
+                  },
+                  {
+                    "amount": 3,
+                    "id": "Ritual",
+                    "name": "Ritual"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 10,
+              "current_hp": 80,
+              "energy": 0,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 2
+          },
+          "current_hp": 80,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 43,
+      "before_sequence": 13,
+      "command": "end",
+      "decision_line": 45,
+      "execution_line": 48,
+      "id": "cultist_ritual_strength_after_attack",
+      "selected_action": {
+        "card_id": null,
+        "hand_index": null,
+        "kind": "end",
+        "target_index": null
+      },
+      "source": "attempt_0007"
+    },
+    {
+      "action_line": 62,
+      "after": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 2,
+                "has_target": true,
+                "id": "Bash",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 21,
+                "half_dead": false,
+                "id": "Cultist",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 53,
+                "move_adjusted_damage": 12,
+                "move_hits": 1,
+                "name": "Cultist",
+                "powers": [
+                  {
+                    "amount": 3,
+                    "id": "Ritual",
+                    "name": "Ritual"
+                  },
+                  {
+                    "amount": 6,
+                    "id": "Strength",
+                    "name": "Strength"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 80,
+              "energy": 3,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 4
+          },
+          "current_hp": 80,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 63,
+      "after_sequence": 18,
+      "before": {
+        "available_commands": [
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 21,
+                "half_dead": false,
+                "id": "Cultist",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 53,
+                "move_adjusted_damage": 9,
+                "move_hits": 1,
+                "name": "Cultist",
+                "powers": [
+                  {
+                    "amount": 3,
+                    "id": "Ritual",
+                    "name": "Ritual"
+                  },
+                  {
+                    "amount": 3,
+                    "id": "Strength",
+                    "name": "Strength"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 10,
+              "current_hp": 80,
+              "energy": 0,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 3
+          },
+          "current_hp": 80,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 59,
+      "before_sequence": 17,
+      "command": "end",
+      "decision_line": 61,
+      "execution_line": 64,
+      "id": "cultist_second_strength_tick",
+      "selected_action": {
+        "card_id": null,
+        "hand_index": null,
+        "kind": "end",
+        "target_index": null
+      },
+      "source": "attempt_0007"
+    },
+    {
+      "action_line": 50,
+      "after": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 2,
+                "has_target": true,
+                "id": "Bash",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 5,
+                "current_hp": 31,
+                "half_dead": false,
+                "id": "JawWorm",
+                "intent": "DEFEND_BUFF",
+                "is_gone": false,
+                "max_hp": 43,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Jaw Worm",
+                "powers": []
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 79,
+              "energy": 3,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 3
+          },
+          "current_hp": 79,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 51,
+      "after_sequence": 15,
+      "before": {
+        "available_commands": [
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 31,
+                "half_dead": false,
+                "id": "JawWorm",
+                "intent": "ATTACK_DEFEND",
+                "is_gone": false,
+                "max_hp": 43,
+                "move_adjusted_damage": 7,
+                "move_hits": 1,
+                "name": "Jaw Worm",
+                "powers": []
+              }
+            ],
+            "player": {
+              "block": 10,
+              "current_hp": 79,
+              "energy": 0,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 2
+          },
+          "current_hp": 79,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 47,
+      "before_sequence": 14,
+      "command": "end",
+      "decision_line": 49,
+      "execution_line": 52,
+      "id": "jaw_worm_attack_defend_adds_block",
+      "selected_action": {
+        "card_id": null,
+        "hand_index": null,
+        "kind": "end",
+        "target_index": null
+      },
+      "source": "attempt_0009"
+    },
+    {
+      "action_line": 62,
+      "after": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 6,
+                "current_hp": 19,
+                "half_dead": false,
+                "id": "JawWorm",
+                "intent": "ATTACK_DEFEND",
+                "is_gone": false,
+                "max_hp": 43,
+                "move_adjusted_damage": 10,
+                "move_hits": 1,
+                "name": "Jaw Worm",
+                "powers": [
+                  {
+                    "amount": 1,
+                    "id": "Vulnerable",
+                    "name": "Vulnerable"
+                  },
+                  {
+                    "amount": 3,
+                    "id": "Strength",
+                    "name": "Strength"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 79,
+              "energy": 3,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 4
+          },
+          "current_hp": 79,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 63,
+      "after_sequence": 18,
+      "before": {
+        "available_commands": [
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 19,
+                "half_dead": false,
+                "id": "JawWorm",
+                "intent": "DEFEND_BUFF",
+                "is_gone": false,
+                "max_hp": 43,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Jaw Worm",
+                "powers": [
+                  {
+                    "amount": 2,
+                    "id": "Vulnerable",
+                    "name": "Vulnerable"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 79,
+              "energy": 0,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 3
+          },
+          "current_hp": 79,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 59,
+      "before_sequence": 17,
+      "command": "end",
+      "decision_line": 61,
+      "execution_line": 64,
+      "id": "jaw_worm_defend_buff_adds_strength",
+      "selected_action": {
+        "card_id": null,
+        "hand_index": null,
+        "kind": "end",
+        "target_index": null
+      },
+      "source": "attempt_0009"
+    },
+    {
+      "action_line": 106,
+      "after": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 6,
+                "current_hp": 3,
+                "half_dead": false,
+                "id": "JawWorm",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 43,
+                "move_adjusted_damage": 17,
+                "move_hits": 1,
+                "name": "Jaw Worm",
+                "powers": [
+                  {
+                    "amount": 6,
+                    "id": "Strength",
+                    "name": "Strength"
+                  },
+                  {
+                    "amount": 1,
+                    "id": "Vulnerable",
+                    "name": "Vulnerable"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 79,
+              "energy": 3,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 7
+          },
+          "current_hp": 79,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 107,
+      "after_sequence": 29,
+      "before": {
+        "available_commands": [
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 3,
+                "half_dead": false,
+                "id": "JawWorm",
+                "intent": "DEFEND_BUFF",
+                "is_gone": false,
+                "max_hp": 43,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Jaw Worm",
+                "powers": [
+                  {
+                    "amount": 3,
+                    "id": "Strength",
+                    "name": "Strength"
+                  },
+                  {
+                    "amount": 2,
+                    "id": "Vulnerable",
+                    "name": "Vulnerable"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 79,
+              "energy": 0,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 6
+          },
+          "current_hp": 79,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 103,
+      "before_sequence": 28,
+      "command": "end",
+      "decision_line": 105,
+      "execution_line": 108,
+      "id": "jaw_worm_second_buff_changes_damage",
+      "selected_action": {
+        "card_id": null,
+        "hand_index": null,
+        "kind": "end",
+        "target_index": null
+      },
+      "source": "attempt_0009"
+    },
+    {
+      "action_line": 122,
+      "after": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 2,
+                "has_target": true,
+                "id": "Bash",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 3,
+                "half_dead": false,
+                "id": "JawWorm",
+                "intent": "DEFEND_BUFF",
+                "is_gone": false,
+                "max_hp": 43,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Jaw Worm",
+                "powers": [
+                  {
+                    "amount": 6,
+                    "id": "Strength",
+                    "name": "Strength"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 77,
+              "energy": 3,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 8
+          },
+          "current_hp": 77,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 123,
+      "after_sequence": 33,
+      "before": {
+        "available_commands": [
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 6,
+                "current_hp": 3,
+                "half_dead": false,
+                "id": "JawWorm",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 43,
+                "move_adjusted_damage": 17,
+                "move_hits": 1,
+                "name": "Jaw Worm",
+                "powers": [
+                  {
+                    "amount": 6,
+                    "id": "Strength",
+                    "name": "Strength"
+                  },
+                  {
+                    "amount": 1,
+                    "id": "Vulnerable",
+                    "name": "Vulnerable"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 15,
+              "current_hp": 79,
+              "energy": 0,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 7
+          },
+          "current_hp": 79,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 119,
+      "before_sequence": 32,
+      "command": "end",
+      "decision_line": 121,
+      "execution_line": 124,
+      "id": "jaw_worm_attack_consumes_player_block",
+      "selected_action": {
+        "card_id": null,
+        "hand_index": null,
+        "kind": "end",
+        "target_index": null
+      },
+      "source": "attempt_0009"
+    },
+    {
+      "action_line": 26,
+      "after": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 2,
+                "has_target": true,
+                "id": "Bash",
+                "is_playable": false,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 4,
+                "current_hp": 4,
+                "half_dead": false,
+                "id": "FuzzyLouseNormal",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 10,
+                "move_adjusted_damage": 5,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": []
+              },
+              {
+                "block": 0,
+                "current_hp": 11,
+                "half_dead": false,
+                "id": "FuzzyLouseNormal",
+                "intent": "BUFF",
+                "is_gone": false,
+                "max_hp": 11,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": [
+                  {
+                    "amount": 7,
+                    "id": "Curl Up",
+                    "name": "Curl Up"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 5,
+              "current_hp": 88,
+              "energy": 1,
+              "max_hp": 88,
+              "powers": []
+            },
+            "turn": 1
+          },
+          "current_hp": 88,
+          "floor": 1,
+          "gold": 99,
+          "is_screen_up": false,
+          "max_hp": 88,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 27,
+      "after_sequence": 9,
+      "before": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 2,
+                "has_target": true,
+                "id": "Bash",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 10,
+                "half_dead": false,
+                "id": "FuzzyLouseNormal",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 10,
+                "move_adjusted_damage": 5,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": [
+                  {
+                    "amount": 4,
+                    "id": "Curl Up",
+                    "name": "Curl Up"
+                  }
+                ]
+              },
+              {
+                "block": 0,
+                "current_hp": 11,
+                "half_dead": false,
+                "id": "FuzzyLouseNormal",
+                "intent": "BUFF",
+                "is_gone": false,
+                "max_hp": 11,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": [
+                  {
+                    "amount": 7,
+                    "id": "Curl Up",
+                    "name": "Curl Up"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 5,
+              "current_hp": 88,
+              "energy": 2,
+              "max_hp": 88,
+              "powers": []
+            },
+            "turn": 1
+          },
+          "current_hp": 88,
+          "floor": 1,
+          "gold": 99,
+          "is_screen_up": false,
+          "max_hp": 88,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 23,
+      "before_sequence": 8,
+      "command": "play 1 0",
+      "decision_line": 25,
+      "execution_line": 28,
+      "id": "same_species_louse_curl_up",
+      "selected_action": {
+        "card_id": "Strike_R",
+        "hand_index": 0,
+        "kind": "play",
+        "target_index": 0
+      },
+      "source": "attempt_0005"
+    },
+    {
+      "action_line": 58,
+      "after": {
+        "available_commands": [
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": false,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 0,
+                "half_dead": false,
+                "id": "FuzzyLouseNormal",
+                "intent": "BUFF",
+                "is_gone": true,
+                "max_hp": 10,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": []
+              },
+              {
+                "block": 7,
+                "current_hp": 5,
+                "half_dead": false,
+                "id": "FuzzyLouseNormal",
+                "intent": "BUFF",
+                "is_gone": false,
+                "max_hp": 11,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": [
+                  {
+                    "amount": 3,
+                    "id": "Strength",
+                    "name": "Strength"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 88,
+              "energy": 0,
+              "max_hp": 88,
+              "powers": []
+            },
+            "turn": 3
+          },
+          "current_hp": 88,
+          "floor": 1,
+          "gold": 99,
+          "is_screen_up": false,
+          "max_hp": 88,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 59,
+      "after_sequence": 17,
+      "before": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 0,
+                "half_dead": false,
+                "id": "FuzzyLouseNormal",
+                "intent": "BUFF",
+                "is_gone": true,
+                "max_hp": 10,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": []
+              },
+              {
+                "block": 0,
+                "current_hp": 11,
+                "half_dead": false,
+                "id": "FuzzyLouseNormal",
+                "intent": "BUFF",
+                "is_gone": false,
+                "max_hp": 11,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": [
+                  {
+                    "amount": 7,
+                    "id": "Curl Up",
+                    "name": "Curl Up"
+                  },
+                  {
+                    "amount": 3,
+                    "id": "Strength",
+                    "name": "Strength"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 88,
+              "energy": 1,
+              "max_hp": 88,
+              "powers": []
+            },
+            "turn": 3
+          },
+          "current_hp": 88,
+          "floor": 1,
+          "gold": 99,
+          "is_screen_up": false,
+          "max_hp": 88,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 55,
+      "before_sequence": 16,
+      "command": "play 2 1",
+      "decision_line": 57,
+      "execution_line": 60,
+      "id": "same_species_target_one_after_kill",
+      "selected_action": {
+        "card_id": "Strike_R",
+        "hand_index": 1,
+        "kind": "play",
+        "target_index": 1
+      },
+      "source": "attempt_0005"
+    },
+    {
+      "action_line": 62,
+      "after": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 0,
+                "half_dead": false,
+                "id": "FuzzyLouseNormal",
+                "intent": "BUFF",
+                "is_gone": true,
+                "max_hp": 10,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": []
+              },
+              {
+                "block": 0,
+                "current_hp": 5,
+                "half_dead": false,
+                "id": "FuzzyLouseNormal",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 11,
+                "move_adjusted_damage": 13,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": [
+                  {
+                    "amount": 6,
+                    "id": "Strength",
+                    "name": "Strength"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 88,
+              "energy": 3,
+              "max_hp": 88,
+              "powers": []
+            },
+            "turn": 4
+          },
+          "current_hp": 88,
+          "floor": 1,
+          "gold": 99,
+          "is_screen_up": false,
+          "max_hp": 88,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 63,
+      "after_sequence": 18,
+      "before": {
+        "available_commands": [
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": false,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 0,
+                "half_dead": false,
+                "id": "FuzzyLouseNormal",
+                "intent": "BUFF",
+                "is_gone": true,
+                "max_hp": 10,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": []
+              },
+              {
+                "block": 7,
+                "current_hp": 5,
+                "half_dead": false,
+                "id": "FuzzyLouseNormal",
+                "intent": "BUFF",
+                "is_gone": false,
+                "max_hp": 11,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": [
+                  {
+                    "amount": 3,
+                    "id": "Strength",
+                    "name": "Strength"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 88,
+              "energy": 0,
+              "max_hp": 88,
+              "powers": []
+            },
+            "turn": 3
+          },
+          "current_hp": 88,
+          "floor": 1,
+          "gold": 99,
+          "is_screen_up": false,
+          "max_hp": 88,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 59,
+      "before_sequence": 17,
+      "command": "end",
+      "decision_line": 61,
+      "execution_line": 64,
+      "id": "same_species_louse_strength_and_block_expire",
+      "selected_action": {
+        "card_id": null,
+        "hand_index": null,
+        "kind": "end",
+        "target_index": null
+      },
+      "source": "attempt_0005"
+    },
+    {
+      "action_line": 34,
+      "after": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 2,
+                "has_target": true,
+                "id": "Bash",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 6,
+                "half_dead": false,
+                "id": "FuzzyLouseDefensive",
+                "intent": "DEBUFF",
+                "is_gone": false,
+                "max_hp": 12,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": []
+              },
+              {
+                "block": 0,
+                "current_hp": 15,
+                "half_dead": false,
+                "id": "FuzzyLouseDefensive",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 15,
+                "move_adjusted_damage": 6,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": [
+                  {
+                    "amount": 3,
+                    "id": "Curl Up",
+                    "name": "Curl Up"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 88,
+              "energy": 3,
+              "max_hp": 88,
+              "powers": [
+                {
+                  "amount": 2,
+                  "id": "Weakened",
+                  "name": "Weakened"
+                }
+              ]
+            },
+            "turn": 2
+          },
+          "current_hp": 88,
+          "floor": 1,
+          "gold": 99,
+          "is_screen_up": false,
+          "max_hp": 88,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 35,
+      "after_sequence": 11,
+      "before": {
+        "available_commands": [
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 6,
+                "current_hp": 6,
+                "half_dead": false,
+                "id": "FuzzyLouseDefensive",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 12,
+                "move_adjusted_damage": 6,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": []
+              },
+              {
+                "block": 0,
+                "current_hp": 15,
+                "half_dead": false,
+                "id": "FuzzyLouseDefensive",
+                "intent": "DEBUFF",
+                "is_gone": false,
+                "max_hp": 15,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": [
+                  {
+                    "amount": 3,
+                    "id": "Curl Up",
+                    "name": "Curl Up"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 10,
+              "current_hp": 88,
+              "energy": 0,
+              "max_hp": 88,
+              "powers": []
+            },
+            "turn": 1
+          },
+          "current_hp": 88,
+          "floor": 1,
+          "gold": 99,
+          "is_screen_up": false,
+          "max_hp": 88,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 31,
+      "before_sequence": 10,
+      "command": "end",
+      "decision_line": 33,
+      "execution_line": 36,
+      "id": "defensive_louses_apply_weak",
+      "selected_action": {
+        "card_id": null,
+        "hand_index": null,
+        "kind": "end",
+        "target_index": null
+      },
+      "source": "attempt_0011"
+    },
+    {
+      "action_line": 62,
+      "after": {
+        "available_commands": [
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 2,
+                "has_target": true,
+                "id": "Bash",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": false,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 0,
+                "half_dead": false,
+                "id": "FuzzyLouseDefensive",
+                "intent": "DEBUFF",
+                "is_gone": true,
+                "max_hp": 12,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": []
+              },
+              {
+                "block": 3,
+                "current_hp": 11,
+                "half_dead": false,
+                "id": "FuzzyLouseDefensive",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 15,
+                "move_adjusted_damage": 6,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": []
+              }
+            ],
+            "player": {
+              "block": 10,
+              "current_hp": 87,
+              "energy": 0,
+              "max_hp": 88,
+              "powers": [
+                {
+                  "amount": 1,
+                  "id": "Weakened",
+                  "name": "Weakened"
+                }
+              ]
+            },
+            "turn": 3
+          },
+          "current_hp": 87,
+          "floor": 1,
+          "gold": 99,
+          "is_screen_up": false,
+          "max_hp": 88,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 63,
+      "after_sequence": 18,
+      "before": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 2,
+                "has_target": true,
+                "id": "Bash",
+                "is_playable": false,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 0,
+                "half_dead": false,
+                "id": "FuzzyLouseDefensive",
+                "intent": "DEBUFF",
+                "is_gone": true,
+                "max_hp": 12,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": []
+              },
+              {
+                "block": 0,
+                "current_hp": 15,
+                "half_dead": false,
+                "id": "FuzzyLouseDefensive",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 15,
+                "move_adjusted_damage": 6,
+                "move_hits": 1,
+                "name": "Louse",
+                "powers": [
+                  {
+                    "amount": 3,
+                    "id": "Curl Up",
+                    "name": "Curl Up"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 10,
+              "current_hp": 87,
+              "energy": 1,
+              "max_hp": 88,
+              "powers": [
+                {
+                  "amount": 1,
+                  "id": "Weakened",
+                  "name": "Weakened"
+                }
+              ]
+            },
+            "turn": 3
+          },
+          "current_hp": 87,
+          "floor": 1,
+          "gold": 99,
+          "is_screen_up": false,
+          "max_hp": 88,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 59,
+      "before_sequence": 17,
+      "command": "play 1 1",
+      "decision_line": 61,
+      "execution_line": 64,
+      "id": "weak_strike_targets_second_defensive_louse",
+      "selected_action": {
+        "card_id": "Strike_R",
+        "hand_index": 0,
+        "kind": "play",
+        "target_index": 1
+      },
+      "source": "attempt_0011"
+    },
+    {
+      "action_line": 26,
+      "after": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 53,
+                "half_dead": false,
+                "id": "Cultist",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 53,
+                "move_adjusted_damage": 9,
+                "move_hits": 1,
+                "name": "Cultist",
+                "powers": [
+                  {
+                    "amount": 3,
+                    "id": "Ritual",
+                    "name": "Ritual"
+                  },
+                  {
+                    "amount": 3,
+                    "id": "Strength",
+                    "name": "Strength"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 74,
+              "energy": 3,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 3
+          },
+          "current_hp": 74,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 27,
+      "after_sequence": 9,
+      "before": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 53,
+                "half_dead": false,
+                "id": "Cultist",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 53,
+                "move_adjusted_damage": 6,
+                "move_hits": 1,
+                "name": "Cultist",
+                "powers": [
+                  {
+                    "amount": 3,
+                    "id": "Ritual",
+                    "name": "Ritual"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 80,
+              "energy": 3,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 2
+          },
+          "current_hp": 80,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 23,
+      "before_sequence": 8,
+      "command": "end",
+      "decision_line": 25,
+      "execution_line": 28,
+      "id": "cultist_probe_unblocked_attack",
+      "selected_action": {
+        "card_id": null,
+        "hand_index": null,
+        "kind": "end",
+        "target_index": null
+      },
+      "source": "attempt_0015"
+    },
+    {
+      "action_line": 46,
+      "after": {
+        "available_commands": [
+          "proceed",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "current_hp": 0,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": true,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "DEATH",
+          "screen_state": {
+            "victory": false
+          },
+          "screen_type": "GAME_OVER"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 47,
+      "after_sequence": 14,
+      "before": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 2,
+                "has_target": true,
+                "id": "Bash",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 53,
+                "half_dead": false,
+                "id": "Cultist",
+                "intent": "ATTACK",
+                "is_gone": false,
+                "max_hp": 53,
+                "move_adjusted_damage": 21,
+                "move_hits": 1,
+                "name": "Cultist",
+                "powers": [
+                  {
+                    "amount": 3,
+                    "id": "Ritual",
+                    "name": "Ritual"
+                  },
+                  {
+                    "amount": 15,
+                    "id": "Strength",
+                    "name": "Strength"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 20,
+              "energy": 3,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 7
+          },
+          "current_hp": 20,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 43,
+      "before_sequence": 13,
+      "command": "end",
+      "decision_line": 45,
+      "execution_line": 48,
+      "id": "cultist_probe_engine_death",
+      "selected_action": {
+        "card_id": null,
+        "hand_index": null,
+        "kind": "end",
+        "target_index": null
+      },
+      "source": "attempt_0015"
+    },
+    {
+      "action_line": 26,
+      "after": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 5,
+                "current_hp": 43,
+                "half_dead": false,
+                "id": "JawWorm",
+                "intent": "DEFEND_BUFF",
+                "is_gone": false,
+                "max_hp": 43,
+                "move_adjusted_damage": -1,
+                "move_hits": 1,
+                "name": "Jaw Worm",
+                "powers": []
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 62,
+              "energy": 3,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 3
+          },
+          "current_hp": 62,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 27,
+      "after_sequence": 9,
+      "before": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 43,
+                "half_dead": false,
+                "id": "JawWorm",
+                "intent": "ATTACK_DEFEND",
+                "is_gone": false,
+                "max_hp": 43,
+                "move_adjusted_damage": 7,
+                "move_hits": 1,
+                "name": "Jaw Worm",
+                "powers": []
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 69,
+              "energy": 3,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 2
+          },
+          "current_hp": 69,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 23,
+      "before_sequence": 8,
+      "command": "end",
+      "decision_line": 25,
+      "execution_line": 28,
+      "id": "jaw_worm_probe_unblocked_attack_defend",
+      "selected_action": {
+        "card_id": null,
+        "hand_index": null,
+        "kind": "end",
+        "target_index": null
+      },
+      "source": "attempt_0016"
+    },
+    {
+      "action_line": 58,
+      "after": {
+        "available_commands": [
+          "proceed",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "current_hp": 0,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": true,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "DEATH",
+          "screen_state": {
+            "victory": false
+          },
+          "screen_type": "GAME_OVER"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "after_line": 59,
+      "after_sequence": 17,
+      "before": {
+        "available_commands": [
+          "play",
+          "end",
+          "key",
+          "click",
+          "wait",
+          "state"
+        ],
+        "game_state": {
+          "act": 1,
+          "ascension_level": 0,
+          "class": "IRONCLAD",
+          "combat_state": {
+            "hand": [
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": true,
+                "id": "Strike_R",
+                "is_playable": true,
+                "upgrades": 0
+              },
+              {
+                "cost": 1,
+                "has_target": false,
+                "id": "Defend_R",
+                "is_playable": true,
+                "upgrades": 0
+              }
+            ],
+            "monsters": [
+              {
+                "block": 0,
+                "current_hp": 43,
+                "half_dead": false,
+                "id": "JawWorm",
+                "intent": "ATTACK_DEFEND",
+                "is_gone": false,
+                "max_hp": 43,
+                "move_adjusted_damage": 16,
+                "move_hits": 1,
+                "name": "Jaw Worm",
+                "powers": [
+                  {
+                    "amount": 9,
+                    "id": "Strength",
+                    "name": "Strength"
+                  }
+                ]
+              }
+            ],
+            "player": {
+              "block": 0,
+              "current_hp": 5,
+              "energy": 3,
+              "max_hp": 80,
+              "powers": []
+            },
+            "turn": 10
+          },
+          "current_hp": 5,
+          "floor": 1,
+          "gold": 199,
+          "is_screen_up": false,
+          "max_hp": 80,
+          "room_phase": "COMBAT",
+          "room_type": "MonsterRoom",
+          "screen_name": "NONE",
+          "screen_type": "NONE"
+        },
+        "in_game": true,
+        "ready_for_command": true
+      },
+      "before_line": 55,
+      "before_sequence": 16,
+      "command": "end",
+      "decision_line": 57,
+      "execution_line": 60,
+      "id": "jaw_worm_probe_engine_death",
+      "selected_action": {
+        "card_id": null,
+        "hand_index": null,
+        "kind": "end",
+        "target_index": null
+      },
+      "source": "attempt_0016"
+    }
+  ]
+}
