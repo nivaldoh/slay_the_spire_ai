@@ -1,6 +1,7 @@
 """Runner lifecycle regressions; these mocked states do not certify the engine."""
 
 import json
+import socket
 from contextlib import nullcontext
 from copy import deepcopy
 from types import SimpleNamespace
@@ -9,7 +10,7 @@ from unittest.mock import Mock
 import pytest
 
 from spire import doctor, rollout
-from spire.bridge import BridgeDisconnected
+from spire.bridge import BridgeDisconnected, BridgeServer
 
 
 def combat_message():
@@ -220,6 +221,23 @@ def test_bridge_disconnect_keeps_pending_action_evidence_and_is_not_loss(tmp_pat
     assert sum(event["kind"] == "action" for event in trace) == 1
     assert not any(event["kind"] in {"terminal", "execution"} for event in trace)
     assert json.loads((directory / "result.json").read_text()) == result
+
+
+def test_occupied_bridge_port_records_failure_before_deployment_or_game_launch(
+    tmp_path, config, harness, monkeypatch
+):
+    with socket.socket() as occupied:
+        occupied.bind(("127.0.0.1", 0))
+        occupied.listen(1)
+        monkeypatch.setattr(rollout, "BRIDGE_PORT", occupied.getsockname()[1])
+        monkeypatch.setattr(rollout, "BridgeServer", BridgeServer)
+        result = rollout.run_episode(tmp_path / "episode", config, 0)
+    assert result["status"] == "infrastructure_failure"
+    assert result["error_type"] == "BridgeError"
+    assert result["actions"] == 0
+    assert not harness.games
+    rollout.prepare_runtime.assert_not_called()
+    assert not any(event["kind"] == "launch" for event in read_trace(tmp_path / "episode"))
 
 
 def test_watchdog_disconnect_at_deadline_is_time_truncation(tmp_path, config, harness):

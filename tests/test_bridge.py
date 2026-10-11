@@ -120,6 +120,32 @@ def test_context_cannot_be_reused_and_closing_releases_port():
         replacement.bind(address)
 
 
+def test_server_can_rebind_same_port_after_server_initiated_close():
+    port = 0
+    for index in range(3):
+        with BridgeServer(port=port, timeout=1) as bridge:
+            port = bridge.address[1]
+            relay = socket.create_connection(bridge.address)
+            relay.settimeout(1)
+            relay.sendall(f'{{"episode":{index}}}\n'.encode())
+            assert bridge.receive() == {"episode": index}
+            # The server closes first, so its address can enter TIME_WAIT.
+        try:
+            assert relay.recv(1) == b""
+        finally:
+            relay.close()
+
+
+def test_address_reuse_does_not_allow_two_live_listeners():
+    with BridgeServer(timeout=1) as original:
+        with pytest.raises(BridgeError, match="could not listen"):
+            with BridgeServer(port=original.address[1], timeout=1):
+                pytest.fail("a second listener must not take ownership")
+        with socket.create_connection(original.address) as relay:
+            relay.sendall(b'{"original":true}\n')
+            assert original.receive() == {"original": True}
+
+
 @pytest.mark.parametrize("timeout", [0, -1, float("nan"), float("inf")])
 def test_timeout_must_be_bounded(timeout):
     with pytest.raises(ValueError):

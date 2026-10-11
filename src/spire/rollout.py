@@ -26,6 +26,11 @@ from spire.protocol import (
 )
 from spire.runtime import GAME_DIR, OwnedGame, RuntimeLock, prepare_runtime, sha256
 
+# Linux ephemeral ports overlap Windows excluded ranges, which prevent WSL's
+# localhost forwarding despite a successful Linux bind. The exclusive runtime
+# owns this fixed port, below both systems' default ephemeral ranges.
+BRIDGE_PORT = 19876
+
 
 def write_json(path: Path, value: dict) -> None:
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -127,7 +132,9 @@ def run_episode(
             trace.flush()
 
         try:
-            with RuntimeLock(), BridgeServer(timeout=config["bridge_timeout"]) as bridge:
+            with RuntimeLock(), BridgeServer(
+                port=BRIDGE_PORT, timeout=config["bridge_timeout"]
+            ) as bridge:
                 deployment = prepare_runtime(*bridge.address, timeout=config["bridge_timeout"])
                 write_json(directory / "deployment.json", deployment)
                 with OwnedGame(directory / "game.log", timeout=config["episode_timeout"]) as game:

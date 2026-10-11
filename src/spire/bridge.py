@@ -74,6 +74,9 @@ class BridgeServer:
             raise BridgeError("bridge contexts cannot be reused")
         listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
+            # Reuse the WSL listening address after a previous episode's TCP
+            # connection enters TIME_WAIT; this does not share a live listener.
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             listener.settimeout(self.timeout)
             listener.bind((self.host, self.port))
             listener.listen(1)
