@@ -28,7 +28,7 @@ CARD_IDS = ("Strike_R", "Defend_R", "Bash")
 POWER_IDS = (
     "Strength",
     "Dexterity",
-    "Weak",
+    "Weakened",
     "Vulnerable",
     "Frail",
     "Curl Up",

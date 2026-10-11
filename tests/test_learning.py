@@ -2,18 +2,22 @@
 
 import copy
 import io
+import json
 import math
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
 torch = pytest.importorskip("torch")
 
 from spire.learning import (  # noqa: E402
+    POWER_IDS,
     CandidateActorCritic,
     NeuralPolicy,
     PPOTrainer,
     Transition,
+    _powers,
     complete_episode_advantages,
     decision_from_dict,
     terminal_reward,
@@ -204,6 +208,17 @@ def test_empty_piles_single_end_action_and_nonfinite_feature_handling():
     combat["player"]["energy"] = float("nan")
     with pytest.raises(ValueError, match="nonfinite"):
         model(decision_from_dict(state))
+
+
+def test_engine_weak_power_has_a_named_feature_channel():
+    fixture = json.loads(
+        (Path(__file__).parent / "fixtures/engine_starter_transitions.json").read_text()
+    )
+    transition = next(item for item in fixture["transitions"] if item["id"] == "weak_strike")
+    public = decision_from_message(transition["before"], session_id="engine-fixture", sequence=0)
+    powers = _powers(public.observation["combat_state"]["player"])
+    assert powers[POWER_IDS.index("Weakened")] == 0.2
+    assert powers[-2:] == [0.0, 0.0]
 
 
 def test_complete_episode_gae_stops_at_each_terminal():

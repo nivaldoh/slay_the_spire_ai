@@ -19,7 +19,8 @@ training batches receives negative-infinity logits and zero action probability.
 
 Features are fixed scaled public health, block, energy, turn/counters, card type,
 cost/upgrades/flags, visible intent and damage, and public power amounts. Named
-power channels cover Strength, Dexterity, Weak, Vulnerable, Frail, Curl Up, Ritual,
+power channels cover Strength, Dexterity, Weak (engine ID `Weakened`), Vulnerable,
+Frail, Curl Up, Ritual,
 Artifact, Metallicize, and Barricade; unknown powers share amount/count channels.
 Unknown card IDs share a channel, but action legality remains restricted by the
 protocol adapter. The model omits names, UUIDs, slot positions, seed, private RNG,
