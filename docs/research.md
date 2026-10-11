@@ -370,3 +370,13 @@ and seed 1 without reduced wins; report the two paired effects individually. Eig
 policy samples per initialization do not become eight independent training replicates.
 The original pilot and default seed-0 run share initialization and are not replicates.
 All of this remains development; broader held-out evaluation and Act 1 are unfinished.
+
+## Language catalog transfer comparison (adopted before launch)
+
+With the PPO route paused by owner direction, the next language-track measurement is
+the reviewed [language catalog contract](language-catalog-experiment.md), adopted
+unchanged (SHA-256 `406f2a6c6c281025504b4d446bb4ecebaf6b6828c6c3f704ed905539c3fb56a7`).
+It evaluates the unchanged Qwen3-0.6B and then the existing final Louse-only SFT LoRA
+on `starter-three-encounter-development-v1`, 12 slots each, with no new training,
+checkpoint choice, prompt change or retry. Cultist and Jaw Worm are absent from the
+adapter's training data; all three scenarios remain development evidence.

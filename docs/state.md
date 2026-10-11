@@ -2,9 +2,26 @@
 
 Updated 2026-10-11, during the authorized unattended bootstrap session.
 
-## Active work (last verified 08:15 UTC)
+## Active work (last verified 14:55 UTC)
 
-All game and GPU jobs have exited. The frozen SFT v2 evaluation completed at source
+Owner direction (2026-10-11 afternoon): pause the pure-RL/PPO route and advance LLM
+post-training. The declared PPO learning-rate launchers stay unrun; the seed-1 clock
+gate has expired, so that pair would need a new declaration before any run.
+
+The declared four-policy catalog comparison completed at source `01f2984` with all
+48 slots, zero infrastructure failures and valid independent audits for every policy:
+
+| Policy | Wins | Macro HP | Louses | Cultist | Jaw Worm |
+| --- | ---: | ---: | --- | --- | --- |
+| Heuristic | 12/12 | 76.00 | 4/4, HP77 | 4/4, HP71 | 4/4, HP80 |
+| Random | 10/12 | 42.00 | 4/4, HP70.25 | 3/4, HP36.75 | 3/4, HP19 |
+| Initial neural | 8/12 | 37.25 | 4/4, HP61.5 | 2/4, HP24.75 | 2/4, HP25.5 |
+| Budget-64 neural | 9/12 | 35.67 | 4/4, HP60.25 | 2/4, HP21 | 3/4, HP25.75 |
+
+The Louse-trained PPO policy shows no transfer improvement over its own initialization
+and stays below random on HP. See [comparison](results/starter-three-encounter-development-v1.json).
+
+The frozen SFT v2 evaluation completed at source
 `e829c1c`; tool session `71199` exited successfully and PIDs `337234`/`337233` are gone.
 It won all eight canonical fights at HP77, with 168 audited transitions and no policy,
 context, command or infrastructure failures. Every command and public transition
@@ -51,9 +68,7 @@ Final declaration SHA-256:
 The three-scenario catalog is admitted from original-engine inventory and repeat
 traces. The declared next comparison is random, heuristic, initial neural and final
 budget-64 neural: 12 attempts / 1,200 seconds per policy, 48 reserved attempts total.
-No catalog policy score has yet been collected. A bounded launcher is prepared at
-`runs/run_declared_catalog_comparison.py`; it stops at the first incomplete policy
-batch, preserves all unattempted policies and does not retry.
+Those catalog scores are complete (table above).
 
 Language catalog evaluation is integrated at `2d3afb1`, with one frozen model owner
 across scheduled children, independent saved-trace auditing and explicit partial
@@ -255,16 +270,14 @@ that natural-language deadline.
 
 ## Next useful actions
 
-1. Commit the completed SFT result and generated figures, then launch the declared
-   random/heuristic/initial-neural/final-neural catalog comparison: 12 attempts and
-   1,200 seconds per policy. Freeze source/HEAD until all four policies terminate.
-2. Audit and report per-scenario scores and the equal-scenario macro result, retaining
-   every failed or unattempted slot. Catalog:
-   `configs/suites/starter_three_encounter_development_v1.json`.
-3. Run the already declared PPO learning-rate intervention and its clock-gated matched
-   seed-1 replication, with frozen final-artifact evaluations; no outcome-driven retries.
-4. Declare separate broader language-model comparisons, held-out evaluation and the
-   smallest supported noncombat expansion before collecting their results.
+1. Run the adopted [language catalog contract](language-catalog-experiment.md):
+   unchanged Qwen3-0.6B, then the final Louse-only SFT LoRA, on the three-scenario
+   catalog (`runs/run_language_catalog_comparison.py`, 24 slots, 3,600-second cap).
+2. Broaden SFT data beyond 21 memorized Louse prompts and test transfer to encounter
+   families absent from training, before any outcome-based LLM post-training.
+3. PPO learning-rate work is paused by owner direction; re-declare before resuming.
+4. Declare held-out evaluation and the smallest supported noncombat expansion before
+   collecting their results.
 
 Current limitations: starter cards only, no potion actions or noncombat policy,
 Neow prefixes outside max HP/100 gold unsupported, no arbitrary snapshots, no live
@@ -273,3 +286,29 @@ combat resume, and no demonstrated neural PPO improvement. Use
 locked and installed; tiny-network training uses CPU because original-engine
 collection dominates runtime. CUDA dependencies remain isolated in their locked
 mutually exclusive extra.
+
+The language comparison report identifies its original and rerun contracts by
+historical Git revision and content hash (committed after the catalog queue ended).
+
+Isolated completed source work, awaiting a safe integration window:
+- `1625e722e80e3ca62de195c66a7fe35ea331b5b2`: PPO clipping-frequency diagnostic.
+  89 focused tests passed. An 81-transition saved original-engine replay exactly
+  preserved model/Adam/RNG and every historical metric; only the new diagnostic
+  was added. Proof: `runs/ppo-clip-diagnostic-equivalence-20261011/proof.json`.
+- `f6a3c3e`: held-out evaluation purpose propagation and training/resume/export/
+  saved-training-audit rejection. 234 focused checks passed, Ruff clean, independent
+  review passed. The completed random development catalog re-audits identically.
+  This adds an operational boundary; no held-out suite or score is established.
+- Two-combat continuation passed independent review at `d446e85`; existing
+  first-combat files are unchanged. No second-combat game has been run. A separate
+  bounded five-attempt engineering gate is being prepared, including a deliberate
+  interruption after claiming gold and before entering the second fight.
+The three source changes are combined in `/tmp/spire-combined-integration` at
+`940d69844fdbffb67326aac9dacead8b4a23fc47`, based on current main. All 764 CPU
+tests passed (eight optional skips), including actual saved mechanics evidence;
+Ruff is clean. Fast-forward only after the current game queue releases ownership.
+Prepared, reviewed, unexecuted launchers: `runs/run_ppo_high_lr_seed0.py` (whole-job
+4,350-second cap) and `runs/run_ppo_seed1_pair.py` (clock gate and whole-block
+10,500-second cap). Do not run either until the current catalog queue completes
+and its evidence is valid. Seed-1 clock gate is before 10:05 UTC, independent of
+seed-0 scores, to reserve 175 minutes before the conservative 13:00 UTC boundary.

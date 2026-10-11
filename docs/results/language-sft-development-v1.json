@@ -4,6 +4,20 @@
   "decision": "keep",
   "decision_scope": "Improved legal completion/wins on the declared same-scenario imitation diagnostic only",
   "evaluation_source_revision": "e829c1ccf610de09e4697dcd74e2b7accb3ba48b",
+  "experiment_contracts": [
+    {
+      "path": "docs/language-experiment.md",
+      "role": "original_before_baseline_and_training",
+      "sha256": "b90ac569a12dc726897968d61c86131e7bc4552e70e6a21111cf0d2e1557d823",
+      "source_revision": "a8286454090b8d14ad700995160eb7619f151f9d"
+    },
+    {
+      "path": "docs/language-experiment.md",
+      "role": "infrastructure_rerun_before_controls",
+      "sha256": "8c636debd2c51adc8ab804e72572db8b0d3886649d6031edf4de6dabf4ad2c8f",
+      "source_revision": "e829c1ccf610de09e4697dcd74e2b7accb3ba48b"
+    }
+  ],
   "mean_trained_inference_seconds_per_episode": 8.265916995002954,
   "preserved_incomplete_trained_batch": {
     "metrics": {
@@ -33,7 +47,6 @@
   "schema_version": 1,
   "scope": "One training initialization and one fixed Louse development scenario. The 42 teacher rows contain 21 unique public prompts and directly reuse evaluation conditions. Eight greedy repeats are correlated; no held-out or broad gameplay claim.",
   "source_evidence_sha256": {
-    "docs/language-experiment.md": "8c636debd2c51adc8ab804e72572db8b0d3886649d6031edf4de6dabf4ad2c8f",
     "runs/baseline-heuristic-settled-20261011/evaluation.json": "16530651e7f95dd23e1277e6dbd66b994b42ac8d213d45b6cc364431a06920cf",
     "runs/qwen3-0.6b-heuristic-sft-20261011/job.json": "e734010e627d6db382d1b2bc621ecf6b9c619b291f16a096016627ecfb4c9591",
     "runs/qwen3-0.6b-heuristic-sft-20261011/training.json": "879a48cb753da0441477f16e3344aa33845ef18b2f9825cb5cbb3027077415a2",
@@ -42,7 +55,7 @@
     "runs/qwen3-0.6b-sft-eval-v2-20261011/evaluation.json": "ceb24e95a3f762a2d229f7444abd5a46b2b072e3f235ec1c07afc330e2d42a73",
     "runs/qwen3-0.6b-sft-eval-v2-20261011/manifest.json": "1210aa158d784e3b0f457aca64201d8676ec4971950673f85a2d1a79b0f1695e",
     "runs/qwen3-0.6b-untuned-eval-20261011/evaluation.json": "cd98d256d3c6c715a95f42f516ccff9cd0951ac0ff4f92bfe8fd27fcb2cc3be1",
-    "runs/summarize_language_diagnostic.py": "5df8f67f2cc415718e12de794e464d87722d9b7d7a6d332ae41c94cd57a8f25f"
+    "runs/summarize_language_diagnostic.py": "3cc2bad12049db03dbb839213957d5bb73e88a7fca4c6b57c934d07ffc7cf2a7"
   },
   "suite": {
     "description": "Fixed original-engine two-Louse first combat, starter Ironclad, Ascension 0, 80 HP, Burning Blood, 100-gold Neow reward, initial intents settled. Repeated stochastic-policy attempts on one scenario; no held-out seed or encounter claim.",
