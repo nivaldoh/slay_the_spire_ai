@@ -232,3 +232,67 @@ def test_decoder_preserves_embedded_special_tokens_and_removes_only_final_eos():
     assert language.decode_completion(Tokenizer(), [1, 151645]) == ('{"a":0}', '{"a":0}<eos>')
     assert language.decode_completion(Tokenizer(), [2, 1, 151645])[0] == '<think>{"a":0}'
     assert language.decode_completion(Tokenizer(), [1, 151645, 151645])[0] == '{"a":0}<eos>'
+
+
+@pytest.mark.parametrize("change", ["missing", "extra", "value", "shape", "lossy_dtype", "nan"])
+def test_adapter_tensor_verification_rejects_incomplete_or_changed_restore(change):
+    saved = {"lora_A": torch.tensor([1.0, 2.0]), "lora_B": torch.tensor([3.0, 4.0])}
+    restored = {key: value.clone() for key, value in saved.items()}
+    if change == "missing":
+        del restored["lora_B"]
+    elif change == "extra":
+        restored["unexpected"] = torch.zeros(1)
+    elif change == "value":
+        restored["lora_A"][0] += 1
+    elif change == "shape":
+        restored["lora_A"] = restored["lora_A"].reshape(1, 2)
+    elif change == "lossy_dtype":
+        restored["lora_A"] = restored["lora_A"].to(torch.bfloat16)
+    else:
+        saved["lora_A"][0] = restored["lora_A"][0] = float("nan")
+    with pytest.raises(ValueError, match="adapter tensor"):
+        language._verify_adapter_tensors(restored, saved)
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float16, torch.bfloat16])
+def test_adapter_tensor_verification_accepts_exact_values_and_lossless_peft_promotion(dtype):
+    saved = {"lora_A": torch.tensor([1.25, -0.5], dtype=dtype)}
+    language._verify_adapter_tensors({"lora_A": saved["lora_A"].clone()}, saved)
+    language._verify_adapter_tensors({"lora_A": saved["lora_A"].float()}, saved)
+
+
+@pytest.mark.parametrize("malformed", [False, True])
+def test_actual_cpu_peft_reload_rejects_missing_serialized_tensor(tmp_path, monkeypatch, malformed):
+    peft = pytest.importorskip("peft")
+    transformers = pytest.importorskip("transformers")
+    safetensors = pytest.importorskip("safetensors.torch")
+    monkeypatch.setenv("HF_HUB_OFFLINE", "1")
+    monkeypatch.setenv("TRANSFORMERS_OFFLINE", "1")
+    config = transformers.Qwen3Config(
+        vocab_size=32,
+        hidden_size=16,
+        intermediate_size=32,
+        num_hidden_layers=1,
+        num_attention_heads=2,
+        num_key_value_heads=1,
+        head_dim=8,
+    )
+    model = peft.get_peft_model(
+        transformers.Qwen3ForCausalLM(config),
+        peft.LoraConfig(r=2, lora_alpha=4, target_modules=["q_proj"], task_type="CAUSAL_LM"),
+    )
+    directory = tmp_path / "adapter"
+    model.save_pretrained(directory)
+    path = directory / "adapter_model.safetensors"
+    saved = safetensors.load_file(path)
+    assert len(saved) == 2 and next(model.parameters()).device.type == "cpu"
+    if malformed:
+        del saved[next(iter(saved))]
+        safetensors.save_file(saved, path)
+        with pytest.warns(UserWarning, match="missing adapter keys"):
+            with pytest.raises(ValueError, match="tensor keys differ"):
+                language._load_adapter(transformers.Qwen3ForCausalLM(config), str(directory))
+    else:
+        restored = language._load_adapter(transformers.Qwen3ForCausalLM(config), str(directory))
+        language._verify_adapter_tensors(peft.get_peft_model_state_dict(restored), saved)
+        assert all(not parameter.requires_grad for parameter in restored.parameters())

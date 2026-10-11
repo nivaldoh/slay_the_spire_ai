@@ -187,6 +187,42 @@ def decode_completion(tokenizer, token_ids: list[int]) -> tuple[str, str]:
     )
 
 
+def _verify_adapter_tensors(restored: dict, saved: dict) -> None:
+    """PEFT permits missing keys; require complete, exactly restored adapter values."""
+    import torch
+
+    if restored.keys() != saved.keys():
+        raise ValueError("Restored language adapter tensor keys differ from safetensors")
+    for name, expected in saved.items():
+        actual = restored[name].detach().cpu()
+        # PEFT's documented inference loader may promote half-precision adapters
+        # to float32. This promotion is lossless; all other dtype changes fail.
+        promoted = (
+            expected.dtype in {torch.float16, torch.bfloat16} and actual.dtype == torch.float32
+        )
+        if (
+            (actual.dtype != expected.dtype and not promoted)
+            or actual.shape != expected.shape
+            or not torch.equal(actual, expected)
+        ):
+            raise ValueError(f"Restored language adapter tensor differs: {name}")
+
+
+def _load_adapter(model, directory: str):
+    from peft import PeftModel, get_peft_model_state_dict
+    from safetensors.torch import load_file
+
+    saved = load_file(str(Path(directory) / "adapter_model.safetensors"), device="cpu")
+    model = PeftModel.from_pretrained(
+        model,
+        directory,
+        is_trainable=False,
+        local_files_only=True,
+    )
+    _verify_adapter_tensors(get_peft_model_state_dict(model), saved)
+    return model
+
+
 def load_local_model(declaration: dict):
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -206,14 +242,7 @@ def load_local_model(declaration: dict):
         trust_remote_code=False,
     )
     if declaration["adapter"] is not None:
-        from peft import PeftModel
-
-        model = PeftModel.from_pretrained(
-            model,
-            declaration["adapter"]["directory"],
-            is_trainable=False,
-            local_files_only=True,
-        )
+        model = _load_adapter(model, declaration["adapter"]["directory"])
     return model, tokenizer
 
 
