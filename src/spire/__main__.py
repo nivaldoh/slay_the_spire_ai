@@ -30,6 +30,9 @@ def main() -> int:
     artifact = evaluate.add_mutually_exclusive_group(required=True)
     artifact.add_argument("--policy", choices=["random", "heuristic"])
     artifact.add_argument("--checkpoint", type=Path, help="Frozen neural policy artifact")
+    artifact.add_argument(
+        "--language-artifact", type=Path, help="Frozen local language-policy declaration"
+    )
     evaluate.add_argument(
         "--suite", type=Path, required=True, help="Schema-1 suite or schema-2 catalog"
     )
@@ -95,7 +98,15 @@ def main() -> int:
         schema = declaration.get("schema_version") if isinstance(declaration, dict) else None
         if type(schema) is not int or schema not in {1, 2}:
             parser.error("Evaluation requires a schema-1 suite or schema-2 catalog")
-        if schema == 2:
+        if args.language_artifact:
+            if schema != 1:
+                parser.error("Language-policy evaluation currently requires a schema-1 suite")
+            from spire.language_evaluation import evaluate_language
+
+            result = evaluate_language(args.language_artifact, args.suite, args.output)
+            metrics = result["audit"]["metrics"]
+            filename = "evaluation.json"
+        elif schema == 2:
             from spire.catalog import evaluate_catalog
 
             result = evaluate_catalog(
