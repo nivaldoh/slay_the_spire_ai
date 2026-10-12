@@ -125,3 +125,12 @@ def test_only_death_and_victory_screens_end_a_run(name, victory, expected):
                   screen_state={"victory": victory, "score": 100})
     assert fullgame.run_outcome(raw) == expected
     assert fullgame.run_outcome({**raw, "ready_for_command": False}) is None
+
+
+def test_grid_confirm_view_never_offers_the_cancel_that_hangs_communicationmod():
+    # Observed 2026-10-12 (Bonfire Spirits purge): cancel here produced no reply.
+    raw = message(["confirm", "cancel", "key", "click", "wait", "state"], screen_type="GRID",
+                  screen_state={"confirm_up": True, "for_purge": True, "num_cards": 1,
+                                "selected_cards": [], "cards": [card("Strike_R", "Strike")]})
+    decision = fullgame.decision_from_message(raw, session_id="s", sequence=1)
+    assert commands(decision) == {"confirm": "confirm"}

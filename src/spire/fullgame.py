@@ -233,8 +233,12 @@ def decision_from_message(message: dict, *, session_id: str, sequence: int) -> D
     if "choose" in commands:
         for index, name in enumerate(game.get("choice_list", [])):
             choices.append((f"choose {index}", _choice_label(game, index, str(name))))
+    # In a grid's confirm view, cancel only un-hovers the card; CommunicationMod sees no
+    # state change and never replies, which hangs the run (observed 2026-10-12).
+    confirm_view = game.get("screen_type") == "GRID" and (game.get("screen_state") or {}).get(
+        "confirm_up")
     for button in BUTTONS:
-        if button in commands:
+        if button in commands and not (confirm_view and button == "cancel"):
             choices.append((button, _button_label(game, button)))
     if "end" in commands:
         choices.append(("end", "end turn"))

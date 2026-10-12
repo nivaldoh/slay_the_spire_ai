@@ -61,7 +61,7 @@ def main() -> int:
     play.add_argument("--ledger", type=Path, default=Path("runs/llm-spend.jsonl"))
     play.add_argument("--max-actions", type=int, default=4000)
     play.add_argument("--run-timeout", type=float, default=5 * 3600)
-    play.add_argument("--bridge-timeout", type=float, default=600)
+    play.add_argument("--bridge-timeout", type=float, default=300)
     play.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.command == "doctor":

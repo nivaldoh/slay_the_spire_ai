@@ -108,7 +108,7 @@ class Ledger:
 class ResponsesClient:
     """Minimal POST client; retries only transient transport and service errors."""
 
-    def __init__(self, key: str, *, timeout: float = 120, attempts: int = 3, url: str = API_URL):
+    def __init__(self, key: str, *, timeout: float = 60, attempts: int = 3, url: str = API_URL):
         self._key, self.timeout, self.attempts, self.url = key, timeout, attempts, url
 
     def create(self, body: dict) -> dict:
@@ -159,10 +159,14 @@ def _monster(index: int, monster: dict) -> str:
             f"{monster.get('block', 0)}, intent {intent}; powers: {_powers(monster)}")
 
 
-def _combat(combat: dict) -> list[str]:
+ROOMS = {"MonsterRoom": "monster", "MonsterRoomElite": "elite", "MonsterRoomBoss": "boss"}
+
+
+def _combat(combat: dict, room: str) -> list[str]:
     player = combat["player"]
     lines = [
-        f"Combat turn {combat.get('turn')}. Energy {player.get('energy')}.",
+        f"Combat ({ROOMS.get(room, 'event')}), turn {combat.get('turn')}. "
+        f"Energy {player.get('energy')}.",
         f"You: HP {player['current_hp']}/{player['max_hp']}, block {player.get('block', 0)}; "
         f"powers: {_powers(player)}",
         "Enemies:",
@@ -222,8 +226,10 @@ def _screen(observation: dict) -> list[str]:
         purpose = next((p for p in ("upgrade", "transform", "purge") if state.get(f"for_{p}")),
                        "select")
         count = "any number of" if state.get("any_number") else state.get("num_cards")
-        return [f"Choose {count} card(s) to {purpose}. Selected: "
-                + _cards(state.get("selected_cards", []))]
+        # A single chosen card waits in a hover slot, not in selected_cards.
+        selected = state.get("selected_cards", [])
+        return [f"Choose {count} card(s) to {purpose}."
+                + (f" Selected: {_cards(selected)}" if selected else "")]
     if screen == "HAND_SELECT":
         return [f"Choose up to {state.get('max_cards')} card(s) from your hand. Selected: "
                 + _cards(state.get("selected", []))]
@@ -248,7 +254,7 @@ def render_state(observation: dict) -> str:
     if keys:
         lines.append("Keys: " + ", ".join(keys))
     if observation.get("combat_state"):
-        lines += _combat(observation["combat_state"])
+        lines += _combat(observation["combat_state"], observation.get("room_type"))
     if observation.get("screen_type") not in (None, "NONE"):
         lines += _screen(observation)
     return "\n".join(lines)

@@ -105,6 +105,7 @@ def test_map_rendering_lists_only_reachable_nodes():
 
 def test_combat_rendering_shows_intents_dead_enemies_and_piles():
     text = llm.render_state(decision().to_dict()["observation"])
+    assert "Combat (event), turn 2. Energy 3." in text
     assert "[0] Louse: dead" in text
     assert "[1] Jaw Worm: HP 30/44, block 0, intent ATTACK 11; powers: Strength 3" in text
     assert "Draw pile (2): Anger (0 attack), Bash (2 attack)" in text
@@ -142,3 +143,14 @@ def test_api_key_file_and_transient_retry_without_leaking_the_key(tmp_path, monk
     with pytest.raises(llm.APIError) as error:
         client.create({})
     assert "sk-test-secret" not in str(error.value) and "<key>" in str(error.value)
+
+
+def test_combat_rendering_names_the_room_and_omits_an_empty_selection():
+    raw = combat_message()
+    raw["game_state"]["room_type"] = "MonsterRoomBoss"
+    observation = fullgame.decision_from_message(raw, session_id="s", sequence=1).observation
+    assert "Combat (boss), turn 2." in llm.render_state(dict(observation))
+    grid = message(["confirm"], screen_type="GRID", screen_state={
+        "confirm_up": True, "for_upgrade": True, "num_cards": 1, "selected_cards": []})
+    observation = fullgame.decision_from_message(grid, session_id="s", sequence=1).observation
+    assert "Choose 1 card(s) to upgrade.\n" in llm.render_state(dict(observation)) + "\n"
