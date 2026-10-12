@@ -385,6 +385,34 @@ checked against the saved fights: 282 HP; two Torch Heads (about 40 HP, Tackle 7
 so killing The Collector ends the fight. Only RUNDEV2 reaches it, so v7 was played on
 RUNDEV2 alone to finish before the session's end.
 
+### 2026-10-12: v7 on RUNDEV2
+
+`runs/llm-luna-v7-dev-20261012`, source `df231dc`, RUNDEV2 only.
+
+| Seed | Outcome | Act / floor | Killed by | Decisions | Calls | Cost | Wall time |
+|---|---|---|---|---:|---:|---:|---:|
+| RUNDEV2 | lost | 3 / 50 | Awakened One (Act 3 boss) | 862 | 719 | $0.172 | 3,420 s |
+
+- The targeted mistake reversed. The model aimed its attacks at The Collector, "the only
+  enemy whose defeat ends the fight", and dealt it 236 damage against 89 to the Torch
+  Heads (earlier fights: 82–116 against 117–206). It won in 13 turns at 61 → 23 HP, the
+  first Collector win in five attempts on this seed.
+- It then cleared Act 3's hallways and died to Awakened One on floor 50 after 14 turns,
+  the furthest any run has gone (score 506).
+- This is one sample on one seed. Keep v7; the next session should replay all three
+  seeds with it.
+
+### Overnight summary, 2026-10-12
+
+Seven scaffolding versions ran between 02:28 and 11:04 local time for $1.45 of API spend
+(ledger total $1.67 of the $25 cap). Best floors per seed went from 16/33/16 (v1.1) to
+29 (v5, v6), 50 (v7) and 42 (v6). Changes that removed a recurring, run-ending mistake:
+the Slime Boss note (v2), the boss's floor in the header (v4), the Large slime notes (v5)
+and The Collector note (v7). The incoming-damage line (v3) is used but showed no
+measurable effect, and v6's 0-HP line coincided with the end of exact-lethal deaths in
+three runs. Two harness defects were found and one fixed: the grid deselect labels, and
+the skipped card reward that stays listed (still open).
+
 ## Overnight loop
 
 Preflight: no `spire play` process is running (`ps -eo pid,cmd | grep '[p]ython3 -m spire play'`;

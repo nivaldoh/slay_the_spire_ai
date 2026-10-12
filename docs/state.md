@@ -3,17 +3,15 @@
 Updated 2026-10-12. The full-run API language-model track is current; see
 [llm-play.md](llm-play.md).
 
-## Active work (last verified 2026-10-12 11:17 UTC)
+## Active work (last verified 2026-10-12 14:05 UTC)
 
-Overnight autoresearch session in progress (owner: stop around 11:00 local, UTC-3).
-Job `runs/llm-luna-v6-dev-20261012` (scaffolding v6, source `e26f649`) is playing
-`RUNDEV1`–`RUNDEV3` with `gpt-6-luna` at low effort; check
-`ps -eo pid,cmd | grep '[p]ython3 -m spire play'` before launching anything. While it
-runs, `src/`, `scripts/` and `configs/` must stay unchanged: the runner compares their
-fingerprints before every seed. Docs may change. Floors so far: v1.1 16/33/16, v2
-16/24/33, v3 16/33/16, v4 16/33/41 (first Act 3), v5 29/23/16 (first RUNDEV1 Slime Boss
-win); see the log in [llm-play.md](llm-play.md). API spend: $1.17 of the $25 cap in
-`runs/llm-spend.jsonl`.
+No game, GPU or API job is running. Source and HEAD are free. The first overnight
+autoresearch session on the full-run LLM track ended at 11:04 local (UTC-3): scaffolding
+v2–v7 were played on `RUNDEV1`–`RUNDEV3` (v7 on `RUNDEV2` only). Best floors per seed:
+29, 50 and 42 (v1.1 baseline: 16, 33, 16); no run has won yet. The next step is to replay
+all three seeds on v7 (`df231dc`), then take the top candidate in
+[llm-play.md](llm-play.md) (skipped-reward memory). API spend: $1.67 of the $25
+cap in `runs/llm-spend.jsonl`.
 
 Owner direction (2026-10-12): run a frontier API model through complete runs, with
 the scaffolding found by autoresearch from observed mistakes. Full runs, `gpt-6-luna`
