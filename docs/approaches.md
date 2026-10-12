@@ -1,6 +1,6 @@
 # Approaches to an AI that plays Slay the Spire
 
-*Research snapshot dated 2026-10-11, synthesized from six research notes compiled that day (the
+*Research snapshot dated 2026-10-11, synthesized from eleven research notes compiled that day (the
 notes stay outside Git, under `runs/research_notes/`). "Estimate" marks a number a researcher
 computed from stated assumptions rather than one a source reported. "Self-reported" marks a
 result its authors published and nobody has reproduced. Prices are list prices read on
@@ -36,7 +36,11 @@ teacher; and, if the goal becomes the full game, validate a fast simulator again
 audited traces before training on it. Paid services buy bigger models, not more samples. The project's distinctive
 asset is its honest-information, audited, real-engine evaluator: the notes found no
 peer-reviewed Slay the Spire paper with real-engine RL results and no published RL-trained LLM
-for the game.
+for the game. Section 11 sketches two later directions that keep that focus: interpretability of
+every policy, with behavioral tests for closed API models and mechanistic tools for the local Qwen
+(ready-made transcoders exist for its exact base model); and robot-learning methods that fit the
+project's slow, verified engine (ENPIRE's agent contract, RECAP-style advantage-conditioned
+post-training, AutoEval-style evaluation and SIMPLER-style sim-to-real metrics).
 
 ## Comparison of paths
 
@@ -961,6 +965,351 @@ solvers, gameplay debate or mixed-model ensembles, RNG-reading teachers, or dist
 that has not first been measured as a policy. OpenAI fine-tuning is not an option for a new
 account in any case.
 
+## 11. Later directions: interpretability and robotics
+
+These two directions are for after the sequence in section 10, not instead of any of it. Both keep
+the project what it is, an AI that plays Slay the Spire, and add a way of studying or improving it.
+Three further research notes compiled on 2026-10-11 back this section.
+
+Both build mainly on assets the project already has. Its 288 saved traces hold about 5,000 combat
+decision states (counted here; many repeat the same seeded states), each with its public
+`Decision`; a decision has a median of 5 legal candidates and at most 11. The Qwen policy
+gives an exact probability for every candidate (`candidate_log_probs` in `language_policy.py`), the
+PPO network a softmax, and the heuristic a deterministic pick. The state is structured, so single
+fields can be edited to make counterfactuals. One base model has a lineage of adapters with measured
+behavior (unchanged, Louse SFT, heuristic relabel, one and two REINFORCE updates). And the real
+engine can turn a claim about a model's internals into a prediction about wins and HP that it then
+confirms or refutes.
+
+### Interpretability: showing how each policy decides
+
+**What the terms mean.** Interpretability asks why a model produces the outputs it does, and it has
+two broad branches. *Behavioral* (black-box) interpretability treats the model as a function: edit
+the input, watch the output, and fit simple explanations to what changes. It needs only queries, so
+it is the only branch that reaches closed API models. *Mechanistic* interpretability opens the model
+and reads or edits its internal activations to find which components cause an output. Its main tools
+are linear probes (does a layer encode "incoming damage"?), activation patching (copy one internal
+value from a counterfactual input and see whether the decision follows), steering vectors (add a
+direction to the activations to shift behavior) and sparse dictionaries (SAEs and transcoders, which
+split activations into more readable features). It needs the weights, so here it applies to Qwen and
+the PPO network, not to Claude, GPT or Gemini.
+
+**Why this project is a good testbed.** Most LLM interpretability work explains free-text answers,
+where "the decision" is fuzzy. Here every decision is a choice among a handful of legal candidates,
+Qwen gives each an exact probability, and the inputs are game fields with ground-truth values such
+as intent damage, block, HP and energy. A metric like "log-probability of the chosen card minus the
+runner-up" is therefore precise, probe labels come free from the audited states, and edited states
+can be checked for legality. Games have long been interpretability's favorite testbed for the same
+reasons. Othello-GPT's board is linearly decodable and editable ([Li et al., ICLR
+2023](https://arxiv.org/abs/2210.13382); [Nanda et al. 2023](https://arxiv.org/abs/2309.00941));
+adding a "skill vector" to a chess-playing GPT raised its win rate by up to 2.6× ([Karvonen
+2024](https://arxiv.org/abs/2403.15498)); a probe on Leela Chess Zero predicts the best move two
+turns ahead 92% of the time in single-line positions ([Jenner et al., NeurIPS
+2024](https://arxiv.org/abs/2406.00877)); AlphaZero's chess concepts were probed and then taught to
+grandmasters ([McGrath et al. 2022](https://arxiv.org/abs/2111.09259); [Schut et al., PNAS
+2025](https://arxiv.org/abs/2310.16410)); a model-free Sokoban agent turned out to plan, in
+something like bidirectional search ([Bush et al., ICLR 2025](https://arxiv.org/abs/2504.01871));
+and subtracting a "cheese vector" made a maze agent mostly ignore its goal ([Turner et al.
+2023](https://www.alignmentforum.org/posts/cAC4AXiNC5ig6jQnc/understanding-and-controlling-a-maze-solving-policy-network)).
+A 2026 study of Llama, Qwen3 and gpt-oss in strategic games found their internal representations of
+the game state "substantially more accurate than their own verbal reports" ([Sobotka et
+al.](https://arxiv.org/abs/2605.00226)). The notes found **no interpretability work on Slay the
+Spire, on any deck-builder, or on a fine-tuned LLM card-game policy**.
+
+**Where the field stands, late 2026.** The open toolchain is mature, and opinion has turned
+pragmatic. Anthropic's attribution graphs, which trace a single output back through readable
+features, were open-sourced as `circuit-tracer` with a Neuronpedia front end in May 2025
+([Anthropic](https://www.anthropic.com/research/open-source-circuit-tracing)); since v0.4.0
+(February 2026) a graph can target the difference between two logits, which is exactly "why
+candidate 2 over candidate 3"
+([releases](https://github.com/safety-research/circuit-tracer/releases)). Ready-made per-layer
+transcoders exist for **Qwen3-0.6B, the project's exact base model** (163,840 features per layer,
+about 18.8 GB for all 28 layers;
+[mwhanna/qwen3-0.6b-transcoders-lowl0](https://huggingface.co/mwhanna/qwen3-0.6b-transcoders-lowl0)).
+The Qwen team's official Qwen-Scope SAEs cover all 24 layers of **Qwen3.5-2B-Base**, the planned
+upgrade, and the model card calls applying base-model SAEs to post-trained checkpoints "reasonable"
+for most situations ([Qwen-Scope](https://arxiv.org/abs/2605.11887); [model
+card](https://huggingface.co/Qwen/SAE-Res-Qwen3.5-2B-Base-W32K-L0_50)); nothing comparable exists
+for Qwen3.5-4B. TransformerLens v4 (2026-09-21) supports Qwen3.5
+([releases](https://github.com/TransformerLensOrg/TransformerLens/releases)), and the Jacobian lens
+(Gurnee et al., July 2026), a principled refinement of the logit lens that shows what each layer
+"would predict", ships with Qwen examples ([arXiv 2607.15495](https://arxiv.org/abs/2607.15495);
+[jacobian-lens](https://github.com/anthropics/jacobian-lens)). Against that, Google DeepMind
+deprioritized fundamental SAE research in March 2025 after dense linear probes beat SAE-based probes
+out of distribution ([Alignment Forum](https://www.alignmentforum.org/posts/4uXCAJNuPKtKBsi28/)),
+AxBench found that for steering "prompting outperforms all existing methods" ([AxBench, ICML
+2025](https://arxiv.org/abs/2501.17148)), and Anthropic reports that attribution graphs give
+"satisfying insight" on about a quarter of the prompts it tried ([Biology of a
+LLM](https://transformer-circuits.pub/2025/attribution-graphs/biology.html)). The working consensus
+is to treat SAE and transcoder features as hypothesis generators and to rest claims on probes with
+controls, patching, and steering compared against a prompting baseline.
+
+**What closed APIs allow.** As of October 2026 none of Anthropic, OpenAI or Google returns raw chain
+of thought. Each returns at most a summary, and Anthropic's summaries are written "by a different
+model from the one you target" ([Claude thinking
+docs](https://platform.claude.com/docs/en/build-with-claude/thinking)). Token log-probabilities are
+nearly gone: Anthropic's OpenAI-compatibility layer ignores them ([compatibility
+docs](https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/openai-sdk)), a reply on
+Google's developer forum (2026-08-05) says they "are no longer returned for 3.X models"
+([forum](https://discuss.ai.google.dev/t/missing-logprobs-support-in-the-newest-gemini-models-3-1-pro-3-6-flash-on-vertex-ai-and-ai-studio/176557)),
+and OpenAI returns them only at reasoning effort `none`, which GPT-6 Sol and Luna accept and GPT-6
+Astra does not ([Using GPT-6](https://developers.openai.com/api/docs/guides/latest-model)). Claude
+4.7 and later also reject temperatures below 1. A closed model's probability over the candidates
+must therefore be estimated by sampling; with 10 samples per state, a 50/50 choice carries a 95%
+interval of about ±0.26 (estimate). Two traps follow. Anthropic's `reasoning_extraction` classifier
+can refuse prompts that ask for "a `reasoning`, `thinking`, or `trace` field in JSON output", and as
+of September 2026 such refusals are billed, so prompts should ask for a short explanation instead
+([refusals docs](https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback)). And
+stated reasons are weak evidence: explanations "systematically fail to mention" planted biases
+([Turpin et al. 2023](https://arxiv.org/abs/2305.04388)), Claude 3.7 Sonnet mentioned a hint it had
+used 25% of the time ([Anthropic
+2025](https://www.anthropic.com/research/reasoning-models-dont-say-think)), and monitors' detection
+of incidental nudges fell as low as 5% under realistic system prompts ([arXiv
+2608.04735](https://arxiv.org/abs/2608.04735)). Reasoning that is genuinely needed almost always
+shows up ([METR](https://www.alignmentforum.org/posts/WAxkA6gDgrschZovx)), but easy first-floor
+decisions are the regime where explanations are least constrained. Finally, re-running identical
+inputs changed agent models' actions in 8.7% of replicate pairs ([arXiv
+2609.03221](https://arxiv.org/abs/2609.03221)), and LLMs favor some option positions over others
+([Zheng et al., ICLR 2024](https://arxiv.org/abs/2309.03882)), so every flip rate needs a measured
+noise floor beside it. An outsider's closest look inside a closed model is a behavioral twin: run an
+open model on the same counterfactual sets, and where its decision boundaries match the closed
+model's, treat its internals as a hypothesis about the closed one, never as evidence.
+
+**Prior art for visuals.** Saliency maps alone are "an exploratory tool rather than an explanatory
+tool" ([Atrey et al., ICLR 2020](https://arxiv.org/abs/1912.05743)). In a 124-participant study only
+saliency combined with reward bars improved non-experts' understanding significantly ([Anderson et
+al., IJCAI 2019](https://ijcai.org/proceedings/2019/184)), and minimal counterfactual game frames
+helped non-experts spot a flawed agent ([Olson et al. 2021](https://arxiv.org/abs/2101.12446)). Game
+AI's lasting visual forms are a value-over-time curve (OpenAI Five's announced win probability), a
+distribution over moves (chess-engine GUIs, poker-solver frequency grids), and the model's text
+beside the game (Claude Plays Pokémon). BalatroBench shows leaderboard columns, and Orak and
+AgenticSTS release trajectories without a viewer. The notes found **no public LLM game benchmark
+that shows per-decision probability distributions across models**, which is the visual niche here.
+
+**What it would take here.** Everything below runs offline on saved states; the engine is needed
+only to validate a steering claim or to branch-replay a few showcase states. The behavioral
+experiments cover every policy. Costs assume a frozen bank of about 300 states, about 2,000 input
+and 1,000 output tokens per query with the fixed prefix cached, and list prices before the 50% batch
+discount (estimates):
+
+| Behavioral experiment | What the visual shows | Queries | Haiku 5.5 | Opus 5.5 |
+|---|---|---:|---:|---:|
+| Noise floor and invariance: re-query identical states, shuffle candidate order, reorder the hand, reformat the prompt | Each model's stochastic floor and position bias; gates every flip rate below | ~6k | ≈$3 | ≈$134 |
+| Per-decision probability bars on a replayed real-engine combat, with disagreement markers and an HP strip | How confident each policy is and where they part ways | ~3k | ≈$2 | ≈$67 |
+| "What flips the decision": sweep incoming damage, block, HP and monster HP; plot P(Defend) against incoming damage with the heuristic's threshold overlaid | Each policy's decision boundaries, and whether they are sensible and monotone | ~18k | ≈$10 | ≈$401 |
+| Faithfulness of stated reasons: a "said vs did" matrix, hint insertion ("coach's note: play Bash"), and whether a reader can predict edited-state choices from the explanation | Whether explanations are faithful or merely plausible | ~5k | ≈$3 | ≈$112 |
+| Agreement matrices, a 2-D "style map", depth-4 surrogate decision trees with fidelity, and a disagreement gallery ranked by stakes, with 10–20 states branch-replayed in the engine | Which policies decide alike, the rules each appears to follow, and the decisive disagreements | Reuses the above | — | — |
+
+Edits that leave the legal candidates unchanged (intent damage, HP, block, monster HP, powers) come
+first; edits to the hand, energy or draw pile need a recomputed candidate list so the `Decision`
+contract still holds. Full sweeps suit the cheap models, with flagship spot checks on a few states.
+
+The mechanistic experiments apply to Qwen and the PPO network, need only the GPU and saved traces,
+and are listed by value for effort (owner-days with a coding agent, estimates):
+
+| Mechanistic experiment | What it would show | Effort |
+|---|---|---|
+| Decision X-ray: a logit or Jacobian lens over layers × legal candidates, for the base, SFT, relabel and REINFORCE adapters, beside the heuristic's pick | At which layer the choice forms, and how each fine-tune moves it | 2–4 days |
+| Probes for derived tactical concepts (net incoming damage, lethal available, "should block"), with control tasks, a random-weights baseline and held-out encounters | Whether SFT or RL makes these concepts more linearly readable | 4–7 days |
+| Activation patching on the Cultist "finish versus block" decision | Which state tokens and layers carry the change the one-update REINFORCE adapter made ("it now finishes a 3-HP Cultist instead of blocking") | 4–7 days |
+| Steering along an attack-versus-block direction, with predictions written down first and a prompt-instruction baseline | A dial from defensive to aggressive play, with engine-confirmed wins and HP at each setting | 3–5 days plus ~1 engine-hour (5 settings × 12 fights) |
+| Adapter diffing: singular spectra and cosines of the rank-8 updates, and activation differences | Whether the RL change is small and late-layer, as math-RL studies report | 4–8 days |
+| One attribution graph for a headline decision, from the Qwen3-0.6B transcoders | Prompt tokens → features → the logit difference between two cards | 5–10 days; untested within 7.7 GiB of RAM |
+| Full analysis of the 12.5k-parameter set encoder: weights, integrated gradients, ablations | A contrast panel showing what a tiny, barely trained network attends to | 1–3 days |
+
+A static, evidence-linked trace viewer would hold the results together: the combat drawn the way the
+game draws it, per-candidate bars for every policy, explanation text and clearly labeled thinking
+summaries, a precomputed counterfactual slider, and links to the audited traces. The behavioral
+sampling harness is the one section 10's fourth step needs for the frontier baseline, so the two can
+share a 20-state, 10-sample pilot per closed model that measures real token counts, checks whether
+GPT-6 Luna's log-probabilities work, and catches refusals before any larger spend. The first five
+mechanistic experiments would make a portfolio-grade write-up in about 3–5 weeks part-time
+(estimate). Two facts affect the tooling. The current LoRA touches only attention, so the MLPs the
+transcoders describe are unchanged under every adapter (an inference, not a published result), and
+the planned MLP-inclusive LoRA would remove that convenience. And Qwen3.5 uses full attention in
+only one layer in four (the others are Gated DeltaNet), so attention views cover a quarter of its
+layers and no tool found draws attribution graphs through the rest.
+
+**Risks.** Interpretability results are easy to over-read. Probes can learn the prompt template
+instead of the concept, so they need control tasks ([Hewitt & Liang
+2019](https://arxiv.org/abs/1909.03368)) and held-out encounters, not just held-out states. Subspace
+patching can produce illusions ([Makelov et al. 2023](https://arxiv.org/abs/2311.17030)), attention
+weights are not explanations ([Jain & Wallace 2019](https://arxiv.org/abs/1902.10186)), and narrow
+fine-tunes leave easily read "this is a game prompt" traces that are not discoveries ([Minder et
+al., ICLR 2026](https://arxiv.org/abs/2510.13900)). Edited states may be ones the engine could never
+produce, so findings should be confirmed on reachable states. Base-model dictionaries may fit
+adapter-shifted activations poorly, which has to be measured. The evidence that RL updates are
+sparse and late-layer ([Mukherjee et al., NeurIPS 2025](https://arxiv.org/abs/2505.11711); [arXiv
+2609.15064](https://arxiv.org/abs/2609.15064)) comes from math and reasoning RL with many updates,
+not one or two. Closed models change every few months, and their thinking summaries come from a
+separate model whose fidelity nobody has measured.
+
+**What it would teach and show.** Causal experimental design (controls, baselines, predictions
+written down first) and the current interpretability toolchain, on a model small enough to study
+completely. The portfolio question has a measurable answer: what changed inside a 0.6B policy when
+one REINFORCE update taught it to finish a 3-HP Cultist instead of blocking? Neel Nanda's guide
+calls public write-ups the main credential in the field and recommends short, well-baselined
+projects over training new dictionaries ([Nanda,
+2025-09-02](https://www.alignmentforum.org/posts/jP9KDyMkchuv6tHwm/how-to-become-a-mechanistic-interpretability-researcher)).
+Anthropic Fellows lists mechanistic interpretability as an area and reports that over 35% of fellows
+joined Anthropic (self-reported;
+[Anthropic](https://alignment.anthropic.com/2025/anthropic-fellows-program-2026/)); whether such
+programs sponsor visas was not verified. The behavioral experiments alone would be the first
+counterfactual, faithfulness and noise-floor analysis the notes know of for frontier models choosing
+actions in a real game.
+
+### Robotics: the project already has the shape of a robot-learning setup
+
+**The link.** The connection is in method, not domain. The original engine behaves like a physical
+robot: one slow instance (about 94 fights an hour), an expensive reset (26% of a heuristic fight's
+wall time is JVM start), an exact verifier, a safety layer, and, once a simulator exists, a
+sim-to-real gap. Several of the project's mechanisms are standard robotics patterns under other
+names. The candidate list plus `validate_action` is a preemptive shield, which hands the agent only
+safe actions ([Alshiekh et al. 2017](https://arxiv.org/abs/1708.08611)); the Windows job object that
+kills the JVM on controller EOF is a watchdog; the combat-start hash gate is a verified reset; and
+the split between bridge, protocol and gameplay failures is the fault taxonomy that robot-evaluation
+systems keep. Robot-learning labs in 2025–2026 worked on the questions this project faces: how to
+improve a policy when real trials are scarce, how to evaluate it credibly, and when to trust a
+simulator. The notes found no paper that uses a turn-based card game as a robotics proxy, and the
+project should not claim to be one. Slay the Spire isolates decision-making under partial
+observability with an exact verifier, with no perception or control.
+
+**ENPIRE, read closely.** ENPIRE (NVIDIA GEAR with CMU and Berkeley; arXiv v1 2026-06-18, v2
+2026-09-20; CoRL 2026; Apache-2.0 code) runs in two stages ([arXiv
+2606.19980](https://arxiv.org/abs/2606.19980); [code](https://github.com/NVlabs/ENPIRE)). Coding
+agents first build safety limits, a binary verifier and an auto-reset, which humans assess and which
+then freeze as fixed interfaces; the agents then loop reset → execute → verify → refine. Its written
+contract for the agents reads almost like this repository's rules. Agents may edit only policy and
+training code, while the environment, reset, verifier, safety limits, evaluation seeds and scorer
+are protected. Each iteration records one falsifiable hypothesis, runs offline tests first, spends
+only an approved number of real trials, and keeps a change only if it passes success and regression
+gates. "Never redefine success inside the policy", failed trials are preserved, and a run is invalid
+if human actions are counted as the policy's
+([contract](https://raw.githubusercontent.com/NVlabs/ENPIRE/main/enpire/policy/autoresearch_instruction.md)).
+The agents (Claude Code, Codex and Kimi Code) wrote heuristic controllers, behavior cloning, offline
+and online RL, and tool code around a VLA. The headline 99% is pass@8, up to eight attempts that see
+earlier failures, not independent samples. Going from one agent and robot to eight cut Push-T from
+about five hours to two, but token cost grew super-linearly and robots sat idle while agents read
+logs. All three agents solved Push-T in simulation, and two of the three failed on the real robot
+(all self-reported); no dollar cost is reported. The project already has ENPIRE's environment and
+rollout pieces in stricter form (an exact verifier, a hash-gated reset, independent re-audits,
+contracts declared before runs). It lacks the agent driver, ENPIRE's hypothesis tree (one git branch
+per idea, compared and pruned), and headroom: on today's catalog, where the heuristic wins 12 of 12,
+an agent would climb noise. A follow-up from overlapping authors, SimEX (2026-09-30), has the agent
+replay real rollouts in simulation and patch the simulator until they match. It reports 26 of 30
+real trials against 3 of 30 for its own reimplementation of ENPIRE (self-reported; [arXiv
+2609.38982](https://arxiv.org/abs/2609.38982)), which supports this guide's parity-before-training
+order.
+
+**Code-as-policy.** Robotics moved from LLM programs over fixed primitive APIs ([Code as Policies,
+2022](https://arxiv.org/abs/2209.07753)) to coding agents that search over whole policy repositories
+at training time ([RHO](https://arxiv.org/abs/2606.16458) and
+[ASPIRE](https://arxiv.org/abs/2607.00272), 2026). The finding that transfers best is CaP-X's:
+performance drops as human-designed abstractions are removed ([CaP-X, ICML
+2026](https://arxiv.org/abs/2603.22435)). For this project that makes the policy's interface an
+experimental variable. The same coding agent could get raw `Decision` fields, then raw fields plus
+derived predicates (incoming damage, lethal this turn), then those plus a library of earlier fixes,
+with each level scored on a held-out catalog. LLM-written invariants checked over saved traces, such
+as "ended the turn with unspent energy and a playable card", are the game counterpart of
+Code-as-Monitor ([CVPR 2025](https://arxiv.org/abs/2412.04455)) and give dense failure signals at no
+engine cost. Code-as-policy in robotics is held back by contact and perception, which Slay the Spire
+lacks; Gemini Robotics-ER's zero-shot code control averaged 25% on a real ALOHA 2 robot ([Gemini
+Robotics, 2025](https://arxiv.org/abs/2503.20020)).
+
+**Robot post-training mirrors this project's post-training.** Physical Intelligence's RECAP (π*0.6,
+2025-11-18) is the closest robotics analogue to the Qwen track ([arXiv
+2511.14759](https://arxiv.org/abs/2511.14759)). It trains a value function on all collected data,
+computes each step's advantage, marks it positive when it exceeds the task's 30th percentile, and
+gives the policy that mark as the text "Advantage: positive" or "Advantage: negative" during
+ordinary supervised fine-tuning, with human corrections always positive; the policy is then run
+conditioned on the positive label. The authors report that PPO and AWR "fall far short" and that on
+some of the hardest tasks RECAP "more than doubles task throughput and roughly halves the task
+failure rate". Because the mark is a prompt string, the method fits an LLM policy almost literally:
+a value model trained on every audited trace (heuristic, random, PPO, SFT, relabel and REINFORCE)
+would label turns by HP lost, the existing SFT code would do the training, and the engine would only
+collect data and confirm results. SimpleVLA-RL, GRPO for robot policies, drops groups in which every
+rollout had the same outcome ([arXiv 2509.09674](https://arxiv.org/abs/2509.09674)); that is the
+"Louses 77×4, no signal" case in the stopped REINFORCE continuation. Real-world robot RL became
+practical through off-policy learning from a few demonstrations rather than on-policy PPO. HIL-SERL
+reached near-100% success in 1–2.5 hours of real training from 20–30 demonstrations, sampling half
+of each batch from demonstrations and half from its own experience, with human interventions that
+tapered off (self-reported; [arXiv 2410.21845](https://arxiv.org/abs/2410.21845)). If the
+set-encoder track returns, that is the robotics-consistent design, with heuristic traces as the
+demonstration buffer and the heuristic as the intervening teacher.
+
+**Evaluation and sim-to-real.** AutoEval (Berkeley, CoRL 2025) runs real-robot evaluation around the
+clock from a job queue: about 500 episodes a day with about 3 human interventions, an alert to a
+person after three failed resets, Pearson 0.942 against human-run evaluation, and drift noticed
+after about 8 hours (self-reported; [arXiv 2503.24278](https://arxiv.org/abs/2503.24278)). Its
+retry-then-escalate handling would have let the stopped REINFORCE job survive its transient Windows
+interop timeout. Robotics papers also push better statistics: explicit trial counts, initial
+conditions and success criteria ([Kress-Gazit et al. 2024](https://arxiv.org/abs/2409.09491)), and
+sequential tests that stop early without p-hacking ([STEP, RSS
+2025](https://arxiv.org/abs/2503.10966)). For simulators, robotics asks above all whether the
+simulator **ranks policies the way reality does**. SIMPLER reports Pearson r and MMRV, a
+rank-violation measure, between simulated and real success; its best setup reached r = 0.924 and
+MMRV = 0.056, against 0.308 and 0.375 for a validation-loss baseline ([SIMPLER, CoRL
+2024](https://arxiv.org/abs/2405.05941)). SureSim combines many simulated runs with a few paired
+real ones into confidence intervals on real performance ([arXiv
+2510.04354](https://arxiv.org/abs/2510.04354)). Slay the Spire can also report something robotics
+cannot, exact transition parity, because both engines are deterministic given the seed and the
+actions. A parity study that reports both levels over the project's seven existing policies
+(heuristic, random, two PPO checkpoints, SFT, relabel, REINFORCE) would show whether imperfect
+parity still ranks policies correctly.
+
+**What it would take here.** Ranked by value for effort; efforts are estimates.
+
+| Extension | Borrows from | Effort (estimate) | Precondition |
+|---|---|---|---|
+| 1. Evaluation service: a queue, retry-then-escalate on transient faults, interventions per 24 h, infrastructure failures per 100 combats, drift plots, paired bootstrap intervals and sequential stopping | AutoEval, Kress-Gazit et al., STEP | 2–4 days | None |
+| 2. Self-improvement loop on the real engine under ENPIRE's contract, with protected paths enforced by a check on every candidate diff, a hypothesis tree, action-source labels, and tokens per kept improvement | ENPIRE | 4–7 days for the harness, then ~12 candidates an hour overnight | Section 10's harder and hidden held-out catalogs |
+| 3. Advantage-conditioned training of the Qwen policy, compared with REINFORCE at an equal engine budget | π*0.6 (RECAP), SimpleVLA-RL | 1–2 weeks | None |
+| 4. Sim-to-real study: transition parity plus r, MMRV and corrected intervals over seven policies | SIMPLER, SureSim | 3–5 days after the parity replay | An sts_lightspeed binding (section 1) |
+| 5. Agentic simulator correction, judged by the exact divergence rate on held-out traces | SimEX, ASPIRE | 1–3 weeks | Item 4 |
+| 6. Code-as-policy evolution with simulator screening and real-engine confirmation, plus the interface ablation | CaP-X, RHO, ASPIRE | 2–4 weeks | Items 4–5 for scale; the ablation alone runs on the real engine |
+
+Item 2 is section 10's fifth step (the autoresearch loop) carried out in ENPIRE's terms, and items
+4–6 extend its sixth step, so much of this direction sharpens work already planned rather than
+adding to it. A direct robotics touchpoint needs no hardware: running ENPIRE's own Push-T prompt on
+the open `gym-pusht` simulator through item 2's harness (2–3 days on CPU, estimate) would show that
+the harness is domain-agnostic and independently check ENPIRE's simulation result. It reuses loop
+code, not game code, and belongs in the portfolio as a labeled side experiment.
+
+**Risks.** Overclaiming is the main one. The project cannot show hardware, control or perception,
+and nothing shows that card-game skill transfers to robots. ENPIRE's results are self-reported, with
+costs and per-agent numbers only in figures; SimEX's ENPIRE baseline is a competitor's
+reimplementation; and RECAP has been shown only on Physical Intelligence's own stack. An agent loop
+on a saturated catalog would optimize noise, as section 6 warns.
+
+**What it would teach and show.** Robot-learning postings in 2026 repeatedly ask for evaluation
+frameworks, task definitions and success criteria, reproducible policy evaluation and diagnosis of
+real-world failures, alongside multimodal LLM training and simulators such as MuJoCo or Isaac Sim
+(for example [NVIDIA
+GEAR](https://jobs.anitab.org/companies/nvidia/jobs/68139470-senior-research-engineer-generalist-embodied-agent-research),
+[Amazon Fauna](https://scoutify.com/companies/amazon/jobs/1352280/) and
+[Runway](https://jobs.madrona.com/companies/runway-3/jobs/81324241-member-of-technical-staff-robotics-engineer),
+read through job aggregators; visa sponsorship not verified). Evaluation infrastructure is the
+project's strongest area, and the defensible pitch is a slow, single-instance real system with an
+exact verifier, on which the owner built the evaluation and self-improvement infrastructure that
+robot-learning labs build for robots. Using the robotics names in the docs (shield, watchdog,
+verified reset, sim-to-real ranking fidelity) costs nothing and makes those skills recognizable. The
+direction also serves the goal of learning to build with coding agents: ENPIRE's agents are Claude
+Code, Codex and Kimi Code working under a written contract, which is how this project is already
+built.
+
+### Order
+
+Most of these experiments need decisions on which policies disagree and outcomes vary, so they gain
+from section 10's first step, a harder and held-out catalog. After that, the cheapest wins overlap
+with planned work. The behavioral pilot shares its sampling harness with the frontier baseline (step
+4), the evaluation service strengthens every later comparison, and ENPIRE's contract is a way to run
+step 5. Mechanistic work on Qwen needs only the GPU and saved traces, so it can run while the engine
+is busy, but it is worth more once the language track has chosen the adapter worth explaining; the
+Decision X-ray and the probability-bar viewer are the quickest routes to visuals.
+Advantage-conditioned training competes with section 10's language-track changes for the same engine
+time and is best treated as one more of them. The sim-to-real work waits on simulator parity (step
+6).
+
 ## Conclusion
 
 The research shifts the question from which algorithm to which resource. Algorithms have
@@ -1166,3 +1515,73 @@ section where each is first cited.
 - [LLM action recommendations as observations for RL, arXiv 2510.08779 (Oct 2025)](https://arxiv.org/html/2510.08779v1)
 - [Behavior cloning then RL in Legends of Code and Magic, arXiv 2404.16689 (2024)](https://arxiv.org/abs/2404.16689v1)
 - [wuhao21/sts2-cli, headless real StS2 engine](https://github.com/wuhao21/sts2-cli)
+
+### Interpretability
+
+- [Li et al., Othello-GPT world model, arXiv 2210.13382 (ICLR 2023)](https://arxiv.org/abs/2210.13382)
+- [Nanda, Lee & Wattenberg, linear world model in Othello-GPT, arXiv 2309.00941 (2023)](https://arxiv.org/abs/2309.00941)
+- [Karvonen, chess-GPT probes and skill vector, arXiv 2403.15498 (2024)](https://arxiv.org/abs/2403.15498)
+- [Jenner et al., look-ahead in Leela Chess Zero, arXiv 2406.00877 (NeurIPS 2024)](https://arxiv.org/abs/2406.00877)
+- [McGrath et al., concepts in AlphaZero, arXiv 2111.09259 (PNAS 2022)](https://arxiv.org/abs/2111.09259)
+- [Schut et al., teaching AlphaZero's concepts to grandmasters, arXiv 2310.16410 (PNAS 2025)](https://arxiv.org/abs/2310.16410)
+- [Bush et al., planning in a model-free Sokoban agent, arXiv 2504.01871 (ICLR 2025)](https://arxiv.org/abs/2504.01871)
+- [Turner et al., understanding and controlling a maze-solving policy network (2023)](https://www.alignmentforum.org/posts/cAC4AXiNC5ig6jQnc/understanding-and-controlling-a-maze-solving-policy-network)
+- [Sobotka et al., LLM game-state representations versus verbal reports, arXiv 2605.00226 (2026)](https://arxiv.org/abs/2605.00226)
+- [Anthropic, open-sourcing circuit tracing (2025-05-29)](https://www.anthropic.com/research/open-source-circuit-tracing)
+- [safety-research/circuit-tracer releases (logit-difference targets from v0.4.0, Feb 2026)](https://github.com/safety-research/circuit-tracer/releases)
+- [mwhanna/qwen3-0.6b-transcoders-lowl0 (per-layer transcoders for Qwen3-0.6B)](https://huggingface.co/mwhanna/qwen3-0.6b-transcoders-lowl0)
+- [Qwen-Scope, arXiv 2605.11887 (May 2026)](https://arxiv.org/abs/2605.11887)
+- [Qwen-Scope SAE model card, Qwen3.5-2B-Base](https://huggingface.co/Qwen/SAE-Res-Qwen3.5-2B-Base-W32K-L0_50)
+- [TransformerLens releases (v4.0, 2026-09-21)](https://github.com/TransformerLensOrg/TransformerLens/releases)
+- [Gurnee et al., the Jacobian lens, arXiv 2607.15495 (Jul 2026)](https://arxiv.org/abs/2607.15495)
+- [anthropics/jacobian-lens](https://github.com/anthropics/jacobian-lens)
+- [Google DeepMind interpretability team, deprioritising SAE research (2025-03-26)](https://www.alignmentforum.org/posts/4uXCAJNuPKtKBsi28/)
+- [AxBench, arXiv 2501.17148 (ICML 2025)](https://arxiv.org/abs/2501.17148)
+- [Anthropic, On the Biology of a Large Language Model (2025-03-27)](https://transformer-circuits.pub/2025/attribution-graphs/biology.html)
+- [Claude documentation, extended thinking](https://platform.claude.com/docs/en/build-with-claude/thinking)
+- [Claude documentation, OpenAI SDK compatibility](https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/openai-sdk)
+- [Google AI developer forum, Gemini 3.x logprobs (2026-08-05)](https://discuss.ai.google.dev/t/missing-logprobs-support-in-the-newest-gemini-models-3-1-pro-3-6-flash-on-vertex-ai-and-ai-studio/176557)
+- [OpenAI documentation, Using GPT-6](https://developers.openai.com/api/docs/guides/latest-model)
+- [Claude documentation, refusals and fallback (`reasoning_extraction`)](https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback)
+- [Turpin et al., unfaithful explanations in chain of thought, arXiv 2305.04388 (NeurIPS 2023)](https://arxiv.org/abs/2305.04388)
+- [Anthropic, Reasoning models don't always say what they think (2025-04-03)](https://www.anthropic.com/research/reasoning-models-dont-say-think)
+- [Duzan & Cooper Stickland, incidental nudges and CoT monitoring, arXiv 2608.04735 (Aug 2026)](https://arxiv.org/abs/2608.04735)
+- [METR, CoT faithfulness when reasoning is required (Aug 2025)](https://www.alignmentforum.org/posts/WAxkA6gDgrschZovx)
+- [Instability floors for LLM agent decisions, arXiv 2609.03221 (Sep 2026)](https://arxiv.org/abs/2609.03221)
+- [Zheng et al., selection bias in multiple-choice answers, arXiv 2309.03882 (ICLR 2024)](https://arxiv.org/abs/2309.03882)
+- [Atrey, Clary & Jensen, saliency maps in deep RL, arXiv 1912.05743 (ICLR 2020)](https://arxiv.org/abs/1912.05743)
+- [Anderson et al., saliency and reward bars for non-experts (IJCAI 2019)](https://ijcai.org/proceedings/2019/184)
+- [Olson et al., counterfactual states for explaining agents, arXiv 2101.12446 (2021)](https://arxiv.org/abs/2101.12446)
+- [Hewitt & Liang, control tasks for probes, arXiv 1909.03368 (EMNLP 2019)](https://arxiv.org/abs/1909.03368)
+- [Makelov et al., subspace activation-patching illusions, arXiv 2311.17030 (2023)](https://arxiv.org/abs/2311.17030)
+- [Jain & Wallace, Attention is not Explanation, arXiv 1902.10186 (NAACL 2019)](https://arxiv.org/abs/1902.10186)
+- [Minder et al., activation differences reveal narrow fine-tunes, arXiv 2510.13900 (ICLR 2026)](https://arxiv.org/abs/2510.13900)
+- [Mukherjee et al., RL fine-tunes small subnetworks, arXiv 2505.11711 (NeurIPS 2025)](https://arxiv.org/abs/2505.11711)
+- [Tracking RL drift with a fixed SAE, arXiv 2609.15064 (Sep 2026)](https://arxiv.org/abs/2609.15064)
+- [Nanda, How to become a mechanistic interpretability researcher (2025-09-02)](https://www.alignmentforum.org/posts/jP9KDyMkchuv6tHwm/how-to-become-a-mechanistic-interpretability-researcher)
+- [Anthropic Fellows Program 2026](https://alignment.anthropic.com/2025/anthropic-fellows-program-2026/)
+
+### Robotics
+
+- [Alshiekh et al., safe RL via shielding, arXiv 1708.08611 (AAAI 2018)](https://arxiv.org/abs/1708.08611)
+- [ENPIRE, agentic robot policy self-improvement, arXiv 2606.19980 (CoRL 2026)](https://arxiv.org/abs/2606.19980)
+- [NVlabs/ENPIRE (Apache-2.0)](https://github.com/NVlabs/ENPIRE)
+- [ENPIRE auto-research contract for agents](https://raw.githubusercontent.com/NVlabs/ENPIRE/main/enpire/policy/autoresearch_instruction.md)
+- [SimEX, simulation-integrated robotics autoresearch, arXiv 2609.38982 (2026-09-30)](https://arxiv.org/abs/2609.38982)
+- [Liang et al., Code as Policies, arXiv 2209.07753 (2022)](https://arxiv.org/abs/2209.07753)
+- [RHO, repositories as policies, arXiv 2606.16458 (Jun 2026)](https://arxiv.org/abs/2606.16458)
+- [ASPIRE, agentic skill discovery for robotics, arXiv 2607.00272 (2026)](https://arxiv.org/abs/2607.00272)
+- [CaP-X, arXiv 2603.22435 (ICML 2026)](https://arxiv.org/abs/2603.22435)
+- [Code-as-Monitor, arXiv 2412.04455 (CVPR 2025)](https://arxiv.org/abs/2412.04455)
+- [Gemini Robotics, arXiv 2503.20020 (Mar 2025)](https://arxiv.org/abs/2503.20020)
+- [Physical Intelligence, π*0.6 and RECAP, arXiv 2511.14759 (Nov 2025)](https://arxiv.org/abs/2511.14759)
+- [SimpleVLA-RL, arXiv 2509.09674 (ICLR 2026)](https://arxiv.org/abs/2509.09674)
+- [Luo et al., HIL-SERL, arXiv 2410.21845 (2024)](https://arxiv.org/abs/2410.21845)
+- [Zhou et al., AutoEval, arXiv 2503.24278 (CoRL 2025)](https://arxiv.org/abs/2503.24278)
+- [Kress-Gazit et al., robot evaluation practice, arXiv 2409.09491 (2024)](https://arxiv.org/abs/2409.09491)
+- [STEP, sequential policy comparison, arXiv 2503.10966 (RSS 2025)](https://arxiv.org/abs/2503.10966)
+- [Li et al., SIMPLER, arXiv 2405.05941 (CoRL 2024)](https://arxiv.org/abs/2405.05941)
+- [SureSim, arXiv 2510.04354 (Oct 2025)](https://arxiv.org/abs/2510.04354)
+- [NVIDIA, Senior Research Engineer, Generalist Embodied Agent Research (posting via aggregator; closed)](https://jobs.anitab.org/companies/nvidia/jobs/68139470-senior-research-engineer-generalist-embodied-agent-research)
+- [Amazon, Applied Scientist, Fauna (posting via aggregator, 2026-06-10)](https://scoutify.com/companies/amazon/jobs/1352280/)
+- [Runway, Member of Technical Staff, Robotics Engineer (posting via aggregator, 2026-06-02)](https://jobs.madrona.com/companies/runway-3/jobs/81324241-member-of-technical-staff-robotics-engineer)
