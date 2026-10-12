@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from spire.fullrun.api import Ledger
+from spire.ledger import Ledger
 from spire.provenance import REPO_ROOT
 
 # USD per million tokens (prefill, sample, train), from the Tinker catalog on 2026-10-12.

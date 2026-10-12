@@ -332,3 +332,11 @@ the skipped card reward that stays listed (still open).
 the game, played Neow, the map and two hallway fights, and stopped as `truncated` on floor 3
 at 75/80 HP: 37 decisions, 27 calls, $0.0047, 125 s. It is a harness check, not a scored
 attempt; its Neow pick (a random rare card) matches v1.1–v3 on this seed.
+
+## 2026-10-12: shared modules for the open-weight track
+
+`fullrun/decisions.py` moved to `spire/decisions.py`, and the spend ledger (`Ledger`,
+`BudgetExhausted`) moved from `fullrun/api.py` to `spire/ledger.py`, so the open-weight
+skeleton uses them without depending on this track's OpenAI client. The code is unchanged
+and so is what the model sees: later commits still play scaffolding v7, and the ledger
+file is still `runs/llm-spend.jsonl`.

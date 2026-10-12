@@ -5,7 +5,9 @@ import json
 import pytest
 from test_decisions import combat_message, message
 
-from spire.fullrun import api, decisions, llm
+from spire import decisions
+from spire.fullrun import llm
+from spire.ledger import BudgetExhausted, Ledger
 from spire.protocol import PolicyFailure
 
 USAGE = {"input_tokens": 1000, "input_tokens_details": {"cached_tokens": 400},
@@ -35,7 +37,7 @@ def decision():
 
 
 def policy(tmp_path, *replies, budget=1.0):
-    ledger = api.Ledger(tmp_path / "spend.jsonl", budget)
+    ledger = Ledger(tmp_path / "spend.jsonl", budget)
     return llm.LLMPolicy("gpt-6-luna", "low", ledger, client=FakeClient(*replies),
                          system_prompt="Play well.")
 
@@ -57,7 +59,7 @@ def test_choice_updates_notes_history_ledger_and_metadata(tmp_path):
     assert agent.totals["calls"] == 2 and agent.totals["reasoning_tokens"] == 300
     lines = (tmp_path / "spend.jsonl").read_text().splitlines()
     assert [json.loads(line)["response_id"] for line in lines] == ["resp-1", "resp-2"]
-    assert api.Ledger(tmp_path / "spend.jsonl", 1.0).spent == pytest.approx(agent.totals["usd"])
+    assert Ledger(tmp_path / "spend.jsonl", 1.0).spent == pytest.approx(agent.totals["usd"])
 
 
 def test_invalid_replies_are_retried_then_fail_as_policy_failure(tmp_path):
@@ -74,7 +76,7 @@ def test_invalid_replies_are_retried_then_fail_as_policy_failure(tmp_path):
 
 def test_budget_refuses_a_call_before_sending(tmp_path):
     agent = policy(tmp_path, reply(0), budget=0.0001)
-    with pytest.raises(api.BudgetExhausted):
+    with pytest.raises(BudgetExhausted):
         agent.choose(decision())
     assert agent.client.bodies == []
     assert not (tmp_path / "spend.jsonl").exists()

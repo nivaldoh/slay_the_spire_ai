@@ -1,10 +1,10 @@
-"""OpenAI Responses transport, model prices and the spend ledger.
+"""OpenAI Responses transport, model prices and the default spend ledger's path.
 
 Infrastructure, not scaffolding: the autoresearch loop does not tune this file. Standard
 library only. The key comes from ``OPENAI_API_KEY`` or the file named by
 ``SPIRE_OPENAI_KEY_FILE`` and is never logged or written to evidence. Every call is priced
-from its reported usage and appended to a spend ledger, and a call is refused before
-sending when the ledger total plus its worst-case cost would exceed the budget.
+from its reported usage and charged to a ``spire.ledger.Ledger``, which refuses a call
+before sending when its total plus the call's worst-case cost would exceed the budget.
 """
 
 from __future__ import annotations
@@ -14,7 +14,6 @@ import os
 import time
 import urllib.error
 import urllib.request
-from datetime import UTC, datetime
 from pathlib import Path
 
 from spire.provenance import REPO_ROOT
@@ -33,10 +32,6 @@ EFFORTS = ("none", "low", "medium", "high")
 # Every job that names the same ledger shares one spend budget.
 LEDGER_PATH = REPO_ROOT / "runs/llm-spend.jsonl"
 TRANSIENT_HTTP = {408, 409, 429, 500, 502, 503, 504}
-
-
-class BudgetExhausted(RuntimeError):
-    """The next call could exceed the declared spend budget; nothing was sent."""
 
 
 class APIError(RuntimeError):
@@ -61,29 +56,6 @@ def usage_cost(model: str, usage: dict) -> float:
         + cached * price_cached
         + usage["output_tokens"] * price_out
     ) / 1e6
-
-
-class Ledger:
-    """Append-only spend record; every job naming the same file shares one budget."""
-
-    def __init__(self, path: Path, budget_usd: float):
-        self.path = Path(path)
-        self.budget = budget_usd
-        lines = self.path.read_text().splitlines() if self.path.exists() else []
-        self.spent = sum(json.loads(line)["usd"] for line in lines)
-
-    def reserve(self, usd: float) -> None:
-        if self.spent + usd > self.budget:
-            raise BudgetExhausted(
-                f"Spent ${self.spent:.4f} of ${self.budget:.2f}; next call may cost ${usd:.4f}"
-            )
-
-    def charge(self, usd: float, **fields) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        record = {"time": datetime.now(UTC).isoformat(), "usd": usd, **fields}
-        with self.path.open("a") as handle:
-            handle.write(json.dumps(record, sort_keys=True) + "\n")
-        self.spent += usd
 
 
 class ResponsesClient:

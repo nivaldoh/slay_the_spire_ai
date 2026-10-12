@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from collections import Counter
 
-from spire.fullrun.decisions import Choice
+from spire.decisions import Choice
 from spire.fullrun.llm import render_state
 from spire.openweight.remote import TinkerSession
 from spire.protocol import Decision, PolicyFailure

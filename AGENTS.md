@@ -12,12 +12,14 @@ src/spire/
   __main__.py      CLI: doctor, play, digest, spend (full runs); rollout, evaluate, train, report (first combat)
   protocol.py      Decision/Action types, the error taxonomy and the first-combat observation contract (frozen)
   policies.py      Scripted first-combat policies: random, starter heuristic, end turn (frozen)
+  decisions.py     Public full-game boundary: labeled choices on every in-game screen, for any track
+  ledger.py        Append-only spend ledger with a hard budget, for any paid model
   provenance.py    Repository root, source fingerprints, committed-source check, atomic JSON writes
   engine/          Real-game plumbing for every track: Windows runtime, relay bridge, doctor,
                    and the Windows-side windows_game.py / windows_relay.py
-  fullrun/         Current track: decisions.py (public full-run boundary), play.py (run loop),
-                   llm.py (prompt, memory and replies: the tuning surface), api.py (OpenAI
-                   transport, prices, spend ledger), digest.py (trace summaries)
+  fullrun/         Current track: play.py (complete-run loop for any policy), llm.py (prompt,
+                   memory and replies: the tuning surface), api.py (OpenAI transport, prices),
+                   digest.py (trace summaries)
   openweight/      Planned remote open-weight track (skeleton, mostly NotImplementedError): tasks
                    and seed splits, env backends, Tinker policy, rewards, rollout, GRPO, dynamics
   combat/          First-combat benchmark: rollout, suites (evaluation), catalogs, evidence audits
@@ -82,7 +84,7 @@ The controller runs in WSL; the game runs on Windows from the Steam install unde
 
 Information boundary: policies get a `Decision` (allowlisted public state, the draw pile as
 an unordered multiset, candidates tied to that decision's id) and never the raw message.
-`fullrun/decisions.py` builds it for full runs, `protocol.py` for the starter-card first
+`decisions.py` builds it for full runs, `protocol.py` for the starter-card first
 combat. On the wire, cards are one-based; monster targets, potion slots and `choose`
 indexes are zero-based. Keep raw target positions after monsters die.
 [docs/integration.md](docs/integration.md) records the other protocol quirks.

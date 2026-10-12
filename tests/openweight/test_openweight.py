@@ -2,7 +2,7 @@
 
 import pytest
 
-from spire.fullrun.decisions import Choice
+from spire.decisions import Choice
 from spire.openweight.env import Step
 from spire.openweight.evaluate import wilson_interval
 from spire.openweight.grpo import group_advantages

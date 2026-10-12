@@ -2,7 +2,7 @@
 
 Tinker's cookbook and Verifiers both drive environments step by step, so this is what
 they would wrap. Every backend hands out the public full-run ``Decision`` built by
-``spire.fullrun.decisions``, never engine state.
+``spire.decisions``, never engine state.
 
 - ``RealGame``: the original game through CommunicationMod, one controller at a time and
   about 38 s per combat. ``spire.fullrun.play.play_run`` calls its policy; this backend
@@ -17,7 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Protocol
 
-from spire.fullrun.decisions import Choice
+from spire.decisions import Choice
 from spire.openweight.tasks import Task
 from spire.protocol import Decision
 

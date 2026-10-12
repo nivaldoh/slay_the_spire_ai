@@ -2,7 +2,7 @@
 
 import pytest
 
-from spire.fullrun import decisions
+from spire import decisions
 from spire.protocol import UnsupportedStateError
 
 

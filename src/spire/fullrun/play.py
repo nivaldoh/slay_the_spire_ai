@@ -18,6 +18,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 
+from spire import decisions
 from spire.engine.bridge import BridgeError, BridgeServer
 from spire.engine.doctor import collect_profile
 from spire.engine.runtime import (
@@ -28,9 +29,8 @@ from spire.engine.runtime import (
     prepare_runtime,
     wsl_bridge_host,
 )
-from spire.fullrun import decisions
-from spire.fullrun.api import BudgetExhausted
 from spire.fullrun.llm import SYSTEM_PROMPT_PATH
+from spire.ledger import BudgetExhausted
 from spire.protocol import BridgeCommandError, IllegalActionError, PolicyFailure, ProtocolError
 from spire.provenance import committed_revision, sha256, source_fingerprints, write_json
 

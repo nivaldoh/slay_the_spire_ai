@@ -32,7 +32,7 @@ the prompt and memory, not weight training.
 
 ## Information boundary
 
-`spire/fullrun/decisions.py` builds each decision from a stable CommunicationMod message.
+`spire/decisions.py` builds each decision from a stable CommunicationMod message.
 The policy sees allowlisted game fields: act, floor, HP, gold, deck, relics,
 potions, keys, the map, the current screen, and combat state. Several fields are
 hidden or changed:
@@ -95,8 +95,9 @@ uv run python -m spire spend                                         # ledger to
 
 - Editable surface: `configs/llm/` (system prompt and monster notes), and the rendering,
   memory and reply handling in `src/spire/fullrun/llm.py`. The information boundary
-  (`decisions.py`), the runner (`play.py`) and the client, prices and ledger (`api.py`) are
-  not tuning surfaces. Fix them only for real defects, and record each fix in the log.
+  (`spire/decisions.py`), the runner (`play.py`), the client and prices (`api.py`) and the
+  ledger (`spire/ledger.py`) are not tuning surfaces. Fix them only for real defects, and
+  record each fix in the log.
 - Commit before every run; the runner refuses uncommitted source and prompt changes.
 - Judge a change by outcomes (floor reached, wins), not by how good the reasons sound.
   With a handful of runs a night, report each run individually and do not call small

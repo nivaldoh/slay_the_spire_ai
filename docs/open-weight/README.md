@@ -160,8 +160,9 @@ Gaps the skeleton makes visible:
 
 - **Full runs:** `spire.fullrun.play.play` takes a `policy_factory`. A policy needs
   `choose(decision) -> Choice`, `choice_metadata(decision_id) -> dict` (saved in the trace)
-  and optionally a `totals` mapping. `spire.fullrun.decisions` is the public full-run
-  boundary, and `spire.fullrun.llm.render_prompt` the current text rendering.
+  and optionally a `totals` mapping. `spire.decisions` is the public full-run boundary,
+  `spire.ledger` the spend cap, and `spire.fullrun.llm.render_prompt` the current text
+  rendering.
 - **Combat scenarios:** `spire.combat` runs seeded first-combat suites and catalogs, but
   its observation contract (`spire/protocol.py`) covers only the starter cards. Varied
   scenarios need the full-run boundary or a new admitted contract;
