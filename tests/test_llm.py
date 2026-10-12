@@ -169,4 +169,5 @@ def test_rules_notes_appear_only_for_present_noted_enemies():
     text = llm.render_state(dict(observation), notes)
     assert "Enemy rules:\n  Slime Boss: It splits at half HP." in text
     assert "Gone, so omitted." not in text and "powers: Corruption\n" in text
-    assert set(json.loads(llm.MONSTER_NOTES_PATH.read_text())) >= {"Lagavulin", "SlimeBoss"}
+    assert set(json.loads(llm.MONSTER_NOTES_PATH.read_text())) >= {
+        "Lagavulin", "SlimeBoss", "AcidSlime_L", "SpikeSlime_L"}
