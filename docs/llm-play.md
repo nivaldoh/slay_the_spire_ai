@@ -431,7 +431,8 @@ Candidate changes with evidence so far, in priority order (v3–v7 took the earl
   block. Candidate: name the source of the selection when the state shows it (relic at
   combat start, or the card just played).
 - **Potion effects end with the combat**: Heart of Iron was drunk in hallway fights twice
-  "to help through the Slime Boss fight". A drafted line is in the overnight notes. Potion
+  "to help through the Slime Boss fight". Draft line: "Potions are single-use. A potion's
+  effect, like every power, buff and debuff, ends with the combat it is used in." Potion
   use swings both ways: early runs drank boss potions in hallways, v4 RUNDEV3 died to an
   elite holding a potion "reserved for Time Eater".
 - **Optional fights and big trades**: the Colosseum's second fight at 58 HP (v6 RUNDEV1),
