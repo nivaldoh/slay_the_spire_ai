@@ -11,6 +11,9 @@ What the state shows:
 - Enemy intent damage is per hit and already includes Strength, Weak and Vulnerable.
 - Card text is not shown. Card names ending in "+" are upgraded.
 - Target and slot numbers in brackets are engine positions; dead enemies keep theirs.
+- You die when your HP reaches 0, so to survive a turn the damage that gets past your
+  block must be less than your HP.
+- A skipped card reward stays on the rewards list; choose proceed to leave it.
 
 Your run notes persist between decisions for the whole run; nothing else does,
 apart from a short list of your recent decisions. Use the notes for plans and facts
