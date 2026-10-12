@@ -373,3 +373,67 @@ things the hand review missed. The model did not know the Awakened One revives: 
 its last resources killing the first form at 21 HP. And the hand never shows Ethereal:
 `decisions.card_text` renders name, cost and type, while the trace marks the cards
 `ethereal`. Both are now candidate changes.
+
+## 2026-10-12: v7 on the three development seeds
+
+`runs/fullrun/llm-luna-v7-dev-20261012-b`, source `5020fef`, all three seeds; the first
+replay of one version on the same seeds.
+
+| Seed | Outcome | Act / floor | Killed by | Decisions | Calls | Cost | Wall time |
+|---|---|---|---|---:|---:|---:|---:|
+| RUNDEV1 | lost | 1 / 16 | 2x Spike Slime (M), Acid Slime (M) (boss) | 234 | 189 | $0.040 | 831 s |
+| RUNDEV2 | lost | 2 / 33 | The Collector (boss) | 460 | 394 | $0.090 | 1,664 s |
+| RUNDEV3 | lost | 1 / 16 | 2x Spike Slime (M), Acid Slime (M) (boss) | 224 | 194 | $0.043 | 850 s |
+
+- RUNDEV1 lost to the Slime Boss on floor 16, turn 12 (80 → 10 HP over the fight; v6 on
+  this seed reached floor 29 and entered the boss at 75 HP, left it at 50). On the F2 shop
+  it removed a Strike (75g) where v6 bought Feel No Pain, while holding Corruption. In the
+  boss fight it played Corruption+ on turn 5 "to make skills free" and then spent its
+  last Defends on turns 6 and 8 against no incoming damage; Corruption exhausts them, so
+  from turn 9 it drew no block and took 16, 8, 8 and a lethal 16. Potions went in the
+  F8 elite (Fear, Heart of Iron) and an F11 hallway (Explosive). Flags: three turns ended
+  with energy and a playable card (F3, F8, F16 turn 6), no card rewards skipped. Nothing
+  shown says what Corruption does; the card-keywords candidate covers only Ethereal.
+  v7 differs from v6 only by The Collector note, which this run never showed, so the gap
+  between floors 29 and 16 on RUNDEV1 is the model's own variance. Both took the same
+  Neow rare (Corruption) and route; the first non-combat divergence is the F1 card reward
+  (Thunderclap here, Armaments in v6), then the F2 shop.
+- RUNDEV2 lost to The Collector on floor 33, in the enemy turn after turn 15, with The
+  Collector at 38/282 (the earlier v7 run won this fight and died on floor 50). It entered
+  at 53/53 HP with no potions (earlier: 61/61 and a Power Potion), having drunk its Energy
+  Potion, held "for the Collector", against a Snecko on F31. The rules note was in all 42
+  F33 prompts and the model focused The Collector (244 HP lost against 156 for the Torch
+  Heads, mostly area damage). Two costly turns: on turn 4 it played Metallicize, Feel No
+  Pain and Disarm against the heads' 20 damage, "no damage to block" on the debuff turn
+  (41 → 27); on turn 11 it held both Apparitions "for a dangerous turn", they exhausted
+  as Ethereal, and turn 12's 39 damage took it from 29 to 8. Ethereal is invisible in the
+  hand, the same failure as the earlier run's Awakened One. Flags: five turns ended with
+  energy and a playable card, the F31 card reward reopened and skipped six times.
+- RUNDEV3 lost to the Slime Boss's split slimes on floor 16, turn 11 (v6 on this seed
+  beat the boss and reached floor 42). Its first prompt hashes match v6's; the first
+  divergence is the F0 map pick (x=1 toward a shop here, x=2 toward events in v6), so this
+  too is the model's variance. It reached the boss at 80/80 with no upgrades and one
+  potion (v6: three upgrades, Inflame, three potions), having drunk an Energy Potion at
+  80/80 on F10 with 2 energy left unspent and an Explosive Potion on a lone slime on F11,
+  against its own notes. On turn 1 it chose Twin Strike and Clothesline on Gambling Chip's
+  screen "to play them", which discards them (the hand-select purpose candidate), and
+  played Reaper on the single boss for 4, exhausting it before the split. Slam hit for 33
+  on turn 3 with no Defend in hand.
+
+Same scaffolding, same seeds: floors 16, 33 and 16 here against 29, 50 and 42 for the
+same prompts' earlier runs (v6 on RUNDEV1 and RUNDEV3, v7 on RUNDEV2). On RUNDEV1 and
+RUNDEV3 the runs part at an early non-combat choice (F1 and F0), so one run per seed cannot
+rank versions by floor. Judge the next versions first by their targeted flags, and treat
+floors as a noisy outcome.
+Evidence added to the candidates: Ethereal invisible again (RUNDEV2), Corruption's exhaust
+rule unknown (RUNDEV1), Reaper's exhaust unknown and Gambling Chip's discard misread
+(RUNDEV3).
+
+## Scaffolding v8: skipped card rewards named on the reward screens
+
+Evidence: the reopen loop survived v6's system prompt line (43 skips in v6 RUNDEV3, 20 of
+them on F24, where the history showed only "skip this card reward"; six on F31 in this
+v7 RUNDEV2 run). Change, in `llm.py`: after the model skips a card reward, that floor's
+reward and card screens add "Card rewards you skipped on this floor (reopening one shows
+the same cards): …" with the cards offered. Target: card-reward reopens near zero in the
+flags; floors are not expected to move.

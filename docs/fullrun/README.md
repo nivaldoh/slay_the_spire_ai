@@ -1,6 +1,6 @@
 # Full runs with an API language model
 
-Status: development, started 2026-10-12, current scaffolding **v7**. No run has won yet;
+Status: development, started 2026-10-12, current scaffolding **v8**. No run has won yet;
 best floors per development seed are 29, 50 and 42 (v1.1: 16, 33, 16). Every version,
 its evidence and its per-seed results are in [log.md](log.md). Code: `src/spire/fullrun/`.
 
@@ -52,7 +52,7 @@ confirm view, where CommunicationMod would never reply. A state with exactly one
 answered without a model call. Initial `DEBUG` intents are settled with a logged `wait 60`,
 as in first-combat rollouts.
 
-## What the model sees (scaffolding v7)
+## What the model sees (scaffolding v8)
 
 The version that introduced each piece is in brackets; [log.md](log.md) has the evidence.
 
@@ -67,6 +67,8 @@ The version that introduced each piece is in brackets; [log.md](log.md) has the 
 - Enemy rules notes from `configs/llm/monsters.json`, shown only while that enemy is in the
   fight: the Act 1 elites and bosses (v2), the Large slimes (v5) and The Collector (v7).
   Every number is checked against the game.
+- On the reward screens, the card rewards already skipped on that floor and their cards
+  (v8).
 - Invalid replies (bad JSON or an out-of-range choice) are re-asked twice, with the error
   appended. A third invalid reply ends the run as `policy_failure`. Transient HTTP and
   network errors are retried three times. Every attempt is billed and recorded.
@@ -177,15 +179,20 @@ Review prompt, one subagent per finished run:
 
 ## Candidate changes
 
-With evidence so far, in priority order (v3–v7 took the earlier ones):
+With evidence so far, in priority order (v3–v8 took the earlier ones):
 
-- **Skipped-reward memory**: v6's interface line did not stop the reopen loop (43 skips in
-  v6 RUNDEV3). Candidate in `llm.py`: after the model skips a card reward, the rewards
-  screen on that floor says which cards it already declined.
+- **Card keywords**: the hand shows name, cost and type only, so Ethereal and Exhaust are
+  invisible. Ethereal Apparitions exhausted unplayed before big hits in both v7 RUNDEV2
+  runs (Awakened One; The Collector, 29 → 8 HP), and v7 RUNDEV3 spent Reaper on a single
+  Slime Boss before the split. Drafted on branch `v9-card-keywords`: the engine's
+  `ethereal` and `exhausts` flags on each card, and one system prompt line. Power rules
+  are a separate gap: v7 RUNDEV1 played Corruption+ and then spent its last Defends,
+  not knowing Corruption exhausts every skill.
 - **Hand-select purpose**: Gambling Chip's start-of-combat screen reads only "Choose up to
-  99 card(s) from your hand", and v6 RUNDEV3 discarded Impervious+ believing it would
-  block. Candidate: name the source of the selection when the state shows it (relic at
-  combat start, or the card just played).
+  99 card(s) from your hand"; v6 RUNDEV3 discarded Impervious+ believing it would block,
+  and v7 RUNDEV3 discarded Twin Strike and Clothesline "to play them". Candidate: name the
+  source of the selection when the state shows it (relic at combat start, or the card
+  just played).
 - **Potion effects end with the combat**: Heart of Iron was drunk in hallway fights twice
   "to help through the Slime Boss fight". Draft line: "Potions are single-use. A potion's
   effect, like every power, buff and debuff, ends with the combat it is used in." Potion
@@ -198,9 +205,6 @@ With evidence so far, in priority order (v3–v7 took the earlier ones):
 - **Act 3 notes** as runs reach them: Transient (v6 RUNDEV3's death) fades after a few
   turns, Giant Head (v4 RUNDEV3's death), and Awakened One, which revives at full HP in a
   second form: v7 RUNDEV2 killed the first at 21 HP with no block left and died to it.
-- **Card keywords**: the hand shows name, cost and type only, so Ethereal is invisible.
-  v7 RUNDEV2 played its only non-Ethereal Apparition against 15 damage on the Awakened One's
-  turn 1, and an Ethereal copy exhausted unplayed before a 32-damage turn.
 - **Notes**: separate run notes from combat scratch, or tighten the instruction.
   Evidence: notes clobbered in the smoke run, copied unchanged on about half of calls.
 - **Deck building**: RUNDEV2 decks of 28–31 cards with no removal bought at 474 gold

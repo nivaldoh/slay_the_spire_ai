@@ -4,9 +4,11 @@ Updated 2026-10-12. Read this first: what is running, what is current, what come
 History lives with each track ([full runs](fullrun/log.md),
 [first combat](first-combat/README.md)), not here.
 
-## Active work (last verified 2026-10-12 18:16 UTC)
+## Active work (last verified 2026-10-12 19:41 UTC)
 
-No game, GPU or API job is running. Source and `HEAD` are free.
+The full-run loop is running: `runs/fullrun/llm-luna-v8-dev-20261012` plays v8 (skipped-reward
+memory) on `RUNDEV1`–`RUNDEV3` (started 19:41 UTC). Keep `src/` and `configs/` unchanged
+until it ends.
 
 ## Current track: full runs with an API model
 
@@ -18,15 +20,16 @@ scaffolding v2–v7 on `RUNDEV1`–`RUNDEV3` (v7 on `RUNDEV2` only). Best floors
 29, 50 and 42 (v1.1 baseline: 16, 33, 16). No run has won yet. API spend: $1.68 of the
 $25 cap (`uv run python -m spire spend`).
 
+A second session (2026-10-12, from 15:40 local) replayed v7 on all three seeds: floors 16,
+33 and 16, against 29, 50 and 42 for the same prompts' earlier runs. Run-to-run variance is
+that large, so one run per seed cannot rank versions by floor.
+
 Next steps:
 
-1. Replay all three seeds on v7. The 2026-10-12 reorganization moved code but did not
-   change what the model sees, so any later commit plays v7.
-2. Take the top candidate in [fullrun/README.md](fullrun/README.md#candidate-changes),
-   skipped-reward memory.
-3. Loop improvements from related work, on the same page: replay saved decisions offline,
-   then held-out seeds. Failure flags in `spire digest` and a `spire watch` waiter are built,
-   and the loop now reviews each run in a subagent to save context.
+1. Finish v8 (skipped-reward memory) on the three seeds; judge it by the reopen flag.
+2. Merge and play v9, card keywords, drafted on branch `v9-card-keywords`.
+3. Loop improvements from related work ([fullrun/README.md](fullrun/README.md)): replay
+   saved decisions offline, then held-out seeds.
 
 Open owner decisions: reasoning effort above `low`, and a whole turn per call.
 
