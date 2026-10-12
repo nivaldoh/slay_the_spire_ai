@@ -1,6 +1,7 @@
 # Approaches to an AI that plays Slay the Spire
 
-*Research snapshot dated 2026-10-11, synthesized from eleven research notes compiled that day (the
+*Research snapshot dated 2026-10-11, with an addendum dated 2026-10-12 before the sources,
+synthesized from eleven research notes compiled that day (the
 notes stay outside Git, under `runs/research_notes/`). "Estimate" marks a number a researcher
 computed from stated assumptions rather than one a source reported. "Self-reported" marks a
 result its authors published and nobody has reproduced. Prices are list prices read on
@@ -484,7 +485,8 @@ p≈0.37, which the authors call directional), while Qwen 3.6 27B and DeepSeek V
 or mechanical decisions ([AgenticSTS](https://arxiv.org/abs/2607.02255)). Humans win 16% of StS2
 A0 runs (Mega Crit, May 2026, via
 [GameGeeker](https://gamegeeker.com/fr/news/slay-the-spire-2-may-neows-news-update?market=FR)). No
-public, honest-information frontier win rate exists for full StS1 runs.
+public, honest-information frontier win rate exists for full StS1 runs. An StS1 benchmark at
+Ascension 20, published after this snapshot, is summarized in the addendum.
 
 **What it would take here.** Two scales need separating. On the current combat catalog, a
 frontier policy needs only an adapter that returns a candidate index under the existing
@@ -555,7 +557,7 @@ service.
 | W&B / CoreWeave Serverless RL (ART backend) | Fits, but no personal accounts | W&B docs say training is "free during preview"; CoreWeave's page lists RL at $2.70/GPU-hour; the two conflict ([W&B](https://docs.wandb.ai/serverless-rl/usage-limits); [CoreWeave](https://coreweave.com/forge-pricing/post-training)) |
 | Together AI | Offline SFT/DPO only | Qwen3.5 up to 9B: SFT $0.34/M tokens, with a second, unlabeled table showing $0.38; an RL API is mentioned only by a third party ([Together pricing](https://www.together.ai/pricing)) |
 | OpenAI | Closed to new users | Fine-tuning is being wound down (notice dated 2026-05-08), with job creation ending by January 2027; RFT on o4-mini cost $100/hour ([OpenAI pricing](https://developers.openai.com/api/docs/pricing); [Tessl](https://tessl.io/blog/openai-shutting-fine-tuning-signals-for-enterprise-ai)) |
-| Prime Intellect Lab | Does not fit (environment runs on their side) | Shared LoRA training stopped accepting new runs on 2026-10-08; dedicated runs are in closed beta ([Prime Intellect docs](https://docs.primeintellect.ai/hosted-training/what-is-lab)) |
+| Prime Intellect Lab | Does not fit (environment runs on their side) | Shared LoRA training was retired (the CLI warning gives 2026-10-05); on-demand Hosted Training, billed per GPU-hour, replaced it in beta; see the addendum ([Prime Intellect docs](https://docs.primeintellect.ai/hosted-training/what-is-lab)) |
 | Anthropic | Not available | No current Claude fine-tuning found; Claude 3 Haiku on Bedrock reached end of life on 2026-09-10 ([AWS](https://aws.amazon.com/jp/blogs/machine-learning/fine-tune-anthropics-claude-3-haiku-in-amazon-bedrock-to-boost-model-accuracy-and-quality/)) |
 | Rented GPUs | Fits (the project's trainer runs remotely) | RunPod RTX 4090 $0.34 community / $0.74 secure per hour, A100 80GB $1.19 / $1.59, H100 SXM $2.69 / $3.49, though the rendered page showed higher figures such as $0.89 for the 4090 ([RunPod](https://www.runpod.io/pricing)); Modal H100 ≈ $3.95/h ([Modal](https://modal.com/pricing)); Lambda H100 SXM $4.29/h ([Lambda](https://lambda.ai/pricing)); HF Jobs A100 80GB $2.50/h ([HF Jobs](https://huggingface.co/docs/huggingface_hub/guides/jobs)) |
 
@@ -1330,6 +1332,116 @@ determinized search teacher to a real-engine audit, would be a credible contribu
 first-floor scale, and it is what would make any later full-game result comparable to the human
 reference points of 9% across all StS1 runs in 2020 and 16% at StS2 A0.
 
+## Addendum, 2026-10-12: self-improving harnesses, an StS1 benchmark and training services
+
+*Added after the full-run API model track started ([llm-play.md](llm-play.md)); sources were read
+on 2026-10-12. That page lists the ideas taken from this research for its loop.*
+
+**Self-improving harnesses.**
+- **Continual Harness** (arXiv 2605.09998, May 2026) automates the human refinement loop of
+  Gemini Plays Pokémon within one episode, without resets.
+  - **How it works:** a Refiner, run by the same model as the player, reads the last 50 steps
+    with automatic failure flags such as "possible loop". It then edits four stores: the
+    strategy prompt, sub-agents, code skills and memory. The released code refines after 25
+    steps, every 25 steps up to step 200, and every 100 after that.
+  - **Results:** on Pokémon Emerald, Gemini 3 Pro reached 100% of milestones at a median of
+    $130, against 98% at $215 for a minimal harness. Flash was mixed. Every Flash-Lite variant
+    scored below the minimal harness's 20%.
+  - **Gaps:** the paper has no component ablation and no check or rollback of edits. It credits
+    most of the gain to code skills, and most authored skills were never used.
+  - **The released harness:** the evolved Pokémon Red harness holds 13 overlapping navigation
+    skills and a prompt that drifted into run-specific goals.
+  - **Co-learning loop:** Gemini relabels a Gemma-4 student's low-reward steps for SFT. It
+    reports no absolute gains, and its training code is not released.
+- **Growing Harness** (arXiv 2609.26760) has an offline optimizer edit harness code, only in
+  functions that appear in failing traces. It accepts a change only if a gate set does not
+  regress. Without the gate, success on the gate set rose to 30% and then fell to 16%. Moving
+  control logic into code cut inference cost by 74–99% against a tool-calling agent.
+- **Meta-Harness** (arXiv 2603.28052) has a coding agent read every earlier harness with its
+  scores and raw traces. Proposers given raw traces scored a median of 50.0, against 34.6 with
+  scores only and 34.9 with summaries.
+- **DemoEvolve** (section 6) is the closest setup to this project's full-run track:
+  - GPT-5.4 at low effort plays and Opus 4.7 proposes changes;
+  - changes are selected on three development seeds, about 60 development rollouts in all;
+  - results are reported on two held-out seeds;
+  - human demonstrations go to the proposer only.
+- **ACE** (arXiv 2510.04618) edits a playbook through itemized additions with helpful and harmful
+  counters. It records how a whole-context rewrite collapsed from 18,282 to 122 tokens and
+  dropped accuracy below the baseline.
+- **"Harness Updating Is Not Harness Benefit"** (arXiv 2605.30621) finds that weak models fail to
+  use or follow the harness changes made for them.
+
+**An StS1 benchmark.**
+- **SpireBench** (Lowe and Keemink, arXiv 2610.12596, 2026-10-08) is unrelated to the StS2 trial
+  of the same name in section 3. It plays the original game's Ironclad at Ascension 20 through
+  CommunicationModPlus, with 10 runs per model. Whether its interface hides the same information
+  as this project's was not checked.
+- **Results** (mean floor, acts cleared, cost per run):
+
+  | Model | Mean floor | Acts cleared | Cost per run |
+  |---|---|---|---|
+  | GPT-6 Astra (max) | 37.0 | 1.50 | $33.09 |
+  | Claude Fable 5.1 (max) | 36.2 | 1.60 | $61.91 |
+  | Claude Opus 5 | 32.5 | 1.30 | $60.62 |
+  | GLM-5.3 (max) | 22.1 | 0.60 | $3.92 |
+  | DeepSeek V4.1 Flash | 16.9 | 0.30 | at most $0.35 |
+  | GLM-5.3 Flash | 15.6 | 0.40 | $0.40 |
+  | Qwen3.8 27B | 14.9 | 0.20 | — |
+  | GPT-5.6 Luna (max) | 14.2 | 0.10 | $0.24 |
+  | Human telemetry (206,082 runs) | 22.1 | 0.73 | — |
+  | BottledAI | 11.3 | — | — |
+  | Random choice | 7.5 | — | — |
+
+  Only GPT-5.6 Sol killed the final boss, once. `gpt-6-luna` was not tested.
+- **Fights, not route:** stronger models are "stronger mainly in the fights, not in the route".
+  HP change over hallway fights separates models (ρ = +0.62). Elites taken, shops, resting and
+  skipped rewards do not.
+- **Memory across runs:** over 80 matched pairs per arm, consolidated memory added +0.00 acts
+  and verbatim notes +0.06.
+  - 17% of memories were false: 78% of written rules, against 9% of statements of fact.
+  - 119 memories advised caution and 17 advised risk.
+  - One model's system prompt grew to 227,089 characters.
+- **Other findings:**
+  - Models rest at 57–75% of rest sites, against 23% of players.
+  - They bring 19.3 cards to the Act 1 boss, against 16.8 for humans.
+  - One action per response needed 3.0 more calls per floor, cost 23% more and cleared 0.07
+    fewer acts.
+  - Renamed cards and enemies cost 0.14 acts, so prior knowledge is part of the score.
+
+**Corrections and updates to section 4.**
+- **Prime Intellect:**
+  - It retired shared LoRA training; the CLI warning gives 2026-10-05.
+  - On-demand Hosted Training replaced it. It is in beta, billed per GPU-hour, with rates shown
+    only in the CLI.
+  - Hosted Training runs rollouts in Prime's own pods and sandboxes, so a local game would need
+    a tunnel while paid GPUs wait.
+  - prime-rl's full RL stack needs two GPUs.
+  - The `verifiers` main branch has removed its v0 API while the docs still call it
+    deprecated.
+  - Its Environments Hub has no Slay the Spire or game environment.
+- **OpenAI** blocked new fine-tuning in three steps:
+  - from 2026-05-07, organizations that had never fine-tuned;
+  - from 2026-07-02, organizations without fine-tuned inference in the previous 60 days;
+  - from 2027-01-06, everyone.
+
+  `gpt-6-luna` cannot be fine-tuned.
+- **Tinker:**
+  - It added Qwen3.8-27B ($0.6975 / $5.595 / $4.103 per million tokens of prefill, sampling and
+    training), DeepSeek-V4.1-Flash, GLM-5.3, GLM-5.3-Flash and Kimi-K2.6.
+  - Qwen3.6-27B, DeepSeek-V3.1 and Nemotron-3-Nano retire on 2026-10-23.
+  - Its API is now the portable choice: Fireworks' serverless training, Baseten Loops (early
+    access) and SkyRL v0.4.0 on local GPUs all implement it.
+- **Fireworks** managed RFT takes no new jobs.
+- **CoreWeave Serverless RL** (formerly W&B) is in public preview with free training. Whether
+  personal accounts are allowed was not verified.
+- **What this means for the full-run track:** training an open model would buy a free local
+  player near Luna's level, not a stronger one. Luna-class open models scored within noise of
+  GPT-5.6 Luna on SpireBench, and Luna runs here cost $0.03–0.17.
+
+**Wall time on the full-run track.** In the v6 and v7 runs, model calls took 70–80% of wall time,
+at a median of about 3 s per call. The Summary's claim that engine wall-clock decides holds for the
+RL and local-model tracks. On the API model track, API latency decides.
+
 ## Sources
 
 All links below are cited in this guide and appear in the research notes. They are grouped by the
@@ -1585,3 +1697,24 @@ section where each is first cited.
 - [NVIDIA, Senior Research Engineer, Generalist Embodied Agent Research (posting via aggregator; closed)](https://jobs.anitab.org/companies/nvidia/jobs/68139470-senior-research-engineer-generalist-embodied-agent-research)
 - [Amazon, Applied Scientist, Fauna (posting via aggregator, 2026-06-10)](https://scoutify.com/companies/amazon/jobs/1352280/)
 - [Runway, Member of Technical Staff, Robotics Engineer (posting via aggregator, 2026-06-02)](https://jobs.madrona.com/companies/runway-3/jobs/81324241-member-of-technical-staff-robotics-engineer)
+
+### Addendum, 2026-10-12
+
+- [Continual Harness, arXiv 2605.09998v1 (HTML; May 2026)](https://arxiv.org/html/2605.09998v1)
+- [sethkarten/continual-harness at commit bbab97a](https://github.com/sethkarten/continual-harness/tree/bbab97a)
+- [Growing Harness, arXiv 2609.26760](https://arxiv.org/abs/2609.26760)
+- [Meta-Harness, arXiv 2603.28052](https://arxiv.org/abs/2603.28052)
+- [DemoEvolve, arXiv 2605.24539 (HTML)](https://arxiv.org/html/2605.24539)
+- [ACE, Agentic Context Engineering, arXiv 2510.04618v2 (HTML)](https://arxiv.org/html/2510.04618v2)
+- [Harness Updating Is Not Harness Benefit, arXiv 2605.30621](https://arxiv.org/abs/2605.30621)
+- [SpireBench, arXiv 2610.12596 (HTML; 2026-10-08)](https://arxiv.org/html/2610.12596)
+- [Prime Intellect docs, shared LoRA retired](https://docs.primeintellect.ai/hosted-training/shared-lora-retired)
+- [PrimeIntellect-ai/prime, PR #984 (retirement warning)](https://github.com/PrimeIntellect-ai/prime/pull/984)
+- [Prime Intellect docs, Hosted Training billing](https://docs.primeintellect.ai/hosted-training/billing)
+- [PrimeIntellect-ai/prime-rl](https://github.com/PrimeIntellect-ai/prime-rl)
+- [PrimeIntellect-ai/verifiers, overview](https://github.com/PrimeIntellect-ai/verifiers/blob/main/docs/overview.md)
+- [OpenAI API deprecations (fine-tuning)](https://developers.openai.com/api/docs/deprecations)
+- [Fireworks docs, reinforcement fine-tuning](https://fireworks.ai/docs/fine-tuning/reinforcement-fine-tuning-models)
+- [Fireworks docs, Training API](https://docs.fireworks.ai/fine-tuning/training-api/introduction)
+- [Baseten Loops, Tinker compatibility](https://docs.baseten.co/loops/tinker-compatibility)
+- [CoreWeave Serverless RL usage limits](https://docs.coreweave.com/serverless-rl/usage-limits)

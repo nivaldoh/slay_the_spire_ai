@@ -433,9 +433,11 @@ nohup uv run python -m spire play --model gpt-6-luna --effort low \
   --output runs/llm-luna-v<VERSION>-dev-<DATE> > runs/llm-luna-v<VERSION>-dev-<DATE>.log 2>&1 &
 ```
 
-Measured cost: Luna runs cost $0.04–0.10 each. Engine and API wall time is about 12–30
-minutes per run, depending on how far the model gets. The $25 cap is therefore not the
-binding limit; time is, at roughly two to four iterations a night. Then:
+Measured cost: Luna runs from v1.1 to v7 cost $0.03–0.17 each and took 11–62 minutes,
+depending on how far the model got. Model calls took 70–80% of that wall time in the v6
+and v7 runs (median about 3 s per call, with a median of 100–130 reasoning tokens at
+`low` effort); the engine took the rest. The $25 cap is therefore not the binding limit;
+time is, at roughly two to four iterations a night. Then:
 
 1. Watch for stalls: a trace that stays unmodified for more than 90 s while the process
    is alive. Stop a stalled job with SIGINT to its `python3 -m spire play` process, and
@@ -473,3 +475,71 @@ Candidate changes with evidence so far, in priority order (v3–v7 took the earl
   Evidence: notes clobbered in the smoke run, copied unchanged on about half of calls.
 - **Deck building**: RUNDEV2 decks of 28–31 cards with no removal bought at 474 gold
   (v2), and RUNDEV3's 11-card deck with little damage (v3).
+
+## Ideas from related work (2026-10-12)
+
+A literature check on self-improving harnesses is summarized in the
+[approaches.md addendum](approaches.md#addendum-2026-10-12-self-improving-harnesses-an-sts1-benchmark-and-training-services).
+This loop already has the shape that works best there: a strong proposer changes the
+harness between runs while a cheap, low-effort model plays. DemoEvolve, the closest
+published setup, has GPT-5.4 at low effort play Slay the Spire 2, with Opus 4.7 proposing
+changes, and selects them on three development seeds. The ideas below are not built yet.
+
+Changes to the loop, in priority order:
+
+1. **Replay saved decisions before a live run.** Each model decision in `trace.jsonl`
+   keeps the observation, the full prompt and the notes. A replay script would re-render
+   chosen decision points with the changed harness, keep the recorded notes and history,
+   and ask the model about five times each. At about $0.0002 a call, a test costs cents
+   and launches no game. It shows whether a change moves the targeted choice. It cannot
+   show what follows that choice, so live runs still judge outcomes.
+2. **Failure flags in `play_digest.py`.** Count per run what the log now counts by hand:
+   turns ended with unspent energy while unblocked damage came in, deaths with potions
+   unused, reopened card rewards, damage to minions against damage to the boss,
+   exact-lethal deaths, and hallway fights with a large HP loss. These counts vary less
+   than the floor reached. The flags should point into the traces rather than replace
+   them: in Meta-Harness, a proposer that read raw traces scored a median of 50.0, against
+   34.9 with summaries.
+3. **Held-out seeds.** `RUNDEV1`–`RUNDEV3` have chosen seven versions. Add two or three
+   seeds that never choose a change, and play them every few versions. DemoEvolve reports
+   two held-out seeds. In Growing Harness, without a no-regression gate, success on the
+   gate set rose to 30% and then fell to 16%.
+4. **Demonstrations for the proposer only**, if a human run on a development seed can be
+   recorded. In DemoEvolve, nine human runs shown only to the proposer took the StS2
+   held-out mean floor from 18.17 to 28.83, against 23.17 with self-play traces alone.
+   Demonstration summaries placed in the player's prompt did not help.
+
+Harness changes this evidence favors:
+
+- **Code over prose for recurring decisions.** Growing Harness moves recurring control
+  logic into harness code. Continual Harness credits most of its gain to code skills.
+  SpireBench (StS1, A20) finds that stronger models are "stronger mainly in the fights, not
+  in the route". The skipped-reward memory and hand-select purpose candidates are of this
+  kind. An end-of-turn preview with a lethal check would be another.
+- **Notes shown only when they apply.** Extend the `monsters.json` pattern to events, relic
+  screens and shops. AgenticSTS's triggered skills went from 3/10 to 6/10 StS2 wins
+  (p≈0.37). Keep these to checked rules: SpireBench found 78% of model-written rules
+  false (against 9% of facts) and caution advised seven times as often as risk.
+
+Not worth adopting now:
+
+- **The player refining its own harness**, as in Continual Harness. The benefit depends on
+  the model: on Pokémon Emerald, every self-refining Flash-Lite variant scored below the
+  minimal harness's 20% of milestones.
+- **Model-written lessons carried across runs.** On StS1 A20, SpireBench measured +0.00
+  acts from consolidated memory and +0.06 from verbatim notes over 80 matched pairs per
+  arm. AgenticSTS's episodic memory added nothing.
+- **Whole-text note rewrites**, if the notes change. ACE recorded a context that collapsed
+  from 18,282 to 122 tokens in one rewrite; itemized additions and removals avoid that.
+- **Paid post-training.** `gpt-6-luna` cannot be fine-tuned. Open models of its class
+  scored within noise of GPT-5.6 Luna on SpireBench. Prime Intellect's hosted training runs
+  rollouts on its own machines. Training an open model would buy a free local player near
+  Luna's level, not a stronger one.
+
+Owner decisions this raises:
+
+- **Reasoning effort.** One v7 pass over the three seeds at `medium` would separate the
+  model's limits from the harness's. The owner fixed `low`.
+- **A whole turn per call.** In SpireBench, one action per call needed 3.0 more calls per
+  floor, cost 23% more and cleared 0.07 fewer acts than batched turns. Model calls are
+  most of the wall time here, so batching would buy iterations per night.

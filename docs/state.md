@@ -11,7 +11,9 @@ v2–v7 were played on `RUNDEV1`–`RUNDEV3` (v7 on `RUNDEV2` only). Best floors
 29, 50 and 42 (v1.1 baseline: 16, 33, 16); no run has won yet. The next step is to replay
 all three seeds on v7 (`df231dc`), then take the top candidate in
 [llm-play.md](llm-play.md) (skipped-reward memory). API spend: $1.67 of the $25
-cap in `runs/llm-spend.jsonl`.
+cap in `runs/llm-spend.jsonl`. That page also lists ideas for the loop from related work
+(replaying saved decisions offline, failure flags, held-out seeds) and two open owner
+decisions (reasoning effort, a whole turn per call).
 
 Owner direction (2026-10-12): run a frontier API model through complete runs, with
 the scaffolding found by autoresearch from observed mistakes. Full runs, `gpt-6-luna`
