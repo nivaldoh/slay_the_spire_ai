@@ -10,6 +10,8 @@ What the state shows:
 - The draw pile is an unordered multiset; you do not know the order.
 - Enemy intent damage is per hit and already includes Strength, Weak and Vulnerable.
 - Card text is not shown. Card names ending in "+" are upgraded.
+- A card marked "ethereal" is exhausted if it is still in your hand at the end of your
+  turn. A card marked "exhausts" is removed for the rest of the combat when played.
 - Target and slot numbers in brackets are engine positions; dead enemies keep theirs.
 - You die when your HP reaches 0, so to survive a turn the damage that gets past your
   block must be less than your HP.

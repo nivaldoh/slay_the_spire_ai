@@ -47,8 +47,14 @@ def _clean(text: str) -> str:
     return re.sub(r"[~@]", "", text).strip()
 
 
+def _card(card: dict) -> str:
+    """Name, cost and type, plus the keywords the engine reports (card text is not shown)."""
+    keywords = "".join(f", {k}" for k in ("ethereal", "exhausts") if card.get(k))
+    return card_text(card)[:-1] + keywords + ")"
+
+
 def _cards(cards: list) -> str:
-    counts = Counter(card_text(card) for card in cards)
+    counts = Counter(_card(card) for card in cards)
     return ", ".join(f"{n}x {text}" if n > 1 else text for text, n in counts.items()) or "none"
 
 
@@ -100,7 +106,7 @@ def _combat(combat: dict, room: str, monster_notes: dict) -> list[str]:
         f"{player.get('block', 0)} block and {player['current_hp']} HP.",
         *(["Enemy rules:"] if noted else []),
         *(f"  {name}: {monster_notes[key]}" for key, name in noted.items()),
-        "Hand: " + (", ".join(card_text(card) for card in combat.get("hand", [])) or "empty"),
+        "Hand: " + (", ".join(_card(card) for card in combat.get("hand", [])) or "empty"),
     ]
     for pile in ("draw_pile", "discard_pile", "exhaust_pile"):
         cards = combat.get(pile, [])
@@ -146,7 +152,7 @@ def _screen(observation: dict) -> list[str]:
         return [f"Event: {state.get('event_name')}", _clean(state.get("body_text", "")),
                 "Options:", *options]
     if screen == "SHOP_SCREEN":
-        items = [card_text(card) + f" {card.get('price')}g" for card in state.get("cards", [])]
+        items = [_card(card) + f" {card.get('price')}g" for card in state.get("cards", [])]
         items += [f"{thing.get('name')} {thing.get('price')}g"
                   for group in ("relics", "potions") for thing in state.get(group, [])]
         purge = f"; card removal {state.get('purge_cost')}g" if state.get("purge_available") else ""

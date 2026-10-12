@@ -157,3 +157,13 @@ def test_skipped_card_rewards_are_named_on_that_floors_reward_screens(tmp_path):
     assert line not in llm.render_prompt(
         decisions.decision_from_message(rewards, session_id="s", sequence=5), "", [], {},
         agent.declined.get(4))
+
+
+def test_cards_show_the_ethereal_and_exhaust_keywords():
+    ghost = {**card("Ghostly", "Apparition", kind="SKILL", target=False),
+             "ethereal": True, "exhausts": True}
+    raw = combat_message(hand=[ghost, card("Strike_R", "Strike")], exhaust_pile=[ghost])
+    observation = decisions.decision_from_message(raw, session_id="s", sequence=1).observation
+    text = llm.render_state(dict(observation))
+    assert "Hand: Apparition (1 skill, ethereal, exhausts), Strike (1 attack)\n" in text
+    assert "Exhaust pile (1): Apparition (1 skill, ethereal, exhausts)" in text
