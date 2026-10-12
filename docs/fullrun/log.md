@@ -524,10 +524,10 @@ infrastructure failure on RUNDEV2; RUNDEV3 was not played.
 - RUNDEV2 stopped on floor 38 (Act 3, turn 4 against a Writhing Mass, 91/104 HP) as
   `unsupported_or_invalid`, not a gameplay outcome. After `play 3 0` the game reported
   `screen_name` `SETTINGS` with `is_screen_up` true, so CommunicationMod offered only
-  `key`, `click`, `wait` and `state`. No command the controller sends opens the settings
-  screen, and no earlier trace has it, so outside input to the game window (Escape or the
-  settings button) is the likely cause; unconfirmed. Possible runner fix if it recurs:
-  close the screen with a logged key press and continue. The run had beaten The Collector
+  `key`, `click`, `wait` and `state`. The owner confirmed an accidental Escape press on the
+  game window; the runner then stopped the run and closed the game, as designed. It is not
+  a loss. A runner fix could close the settings screen with a logged key press and
+  continue. The run had beaten The Collector
   and had no Apparitions, so v9's keywords were not tested on Ethereal cards in either run.
 
 v9 is not judged: one finished run, no Ethereal card in play. Replay it on all three seeds.

@@ -22,8 +22,8 @@ A second session (2026-10-12, 15:40–20:16 local) replayed v7 on all three seed
 16, 33 and 16, against 29, 50 and 42 for the same prompts' earlier runs: run-to-run
 variance is that large), played v8, skipped-reward memory (50, 54 and 16; RUNDEV2 reached
 Act 4, the furthest yet, and the reopen loop nearly stopped), and started v9, card keywords
-(RUNDEV1 29; RUNDEV2 stopped on floor 38 when the game's settings screen opened, likely
-from outside input; RUNDEV3 not played). API spend: $2.49 of the $25 cap.
+(RUNDEV1 29; RUNDEV2 stopped on floor 38 when an accidental Escape press opened the game's
+settings screen; RUNDEV3 not played). API spend: $2.49 of the $25 cap.
 
 Next steps:
 
@@ -38,13 +38,18 @@ Next steps:
    jobs with SpireBench's measures, before more versions are compared
    ([fullrun/README.md](fullrun/README.md#ideas-from-related-work-2026-10-12)). SpireBench
    released no code; its metric definitions and fixed held-out seeds carry over.
-5. If the settings screen stops a run again, close it in the runner with a logged key
-   press. Owner: was the game window touched at about 20:12 local (23:12 UTC)?
+5. Optional runner fix: close the settings screen (opened by an Escape press on the game
+   window) with a logged key press instead of stopping the run.
+6. An open StS1 full-run benchmark, built from this harness: owner interest, scoped in the
+   [approaches.md addendum](approaches.md#addendum-2026-10-12-evening-an-open-sts1-benchmark).
+   Its first step is the same results table as item 4.
 
 Open owner decisions: reasoning effort above `low`, and a whole turn per call.
 
 ## Owner direction
 
+- 2026-10-12: interest in turning this harness into an open-source StS1 benchmark, since
+  SpireBench's code is not public (checked 2026-10-12); see the approaches.md addendum.
 - 2026-10-12: run a frontier API model through complete runs, with scaffolding found by
   autoresearch from observed mistakes. `gpt-6-luna` at low reasoning effort, a hard $25 API
   cap for the first overnight work, and lean code.

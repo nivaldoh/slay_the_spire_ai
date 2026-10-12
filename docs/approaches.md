@@ -1445,6 +1445,83 @@ on 2026-10-12. That page lists the ideas taken from this research for its loop.*
 at a median of about 3 s per call. The Summary's claim that engine wall-clock decides holds for the
 RL and local-model tracks. On the API model track, API latency decides.
 
+## Addendum, 2026-10-12 (evening): an open StS1 benchmark
+
+*Prompted by the owner after the second full-run session, when SpireBench's code turned out
+not to be public. Sources were read on 2026-10-12.*
+
+**What is public.**
+- **SpireBench** (above) is the most complete StS1 full-run benchmark: Ironclad at A20, every
+  decision made by the model, 20 models, ten fixed held-out seeds. No code is public as of
+  2026-10-12.
+  - The arXiv page has no comment or code link.
+  - The paper links only upstream projects (CommunicationMod, Bottled AI) and human run data.
+  - Its CommunicationModPlus fork appears in no public repository.
+  - The first author's public GitHub has no related repository.
+  - The preprint is four days old, so a release may follow. Check again before building.
+- **Orak** (KRAFTON, MIT license, last pushed 2025-06-17) is open and includes StS1 through a
+  modified CommunicationMod with file-based input and output. It is not a full-run benchmark:
+  - Its default config plays one seed (0) at Ascension 0 with a 200-step cap.
+  - Rules make the map, event and potion decisions.
+- **Slay the Spire 2:** ClaudePlaysTheSpire (MIT; its "SpireBench" trial is unrelated to the
+  paper) and AgenticSTS publish harness code.
+- **Hobby harnesses** on CommunicationMod (spirecomm forks, small LLM bots) report a few runs
+  each, with no fixed seeds or results table.
+
+**The gap.** No open benchmark has a model make every decision of complete StS1 runs with:
+- fixed public and held-out seeds;
+- a declared information boundary;
+- per-decision traces;
+- cost accounting.
+
+**What this project already has.**
+- The pinned engine and mods, checked by hash (`spire/engine/runtime.py`).
+- Seeded complete runs, one JVM per run.
+- A public decision boundary that labels every legal choice and removes hidden state
+  (`spire/decisions.py`).
+- A failure taxonomy that keeps infrastructure stops out of gameplay results. v9's run
+  stopped by an accidental Escape is an example.
+- Provenance per job: source fingerprints and the prompt hash.
+- A spend ledger with a hard cap.
+- Full traces with failure flags (`spire digest`).
+- A runner that takes any policy. The open-weight skeleton already plugs into it.
+
+**What a benchmark would still need.**
+1. **Seed sets:** development seeds plus held-out seeds, the same for every model (SpireBench
+   uses ten).
+2. **A results table:** acts cleared, floor reached, bosses beaten, wins, and cost and calls
+   per floor, with spread over runs. This is the `spire stats` plan in
+   [fullrun/README.md](fullrun/README.md#ideas-from-related-work-2026-10-12); the v7 replay
+   showed that one run per seed cannot rank anything.
+3. **Harness levels:** a bare interface and the tuned scaffolding as named, frozen versions,
+   to separate the model from the scaffolding. Possibly also a reference compendium, which
+   SpireBench's prompt includes for the rules and every card, relic and potion. Game text
+   cannot be redistributed, so a compendium would be hand-written or generated from the
+   user's own install.
+4. **Baselines:**
+   - random choice;
+   - a scripted policy;
+   - Bottled AI (rules plus search);
+   - human runs from Mega Crit's released telemetry ([section 8](#8-imitation-from-human-run-data-77-million-runs-zero-combat-actions)).
+5. **Setup others can reproduce.** Today it is a Windows game with a WSL controller and
+   Workshop jars pinned by hash, and every user must own the game.
+6. **Throughput.** Runs take 15–60 minutes and one game runs per machine, so ten seeds per
+   model is an evening per model.
+
+**Risks.**
+- If SpireBench publishes its harness, the value of an open one narrows to the A0 and
+  cheap-model tier, the harness levels and the public traces. Contributing to theirs is also
+  an option.
+- The game is proprietary: no game files, saves or game text can ship.
+- A benchmark needs upkeep: engine pins, model APIs and prices.
+- The autoresearch loop changes the harness, but a benchmark needs it frozen. Benchmark
+  entries must name a frozen scaffolding version.
+
+**First step.** Build `spire stats` and fix the seed sets. Both serve the loop now and are
+the core of any benchmark. Then decide the scope and a public name, for example Ironclad A0
+complete runs with every decision by the model, after rechecking whether SpireBench has
+released code.
+
 ## Sources
 
 All links below are cited in this guide and appear in the research notes. They are grouped by the
@@ -1721,4 +1798,10 @@ section where each is first cited.
 - [Fireworks docs, Training API](https://docs.fireworks.ai/fine-tuning/training-api/introduction)
 - [Baseten Loops, Tinker compatibility](https://docs.baseten.co/loops/tinker-compatibility)
 - [CoreWeave Serverless RL usage limits](https://docs.coreweave.com/serverless-rl/usage-limits)
+- [SpireBench, arXiv abstract page 2610.12596 (no code link, read 2026-10-12)](https://arxiv.org/abs/2610.12596)
+- [krafton-ai/Orak (MIT)](https://github.com/krafton-ai/Orak)
+- [Orak Slay the Spire config](https://github.com/krafton-ai/Orak/blob/main/src/mcp_agent_client/configs/slay_the_spire/config.yaml)
+- [hiKareeem/ClaudePlaysTheSpire (MIT)](https://github.com/hiKareeem/ClaudePlaysTheSpire)
+- [AlayaLab/AgenticSTS](https://github.com/AlayaLab/AgenticSTS)
+- [xaved88/bottled_ai](https://github.com/xaved88/bottled_ai)
 
