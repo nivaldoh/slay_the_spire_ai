@@ -340,3 +340,36 @@ attempt; its Neow pick (a random rare card) matches v1.1–v3 on this seed.
 skeleton uses them without depending on this track's OpenAI client. The code is unchanged
 and so is what the model sees: later commits still play scaffolding v7, and the ledger
 file is still `runs/llm-spend.jsonl`.
+
+## 2026-10-12: a leaner review loop
+
+The owner asked for a loop that uses less of Claude Code's context. The overnight session's
+transcript showed where its context went: 413k tokens by the end, about 59% of the growth
+from tool output and notifications. Digest output was half of all tool output (full-run
+views of 10–30 KB). 39 one-off trace scans written as inline scripts added both their code
+and their output. Polling took about 50 calls: Monitor expires after 30 minutes, so it was
+re-armed 13 times, and background wait loops repeated its events.
+
+Changes, none of them to what the model sees (later commits still play v7):
+
+- `spire digest <run>` prints floors, flags and final notes: 2.4 KB for v7 RUNDEV2's
+  50-floor run, against 30 KB before. `--picks` restores the per-floor choices and reasons.
+  `--floor N` prints the state once per turn and at its end, not on every card: v7's
+  Awakened One fight went from 15.0 to 10.1 KB, most of it the model's reasons.
+- The flags reproduce the log's hand counts: v6 RUNDEV3's 43 card reward skips (20 on F24,
+  16 on F39), v2 RUNDEV2's exactly lethal Snecko hit (7 against 0 block and 7 HP), v6's
+  final-turn margins of 23, 11 and 29, and v1.1 RUNDEV1's six Slime Boss turns ended with
+  energy and a playable card.
+- `spire watch <job>` returns once per finished run, stall, job end or refused start. It
+  replaces Monitor, the wait loops and the progress checks.
+- The loop in [README.md](README.md) reviews each finished run in a fresh subagent and
+  keeps only its review, writes findings straight into this log, updates `state.md` once
+  per loop, and drops the manual preflight, which `spire play` and the engine already
+  enforce.
+
+A check of the review subagent on the saved v7 RUNDEV2 run (91k subagent tokens, 14 tool
+calls, 3 minutes; about 600 tokens returned) matched this log's v7 entry and found two
+things the hand review missed. The model did not know the Awakened One revives: it spent
+its last resources killing the first form at 21 HP. And the hand never shows Ethereal:
+`decisions.card_text` renders name, cost and type, while the trace marks the cards
+`ethereal`. Both are now candidate changes.

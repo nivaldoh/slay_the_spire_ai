@@ -77,7 +77,7 @@ ROOMS = {"MonsterRoom": "monster", "MonsterRoomElite": "elite", "MonsterRoomBoss
 BOSS_FLOORS = {1: 16, 2: 33, 3: 50}
 
 
-def _incoming(monsters: list) -> int:
+def incoming_damage(monsters: list) -> int:
     # Visible attack intents only; hidden damage (Runic Dome) reports -1 and is left out.
     return sum(max(monsters[i].get("move_adjusted_damage", 0), 0) * monsters[i].get("move_hits", 1)
                for i in live_targets(monsters))
@@ -95,7 +95,7 @@ def _combat(combat: dict, room: str, monster_notes: dict) -> list[str]:
         f"powers: {_powers(player)}",
         "Enemies:",
         *(f"  {_monster(i, m)}" for i, m in enumerate(monsters)),
-        f"Incoming attack damage this turn: {_incoming(monsters)}, against your "
+        f"Incoming attack damage this turn: {incoming_damage(monsters)}, against your "
         f"{player.get('block', 0)} block and {player['current_hp']} HP.",
         *(["Enemy rules:"] if noted else []),
         *(f"  {name}: {monster_notes[key]}" for key, name in noted.items()),

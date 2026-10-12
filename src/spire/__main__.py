@@ -66,6 +66,10 @@ def main() -> int:
     digest = commands.add_parser("digest", help="Full runs: summarize a saved job or run")
     digest.add_argument("path", type=Path, help="A job directory, or one of its run-NNNN")
     digest.add_argument("--floor", type=int, help="Show one floor of a run turn by turn")
+    digest.add_argument("--picks", action="store_true",
+                        help="List a run's noncombat choices and reasons under each floor")
+    watch = commands.add_parser("watch", help="Full runs: wait for a job's next run, stall or end")
+    watch.add_argument("job", type=Path, help="A job directory under runs/fullrun")
     spend = commands.add_parser("spend", help="Full runs: total the API spend ledger")
     spend.add_argument("--ledger", type=Path, default=LEDGER_PATH)
     args = parser.parse_args()
@@ -200,7 +204,12 @@ def main() -> int:
     if args.command == "digest":
         from spire.fullrun.digest import main as run_digest
 
-        run_digest(args.path, args.floor)
+        run_digest(args.path, args.floor, args.picks)
+        return 0
+    if args.command == "watch":
+        from spire.fullrun.watch import next_event
+
+        print(next_event(args.job))
         return 0
     if args.command == "spend":
         from spire.ledger import Ledger

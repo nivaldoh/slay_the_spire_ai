@@ -4,7 +4,7 @@ Updated 2026-10-12. Read this first: what is running, what is current, what come
 History lives with each track ([full runs](fullrun/log.md),
 [first combat](first-combat/README.md)), not here.
 
-## Active work (last verified 2026-10-12 16:13 UTC)
+## Active work (last verified 2026-10-12 18:16 UTC)
 
 No game, GPU or API job is running. Source and `HEAD` are free.
 
@@ -25,7 +25,8 @@ Next steps:
 2. Take the top candidate in [fullrun/README.md](fullrun/README.md#candidate-changes),
    skipped-reward memory.
 3. Loop improvements from related work, on the same page: replay saved decisions offline,
-   failure flags in `spire digest`, held-out seeds.
+   then held-out seeds. Failure flags in `spire digest` and a `spire watch` waiter are built,
+   and the loop now reviews each run in a subagent to save context.
 
 Open owner decisions: reasoning effort above `low`, and a whole turn per call.
 

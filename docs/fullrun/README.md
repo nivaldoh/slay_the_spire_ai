@@ -79,17 +79,28 @@ candidates to add when traces show the need, one at a time.
 
 Jobs go in `runs/fullrun/<job>/`, with the job's stdout and stderr beside it as
 `<job>.log`. Each job directory holds `manifest.json` (source revision and fingerprints,
-config, prompt hash), `system_prompt.md`, `environment.json`, and one `run-NNNN/` per seed.
-Each run holds `trace.jsonl` with raw messages, public decisions, the full prompt, every API
-attempt with usage, cost, latency, reason and notes, and the commands sent. `result.json`
-holds the outcome, the final act, floor, HP, deck and relics, and LLM totals.
+config, prompt hash, status and finished runs), `system_prompt.md`, `environment.json`, and
+one `run-NNNN/` per seed. Each run holds `trace.jsonl` with raw messages, public decisions,
+the full prompt, every API attempt with usage, cost, latency, reason and notes, and the
+commands sent. `result.json` holds the outcome, the final act, floor, HP, deck and relics,
+and LLM totals. A trace record of kind `decision` holds `decision.observation`,
+`decision.candidates` (each with `id`, `command` and `label`), the `choice_id` taken, and
+`behavior`, whose `type` is `llm` (with `reason` and `notes`) or `forced`;
+`digest._decisions` reads them.
 
 ```bash
-uv run python -m spire digest runs/fullrun/<job>                     # per-seed table for log.md
-uv run python -m spire digest runs/fullrun/<job>/run-0000            # floors, choices, reasons
-uv run python -m spire digest runs/fullrun/<job>/run-0000 --floor 16 # one fight, turn by turn
-uv run python -m spire spend                                         # ledger total
+uv run python -m spire digest runs/fullrun/<job>                      # per-seed table for log.md
+uv run python -m spire digest runs/fullrun/<job>/run-0000             # floors, flags, final notes
+uv run python -m spire digest runs/fullrun/<job>/run-0000 --picks     # also each choice and reason
+uv run python -m spire digest runs/fullrun/<job>/run-0000 --floor 16  # one floor, turn by turn
+uv run python -m spire watch runs/fullrun/<job>  # waits for the next finished run, stall or end
+uv run python -m spire spend                                          # ledger total
 ```
+
+A run's flags count what the log once counted by hand: turns ended with energy and a
+playable card (and those with attacks exceeding block), card rewards skipped (and floors
+where one was reopened), potions used and held at the end, and the last turn's incoming
+damage against block and HP. They point into the traces and do not replace reading them.
 
 ## Autoresearch rules
 
@@ -109,12 +120,9 @@ uv run python -m spire spend                                         # ledger to
 
 ## The loop
 
-Preflight: no `spire play` process is running (`ps -eo pid,cmd | grep '[p]ython3 -m spire play'`;
-a plain `pgrep -f` inside a shell or monitor script also matches that script), the game is
-closed, `git status` is clean under `src/`, `scripts/` and `configs/`, and
-`uv run python -m spire spend` is below the cap.
-
-One iteration plays the three development seeds with the committed scaffolding version:
+One iteration plays the three development seeds with the committed scaffolding version.
+There is no separate preflight: `spire play` refuses uncommitted source, an existing output
+directory, a second controller and a running game, and the ledger refuses calls over the cap.
 
 ```bash
 export SPIRE_OPENAI_KEY_FILE=~/.config/robocasa/openai_api_key
@@ -130,16 +138,42 @@ and v7 runs (median about 3 s per call, with a median of 100–130 reasoning tok
 `low` effort); the engine took the rest. The $25 cap is therefore not the binding limit;
 time is, at roughly two to four iterations a night. Then:
 
-1. Watch for stalls: a trace that stays unmodified for more than 90 s while the process
-   is alive. Stop a stalled job with SIGINT to its `python3 -m spire play` process, and
-   diagnose the last observation before changing anything.
-2. Review each run with `spire digest`, and `--floor N` for the fight that killed it.
-3. Pick the most damaging mistake that recurs across runs. Make one change on the
-   editable surface, add a test if code changed, commit, and run the next iteration on
-   the same seeds.
-4. Log the version, its evidence, the per-seed table and the decision in [log.md](log.md).
-   Keep a change if the targeted mistake stops and outcomes do not get worse. With three
+1. Run `spire watch $JOB` in the background (in Claude Code, Bash with `run_in_background`)
+   and start it again after each event. It returns one line per event: a finished run (its
+   log table row), a stall (the newest trace unchanged for 90 s), the job's end, or a job
+   that wrote no manifest (the log's last lines say why). Stop a stalled job with SIGINT to
+   its `python3 -m spire play` process, and diagnose the last observation before changing
+   anything.
+2. Review each finished run in a fresh subagent with the prompt below (in Claude Code, a
+   general-purpose agent, not a fork), so digests stay out of the main context. Add its
+   findings to a draft entry in [log.md](log.md) at once; `docs/` is not fingerprinted, so
+   this is safe while the job runs.
+3. While the job runs, draft one change on the editable surface in a git worktree: a job
+   stops if `src/` or `configs/` changes between its seeds. Target the most damaging mistake
+   that recurs across runs. Before editing, read the decisions the reviews point to
+   (`--floor N`) and the source by function (`grep -n`, then that range). Add a test if
+   code changed.
+4. When the job ends, finish its log entry (the table is `spire digest $JOB`), merge the
+   change, commit and push once, and run the next iteration on the same seeds. Keep a
+   change if the targeted mistake stops and outcomes do not get worse. With three
    stochastic runs per version, do not claim more than that.
+
+Update "Active work" in [state.md](../state.md) when the loop starts and when it stops, with
+the time from `date -u`, rather than at every launch. To save context, a session reads
+[state.md](../state.md), this page and only the newest entry of [log.md](log.md), and never
+reads `docs/approaches.md` whole.
+
+Review prompt, one subagent per finished run:
+
+> Review the Slay the Spire full run at `runs/fullrun/<job>/run-NNNN` in
+> /home/niv/repos/slay_the_spire_ai, read-only. Run `uv run python -m spire digest <run>`,
+> then `--floor N` for the fight that ended the run and for floors the flags or HP losses
+> point to, and `--picks` (filtered to the floors in question) for route and reward choices.
+> The same seed's previous run is `<previous run>`; compare only where it explains a
+> different outcome. Reply in at most 300 words: the outcome and cause of death, with floor
+> and turn; the flags; up to three costliest mistakes, each with floor and turn, the
+> model's stated reason and why it was wrong; and which of them match the candidate
+> changes in docs/fullrun/README.md. Report what the trace shows, not guesses.
 
 ## Candidate changes
 
@@ -162,7 +196,11 @@ With evidence so far, in priority order (v3–v7 took the earlier ones):
   half max HP before The Collector (v3 and v6 RUNDEV2). This is strategy advice; prefer
   state or rules fixes first.
 - **Act 3 notes** as runs reach them: Transient (v6 RUNDEV3's death) fades after a few
-  turns, and Giant Head (v4 RUNDEV3's death).
+  turns, Giant Head (v4 RUNDEV3's death), and Awakened One, which revives at full HP in a
+  second form: v7 RUNDEV2 killed the first at 21 HP with no block left and died to it.
+- **Card keywords**: the hand shows name, cost and type only, so Ethereal is invisible.
+  v7 RUNDEV2 played its only non-Ethereal Apparition against 15 damage on the Awakened One's
+  turn 1, and an Ethereal copy exhausted unplayed before a 32-damage turn.
 - **Notes**: separate run notes from combat scratch, or tighten the instruction.
   Evidence: notes clobbered in the smoke run, copied unchanged on about half of calls.
 - **Deck building**: RUNDEV2 decks of 28–31 cards with no removal bought at 474 gold
@@ -170,63 +208,31 @@ With evidence so far, in priority order (v3–v7 took the earlier ones):
 
 ## Ideas from related work (2026-10-12)
 
-A literature check on self-improving harnesses is summarized in the
+A literature check on self-improving harnesses, with its evidence, is in the
 [approaches.md addendum](../approaches.md#addendum-2026-10-12-self-improving-harnesses-an-sts1-benchmark-and-training-services).
 This loop already has the shape that works best there: a strong proposer changes the
-harness between runs while a cheap, low-effort model plays. DemoEvolve, the closest
-published setup, has GPT-5.4 at low effort play Slay the Spire 2, with Opus 4.7 proposing
-changes, and selects them on three development seeds. The ideas below are not built yet.
+harness between runs while a cheap, low-effort model plays (DemoEvolve, the closest
+published setup, does this on Slay the Spire 2). Loop changes not built yet, in priority
+order:
 
-Changes to the loop, in priority order:
+1. **Replay saved decisions before a live run.** Re-render recorded decision points with the
+   changed harness, keep the recorded notes and history, and ask the model about five times
+   each: cents and no game. It shows whether a change moves the targeted choice, not what
+   follows it, so live runs still judge outcomes.
+2. **Held-out seeds.** Two or three seeds that never choose a change, played every few
+   versions, against selecting for `RUNDEV1`–`RUNDEV3` alone.
+3. **Demonstrations for the proposer only**, if a human run on a development seed can be
+   recorded.
 
-1. **Replay saved decisions before a live run.** Each model decision in `trace.jsonl`
-   keeps the observation, the full prompt and the notes. A replay script would re-render
-   chosen decision points with the changed harness, keep the recorded notes and history,
-   and ask the model about five times each. At about $0.0002 a call, a test costs cents
-   and launches no game. It shows whether a change moves the targeted choice. It cannot
-   show what follows that choice, so live runs still judge outcomes.
-2. **Failure flags in `spire digest`.** Count per run what the log now counts by hand:
-   turns ended with unspent energy while unblocked damage came in, deaths with potions
-   unused, reopened card rewards, damage to minions against damage to the boss,
-   exact-lethal deaths, and hallway fights with a large HP loss. These counts vary less
-   than the floor reached. The flags should point into the traces rather than replace
-   them: in Meta-Harness, a proposer that read raw traces scored a median of 50.0, against
-   34.9 with summaries.
-3. **Held-out seeds.** `RUNDEV1`–`RUNDEV3` have chosen seven versions. Add two or three
-   seeds that never choose a change, and play them every few versions. DemoEvolve reports
-   two held-out seeds. In Growing Harness, without a no-regression gate, success on the
-   gate set rose to 30% and then fell to 16%.
-4. **Demonstrations for the proposer only**, if a human run on a development seed can be
-   recorded. In DemoEvolve, nine human runs shown only to the proposer took the StS2
-   held-out mean floor from 18.17 to 28.83, against 23.17 with self-play traces alone.
-   Demonstration summaries placed in the player's prompt did not help.
+Failure flags in `spire digest`, formerly second, are built (2026-10-12).
 
-Harness changes this evidence favors:
-
-- **Code over prose for recurring decisions.** Growing Harness moves recurring control
-  logic into harness code. Continual Harness credits most of its gain to code skills.
-  SpireBench (StS1, A20) finds that stronger models are "stronger mainly in the fights, not
-  in the route". The skipped-reward memory and hand-select purpose candidates are of this
-  kind. An end-of-turn preview with a lethal check would be another.
-- **Notes shown only when they apply.** Extend the `monsters.json` pattern to events, relic
-  screens and shops. AgenticSTS's triggered skills went from 3/10 to 6/10 StS2 wins
-  (p≈0.37). Keep these to checked rules: SpireBench found 78% of model-written rules
-  false (against 9% of facts) and caution advised seven times as often as risk.
-
-Not worth adopting now:
-
-- **The player refining its own harness**, as in Continual Harness. The benefit depends on
-  the model: on Pokémon Emerald, every self-refining Flash-Lite variant scored below the
-  minimal harness's 20% of milestones.
-- **Model-written lessons carried across runs.** On StS1 A20, SpireBench measured +0.00
-  acts from consolidated memory and +0.06 from verbatim notes over 80 matched pairs per
-  arm. AgenticSTS's episodic memory added nothing.
-- **Whole-text note rewrites**, if the notes change. ACE recorded a context that collapsed
-  from 18,282 to 122 tokens in one rewrite; itemized additions and removals avoid that.
-- **Paid post-training.** `gpt-6-luna` cannot be fine-tuned. Open models of its class
-  scored within noise of GPT-5.6 Luna on SpireBench. Prime Intellect's hosted training runs
-  rollouts on its own machines. Training an open model would buy a free local player near
-  Luna's level, not a stronger one.
+Harness changes the evidence favors: code over prose for recurring decisions (the
+skipped-reward memory and hand-select purpose candidates are of this kind; an end-of-turn
+preview with a lethal check would be another), and notes shown only when they apply, kept
+to checked rules: extend the `monsters.json` pattern to events, relic screens and shops
+(AgenticSTS's triggered skills went from 3/10 to 6/10 StS2 wins, p≈0.37). Not worth
+adopting now: the player refining its own harness, model-written lessons carried across
+runs, whole-text note rewrites, and paid post-training.
 
 ## Open owner decisions
 
