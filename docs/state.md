@@ -18,7 +18,9 @@ decisions (reasoning effort, a whole turn per call).
 Owner direction (2026-10-12): run a frontier API model through complete runs, with
 the scaffolding found by autoresearch from observed mistakes. Full runs, `gpt-6-luna`
 at low reasoning effort, hard $25 API cap for the first overnight work. Keep the code
-lean.
+lean. Later, the owner also wants to test a remotely trained open-weight model
+(Qwen3.6-35B-A3B, then GLM-5.3, with RL on Tinker); the plan is in
+[approaches.md](approaches.md#planned-track-a-remotely-trained-open-weight-model).
 
 Earlier entries below describe the first-combat tracks, unchanged since 2026-10-11.
 
