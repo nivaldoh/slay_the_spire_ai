@@ -154,9 +154,8 @@ def test_skipped_card_rewards_are_named_on_that_floors_reward_screens(tmp_path):
     assert prompts[1].count(line + "Cleave (1 attack)\n") == 1
     assert line + "Cleave (1 attack)\n" in prompts[3]
     rewards["game_state"]["floor"] = 4
-    assert line not in llm.render_prompt(
-        decisions.decision_from_message(rewards, session_id="s", sequence=5), "", [], {},
-        agent.declined.get(4))
+    later = decisions.decision_from_message(rewards, session_id="s", sequence=5)
+    assert agent._reminders(later.observation) == []
 
 
 def test_cards_show_the_ethereal_and_exhaust_keywords():
@@ -167,3 +166,46 @@ def test_cards_show_the_ethereal_and_exhaust_keywords():
     text = llm.render_state(dict(observation))
     assert "Hand: Apparition (1 skill, ethereal, exhausts), Strike (1 attack)\n" in text
     assert "Exhaust pile (1): Apparition (1 skill, ethereal, exhausts)" in text
+
+
+def hand_select(turn, relics=()):
+    raw = combat_message(turn=turn)
+    raw["available_commands"] = ["choose", "confirm"]
+    raw["game_state"].update(
+        screen_type="HAND_SELECT", choice_list=["strike", "defend"],
+        relics=[{"id": name, "name": name, "counter": -1} for name in relics],
+        screen_state={"hand": [card("Strike_R", "Strike"), card("Defend_R", "Defend")],
+                      "max_cards": 99, "selected": [], "can_pick_zero": True})
+    return raw
+
+
+def test_hand_selections_name_their_source():
+    agent = llm.LLMPolicy("gpt-6-luna", "low", None, send=FakeSend(),
+                          system_prompt="Play well.")
+
+    def reminders(raw):
+        observation = decisions.decision_from_message(raw, session_id="s", sequence=1).observation
+        return agent._reminders(observation)
+
+    assert reminders(hand_select(1, ["Gambling Chip"])) == [
+        "This selection is Gambling Chip's: the chosen cards are discarded, then you draw "
+        "that many."]
+    assert reminders(hand_select(2, ["Gambling Chip"])) == []
+    agent.last_action = (3, 2, "play Armaments (1 skill)")
+    assert reminders(hand_select(2)) == [
+        "This selection is for Armaments (1 skill), which you just played."]
+    assert reminders(hand_select(3)) == []
+    agent.last_action = (3, 1, "use potion Gambler's Brew")
+    assert reminders(hand_select(1, ["Gambling Chip"])) == [
+        "This selection is for the potion Gambler's Brew, which you just used."]
+
+
+def test_the_last_action_skips_hand_selections_and_keeps_floor_and_turn(tmp_path):
+    agent = policy(tmp_path, reply(1), reply(0))
+    agent.choose(decision())
+    assert agent.last_action == (3, 2, "play Defend (1 skill)")
+    agent.choose(decisions.decision_from_message(hand_select(2), session_id="s", sequence=2))
+    assert agent.last_action == (3, 2, "play Defend (1 skill)")
+    prompt = agent.api.send.bodies[1]["input"][0]["content"]
+    assert ("Selected: none\nThis selection is for Defend (1 skill), which you just played."
+            in prompt)

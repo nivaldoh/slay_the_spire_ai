@@ -201,16 +201,13 @@ def render_state(observation: dict, monster_notes: dict | None = None) -> str:
 
 
 def render_prompt(decision: Decision, notes: str, history: list[str],
-                  monster_notes: dict | None = None, declined: list[str] | None = None) -> str:
+                  monster_notes: dict | None = None, reminders: list[str] = ()) -> str:
     choices = "\n".join(f"{i}: {c.label}" for i, c in enumerate(decision.candidates))
     state = render_state(decision.to_dict()["observation"], monster_notes)
-    if declined and decision.observation.get("screen_type") in REWARD_SCREENS:
-        state += ("\nCard rewards you skipped on this floor (reopening one shows the same "
-                  "cards): " + "; ".join(declined))
     return "\n\n".join([
         "Run notes:\n" + (notes or "(empty)"),
         "Recent decisions, oldest first:\n" + ("\n".join(history) or "(none)"),
-        "State:\n" + state,
+        "State:\n" + "\n".join([state, *reminders]),
         "Choices:\n" + choices,
     ])
 
@@ -237,13 +234,40 @@ class LLMPolicy:
         self.history: deque[str] = deque(maxlen=HISTORY_LENGTH)
         # Skipped card rewards stay listed; remember them per floor (v6 reopened one 20 times).
         self.declined: dict[int, list[str]] = {}
+        # A hand selection does not say what it is for; the action before it, on the same
+        # floor and combat turn, does. Keyed (floor, turn, label).
+        self.last_action: tuple = (None, None, "")
         self._metadata = None
+
+    def _reminders(self, observation: dict) -> list[str]:
+        """Facts from earlier decisions that the current screen does not show."""
+        screen = observation.get("screen_type")
+        declined = self.declined.get(observation.get("floor"))
+        if declined and screen in REWARD_SCREENS:
+            return ["Card rewards you skipped on this floor (reopening one shows the same "
+                    "cards): " + "; ".join(declined)]
+        if screen != "HAND_SELECT":
+            return []
+        turn = (observation.get("combat_state") or {}).get("turn")
+        floor, action_turn, action = self.last_action
+        if (floor, action_turn) == (observation.get("floor"), turn):
+            if action.startswith("play "):
+                return [f"This selection is for {action.removeprefix('play ')}, which you just "
+                        "played."]
+            if action.startswith("use potion "):
+                return [f"This selection is for the potion {action.removeprefix('use potion ')}"
+                        ", which you just used."]
+        relics = {relic.get("name") for relic in observation.get("relics", [])}
+        if "Gambling Chip" in relics and turn == 1:
+            return ["This selection is Gambling Chip's: the chosen cards are discarded, then "
+                    "you draw that many."]
+        return []
 
     def choose(self, decision: Decision) -> Choice:
         observation = decision.observation
         floor = observation.get("floor")
         prompt = render_prompt(decision, self.notes, list(self.history), self.monster_notes,
-                               self.declined.get(floor))
+                               self._reminders(observation))
         self._metadata = metadata = {
             "type": "llm", "model": self.api.name, "effort": self.api.effort,
             "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(), "prompt": prompt,
@@ -264,6 +288,9 @@ class LLMPolicy:
             offer = _cards((observation.get("screen_state") or {}).get("cards", []))
             if offer not in self.declined.setdefault(floor, []):
                 self.declined[floor].append(offer)
+        if observation.get("screen_type") != "HAND_SELECT":
+            turn = (observation.get("combat_state") or {}).get("turn")
+            self.last_action = (floor, turn, choice.label)
         self.history.append(f"floor {floor}: {choice.label} ({reply['reason']})")
         metadata.update(selected_index=reply["choice"], reason=reply["reason"])
         return choice
