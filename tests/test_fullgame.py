@@ -134,3 +134,16 @@ def test_grid_confirm_view_never_offers_the_cancel_that_hangs_communicationmod()
                                 "selected_cards": [], "cards": [card("Strike_R", "Strike")]})
     decision = fullgame.decision_from_message(raw, session_id="s", sequence=1)
     assert commands(decision) == {"confirm": "confirm"}
+
+
+def test_grid_labels_an_already_selected_copy_as_deselect():
+    # Observed 2026-10-12 (Neow remove 2): choosing the first of five identical Strikes
+    # again only toggled it off, seven times in one run.
+    strikes = [card("Strike_R", "Strike", uuid=f"s{i}") for i in range(2)]
+    raw = message(["choose", "key", "click", "wait", "state"], screen_type="GRID",
+                  choice_list=["strike", "strike"],
+                  screen_state={"for_purge": True, "num_cards": 2, "cards": strikes,
+                                "selected_cards": [strikes[0]]})
+    decision = fullgame.decision_from_message(raw, session_id="s", sequence=1)
+    assert commands(decision) == {"choose 0": "deselect Strike (1 attack)",
+                                  "choose 1": "select Strike (1 attack)"}

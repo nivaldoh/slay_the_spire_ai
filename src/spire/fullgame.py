@@ -170,7 +170,9 @@ def _choice_label(game: dict, index: int, name: str) -> str:
         cards = state.get("cards" if screen == "GRID" else "hand", [])
         card = item(cards)
         if card:
-            return f"select {card_text(card)}"
+            # Choosing a grid card that is already selected deselects it.
+            chosen = {c.get("uuid") for c in state.get("selected_cards", [])} - {None}
+            return f"{'deselect' if card.get('uuid') in chosen else 'select'} {card_text(card)}"
     elif screen == "CHEST" and name == "open":
         return f"open the {str(state.get('chest_type', 'chest')).lower()}"
     elif screen == "SHOP_ROOM" and name == "shop":
