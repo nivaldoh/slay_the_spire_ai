@@ -231,6 +231,49 @@ B block and H HP.", summing the visible attack intents of live enemies. Hidden i
 damage (Runic Dome) is left out. The Lagavulin note now says "Attack (one hit of 18) on
 two turns in a row".
 
+### 2026-10-12: v3 on the development seeds
+
+`runs/llm-luna-v3-dev-20261012`, source `7171bd8`.
+
+| Seed | Outcome | Act / floor | Killed by | Decisions | Calls | Cost | Wall time |
+|---|---|---|---|---:|---:|---:|---:|
+| RUNDEV1 | lost | 1 / 16 | Slime Boss (Acid Slime (L)) | 254 | 208 | $0.047 | 1,047 s |
+| RUNDEV2 | lost | 2 / 33 | The Collector | 490 | 425 | $0.094 | 2,042 s |
+| RUNDEV3 | lost | 1 / 16 | Slime Boss (split slimes) | 199 | 172 | $0.035 | 804 s |
+
+- The model reads the new line: "against the 32 incoming damage", "the 24 incoming
+  damage". RUNDEV1 lost 7 HP to Lagavulin (v2: 23) and entered the boss at 71 HP (v2: 56),
+  but then ran out of damage. After the split it never attacked the Acid Slime (L)
+  (65 → 61 HP in 12 turns) and spent energy cycling Slimed for Feel No Pain block.
+- RUNDEV2 reached The Collector again and beat Hexaghost for 2 HP. On floor 20 it took
+  Council of Ghosts (5 Apparitions for 40 max HP), then spent a rest site on the Ruby Key
+  at 33/40 HP before the boss.
+- RUNDEV3 made the same Neow pick as v1.1 and v2 (lose all gold, remove 2 cards), then
+  removed two more Strikes at events and skipped most fights, reaching the boss with 11
+  cards. It handled the split well, using Explosive Potion after crossing 70 HP so both
+  Large slimes started at 54, but died one block short on turn 11.
+- Two deaths were again exact or near-exact lethal (RUNDEV1 at 10 HP with 6 block against
+  16; RUNDEV3 at 23 HP with 12 block against 36), so the targeted arithmetic mistake did
+  not stop. Costly turns (at least 8 unblocked damage) were 9, 14 and 7 against v2's 9,
+  15 and 11.
+- Decision: keep v3, as cheap context the model uses; with these samples it shows no
+  measurable effect on outcomes (floors 16/33/16 against v2's 16/24/33).
+
+### 2026-10-12: grid deselect fix
+
+On RUNDEV3's Neow removal grid, every v1.1–v3 run chose the first of five identical
+"select Strike" choices again after selecting it, which only deselects it: 1, 7 and 4
+wasted calls. A grid card that is already selected is now labeled "deselect …". This is a
+`fullgame.py` defect fix, so later runs carry it.
+
+### Scaffolding v4: the act boss's floor
+
+Evidence is under "Which fight is the boss" below; v3 RUNDEV1 again played the floor-13
+Spike Slime (L) as "the slime boss" and drank Heart of Iron against a Slaver "while
+helping in the upcoming boss fight". Change: the header reads "Act 1, floor 13. Act boss:
+Slime Boss, on floor 16." (floors 16, 33 and 50 for Acts 1–3) instead of naming the boss
+alone.
+
 ## Overnight loop
 
 Preflight: no `spire play` process is running (`ps -eo pid,cmd | grep '[p]ython3 -m spire play'`;
@@ -267,7 +310,8 @@ binding limit; time is, at roughly two to four iterations a night. Then:
    Keep a change if the targeted mistake stops and outcomes do not get worse. With three
    stochastic runs per version, do not claim more than that.
 
-Candidate changes with evidence so far, in priority order (incoming damage became v3):
+Candidate changes with evidence so far, in priority order (incoming damage became v3
+and the boss's floor v4):
 
 - **Which fight is the boss**: hallway fights are mistaken for the act boss. Evidence:
   v1.1 RUNDEV1 played a floor-13 Spike Slime (L) as the Slime Boss for five decisions;
@@ -277,9 +321,11 @@ Candidate changes with evidence so far, in priority order (incoming damage becam
   above the combat block. Candidate state fix: name the boss's floor (16, 33, 50) in the
   header and keep it out of the combat block.
 - **Potion discipline**: potions taken "for the boss" are used within a few floors, often
-  in hallway fights (all four v1.1/v2 runs that held one), and Heart of Iron was drunk
-  against Louses "to help through the Slime Boss fight". Try the boss fix first, since
-  some of these uses came with the boss confusion.
+  in hallway fights (all four v1.1/v2 runs that held one; RUNDEV1 used the same Explosive
+  Potion on the same floor-10/11 slimes in v1.1, v2 and v3). Heart of Iron was drunk in
+  hallway fights twice "to help through the Slime Boss fight", as if its effect lasted
+  beyond the combat. Try the boss fix first, since some of these uses came with the boss
+  confusion; then a factual line that potion effects and powers end with the combat.
 - **Notes**: separate run notes from combat scratch, or tighten the instruction.
   Evidence: notes clobbered in the smoke run, copied unchanged on about half of calls.
 - **Deck building**: guidance on skipping card rewards and removing cards. Evidence:
