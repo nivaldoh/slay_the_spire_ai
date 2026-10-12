@@ -5,6 +5,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from spire.llm import EFFORTS, PRICES
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Slay the Spire experiment tools")
@@ -49,6 +51,18 @@ def main() -> int:
     train.add_argument(
         "--learning-rate", type=float, help="PPO Adam learning rate (default: 0.0003)"
     )
+    play = commands.add_parser("play", help="Play complete original-engine runs with an API model")
+    play.add_argument("--model", required=True, choices=sorted(PRICES))
+    play.add_argument("--effort", default="low", choices=EFFORTS)
+    play.add_argument("--seed", action="append", dest="seeds", required=True,
+                      help="Alphanumeric game seed; repeat for several runs")
+    play.add_argument("--budget-usd", type=float, required=True,
+                      help="Hard cap on the ledger's total spend, including earlier jobs")
+    play.add_argument("--ledger", type=Path, default=Path("runs/llm-spend.jsonl"))
+    play.add_argument("--max-actions", type=int, default=4000)
+    play.add_argument("--run-timeout", type=float, default=5 * 3600)
+    play.add_argument("--bridge-timeout", type=float, default=600)
+    play.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.command == "doctor":
         from spire.doctor import collect_diagnostics, exit_code, render_diagnostics
@@ -162,6 +176,20 @@ def main() -> int:
         result = train(args.output, config, resume=args.resume)
         print(json.dumps(result, indent=2))
         return 0 if result["status"] in {"completed", "budget_exhausted"} else 1
+    if args.command == "play":
+        from spire.llm import Ledger, LLMPolicy, ResponsesClient, api_key
+        from spire.play import play as run_play
+
+        config = vars(args).copy()
+        output = config.pop("output")
+        config.pop("command")
+        config["ledger"] = str(config["ledger"])
+        ledger = Ledger(args.ledger, args.budget_usd)
+        client = ResponsesClient(api_key())
+        manifest = run_play(output, config, policy_factory=lambda: LLMPolicy(
+            args.model, args.effort, ledger, client=client))
+        print(f"Evidence: {output.resolve()}")
+        return 0 if manifest["status"] == "completed" else 1
     return 2
 
 
