@@ -1,7 +1,7 @@
 # Full runs with an API language model
 
-Status: development, started 2026-10-12, current scaffolding **v8**. No run has won yet;
-best floors per development seed are 29, 50 and 42 (v1.1: 16, 33, 16). Every version,
+Status: development, started 2026-10-12, current scaffolding **v9**. No run has won yet;
+best floors per development seed are 50, 54 and 42 (v1.1: 16, 33, 16). Every version,
 its evidence and its per-seed results are in [log.md](log.md). Code: `src/spire/fullrun/`.
 
 ## Question
@@ -52,7 +52,7 @@ confirm view, where CommunicationMod would never reply. A state with exactly one
 answered without a model call. Initial `DEBUG` intents are settled with a logged `wait 60`,
 as in first-combat rollouts.
 
-## What the model sees (scaffolding v8)
+## What the model sees (scaffolding v9)
 
 The version that introduced each piece is in brackets; [log.md](log.md) has the evidence.
 
@@ -69,6 +69,8 @@ The version that introduced each piece is in brackets; [log.md](log.md) has the 
   Every number is checked against the game.
 - On the reward screens, the card rewards already skipped on that floor and their cards
   (v8).
+- Cards show the engine's `ethereal` and `exhausts` keywords, with one system prompt line
+  on what they do (v9).
 - Invalid replies (bad JSON or an out-of-range choice) are re-asked twice, with the error
   appended. A third invalid reply ends the run as `policy_failure`. Transient HTTP and
   network errors are retried three times. Every attempt is billed and recorded.
@@ -179,20 +181,17 @@ Review prompt, one subagent per finished run:
 
 ## Candidate changes
 
-With evidence so far, in priority order (v3–v8 took the earlier ones):
+With evidence so far, in priority order (v3–v9 took the earlier ones):
 
-- **Card keywords**: the hand shows name, cost and type only, so Ethereal and Exhaust are
-  invisible. Ethereal Apparitions exhausted unplayed before big hits in both v7 RUNDEV2
-  runs (Awakened One; The Collector, 29 → 8 HP), and v7 RUNDEV3 spent Reaper on a single
-  Slime Boss before the split. Drafted on branch `v9-card-keywords`: the engine's
-  `ethereal` and `exhausts` flags on each card, and one system prompt line. Power rules
-  are a separate gap: v7 RUNDEV1 played Corruption+ and then spent its last Defends,
-  not knowing Corruption exhausts every skill.
 - **Hand-select purpose**: Gambling Chip's start-of-combat screen reads only "Choose up to
   99 card(s) from your hand"; v6 RUNDEV3 discarded Impervious+ believing it would block,
-  and v7 RUNDEV3 discarded Twin Strike and Clothesline "to play them". Candidate: name the
-  source of the selection when the state shows it (relic at combat start, or the card
-  just played).
+  and v7 RUNDEV3 discarded Twin Strike and Clothesline "to play them"; v8 RUNDEV3 did the
+  same in six fights, discarding Offering and Bash+ on the Slime Boss's turn 1. Candidate:
+  name the source of the selection when the state shows it (relic at combat start, or the
+  card just played).
+- **Power rules**: v7 and v8 RUNDEV1 played Corruption+ without knowing it exhausts every
+  skill (spending the last Defends; halving Second Wind+). Candidate: short checked notes
+  for the player's powers, shown while active, like `monsters.json`.
 - **Potion effects end with the combat**: Heart of Iron was drunk in hallway fights twice
   "to help through the Slime Boss fight". Draft line: "Potions are single-use. A potion's
   effect, like every power, buff and debuff, ends with the combat it is used in." Potion

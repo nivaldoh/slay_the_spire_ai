@@ -437,3 +437,62 @@ v7 RUNDEV2 run). Change, in `llm.py`: after the model skips a card reward, that 
 reward and card screens add "Card rewards you skipped on this floor (reopening one shows
 the same cards): …" with the cards offered. Target: card-reward reopens near zero in the
 flags; floors are not expected to move.
+
+## 2026-10-12: v8 on the development seeds
+
+`runs/fullrun/llm-luna-v8-dev-20261012`, source `f36176b`.
+
+| Seed | Outcome | Act / floor | Killed by | Decisions | Calls | Cost | Wall time |
+|---|---|---|---|---:|---:|---:|---:|
+| RUNDEV1 | lost | 3 / 50 | Deca, Donu (boss) | 782 | 700 | $0.169 | 3,113 s |
+| RUNDEV2 | lost | 4 / 54 | Spire Shield, Spire Spear (elite) | 955 | 869 | $0.208 | 3,641 s |
+| RUNDEV3 | lost | 1 / 16 | Acid Slime (L) (boss) | 238 | 211 | $0.047 | 892 s |
+
+- RUNDEV1 lost to Donu and Deca on floor 50, turn 2 (score 524), this seed's furthest run
+  (v6: 29, v7: 16). It escaped the F29 Colosseum at 44 HP where v6 fought on and died. On
+  F37 it took Mind Bloom's "I am Awake" (upgrade all cards, no more healing) at 80 HP,
+  "enough to forgo future healing", with 13 floors left; the F41 elite (77 → 33) and F42
+  Spire Growth (33 → 12) losses then stood, the F47 and F49 rest sites healed nothing, and
+  it entered the boss at 12/76. It drank Liquid Memories, kept "for the boss", on F48, and
+  twice played Corruption+ before Second Wind+ (F42 turn 4, F50 turn 1), halving Second
+  Wind's block. Skip line: one reopen, on F22, where the model reopened the skipped reward
+  "to inspect the cards", skipped the same three again and left; on F39, F42 and F48 the
+  line appeared and it left without reopening. Flags: six card rewards skipped, five turns
+  ended with energy and a playable card.
+- RUNDEV2 reached Act 4, the first run to do so, and died on floor 54 to Spire Shield and
+  Spire Spear on turn 6 (10 HP, 14 block, against Smash for 54). It beat Awakened One on
+  F50 (47 → 18 HP, 12 turns): the first form died on turn 8 with the player at full HP,
+  after Reaper+ healed and two Apparitions gave Intangible, and Twin Strike finished the
+  second form. Keys: Emerald from a burning Gremlin Nob (F13), Sapphire from a chest (F26),
+  Ruby by Recall at F49. It took five Apparitions from Council of Ghosts on F29 (max HP
+  94 → 47); they carried both bosses, but Act 4 began at 50 max HP against Smash turns of
+  57 (turn 3, 50 → 12 HP) and 54. In that fight it paired Apparitions "to extend
+  Intangible", covering turns 1–2 and 4–5 but neither Smash turn, and it had smithed two
+  Apparitions believing the upgrade grants two turns of Intangible (it removes Ethereal,
+  which the hand does not show). Skip line: one skip, on F45, and no reopen. Flags: 15
+  turns ended with energy and a playable card; Sozu from F34 meant no potions.
+- RUNDEV3 lost to the Slime Boss on floor 16, turn 12, killed by an untouched Acid Slime
+  (L) at 4 HP. It took Recall (Ruby Key) on F15 instead of resting and entered at 61/80
+  with one upgrade and two potions, having drunk three potions it had said it was keeping
+  for the boss in F10 and F12 hallways. On Gambling Chip's screen it discarded cards it
+  meant to play in six fights (F7, F10–F13, and boss turn 1, where Offering and Bash+
+  went unplayed); v6 played Offering on turn 1 and split the boss before any Slam. Slam
+  hit for 27 on turn 3. On turn 4 it played Spot Weakness against a debuff intent and
+  stopped the boss at 74, "just above its split threshold". The rules notes appeared as
+  intended. No card reward was skipped.
+
+Skip line: one reopen in three runs (RUNDEV1 F22), against 43 skips on four floors in v6
+RUNDEV3 and six reopens on F31 in v7 RUNDEV2; the line appeared on five floors and the
+model left four of them without reopening. Keep v8. Floors were 50, 54 and 16 against v7's
+16, 33 and 16 on the same seeds; v8 is not expected to change floors, and the RUNDEV1 and
+RUNDEV2 gains are within the variance the v7 replay showed. Hand-select purpose now has
+the clearest recurring evidence: RUNDEV3 has misread Gambling Chip's screen in v6, v7 and
+v8.
+
+## Scaffolding v9: card keywords
+
+Evidence: Ethereal Apparitions exhausted unplayed in both v7 RUNDEV2 runs, and v8 RUNDEV2
+upgraded Apparitions believing the upgrade adds Intangible (it removes Ethereal). Change:
+cards in the hand, piles, deck and shop show the engine's `ethereal` and `exhausts` flags,
+as in "Apparition (1 skill, ethereal, exhausts)", and the system prompt gains one line on
+what the two keywords do. Power rules (Corruption) are not covered.

@@ -4,10 +4,10 @@ Updated 2026-10-12. Read this first: what is running, what is current, what come
 History lives with each track ([full runs](fullrun/log.md),
 [first combat](first-combat/README.md)), not here.
 
-## Active work (last verified 2026-10-12 19:41 UTC)
+## Active work (last verified 2026-10-12 21:58 UTC)
 
-The full-run loop is running: `runs/fullrun/llm-luna-v8-dev-20261012` plays v8 (skipped-reward
-memory) on `RUNDEV1`–`RUNDEV3` (started 19:41 UTC). Keep `src/` and `configs/` unchanged
+The full-run loop is running: `runs/fullrun/llm-luna-v9-dev-20261012` plays v9 (card
+keywords) on `RUNDEV1`–`RUNDEV3` (started 21:58 UTC). Keep `src/` and `configs/` unchanged
 until it ends.
 
 ## Current track: full runs with an API model
@@ -20,14 +20,15 @@ scaffolding v2–v7 on `RUNDEV1`–`RUNDEV3` (v7 on `RUNDEV2` only). Best floors
 29, 50 and 42 (v1.1 baseline: 16, 33, 16). No run has won yet. API spend: $1.68 of the
 $25 cap (`uv run python -m spire spend`).
 
-A second session (2026-10-12, from 15:40 local) replayed v7 on all three seeds: floors 16,
-33 and 16, against 29, 50 and 42 for the same prompts' earlier runs. Run-to-run variance is
-that large, so one run per seed cannot rank versions by floor.
+A second session (2026-10-12, from 15:40 local) replayed v7 on all three seeds (floors
+16, 33 and 16, against 29, 50 and 42 for the same prompts' earlier runs: run-to-run
+variance is that large), then played v8, skipped-reward memory (50, 54 and 16; RUNDEV2
+reached Act 4, the furthest yet, and the reopen loop nearly stopped). API spend: $2.27.
 
 Next steps:
 
-1. Finish v8 (skipped-reward memory) on the three seeds; judge it by the reopen flag.
-2. Merge and play v9, card keywords, drafted on branch `v9-card-keywords`.
+1. Finish v9 (card keywords) on the three seeds.
+2. Hand-select purpose: RUNDEV3 has misread Gambling Chip's discard screen in v6, v7 and v8.
 3. Loop improvements from related work ([fullrun/README.md](fullrun/README.md)): replay
    saved decisions offline, then held-out seeds.
 
