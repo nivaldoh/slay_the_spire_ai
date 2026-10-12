@@ -36,7 +36,7 @@ Open owner decisions: reasoning effort above `low`, and a whole turn per call.
   cap for the first overnight work, and lean code.
 - 2026-10-12: later, test a remotely trained open-weight model (Qwen3.6-35B-A3B, then
   GLM-5.3, with RL on Tinker). The plan is in [open-weight/README.md](open-weight/README.md);
-  nothing is built.
+  only a code skeleton exists, in `src/spire/openweight/`.
 - 2026-10-11: PPO paused in favor of language-model post-training, which in turn paused
   with the move to full runs. Results and open threads:
   [first-combat/README.md](first-combat/README.md).
