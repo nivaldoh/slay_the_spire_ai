@@ -4,11 +4,9 @@ Updated 2026-10-12. Read this first: what is running, what is current, what come
 History lives with each track ([full runs](fullrun/log.md),
 [first combat](first-combat/README.md)), not here.
 
-## Active work (last verified 2026-10-12 21:58 UTC)
+## Active work (last verified 2026-10-12 23:16 UTC)
 
-The full-run loop is running: `runs/fullrun/llm-luna-v9-dev-20261012` plays v9 (card
-keywords) on `RUNDEV1`–`RUNDEV3` (started 21:58 UTC). Keep `src/` and `configs/` unchanged
-until it ends.
+No game, GPU or API job is running. Source and `HEAD` are free.
 
 ## Current track: full runs with an API model
 
@@ -20,17 +18,28 @@ scaffolding v2–v7 on `RUNDEV1`–`RUNDEV3` (v7 on `RUNDEV2` only). Best floors
 29, 50 and 42 (v1.1 baseline: 16, 33, 16). No run has won yet. API spend: $1.68 of the
 $25 cap (`uv run python -m spire spend`).
 
-A second session (2026-10-12, from 15:40 local) replayed v7 on all three seeds (floors
+A second session (2026-10-12, 15:40–20:16 local) replayed v7 on all three seeds (floors
 16, 33 and 16, against 29, 50 and 42 for the same prompts' earlier runs: run-to-run
-variance is that large), then played v8, skipped-reward memory (50, 54 and 16; RUNDEV2
-reached Act 4, the furthest yet, and the reopen loop nearly stopped). API spend: $2.27.
+variance is that large), played v8, skipped-reward memory (50, 54 and 16; RUNDEV2 reached
+Act 4, the furthest yet, and the reopen loop nearly stopped), and started v9, card keywords
+(RUNDEV1 29; RUNDEV2 stopped on floor 38 when the game's settings screen opened, likely
+from outside input; RUNDEV3 not played). API spend: $2.49 of the $25 cap.
 
 Next steps:
 
-1. Finish v9 (card keywords) on the three seeds.
-2. Hand-select purpose: RUNDEV3 has misread Gambling Chip's discard screen in v6, v7 and v8.
-3. Loop improvements from related work ([fullrun/README.md](fullrun/README.md)): replay
-   saved decisions offline, then held-out seeds.
+1. Replay v9 on all three seeds; it is untested on Ethereal cards so far.
+2. v10, hand-select purpose, is drafted on local branch `v10-hand-select` (one commit on
+   top of `35903e9`; rebase onto `main`): a line naming the card, potion or Gambling Chip
+   behind each hand selection, checked against all 55 saved hand-select screens.
+3. Keys memory: CommunicationMod 1.2.1 never sends `keys`, so the model cannot see the
+   keys it holds; v9 RUNDEV1 died on an elite path taken for a key it had
+   ([integration.md](integration.md), [candidates](fullrun/README.md#candidate-changes)).
+4. A results table across versions (owner request): a read-only `spire stats` over all
+   jobs with SpireBench's measures, before more versions are compared
+   ([fullrun/README.md](fullrun/README.md#ideas-from-related-work-2026-10-12)). SpireBench
+   released no code; its metric definitions and fixed held-out seeds carry over.
+5. If the settings screen stops a run again, close it in the runner with a logged key
+   press. Owner: was the game window touched at about 20:12 local (23:12 UTC)?
 
 Open owner decisions: reasoning effort above `low`, and a whole turn per call.
 

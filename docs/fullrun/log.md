@@ -496,3 +496,38 @@ upgraded Apparitions believing the upgrade adds Intangible (it removes Ethereal)
 cards in the hand, piles, deck and shop show the engine's `ethereal` and `exhausts` flags,
 as in "Apparition (1 skill, ethereal, exhausts)", and the system prompt gains one line on
 what the two keywords do. Power rules (Corruption) are not covered.
+
+## 2026-10-12: v9 on the development seeds (incomplete)
+
+`runs/fullrun/llm-luna-v9-dev-20261012`, source `005083f`. The job stopped after an
+infrastructure failure on RUNDEV2; RUNDEV3 was not played.
+
+| Seed | Outcome | Act / floor | Killed by | Decisions | Calls | Cost | Wall time |
+|---|---|---|---|---:|---:|---:|---:|
+| RUNDEV1 | lost | 2 / 29 | 2x Slaver, Taskmaster (elite) | 493 | 427 | $0.099 | 2,024 s |
+| RUNDEV2 | unsupported_or_invalid | 3 / 38 | (settings screen opened; see below) | 582 | 511 | $0.120 | 2,326 s |
+
+- RUNDEV1 lost to the Slavers elite on floor 29, turn 5 (4 HP, Entangled, 22 incoming;
+  earlier runs on this seed: 29, 16 and 50). On the F26 map it chose an elite path "to
+  pursue the Emerald Key", which it had taken on F23, and opened the F26 chest "for the
+  Sapphire Key", taken on F7; the path forced the Gremlin Leader (F27, 80 → 62 HP and
+  three potions) and the fatal Slavers. **Harness gap:** CommunicationMod 1.2.1 never
+  sends `keys` (no raw message in the v8 and v9 traces has it), so the allowlisted field
+  and its "Keys:" line never appear, and the model knows its keys only from its notes,
+  which dropped the Emerald Key on F25. Two other false beliefs cost HP: it bottled Dark
+  Embrace in Bottled Tornado "without duplicating the already-bottled Demon Form+" (no
+  power was bottled), and on F29 turn 2 it took 25 trusting a Fossilized Helix Buffer
+  spent on turn 1 (the powers line showed only Dark Embrace). No Ethereal card appeared;
+  every reason that named exhaust was sound (Slimed, True Grit on Wounds, Dark Embrace
+  draws). Flags: four turns ended with energy and a playable card, one card reward
+  skipped, no reopen.
+- RUNDEV2 stopped on floor 38 (Act 3, turn 4 against a Writhing Mass, 91/104 HP) as
+  `unsupported_or_invalid`, not a gameplay outcome. After `play 3 0` the game reported
+  `screen_name` `SETTINGS` with `is_screen_up` true, so CommunicationMod offered only
+  `key`, `click`, `wait` and `state`. No command the controller sends opens the settings
+  screen, and no earlier trace has it, so outside input to the game window (Escape or the
+  settings button) is the likely cause; unconfirmed. Possible runner fix if it recurs:
+  close the screen with a logged key press and continue. The run had beaten The Collector
+  and had no Apparitions, so v9's keywords were not tested on Ethereal cards in either run.
+
+v9 is not judged: one finished run, no Ethereal card in play. Replay it on all three seeds.

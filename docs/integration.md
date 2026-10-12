@@ -63,6 +63,9 @@ make raw game state suitable for policy input.
   canonical multiset without UUIDs. Drop the seed, current action, internal
   enemy move IDs/history/base damage, and unaudited reflected power fields.
   Retain damage/hit counts only for displayed attack intents.
+- CommunicationMod 1.2.1 sends no `keys` field: no raw message in the v8 and v9 full-run
+  traces has one, including runs that took all three keys. Key state must be inferred
+  from the choices that take keys.
 - `GAME_OVER` includes unlock screens whose false victory value is a placeholder;
   only real death/victory screens prove run outcomes. Combat has no terminal
   flag: require prior combat followed by same-floor `COMPLETE` in a monster room.

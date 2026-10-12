@@ -34,8 +34,8 @@ the prompt and memory, not weight training.
 
 `spire/decisions.py` builds each decision from a stable CommunicationMod message.
 The policy sees allowlisted game fields: act, floor, HP, gold, deck, relics,
-potions, keys, the map, the current screen, and combat state. Several fields are
-hidden or changed:
+potions, keys (allowlisted, but CommunicationMod 1.2.1 never sends them), the map, the
+current screen, and combat state. Several fields are hidden or changed:
 
 - UUIDs, the seed, the action phase, enemy move IDs, move history and base damage are
   removed.
@@ -77,7 +77,11 @@ The version that introduced each piece is in brackets; [log.md](log.md) has the 
 
 What the model does not get: card, relic or power text; damage calculators; search; lookup
 tools. Section 3 of [approaches.md](../approaches.md) suggests these matter. They are
-candidates to add when traces show the need, one at a time.
+candidates to add when traces show the need, one at a time. SpireBench's system prompt
+carries a compendium of the rules, keywords and every card, relic and potion with its
+effect; this harness's checked notes (enemy rules, v9's keywords) are a narrow version of
+that, and v7–v9 deaths from unknown card and power rules (Ethereal, Corruption, Apparition+)
+argue for a broader one. Game text itself must not be committed.
 
 ## Evidence
 
@@ -189,6 +193,11 @@ With evidence so far, in priority order (v3–v9 took the earlier ones):
   same in six fights, discarding Offering and Bash+ on the Slime Boss's turn 1. Candidate:
   name the source of the selection when the state shows it (relic at combat start, or the
   card just played).
+- **Keys memory** (harness gap): CommunicationMod 1.2.1 never sends `keys`, so the "Keys:"
+  line never appears and the model tracks keys only in its notes. v9 RUNDEV1 took an
+  elite path for an Emerald Key it already held and died on that path. Candidate in
+  `llm.py`: remember keys from the choices that take them (the Emerald and Sapphire Key
+  rewards, Recall at a rest site) and show them in the header.
 - **Power rules**: v7 and v8 RUNDEV1 played Corruption+ without knowing it exhausts every
   skill (spending the last Defends; halving Second Wind+). Candidate: short checked notes
   for the player's powers, shown while active, like `monsters.json`.
@@ -218,13 +227,24 @@ harness between runs while a cheap, low-effort model plays (DemoEvolve, the clos
 published setup, does this on Slay the Spire 2). Loop changes not built yet, in priority
 order:
 
-1. **Replay saved decisions before a live run.** Re-render recorded decision points with the
+1. **A results table across versions** (owner request, 2026-10-12). Today each job has
+   its own `spire digest` table, copied by hand into this log; nothing aggregates versions.
+   A read-only `spire stats runs/fullrun` could print one row per job from the saved
+   `result.json` and traces, using SpireBench's measures where they fit: acts cleared (its
+   headline), floor reached, bosses beaten, HP lost per Act 1 hallway fight (the measure
+   that best separated models there), card-reward skip and reopen counts, calls and cost
+   per floor. The v7 replay (floors 16, 33, 16 against 29, 50, 42 for the same prompts)
+   shows why: versions need several runs per seed, summarized, before any comparison.
+   SpireBench itself is not reusable code: as of 2026-10-12 neither its harness nor its
+   CommunicationModPlus fork is public (the paper links neither), so only its metric
+   definitions and protocol (ten fixed held-out seeds, the same for every model) carry over.
+2. **Replay saved decisions before a live run.** Re-render recorded decision points with the
    changed harness, keep the recorded notes and history, and ask the model about five times
    each: cents and no game. It shows whether a change moves the targeted choice, not what
    follows it, so live runs still judge outcomes.
-2. **Held-out seeds.** Two or three seeds that never choose a change, played every few
-   versions, against selecting for `RUNDEV1`–`RUNDEV3` alone.
-3. **Demonstrations for the proposer only**, if a human run on a development seed can be
+3. **Held-out seeds.** Two or three seeds that never choose a change, played every few
+   versions, against selecting for `RUNDEV1`–`RUNDEV3` alone. SpireBench uses ten.
+4. **Demonstrations for the proposer only**, if a human run on a development seed can be
    recorded.
 
 Failure flags in `spire digest`, formerly second, are built (2026-10-12).
