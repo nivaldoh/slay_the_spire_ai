@@ -345,6 +345,46 @@ survive a turn the damage that gets past your block must be less than your HP", 
 skipped card reward stays on the rewards list; choose proceed to leave it." The second
 is an interface fact the screen does not show.
 
+### 2026-10-12: v6 on the development seeds
+
+`runs/llm-luna-v6-dev-20261012`, source `e26f649`.
+
+| Seed | Outcome | Act / floor | Killed by | Decisions | Calls | Cost | Wall time |
+|---|---|---|---|---:|---:|---:|---:|
+| RUNDEV1 | lost | 2 / 29 | Colosseum Gremlin Nob and Taskmaster (event) | 476 | 377 | $0.084 | 1,603 s |
+| RUNDEV2 | lost | 2 / 33 | The Collector | 524 | 480 | $0.109 | 2,204 s |
+| RUNDEV3 | lost | 3 / 42 | Transient | 675 | 644 | $0.142 | 2,678 s |
+
+- No v6 death was exactly lethal; the final unblocked damage exceeded the remaining HP
+  by 23, 11 and 29, against four exact-lethal deaths in eleven before. Three runs cannot show
+  more than that.
+- The skipped-reward line did not stop the loop. RUNDEV3 reopened the same Cleave /
+  Clothesline / Searing Blow+1 reward 20 times on floor 24 ("assess whether any option
+  meaningfully improves the deck") and 16 times on floor 39 (43 skips in the run). The
+  model knows the reward stays; it does not remember that it already looked.
+- RUNDEV1 beat the Slime Boss again (75 → 50 HP). In the floor-29 Colosseum it took the
+  optional second fight at 58 HP ("[VICTORY] A powerful fight with many rewards" over
+  "[COWARDICE] Escape") and died to Gremlin Nob and Taskmaster.
+- RUNDEV2 reached The Collector at 48 HP after again trading 50 max HP for five
+  Apparitions (Council of Ghosts, as in v3). In all four Collector fights so far the model
+  dealt more damage to the Torch Heads, which are minions it revives, than to the boss:
+  117 vs 108 (v1.1), 156 vs 116 (v3), 138 vs 89 (v4) and 206 vs 82 (v6).
+- RUNDEV3 is the furthest run yet. It beat The Champ in 5 turns for 10 HP, then took an
+  Orb Walker event fight at 84 HP (left at 25) and died to a Transient on floor 42. At
+  that fight's start, Gambling Chip's "Choose up to 99 card(s) from your hand" screen has
+  no stated purpose, and the model selected Impervious+ "to block the Transient's full 30
+  damage", which discarded it.
+- Decision: keep v6 (floors 29/33/42, the best so far, with the usual caveats).
+
+### Scaffolding v7: The Collector rules note
+
+Evidence: the damage split above. Change: a note for `TheCollector`, with every number
+checked against the saved fights: 282 HP; two Torch Heads (about 40 HP, Tackle 7) on turn
+1; Mega Debuff (3 Weak, 3 Vulnerable, 3 Frail) on turn 4; otherwise Fireball 18, a buff
+(15 block, and 3 Strength to it and each Torch Head) or Revive. Torch Heads are minions,
+so killing The Collector ends the fight. Only RUNDEV2 reaches it, so v7 was played on
+RUNDEV2 alone to finish before the session's end.
+
 ## Overnight loop
 
 Preflight: no `spire play` process is running (`ps -eo pid,cmd | grep '[p]ython3 -m spire play'`;
@@ -381,30 +421,26 @@ binding limit; time is, at roughly two to four iterations a night. Then:
    Keep a change if the targeted mistake stops and outcomes do not get worse. With three
    stochastic runs per version, do not claim more than that.
 
-Candidate changes with evidence so far, in priority order (incoming damage became v3,
-the boss's floor v4, the slime notes v5, and the next two items v6):
+Candidate changes with evidence so far, in priority order (v3–v7 took the earlier ones):
 
-- **0 HP is death**: four of eleven deaths since v1.1 took exactly lethal damage, and v4
-  RUNDEV2 chose Defend to "survive this turn, even if only at 0 HP". Candidate: one
-  factual line in the system prompt.
-- **Skipped card rewards**: a skipped card reward stays listed, and v4 RUNDEV3 reopened
-  one 36 times. Candidate: say so in the system prompt's interface description.
-
-- **Which fight is the boss**: hallway fights are mistaken for the act boss. Evidence:
-  v1.1 RUNDEV1 played a floor-13 Spike Slime (L) as the Slime Boss for five decisions;
-  v1.1 RUNDEV3 kept cards "for the Slime Boss turn" against floor-12 slimes; v2 RUNDEV3
-  used Fire Potion "to the boss now" on a floor-3 Acid Slime (M); v2 RUNDEV2 wrote
-  "Collector rewards" after a floor-22 hallway fight. The header names the act boss right
-  above the combat block. Candidate state fix: name the boss's floor (16, 33, 50) in the
-  header and keep it out of the combat block.
-- **Potion discipline**: potions taken "for the boss" are used within a few floors, often
-  in hallway fights (all four v1.1/v2 runs that held one; RUNDEV1 used the same Explosive
-  Potion on the same floor-10/11 slimes in v1.1, v2 and v3). Heart of Iron was drunk in
-  hallway fights twice "to help through the Slime Boss fight", as if its effect lasted
-  beyond the combat. Try the boss fix first, since some of these uses came with the boss
-  confusion; then a factual line that potion effects and powers end with the combat.
+- **Skipped-reward memory**: v6's interface line did not stop the reopen loop (43 skips in
+  v6 RUNDEV3). Candidate in `llm.py`: after the model skips a card reward, the rewards
+  screen on that floor says which cards it already declined.
+- **Hand-select purpose**: Gambling Chip's start-of-combat screen reads only "Choose up to
+  99 card(s) from your hand", and v6 RUNDEV3 discarded Impervious+ believing it would
+  block. Candidate: name the source of the selection when the state shows it (relic at
+  combat start, or the card just played).
+- **Potion effects end with the combat**: Heart of Iron was drunk in hallway fights twice
+  "to help through the Slime Boss fight". A drafted line is in the overnight notes. Potion
+  use swings both ways: early runs drank boss potions in hallways, v4 RUNDEV3 died to an
+  elite holding a potion "reserved for Time Eater".
+- **Optional fights and big trades**: the Colosseum's second fight at 58 HP (v6 RUNDEV1),
+  an Orb Walker event fight at 84 HP that left 25 (v6 RUNDEV3), and Council of Ghosts'
+  half max HP before The Collector (v3 and v6 RUNDEV2). This is strategy advice; prefer
+  state or rules fixes first.
+- **Act 3 notes** as runs reach them: Transient (v6 RUNDEV3's death) fades after a few
+  turns, and Giant Head (v4 RUNDEV3's death).
 - **Notes**: separate run notes from combat scratch, or tighten the instruction.
   Evidence: notes clobbered in the smoke run, copied unchanged on about half of calls.
-- **Deck building**: guidance on skipping card rewards and removing cards. Evidence:
-  RUNDEV2's 29-card deck in v1.1 and 28 in v2, with no removal bought at 474 gold.
-- **Act 2–3 elite and boss notes** once runs reach them (The Collector, The Champ).
+- **Deck building**: RUNDEV2 decks of 28–31 cards with no removal bought at 474 gold
+  (v2), and RUNDEV3's 11-card deck with little damage (v3).
