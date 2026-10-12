@@ -274,6 +274,47 @@ helping in the upcoming boss fight". Change: the header reads "Act 1, floor 13. 
 Slime Boss, on floor 16." (floors 16, 33 and 50 for Acts 1–3) instead of naming the boss
 alone.
 
+### 2026-10-12: v4 on the development seeds
+
+`runs/llm-luna-v4-dev-20261012`, source `5136609` (v4 and the grid fix).
+
+| Seed | Outcome | Act / floor | Killed by | Decisions | Calls | Cost | Wall time |
+|---|---|---|---|---:|---:|---:|---:|
+| RUNDEV1 | lost | 1 / 16 | Slime Boss (split slimes) | 263 | 239 | $0.054 | 1,252 s |
+| RUNDEV2 | lost | 2 / 33 | The Collector | 452 | 377 | $0.087 | 1,856 s |
+| RUNDEV3 | lost | 3 / 41 | Giant Head (elite) | 835 | 808 | $0.172 | 3,739 s |
+
+- The targeted mistake stopped. Hallway combat reasons that treat the fight as the act
+  boss went from 2, 4, 1 and 2 in RUNDEV1's runs (v1–v3, all in the floor 12–13 slime
+  fight) to 0, on the same floor-13 Spike Slime (L) fight. RUNDEV2 stayed at 0.
+- The header change also flipped RUNDEV1's Neow pick (random rare card in v1.1–v3, now
+  +16 max HP), so a prompt edit can perturb choices it was not aimed at; seeds stay
+  comparable only up to their first divergent decision.
+- RUNDEV1 entered the boss at 96/96 HP and still lost. After the split it held back
+  damage on purpose: "Both slimes are above their split thresholds, so avoid dealing
+  damage and end the turn" (11 such reasons over turns 7–10). The v2 boss note is shown
+  only while the Slime Boss lives, and the Large slimes had none, so the v1.1
+  misconception came back. It also spent four potions in the floor 13–14 hallways.
+- RUNDEV2 died to The Collector on exactly lethal damage, reasoning that Defend would let
+  it "survive this turn, even if only at 0 HP". Across the 11 deaths since v1.1, four
+  ended with unblocked damage exactly equal to the remaining HP.
+- RUNDEV3 is the first run to reach Act 3. It beat the Slime Boss and The Champ, lost
+  almost no HP in the Act 2 hallways, and died to Giant Head on floor 41 while refusing
+  to drink Ancient Potion, "reserved for Time Eater", on every turn. It opened and
+  skipped the same card reward 17 times after a floor-22 fight and 19 times after a
+  floor-35 fight, because a skipped card reward stays on the rewards screen (39 skips and
+  36 reopenings in the run, about a tenth of its calls).
+- Decision: keep v4.
+
+### Scaffolding v5: Large slime split notes
+
+Evidence: v4 RUNDEV1's split-slime stall above, and the same stall on the Slime Boss
+itself in v1.1. Change: rules notes for `AcidSlime_L` and `SpikeSlime_L`. Each says that
+at half its max HP its next move is Split into two Medium slimes with its HP at that
+moment, that holding back damage never avoids the split, and that damage before its turn
+still lowers both Mediums (killing it first prevents the split). The notes also show in
+hallway fights with Large slimes.
+
 ## Overnight loop
 
 Preflight: no `spire play` process is running (`ps -eo pid,cmd | grep '[p]ython3 -m spire play'`;
@@ -310,8 +351,14 @@ binding limit; time is, at roughly two to four iterations a night. Then:
    Keep a change if the targeted mistake stops and outcomes do not get worse. With three
    stochastic runs per version, do not claim more than that.
 
-Candidate changes with evidence so far, in priority order (incoming damage became v3
-and the boss's floor v4):
+Candidate changes with evidence so far, in priority order (incoming damage became v3,
+the boss's floor v4 and the slime notes v5):
+
+- **0 HP is death**: four of eleven deaths since v1.1 took exactly lethal damage, and v4
+  RUNDEV2 chose Defend to "survive this turn, even if only at 0 HP". Candidate: one
+  factual line in the system prompt.
+- **Skipped card rewards**: a skipped card reward stays listed, and v4 RUNDEV3 reopened
+  one 36 times. Candidate: say so in the system prompt's interface description.
 
 - **Which fight is the boss**: hallway fights are mistaken for the act boss. Evidence:
   v1.1 RUNDEV1 played a floor-13 Spike Slime (L) as the Slime Boss for five decisions;
