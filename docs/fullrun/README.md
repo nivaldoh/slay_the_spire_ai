@@ -16,9 +16,9 @@ the prompt and memory, not weight training.
 
 - Model: `gpt-6-luna` through the OpenAI Responses API, reasoning effort `low`, structured
   JSON output. The owner chose Luna for cost; `gpt-6-astra`, `gpt-6-sol` and
-  `gpt-6.1-sol` have declared prices in `spire.fullrun.llm` and can be selected with `--model`.
+  `gpt-6.1-sol` have declared prices in `spire.fullrun.api` and can be selected with `--model`.
 - Spend: every call is priced from its reported usage at the standard-tier list prices in
-  `spire.fullrun.llm.PRICES` (read 2026-10-12) and appended to a ledger. A call is refused
+  `spire.fullrun.api.PRICES` (read 2026-10-12) and appended to a ledger. A call is refused
   before it is sent if the ledger's total plus that call's worst-case cost (prompt bytes as
   an upper bound on input tokens, plus 4,000 output tokens) would exceed `--budget-usd`. The
   owner's cap for the first overnight work is **$25** on `runs/llm-spend.jsonl`, the default
@@ -94,9 +94,9 @@ uv run python -m spire spend                                         # ledger to
 ## Autoresearch rules
 
 - Editable surface: `configs/llm/` (system prompt and monster notes), and the rendering,
-  memory and reply handling in `src/spire/fullrun/llm.py`. The information boundary in
-  `decisions.py`, the runner, the pricing and the ledger are not tuning surfaces. Fix them
-  only for real defects, and record each fix in the log.
+  memory and reply handling in `src/spire/fullrun/llm.py`. The information boundary
+  (`decisions.py`), the runner (`play.py`) and the client, prices and ledger (`api.py`) are
+  not tuning surfaces. Fix them only for real defects, and record each fix in the log.
 - Commit before every run; the runner refuses uncommitted source and prompt changes.
 - Judge a change by outcomes (floor reached, wins), not by how good the reasons sound.
   With a handful of runs a night, report each run individually and do not call small

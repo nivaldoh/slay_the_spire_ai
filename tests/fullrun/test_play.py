@@ -10,7 +10,7 @@ from test_decisions import combat_message, message
 
 from spire.engine import doctor
 from spire.fullrun import play
-from spire.fullrun.llm import BudgetExhausted
+from spire.fullrun.api import BudgetExhausted
 
 MENU = {"ready_for_command": True, "in_game": False, "available_commands": ["start", "state"],
         "game_state": {}}

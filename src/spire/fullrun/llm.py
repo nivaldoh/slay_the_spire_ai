@@ -1,44 +1,24 @@
-"""API language-model policy over full-run decisions, through the OpenAI Responses API.
+"""API language-model player over full-run decisions: the prompt, memory and replies.
 
-Standard library only. The key comes from ``OPENAI_API_KEY`` or the file named by
-``SPIRE_OPENAI_KEY_FILE`` and is never logged or written to evidence. Every call is
-priced from its reported usage and appended to a spend ledger, and a call is refused
-before sending when the ledger total plus its worst-case cost would exceed the budget.
-
-Run memory is bounded: model-written notes (rewritten through the reply's ``notes``
-field) and the last few decisions. No transcript accumulates.
+This file and ``configs/llm/`` are the autoresearch loop's editable surface; transport,
+prices and the spend ledger live in ``api.py``. Run memory is bounded: model-written notes
+(rewritten through the reply's ``notes`` field) and the last few decisions. No transcript
+accumulates.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
-import os
 import re
 import time
-import urllib.error
-import urllib.request
 from collections import Counter, deque
-from datetime import UTC, datetime
-from pathlib import Path
 
+from spire.fullrun.api import EFFORTS, PRICES, Ledger, ResponsesClient, api_key, usage_cost
 from spire.fullrun.decisions import Choice, card_text, live_targets
 from spire.protocol import Decision, PolicyFailure
 from spire.provenance import REPO_ROOT
 
-API_URL = "https://api.openai.com/v1/responses"
-# USD per million tokens (input, cached input, output), standard tier, read 2026-10-12
-# from https://developers.openai.com/api/docs/pricing. Prompts stay far below the
-# 272K-token threshold where long-context rates apply.
-PRICES = {
-    "gpt-6-luna": (0.10, 0.01, 0.50),
-    "gpt-6-sol": (2.00, 0.20, 10.00),
-    "gpt-6.1-sol": (2.00, 0.10, 10.00),
-    "gpt-6-astra": (10.00, 1.00, 50.00),
-}
-EFFORTS = ("none", "low", "medium", "high")
-# Every job that names the same ledger shares one spend budget.
-LEDGER_PATH = REPO_ROOT / "runs/llm-spend.jsonl"
 SYSTEM_PROMPT_PATH = REPO_ROOT / "configs/llm/system_prompt.md"
 # Short rules notes for enemies the model was seen to misplay, keyed by monster ID.
 MONSTER_NOTES_PATH = SYSTEM_PROMPT_PATH.with_name("monsters.json")
@@ -46,7 +26,6 @@ MAX_OUTPUT_TOKENS = 4000
 NOTES_LIMIT = 2000
 HISTORY_LENGTH = 12
 INVALID_RETRIES = 2
-TRANSIENT_HTTP = {408, 409, 429, 500, 502, 503, 504}
 REPLY_SCHEMA = {
     "type": "object",
     "properties": {
@@ -57,82 +36,6 @@ REPLY_SCHEMA = {
     "required": ["choice", "reason", "notes"],
     "additionalProperties": False,
 }
-
-
-class BudgetExhausted(RuntimeError):
-    """The next call could exceed the declared spend budget; nothing was sent."""
-
-
-class APIError(RuntimeError):
-    """Transport or service failure: infrastructure, never a gameplay outcome."""
-
-
-def api_key() -> str:
-    key = os.environ.get("OPENAI_API_KEY", "").strip()
-    if key:
-        return key
-    path = os.environ.get("SPIRE_OPENAI_KEY_FILE")
-    if not path:
-        raise APIError("Set OPENAI_API_KEY or SPIRE_OPENAI_KEY_FILE")
-    return Path(path).expanduser().read_text().strip()
-
-
-def usage_cost(model: str, usage: dict) -> float:
-    price_in, price_cached, price_out = PRICES[model]
-    cached = (usage.get("input_tokens_details") or {}).get("cached_tokens", 0)
-    return (
-        (usage["input_tokens"] - cached) * price_in
-        + cached * price_cached
-        + usage["output_tokens"] * price_out
-    ) / 1e6
-
-
-class Ledger:
-    """Append-only spend record; every job naming the same file shares one budget."""
-
-    def __init__(self, path: Path, budget_usd: float):
-        self.path = Path(path)
-        self.budget = budget_usd
-        lines = self.path.read_text().splitlines() if self.path.exists() else []
-        self.spent = sum(json.loads(line)["usd"] for line in lines)
-
-    def reserve(self, usd: float) -> None:
-        if self.spent + usd > self.budget:
-            raise BudgetExhausted(
-                f"Spent ${self.spent:.4f} of ${self.budget:.2f}; next call may cost ${usd:.4f}"
-            )
-
-    def charge(self, usd: float, **fields) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        record = {"time": datetime.now(UTC).isoformat(), "usd": usd, **fields}
-        with self.path.open("a") as handle:
-            handle.write(json.dumps(record, sort_keys=True) + "\n")
-        self.spent += usd
-
-
-class ResponsesClient:
-    """Minimal POST client; retries only transient transport and service errors."""
-
-    def __init__(self, key: str, *, timeout: float = 60, attempts: int = 3, url: str = API_URL):
-        self._key, self.timeout, self.attempts, self.url = key, timeout, attempts, url
-
-    def create(self, body: dict) -> dict:
-        data = json.dumps(body).encode()
-        headers = {"Authorization": f"Bearer {self._key}", "Content-Type": "application/json"}
-        for attempt in range(1, self.attempts + 1):
-            request = urllib.request.Request(self.url, data=data, headers=headers)
-            try:
-                with urllib.request.urlopen(request, timeout=self.timeout) as response:
-                    return json.load(response)
-            except urllib.error.HTTPError as error:
-                detail = error.read(500).decode(errors="replace").replace(self._key, "<key>")
-                if error.code not in TRANSIENT_HTTP or attempt == self.attempts:
-                    raise APIError(f"HTTP {error.code}: {detail}") from None
-            except (urllib.error.URLError, TimeoutError, ConnectionError) as error:
-                if attempt == self.attempts:
-                    raise APIError(f"{type(error).__name__}: {error}") from None
-            time.sleep(2**attempt)
-        raise AssertionError("unreachable")
 
 
 def _clean(text: str) -> str:

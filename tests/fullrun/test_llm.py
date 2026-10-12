@@ -1,13 +1,11 @@
-"""API policy accounting, memory and parsing with a fake client; no network."""
+"""Prompt rendering, memory, parsing and accounting with a fake client; no network."""
 
-import io
 import json
-import urllib.error
 
 import pytest
 from test_decisions import combat_message, message
 
-from spire.fullrun import decisions, llm
+from spire.fullrun import api, decisions, llm
 from spire.protocol import PolicyFailure
 
 USAGE = {"input_tokens": 1000, "input_tokens_details": {"cached_tokens": 400},
@@ -37,14 +35,9 @@ def decision():
 
 
 def policy(tmp_path, *replies, budget=1.0):
-    ledger = llm.Ledger(tmp_path / "spend.jsonl", budget)
+    ledger = api.Ledger(tmp_path / "spend.jsonl", budget)
     return llm.LLMPolicy("gpt-6-luna", "low", ledger, client=FakeClient(*replies),
                          system_prompt="Play well.")
-
-
-def test_usage_cost_prices_uncached_cached_and_output_tokens():
-    expected = (600 * 10 + 400 * 1 + 200 * 50) / 1e6
-    assert llm.usage_cost("gpt-6-astra", USAGE) == pytest.approx(expected)
 
 
 def test_choice_updates_notes_history_ledger_and_metadata(tmp_path):
@@ -64,7 +57,7 @@ def test_choice_updates_notes_history_ledger_and_metadata(tmp_path):
     assert agent.totals["calls"] == 2 and agent.totals["reasoning_tokens"] == 300
     lines = (tmp_path / "spend.jsonl").read_text().splitlines()
     assert [json.loads(line)["response_id"] for line in lines] == ["resp-1", "resp-2"]
-    assert llm.Ledger(tmp_path / "spend.jsonl", 1.0).spent == pytest.approx(agent.totals["usd"])
+    assert api.Ledger(tmp_path / "spend.jsonl", 1.0).spent == pytest.approx(agent.totals["usd"])
 
 
 def test_invalid_replies_are_retried_then_fail_as_policy_failure(tmp_path):
@@ -81,7 +74,7 @@ def test_invalid_replies_are_retried_then_fail_as_policy_failure(tmp_path):
 
 def test_budget_refuses_a_call_before_sending(tmp_path):
     agent = policy(tmp_path, reply(0), budget=0.0001)
-    with pytest.raises(llm.BudgetExhausted):
+    with pytest.raises(api.BudgetExhausted):
         agent.choose(decision())
     assert agent.client.bodies == []
     assert not (tmp_path / "spend.jsonl").exists()
@@ -116,34 +109,6 @@ def test_event_text_markup_is_removed():
     assert llm._clean("You find #ygold. NL The @ghost@ ~waves~.") == (
         "You find gold.\nThe ghost waves."
     )
-
-
-def test_api_key_file_and_transient_retry_without_leaking_the_key(tmp_path, monkeypatch):
-    key_file = tmp_path / "key"
-    key_file.write_text("sk-test-secret\n")
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    monkeypatch.setenv("SPIRE_OPENAI_KEY_FILE", str(key_file))
-    assert llm.api_key() == "sk-test-secret"
-    responses = [
-        urllib.error.HTTPError("u", 503, "busy", {}, io.BytesIO(b"busy")),
-        io.BytesIO(b'{"id": "ok"}'),
-        urllib.error.HTTPError("u", 401, "no", {}, io.BytesIO(b"bad key sk-test-secret")),
-    ]
-
-    def urlopen(request, timeout):
-        assert request.headers["Authorization"] == "Bearer sk-test-secret"
-        value = responses.pop(0)
-        if isinstance(value, Exception):
-            raise value
-        return value
-
-    monkeypatch.setattr(llm.urllib.request, "urlopen", urlopen)
-    monkeypatch.setattr(llm.time, "sleep", lambda seconds: None)
-    client = llm.ResponsesClient(llm.api_key())
-    assert client.create({}) == {"id": "ok"}
-    with pytest.raises(llm.APIError) as error:
-        client.create({})
-    assert "sk-test-secret" not in str(error.value) and "<key>" in str(error.value)
 
 
 def test_combat_rendering_names_the_room_and_omits_an_empty_selection():

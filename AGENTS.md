@@ -16,7 +16,8 @@ src/spire/
   engine/          Real-game plumbing for every track: Windows runtime, relay bridge, doctor,
                    and the Windows-side windows_game.py / windows_relay.py
   fullrun/         Current track: decisions.py (public full-run boundary), play.py (run loop),
-                   llm.py (OpenAI player, prompt rendering, spend ledger), digest.py
+                   llm.py (prompt, memory and replies: the tuning surface), api.py (OpenAI
+                   transport, prices, spend ledger), digest.py (trace summaries)
   combat/          First-combat benchmark: rollout, suites (evaluation), catalogs, evidence audits
   ppo/             Actor-critic and the budgeted, resumable PPO runner
   language/        Local Qwen LoRA: demonstrations, SFT, frozen policy, evaluation, sampling, REINFORCE

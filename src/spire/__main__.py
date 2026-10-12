@@ -5,7 +5,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from spire.fullrun.llm import EFFORTS, LEDGER_PATH, PRICES
+from spire.fullrun.api import EFFORTS, LEDGER_PATH, PRICES
 
 
 def main() -> int:
@@ -182,7 +182,8 @@ def main() -> int:
         print(json.dumps(result, indent=2))
         return 0 if result["status"] in {"completed", "budget_exhausted"} else 1
     if args.command == "play":
-        from spire.fullrun.llm import Ledger, LLMPolicy, ResponsesClient, api_key
+        from spire.fullrun.api import Ledger, ResponsesClient, api_key
+        from spire.fullrun.llm import LLMPolicy
         from spire.fullrun.play import play as run_play
 
         config = vars(args).copy()
@@ -201,7 +202,7 @@ def main() -> int:
         run_digest(args.path, args.floor)
         return 0
     if args.command == "spend":
-        from spire.fullrun.llm import Ledger
+        from spire.fullrun.api import Ledger
 
         print(f"${Ledger(args.ledger, budget_usd=0).spent:.4f} spent ({args.ledger})")
         return 0

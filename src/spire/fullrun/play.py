@@ -29,7 +29,8 @@ from spire.engine.runtime import (
     wsl_bridge_host,
 )
 from spire.fullrun import decisions
-from spire.fullrun.llm import SYSTEM_PROMPT_PATH, BudgetExhausted
+from spire.fullrun.api import BudgetExhausted
+from spire.fullrun.llm import SYSTEM_PROMPT_PATH
 from spire.protocol import BridgeCommandError, IllegalActionError, PolicyFailure, ProtocolError
 from spire.provenance import committed_revision, sha256, source_fingerprints, write_json
 
