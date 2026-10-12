@@ -103,7 +103,17 @@ uv run python -m spire digest runs/fullrun/<job>/run-0000 --picks     # also eac
 uv run python -m spire digest runs/fullrun/<job>/run-0000 --floor 16  # one floor, turn by turn
 uv run python -m spire watch runs/fullrun/<job>  # waits for the next finished run, stall or end
 uv run python -m spire spend                                          # ledger total
+uv run python -m spire stats                  # milestones per model, effort and harness version
+uv run python -m spire stats --rebuild        # rewrite results.csv from every saved job
 ```
+
+`spire play` appends one row per run to the committed [results.csv](results.csv): date, job,
+run, seed, character, ascension, model, effort, harness version (from the job name), source,
+outcome, act, floor, score and cost. Rows come only from saved evidence, so `--rebuild`
+reproduces them; pass `play --results <path>` to keep a smoke test out of the register.
+`spire stats` counts, per group, the runs that reached Acts 2, 3 and 4 (however they
+ended), wins, and the best floor, plus the mean floor over finished runs (engine-confirmed
+wins and deaths).
 
 A run's flags count what the log once counted by hand: turns ended with energy and a
 playable card (and those with attacks exceeding block), card rewards skipped (and floors
@@ -162,7 +172,7 @@ time is, at roughly two to four iterations a night. Then:
    (`--floor N`) and the source by function (`grep -n`, then that range). Add a test if
    code changed.
 4. When the job ends, finish its log entry (the table is `spire digest $JOB`), merge the
-   change, commit and push once, and run the next iteration on the same seeds. Keep a
+   change, commit it with the new `results.csv` rows and push once, and run the next iteration on the same seeds. Keep a
    change if the targeted mistake stops and outcomes do not get worse. With three
    stochastic runs per version, do not claim more than that.
 
@@ -227,11 +237,10 @@ harness between runs while a cheap, low-effort model plays (DemoEvolve, the clos
 published setup, does this on Slay the Spire 2). Loop changes not built yet, in priority
 order:
 
-1. **A results table across versions** (owner request, 2026-10-12). Today each job has
-   its own `spire digest` table, copied by hand into this log; nothing aggregates versions.
-   A read-only `spire stats runs/fullrun` could print one row per job from the saved
-   `result.json` and traces, using SpireBench's measures where they fit: acts cleared (its
-   headline), floor reached, bosses beaten, HP lost per Act 1 hallway fight (the measure
+1. **A results table across versions** (owner request, 2026-10-12). The first part is
+   built: [results.csv](results.csv) holds one row per run and `spire stats` prints acts
+   reached, wins and floors per model, effort and harness version. Still to add from
+   SpireBench's measures where they fit: bosses beaten, HP lost per Act 1 hallway fight (the measure
    that best separated models there), card-reward skip and reopen counts, calls and cost
    per floor. The v7 replay (floors 16, 33, 16 against 29, 50, 42 for the same prompts)
    shows why: versions need several runs per seed, summarized, before any comparison.

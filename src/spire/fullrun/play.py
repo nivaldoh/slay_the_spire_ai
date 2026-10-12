@@ -30,6 +30,7 @@ from spire.engine.runtime import (
     wsl_bridge_host,
 )
 from spire.fullrun.llm import SYSTEM_PROMPT_PATH
+from spire.fullrun.stats import record
 from spire.ledger import BudgetExhausted
 from spire.protocol import BridgeCommandError, IllegalActionError, PolicyFailure, ProtocolError
 from spire.provenance import committed_revision, sha256, source_fingerprints, write_json
@@ -194,10 +195,11 @@ def play(output: Path, config: dict, *, policy_factory: Callable) -> dict:
         for index, seed in enumerate(config["seeds"]):
             if source_fingerprints() != manifest["source_files"]:
                 raise RuntimeError("Implementation changed during the job; stopped before launch")
-            result = play_run(output / f"run-{index:04d}", {**config, "seed": seed},
-                              policy_factory())
+            run = output / f"run-{index:04d}"
+            result = play_run(run, {**config, "seed": seed}, policy_factory())
             manifest["runs"].append(result)
             write_json(output / "manifest.json", manifest)
+            record(Path(config["results"]), output, run)
             print(json.dumps({k: result.get(k) for k in (
                 "seed", "status", "act", "floor", "current_hp", "decisions", "llm", "error",
             )}, sort_keys=True), flush=True)

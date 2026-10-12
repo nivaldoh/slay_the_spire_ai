@@ -20,7 +20,8 @@ src/spire/
                    and the Windows-side windows_game.py / windows_relay.py
   fullrun/         Current track: play.py (complete-run loop for any policy), llm.py (prompt,
                    memory and replies: the tuning surface), api.py (OpenAI transport, prices),
-                   digest.py (trace summaries and mistake flags), watch.py (job events)
+                   digest.py (trace summaries and mistake flags), watch.py (job events),
+                   stats.py (the results register, docs/fullrun/results.csv)
   openweight/      Planned remote open-weight track (skeleton, mostly NotImplementedError): tasks
                    and seed splits, env backends, Tinker policy, rewards, rollout, GRPO, dynamics
   combat/          First-combat benchmark: rollout, suites (evaluation), catalogs, evidence audits
@@ -49,6 +50,7 @@ uv run python -m spire doctor      # read-only runtime check
 uv run python -m spire digest runs/fullrun/<job>   # per-seed table; add /run-0000 [--picks | --floor N]
 uv run python -m spire watch runs/fullrun/<job>    # wait for the next finished run, stall or job end
 uv run python -m spire spend       # API ledger total
+uv run python -m spire stats       # milestones per model, effort and harness; --rebuild from runs/
 ```
 
 - The `train` (CPU torch) and `llm` (CUDA torch, transformers, peft) extras conflict; use
@@ -99,9 +101,10 @@ policy failures. Only an engine-confirmed victory or death is a gameplay outcome
 
 Run evidence goes in `runs/<track>/<job>/` and stays out of Git (layout in
 `runs/README.md`). The full-run API ledger is `runs/llm-spend.jsonl`; never move or reset it.
-Compact first-combat results are committed in `docs/first-combat/results/`. Log every
-full-run version in `docs/fullrun/log.md`, and update `docs/state.md` when work starts,
-stops or changes direction.
+Compact first-combat results are committed in `docs/first-combat/results/`. `spire play`
+appends one row per run to `docs/fullrun/results.csv`; commit it with the version's log
+entry. Log every full-run version in `docs/fullrun/log.md`, and update `docs/state.md` when
+work starts, stops or changes direction.
 
 ## Coding Style
 

@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from spire.fullrun.api import EFFORTS, LEDGER_PATH, PRICES
+from spire.fullrun.stats import RESULTS_PATH
 
 
 def main() -> int:
@@ -59,6 +60,8 @@ def main() -> int:
     play.add_argument("--budget-usd", type=float, required=True,
                       help="Hard cap on the ledger's total spend, including earlier jobs")
     play.add_argument("--ledger", type=Path, default=LEDGER_PATH)
+    play.add_argument("--results", type=Path, default=RESULTS_PATH,
+                      help="Results register that gets one row per run")
     play.add_argument("--max-actions", type=int, default=4000)
     play.add_argument("--run-timeout", type=float, default=5 * 3600)
     play.add_argument("--bridge-timeout", type=float, default=300)
@@ -72,6 +75,10 @@ def main() -> int:
     watch.add_argument("job", type=Path, help="A job directory under runs/fullrun")
     spend = commands.add_parser("spend", help="Full runs: total the API spend ledger")
     spend.add_argument("--ledger", type=Path, default=LEDGER_PATH)
+    stats = commands.add_parser("stats", help="Full runs: milestones from the results register")
+    stats.add_argument("--rebuild", action="store_true",
+                       help="Rewrite the register from every job under runs/fullrun")
+    stats.add_argument("--results", type=Path, default=RESULTS_PATH)
     args = parser.parse_args()
     if args.command == "doctor":
         from spire.engine.doctor import collect_diagnostics, exit_code, render_diagnostics
@@ -195,6 +202,7 @@ def main() -> int:
         output = config.pop("output")
         config.pop("command")
         config["ledger"] = str(config["ledger"])
+        config["results"] = str(config["results"])
         ledger = Ledger(args.ledger, args.budget_usd)
         client = ResponsesClient(api_key())
         manifest = run_play(output, config, policy_factory=lambda: LLMPolicy(
@@ -215,6 +223,13 @@ def main() -> int:
         from spire.ledger import Ledger
 
         print(f"${Ledger(args.ledger, budget_usd=0).spent:.4f} spent ({args.ledger})")
+        return 0
+    if args.command == "stats":
+        from spire.fullrun.stats import JOBS_ROOT, rebuild, summary
+
+        if args.rebuild:
+            rebuild(JOBS_ROOT, args.results)
+        print(summary(args.results))
         return 0
     return 2
 

@@ -13,7 +13,8 @@ def test_job_table_reports_each_seed_and_the_last_fight(tmp_path, harness, capsy
     elite = combat_message()
     elite["game_state"]["room_type"] = "MonsterRoomElite"
     sessions += [[MENU, NEOW, elite, DEATH], [MENU, NEOW, combat_message(), DEATH]]
-    play.play(tmp_path / "job", CONFIG, policy_factory=ScriptedPolicy)
+    play.play(tmp_path / "job", {**CONFIG, "results": str(tmp_path / "results.csv")},
+              policy_factory=ScriptedPolicy)
     table = digest.job_table(tmp_path / "job").splitlines()
     assert table[0] == "job: source test, completed"
     assert table[3].startswith("| SEEDA | lost | ")
@@ -47,7 +48,8 @@ def test_run_digest_flags_recurring_mistakes_and_groups_a_fight_by_turn(
                      screen_state={"cards": [card("Anger", cost=0)]})
     sessions.append([MENU, NEOW, combat_message(), combat_message(), reward, reward, DEATH])
     commands = ("potion use 0 1", "end", "skip", "skip")
-    play.play(tmp_path / "job", {**CONFIG, "seeds": ["SEEDA"]},
+    play.play(tmp_path / "job", {**CONFIG, "seeds": ["SEEDA"],
+                                 "results": str(tmp_path / "results.csv")},
               policy_factory=lambda: CommandPolicy(*commands))
     run = tmp_path / "job/run-0000"
     # Ending a turn with 3 energy, a playable Strike and 11 unblocked damage counts twice.

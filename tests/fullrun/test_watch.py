@@ -14,7 +14,8 @@ __all__ = ["harness"]
 def test_each_finished_run_is_one_event_with_its_log_row(tmp_path, harness):
     sessions, _ = harness
     sessions += [[MENU, NEOW, DEATH], [MENU, NEOW, DEATH]]
-    play.play(tmp_path / "job", CONFIG, policy_factory=ScriptedPolicy)
+    play.play(tmp_path / "job", {**CONFIG, "results": str(tmp_path / "results.csv")},
+              policy_factory=ScriptedPolicy)
     assert watch.check(tmp_path / "job", 0).startswith("| SEEDA | lost | ")
     assert watch.check(tmp_path / "job", 1).endswith(" job completed")
     assert watch.check(tmp_path / "job", 2) == "job completed"

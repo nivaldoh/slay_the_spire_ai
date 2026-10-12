@@ -1,5 +1,6 @@
 """Full-run lifecycle with a fake bridge and game; these states do not certify the engine."""
 
+import csv
 import json
 from contextlib import nullcontext
 from copy import deepcopy
@@ -108,9 +109,13 @@ def test_run_starts_settles_forces_single_choices_and_ends_on_death(tmp_path, ha
 def test_budget_exhaustion_ends_the_run_and_stops_the_job(tmp_path, harness):
     sessions, sent = harness
     sessions.append([MENU, combat_message()])
-    manifest = play.play(tmp_path / "job", CONFIG,
+    results = tmp_path / "results.csv"
+    manifest = play.play(tmp_path / "job", {**CONFIG, "results": str(results)},
                          policy_factory=lambda: ScriptedPolicy(BudgetExhausted("cap")))
     assert manifest["status"] == "stopped"
     assert [run["status"] for run in manifest["runs"]] == ["budget_exhausted"]
     assert sent == ["START IRONCLAD 0 SEEDA"]
     assert (tmp_path / "job/system_prompt.md").read_text().startswith("You are playing")
+    [row] = csv.DictReader(results.open())
+    assert (row["job"], row["run"], row["seed"], row["outcome"]) == (
+        "job", "run-0000", "SEEDA", "budget_exhausted")

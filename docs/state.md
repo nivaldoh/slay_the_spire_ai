@@ -34,8 +34,10 @@ Next steps:
 3. Keys memory: CommunicationMod 1.2.1 never sends `keys`, so the model cannot see the
    keys it holds; v9 RUNDEV1 died on an elite path taken for a key it had
    ([integration.md](integration.md), [candidates](fullrun/README.md#candidate-changes)).
-4. A results table across versions (owner request): a read-only `spire stats` over all
-   jobs with SpireBench's measures, before more versions are compared
+4. A results table across versions (owner request): the register is built.
+   `spire play` appends each run to the committed `docs/fullrun/results.csv` (backfilled
+   for v1–v9), and `spire stats` prints acts reached, wins and floors per version. Still
+   to add: SpireBench's other measures, before more versions are compared
    ([fullrun/README.md](fullrun/README.md#ideas-from-related-work-2026-10-12)). SpireBench
    released no code; its metric definitions and fixed held-out seeds carry over.
 5. Optional runner fix: close the settings screen (opened by an Escape press on the game
