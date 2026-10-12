@@ -150,3 +150,85 @@ without a reply. It is not a scored attempt.
   whether the fight is a monster, elite, boss or event combat, as the game shows.
 
 Both fixes change what the model sees, so later runs are scaffolding v1.1.
+
+### 2026-10-12: v1.1 baseline on the development seeds
+
+`runs/llm-luna-v1.1-dev-20261012`, source `fea677a`, seeds `RUNDEV1`–`RUNDEV3`. Each run
+was played once by a stochastic model, so these are single samples. Neow options are
+fixed by the seed: `RUNDEV1` showed identical options in two runs after different
+previous runs.
+
+| Seed | Outcome | Act / floor | Killed by | Decisions | Calls | Cost | Wall time |
+|---|---|---|---|---:|---:|---:|---:|
+| RUNDEV1 | lost | 1 / 16 | Slime Boss | 248 | 200 | $0.039 | 738 s |
+| RUNDEV2 | lost | 2 / 33 | The Collector | 475 | 444 | $0.101 | 1,755 s |
+| RUNDEV3 | lost | 1 / 16 | Slime Boss (split slimes) | 194 | 165 | $0.033 | 670 s |
+
+- RUNDEV1 reached the Slime Boss at 72/80 HP with a Corruption and Feel No Pain deck. It
+  then **ended turns 10 and 11 with 3 energy and attacks in hand**, "without crossing
+  Slime Boss's 70-HP split threshold", and died to Slam. This is the same kind of rules
+  error as waking Lagavulin in the smoke run.
+- RUNDEV2 beat Gremlin Nob, Lagavulin, Hexaghost and Book of Stabbing, and reached The
+  Collector at 104 HP. It lost an 11-turn fight with a 29-card deck that had never removed
+  a card. After Mega Debuff (Weak, Vulnerable and Frail 3) it took 28–35 per turn.
+- RUNDEV3 beat Lagavulin and reached the Slime Boss at 71 HP. It died to the split
+  slimes at 15 HP after spending its last turn's energy exhausting Slimed instead of
+  blocking 18 incoming damage.
+- The notes said the potions were saved for the boss, but the model used them earlier.
+  Its stated plans are not reliable evidence of its later play.
+
+### Scaffolding v2: enemy rules notes
+
+Evidence: Lagavulin woken early (smoke run), the Slime Boss split stall (RUNDEV1), and the
+knowledge probe's errors on Gremlin Nob and Hexaghost. Change: `configs/llm/monsters.json`
+holds a short, A0-accurate rules note for each Act 1 elite and boss: Gremlin Nob,
+Lagavulin, Sentry, Slime Boss, The Guardian and Hexaghost. A note appears under "Enemy
+rules" only while that enemy is in the fight. Amountless powers no longer render as
+"Corruption -1". Add notes for later acts only when runs show they are needed, and check
+every number against the game.
+
+## Overnight loop
+
+Preflight: no `spire play` process is running (`pgrep -af 'spire play'`), the game is
+closed, `git status` is clean under `src/`, `scripts/` and `configs/`, and the ledger total
+is below the cap:
+
+```bash
+python3 -c "import json; print(sum(json.loads(l)['usd'] for l in open('runs/llm-spend.jsonl')))"
+```
+
+One iteration plays the three development seeds with the committed scaffolding version:
+
+```bash
+export SPIRE_OPENAI_KEY_FILE=~/.config/robocasa/openai_api_key
+nohup uv run python -m spire play --model gpt-6-luna --effort low \
+  --seed RUNDEV1 --seed RUNDEV2 --seed RUNDEV3 --budget-usd 25 \
+  --output runs/llm-luna-v<VERSION>-dev-<DATE> > runs/llm-luna-v<VERSION>-dev-<DATE>.log 2>&1 &
+```
+
+Measured cost: Luna runs cost $0.04–0.10 each. Engine and API wall time is about 12–30
+minutes per run, depending on how far the model gets. The $25 cap is therefore not the
+binding limit; time is, at roughly two to four iterations a night. Then:
+
+1. Watch for stalls: a trace that stays unmodified for more than 90 s while the process
+   is alive. Stop a stalled job with SIGINT to its `python3 -m spire play` process, and
+   diagnose the last observation before changing anything.
+2. Review each run: `uv run python scripts/play_digest.py <run>` and `--floor N` for the
+   fight that killed it.
+3. Pick the most damaging mistake that recurs across runs. Make one change on the
+   editable surface, add a test if code changed, commit, and run the next iteration on
+   the same seeds.
+4. Log the version, its evidence, the per-seed table and the decision here.
+   Keep a change if the targeted mistake stops and outcomes do not get worse. With three
+   stochastic runs per version, do not claim more than that.
+
+Candidate changes with evidence so far, in priority order:
+
+- **Incoming damage**: show the total of visible incoming attack damage against current
+  block. Evidence: under-blocking against Lagavulin, The Collector and the split slimes,
+  and spending energy on Slimed while lethal damage was coming.
+- **Notes**: separate run notes from combat scratch, or tighten the instruction.
+  Evidence: notes clobbered in the smoke run, copied unchanged on about half of calls.
+- **Deck building**: guidance on skipping card rewards and removing cards. Evidence:
+  RUNDEV2's 29-card deck.
+- **Act 2–3 elite and boss notes** once runs reach them (The Collector, for example).

@@ -37,6 +37,8 @@ PRICES = {
 }
 EFFORTS = ("none", "low", "medium", "high")
 SYSTEM_PROMPT_PATH = Path(__file__).resolve().parents[2] / "configs/llm/system_prompt.md"
+# Short rules notes for enemies the model was seen to misplay, keyed by monster ID.
+MONSTER_NOTES_PATH = SYSTEM_PROMPT_PATH.with_name("monsters.json")
 MAX_OUTPUT_TOKENS = 4000
 NOTES_LIMIT = 2000
 HISTORY_LENGTH = 12
@@ -143,7 +145,11 @@ def _cards(cards: list) -> str:
 
 
 def _powers(creature: dict) -> str:
-    return ", ".join(f"{p.get('name')} {p.get('amount')}" for p in creature["powers"]) or "none"
+    # Amountless powers such as Corruption report -1.
+    return ", ".join(
+        p.get("name") + ("" if p.get("amount", -1) == -1 else f" {p['amount']}")
+        for p in creature["powers"]
+    ) or "none"
 
 
 def _monster(index: int, monster: dict) -> str:
@@ -162,15 +168,20 @@ def _monster(index: int, monster: dict) -> str:
 ROOMS = {"MonsterRoom": "monster", "MonsterRoomElite": "elite", "MonsterRoomBoss": "boss"}
 
 
-def _combat(combat: dict, room: str) -> list[str]:
+def _combat(combat: dict, room: str, monster_notes: dict) -> list[str]:
     player = combat["player"]
+    monsters = combat.get("monsters", [])
+    noted = {m["id"]: m.get("name") for m in monsters
+             if m.get("id") in monster_notes and not m.get("is_gone")}
     lines = [
         f"Combat ({ROOMS.get(room, 'event')}), turn {combat.get('turn')}. "
         f"Energy {player.get('energy')}.",
         f"You: HP {player['current_hp']}/{player['max_hp']}, block {player.get('block', 0)}; "
         f"powers: {_powers(player)}",
         "Enemies:",
-        *(f"  {_monster(i, m)}" for i, m in enumerate(combat.get("monsters", []))),
+        *(f"  {_monster(i, m)}" for i, m in enumerate(monsters)),
+        *(["Enemy rules:"] if noted else []),
+        *(f"  {name}: {monster_notes[key]}" for key, name in noted.items()),
         "Hand: " + (", ".join(card_text(card) for card in combat.get("hand", [])) or "empty"),
     ]
     for pile in ("draw_pile", "discard_pile", "exhaust_pile"):
@@ -236,7 +247,7 @@ def _screen(observation: dict) -> list[str]:
     return [f"Screen: {screen}" + (f" ({state['chest_type']})" if "chest_type" in state else "")]
 
 
-def render_state(observation: dict) -> str:
+def render_state(observation: dict, monster_notes: dict | None = None) -> str:
     relics = [r.get("name") + (f" ({r['counter']})" if r.get("counter", -1) >= 0 else "")
               for r in observation.get("relics", [])]
     potions = [f"[{slot}] " + ("empty" if p.get("id") == "Potion Slot" else p.get("name"))
@@ -254,18 +265,21 @@ def render_state(observation: dict) -> str:
     if keys:
         lines.append("Keys: " + ", ".join(keys))
     if observation.get("combat_state"):
-        lines += _combat(observation["combat_state"], observation.get("room_type"))
+        lines += _combat(
+            observation["combat_state"], observation.get("room_type"), monster_notes or {}
+        )
     if observation.get("screen_type") not in (None, "NONE"):
         lines += _screen(observation)
     return "\n".join(lines)
 
 
-def render_prompt(decision: Decision, notes: str, history: list[str]) -> str:
+def render_prompt(decision: Decision, notes: str, history: list[str],
+                  monster_notes: dict | None = None) -> str:
     choices = "\n".join(f"{i}: {c.label}" for i, c in enumerate(decision.candidates))
     return "\n\n".join([
         "Run notes:\n" + (notes or "(empty)"),
         "Recent decisions, oldest first:\n" + ("\n".join(history) or "(none)"),
-        "State:\n" + render_state(decision.to_dict()["observation"]),
+        "State:\n" + render_state(decision.to_dict()["observation"], monster_notes),
         "Choices:\n" + choices,
     ])
 
@@ -303,6 +317,7 @@ class LLMPolicy:
         self.model, self.effort, self.ledger = model, effort, ledger
         self.client = client or ResponsesClient(api_key())
         self.instructions = system_prompt or SYSTEM_PROMPT_PATH.read_text()
+        self.monster_notes = json.loads(MONSTER_NOTES_PATH.read_text())
         self.notes = ""
         self.history: deque[str] = deque(maxlen=HISTORY_LENGTH)
         self.totals = Counter()
@@ -348,7 +363,7 @@ class LLMPolicy:
         return attempt
 
     def choose(self, decision: Decision) -> Choice:
-        prompt = render_prompt(decision, self.notes, list(self.history))
+        prompt = render_prompt(decision, self.notes, list(self.history), self.monster_notes)
         metadata = {
             "type": "llm", "model": self.model, "effort": self.effort,
             "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),

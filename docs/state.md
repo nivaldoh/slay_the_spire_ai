@@ -1,10 +1,23 @@
 # Project state
 
-Updated 2026-10-11, during the authorized unattended bootstrap session.
+Updated 2026-10-12. The full-run API language-model track is current; see
+[llm-play.md](llm-play.md).
 
-## Active work (last verified 19:00 UTC)
+## Active work (last verified 2026-10-12 05:25 UTC)
 
-No game, GPU or training job is running. Source and HEAD are free.
+No game, GPU or API job is running. Source and HEAD are free. The full-run LLM track
+is ready for its first overnight autoresearch session: scaffolding v2 (enemy rules
+notes) is committed and has not been played yet. Its first iteration plays
+`RUNDEV1`–`RUNDEV3`, to compare with the v1.1 baseline (lost on floors 16, 33 and 16).
+Follow "Overnight loop" in [llm-play.md](llm-play.md). API spend is $0.22 of the $25
+cap in `runs/llm-spend.jsonl`.
+
+Owner direction (2026-10-12): run a frontier API model through complete runs, with
+the scaffolding found by autoresearch from observed mistakes. Full runs, `gpt-6-luna`
+at low reasoning effort, hard $25 API cap for the first overnight work. Keep the code
+lean.
+
+Earlier entries below describe the first-combat tracks, unchanged since 2026-10-11.
 
 Owner direction (2026-10-11 afternoon): pause the pure-RL/PPO route and advance LLM
 post-training. The declared PPO learning-rate launchers stay unrun; the seed-1 clock
@@ -298,13 +311,18 @@ level is 3 of 5. The starter combat slice is insensitive to reward-pool unlock c
 new runs record profile evidence and each new episode snapshots unlocks.
 
 The owner authorizes game windows, local GPU work, commits, and pushes to public `main`.
-No new paid services or APIs. One game runner and one GPU training job at a time.
+Paid API use is authorized for the OpenAI key the owner set up (2026-10-12), within
+the declared spend cap. One game runner and one GPU training job at a time.
 The user requested autonomous work until 10:00 tomorrow; session start was 2026-10-11
 02:12 America/Sao_Paulo. Experiments use explicit shorter bounds rather than relying on
 that natural-language deadline.
 
 ## Next useful actions
 
+0. Full-run LLM track (current): run the overnight autoresearch loop in
+   [llm-play.md](llm-play.md), starting with scaffolding v2 on `RUNDEV1`–`RUNDEV3`. Review
+   traces with `scripts/play_digest.py`, fix the most damaging recurring mistake with one
+   scaffolding change, commit, and rerun the same seeds.
 1. Evaluate the stopped continuation's two-update adapter once on the catalog with the
    frozen greedy evaluator; compare with the base (63.67) and the one-update adapter (66.67).
 2. Decide the language track's next question (owner review pending): more outcome-based

@@ -154,3 +154,16 @@ def test_combat_rendering_names_the_room_and_omits_an_empty_selection():
         "confirm_up": True, "for_upgrade": True, "num_cards": 1, "selected_cards": []})
     observation = fullgame.decision_from_message(grid, session_id="s", sequence=1).observation
     assert "Choose 1 card(s) to upgrade.\n" in llm.render_state(dict(observation)) + "\n"
+
+
+def test_rules_notes_appear_only_for_present_noted_enemies():
+    raw = combat_message()
+    raw["game_state"]["combat_state"]["monsters"][1].update(id="SlimeBoss", name="Slime Boss")
+    raw["game_state"]["combat_state"]["player"]["powers"] = [
+        {"id": "Corruption", "name": "Corruption", "amount": -1}]
+    observation = fullgame.decision_from_message(raw, session_id="s", sequence=1).observation
+    notes = {"SlimeBoss": "It splits at half HP.", "FuzzyLouseNormal": "Gone, so omitted."}
+    text = llm.render_state(dict(observation), notes)
+    assert "Enemy rules:\n  Slime Boss: It splits at half HP." in text
+    assert "Gone, so omitted." not in text and "powers: Corruption\n" in text
+    assert set(json.loads(llm.MONSTER_NOTES_PATH.read_text())) >= {"Lagavulin", "SlimeBoss"}

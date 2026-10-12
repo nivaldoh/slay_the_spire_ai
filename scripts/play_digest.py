@@ -60,7 +60,7 @@ def digest(run: Path) -> None:
         f"{run.name} seed {result['seed']}: {result['status']} at act {result.get('act')} "
         f"floor {result.get('floor')} (score {result.get('score')}), {result['decisions']} "
         f"decisions, {llm.get('calls', 0)} calls, ${llm.get('usd', 0):.4f}, "
-        f"{result['elapsed_seconds']:.0f} s"
+        f"{result.get('elapsed_seconds', 0):.0f} s"
     )
     floors: dict[int, dict] = {}
     notes = ""

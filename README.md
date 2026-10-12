@@ -97,6 +97,20 @@ HP77, exactly matching the teacher. This is imitation on reused data conditions,
 not held-out generalization or a compute-matched comparison to PPO. See the
 [language experiment, results and reproduction details](docs/language-experiment.md).
 
+## Full runs with an API language model
+
+`spire play` drives complete original-engine runs (Neow to death or victory) with an
+OpenAI model choosing every action from a public, labeled choice list. Spend is priced
+from reported usage and capped by a ledger before each call. See
+[llm-play.md](docs/llm-play.md) for the information boundary, scaffolding and log.
+
+```bash
+export SPIRE_OPENAI_KEY_FILE=~/.config/robocasa/openai_api_key   # or OPENAI_API_KEY
+uv run python -m spire play --model gpt-6-luna --effort low --seed RUNDEV1 \
+  --budget-usd 25 --output runs/llm-example
+uv run python scripts/play_digest.py runs/llm-example/run-0000
+```
+
 ## Budgeted learning
 
 The optional learner is a 12,498-parameter CPU actor-critic with masked PPO.
