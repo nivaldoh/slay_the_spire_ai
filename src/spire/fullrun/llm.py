@@ -27,6 +27,7 @@ MAX_OUTPUT_TOKENS = 4000
 NOTES_LIMIT = 2000
 HISTORY_LENGTH = 12
 INVALID_RETRIES = 2
+REWARD_SCREENS = ("COMBAT_REWARD", "CARD_REWARD")
 REPLY_SCHEMA = {
     "type": "object",
     "properties": {
@@ -193,12 +194,16 @@ def render_state(observation: dict, monster_notes: dict | None = None) -> str:
 
 
 def render_prompt(decision: Decision, notes: str, history: list[str],
-                  monster_notes: dict | None = None) -> str:
+                  monster_notes: dict | None = None, declined: list[str] | None = None) -> str:
     choices = "\n".join(f"{i}: {c.label}" for i, c in enumerate(decision.candidates))
+    state = render_state(decision.to_dict()["observation"], monster_notes)
+    if declined and decision.observation.get("screen_type") in REWARD_SCREENS:
+        state += ("\nCard rewards you skipped on this floor (reopening one shows the same "
+                  "cards): " + "; ".join(declined))
     return "\n\n".join([
         "Run notes:\n" + (notes or "(empty)"),
         "Recent decisions, oldest first:\n" + ("\n".join(history) or "(none)"),
-        "State:\n" + render_state(decision.to_dict()["observation"], monster_notes),
+        "State:\n" + state,
         "Choices:\n" + choices,
     ])
 
@@ -239,6 +244,8 @@ class LLMPolicy:
         self.monster_notes = json.loads(MONSTER_NOTES_PATH.read_text())
         self.notes = ""
         self.history: deque[str] = deque(maxlen=HISTORY_LENGTH)
+        # Skipped card rewards stay listed; remember them per floor (v6 reopened one 20 times).
+        self.declined: dict[int, list[str]] = {}
         self.totals = Counter()
         self._last_id = self._metadata = None
 
@@ -282,7 +289,10 @@ class LLMPolicy:
         return attempt
 
     def choose(self, decision: Decision) -> Choice:
-        prompt = render_prompt(decision, self.notes, list(self.history), self.monster_notes)
+        observation = decision.observation
+        floor = observation.get("floor")
+        prompt = render_prompt(decision, self.notes, list(self.history), self.monster_notes,
+                               self.declined.get(floor))
         metadata = {
             "type": "llm", "model": self.model, "effort": self.effort,
             "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
@@ -303,9 +313,11 @@ class LLMPolicy:
             if reply["notes"] is not None:
                 self.notes = reply["notes"][:NOTES_LIMIT]
                 metadata["notes"] = self.notes
-            observation = decision.observation
-            self.history.append(f"floor {observation.get('floor')}: {choice.label}"
-                                f" ({reply['reason']})")
+            if observation.get("screen_type") == "CARD_REWARD" and choice.command == "skip":
+                offer = _cards((observation.get("screen_state") or {}).get("cards", []))
+                if offer not in self.declined.setdefault(floor, []):
+                    self.declined[floor].append(offer)
+            self.history.append(f"floor {floor}: {choice.label} ({reply['reason']})")
             metadata.update(selected_index=reply["choice"], reason=reply["reason"])
             return choice
         raise PolicyFailure("No valid reply after declared retries", failure={

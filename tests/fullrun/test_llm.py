@@ -3,7 +3,7 @@
 import json
 
 import pytest
-from test_decisions import combat_message, message
+from test_decisions import card, combat_message, message
 
 from spire import decisions
 from spire.fullrun import llm
@@ -138,3 +138,22 @@ def test_rules_notes_appear_only_for_present_noted_enemies():
     assert "Gone, so omitted." not in text and "powers: Corruption\n" in text
     assert set(json.loads(llm.MONSTER_NOTES_PATH.read_text())) >= {
         "Lagavulin", "SlimeBoss", "AcidSlime_L", "SpikeSlime_L"}
+
+
+def test_skipped_card_rewards_are_named_on_that_floors_reward_screens(tmp_path):
+    offer = message(["choose", "skip"], screen_type="CARD_REWARD", choice_list=["cleave"],
+                    screen_state={"cards": [card("Cleave")]})
+    rewards = message(["choose", "proceed"], screen_type="COMBAT_REWARD", choice_list=["card"],
+                      screen_state={"rewards": [{"reward_type": "CARD"}]})
+    agent = policy(tmp_path, reply(1), reply(0), reply(1), reply(0))
+    for sequence, raw in enumerate([offer, rewards, offer, rewards]):
+        agent.choose(decisions.decision_from_message(raw, session_id="s", sequence=sequence))
+    prompts = [body["input"][0]["content"] for body in agent.client.bodies]
+    line = "Card rewards you skipped on this floor (reopening one shows the same cards): "
+    assert line not in prompts[0]
+    assert prompts[1].count(line + "Cleave (1 attack)\n") == 1
+    assert line + "Cleave (1 attack)\n" in prompts[3]
+    rewards["game_state"]["floor"] = 4
+    assert line not in llm.render_prompt(
+        decisions.decision_from_message(rewards, session_id="s", sequence=5), "", [], {},
+        agent.declined.get(4))
