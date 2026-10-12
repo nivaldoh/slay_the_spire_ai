@@ -13,7 +13,7 @@ Targeted local inspection used engine build `10180494`, `desktop-1.0.jar` SHA-25
 `cfad868ac8d65a88e71a0bf096fb09f78811e553effe0787c5309a655e081673`, and CFR 0.152,
 SHA-256 `f686e8f3ded377d7bc87d216a90e9e9512df4156e75b06c655a16648ae8765b2`.
 The exact installed mod hashes and separate source revisions are in
-[integration.md](integration.md). Decompiled files remain outside Git at
+[integration.md](../integration.md). Decompiled files remain outside Git at
 `/tmp/spire-metrics-audit/`; the following records findings, not proprietary code.
 
 | Inspected path | Finding relevant to the proposal |
@@ -80,7 +80,7 @@ JRE, so compiler availability is a separate preparation step.
 Before execution, freeze source/configuration hashes, patch source and binary
 hashes, engine/mod hashes, profile snapshot, command, and a candidate reset version
 such as `owned_jvm_menu_reset_then_seeded_start-v1`. Use the existing
-[development suite](../configs/suites/louse_diagnostic_development_v1.json), public
+[development suite](../../configs/suites/louse_diagnostic_development_v1.json), public
 observation contract and settled prefix. Keep this probe out of training data.
 
 Proposed cap: **14 attempts and 10 minutes**, whichever comes first, with the

@@ -34,11 +34,11 @@ The seed labels do not randomize greedy language decoding.
 
 Use these original declarations without editing their provenance:
 
-- Unchanged base: `runs/qwen3-0.6b-untuned-declaration-v2-20261011.json`, SHA-256
+- Unchanged base: `runs/first-combat/qwen3-0.6b-untuned-declaration-v2-20261011.json`, SHA-256
   `b689e0d880f11b6ffee787a2c627b4d4da33ef2f7f190a9882df4302628af0b6`.
   Adapter must be null. Previously recorded full-model tensor SHA-256:
   `bda00e3e09e7e35c6c6950cfb2673117052c3e8718dfc47ed35f7db9c5405c94`.
-- Final LoRA: `runs/qwen3-0.6b-heuristic-sft-20261011/artifacts/update-000064-b2281346a63a7944bb9f4f2c64b3f1f3839d15bbcc97e1da6e83335d72dcd1bc/policy.json`,
+- Final LoRA: `runs/first-combat/qwen3-0.6b-heuristic-sft-20261011/artifacts/update-000064-b2281346a63a7944bb9f4f2c64b3f1f3839d15bbcc97e1da6e83335d72dcd1bc/policy.json`,
   SHA-256 `70d19d51a5578ca3ce4e64e0f3f8646c9034ab6e14cf9f84baa2002268a248d6`.
   Adapter config/file SHA-256 values are respectively
   `d5b8b5caefef3288fbb86ee2b1bbbcfd6e3474588ae4a2999d356855c9bcede2` and

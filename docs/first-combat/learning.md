@@ -5,7 +5,7 @@ This is a small, randomly initialized CPU actor-critic for the public
 original-engine learning experiment; unit tests do not demonstrate learned game
 performance. Install the locked optional dependency with
 `uv sync --locked --extra train`, then run
-`uv run --extra train pytest tests/test_learning.py`.
+`uv run --extra train pytest tests/ppo/test_learning.py`.
 
 The encoder (`starter-set-scorer-v1`) applies a shared 16-unit card encoder to each
 card, sums separately over hand/draw/discard/exhaust piles, and sums a shared

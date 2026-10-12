@@ -1,100 +1,10 @@
-# Full runs with an API language model
+# Full-run log
 
-Status: development, started 2026-10-12. No benchmark score is claimed yet.
+Append-only record of the [full-run track](README.md): every scaffolding version, the
+mistake that motivated it, the runs before and after, and the decision. Job directories
+are under `runs/fullrun/`; `python -m spire digest <job>` prints a job's per-seed table.
 
-## Question
-
-How far does a cheap frontier API model get in complete Slay the Spire 1 runs (Ironclad,
-Ascension 0) when it makes every decision through a public interface, and which
-scaffolding measurably helps it? Scaffolding is found by watching the model's mistakes in
-saved traces and changing one thing at a time. That makes this an autoresearch loop on
-the prompt and memory, not weight training.
-
-## Setup
-
-- Model: `gpt-6-luna` through the OpenAI Responses API, reasoning effort `low`, structured
-  JSON output. The owner chose Luna for cost; `gpt-6-astra`, `gpt-6-sol` and
-  `gpt-6.1-sol` have declared prices in `spire.llm` and can be selected with `--model`.
-- Spend: every call is priced from its reported usage at the standard-tier list prices in
-  `spire.llm.PRICES` (read 2026-10-12) and appended to a ledger. A call is refused before
-  it is sent if the ledger's total plus that call's worst-case cost (prompt bytes as an
-  upper bound on input tokens, plus 4,000 output tokens) would exceed `--budget-usd`. The
-  owner's cap for the first overnight work is **$25** on `runs/llm-spend.jsonl`. An API
-  request that times out on our side may still be billed without a ledger entry, so the
-  OpenAI dashboard total is the final check.
-- Key: read from `OPENAI_API_KEY` or from the file named by `SPIRE_OPENAI_KEY_FILE`.
-  It is never logged; evidence records only response IDs and usage.
-- Engine: the pinned original game, one fresh JVM per run, `START IRONCLAD 0 <seed>`. The
-  run ends only on the engine's death or victory screen, or at a declared action or time
-  limit.
-
-```bash
-export SPIRE_OPENAI_KEY_FILE=~/.config/robocasa/openai_api_key
-uv run python -m spire play --model gpt-6-luna --effort low --seed LUNADEV1 \
-  --budget-usd 25 --output runs/llm-luna-example
-```
-
-## Information boundary
-
-`spire/fullgame.py` builds each decision from a stable CommunicationMod message.
-The policy sees allowlisted game fields: act, floor, HP, gold, deck, relics,
-potions, keys, the map, the current screen, and combat state. Several fields are
-hidden or changed:
-
-- UUIDs, the seed, the action phase, enemy move IDs, move history and base damage are
-  removed.
-- The draw pile is sorted into an unordered multiset unless the player holds Frozen Eye,
-  which shows the real order in game.
-- Enemy damage and hit counts are kept only for attack intents.
-
-Choices are every legal `play`, `potion use`/`discard`, `choose` and screen button
-(`confirm`, `proceed`, `skip`, `cancel`, `return`, `leave`), plus `end`. Each choice has a
-label built from the screen. Raw input (`key`, `click`), `wait` and `state` are never
-offered. Identical cards in hand are offered once, since they are interchangeable. A state
-with exactly one choice is answered without a model call. Initial `DEBUG` intents are
-settled with a logged `wait 60`, as in first-combat rollouts.
-
-## Scaffolding, version 1
-
-- A static system prompt, `configs/llm/system_prompt.md`, describing the interface and
-  output format. It contains no strategy advice and no card text.
-- Model-written run notes of up to 2,000 characters. The model replaces them through the
-  reply's `notes` field, and they are its only memory across a whole run.
-- The last 12 decisions, each with its stated reason.
-- A text rendering of the state, and the numbered choices. The map shows only the nodes
-  still reachable.
-- Invalid replies (bad JSON or an out-of-range choice) are re-asked twice, with the error
-  appended. A third invalid reply ends the run as `policy_failure`. Transient HTTP and
-  network errors are retried three times. Every attempt is billed and recorded.
-
-What the model does not get: card, relic or power text; damage calculators; search; lookup
-tools. Section 3 of [approaches.md](approaches.md) suggests these matter. They are
-candidates to add when traces show the need, one at a time.
-
-## Evidence
-
-Each job directory holds `manifest.json` (source revision and fingerprints, config, prompt
-hash), `system_prompt.md`, `environment.json`, and one `run-NNNN/` per seed. Each run holds
-`trace.jsonl` with raw messages, public decisions, the full prompt, every API attempt with
-usage, cost, latency, reason and notes, and the commands sent. `result.json` holds the
-outcome, the final act, floor, HP, deck and relics, and LLM totals.
-
-## Autoresearch rules
-
-- Editable surface: `configs/llm/system_prompt.md`, and the rendering, memory and reply
-  handling in `spire/llm.py`. The information boundary in `fullgame.py`, the runner, the
-  pricing and the ledger are not tuning surfaces. Fix them only for real defects, and
-  record each fix here.
-- Commit before every run; the runner refuses uncommitted source and prompt changes.
-- Judge a change by outcomes (floor reached, wins), not by how good the reasons sound.
-  With a handful of runs a night, report each run individually and do not call small
-  differences improvements. Compare variants on the same seeds where possible, knowing
-  the model itself is stochastic.
-- Log every change below with the mistake that motivated it and the runs before and after.
-
-## Log
-
-### 2026-10-12: harness smoke test
+## 2026-10-12: harness smoke test
 
 Before building, a 28-question knowledge probe of Luna (scratch evidence, not committed)
 found that it knows most common cards, relics, potions and debuffs. It got several
@@ -103,7 +13,7 @@ Strength rather than Enrage, which punishes Skills); and Hexaghost's opening (it
 Divider on turn 1, not after Activate). Elite and boss mechanics are the likeliest
 knowledge gap.
 
-`runs/llm-smoke-20261012-a`, seed `LUNASMOKE1`, scaffolding v1, source `3df5c0b`.
+`runs/fullrun/llm-smoke-20261012-a`, seed `LUNASMOKE1`, scaffolding v1, source `3df5c0b`.
 The run lost on act 1 floor 6 to Lagavulin, with score 36: 76 decisions, 61 model calls,
 $0.0137 and 276 s in total. Calls took 1.2–7 s each, and prompts were about 760 input
 tokens. Neow, map, events, combat with potions, combat and card rewards, the elite fight
@@ -128,9 +38,9 @@ Mistakes seen, with candidate scaffolding for each:
    chatter. Candidate: separate a per-combat scratchpad from the run notes, or tighten
    the notes instruction.
 
-### 2026-10-12: first baseline attempt and harness fixes
+## 2026-10-12: first baseline attempt and harness fixes
 
-`runs/llm-luna-v1-dev-20261012`, seed `RUNDEV1`, source `3df5c0b`. This was the strongest
+`runs/fullrun/llm-luna-v1-dev-20261012`, seed `RUNDEV1`, source `3df5c0b`. This was the strongest
 play so far: the model took a random rare card (Corruption) at Neow, then shopped, rested,
 collected the Ruby and Sapphire keys, beat Lagavulin and reached act 1 floor 14 at 77/80
 HP ($0.030, 149 calls, 770 s). The run then hung, and was interrupted by hand after 190 s
@@ -151,9 +61,9 @@ without a reply. It is not a scored attempt.
 
 Both fixes change what the model sees, so later runs are scaffolding v1.1.
 
-### 2026-10-12: v1.1 baseline on the development seeds
+## 2026-10-12: v1.1 baseline on the development seeds
 
-`runs/llm-luna-v1.1-dev-20261012`, source `fea677a`, seeds `RUNDEV1`–`RUNDEV3`. Each run
+`runs/fullrun/llm-luna-v1.1-dev-20261012`, source `fea677a`, seeds `RUNDEV1`–`RUNDEV3`. Each run
 was played once by a stochastic model, so these are single samples. Neow options are
 fixed by the seed: `RUNDEV1` showed identical options in two runs after different
 previous runs.
@@ -177,7 +87,7 @@ previous runs.
 - The notes said the potions were saved for the boss, but the model used them earlier.
   Its stated plans are not reliable evidence of its later play.
 
-### Scaffolding v2: enemy rules notes
+## Scaffolding v2: enemy rules notes
 
 Evidence: Lagavulin woken early (smoke run), the Slime Boss split stall (RUNDEV1), and the
 knowledge probe's errors on Gremlin Nob and Hexaghost. Change: `configs/llm/monsters.json`
@@ -187,9 +97,9 @@ rules" only while that enemy is in the fight. Amountless powers no longer render
 "Corruption -1". Add notes for later acts only when runs show they are needed, and check
 every number against the game.
 
-### 2026-10-12: v2 on the development seeds
+## 2026-10-12: v2 on the development seeds
 
-`runs/llm-luna-v2-dev-20261012`, source `e0b47aa`. These are single stochastic samples,
+`runs/fullrun/llm-luna-v2-dev-20261012`, source `e0b47aa`. These are single stochastic samples,
 like v1.1. The opening of RUNDEV1 repeated v1.1 almost choice for choice (same Neow pick,
 route, card and shop buys), so same-seed comparisons are less noisy early than feared.
 
@@ -221,7 +131,7 @@ route, card and shop buys), so same-seed comparisons are less noisy early than f
 - Decision: keep v2. Floors went from 16/33/16 to 16/24/33; RUNDEV2's regression came in
   Act 2 hallways the notes do not touch.
 
-### Scaffolding v3: incoming damage against block and HP
+## Scaffolding v3: incoming damage against block and HP
 
 Evidence: every v2 death ended in survival arithmetic (one block short, a single hit
 read as multi-hit, a multi-hit read as one lethal hit), and the costly-turn scans of
@@ -231,9 +141,9 @@ B block and H HP.", summing the visible attack intents of live enemies. Hidden i
 damage (Runic Dome) is left out. The Lagavulin note now says "Attack (one hit of 18) on
 two turns in a row".
 
-### 2026-10-12: v3 on the development seeds
+## 2026-10-12: v3 on the development seeds
 
-`runs/llm-luna-v3-dev-20261012`, source `7171bd8`.
+`runs/fullrun/llm-luna-v3-dev-20261012`, source `7171bd8`.
 
 | Seed | Outcome | Act / floor | Killed by | Decisions | Calls | Cost | Wall time |
 |---|---|---|---|---:|---:|---:|---:|
@@ -259,24 +169,24 @@ two turns in a row".
 - Decision: keep v3, as cheap context the model uses; with these samples it shows no
   measurable effect on outcomes (floors 16/33/16 against v2's 16/24/33).
 
-### 2026-10-12: grid deselect fix
+## 2026-10-12: grid deselect fix
 
 On RUNDEV3's Neow removal grid, every v1.1–v3 run chose the first of five identical
 "select Strike" choices again after selecting it, which only deselects it: 1, 7 and 4
 wasted calls. A grid card that is already selected is now labeled "deselect …". This is a
-`fullgame.py` defect fix, so later runs carry it.
+`fullgame.py` (now `fullrun/decisions.py`) defect fix, so later runs carry it.
 
-### Scaffolding v4: the act boss's floor
+## Scaffolding v4: the act boss's floor
 
-Evidence is under "Which fight is the boss" below; v3 RUNDEV1 again played the floor-13
+Evidence: the "Which fight is the boss" candidate of the time; v3 RUNDEV1 again played the floor-13
 Spike Slime (L) as "the slime boss" and drank Heart of Iron against a Slaver "while
 helping in the upcoming boss fight". Change: the header reads "Act 1, floor 13. Act boss:
 Slime Boss, on floor 16." (floors 16, 33 and 50 for Acts 1–3) instead of naming the boss
 alone.
 
-### 2026-10-12: v4 on the development seeds
+## 2026-10-12: v4 on the development seeds
 
-`runs/llm-luna-v4-dev-20261012`, source `5136609` (v4 and the grid fix).
+`runs/fullrun/llm-luna-v4-dev-20261012`, source `5136609` (v4 and the grid fix).
 
 | Seed | Outcome | Act / floor | Killed by | Decisions | Calls | Cost | Wall time |
 |---|---|---|---|---:|---:|---:|---:|
@@ -306,7 +216,7 @@ alone.
   36 reopenings in the run, about a tenth of its calls).
 - Decision: keep v4.
 
-### Scaffolding v5: Large slime split notes
+## Scaffolding v5: Large slime split notes
 
 Evidence: v4 RUNDEV1's split-slime stall above, and the same stall on the Slime Boss
 itself in v1.1. Change: rules notes for `AcidSlime_L` and `SpikeSlime_L`. Each says that
@@ -315,9 +225,9 @@ moment, that holding back damage never avoids the split, and that damage before 
 still lowers both Mediums (killing it first prevents the split). The notes also show in
 hallway fights with Large slimes.
 
-### 2026-10-12: v5 on the development seeds
+## 2026-10-12: v5 on the development seeds
 
-`runs/llm-luna-v5-dev-20261012`, source `b564305`.
+`runs/fullrun/llm-luna-v5-dev-20261012`, source `b564305`.
 
 | Seed | Outcome | Act / floor | Killed by | Decisions | Calls | Cost | Wall time |
 |---|---|---|---|---:|---:|---:|---:|
@@ -337,17 +247,17 @@ hallway fights with Large slimes.
   24, 33, 33 and 23 across versions.
 - Decision: keep v5.
 
-### Scaffolding v6: death at 0 HP and skipped card rewards
+## Scaffolding v6: death at 0 HP and skipped card rewards
 
-Evidence: the "0 HP is death" and "Skipped card rewards" candidates below. Change: two
+Evidence: the "0 HP is death" and "Skipped card rewards" candidates of the time. Change: two
 lines in the system prompt's state description: "You die when your HP reaches 0, so to
 survive a turn the damage that gets past your block must be less than your HP", and "A
 skipped card reward stays on the rewards list; choose proceed to leave it." The second
 is an interface fact the screen does not show.
 
-### 2026-10-12: v6 on the development seeds
+## 2026-10-12: v6 on the development seeds
 
-`runs/llm-luna-v6-dev-20261012`, source `e26f649`.
+`runs/fullrun/llm-luna-v6-dev-20261012`, source `e26f649`.
 
 | Seed | Outcome | Act / floor | Killed by | Decisions | Calls | Cost | Wall time |
 |---|---|---|---|---:|---:|---:|---:|
@@ -376,7 +286,7 @@ is an interface fact the screen does not show.
   damage", which discarded it.
 - Decision: keep v6 (floors 29/33/42, the best so far, with the usual caveats).
 
-### Scaffolding v7: The Collector rules note
+## Scaffolding v7: The Collector rules note
 
 Evidence: the damage split above. Change: a note for `TheCollector`, with every number
 checked against the saved fights: 282 HP; two Torch Heads (about 40 HP, Tackle 7) on turn
@@ -385,9 +295,9 @@ checked against the saved fights: 282 HP; two Torch Heads (about 40 HP, Tackle 7
 so killing The Collector ends the fight. Only RUNDEV2 reaches it, so v7 was played on
 RUNDEV2 alone to finish before the session's end.
 
-### 2026-10-12: v7 on RUNDEV2
+## 2026-10-12: v7 on RUNDEV2
 
-`runs/llm-luna-v7-dev-20261012`, source `df231dc`, RUNDEV2 only.
+`runs/fullrun/llm-luna-v7-dev-20261012`, source `df231dc`, RUNDEV2 only.
 
 | Seed | Outcome | Act / floor | Killed by | Decisions | Calls | Cost | Wall time |
 |---|---|---|---|---:|---:|---:|---:|
@@ -402,7 +312,7 @@ RUNDEV2 alone to finish before the session's end.
 - This is one sample on one seed. Keep v7; the next session should replay all three
   seeds with it.
 
-### Overnight summary, 2026-10-12
+## Overnight summary, 2026-10-12
 
 Seven scaffolding versions ran between 02:28 and 11:04 local time for $1.45 of API spend
 (ledger total $1.67 of the $25 cap). Best floors per seed went from 16/33/16 (v1.1) to
@@ -413,133 +323,3 @@ measurable effect, and v6's 0-HP line coincided with the end of exact-lethal dea
 three runs. Two harness defects were found and one fixed: the grid deselect labels, and
 the skipped card reward that stays listed (still open).
 
-## Overnight loop
-
-Preflight: no `spire play` process is running (`ps -eo pid,cmd | grep '[p]ython3 -m spire play'`;
-a plain `pgrep -f` inside a shell or monitor script also matches that script), the game is
-closed, `git status` is clean under `src/`, `scripts/` and `configs/`, and the ledger total
-is below the cap:
-
-```bash
-python3 -c "import json; print(sum(json.loads(l)['usd'] for l in open('runs/llm-spend.jsonl')))"
-```
-
-One iteration plays the three development seeds with the committed scaffolding version:
-
-```bash
-export SPIRE_OPENAI_KEY_FILE=~/.config/robocasa/openai_api_key
-nohup uv run python -m spire play --model gpt-6-luna --effort low \
-  --seed RUNDEV1 --seed RUNDEV2 --seed RUNDEV3 --budget-usd 25 \
-  --output runs/llm-luna-v<VERSION>-dev-<DATE> > runs/llm-luna-v<VERSION>-dev-<DATE>.log 2>&1 &
-```
-
-Measured cost: Luna runs from v1.1 to v7 cost $0.03–0.17 each and took 11–62 minutes,
-depending on how far the model got. Model calls took 70–80% of that wall time in the v6
-and v7 runs (median about 3 s per call, with a median of 100–130 reasoning tokens at
-`low` effort); the engine took the rest. The $25 cap is therefore not the binding limit;
-time is, at roughly two to four iterations a night. Then:
-
-1. Watch for stalls: a trace that stays unmodified for more than 90 s while the process
-   is alive. Stop a stalled job with SIGINT to its `python3 -m spire play` process, and
-   diagnose the last observation before changing anything.
-2. Review each run: `uv run python scripts/play_digest.py <run>` and `--floor N` for the
-   fight that killed it.
-3. Pick the most damaging mistake that recurs across runs. Make one change on the
-   editable surface, add a test if code changed, commit, and run the next iteration on
-   the same seeds.
-4. Log the version, its evidence, the per-seed table and the decision here.
-   Keep a change if the targeted mistake stops and outcomes do not get worse. With three
-   stochastic runs per version, do not claim more than that.
-
-Candidate changes with evidence so far, in priority order (v3–v7 took the earlier ones):
-
-- **Skipped-reward memory**: v6's interface line did not stop the reopen loop (43 skips in
-  v6 RUNDEV3). Candidate in `llm.py`: after the model skips a card reward, the rewards
-  screen on that floor says which cards it already declined.
-- **Hand-select purpose**: Gambling Chip's start-of-combat screen reads only "Choose up to
-  99 card(s) from your hand", and v6 RUNDEV3 discarded Impervious+ believing it would
-  block. Candidate: name the source of the selection when the state shows it (relic at
-  combat start, or the card just played).
-- **Potion effects end with the combat**: Heart of Iron was drunk in hallway fights twice
-  "to help through the Slime Boss fight". Draft line: "Potions are single-use. A potion's
-  effect, like every power, buff and debuff, ends with the combat it is used in." Potion
-  use swings both ways: early runs drank boss potions in hallways, v4 RUNDEV3 died to an
-  elite holding a potion "reserved for Time Eater".
-- **Optional fights and big trades**: the Colosseum's second fight at 58 HP (v6 RUNDEV1),
-  an Orb Walker event fight at 84 HP that left 25 (v6 RUNDEV3), and Council of Ghosts'
-  half max HP before The Collector (v3 and v6 RUNDEV2). This is strategy advice; prefer
-  state or rules fixes first.
-- **Act 3 notes** as runs reach them: Transient (v6 RUNDEV3's death) fades after a few
-  turns, and Giant Head (v4 RUNDEV3's death).
-- **Notes**: separate run notes from combat scratch, or tighten the instruction.
-  Evidence: notes clobbered in the smoke run, copied unchanged on about half of calls.
-- **Deck building**: RUNDEV2 decks of 28–31 cards with no removal bought at 474 gold
-  (v2), and RUNDEV3's 11-card deck with little damage (v3).
-
-## Ideas from related work (2026-10-12)
-
-A literature check on self-improving harnesses is summarized in the
-[approaches.md addendum](approaches.md#addendum-2026-10-12-self-improving-harnesses-an-sts1-benchmark-and-training-services).
-This loop already has the shape that works best there: a strong proposer changes the
-harness between runs while a cheap, low-effort model plays. DemoEvolve, the closest
-published setup, has GPT-5.4 at low effort play Slay the Spire 2, with Opus 4.7 proposing
-changes, and selects them on three development seeds. The ideas below are not built yet.
-
-Changes to the loop, in priority order:
-
-1. **Replay saved decisions before a live run.** Each model decision in `trace.jsonl`
-   keeps the observation, the full prompt and the notes. A replay script would re-render
-   chosen decision points with the changed harness, keep the recorded notes and history,
-   and ask the model about five times each. At about $0.0002 a call, a test costs cents
-   and launches no game. It shows whether a change moves the targeted choice. It cannot
-   show what follows that choice, so live runs still judge outcomes.
-2. **Failure flags in `play_digest.py`.** Count per run what the log now counts by hand:
-   turns ended with unspent energy while unblocked damage came in, deaths with potions
-   unused, reopened card rewards, damage to minions against damage to the boss,
-   exact-lethal deaths, and hallway fights with a large HP loss. These counts vary less
-   than the floor reached. The flags should point into the traces rather than replace
-   them: in Meta-Harness, a proposer that read raw traces scored a median of 50.0, against
-   34.9 with summaries.
-3. **Held-out seeds.** `RUNDEV1`–`RUNDEV3` have chosen seven versions. Add two or three
-   seeds that never choose a change, and play them every few versions. DemoEvolve reports
-   two held-out seeds. In Growing Harness, without a no-regression gate, success on the
-   gate set rose to 30% and then fell to 16%.
-4. **Demonstrations for the proposer only**, if a human run on a development seed can be
-   recorded. In DemoEvolve, nine human runs shown only to the proposer took the StS2
-   held-out mean floor from 18.17 to 28.83, against 23.17 with self-play traces alone.
-   Demonstration summaries placed in the player's prompt did not help.
-
-Harness changes this evidence favors:
-
-- **Code over prose for recurring decisions.** Growing Harness moves recurring control
-  logic into harness code. Continual Harness credits most of its gain to code skills.
-  SpireBench (StS1, A20) finds that stronger models are "stronger mainly in the fights, not
-  in the route". The skipped-reward memory and hand-select purpose candidates are of this
-  kind. An end-of-turn preview with a lethal check would be another.
-- **Notes shown only when they apply.** Extend the `monsters.json` pattern to events, relic
-  screens and shops. AgenticSTS's triggered skills went from 3/10 to 6/10 StS2 wins
-  (p≈0.37). Keep these to checked rules: SpireBench found 78% of model-written rules
-  false (against 9% of facts) and caution advised seven times as often as risk.
-
-Not worth adopting now:
-
-- **The player refining its own harness**, as in Continual Harness. The benefit depends on
-  the model: on Pokémon Emerald, every self-refining Flash-Lite variant scored below the
-  minimal harness's 20% of milestones.
-- **Model-written lessons carried across runs.** On StS1 A20, SpireBench measured +0.00
-  acts from consolidated memory and +0.06 from verbatim notes over 80 matched pairs per
-  arm. AgenticSTS's episodic memory added nothing.
-- **Whole-text note rewrites**, if the notes change. ACE recorded a context that collapsed
-  from 18,282 to 122 tokens in one rewrite; itemized additions and removals avoid that.
-- **Paid post-training.** `gpt-6-luna` cannot be fine-tuned. Open models of its class
-  scored within noise of GPT-5.6 Luna on SpireBench. Prime Intellect's hosted training runs
-  rollouts on its own machines. Training an open model would buy a free local player near
-  Luna's level, not a stronger one.
-
-Owner decisions this raises:
-
-- **Reasoning effort.** One v7 pass over the three seeds at `medium` would separate the
-  model's limits from the harness's. The owner fixed `low`.
-- **A whole turn per call.** In SpireBench, one action per call needed 3.0 more calls per
-  floor, cost 23% more and cleared 0.07 fewer acts than batched turns. Model calls are
-  most of the wall time here, so batching would buy iterations per night.

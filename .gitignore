@@ -18,4 +18,4 @@ build/
 *.pth
 *.safetensors
 runs/**
-!runs/.gitkeep
+!runs/README.md

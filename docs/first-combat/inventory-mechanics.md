@@ -1,8 +1,8 @@
 # Original-engine inventory mechanics evidence
 
-The [inventory fixture](../tests/fixtures/engine_inventory_transitions.json)
+The [inventory fixture](../../tests/fixtures/engine_inventory_transitions.json)
 captures 16 transitions from six completed original-engine episodes in
-`runs/starter-inventory-20261011`. These extend the earlier
+`runs/first-combat/starter-inventory-20261011`. These extend the earlier
 [starter mechanics evidence](mechanics.md) with Cultist, Jaw Worm, and two
 same-species Louse compositions. All fights use Ironclad, Ascension 0, and the
 unupgraded starter deck. These are observations from particular fights, not
@@ -18,7 +18,7 @@ the original inventory record.
 
 ## Sources and scope
 
-All attempt paths below are beneath `runs/starter-inventory-20261011/runs/`.
+All attempt paths below are beneath `runs/first-combat/starter-inventory-20261011/runs/`.
 The fixture stores their full trace, manifest and source-patch hashes, exact
 source status, implementation revision, protocol source hash, public start
 fingerprint, and original line numbers for each observation, decision, action
@@ -78,13 +78,13 @@ decompiled source or proprietary game files. The source runs remain ignored
 local artifacts.
 
 ```bash
-uv run pytest tests/test_inventory_engine_regressions.py tests/test_engine_regressions.py
+uv run pytest tests/combat/test_inventory_engine_regressions.py tests/combat/test_engine_regressions.py
 ```
 
 To check captured values against the original traces in another checkout:
 
 ```bash
-SPIRE_EVIDENCE_ROOT=/path/to/slay_the_spire_ai uv run pytest tests/test_inventory_engine_regressions.py tests/test_engine_regressions.py
+SPIRE_EVIDENCE_ROOT=/path/to/slay_the_spire_ai/runs/first-combat uv run pytest tests/combat/test_inventory_engine_regressions.py tests/combat/test_engine_regressions.py
 ```
 
 Validation with original artifacts available: **73 tests passed**, including

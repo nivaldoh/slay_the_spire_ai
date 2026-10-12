@@ -148,6 +148,6 @@ collision still fails instead of taking over another process.
 
 Each launch now records the intended relay address and captures only the new suffix
 of CommunicationMod's shared stderr log. See the preserved
-[failure and probe evidence](results/relay-startup-failure-audit.json). The policy
+[failure and probe evidence](first-combat/results/relay-startup-failure-audit.json). The policy
 evaluation was restarted in a new directory with the same frozen artifact and
 suite; earlier partial evidence remains invalid for a full-suite score.

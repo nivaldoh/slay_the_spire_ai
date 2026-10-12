@@ -43,7 +43,8 @@ dependency for this small model. PEFT supports
 ## Bounded smoke
 
 Download only the pinned public model's safetensors, tokenizer and configuration
-into an external cache. Then run the script against that local snapshot:
+into an external cache. Then run the script against that local snapshot (the smoke is
+done; `scripts/language_smoke.py` was removed on 2026-10-12 and remains in Git history):
 
 ```sh
 uv run --locked --extra llm python scripts/language_smoke.py \
@@ -69,7 +70,7 @@ No second worker, engine process, policy retry or fallback is launched.
 The first smoke completed on 2026-10-11 from clean source
 `699f6414080dcd954c130573ce543ea83823c1af` in 7.83 seconds on the RTX 3060.
 Its ignored evidence is
-`runs/language-smoke-20261011-0649/{manifest.json,metrics.json,resources.jsonl,worker.log}`
+`runs/first-combat/language-smoke-20261011-0649/{manifest.json,metrics.json,resources.jsonl,worker.log}`
 in the isolated `/tmp/spire-language-smoke` worktree. The manifest pins every base
 and tokenizer file, dependencies, source files, command, decoder, and saved adapter.
 The base snapshot and source remained unchanged through the run.
@@ -138,7 +139,7 @@ loss decrease nor better scores there establishes unseen-encounter performance.
 
 ## Frozen public-decision policy and evaluation
 
-`spire.language_policy.create_declaration(base_snapshot, adapter_directory=None,
+`spire.language.policy.create_declaration(base_snapshot, adapter_directory=None,
 provenance=None)` returns a schema-one declaration with type `language`. Save it
 outside the optional PEFT adapter directory. The declaration pins the exact public
 Qwen revision and all nine snapshot file hashes, optional adapter file inventory,
@@ -165,7 +166,7 @@ records the full raw decode, parser input, token IDs/counts, prompt hashes and
 inference duration. Evaluation re-tokenizes and re-decodes that evidence without
 calling generation again.
 
-`spire.language_evaluation.evaluate_language(declaration_path, suite_path, output)`
+`spire.language.evaluation.evaluate_language(declaration_path, suite_path, output)`
 uses the existing schema-one development suite. A parser or prompt-limit failure
 is an audited `policy_failure` with no game command or invalid-action increment.
 It continues to the next scheduled policy seed, never retrying the failed attempt.

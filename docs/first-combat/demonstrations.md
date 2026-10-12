@@ -1,6 +1,6 @@
 # Audited public-action demonstrations
 
-`spire.demonstrations` prepares model-independent action targets for guide §6.3.
+`spire.language.demonstrations` prepares model-independent action targets for guide §6.3.
 It performs no model download, training, generation, game launch or evaluation.
 The current teachers are the known public `heuristic` and seeded `random` policies.
 Search, human, neural and privileged teachers require their own provenance contract
@@ -8,12 +8,12 @@ before they can be admitted.
 
 ```python
 from pathlib import Path
-from spire.demonstrations import DemonstrationSource, export_demonstrations
+from spire.language.demonstrations import DemonstrationSource, export_demonstrations
 
 manifest = export_demonstrations(
     Path("/tmp/heuristic-demonstrations"),
     [DemonstrationSource(
-        run=Path("runs/heuristic-settled-20261011"),
+        run=Path("runs/first-combat/heuristic-settled-20261011"),
         split="train",
         source_role="heuristic",
         teacher_information="public",
@@ -138,7 +138,7 @@ file hashes, split rules and duplicate counts. `teacher_sources/` and, when used
 `source_suites/` retain verified provenance bytes. Bulky exports remain outside Git.
 
 Read-only validation on the existing original-engine
-`runs/heuristic-settled-20261011` reproduced all **42 actions** in two complete
+`runs/first-combat/heuristic-settled-20261011` reproduced all **42 actions** in two complete
 heuristic episodes. They yield **21 unique examples and 21 duplicate rows**, one
 environment seed and one public-start family. This is a training/smoke dataset;
 it provides no independent validation/test scenario or generalization result.

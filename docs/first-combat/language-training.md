@@ -156,7 +156,7 @@ weights are computational findings; gameplay claims require the separately
 frozen original-engine evaluation.
 
 ```bash
-uv run --extra train pytest -q tests/test_language_training.py
+uv run --extra train pytest -q tests/language/test_language_training.py
 ```
 
 The torch-only test environment skips three safetensors integration cases and

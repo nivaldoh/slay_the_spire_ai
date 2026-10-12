@@ -8,7 +8,7 @@ This is a bootstrap guide and reference. Read it once, execute the relevant stag
 
 ## 0. Current status
 
-See [docs/state.md](docs/state.md) for the current milestone, evidence, blockers, and next action.
+See [docs/state.md](state.md) for the current milestone, evidence, blockers, and next action.
 
 ## 1. Your assignment
 
@@ -124,7 +124,7 @@ Create files as working code needs them. A reasonable starting arrangement is:
 | `AGENTS.md` | Short operating rules, actual commands, and pointers to current state |
 | `CLAUDE.md`, if needed | A thin reference to the same instructions, rather than a conflicting copy |
 | `README.md` | What currently works and how to reproduce it |
-| `docs/research.md` | Current question, observation/evaluation contract, decisions, and useful sources |
+| `docs/first-combat/research.md` | Current question, observation/evaluation contract, decisions, and useful sources |
 | `docs/state.md` | Current baseline, active work, blockers, and next useful action |
 | `src/spire/` | Adapter, policy, training, evaluation, and reporting code as they become necessary |
 | `tests/` | Contract checks and meaningful regressions |
@@ -376,7 +376,7 @@ These prompts assume this file is in the repository root. Adapt paths if it is m
 ### Bootstrap
 
 ```text
-Read SLAY_THE_SPIRE_AGENT_GUIDE.md and the repository instructions.
+Read docs/agent-guide.md and the repository instructions.
 Execute the first applicable milestone. Inspect what already works,
 then build and verify the smallest missing piece. Handle routine local
 setup yourself. Use existing integrations where justified. Preserve

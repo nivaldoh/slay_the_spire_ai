@@ -1,7 +1,7 @@
 # Bounded starter scenario inventory
 
 `scripts/inventory_scenarios.py` implements the proposed development inventory in
-[research.md](research.md#proposed-bounded-development-inventory-not-launched).
+[research.md](research.md#bounded-development-inventory-contract-declared-before-launch).
 It has not been launched. Complete the active long training trial and frozen
 evaluation before using the game runtime for this inventory.
 
@@ -10,7 +10,7 @@ audited heuristic reference run:
 
 ```sh
 uv run python scripts/inventory_scenarios.py \
-  --reference runs/baseline-heuristic-settled-20261011 \
+  --reference runs/first-combat/baseline-heuristic-settled-20261011 \
   --output runs/starter-inventory-v1
 ```
 

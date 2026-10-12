@@ -1,6 +1,6 @@
 # Direct WSL endpoint startup mitigation
 
-`runs/qwen3-0.6b-sft-eval-20261011` stopped after two completed wins at 77 HP.
+`runs/first-combat/qwen3-0.6b-sft-eval-20261011` stopped after two completed wins at 77 HP.
 The third attempt failed before any observation or action reached the runner:
 `BridgeTimeout: timed out waiting for relay connection`. Five of the eight
 scheduled attempts remain unattempted. The original failure and incomplete

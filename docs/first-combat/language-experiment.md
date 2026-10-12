@@ -33,7 +33,7 @@ hashes, token counts, completion IDs/text and its bound legal candidate.
 
 ## Data and training budget
 
-Export `runs/heuristic-settled-20261011`, the two verified deterministic public-heuristic
+Export `runs/first-combat/heuristic-settled-20261011`, the two verified deterministic public-heuristic
 replays, through the audited demonstration exporter. Expected data: 42 rows, 21 unique
 public prompts. Preserve duplicates and their origins; do not claim they are independent
 examples. Put the whole origin in the training split with no validation split. The
@@ -71,7 +71,7 @@ scenario requires new declared development comparisons and later held-out evalua
 
 ## Preserved infrastructure failure and bounded rerun
 
-The first trained evaluation, `runs/qwen3-0.6b-sft-eval-20261011`, stopped after two
+The first trained evaluation, `runs/first-combat/qwen3-0.6b-sft-eval-20261011`, stopped after two
 wins at HP77 and one relay-startup failure, leaving five scheduled attempts unrun.
 The two completed fights exactly reproduced the teacher's commands and public
 transitions. The third attempt had zero observations/actions and failed while Linux
@@ -86,7 +86,7 @@ address instead of its localhost forwarder. Keep port19876, timeouts and fail-cl
 session semantics. This bypasses a suspected intermediary; bounded socket probes
 did not reproduce the intermittent failure and do not prove its exact cause.
 
-First run `runs/direct-relay-control-20261011`: two canonical SPIREAI1 public-heuristic
+First run `runs/first-combat/direct-relay-control-20261011`: two canonical SPIREAI1 public-heuristic
 fights, 500 actions/180 seconds per episode, 45-second bridge timeout and a 300-second
 process limit. Require both original-engine outcomes, exact settled starts and full
 command/public-transition agreement with the existing heuristic reference. Stop on
@@ -94,7 +94,7 @@ failure; these are infrastructure controls, not new training demonstrations.
 
 If those controls pass, run the same final update64 adapter (declaration SHA-256
 `70d19d51a5578ca3ce4e64e0f3f8646c9034ab6e14cf9f84baa2002268a248d6`) on the unchanged
-eight-attempt suite as `runs/qwen3-0.6b-sft-eval-v2-20261011`, with the existing
+eight-attempt suite as `runs/first-combat/qwen3-0.6b-sft-eval-v2-20261011`, with the existing
 1,600-second batch limit. No new training, checkpoint selection, prompt/parser change,
 response repair or automatic retry. This is one explicitly declared infrastructure
 rerun after preserving the first batch, not a continuation that overwrites it. Report
@@ -142,6 +142,6 @@ The initial incomplete batch remains separate: two wins, one infrastructure fail
 and five unattempted slots. Across both trained batches, 11 game attempts produced
 10 wins and one startup failure; these totals do not replace the canonical eight-game
 score. See [comparison and paired traces](results/language-sft-development-v1.json).
-Regenerate that compact result with `uv run python runs/summarize_language_diagnostic.py`
+Regenerate that compact result with `uv run python runs/first-combat/scripts/summarize_language_diagnostic.py`
 when the retained local raw runs are available. Multi-encounter language evaluation
 is now implemented, but no such gameplay score has been collected yet.

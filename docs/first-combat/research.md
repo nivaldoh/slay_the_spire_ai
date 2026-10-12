@@ -63,7 +63,7 @@ that observation as an invariant for all runs.
 
 ## First original-engine learning pilot contract
 
-Planned run: `runs/ppo-pilot-seed0-20261011`. Source is frozen at the integrated training
+Planned run: `runs/first-combat/ppo-pilot-seed0-20261011`. Source is frozen at the integrated training
 revision before launch. Initialization seed 0; CPU set encoder/candidate scorer, 12,498
 parameters; PPO defaults documented in [learning.md](learning.md). Collect complete
 episodes only, normally update after at least 64 transitions, with ceilings of 8 attempts,
@@ -114,7 +114,7 @@ improvement from tensor changes or training wins.
 ## Next budget increase (declared before launch)
 
 Conditional on valid frozen pilot evaluations, the next run is
-`runs/ppo-budget64-seed0-20261011`: fresh seed-0 initialization, the same network,
+`runs/first-combat/ppo-budget64-seed0-20261011`: fresh seed-0 initialization, the same network,
 PPO defaults, a 64-transition collection threshold with the existing attempt-limit
 tail-batch flush described above, reward, fixed scenario and canonical evaluation.
 Only the training budget increases, to at most 64 attempts, 16 updates and 3,000
@@ -440,7 +440,7 @@ from 4,500 to 5,400 seconds: this adapter's measured fights take 46–59 seconds
 
 ### First REINFORCE job: one completed iteration, then infrastructure stop
 
-`runs/language-rl-relabel-20261011` (source `e8d0b86`) completed iteration 0: 12 sampled
+`runs/first-combat/language-rl-relabel-20261011` (source `e8d0b86`) completed iteration 0: 12 sampled
 combats, all won (Louses HP 79/79/77/79, Cultist 69/66/61/69, Jaw Worm 75/52/78/58),
 all three groups with nonzero advantages. The update recomputed all 331 behavior
 log-probability vectors within 8.9e-7 of the recorded values, changed all 2,293,759
@@ -469,7 +469,7 @@ Infrastructure mitigation `e9ab10c`: the fixed per-user config path is resolved 
 per process (30-second cap) instead of before every game. Game, observation, policy,
 reward and retry semantics are unchanged.
 
-Continuation job `runs/language-rl-relabel-continued-20261011`: the same contract
+Continuation job `runs/first-combat/language-rl-relabel-continued-20261011`: the same contract
 (T = 1, group 4, learning rate 1e-4, three catalog scenarios, one REINFORCE step per
 iteration), starting from iteration 0's exact adapter, for **4 iterations** with
 `seed = 1` so no sampling seed repeats, and a 4,500-second cap. AdamW state is not

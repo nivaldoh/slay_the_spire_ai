@@ -1,10 +1,10 @@
 # Original-engine starter mechanics evidence
 
-The [captured fixture](../tests/fixtures/engine_starter_transitions.json) contains
+The [captured fixture](../../tests/fixtures/engine_starter_transitions.json) contains
 12 transitions from three completed original-engine combats on 2026-10-11:
-`runs/first-random-v2-20261011/episode-0000` and
-`runs/heuristic-replay-20261011/episode-0000`, plus
-`runs/loss-restart-probe-20261011/episode-0000`. All are Ironclad, Ascension 0,
+`runs/first-combat/first-random-v2-20261011/episode-0000` and
+`runs/first-combat/heuristic-replay-20261011/episode-0000`, plus
+`runs/first-combat/loss-restart-probe-20261011/episode-0000`. All are Ironclad, Ascension 0,
 with unupgraded starter cards and the same `FuzzyLouseNormal` /
 `FuzzyLouseDefensive` encounter. They are examples from one encounter, not
 independent coverage of different encounter distributions.
@@ -35,7 +35,7 @@ decompiled source and is under 50 KB.
 | `victory_heal_capped` | A second engine terminal observation changes HP 78 → maximum 80 with Burning Blood present. |
 | `end_turn_engine_death` | END changes HP 1 → 0 and produces `GAME_OVER` / `DEATH` with `victory=false`, even though `room_phase` remains `COMBAT`. |
 
-The [regressions](../tests/test_engine_regressions.py) feed these captured states
+The [regressions](../../tests/combat/test_engine_regressions.py) feed these captured states
 through the adapter. They check observed commands against its legal candidates,
 card/target identity, public damage/block/power values, ordinary energy costs,
 stale-action rejection, zero-energy action masks, and terminal recognition.
@@ -48,7 +48,7 @@ they do not establish general formulas for unseen mechanics.
 Run the fixture regressions from the repository:
 
 ```bash
-uv run pytest tests/test_engine_regressions.py
+uv run pytest tests/combat/test_engine_regressions.py
 ```
 
 When the ignored original runs are present, three additional provenance checks
@@ -58,7 +58,7 @@ Those three checks skip in a fresh checkout without local evidence. To verify
 against artifacts in another checkout:
 
 ```bash
-SPIRE_EVIDENCE_ROOT=/path/to/slay_the_spire_ai uv run pytest tests/test_engine_regressions.py
+SPIRE_EVIDENCE_ROOT=/path/to/slay_the_spire_ai/runs/first-combat uv run pytest tests/combat/test_engine_regressions.py
 ```
 
 Validation after adding the loss capture: **29 tests passed**, including all three source-trace
