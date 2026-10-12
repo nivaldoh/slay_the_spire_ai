@@ -109,6 +109,7 @@ def test_combat_rendering_shows_intents_dead_enemies_and_piles():
     assert "[0] Louse: dead" in text
     assert "[1] Jaw Worm: HP 30/44, block 0, intent ATTACK 11; powers: Strength 3" in text
     assert "Draw pile (2): Anger (0 attack), Bash (2 attack)" in text
+    assert "Incoming attack damage this turn: 11, against your 0 block and 70 HP." in text
 
 
 def test_event_text_markup_is_removed():

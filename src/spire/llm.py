@@ -22,7 +22,7 @@ from collections import Counter, deque
 from datetime import UTC, datetime
 from pathlib import Path
 
-from spire.fullgame import Choice, card_text
+from spire.fullgame import Choice, card_text, live_targets
 from spire.protocol import Decision, PolicyFailure
 
 API_URL = "https://api.openai.com/v1/responses"
@@ -168,6 +168,12 @@ def _monster(index: int, monster: dict) -> str:
 ROOMS = {"MonsterRoom": "monster", "MonsterRoomElite": "elite", "MonsterRoomBoss": "boss"}
 
 
+def _incoming(monsters: list) -> int:
+    # Visible attack intents only; hidden damage (Runic Dome) reports -1 and is left out.
+    return sum(max(monsters[i].get("move_adjusted_damage", 0), 0) * monsters[i].get("move_hits", 1)
+               for i in live_targets(monsters))
+
+
 def _combat(combat: dict, room: str, monster_notes: dict) -> list[str]:
     player = combat["player"]
     monsters = combat.get("monsters", [])
@@ -180,6 +186,8 @@ def _combat(combat: dict, room: str, monster_notes: dict) -> list[str]:
         f"powers: {_powers(player)}",
         "Enemies:",
         *(f"  {_monster(i, m)}" for i, m in enumerate(monsters)),
+        f"Incoming attack damage this turn: {_incoming(monsters)}, against your "
+        f"{player.get('block', 0)} block and {player['current_hp']} HP.",
         *(["Enemy rules:"] if noted else []),
         *(f"  {name}: {monster_notes[key]}" for key, name in noted.items()),
         "Hand: " + (", ".join(card_text(card) for card in combat.get("hand", [])) or "empty"),
