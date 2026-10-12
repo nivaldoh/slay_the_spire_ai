@@ -323,3 +323,12 @@ measurable effect, and v6's 0-HP line coincided with the end of exact-lethal dea
 three runs. Two harness defects were found and one fixed: the grid deselect labels, and
 the skipped card reward that stays listed (still open).
 
+
+## 2026-10-12: harness check after the repository reorganization
+
+`runs/fullrun/smoke-reorg-20261012`, seed `RUNDEV1`, source `d0ad9f4`, scaffolding v7 with
+`--max-actions 40`. The code moved into packages (the Windows scripts now deploy from
+`src/spire/engine/`) without changing what the model sees. The run deployed and launched
+the game, played Neow, the map and two hallway fights, and stopped as `truncated` on floor 3
+at 75/80 HP: 37 decisions, 27 calls, $0.0047, 125 s. It is a harness check, not a scored
+attempt; its Neow pick (a random rare card) matches v1.1–v3 on this seed.

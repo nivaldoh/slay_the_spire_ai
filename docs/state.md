@@ -15,7 +15,7 @@ No game, GPU or API job is running. Source and `HEAD` are free.
 
 The first overnight autoresearch session (2026-10-12, 02:28–11:04 local, UTC-3) played
 scaffolding v2–v7 on `RUNDEV1`–`RUNDEV3` (v7 on `RUNDEV2` only). Best floors per seed:
-29, 50 and 42 (v1.1 baseline: 16, 33, 16). No run has won yet. API spend: $1.67 of the
+29, 50 and 42 (v1.1 baseline: 16, 33, 16). No run has won yet. API spend: $1.68 of the
 $25 cap (`uv run python -m spire spend`).
 
 Next steps:

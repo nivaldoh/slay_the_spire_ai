@@ -9,12 +9,12 @@ from spire.fullrun.api import EFFORTS, LEDGER_PATH, PRICES
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Slay the Spire experiment tools")
+    parser = argparse.ArgumentParser(prog="spire", description="Slay the Spire experiment tools")
     parser.add_argument("--version", action="version", version="spire-agent 0.1.0")
     commands = parser.add_subparsers(dest="command", required=True)
-    doctor = commands.add_parser("doctor", help="Inspect local runtime prerequisites")
+    doctor = commands.add_parser("doctor", help="Inspect the game, mods and runtime (read-only)")
     doctor.add_argument("--json", action="store_true", help="Emit structured diagnostics")
-    rollout = commands.add_parser("rollout", help="Record original-engine first-combat episodes")
+    rollout = commands.add_parser("rollout", help="First combat: record seeded episodes")
     rollout.add_argument("--policy", choices=["random", "heuristic", "end_turn"], default="random")
     rollout.add_argument("--game-seed", default="SPIREAI1")
     rollout.add_argument("--policy-seed", type=int, default=0)
@@ -23,11 +23,11 @@ def main() -> int:
     rollout.add_argument("--episode-timeout", type=float, default=600)
     rollout.add_argument("--bridge-timeout", type=float, default=90)
     rollout.add_argument("--output", type=Path)
-    report = commands.add_parser("report", help="Audit and compare saved combat evidence")
+    report = commands.add_parser("report", help="First combat: audit and compare saved evidence")
     report.add_argument("runs", type=Path, nargs="+")
     report.add_argument("--output", type=Path, help="Write a .json or Markdown report")
     evaluate = commands.add_parser(
-        "evaluate", help="Evaluate a frozen policy on a suite or catalog"
+        "evaluate", help="First combat: evaluate a frozen policy on a suite or catalog"
     )
     artifact = evaluate.add_mutually_exclusive_group(required=True)
     artifact.add_argument("--policy", choices=["random", "heuristic"])
@@ -39,7 +39,7 @@ def main() -> int:
         "--suite", type=Path, required=True, help="Schema-1 suite or schema-2 catalog"
     )
     evaluate.add_argument("--output", type=Path, required=True)
-    train = commands.add_parser("train", help="Run budgeted, resumable original-engine PPO")
+    train = commands.add_parser("train", help="First combat: budgeted, resumable PPO training")
     train.add_argument("--output", type=Path, required=True)
     train.add_argument("--resume", action="store_true", help="Resume with the original budget")
     train.add_argument("--suite", type=Path)
@@ -51,7 +51,7 @@ def main() -> int:
     train.add_argument(
         "--learning-rate", type=float, help="PPO Adam learning rate (default: 0.0003)"
     )
-    play = commands.add_parser("play", help="Play complete original-engine runs with an API model")
+    play = commands.add_parser("play", help="Full runs: play complete runs with an API model")
     play.add_argument("--model", required=True, choices=sorted(PRICES))
     play.add_argument("--effort", default="low", choices=EFFORTS)
     play.add_argument("--seed", action="append", dest="seeds", required=True,
@@ -63,10 +63,10 @@ def main() -> int:
     play.add_argument("--run-timeout", type=float, default=5 * 3600)
     play.add_argument("--bridge-timeout", type=float, default=300)
     play.add_argument("--output", type=Path, required=True)
-    digest = commands.add_parser("digest", help="Summarize a saved full-run job or run")
+    digest = commands.add_parser("digest", help="Full runs: summarize a saved job or run")
     digest.add_argument("path", type=Path, help="A job directory, or one of its run-NNNN")
     digest.add_argument("--floor", type=int, help="Show one floor of a run turn by turn")
-    spend = commands.add_parser("spend", help="Total the API spend ledger")
+    spend = commands.add_parser("spend", help="Full runs: total the API spend ledger")
     spend.add_argument("--ledger", type=Path, default=LEDGER_PATH)
     args = parser.parse_args()
     if args.command == "doctor":
