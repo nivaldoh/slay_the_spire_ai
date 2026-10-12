@@ -5,7 +5,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from spire.llm import EFFORTS, PRICES
+from spire.fullrun.llm import EFFORTS, LEDGER_PATH, PRICES
 
 
 def main() -> int:
@@ -58,20 +58,25 @@ def main() -> int:
                       help="Alphanumeric game seed; repeat for several runs")
     play.add_argument("--budget-usd", type=float, required=True,
                       help="Hard cap on the ledger's total spend, including earlier jobs")
-    play.add_argument("--ledger", type=Path, default=Path("runs/llm-spend.jsonl"))
+    play.add_argument("--ledger", type=Path, default=LEDGER_PATH)
     play.add_argument("--max-actions", type=int, default=4000)
     play.add_argument("--run-timeout", type=float, default=5 * 3600)
     play.add_argument("--bridge-timeout", type=float, default=300)
     play.add_argument("--output", type=Path, required=True)
+    digest = commands.add_parser("digest", help="Summarize a saved full-run job or run")
+    digest.add_argument("path", type=Path, help="A job directory, or one of its run-NNNN")
+    digest.add_argument("--floor", type=int, help="Show one floor of a run turn by turn")
+    spend = commands.add_parser("spend", help="Total the API spend ledger")
+    spend.add_argument("--ledger", type=Path, default=LEDGER_PATH)
     args = parser.parse_args()
     if args.command == "doctor":
-        from spire.doctor import collect_diagnostics, exit_code, render_diagnostics
+        from spire.engine.doctor import collect_diagnostics, exit_code, render_diagnostics
 
         report = collect_diagnostics()
         print(json.dumps(report, indent=2) if args.json else render_diagnostics(report))
         return exit_code(report)
     if args.command == "rollout":
-        from spire.rollout import rollout as run_rollout
+        from spire.combat.rollout import rollout as run_rollout
 
         config = vars(args).copy()
         output = config.pop("output") or Path("runs") / datetime.now(timezone.utc).strftime(
@@ -91,12 +96,12 @@ def main() -> int:
         if any(catalog_runs):
             if not all(catalog_runs):
                 parser.error("Report catalogs and single-scenario runs separately")
-            from spire.catalog_report import compare_catalogs, render_catalog_report
+            from spire.combat.catalog_report import compare_catalogs, render_catalog_report
 
             report = compare_catalogs(args.runs)
             rendered = render_catalog_report(report)
         else:
-            from spire.report import compare_runs, render_report
+            from spire.combat.report import compare_runs, render_report
 
             report = compare_runs(args.runs)
             rendered = render_report(report)
@@ -116,13 +121,13 @@ def main() -> int:
         if type(schema) is not int or schema not in {1, 2}:
             parser.error("Evaluation requires a schema-1 suite or schema-2 catalog")
         if args.language_artifact and schema == 1:
-            from spire.language_evaluation import evaluate_language
+            from spire.language.evaluation import evaluate_language
 
             result = evaluate_language(args.language_artifact, args.suite, args.output)
             metrics = result["audit"]["metrics"]
             filename = "evaluation.json"
         elif schema == 2:
-            from spire.catalog import evaluate_catalog
+            from spire.combat.catalog import evaluate_catalog
 
             result = evaluate_catalog(
                 args.policy or ("language" if args.language_artifact else "neural"),
@@ -132,7 +137,7 @@ def main() -> int:
             metrics = {"metrics": result["metrics"], "macro": result["macro"]}
             filename = "catalog-evaluation.json"
         else:
-            from spire.evaluation import evaluate
+            from spire.combat.evaluation import evaluate
 
             result = evaluate(
                 args.policy or "neural", args.suite, args.output, checkpoint=args.checkpoint
@@ -158,7 +163,7 @@ def main() -> int:
             parser.error(
                 "new training requires --suite, --episodes, --batch-steps, --updates, --time-budget"
             )
-        from spire.training import train
+        from spire.ppo.training import train
 
         config = (
             None
@@ -177,8 +182,8 @@ def main() -> int:
         print(json.dumps(result, indent=2))
         return 0 if result["status"] in {"completed", "budget_exhausted"} else 1
     if args.command == "play":
-        from spire.llm import Ledger, LLMPolicy, ResponsesClient, api_key
-        from spire.play import play as run_play
+        from spire.fullrun.llm import Ledger, LLMPolicy, ResponsesClient, api_key
+        from spire.fullrun.play import play as run_play
 
         config = vars(args).copy()
         output = config.pop("output")
@@ -190,6 +195,16 @@ def main() -> int:
             args.model, args.effort, ledger, client=client))
         print(f"Evidence: {output.resolve()}")
         return 0 if manifest["status"] == "completed" else 1
+    if args.command == "digest":
+        from spire.fullrun.digest import main as run_digest
+
+        run_digest(args.path, args.floor)
+        return 0
+    if args.command == "spend":
+        from spire.fullrun.llm import Ledger
+
+        print(f"${Ledger(args.ledger, budget_usd=0).spent:.4f} spent ({args.ledger})")
+        return 0
     return 2
 
 

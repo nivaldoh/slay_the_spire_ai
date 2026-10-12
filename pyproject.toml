@@ -46,6 +46,8 @@ packages = ["src/spire"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Tests share fixtures by importing test modules across these directories.
+pythonpath = ["tests/engine", "tests/combat", "tests/ppo", "tests/language", "tests/fullrun"]
 
 [tool.ruff]
 line-length = 100

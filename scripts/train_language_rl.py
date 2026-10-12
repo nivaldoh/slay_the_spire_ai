@@ -27,7 +27,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     os.environ.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1", HF_HUB_DISABLE_TELEMETRY="1")
-    from spire.language_rl import audit_language_rl, train_language_rl
+    from spire.language.rl import audit_language_rl, train_language_rl
 
     if args.audit:
         report = audit_language_rl(args.audit)

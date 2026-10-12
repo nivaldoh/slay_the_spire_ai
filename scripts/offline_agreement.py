@@ -21,9 +21,9 @@ import time
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from spire.demonstrations import render_prompt
-from spire.evidence import audit_run
-from spire.language_policy import LanguagePolicy
+from spire.combat.evidence import audit_run
+from spire.language.demonstrations import render_prompt
+from spire.language.policy import LanguagePolicy
 from spire.protocol import Action, Decision, PolicyFailure
 
 

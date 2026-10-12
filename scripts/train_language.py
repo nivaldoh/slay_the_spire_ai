@@ -155,7 +155,7 @@ def main() -> int:
     parser.add_argument("--started-unix", type=float, help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.worker:
-        from spire.language_training import train_language
+        from spire.language.training import train_language
 
         config = json.loads(args.config.read_text()) if args.config else None
         result = train_language(

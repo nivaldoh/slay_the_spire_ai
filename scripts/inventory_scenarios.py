@@ -1,7 +1,7 @@
-"""Collect the fixed, bounded development inventory in docs/research.md.
+"""Collect the fixed, bounded development inventory in docs/first-combat/research.md.
 
 No resume or implicit replacement seeds. All game work uses ordinary one-episode
-rollouts; policies never receive inventory metadata. See docs/inventory.md.
+rollouts; policies never receive inventory metadata. See docs/first-combat/inventory.md.
 """
 
 from __future__ import annotations
@@ -10,17 +10,17 @@ import argparse
 import hashlib
 import json
 import signal
-import subprocess
 import time
 from collections import Counter
 from contextlib import contextmanager
 from pathlib import Path
 
-from spire.evidence import audit_run, compare_resets
+from spire.combat.evidence import audit_run, compare_resets
+from spire.combat.rollout import rollout
 from spire.protocol import OBSERVATION_CONTRACT
-from spire.rollout import rollout, source_fingerprints, write_json
+from spire.provenance import REPO_ROOT as ROOT
+from spire.provenance import committed_revision, source_fingerprints, write_json
 
-ROOT = Path(__file__).resolve().parents[1]
 SEEDS = tuple(f"SPIREINV{number:02d}" for number in range(1, 13))
 FAMILIES = ("cultist", "jaw_worm", "two_louses")
 START_SHA256 = "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4"
@@ -62,14 +62,11 @@ def files(directory: Path) -> dict:
 def source() -> dict:
     if Path.cwd().resolve() != ROOT:
         raise ValueError(f"Run the inventory from its checkout: {ROOT}")
-    paths = ["src", "scripts", "configs", "pyproject.toml", "uv.lock", ".python-version"]
-    if subprocess.check_output(["git", "status", "--porcelain", "--", *paths], text=True):
-        raise ValueError("Commit implementation changes before inventory collection")
     return {
-        "source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+        "source_revision": committed_revision("inventory collection"),
         "source_files": source_fingerprints(),
         "driver_sha256": digest(Path(__file__)),
-        "research_sha256": digest(ROOT / "docs/research.md"),
+        "research_sha256": digest(ROOT / "docs/first-combat/research.md"),
     }
 
 

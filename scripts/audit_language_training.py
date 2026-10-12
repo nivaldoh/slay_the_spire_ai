@@ -17,8 +17,9 @@ from pathlib import Path
 
 import torch
 
-from spire import language_training as training
-from spire.language_policy import file_inventory, validate_declaration
+from spire.language import training
+from spire.language.policy import file_inventory, validate_declaration
+from spire.provenance import REPO_ROOT
 
 
 def require(condition, message):
@@ -56,9 +57,8 @@ def within(root, value):
 
 
 def archived_source(revision):
-    repository = Path(training.__file__).resolve().parents[2]
     names = subprocess.check_output(
-        ["git", "ls-tree", "-r", "--name-only", revision], cwd=repository, text=True
+        ["git", "ls-tree", "-r", "--name-only", revision], cwd=REPO_ROOT, text=True
     ).splitlines()
     selected = [
         name
@@ -67,13 +67,12 @@ def archived_source(revision):
             name.startswith(("src/", "scripts/"))
             and name.endswith(".py")
             or name.startswith("configs/")
-            and name.endswith(".json")
             or name in {"pyproject.toml", "uv.lock", ".python-version"}
         )
     ]
     return {
         name: hashlib.sha256(
-            subprocess.check_output(["git", "show", f"{revision}:{name}"], cwd=repository)
+            subprocess.check_output(["git", "show", f"{revision}:{name}"], cwd=REPO_ROOT)
         ).hexdigest()
         for name in selected
     }
@@ -352,10 +351,10 @@ def _audit(root, report):
         job["source"]["files"] == archived_source(job["source"]["revision"]),
         "Source fingerprints differ from recorded Git revision",
     )
-    for name in ("language_training.py", "language_policy.py", "demonstrations.py"):
+    for name in ("training.py", "policy.py", "demonstrations.py"):
         require(
             digest(Path(training.__file__).with_name(name))
-            == job["source"]["files"][f"src/spire/{name}"],
+            == job["source"]["files"][f"src/spire/language/{name}"],
             "Auditor requires the recorded canonical validators",
         )
     checks["frozen_contract_and_archived_source"] = True

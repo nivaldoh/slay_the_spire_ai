@@ -4,10 +4,10 @@ Selection rule, with no outcome or policy-quality filtering: every complete,
 independently audited run under ``--runs`` with a single public start, excluding
 language-policy behavior. Training uses only the pinned settled SPIREAI1 two-Louse
 start; the offline test split uses every other start. Pre-settle SPIREAI1 starts are
-skipped. See docs/language-relabel-experiment.md.
+skipped. See docs/first-combat/language-relabel-experiment.md.
 
-    uv run python scripts/export_relabel_datasets.py --runs runs \
-        --train-output runs/new-train --test-output runs/new-test
+    uv run python scripts/export_relabel_datasets.py --runs runs/first-combat \
+        --train-output runs/first-combat/new-train --test-output runs/first-combat/new-test
 """
 
 import argparse
@@ -15,8 +15,8 @@ import json
 import sys
 from pathlib import Path
 
-from spire.demonstrations import RELABEL, DemonstrationSource, export_demonstrations
-from spire.evidence import audit_run
+from spire.combat.evidence import audit_run
+from spire.language.demonstrations import RELABEL, DemonstrationSource, export_demonstrations
 
 LOUSE_PIN = "177b2fcdc80ed0e9efb7d2a01191a40df6e40d4123867d09e091fa122edc12c4"
 
