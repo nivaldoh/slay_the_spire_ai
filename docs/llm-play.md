@@ -315,6 +315,36 @@ moment, that holding back damage never avoids the split, and that damage before 
 still lowers both Mediums (killing it first prevents the split). The notes also show in
 hallway fights with Large slimes.
 
+### 2026-10-12: v5 on the development seeds
+
+`runs/llm-luna-v5-dev-20261012`, source `b564305`.
+
+| Seed | Outcome | Act / floor | Killed by | Decisions | Calls | Cost | Wall time |
+|---|---|---|---|---:|---:|---:|---:|
+| RUNDEV1 | lost | 2 / 29 | Colosseum Slavers (event fight) | 501 | 422 | $0.097 | 2,183 s |
+| RUNDEV2 | lost | 2 / 23 | Book of Stabbing (elite, left at 4 HP) | 340 | 301 | $0.066 | 1,402 s |
+| RUNDEV3 | lost | 1 / 16 | Slime Boss (split slimes) | 253 | 214 | $0.048 | 1,167 s |
+
+- The targeted mistake stopped: no reason in any v5 run holds back damage to stay above
+  a split threshold. Instead: "push the Acid Slime well below its split threshold", "Deal
+  damage before the Spike Slime splits, reducing the HP of both resulting slimes", and
+  "Iron Wave … triggers its split".
+- RUNDEV1 beat the Slime Boss for the first time in five versions (80 → 9 HP), on the
+  same Corruption opening as v1.1–v3. It died on floor 29, where a "?" room was the
+  Colosseum and its forced Slaver fight started at 26 HP after Byrd and Chosen.
+- RUNDEV2 and RUNDEV3 diverged from v4 by floors 2–7, before any Large slime appeared, so
+  their lower floors are the model's own variance. RUNDEV2 has now reached floors 33,
+  24, 33, 33 and 23 across versions.
+- Decision: keep v5.
+
+### Scaffolding v6: death at 0 HP and skipped card rewards
+
+Evidence: the "0 HP is death" and "Skipped card rewards" candidates below. Change: two
+lines in the system prompt's state description: "You die when your HP reaches 0, so to
+survive a turn the damage that gets past your block must be less than your HP", and "A
+skipped card reward stays on the rewards list; choose proceed to leave it." The second
+is an interface fact the screen does not show.
+
 ## Overnight loop
 
 Preflight: no `spire play` process is running (`ps -eo pid,cmd | grep '[p]ython3 -m spire play'`;
@@ -352,7 +382,7 @@ binding limit; time is, at roughly two to four iterations a night. Then:
    stochastic runs per version, do not claim more than that.
 
 Candidate changes with evidence so far, in priority order (incoming damage became v3,
-the boss's floor v4 and the slime notes v5):
+the boss's floor v4, the slime notes v5, and the next two items v6):
 
 - **0 HP is death**: four of eleven deaths since v1.1 took exactly lethal damage, and v4
   RUNDEV2 chose Defend to "survive this turn, even if only at 0 HP". Candidate: one
