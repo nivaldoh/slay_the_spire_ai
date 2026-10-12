@@ -3,16 +3,16 @@
 Updated 2026-10-12. The full-run API language-model track is current; see
 [llm-play.md](llm-play.md).
 
-## Active work (last verified 2026-10-12 05:35 UTC)
+## Active work (last verified 2026-10-12 06:57 UTC)
 
 Overnight autoresearch session in progress (owner: stop around 11:00 local, UTC-3).
-Job `runs/llm-luna-v2-dev-20261012` (scaffolding v2, source `e0b47aa`) is playing
+Job `runs/llm-luna-v3-dev-20261012` (scaffolding v3, source `7171bd8`) is playing
 `RUNDEV1`–`RUNDEV3` with `gpt-6-luna` at low effort; check
 `ps -eo pid,cmd | grep '[p]ython3 -m spire play'` before launching anything. While it
 runs, `src/`, `scripts/` and `configs/` must stay unchanged: the runner compares their
-fingerprints before every seed. Docs may change. Follow "Overnight loop" in
-[llm-play.md](llm-play.md). API spend before this job: $0.22 of the $25 cap in
-`runs/llm-spend.jsonl`.
+fingerprints before every seed. Docs may change. v2 reached floors 16, 24 and 33 (v1.1:
+16, 33, 16); see the log in [llm-play.md](llm-play.md). API spend: $0.47 of the
+$25 cap in `runs/llm-spend.jsonl`.
 
 Owner direction (2026-10-12): run a frontier API model through complete runs, with
 the scaffolding found by autoresearch from observed mistakes. Full runs, `gpt-6-luna`

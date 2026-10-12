@@ -187,6 +187,50 @@ rules" only while that enemy is in the fight. Amountless powers no longer render
 "Corruption -1". Add notes for later acts only when runs show they are needed, and check
 every number against the game.
 
+### 2026-10-12: v2 on the development seeds
+
+`runs/llm-luna-v2-dev-20261012`, source `e0b47aa`. These are single stochastic samples,
+like v1.1. The opening of RUNDEV1 repeated v1.1 almost choice for choice (same Neow pick,
+route, card and shop buys), so same-seed comparisons are less noisy early than feared.
+
+| Seed | Outcome | Act / floor | Killed by | Decisions | Calls | Cost | Wall time |
+|---|---|---|---|---:|---:|---:|---:|
+| RUNDEV1 | lost | 1 / 16 | Slime Boss (last Acid Slime (M), at 7 HP) | 267 | 217 | $0.050 | 1,020 s |
+| RUNDEV2 | lost | 2 / 24 | Snecko | 435 | 387 | $0.085 | 1,888 s |
+| RUNDEV3 | lost | 2 / 33 | The Champ | 546 | 497 | $0.113 | 2,389 s |
+
+- The targeted mistakes stopped. On RUNDEV1 and RUNDEV3 the model pushed the Slime Boss
+  through its split on purpose ("crosses the split threshold, starting both slimes at lower
+  HP"), and RUNDEV3 beat it for the first time. Both Lagavulin fights used the sleeping
+  turns for setup without waking it early. The note's "attacks for 18 twice" was read as a
+  single 36-damage turn, so v3 rewords it.
+- RUNDEV1 died at 1 HP on boss turn 17, one block short, with the last slime at 7 HP. It
+  had taken an Explosive Potion "for the Slime Boss split", repeated that plan on the next
+  two floors, then used it on floor 10 against two small slimes. v1.1 did the same with
+  the same potion on the same seed.
+- RUNDEV2 died at 7 HP to a Snecko on 15 HP with Vulnerable. Perfected Strike would have
+  killed it and Defend would have survived. It played Disarm "to reduce Snecko's
+  multi-hit damage enough to survive", which left a single exactly lethal 7-damage hit.
+  Earlier, after a floor-22 hallway fight, it wrote "Proceed from the Collector rewards"
+  and took an elite at 27 HP. In one shop it bought Ancient Potion, discarded it at once
+  to buy Skill Potion, then discarded that on the map screen (123 gold lost), and bought
+  no card removal with 474 gold.
+- RUNDEV3 ended its last Champ turn into 24x2 with Fairy in a Bottle, "the Fairy can
+  revive me after his lethal attack", spending 2 energy on Inflame and Twin Strike
+  rather than Defends. The first hit used the Fairy (24 HP) and the second killed it.
+- Decision: keep v2. Floors went from 16/33/16 to 16/24/33; RUNDEV2's regression came in
+  Act 2 hallways the notes do not touch.
+
+### Scaffolding v3: incoming damage against block and HP
+
+Evidence: every v2 death ended in survival arithmetic (one block short, a single hit
+read as multi-hit, a multi-hit read as one lethal hit), and the costly-turn scans of
+v1.1 and v2 show attacks played while Defends stay in hand and 10–35 damage comes in.
+Change: combat states add one line, "Incoming attack damage this turn: N, against your
+B block and H HP.", summing the visible attack intents of live enemies. Hidden intent
+damage (Runic Dome) is left out. The Lagavulin note now says "Attack (one hit of 18) on
+two turns in a row".
+
 ## Overnight loop
 
 Preflight: no `spire play` process is running (`ps -eo pid,cmd | grep '[p]ython3 -m spire play'`;
@@ -223,13 +267,21 @@ binding limit; time is, at roughly two to four iterations a night. Then:
    Keep a change if the targeted mistake stops and outcomes do not get worse. With three
    stochastic runs per version, do not claim more than that.
 
-Candidate changes with evidence so far, in priority order:
+Candidate changes with evidence so far, in priority order (incoming damage became v3):
 
-- **Incoming damage**: show the total of visible incoming attack damage against current
-  block. Evidence: under-blocking against Lagavulin, The Collector and the split slimes,
-  and spending energy on Slimed while lethal damage was coming.
+- **Which fight is the boss**: hallway fights are mistaken for the act boss. Evidence:
+  v1.1 RUNDEV1 played a floor-13 Spike Slime (L) as the Slime Boss for five decisions;
+  v1.1 RUNDEV3 kept cards "for the Slime Boss turn" against floor-12 slimes; v2 RUNDEV3
+  used Fire Potion "to the boss now" on a floor-3 Acid Slime (M); v2 RUNDEV2 wrote
+  "Collector rewards" after a floor-22 hallway fight. The header names the act boss right
+  above the combat block. Candidate state fix: name the boss's floor (16, 33, 50) in the
+  header and keep it out of the combat block.
+- **Potion discipline**: potions taken "for the boss" are used within a few floors, often
+  in hallway fights (all four v1.1/v2 runs that held one), and Heart of Iron was drunk
+  against Louses "to help through the Slime Boss fight". Try the boss fix first, since
+  some of these uses came with the boss confusion.
 - **Notes**: separate run notes from combat scratch, or tighten the instruction.
   Evidence: notes clobbered in the smoke run, copied unchanged on about half of calls.
 - **Deck building**: guidance on skipping card rewards and removing cards. Evidence:
-  RUNDEV2's 29-card deck.
-- **Act 2–3 elite and boss notes** once runs reach them (The Collector, for example).
+  RUNDEV2's 29-card deck in v1.1 and 28 in v2, with no removal bought at 474 gold.
+- **Act 2–3 elite and boss notes** once runs reach them (The Collector, The Champ).
