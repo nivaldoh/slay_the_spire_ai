@@ -166,6 +166,8 @@ def _monster(index: int, monster: dict) -> str:
 
 
 ROOMS = {"MonsterRoom": "monster", "MonsterRoomElite": "elite", "MonsterRoomBoss": "boss"}
+# The boss room ends each of the first three acts on a fixed floor.
+BOSS_FLOORS = {1: 16, 2: 33, 3: 50}
 
 
 def _incoming(monsters: list) -> int:
@@ -261,10 +263,12 @@ def render_state(observation: dict, monster_notes: dict | None = None) -> str:
     potions = [f"[{slot}] " + ("empty" if p.get("id") == "Potion Slot" else p.get("name"))
                for slot, p in enumerate(observation.get("potions", []))]
     deck = observation.get("deck", [])
+    act, boss = observation.get("act"), observation.get("act_boss")
+    boss = f"{boss}, on floor {BOSS_FLOORS[act]}" if act in BOSS_FLOORS else boss
     lines = [
-        f"Act {observation.get('act')}, floor {observation.get('floor')}, act boss "
-        f"{observation.get('act_boss')}. HP {observation.get('current_hp')}/"
-        f"{observation.get('max_hp')}, gold {observation.get('gold')}.",
+        f"Act {act}, floor {observation.get('floor')}. Act boss: {boss}. "
+        f"HP {observation.get('current_hp')}/{observation.get('max_hp')}, "
+        f"gold {observation.get('gold')}.",
         "Relics: " + (", ".join(relics) or "none"),
         "Potions: " + (", ".join(potions) or "none"),
         f"Deck ({len(deck)}): {_cards(deck)}",

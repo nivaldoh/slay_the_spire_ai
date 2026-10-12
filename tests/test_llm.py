@@ -148,9 +148,11 @@ def test_api_key_file_and_transient_retry_without_leaking_the_key(tmp_path, monk
 
 def test_combat_rendering_names_the_room_and_omits_an_empty_selection():
     raw = combat_message()
-    raw["game_state"]["room_type"] = "MonsterRoomBoss"
+    raw["game_state"].update(room_type="MonsterRoomBoss", act_boss="Slime Boss")
     observation = fullgame.decision_from_message(raw, session_id="s", sequence=1).observation
-    assert "Combat (boss), turn 2." in llm.render_state(dict(observation))
+    text = llm.render_state(dict(observation))
+    assert text.startswith("Act 1, floor 3. Act boss: Slime Boss, on floor 16. HP 70/80,")
+    assert "Combat (boss), turn 2." in text
     grid = message(["confirm"], screen_type="GRID", screen_state={
         "confirm_up": True, "for_upgrade": True, "num_cards": 1, "selected_cards": []})
     observation = fullgame.decision_from_message(grid, session_id="s", sequence=1).observation
