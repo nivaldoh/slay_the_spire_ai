@@ -189,7 +189,8 @@ every number against the game.
 
 ## Overnight loop
 
-Preflight: no `spire play` process is running (`pgrep -af 'spire play'`), the game is
+Preflight: no `spire play` process is running (`ps -eo pid,cmd | grep '[p]ython3 -m spire play'`;
+a plain `pgrep -f` inside a shell or monitor script also matches that script), the game is
 closed, `git status` is clean under `src/`, `scripts/` and `configs/`, and the ledger total
 is below the cap:
 
