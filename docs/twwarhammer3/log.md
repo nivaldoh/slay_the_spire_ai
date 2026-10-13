@@ -256,3 +256,8 @@ missile unit never trades fire with enemy missile infantry and shoots infantry n
 melee, or from 40-60 m to the side of a fight; a shooter moves to its spot before the
 attack (an attack replaces a move and walks a shooter straight at a target out of
 range: about 20 such orders cut a shooter's own move in 14 gun-mirror battles).
+
+Job `llm-luna-v10-emp-20261013` (source `ffbc953`): lost at 237 s (37% against 71%), 296 s
+(22% against 38%: the enemy's lowest yet in this mirror) and 254 s (51% against 63%).
+Still no Empire win, but the margin has narrowed with each version: mean strength left,
+ours against the enemy's, v6 21/69%, v8 31/70%, v10 37/57%.
