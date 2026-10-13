@@ -81,7 +81,13 @@ the Spire game and opened its settings screen, so the intro skip was removed.
 ## The loop
 
 As for Spire full runs: play three episodes of the fixed scenario per version (`play`
-needs a clean source tree and an API key through `SPIRE_OPENAI_KEY_FILE`), have a fresh
-subagent review each episode from its digest and trace, make one change to the prompt,
-rendering or memory, and log the version in [log.md](log.md). The WH3 ledger
+needs a clean source tree and an API key through `SPIRE_OPENAI_KEY_FILE`), review them,
+make one change to the prompt, rendering or memory, and log the version in
+[log.md](log.md). The review is the `wh3-version-review` workflow
+(`.claude/workflows/wh3-version-review.js`): a reviewer per episode reads the digest and
+the prompts and replies around the turning points, three proposers each suggest one
+change (tactics prompt, state and memory, order interface) with the version history and
+the baseline in view, and three judges score them. While it runs, replay the same
+version for two or three more episodes, and draft the next change in a git worktree: a
+job stops if its source scope changes. The WH3 ledger
 (`runs/twwarhammer3/llm-spend.jsonl`) is separate from Spire's, with its own $25 cap.
