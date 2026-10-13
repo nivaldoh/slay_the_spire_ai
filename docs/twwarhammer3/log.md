@@ -215,3 +215,24 @@ missile infantry stands 40-60 m to the side of the melee line, never straight be
 target loses no men for two turns moves to a clear line or switches; cavalry shelled
 while waiting ride wide onto the enemy artillery instead of shuffling about in its range;
 cavalry are left out of the enemy-lord gang-up.
+
+Job `llm-luna-v8-emp-20261013` (source `fbcdf99`): lost at 321 s (25% against 69%), 203 s
+(30% against 83%) and 343 s (38% against 57%). The enemy cannon was hit hard each time
+(7, 33 and 15 of 33 crew left, against 33 of 33 under v6) and our side kept more (25-38%
+against v6's 0-37%), but the enemy handgunners still ended untouched (66-67 of 68).
+
+Job `llm-luna-v8-dwf-20261013` (source `3879027`, stopped after two battles when v9 was
+merged): lost at 487 s (33% against 77%) and 605 s (26% against 75%). The enemy Grudge
+Thrower broke under counter-battery fire, but the enemy infantry kept more than under v6
+(43-66%): shells that went at the enemy artillery no longer thinned its infantry, and the
+melee was lost as before.
+
+## v9: fight the enemy holding you
+
+Change (prompt), chosen by the review of the v6 Dwarf mirror losses and the Khorne
+mirror loss (all three judges): after contact, a unit the game moved onto another enemy
+stays on it; the enemy-lord rule sends units back to him only while he lost 5 or more
+health since the last turn or none of ours is on him; no unit leaves a wavering enemy.
+The reviewers counted 11-15 pulls onto the enemy lord per Dwarf battle while he stood
+inside his own infantry, losing about 1.4 points a turn, and the enemy holding each
+pulled unit hit its flank (f3 Longbeards 68→48 men against e3's 75→71 in one loss).
