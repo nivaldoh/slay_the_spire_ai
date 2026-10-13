@@ -91,12 +91,12 @@ DIGEST_COLUMNS = ("episode", "outcome", "battle_s", "own_left", "enemy_left", "d
 
 
 def _draw(manifest: dict) -> str:
-    """A random job's draw: seed, map and both factions."""
+    """A random job's draw: seed, map and both races."""
     scenario = manifest.get("scenario") or {}
     if "seed" not in manifest["config"] or not scenario.get("map"):
         return ""
-    return (f" (seed {manifest['config']['seed']}: {scenario['player']['faction']} vs"
-            f" {scenario['enemy']['faction']} on {scenario['map']})")
+    return (f" (seed {manifest['config']['seed']}: {scenario['player']['subculture']} vs"
+            f" {scenario['enemy']['subculture']} on {scenario['map']})")
 
 
 def job_digest(job: Path) -> str:

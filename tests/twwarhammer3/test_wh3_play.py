@@ -349,17 +349,19 @@ def test_scenario_steps_pick_each_race_and_recruit_the_lord_first():
             assert len([s for s in steps if s.get("dblclick")]) == 10
 
 
-def test_a_random_scenario_draws_a_map_and_factions_and_autogenerates_both_armies():
+def test_a_random_scenario_draws_a_map_and_races_and_autogenerates_both_armies():
     config = {"scenario": "random", "seed": 7}
     draw = play.load_scenario(config)
     assert draw == play.load_scenario({"scenario": "random", "seed": 7})
     catalogue = json.loads(play.CATALOGUE_PATH.read_text())
     assert draw["map"] in catalogue["maps"]
     for side in ("player", "enemy"):
-        assert draw[side]["faction"] in catalogue["races"][draw[side]["subculture"]]
-        assert draw[side]["units"] is None
+        assert draw[side]["subculture"] in catalogue["races"]
+        assert draw[side]["units"] is None and "faction" not in draw[side]
     steps = play.scenario_steps(draw)
     finds = [s.get("find") for s in steps]
+    # The faction only changes banner colours, so a draw leaves it to the game.
+    assert not any(f and f[0] == "dropdown_context_scroll" for f in finds)
     assert ["map_type_list", "CcoBattleTypeRecordclassic"] in finds
     assert ["map_listview", "CcoCustomBattleMap" + draw["map"]] in finds
     assert finds.count(["clear_autogen_parent", "button_autogen"]) == 2
@@ -421,4 +423,4 @@ def test_random_jobs_record_their_draw_and_keep_the_menu_dumps(tmp_path, harness
     assert manifest["scenario"] == play.load_scenario({"scenario": "random", "seed": 3})
     assert mailbox.menu == play.scenario_steps(manifest["scenario"])
     assert (job / "map_list.txt").read_text() == "list_box\n"
-    assert f"seed 3: {manifest['scenario']['player']['faction']} vs" in digest.digest(job)
+    assert f"seed 3: {manifest['scenario']['player']['subculture']} vs" in digest.digest(job)

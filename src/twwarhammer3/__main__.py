@@ -70,8 +70,8 @@ def main() -> int:
     play.add_argument("--results", type=Path, default=RESULTS_PATH)
     play.add_argument("--episodes", type=int, default=1)
     play.add_argument("--scenario", required=True,
-                      help="a battle in configs/twwarhammer3/scenarios.json; random draws a map,"
-                      " races and factions, and autogenerates both armies")
+                      help="a battle in configs/twwarhammer3/scenarios.json; random draws a map"
+                      " and both races, and autogenerates both armies")
     play.add_argument("--seed", type=int, default=None, help="the draw of --scenario random")
     add_session_arguments(play)
     play.add_argument("--start-timeout", type=float, default=900)
