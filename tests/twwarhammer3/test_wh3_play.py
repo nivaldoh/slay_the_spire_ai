@@ -259,6 +259,8 @@ def test_scenario_steps_pick_each_race_and_recruit_the_lord_first():
     races = [s["find"][1] for s in steps if s.get("find", [""])[0] == "button_select_race"]
     assert races == ["CcoSubcultureRecordwh3_main_sc_kho_khorne",
                      "CcoSubcultureRecordwh_main_sc_dwf_dwarfs"]
+    factions = [s["find"][1] for s in steps if s.get("find", [""])[0] == "dropdown_context_scroll"]
+    assert factions == ["CcoFactionRecordwh3_main_kho_khorne", "CcoFactionRecordwh_main_dwf_dwarfs"]
     cards = [s["find"][0] for s in steps if s.get("dblclick")]
     assert cards[0] == ("CcoUnitsCustomBattlePermissionRecord"
                         "wh3_main_kho_cha_herald_of_khorne_0:wh3_main_kho_khorne:1")

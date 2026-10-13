@@ -108,9 +108,10 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
 def scenario_steps(name: str) -> list[dict]:
     """Menu steps from the main menu to the start of the named custom battle.
 
-    Each side picks its race, clears the army and recruits its units by double-click; the
-    first unit is the lord (the last field of a lord's card id is 1). The screen keeps
-    the last map, so the map is not set.
+    Each side picks its race and its faction, clears the army and recruits its units by
+    double-click; the first unit is the lord (the last field of a lord's card id is 1).
+    Without the faction step the game picks one, which varied between jobs. The screen
+    keeps the last map, so the map is not set.
     """
     scenario = json.loads(SCENARIOS_PATH.read_text())[name]
     steps = [{"log": f"custom battle {name}; waiting for the main menu"},
@@ -129,6 +130,12 @@ def scenario_steps(name: str) -> list[dict]:
             {"find": ["button_select_race", "CcoSubcultureRecord" + side["subculture"]],
              "click": True},
             {"wait_ms": 2500},
+            {"find": ["faction_pic_mask_parent", "dropdown_context_scroll"], "click": True,
+             "timeout_ms": 15000},
+            {"wait_ms": 1500},
+            {"find": ["dropdown_context_scroll", "CcoFactionRecord" + side["faction"]],
+             "click": True},
+            {"wait_ms": 2000},
             {"find": ["button_bar_parent", "button_clear"], "click": True, "timeout_ms": 15000},
             {"wait_ms": 800},
         ]

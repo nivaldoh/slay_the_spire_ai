@@ -60,6 +60,12 @@ off, multithreaded model on.
   from the root, so the step that clicks an entry cannot wait for it. The screen keeps the
   last races and map across launches; `play.scenario_steps` sets the races every time
   and leaves the map ("An Ogre's Folly").
+- Faction: `faction_pic_mask_parent/dropdown_context_scroll` opens a list of the race's
+  `CcoFactionRecord<faction>` entries (Khorne: khorne, arbaal, crimson_skull, ...); a
+  click on one selects it for the selected slot (verified 2026-10-13), and both slots
+  accepted the same faction. Without that step the game picked a faction itself, and it
+  varied between jobs on both sides. Unit card ids keep the race's main faction key
+  (`...:wh3_main_kho_khorne:1`) whatever faction is selected.
 - Intro movies: the frontend script loads about 25 s after launch, but its real-time
   callbacks do not run until the intro movies end on their own, about 2 minutes later.
   No key press is needed; the first menu step waits for `buttons_holder/button_battle`.
