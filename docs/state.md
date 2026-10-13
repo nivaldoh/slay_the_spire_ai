@@ -18,8 +18,11 @@ autoresearch is idle (v10 untested).
 [twwarhammer3/integration.md](twwarhammer3/integration.md) the verified engine facts;
 [twwarhammer3/log.md](twwarhammer3/log.md) the versions. A job launches the game, recruits
 both armies through the frontend mod (double-click on unit cards), plays episodes in real
-time and restarts through the rematch button, with no desktop input. The first LLM job
-(`gpt-6-luna`, low) won one of three battles; the autoresearch loop is running.
+time and restarts through the rematch button, with no desktop input. On the fixed
+Khorne-vs-Dwarfs battle, `attack_nearest` wins 3 of 3; `gpt-6-luna` (low) went from 1 of 3
+(v1) to 4 of 6 (v5) through prompt and state changes chosen by the review workflow
+(`.claude/workflows/wh3-version-review.js`). API spend so far is under $0.40 of its own
+$25 ledger.
 
 ## Current track: full runs with an API model
 

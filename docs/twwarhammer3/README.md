@@ -42,7 +42,7 @@ way. There is no external game API; the mod is the API.
   `result.json` and `mod.log`; each finished episode appends a row to
   [results.csv](results.csv). Versions are logged in [log.md](log.md).
 
-## Status (2026-10-13 04:10 local)
+## Status (2026-10-13 06:45 local)
 
 | Milestone | State | Evidence |
 |---|---|---|
@@ -54,9 +54,11 @@ way. There is no external game API; the mod is the API.
 | 5 Restart | done | rematch button and confirmation; three episodes per job |
 | 6 Scripted baselines | done | `attack_nearest`: 3 wins of 3 at about 345 s |
 | 7 First LLM battles | done | v1: 1 win of 3 |
-| 8 Autoresearch loop | running | [log.md](log.md): v2 0 of 3 (withdrawal rules), v3 running |
+| 8 Autoresearch loop | running | [log.md](log.md): v2 0/3, v3 3/5, v4 1/3 (1/3 paused), v5 4/6, v6 running |
 
-Results by version: `python -m twwarhammer3 stats`.
+Results by version: `python -m twwarhammer3 stats`. With outcomes this noisy (a version's
+battles swing between a clear win and a clear loss), three episodes rank versions only
+roughly; `own_left` and `enemy_left` (true strength at the end) add a finer measure.
 
 ## Commands
 
