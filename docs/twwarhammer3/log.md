@@ -160,3 +160,14 @@ his health fell about 1 point a turn (he stood inside his own infantry), and the
 Warriors wavered untouched beside them; the Herald was sent back at him 24-26 points
 behind. Support fire stayed useless (14 Skullcannon shots and 270 axes for about 2 kills
 in the first win); the hurt-lord rule parked the Herald for most of two battles.
+
+Replicate `llm-luna-v6-20261013b`: won at 462 s (16% against 34%), won at 381 s (51%
+against 18%), won at 374 s (56% against 19%: the widest margins of any battle so far,
+the baseline included). v6 in all: 5 wins of 6.
+
+## v7: the enemy lord only while he is losing the lords' race
+
+Change (prompt): v4's always-on "every melee unit within 40 m attacks the enemy lord" is
+gone. After contact the enemy lord stays the focus only while his health is below our
+lord's or fell 5 points or more since the last turn; otherwise units leave melee targets
+on the game's choice and switch to the nearby enemy closest to breaking.
