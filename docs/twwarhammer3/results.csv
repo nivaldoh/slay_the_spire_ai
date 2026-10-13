@@ -1,3 +1,6 @@
-date,job,episode,scenario,model,effort,harness,source,mode,speed,interval_s,outcome,battle_s,decisions,invalid,delay_s,usd
-2026-10-13,attack-m3-20261013,episode-0000,kho5-dwf5,attack_nearest,,,60314c3,realtime,1.0,5.0,lost,344,54,22,0.3,0
-2026-10-13,attack-m3-20261013,episode-0001,kho5-dwf5,attack_nearest,,,60314c3,realtime,1.0,5.0,won,400,63,8,0.3,0
+date,job,episode,scenario,model,effort,harness,source,mode,speed,interval_s,outcome,battle_s,own_left,enemy_left,decisions,invalid,delay_s,usd
+2026-10-13,attack-m3-20261013,episode-0000,kho5-dwf5,attack_nearest,,,60314c3,realtime,1.0,5.0,lost,344,,,54,22,0.3,0
+2026-10-13,attack-m3-20261013,episode-0001,kho5-dwf5,attack_nearest,,,60314c3,realtime,1.0,5.0,won,400,,,63,8,0.3,0
+2026-10-13,llm-luna-v1-20261013,episode-0000,kho5-dwf5,gpt-6-luna,low,1,b615830,realtime,1.0,5.0,won,446,,,44,0,4.23,0.0124
+2026-10-13,llm-luna-v1-20261013,episode-0001,kho5-dwf5,gpt-6-luna,low,1,b615830,realtime,1.0,5.0,lost,503,,,51,0,3.78,0.0132
+2026-10-13,llm-luna-v1-20261013,episode-0002,kho5-dwf5,gpt-6-luna,low,1,b615830,realtime,1.0,5.0,lost,366,,,37,0,4.01,0.0096
