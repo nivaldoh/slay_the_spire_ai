@@ -260,7 +260,8 @@ local function apply_order(order)
             -- Queued attacks select the attack method without changing the current move.
             if not order.queue then controller:melee(mode == "melee") end
             local method = order.queue and "attack_unit_q" or "attack_unit"
-            controller[method](controller, target.unit, mode ~= "melee", order.run == true)
+            local primary = mode ~= "melee" or get(unit, "missile_range", 0) == 0
+            controller[method](controller, target.unit, primary, order.run == true)
             entry.attack_mode = mode
         elseif order.type == "halt" then
             controller:halt()
@@ -296,7 +297,8 @@ local function apply_order(order)
                 end
                 controller:perform_special_ability(order.ability, target.unit)
             else
-                controller:perform_special_ability(order.ability)
+                -- This build requires a unit argument even for an ability cast on self.
+                controller:perform_special_ability(order.ability, unit)
             end
         else
             error("unknown_type")
