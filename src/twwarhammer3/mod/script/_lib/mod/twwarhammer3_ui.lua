@@ -11,17 +11,23 @@ function ui.find(path)
     return find_uicomponent(core:get_ui_root(), unpack(path))
 end
 
-local function dump(uic, depth, max_depth, lines)
+local function dump(uic, depth, max_depth, lines, context)
     local visible = uic:Visible() and "" or " [hidden]"
-    lines[#lines + 1] = string.rep("  ", depth) .. tostring(uic:Id()) .. visible
+    local line = string.rep("  ", depth) .. tostring(uic:Id()) .. visible
         .. " <" .. tostring(uic:CurrentState()) .. ">"
+    if context then
+        local ok, id = pcall(function() return uic:GetContextObjectId(context) end)
+        if ok and id and id ~= "" then line = line .. " {" .. tostring(id) .. "}" end
+    end
+    lines[#lines + 1] = line
     if depth >= max_depth then return end
     for index = 0, uic:ChildCount() - 1 do
-        dump(UIComponent(uic:Find(index)), depth + 1, max_depth, lines)
+        dump(UIComponent(uic:Find(index)), depth + 1, max_depth, lines, context)
     end
 end
 
--- {"dump": "file.txt", "depth": N, "find": [...]?}: the tree under the root or a component.
+-- {"dump": "file.txt", "depth": N, "find": [...]?, "context": type?}: the tree under the
+-- root or a component, with each component's context object id of that type.
 function ui.dump(step, directory)
     local root = core:get_ui_root()
     if step.find then
@@ -29,7 +35,7 @@ function ui.dump(step, directory)
         if not root then return "dump root not found" end
     end
     local lines = {}
-    dump(root, 0, step.depth or 4, lines)
+    dump(root, 0, step.depth or 4, lines, step.context)
     local file = io.open(directory .. step.dump, "w")
     if not file then return "cannot write " .. step.dump end
     file:write(table.concat(lines, "\n") .. "\n")
@@ -63,10 +69,14 @@ function ui.act(uic, step)
     return table.concat(done, ", ")
 end
 
--- One step that needs no waiting: dump, key, find (once) or log.
+-- One step that needs no waiting: dump, key, find (once), log, or an expression on a
+-- context object ({"context": "CcoBattleUnit", "id": "...", "expression": "..."}).
 function ui.run(step, directory)
     if step.log then
         return "log " .. tostring(step.log)
+    elseif step.expression then
+        local value = common.get_context_value(step.context, step.id or "", step.expression)
+        return step.expression .. " = " .. tostring(value)
     elseif step.dump then
         return ui.dump(step, directory)
     elseif step.key then

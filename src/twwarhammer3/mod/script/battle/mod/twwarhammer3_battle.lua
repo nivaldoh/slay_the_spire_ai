@@ -497,6 +497,7 @@ local function start()
         controller:take_control()
         state.friendly[id] = {unit = unit, controller = controller, class = unit_class(unit)}
         state.friendly_ids[#state.friendly_ids + 1] = id
+        log(id .. " ui id " .. tostring(get(unit, "unique_ui_id", "?")))
     end
     local armies = bm:get_non_player_alliance():armies()
     local count = 0
