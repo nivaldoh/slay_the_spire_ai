@@ -567,3 +567,11 @@ settings screen, where CommunicationMod offers only `key`, `click`, `wait` and `
 (v9 RUNDEV2 stopped there). The runner now sends `key cancel`, up to three times, and
 continues. Not yet seen against the engine; if the game does not close the screen, the
 run stops as before.
+
+## 2026-10-13: v10 on the development seeds (stopped by a WSL restart)
+
+`runs/fullrun/llm-luna-v10-dev-20261013` (source `54a5967`): RUNDEV1 reached floor 10 with
+60 HP, then the bridge connection reset (`[Errno 104] Connection reset by peer`) when the
+WSL virtual machine restarted at 04:36 UTC; the run is an infrastructure failure and the
+autoresearch session that ran it ended with the VM. RUNDEV2 and RUNDEV3 were not played.
+v10 remains untested.

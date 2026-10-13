@@ -4,27 +4,22 @@ Updated 2026-10-13. Read this first: what is running, what is current, what come
 History lives with each track ([full runs](fullrun/log.md),
 [first combat](first-combat/README.md)), not here.
 
-## Active work (last verified 2026-10-13 04:30 UTC)
+## Active work (last verified 2026-10-13 06:05 UTC)
 
-Third overnight autoresearch session (owner away about 8 hours from 03:50 UTC): Luna/low
-full runs on `RUNDEV1`–`RUNDEV3`, one version after another. Running:
-`runs/fullrun/llm-luna-v10-dev-20261013` (v10, source `54a5967`). A job stops if `src/gameai`,
-`src/spire`, `configs/llm` or the lock files change, so draft in a worktree. WH3 is closed
-for the night; its session messages this one before launching the game again (one game at
-a time: WH3 sends Escape presses through SendInput at launch).
+WH3 session (owner away about 7 hours from 04:40 UTC): getting the API model to play
+custom battles and improving the harness. Jobs run under `runs/twwarhammer3/battle/`;
+one game at a time. The Spire v10 job (`runs/fullrun/llm-luna-v10-dev-20261013`) died on
+floor 10 when WSL restarted at 04:36 UTC, which also ended the Spire session; Spire
+autoresearch is idle (v10 untested).
 
-## Second game: Total War: WARHAMMER III (started 2026-10-13, paused for owner review)
+## Second game: Total War: WARHAMMER III (started 2026-10-13)
 
 [twwarhammer3/README.md](twwarhammer3/README.md) is the track page and status;
-[twwarhammer3/integration.md](twwarhammer3/integration.md) the verified engine facts.
-Done: the game-neutral Windows supervisor moved into `gameai`; the `twwarhammer3`
-package (pack writer and reader, runtime, doctor, file mailbox, protocol, scripted
-policies, CLI); the Lua mod loads in the game and its frontend script navigates the menus
-by UI component id. Blocked on recruiting units programmatically on the custom battle
-screen (a simulated click only pins the info panel). The play loop, LLM policy, prompt,
-results register and the autoresearch loop are designed but not written. Owner question
-pending: whether to continue the in-game mod route (double click or context command) or
-change approach.
+[twwarhammer3/integration.md](twwarhammer3/integration.md) the verified engine facts;
+[twwarhammer3/log.md](twwarhammer3/log.md) the versions. A job launches the game, recruits
+both armies through the frontend mod (double-click on unit cards), plays episodes in real
+time and restarts through the rematch button, with no desktop input. The first LLM job
+(`gpt-6-luna`, low) won one of three battles; the autoresearch loop is running.
 
 ## Current track: full runs with an API model
 
