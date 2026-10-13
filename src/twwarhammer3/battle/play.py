@@ -6,7 +6,7 @@ after a ``restart`` control), then alternates observations and decisions: one re
 in flight at a time. By default the acknowledgement observation starts the next
 decision immediately; ``interval_ms`` optionally adds a wait after orders apply. Each
 decision records the think time and the battle-time delay between the state it saw and the
-orders taking effect. Only an engine-reported result is a gameplay outcome.
+orders being issued (or queued). Only an engine-reported result is a gameplay outcome.
 """
 
 import json

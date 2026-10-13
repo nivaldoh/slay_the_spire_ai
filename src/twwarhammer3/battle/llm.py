@@ -235,13 +235,13 @@ def render_timing(observation: dict, latency: dict | None) -> str:
     limit = f", {remaining / 1000:.0f} s left" if remaining and remaining >= 0 else ""
     text = f"Timing: battle time {seconds:.0f} s{limit}, speed {observation.get('speed', 1)}."
     if observation.get("awaiting_orders"):
-        text += " The battle is paused until you reply; your orders apply at once."
+        text += " The battle is paused until you reply; it resumes to issue your orders."
     elif latency:
-        text += (f" Your last orders took effect {latency['delay_ms'] / 1000:.1f} s after the"
+        text += (f" Your last batch was issued to the engine {latency['delay_ms'] / 1000:.1f} s after the"
                  f" state you saw (you took {latency['think_s']:.1f} s to reply). Expect a"
                  " similar delay now.")
     else:
-        text += " Your orders will take effect a few seconds after this state."
+        text += " Your batch will reach the engine a few seconds after this state."
     return text
 
 
@@ -254,7 +254,7 @@ def render_ack(ack: dict | None) -> str:
     verdicts = []
     for result in results:
         label = result["unit"] + (f" #{result['index']}" if "index" in result else "")
-        verdict = "queued" if result.get("queued") else "applied"
+        verdict = "queued" if result.get("queued") else "issued"
         if not result.get("ok"):
             verdict = "rejected: " + str(result.get("error"))
         verdicts.append(f"{label} {verdict}")

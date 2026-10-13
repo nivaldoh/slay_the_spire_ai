@@ -79,8 +79,8 @@ def test_prompt_shows_units_timing_delay_and_last_seen(tmp_path):
     agent.decide(observation(time_ms=45000, visible=()))
     prompt = agent.metadata()["prompt"]
     assert "Battle notes:\nhold the line" in prompt
-    assert "took effect 4.2 s after the state you saw (you took 3.2 s to reply)" in prompt
-    assert "Last orders: f2 applied." in prompt
+    assert "issued to the engine 4.2 s after the state you saw (you took 3.2 s to reply)" in prompt
+    assert "Last orders: f2 issued." in prompt
     assert "Last seen, not visible now:\n- e1 at (100, 200) 15 s ago, 90 men" in prompt
     assert "30 s: f2 attack e1 (go)" in prompt
     assert agent.totals["calls"] == 2
