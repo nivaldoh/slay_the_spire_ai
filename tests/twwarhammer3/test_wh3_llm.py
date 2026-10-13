@@ -128,3 +128,27 @@ def test_request_uses_the_strict_schema(tmp_path):
 ])
 def test_short_type_strips_the_game_prefix(key, short):
     assert llm.short_type(key) == short
+
+
+def test_dead_enemies_leave_last_seen_and_moves_can_face(tmp_path):
+    move = [{"unit": "f2", "type": "move", "x": 0.0, "z": 30.0, "facing": 180.0, "target": None,
+             "run": False}]
+    agent = policy(tmp_path, reply(move), reply([]))
+    agent.decide(observation())
+    later = observation(time_ms=45000, visible=())
+    later["enemy_roster"][0]["dead"] = True
+    later["awaiting_orders"] = True
+    agent.decide(later)
+    prompt = agent.metadata()["prompt"]
+    assert "e1 dwarf_warriors_0 (destroyed)" in prompt and "Last seen" not in prompt
+    assert "30 s: f2 move (0, 30) facing 180 (go)" in prompt
+    assert "The battle is paused until you reply" in prompt
+    assert "f1 herald_of_khorne_0 (lord) at (10, -40) facing 0, 1/1 men, hp 100%" in prompt
+
+
+def test_a_bad_facing_is_invalid(tmp_path):
+    bad = [{"unit": "f2", "type": "move", "x": 0.0, "z": 30.0, "facing": "north", "target": None,
+            "run": False}]
+    agent = policy(tmp_path, reply(bad), reply([]))
+    agent.decide(observation())
+    assert "facing must be a number" in agent.metadata()["attempts"][0]["error"]

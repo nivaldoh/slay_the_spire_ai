@@ -40,10 +40,11 @@ REPLY_SCHEMA = {
                     "type": {"type": "string", "enum": ["move", "attack", "halt"]},
                     "x": {"type": ["number", "null"]},
                     "z": {"type": ["number", "null"]},
+                    "facing": {"type": ["number", "null"]},
                     "target": {"type": ["string", "null"]},
                     "run": {"type": "boolean"},
                 },
-                "required": ["unit", "type", "x", "z", "target", "run"],
+                "required": ["unit", "type", "x", "z", "facing", "target", "run"],
                 "additionalProperties": False,
             },
         },
@@ -80,7 +81,8 @@ def render_unit(unit: dict, mine: bool) -> str:
         walk, run = unit.get("speed") or (0, 0)
         parts.append(f"walk {walk} run {run}")
         parts.append(unit.get("fatigue") or "fresh")
-    parts.append(" ".join(unit.get("state") or []) or "idle")
+    if unit.get("state"):
+        parts.append(" ".join(unit["state"]))
     if unit.get("target"):
         parts.append(f"target {unit['target']}")
     if unit.get("dest"):
@@ -94,7 +96,8 @@ def render_state(observation: dict, last_seen: dict) -> str:
     lines += ["- " + render_unit(unit, True) for unit in observation.get("friendly", [])]
     roster = observation.get("enemy_roster") or []
     lines.append("Enemy roster: " + (", ".join(
-        f"{unit['id']} {short_type(unit.get('type'))}" for unit in roster) or "unknown"))
+        f"{unit['id']} {short_type(unit.get('type'))}{' (destroyed)' if unit.get('dead') else ''}"
+        for unit in roster) or "unknown"))
     lines.append("Visible enemies:")
     lines += ["- " + render_unit(unit, False) for unit in visible.values()] or ["- none"]
     unseen = [
@@ -117,7 +120,9 @@ def render_timing(observation: dict, latency: dict | None) -> str:
     remaining = observation.get("remaining_ms", -1)
     limit = f", {remaining / 1000:.0f} s left" if remaining and remaining >= 0 else ""
     text = f"Timing: battle time {seconds:.0f} s{limit}, speed {observation.get('speed', 1)}."
-    if latency:
+    if observation.get("awaiting_orders"):
+        text += " The battle is paused until you reply; your orders apply at once."
+    elif latency:
         text += (f" Your last orders took effect {latency['delay_ms'] / 1000:.1f} s after the"
                  f" state you saw (you took {latency['think_s']:.1f} s to reply). Expect a"
                  " similar delay now.")
@@ -162,11 +167,13 @@ def describe_orders(orders: list[dict]) -> str:
         return "no new orders"
     parts = []
     for order in orders:
+        run = " run" if order.get("run") else ""
         if order["type"] == "move":
+            facing = order.get("facing")
             parts.append(f"{order['unit']} move ({order['x']:.0f}, {order['z']:.0f})"
-                         + (" run" if order.get("run") else ""))
+                         + (f" facing {facing:.0f}" if facing is not None else "") + run)
         elif order["type"] == "attack":
-            parts.append(f"{order['unit']} attack {order['target']}")
+            parts.append(f"{order['unit']} attack {order['target']}{run}")
         else:
             parts.append(f"{order['unit']} halt")
     return ", ".join(parts)
@@ -195,6 +202,9 @@ class LLMPolicy:
                     "x": unit["x"], "z": unit["z"], "men": unit.get("men", 0),
                     "time_ms": observation.get("time_ms", 0),
                 }
+        for unit in observation.get("enemy_roster", []):
+            if unit.get("dead"):
+                self.last_seen.pop(unit["id"], None)
         prompt = render_prompt(observation, self.notes, list(self.history), self.last_seen,
                                self.latency, self.ack)
         self._metadata = metadata = {

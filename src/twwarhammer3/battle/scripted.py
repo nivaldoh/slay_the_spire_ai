@@ -23,7 +23,11 @@ class Hold:
 
 
 class AttackNearest:
-    """Every able unit attacks its nearest visible enemy; orders repeat only on a new target."""
+    """Every able unit attacks its nearest visible enemy.
+
+    An order repeats on a new nearest enemy, or when the engine dropped the old one (the
+    unit shows no target, or idle): attacks end when the target dies or leaves sight.
+    """
 
     def __init__(self):
         self.targets = {}
@@ -32,10 +36,12 @@ class AttackNearest:
         enemies = visible_enemies(observation)
         orders = []
         for unit_id, unit in friendly_units(observation).items():
-            if not enemies or {"routing", "shattered"} & set(unit.get("state", [])):
+            states = set(unit.get("state", []))
+            if not enemies or unit.get("men") == 0 or {"routing", "shattered"} & states:
                 continue
             nearest = min(enemies.values(), key=lambda enemy: _distance(unit, enemy))
-            if self.targets.get(unit_id) != nearest["id"]:
+            lapsed = not unit.get("target") or "idle" in states
+            if lapsed or self.targets.get(unit_id) != nearest["id"]:
                 self.targets[unit_id] = nearest["id"]
                 orders.append({"unit": unit_id, "type": "attack", "target": nearest["id"],
                                "run": False})

@@ -8,6 +8,7 @@
 
 local BRIDGE = "C:/wh3-agent/bridge/"
 local REMATCH = {"in_battle_results_popup", "button_rematch"}
+local CONFIRM = {"dialogue_box", "both_group", "button_tick"}
 local json = twwarhammer3_json
 local ui = twwarhammer3_ui
 
@@ -89,14 +90,26 @@ local function round(value, digits)
     return math.floor(value * scale + 0.5) / scale
 end
 
+-- From the land_units class (inf_mel, inf_mis, cav_shk, cav_mis, art_fld, mon, com, ...);
+-- the is_* flags missed missile cavalry and war machines.
+local CLASSES = {
+    inf = "infantry", cav = "cavalry", chariot = "chariot", art = "artillery",
+    mon = "monster", elph = "monster", com = "hero",
+}
+
 local function unit_class(unit)
     if get(unit, "is_commanding_unit", false) then return "lord" end
-    if get(unit, "is_artillery", false) then return "artillery" end
-    local missile = (get(unit, "missile_range", 0) or 0) > 0
-    if get(unit, "is_cavalry", false) then return missile and "missile_cavalry" or "cavalry" end
-    if get(unit, "is_infantry", false) then return missile and "missile" or "infantry" end
-    if get(unit, "can_fly", false) then return "flying" end
-    return "monster"
+    local land_class = tostring(get(unit, "unit_class", ""))
+    local class = CLASSES[string.match(land_class, "^(%a+)") or ""]
+    if not class then
+        if get(unit, "can_fly", false) then return "flying" end
+        return land_class ~= "" and land_class or "monster"
+    end
+    if (get(unit, "missile_range", 0) or 0) > 0 then
+        if class == "infantry" then return "missile" end
+        if class == "cavalry" or class == "chariot" then return "missile_" .. class end
+    end
+    return class
 end
 
 local function unit_record(id, unit, mine)
@@ -113,7 +126,8 @@ local function unit_record(id, unit, mine)
         {"is_routing", "routing"}, {"is_shattered", "shattered"}, {"is_wavering", "wavering"},
         {"is_in_melee", "melee"}, {"is_under_missile_attack", "under_fire"},
         {"is_moving_fast", "running"}, {"is_moving", "moving"}, {"is_idle", "idle"},
-        {"is_hidden", "hidden"},
+        {"is_hidden", "hidden"}, {"is_unstable", "unstable"}, {"is_crumbling", "crumbling"},
+        {"is_rampaging", "rampaging"},
     }
     for _, flag in ipairs(flags) do
         if get(unit, flag[1], false) then record.state[#record.state + 1] = flag[2] end
@@ -126,19 +140,21 @@ local function unit_record(id, unit, mine)
         record.fatigue = string.gsub(tostring(get(unit, "fatigue_state", "")), "^threshold_", "")
         local target = get(unit, "current_target", nil)
         if target then record.target = state.enemy_by_ui[get(target, "unique_ui_id", -1)] end
+        -- ordered_position is the unit's own position while it attacks.
         local destination = get(unit, "ordered_position", nil)
-        if destination and get(unit, "is_moving", false) then
+        if destination and state.friendly[id].order == "move" and get(unit, "is_moving", false) then
             record.dest = {round(destination:get_x(), 1), round(destination:get_z(), 1)}
         end
     end
     return record
 end
 
+-- Line of sight (is_visible_to_alliance) and concealment in grass or trees (is_hidden) are
+-- separate tests; an enemy is shown only when it passes both.
 local function visible_to_player(unit)
-    if not state.alliance then return true end
+    if get(unit, "is_hidden", false) then return false end
     local ok, visible = pcall(function() return unit:is_visible_to_alliance(state.alliance) end)
-    if not ok then return true end
-    return visible
+    return ok and visible == true
 end
 
 local function observation(now, awaiting)
@@ -149,10 +165,14 @@ local function observation(now, awaiting)
         friendly[#friendly + 1] = ok and record or {id = id, error = clean_error(record)}
     end
     for _, id in ipairs(state.enemy_ids) do
-        local unit = state.enemy[id].unit
-        roster[#roster + 1] = {id = id, type = get(unit, "type", "?")}
-        if get(unit, "number_of_men_alive", 0) > 0 and visible_to_player(unit) then
-            local ok, record = pcall(unit_record, id, unit, false)
+        local entry = state.enemy[id]
+        local alive = get(entry.unit, "number_of_men_alive", 0) > 0
+        -- A unit's destruction is reported only once the player has seen the unit.
+        roster[#roster + 1] = {id = id, type = get(entry.unit, "type", "?"),
+                               dead = (entry.seen and not alive) or nil}
+        if alive and visible_to_player(entry.unit) then
+            entry.seen = true
+            local ok, record = pcall(unit_record, id, entry.unit, false)
             enemy[#enemy + 1] = ok and record or {id = id, error = clean_error(record)}
         end
     end
@@ -172,8 +192,8 @@ end
 
 local function publish_observation(now, awaiting)
     local ok, message = pcall(observation, now, awaiting)
-    if not ok then log("observation failed: " .. clean_error(message)); return end
-    publish("observation.json", message)
+    if not ok then log("observation failed: " .. clean_error(message)); return false end
+    return publish("observation.json", message)
 end
 
 local function vector(x, y, z)
@@ -195,7 +215,14 @@ local function apply_order(order)
             local x, z = tonumber(order.x), tonumber(order.z)
             if not x or not z then error("bad_position") end
             local y = get(bm.battle, "get_terrain_height", 0, x, z)
-            controller:goto_location(vector(x, y, z), order.run == true)
+            local facing = tonumber(order.facing)
+            if facing then
+                local width = get(unit, "ordered_width", 0)
+                controller:goto_location_angle_width(vector(x, y, z), facing,
+                                                     width > 0 and width or 40, order.run == true)
+            else
+                controller:goto_location(vector(x, y, z), order.run == true)
+            end
         elseif order.type == "attack" then
             local target = state.enemy[order.target]
             if not target then error("unknown_target") end
@@ -208,7 +235,10 @@ local function apply_order(order)
             error("unknown_type")
         end
     end)
-    if ok then return {unit = order.unit, ok = true} end
+    if ok then
+        entry.order = order.type
+        return {unit = order.unit, ok = true}
+    end
     return {unit = order.unit, ok = false, error = clean_error(err)}
 end
 
@@ -264,20 +294,25 @@ local function finish()
     log("result " .. state.result)
 end
 
--- The results popup's rematch button reloads the same battle (bm:restart_battle(), the
--- RestartBattle context command, did nothing on the results screen). A decided battle is
--- ended at once so the popup opens; RestartBattle is the fallback.
+-- The results popup's rematch button, then the "Are you sure?" dialog's tick, reload the
+-- same battle (bm:restart_battle(), the RestartBattle context command, did nothing on the
+-- results screen). A decided battle is ended at once so the popup opens; RestartBattle is
+-- the fallback.
 local function restart()
     if state.finished then pcall(function() bm:end_battle() end) end
-    local waited = 0
+    local waited, rematched = 0, false
     bm:repeat_real_callback(guarded("restart", function()
         waited = waited + 1000
-        local button = ui.find(REMATCH)
-        if button then
-            bm:remove_real_callback("twwarhammer3_restart")
+        local button = ui.find(rematched and CONFIRM or REMATCH)
+        if button and not rematched then
             button:SetVisible(true)
             button:SimulateLClick()
+            rematched = true
             log("rematch clicked")
+        elseif button then
+            bm:remove_real_callback("twwarhammer3_restart")
+            button:SimulateLClick()
+            log("rematch confirmed")
         elseif waited >= (state.finished and 60000 or 3000) then
             bm:remove_real_callback("twwarhammer3_restart")
             log("no rematch button; RestartBattle")
@@ -301,8 +336,8 @@ local function tick()
         end
         state.force_observe = false
         state.next_observe_ms = now + (session.observe_ms or 1000)
-        publish_observation(now, awaiting)
-        if awaiting and not state.paused then
+        local published = publish_observation(now, awaiting)
+        if published and awaiting and not state.paused then
             bm:modify_battle_speed(0, true)
             state.paused = true
         end

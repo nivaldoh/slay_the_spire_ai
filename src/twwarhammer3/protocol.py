@@ -1,7 +1,7 @@
 """What the policy sees and may order in a battle, and the failure taxonomy.
 
 Observations are the dicts the Lua side publishes (``engine/mailbox.py`` has the
-shape); orders are dicts ``{"unit", "type", "x", "z", "run", "target"}``. Only an
+shape); orders are dicts ``{"unit", "type", "x", "z", "facing", "run", "target"}``. Only an
 engine-reported battle result is a gameplay outcome; everything below is an
 infrastructure, protocol or policy failure.
 """
@@ -66,6 +66,8 @@ def validate_orders(orders: list, observation: dict) -> None:
             raise IllegalActionError(f"{unit}: unknown order type {kind!r}")
         if kind == "move" and not all(_finite(order.get(axis)) for axis in ("x", "z")):
             raise IllegalActionError(f"{unit}: move needs finite x and z")
+        if kind == "move" and order.get("facing") is not None and not _finite(order["facing"]):
+            raise IllegalActionError(f"{unit}: facing must be a number of degrees or null")
         if kind == "attack" and order.get("target") not in enemies:
             raise IllegalActionError(f"{unit}: target {order.get('target')!r} is not visible")
 

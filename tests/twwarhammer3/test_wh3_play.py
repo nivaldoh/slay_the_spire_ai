@@ -18,7 +18,7 @@ def observation(seq, time_ms, *, battle="b1", phase="Deployed", result=None, ack
         "time_ms": time_ms, "speed": 1, "awaiting_orders": awaiting, "remaining_ms": 100000,
         "armies": {"player": {"faction": "kho"}, "enemy": {"faction": "dwf"}},
         "friendly": [{"id": "f1", "type": "kho_inf_a", "class": "infantry", "x": 0.0, "z": 0.0,
-                      "men": 100, "men0": 100, "hp": 1.0, "state": []}],
+                      "men": 100, "men0": 100, "hp": 1.0, "state": ["melee"], "target": "e1"}],
         "enemy_roster": [{"id": "e1", "type": "dwf_inf_b"}],
         "enemy": [{"id": "e1", "type": "dwf_inf_b", "class": "infantry", "x": 50.0, "z": 50.0,
                    "men": 90, "men0": 90, "hp": 1.0, "state": []}] if enemy else [],
@@ -252,3 +252,16 @@ def test_a_battle_observation_ends_the_menu_wait(tmp_path, harness):
     manifest = play.play(tmp_path / "job", {**CONFIG, "results": str(tmp_path / "r.csv")},
                          policy_factory=Hold)
     assert [e["status"] for e in manifest["episodes"]] == ["won"]
+
+
+def test_attack_nearest_reorders_a_lapsed_attack_and_skips_the_dead():
+    policy = AttackNearest()
+    first = observation(1, 1000)
+    assert [o["unit"] for o in policy.decide(first)] == ["f1"]
+    assert policy.decide(first) == []
+    lapsed = observation(2, 6000)
+    lapsed["friendly"][0].update(state=["idle"], target=None)
+    assert [o["target"] for o in policy.decide(lapsed)] == ["e1"]
+    dead = observation(3, 9000)
+    dead["friendly"][0].update(men=0, state=[], target=None)
+    assert policy.decide(dead) == []

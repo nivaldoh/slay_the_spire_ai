@@ -80,8 +80,11 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
 
     try:
         if config["attach"]:
-            job = json.loads((BRIDGE_DIR / "session.json").read_text())["job"]
-            manifest["status"] = episodes(Mailbox(BRIDGE_DIR, job=job))
+            # The running game keeps the session it was launched with.
+            live = json.loads((BRIDGE_DIR / "session.json").read_text())
+            config.update({key: live[key] for key in SESSION_KEYS if key in live})
+            write_json(output / "manifest.json", manifest)
+            manifest["status"] = episodes(Mailbox(BRIDGE_DIR, job=live["job"]))
         else:
             with RuntimeLock():
                 manifest["deployment"] = prepare_runtime()
@@ -108,13 +111,13 @@ def start_frontend(mailbox: Mailbox, config: dict, output: Path) -> None:
     intro movies play out on their own. The frontend script unloads when the battle
     loads, so a battle observation also ends the wait.
     """
+    if not config["menu"]:
+        return
     deadline = time.monotonic() + config["start_timeout"]
     while "frontend loaded" not in mailbox.log_since(0, "menu.log"):
         if time.monotonic() > deadline:
             raise MailboxTimeout("the frontend script did not report in")
         time.sleep(1)
-    if not config["menu"]:
-        return
     offset = mailbox.log_offset("menu.log")
     mailbox.write_menu(json.loads(MENU_PATH.read_text()))
     while True:
