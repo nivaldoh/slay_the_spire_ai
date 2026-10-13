@@ -66,7 +66,7 @@ uv run python -m twwarhammer3 pack --list PACK       # entries of any pack; --ex
 uv run python -m twwarhammer3 launch                 # build, install, run the game until Ctrl-C
 uv run python -m twwarhammer3 menu --dump 4          # UI tree of the current screen (ui_tree.txt)
 uv run python -m twwarhammer3 menu --steps steps.json  # click through components; tails menu.log
-uv run python -m twwarhammer3 menu --battle --steps steps.json  # the same, in a running battle
+uv run python -m twwarhammer3 menu --battle --steps steps.json  # the same in a battle (mod.log)
 uv run python -m twwarhammer3 play --policy llm --budget-usd 25 --scenario kho5-dwf5 \
     --episodes 3 --output runs/twwarhammer3/battle/llm-luna-vN-YYYYMMDD
 uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>[/episode-0000]

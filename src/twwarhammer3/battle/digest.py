@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 
 from twwarhammer3.battle.llm import describe_orders, short_type
+from twwarhammer3.battle.stats import row
 
 
 def _strength(observation: dict) -> str:
@@ -35,7 +36,8 @@ def _units(observation: dict) -> list[str]:
 
 
 def episode_digest(episode: Path) -> str:
-    result = json.loads((episode / "result.json").read_text())
+    path = episode / "result.json"
+    result = json.loads(path.read_text()) if path.exists() else {"status": "running"}
     delays = result.get("delays_ms") or []
     llm = result.get("llm") or {}
     error = f"; error: {result['error']}" if result.get("error") else ""
@@ -78,21 +80,22 @@ def episode_digest(episode: Path) -> str:
     return "\n".join(lines)
 
 
+DIGEST_COLUMNS = ("episode", "outcome", "battle_s", "own_left", "enemy_left", "decisions",
+                  "invalid", "delay_s", "usd")
+
+
 def job_digest(job: Path) -> str:
     manifest = json.loads((job / "manifest.json").read_text())
     config = manifest["config"]
     lines = [f"{job.name}: {manifest['status']}, policy {config['policy']}"
              + (f" {config['model']}/{config['effort']}" if config["policy"] == "llm" else "")
              + f", scenario {config['scenario']}, source {manifest['source_revision'][:7]}",
-             "| episode | outcome | battle s | decisions | invalid | delay s | usd |",
-             "|---|---|---|---|---|---|---|"]
-    for episode in manifest["episodes"]:
-        lines.append(f"| {episode['episode']} | {episode['status']} | {episode.get('battle_s', '')}"
-                     f" | {episode.get('decisions', 0)} | {episode.get('invalid', 0)}"
-                     f" | {episode.get('delay_s') or ''}"
-                     f" | {(episode.get('llm') or {}).get('usd', 0):.4f} |")
+             "| " + " | ".join(DIGEST_COLUMNS) + " |", "|" + "---|" * len(DIGEST_COLUMNS)]
+    for result in sorted(job.glob("episode-*/result.json")):
+        item = row(job, result.parent)
+        lines.append("| " + " | ".join(str(item[column]) for column in DIGEST_COLUMNS) + " |")
     return "\n".join(lines)
 
 
 def digest(path: Path) -> str:
-    return episode_digest(path) if (path / "result.json").exists() else job_digest(path)
+    return episode_digest(path) if (path / "trace.jsonl").exists() else job_digest(path)

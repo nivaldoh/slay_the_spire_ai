@@ -51,7 +51,7 @@ local function run_step(step)
         return "wait " .. step.wait_ms .. " ms"
     elseif step.find and step.timeout_ms then
         local uic = ui.find(step.find)
-        if not (uic and ui.visible(uic)) then
+        if not (uic and uic:VisibleFromRoot()) then
             if state.retries * POLL_MS < step.timeout_ms then
                 state.retries = state.retries + 1
                 return nil
