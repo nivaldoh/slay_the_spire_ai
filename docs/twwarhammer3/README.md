@@ -94,7 +94,7 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 | v8 guns | 0/3, 31/70% | 0/2, 30/76% | |
 | v9 melee | | 0/3, 35/65% | 1/3, 26/47% |
 | v10 shooters | 0/3, 37/57% | 0/3, 42/68% | |
-| v11 lords | | | 0/3, 26/61% |
+| v11 lords (reverted) | 0/3, 34/76% | | 0/3, 26/61% |
 
 - With guns, crossbows or artillery on both sides, Luna lost every battle (0 of 11 in the
   Empire mirror, 0 of 11 in the Dwarf mirror), and so did `attack_nearest` (Empire, 0 of
@@ -120,8 +120,8 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 
 ## Next
 
-1. `main` runs v11. Play more battles per version (five or six) before comparing; v11 is
-   untested in the Dwarf mirror. A shorter prompt is worth testing for think time.
+1. `main` runs v10 (v11 reverted after 0 of 6). Play more battles per version (five or
+   six) before comparing. A shorter prompt is worth testing for think time.
 2. Candidate on branch `wh3-fire-report` (`832b233`, built on v9): the mod publishes kill
    counts and enemy targets; an attack order shows shots fired and men killed since it
    was given, enemy lines show their target, our units show "attacked by e3 15 m rear".

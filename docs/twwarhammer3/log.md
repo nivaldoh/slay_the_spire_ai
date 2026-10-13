@@ -286,3 +286,7 @@ To check whether v8-v11 cost the Khorne mirror, v6 was replayed there from a wor
 against 77%), 227 s (37% against 50%) and 185 s (34% against 65%). v6 in the Khorne
 mirror: 2 wins of 6; v9 1 of 3, v11 0 of 3. The first v6 job's two wins look like luck
 more than a better prompt; the newer prompts are not shown to be worse there.
+
+Job `llm-luna-v11-emp-20261013`: lost at 160 s (39% against 79%), 249 s (20% against
+77%) and 189 s (42% against 73%). v11 in all: 0 of 6, and the Empire margin went back to
+-42 points from v10's -20, so v11 was reverted: `main` runs v10.
