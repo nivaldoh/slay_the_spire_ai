@@ -191,8 +191,10 @@ class CommanderPolicy:
 
     def _prompt(self, observation: dict) -> str:
         friendly = friendly_units(observation)
+        # Orders sent this tick have not reached the engine, so the state cannot show them.
         ordered = {unit_id: order for unit_id, order in self.skills.sent.items()
-                   if unit_id in friendly and holds(friendly[unit_id], order)}
+                   if unit_id in friendly and order["time_s"] < self.skills.time_s
+                   and holds(friendly[unit_id], order)}
         report = "\n".join(self.report) or "(none)"
         self.report.clear()
         prompt = "\n\n".join([

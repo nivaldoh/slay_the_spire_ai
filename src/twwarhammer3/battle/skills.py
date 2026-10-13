@@ -77,6 +77,11 @@ def _attack(unit: dict, enemy: dict, mode: str, sent: dict | None, *,
             "run": run, "queue": False}
 
 
+def _last(sent: dict | None) -> str | None:
+    """The target of our last attack: the observed target lags an order by one tick."""
+    return sent["target"] if sent and sent["type"] == "attack" else None
+
+
 def _first(enemies: dict, *ids) -> dict | None:
     """The first of ``ids`` naming a live visible enemy."""
     for enemy_id in ids:
@@ -91,7 +96,8 @@ def engage(unit, assignment, enemies, sent):
     live = [enemy for enemy in enemies.values() if _live(enemy)]
     lords = [enemy for enemy in live if (enemy.get("commander") or enemy.get("class") == "lord")
              and "melee" in _states(enemy) and _distance(unit, enemy) <= ENGAGE_M]
-    target = (_nearest(unit, lords) or _first(enemies, assignment.get("target"), unit.get("target"))
+    target = (_nearest(unit, lords)
+              or _first(enemies, assignment.get("target"), _last(sent), unit.get("target"))
               or _nearest(unit, live)
               or _nearest(unit, [e for e in enemies.values() if e.get("x") is not None]))
     if not target:
@@ -116,7 +122,7 @@ def shoot(unit, assignment, enemies, sent):
              if _live(enemy) and ("melee" not in _states(enemy) or enemy["id"] == named)]
     in_range = [enemy for enemy in clear if _distance(unit, enemy) <= (unit.get("range") or 0)]
     ids = [enemy["id"] for enemy in in_range]
-    target = _first({e["id"]: e for e in in_range}, named, unit.get("target"))
+    target = _first({e["id"]: e for e in in_range}, named, _last(sent), unit.get("target"))
     if not target and in_range:
         # Blocks of infantry and cavalry before shooters and guns, the largest first.
         target = min(in_range, key=lambda e: (e.get("class") in SHOOTERS + ("missile_cavalry",),
@@ -140,7 +146,8 @@ def hold(unit, assignment, enemies, sent):
     near = [enemy for enemy in enemies.values()
             if _live(enemy) and _distance(post, enemy) <= ENGAGE_M]
     if near:
-        target = _first({e["id"]: e for e in near}, unit.get("target")) or _nearest(post, near)
+        target = (_first({e["id"]: e for e in near}, _last(sent), unit.get("target"))
+                  or _nearest(post, near))
         return _attack(unit, target, "auto", sent), f"fighting {target['id']} at the post"
     if _distance(unit, post) > ARRIVED_M:
         return _move(unit, post, face=_nearest(post, enemies.values())), "returning to post"
@@ -152,17 +159,24 @@ def charge(unit, assignment, enemies, sent):
         return None, f"in melee with {unit.get('target') or '?'}"
     fighting = {enemy["id"]: enemy for enemy in enemies.values()
                 if _live(enemy) and "melee" in _states(enemy)}
-    wanted = assignment.get("target")
+    # A named target out of sight, dead or routing counts as no target.
+    wanted = assignment.get("target") if _first(enemies, assignment.get("target")) else None
     target = (_first(fighting, wanted) if wanted
-              else _first(fighting, unit.get("target")) or _nearest(unit, fighting.values()))
+              else _first(fighting, _last(sent), unit.get("target"))
+              or _nearest(unit, fighting.values()))
     if target:
         run = True if unit.get("class") in MOUNTED else None  # foot walks most of the way
         return _attack(unit, target, "melee", sent, run=run), f"charging {target['id']}"
-    waiting = f"waiting: {wanted} not in melee" if wanted else "waiting for melee"
+    named = assignment.get("target")
+    waiting = (f"waiting: {wanted} not in melee" if wanted else "waiting for melee"
+               + (f" ({named} out of sight)" if named else ""))
     post = _point(assignment)
     if post and _distance(unit, post) > ARRIVED_M:
         order = _move(unit, post, face=_nearest(post, enemies.values()))
         return order, waiting + ", moving to post"
+    if not post and sent and sent["type"] != "halt" and sent["time_s"] < assignment.get(
+            "since_s", 0):
+        return {"unit": unit["id"], "type": "halt"}, waiting  # stop the previous skill's order
     return None, waiting
 
 
@@ -189,9 +203,9 @@ def same(order: dict, sent: dict | None) -> bool:
 
 
 def lapsed(unit: dict, sent: dict) -> bool:
-    """Whether the engine dropped an order we sent (or never started it)."""
+    """Whether the engine dropped an order we sent, never started it or changed it."""
     if sent["type"] == "attack":
-        return not unit.get("target") or "idle" in _states(unit)
+        return unit.get("target") != sent["target"] or "idle" in _states(unit)
     if sent["type"] == "move":
         return not unit.get("dest") and "moving" not in _states(unit)
     return False  # a halt is one-shot
@@ -208,11 +222,9 @@ class Skills:
         self.time_s = 0.0
 
     def assign(self, unit: dict, item: dict, time_s: float) -> None:
-        assignment = {"skill": item["skill"], "target": item.get("target"), "x": item.get("x"),
-                      "z": item.get("z"), "since_s": time_s}
-        if assignment["skill"] == "hold" and _point(assignment) is None:
-            assignment.update(x=unit.get("x"), z=unit.get("z"))
-        self.assignments[unit["id"]] = assignment
+        self.assignments[unit["id"]] = {"skill": item["skill"], "target": item.get("target"),
+                                        "x": item.get("x"), "z": item.get("z"),
+                                        "since_s": time_s}
 
     def decide(self, observation: dict) -> list[dict]:
         self.time_s = observation.get("time_ms", 0) / 1000
@@ -225,6 +237,8 @@ class Skills:
             if unit_id not in self.assignments:
                 self.assign(unit, {"skill": default_skill(unit)}, self.time_s)
             assignment = self.assignments[unit_id]
+            if assignment["skill"] == "hold" and _point(assignment) is None:
+                assignment.update(x=unit["x"], z=unit["z"])  # the post is where it stands
             sent = self.sent.get(unit_id)
             order, self.phase[unit_id] = RULES[assignment["skill"]](unit, assignment, enemies,
                                                                     sent)
@@ -246,9 +260,9 @@ class Skills:
                 continue
             order = self.batch[index - 1]
             assignment = self.assignments.get(order["unit"])
-            if order["type"] == "move" and assignment:
-                # The point is unreachable: stay where the unit is instead.
-                if assignment["skill"] == "move":
+            # Other rejections (a routing unit) are retried once the order lapses.
+            if order["type"] == "move" and assignment and result.get("error") == "unreachable":
+                if assignment["skill"] == "move":  # stay where the unit is instead
                     assignment["skill"] = "hold"
                 assignment.update(x=None, z=None)
 

@@ -271,3 +271,9 @@ def test_magic_state_is_player_only_and_unknown_values_are_not_zero():
     assert "Winds of Magic: 23.5 available, 42 reserve" in llm.render_state(obs, {})
     obs["magic"] = {"reserve": 42}
     assert "Winds of Magic: unknown available, 42 reserve" in llm.render_state(obs, {})
+
+
+def test_an_ability_with_half_a_ground_point_is_described_without_crashing():
+    order = {"unit": "f1", "type": "ability", "ability": "roar", "target": None, "x": 10.0,
+             "z": None, "facing": None, "width": None}
+    assert llm.describe_orders([order]) == "f1 ability roar at self"

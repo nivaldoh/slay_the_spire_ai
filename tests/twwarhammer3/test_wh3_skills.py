@@ -140,6 +140,7 @@ def test_charge_waits_for_melee_then_runs_in_when_mounted():
 def test_hold_returns_to_its_post_and_fights_near_it():
     executor = Skills()
     executor.assign(unit("f1", "infantry", 0, 0), {"skill": "hold"}, 10)
+    assert step(executor, [unit("f1", "infantry", 0, 0)], []) == []  # the post is pinned here
     away = unit("f1", "infantry", 0, 30)
     orders = step(executor, [away], [unit("e1", "infantry", 0, 200)])
     assert orders[0]["type"] == "move" and (orders[0]["x"], orders[0]["z"]) == (0, 0)
@@ -162,9 +163,15 @@ def test_a_rejected_move_turns_into_holding_where_the_unit_stands():
     executor = Skills()
     executor.assign(unit("f1", "infantry", 0, 0), {"skill": "move", "x": 500, "z": 500}, 10)
     assert step(executor, [unit("f1", "infantry", 0, 0)], [])[0]["type"] == "move"
-    executor.acknowledge({"results": [{"index": 1, "unit": "f1", "ok": False}]}, {})
+    # A routing unit's rejection is retried later; an unreachable point is given up.
+    executor.acknowledge({"results": [{"index": 1, "unit": "f1", "ok": False,
+                                       "error": "unit_routing"}]}, {})
+    assert executor.assignments["f1"]["skill"] == "move"
+    executor.acknowledge({"results": [{"index": 1, "unit": "f1", "ok": False,
+                                       "error": "unreachable"}]}, {})
     assert executor.assignments["f1"]["skill"] == "hold"
     assert step(executor, [unit("f1", "infantry", 0, 0)], [], 20000) == []
+    assert (executor.assignments["f1"]["x"], executor.assignments["f1"]["z"]) == (0, 0)
 
 
 def test_routing_and_destroyed_units_get_no_orders():
@@ -175,3 +182,35 @@ def test_routing_and_destroyed_units_get_no_orders():
     assert step(executor, friendly, [enemy]) == []
     assert executor.phase == {"f1": "routing", "f2": "destroyed"}
     assert skills.default_skill({"class": "flying"}) == "engage"
+
+
+def test_the_last_target_sent_wins_over_the_lagging_observed_one():
+    # Regression (skills-v1-kho-smoke): the ack observation still shows the previous target,
+    # and preferring it made a Skullcannon alternate e1/e5 every tick without firing.
+    executor = Skills()
+    lord, gun = unit("e1", "lord", 0, 140, state=["melee"]), unit("e5", "artillery", 0, 145)
+    assert step(executor, [shooter(target="e1")], [lord, gun]) == [attack("f1", "e5", "ranged")]
+    lord["state"] = []
+    assert step(executor, [shooter(target="e1")], [lord, gun], 10300) == []
+    assert step(executor, [shooter(target="e5")], [lord, gun], 10600) == []
+
+
+def test_charge_without_a_post_halts_the_previous_skills_order():
+    executor = Skills()
+    enemy = unit("e1", "infantry", 0, 200)
+    assert step(executor, [unit("f1", "infantry", 0, 0)], [enemy]) == [attack("f1", "e1")]
+    executor.assign(unit("f1", "infantry", 0, 40), {"skill": "charge"}, 11)
+    walking = unit("f1", "infantry", 0, 40, target="e1")
+    assert step(executor, [walking], [enemy], 11000) == [{"unit": "f1", "type": "halt"}]
+    assert step(executor, [walking], [enemy], 11300) == []
+    assert executor.phase["f1"] == "waiting for melee"
+
+
+def test_an_attack_the_game_redirected_is_sent_again_after_two_seconds():
+    executor = Skills()
+    executor.assign(shooter(), {"skill": "shoot", "target": "e1"}, 10)
+    enemies = [unit("e1", "infantry", 0, 100), unit("e2", "infantry", 0, 120, men=99)]
+    assert step(executor, [shooter()], enemies) == [attack("f1", "e1", "ranged")]
+    assert step(executor, [shooter(target="e2")], enemies, 11000) == []
+    assert step(executor, [shooter(target="e2")], enemies, 12000) == [
+        attack("f1", "e1", "ranged")]

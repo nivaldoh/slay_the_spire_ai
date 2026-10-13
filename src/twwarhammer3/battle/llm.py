@@ -316,7 +316,7 @@ def describe_orders(orders: list[dict]) -> str:
                          + ("on" if order["enabled"] else "off"))
         elif order["type"] == "ability":
             target = order.get("target") or "self"
-            if order.get("x") is not None:
+            if order.get("x") is not None and order.get("z") is not None:
                 target = f"({order['x']:.0f}, {order['z']:.0f})"
             parts.append(f"{order['unit']} ability {order['ability']} at {target}")
         else:

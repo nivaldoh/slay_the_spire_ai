@@ -10,7 +10,7 @@ from gameai.ledger import BudgetExhausted
 from twwarhammer3.__main__ import add_session_arguments
 from twwarhammer3.battle import commander, digest, play, stats
 from twwarhammer3.battle.scripted import AttackNearest, Hold
-from twwarhammer3.protocol import BattleRestarted, MailboxTimeout
+from twwarhammer3.protocol import BattleRestarted, MailboxTimeout, PolicyFailure
 
 
 def observation(seq, time_ms, *, battle="b1", phase="Deployed", result=None, ack=False,
@@ -216,6 +216,18 @@ def test_quiet_decisions_of_a_fast_policy_are_logged_once_per_observe_interval(t
     assert [e["time_ms"] for e in events if e["kind"] == "decision"] == [250, 1250, 1500]
     assert [e["kind"] for e in events].count("observation") == 3
     assert [e["kind"] for e in events].count("ack") == 3
+
+
+def test_the_observation_a_failing_decision_saw_is_kept_in_the_trace(tmp_path):
+    class Failing(Hold):
+        def decide(self, observation):
+            raise PolicyFailure("no reply", failure={"kind": "invalid_reply"})
+
+    mailbox = FakeMailbox([observation(0, 0), observation(1, 1000)])
+    result = play.play_episode(tmp_path / "e", CONFIG, Failing(), mailbox, not_battle=None)
+    assert result["status"] == "policy_failure"
+    kinds = [json.loads(line)["kind"] for line in (tmp_path / "e/trace.jsonl").open()]
+    assert kinds[-1] == "observation"
 
 
 @pytest.fixture

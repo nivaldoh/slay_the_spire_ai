@@ -281,7 +281,12 @@ def _drive(config, policy, mailbox, not_battle, result, event, started) -> None:
         if applied_ms is not None and observation["time_ms"] < applied_ms + config["interval_ms"]:
             continue
         read_at = time.monotonic()
-        orders, invalid = policy.decide(observation), None
+        since = observation["time_ms"] - applied_ms if applied_ms is not None else None
+        try:
+            orders, invalid = policy.decide(observation), None
+        except BaseException:
+            event("observation", observation=observation, since_previous_applied_ms=since)
+            raise
         try:
             validate_orders(orders, observation)
         except IllegalActionError as exc:
@@ -294,9 +299,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started) -> None:
         logged = (orders or invalid or behavior != logged_behavior or logged_ms is None
                   or observation["time_ms"] - logged_ms >= config["observe_ms"])
         if logged:
-            event("observation", observation=observation,
-                  since_previous_applied_ms=(observation["time_ms"] - applied_ms
-                                             if applied_ms is not None else None))
+            event("observation", observation=observation, since_previous_applied_ms=since)
             if invalid:
                 event("invalid", **invalid)
         request = mailbox.write_orders(battle, observation["seq"], orders)

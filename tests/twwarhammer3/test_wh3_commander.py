@@ -58,6 +58,8 @@ def test_decide_never_waits_and_keeps_one_request_in_flight(tmp_path):
                        "run": False, "queue": False}]
     assert agent.skills.assignments["f1"]["skill"] == "charge"
     assert "Units follow their default skills" in agent.metadata()["prompt"]
+    # f2's attack was sent this tick: the state cannot show it yet, so it is not annotated.
+    assert "your order" not in agent.metadata()["prompt"]
     assert agent.decide(observation(31000)) == []
     assert "prompt" not in agent.metadata()
     answer(agent)
@@ -88,9 +90,9 @@ def test_plans_are_checked_against_the_state_they_arrive_in(tmp_path):
         "f1 engage e9: target e9 is not a live enemy, so it was cleared"]
     assert agent.skills.assignments["f1"] == {"skill": "engage", "target": None, "x": None,
                                               "z": None, "since_s": 36.0}
-    # e2 is in the roster but not visible: the assignment keeps it and waits.
+    # e2 is in the roster but not visible: the assignment keeps it, and acts without it.
     assert agent.skills.assignments["f2"]["target"] == "e2"
-    assert agent.skills.phase["f2"] == "waiting: e2 not in melee, moving to post"
+    assert agent.skills.phase["f2"] == "waiting for melee (e2 out of sight), moving to post"
     assert "dropped f2 shoot: the unit has no missiles" in agent.metadata()["prompt"]
     answer(agent)
     agent.decide(observation(40000))
