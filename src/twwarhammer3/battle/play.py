@@ -34,11 +34,12 @@ from twwarhammer3.protocol import (
 SCORED = {"won", "lost", "draw", "policy_failure", "truncated"}
 SOURCES = ("src/gameai", "src/twwarhammer3", "configs/twwarhammer3", "pyproject.toml",
            "uv.lock", ".python-version")
-MENU_PATH = Path(__file__).resolve().parents[3] / "configs/twwarhammer3/menu.json"
+SCENARIOS_PATH = Path(__file__).resolve().parents[3] / "configs/twwarhammer3/scenarios.json"
 SESSION_KEYS = ("speed", "pause", "interval_ms", "observe_ms", "tick_ms", "autostart", "menu")
 
 
 def play(output: Path, config: dict, *, policy_factory) -> dict:
+    steps = scenario_steps(config["scenario"])
     output.mkdir(parents=True)
     write_json(output / "environment.json", collect_diagnostics())
     manifest = {
@@ -94,7 +95,7 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
                 mailbox.write_session(session)
                 with OwnedGame(output / "game.log", timeout=config["run_timeout"]) as game:
                     manifest["game"] = game.info
-                    start_frontend(mailbox, config, output)
+                    start_frontend(mailbox, config, output, steps)
                     manifest["status"] = episodes(mailbox)
     except BaseException:
         manifest["status"] = "interrupted"
@@ -104,7 +105,47 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
     return manifest
 
 
-def start_frontend(mailbox: Mailbox, config: dict, output: Path) -> None:
+def scenario_steps(name: str) -> list[dict]:
+    """Menu steps from the main menu to the start of the named custom battle.
+
+    Each side picks its race, clears the army and recruits its units by double-click; the
+    first unit is the lord (the last field of a lord's card id is 1). The screen keeps
+    the last map, so the map is not set.
+    """
+    scenario = json.loads(SCENARIOS_PATH.read_text())[name]
+    steps = [{"log": f"custom battle {name}; waiting for the main menu"},
+             {"find": ["buttons_holder", "button_battle"], "click": True, "timeout_ms": 240000},
+             {"find": ["battle_frame", "button_practice_battle"], "click": True,
+              "timeout_ms": 20000}]
+    for slot, side in enumerate((scenario["player"], scenario["enemy"])):
+        steps += [
+            {"find": ["teams_parent", f"CcoCustomBattlePlayerSlotslot{slot}"], "click": True,
+             "timeout_ms": 30000},
+            {"wait_ms": 2500},
+            {"find": ["faction_pic_mask_parent", "button_select_race"], "click": True,
+             "timeout_ms": 15000},
+            {"wait_ms": 1500},
+            # The race list never reads as visible from the root, so this find does not wait.
+            {"find": ["button_select_race", "CcoSubcultureRecord" + side["subculture"]],
+             "click": True},
+            {"wait_ms": 2500},
+            {"find": ["button_bar_parent", "button_clear"], "click": True, "timeout_ms": 15000},
+            {"wait_ms": 800},
+        ]
+        for index, unit in enumerate(side["units"]):
+            card = f"CcoUnitsCustomBattlePermissionRecord{unit}:{side['faction']}:{int(index == 0)}"
+            steps += [{"find": [card, "unit_card"], "dblclick": True, "timeout_ms": 15000},
+                      {"wait_ms": 600}]
+    return steps + [
+        {"find": ["teams_parent", "CcoCustomBattlePlayerSlotslot0"], "click": True,
+         "timeout_ms": 30000},
+        {"wait_ms": 1500},
+        {"dump": "army_player.txt", "depth": 1, "find": ["recruited_army_parent", "unit_list"]},
+        {"find": ["start_button_frame", "button_start_battle"], "click": True, "timeout_ms": 15000},
+    ]
+
+
+def start_frontend(mailbox: Mailbox, config: dict, output: Path, steps: list[dict]) -> None:
     """Wait for the frontend script, then run the custom battle steps to the end.
 
     No input is sent to the desktop: the first step waits for the main menu, so the
@@ -119,7 +160,7 @@ def start_frontend(mailbox: Mailbox, config: dict, output: Path) -> None:
             raise MailboxTimeout("the frontend script did not report in")
         time.sleep(1)
     offset = mailbox.log_offset("menu.log")
-    mailbox.write_menu(json.loads(MENU_PATH.read_text()))
+    mailbox.write_menu(steps)
     while True:
         lines = mailbox.log_since(offset, "menu.log").splitlines()
         (output / "menu.log").write_text(mailbox.log_since(0, "menu.log"))

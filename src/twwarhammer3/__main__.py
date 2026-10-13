@@ -69,7 +69,7 @@ def main() -> int:
     play.add_argument("--ledger", type=Path, default=LEDGER_PATH)
     play.add_argument("--results", type=Path, default=RESULTS_PATH)
     play.add_argument("--episodes", type=int, default=1)
-    play.add_argument("--scenario", required=True, help="label of the fixed custom battle")
+    play.add_argument("--scenario", required=True, help="a battle in configs/twwarhammer3/scenarios.json")
     add_session_arguments(play)
     play.add_argument("--start-timeout", type=float, default=900)
     play.add_argument("--observation-timeout", type=float, default=60)

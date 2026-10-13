@@ -87,7 +87,7 @@ class FakeMailbox:
         return "[0] loaded battle b1\n"
 
 
-CONFIG = {"policy": "attack_nearest", "episodes": 1, "scenario": "small", "speed": 1.0,
+CONFIG = {"policy": "attack_nearest", "episodes": 1, "scenario": "kho5-dwf5", "speed": 1.0,
           "pause": False, "interval_ms": 5000, "observe_ms": 1000, "tick_ms": 250,
           "autostart": True, "menu": True, "start_timeout": 5, "observation_timeout": 5,
           "episode_timeout": 100, "run_timeout": 100, "attach": False, "results": ""}
@@ -183,9 +183,6 @@ def harness(tmp_path, monkeypatch):
     monkeypatch.setattr(play, "committed_revision", lambda purpose, paths: "abc1234def")
     monkeypatch.setattr(play, "source_fingerprints", lambda paths: {})
     monkeypatch.setattr(play, "Mailbox", mailbox_factory)
-    menu = tmp_path / "menu.json"
-    menu.write_text(json.dumps([{"find": ["button_battle"], "click": True}]))
-    monkeypatch.setattr(play, "MENU_PATH", menu)
     return boxes
 
 
@@ -204,7 +201,7 @@ def test_job_plays_episodes_with_restarts_and_records_rows(tmp_path, harness):
     assert manifest["status"] == "completed"
     assert [e["status"] for e in manifest["episodes"]] == ["won", "lost"]
     assert mailbox.controls == [("b1", "restart")]
-    assert mailbox.menu == [{"find": ["button_battle"], "click": True}]
+    assert mailbox.menu == play.scenario_steps("kho5-dwf5")
     assert mailbox.session["interval_ms"] == 5000 and mailbox.job == "attack-v1-20261013"
     rows = list(csv.DictReader(results.open()))
     assert [(r["episode"], r["outcome"], r["model"], r["harness"], r["mode"], r["own_left"],
@@ -213,7 +210,7 @@ def test_job_plays_episodes_with_restarts_and_records_rows(tmp_path, harness):
         ("episode-0001", "lost", "attack_nearest", "1", "realtime", "0.5", "0.1"),
     ]
     table = stats.summary(results)
-    assert ("| small | attack_nearest |  | 1 | realtime | 2 | 1 | 1 | 0 | 0 | 4 | 0.50 | 0.10 |"
+    assert ("| kho5-dwf5 | attack_nearest |  | 1 | realtime | 2 | 1 | 1 | 0 | 0 | 4 | 0.50 | 0.10 |"
             in table)
     rebuilt = tmp_path / "rebuilt.csv"
     assert stats.rebuild(tmp_path, rebuilt) == 2
@@ -255,6 +252,21 @@ def test_a_battle_observation_ends_the_menu_wait(tmp_path, harness):
     manifest = play.play(tmp_path / "job", {**CONFIG, "results": str(tmp_path / "r.csv")},
                          policy_factory=Hold)
     assert [e["status"] for e in manifest["episodes"]] == ["won"]
+
+
+def test_scenario_steps_pick_each_race_and_recruit_the_lord_first():
+    steps = play.scenario_steps("kho5-dwf5")
+    races = [s["find"][1] for s in steps if s.get("find", [""])[0] == "button_select_race"]
+    assert races == ["CcoSubcultureRecordwh3_main_sc_kho_khorne",
+                     "CcoSubcultureRecordwh_main_sc_dwf_dwarfs"]
+    cards = [s["find"][0] for s in steps if s.get("dblclick")]
+    assert cards[0] == ("CcoUnitsCustomBattlePermissionRecord"
+                        "wh3_main_kho_cha_herald_of_khorne_0:wh3_main_kho_khorne:1")
+    assert cards[5].endswith("wh_main_dwf_cha_lord_0:wh_main_dwf_dwarfs:1")
+    assert len(cards) == 10 and all(card.endswith(":0") for card in cards[1:5] + cards[6:])
+    assert steps[-1]["find"] == ["start_button_frame", "button_start_battle"]
+    for name in json.loads(play.SCENARIOS_PATH.read_text()):
+        assert len([s for s in play.scenario_steps(name) if s.get("dblclick")]) == 10
 
 
 def test_attack_nearest_reorders_a_lapsed_attack_and_skips_the_dead():
