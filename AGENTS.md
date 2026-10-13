@@ -13,6 +13,8 @@ src/gameai/        Game-neutral code any game can import; it never imports a gam
   ledger.py        Append-only spend ledger with a hard budget, for any paid model
   provenance.py    Repository root, scoped source fingerprints, committed-source check,
                    atomic JSON writes
+  windows.py       Windows games owned from WSL: runtime lock, supervised launch, probes
+  windows_game.py  The Windows-side supervisor (job object, controller EOF and time limit)
 src/spire/         Slay the Spire 1
   __main__.py      CLI: doctor, play, digest, watch, spend (full runs); rollout, evaluate, train, report
                    (first combat)
@@ -20,7 +22,7 @@ src/spire/         Slay the Spire 1
   policies.py      Scripted first-combat policies: random, starter heuristic, end turn (frozen)
   decisions.py     Public full-game boundary: labeled choices on every in-game screen, for any track
   engine/          Real-game plumbing for every track: Windows runtime, relay bridge, doctor,
-                   and the Windows-side windows_game.py / windows_relay.py
+                   and the Windows-side windows_relay.py
   fullrun/         Current track: play.py (complete-run loop for any policy), llm.py (prompt,
                    memory and replies: the tuning surface), digest.py (trace summaries and
                    mistake flags), watch.py (job events), stats.py (the results register,

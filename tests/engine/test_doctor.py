@@ -6,7 +6,7 @@ from unittest.mock import Mock
 import pytest
 
 from gameai.provenance import sha256
-from spire.engine import doctor, runtime, windows_game
+from spire.engine import doctor, runtime
 
 
 @pytest.fixture
@@ -34,8 +34,8 @@ def setup(tmp_path, monkeypatch):
     monkeypatch.setattr(runtime, "WORKSHOP_DIR", tmp_path / "workshop")
     monkeypatch.setattr(runtime, "RUNTIME_DIR", tmp_path / "runtime")
     monkeypatch.setattr(runtime, "wsl_bridge_host", lambda: "172.18.34.183")
-    monkeypatch.setattr(windows_game, "conflicting_games", lambda game_dir: [])
-    monkeypatch.setattr(doctor, "_probe", Mock(return_value={"status": "ok", "output": "v"}))
+    monkeypatch.setattr(doctor, "conflicting_games", lambda game_dir, rules: [])
+    monkeypatch.setattr(doctor, "probe", Mock(return_value={"status": "ok", "output": "v"}))
     return tmp_path
 
 
@@ -80,12 +80,12 @@ def test_missing_prerequisites_block(tmp_path, monkeypatch):
     monkeypatch.setattr(runtime, "GAME_DIR", tmp_path / "game")
     monkeypatch.setattr(runtime, "WORKSHOP_DIR", tmp_path / "workshop")
     monkeypatch.setattr(runtime, "RUNTIME_DIR", tmp_path / "runtime")
-    monkeypatch.setattr(doctor, "_probe", lambda command: {"status": "unavailable"})
+    monkeypatch.setattr(doctor, "probe", lambda command: {"status": "unavailable"})
     monkeypatch.setattr(
         runtime, "wsl_bridge_host", Mock(side_effect=RuntimeError("Cannot discover eth0"))
     )
     failed = Mock(side_effect=subprocess.CalledProcessError(1, "powershell"))
-    monkeypatch.setattr(windows_game, "conflicting_games", failed)
+    monkeypatch.setattr(doctor, "conflicting_games", failed)
     report = doctor.collect_diagnostics()
     assert report["status"] == "blocked"
     text = blockers(report)
@@ -97,7 +97,7 @@ def test_missing_prerequisites_block(tmp_path, monkeypatch):
 
 
 def test_running_game_blocks(setup, monkeypatch):
-    monkeypatch.setattr(windows_game, "conflicting_games", lambda game_dir: [{"ProcessId": 42}])
+    monkeypatch.setattr(doctor, "conflicting_games", lambda game_dir, rules: [{"ProcessId": 42}])
     assert "PIDs 42" in blockers(doctor.collect_diagnostics())
 
 
@@ -119,13 +119,3 @@ def test_profile_reads_the_active_slot_and_rejects_unknown_slots(tmp_path):
     (preferences / "STSSaveSlots").write_text(json.dumps({"DEFAULT_SLOT": "../x"}))
     assert doctor.collect_profile(tmp_path)["status"] == "unavailable"
     assert doctor.collect_profile(Path(tmp_path / "absent"))["status"] == "unavailable"
-
-
-def test_probe_timeout_is_bounded_and_reported(monkeypatch):
-    run = Mock(side_effect=subprocess.TimeoutExpired("python", 8))
-    monkeypatch.setattr(doctor.subprocess, "run", run)
-    assert doctor._probe(["python", "--version"]) == {
-        "status": "unavailable",
-        "error": "TimeoutExpired",
-    }
-    assert run.call_args.kwargs["timeout"] == 8

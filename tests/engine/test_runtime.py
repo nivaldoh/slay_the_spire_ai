@@ -13,7 +13,7 @@ import pytest
 from gameai.provenance import REPO_ROOT, sha256
 from spire.engine import runtime
 
-SCRIPT = REPO_ROOT / "src/spire/engine/windows_game.py"
+SCRIPT = REPO_ROOT / "src/gameai/windows_game.py"
 SPEC = importlib.util.spec_from_file_location("windows_game", SCRIPT)
 WINDOWS_GAME = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(WINDOWS_GAME)
@@ -250,14 +250,15 @@ def test_startup_handshake_reads_complete_json(tmp_path):
     ],
 )
 def test_existing_user_game_is_identified_without_killing_processes(process, conflicts):
-    assert WINDOWS_GAME.is_game_process(process, Path("C:/games/SlayTheSpire")) == conflicts
+    game_dir = Path("C:/games/SlayTheSpire")
+    assert WINDOWS_GAME.is_game_process(process, game_dir, runtime.CONFLICTS) == conflicts
 
 
 def test_process_probe_preserves_powershell_failure(monkeypatch):
     failed = Mock(side_effect=subprocess.CalledProcessError(1, "powershell"))
     monkeypatch.setattr(WINDOWS_GAME.subprocess, "check_output", failed)
     with pytest.raises(subprocess.CalledProcessError):
-        WINDOWS_GAME.conflicting_games(Path("C:/games/SlayTheSpire"))
+        WINDOWS_GAME.conflicting_games(Path("C:/games/SlayTheSpire"), runtime.CONFLICTS)
 
 
 def start_supervisor(tmp_path, timeout):
@@ -270,11 +271,11 @@ def start_supervisor(tmp_path, timeout):
         "import importlib.util,sys; "
         "spec=importlib.util.spec_from_file_location('g',sys.argv[1]); "
         "g=importlib.util.module_from_spec(spec); spec.loader.exec_module(g); "
-        "g.join_kill_on_close_job=lambda:None; g.conflicting_games=lambda game_dir:[]; "
+        "g.join_kill_on_close_job=lambda:None; g.conflicting_games=lambda game_dir,rules:[]; "
         "sys.argv=sys.argv[1:]; sys.exit(g.main())"
     )
-    arguments = ["--game-dir", str(tmp_path / "game"), "--loader", "ModTheSpire.jar",
-                 "--log", str(tmp_path / "game.log"), "--timeout", str(timeout)]
+    arguments = ["--game-dir", str(tmp_path / "game"), "--log", str(tmp_path / "game.log"),
+                 "--timeout", str(timeout), "--", str(jvm), "-jar", "ModTheSpire.jar"]
     return subprocess.Popen(
         [sys.executable, "-c", code, str(SCRIPT), *arguments],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,

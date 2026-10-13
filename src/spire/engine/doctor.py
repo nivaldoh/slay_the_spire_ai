@@ -17,19 +17,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from gameai.provenance import sha256
-from spire.engine import runtime, windows_game
-
-
-def _probe(command: list[str]) -> dict:
-    """Run a bounded version or resource probe."""
-    try:
-        result = subprocess.run(command, capture_output=True, text=True, timeout=8)
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        return {"status": "unavailable", "error": type(exc).__name__}
-    return {
-        "status": "ok" if result.returncode == 0 else "failed",
-        "output": (result.stdout or result.stderr).strip()[:4096],
-    }
+from gameai.windows import probe
+from gameai.windows_game import conflicting_games
+from spire.engine import runtime
 
 
 def _preferences(path: Path) -> dict | None:
@@ -88,8 +78,8 @@ def collect_diagnostics() -> dict:
                 blockers.append(f"{path} differs from the pinned {name}")
 
     probes = {
-        "windows_python": _probe([str(runtime.WINDOWS_PYTHON), "--version"]),
-        "bundled_java": _probe([str(runtime.GAME_DIR / "jre/bin/java.exe"), "-version"]),
+        "windows_python": probe([str(runtime.WINDOWS_PYTHON), "--version"]),
+        "bundled_java": probe([str(runtime.GAME_DIR / "jre/bin/java.exe"), "-version"]),
     }
     blockers += [f"{key} did not run" for key, probe in probes.items() if probe["status"] != "ok"]
     profile = collect_profile(runtime.GAME_DIR)
@@ -101,7 +91,7 @@ def collect_diagnostics() -> dict:
         bridge_host = None
         blockers.append(str(exc))
     try:
-        conflicts = windows_game.conflicting_games(Path(runtime.WINDOWS_GAME_DIR))
+        conflicts = conflicting_games(Path(runtime.WINDOWS_GAME_DIR), runtime.CONFLICTS)
         if conflicts:
             pids = ", ".join(str(process["ProcessId"]) for process in conflicts)
             blockers.append(f"A game or JVM is already running (PIDs {pids})")
@@ -122,7 +112,7 @@ def collect_diagnostics() -> dict:
         "resources": {
             "cpu_threads": os.cpu_count(),
             "memory_bytes": os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES"),
-            "gpu": _probe([nvidia, "--query-gpu=name,driver_version,memory.total",
+            "gpu": probe([nvidia, "--query-gpu=name,driver_version,memory.total",
                            "--format=csv,noheader,nounits"]) if nvidia else None,
         },
     }

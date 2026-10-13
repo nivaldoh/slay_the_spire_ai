@@ -1,4 +1,7 @@
-"""Own one Windows JVM and stop it on controller EOF or a hard time limit."""
+"""Own one Windows game process and stop it on controller EOF or a hard time limit.
+
+Runs on Windows under python.exe; the WSL controller starts it through ``OwnedGame``.
+"""
 
 import argparse
 import ctypes
@@ -66,13 +69,14 @@ def join_kill_on_close_job() -> None:
         raise ctypes.WinError(ctypes.get_last_error())
 
 
-def conflicting_games(game_dir: Path) -> list[dict]:
+def conflicting_games(game_dir: Path, rules: dict) -> list[dict]:
     """Read process metadata and refuse overlap; never terminate an existing game."""
+    names = [*rules.get("names", []), *rules.get("hosts", [])]
+    where = " OR ".join(f"Name='{name}'" for name in names)
     query = (
         "$ErrorActionPreference='Stop'; "
         "[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new(); "
-        "@(Get-CimInstance Win32_Process -Filter "
-        "\"Name='java.exe' OR Name='javaw.exe' OR Name='SlayTheSpire.exe'\" | "
+        f"@(Get-CimInstance Win32_Process -Filter \"{where}\" | "
         "Select-Object ProcessId,Name,ExecutablePath,CommandLine) | ConvertTo-Json -Compress"
     )
     output = subprocess.check_output(
@@ -81,51 +85,55 @@ def conflicting_games(game_dir: Path) -> list[dict]:
     processes = json.loads(output) if output else []
     if isinstance(processes, dict):
         processes = [processes]
-    return [process for process in processes if is_game_process(process, game_dir)]
+    return [process for process in processes if is_game_process(process, game_dir, rules)]
 
 
-def is_game_process(process: dict, game_dir: Path) -> bool:
+def is_game_process(process: dict, game_dir: Path, rules: dict) -> bool:
+    """Whether a process is the game or one of its ``hosts`` (such as a JVM) running it.
+
+    ``rules``: ``names`` are the game's own executables; ``hosts`` are interpreters that
+    may run it, matched by the game folder or a ``markers`` substring in their command
+    line, or treated as conflicts when Windows reveals neither path nor command line.
+    """
     name = (process.get("Name") or "").lower()
     executable = (process.get("ExecutablePath") or "").lower().replace("/", "\\")
     command = (process.get("CommandLine") or "").lower().replace("/", "\\")
     game_path = str(game_dir).lower().replace("/", "\\").rstrip("\\") + "\\"
+    hosts = {host.lower() for host in rules.get("hosts", [])}
     return (
-        name == "slaythespire.exe"
+        name in {item.lower() for item in rules.get("names", [])}
         or executable.startswith(game_path)
-        or "modthespire.jar" in command
-        or "desktop-1.0.jar" in command
+        or any(marker.lower() in command for marker in rules.get("markers", []))
         or game_path in command
-        # An inaccessible JVM cannot be safely classified as unrelated.
-        or (name in {"java.exe", "javaw.exe"} and not executable and not command)
+        # An inaccessible host process cannot be safely classified as unrelated.
+        or (name in hosts and not executable and not command)
     )
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--game-dir", required=True)
-    parser.add_argument("--loader", required=True)
+    parser.add_argument("--game-dir", required=True, help="working directory of the game")
     parser.add_argument("--log", required=True)
     parser.add_argument("--timeout", type=float, default=600)
+    parser.add_argument("--rules", default="{}", help="JSON conflict rules, see is_game_process")
+    parser.add_argument("command", nargs="+", help="the game command line, after --")
     args = parser.parse_args()
     game_dir = Path(args.game_dir)
     join_kill_on_close_job()
-    conflicts = conflicting_games(game_dir)
+    conflicts = conflicting_games(game_dir, json.loads(args.rules))
     if conflicts:
         print(
-            "windows_game: refusing overlap with existing game/JVM PIDs "
+            "windows_game: refusing overlap with existing game PIDs "
             + ", ".join(str(process["ProcessId"]) for process in conflicts),
             file=sys.stderr,
             flush=True,
         )
         return 1
-    command = [
-        str(game_dir / "jre/bin/java.exe"), "-Xmx1G", "-Dfile.encoding=UTF-8", "-jar", args.loader,
-        "--skip-launcher", "--skip-intro", "--mods", "basemod,CommunicationMod",
-    ]
+    command = args.command
     stop = threading.Event()
 
     def watch_controller() -> None:
-        # EOF also means the WSL controller disappeared. Never leave an orphan JVM.
+        # EOF also means the WSL controller disappeared. Never leave an orphan game.
         os.read(sys.stdin.fileno(), 1)
         stop.set()
 
