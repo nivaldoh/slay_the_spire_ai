@@ -106,3 +106,9 @@ baseline. The support units still did little: the Skullcannon fired its 12 shots
 most 3 kills, and the horsemen, ordered at the Quarrellers through the melee, stalled
 behind it and routed, throwing 6-26 axes where the baseline's threw about 170 into the
 Dwarf Warriors before contact. Moves to flank were acknowledged but the unit barely moved.
+
+Pause-mode ablation, job `llm-luna-v4-pause-20261013` (same source, `--pause`: the battle
+stops while the model thinks; orders apply 0.6 s of battle time after the state seen,
+against 5.5 s in real time): lost at 232 s (37% against 71%), lost at 579 s (8% against
+34%), won at 434 s (39% against 26%). One win of three, as in real time: the model's
+latency is not what separates it from the baseline.
