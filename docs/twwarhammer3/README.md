@@ -162,7 +162,9 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 
 ## Next
 
-0. Compare the controllers ([controllers.md](controllers.md#comparing-controllers)): six
+0. Fix the shooter re-send loop found in the first random skills battle
+   ([log.md](log.md#random-battles)), then compare the controllers
+   ([controllers.md](controllers.md#comparing-controllers)): six
    episodes each of `skills`, the Luna `commander` and the best `llm` version on the same
    pinned scenarios, then Sol and Astra as commander. The smoke battles are in
    [log.md](log.md#skills-and-commander-v1-2026-10-13).

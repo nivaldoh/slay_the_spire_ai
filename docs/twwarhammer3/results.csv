@@ -88,3 +88,5 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-13,commander-sol-v1-kho-smoke-20261013,episode-0000,kho5-dwf5,commander,gpt-6.1-sol,low,1,0f8eb39,realtime,1.0,0.0,won,255,0.75,0.44,825,2,0.3,0.1769
 2026-10-13,commander-astra-v1-kho-smoke-20261013,episode-0000,kho5-dwf5,commander,gpt-6-astra,low,1,0f8eb39,realtime,1.0,0.0,won,309,0.64,0.26,1004,2,0.3,1.1685
 2026-10-13,commander-luna-v1-random-s2-smoke-20261013,episode-0000,random,commander,gpt-6-luna,low,1,5a2fc8d,realtime,1.0,0.0,won,407,0.4,0.23,1315,9,0.31,0.0321
+2026-10-13,skills-v1.1-random-a-20261013,episode-0000,random,skills,,,1.1,900000a,realtime,1.0,0.0,lost,415,0.35,0.25,1345,0,0.3,0
+2026-10-13,commander-luna-v1-random-b-20261013,episode-0000,random,commander,gpt-6-luna,low,1,29c9325,realtime,1.0,0.0,lost,404,0.0,0.31,1319,21,0.3,0.0323

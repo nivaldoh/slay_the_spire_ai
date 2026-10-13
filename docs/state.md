@@ -28,9 +28,13 @@ job unless `--seed` is given. The first draw (Dark Elves vs Nurgle) was won by t
 commander. Every battle so far ran at AI difficulty very hard. Army
 abilities (Khorne's kill unlocks) are missing from the interface: a gap to fix.
 
+Two fresh random draws were each lost: `skills` with Skaven vs Norsca, and the Luna
+commander with Vampire Counts vs Lizardmen.
+
 Next:
-1. The six-episode comparison of `llm`, `skills` and `commander`.
-2. Army abilities and ability readiness.
+1. Fix the shooter re-send loop the Skaven battle showed (see the WH3 log).
+2. The six-episode comparison of `llm`, `skills` and `commander`.
+3. Army abilities and ability readiness.
 
 WH3 interface work completed: no extra wait by default; explicit attack modes, queued
 moves/attacks, formation width, supported behavior toggles and self/unit/ground abilities.

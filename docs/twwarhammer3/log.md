@@ -500,3 +500,18 @@ nothing new, and a job is one matchup. The draw also picked a faction for each s
 (`5a2fc8d`), but the owner noted that a faction within a race only changes colours. The
 next commit draws races only, a fresh seed per job. The mod reports the Harpies and the
 Feral Manticore as infantry: its class mapping checks `can_fly` only for monsters.
+
+Two fresh draws followed, each lost:
+
+| Job | Draw | Outcome | Battle s | Own left | Enemy left | Notes |
+|---|---|---|---|---|---|---|
+| `skills-v1.1-random-a` (`900000a`) | Skaven (20 units) vs Norsca (13), `wh3_nur_wastes_01_04`, seed 255179936 | lost | 415 | 0.35 | 0.25 | 0 rejections |
+| `commander-luna-v1-random-b` (`29c9325`) | Vampire Counts vs Lizardmen, `wh3_tze_wastes_02_01`, seed 369290826 | lost | 404 | 0.00 | 0.31 | 70 plans, plan age 5.6 s, $0.03 |
+
+In the commander battle, 19 of 21 rejections were refused lord ability casts. A defect
+to fix before the comparison: in the skills battle four Skaven missile units (Night
+Runners, Gutter Runners, Globadiers, Death Globe Bombardiers) re-sent the same ranged
+attack every 2 s for long stretches, 69-102 orders each. The engine never showed the
+ordered target, probably for lack of line of sight, so the redirected-attack lapse rule
+from `0f8eb39` fired on its 2-second repeat. A shooter should give up on a target the
+engine keeps refusing and pick another.
