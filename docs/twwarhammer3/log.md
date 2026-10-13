@@ -82,3 +82,18 @@ so the horsemen and the Skullcannon could not charge.
 Across all episodes so far, the model orders `run` on about 90% of its moves and attacks
 (v1: 62 of 67; v2: 296 of 324), while `attack_nearest` never runs; the baseline's units
 always reach their first melee fresh, the model's often tired or exhausted.
+
+## v4: one body, gang up on the enemy lord
+
+Change (prompt): the lord and the melee units advance side by side at a walk; two or
+three units on one enemy, the enemy lord first at contact; every melee unit within 40 m
+attacks the enemy lord when he engages; our lord attacks only targets another unit is on
+and parks 30-50 m behind the line below 35% health. From the v3 reviews: the Herald fought
+the enemy lord with no other melee unit on him in all 28 such turns (the baseline had help
+in 20 of 22), and the model paired its units off one to one.
+
+Job `llm-luna-v4-20261013` (source `0547bfb`): lost at 603 s (9% of our men left, 32% of
+the enemy's), lost at 488 s (7% against 40%), won at 355 s (44% against 39%, the closest
+an LLM battle has come to the baseline's 45% against 33%). The model followed the
+doctrine: it walked on 55 of 76 moves and attacks (v3: 34 of 140), met the enemy at 95 s
+like the baseline (v3: 55-79 s) and helped its lord in 12 of 14 duel turns.
