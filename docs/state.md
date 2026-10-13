@@ -4,29 +4,30 @@ Updated 2026-10-13. Read this first: what is running, what is current, what come
 History lives with each track ([full runs](fullrun/log.md),
 [first combat](first-combat/README.md)), not here.
 
-## Active work (last verified 2026-10-13 11:55 UTC)
+## Active work (last verified 2026-10-13 15:40 UTC)
 
-WH3 mirror battles (owner away 11:25-16:25 UTC): how `gpt-6-luna` (v6 prompt) does when
-both sides field the same army (Khorne, Dwarf, Empire), and harness changes that raise
-it. Scenarios are now named in `configs/twwarhammer3/scenarios.json`. Running:
-`runs/twwarhammer3/battle/llm-luna-v6-emp-20261013`. The Spire v10 job
-(`runs/fullrun/llm-luna-v10-dev-20261013`) died on floor 10 when WSL restarted at 04:36
-UTC; Spire autoresearch is idle (v10 untested).
+WH3 mirror battles (owner away 11:25-16:25 UTC): `gpt-6-luna` against the game AI with
+the same army on both sides (Khorne, Dwarf, Empire), and prompt versions v8-v11 chosen
+by the review workflow. Last job: `runs/twwarhammer3/battle/llm-luna-v11-emp-20261013`.
+The Spire v10 job (`runs/fullrun/llm-luna-v10-dev-20261013`) died on floor 10 when WSL
+restarted at 04:36 UTC; Spire autoresearch is idle (v10 untested).
 
 ## Second game: Total War: WARHAMMER III (started 2026-10-13)
 
 [twwarhammer3/README.md](twwarhammer3/README.md) is the track page, status, findings and
 next steps; [twwarhammer3/integration.md](twwarhammer3/integration.md) the verified engine
 facts; [twwarhammer3/log.md](twwarhammer3/log.md) the versions. A job launches the game,
-recruits both armies through the frontend mod (double-click on unit cards), plays
-episodes in real time and restarts through the rematch button, with no desktop input.
-On the fixed Khorne-vs-Dwarfs battle, `attack_nearest` wins 3 of 3; `gpt-6-luna` (low)
-went from 1 of 3 (v1) to 5 of 6 (v6) through prompt and state changes chosen by the
-review workflow (`.claude/workflows/wh3-version-review.js`, run by `scriptPath` until a
-new session loads it by name). API spend about $0.40 of its own $25 ledger.
+sets up the `--scenario` battle from `configs/twwarhammer3/scenarios.json` (race picked in
+the selector's popup, units recruited by double-click), plays episodes in real time and
+restarts through the rematch button, with no desktop input. On Khorne vs Dwarfs
+`attack_nearest` wins 3 of 3 and v6 won 5 of 6. In mirror battles Luna has not won with
+guns on both sides (Empire 0 of 11+, Dwarfs 0 of 11) and won 3 of 15 Khorne mirrors; the
+AI's stats modifier preference is 1.1. `main` runs v11 (prompt changes v8-v11, reviewed
+per batch). API spend about $0.7 of its own $25 ledger.
 
-Next: a second scenario to test generality, a melee mode for units with ammunition, and
-more episodes per version. Branch `wh3-v4-info` holds an unmerged state candidate.
+Next: the README's list; first the fire-report candidate (branch `wh3-fire-report`) and
+an owner decision on the AI stats modifier for mirrors. Branch `wh3-v4-info` holds an
+older unmerged state candidate.
 
 ## Current track: full runs with an API model
 

@@ -35,8 +35,9 @@ way. There is no external game API; the mod is the API.
   custom battle screen shows it. `battle/scripted.py` has `hold`, `attack_nearest` and
   `probe_move` (the axis probe); `battle/llm.py` and `configs/twwarhammer3/` are the
   API-model policy and the autoresearch loop's editable surface.
-- A job (`battle/play.py`) launches the game, runs the custom battle steps in
-  `configs/twwarhammer3/menu.json` (no desktop input), plays episodes and restarts the
+- A job (`battle/play.py`) launches the game, runs the custom battle steps it builds
+  from the `--scenario` entry in `configs/twwarhammer3/scenarios.json` (each side's race,
+  faction and units; no desktop input), plays episodes and restarts the
   same battle between them through the results popup's rematch button. Each episode
   writes `trace.jsonl` (every observation, prompt, reply and acknowledgement),
   `result.json` and `mod.log`; each finished episode appends a row to
@@ -54,7 +55,8 @@ way. There is no external game API; the mod is the API.
 | 5 Restart | done | rematch button and confirmation; 40 episodes in 14 jobs, none an infrastructure failure |
 | 6 Scripted baselines | done | `attack_nearest`: 3 wins of 3 at about 345 s |
 | 7 First LLM battles | done | v1: 1 win of 3 |
-| 8 Autoresearch loop | running | [log.md](log.md): v2 0/3, v3 3/5, v4 1/3 (1/3 paused), v5 4/6, v6 5/6, v7 2/6 (reverted; `main` runs v6) |
+| 8 Autoresearch loop | running | [log.md](log.md): v2 0/3, v3 3/5, v4 1/3 (1/3 paused), v5 4/6, v6 5/6, v7 2/6 (reverted); v8-v11 on mirror battles, no mirror win yet with guns |
+| 9 Several scenarios | done | `configs/twwarhammer3/scenarios.json`: each side's race is picked in the selector's popup; Khorne, Dwarf and Empire mirrors |
 
 Results by version: `python -m twwarhammer3 stats`. With outcomes this noisy (a version's
 battles swing between a clear win and a clear loss), three episodes rank versions only
@@ -79,14 +81,57 @@ roughly; `own_left` and `enemy_left` (true strength at the end) add a finer meas
 - Still weak in every version: the Skullcannon and the missile horsemen. An attack order
   only makes a unit with ammunition shoot, and their fire killed almost nothing.
 
+## What the mirror battles showed (2026-10-13, second session)
+
+Same army on both sides of the same map, the player starting north; 9 to 12 battles per
+mirror. Wins and mean true strength left at the end (ours/enemy), from
+`python -m twwarhammer3 stats`:
+
+| Version | Empire (guns, cannon, knights) | Dwarfs (crossbows, catapult) | Khorne (melee) |
+|---|---|---|---|
+| attack_nearest | 0/2, 26/82% | | |
+| v6 | 0/3, 21/69% | 0/3, 25/53% | 2/3, 34/25%; replicate 0/3, 38/64% |
+| v8 guns | 0/3, 31/70% | 0/2, 30/76% | |
+| v9 melee | | 0/3, 35/65% | 1/3, 26/47% |
+| v10 shooters | 0/3, 37/57% | 0/3, 42/68% | |
+| v11 lords | | | 0/3, 26/61% |
+
+- With guns, crossbows or artillery on both sides, Luna lost every battle (0 of 11 in the
+  Empire mirror, 0 of 11 in the Dwarf mirror), and so did `attack_nearest` (Empire, 0 of
+  2). The losses follow one pattern: the AI's missile units and artillery shoot our units
+  while they fight, and its missile infantry ends the battle untouched (66-67 of 68
+  handgunners, 52-58 of 60 quarrellers).
+- The game's AI stats modifier preference is 1.1 (pinned since the first night), so the
+  AI's units are probably about 10% stronger: a mirror is not an even fight, and an even
+  trade loses. Whether to play mirrors at 1.0 is an owner decision.
+- The prompt changes narrowed the Empire margin (v6 -48 points, v10 -20) but not the
+  Dwarf one (v6 -28, v10 -26). In the Khorne mirror v6 won 2 of its first 3 and none of a
+  replicate 3, so v9 (1/3) and v11 (0/3) are not shown to be worse: battles swing so
+  widely that three per mirror and version separate little.
+- Measured by the reviews over the traces: artillery killed about 2 men a shot at
+  infantry in the open, 1 in 2 shots at missile infantry and 1 in 3 at crews; our missile
+  units shooting enemy missile infantry killed about 1 man per 100 shots; our lord alone
+  against the enemy lord lost health 3 to 8 times faster than he did.
+- Harness gaps found: enemy units' targets never reached the state (llm.py rendered a
+  field the mod never sent), there is no record of what a fire order killed, an attack
+  order replaces a move (a shooter walks straight at a target out of range), and units
+  with ammunition cannot be sent into melee. The decision delay grew from about 6 s to
+  7-10 s as the prompt grew.
+
 ## Next
 
-1. A second scenario (other factions, armies and map) to see whether the doctrine
-   generalises; the menu steps need faction selection by component id.
-2. A melee mode for units with ammunition (`unitcontroller:melee`, `attack_unit`'s
-   primary-attack flag), proposed by three reviews; untested in the engine.
-3. More episodes per version (five or six) before comparing versions.
-4. Unmerged candidate `wh3-v4-info` (`aa1ece5`): compass directions, enemy missiles in
+1. `main` runs v11. Play more battles per version (five or six) before comparing; v11 is
+   untested in the Dwarf mirror. A shorter prompt is worth testing for think time.
+2. Candidate on branch `wh3-fire-report` (`832b233`, built on v9): the mod publishes kill
+   counts and enemy targets; an attack order shows shots fired and men killed since it
+   was given, enemy lines show their target, our units show "attacked by e3 15 m rear".
+   Ranked second by three reviews; untested in the engine (check that AI units report
+   `current_target` and that `number_of_enemies_killed` returns numbers).
+3. A melee mode for units with ammunition (`unitcontroller:melee`, `attack_unit`'s
+   primary-attack flag) and an approach point for attack orders (go there, then attack),
+   both proposed by reviews; untested in the engine.
+4. The AI stats modifier (1.1) for mirror battles, and more mirrors (other races, maps).
+5. Unmerged candidate `wh3-v4-info` (`aa1ece5`): compass directions, enemy missiles in
    reach and both armies' start points, for orientation errors the reviews still find.
 
 ## Commands

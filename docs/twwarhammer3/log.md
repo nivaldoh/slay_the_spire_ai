@@ -192,15 +192,15 @@ put the same army on both sides of the same map, the player starting north:
 
 Empire mirror, source `b1c9ce0`:
 - `attack_nearest` (`attack-emp-mirror-20261013`): lost at 228 s and 232 s.
-- v6 (`llm-luna-v6-emp-20261013`): lost at 270 s (0% against 71%), 242 s (19% against
+- v6 (`llm-luna-v6-emp-20261013`): lost at 270 s (8% against 71%), 242 s (19% against
   71%) and 246 s (37% against 65%). In every loss the enemy handgunners and cannon ended
   nearly untouched (64-66 of 68 men, 33 of 33) while ours were destroyed.
 
 Khorne and Dwarf mirrors, v6, source `6777a64`:
-- `llm-luna-v6-kho-20261013`: won at 265 s (77% against 34%), lost at 282 s (49% against
-  65%), won at 247 s (72% against 50%).
-- `llm-luna-v6-dwf-20261013`: lost at 499 s (31% against 66%), 576 s (24% against 49%) and
-  629 s (19% against 43%).
+- `llm-luna-v6-kho-20261013`: won at 265 s (39% against 17%), lost at 282 s (25% against
+  33%), won at 247 s (37% against 25%).
+- `llm-luna-v6-dwf-20261013`: lost at 499 s (31% against 66%), 576 s (24% against 50%) and
+  629 s (20% against 43%).
 
 v6 in the mirrors: 2 wins of 9, both in the melee-heavy Khorne mirror. The armies with
 guns, crossbows and artillery beat the model every time.
@@ -219,7 +219,7 @@ cavalry are left out of the enemy-lord gang-up.
 Job `llm-luna-v8-emp-20261013` (source `fbcdf99`): lost at 321 s (25% against 69%), 203 s
 (30% against 83%) and 343 s (38% against 57%). The enemy cannon was hit hard each time
 (7, 33 and 15 of 33 crew left, against 33 of 33 under v6) and our side kept more (25-38%
-against v6's 0-37%), but the enemy handgunners still ended untouched (66-67 of 68).
+against v6's 8-37%), but the enemy handgunners still ended untouched (66-67 of 68).
 
 Job `llm-luna-v8-dwf-20261013` (source `3879027`, stopped after two battles when v9 was
 merged): lost at 487 s (33% against 77%) and 605 s (26% against 75%). The enemy Grudge
@@ -277,3 +277,12 @@ duel, since our own lord counts as a unit on him), the 35% hurt-lord clause and 
 your best fighter", which is untrue against the AI's 1.1 stats modifier. The reviewers
 measured our lord, alone against the enemy lord, losing health 3 to 8 times faster than
 he did; he was the first unit to rout in the v10 Empire losses.
+
+Job `llm-luna-v11-kho-20261013` (source `1eb75aa`): lost at 246 s (27% against 46%), 232 s
+(28% against 63%) and 198 s (22% against 74%).
+
+To check whether v8-v11 cost the Khorne mirror, v6 was replayed there from a worktree at
+`6777a64` (same ledger and results file): `llm-luna-v6-kho-20261013b` lost at 214 s (44%
+against 77%), 227 s (37% against 50%) and 185 s (34% against 65%). v6 in the Khorne
+mirror: 2 wins of 6; v9 1 of 3, v11 0 of 3. The first v6 job's two wins look like luck
+more than a better prompt; the newer prompts are not shown to be worse there.

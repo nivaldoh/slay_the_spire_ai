@@ -51,9 +51,15 @@ off, multithreaded model on.
   vs Dwarfs, map "An Ogre's Folly") across launches but not the armies.
 - A simulated left click on `unit_card` pins the unit's info panel; `SimulateDblLClick()`
   on the same `unit_card` recruits the unit (verified 2026-10-13 for both slots: select the
-  slot, `button_bar_parent/button_clear`, then double-click each card). The sequence is
-  `configs/twwarhammer3/menu.json`. The screen keeps the last factions across launches, so
-  the steps assume Khorne (player) against Dwarfs.
+  slot, `button_bar_parent/button_clear`, then double-click each card). The last field of
+  a card id is 1 for lords and 0 for other units (`...general_0:wh_main_emp_empire:1`).
+- Race: `faction_pic_mask_parent/button_select_race` opens a popup listing
+  `CcoSubcultureRecord<subculture>` entries (25 on 2026-10-13, e.g.
+  `wh_main_sc_emp_empire`); a simulated click on one switches the selected slot's race and
+  its unit cards (verified 2026-10-13 for both slots). The popup never reads as visible
+  from the root, so the step that clicks an entry cannot wait for it. The screen keeps the
+  last races and map across launches; `play.scenario_steps` sets the races every time
+  and leaves the map ("An Ogre's Folly").
 - Intro movies: the frontend script loads about 25 s after launch, but its real-time
   callbacks do not run until the intro movies end on their own, about 2 minutes later.
   No key press is needed; the first menu step waits for `buttons_holder/button_battle`.
