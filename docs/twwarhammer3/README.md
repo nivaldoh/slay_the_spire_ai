@@ -42,19 +42,21 @@ way. There is no external game API; the mod is the API.
   `result.json` and `mod.log`; each finished episode appends a row to
   [results.csv](results.csv). Versions are logged in [log.md](log.md).
 
-## Status (2026-10-13 02:40 local)
+## Status (2026-10-13 04:10 local)
 
 | Milestone | State | Evidence |
 |---|---|---|
 | 1 Mod loads | done | `runs/twwarhammer3/launch-m1/` |
-| 1b Unattended custom battle | done | menu steps recruit both armies by double-click and start the battle; `runs/twwarhammer3/battle/attack-m3-20261013/menu.log` |
+| 1b Unattended custom battle | done | menu steps recruit both armies by double-click and start the battle; `runs/twwarhammer3/battle/*/menu.log` |
 | 2 Roster readable | done | 5 v 5 units with positions, strength, fatigue, flags, targets in every observation |
 | 3 Orders apply | done | attack, move (with facing) and halt through one unitcontroller per unit; acknowledgements carry the applied battle time |
-| 4 Result | done | "lost" and "won" from the engine at VictoryCountdown |
-| 5 Restart | done | rematch button and confirmation; two episodes in one job |
-| 6 Scripted baselines | done | `attack_nearest`: lost, won (`attack-m3-20261013`) |
-| 7 First LLM battle | running | `llm-luna-v1-20261013` |
-| 8 Autoresearch loop | next | [log.md](log.md) |
+| 4 Result | done | "lost" and "won" from the engine at VictoryCountdown, with both armies' true strength for evaluation |
+| 5 Restart | done | rematch button and confirmation; three episodes per job |
+| 6 Scripted baselines | done | `attack_nearest`: 3 wins of 3 at about 345 s |
+| 7 First LLM battles | done | v1: 1 win of 3 |
+| 8 Autoresearch loop | running | [log.md](log.md): v2 0 of 3 (withdrawal rules), v3 running |
+
+Results by version: `python -m twwarhammer3 stats`.
 
 ## Commands
 
