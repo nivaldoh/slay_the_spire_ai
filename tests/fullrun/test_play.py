@@ -104,6 +104,16 @@ def test_run_starts_settles_forces_single_choices_and_ends_on_death(tmp_path, ha
     assert "seed" not in decisions[1]["decision"]["observation"]
 
 
+def test_an_opened_settings_screen_is_closed_with_the_cancel_key(tmp_path, harness):
+    sessions, sent = harness
+    settings = message(["key", "click", "wait", "state"], screen_type="NONE",
+                       screen_name="SETTINGS", is_screen_up=True)
+    sessions.append([MENU, settings, combat_message(), DEATH])
+    result = play.play_run(tmp_path / "run", {**CONFIG, "seed": "SEEDA"}, ScriptedPolicy())
+    assert sent == ["START IRONCLAD 0 SEEDA", "key cancel", "end"]
+    assert result["status"] == "lost"
+
+
 def test_budget_exhaustion_ends_the_run_and_stops_the_job(tmp_path, harness):
     sessions, sent = harness
     sessions.append([MENU, combat_message()])

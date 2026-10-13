@@ -77,7 +77,7 @@ def _decide(message: dict, policy, session_id: str, sequence: int, result: dict,
 def _drive(bridge, policy, config: dict, session_id: str, deadline: float, result: dict,
            event) -> None:
     """Answer the engine until the run ends or hits a limit, recording into ``result``."""
-    sequence = settles = 0
+    sequence = settles = closes = 0
     run_started = False
     state: dict = {}
     while time.monotonic() < deadline:
@@ -106,6 +106,12 @@ def _drive(bridge, policy, config: dict, session_id: str, deadline: float, resul
                 raise ProtocolError("Enemy intents did not settle")
             command, settles = "wait 60", settles + 1
             result["settle_waits"] += 1
+        elif state.get("screen_name") == "SETTINGS" and "key" in message["available_commands"]:
+            # Escape on the game window opens the settings screen (v9 RUNDEV2); the game's
+            # cancel key closes it.
+            if closes >= 3:
+                raise ProtocolError("The settings screen did not close")
+            command, closes = "key cancel", closes + 1
         else:
             settles = 0
             command = _decide(message, policy, session_id, sequence, result, event)
