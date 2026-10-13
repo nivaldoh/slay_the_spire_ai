@@ -5,7 +5,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from spire.fullrun.api import EFFORTS, LEDGER_PATH, PRICES
+from gameai.llm import EFFORTS, PRICES
+from spire.fullrun.llm import LEDGER_PATH
 from spire.fullrun.stats import RESULTS_PATH
 
 
@@ -193,8 +194,10 @@ def main() -> int:
         print(json.dumps(result, indent=2))
         return 0 if result["status"] in {"completed", "budget_exhausted"} else 1
     if args.command == "play":
+        from functools import partial
+
         from gameai.ledger import Ledger
-        from spire.fullrun.api import ResponsesClient, api_key
+        from gameai.llm import api_key, post
         from spire.fullrun.llm import LLMPolicy
         from spire.fullrun.play import play as run_play
 
@@ -204,9 +207,9 @@ def main() -> int:
         config["ledger"] = str(config["ledger"])
         config["results"] = str(config["results"])
         ledger = Ledger(args.ledger, args.budget_usd)
-        client = ResponsesClient(api_key())
+        send = partial(post, api_key())  # a missing key fails here, before any launch
         manifest = run_play(output, config, policy_factory=lambda: LLMPolicy(
-            args.model, args.effort, ledger, client=client))
+            args.model, args.effort, ledger, send=send))
         print(f"Evidence: {output.resolve()}")
         return 0 if manifest["status"] == "completed" else 1
     if args.command == "digest":

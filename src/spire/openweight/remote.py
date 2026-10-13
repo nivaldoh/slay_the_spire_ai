@@ -1,4 +1,4 @@
-"""Tinker transport, prices and spend: infrastructure, like ``spire.fullrun.api``.
+"""Tinker transport, prices and spend: infrastructure, like ``gameai.llm``.
 
 Tinker trains LoRA adapters remotely and samples from them; the game, any simulator and the
 orchestration stay on this machine. The SDK is not a dependency yet. When the pilot starts,

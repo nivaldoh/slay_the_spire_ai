@@ -1,7 +1,7 @@
 """API language-model player over full-run decisions: the prompt, memory and replies.
 
 This file and ``configs/llm/`` are the autoresearch loop's editable surface; transport,
-prices and the ledger path live in ``api.py``. Run memory is bounded: model-written notes
+prices and spend live in ``gameai.llm``. Run memory is bounded: model-written notes
 (rewritten through the reply's ``notes`` field) and the last few decisions. No transcript
 accumulates.
 """
@@ -11,18 +11,19 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-import time
 from collections import Counter, deque
 
 from gameai.ledger import Ledger
+from gameai.llm import InvalidReply, Model
 from gameai.provenance import REPO_ROOT
 from spire.decisions import Choice, card_text, live_targets
-from spire.fullrun.api import EFFORTS, PRICES, ResponsesClient, api_key, usage_cost
 from spire.protocol import Decision, PolicyFailure
 
 SYSTEM_PROMPT_PATH = REPO_ROOT / "configs/llm/system_prompt.md"
 # Short rules notes for enemies the model was seen to misplay, keyed by monster ID.
 MONSTER_NOTES_PATH = SYSTEM_PROMPT_PATH.with_name("monsters.json")
+# Every full-run job shares this spend file, and so one budget; other games keep their own.
+LEDGER_PATH = REPO_ROOT / "runs/llm-spend.jsonl"
 MAX_OUTPUT_TOKENS = 4000
 NOTES_LIMIT = 2000
 HISTORY_LENGTH = 12
@@ -214,123 +215,58 @@ def render_prompt(decision: Decision, notes: str, history: list[str],
     ])
 
 
-def _output_text(response: dict) -> str:
-    return "".join(
-        part.get("text", "")
-        for item in response.get("output", []) if item.get("type") == "message"
-        for part in item.get("content", []) if part.get("type") == "output_text"
-    )
-
-
 def _parse(text: str, count: int) -> dict:
+    # The strict reply schema fixes the keys and types; only the range is left to check.
     reply = json.loads(text)
-    if not isinstance(reply, dict) or set(reply) != {"choice", "reason", "notes"}:
-        raise ValueError("reply must be an object with choice, reason and notes")
-    if type(reply["choice"]) is not int or not 0 <= reply["choice"] < count:
+    if not 0 <= reply["choice"] < count:
         raise ValueError(f"choice must be an integer from 0 to {count - 1}")
-    if not isinstance(reply["reason"], str) or not (
-        reply["notes"] is None or isinstance(reply["notes"], str)
-    ):
-        raise ValueError("reason must be text and notes text or null")
     return reply
 
 
 class LLMPolicy:
     """One instance per run: its notes and history are that run's only memory."""
 
-    def __init__(self, model: str, effort: str, ledger: Ledger, *, client=None,
+    def __init__(self, model: str, effort: str, ledger: Ledger, *, send=None,
                  system_prompt: str | None = None):
-        if model not in PRICES:
-            raise ValueError(f"No declared price for model {model}")
-        if effort not in EFFORTS:
-            raise ValueError(f"Unsupported reasoning effort {effort}")
-        self.model, self.effort, self.ledger = model, effort, ledger
-        self.client = client or ResponsesClient(api_key())
-        self.instructions = system_prompt or SYSTEM_PROMPT_PATH.read_text()
+        self.api = Model(model, effort, ledger, send=send,
+                         instructions=system_prompt or SYSTEM_PROMPT_PATH.read_text(),
+                         max_output_tokens=MAX_OUTPUT_TOKENS)
+        self.totals = self.api.totals
         self.monster_notes = json.loads(MONSTER_NOTES_PATH.read_text())
         self.notes = ""
         self.history: deque[str] = deque(maxlen=HISTORY_LENGTH)
         # Skipped card rewards stay listed; remember them per floor (v6 reopened one 20 times).
         self.declined: dict[int, list[str]] = {}
-        self.totals = Counter()
-        self._last_id = self._metadata = None
-
-    def _call(self, prompt: str) -> dict:
-        # Bytes bound tokens from above, so this reservation is a true worst case.
-        tokens = len((self.instructions + prompt).encode())
-        price_in, _, price_out = PRICES[self.model]
-        self.ledger.reserve((tokens * price_in + MAX_OUTPUT_TOKENS * price_out) / 1e6)
-        started = time.monotonic()
-        response = self.client.create({
-            "model": self.model,
-            "instructions": self.instructions,
-            "input": [{"role": "user", "content": prompt}],
-            "reasoning": {"effort": self.effort},
-            "max_output_tokens": MAX_OUTPUT_TOKENS,
-            "text": {"format": {"type": "json_schema", "name": "decision",
-                                "schema": REPLY_SCHEMA, "strict": True}},
-            "store": False,
-        })
-        # Without reported usage, charge the reserved worst case.
-        usage = response.get("usage") or {
-            "input_tokens": tokens, "output_tokens": MAX_OUTPUT_TOKENS,
-        }
-        usd = usage_cost(self.model, usage)
-        self.ledger.charge(usd, model=self.model, response_id=response.get("id"))
-        details = usage.get("output_tokens_details") or {}
-        attempt = {
-            "response_id": response.get("id"),
-            "status": response.get("status"),
-            "seconds": time.monotonic() - started,
-            "usage": usage,
-            "usd": usd,
-            "text": _output_text(response),
-        }
-        self.totals.update(
-            calls=1, usd=usd, seconds=attempt["seconds"], input_tokens=usage["input_tokens"],
-            output_tokens=usage["output_tokens"],
-            reasoning_tokens=details.get("reasoning_tokens", 0),
-            cached_tokens=(usage.get("input_tokens_details") or {}).get("cached_tokens", 0),
-        )
-        return attempt
+        self._metadata = None
 
     def choose(self, decision: Decision) -> Choice:
         observation = decision.observation
         floor = observation.get("floor")
         prompt = render_prompt(decision, self.notes, list(self.history), self.monster_notes,
                                self.declined.get(floor))
-        metadata = {
-            "type": "llm", "model": self.model, "effort": self.effort,
-            "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
-            "prompt": prompt, "attempts": [],
+        self._metadata = metadata = {
+            "type": "llm", "model": self.api.name, "effort": self.api.effort,
+            "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(), "prompt": prompt,
         }
-        self._last_id, self._metadata = decision.id, metadata
-        feedback = ""
-        for _ in range(1 + INVALID_RETRIES):
-            attempt = self._call(prompt + feedback)
-            metadata["attempts"].append(attempt)
-            try:
-                reply = _parse(attempt["text"], len(decision.candidates))
-            except ValueError as error:
-                attempt["error"] = str(error)
-                feedback = f"\n\nYour previous reply was invalid: {error}. Reply again."
-                continue
-            choice = decision.candidates[reply["choice"]]
-            if reply["notes"] is not None:
-                self.notes = reply["notes"][:NOTES_LIMIT]
-                metadata["notes"] = self.notes
-            if observation.get("screen_type") == "CARD_REWARD" and choice.command == "skip":
-                offer = _cards((observation.get("screen_state") or {}).get("cards", []))
-                if offer not in self.declined.setdefault(floor, []):
-                    self.declined[floor].append(offer)
-            self.history.append(f"floor {floor}: {choice.label} ({reply['reason']})")
-            metadata.update(selected_index=reply["choice"], reason=reply["reason"])
-            return choice
-        raise PolicyFailure("No valid reply after declared retries", failure={
-            "kind": "invalid_reply", "attempts": metadata["attempts"],
-        })
+        try:
+            reply, metadata["attempts"] = self.api.ask(
+                prompt, REPLY_SCHEMA, lambda text: _parse(text, len(decision.candidates)),
+                INVALID_RETRIES)
+        except InvalidReply as error:
+            raise PolicyFailure(str(error), failure={
+                "kind": "invalid_reply", "attempts": error.attempts,
+            }) from None
+        choice = decision.candidates[reply["choice"]]
+        if reply["notes"] is not None:
+            self.notes = reply["notes"][:NOTES_LIMIT]
+            metadata["notes"] = self.notes
+        if observation.get("screen_type") == "CARD_REWARD" and choice.command == "skip":
+            offer = _cards((observation.get("screen_state") or {}).get("cards", []))
+            if offer not in self.declined.setdefault(floor, []):
+                self.declined[floor].append(offer)
+        self.history.append(f"floor {floor}: {choice.label} ({reply['reason']})")
+        metadata.update(selected_index=reply["choice"], reason=reply["reason"])
+        return choice
 
     def choice_metadata(self, decision_id: str) -> dict:
-        if decision_id != self._last_id or self._metadata is None:
-            raise ValueError("No language-model reply for this decision")
         return self._metadata

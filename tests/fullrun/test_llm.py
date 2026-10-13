@@ -1,4 +1,4 @@
-"""Prompt rendering, memory, parsing and accounting with a fake client; no network."""
+"""Prompt rendering, memory, parsing and accounting with a fake transport; no network."""
 
 import json
 
@@ -14,12 +14,12 @@ USAGE = {"input_tokens": 1000, "input_tokens_details": {"cached_tokens": 400},
          "output_tokens": 200, "output_tokens_details": {"reasoning_tokens": 150}}
 
 
-class FakeClient:
+class FakeSend:
     def __init__(self, *replies):
         self.replies = list(replies)
         self.bodies = []
 
-    def create(self, body):
+    def __call__(self, body):
         self.bodies.append(body)
         text = self.replies.pop(0)
         text = text if isinstance(text, str) else json.dumps(text)
@@ -38,7 +38,7 @@ def decision():
 
 def policy(tmp_path, *replies, budget=1.0):
     ledger = Ledger(tmp_path / "spend.jsonl", budget)
-    return llm.LLMPolicy("gpt-6-luna", "low", ledger, client=FakeClient(*replies),
+    return llm.LLMPolicy("gpt-6-luna", "low", ledger, send=FakeSend(*replies),
                          system_prompt="Play well.")
 
 
@@ -49,11 +49,11 @@ def test_choice_updates_notes_history_ledger_and_metadata(tmp_path):
     metadata = agent.choice_metadata(first.id)
     assert metadata["reason"] == "because" and metadata["notes"] == "Jaw Worm hits hard."
     assert "Choices:\n0: play Strike (1 attack) -> Jaw Worm [1]" in metadata["prompt"]
-    body = agent.client.bodies[0]
+    body = agent.api.send.bodies[0]
     assert body["reasoning"] == {"effort": "low"} and body["store"] is False
     assert body["text"]["format"]["strict"] is True
     agent.choose(decision())
-    second_prompt = agent.client.bodies[1]["input"][0]["content"]
+    second_prompt = agent.api.send.bodies[1]["input"][0]["content"]
     assert "Run notes:\nJaw Worm hits hard." in second_prompt
     assert "floor 3: play Defend (1 skill) (because)" in second_prompt
     assert agent.totals["calls"] == 2 and agent.totals["reasoning_tokens"] == 300
@@ -67,7 +67,7 @@ def test_invalid_replies_are_retried_then_fail_as_policy_failure(tmp_path):
     assert agent.choose(decision()).command == "potion use 0 1"
     attempts = agent._metadata["attempts"]
     assert [bool(a.get("error")) for a in attempts] == [True, True, False]
-    assert "previous reply was invalid" in agent.client.bodies[2]["input"][0]["content"]
+    assert "previous reply was invalid" in agent.api.send.bodies[2]["input"][0]["content"]
     failing = policy(tmp_path, reply(-1), reply(-1), reply(-1))
     with pytest.raises(PolicyFailure) as error:
         failing.choose(decision())
@@ -78,7 +78,7 @@ def test_budget_refuses_a_call_before_sending(tmp_path):
     agent = policy(tmp_path, reply(0), budget=0.0001)
     with pytest.raises(BudgetExhausted):
         agent.choose(decision())
-    assert agent.client.bodies == []
+    assert agent.api.send.bodies == []
     assert not (tmp_path / "spend.jsonl").exists()
 
 
@@ -148,7 +148,7 @@ def test_skipped_card_rewards_are_named_on_that_floors_reward_screens(tmp_path):
     agent = policy(tmp_path, reply(1), reply(0), reply(1), reply(0))
     for sequence, raw in enumerate([offer, rewards, offer, rewards]):
         agent.choose(decisions.decision_from_message(raw, session_id="s", sequence=sequence))
-    prompts = [body["input"][0]["content"] for body in agent.client.bodies]
+    prompts = [body["input"][0]["content"] for body in agent.api.send.bodies]
     line = "Card rewards you skipped on this floor (reopening one shows the same cards): "
     assert line not in prompts[0]
     assert prompts[1].count(line + "Cleave (1 attack)\n") == 1

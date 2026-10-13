@@ -1,11 +1,12 @@
-"""Pricing, key loading and transport retries for the OpenAI client; no network."""
+"""Pricing, key loading and transport retries for OpenAI calls; no network."""
 
 import io
 import urllib.error
 
 import pytest
 
-from spire.fullrun import api
+from gameai import llm as api
+from gameai.ledger import Ledger
 
 USAGE = {"input_tokens": 1000, "input_tokens_details": {"cached_tokens": 400},
          "output_tokens": 200, "output_tokens_details": {"reasoning_tokens": 150}}
@@ -37,8 +38,31 @@ def test_api_key_file_and_transient_retry_without_leaking_the_key(tmp_path, monk
 
     monkeypatch.setattr(api.urllib.request, "urlopen", urlopen)
     monkeypatch.setattr(api.time, "sleep", lambda seconds: None)
-    client = api.ResponsesClient(api.api_key())
-    assert client.create({}) == {"id": "ok"}
+    assert api.post(api.api_key(), {}) == {"id": "ok"}
     with pytest.raises(api.APIError) as error:
-        client.create({})
+        api.post(api.api_key(), {})
     assert "sk-test-secret" not in str(error.value) and "<key>" in str(error.value)
+
+
+def test_ask_retries_rejected_replies_with_feedback_then_gives_up(tmp_path):
+    texts, prompts = ["left", "jump", "up", "up"], []
+
+    def send(body):
+        prompts.append(body["input"][0]["content"])
+        return {"id": "r", "usage": USAGE, "output": [{"type": "message", "content": [
+            {"type": "output_text", "text": texts.pop(0)}]}]}
+
+    def parse(text):
+        if text not in ("up", "down"):
+            raise ValueError(f"unknown key {text}")
+        return text
+
+    model = api.Model("gpt-6-luna", "none", Ledger(tmp_path / "spend.jsonl", 1.0), send=send,
+                      instructions="Press a key.", max_output_tokens=50)
+    value, attempts = model.ask("Wall ahead.", {}, parse, retries=2)
+    assert value == "up" and [a.get("error") for a in attempts] == [
+        "unknown key left", "unknown key jump", None]
+    assert prompts[2].endswith("Your previous reply was invalid: unknown key jump. Reply again.")
+    with pytest.raises(api.InvalidReply) as error:
+        model.ask("Wall ahead.", {}, lambda text: parse("jump"), retries=0)
+    assert len(error.value.attempts) == 1 and model.totals["calls"] == 4
