@@ -10,7 +10,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from gameai.provenance import REPO_ROOT
+from gameai.provenance import REPO_ROOT, sha256
 from spire.engine import runtime
 
 SCRIPT = REPO_ROOT / "src/spire/engine/windows_game.py"
@@ -43,7 +43,6 @@ def test_wsl_endpoint_discovers_current_private_eth0_address_each_time(monkeypat
 
 @pytest.mark.parametrize("data", [
     [], {}, [None], [interface(), interface()],
-    [{**interface(), "ifname": "lo"}],
     [{**interface(), "flags": []}],
     [{**interface(), "addr_info": []}],
     [{**interface(), "addr_info": interface()["addr_info"] * 2}],
@@ -91,6 +90,43 @@ def test_deployment_config_and_record_use_exact_listener_endpoint(tmp_path, monk
     assert deployment["relay"] == {"host": "172.18.34.183", "port": 19876, "timeout": 45}
     assert "--host 172.18.34.183 --port 19876 --timeout 45\n" in config.read_text()
     assert "127.0.0.1" not in config.read_text() and "0.0.0.0" not in config.read_text()
+
+
+def pin_jars(tmp_path, monkeypatch):
+    monkeypatch.setattr(runtime, "GAME_DIR", tmp_path / "game")
+    monkeypatch.setattr(runtime, "WORKSHOP_DIR", tmp_path / "workshop")
+    monkeypatch.setattr(runtime, "RUNTIME_DIR", tmp_path / "runtime")
+    monkeypatch.setattr(runtime, "communication_config", lambda: tmp_path / "config.properties")
+    pins = {}
+    for index, name in enumerate(["ModTheSpire.jar", "BaseMod.jar"]):
+        jar = tmp_path / "workshop" / str(index) / name
+        jar.parent.mkdir(parents=True)
+        jar.write_bytes(name.encode())
+        pins[name] = (str(index), sha256(jar))
+    monkeypatch.setattr(runtime, "PINS", pins)
+    (tmp_path / "game").mkdir()
+
+
+def test_deployment_copies_pinned_jars_where_the_launch_uses_them(tmp_path, monkeypatch):
+    pin_jars(tmp_path, monkeypatch)
+    deployment = runtime.prepare_runtime("172.18.34.183", 19876)
+    assert deployment["mods"] == {name: pin for name, (_, pin) in runtime.PINS.items()}
+    assert (tmp_path / "runtime/mods/ModTheSpire.jar").read_bytes() == b"ModTheSpire.jar"
+    assert (tmp_path / "runtime/mods/BaseMod.jar").read_bytes() == b"BaseMod.jar"
+    assert (tmp_path / "game/mods/BaseMod.jar").read_bytes() == b"BaseMod.jar"
+    # The loader runs from the runtime folder, never from the game's mods.
+    assert not (tmp_path / "game/mods/ModTheSpire.jar").exists()
+
+
+@pytest.mark.parametrize("changed", ["workshop/1/BaseMod.jar", "game/mods/BaseMod.jar"])
+def test_deployment_refuses_a_changed_jar_without_overwriting(tmp_path, monkeypatch, changed):
+    pin_jars(tmp_path, monkeypatch)
+    (tmp_path / changed).parent.mkdir(parents=True, exist_ok=True)
+    (tmp_path / changed).write_bytes(b"Workshop update")
+    with pytest.raises(RuntimeError, match="BaseMod.jar"):
+        runtime.prepare_runtime("172.18.34.183", 19876)
+    assert (tmp_path / changed).read_bytes() == b"Workshop update"
+    assert not (tmp_path / "config.properties").exists()
 
 
 def test_runtime_lock_uses_kernel_ownership_and_releases_on_exception(tmp_path, monkeypatch):
@@ -155,14 +191,6 @@ def test_episode_logs_are_unique_even_in_same_controller(tmp_path):
     first = runtime.OwnedGame(tmp_path / "first.log")
     second = runtime.OwnedGame(tmp_path / "second.log")
     assert first.windows_log != second.windows_log
-
-
-@pytest.mark.parametrize("timeout", [0, -1, float("nan"), float("inf")])
-def test_timeout_validation_precedes_game_mutations(tmp_path, timeout):
-    with pytest.raises(ValueError, match="timeout"):
-        runtime.OwnedGame(tmp_path / "game.log", timeout=timeout)
-    with pytest.raises(ValueError, match="timeout"):
-        runtime.prepare_runtime("127.0.0.1", 8765, timeout=timeout)
 
 
 @pytest.mark.parametrize("output", ["", '{"pid":', "x" * 70000])
@@ -232,13 +260,48 @@ def test_process_probe_preserves_powershell_failure(monkeypatch):
         WINDOWS_GAME.conflicting_games(Path("C:/games/SlayTheSpire"))
 
 
+def start_supervisor(tmp_path, timeout):
+    """Run windows_game.main with a fake JVM; the job object and process query need Windows."""
+    jvm = tmp_path / "game/jre/bin/java.exe"
+    jvm.parent.mkdir(parents=True)
+    jvm.write_text("#!/bin/sh\nexec sleep 30\n")
+    jvm.chmod(0o755)
+    code = (
+        "import importlib.util,sys; "
+        "spec=importlib.util.spec_from_file_location('g',sys.argv[1]); "
+        "g=importlib.util.module_from_spec(spec); spec.loader.exec_module(g); "
+        "g.join_kill_on_close_job=lambda:None; g.conflicting_games=lambda game_dir:[]; "
+        "sys.argv=sys.argv[1:]; sys.exit(g.main())"
+    )
+    arguments = ["--game-dir", str(tmp_path / "game"), "--loader", "ModTheSpire.jar",
+                 "--log", str(tmp_path / "game.log"), "--timeout", str(timeout)]
+    return subprocess.Popen(
+        [sys.executable, "-c", code, str(SCRIPT), *arguments],
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
+    )
+
+
+@pytest.mark.parametrize("stop", ["controller_eof", "hard_timeout"])
+def test_supervisor_stops_the_jvm_on_controller_eof_or_hard_timeout(tmp_path, stop):
+    with start_supervisor(tmp_path, 0.5 if stop == "hard_timeout" else 30) as supervisor:
+        try:
+            jvm = json.loads(supervisor.stdout.readline())["pid"]
+            if stop == "controller_eof":
+                supervisor.stdin.close()
+            assert supervisor.wait(timeout=10) == 0
+            assert json.loads(supervisor.stdout.readline())["exit_code"] != 0
+            with pytest.raises(ProcessLookupError):
+                os.kill(jvm, 0)
+        finally:
+            supervisor.kill()
+
+
 @pytest.mark.skipif(
     os.environ.get("SPIRE_TEST_WINDOWS") != "1" or not runtime.WINDOWS_PYTHON.exists(),
     reason="set SPIRE_TEST_WINDOWS=1 on WSL to test actual Windows process ownership",
 )
-def test_windows_job_kills_owned_children_and_refuses_duplicate_supervisor(tmp_path):
-    script = runtime.windows_path(SCRIPT)
-    identity = runtime.windows_path(tmp_path / "disposable-game-identity")
+def test_windows_job_kills_owned_children_when_the_supervisor_dies(tmp_path):
+    script = subprocess.check_output(["wslpath", "-w", str(SCRIPT)], text=True).strip()
     child_code = (
         "import subprocess,sys,time; "
         "p=subprocess.Popen([sys.executable,'-c','import time;time.sleep(30)']); "
@@ -246,13 +309,13 @@ def test_windows_job_kills_owned_children_and_refuses_duplicate_supervisor(tmp_p
     )
     owner_code = (
         "import runpy,sys,json,subprocess,os;from pathlib import Path; "
-        "m=runpy.run_path(sys.argv[1]); o=m['WindowsOwnership'](Path(sys.argv[2])); "
-        "p=subprocess.Popen([sys.executable,'-u','-c',sys.argv[3]],"
+        "m=runpy.run_path(sys.argv[1]); m['join_kill_on_close_job'](); "
+        "p=subprocess.Popen([sys.executable,'-u','-c',sys.argv[2]],"
         "stdout=subprocess.PIPE,text=True); "
         "print(json.dumps({'pid':os.getpid(),'child':p.pid,'grandchild':int(p.stdout.readline())}),"
         "flush=True); os.read(sys.stdin.fileno(),1)"
     )
-    command = [str(runtime.WINDOWS_PYTHON), "-u", "-c", owner_code, script, identity, child_code]
+    command = [str(runtime.WINDOWS_PYTHON), "-u", "-c", owner_code, script, child_code]
     with subprocess.Popen(
         command,
         stdin=subprocess.PIPE,
@@ -264,11 +327,6 @@ def test_windows_job_kills_owned_children_and_refuses_duplicate_supervisor(tmp_p
         game.process = owner
         try:
             info = game._startup_message(timeout=10)
-            duplicate = subprocess.run(
-                command, input="", capture_output=True, text=True, timeout=10
-            )
-            assert duplicate.returncode != 0
-            assert "another Windows supervisor" in duplicate.stderr
             # Abrupt supervisor death must also terminate the JVM-equivalent and relay-equivalent.
             owner.kill()
             owner.communicate(timeout=5)

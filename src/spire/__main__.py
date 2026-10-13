@@ -88,11 +88,11 @@ def main() -> int:
     stats.add_argument("--results", type=Path, default=RESULTS_PATH)
     args = parser.parse_args()
     if args.command == "doctor":
-        from spire.engine.doctor import collect_diagnostics, exit_code, render_diagnostics
+        from spire.engine.doctor import collect_diagnostics, render_diagnostics
 
         report = collect_diagnostics()
         print(json.dumps(report, indent=2) if args.json else render_diagnostics(report))
-        return exit_code(report)
+        return 1 if report["blockers"] else 0
     if args.command == "rollout":
         from spire.combat.rollout import rollout as run_rollout
 

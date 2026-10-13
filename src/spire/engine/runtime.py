@@ -1,9 +1,9 @@
-"""Local Windows game setup and bounded process ownership from WSL."""
+"""Windows game setup and process ownership from WSL."""
 
+import fcntl
 import functools
 import ipaddress
 import json
-import math
 import os
 import select
 import shutil
@@ -15,12 +15,14 @@ from pathlib import Path
 from gameai.provenance import sha256
 
 GAME_DIR = Path("/mnt/c/Program Files (x86)/Steam/steamapps/common/SlayTheSpire")
+WINDOWS_GAME_DIR = r"C:\Program Files (x86)\Steam\steamapps\common\SlayTheSpire"
 WORKSHOP_DIR = Path("/mnt/c/Program Files (x86)/Steam/steamapps/workshop/content/646570")
 RUNTIME_DIR = Path("/mnt/c/spire-agent")
 WINDOWS_PYTHON = Path("/mnt/c/Python313/python.exe")
 # The exclusive runtime's fixed port, below both ephemeral ranges. The exact WSL eth0
 # address bypasses Windows localhost forwarding for game runs.
 BRIDGE_PORT = 19876
+# Workshop item ID and SHA-256 of each pinned jar; docs/integration.md has the versions.
 PINS = {
     "ModTheSpire.jar": (
         "1605060445",
@@ -38,68 +40,46 @@ PINS = {
 
 
 class RuntimeLock:
-    """Exclusive WSL ownership covering deployment as well as the game lifetime.
+    """One controller at a time, held around prepare_runtime and OwnedGame.
 
-    Hold this context around prepare_runtime and OwnedGame. The kernel releases
-    it if the controller dies; file existence or a remembered PID is not a lock.
+    The kernel releases the flock if the controller dies; a file's existence is not a lock.
     """
 
-    def __init__(self):
-        self._file = None
-
     def __enter__(self):
-        import fcntl
-
-        if self._file is not None:
-            raise RuntimeError("runtime lock context cannot be reentered")
         RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
         self._file = (RUNTIME_DIR / "owner.lock").open("a+")
         try:
-            fcntl.flock(self._file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            fcntl.flock(self._file, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError as exc:
             self._file.close()
-            self._file = None
             raise RuntimeError("another controller owns the game runtime") from exc
         return self
 
     def __exit__(self, *_):
-        if self._file is not None:
-            self._file.close()
-            self._file = None
-
-
-def windows_path(path: Path) -> str:
-    return subprocess.check_output(["wslpath", "-w", str(path.resolve())], text=True).strip()
+        self._file.close()
 
 
 def wsl_bridge_host() -> str:
-    """Discover the current WSL NAT endpoint without using localhost forwarding.
+    """Return the one private IPv4 address of active WSL eth0, queried each episode.
 
-    The supported runtime has one private global IPv4 address on active eth0.
-    Reject missing or ambiguous endpoints before deployment; never fall back to
-    loopback or bind every interface. Query each episode because WSL IPs change.
+    WSL addresses change. Never fall back to loopback, which goes through Windows
+    localhost forwarding, or bind every interface.
     """
     try:
-        interfaces = json.loads(subprocess.check_output(
+        output = subprocess.check_output(
             ["ip", "-4", "-j", "address", "show", "dev", "eth0"],
             text=True, stderr=subprocess.PIPE, timeout=5,
-        ))
-        if (
-            not isinstance(interfaces, list) or len(interfaces) != 1
-            or interfaces[0]["ifname"] != "eth0" or "UP" not in interfaces[0]["flags"]
-        ):
-            raise ValueError("eth0 is absent or inactive")
-        addresses = [
-            item["local"] for item in interfaces[0]["addr_info"]
-            if item["family"] == "inet" and item["scope"] == "global"
+        )
+        (interface,) = json.loads(output)
+        (address,) = [
+            ipaddress.IPv4Address(item["local"])
+            for item in interface["addr_info"] if item["scope"] == "global"
         ]
-        if len(addresses) != 1 or not isinstance(addresses[0], str):
-            raise ValueError("eth0 requires one global IPv4 address")
-        address = ipaddress.IPv4Address(addresses[0])
-        if not any(address in ipaddress.IPv4Network(network) for network in (
-            "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16",
-        )):
-            raise ValueError("eth0 requires a private NAT address")
+        private = ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+        if "UP" not in interface["flags"] or not any(
+            address in ipaddress.IPv4Network(network) for network in private
+        ):
+            raise ValueError("eth0 is down or its address is not private")
         return str(address)
     except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError) as exc:
         raise RuntimeError("Cannot discover one usable private IPv4 address on WSL eth0") from exc
@@ -121,35 +101,30 @@ def communication_config() -> Path:
     return Path(local) / "ModTheSpire/CommunicationMod/config.properties"
 
 
+def mod_paths(name: str) -> list[Path]:
+    """A pinned jar's Workshop original, then the copies a launch makes and uses."""
+    paths = [WORKSHOP_DIR / PINS[name][0] / name, RUNTIME_DIR / "mods" / name]
+    # The loader runs from RUNTIME_DIR; ModTheSpire loads the other mods from the game folder.
+    if name != "ModTheSpire.jar":
+        paths.append(GAME_DIR / "mods" / name)
+    return paths
+
+
 def prepare_runtime(host: str, port: int, *, timeout: float = 120) -> dict:
     """Verify pinned jars, deploy scripts, and configure the authorized game bridge."""
-    if any(character.isspace() for character in host) or not 0 < port < 65536:
-        raise ValueError("invalid bridge address")
-    if not math.isfinite(timeout) or timeout <= 0:
-        raise ValueError("timeout must be positive and finite")
-    mods_dir = RUNTIME_DIR / "mods"
-    mods_dir.mkdir(parents=True, exist_ok=True)
-    game_mods = GAME_DIR / "mods"
-    game_mods.mkdir(exist_ok=True)
-    hashes = {}
-    # MTS can prefer newer Workshop versions, so validate those on every launch too.
-    for name, (workshop_id, expected) in PINS.items():
-        original = WORKSHOP_DIR / workshop_id / name
-        actual = sha256(original)
-        if actual != expected:
-            raise RuntimeError(f"Workshop hash changed for {name}: {actual}")
-        pinned = mods_dir / name
-        if not pinned.exists():
-            shutil.copy2(original, pinned)
-        if sha256(pinned) != expected:
-            raise RuntimeError(f"Pinned hash mismatch: {pinned}")
-        if name != "ModTheSpire.jar":
-            target = game_mods / name
-            if target.exists() and sha256(target) != expected:
-                raise RuntimeError(f"Existing game mod differs; refusing overwrite: {target}")
-            if not target.exists():
-                shutil.copy2(pinned, target)
-        hashes[name] = actual
+    (RUNTIME_DIR / "mods").mkdir(parents=True, exist_ok=True)
+    (GAME_DIR / "mods").mkdir(exist_ok=True)
+    for name, (_, expected) in PINS.items():
+        workshop, *copies = mod_paths(name)
+        # ModTheSpire can prefer a newer Workshop version, so check the original every launch.
+        if sha256(workshop) != expected:
+            raise RuntimeError(f"Workshop hash changed for {name}: {workshop}")
+        for path in copies:
+            if not path.exists():
+                shutil.copy2(workshop, path)
+            # Never overwrite a differing copy; audit a changed jar before re-pinning it.
+            if sha256(path) != expected:
+                raise RuntimeError(f"{path} differs from the pinned {name}; refusing overwrite")
     for script in ("windows_relay.py", "windows_game.py"):
         shutil.copy2(Path(__file__).with_name(script), RUNTIME_DIR / script)
     config = communication_config()
@@ -168,7 +143,7 @@ def prepare_runtime(host: str, port: int, *, timeout: float = 120) -> dict:
     temporary.write_text(content, encoding="ascii")
     os.replace(temporary, config)
     return {
-        "mods": hashes,
+        "mods": {name: expected for name, (_, expected) in PINS.items()},
         "config": str(config),
         "runtime": str(RUNTIME_DIR),
         "relay": {"host": host, "port": port, "timeout": timeout},
@@ -179,53 +154,33 @@ class OwnedGame:
     """A game process with a Windows-side watchdog and controller-lifetime cleanup."""
 
     def __init__(self, log_path: Path, *, timeout: float = 600):
-        if not math.isfinite(timeout) or timeout <= 0:
-            raise ValueError("timeout must be positive and finite")
-        # Windows writes logs to the local runtime folder; copy the final log to evidence.
+        # Windows writes the log to the runtime folder; close() copies it to log_path.
         self.log_path = log_path
         self.windows_log = RUNTIME_DIR / f"game-{os.getpid()}-{uuid.uuid4().hex}.log"
         self.timeout = timeout
         self.process = None
         self.info = None
-        self._entered = False
         self.supervisor_stderr = ""
         self.relay_stderr = GAME_DIR / "communication_mod_errors.log"
         self._relay_stderr_offset = None
 
     def __enter__(self):
-        if self._entered:
-            raise RuntimeError("OwnedGame contexts cannot be reused")
-        self._entered = True
+        # Python.exe takes Windows paths for the script and its arguments.
         command = [
-            str(WINDOWS_PYTHON),
-            str(RUNTIME_DIR / "windows_game.py"),
-            "--game-dir",
-            windows_path(GAME_DIR),
-            "--loader",
-            "C:/spire-agent/mods/ModTheSpire.jar",
-            "--log",
-            windows_path(self.windows_log),
-            "--timeout",
-            str(self.timeout),
+            str(WINDOWS_PYTHON), "C:/spire-agent/windows_game.py",
+            "--game-dir", WINDOWS_GAME_DIR,
+            "--loader", "C:/spire-agent/mods/ModTheSpire.jar",
+            "--log", "C:/spire-agent/" + self.windows_log.name,
+            "--timeout", str(self.timeout),
         ]
-        # Python.exe needs a Windows script path even though its executable is a WSL path.
-        command[1] = "C:/spire-agent/windows_game.py"
         # CommunicationMod appends all relay stderr to one game-directory file.
         # Capture only this launch's suffix before a later launch can obscure it.
-        self._relay_stderr_offset = (
-            self.relay_stderr.stat().st_size if self.relay_stderr.exists() else 0
-        )
-        self.process = subprocess.Popen(
-            command,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
+        exists = self.relay_stderr.exists()
+        self._relay_stderr_offset = self.relay_stderr.stat().st_size if exists else 0
+        pipe = subprocess.PIPE
+        self.process = subprocess.Popen(command, stdin=pipe, stdout=pipe, stderr=pipe, text=True)
         try:
             self.info = self._startup_message()
-            if not isinstance(self.info, dict) or not isinstance(self.info.get("pid"), int):
-                raise RuntimeError("Windows supervisor returned an invalid startup message")
             return self
         except BaseException as exc:
             self.close()
@@ -234,49 +189,41 @@ class OwnedGame:
             raise
 
     def _startup_message(self, timeout: float = 15) -> dict:
-        """Bound the complete handshake, including malformed partial output."""
+        """Read the supervisor's first line without blocking past the deadline."""
         deadline = time.monotonic() + timeout
-        line = bytearray()
+        line = b""
         while b"\n" not in line:
-            remaining = deadline - time.monotonic()
-            if remaining <= 0:
-                raise TimeoutError("Windows supervisor did not report startup before deadline")
-            readable, _, _ = select.select([self.process.stdout], [], [], remaining)
-            if not readable:
+            remaining = max(0, deadline - time.monotonic())
+            if not select.select([self.process.stdout], [], [], remaining)[0]:
                 raise TimeoutError("Windows supervisor did not report startup before deadline")
             chunk = os.read(self.process.stdout.fileno(), 4096)
             if not chunk:
                 # Do not block reading stderr from a process which only closed stdout.
                 raise RuntimeError("Windows supervisor closed stdout before reporting startup")
-            line.extend(chunk)
-            if len(line) > 65536:
-                raise RuntimeError("Windows supervisor startup message exceeds byte limit")
+            line += chunk
         return json.loads(line.split(b"\n", 1)[0])
 
     def close(self) -> None:
-        if self.process is not None:
-            process, self.process = self.process, None
-            try:
-                _, self.supervisor_stderr = process.communicate("stop\n", timeout=15)
-            except subprocess.TimeoutExpired:
-                process.kill()
-                _, self.supervisor_stderr = process.communicate(timeout=5)
-            finally:
-                self.log_path.parent.mkdir(parents=True, exist_ok=True)
-                if self.windows_log.exists():
-                    shutil.copy2(self.windows_log, self.log_path)
-                if self._relay_stderr_offset is not None and self.relay_stderr.exists():
-                    with self.relay_stderr.open("rb") as source:
-                        # A reset/truncated log belongs wholly to this launch.
-                        if self.relay_stderr.stat().st_size >= self._relay_stderr_offset:
-                            source.seek(self._relay_stderr_offset)
-                        self.log_path.with_name("communication-mod.stderr.log").write_bytes(
-                            source.read()
-                        )
-                if self.supervisor_stderr:
-                    self.log_path.with_name("supervisor.stderr.log").write_text(
-                        self.supervisor_stderr
-                    )
+        if self.process is None:
+            return
+        process, self.process = self.process, None
+        try:
+            _, self.supervisor_stderr = process.communicate("stop\n", timeout=15)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            _, self.supervisor_stderr = process.communicate(timeout=5)
+        finally:
+            self.log_path.parent.mkdir(parents=True, exist_ok=True)
+            if self.windows_log.exists():
+                shutil.copy2(self.windows_log, self.log_path)
+            if self._relay_stderr_offset is not None and self.relay_stderr.exists():
+                relay_stderr = self.relay_stderr.read_bytes()
+                # A reset/truncated log belongs wholly to this launch.
+                if len(relay_stderr) >= self._relay_stderr_offset:
+                    relay_stderr = relay_stderr[self._relay_stderr_offset:]
+                self.log_path.with_name("communication-mod.stderr.log").write_bytes(relay_stderr)
+            if self.supervisor_stderr:
+                self.log_path.with_name("supervisor.stderr.log").write_text(self.supervisor_stderr)
 
     def __exit__(self, *_):
         self.close()

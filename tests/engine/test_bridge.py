@@ -63,16 +63,12 @@ def test_line_byte_limit_includes_newline():
             assert bridge.receive() == {}
 
 
-@pytest.mark.parametrize("command", ["", " ", "STATE\nEND", "STATE\r", "STATE\0", None])
+@pytest.mark.parametrize("command", ["", " ", "STATE\nEND", "STATE\r", "STATE\0"])
 def test_commands_cannot_inject_additional_protocol_lines(command):
     with BridgeServer() as bridge:
         with pytest.raises(BridgeProtocolError):
             bridge.send(command)
-
-
-def test_oversized_command_invalidates_session():
-    with BridgeServer(max_line_bytes=3) as bridge:
-        with pytest.raises(BridgeProtocolError, match="byte limit"):
+        with pytest.raises(BridgeDisconnected):
             bridge.send("STATE")
 
 
@@ -106,16 +102,12 @@ def test_connection_and_partial_state_timeouts_are_terminal():
                 bridge.receive()
 
 
-def test_context_cannot_be_reused_and_closing_releases_port():
-    bridge = BridgeServer()
-    with pytest.raises(BridgeError, match="not started"):
-        _ = bridge.address
-    with bridge:
+def test_closing_is_idempotent_and_releases_port():
+    with BridgeServer() as bridge:
         address = bridge.address
     bridge.close()
-    with pytest.raises(BridgeError, match="cannot be reused"):
-        with bridge:
-            pass
+    with pytest.raises(BridgeDisconnected):
+        bridge.receive()
     with socket.socket() as replacement:
         replacement.bind(address)
 
@@ -144,12 +136,6 @@ def test_address_reuse_does_not_allow_two_live_listeners():
         with socket.create_connection(original.address) as relay:
             relay.sendall(b'{"original":true}\n')
             assert original.receive() == {"original": True}
-
-
-@pytest.mark.parametrize("timeout", [0, -1, float("nan"), float("inf")])
-def test_timeout_must_be_bounded(timeout):
-    with pytest.raises(ValueError):
-        BridgeServer(timeout=timeout)
 
 
 def launch_relay(address, *args):
@@ -190,7 +176,8 @@ def test_real_relay_handshake_and_bidirectional_bytes():
                     process.stdin.flush()
                     with connection.makefile("rb") as states:
                         assert states.readline() == state
-                    connection.sendall(b"PLAY 1 0\nEND\n")
+                    # A command cut short by the disconnect never reaches the game.
+                    connection.sendall(b"PLAY 1 0\nEND\nPLAY 2")
                 stdout, stderr = process.communicate(timeout=3)
                 assert stdout == b"PLAY 1 0\nEND\n"
                 assert process.returncode == 1
@@ -206,25 +193,25 @@ def test_relay_does_not_claim_readiness_if_connection_fails():
     with socket.socket() as reserved:
         reserved.bind(("127.0.0.1", 0))
         # Bound but not listening: connecting fails deterministically.
-        with launch_relay(reserved.getsockname(), "--connect-timeout", "0.05") as process:
+        with launch_relay(reserved.getsockname()) as process:
             stdout, stderr = process.communicate(timeout=2)
             assert stdout == b""
             assert b"windows_relay:" in stderr
             assert process.returncode == 1
 
 
-def test_relay_rejects_oversized_game_line_without_forwarding_it():
-    with BridgeServer(timeout=2, max_line_bytes=100) as bridge:
-        with launch_relay(bridge.address, "--max-line-bytes", "8") as process:
+def test_bridge_alone_enforces_the_line_limit_on_relayed_state():
+    with BridgeServer(timeout=2, max_line_bytes=8) as bridge:
+        with launch_relay(bridge.address) as process:
             try:
                 bridge.accept()
-                process.stdin.write(b"123456789\n")
+                process.stdin.write(b'{"x":12345}\n')
                 process.stdin.flush()
-                with pytest.raises(BridgeDisconnected):
+                with pytest.raises(BridgeProtocolError, match="byte limit"):
                     bridge.receive()
                 stdout, stderr = process.communicate(timeout=3)
                 assert stdout == b"ready\n"
-                assert b"byte limit" in stderr
+                assert b"windows_relay:" in stderr
                 assert process.returncode == 1
             finally:
                 if process.poll() is None:

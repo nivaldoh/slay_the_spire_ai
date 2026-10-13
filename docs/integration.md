@@ -76,10 +76,10 @@ The actual config path is
 launches; the default is false. Java properties escaping applies to `command`,
 but its parser splits on whitespace without quote support. The relay executable
 and script paths therefore need no spaces. Launch Java with
-`-Dfile.encoding=UTF-8` for consistent stream encoding. The doctor reports
-whether a command is present without printing its content or private profile
-fields. Its success means readiness for a runtime probe; it never certifies a
-handshake, completed combat, or reproducible reset from file presence.
+`-Dfile.encoding=UTF-8` for consistent stream encoding. Every launch rewrites
+this config. The doctor reports what would block a launch without printing
+private profile fields; passing never certifies a handshake, completed combat,
+or reproducible reset.
 
 ## Metrics upload and profile effects
 
