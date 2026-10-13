@@ -209,3 +209,17 @@ def test_the_last_action_skips_hand_selections_and_keeps_floor_and_turn(tmp_path
     prompt = agent.api.send.bodies[1]["input"][0]["content"]
     assert ("Selected: none\nThis selection is for Defend (1 skill), which you just played."
             in prompt)
+
+
+def test_keys_taken_are_remembered_and_shown(tmp_path):
+    rewards = message(["choose", "proceed"], screen_type="COMBAT_REWARD",
+                      choice_list=["emerald_key", "gold"],
+                      screen_state={"rewards": [{"reward_type": "EMERALD_KEY"},
+                                                {"reward_type": "GOLD", "gold": 30}]})
+    agent = policy(tmp_path, reply(0), reply(0), reply(0))
+    for sequence in range(3):
+        agent.choose(decisions.decision_from_message(rewards, session_id="s", sequence=sequence))
+    prompts = [body["input"][0]["content"] for body in agent.api.send.bodies]
+    assert "\nKeys: none\n" in prompts[0]
+    assert "\nKeys: Emerald Key\n" in prompts[1]
+    assert agent.keys == ["Emerald Key"]

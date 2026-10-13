@@ -29,6 +29,8 @@ NOTES_LIMIT = 2000
 HISTORY_LENGTH = 12
 INVALID_RETRIES = 2
 REWARD_SCREENS = ("COMBAT_REWARD", "CARD_REWARD")
+# The labels of the choices that take a key (decisions.py); the game never reports keys.
+KEY_CHOICE = re.compile(r"^(?:take|recall: obtain) the (Ruby|Emerald|Sapphire) Key")
 REPLY_SCHEMA = {
     "type": "object",
     "properties": {
@@ -172,7 +174,8 @@ def _screen(observation: dict) -> list[str]:
     return [f"Screen: {screen}" + (f" ({state['chest_type']})" if "chest_type" in state else "")]
 
 
-def render_state(observation: dict, monster_notes: dict | None = None) -> str:
+def render_state(observation: dict, monster_notes: dict | None = None,
+                 keys: list[str] | None = None) -> str:
     relics = [r.get("name") + (f" ({r['counter']})" if r.get("counter", -1) >= 0 else "")
               for r in observation.get("relics", [])]
     potions = [f"[{slot}] " + ("empty" if p.get("id") == "Potion Slot" else p.get("name"))
@@ -188,9 +191,8 @@ def render_state(observation: dict, monster_notes: dict | None = None) -> str:
         "Potions: " + (", ".join(potions) or "none"),
         f"Deck ({len(deck)}): {_cards(deck)}",
     ]
-    keys = [name for name, held in (observation.get("keys") or {}).items() if held]
-    if keys:
-        lines.append("Keys: " + ", ".join(keys))
+    if keys is not None:
+        lines.append("Keys: " + (", ".join(keys) or "none"))
     if observation.get("combat_state"):
         lines += _combat(
             observation["combat_state"], observation.get("room_type"), monster_notes or {}
@@ -201,9 +203,10 @@ def render_state(observation: dict, monster_notes: dict | None = None) -> str:
 
 
 def render_prompt(decision: Decision, notes: str, history: list[str],
-                  monster_notes: dict | None = None, reminders: list[str] = ()) -> str:
+                  monster_notes: dict | None = None, reminders: list[str] = (),
+                  keys: list[str] | None = None) -> str:
     choices = "\n".join(f"{i}: {c.label}" for i, c in enumerate(decision.candidates))
-    state = render_state(decision.to_dict()["observation"], monster_notes)
+    state = render_state(decision.to_dict()["observation"], monster_notes, keys)
     return "\n\n".join([
         "Run notes:\n" + (notes or "(empty)"),
         "Recent decisions, oldest first:\n" + ("\n".join(history) or "(none)"),
@@ -237,6 +240,8 @@ class LLMPolicy:
         # A hand selection does not say what it is for; the action before it, on the same
         # floor and combat turn, does. Keyed (floor, turn, label).
         self.last_action: tuple = (None, None, "")
+        # CommunicationMod never sends the keys held; remember the ones taken (v9 lost track).
+        self.keys: list[str] = []
         self._metadata = None
 
     def _reminders(self, observation: dict) -> list[str]:
@@ -267,7 +272,7 @@ class LLMPolicy:
         observation = decision.observation
         floor = observation.get("floor")
         prompt = render_prompt(decision, self.notes, list(self.history), self.monster_notes,
-                               self._reminders(observation))
+                               self._reminders(observation), self.keys)
         self._metadata = metadata = {
             "type": "llm", "model": self.api.name, "effort": self.api.effort,
             "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(), "prompt": prompt,
@@ -288,6 +293,9 @@ class LLMPolicy:
             offer = _cards((observation.get("screen_state") or {}).get("cards", []))
             if offer not in self.declined.setdefault(floor, []):
                 self.declined[floor].append(offer)
+        key = KEY_CHOICE.match(choice.label)
+        if key and f"{key[1]} Key" not in self.keys:
+            self.keys.append(f"{key[1]} Key")
         if observation.get("screen_type") != "HAND_SELECT":
             turn = (observation.get("combat_state") or {}).get("turn")
             self.last_action = (floor, turn, choice.label)
