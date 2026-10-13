@@ -7,7 +7,8 @@ Without a commander, units keep the default skill of their class.
 
 - engage: fight in melee; free units go for the enemy lord when he is in melee nearby.
 - shoot: fire at a live enemy in range that is not in melee (unless the commander named it);
-  walk to a firing spot first.
+  walk to a firing spot first. A target in range that draws no shot for STALL_S is skipped
+  for SKIP_S.
 - hold: keep a post and fight enemies that come near it.
 - charge: wait (at a post) until the target, or any enemy, is in melee, then charge it
   (mounted units run all the way, others for the last stretch).
@@ -24,6 +25,9 @@ SKILLS = ("engage", "shoot", "hold", "charge", "move")
 RUN_M = 30  # run only for the last stretch of a charge
 ENGAGE_M = 40  # how near an enemy must come to a hold post, or the enemy lord to a free unit
 REPEAT_S = 2.0  # a lapsed or rejected order is sent again after this many battle seconds
+STALL_S = 15  # a shooter gives up on a target in range after this long without a shot
+STALL_ARTILLERY_S = 30  # artillery reloads slowly
+SKIP_S = 30  # and leaves that target alone this long
 SHOOTERS = ("missile", "missile_chariot", "artillery")
 CHARGERS = ("lord", "hero", "cavalry", "chariot", "missile_cavalry")
 MOUNTED = ("cavalry", "chariot", "missile_cavalry", "missile_chariot")
@@ -205,7 +209,11 @@ def same(order: dict, sent: dict | None) -> bool:
 def lapsed(unit: dict, sent: dict) -> bool:
     """Whether the engine dropped an order we sent, never started it or changed it."""
     if sent["type"] == "attack":
-        return unit.get("target") != sent["target"] or "idle" in _states(unit)
+        # A unit moving with no target or destination is still at it: closing in, finding a
+        # line of fire, or evading as a skirmisher (the engine shows no target meanwhile).
+        target = unit.get("target")
+        moving = target is None and not unit.get("dest") and "moving" in _states(unit)
+        return (target != sent["target"] and not moving) or "idle" in _states(unit)
     if sent["type"] == "move":
         return not unit.get("dest") and "moving" not in _states(unit)
     return False  # a halt is one-shot
@@ -218,6 +226,8 @@ class Skills:
         self.assignments: dict[str, dict] = {}
         self.sent: dict[str, dict] = {}
         self.phase: dict[str, str] = {}
+        self.aim: dict[str, tuple] = {}  # a shooter's target in range, since when, its ammo then
+        self.skip: dict[str, dict[str, float]] = {}  # targets a shooter gave up on, until when
         self.batch: list[dict] = []
         self.time_s = 0.0
 
@@ -240,8 +250,15 @@ class Skills:
             if assignment["skill"] == "hold" and _point(assignment) is None:
                 assignment.update(x=unit["x"], z=unit["z"])  # the post is where it stands
             sent = self.sent.get(unit_id)
-            order, self.phase[unit_id] = RULES[assignment["skill"]](unit, assignment, enemies,
-                                                                    sent)
+            rule, pool = RULES[assignment["skill"]], self._targets(unit_id, assignment, enemies)
+            order, phase = rule(unit, assignment, pool, sent)
+            if self._stalled(unit, order, pool):
+                self.skip.setdefault(unit_id, {})[order["target"]] = self.time_s + SKIP_S
+                pool = self._targets(unit_id, assignment, enemies)
+                order, phase = rule(unit, assignment, pool, sent)
+            if skipped := sorted(enemies.keys() - pool.keys()):
+                phase += f"; skipping {', '.join(skipped)} (no shot fired)"
+            self.phase[unit_id] = phase
             if order is None:
                 continue
             if same(order, sent) and not (
@@ -252,6 +269,34 @@ class Skills:
             orders.append(order)
         self.batch = orders
         return orders
+
+    def _targets(self, unit_id: str, assignment: dict, enemies: dict) -> dict:
+        """The enemies a shooter has not given up on; all of them for other skills."""
+        if assignment["skill"] != "shoot":
+            return enemies
+        until = self.skip.get(unit_id, {})
+        return {key: enemy for key, enemy in enemies.items() if until.get(key, 0) <= self.time_s}
+
+    def _stalled(self, unit: dict, order: dict | None, enemies: dict) -> bool:
+        """Whether a shooter has had its target in range without firing for too long.
+
+        Skaven skirmishers kept chariots in range for up to 40 s without a shot while the
+        executor re-sent the attack every 2 s (skills-v1.1-random-a).
+        """
+        ranged = order and order["type"] == "attack" and order["mode"] == "ranged"
+        target = enemies.get(order["target"]) if ranged else None
+        if not target or _distance(unit, target) > (unit.get("range") or 0):
+            self.aim.pop(unit["id"], None)
+            return False
+        aim, ammo = self.aim.get(unit["id"]), unit.get("ammo", 0)
+        if not aim or aim[0] != target["id"] or ammo < aim[2]:
+            self.aim[unit["id"]] = (target["id"], self.time_s, ammo)
+            return False
+        limit = STALL_ARTILLERY_S if unit.get("class") == "artillery" else STALL_S
+        if self.time_s - aim[1] < limit:
+            return False
+        del self.aim[unit["id"]]
+        return True
 
     def acknowledge(self, ack: dict, latency: dict) -> None:
         for result in ack.get("results") or []:

@@ -214,3 +214,47 @@ def test_an_attack_the_game_redirected_is_sent_again_after_two_seconds():
     assert step(executor, [shooter(target="e2")], enemies, 11000) == []
     assert step(executor, [shooter(target="e2")], enemies, 12000) == [
         attack("f1", "e1", "ranged")]
+
+
+def test_a_unit_moving_without_a_target_is_still_carrying_out_its_attack():
+    # Regression (skills-v1.1-random-a): the engine shows no target while a shooter moves
+    # to fire or evades, and the executor re-sent the same attack every 2 s.
+    executor = Skills()
+    enemy = unit("e1", "cavalry", 0, 100, men=6)
+    assert step(executor, [shooter()], [enemy], 10000) == [attack("f1", "e1", "ranged")]
+    assert step(executor, [shooter(state=["moving", "running"])], [enemy], 13000) == []
+    assert step(executor, [shooter(state=["idle"])], [enemy], 14000) == [
+        attack("f1", "e1", "ranged")]
+
+
+def test_a_shooter_gives_up_on_a_target_in_range_it_never_fires_at():
+    executor = Skills()
+    chariot, block = unit("e1", "chariot", 0, 100, men=6), unit("e2", "infantry", 0, 140)
+    executor.assign(shooter(), {"skill": "shoot", "target": "e1"}, 10)
+    assert step(executor, [shooter()], [chariot, block], 10000) == [attack("f1", "e1", "ranged")]
+    # A shot (ammunition spent) restarts the clock.
+    assert step(executor, [shooter(ammo=19, state=["moving"])], [chariot, block], 20000) == []
+    assert step(executor, [shooter(ammo=19, state=["moving"])], [chariot, block], 34000) == []
+    assert step(executor, [shooter(ammo=19, state=["moving"])], [chariot, block], 35000) == [
+        attack("f1", "e2", "ranged")]
+    assert executor.phase["f1"] == "shooting e2 (1 in range); skipping e1 (no shot fired)"
+    # The named target is skipped until SKIP_S has passed.
+    assert step(executor, [shooter(ammo=19, target="e2")], [chariot, block], 64000) == []
+    assert step(executor, [shooter(ammo=19, target="e2")], [chariot, block], 65000) == [
+        attack("f1", "e1", "ranged")]
+
+
+def test_artillery_waits_longer_and_out_of_range_time_does_not_count():
+    executor = Skills()
+    far, near = unit("e1", "infantry", 0, 200), unit("e1", "infantry", 0, 100)
+    gun = shooter(kind="artillery")
+    assert step(executor, [gun], [near], 10000) == [attack("f1", "e1", "ranged")]
+    aiming = dict(gun, target="e1")
+    assert step(executor, [aiming], [near], 39000) == []
+    assert step(executor, [aiming], [near], 40000) == [{"unit": "f1", "type": "halt"}]
+    assert executor.phase["f1"] == "holding fire; skipping e1 (no shot fired)"
+    walker = Skills()
+    assert step(walker, [shooter()], [far], 10000) == [attack("f1", "e1", "ranged")]
+    assert step(walker, [shooter(state=["moving"])], [far], 40000) == []
+    assert step(walker, [shooter(state=["moving"])], [near], 54000) == []
+    assert walker.phase["f1"] == "shooting e1 (1 in range)"
