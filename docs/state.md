@@ -4,25 +4,27 @@ Updated 2026-10-13. Read this first: what is running, what is current, what come
 History lives with each track ([full runs](fullrun/log.md),
 [first combat](first-combat/README.md)), not here.
 
-## Active work (last verified 2026-10-13 06:05 UTC)
+## Active work (last verified 2026-10-13 10:35 UTC)
 
-WH3 session (owner away about 7 hours from 04:40 UTC): getting the API model to play
-custom battles and improving the harness. Jobs run under `runs/twwarhammer3/battle/`;
-one game at a time. The Spire v10 job (`runs/fullrun/llm-luna-v10-dev-20261013`) died on
-floor 10 when WSL restarted at 04:36 UTC, which also ended the Spire session; Spire
-autoresearch is idle (v10 untested).
+The WH3 session (owner away 04:40-11:40 UTC) ran the autoresearch loop to v7; its last job
+is `runs/twwarhammer3/battle/llm-luna-v7-20261013`. Nothing else is running. The Spire v10
+job (`runs/fullrun/llm-luna-v10-dev-20261013`) died on floor 10 when WSL restarted at
+04:36 UTC, which also ended the Spire session; Spire autoresearch is idle (v10 untested).
 
 ## Second game: Total War: WARHAMMER III (started 2026-10-13)
 
-[twwarhammer3/README.md](twwarhammer3/README.md) is the track page and status;
-[twwarhammer3/integration.md](twwarhammer3/integration.md) the verified engine facts;
-[twwarhammer3/log.md](twwarhammer3/log.md) the versions. A job launches the game, recruits
-both armies through the frontend mod (double-click on unit cards), plays episodes in real
-time and restarts through the rematch button, with no desktop input. On the fixed
-Khorne-vs-Dwarfs battle, `attack_nearest` wins 3 of 3; `gpt-6-luna` (low) went from 1 of 3
-(v1) to 4 of 6 (v5) through prompt and state changes chosen by the review workflow
-(`.claude/workflows/wh3-version-review.js`). API spend so far is under $0.40 of its own
-$25 ledger.
+[twwarhammer3/README.md](twwarhammer3/README.md) is the track page, status, findings and
+next steps; [twwarhammer3/integration.md](twwarhammer3/integration.md) the verified engine
+facts; [twwarhammer3/log.md](twwarhammer3/log.md) the versions. A job launches the game,
+recruits both armies through the frontend mod (double-click on unit cards), plays
+episodes in real time and restarts through the rematch button, with no desktop input.
+On the fixed Khorne-vs-Dwarfs battle, `attack_nearest` wins 3 of 3; `gpt-6-luna` (low)
+went from 1 of 3 (v1) to 5 of 6 (v6) through prompt and state changes chosen by the
+review workflow (`.claude/workflows/wh3-version-review.js`, run by `scriptPath` until a
+new session loads it by name). API spend about $0.40 of its own $25 ledger.
+
+Next: a second scenario to test generality, a melee mode for units with ammunition, and
+more episodes per version. Branch `wh3-v4-info` holds an unmerged state candidate.
 
 ## Current track: full runs with an API model
 
