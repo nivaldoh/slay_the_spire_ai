@@ -76,6 +76,9 @@ def main() -> int:
     play.add_argument("--attach", action="store_true", help="use the game a launch started")
     play.add_argument("--output", type=Path, required=True)
 
+    digest = commands.add_parser("digest", help="Summarise a job or one episode's trace")
+    digest.add_argument("path", type=Path, help="job directory or job/episode-NNNN")
+
     stats = commands.add_parser("stats", help="Summarise the results register")
     stats.add_argument("--results", type=Path, default=RESULTS_PATH)
     stats.add_argument("--rebuild", action="store_true", help="rewrite it from runs/")
@@ -197,6 +200,12 @@ def main() -> int:
             policy_factory = POLICIES[args.policy]
         manifest = run_play(args.output, config, policy_factory=policy_factory)
         return 0 if manifest["status"] == "completed" else 1
+
+    if args.command == "digest":
+        from twwarhammer3.battle.digest import digest as render
+
+        print(render(args.path))
+        return 0
 
     if args.command == "stats":
         from twwarhammer3.battle.stats import JOBS_ROOT, rebuild, summary

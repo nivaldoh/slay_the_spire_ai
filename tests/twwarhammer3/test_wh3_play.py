@@ -6,7 +6,7 @@ from contextlib import nullcontext
 import pytest
 
 from gameai.ledger import BudgetExhausted
-from twwarhammer3.battle import play, stats
+from twwarhammer3.battle import digest, play, stats
 from twwarhammer3.battle.scripted import AttackNearest, Hold
 from twwarhammer3.protocol import BattleRestarted, MailboxTimeout
 
@@ -118,6 +118,9 @@ def test_episode_decides_waits_for_the_ack_and_the_interval_then_records_the_res
                      "decision", "ack", "result"]
     assert (tmp_path / "episode-0000/mod.log").read_text() == "[0] loaded battle b1\n"
     assert json.loads((tmp_path / "episode-0000/result.json").read_text())["status"] == "won"
+    text = digest.digest(tmp_path / "episode-0000")
+    assert "episode-0000: won at 9 s battle time; 2 decisions, 0 invalid" in text
+    assert "     1s  us 1/1u 100m  seen 1/1u 90m  f1 attack e1  [delay 0.5s]" in text
 
 
 def test_pause_mode_decides_only_when_the_game_awaits_orders(tmp_path):
