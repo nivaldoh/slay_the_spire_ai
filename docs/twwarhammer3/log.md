@@ -290,3 +290,12 @@ more than a better prompt; the newer prompts are not shown to be worse there.
 Job `llm-luna-v11-emp-20261013`: lost at 160 s (39% against 79%), 249 s (20% against
 77%) and 189 s (42% against 73%). v11 in all: 0 of 6, and the Empire margin went back to
 -42 points from v10's -20, so v11 was reverted: `main` runs v10.
+
+Job `llm-luna-v10-kho-20261013` (source `9c8f995`, the v10 prompt): lost at 298 s (25%
+against 37%), 211 s (15% against 68%) and 194 s (18% against 70%).
+
+Where the mirrors stand at the end of the session (mean strength left, ours minus the
+enemy's, in points): v6 Empire -48, Dwarfs -28, Khorne -8 (2 wins of 6); v10 Empire -20,
+Dwarfs -26, Khorne -39 (no win in 9). v8-v10 traded the melee mirror for the gun mirrors;
+`main` keeps v10, and v6's prompt is at `6777a64` for comparison. Spend for the session
+about $0.25 (ledger total $0.68).

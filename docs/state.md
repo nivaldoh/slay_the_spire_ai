@@ -4,11 +4,11 @@ Updated 2026-10-13. Read this first: what is running, what is current, what come
 History lives with each track ([full runs](fullrun/log.md),
 [first combat](first-combat/README.md)), not here.
 
-## Active work (last verified 2026-10-13 15:40 UTC)
+## Active work (last verified 2026-10-13 16:10 UTC)
 
 WH3 mirror battles (owner away 11:25-16:25 UTC): `gpt-6-luna` against the game AI with
 the same army on both sides (Khorne, Dwarf, Empire), and prompt versions v8-v11 chosen
-by the review workflow. Last job: `runs/twwarhammer3/battle/llm-luna-v10-kho-20261013`.
+by the review workflow. Last job: `runs/twwarhammer3/battle/llm-luna-v10-kho-20261013`. Nothing is running.
 The Spire v10 job (`runs/fullrun/llm-luna-v10-dev-20261013`) died on floor 10 when WSL
 restarted at 04:36 UTC; Spire autoresearch is idle (v10 untested).
 
@@ -21,7 +21,7 @@ sets up the `--scenario` battle from `configs/twwarhammer3/scenarios.json` (race
 the selector's popup, units recruited by double-click), plays episodes in real time and
 restarts through the rematch button, with no desktop input. On Khorne vs Dwarfs
 `attack_nearest` wins 3 of 3 and v6 won 5 of 6. In mirror battles Luna has not won with
-guns on both sides (Empire 0 of 11+, Dwarfs 0 of 11) and won 3 of 15 Khorne mirrors; the
+guns on both sides (Empire 0 of 11+, Dwarfs 0 of 11) and won 3 of 18 Khorne mirrors (2 of 6 for v6, none for v10); the
 AI's stats modifier preference is 1.1. `main` runs v10 (prompt changes v8-v10; v11 reverted after 0 of 6). API spend about $0.7 of its own $25 ledger.
 
 Next: the README's list; first the fire-report candidate (branch `wh3-fire-report`) and

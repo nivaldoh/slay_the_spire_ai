@@ -93,7 +93,7 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 | v6 | 0/3, 21/69% | 0/3, 25/53% | 2/3, 34/25%; replicate 0/3, 38/64% |
 | v8 guns | 0/3, 31/70% | 0/2, 30/76% | |
 | v9 melee | | 0/3, 35/65% | 1/3, 26/47% |
-| v10 shooters | 0/3, 37/57% | 0/3, 42/68% | |
+| v10 shooters (`main`) | 0/3, 37/57% | 0/3, 42/68% | 0/3, 19/58% |
 | v11 lords (reverted) | 0/3, 34/76% | | 0/3, 26/61% |
 
 - With guns, crossbows or artillery on both sides, Luna lost every battle (0 of 11 in the
@@ -104,10 +104,11 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 - The game's AI stats modifier preference is 1.1 (pinned since the first night), so the
   AI's units are probably about 10% stronger: a mirror is not an even fight, and an even
   trade loses. Whether to play mirrors at 1.0 is an owner decision.
-- The prompt changes narrowed the Empire margin (v6 -48 points, v10 -20) but not the
-  Dwarf one (v6 -28, v10 -26). In the Khorne mirror v6 won 2 of its first 3 and none of a
-  replicate 3, so v9 (1/3) and v11 (0/3) are not shown to be worse: battles swing so
-  widely that three per mirror and version separate little.
+- The prompt changes traded the melee mirror for the gun mirrors. Margin (ours minus the
+  enemy's strength left, in points): Empire v6 -48, v10 -20; Dwarfs v6 -28, v10 -26;
+  Khorne v6 -8 over 6 battles (2 won; a replicate of 3 lost all), v10 -39 (0/3), v11 -35.
+  Averaged over the three mirrors v6 and v10 are level (-28). Battles swing widely, so
+  three per mirror and version separate little.
 - Measured by the reviews over the traces: artillery killed about 2 men a shot at
   infantry in the open, 1 in 2 shots at missile infantry and 1 in 3 at crews; our missile
   units shooting enemy missile infantry killed about 1 man per 100 shots; our lord alone
@@ -120,8 +121,11 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 
 ## Next
 
-1. `main` runs v10 (v11 reverted after 0 of 6). Play more battles per version (five or
-   six) before comparing. A shorter prompt is worth testing for think time.
+1. `main` runs v10 (v11 reverted after 0 of 6); v6's prompt (`6777a64`) is better in the
+   Khorne mirror and on Khorne vs Dwarfs (5/6, untested with v8-v10). Find which v8-v10
+   rule costs the melee mirror (v8's cavalry exemption from the lord gang-up and v10's
+   fire doctrine for the Skullcannon and horsemen are suspects), with five or six battles
+   per version. A shorter prompt is worth testing for think time.
 2. Candidate on branch `wh3-fire-report` (`832b233`, built on v9): the mod publishes kill
    counts and enemy targets; an attack order shows shots fired and men killed since it
    was given, enemy lines show their target, our units show "attacked by e3 15 m rear".
