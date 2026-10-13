@@ -252,3 +252,22 @@ def test_a_toggle_ack_does_not_replace_the_previous_movement_order(tmp_path):
     agent.acknowledge({"results": [{"unit": "f1", "index": 1, "ok": True},
                                     {"unit": "f1", "index": 2, "ok": True}]}, {})
     assert agent.ordered["f1"]["type"] == "move"
+
+
+def test_a_rejected_queued_attack_keeps_the_successful_move_in_memory(tmp_path):
+    move = {"unit": "f1", "type": "move", "x": 50, "z": 20}
+    attack = {"unit": "f1", "type": "attack", "target": "e1", "queue": True}
+    agent = policy(tmp_path, reply([move, attack]))
+    agent.decide(observation())
+    agent.acknowledge({"results": [{"unit": "f1", "index": 1, "ok": True},
+                                    {"unit": "f1", "index": 2, "ok": False,
+                                     "error": "target_not_visible"}]}, {})
+    assert agent.ordered["f1"]["type"] == "move"
+
+
+def test_magic_state_is_player_only_and_unknown_values_are_not_zero():
+    obs = observation()
+    obs["magic"] = {"current": 23.5, "reserve": 42}
+    assert "Winds of Magic: 23.5 available, 42 reserve" in llm.render_state(obs, {})
+    obs["magic"] = {"reserve": 42}
+    assert "Winds of Magic: unknown available, 42 reserve" in llm.render_state(obs, {})

@@ -198,6 +198,7 @@ local function observation(now, awaiting)
         end
     end
     local remaining = get(bm.battle, "remaining_conflict_time", -1)
+    local player = bm:get_player_army()
     return {
         schema = 1, job = session.job, battle = state.battle, seq = state.seq,
         phase = bm:get_current_phase_name(), time_ms = now, speed = session.speed or 1,
@@ -207,6 +208,10 @@ local function observation(now, awaiting)
             enemy = {faction = get(bm:get_first_non_player_army(), "faction_key", "?")},
         },
         friendly = friendly, enemy_roster = roster, enemy = enemy,
+        magic = {
+            current = get(player, "winds_of_magic_current", nil),
+            reserve = get(player, "winds_of_magic_reserve", nil),
+        },
         orders = state.applied, result = state.result, final = state.final,
     }
 end

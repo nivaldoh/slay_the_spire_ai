@@ -200,6 +200,10 @@ def render_state(observation: dict, last_seen: dict, before: dict | None = None,
     visible = visible_enemies(observation)
     before, ordered = before or {}, ordered or {}
     lines = ["Your units:"]
+    magic = observation.get("magic") or {}
+    if magic:
+        lines.insert(0, f"Winds of Magic: {magic.get('current', 'unknown')} available, "
+                     f"{magic.get('reserve', 'unknown')} reserve.")
     lines += ["- " + render_unit(unit, True, before.get(unit["id"]), visible,
                                  ordered.get(unit["id"]))
               for unit in observation.get("friendly", [])]
@@ -367,6 +371,7 @@ class LLMPolicy:
 
     def acknowledge(self, ack: dict, latency: dict) -> None:
         self.ack, self.latency = ack, latency
+        accepted = []
         for result in ack.get("results") or []:
             if not result.get("ok"):
                 continue
@@ -375,9 +380,11 @@ class LLMPolicy:
                      else next((o for o in self.sent if o["unit"] == result["unit"]), None))
             if not order or order["type"] not in ("move", "attack", "halt"):
                 continue
+            accepted.append(order)
+        for order in accepted:
             unit = order["unit"]
             # A submitted queue is not evidence that its final attack has started.
-            sequence = [o for o in self.sent if o["unit"] == unit and o.get("queue")]
+            sequence = [o for o in accepted if o["unit"] == unit and o.get("queue")]
             if sequence:
                 self.ordered.pop(unit, None)
             else:
