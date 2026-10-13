@@ -33,26 +33,28 @@ way. There is no external game API; the mod is the API.
 - Policies see dicts (`protocol.py`): friendly units in full, enemy units only while
   `is_visible_to_alliance` says the player can see them, plus the enemy roster as the
   custom battle screen shows it. `battle/scripted.py` has `hold`, `attack_nearest` and
-  `probe_move` (the axis probe). The LLM policy, the play loop, digest and the results
-  register are not written yet; their design is in the session plan summarised below.
+  `probe_move` (the axis probe); `battle/llm.py` and `configs/twwarhammer3/` are the
+  API-model policy and the autoresearch loop's editable surface.
+- A job (`battle/play.py`) launches the game, runs the custom battle steps in
+  `configs/twwarhammer3/menu.json` (no desktop input), plays episodes and restarts the
+  same battle between them through the results popup's rematch button. Each episode
+  writes `trace.jsonl` (every observation, prompt, reply and acknowledgement),
+  `result.json` and `mod.log`; each finished episode appends a row to
+  [results.csv](results.csv). Versions are logged in [log.md](log.md).
 
-## Status (2026-10-13 01:00 local, paused by the owner)
+## Status (2026-10-13 02:40 local)
 
 | Milestone | State | Evidence |
 |---|---|---|
-| 1 Mod loads | done | `runs/twwarhammer3/launch-m1/lua_mod_log.txt` lists the json and frontend scripts loaded; `menu.log` has "frontend loaded" 25 s after launch |
-| 1b Unattended custom battle | in progress | menu navigation by component id works (Battle, Custom Battle); UI tree dumps in `runs/twwarhammer3/launch-m1/*.txt`; a simulated single click on a unit card pins its info panel and does not recruit it |
-| 2 Roster readable | not started | the battle script is written but has not run in a battle yet |
-| 3–8 | not started | |
-
-Open point for the owner: how to recruit units programmatically. `SimulateDblLClick`
-support is in the frontend script (untested; the game must be relaunched to load the
-rebuilt pack). If that also only pins the panel, the next route is the UI layout's own
-context command for the card (the component ids are `CcoUnitsCustomBattlePermissionRecord
-<unit key>:<faction>:<n>`, which are context objects), or `button_autogen` for a
-generated army. Screenshots (`gameai/windows_desktop.py`) were only used to verify what a
-click did; real mouse input is not part of the design and the one test of it hit the
-owner's terminal window instead of the game.
+| 1 Mod loads | done | `runs/twwarhammer3/launch-m1/` |
+| 1b Unattended custom battle | done | menu steps recruit both armies by double-click and start the battle; `runs/twwarhammer3/battle/attack-m3-20261013/menu.log` |
+| 2 Roster readable | done | 5 v 5 units with positions, strength, fatigue, flags, targets in every observation |
+| 3 Orders apply | done | attack, move (with facing) and halt through one unitcontroller per unit; acknowledgements carry the applied battle time |
+| 4 Result | done | "lost" and "won" from the engine at VictoryCountdown |
+| 5 Restart | done | rematch button and confirmation; two episodes in one job |
+| 6 Scripted baselines | done | `attack_nearest`: lost, won (`attack-m3-20261013`) |
+| 7 First LLM battle | running | `llm-luna-v1-20261013` |
+| 8 Autoresearch loop | next | [log.md](log.md) |
 
 ## Commands
 
@@ -62,6 +64,11 @@ uv run python -m twwarhammer3 pack --list PACK       # entries of any pack; --ex
 uv run python -m twwarhammer3 launch                 # build, install, run the game until Ctrl-C
 uv run python -m twwarhammer3 menu --dump 4          # UI tree of the current screen (ui_tree.txt)
 uv run python -m twwarhammer3 menu --steps steps.json  # click through components; tails menu.log
+uv run python -m twwarhammer3 menu --battle --steps steps.json  # the same, in a running battle
+uv run python -m twwarhammer3 play --policy llm --budget-usd 25 --scenario kho5-dwf5 \
+    --episodes 3 --output runs/twwarhammer3/battle/llm-luna-vN-YYYYMMDD
+uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>[/episode-0000]
+uv run python -m twwarhammer3 stats                  # results.csv by policy, harness and mode
 uv run python -m twwarhammer3 spend                  # runs/twwarhammer3/llm-spend.jsonl total
 ```
 
@@ -69,19 +76,10 @@ Nothing sends desktop input: the first menu step waits (up to 240 s) for the mai
 while the intro movies play out. An Escape press sent through `SendInput` once landed in
 the Spire game and opened its settings screen, so the intro skip was removed.
 
-## Planned next (from the approved session plan)
+## The loop
 
-1. Recruit units by component (double-click or context command), select the CPU slot and
-   recruit its army the same way, click `button_start_battle`; record the sequence in
-   `configs/twwarhammer3/menu.json`. Then `play --episodes 2 --policy hold` must reach
-   two results with nobody at the keyboard.
-2. `battle/play.py`: job over episodes (restart through `bm:restart_battle()`), episode
-   loop with the latency bookkeeping, `trace.jsonl` and `result.json`, exception mapping
-   as in `spire.fullrun.play`; `--attach` to reuse a `launch`ed game.
-3. `battle/llm.py` and `configs/twwarhammer3/system_prompt.md`: strict reply schema
-   `{"orders": [...], "reason", "notes"}`, bounded notes and recent-orders memory, the
-   timing line with the last measured delay, last-seen enemies.
-4. Milestones 2–5 and 7 with facts into integration.md; then the first LLM battle,
-   baselines, `docs/twwarhammer3/results.csv`, `stats`, and the autoresearch loop: three
-   episodes of one fixed scenario per version, episode reviews in subagents, one change
-   per version, `log.md` entries, a separate $25 ledger.
+As for Spire full runs: play three episodes of the fixed scenario per version (`play`
+needs a clean source tree and an API key through `SPIRE_OPENAI_KEY_FILE`), have a fresh
+subagent review each episode from its digest and trace, make one change to the prompt,
+rendering or memory, and log the version in [log.md](log.md). The WH3 ledger
+(`runs/twwarhammer3/llm-spend.jsonl`) is separate from Spire's, with its own $25 cap.
