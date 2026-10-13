@@ -122,3 +122,14 @@ he has (v4 parked him for minutes while the enemy lord was nearly dead).
 Job `llm-luna-v5-20261013` (source `33895de`): won at 333 s (64% of our men left, 29% of
 the enemy's: a wider margin than any baseline battle), won at 343 s (36% against 36%),
 lost at 417 s (10% against 48%).
+
+Reviews: the wins came from the lord and both infantry units walking in together and
+all three going onto the enemy lord in the same reply at contact (he routed at 162 s in
+the first win, our lord at 58%); the hurt-lord rule mattered in the second win (the
+Herald fought on at 42% once the lords' health was level). The loss turned on the lord
+duel: the Herald's line move carried him past the engaged Chaos Warriors, he alone was
+sent onto the enemy lord, and when the game retargeted him and the Bloodletters onto
+other enemies the model read it as its own gang-up, leaving the enemy lord untouched at
+80% for 90 s. The support units achieved little in all three: the Skullcannon's 12 shots
+killed almost no one and the horsemen's attacks on the Quarrellers were replaced by the
+game 7 times, each acknowledged as applied.
