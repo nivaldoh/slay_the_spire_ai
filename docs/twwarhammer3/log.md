@@ -195,3 +195,23 @@ Empire mirror, source `b1c9ce0`:
 - v6 (`llm-luna-v6-emp-20261013`): lost at 270 s (0% against 71%), 242 s (19% against
   71%) and 246 s (37% against 65%). In every loss the enemy handgunners and cannon ended
   nearly untouched (64-66 of 68 men, 33 of 33) while ours were destroyed.
+
+Khorne and Dwarf mirrors, v6, source `6777a64`:
+- `llm-luna-v6-kho-20261013`: won at 265 s (77% against 34%), lost at 282 s (49% against
+  65%), won at 247 s (72% against 50%).
+- `llm-luna-v6-dwf-20261013`: lost at 499 s (31% against 66%), 576 s (24% against 49%) and
+  629 s (19% against 43%).
+
+v6 in the mirrors: 2 wins of 9, both in the melee-heavy Khorne mirror. The armies with
+guns, crossbows and artillery beat the model every time.
+
+## v8: answer the enemy's guns
+
+Change (prompt), chosen by the review of the Empire mirror (all three judges): artillery
+fires first at enemy artillery in range ("never at small crews" had made the model take
+the cannon off the enemy cannon, the game's own pick, at 5 s in all three battles);
+missile infantry stands 40-60 m to the side of the melee line, never straight behind it
+(the handgunners fired 167 rounds through our own melee for 2 kills); a shooter whose
+target loses no men for two turns moves to a clear line or switches; cavalry shelled
+while waiting ride wide onto the enemy artillery instead of shuffling about in its range;
+cavalry are left out of the enemy-lord gang-up.
