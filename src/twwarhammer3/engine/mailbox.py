@@ -13,6 +13,7 @@ Observation shape::
     {"schema": 1, "job", "battle", "seq", "phase", "time_ms", "speed", "awaiting_orders",
      "remaining_ms", "armies": {"player": {"faction"}, "enemy": {"faction"}},
      "friendly": [unit...], "enemy_roster": [{"id", "type"}...], "enemy": [visible unit...],
+     "magic": {"current"?, "reserve"?},
      "orders": {"request", "based_on", "applied_ms",
                 "results": [{"index", "unit", "ok", "queued", "error"?}]} | null,
      "result": "won" | "lost" | "draw" | null,

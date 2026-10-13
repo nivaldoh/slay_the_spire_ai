@@ -1,8 +1,9 @@
 """What the policy sees and may order in a battle, and the failure taxonomy.
 
 Observations are the dicts the Lua side publishes (``engine/mailbox.py`` has the
-shape); orders are dicts ``{"unit", "type", "x", "z", "facing", "run", "target"}``. Only an
-engine-reported battle result is a gameplay outcome; everything below is an
+shape). Orders have a unit, type and command-specific fields for movement, attacks,
+toggles or abilities; move/attack sequences use ``queue``. Only an engine-reported
+battle result is a gameplay outcome; everything below is an
 infrastructure, protocol or policy failure.
 """
 

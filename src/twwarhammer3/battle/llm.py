@@ -237,7 +237,8 @@ def render_timing(observation: dict, latency: dict | None) -> str:
     if observation.get("awaiting_orders"):
         text += " The battle is paused until you reply; it resumes to issue your orders."
     elif latency:
-        text += (f" Your last batch was issued to the engine {latency['delay_ms'] / 1000:.1f} s after the"
+        text += (" Your last batch was issued to the engine"
+                 f" {latency['delay_ms'] / 1000:.1f} s after the"
                  f" state you saw (you took {latency['think_s']:.1f} s to reply). Expect a"
                  " similar delay now.")
     else:
