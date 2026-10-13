@@ -4,12 +4,14 @@ Updated 2026-10-13. Read this first: what is running, what is current, what come
 History lives with each track ([full runs](fullrun/log.md),
 [first combat](first-combat/README.md)), not here.
 
-## Active work (last verified 2026-10-13 10:35 UTC)
+## Active work (last verified 2026-10-13 11:55 UTC)
 
-The WH3 session (owner away 04:40-11:40 UTC) ran the autoresearch loop to v7 (2 of 6,
-reverted; `main` runs v6, 5 of 6); its last job is `runs/twwarhammer3/battle/llm-luna-v7-20261013b`. Nothing else is running. The Spire v10
-job (`runs/fullrun/llm-luna-v10-dev-20261013`) died on floor 10 when WSL restarted at
-04:36 UTC, which also ended the Spire session; Spire autoresearch is idle (v10 untested).
+WH3 mirror battles (owner away 11:25-16:25 UTC): how `gpt-6-luna` (v6 prompt) does when
+both sides field the same army (Khorne, Dwarf, Empire), and harness changes that raise
+it. Scenarios are now named in `configs/twwarhammer3/scenarios.json`. Running:
+`runs/twwarhammer3/battle/llm-luna-v6-emp-20261013`. The Spire v10 job
+(`runs/fullrun/llm-luna-v10-dev-20261013`) died on floor 10 when WSL restarted at 04:36
+UTC; Spire autoresearch is idle (v10 untested).
 
 ## Second game: Total War: WARHAMMER III (started 2026-10-13)
 

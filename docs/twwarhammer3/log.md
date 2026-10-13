@@ -181,3 +181,17 @@ against 70%), lost at 434 s (22% against 29%). v7 in all: 2 wins of 6, against v
 6, so v7 was reverted: `main` runs the v6 prompt. Without the standing order to pile onto
 the enemy lord, the replicate's battles were lost fast; the race test seems to have taken
 units off him too early. The next version starts again from v6.
+
+## Mirror battles (2026-10-13, second session)
+
+Scenarios are now named in `configs/twwarhammer3/scenarios.json` (each side's race,
+faction and units; the menu steps pick the race in the selector's popup). Mirror battles
+put the same army on both sides of the same map, the player starting north:
+`kho5-kho5` (the Khorne army above), `dwf5-dwf5` (the Dwarf army above) and `emp5-emp5`
+(Empire: General, Swordsmen, Handgunners, Empire Knights, Great Cannon).
+
+Empire mirror, source `b1c9ce0`:
+- `attack_nearest` (`attack-emp-mirror-20261013`): lost at 228 s and 232 s.
+- v6 (`llm-luna-v6-emp-20261013`): lost at 270 s (0% against 71%), 242 s (19% against
+  71%) and 246 s (37% against 65%). In every loss the enemy handgunners and cannon ended
+  nearly untouched (64-66 of 68 men, 33 of 33) while ours were destroyed.
