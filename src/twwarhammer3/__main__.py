@@ -68,6 +68,28 @@ def main() -> int:
     menu.add_argument("--click", action="store_true", help="click the --find component")
     menu.add_argument("--wait", type=float, default=20, help="seconds to tail menu.log")
 
+    play = commands.add_parser("play", help="Play custom battles with a policy; one job directory")
+    play.add_argument("--policy", choices=["llm", "hold", "attack_nearest", "probe_move"],
+                      default="llm")
+    play.add_argument("--model", default="gpt-6-luna")
+    play.add_argument("--effort", default="low")
+    play.add_argument("--budget-usd", type=float, default=None, help="required with --policy llm")
+    play.add_argument("--ledger", type=Path, default=LEDGER_PATH)
+    play.add_argument("--results", type=Path, default=RESULTS_PATH)
+    play.add_argument("--episodes", type=int, default=1)
+    play.add_argument("--scenario", required=True, help="label of the fixed custom battle")
+    add_session_arguments(play)
+    play.add_argument("--start-timeout", type=float, default=900)
+    play.add_argument("--observation-timeout", type=float, default=60)
+    play.add_argument("--episode-timeout", type=float, default=3600)
+    play.add_argument("--run-timeout", type=float, default=8 * 3600, help="game process limit")
+    play.add_argument("--attach", action="store_true", help="use the game a launch started")
+    play.add_argument("--output", type=Path, required=True)
+
+    stats = commands.add_parser("stats", help="Summarise the results register")
+    stats.add_argument("--results", type=Path, default=RESULTS_PATH)
+    stats.add_argument("--rebuild", action="store_true", help="rewrite it from runs/")
+
     spend = commands.add_parser("spend", help="Print the API ledger total")
     spend.add_argument("--ledger", type=Path, default=LEDGER_PATH)
 
@@ -159,6 +181,43 @@ def main() -> int:
                 if text.rstrip().endswith("done"):
                     break
             time.sleep(0.5)
+        return 0
+
+    if args.command == "play":
+        from twwarhammer3.battle.play import play as run_play
+
+        skipped = ("command", "output")
+        config = {key: value for key, value in vars(args).items() if key not in skipped}
+        config.update(session_from(args))
+        for key, value in config.items():
+            if isinstance(value, Path):
+                config[key] = str(value)
+        if args.policy == "llm":
+            from functools import partial
+
+            from gameai.ledger import Ledger
+            from gameai.llm import api_key, post
+            from twwarhammer3.battle.llm import LLMPolicy
+
+            if args.budget_usd is None:
+                parser.error("--policy llm needs --budget-usd")
+            ledger = Ledger(args.ledger, args.budget_usd)
+            send = partial(post, api_key())
+            def policy_factory():
+                return LLMPolicy(args.model, args.effort, ledger, send=send)
+        else:
+            from twwarhammer3.battle.scripted import POLICIES
+
+            policy_factory = POLICIES[args.policy]
+        manifest = run_play(args.output, config, policy_factory=policy_factory)
+        return 0 if manifest["status"] == "completed" else 1
+
+    if args.command == "stats":
+        from twwarhammer3.battle.stats import JOBS_ROOT, rebuild, summary
+
+        if args.rebuild:
+            print(f"{rebuild(JOBS_ROOT, args.results)} rows")
+        print(summary(args.results))
         return 0
 
     if args.command == "spend":
