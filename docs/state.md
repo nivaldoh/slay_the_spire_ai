@@ -4,16 +4,33 @@ Updated 2026-10-13. Read this first: what is running, what is current, what come
 History lives with each track ([full runs](fullrun/log.md),
 [first combat](first-combat/README.md)), not here.
 
-## Active work (last verified 2026-10-13 18:50 UTC)
+## Active work (last verified 2026-10-13 20:45 UTC)
 
-WH3 startup skipping is installed (`2793933`): menu time fell from 149.0 s to 17.7 s
-in one comparison; without the project mod list the menu was visible by 20.8 s.
-The separate movie pack also applies to ordinary Steam launches. At the owner's
-direction, battles now always run unpaused at 1x, including probes (`1c56ec2` removes
-pause/speed overrides). The corrected live smoke measured 23.4 battle seconds over
-23.401 wall seconds, five units per side, 77 acknowledged batches and no invalid orders.
-95 WH3 tests and Ruff pass. Evidence: `runs/twwarhammer3/skip-intro-20261013/`.
-All probes are stopped; doctor is ready, no game/controller is running.
+WH3 controllers (owner request, 2026-10-13). From a ChatGPT 6 Astra Pro research
+summary, the simplest design is now built:
+- `--policy skills`: persistent per-unit skills run by a scripted executor on every
+  observation.
+- `--policy commander`: an API model setting those skills asynchronously, so units keep
+  acting while it thinks.
+
+The other designs are catalogued for later in
+[twwarhammer3/controllers.md](twwarhammer3/controllers.md). Code: `d2bf74a`, `0f8eb39`
+(fixes from the first smoke and a six-agent review) and `5a2fc8d`.
+
+Smoke battles on `kho5-dwf5`, one each: the commander won with Luna ($0.02), Sol
+(`gpt-6.1-sol`, $0.18) and Astra ($1.17). The pre-fix skills executor lost. Order delay
+is 0.3 s, against 4-11 s for the direct controller. Think time at low effort: Luna
+6.4 s, Sol 5.8 s, Astra 4.8 s.
+
+`--scenario random` (owner request) draws a map and both races, leaves the faction to
+the game, and autogenerates both armies (about 13 units a side). The seed is drawn per
+job unless `--seed` is given. The first draw (Dark Elves vs Nurgle) was won by the Luna
+commander. Every battle so far ran at AI difficulty very hard. Army
+abilities (Khorne's kill unlocks) are missing from the interface: a gap to fix.
+
+Next:
+1. The six-episode comparison of `llm`, `skills` and `commander`.
+2. Army abilities and ability readiness.
 
 WH3 interface work completed: no extra wait by default; explicit attack modes, queued
 moves/attacks, formation width, supported behavior toggles and self/unit/ground abilities.

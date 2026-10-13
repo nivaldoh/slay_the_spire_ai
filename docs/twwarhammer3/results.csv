@@ -83,3 +83,8 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-13,llm-luna-v12-kho-20261013,episode-0001,kho5-kho5,llm,gpt-6-luna,low,12,42a8af7,realtime,1.0,5.0,lost,271,0.19,0.52,22,1,6.6,0.0066
 2026-10-13,llm-luna-v12-kho-20261013,episode-0002,kho5-kho5,llm,gpt-6-luna,low,12,42a8af7,realtime,1.0,5.0,lost,265,0.19,0.54,21,0,6.63,0.0064
 2026-10-13,llm-luna-v10-kho-pinned-20261013,episode-0000,kho5-kho5,llm,gpt-6-luna,low,10,61c5f7f,realtime,1.0,5.0,lost,248,0.32,0.52,20,0,6.63,0.0071
+2026-10-13,skills-v1-kho-smoke-20261013,episode-0000,kho5-dwf5,skills,,,1,d2bf74a,realtime,1.0,0.0,lost,302,0.34,0.57,974,1,0.3,0
+2026-10-13,commander-luna-v1-kho-smoke-20261013,episode-0000,kho5-dwf5,commander,gpt-6-luna,low,1,0f8eb39,realtime,1.0,0.0,won,355,0.53,0.28,1157,9,0.3,0.0199
+2026-10-13,commander-sol-v1-kho-smoke-20261013,episode-0000,kho5-dwf5,commander,gpt-6.1-sol,low,1,0f8eb39,realtime,1.0,0.0,won,255,0.75,0.44,825,2,0.3,0.1769
+2026-10-13,commander-astra-v1-kho-smoke-20261013,episode-0000,kho5-dwf5,commander,gpt-6-astra,low,1,0f8eb39,realtime,1.0,0.0,won,309,0.64,0.26,1004,2,0.3,1.1685
+2026-10-13,commander-luna-v1-random-s2-smoke-20261013,episode-0000,random,commander,gpt-6-luna,low,1,5a2fc8d,realtime,1.0,0.0,won,407,0.4,0.23,1315,9,0.31,0.0321

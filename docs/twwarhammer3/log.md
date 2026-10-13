@@ -410,3 +410,93 @@ The run ended at its 50-second diagnostic timeout, with no gameplay outcome meas
 and no row added to the policy results register. Repeat installation preserved the
 startup pack/preference bytes and mtimes. All probes are stopped, session files cleared,
 and the final doctor reports ready with the startup skip installed.
+
+## Skills and commander v1 (2026-10-13)
+
+Owner request: build the simplest design from a research summary (ChatGPT 6 Astra Pro,
+2026-10-13), an asynchronous API-model commander over persistent scripted skills, and
+document the other designs for later comparison
+([controllers.md](controllers.md)). Code:
+- `d2bf74a`: the skills executor (`--policy skills`), the commander
+  (`--policy commander`), a `policy` column in the results register (rebuilt from
+  `runs/`, identical except that column and blank model cells on scripted rows) and
+  trace thinning for fast policies.
+- `0f8eb39`: the fixes below.
+- `5a2fc8d`: random battles.
+
+The model's prompt is `configs/twwarhammer3/commander_prompt.md`; the direct controller
+keeps `system_prompt.md`.
+
+Smoke battles, one episode each on `kho5-dwf5`, unpaused at 1x, AI difficulty very hard
+(found by the probe below; every earlier battle ran at it too):
+
+| Job | Source | Outcome | Battle s | Own left | Enemy left | Plans | Mean plan age s | Cost |
+|---|---|---|---|---|---|---|---|---|
+| `skills-v1-kho-smoke` | `d2bf74a` | lost | 302 | 0.34 | 0.57 | | | $0 |
+| `commander-luna-v1-kho-smoke` | `0f8eb39` | won | 355 | 0.53 | 0.28 | 53 | 6.5 | $0.02 |
+| `commander-sol-v1-kho-smoke` (`gpt-6.1-sol`) | `0f8eb39` | won | 255 | 0.75 | 0.44 | 41 | 6.0 | $0.18 |
+| `commander-astra-v1-kho-smoke` | `0f8eb39` | won | 309 | 0.64 | 0.26 | 59 | 5.1 | $1.17 |
+
+All jobs ran at low effort. Mean order delay was 0.3 s (maximum 0.6 s) in every job,
+against 4-11 s for the direct controller. The executor ran about 3 decisions a second,
+and traces stayed at 1.6-2.5 MB per battle after thinning.
+
+These battles show that the controller works, not that it is stronger: the direct
+controller won 5 of 6 on this scenario at v6 and `attack_nearest` 3 of 3. The comparison
+needs six or more episodes per controller ([README](README.md#next) item 0).
+
+- **skills v1** found a defect. The observation published with an acknowledgement still
+  shows the previous target, and shoot preferred the observed target. After the enemy
+  lord's melee flag flickered at 89 s, the Skullcannon alternated between two targets
+  on every tick from 89 s until 185 s: 319 attack orders and no shots. `0f8eb39` makes every
+  skill prefer the executor's own last target (regression test). A six-agent review
+  (three reviewers, each with a verifier) confirmed eight more defects, all fixed in
+  `0f8eb39`:
+  - a charge whose named target is out of sight now acts as with no target;
+  - without a post, charge halts the previous skill's order;
+  - only an unreachable move drops its point;
+  - an attack the game redirected counts as lapsed;
+  - `describe_orders` no longer crashes on an ability with x but no z;
+  - the prompt no longer annotates orders sent in the same tick;
+  - the trace keeps the observation a failing decision saw.
+- **Commander.** The first Luna plan arrived 7.2 s after its state. Meanwhile the
+  default skills had the infantry engaging, the Skullcannon firing and the lord and
+  horsemen waiting for melee. No assignment was ever dropped. Every engine rejection
+  except two was an ability cast the engine refused ("does not support this special
+  ability"): 7 for Luna, which repeated `deadly_onslaught`, and 2 each for Sol and
+  Astra. Luna's other 2 were unreachable horsemen moves. The model still cannot tell ability cooldowns.
+  The owner saw a Khorne army ability become available near the end of a battle and go
+  unused. Army abilities are missing from the interface (state and orders) for every
+  controller; this is a harness gap to fix, recorded in integration.md.
+- **Latency and cost.** Sol and Astra at low effort spent only 25 and 10 reasoning
+  tokens per call, against Luna's 341, so they were no slower: think time was 6.4 s
+  for Luna, 5.8 s for Sol and 4.8 s for Astra. Astra's first call took 12.5 s. Total WH3
+  spend after these jobs: $2.08 of the $25 ledger.
+
+### Random battles
+
+Owner request: use the custom battle screen's Autogenerate army on random factions, and
+randomize the map too. A UI probe (`runs/twwarhammer3/probe-random-army-20261013/`,
+[integration.md](integration.md#frontend-automation)) found:
+- the button `clear_autogen_parent/button_autogen`;
+- the classic battle types' 380 maps;
+- the faction list of each of 23 owned races (307 factions);
+- the profile's fixed settings, including AI difficulty very hard.
+
+`--scenario random [--seed N]` draws the map and both races from
+`configs/twwarhammer3/custom_battle.json` and autogenerates both armies. The battle type
+stays classic: sieges, capture points and survival need interface work first.
+
+The first draw, `commander-luna-v1-random-s2-smoke`, was seed 2 on
+`land_of_the_dead_01_04`. Dark Elves (Blessed Dread) had 13 units: a Dreadlord,
+Corsairs, Executioners, Black Guard, Dark Riders, Cold One Knights, a Cold One chariot,
+three Harpies, a Feral Manticore and a Reaper Bolt Thrower. Nurgle (Pallid Nurslings)
+also had 13. The commander won at 407 s with 0.40 of its men left against 0.23, from 62
+plans: mean plan age 6.5 s, think time 6.2 s, about 4,800 input tokens per call, $0.03.
+All 9 rejections were refused lord ability casts. The trace was 5.5 MB.
+
+A `skills` job on the same seed was stopped at the owner's word: a repeated draw shows
+nothing new, and a job is one matchup. The draw also picked a faction for each side
+(`5a2fc8d`), but the owner noted that a faction within a race only changes colours. The
+next commit draws races only, a fresh seed per job. The mod reports the Harpies and the
+Feral Manticore as infantry: its class mapping checks `can_fly` only for monsters.

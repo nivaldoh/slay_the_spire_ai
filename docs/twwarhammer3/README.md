@@ -51,11 +51,24 @@ way. There is no external game API; the mod is the API.
   `is_visible_to_alliance` says the player can see them, plus the enemy roster as the
   custom battle screen shows it. `battle/scripted.py` has `hold`, `attack_nearest` and
   `probe_move` (the axis probe); `battle/llm.py` and `configs/twwarhammer3/` are the
-  API-model policy and the autoresearch loop's editable surface.
+  API-model policy and the autoresearch loop's editable surface. Since 2026-10-13 two
+  more: `skills` (persistent per-unit skills run by a scripted executor on every
+  observation) and `commander` (an API model setting those skills asynchronously, so
+  units keep acting while it thinks). [controllers.md](controllers.md) describes every
+  controller, how to compare them, and the researched designs not built yet.
 - A job (`battle/play.py`) launches the game, runs the custom battle steps it builds
   from the `--scenario` entry in `configs/twwarhammer3/scenarios.json` (each side's race,
-  faction and units; no desktop input), plays episodes and restarts the
-  same battle between them through the results popup's rematch button. Each episode
+  faction and units, optionally the map; no desktop input), plays episodes and restarts the
+  same battle between them through the results popup's rematch button. `--scenario
+  random` (2026-10-13) draws a classic-battle map and each side's race from
+  `configs/twwarhammer3/custom_battle.json` with `--seed` (recorded; drawn when omitted).
+  It leaves the faction to the game, because it only changes banner colours, and fills
+  both armies with the game's Autogenerate army button (13 units a side in the
+  first draw, seed 2; the probe's single click filled a cleared Khorne army with 11).
+  The draw is in the manifest's `scenario`; the armies the game generated are in each
+  episode's roster. Rematches replay the same draw, so a job is one matchup. Funds, unit
+  size (large), time limit (long) and AI difficulty (very hard) stay as the profile has
+  them ([integration.md](integration.md#frontend-automation)). Each episode
   writes `trace.jsonl` (every observation, prompt, reply and acknowledgement),
   `result.json` and `mod.log`; each finished episode appends a row to
   [results.csv](results.csv). Versions are logged in [log.md](log.md).
@@ -149,6 +162,14 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 
 ## Next
 
+0. Compare the controllers ([controllers.md](controllers.md#comparing-controllers)): six
+   episodes each of `skills`, the Luna `commander` and the best `llm` version on the same
+   pinned scenarios, then Sol and Astra as commander. The smoke battles are in
+   [log.md](log.md#skills-and-commander-v1-2026-10-13).
+   Also add army abilities, which every controller is blind to today (Khorne's
+   kill-unlocked abilities went unused; [integration.md](integration.md#unverified-from-the-documentation-probe-before-relying-on-them)),
+   and ability readiness: engine rejections show the model re-casting lord abilities
+   that are not available.
 1. Evaluate the expanded interface (v13) with pinned factions and compare it to the
    earlier interface; record the interval explicitly (old runs used 5000 ms, v13 uses 0).
    Re-measure with pinned factions: until `61c5f7f` the game chose each side's faction
@@ -182,6 +203,12 @@ uv run python -m twwarhammer3 menu --steps steps.json  # click through component
 uv run python -m twwarhammer3 menu --battle --steps steps.json  # the same in a battle (mod.log)
 uv run python -m twwarhammer3 play --policy llm --budget-usd 25 --scenario kho5-dwf5 \
     --episodes 3 --output runs/twwarhammer3/battle/llm-luna-vN-YYYYMMDD
+uv run python -m twwarhammer3 play --policy commander --model gpt-6-luna --budget-usd 25 \
+    --scenario kho5-dwf5 --episodes 6 --output runs/twwarhammer3/battle/commander-luna-vN-YYYYMMDD
+uv run python -m twwarhammer3 play --policy skills --scenario kho5-dwf5 --episodes 6 \
+    --output runs/twwarhammer3/battle/skills-vN-YYYYMMDD
+uv run python -m twwarhammer3 play --policy skills --scenario random --seed 2 \
+    --output runs/twwarhammer3/battle/skills-vN-random-s2-YYYYMMDD
 uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>[/episode-0000]
 uv run python -m twwarhammer3 stats                  # results.csv by policy, harness and mode
 uv run python -m twwarhammer3 spend                  # runs/twwarhammer3/llm-spend.jsonl total

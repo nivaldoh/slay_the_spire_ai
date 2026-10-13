@@ -78,13 +78,43 @@ off, multithreaded model on.
   its unit cards (verified 2026-10-13 for both slots). The popup never reads as visible
   from the root, so the step that clicks an entry cannot wait for it. The screen keeps the
   last races and map across launches; `play.scenario_steps` sets the races every time
-  and leaves the map ("An Ogre's Folly").
+  and leaves the map ("An Ogre's Folly") unless the scenario names one (random draws do).
 - Faction: `faction_pic_mask_parent/dropdown_context_scroll` opens a list of the race's
   `CcoFactionRecord<faction>` entries (Khorne: khorne, arbaal, crimson_skull, ...); a
   click on one selects it for the selected slot (verified 2026-10-13), and both slots
   accepted the same faction. Without that step the game picked a faction itself, and it
   varied between jobs on both sides. Unit card ids keep the race's main faction key
   (`...:wh3_main_kho_khorne:1`) whatever faction is selected.
+- Probe of 2026-10-13 (`runs/twwarhammer3/probe-random-army-20261013/`, dumps and steps):
+  - Autogenerate army is `button_bar_parent/button_list/clear_autogen_parent/button_autogen`
+    beside `button_clear`; a simulated click filled a cleared Khorne army with 11 units at
+    the "large" funds setting. The UI texts say it is disabled while Unit Caps is on;
+    `checkbox_unit_caps` is off (`<active>`) on this profile. The texts also name a
+    `button_autogenerate`, which this screen does not have.
+  - Maps tab: battle types `map_type_list/CcoBattleTypeRecord<type>` (`classic` selected;
+    also conquest, domination, free_for_all, ambush, river_crossing_battle,
+    underground_intercept, unfortified_settlement, siege, survival) and, for classic, 380
+    `map_listview/.../CcoCustomBattleMap<preset key>` entries. `button_random_map` picks
+    one and the list marks it `<selected>`. A map chosen without starting a battle did
+    not persist: the next job began on the same map with the same start positions.
+  - Settings on this profile, as `dropdown_<name>/popup_menu/list_box/
+    CcoCustomBattleSettingRecord<option>`:
+    - `dropdown_funds_type`: `funds_large` (the only other option, `funds_custom`,
+      takes a typed amount);
+    - `dropdown_unit_scale`: `unit_scale_large` (also `_small`, `_normal`, `_ultra`);
+    - `dropdown_time_limit`: `time_limit_long` (also `_short`, `_medium`, `_unlimited`);
+    - `dropdown_difficulty`: **`ai_level_very_hard`** (also `ai_level_sandbox`, `_easy`,
+      `_normal`, `_hard`). Every battle so far ran at
+    very hard. The AI stat modifier is a slider (`ai_stat_mod_slider`). Checkboxes:
+    realism, large armies, unit caps and multiple lords off; "allow no lord" on.
+  - The race list had 25 entries. Beastmen and Undead Legions showed no factions of
+    their own (DLC not owned, presumably), so `configs/twwarhammer3/custom_battle.json`
+    (23 races and the 380 classic maps) leaves them out. The owned races list 307
+    factions in all.
+  - A faction within a race appears to be cosmetic (the owner's observation): the faction
+    dropdown carries the banner's primary and secondary colours, unit cards keep the
+    race's main faction key whatever faction is selected, and Autogenerate fills the army
+    from the race. Random draws therefore pick only the race.
 - Before the startup skip, the frontend script loaded about 25 s after launch, but its
   real-time callbacks did not run until the intro movies ended, about 2 minutes later.
   The first menu step waits for `buttons_holder/button_battle`; no key press is sent.
@@ -148,6 +178,22 @@ Verified 2026-10-13 in `runs/twwarhammer3/battle/attack-m3-20261013` (Khorne vs 
 `goto_location_angle_width` width; `is_hidden()` for enemies in
 cover; `os.rename` collisions while the controller reads; a restart requested before the
 battle is decided (the script calls `RestartBattle` after 3 s without a results popup).
+
+Army abilities are not in the interface (owner report, 2026-10-13). These are army-wide
+abilities that are not owned by a unit, such as the three Khorne abilities that unlock
+as the army kills enemies. In a commander battle one became available near the end and
+went unused. The mod reads only unit abilities (`owned_non_passive_special_abilities`),
+so neither the state nor the order set includes them, for any controller. The
+documentation offers:
+- `battle_army:use_special_ability(key, position, [bearing], [width])`, with keys from
+  the `army_special_abilities` table;
+- battle currency through `army:has_currency(type)`, `army:currency_amount(type)` and
+  `reset_currency_amount`, which presumably drives the Khorne unlocks.
+
+It gives no getter for which army abilities an army owns or can use now. To probe:
+- the battle UI's army ability panel (component ids and states), or the
+  `army_special_abilities` table together with the currency amounts;
+- a `use_special_ability` call on a Khorne army once one is unlocked.
 
 ## Expanded controller interface (2026-10-13)
 
