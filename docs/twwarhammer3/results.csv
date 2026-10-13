@@ -105,3 +105,6 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-13,commander-luna-v1.2-kho-20261013,episode-0005,kho5-dwf5,commander,gpt-6-luna,low,1.2,df390c1,realtime,1.0,0.0,won,329,0.22,0.33,1067,8,0.3,0.0206
 2026-10-13,llm-luna-v13-kho-20261013,episode-0000,kho5-dwf5,llm,gpt-6-luna,low,13,df390c1,realtime,1.0,0.0,won,244,0.66,0.28,43,7,5.62,0.0153
 2026-10-13,probe-abilities-random-s4-20261013,episode-0000,random,probe_abilities,,,,9bfee82,realtime,1.0,0.0,lost,228,0.56,0.9,729,0,0.31,0
+2026-10-13,skills-v1.2-rand-2028855463-20261013,episode-0000,random,skills,,,1.2,9bfee82,realtime,1.0,0.0,lost,434,0.06,0.34,1389,0,0.31,0
+2026-10-13,commander-luna-v2-rand-2028855463-20261013,episode-0000,random,commander,gpt-6-luna,low,2,feb5937,realtime,1.0,0.0,lost,299,0.15,0.56,968,2,0.3,0.024
+2026-10-13,llm-luna-v14-rand-2028855463-20261013,episode-0000,random,llm,gpt-6-luna,low,14,feb5937,realtime,1.0,0.0,lost,618,0.0,0.31,89,6,6.93,0.0396

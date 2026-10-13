@@ -273,3 +273,11 @@ battles with scripted interventions, not policy win-rate evaluations.
   produced ambiguous pool changes (a later command can interrupt an earlier cast).
   Pool expenditure proves acceptance beyond the API call, not final damage or a
   completed effect on every target. Cooldown/damage attribution remains unmeasured.
+
+## Advisor text (verified 2026-10-13)
+
+`common.advice(text)` from the battle script opens the advisor (`advice_interface` turns
+visible) and shows the text as is, in a custom battle unpaused at 1x. `play --show` sends
+each model reply as `say` with the orders; in `commander-luna-v2-rand-2028855463` the
+advisor's `Text` component read "23 s: gpt-6-luna plan from the state at 15 s / Keep the
+infantry advancing together, ... / f8 shoot e3". Each reply replaces the previous text.
