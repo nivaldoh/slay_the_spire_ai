@@ -42,7 +42,7 @@ way. There is no external game API; the mod is the API.
   `result.json` and `mod.log`; each finished episode appends a row to
   [results.csv](results.csv). Versions are logged in [log.md](log.md).
 
-## Status (2026-10-13 06:45 local)
+## Status (2026-10-13 07:40 local)
 
 | Milestone | State | Evidence |
 |---|---|---|
@@ -51,14 +51,43 @@ way. There is no external game API; the mod is the API.
 | 2 Roster readable | done | 5 v 5 units with positions, strength, fatigue, flags, targets in every observation |
 | 3 Orders apply | done | attack, move (with facing) and halt through one unitcontroller per unit; acknowledgements carry the applied battle time |
 | 4 Result | done | "lost" and "won" from the engine at VictoryCountdown, with both armies' true strength for evaluation |
-| 5 Restart | done | rematch button and confirmation; three episodes per job |
+| 5 Restart | done | rematch button and confirmation; 47 episodes in 12 jobs without an infrastructure failure |
 | 6 Scripted baselines | done | `attack_nearest`: 3 wins of 3 at about 345 s |
 | 7 First LLM battles | done | v1: 1 win of 3 |
-| 8 Autoresearch loop | running | [log.md](log.md): v2 0/3, v3 3/5, v4 1/3 (1/3 paused), v5 4/6, v6 running |
+| 8 Autoresearch loop | running | [log.md](log.md): v2 0/3, v3 3/5, v4 1/3 (1/3 paused), v5 4/6, v6 5/6, v7 running |
 
 Results by version: `python -m twwarhammer3 stats`. With outcomes this noisy (a version's
 battles swing between a clear win and a clear loss), three episodes rank versions only
 roughly; `own_left` and `enemy_left` (true strength at the end) add a finer measure.
+
+## What the first night showed (2026-10-13)
+
+- The model can command a real-time battle through the mod: about one decision per 10 s
+  of battle time, orders applied about 5 s after the state it saw, no invalid replies,
+  about $0.01 per battle.
+- The fixed script that sends every unit at its nearest enemy, walking, wins this battle
+  every time. The model's early losses came from what it added: passivity (v1), retreats
+  out of melee (v2), running everywhere and arriving tired, pairing its units off one to
+  one, and above all leaving its lord to duel the enemy lord alone, or parking him while
+  the enemy lord was nearly dead. Each version's prompt change targeted the costliest
+  mistake the reviewers measured in the traces.
+- Latency is not the gap: pausing the battle while the model thinks (orders applied 0.6 s
+  after the state instead of 5.5 s) gave the same 1 of 3 for v4.
+- The state must say what the game did with an order: the game retargets units on its
+  own, and showing its choice as if it were the model's order made the model believe
+  plans were running that were not (v6 fixed this; 5 wins of 6).
+- Still weak in every version: the Skullcannon and the missile horsemen. An attack order
+  only makes a unit with ammunition shoot, and their fire killed almost nothing.
+
+## Next
+
+1. A second scenario (other factions, armies and map) to see whether the doctrine
+   generalises; the menu steps need faction selection by component id.
+2. A melee mode for units with ammunition (`unitcontroller:melee`, `attack_unit`'s
+   primary-attack flag), proposed by three reviews; untested in the engine.
+3. More episodes per version (five or six) before comparing versions.
+4. Unmerged candidate `wh3-v4-info` (`aa1ece5`): compass directions, enemy missiles in
+   reach and both armies' start points, for orientation errors the reviews still find.
 
 ## Commands
 
