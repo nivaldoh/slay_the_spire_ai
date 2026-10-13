@@ -51,7 +51,7 @@ confirm view, where CommunicationMod would never reply. A state with exactly one
 answered without a model call. Initial `DEBUG` intents are settled with a logged `wait 60`,
 as in first-combat rollouts.
 
-## What the model sees (scaffolding v9)
+## What the model sees (scaffolding v10)
 
 The version that introduced each piece is in brackets; [log.md](log.md) has the evidence.
 
@@ -70,6 +70,8 @@ The version that introduced each piece is in brackets; [log.md](log.md) has the 
   (v8).
 - Cards show the engine's `ethereal` and `exhausts` keywords, with one system prompt line
   on what they do (v9).
+- A hand selection names its source when the trace shows it: the card or potion just
+  played, or Gambling Chip on turn 1 (v10).
 - Invalid replies (bad JSON or an out-of-range choice) are re-asked twice, with the error
   appended. A third invalid reply ends the run as `policy_failure`. Transient HTTP and
   network errors are retried three times. Every attempt is billed and recorded.
@@ -194,14 +196,8 @@ Review prompt, one subagent per finished run:
 
 ## Candidate changes
 
-With evidence so far, in priority order (v3–v9 took the earlier ones):
+With evidence so far, in priority order (v3–v10 took the earlier ones):
 
-- **Hand-select purpose**: Gambling Chip's start-of-combat screen reads only "Choose up to
-  99 card(s) from your hand"; v6 RUNDEV3 discarded Impervious+ believing it would block,
-  and v7 RUNDEV3 discarded Twin Strike and Clothesline "to play them"; v8 RUNDEV3 did the
-  same in six fights, discarding Offering and Bash+ on the Slime Boss's turn 1. Candidate:
-  name the source of the selection when the state shows it (relic at combat start, or the
-  card just played).
 - **Keys memory** (harness gap): CommunicationMod 1.2.1 never sends `keys`, so the "Keys:"
   line never appears and the model tracks keys only in its notes. v9 RUNDEV1 took an
   elite path for an Emerald Key it already held and died on that path. Candidate in

@@ -549,3 +549,21 @@ engine package were simplified (engine 1,153 → 739 lines). Checks:
   match the previous smoke run, and no game process remained.
 - The `--version` flag is gone. The trace no longer writes the `terminal` and `result`
   events, which repeated `result.json`.
+
+## Scaffolding v10: hand-select purpose, and a runner fix for the settings screen
+
+Evidence: a hand selection reads only "Choose up to N card(s) from your hand", whatever
+asked for it. Gambling Chip's start-of-combat discard was misread as a play or a block: v6
+RUNDEV3 discarded Impervious+ "to block", v7 RUNDEV3 discarded Twin Strike and
+Clothesline "to play them", and v8 RUNDEV3 did the same in six fights, discarding Offering
+and Bash+ on the Slime Boss's turn 1. Change (`llm.py`): on a hand selection, one line
+names its source when the trace shows it: the card or potion played just before on the
+same floor and turn, else Gambling Chip on turn 1. Replaying the saved traces with their
+recorded replies adds the line to all 385 hand-select prompts (226 Gambling Chip, 112
+cards, 47 potions) and changes no other prompt.
+
+Runner fix (`play.py`, not scaffolding): an Escape press on the game window opens the
+settings screen, where CommunicationMod offers only `key`, `click`, `wait` and `state`
+(v9 RUNDEV2 stopped there). The runner now sends `key cancel`, up to three times, and
+continues. Not yet seen against the engine; if the game does not close the screen, the
+run stops as before.

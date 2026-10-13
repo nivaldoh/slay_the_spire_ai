@@ -4,9 +4,14 @@ Updated 2026-10-13. Read this first: what is running, what is current, what come
 History lives with each track ([full runs](fullrun/log.md),
 [first combat](first-combat/README.md)), not here.
 
-## Active work (last verified 2026-10-13 04:05 UTC)
+## Active work (last verified 2026-10-13 04:30 UTC)
 
-No game, GPU or API job is running. Source and `HEAD` are free.
+Third overnight autoresearch session (owner away about 8 hours from 03:50 UTC): Luna/low
+full runs on `RUNDEV1`–`RUNDEV3`, one version after another. Running:
+`runs/fullrun/llm-luna-v10-dev-20261013` (v10, source `54a5967`). A job stops if `src/gameai`,
+`src/spire`, `configs/llm` or the lock files change, so draft in a worktree. WH3 is closed
+for the night; its session messages this one before launching the game again (one game at
+a time: WH3 sends Escape presses through SendInput at launch).
 
 ## Second game: Total War: WARHAMMER III (started 2026-10-13, paused for owner review)
 
