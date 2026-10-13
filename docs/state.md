@@ -50,7 +50,7 @@ Next steps:
    onto `main`: a line naming the card, potion or Gambling Chip behind each hand selection.
    Replaying the saved traces, it adds that line to all 385 hand-select prompts (226 Gambling
    Chip, 112 cards, 47 potions) and changes no other prompt.
-3. Keys memory: CommunicationMod 1.2.1 never sends `keys`, so the model cannot see the
+3. Keys memory (drafted as v11 on branch `v11-keys`, unmerged): CommunicationMod 1.2.1 never sends `keys`, so the model cannot see the
    keys it holds; v9 RUNDEV1 died on an elite path taken for a key it had
    ([integration.md](integration.md), [candidates](fullrun/README.md#candidate-changes)).
 4. A results table across versions (owner request): the register is built.
@@ -97,9 +97,11 @@ docs and run folders; [AGENTS.md](../AGENTS.md) has the map. Evidence from 2026-
 to `runs/first-combat/`, and the records inside keep their old absolute paths
 ([how to re-audit](first-combat/README.md#evidence-and-tools)).
 
-Pending owner cleanup: 49 local branches whose commits are all in `main`, and 47 stale
-`git worktree` records for deleted `/tmp` checkouts. Keep
-`integration/heldout-clip-continuation`, which holds unmerged first-combat work.
+Pending owner cleanup: 49 local branches whose commits are all in `main`. Keep
+`integration/heldout-clip-continuation`, which holds unmerged first-combat work, and
+`v11-keys` (`cd97667`, "Remember the keys taken and show them in the state header"), the
+Spire session's unmerged v11 draft. The stale `git worktree` records for deleted `/tmp`
+checkouts were pruned on 2026-10-13 (`git worktree prune`; no branch was touched).
 
 ## Runtime and ownership
 
