@@ -1,5 +1,6 @@
--- rxi/json.lua 0.1.2 (MIT, https://github.com/rxi/json.lua), unchanged except for the
--- global export at the end: the mod loader runs this file as a mod and discards its
+-- rxi/json.lua 0.1.2 (MIT, https://github.com/rxi/json.lua), unchanged except that
+-- math.huge is spelled (1 / 0) (the game's Lua has no math.huge) and for the global
+-- export at the end: the mod loader runs this file as a mod and discards its
 -- return value, so the battle and frontend scripts use twwarhammer3_json.
 
 --
@@ -109,7 +110,7 @@ end
 
 local function encode_number(val)
   -- Check for NaN, -inf and inf
-  if val ~= val or val <= -math.huge or val >= math.huge then
+  if val ~= val or val <= -(1 / 0) or val >= (1 / 0) then
     error("unexpected number value '" .. tostring(val) .. "'")
   end
   return string.format("%.14g", val)

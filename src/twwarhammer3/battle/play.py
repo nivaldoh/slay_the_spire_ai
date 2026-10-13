@@ -17,7 +17,6 @@ from pathlib import Path
 
 from gameai.ledger import BudgetExhausted
 from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
-from gameai.windows import desktop
 from twwarhammer3.battle.stats import record
 from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox
@@ -92,7 +91,7 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
                 mailbox.write_session(session)
                 with OwnedGame(output / "game.log", timeout=config["run_timeout"]) as game:
                     manifest["game"] = game.info
-                    start_frontend(mailbox, config)
+                    start_frontend(mailbox, config, output)
                     manifest["status"] = episodes(mailbox)
     except BaseException:
         manifest["status"] = "interrupted"
@@ -102,19 +101,31 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
     return manifest
 
 
-def start_frontend(mailbox: Mailbox, config: dict) -> None:
-    """Wait for the frontend script, skip the intro, and send the custom battle steps."""
+def start_frontend(mailbox: Mailbox, config: dict, output: Path) -> None:
+    """Wait for the frontend script, then run the custom battle steps to the end.
+
+    No input is sent to the desktop: the first step waits for the main menu, so the
+    intro movies play out on their own.
+    """
     deadline = time.monotonic() + config["start_timeout"]
     while "frontend loaded" not in mailbox.log_since(0, "menu.log"):
         if time.monotonic() > deadline:
             raise MailboxTimeout("the frontend script did not report in")
         time.sleep(1)
-    time.sleep(2)
-    for _ in range(3):
-        desktop("key", "escape")
-        time.sleep(1.5)
-    if config["menu"] and MENU_PATH.exists():
-        mailbox.write_menu(json.loads(MENU_PATH.read_text()))
+    if not config["menu"]:
+        return
+    offset = mailbox.log_offset("menu.log")
+    mailbox.write_menu(json.loads(MENU_PATH.read_text()))
+    while True:
+        lines = mailbox.log_since(offset, "menu.log").splitlines()
+        (output / "menu.log").write_text(mailbox.log_since(0, "menu.log"))
+        if "done" in lines:
+            return
+        if "failed" in lines:
+            raise ProtocolError("custom battle setup failed: " + lines[-2])
+        if time.monotonic() > deadline:
+            raise MailboxTimeout("the custom battle steps did not finish")
+        time.sleep(1)
 
 
 def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,

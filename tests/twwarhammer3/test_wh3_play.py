@@ -34,6 +34,7 @@ class FakeMailbox:
         self.controls = []
         self.pending = None
         self.menu = None
+        self.menu_outcome = "step 1: found button_battle, clicked\ndone"
 
     def reset(self):
         pass
@@ -77,7 +78,9 @@ class FakeMailbox:
         return 0
 
     def log_since(self, offset, name="mod.log"):
-        return "frontend loaded\n" if name == "menu.log" else "[0] loaded battle b1\n"
+        if name == "menu.log":
+            return "frontend loaded\n" + (self.menu_outcome + "\n" if self.menu else "")
+        return "[0] loaded battle b1\n"
 
 
 CONFIG = {"policy": "attack_nearest", "episodes": 1, "scenario": "small", "speed": 1.0,
@@ -172,7 +175,6 @@ def harness(tmp_path, monkeypatch):
     monkeypatch.setattr(play, "collect_diagnostics", lambda: {"status": "ready"})
     monkeypatch.setattr(play, "committed_revision", lambda purpose, paths: "abc1234def")
     monkeypatch.setattr(play, "source_fingerprints", lambda paths: {})
-    monkeypatch.setattr(play, "desktop", lambda *args: None)
     monkeypatch.setattr(play, "Mailbox", mailbox_factory)
     menu = tmp_path / "menu.json"
     menu.write_text(json.dumps([{"find": ["button_battle"], "click": True}]))
@@ -221,3 +223,15 @@ def test_budget_exhaustion_stops_the_job(tmp_path, harness):
     assert manifest["status"] == "stopped"
     assert manifest["episodes"][0]["status"] == "budget_exhausted"
     assert harness[0].controls == []
+
+
+def test_a_failed_menu_step_stops_the_job_before_any_episode(tmp_path, harness):
+    mailbox = FakeMailbox([observation(0, 0)])
+    mailbox.menu_outcome = "step 1: not found within 240000 ms: button_battle\nfailed"
+    harness.append(mailbox)
+    with pytest.raises(play.ProtocolError, match="not found within 240000 ms"):
+        play.play(tmp_path / "job", {**CONFIG, "results": str(tmp_path / "r.csv")},
+                  policy_factory=Hold)
+    manifest = json.loads((tmp_path / "job/manifest.json").read_text())
+    assert manifest["status"] == "interrupted" and manifest["episodes"] == []
+    assert "failed" in (tmp_path / "job/menu.log").read_text()

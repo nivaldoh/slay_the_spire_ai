@@ -73,7 +73,7 @@ local function get(object, method, default, ...)
 end
 
 local function round(value, digits)
-    if type(value) ~= "number" or value ~= value or value == math.huge or value == -math.huge then
+    if type(value) ~= "number" or value ~= value or value == (1 / 0) or value == -(1 / 0) then
         return nil
     end
     local scale = 10 ^ (digits or 0)
@@ -369,7 +369,14 @@ local function load()
     bm:register_phase_change_callback("Complete", guarded("finish", finish))
     bm:repeat_real_callback(guarded("poll", poll), 200, "twwarhammer3_poll")
     if session.autostart then
-        bm:real_callback(guarded("autostart", try_end_deployment), 3000, "twwarhammer3_autostart")
+        -- Deployment begins after the loading screen; keep trying until combat starts.
+        bm:repeat_real_callback(guarded("autostart", function()
+            if state.started or state.finished then
+                bm:remove_real_callback("twwarhammer3_autostart")
+            elseif bm:get_current_phase_name() == "Deployment" then
+                try_end_deployment()
+            end
+        end), 5000, "twwarhammer3_autostart")
     end
     publish("observation.json", {
         schema = 1, job = session.job, battle = state.battle, seq = 0, phase = "Loading",

@@ -25,16 +25,6 @@ def add_session_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--no-menu", action="store_true", help="do not drive the frontend menus")
 
 
-def skip_intro() -> None:
-    """Dismiss the intro movies with Escape once the frontend scripts are running."""
-    from gameai.windows import desktop
-
-    time.sleep(2)
-    for _ in range(3):
-        desktop("key", "escape")
-        time.sleep(1.5)
-
-
 def session_from(args: argparse.Namespace) -> dict:
     return {
         "enabled": True, "speed": args.speed, "pause": args.pause,
@@ -138,16 +128,12 @@ def main() -> int:
                 with OwnedGame(output / "game.log", timeout=args.timeout) as game:
                     print(json.dumps(game.info), flush=True)
                     offsets = {"mod.log": 0, "menu.log": 0}
-                    intro_skipped = False
                     while game.process.poll() is None:
                         for name in offsets:
                             text = mailbox.log_since(offsets[name], name)
                             if text:
                                 offsets[name] += len(text.encode())
                                 print(f"{name}: {text.rstrip()}", flush=True)
-                        if offsets["menu.log"] and not intro_skipped:
-                            skip_intro()
-                            intro_skipped = True
                         time.sleep(1)
                     print("game exited", flush=True)
             except KeyboardInterrupt:

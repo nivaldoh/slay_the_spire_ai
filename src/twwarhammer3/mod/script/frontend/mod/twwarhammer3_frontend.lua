@@ -3,8 +3,10 @@
 -- Loaded by the vanilla mod loader from script/frontend/mod/ when the frontend starts.
 -- Inert unless session.json has "menu": true. Then it polls menu.json; each step is one
 -- of {"find": [names...], "click": true} (or "dblclick"/"rclick"), {"find": [...], "state": "name"}, {"key": "name"},
--- {"dump": "file.txt", "depth": N}, {"wait_ms": N} or {"log": "text"}. Results go to
--- menu.log; the file is deleted when read and "done" is logged after the last step.
+-- {"dump": "file.txt", "depth": N}, {"wait_ms": N} or {"log": "text"}. A find step with
+-- "timeout_ms" retries until the component is visible and stops the sequence ("failed")
+-- if it never is. Results go to menu.log; the file is deleted when read and "done" is
+-- logged after the last step.
 
 local BRIDGE = "C:/wh3-agent/bridge/"
 local json = twwarhammer3_json
@@ -49,7 +51,14 @@ local function dump(uic, depth, max_depth, lines)
     end
 end
 
-local state = {steps = nil, index = 0, wait_polls = 0}
+local state = {steps = nil, index = 0, wait_polls = 0, retries = 0}
+
+-- Visible itself and through every ancestor, when the game offers the check.
+local function visible(uic)
+    local ok, value = pcall(function() return uic:VisibleFromRoot() end)
+    if ok then return value end
+    return uic:Visible()
+end
 
 local function run_step(step)
     if step.wait_ms then
@@ -75,8 +84,16 @@ local function run_step(step)
         return "key " .. step.key
     elseif step.find then
         local uic = find_uicomponent(core:get_ui_root(), unpack(step.find))
+        if step.timeout_ms and not (uic and visible(uic)) then
+            if state.retries * POLL_MS < step.timeout_ms then
+                state.retries = state.retries + 1
+                return nil
+            end
+            error("not found within " .. step.timeout_ms .. " ms: " .. table.concat(step.find, "/"))
+        end
         if not uic then return "not found: " .. table.concat(step.find, "/") end
         local done = {"found " .. table.concat(step.find, "/")}
+        if state.retries > 0 then done[1] = done[1] .. " after " .. state.retries * POLL_MS .. " ms" end
         if step.visible ~= nil then
             uic:SetVisible(step.visible)
             done[#done + 1] = "visible=" .. tostring(step.visible)
@@ -112,7 +129,7 @@ local function poll()
             log("menu.json unreadable; dropped")
             return
         end
-        state.steps, state.index, state.wait_polls = message.steps, 0, 0
+        state.steps, state.index, state.wait_polls, state.retries = message.steps, 0, 0, 0
         log(string.format("menu: %d steps", #state.steps))
         return
     end
@@ -120,15 +137,24 @@ local function poll()
         state.wait_polls = state.wait_polls - 1
         return
     end
-    state.index = state.index + 1
-    local step = state.steps[state.index]
+    local step = state.steps[state.index + 1]
     if not step then
         log("done")
         state.steps = nil
         return
     end
     local ok, result = pcall(run_step, step)
-    log(string.format("step %d: %s", state.index, ok and tostring(result) or ("failed: " .. clean_error(result))))
+    if ok and result == nil then return end
+    state.index, state.retries = state.index + 1, 0
+    if ok then
+        log(string.format("step %d: %s", state.index, tostring(result)))
+    elseif step.timeout_ms then
+        log(string.format("step %d: %s", state.index, clean_error(result)))
+        log("failed")
+        state.steps = nil
+    else
+        log(string.format("step %d: failed: %s", state.index, clean_error(result)))
+    end
 end
 
 local function load()

@@ -65,8 +65,9 @@ uv run python -m twwarhammer3 menu --steps steps.json  # click through component
 uv run python -m twwarhammer3 spend                  # runs/twwarhammer3/llm-spend.jsonl total
 ```
 
-`launch` presses Escape through the desktop helper once the frontend reports in, to skip
-the intro movies (untested: added after the owner skipped them by hand).
+Nothing sends desktop input: the first menu step waits (up to 240 s) for the main menu
+while the intro movies play out. An Escape press sent through `SendInput` once landed in
+the Spire game and opened its settings screen, so the intro skip was removed.
 
 ## Planned next (from the approved session plan)
 
