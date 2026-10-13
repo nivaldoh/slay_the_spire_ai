@@ -236,3 +236,23 @@ health since the last turn or none of ours is on him; no unit leaves a wavering 
 The reviewers counted 11-15 pulls onto the enemy lord per Dwarf battle while he stood
 inside his own infantry, losing about 1.4 points a turn, and the enemy holding each
 pulled unit hit its flank (f3 Longbeards 68→48 men against e3's 75→71 in one loss).
+
+Job `llm-luna-v9-dwf-20261013` (source `d928965`): lost at 554 s (27% against 59%), 696 s
+(33% against 49%) and 332 s (45% against 86%). Job `llm-luna-v9-kho-20261013`: lost at
+205 s (25% against 70%), won at 218 s (35% against 36%), lost at 297 s (17% against 36%).
+In the Khorne mirror v9 (with v8 under it) did worse than v6 (2 of 3, 34% against 25% on
+average), and the mean delay rose from 7.2 s to 9.6 s as the prompt grew; which of v8 or
+v9 cost the Khorne battles is not separated.
+
+## v10: shooters hit infantry in the open
+
+Change (prompt), chosen by the review of two v9 Dwarf and two v8 Empire losses (all three
+judges): the reviewers measured, over the gun mirrors, artillery killing about 2 men a
+shot at infantry in the open, 1 in 2 shots at missile infantry and 1 in 3 at crews, and
+missile units killing about 1 man per 100 shots at enemy missile infantry. So until the
+enemy infantry reaches our line every shooter fires at it; after that artillery fires at
+the enemy's missile units, then its artillery (replacing v8's counter-battery first); a
+missile unit never trades fire with enemy missile infantry and shoots infantry not in
+melee, or from 40-60 m to the side of a fight; a shooter moves to its spot before the
+attack (an attack replaces a move and walks a shooter straight at a target out of
+range: about 20 such orders cut a shooter's own move in 14 gun-mirror battles).
