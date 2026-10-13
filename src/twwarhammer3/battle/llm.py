@@ -150,7 +150,20 @@ def render_unit(unit: dict, mine: bool, before: tuple | None = None,
         parts.append(target)
     if unit.get("dest"):
         parts.append(f"heading to ({unit['dest'][0]:.0f}, {unit['dest'][1]:.0f})")
+    leaving = {"routing", "shattered"} & set(unit.get("state") or [])
+    if mine and not unit.get("target") and not leaving:
+        if not (target or unit.get("dest")):
+            parts.append("no order")
+        if nearest := _nearest(unit, enemies or {}):
+            parts.append(f"nearest enemy {nearest['id']}{_distance(unit, nearest)}")
     return ", ".join(parts)
+
+
+def _nearest(unit: dict, enemies: dict) -> dict | None:
+    placed = [enemy for enemy in enemies.values() if enemy.get("x") is not None]
+    if unit.get("x") is None or not placed:
+        return None
+    return min(placed, key=lambda e: math.hypot(e["x"] - unit["x"], e["z"] - unit["z"]))
 
 
 def render_state(observation: dict, last_seen: dict, before: dict | None = None,
