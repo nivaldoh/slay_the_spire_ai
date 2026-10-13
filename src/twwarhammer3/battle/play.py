@@ -41,6 +41,7 @@ SOURCES = ("src/gameai", "src/twwarhammer3", "configs/twwarhammer3", "pyproject.
            "uv.lock", ".python-version")
 SCENARIOS_PATH = Path(__file__).resolve().parents[3] / "configs/twwarhammer3/scenarios.json"
 CATALOGUE_PATH = SCENARIOS_PATH.with_name("custom_battle.json")
+CAPTION_LIMIT = 400
 SESSION_KEYS = ("speed", "pause", "interval_ms", "observe_ms", "tick_ms", "autostart", "menu")
 
 
@@ -284,6 +285,25 @@ def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
     return result
 
 
+def caption(observation: dict, behavior: dict, orders: list[dict]) -> str | None:
+    """Advisor text for a decision that carries a model's reply: what it saw and decided."""
+    if not behavior.get("reason"):
+        return None
+    from twwarhammer3.battle.commander import describe_plan
+    from twwarhammer3.battle.digest import _strength
+    from twwarhammer3.battle.llm import describe_orders
+
+    seconds = observation["time_ms"] / 1000
+    if "plan" in behavior:
+        head = (f"{seconds:.0f} s: {behavior['model']} plan from the state at"
+                f" {seconds - behavior['plan_age_s']:.0f} s")
+        decided = describe_plan(behavior["plan"])
+    else:
+        head = f"{seconds:.0f} s: {behavior.get('model', 'model')} saw {_strength(observation)}"
+        decided = describe_orders(orders)
+    return f"{head}\n{behavior['reason']}\n{decided}"[:CAPTION_LIMIT]
+
+
 def _drive(config, policy, mailbox, not_battle, result, event, started) -> None:
     deadline = started + config["episode_timeout"]
     first = mailbox.wait_new_battle(not_battle=not_battle, timeout=config["start_timeout"])
@@ -357,7 +377,8 @@ def _drive(config, policy, mailbox, not_battle, result, event, started) -> None:
             event("observation", observation=observation, since_previous_applied_ms=since)
             if invalid:
                 event("invalid", **invalid)
-        request = mailbox.write_orders(battle, observation["seq"], orders)
+        say = caption(observation, behavior, orders) if config.get("show") else None
+        request = mailbox.write_orders(battle, observation["seq"], orders, say=say)
         if logged:
             event("decision", seq=observation["seq"], time_ms=observation["time_ms"],
                   request=request, orders=orders, behavior=behavior)

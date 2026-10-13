@@ -235,8 +235,8 @@ def test_capabilities_are_visible_and_queued_attack_is_not_mistaken_for_active(t
     agent.decide(obs)
     prompt = agent.metadata()["prompt"]
     assert "formation width 25 m" in prompt and "fire_at_will=off" in prompt
-    assert "buff (permitted, last issued 12.3 s)" in prompt
-    assert "cooldown unknown" in prompt and "last requested attack mode melee" in prompt
+    assert "buff (readiness unknown; last issued 12 s)" in prompt
+    assert "last requested attack mode melee" in prompt
     assert "f1 #3 queued" in prompt and "completion unconfirmed" in prompt
     assert "attack e1 melee [queued]" in prompt
     assert not agent.ordered
@@ -277,3 +277,39 @@ def test_an_ability_with_half_a_ground_point_is_described_without_crashing():
     order = {"unit": "f1", "type": "ability", "ability": "roar", "target": None, "x": 10.0,
              "z": None, "facing": None, "width": None}
     assert llm.describe_orders([order]) == "f1 ability roar at self"
+
+
+def test_abilities_show_target_cost_and_readiness_and_army_abilities_their_unlocks():
+    state = observation()
+    state["friendly"][0]["abilities"] = [
+        {"key": "foe_seeker", "can_use": True, "ready": True, "target": "Self", "cooldown_s": 60},
+        {"key": "deadly_onslaught", "can_use": True, "ready": False, "recharge_s": 41.6,
+         "target": "Self", "cooldown_s": 90, "last_issued_ms": 61000},
+        {"key": "spell", "can_use": True, "ready": False, "target": "Enemy", "mana": 8,
+         "uses": 2},
+        {"key": "banner", "can_use": True, "ready": False, "active": True,
+         "target": "Around self"}]
+    state["army"] = {"currency": 71, "next_unlock": 100, "abilities": [
+        {"key": "horn_of_khorne", "target": "Ground, Ally", "radius": 35, "cooldown_s": 90,
+         "cost": 100, "unlocked": True, "button": "active", "ready": True},
+        {"key": "relentless_rage", "target": "Ally", "radius": 0, "cooldown_s": 90,
+         "cost": 200, "unlocked": True, "button": "inactive", "ready": False, "timer": "1:02"},
+        {"key": "blade_of_khorne", "target": "Ground", "cooldown_s": 120, "cost": 300,
+         "unlocked": False, "button": "inactive", "ready": False}]}
+    text = llm.render_state(state, {})
+    assert ("abilities foe_seeker (Self; ready; cooldown 60 s); deadly_onslaught (Self;"
+            " recharging, 42 s left; cooldown 90 s; last issued 61 s); spell (Enemy; 8 magic;"
+            " not available now; 2 uses left); banner (Around self; active now)") in text
+    assert text.startswith(
+        'Army abilities (order with unit "army"; points 71, next unlock at 100):'
+        " horn_of_khorne (Ground, Ally; radius 35 m; ready; cooldown 90 s); relentless_rage"
+        " (Ally; recharging, 1:02 left; cooldown 90 s); blade_of_khorne (Ground; locked,"
+        " unlocks at 300 points; cooldown 120 s)\n")
+
+
+def test_engine_permission_wins_over_readiness_and_unlocks_may_be_complete():
+    assert llm.render_ability({"key": "roar", "can_use": False, "ready": True}) == (
+        "roar (blocked)")
+    assert llm.render_army({"currency": 320, "abilities": [
+        {"key": "horn", "unlocked": True, "ready": True}]}) == (
+        'Army abilities (order with unit "army"; points 320): horn (ready)')

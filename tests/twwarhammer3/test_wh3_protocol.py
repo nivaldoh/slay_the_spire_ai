@@ -82,3 +82,62 @@ def test_no_ranged_attack_without_ammunition_or_queue_after_an_attack():
         protocol.validate_orders([{"unit": "f1", "type": "attack", "target": "e2"},
                                   {"unit": "f1", "type": "move", "x": 1, "z": 2,
                                    "queue": True}], capable_observation())
+
+
+ABILITIES = dict(OBSERVATION, friendly=[
+    {"id": "f1", "abilities": [{"key": "roar", "can_use": True, "ready": True},
+                               {"key": "rage", "can_use": True, "ready": False}]},
+    {"id": "f2"}], army={"currency": 120, "next_unlock": 200, "abilities": [
+        {"key": "horn", "target": "Ground, Ally", "unlocked": True, "ready": True},
+        {"key": "rage", "target": "Ally", "unlocked": True, "ready": False},
+        {"key": "blade", "target": "Ground", "unlocked": False, "ready": False}]})
+
+
+def test_abilities_must_be_ready_and_army_abilities_unlocked():
+    ability = {"type": "ability", "target": None, "x": None, "z": None}
+    protocol.validate_orders([dict(ability, unit="f1", ability="roar")], ABILITIES)
+    with pytest.raises(protocol.IllegalActionError, match="'rage' is not ready"):
+        protocol.validate_orders([dict(ability, unit="f1", ability="rage")], ABILITIES)
+    horn = dict(ability, unit="army", ability="horn", x=10.0, z=20.0)
+    protocol.validate_orders([horn], ABILITIES)
+    protocol.validate_orders([dict(horn, x=None, z=None, target="f2")], ABILITIES)
+    for order, message in [
+        (dict(horn, ability="blade"), "unavailable army ability 'blade'"),
+        (dict(horn, ability="rage", x=None, z=None, target="f1"), "'rage' is not ready"),
+        (dict(horn, ability="roar"), "unavailable army ability 'roar'"),
+        (dict(horn, x=None, z=None), "needs a unit target or x/z"),
+        (dict(horn, target="e1"), "not visible"),
+    ]:
+        with pytest.raises(protocol.IllegalActionError, match=message):
+            protocol.validate_orders([order], ABILITIES)
+    with pytest.raises(protocol.IllegalActionError, match="repeated ability 'horn'"):
+        protocol.validate_orders([horn, horn], ABILITIES)
+    with pytest.raises(protocol.IllegalActionError, match="unknown friendly"):
+        protocol.validate_orders([dict(horn, type="halt")], ABILITIES)
+
+
+def test_the_ability_probe_casts_ready_abilities_once_per_five_seconds():
+    from twwarhammer3.battle.scripted import ProbeAbilities
+
+    probe = ProbeAbilities()
+    state = {"time_ms": 10000, "friendly": [
+        {"id": "f1", "x": 0.0, "z": 0.0, "men": 1, "state": ["melee"], "target": "e2",
+         "abilities": [{"key": "roar", "can_use": True, "ready": True, "target": "Self"},
+                       {"key": "bolt", "can_use": True, "ready": True, "target": "Enemy"}]},
+        {"id": "f2", "x": 5.0, "z": 9.0, "men": 80, "state": ["melee"], "target": "e2"}],
+        "enemy": [{"id": "e2", "x": 3.0, "z": 3.0}], "enemy_roster": [{"id": "e2"}],
+        "army": {"abilities": [{"key": "horn", "target": "Ground, Ally", "ready": True},
+                               {"key": "rage", "target": "Ally", "ready": True},
+                               {"key": "blade", "target": "Ground", "ready": False}]}}
+    orders = probe.decide(state)
+    protocol.validate_orders(orders, state)
+    assert [order for order in orders if order["type"] == "ability"] == [
+        {"unit": "f1", "type": "ability", "ability": "roar", "target": None, "x": None,
+         "z": None},
+        {"unit": "army", "type": "ability", "ability": "horn", "target": None, "x": 5.0,
+         "z": 9.0},
+        {"unit": "army", "type": "ability", "ability": "rage", "target": "f2", "x": None,
+         "z": None}]
+    assert not [o for o in probe.decide(dict(state, time_ms=14000)) if o["type"] == "ability"]
+    assert len([o for o in probe.decide(dict(state, time_ms=15000))
+                if o["type"] == "ability"]) == 3

@@ -17,6 +17,7 @@ local state = {
     friendly = {}, friendly_ids = {}, enemy = {}, enemy_ids = {}, enemy_by_ui = {},
     pending = nil, last_request = nil, applied = nil, applied_ms = nil,
     next_observe_ms = 0, force_observe = false, alliance = nil,
+    army_abilities = {}, army_issued = {},
 }
 local session = nil
 local BEHAVIOURS = {"fire_at_will", "skirmish", "defend", "change_formation_spacing", "formed_attack"}
@@ -81,6 +82,40 @@ local function get(object, method, default, ...)
     local ok, value = pcall(function(...) return object[method](object, ...) end, ...)
     if ok and value ~= nil then return value end
     return default
+end
+
+-- Ability state has no script getter; the UI's context system has it. One expression per
+-- unit returns "key|field|...;key|..." rows (concatenation converts numbers and booleans).
+local ABILITY_SETUP = 'BattleAbilityList.JoinString(SetupAbilityContext.RecordKey + "|" + '
+    .. 'SetupAbilityContext.TargetType + "|" + SetupAbilityContext.ManaUsed + "|" + '
+    .. 'SetupAbilityContext.RechargeTime, ";")'
+local ABILITY_STATE = 'BattleAbilityList.JoinString(SetupAbilityContext.RecordKey + "|" + '
+    .. 'CanCurrentlyPerform + "|" + RechargeTimeRemainingSecs + "|" + RemainingUses + "|" + '
+    .. 'IsActive, ";")'
+local ARMY_SETUP = 'PlayerArmyContext.ArmyAbilitiesList(false).JoinString(RecordKey + "|" + '
+    .. 'TargetType + "|" + EffectRange + "|" + RechargeTime, ";")'
+
+local function context_rows(context, id, expression)
+    local ok, text = pcall(function() return common.get_context_value(context, id, expression) end)
+    local rows = {}
+    if not ok or type(text) ~= "string" then return rows end
+    for item in string.gmatch(text, "[^;]+") do
+        local fields = {}
+        for field in string.gmatch(item .. "|", "([^|]*)|") do fields[#fields + 1] = field end
+        rows[#rows + 1] = fields
+    end
+    return rows
+end
+
+-- "[[col:green]]Ground, Ally[[/col]]" -> "Ground, Ally"
+local function plain(text)
+    return (string.gsub(text or "", "%[%[.-%]%]", ""))
+end
+
+local function get_context(expression)
+    local ok, value = pcall(function() return common.get_context_value("CcoBattleRoot", "", expression) end)
+    if ok then return value end
+    return nil
 end
 
 local function round(value, digits)
@@ -152,9 +187,21 @@ local function unit_record(id, unit, mine, class)
             end
         end
         record.abilities = {}
-        for _, key in ipairs(get(unit, "owned_non_passive_special_abilities", {})) do
+        local owned, live = get(unit, "owned_non_passive_special_abilities", {}), {}
+        if #owned > 0 then
+            for _, row in ipairs(context_rows("CcoBattleUnit", entry.ui_id, ABILITY_STATE)) do
+                live[row[1]] = row
+            end
+        end
+        for _, key in ipairs(owned) do
+            local row, setup = live[key], entry.setup[key] or {}
+            local recharge, uses = row and tonumber(row[3]), row and tonumber(row[4])
             record.abilities[#record.abilities + 1] = {
                 key = key, can_use = get(unit, "can_perform_special_ability", false, key),
+                ready = row and row[2] == "true", active = row and row[5] == "true",
+                recharge_s = recharge and recharge > 0 and round(recharge, 1) or nil,
+                uses = uses and uses >= 0 and uses or nil,
+                target = setup.target, mana = setup.mana, cooldown_s = setup.cooldown_s,
                 last_issued_ms = entry.ability_issued and entry.ability_issued[key],
             }
         end
@@ -177,6 +224,34 @@ local function visible_to_player(unit)
     return ok and visible == true
 end
 
+-- Army abilities (Khorne's kill unlocks): the setup and unlocks from the context system
+-- (indexes follow the list, which is ordered by cost), readiness from each ability's
+-- button in the battle HUD: "inactive" or a cooldown timer means not ready.
+local function army_abilities()
+    local abilities = {}
+    for _, setup in ipairs(state.army_abilities) do
+        local record = {key = setup.key, target = setup.target, radius = setup.radius,
+                        cooldown_s = setup.cooldown_s, cost = setup.cost,
+                        last_issued_ms = state.army_issued[setup.key]}
+        if setup.cost then
+            record.unlocked = get_context("PlayerArmyContext.IsArmyAbilityUnlocked(" .. setup.index .. ")")
+        end
+        local button = ui.find({"army_ability_parent", "button_ability_" .. setup.key})
+        if button then
+            local timer = find_uicomponent(button, "dy_time_remaining")
+            record.button = button:CurrentState()
+            record.timer = timer and timer:Visible() and timer:GetStateText() or nil
+            record.ready = record.button ~= "inactive" and record.timer == nil
+        end
+        abilities[#abilities + 1] = record
+    end
+    return {
+        currency = get_context("PlayerArmyContext.ArmyAbilityCurrency"),
+        next_unlock = get_context("PlayerArmyContext.CurrentArmyAbilityThreshold"),
+        abilities = abilities,
+    }
+end
+
 local function observation(now)
     state.seq = state.seq + 1
     local friendly, enemy, roster = {}, {}, {}
@@ -197,6 +272,11 @@ local function observation(now)
             enemy[#enemy + 1] = ok and record or {id = id, error = clean_error(record)}
         end
     end
+    local army = nil
+    if #state.army_abilities > 0 then
+        local ok, value = pcall(army_abilities)
+        army = ok and value or {error = clean_error(value)}
+    end
     local remaining = get(bm.battle, "remaining_conflict_time", -1)
     local player = bm:get_player_army()
     return {
@@ -212,6 +292,7 @@ local function observation(now)
             current = get(player, "winds_of_magic_current", nil),
             reserve = get(player, "winds_of_magic_reserve", nil),
         },
+        army = army,
         orders = state.applied, result = state.result, final = state.final,
     }
 end
@@ -227,7 +308,37 @@ local function vector(x, y, z)
     return battle_vector:new(x, y, z)
 end
 
+local function apply_army_ability(order)
+    local known = false
+    for _, setup in ipairs(state.army_abilities) do
+        if setup.key == order.ability then known = true end
+    end
+    if not known then error("unavailable_ability") end
+    local x, z = tonumber(order.x), tonumber(order.z)
+    if order.target ~= nil then
+        if order.x ~= nil then error("ambiguous_ability_target") end
+        local target = state.friendly[order.target] or state.enemy[order.target]
+        if not target then error("unknown_target") end
+        if get(target.unit, "number_of_men_alive", 0) <= 0 then error("target_dead") end
+        if state.enemy[order.target] and not visible_to_player(target.unit) then
+            error("target_not_visible")
+        end
+        local position = get(target.unit, "position", nil)
+        x, z = position and position:get_x(), position and position:get_z()
+    end
+    if not x or not z then error("bad_position") end
+    local y = get(bm.battle, "get_terrain_height", 0, x, z)
+    bm:get_player_army():use_special_ability(order.ability, vector(x, y, z),
+                                             tonumber(order.facing) or 0, tonumber(order.width) or 0)
+    state.army_issued[order.ability] = battle_time()
+end
+
 local function apply_order(order)
+    if order.unit == "army" and order.type == "ability" then
+        if not state.started then return {unit = order.unit, ok = false, error = "deployment"} end
+        local ok, err = pcall(apply_army_ability, order)
+        return {unit = order.unit, ok = ok, error = not ok and clean_error(err) or nil}
+    end
     local entry = state.friendly[order.unit]
     if not entry then return {unit = order.unit, ok = false, error = "unknown_unit"} end
     if not state.started then return {unit = order.unit, ok = false, error = "deployment"} end
@@ -329,6 +440,10 @@ end
 local function apply_pending(now)
     local message = state.pending
     state.pending = nil
+    if type(message.say) == "string" then
+        local shown, err = pcall(function() common.advice(message.say) end)
+        if not shown then log("advice failed: " .. clean_error(err)) end
+    end
     local results, failed, previous = {}, {}, {}
     for index, order in ipairs(message.orders or {}) do
         local result
@@ -495,9 +610,22 @@ local function start()
         local controller = army:create_unit_controller()
         controller:add_units(unit)
         controller:take_control()
-        state.friendly[id] = {unit = unit, controller = controller, class = unit_class(unit)}
+        local entry = {unit = unit, controller = controller, class = unit_class(unit),
+                       ui_id = tostring(get(unit, "unique_ui_id", "")), setup = {}}
+        for _, row in ipairs(context_rows("CcoBattleUnit", entry.ui_id, ABILITY_SETUP)) do
+            entry.setup[row[1]] = {target = plain(row[2]), mana = tonumber(row[3]),
+                                   cooldown_s = tonumber(row[4])}
+        end
+        state.friendly[id] = entry
         state.friendly_ids[#state.friendly_ids + 1] = id
-        log(id .. " ui id " .. tostring(get(unit, "unique_ui_id", "?")))
+    end
+    local fill = get_context("HasArmyAbilityFillCurrency") == true
+    for index, row in ipairs(context_rows("CcoBattleRoot", "", ARMY_SETUP)) do
+        state.army_abilities[index] = {
+            key = row[1], target = plain(row[2]), radius = tonumber(row[3]),
+            cooldown_s = tonumber(row[4]), index = index - 1,
+            cost = fill and get_context("PlayerArmyContext.ArmyAbilityIndexCost(" .. (index - 1) .. ")") or nil,
+        }
     end
     local armies = bm:get_non_player_alliance():armies()
     local count = 0

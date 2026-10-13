@@ -69,7 +69,7 @@ class FakeMailbox:
                               "results": [{"unit": o["unit"], "ok": True} for o in orders]}
         return item
 
-    def write_orders(self, battle, based_on, orders):
+    def write_orders(self, battle, based_on, orders, say=None):
         request = f"r{len(self.requests) + 1}"
         self.requests.append((battle, based_on, orders))
         self.pending = (request, orders)

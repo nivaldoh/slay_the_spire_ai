@@ -19,6 +19,10 @@ local function dump(uic, depth, max_depth, lines, context)
         local ok, id = pcall(function() return uic:GetContextObjectId(context) end)
         if ok and id and id ~= "" then line = line .. " {" .. tostring(id) .. "}" end
     end
+    local ok, text = pcall(function() return uic:GetStateText() end)
+    if ok and type(text) == "string" and text ~= "" then
+        line = line .. ' "' .. string.gsub(text, "\n", " / ") .. '"'
+    end
     lines[#lines + 1] = line
     if depth >= max_depth then return end
     for index = 0, uic:ChildCount() - 1 do

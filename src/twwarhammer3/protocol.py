@@ -2,7 +2,8 @@
 
 Observations are the dicts the Lua side publishes (``engine/mailbox.py`` has the
 shape). Orders have a unit, type and command-specific fields for movement, attacks,
-toggles or abilities; move/attack sequences use ``queue``. Only an engine-reported
+toggles or abilities; move/attack sequences use ``queue``. An army ability (Khorne's kill
+unlocks) is an ``ability`` order whose unit is ``"army"``. Only an engine-reported
 battle result is a gameplay outcome; everything below is an
 infrastructure, protocol or policy failure.
 """
@@ -63,6 +64,9 @@ def validate_orders(orders: list, observation: dict) -> None:
         if not isinstance(order, dict):
             raise IllegalActionError(f"order is not an object: {order!r}")
         unit, kind = order.get("unit"), order.get("type")
+        if unit == "army" and kind == "ability":
+            _validate_army_ability(order, observation, friendly, enemies, settings)
+            continue
         if unit not in friendly:
             raise IllegalActionError(f"unknown friendly unit {unit!r}")
         if kind not in ORDER_TYPES:
@@ -108,13 +112,35 @@ def validate_orders(orders: list, observation: dict) -> None:
             available = {a["key"]: a for a in friendly[unit].get("abilities", [])}
             if ability not in available or available[ability].get("can_use") is not True:
                 raise IllegalActionError(f"{unit}: unavailable ability {ability!r}")
-            target = order.get("target")
-            ground = order.get("x") is not None or order.get("z") is not None
-            if target is not None and target not in friendly and target not in enemies:
-                raise IllegalActionError(f"{unit}: ability target {target!r} not visible/friendly")
-            positioned = all(_finite(order.get(axis)) for axis in ("x", "z"))
-            if ground and (target is not None or not positioned):
-                raise IllegalActionError(f"{unit}: ground ability needs x/z and no unit target")
+            if available[ability].get("ready") is False:
+                raise IllegalActionError(f"{unit}: ability {ability!r} is not ready")
+            _validate_ability_target(unit, order, friendly, enemies)
+
+
+def _validate_army_ability(order, observation, friendly, enemies, settings) -> None:
+    """An army ability is cast by the army ("unit": "army"), not by one of its units."""
+    ability = order.get("ability")
+    army = {a["key"]: a for a in (observation.get("army") or {}).get("abilities", [])}
+    if ability not in army or army[ability].get("unlocked") is False:
+        raise IllegalActionError(f"army: unavailable army ability {ability!r}")
+    if army[ability].get("ready") is False:
+        raise IllegalActionError(f"army: army ability {ability!r} is not ready")
+    if ("army", ability) in settings:
+        raise IllegalActionError(f"army: repeated ability {ability!r}")
+    settings.add(("army", ability))
+    if order.get("target") is None and order.get("x") is None:
+        raise IllegalActionError(f"army: {ability!r} needs a unit target or x/z")
+    _validate_ability_target("army", order, friendly, enemies)
+
+
+def _validate_ability_target(unit, order, friendly, enemies) -> None:
+    target = order.get("target")
+    ground = order.get("x") is not None or order.get("z") is not None
+    if target is not None and target not in friendly and target not in enemies:
+        raise IllegalActionError(f"{unit}: ability target {target!r} not visible/friendly")
+    positioned = all(_finite(order.get(axis)) for axis in ("x", "z"))
+    if ground and (target is not None or not positioned):
+        raise IllegalActionError(f"{unit}: ground ability needs x/z and no unit target")
 
 
 def _finite(value) -> bool:

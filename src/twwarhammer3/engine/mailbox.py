@@ -14,6 +14,9 @@ Observation shape::
      "remaining_ms", "armies": {"player": {"faction"}, "enemy": {"faction"}},
      "friendly": [unit...], "enemy_roster": [{"id", "type"}...], "enemy": [visible unit...],
      "magic": {"current"?, "reserve"?},
+     "army": {"currency"?, "next_unlock"?, "abilities": [{"key", "target", "radius",
+              "cooldown_s", "cost"?, "unlocked"?, "button"?, "timer"?, "ready"?,
+              "last_issued_ms"?}...]} | null,
      "orders": {"request", "based_on", "applied_ms",
                 "results": [{"index", "unit", "ok", "queued", "error"?}]} | null,
      "result": "won" | "lost" | "draw" | null,
@@ -22,11 +25,14 @@ Observation shape::
 ``final`` is both armies' true strength, published only with the result (after the last
 decision), for evaluation.
 
-Order indexes are one-based positions in the request, so a unit can receive a behavior
+A request may carry ``say``, text the battle script shows in the advisor window. An
+ability order whose unit is ``"army"`` casts an army ability. Order indexes are
+one-based positions in the request, so a unit can receive a behavior
 change and a move/attack sequence in one batch. ``queued`` acknowledges submission to
 the engine queue, not execution. Friendly records include ``behaviours`` (supported
-toggle keys mapped to current booleans), ``abilities`` (owned active keys, can_use and
-last_issued_ms; can_use does not report cooldown),
+toggle keys mapped to current booleans), ``abilities`` (owned active keys with can_use,
+the engine's permission, and from the UI context system ready, active, recharge_s left,
+uses left, target type, mana cost and cooldown_s; plus last_issued_ms),
 formation ``width``, last requested ``attack_mode`` and last submitted ``command_queue``.
 
 Writers publish whole files (temporary file, then rename); readers treat a missing,
@@ -71,9 +77,13 @@ class Mailbox:
         self._publish("session.json", {"schema": SCHEMA, "job": self.job, **session})
 
     def write_orders(self, battle: str, based_on: int, orders: list[dict], *,
-                     timeout: float = 15) -> str:
-        """Send one request; the previous one must have been consumed first."""
-        return self._request(battle, {"based_on": based_on, "orders": orders}, timeout)
+                     say: str | None = None, timeout: float = 15) -> str:
+        """Send one request; the previous one must have been consumed first. ``say`` is
+        shown in the game's advisor window."""
+        body = {"based_on": based_on, "orders": orders}
+        if say:
+            body["say"] = say
+        return self._request(battle, body, timeout)
 
     def write_control(self, battle: str, control: str, *, timeout: float = 15, **fields) -> str:
         """``restart`` or ``start`` (end deployment)."""

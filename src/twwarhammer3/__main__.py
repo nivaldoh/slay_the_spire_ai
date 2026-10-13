@@ -61,7 +61,8 @@ def main() -> int:
 
     play = commands.add_parser("play", help="Play custom battles with a policy; one job directory")
     play.add_argument("--policy", default="llm", choices=[
-        "llm", "commander", "skills", "hold", "attack_nearest", "probe_move"])
+        "llm", "commander", "skills", "hold", "attack_nearest", "probe_move",
+        "probe_abilities"])
     play.add_argument("--model", default="gpt-6-luna")
     play.add_argument("--effort", default="low")
     play.add_argument("--budget-usd", type=float, default=None,
@@ -79,10 +80,17 @@ def main() -> int:
     play.add_argument("--episode-timeout", type=float, default=3600)
     play.add_argument("--run-timeout", type=float, default=8 * 3600, help="game process limit")
     play.add_argument("--attach", action="store_true", help="use the game a launch started")
+    play.add_argument("--show", action="store_true",
+                      help="show each model reply in the game's advisor window")
     play.add_argument("--output", type=Path, required=True)
 
     digest = commands.add_parser("digest", help="Summarise a job or one episode's trace")
     digest.add_argument("path", type=Path, help="job directory or job/episode-NNNN")
+
+    watch = commands.add_parser("watch", help="Follow a job live: model inputs and outputs")
+    watch.add_argument("path", type=Path, nargs="?",
+                       help="job or episode directory (default: the job in session.json)")
+    watch.add_argument("--prompts", action="store_true", help="print every prompt in full")
 
     stats = commands.add_parser("stats", help="Summarise the results register")
     stats.add_argument("--results", type=Path, default=RESULTS_PATH)
@@ -216,6 +224,21 @@ def main() -> int:
         from twwarhammer3.battle.digest import digest as render
 
         print(render(args.path))
+        return 0
+
+    if args.command == "watch":
+        from twwarhammer3.battle.watch import follow
+        from twwarhammer3.engine.runtime import BRIDGE_DIR
+
+        path = args.path or REPO_ROOT / "runs/twwarhammer3/battle" / json.loads(
+            (BRIDGE_DIR / "session.json").read_text())["job"]
+        if not path.is_dir():
+            parser.error(f"no job or episode directory at {path}")
+        print(f"following {path}", flush=True)
+        try:
+            follow(path, args.prompts)
+        except KeyboardInterrupt:
+            pass
         return 0
 
     if args.command == "stats":

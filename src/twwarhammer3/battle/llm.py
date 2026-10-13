@@ -162,11 +162,7 @@ def render_unit(unit: dict, mine: bool, before: tuple | None = None,
             parts.append("toggles " + " ".join(
                 f"{key}={'on' if value else 'off'}" for key, value in unit["behaviours"].items()))
         if unit.get("abilities"):
-            parts.append("abilities (cooldown unknown) " + "; ".join(
-                f"{a['key']} ({'permitted' if a.get('can_use') else 'blocked'}"
-                + (f", last issued {a['last_issued_ms'] / 1000:.1f} s"
-                   if a.get("last_issued_ms") is not None else "") + ")"
-                for a in unit["abilities"]))
+            parts.append("abilities " + "; ".join(render_ability(a) for a in unit["abilities"]))
         if unit.get("command_queue"):
             parts.append("last submitted sequence (completion unconfirmed): "
                          + describe_orders(unit["command_queue"]))
@@ -187,6 +183,48 @@ def render_unit(unit: dict, mine: bool, before: tuple | None = None,
     return ", ".join(parts)
 
 
+def render_ability(ability: dict) -> str:
+    """``key (Ground; 8 magic; recharging, 42 s left; last issued 61 s)``: target type, cost
+    and readiness as the game's ability panel shows them."""
+    facts = [ability["target"]] if ability.get("target") else []
+    if ability.get("radius"):
+        facts.append(f"radius {ability['radius']:.0f} m")
+    if ability.get("mana"):
+        facts.append(f"{ability['mana']} magic")
+    if ability.get("unlocked") is False:
+        facts.append(f"locked, unlocks at {ability['cost']:.0f} points" if ability.get("cost")
+                     else "locked")
+    elif ability.get("can_use") is False:
+        facts.append("blocked")
+    elif ability.get("active"):
+        facts.append("active now")
+    elif ability.get("recharge_s"):
+        facts.append(f"recharging, {ability['recharge_s']:.0f} s left")
+    elif ability.get("timer"):
+        facts.append(f"recharging, {ability['timer']} left")
+    elif ability.get("ready"):
+        facts.append("ready")
+    elif ability.get("ready") is False:
+        facts.append("not available now")
+    else:
+        facts.append("readiness unknown")
+    if ability.get("uses") is not None:
+        facts.append(f"{ability['uses']} uses left")
+    if ability.get("cooldown_s", 0) > 0:
+        facts.append(f"cooldown {ability['cooldown_s']:.0f} s")
+    if ability.get("last_issued_ms") is not None:
+        facts.append(f"last issued {ability['last_issued_ms'] / 1000:.0f} s")
+    return f"{ability['key']} ({'; '.join(facts)})"
+
+
+def render_army(army: dict) -> str:
+    points = f"; points {army['currency']}" if army.get("currency") is not None else ""
+    if army.get("next_unlock") is not None:
+        points += f", next unlock at {army['next_unlock']}"
+    return (f"Army abilities (order with unit \"army\"{points}): "
+            + "; ".join(render_ability(a) for a in army.get("abilities", [])))
+
+
 def _nearest(unit: dict, enemies: dict) -> dict | None:
     placed = [enemy for enemy in enemies.values() if enemy.get("x") is not None]
     if unit.get("x") is None or not placed:
@@ -205,6 +243,8 @@ def render_state(observation: dict, last_seen: dict, before: dict | None = None,
     if magic:
         lines.insert(0, f"Winds of Magic: {magic.get('current', 'unknown')} available, "
                      f"{magic.get('reserve', 'unknown')} reserve.")
+    if (observation.get("army") or {}).get("abilities"):
+        lines.insert(0, render_army(observation["army"]))
     lines += ["- " + render_unit(unit, True, before.get(unit["id"]), visible,
                                  ordered.get(unit["id"]))
               for unit in observation.get("friendly", [])]
