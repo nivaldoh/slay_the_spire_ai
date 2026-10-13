@@ -101,10 +101,8 @@ local function unit_class(unit)
     if get(unit, "is_commanding_unit", false) then return "lord" end
     local land_class = tostring(get(unit, "unit_class", ""))
     local class = CLASSES[string.match(land_class, "^(%a+)") or ""]
-    if not class then
-        if get(unit, "can_fly", false) then return "flying" end
-        return land_class ~= "" and land_class or "monster"
-    end
+    if (not class or class == "monster") and get(unit, "can_fly", false) then return "flying" end
+    if not class then return land_class ~= "" and land_class or "monster" end
     if (get(unit, "missile_range", 0) or 0) > 0 then
         if class == "infantry" then return "missile" end
         if class == "cavalry" or class == "chariot" then return "missile_" .. class end
@@ -316,7 +314,7 @@ end
 -- The results popup's rematch button, then the "Are you sure?" dialog's tick, reload the
 -- same battle (bm:restart_battle(), the RestartBattle context command, did nothing on the
 -- results screen). A decided battle is ended at once so the popup opens; RestartBattle is
--- the fallback.
+-- the fallback before a decision.
 local function restart()
     if state.finished then pcall(function() bm:end_battle() end) end
     local waited, rematched = 0, false
@@ -334,8 +332,8 @@ local function restart()
             log("rematch confirmed")
         elseif waited >= (state.finished and 60000 or 3000) then
             bm:remove_real_callback("twwarhammer3_restart")
-            log("no rematch button; RestartBattle")
-            bm:restart_battle()
+            log(rematched and "no rematch confirmation" or "no rematch button")
+            if not state.finished then bm:restart_battle() end
         end
     end), 1000, "twwarhammer3_restart")
 end
@@ -363,7 +361,22 @@ local function tick()
     end
 end
 
+-- UI steps for probing the battle UI (menu --battle): the frontend script is unloaded
+-- during a battle, so menu.json is free, and orders.json stays the job's alone.
+local function run_menu()
+    local text = read_file(BRIDGE .. "menu.json")
+    if not text then return end
+    os.remove(BRIDGE .. "menu.json")
+    local ok, message = pcall(json.decode, text)
+    if not ok or type(message) ~= "table" or type(message.steps) ~= "table" then return end
+    for index, step in ipairs(message.steps) do
+        local done_ok, done = pcall(ui.run, step, BRIDGE)
+        log(string.format("ui %d: %s", index, done_ok and tostring(done) or clean_error(done)))
+    end
+end
+
 local function poll()
+    run_menu()
     local text = read_file(BRIDGE .. "orders.json")
     if not text then return end
     os.remove(BRIDGE .. "orders.json")
@@ -381,12 +394,6 @@ local function poll()
     if message.control == "restart" then
         log("restart requested by " .. tostring(message.request))
         restart()
-        return
-    elseif message.control == "ui" then
-        for index, step in ipairs(message.steps or {}) do
-            local ok, done = pcall(ui.run, step, BRIDGE)
-            log(string.format("ui %d: %s", index, ok and tostring(done) or clean_error(done)))
-        end
         return
     elseif message.control == "start" then
         try_end_deployment()

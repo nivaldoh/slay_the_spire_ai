@@ -161,14 +161,10 @@ def main() -> int:
             steps = [{"find": args.find, "click": args.click}]
         else:
             parser.error("menu needs --steps, --dump or --find")
+        # The battle script runs menu.json steps too (the frontend is unloaded in battle).
         log = "mod.log" if args.battle else "menu.log"
         offset = mailbox.log_offset(log)
-        if args.battle:
-            battle = mailbox.read_observation()["battle"]
-            mailbox.requests = int(time.time())  # request ids must differ from the job's
-            mailbox.write_control(battle, "ui", steps=steps)
-        else:
-            mailbox.write_menu(steps)
+        mailbox.write_menu(steps)
         deadline = time.monotonic() + args.wait
         while time.monotonic() < deadline:
             text = mailbox.log_since(offset, log)

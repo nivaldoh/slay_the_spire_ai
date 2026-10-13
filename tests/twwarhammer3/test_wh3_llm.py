@@ -162,3 +162,52 @@ def test_dead_friendly_units_are_one_line_and_enemy_range_shows():
     assert "- f1 herald_of_khorne_0: destroyed\n" in text
     assert ("e1 dwarf_warriors_0 (infantry) at (100, 200) facing 180, 90/100 men, hp 90%,"
             " range 160") in text
+
+
+def test_prompt_shows_changes_and_the_order_behind_each_target(tmp_path):
+    orders = [{"unit": "f2", "type": "attack", "x": None, "z": None, "facing": None,
+               "target": "e1", "run": False}]
+    agent = policy(tmp_path, reply(orders), reply([]))
+    agent.decide(observation())
+    agent.acknowledge({"request": "r1", "results": [{"unit": "f2", "ok": True}],
+                       "applied_ms": 34000}, {"think_s": 3.0, "delay_ms": 4000})
+    later = observation(time_ms=40000)
+    later["friendly"][1].update(men=104, hp=0.85, target="e2", dest=None)
+    later["friendly"][0]["target"] = "e1"
+    later["enemy"][0].update(men=85, x=0.0, z=-10.0)
+    agent.decide(later)
+    prompt = agent.metadata()["prompt"]
+    assert "110/120 men" not in prompt and "104/120 men (-6), hp 85% (-8)" in prompt
+    assert "target e2, game's choice; your order at 30 s was e1 30 m" in prompt
+    assert "f1 herald_of_khorne_0" in prompt and "target e1 32 m, game's choice" in prompt
+    assert "85/100 men (-5), hp 90%" in prompt
+
+
+def test_lapsed_orders_are_forgotten_and_dropped_moves_reported(tmp_path):
+    orders = [{"unit": "f1", "type": "move", "x": 10.0, "z": 60.0, "facing": None,
+               "target": None, "run": False},
+              {"unit": "f2", "type": "attack", "x": None, "z": None, "facing": None,
+               "target": "e1", "run": False}]
+    agent = policy(tmp_path, reply(orders), reply([]))
+    agent.decide(observation())
+    agent.acknowledge({"request": "r1", "results": [{"unit": "f1", "ok": True},
+                                                    {"unit": "f2", "ok": True}],
+                       "applied_ms": 34000}, {"think_s": 3.0, "delay_ms": 4000})
+    later = observation(time_ms=40000)
+    later["friendly"][1].update(state=["idle"], dest=None)
+    agent.decide(later)
+    prompt = agent.metadata()["prompt"]
+    assert "stopped 100 m short of your move (30 s)" in prompt
+    assert "your order" not in prompt.split("f2 chaos_warriors_0")[1].split("\n")[0]
+    assert agent.ordered == {"f1": dict(orders[0], time_s=30.0)}
+
+
+def test_units_without_a_target_show_no_order_and_their_nearest_enemy():
+    observation_ = observation()
+    observation_["friendly"][0]["state"] = []
+    observation_["friendly"].append({**observation_["friendly"][1], "id": "f3",
+                                     "state": ["routing"], "dest": None})
+    text = llm.render_state(observation_, {})
+    assert "fresh, no order, nearest enemy e1 256 m" in text
+    assert "heading to (0, 20), nearest enemy e1 260 m" in text
+    assert "nearest" not in text.split("- f3 ")[1].split("\n")[0]

@@ -93,8 +93,9 @@ def summary(path: Path) -> str:
     groups = defaultdict(list)
     with path.open(newline="") as handle:
         for item in csv.DictReader(handle):
-            groups[(item["scenario"], item["model"], item["effort"], item["harness"],
-                    item["mode"])].append(item)
+            # Scripted policies have no harness version: their source tells revisions apart.
+            groups[(item["scenario"], item["model"], item["effort"],
+                    item["harness"] or item["source"], item["mode"])].append(item)
     lines = ["| Scenario | Model | Effort | Harness | Mode | Episodes | Won | Lost | Draw | "
              "Other | Mean battle s | Own left | Enemy left | Mean delay s | USD |",
              "|" + "---|" * 15]

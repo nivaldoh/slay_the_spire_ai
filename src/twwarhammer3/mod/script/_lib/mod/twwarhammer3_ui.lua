@@ -7,13 +7,6 @@
 twwarhammer3_ui = {}
 local ui = twwarhammer3_ui
 
--- Visible itself and through every ancestor, when the game offers the check.
-function ui.visible(uic)
-    local ok, value = pcall(function() return uic:VisibleFromRoot() end)
-    if ok then return value end
-    return uic:Visible()
-end
-
 function ui.find(path)
     return find_uicomponent(core:get_ui_root(), unpack(path))
 end
