@@ -5,8 +5,8 @@ after a job ends; summaries and audits are written beside a job, not inside it.
 
 ```
 runs/
-  llm-spend.jsonl     API spend ledger shared by every `spire play` job. Never move or reset it:
-                      the budget cap is computed from its total.
+  llm-spend.jsonl     Slay the Spire's OpenAI spend ledger, shared by every `spire play` job
+                      (ledger rules in AGENTS.md). Another game keeps runs/<game>/.
   fullrun/            Current track. One directory per `spire play` job, named
                       <model>-v<scaffolding>-<seed set>-<date> (e.g. llm-luna-v7-dev-20261012),
                       with its stdout and stderr beside it as <job>.log.
@@ -16,7 +16,8 @@ runs/
   research-notes/     Source notes for docs/approaches.md, kept out of Git.
 ```
 
-New tracks get their own folder (`runs/<track>/<job>`). A job directory holds what its
+New tracks get their own folder (`runs/<track>/<job>`), and new games theirs
+(`runs/<game>/<track>/<job>`). A job directory holds what its
 runner wrote: `manifest.json` with the source revision, file fingerprints and
 configuration; `environment.json`; and one subdirectory per run or episode with the raw
 trace, result and game logs.

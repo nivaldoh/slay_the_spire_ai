@@ -1,8 +1,8 @@
 # Full runs with an API language model
 
-Status: development, started 2026-10-12, current scaffolding **v9**. No run has won yet;
-best floors per development seed are 50, 54 and 42 (v1.1: 16, 33, 16). Every version,
-its evidence and its per-seed results are in [log.md](log.md). Code: `src/spire/fullrun/`.
+Status: development, started 2026-10-12. The current version and spend are in
+[state.md](../state.md); every version, its evidence and its per-seed results are in
+[log.md](log.md). Code: `src/spire/fullrun/`, on top of `src/gameai/`.
 
 ## Question
 
@@ -16,13 +16,12 @@ the prompt and memory, not weight training.
 
 - Model: `gpt-6-luna` through the OpenAI Responses API, reasoning effort `low`, structured
   JSON output. The owner chose Luna for cost; `gpt-6-astra`, `gpt-6-sol` and
-  `gpt-6.1-sol` have declared prices in `spire.fullrun.api` and can be selected with `--model`.
+  `gpt-6.1-sol` have declared prices in `gameai.llm` and can be selected with `--model`.
 - Spend: every call is priced from its reported usage at the standard-tier list prices in
-  `spire.fullrun.api.PRICES` (read 2026-10-12) and appended to a ledger. A call is refused
+  `gameai.llm.PRICES` (read 2026-10-12) and appended to a ledger. A call is refused
   before it is sent if the ledger's total plus that call's worst-case cost (prompt bytes as
   an upper bound on input tokens, plus 4,000 output tokens) would exceed `--budget-usd`. The
-  owner's cap for the first overnight work is **$25** on `runs/llm-spend.jsonl`, the default
-  ledger. An API request that times out on our side may still be billed without a ledger
+  default ledger is `runs/llm-spend.jsonl`; the owner's cap is in [state.md](../state.md). An API request that times out on our side may still be billed without a ledger
   entry, so the OpenAI dashboard total is the final check.
 - Key: read from `OPENAI_API_KEY` or from the file named by `SPIRE_OPENAI_KEY_FILE`.
   It is never logged; evidence records only response IDs and usage.
@@ -124,8 +123,8 @@ damage against block and HP. They point into the traces and do not replace readi
 
 - Editable surface: `configs/llm/` (system prompt and monster notes), and the rendering,
   memory and reply handling in `src/spire/fullrun/llm.py`. The information boundary
-  (`spire/decisions.py`), the runner (`play.py`), the client and prices (`api.py`) and the
-  ledger (`spire/ledger.py`) are not tuning surfaces. Fix them only for real defects, and
+  (`spire/decisions.py`), the runner (`play.py`), the client, prices and retry loop
+  (`gameai/llm.py`) and the ledger (`gameai/ledger.py`) are not tuning surfaces. Fix them only for real defects, and
   record each fix in the log.
 - Commit before every run; the runner refuses uncommitted source and prompt changes.
 - Judge a change by outcomes (floor reached, wins), not by how good the reasons sound.

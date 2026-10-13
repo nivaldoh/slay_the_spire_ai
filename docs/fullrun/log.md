@@ -531,3 +531,21 @@ infrastructure failure on RUNDEV2; RUNDEV3 was not played.
   and had no Apparitions, so v9's keywords were not tested on Ethereal cards in either run.
 
 v9 is not judged: one finished run, no Ethereal card in play. Replay it on all three seeds.
+
+## 2026-10-12: shared gameai package and a leaner harness (no scaffolding change)
+
+To let other games reuse the model code, the OpenAI transport, prices, spend reservation and
+reply-retry loop moved to `gameai/llm.py` (`Model.ask`), and the ledger and provenance to
+`gameai/`. Full-run jobs fingerprint only `src/gameai`, `src/spire`, `configs/llm` and the
+lock files, so edits elsewhere no longer stop a job. The runner loop, decision builder and
+engine package were simplified (engine 1,153 → 739 lines). Checks:
+
+- Replaying all 30 saved traces through `LLMPolicy` with their recorded replies gave
+  byte-identical prompts, request bodies, ledger reservations and charges, choices and
+  totals, also with injected invalid replies; `digest`, `watch`, `stats` and the rebuilt
+  `results.csv` were unchanged.
+- Smoke run `runs/fullrun/smoke-gameai-20261012` (source `1a24d2f`, RUNDEV1, 40-action
+  cap): truncated on floor 3 as intended after 28 calls ($0.005); manifest and result keys
+  match the previous smoke run, and no game process remained.
+- The `--version` flag is gone. The trace no longer writes the `terminal` and `result`
+  events, which repeated `result.json`.

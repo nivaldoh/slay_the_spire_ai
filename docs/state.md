@@ -29,8 +29,9 @@ Next steps:
 
 1. Replay v9 on all three seeds; it is untested on Ethereal cards so far.
 2. v10, hand-select purpose, is drafted on local branch `v10-hand-select` (one commit on
-   top of `35903e9`; rebase onto `main`): a line naming the card, potion or Gambling Chip
-   behind each hand selection, checked against all 55 saved hand-select screens.
+   top of `35903e9`): a line naming the card, potion or Gambling Chip behind each hand
+   selection, checked against all 55 saved hand-select screens. Rebasing onto `main`
+   conflicts in `LLMPolicy.choose`, whose call and retry loop moved to `gameai.llm.Model.ask`.
 3. Keys memory: CommunicationMod 1.2.1 never sends `keys`, so the model cannot see the
    keys it holds; v9 RUNDEV1 died on an elite path taken for a key it had
    ([integration.md](integration.md), [candidates](fullrun/README.md#candidate-changes)).
@@ -46,7 +47,7 @@ Next steps:
    [approaches.md addendum](approaches.md#addendum-2026-10-12-evening-an-open-sts1-benchmark).
    Its first step is the same results table as item 4.
 
-Open owner decisions: reasoning effort above `low`, and a whole turn per call.
+Open owner decisions: [fullrun/README.md](fullrun/README.md#open-owner-decisions).
 
 ## Owner direction
 
@@ -64,6 +65,12 @@ Open owner decisions: reasoning effort above `low`, and a whole turn per call.
 
 ## Housekeeping
 
+2026-10-12 (late): game-neutral code moved to `src/gameai/` (OpenAI calls and spend,
+ledgers, scoped provenance) so other games can reuse it, and the full-run loop and engine
+were simplified. Replaying all 30 saved full-run traces gave byte-identical prompts,
+request bodies and ledger charges; a 40-action smoke run passed (API spend now $2.50).
+`docs/agent-guide.md` was removed (in Git history).
+
 The repository was reorganized on 2026-10-12 into per-track packages, test directories,
 docs and run folders; [AGENTS.md](../AGENTS.md) has the map. Evidence from 2026-10-11 moved
 to `runs/first-combat/`, and the records inside keep their old absolute paths
@@ -75,20 +82,7 @@ Pending owner cleanup: 49 local branches whose commits are all in `main`, and 47
 
 ## Runtime and ownership
 
-- WSL2 Ubuntu 24.04 with uv 0.12.5 and a locked Python 3.13 environment. Windows Python
-  3.13.1 and the game-bundled Java 1.8.0_144 run from WSL.
-- Steam game build 10180494 (game version 12-18-2022). Pinned ModTheSpire 3.30.3, BaseMod
-  5.56.0 and CommunicationMod 1.2.1, copied to `C:/spire-agent/mods`; hashes are in
-  `spire/engine/runtime.py` and [integration.md](integration.md), and the Workshop copies
-  are rechecked on every launch.
-- The relay connects from Windows to the current WSL guest IPv4 on fixed port 19876.
-  CommunicationMod's config is `%LOCALAPPDATA%/ModTheSpire/CommunicationMod/config.properties`.
-- Every launch owns one JVM in a Windows job object, which stops it and the relay on
-  controller EOF, deadline or supervisor death. A WSL lock and a Windows mutex prevent
-  overlap, and pre-existing game processes cause a refusal.
-- The directly launched JVM reports a Steam API initialization failure; gameplay works.
-  `isModded=true` gates the engine's metric and crash uploads (see [integration.md](integration.md)).
-- RTX 3060 12 GB; WSL memory 7.7 GiB. Windows AC sleep is disabled.
+Host, engine, mod and process facts: [integration.md](integration.md#runtime-and-source-pins).
 
 The owner authorizes the installed Steam game and personal profile slot 0, including
 changes to stats, unlock progress, run history and achievements (Ironclad unlock level was

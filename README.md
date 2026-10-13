@@ -7,12 +7,13 @@ game, see only what a player could see, and leave an audited record of every dec
 
 | Track | Status | Page |
 | --- | --- | --- |
-| Full runs with an API model | **Current.** `gpt-6-luna` plays complete runs from a labeled list of public choices; its scaffolding changes one observed mistake at a time. In one night, seven versions raised the best floor per development seed from 16/33/16 to 29/50/42 for $1.45. No win yet. | [docs/fullrun](docs/fullrun/README.md) |
+| Full runs with an API model | **Current.** `gpt-6-luna` plays complete runs from a labeled list of public choices; its scaffolding changes one observed mistake at a time. Results per version: [log](docs/fullrun/log.md). | [docs/fullrun](docs/fullrun/README.md) |
 | First-combat benchmark | **Paused.** Verified original-engine loop on fixed floor-1 combats. PPO updated weights without playing better; a Qwen3-0.6B LoRA imitated the scripted heuristic (catalog HP 76.33 against 76.00). | [docs/first-combat](docs/first-combat/README.md) |
 | Remotely trained open-weight model | **Planned.** Game-reward RL on Tinker, with a dynamics-prediction experiment. | [docs/open-weight](docs/open-weight/README.md) |
 
 What is running and what comes next: [docs/state.md](docs/state.md). Repository layout
-and working rules: [AGENTS.md](AGENTS.md).
+and working rules: [AGENTS.md](AGENTS.md). Game-neutral pieces (OpenAI calls with a spend
+cap, ledgers, provenance) live in `src/gameai/`, so other games can reuse them.
 
 ## Setup
 

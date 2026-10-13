@@ -37,6 +37,16 @@ engine is the final 2022 build. The first launch successfully initialized all
 three mods and produced live CommunicationMod state. This verifies the startup
 path only; combat and reset claims require saved gameplay evidence.
 
+Host and process ownership:
+
+- WSL2 Ubuntu 24.04 with uv 0.12.5 and a locked Python 3.13 environment; RTX 3060 12 GB,
+  WSL memory 7.7 GiB, Windows AC sleep disabled.
+- The relay connects from Windows to the current WSL guest IPv4 on fixed port 19876.
+- Every launch owns one JVM in a Windows job object, which stops it and the relay on
+  controller EOF, deadline or supervisor death. A WSL flock (`C:/spire-agent/owner.lock`)
+  allows one controller, and a game process already running causes a refusal.
+- The directly launched JVM reports a Steam API initialization failure; gameplay works.
+
 ## Protocol boundary
 
 The [CommunicationMod protocol](https://github.com/ForgottenArbiter/CommunicationMod/blob/5e417eb189530986b9047a3c9426889fb261d146/README.md)

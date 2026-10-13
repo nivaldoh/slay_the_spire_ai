@@ -1,27 +1,30 @@
 # Repository Guidelines
 
-AI policies for Slay the Spire 1 (Ironclad, Ascension 0), played through the original game
-from WSL. Start every session with [docs/state.md](docs/state.md): what is running, the
-current track and the next step. Then read that track's page. The owner's original brief
-is [docs/agent-guide.md](docs/agent-guide.md); read it once, not for every task.
+AI policies for games, starting with Slay the Spire 1 (Ironclad, Ascension 0) played
+through the original game from WSL. Start every session with [docs/state.md](docs/state.md):
+what is running, the current track and the next step. Then read that track's page.
 
 ## Layout
 
 ```
-src/spire/
+src/gameai/        Game-neutral code any game can import; it never imports a game package
+  llm.py           OpenAI Responses transport, prices, Model (spend reservation, the
+                   reply-retry loop)
+  ledger.py        Append-only spend ledger with a hard budget, for any paid model
+  provenance.py    Repository root, scoped source fingerprints, committed-source check,
+                   atomic JSON writes
+src/spire/         Slay the Spire 1
   __main__.py      CLI: doctor, play, digest, watch, spend (full runs); rollout, evaluate, train, report
                    (first combat)
   protocol.py      Decision/Action types, the error taxonomy and the first-combat observation contract (frozen)
   policies.py      Scripted first-combat policies: random, starter heuristic, end turn (frozen)
   decisions.py     Public full-game boundary: labeled choices on every in-game screen, for any track
-  ledger.py        Append-only spend ledger with a hard budget, for any paid model
-  provenance.py    Repository root, source fingerprints, committed-source check, atomic JSON writes
   engine/          Real-game plumbing for every track: Windows runtime, relay bridge, doctor,
                    and the Windows-side windows_game.py / windows_relay.py
   fullrun/         Current track: play.py (complete-run loop for any policy), llm.py (prompt,
-                   memory and replies: the tuning surface), api.py (OpenAI transport, prices),
-                   digest.py (trace summaries and mistake flags), watch.py (job events),
-                   stats.py (the results register, docs/fullrun/results.csv)
+                   memory and replies: the tuning surface), digest.py (trace summaries and
+                   mistake flags), watch.py (job events), stats.py (the results register,
+                   docs/fullrun/results.csv)
   openweight/      Planned remote open-weight track (skeleton, mostly NotImplementedError): tasks
                    and seed splits, env backends, Tinker policy, rewards, rollout, GRPO, dynamics
   combat/          First-combat benchmark: rollout, suites (evaluation), catalogs, evidence audits
@@ -38,6 +41,11 @@ runs/              Local evidence, ignored by Git; see runs/README.md
 
 `protocol.py` and `policies.py` stay byte-stable: demonstration export compares their syntax
 tree with the recorded teacher sources. New full-run behavior belongs in `fullrun/`.
+
+A new game gets `src/<game>/`, `configs/<game>/`, `docs/<game>/`, `runs/<game>/` and
+`tests/<game>/`; Slay the Spire keeps its existing paths. Move code into `gameai` when a
+second game would otherwise copy it, not before. Test files share one namespace (there is
+no `tests/__init__.py`), so every test file name must be unique across `tests/`.
 
 ## Commands
 
@@ -59,10 +67,12 @@ uv run python -m spire stats       # milestones per model, effort and harness; -
 - The original-engine regressions in `tests/combat/` read `runs/first-combat/` (override with
   `SPIRE_EVIDENCE_ROOT`) and skip when it is absent.
 - `play`, `rollout`, `evaluate`, `train` and `scripts/inventory_scenarios.py` launch the real
-  game. They refuse uncommitted changes under `src/`, `scripts/`, `configs/`,
-  `pyproject.toml`, `uv.lock` and `.python-version`, and need a new output directory. Check
-  "Active work" in `docs/state.md` first: a live job may need source and `HEAD` frozen.
-  Never run two game controllers at once.
+  game and need a new output directory. They refuse uncommitted changes in their source
+  scope: for `play`, `src/gameai/`, `src/spire/`, `configs/llm/`, `pyproject.toml`,
+  `uv.lock` and `.python-version` (`fullrun/play.py` `SOURCES`); for the first-combat tools,
+  also `scripts/` and all of `configs/`. A `play` job stops before its next seed if a file in
+  scope changes. Check "Active work" in `docs/state.md` first. Never run two game controllers
+  at once.
 - `scripts/audit_ppo_training.py` and `scripts/audit_language_training.py` are read-only.
   Run them only on stopped runs, and write their reports outside the run directory.
 
@@ -100,7 +110,9 @@ policy failures. Only an engine-confirmed victory or death is a gameplay outcome
 ## Evidence
 
 Run evidence goes in `runs/<track>/<job>/` and stays out of Git (layout in
-`runs/README.md`). The full-run API ledger is `runs/llm-spend.jsonl`; never move or reset it.
+`runs/README.md`). Each game has its own API spend ledger: Slay the Spire's is
+`runs/llm-spend.jsonl`, another game's `runs/<game>/llm-spend.jsonl`. Never move or reset a
+ledger; its budget cap is computed from its total.
 Compact first-combat results are committed in `docs/first-combat/results/`. `spire play`
 appends one row per run to `docs/fullrun/results.csv`; commit it with the version's log
 entry. Log every full-run version in `docs/fullrun/log.md`, and update `docs/state.md` when

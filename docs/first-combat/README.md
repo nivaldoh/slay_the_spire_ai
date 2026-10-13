@@ -81,7 +81,8 @@ Sources: [baselines](results/baselines-development-v1.json),
 - **Engine time dominates.** About 38 s per combat, mostly animation and JVM restarts; see
   the engine-speed section of [approaches.md](../approaches.md).
 
-Against the milestones in section 10 of the [agent guide](../agent-guide.md): A (a working
+Against the milestones in section 10 of the owner's original brief (`docs/agent-guide.md`,
+removed 2026-10-12; it is in Git history before that date): A (a working
 original-engine loop) and B (a fixed-encounter diagnostic with baselines) are verified, C
 (a learning loop) is verified computationally without a gameplay improvement, E (language
 weight training) is verified narrowly, and D and F are incomplete.
