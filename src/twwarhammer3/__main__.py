@@ -60,11 +60,12 @@ def main() -> int:
                       help="send the steps to the running battle script (tails mod.log)")
 
     play = commands.add_parser("play", help="Play custom battles with a policy; one job directory")
-    play.add_argument("--policy", choices=["llm", "hold", "attack_nearest", "probe_move"],
-                      default="llm")
+    play.add_argument("--policy", default="llm", choices=[
+        "llm", "commander", "skills", "hold", "attack_nearest", "probe_move"])
     play.add_argument("--model", default="gpt-6-luna")
     play.add_argument("--effort", default="low")
-    play.add_argument("--budget-usd", type=float, default=None, help="required with --policy llm")
+    play.add_argument("--budget-usd", type=float, default=None,
+                      help="required with --policy llm or commander")
     play.add_argument("--ledger", type=Path, default=LEDGER_PATH)
     play.add_argument("--results", type=Path, default=RESULTS_PATH)
     play.add_argument("--episodes", type=int, default=1)
@@ -186,23 +187,26 @@ def main() -> int:
         for key, value in config.items():
             if isinstance(value, Path):
                 config[key] = str(value)
-        if args.policy == "llm":
+        if args.policy in ("llm", "commander"):
             from functools import partial
 
             from gameai.ledger import Ledger
             from gameai.llm import api_key, post
+            from twwarhammer3.battle.commander import CommanderPolicy
             from twwarhammer3.battle.llm import LLMPolicy
 
             if args.budget_usd is None:
-                parser.error("--policy llm needs --budget-usd")
+                parser.error(f"--policy {args.policy} needs --budget-usd")
             ledger = Ledger(args.ledger, args.budget_usd)
             send = partial(post, api_key())
+            kind = LLMPolicy if args.policy == "llm" else CommanderPolicy
             def policy_factory():
-                return LLMPolicy(args.model, args.effort, ledger, send=send)
+                return kind(args.model, args.effort, ledger, send=send)
         else:
             from twwarhammer3.battle.scripted import POLICIES
+            from twwarhammer3.battle.skills import Skills
 
-            policy_factory = POLICIES[args.policy]
+            policy_factory = Skills if args.policy == "skills" else POLICIES[args.policy]
         manifest = run_play(args.output, config, policy_factory=policy_factory)
         return 0 if manifest["status"] == "completed" else 1
 

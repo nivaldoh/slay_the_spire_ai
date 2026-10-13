@@ -6,7 +6,9 @@ after a ``restart`` control), then alternates observations and decisions: one re
 in flight at a time. By default the acknowledgement observation starts the next
 decision immediately; ``interval_ms`` optionally adds a wait after orders apply. Each
 decision records the think time and the battle-time delay between the state it saw and the
-orders being issued (or queued). Only an engine-reported result is a gameplay outcome.
+orders being issued (or queued). A fast policy decides at the mod's tick rate, so the trace
+keeps every decision with orders, an error or new metadata, and quiet ones once per
+``observe_ms``. Only an engine-reported result is a gameplay outcome.
 """
 
 import json
@@ -52,11 +54,13 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
         "status": "running",
         "episodes": [],
     }
-    if config["policy"] == "llm":
-        from twwarhammer3.battle.llm import SYSTEM_PROMPT_PATH
+    if config["policy"] in ("llm", "commander"):
+        from twwarhammer3.battle import commander, llm
 
-        (output / "system_prompt.md").write_bytes(SYSTEM_PROMPT_PATH.read_bytes())
-        manifest["system_prompt_sha256"] = sha256(SYSTEM_PROMPT_PATH)
+        prompt = (commander.PROMPT_PATH if config["policy"] == "commander"
+                  else llm.SYSTEM_PROMPT_PATH)
+        (output / "system_prompt.md").write_bytes(prompt.read_bytes())
+        manifest["system_prompt_sha256"] = sha256(prompt)
     write_json(output / "manifest.json", manifest)
     session = {key: config[key] for key in SESSION_KEYS}
 
@@ -213,6 +217,8 @@ def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
         result.update(status="infrastructure_failure", error=str(exc),
                       error_type=type(exc).__name__)
     finally:
+        if hasattr(policy, "close"):
+            policy.close()  # a call still in flight is waited for and charged
         result["elapsed_seconds"] = round(time.monotonic() - started, 1)
         result["llm"] = dict(getattr(policy, "totals", {}))
         delays = result["delays_ms"]
@@ -231,6 +237,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started) -> None:
     event("battle", observation=first)
     applied_ms = None
     outstanding = None
+    logged_ms, logged_behavior = None, None
     while True:
         remaining = deadline - time.monotonic()
         if remaining <= 0:
@@ -258,7 +265,8 @@ def _drive(config, policy, mailbox, not_battle, result, event, started) -> None:
             result["invalid"] += sum(1 for item in ack.get("results", []) if not item.get("ok"))
             result["delays_ms"].append(latency["delay_ms"])
             result["think_s"].append(latency["think_s"])
-            event("ack", request=ack["request"], ack=ack, latency=latency)
+            if outstanding["logged"]:
+                event("ack", request=ack["request"], ack=ack, latency=latency)
             policy.acknowledge(ack, latency)
             applied_ms = ack["applied_ms"]
             outstanding = None
@@ -273,19 +281,29 @@ def _drive(config, policy, mailbox, not_battle, result, event, started) -> None:
         if applied_ms is not None and observation["time_ms"] < applied_ms + config["interval_ms"]:
             continue
         read_at = time.monotonic()
-        event("observation", observation=observation,
-              since_previous_applied_ms=(observation["time_ms"] - applied_ms
-                                         if applied_ms is not None else None))
-        orders = policy.decide(observation)
+        orders, invalid = policy.decide(observation), None
         try:
             validate_orders(orders, observation)
         except IllegalActionError as exc:
-            event("invalid", error=str(exc), orders=orders)
+            invalid = {"error": str(exc), "orders": orders}
             result["invalid"] += 1
             orders = []
+        behavior = policy.metadata()
+        # A fast policy decides at the tick rate: quiet decisions are logged once per
+        # observe_ms, and every decision with orders, an error or new metadata is logged.
+        logged = (orders or invalid or behavior != logged_behavior or logged_ms is None
+                  or observation["time_ms"] - logged_ms >= config["observe_ms"])
+        if logged:
+            event("observation", observation=observation,
+                  since_previous_applied_ms=(observation["time_ms"] - applied_ms
+                                             if applied_ms is not None else None))
+            if invalid:
+                event("invalid", **invalid)
         request = mailbox.write_orders(battle, observation["seq"], orders)
-        event("decision", seq=observation["seq"], time_ms=observation["time_ms"],
-              request=request, orders=orders, behavior=policy.metadata())
+        if logged:
+            event("decision", seq=observation["seq"], time_ms=observation["time_ms"],
+                  request=request, orders=orders, behavior=behavior)
+            logged_ms, logged_behavior = observation["time_ms"], behavior
         outstanding = {"request": request, "observed_ms": observation["time_ms"],
-                       "read": read_at, "sent": time.monotonic()}
+                       "read": read_at, "sent": time.monotonic(), "logged": bool(logged)}
         result["decisions"] += 1

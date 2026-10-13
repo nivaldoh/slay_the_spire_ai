@@ -17,10 +17,11 @@ from gameai.provenance import REPO_ROOT
 RESULTS_PATH = REPO_ROOT / "docs/twwarhammer3/results.csv"
 JOBS_ROOT = REPO_ROOT / "runs/twwarhammer3/battle"
 FIELDS = [
-    "date", "job", "episode", "scenario", "model", "effort", "harness", "source", "mode",
-    "speed", "interval_s", "outcome", "battle_s", "own_left", "enemy_left", "decisions",
-    "invalid", "delay_s", "usd",
+    "date", "job", "episode", "scenario", "policy", "model", "effort", "harness", "source",
+    "mode", "speed", "interval_s", "outcome", "battle_s", "own_left", "enemy_left",
+    "decisions", "invalid", "delay_s", "usd",
 ]
+MODEL_POLICIES = ("llm", "commander")
 
 
 def harness_version(job: str) -> str:
@@ -38,14 +39,15 @@ def row(job: Path, episode: Path) -> dict:
     manifest = json.loads((job / "manifest.json").read_text())
     result = json.loads((episode / "result.json").read_text())
     config = manifest["config"]
-    llm = config.get("policy") == "llm"
+    llm = config.get("policy") in MODEL_POLICIES
     delays = result.get("delays_ms") or []
     return {
         "date": manifest["created_at"][:10],
         "job": job.name,
         "episode": episode.name,
         "scenario": config.get("scenario", ""),
-        "model": config.get("model", "") if llm else config.get("policy", ""),
+        "policy": config.get("policy", ""),
+        "model": config.get("model", "") if llm else "",
         "effort": config.get("effort", "") if llm else "",
         "harness": harness_version(job.name),
         "source": manifest["source_revision"][:7],
@@ -94,11 +96,11 @@ def summary(path: Path) -> str:
     with path.open(newline="") as handle:
         for item in csv.DictReader(handle):
             # Scripted policies have no harness version: their source tells revisions apart.
-            groups[(item["scenario"], item["model"], item["effort"],
+            groups[(item["scenario"], item["policy"], item["model"], item["effort"],
                     item["harness"] or item["source"], item["mode"])].append(item)
-    lines = ["| Scenario | Model | Effort | Harness | Mode | Episodes | Won | Lost | Draw | "
-             "Other | Mean battle s | Own left | Enemy left | Mean delay s | USD |",
-             "|" + "---|" * 15]
+    lines = ["| Scenario | Policy | Model | Effort | Harness | Mode | Episodes | Won | Lost | "
+             "Draw | Other | Mean battle s | Own left | Enemy left | Mean delay s | USD |",
+             "|" + "---|" * 16]
     for key, items in sorted(groups.items()):
         outcomes = [item["outcome"] for item in items]
         battle = [float(item["battle_s"]) for item in items if item["battle_s"]]

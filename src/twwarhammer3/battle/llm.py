@@ -43,6 +43,9 @@ def _order_schema(kind: str, **fields) -> dict:
             "additionalProperties": False}
 
 
+ABILITY_SCHEMA = _order_schema("ability", ability={"type": "string"}, target=STRING_OR_NULL,
+                               x=NUMBER_OR_NULL, z=NUMBER_OR_NULL, facing=NUMBER_OR_NULL,
+                               width=NUMBER_OR_NULL)
 REPLY_SCHEMA = {
     "type": "object",
     "properties": {
@@ -56,9 +59,7 @@ REPLY_SCHEMA = {
             _order_schema("halt"),
             _order_schema("behaviour", behaviour={"type": "string", "enum": list(BEHAVIOURS)},
                           enabled={"type": "boolean"}),
-            _order_schema("ability", ability={"type": "string"}, target=STRING_OR_NULL,
-                          x=NUMBER_OR_NULL, z=NUMBER_OR_NULL, facing=NUMBER_OR_NULL,
-                          width=NUMBER_OR_NULL),
+            ABILITY_SCHEMA,
         ]}},
         "reason": {"type": "string"},
         "notes": STRING_OR_NULL,
@@ -262,6 +263,19 @@ def render_ack(ack: dict | None) -> str:
     return "Last orders: " + "; ".join(verdicts) + "."
 
 
+def remember(last_seen: dict, observation: dict) -> None:
+    """Where each enemy was last seen, until it is reported destroyed."""
+    for unit in observation.get("enemy", []):
+        if unit.get("x") is not None:
+            last_seen[unit["id"]] = {
+                "x": unit["x"], "z": unit["z"], "men": unit.get("men", 0),
+                "time_ms": observation.get("time_ms", 0),
+            }
+    for unit in observation.get("enemy_roster", []):
+        if unit.get("dead"):
+            last_seen.pop(unit["id"], None)
+
+
 def render_prompt(observation: dict, notes: str, history: list[str], last_seen: dict,
                   latency: dict | None, ack: dict | None, before: dict | None = None,
                   ordered: dict | None = None) -> str:
@@ -332,15 +346,7 @@ class LLMPolicy:
         self._metadata = {}
 
     def decide(self, observation: dict) -> list[dict]:
-        for unit in observation.get("enemy", []):
-            if unit.get("x") is not None:
-                self.last_seen[unit["id"]] = {
-                    "x": unit["x"], "z": unit["z"], "men": unit.get("men", 0),
-                    "time_ms": observation.get("time_ms", 0),
-                }
-        for unit in observation.get("enemy_roster", []):
-            if unit.get("dead"):
-                self.last_seen.pop(unit["id"], None)
+        remember(self.last_seen, observation)
         friendly = friendly_units(observation)
         self.ordered = {unit_id: order for unit_id, order in self.ordered.items()
                         if unit_id in friendly and holds(friendly[unit_id], order)}

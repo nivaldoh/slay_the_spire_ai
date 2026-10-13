@@ -8,7 +8,7 @@ import pytest
 
 from gameai.ledger import BudgetExhausted
 from twwarhammer3.__main__ import add_session_arguments
-from twwarhammer3.battle import digest, play, stats
+from twwarhammer3.battle import commander, digest, play, stats
 from twwarhammer3.battle.scripted import AttackNearest, Hold
 from twwarhammer3.protocol import BattleRestarted, MailboxTimeout
 
@@ -195,6 +195,29 @@ def test_illegal_scripted_orders_are_counted_and_not_sent(tmp_path):
     assert mailbox.requests[0][2] == []
 
 
+def test_quiet_decisions_of_a_fast_policy_are_logged_once_per_observe_interval(tmp_path):
+    class Fast(Hold):
+        closed = False
+
+        def decide(self, observation):
+            return [{"unit": "f1", "type": "halt"}] if observation["time_ms"] == 1500 else []
+
+        def close(self):
+            self.closed = True
+
+    mailbox = FakeMailbox([observation(0, 0), observation(1, 250)]
+                          + [observation(i, 250 * i, ack=True) for i in range(2, 9)]
+                          + [observation(9, 2250, ack=True, result="won")])
+    policy = Fast()
+    result = play.play_episode(tmp_path / "e", {**CONFIG, "interval_ms": 0}, policy, mailbox,
+                               not_battle=None)
+    assert result["decisions"] == 8 and len(result["delays_ms"]) == 8 and policy.closed
+    events = [json.loads(line) for line in (tmp_path / "e/trace.jsonl").read_text().splitlines()]
+    assert [e["time_ms"] for e in events if e["kind"] == "decision"] == [250, 1250, 1500]
+    assert [e["kind"] for e in events].count("observation") == 3
+    assert [e["kind"] for e in events].count("ack") == 3
+
+
 @pytest.fixture
 def harness(tmp_path, monkeypatch):
     boxes = []
@@ -243,14 +266,14 @@ def test_job_plays_episodes_with_restarts_and_records_rows(tmp_path, harness):
     assert mailbox.menu == play.scenario_steps("kho5-dwf5")
     assert mailbox.session["interval_ms"] == 5000 and mailbox.job == "attack-v1-20261013"
     rows = list(csv.DictReader(results.open()))
-    assert [(r["episode"], r["outcome"], r["model"], r["harness"], r["mode"], r["own_left"],
-             r["enemy_left"]) for r in rows] == [
-        ("episode-0000", "won", "attack_nearest", "1", "realtime", "0.5", "0.1"),
-        ("episode-0001", "lost", "attack_nearest", "1", "realtime", "0.5", "0.1"),
+    assert [(r["episode"], r["outcome"], r["policy"], r["model"], r["harness"], r["mode"],
+             r["own_left"], r["enemy_left"]) for r in rows] == [
+        ("episode-0000", "won", "attack_nearest", "", "1", "realtime", "0.5", "0.1"),
+        ("episode-0001", "lost", "attack_nearest", "", "1", "realtime", "0.5", "0.1"),
     ]
     table = stats.summary(results)
-    assert ("| kho5-dwf5 | attack_nearest |  | 1 | realtime | 2 | 1 | 1 | 0 | 0 | 4 | 0.50 | 0.10 |"
-            in table)
+    assert ("| kho5-dwf5 | attack_nearest |  |  | 1 | realtime | 2 | 1 | 1 | 0 | 0 | 4 | 0.50 |"
+            " 0.10 |" in table)
     rebuilt = tmp_path / "rebuilt.csv"
     assert stats.rebuild(tmp_path, rebuilt) == 2
     assert rebuilt.read_text() == results.read_text()
@@ -333,3 +356,17 @@ def test_attach_rejects_an_old_non_realtime_session(tmp_path, monkeypatch, harne
         play.play(tmp_path / "job", {**CONFIG, "attach": True}, policy_factory=Hold)
     manifest = json.loads((tmp_path / "job/manifest.json").read_text())
     assert manifest["status"] == "interrupted" and manifest["episodes"] == []
+
+
+def test_commander_jobs_snapshot_their_prompt_and_record_their_model(tmp_path, harness):
+    harness.append(FakeMailbox([observation(0, 0), observation(1, 1000, result="won")]))
+    results = tmp_path / "r.csv"
+    config = {**CONFIG, "policy": "commander", "model": "gpt-6-luna", "effort": "low",
+              "results": str(results)}
+    job = tmp_path / "commander-luna-v1-20261013"
+    assert play.play(job, config, policy_factory=Hold)["status"] == "completed"
+    assert (job / "system_prompt.md").read_bytes() == commander.PROMPT_PATH.read_bytes()
+    item = next(csv.DictReader(results.open()))
+    assert (item["policy"], item["model"], item["effort"], item["harness"]) == (
+        "commander", "gpt-6-luna", "low", "1")
+    assert "policy commander gpt-6-luna/low" in digest.digest(job)

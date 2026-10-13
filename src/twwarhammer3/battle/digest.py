@@ -3,17 +3,19 @@
     python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>                 episode table
     python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>/episode-0000    decision lines
 
-An episode prints one line per decision: battle time, both sides' strength in the state
-the policy saw (units still fighting / men; enemies as seen of the roster), the measured
-delay, the orders, the engine's rejections and the model's reason; then the final state
-and the model's last notes. It only reads evidence.
+An episode prints one line per decision that sent orders or carries a model's reason:
+battle time, both sides' strength in the state the policy saw (units still fighting / men;
+enemies as seen of the roster), the measured delay, the orders, the engine's rejections,
+a commander's adopted plan with its age and the model's reason; then the final state and
+the model's last notes. It only reads evidence.
 """
 
 import json
 from pathlib import Path
 
+from twwarhammer3.battle.commander import describe_plan
 from twwarhammer3.battle.llm import describe_orders, short_type
-from twwarhammer3.battle.stats import row
+from twwarhammer3.battle.stats import MODEL_POLICIES, row
 
 
 def _strength(observation: dict) -> str:
@@ -59,10 +61,14 @@ def episode_digest(episode: Path) -> str:
         elif kind == "decision":
             behavior = record.get("behavior") or {}
             notes = behavior.get("notes", notes)
+            if not record["orders"] and not behavior.get("reason"):
+                continue
             pending[record["request"]] = len(lines)
             reason = f" | {behavior['reason']}" if behavior.get("reason") else ""
+            plan = (f"  plan ({behavior['plan_age_s']:.1f} s old): "
+                    f"{describe_plan(behavior['plan'])}" if "plan" in behavior else "")
             lines.append(f"{record['time_ms'] / 1000:6.0f}s  {_strength(observation)}"
-                         f"  {describe_orders(record['orders'])}{reason}")
+                         f"  {describe_orders(record['orders'])}{plan}{reason}")
         elif kind == "ack" and record["request"] in pending:
             index = pending.pop(record["request"])
             rejected = [f"{r['unit']} {r.get('error')}" for r in record["ack"].get("results", [])
@@ -88,7 +94,8 @@ def job_digest(job: Path) -> str:
     manifest = json.loads((job / "manifest.json").read_text())
     config = manifest["config"]
     lines = [f"{job.name}: {manifest['status']}, policy {config['policy']}"
-             + (f" {config['model']}/{config['effort']}" if config["policy"] == "llm" else "")
+             + (f" {config['model']}/{config['effort']}"
+                if config["policy"] in MODEL_POLICIES else "")
              + f", scenario {config['scenario']}, source {manifest['source_revision'][:7]}",
              "| " + " | ".join(DIGEST_COLUMNS) + " |", "|" + "---|" * len(DIGEST_COLUMNS)]
     for result in sorted(job.glob("episode-*/result.json")):
