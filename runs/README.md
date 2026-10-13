@@ -14,6 +14,8 @@ runs/
                       language training runs, their sidecar logs, audits and declarations, and
                       scripts/ with the one-off launch and summary scripts that produced them.
   research-notes/     Source notes for docs/approaches.md, kept out of Git.
+  twwarhammer3/       Total War: WARHAMMER III: llm-spend.jsonl (its own ledger), launch-*/
+                      probe logs and UI tree dumps, and later battle/<job>/episode-NNNN/.
 ```
 
 New tracks get their own folder (`runs/<track>/<job>`), and new games theirs

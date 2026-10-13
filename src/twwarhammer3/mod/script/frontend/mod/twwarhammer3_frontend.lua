@@ -2,7 +2,7 @@
 --
 -- Loaded by the vanilla mod loader from script/frontend/mod/ when the frontend starts.
 -- Inert unless session.json has "menu": true. Then it polls menu.json; each step is one
--- of {"find": [names...], "click": true}, {"find": [...], "state": "name"}, {"key": "name"},
+-- of {"find": [names...], "click": true} (or "dblclick"/"rclick"), {"find": [...], "state": "name"}, {"key": "name"},
 -- {"dump": "file.txt", "depth": N}, {"wait_ms": N} or {"log": "text"}. Results go to
 -- menu.log; the file is deleted when read and "done" is logged after the last step.
 
@@ -88,6 +88,14 @@ local function run_step(step)
         if step.click then
             uic:SimulateLClick()
             done[#done + 1] = "clicked"
+        end
+        if step.dblclick then
+            uic:SimulateDblLClick()
+            done[#done + 1] = "double-clicked"
+        end
+        if step.rclick then
+            uic:SimulateRClick()
+            done[#done + 1] = "right-clicked"
         end
         return table.concat(done, ", ")
     end

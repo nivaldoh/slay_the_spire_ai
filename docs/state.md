@@ -1,12 +1,25 @@
 # Project state
 
-Updated 2026-10-12. Read this first: what is running, what is current, what comes next.
+Updated 2026-10-13. Read this first: what is running, what is current, what comes next.
 History lives with each track ([full runs](fullrun/log.md),
 [first combat](first-combat/README.md)), not here.
 
-## Active work (last verified 2026-10-12 23:16 UTC)
+## Active work (last verified 2026-10-13 04:05 UTC)
 
 No game, GPU or API job is running. Source and `HEAD` are free.
+
+## Second game: Total War: WARHAMMER III (started 2026-10-13, paused for owner review)
+
+[twwarhammer3/README.md](twwarhammer3/README.md) is the track page and status;
+[twwarhammer3/integration.md](twwarhammer3/integration.md) the verified engine facts.
+Done: the game-neutral Windows supervisor moved into `gameai`; the `twwarhammer3`
+package (pack writer and reader, runtime, doctor, file mailbox, protocol, scripted
+policies, CLI); the Lua mod loads in the game and its frontend script navigates the menus
+by UI component id. Blocked on recruiting units programmatically on the custom battle
+screen (a simulated click only pins the info panel). The play loop, LLM policy, prompt,
+results register and the autoresearch loop are designed but not written. Owner question
+pending: whether to continue the in-game mod route (double click or context command) or
+change approach.
 
 ## Current track: full runs with an API model
 
@@ -51,6 +64,9 @@ Open owner decisions: [fullrun/README.md](fullrun/README.md#open-owner-decisions
 
 ## Owner direction
 
+- 2026-10-13: a WH3 battle track driven by the same API model; real-time with the order
+  delay measured; control through an in-game mod, not screenshots or desktop input;
+  paused after the first probes for a review of how to proceed.
 - 2026-10-12: interest in turning this harness into an open-source StS1 benchmark, since
   SpireBench's code is not public (checked 2026-10-12); see the approaches.md addendum.
 - 2026-10-12: run a frontier API model through complete runs, with scaffolding found by

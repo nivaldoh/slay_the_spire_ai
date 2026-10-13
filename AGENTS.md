@@ -32,6 +32,13 @@ src/spire/         Slay the Spire 1
   combat/          First-combat benchmark: rollout, suites (evaluation), catalogs, evidence audits
   ppo/             Actor-critic and the budgeted, resumable PPO runner
   language/        Local Qwen LoRA: demonstrations, SFT, frozen policy, evaluation, sampling, REINFORCE
+src/twwarhammer3/  Total War: WARHAMMER III battles (docs/twwarhammer3/README.md)
+  __main__.py      CLI: doctor, pack, launch, menu, spend
+  protocol.py      Order validation and the error taxonomy; observations stay dicts
+  engine/          runtime (pins, pack build, mod list, launch), pack (PFH5), mailbox (the
+                   file protocol with the Lua scripts), doctor
+  mod/             The Lua scripts packed into the game: JSON, frontend menus, battle
+  battle/          scripted.py (hold, attack nearest, axis probe); play, llm, stats to come
 configs/llm/       Full-run system prompt and enemy rules notes (the autoresearch surface)
 configs/suites/    First-combat suite and catalog declarations
 scripts/           Standalone first-combat tools (inventory, audits, dataset export, training drivers, plots)
@@ -61,6 +68,7 @@ uv run python -m spire digest runs/fullrun/<job>   # per-seed table; add /run-00
 uv run python -m spire watch runs/fullrun/<job>    # wait for the next finished run, stall or job end
 uv run python -m spire spend       # API ledger total
 uv run python -m spire stats       # milestones per model, effort and harness; --rebuild from runs/
+uv run python -m twwarhammer3 doctor   # WH3: pins, preferences, running game; also pack, launch, menu
 ```
 
 - The `train` (CPU torch) and `llm` (CUDA torch, transformers, peft) extras conflict; use
@@ -68,8 +76,8 @@ uv run python -m spire stats       # milestones per model, effort and harness; -
   local language models. Without them, those tests skip through `importorskip`.
 - The original-engine regressions in `tests/combat/` read `runs/first-combat/` (override with
   `SPIRE_EVIDENCE_ROOT`) and skip when it is absent.
-- `play`, `rollout`, `evaluate`, `train` and `scripts/inventory_scenarios.py` launch the real
-  game and need a new output directory. They refuse uncommitted changes in their source
+- `play`, `rollout`, `evaluate`, `train`, `scripts/inventory_scenarios.py` and
+  `twwarhammer3 launch` run a real game; the first four need a new output directory. They refuse uncommitted changes in their source
   scope: for `play`, `src/gameai/`, `src/spire/`, `configs/llm/`, `pyproject.toml`,
   `uv.lock` and `.python-version` (`fullrun/play.py` `SOURCES`); for the first-combat tools,
   also `scripts/` and all of `configs/`. A `play` job stops before its next seed if a file in
