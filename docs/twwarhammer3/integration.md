@@ -97,9 +97,17 @@ Verified 2026-10-13 in `runs/twwarhammer3/battle/attack-m3-20261013` (Khorne vs 
   (`script/_lib/lib_battle_manager.lua`, ...). Extract them with `pack --extract` into an
   ignored folder (`runs/twwarhammer3/vanilla/`); they are proprietary.
 
+- Pause mode (`--pause`, verified 2026-10-13 in `llm-luna-v4-pause-20261013`):
+  `bm:modify_battle_speed(0, true)` stops model time, so the `repeat_callback` tick
+  stops while `repeat_real_callback` polling continues; orders resume the battle and
+  apply 600 ms of battle time after the state the model saw, whatever its think time.
+- `goto_location_angle_width(position, facing, width, run)` forms the unit up facing
+  the given bearing (used by every v2+ battle line; the model's lines faced the enemy).
+- `unit:can_reach_position(vector)` is false near the map edge: v2's withdrawals into
+  the south-west corner (about x -500, z -480) had about 25 moves per episode rejected.
+
 ## Unverified (from the documentation; probe before relying on them)
 
-`bm:repeat_callback`/`repeat_real_callback` behaviour under `modify_battle_speed(0)`
-(pause mode); `goto_location_angle_width` facing and width; `is_hidden()` for enemies in
+`goto_location_angle_width` width; `is_hidden()` for enemies in
 cover; `os.rename` collisions while the controller reads; a restart requested before the
 battle is decided (the script calls `RestartBattle` after 3 s without a results popup).
