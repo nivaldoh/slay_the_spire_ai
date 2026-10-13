@@ -7,3 +7,6 @@ date,job,episode,scenario,model,effort,harness,source,mode,speed,interval_s,outc
 2026-10-13,attack-b2-20261013,episode-0000,kho5-dwf5,attack_nearest,,,7b31ce9,realtime,1.0,5.0,won,346,0.45,0.33,55,0,0.3,0
 2026-10-13,attack-b2-20261013,episode-0001,kho5-dwf5,attack_nearest,,,7b31ce9,realtime,1.0,5.0,won,344,0.4,0.29,54,0,0.31,0
 2026-10-13,attack-b2-20261013,episode-0002,kho5-dwf5,attack_nearest,,,7b31ce9,realtime,1.0,5.0,won,346,0.45,0.33,55,0,0.3,0
+2026-10-13,llm-luna-v2-20261013,episode-0000,kho5-dwf5,gpt-6-luna,low,2,f807f64,realtime,1.0,5.0,lost,569,0.0,0.77,38,31,8.94,0.0144
+2026-10-13,llm-luna-v2-20261013,episode-0001,kho5-dwf5,gpt-6-luna,low,2,f807f64,realtime,1.0,5.0,lost,614,0.02,0.45,44,27,7.93,0.015
+2026-10-13,llm-luna-v2-20261013,episode-0002,kho5-dwf5,gpt-6-luna,low,2,f807f64,realtime,1.0,5.0,lost,1226,0.1,0.2,92,66,7.4,0.0342

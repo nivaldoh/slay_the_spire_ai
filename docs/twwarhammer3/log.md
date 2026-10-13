@@ -32,3 +32,29 @@ including minutes when the lord bled out; "back toward the army" moves went to t
 enemy side of the melee (no sense of the front). Misleading state: "running" on standing
 units, the Skullcannon's class flipping with its ammunition, dead units listed with stale
 flags, no enemy missile range, moves to unreachable points acknowledged as applied.
+
+## Baseline after the lapse fix
+
+`attack_nearest`, source `7b31ce9`, job `attack-b2-20261013`: won 3 of 3 at 346, 344 and
+346 s, with 45% of our men left against 33% of the enemy's. A fixed policy gives nearly
+the same battle every time; the model's variance comes from its own orders.
+
+## v2: a battle doctrine (worse)
+
+Change (prompt): check every unit each turn and pull back units that waver, lose men
+faster than their target, or are under fire with nothing to hit; pull the lord back
+below 40% health; switch fire targets that lose no men; keep missile cavalry out of
+enemy missile range; charge only once the lines are locked. State fixes in the same
+version: "running" only while moving, a unit's class fixed at the start, enemy missile
+range shown, dead units on one line, moves to unreachable points rejected.
+
+Job `llm-luna-v2-20261013` (source `f807f64`): lost at 569 s (none of our men left,
+77% of the enemy's), lost at 614 s (2% against 45%) and lost at 1226 s (10% against 20%,
+66 rejected orders). The model turned "pull back"
+into a slow general withdrawal: units left melee (which costs men and morale in Total
+War) and the army drifted to the map corner, where about 25 moves per episode were
+rejected as unreachable. Think time doubled to about 8 s with the longer prompt.
+Reviews (two episodes): moves ordered to units in melee went from none in v1 to 14 and
+10; after the withdrawals began the enemy lost almost no men; the lord flip-flopped
+between committing and withdrawing over a 3-point health gap, and lost 42% health while
+disengaging.
