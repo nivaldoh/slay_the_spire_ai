@@ -29,8 +29,8 @@ def _units(observation: dict) -> list[str]:
     for side in ("friendly", "enemy"):
         for unit in observation.get(side, []):
             lines.append(f"  {unit['id']} {short_type(unit.get('type'))}: {unit.get('men')}/"
-                         f"{unit.get('men0')} men at ({unit.get('x')}, {unit.get('z')}) "
-                         + " ".join(unit.get("state") or []))
+                         f"{unit.get('men0')} men at ({unit.get('x') or 0:.0f},"
+                         f" {unit.get('z') or 0:.0f}) " + " ".join(unit.get("state") or []))
     return lines
 
 

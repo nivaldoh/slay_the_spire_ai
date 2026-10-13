@@ -77,9 +77,10 @@ def render_unit(unit: dict, mine: bool) -> str:
     ]
     if mine:
         if unit.get("ammo0"):
-            parts.append(f"ammo {unit['ammo']}/{unit['ammo0']} range {unit.get('range', 0)}")
+            parts.append(f"ammo {unit['ammo']}/{unit['ammo0']} range {unit.get('range') or 0:.0f}")
         walk, run = unit.get("speed") or (0, 0)
-        parts.append(f"walk {walk} run {run}")
+        # The game's Lua numbers are 32-bit floats: 1.9 arrives as 1.8999999761581.
+        parts.append(f"walk {walk or 0:.1f} run {run or 0:.1f}")
         parts.append(unit.get("fatigue") or "fresh")
     if unit.get("state"):
         parts.append(" ".join(unit["state"]))
