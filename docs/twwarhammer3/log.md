@@ -171,3 +171,7 @@ Change (prompt): v4's always-on "every melee unit within 40 m attacks the enemy 
 gone. After contact the enemy lord stays the focus only while his health is below our
 lord's or fell 5 points or more since the last turn; otherwise units leave melee targets
 on the game's choice and switch to the nearby enemy closest to breaking.
+
+Job `llm-luna-v7-20261013` (source `42d3054`): won at 451 s (10% against 27%), lost at
+334 s (30% against 17%: our army broke with more men left than the enemy's), won at 376 s
+(32% against 35%).
