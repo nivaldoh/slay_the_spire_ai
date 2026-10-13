@@ -46,7 +46,8 @@ observation, its skill turns the fresh state into the order the unit should have
 order goes out only when it differs from the last one sent, or when the last one
 lapsed and was sent at least 2 battle seconds ago. An order lapses when the engine
 dropped it or never started it; an attack also lapses when the game switched the
-target or left the unit idle.
+target, left the unit idle, or the unit stands without a target. A unit moving with no
+target and no move destination is still carrying the attack out.
 
 The skills:
 - **engage**: melee. Its target choice, in order:
@@ -65,7 +66,9 @@ The skills:
   It walks to a firing spot first if one is given. With nothing in range it closes on a
   target, unless it has a firing spot or is artillery. It sends a single halt rather
   than shoot into melee. Out of ammunition, artillery stays idle and other shooters
-  charge.
+  charge. A target in range that draws no shot (ammunition unchanged) for 15 s, or 30 s
+  for artillery, is skipped for 30 s (`55ab6b3`, after Skaven skirmishers chased
+  chariots without firing).
 - **hold**: keeps a post and fights enemies within 40 m of it.
 - **charge**: waits, at a post if one is given, until its target or any enemy is in
   melee with our units, then charges. Mounted units run all the way. This is the lord
