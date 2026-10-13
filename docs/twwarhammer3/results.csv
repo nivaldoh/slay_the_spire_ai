@@ -27,3 +27,6 @@ date,job,episode,scenario,model,effort,harness,source,mode,speed,interval_s,outc
 2026-10-13,llm-luna-v5-20261013b,episode-0000,kho5-dwf5,gpt-6-luna,low,5,33895de,realtime,1.0,5.0,won,333,0.56,0.29,29,0,5.56,0.0083
 2026-10-13,llm-luna-v5-20261013b,episode-0001,kho5-dwf5,gpt-6-luna,low,5,33895de,realtime,1.0,5.0,won,418,0.28,0.27,37,1,5.39,0.0102
 2026-10-13,llm-luna-v5-20261013b,episode-0002,kho5-dwf5,gpt-6-luna,low,5,33895de,realtime,1.0,5.0,lost,329,0.32,0.54,29,3,5.49,0.008
+2026-10-13,llm-luna-v6-20261013,episode-0000,kho5-dwf5,gpt-6-luna,low,6,ac3c0bd,realtime,1.0,5.0,won,357,0.26,0.34,31,1,5.57,0.0094
+2026-10-13,llm-luna-v6-20261013,episode-0001,kho5-dwf5,gpt-6-luna,low,6,ac3c0bd,realtime,1.0,5.0,won,496,0.08,0.24,44,1,5.16,0.0122
+2026-10-13,llm-luna-v6-20261013,episode-0002,kho5-dwf5,gpt-6-luna,low,6,ac3c0bd,realtime,1.0,5.0,lost,428,0.12,0.38,38,3,5.34,0.0115

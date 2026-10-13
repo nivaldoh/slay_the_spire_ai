@@ -133,3 +133,21 @@ other enemies the model read it as its own gang-up, leaving the enemy lord untou
 80% for 90 s. The support units achieved little in all three: the Skullcannon's 12 shots
 killed almost no one and the horsemen's attacks on the Quarrellers were replaced by the
 game 7 times, each acknowledged as applied.
+
+Replicate `llm-luna-v5-20261013b`: won at 333 s, won at 418 s, lost at 329 s (32% against
+54%). v5 in all: 4 wins of 6.
+
+## v6: show what each unit is really doing
+
+Change (state rendering, `llm.py`, with the prompt's description of it): each friendly
+target is marked as the ordered one ("target e1 3 m (your order, 95 s)") or the game's
+choice with the order it replaced; a move the game dropped reads "stopped N m short of
+your move"; a unit with no target or destination reads "no order" and shows its nearest
+visible enemy; men and health show the change since the previous decision for both sides;
+orders are forgotten once the game no longer carries them out. In the same merge, fixes
+from a review of this session's code (not visible to the model in this scenario): flying
+monsters labelled flying again, the restart fallback only before a decision, battle UI
+probes through `menu.json`, `stats` grouping scripted rows by source revision.
+
+Job `llm-luna-v6-20261013` (source `ac3c0bd`): won at 357 s (26% against 34%), won at
+496 s (8% against 24%), lost at 428 s (12% against 38%).
