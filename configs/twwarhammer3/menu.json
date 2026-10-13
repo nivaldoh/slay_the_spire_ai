@@ -201,11 +201,5 @@
   ],
   "click": true,
   "timeout_ms": 15000
- },
- {
-  "wait_ms": 2000
- },
- {
-  "log": "start battle clicked"
  }
 ]

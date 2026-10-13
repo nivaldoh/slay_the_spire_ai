@@ -74,6 +74,9 @@ class FakeMailbox:
         self.controls.append((battle, control))
         return "c"
 
+    def read_observation(self):
+        return None
+
     def log_offset(self, name="mod.log"):
         return 0
 
@@ -235,3 +238,14 @@ def test_a_failed_menu_step_stops_the_job_before_any_episode(tmp_path, harness):
     manifest = json.loads((tmp_path / "job/manifest.json").read_text())
     assert manifest["status"] == "interrupted" and manifest["episodes"] == []
     assert "failed" in (tmp_path / "job/menu.log").read_text()
+
+
+def test_a_battle_observation_ends_the_menu_wait(tmp_path, harness):
+    # The frontend script unloads with the loading screen, before it can log "done".
+    mailbox = FakeMailbox([observation(0, 0), observation(1, 1000, result="won")])
+    mailbox.menu_outcome = "step 36: found start_button_frame/button_start_battle, clicked"
+    mailbox.read_observation = lambda: observation(0, 0)
+    harness.append(mailbox)
+    manifest = play.play(tmp_path / "job", {**CONFIG, "results": str(tmp_path / "r.csv")},
+                         policy_factory=Hold)
+    assert [e["status"] for e in manifest["episodes"]] == ["won"]

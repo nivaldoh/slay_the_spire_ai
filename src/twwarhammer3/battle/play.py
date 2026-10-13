@@ -105,7 +105,8 @@ def start_frontend(mailbox: Mailbox, config: dict, output: Path) -> None:
     """Wait for the frontend script, then run the custom battle steps to the end.
 
     No input is sent to the desktop: the first step waits for the main menu, so the
-    intro movies play out on their own.
+    intro movies play out on their own. The frontend script unloads when the battle
+    loads, so a battle observation also ends the wait.
     """
     deadline = time.monotonic() + config["start_timeout"]
     while "frontend loaded" not in mailbox.log_since(0, "menu.log"):
@@ -119,7 +120,7 @@ def start_frontend(mailbox: Mailbox, config: dict, output: Path) -> None:
     while True:
         lines = mailbox.log_since(offset, "menu.log").splitlines()
         (output / "menu.log").write_text(mailbox.log_since(0, "menu.log"))
-        if "done" in lines:
+        if "done" in lines or mailbox.read_observation() is not None:
             return
         if "failed" in lines:
             raise ProtocolError("custom battle setup failed: " + lines[-2])
