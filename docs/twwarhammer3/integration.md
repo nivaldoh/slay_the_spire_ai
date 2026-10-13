@@ -31,6 +31,14 @@ off, multithreaded model on.
   stopped before writing any game files, preserves other preference bytes, and leaves
   matching packs/preferences untouched. The deployment record and read-only doctor
   expose the actual/expected pack hashes and effective preference.
+  On 2026-10-13 the unmodified launch reached the menu in 149.014 s, versus 17.735 s
+  after installing the skip (131.279 s saved in this single comparison). Both were
+  supervised launches with the same project mod, measured when the visible Battle
+  button was found; no key presses. Local evidence, screenshots, source fingerprints
+  and preference snapshots: `runs/twwarhammer3/skip-intro-20261013/`.
+  A direct executable launch with no arguments (Steam running, no project mod list)
+  also reached the menu: visible in the capture completed at 20.774 s. Its Lua log
+  contains no project scripts. The game's initial static loading splash remains.
 - `script/_lib/lib_header.lua` creates `core`, `bm` (battle), `tm` (frontend) and then
   requires `lib_mod_loader.lua`, which calls `core:load_mods("/script/_lib/mod/",
   "/script/battle/mod/")` in battle and `"/script/frontend/mod/"` in the frontend; each
@@ -120,10 +128,13 @@ Verified 2026-10-13 in `runs/twwarhammer3/battle/attack-m3-20261013` (Khorne vs 
   (`script/_lib/lib_battle_manager.lua`, ...). Extract them with `pack --extract` into an
   ignored folder (`runs/twwarhammer3/vanilla/`); they are proprietary.
 
-- Pause mode (`--pause`, verified 2026-10-13 in `llm-luna-v4-pause-20261013`):
+- Historical pause mode (removed on 2026-10-13 at the owner's direction; verified
+  earlier in `llm-luna-v4-pause-20261013`):
   `bm:modify_battle_speed(0, true)` stops model time, so the `repeat_callback` tick
   stops while `repeat_real_callback` polling continues; orders resume the battle and
-  apply 600 ms of battle time after the state the model saw, whatever its think time.
+  applied 600 ms of battle time after the state the model saw, whatever its think time.
+  Current battles always run unpaused at 1x; the mod no longer pauses on publication
+  or changes speed in response to orders. Old paused results remain labelled as such.
 - `goto_location_angle_width(position, facing, width, run)` forms the unit up facing
   the given bearing (used by every v2+ battle line; the model's lines faced the enemy).
 - `unit:can_reach_position(vector)` is false near the map edge: v2's withdrawals into

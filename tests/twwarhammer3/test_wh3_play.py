@@ -126,15 +126,34 @@ def test_episode_decides_waits_for_the_ack_and_the_interval_then_records_the_res
     assert "     1s  us 1/1u 100m  seen 1/1u 90m  f1 attack e1  [delay 0.5s]" in text
 
 
-def test_pause_mode_decides_only_when_the_game_awaits_orders(tmp_path):
-    mailbox = FakeMailbox([
-        observation(0, 0), observation(1, 1000), observation(2, 2000, awaiting=True),
-        observation(3, 2500, ack=True), observation(4, 3000, result="lost"),
-    ])
-    config = {**CONFIG, "pause": True}
-    result = play.play_episode(tmp_path / "e", config, AttackNearest(), mailbox, not_battle=None)
-    assert result["status"] == "lost" and result["decisions"] == 1
-    assert mailbox.requests[0][1] == 2
+@pytest.mark.parametrize("change", [{"pause": True}, {"speed": 0.5}, {"speed": 2}])
+def test_non_realtime_jobs_and_episodes_are_rejected_before_starting(tmp_path, change):
+    config = {**CONFIG, **change}
+    with pytest.raises(ValueError, match="unpaused at 1x"):
+        play.play(tmp_path / "job", config, policy_factory=Hold)
+    with pytest.raises(ValueError, match="unpaused at 1x"):
+        play.play_episode(tmp_path / "episode", config, Hold(), FakeMailbox([]), not_battle=None)
+    assert not (tmp_path / "job").exists()
+    assert not (tmp_path / "episode").exists()
+
+
+@pytest.mark.parametrize("arguments", [["--pause"], ["--speed", "0.5"], ["--speed", "2"]])
+def test_cli_cannot_request_paused_or_changed_speed_battles(arguments):
+    parser = argparse.ArgumentParser()
+    add_session_arguments(parser)
+    default = parser.parse_args([])
+    assert default.speed == 1 and not default.pause
+    with pytest.raises(SystemExit):
+        parser.parse_args(arguments)
+
+
+@pytest.mark.parametrize("change", [{"awaiting_orders": True}, {"speed": 0.5}])
+def test_incompatible_live_observation_stops_before_a_policy_decision(tmp_path, change):
+    mailbox = FakeMailbox([observation(0, 0), {**observation(1, 1000), **change}])
+    result = play.play_episode(tmp_path / "e", CONFIG, Hold(), mailbox, not_battle=None)
+    assert result["status"] == "unsupported_or_invalid"
+    assert "unpaused 1x" in result["error"]
+    assert result["decisions"] == 0 and mailbox.requests == []
 
 
 def test_default_has_no_wait_and_uses_ack_observation_for_next_decision(tmp_path):
@@ -302,3 +321,15 @@ def test_attack_nearest_reorders_a_lapsed_attack_and_skips_the_dead():
     dead = observation(3, 9000)
     dead["friendly"][0].update(men=0, state=[], target=None)
     assert policy.decide(dead) == []
+
+
+@pytest.mark.parametrize("change", [{"pause": True}, {"speed": 0.5}])
+def test_attach_rejects_an_old_non_realtime_session(tmp_path, monkeypatch, harness, change):
+    bridge = tmp_path / "bridge"
+    bridge.mkdir()
+    (bridge / "session.json").write_text(json.dumps({**CONFIG, **change, "job": "old"}))
+    monkeypatch.setattr(play, "BRIDGE_DIR", bridge)
+    with pytest.raises(ValueError, match="unpaused at 1x"):
+        play.play(tmp_path / "job", {**CONFIG, "attach": True}, policy_factory=Hold)
+    manifest = json.loads((tmp_path / "job/manifest.json").read_text())
+    assert manifest["status"] == "interrupted" and manifest["episodes"] == []

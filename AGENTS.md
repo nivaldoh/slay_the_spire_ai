@@ -85,6 +85,8 @@ uv run python -m twwarhammer3 doctor   # WH3: pins, preferences, running game; a
   at once.
 - `scripts/audit_ppo_training.py` and `scripts/audit_language_training.py` are read-only.
   Run them only on stopped runs, and write their reports outside the run directory.
+- WH3 battles always run unpaused at 1x speed, including diagnostic probes and smoke
+  tests. Never pause or slow the battle to give a policy more thinking time.
 
 ## Architecture
 

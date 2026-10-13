@@ -14,8 +14,7 @@ RESULTS_PATH = REPO_ROOT / "docs/twwarhammer3/results.csv"
 
 
 def add_session_arguments(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--speed", type=float, default=1.0, help="battle speed multiplier")
-    parser.add_argument("--pause", action="store_true", help="pause the battle while deciding")
+    parser.set_defaults(speed=1.0, pause=False)
     parser.add_argument("--interval-ms", type=int, default=0,
                         help="optional battle-time wait after orders apply (default: none)")
     parser.add_argument("--observe-ms", type=int, default=1000,

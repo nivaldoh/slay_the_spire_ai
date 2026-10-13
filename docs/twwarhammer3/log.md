@@ -364,3 +364,27 @@ to pass a unit even for a self ability; the dispatcher now passes the caster. Sp
 and formed-attack toggles were unavailable on the tested armies and correctly omitted.
 These are diagnostic battles with scripted prefixes, not comparable policy outcomes,
 so they add no rows to the results register. See integration.md for the limits.
+
+## Automatic startup video skipping (2026-10-13)
+
+Code `2793933`. `launch` and `play` install a separate auto-loaded PFH5 movie pack in
+the game's `data/` directory and set `fe_game_intro_video_enabled false` in the existing
+profile. The change persists for ordinary Steam launches. The pack replaces the five
+startup movies and all 13 localized warning movies with twpatcher's 595-byte blank clip
+(MIT attribution in `src/twwarhammer3/assets/LICENSE.twpatcher`). It leaves the main
+cinematic intact for the viewer. Preparation refuses to change game files while WH3
+is running, preserves all other preference bytes, and leaves matching startup files
+untouched. Doctor reports the effective setting and actual/expected pack hashes;
+deployment evidence includes them. No new CLI options or desktop input.
+
+Validation: 83 WH3 tests and repository-wide Ruff pass. Engine evidence is under
+`runs/twwarhammer3/skip-intro-20261013/`. The baseline reached the visible Battle button
+at 149.014 s; the patched launch at 17.735 s, saving 131.279 s in one comparison.
+Without the project mod list, the menu is visible in the capture completed at 20.774 s,
+and the game's Lua log shows no project scripts. These were direct executable launches
+with Steam running; the Steam launcher UI was not exercised. The static loading splash
+remains. All 18 overridden paths exist in the installed engine's `movies.pack`; the
+installed 11,646-byte startup pack has SHA256
+`87c3964bdbbb4d07feef70e7befcbb919753c948bff47182d78a42caa24c03f1`.
+The live preference comparison changed only `true` to `false`, and attempting preparation
+during the patched probe was refused before writing.

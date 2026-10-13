@@ -3,7 +3,7 @@
 -- The vanilla mod loader runs this file from script/battle/mod/ when a battle's script
 -- libraries load, after `bm` exists. It stays inert unless C:/wh3-agent/bridge/session.json
 -- enables it. Then it publishes observation.json on model time, polls orders.json on UI
--- time (so pause mode keeps listening), applies orders through one unit controller per
+-- time, applies orders through one unit controller per
 -- friendly unit, and reports the result. engine/mailbox.py documents the messages.
 
 local BRIDGE = "C:/wh3-agent/bridge/"
@@ -16,7 +16,7 @@ local state = {
     battle = nil, seq = 0, started = false, finished = false, result = nil,
     friendly = {}, friendly_ids = {}, enemy = {}, enemy_ids = {}, enemy_by_ui = {},
     pending = nil, last_request = nil, applied = nil, applied_ms = nil,
-    paused = false, next_observe_ms = 0, force_observe = false, alliance = nil,
+    next_observe_ms = 0, force_observe = false, alliance = nil,
 }
 local session = nil
 local BEHAVIOURS = {"fire_at_will", "skirmish", "defend", "change_formation_spacing", "formed_attack"}
@@ -177,7 +177,7 @@ local function visible_to_player(unit)
     return ok and visible == true
 end
 
-local function observation(now, awaiting)
+local function observation(now)
     state.seq = state.seq + 1
     local friendly, enemy, roster = {}, {}, {}
     for _, id in ipairs(state.friendly_ids) do
@@ -201,8 +201,8 @@ local function observation(now, awaiting)
     local player = bm:get_player_army()
     return {
         schema = 1, job = session.job, battle = state.battle, seq = state.seq,
-        phase = bm:get_current_phase_name(), time_ms = now, speed = session.speed or 1,
-        awaiting_orders = awaiting, remaining_ms = remaining >= 0 and remaining * 1000 or -1,
+        phase = bm:get_current_phase_name(), time_ms = now, speed = 1,
+        awaiting_orders = false, remaining_ms = remaining >= 0 and remaining * 1000 or -1,
         armies = {
             player = {faction = get(bm:get_player_army(), "faction_key", "?")},
             enemy = {faction = get(bm:get_first_non_player_army(), "faction_key", "?")},
@@ -216,8 +216,8 @@ local function observation(now, awaiting)
     }
 end
 
-local function publish_observation(now, awaiting)
-    local ok, message = pcall(observation, now, awaiting)
+local function publish_observation(now)
+    local ok, message = pcall(observation, now)
     if not ok then log("observation failed: " .. clean_error(message)); return false end
     return publish("observation.json", message)
 end
@@ -393,11 +393,7 @@ local function finish()
     for _, entry in pairs(state.friendly) do
         pcall(function() entry.controller:release_control() end)
     end
-    if state.paused then
-        pcall(function() bm:modify_battle_speed(session.speed or 1, true) end)
-        state.paused = false
-    end
-    publish_observation(battle_time(), false)
+    publish_observation(battle_time())
     bm:remove_process("twwarhammer3_tick")
     log("result " .. state.result)
 end
@@ -437,18 +433,9 @@ local function tick()
         return
     end
     if state.force_observe or now >= state.next_observe_ms then
-        local awaiting = false
-        if session.pause and state.started and not state.finished and not state.pending then
-            local interval = session.interval_ms or 0
-            awaiting = state.applied_ms == nil or (now - state.applied_ms) >= interval
-        end
         state.force_observe = false
         state.next_observe_ms = now + (session.observe_ms or 1000)
-        local published = publish_observation(now, awaiting)
-        if published and awaiting and not state.paused then
-            bm:modify_battle_speed(0, true)
-            state.paused = true
-        end
+        publish_observation(now)
     end
 end
 
@@ -494,10 +481,6 @@ local function poll()
         return
     end
     state.pending = message
-    if state.paused then
-        bm:modify_battle_speed(session.speed or 1, true)
-        state.paused = false
-    end
 end
 
 local function start()
@@ -528,7 +511,7 @@ local function start()
             state.enemy_by_ui[get(unit, "unique_ui_id", -1)] = id
         end
     end
-    bm:modify_battle_speed(session.speed or 1, true)
+    bm:modify_battle_speed(1, true)
     state.force_observe = true
     bm:repeat_callback(tick, session.tick_ms or 250, "twwarhammer3_tick")
     log(string.format("started: %d friendly, %d enemy units", #state.friendly_ids, count))
@@ -562,7 +545,7 @@ local function load()
     end
     publish("observation.json", {
         schema = 1, job = session.job, battle = state.battle, seq = 0, phase = "Loading",
-        time_ms = 0, speed = session.speed or 1, awaiting_orders = false, friendly = {},
+        time_ms = 0, speed = 1, awaiting_orders = false, friendly = {},
         enemy_roster = {}, enemy = {},
     })
 end

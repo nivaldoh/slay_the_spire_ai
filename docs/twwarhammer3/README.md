@@ -20,7 +20,7 @@ way. There is no external game API; the mod is the API.
   `script/battle/mod/twwarhammer3_battle.lua` (observations, orders, result).
 - The controller in WSL talks to the scripts through files in `C:/wh3-agent/bridge/`
   (`engine/mailbox.py` documents the messages): `session.json` enables the scripts and
-  sets speed, pause, intervals; `menu.json` carries frontend steps (find a UI component by
+  sets observation and decision intervals; `menu.json` carries frontend steps (find a UI component by
   id and click it, dump the UI tree, press a key, wait); `observation.json` is rewritten by
   the battle script every observation interval; `orders.json` holds one outstanding
   request (unit orders or a `restart` control). The scripts are inert
@@ -28,8 +28,9 @@ way. There is no external game API; the mod is the API.
 - Real-time by design: the battle keeps running while the model thinks. Every request
   carries the observation it was based on; the acknowledgement carries the battle time at
   which the orders were issued or queued. `delay_ms` is measured per decision and goes
-  into the next prompt. `--pause` is a labelled alternative (the script pauses after publishing and
-  resumes when orders arrive; polling runs on UI time so it survives the pause).
+  into the next prompt. Battles always run unpaused at normal 1x speed, including
+  diagnostic probes. The CLI has no pause or speed override; stale session settings
+  requesting either are rejected.
 - Decisions now start as soon as the preceding batch is acknowledged. `--interval-ms`
   defaults to **0**; a positive value explicitly adds battle time after application.
   `--observe-ms` controls state publication, independently of decision pacing. Traces
@@ -201,6 +202,11 @@ changing anything. Deployment evidence is saved in `launch`'s `deployment.json` 
 from `data/`, and set the preference back to `true`. The next project launch reinstalls
 the skip. The blank clip's source and MIT license are in
 `src/twwarhammer3/assets/LICENSE.twpatcher`.
+
+Measured on 2026-10-13: main menu in 149.0 s before the skip and 17.7 s after (about
+131 s saved in one comparison). A launch without the project mod list also showed the
+menu by the 20.8 s screenshot. The initial static loading splash remains;
+[integration.md](integration.md) records the evidence.
 
 ## The loop
 

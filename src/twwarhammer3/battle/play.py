@@ -19,7 +19,7 @@ from gameai.ledger import BudgetExhausted
 from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
 from twwarhammer3.battle.stats import record
 from twwarhammer3.engine.doctor import collect_diagnostics
-from twwarhammer3.engine.mailbox import Mailbox
+from twwarhammer3.engine.mailbox import Mailbox, require_realtime
 from twwarhammer3.engine.runtime import BRIDGE_DIR, OwnedGame, RuntimeLock, prepare_runtime
 from twwarhammer3.protocol import (
     BattleRestarted,
@@ -39,6 +39,7 @@ SESSION_KEYS = ("speed", "pause", "interval_ms", "observe_ms", "tick_ms", "autos
 
 
 def play(output: Path, config: dict, *, policy_factory) -> dict:
+    require_realtime(config)
     steps = scenario_steps(config["scenario"])
     output.mkdir(parents=True)
     write_json(output / "environment.json", collect_diagnostics())
@@ -83,6 +84,7 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
         if config["attach"]:
             # The running game keeps the session it was launched with.
             live = json.loads((BRIDGE_DIR / "session.json").read_text())
+            require_realtime(live)
             config.update({key: live[key] for key in SESSION_KEYS if key in live})
             write_json(output / "manifest.json", manifest)
             manifest["status"] = episodes(Mailbox(BRIDGE_DIR, job=live["job"]))
@@ -182,6 +184,7 @@ def start_frontend(mailbox: Mailbox, config: dict, output: Path, steps: list[dic
 
 def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
                  not_battle: str | None) -> dict:
+    require_realtime(config)
     directory.mkdir()
     trace = (directory / "trace.jsonl").open("x", buffering=1)
     started = time.monotonic()
@@ -235,6 +238,8 @@ def _drive(config, policy, mailbox, not_battle, result, event, started) -> None:
             return
         observation = mailbox.wait_observation(
             battle=battle, after_seq=seq, timeout=min(config["observation_timeout"], remaining))
+        if observation.get("awaiting_orders") or observation.get("speed", 1) != 1:
+            raise ProtocolError("WH3 observation is not from an unpaused 1x battle")
         seq = observation["seq"]
         if "scenario" not in result and observation.get("friendly"):
             result["scenario"] = scenario_key(observation)
@@ -266,8 +271,6 @@ def _drive(config, policy, mailbox, not_battle, result, event, started) -> None:
         if outstanding or observation.get("phase") != "Deployed":
             continue
         if applied_ms is not None and observation["time_ms"] < applied_ms + config["interval_ms"]:
-            continue
-        if config["pause"] and not observation.get("awaiting_orders"):
             continue
         read_at = time.monotonic()
         event("observation", observation=observation,

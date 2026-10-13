@@ -44,6 +44,12 @@ SCHEMA = 1
 FILES = ("session.json", "observation.json", "orders.json", "menu.json", "mod.log", "menu.log")
 
 
+def require_realtime(session: dict) -> None:
+    """All WH3 battles, including probes, run at normal speed without policy pauses."""
+    if session.get("pause") or session.get("speed", 1) != 1:
+        raise ValueError("WH3 battles must run unpaused at 1x speed")
+
+
 class Mailbox:
     def __init__(self, directory: Path, *, job: str, poll: float = 0.1):
         self.directory = directory
@@ -61,6 +67,7 @@ class Mailbox:
                 path.unlink(missing_ok=True)
 
     def write_session(self, session: dict) -> None:
+        require_realtime(session)
         self._publish("session.json", {"schema": SCHEMA, "job": self.job, **session})
 
     def write_orders(self, battle: str, based_on: int, orders: list[dict], *,

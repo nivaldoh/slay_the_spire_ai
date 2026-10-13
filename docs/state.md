@@ -88,6 +88,8 @@ Open owner decisions: [fullrun/README.md](fullrun/README.md#open-owner-decisions
 
 ## Owner direction
 
+- 2026-10-13: WH3 battles always run unpaused at 1x, including diagnostic probes; no
+  pausing or slowing the simulation while the policy thinks.
 - 2026-10-13: a WH3 battle track driven by the same API model; real-time with the order
   delay measured; control through an in-game mod, not screenshots or desktop input;
   paused after the first probes for a review of how to proceed.

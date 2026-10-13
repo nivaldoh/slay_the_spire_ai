@@ -84,3 +84,11 @@ def test_session_and_log_slices(mailbox):
     offset = mailbox.log_offset()
     (mailbox.directory / "mod.log").write_text("loaded\napplied r1\n")
     assert mailbox.log_since(offset) == "applied r1\n"
+
+
+@pytest.mark.parametrize("session", [{"pause": True}, {"speed": 0.5}, {"speed": 2}])
+def test_mailbox_refuses_non_realtime_sessions(tmp_path, session):
+    mailbox = Mailbox(tmp_path, job="probe")
+    with pytest.raises(ValueError, match="unpaused at 1x"):
+        mailbox.write_session(session)
+    assert not (tmp_path / "session.json").exists()
