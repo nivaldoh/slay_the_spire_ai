@@ -31,7 +31,7 @@ Next steps:
 2. v10, hand-select purpose, is commit `cb4c90d` on local branch `v10-hand-select`, rebased
    onto `main`: a line naming the card, potion or Gambling Chip behind each hand selection.
    Replaying the saved traces, it adds that line to all 385 hand-select prompts (226 Gambling
-   Chip, 113 cards, 46 potions) and changes no other prompt.
+   Chip, 112 cards, 47 potions) and changes no other prompt.
 3. Keys memory: CommunicationMod 1.2.1 never sends `keys`, so the model cannot see the
    keys it holds; v9 RUNDEV1 died on an elite path taken for a key it had
    ([integration.md](integration.md), [candidates](fullrun/README.md#candidate-changes)).
