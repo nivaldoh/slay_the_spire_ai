@@ -8,6 +8,7 @@ engine's verdict on them, and where enemies were last seen. No transcript accumu
 
 import hashlib
 import json
+import math
 import re
 from collections import deque
 
@@ -67,15 +68,46 @@ def _position(unit: dict) -> str:
     return f"at ({unit['x']:.0f}, {unit['z']:.0f}) facing {unit.get('bearing', 0):.0f}"
 
 
-def render_unit(unit: dict, mine: bool) -> str:
+def _hp(unit: dict) -> int:
+    return round(100 * (unit.get("hp") or 0))
+
+
+def _change(now: int, before: int | None) -> str:
+    return f" ({now - before:+d})" if before is not None and now != before else ""
+
+
+def _distance(unit: dict, other: dict | None) -> str:
+    if not other or None in (unit.get("x"), unit.get("z"), other.get("x"), other.get("z")):
+        return ""
+    return f" {math.hypot(other['x'] - unit['x'], other['z'] - unit['z']):.0f} m"
+
+
+def render_target(unit: dict, enemies: dict, ordered: dict | None) -> str:
+    """The enemy the unit is fighting now, marked against the attack order it was given."""
+    shown, wanted = unit.get("target"), (ordered or {}).get("target")
+    here = f"{shown}{_distance(unit, enemies.get(shown))}" if shown else ""
+    if wanted is None:
+        return f"target {here}, not ordered" if shown else ""
+    order = f"{wanted}{_distance(unit, enemies.get(wanted))} ({ordered['time_s']:.0f} s)"
+    if shown == wanted:
+        return f"target {here} (your order, {ordered['time_s']:.0f} s)"
+    return (f"target {here}, but your order is {order}" if shown
+            else f"no target, but your order is {order}")
+
+
+def render_unit(unit: dict, mine: bool, before: tuple | None = None,
+                enemies: dict | None = None, ordered: dict | None = None) -> str:
+    """``before`` is (men, hp %) at the previous decision; ``enemies`` and ``ordered`` (the
+    attack order the unit holds) annotate a friendly unit's target."""
     if "error" in unit:
         return f"{unit['id']}: unreadable ({unit['error']})"
     if mine and not unit.get("men"):
         return f"{unit['id']} {short_type(unit.get('type'))}: destroyed"
+    men0, hp0 = before or (None, None)
     parts = [
         f"{unit['id']} {short_type(unit.get('type'))} ({unit.get('class', '?')}) {_position(unit)}",
-        f"{unit.get('men', 0)}/{unit.get('men0', 0)} men",
-        f"hp {round(100 * (unit.get('hp') or 0))}%",
+        f"{unit.get('men', 0)}/{unit.get('men0', 0)} men{_change(unit.get('men', 0), men0)}",
+        f"hp {_hp(unit)}%{_change(_hp(unit), hp0)}",
     ]
     if mine and unit.get("ammo0"):
         parts.append(f"ammo {unit['ammo']}/{unit['ammo0']} range {unit.get('range') or 0:.0f}")
@@ -88,23 +120,32 @@ def render_unit(unit: dict, mine: bool) -> str:
         parts.append(unit.get("fatigue") or "fresh")
     if unit.get("state"):
         parts.append(" ".join(unit["state"]))
-    if unit.get("target"):
-        parts.append(f"target {unit['target']}")
+    target = (render_target(unit, enemies or {}, ordered) if mine
+              else f"target {unit['target']}" if unit.get("target") else "")
+    if target:
+        parts.append(target)
     if unit.get("dest"):
         parts.append(f"heading to ({unit['dest'][0]:.0f}, {unit['dest'][1]:.0f})")
     return ", ".join(parts)
 
 
-def render_state(observation: dict, last_seen: dict) -> str:
+def render_state(observation: dict, last_seen: dict, before: dict | None = None,
+                 ordered: dict | None = None) -> str:
+    """``before`` maps unit ids to (men, hp %) at the previous decision, ``ordered`` our
+    units to the attack order they hold."""
     visible = visible_enemies(observation)
+    before, ordered = before or {}, ordered or {}
     lines = ["Your units:"]
-    lines += ["- " + render_unit(unit, True) for unit in observation.get("friendly", [])]
+    lines += ["- " + render_unit(unit, True, before.get(unit["id"]), visible,
+                                 ordered.get(unit["id"]))
+              for unit in observation.get("friendly", [])]
     roster = observation.get("enemy_roster") or []
     lines.append("Enemy roster: " + (", ".join(
         f"{unit['id']} {short_type(unit.get('type'))}{' (destroyed)' if unit.get('dead') else ''}"
         for unit in roster) or "unknown"))
     lines.append("Visible enemies:")
-    lines += ["- " + render_unit(unit, False) for unit in visible.values()] or ["- none"]
+    lines += ["- " + render_unit(unit, False, before.get(unit["id"]))
+              for unit in visible.values()] or ["- none"]
     unseen = [
         f"- {unit_id} {_describe_last_seen(seen, observation)}"
         for unit_id, seen in last_seen.items() if unit_id not in visible
@@ -148,13 +189,14 @@ def render_ack(ack: dict | None) -> str:
 
 
 def render_prompt(observation: dict, notes: str, history: list[str], last_seen: dict,
-                  latency: dict | None, ack: dict | None) -> str:
+                  latency: dict | None, ack: dict | None, before: dict | None = None,
+                  ordered: dict | None = None) -> str:
     return "\n\n".join([
         "Battle notes:\n" + (notes or "(none)"),
         "Recent decisions, oldest first:\n" + ("\n".join(history) or "(none)"),
         render_timing(observation, latency),
         render_ack(ack),
-        render_state(observation, last_seen),
+        render_state(observation, last_seen, before, ordered),
     ])
 
 
@@ -198,6 +240,9 @@ class LLMPolicy:
         self.last_seen: dict[str, dict] = {}
         self.latency = None
         self.ack = None
+        self.before: dict[str, tuple] = {}
+        self.sent: dict[str, dict] = {}
+        self.ordered: dict[str, dict] = {}
         self._metadata = {}
 
     def decide(self, observation: dict) -> list[dict]:
@@ -210,8 +255,12 @@ class LLMPolicy:
         for unit in observation.get("enemy_roster", []):
             if unit.get("dead"):
                 self.last_seen.pop(unit["id"], None)
+                self.ordered = {k: v for k, v in self.ordered.items()
+                                if v["target"] != unit["id"]}
         prompt = render_prompt(observation, self.notes, list(self.history), self.last_seen,
-                               self.latency, self.ack)
+                               self.latency, self.ack, self.before, self.ordered)
+        self.before = {unit["id"]: (unit.get("men", 0), _hp(unit))
+                       for unit in observation.get("friendly", []) + observation.get("enemy", [])}
         self._metadata = metadata = {
             "type": "llm", "model": self.api.name, "effort": self.api.effort,
             "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(), "prompt": prompt,
@@ -228,6 +277,8 @@ class LLMPolicy:
             self.notes = reply["notes"][:NOTES_LIMIT]
             metadata["notes"] = self.notes
         seconds = observation.get("time_ms", 0) / 1000
+        self.sent = {order["unit"]: {"target": order.get("target") if order["type"] == "attack"
+                                     else None, "time_s": seconds} for order in reply["orders"]}
         summary = describe_orders(reply["orders"])
         self.history.append(f"{seconds:.0f} s: {summary} ({reply['reason']})")
         metadata["reason"] = reply["reason"]
@@ -235,6 +286,9 @@ class LLMPolicy:
 
     def acknowledge(self, ack: dict, latency: dict) -> None:
         self.ack, self.latency = ack, latency
+        for result in ack.get("results") or []:
+            if result.get("ok") and result["unit"] in self.sent:
+                self.ordered[result["unit"]] = self.sent[result["unit"]]
 
     def metadata(self) -> dict:
         return self._metadata
