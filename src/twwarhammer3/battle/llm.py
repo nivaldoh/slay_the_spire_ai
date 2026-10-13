@@ -18,6 +18,7 @@ from gameai.provenance import REPO_ROOT
 from twwarhammer3.protocol import (
     IllegalActionError,
     PolicyFailure,
+    friendly_units,
     validate_orders,
     visible_enemies,
 )
@@ -29,6 +30,7 @@ MAX_OUTPUT_TOKENS = 4000
 NOTES_LIMIT = 2000
 HISTORY_LENGTH = 8
 INVALID_RETRIES = 2
+ARRIVED_M = 15  # a move whose unit stopped this close to the point has been carried out
 REPLY_SCHEMA = {
     "type": "object",
     "properties": {
@@ -82,17 +84,39 @@ def _distance(unit: dict, other: dict | None) -> str:
     return f" {math.hypot(other['x'] - unit['x'], other['z'] - unit['z']):.0f} m"
 
 
-def render_target(unit: dict, enemies: dict, ordered: dict | None) -> str:
-    """The enemy the unit is fighting now, marked against the attack order it was given."""
-    shown, wanted = unit.get("target"), (ordered or {}).get("target")
-    here = f"{shown}{_distance(unit, enemies.get(shown))}" if shown else ""
-    if wanted is None:
-        return f"target {here}, not ordered" if shown else ""
-    order = f"{wanted}{_distance(unit, enemies.get(wanted))} ({ordered['time_s']:.0f} s)"
-    if shown == wanted:
-        return f"target {here} (your order, {ordered['time_s']:.0f} s)"
-    return (f"target {here}, but your order is {order}" if shown
-            else f"no target, but your order is {order}")
+def _short_of(unit: dict, order: dict) -> float:
+    return math.hypot(order["x"] - unit["x"], order["z"] - unit["z"])
+
+
+def holds(unit: dict, order: dict) -> bool:
+    """Whether the game still carries out ``order`` as far as the state shows: an attack
+    while the unit has a target, a move until contact or arrival (or while it stopped
+    short, which the state reports); nothing once the unit routs or dies."""
+    states = set(unit.get("state") or [])
+    if not unit.get("men") or {"routing", "shattered"} & states or order["type"] == "halt":
+        return False
+    if order["type"] == "attack":
+        return bool(unit.get("target"))
+    if "melee" in states or unit.get("x") is None:
+        return False
+    return bool(unit.get("dest")) or _short_of(unit, order) > ARRIVED_M
+
+
+def render_target(unit: dict, enemies: dict, order: dict | None) -> str:
+    """The enemy the unit is fighting now, against the order it holds."""
+    shown = unit.get("target")
+    here = f"target {shown}{_distance(unit, enemies.get(shown))}" if shown else ""
+    order = order or {}
+    if order.get("type") == "attack":
+        if shown == order["target"]:
+            return f"{here} (your order, {order['time_s']:.0f} s)"
+        return (f"{here}, game's choice; your order at {order['time_s']:.0f} s was"
+                f" {order['target']}{_distance(unit, enemies.get(order['target']))}")
+    if order.get("type") == "move" and not unit.get("dest"):
+        stopped = (f"stopped {_short_of(unit, order):.0f} m short of your move"
+                   f" ({order['time_s']:.0f} s)")
+        return f"{here}, game's choice; {stopped}" if shown else stopped
+    return f"{here}, game's choice" if shown else ""
 
 
 def render_unit(unit: dict, mine: bool, before: tuple | None = None,
@@ -255,8 +279,9 @@ class LLMPolicy:
         for unit in observation.get("enemy_roster", []):
             if unit.get("dead"):
                 self.last_seen.pop(unit["id"], None)
-                self.ordered = {k: v for k, v in self.ordered.items()
-                                if v["target"] != unit["id"]}
+        friendly = friendly_units(observation)
+        self.ordered = {unit_id: order for unit_id, order in self.ordered.items()
+                        if unit_id in friendly and holds(friendly[unit_id], order)}
         prompt = render_prompt(observation, self.notes, list(self.history), self.last_seen,
                                self.latency, self.ack, self.before, self.ordered)
         self.before = {unit["id"]: (unit.get("men", 0), _hp(unit))
@@ -277,8 +302,7 @@ class LLMPolicy:
             self.notes = reply["notes"][:NOTES_LIMIT]
             metadata["notes"] = self.notes
         seconds = observation.get("time_ms", 0) / 1000
-        self.sent = {order["unit"]: {"target": order.get("target") if order["type"] == "attack"
-                                     else None, "time_s": seconds} for order in reply["orders"]}
+        self.sent = {order["unit"]: dict(order, time_s=seconds) for order in reply["orders"]}
         summary = describe_orders(reply["orders"])
         self.history.append(f"{seconds:.0f} s: {summary} ({reply['reason']})")
         metadata["reason"] = reply["reason"]

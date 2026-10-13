@@ -178,6 +178,25 @@ def test_prompt_shows_changes_and_the_order_behind_each_target(tmp_path):
     agent.decide(later)
     prompt = agent.metadata()["prompt"]
     assert "110/120 men" not in prompt and "104/120 men (-6), hp 85% (-8)" in prompt
-    assert "target e2, but your order is e1 30 m (30 s)" in prompt
-    assert "f1 herald_of_khorne_0" in prompt and "target e1 32 m, not ordered" in prompt
+    assert "target e2, game's choice; your order at 30 s was e1 30 m" in prompt
+    assert "f1 herald_of_khorne_0" in prompt and "target e1 32 m, game's choice" in prompt
     assert "85/100 men (-5), hp 90%" in prompt
+
+
+def test_lapsed_orders_are_forgotten_and_dropped_moves_reported(tmp_path):
+    orders = [{"unit": "f1", "type": "move", "x": 10.0, "z": 60.0, "facing": None,
+               "target": None, "run": False},
+              {"unit": "f2", "type": "attack", "x": None, "z": None, "facing": None,
+               "target": "e1", "run": False}]
+    agent = policy(tmp_path, reply(orders), reply([]))
+    agent.decide(observation())
+    agent.acknowledge({"request": "r1", "results": [{"unit": "f1", "ok": True},
+                                                    {"unit": "f2", "ok": True}],
+                       "applied_ms": 34000}, {"think_s": 3.0, "delay_ms": 4000})
+    later = observation(time_ms=40000)
+    later["friendly"][1].update(state=["idle"], dest=None)
+    agent.decide(later)
+    prompt = agent.metadata()["prompt"]
+    assert "stopped 100 m short of your move (30 s)" in prompt
+    assert "your order" not in prompt.split("f2 chaos_warriors_0")[1].split("\n")[0]
+    assert agent.ordered == {"f1": dict(orders[0], time_s=30.0)}
