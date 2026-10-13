@@ -3,9 +3,9 @@
 A job owns the game for its whole duration. Each episode waits for a new battle id from
 the mailbox (the first one after the frontend steps start a custom battle, later ones
 after a ``restart`` control), then alternates observations and decisions: one request
-in flight at a time, the next decision only once the battle time has moved
-``interval_ms`` past the moment the previous orders applied. Every decision records
-the think time and the battle-time delay between the state the policy saw and the
+in flight at a time. By default the acknowledgement observation starts the next
+decision immediately; ``interval_ms`` optionally adds a wait after orders apply. Each
+decision records the think time and the battle-time delay between the state it saw and the
 orders taking effect. Only an engine-reported result is a gameplay outcome.
 """
 
@@ -243,12 +243,6 @@ def _drive(config, policy, mailbox, not_battle, result, event, started) -> None:
                 "enemy": [unit.get("type") for unit in observation.get("enemy_roster", [])],
             }
             event("roster", observation=observation)
-        if observation.get("result"):
-            result.update(status=observation["result"], battle_ms=observation.get("time_ms"),
-                          battle_s=round(observation.get("time_ms", 0) / 1000),
-                          final=observation.get("final"))
-            event("result", observation=observation)
-            return
         ack = observation.get("orders")
         if outstanding and ack and ack.get("request") == outstanding["request"]:
             latency = {
@@ -263,6 +257,12 @@ def _drive(config, policy, mailbox, not_battle, result, event, started) -> None:
             policy.acknowledge(ack, latency)
             applied_ms = ack["applied_ms"]
             outstanding = None
+        if observation.get("result"):
+            result.update(status=observation["result"], battle_ms=observation.get("time_ms"),
+                          battle_s=round(observation.get("time_ms", 0) / 1000),
+                          final=observation.get("final"))
+            event("result", observation=observation)
+            return
         if outstanding or observation.get("phase") != "Deployed":
             continue
         if applied_ms is not None and observation["time_ms"] < applied_ms + config["interval_ms"]:
@@ -270,7 +270,9 @@ def _drive(config, policy, mailbox, not_battle, result, event, started) -> None:
         if config["pause"] and not observation.get("awaiting_orders"):
             continue
         read_at = time.monotonic()
-        event("observation", observation=observation)
+        event("observation", observation=observation,
+              since_previous_applied_ms=(observation["time_ms"] - applied_ms
+                                         if applied_ms is not None else None))
         orders = policy.decide(observation)
         try:
             validate_orders(orders, observation)

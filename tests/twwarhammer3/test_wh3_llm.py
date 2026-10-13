@@ -211,3 +211,42 @@ def test_units_without_a_target_show_no_order_and_their_nearest_enemy():
     assert "fresh, no order, nearest enemy e1 256 m" in text
     assert "heading to (0, 20), nearest enemy e1 260 m" in text
     assert "nearest" not in text.split("- f3 ")[1].split("\n")[0]
+
+
+def test_capabilities_are_visible_and_queued_attack_is_not_mistaken_for_active(tmp_path):
+    obs = observation()
+    unit = obs["friendly"][0]
+    unit.update(width=25, ammo=5, behaviours={"fire_at_will": False},
+                abilities=[{"key": "buff", "can_use": True}], attack_mode="melee")
+    orders = [
+        {"unit": "f1", "type": "behaviour", "behaviour": "fire_at_will", "enabled": True},
+        {"unit": "f1", "type": "move", "x": 50, "z": 20, "width": 30},
+        {"unit": "f1", "type": "attack", "target": "e1", "mode": "melee", "queue": True},
+    ]
+    agent = policy(tmp_path, reply(orders), reply([]))
+    agent.decide(obs)
+    agent.acknowledge({"results": [
+        {"unit": "f1", "index": 1, "ok": True},
+        {"unit": "f1", "index": 2, "ok": True},
+        {"unit": "f1", "index": 3, "ok": True, "queued": True},
+    ]}, {"think_s": 2, "delay_ms": 2300})
+    unit["command_queue"] = orders[1:]
+    agent.decide(obs)
+    prompt = agent.metadata()["prompt"]
+    assert "formation width 25 m" in prompt and "fire_at_will=off" in prompt
+    assert "buff (available)" in prompt and "last requested attack mode melee" in prompt
+    assert "f1 #3 queued" in prompt and "completion unconfirmed" in prompt
+    assert "attack e1 melee [queued]" in prompt
+    assert not agent.ordered
+
+
+def test_a_toggle_ack_does_not_replace_the_previous_movement_order(tmp_path):
+    obs = observation()
+    obs["friendly"][0]["behaviours"] = {"fire_at_will": True}
+    move = {"unit": "f1", "type": "move", "x": 50, "z": 20}
+    toggle = {"unit": "f1", "type": "behaviour", "behaviour": "fire_at_will", "enabled": False}
+    agent = policy(tmp_path, reply([move, toggle]))
+    agent.decide(obs)
+    agent.acknowledge({"results": [{"unit": "f1", "index": 1, "ok": True},
+                                    {"unit": "f1", "index": 2, "ok": True}]}, {})
+    assert agent.ordered["f1"]["type"] == "move"

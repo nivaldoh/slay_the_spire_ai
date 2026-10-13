@@ -6,6 +6,10 @@ History lives with each track ([full runs](fullrun/log.md),
 
 ## Active work (last verified 2026-10-13 16:40 UTC)
 
+Owner-requested WH3 interface work: remove the default wait after orders apply; expose
+attack modes, queued orders, formation width, behavior toggles and abilities, including
+their observation/acknowledgement support. Implementation and engine validation underway.
+
 WH3 mirror battles (owner away 11:25-16:25 UTC): `gpt-6-luna` against the game AI with
 the same army on both sides (Khorne, Dwarf, Empire), and prompt versions v8-v11 chosen
 by the review workflow. Last job: `runs/twwarhammer3/battle/llm-luna-v10-kho-pinned-20261013` (stopped at the

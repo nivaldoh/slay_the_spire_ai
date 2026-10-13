@@ -16,6 +16,8 @@ from gameai.ledger import Ledger
 from gameai.llm import InvalidReply, Model
 from gameai.provenance import REPO_ROOT
 from twwarhammer3.protocol import (
+    ATTACK_MODES,
+    BEHAVIOURS,
     IllegalActionError,
     PolicyFailure,
     friendly_units,
@@ -31,28 +33,35 @@ NOTES_LIMIT = 2000
 HISTORY_LENGTH = 8
 INVALID_RETRIES = 2
 ARRIVED_M = 15  # a move whose unit stopped this close to the point has been carried out
+NUMBER_OR_NULL = {"type": ["number", "null"]}
+STRING_OR_NULL = {"type": ["string", "null"]}
+
+
+def _order_schema(kind: str, **fields) -> dict:
+    properties = {"unit": {"type": "string"}, "type": {"type": "string", "enum": [kind]}, **fields}
+    return {"type": "object", "properties": properties, "required": list(properties),
+            "additionalProperties": False}
+
+
 REPLY_SCHEMA = {
     "type": "object",
     "properties": {
-        "orders": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "unit": {"type": "string"},
-                    "type": {"type": "string", "enum": ["move", "attack", "halt"]},
-                    "x": {"type": ["number", "null"]},
-                    "z": {"type": ["number", "null"]},
-                    "facing": {"type": ["number", "null"]},
-                    "target": {"type": ["string", "null"]},
-                    "run": {"type": "boolean"},
-                },
-                "required": ["unit", "type", "x", "z", "facing", "target", "run"],
-                "additionalProperties": False,
-            },
-        },
+        "orders": {"type": "array", "items": {"anyOf": [
+            _order_schema("move", x={"type": "number"}, z={"type": "number"},
+                          facing=NUMBER_OR_NULL, width=NUMBER_OR_NULL,
+                          run={"type": "boolean"}, queue={"type": "boolean"}),
+            _order_schema("attack", target={"type": "string"},
+                          mode={"type": "string", "enum": list(ATTACK_MODES)},
+                          run={"type": "boolean"}, queue={"type": "boolean"}),
+            _order_schema("halt"),
+            _order_schema("behaviour", behaviour={"type": "string", "enum": list(BEHAVIOURS)},
+                          enabled={"type": "boolean"}),
+            _order_schema("ability", ability={"type": "string"}, target=STRING_OR_NULL,
+                          x=NUMBER_OR_NULL, z=NUMBER_OR_NULL, facing=NUMBER_OR_NULL,
+                          width=NUMBER_OR_NULL),
+        ]}},
         "reason": {"type": "string"},
-        "notes": {"type": ["string", "null"]},
+        "notes": STRING_OR_NULL,
     },
     "required": ["orders", "reason", "notes"],
     "additionalProperties": False,
@@ -106,6 +115,8 @@ def render_target(unit: dict, enemies: dict, order: dict | None) -> str:
     """The enemy the unit is fighting now, against the order it holds."""
     shown = unit.get("target")
     here = f"target {shown}{_distance(unit, enemies.get(shown))}" if shown else ""
+    if unit.get("command_queue"):
+        return here
     order = order or {}
     if order.get("type") == "attack":
         if shown == order["target"]:
@@ -142,6 +153,20 @@ def render_unit(unit: dict, mine: bool, before: tuple | None = None,
         # The game's Lua numbers are 32-bit floats: 1.9 arrives as 1.8999999761581.
         parts.append(f"walk {walk or 0:.1f} run {run or 0:.1f}")
         parts.append(unit.get("fatigue") or "fresh")
+        if unit.get("width"):
+            parts.append(f"formation width {unit['width']:.0f} m")
+        if unit.get("attack_mode"):
+            parts.append(f"last requested attack mode {unit['attack_mode']}")
+        if unit.get("behaviours"):
+            parts.append("toggles " + " ".join(
+                f"{key}={'on' if value else 'off'}" for key, value in unit["behaviours"].items()))
+        if unit.get("abilities"):
+            parts.append("abilities " + "; ".join(
+                f"{a['key']} ({'available' if a.get('can_use') else 'unavailable'})"
+                for a in unit["abilities"]))
+        if unit.get("command_queue"):
+            parts.append("last submitted sequence (completion unconfirmed): "
+                         + describe_orders(unit["command_queue"]))
     if unit.get("state"):
         parts.append(" ".join(unit["state"]))
     target = (render_target(unit, enemies or {}, ordered) if mine
@@ -220,8 +245,13 @@ def render_ack(ack: dict | None) -> str:
     results = ack.get("results") or []
     if not results:
         return "Last orders: none (units continued)."
-    verdicts = [f"{r['unit']} {'applied' if r.get('ok') else 'rejected: ' + str(r.get('error'))}"
-                for r in results]
+    verdicts = []
+    for result in results:
+        label = result["unit"] + (f" #{result['index']}" if "index" in result else "")
+        verdict = "queued" if result.get("queued") else "applied"
+        if not result.get("ok"):
+            verdict = "rejected: " + str(result.get("error"))
+        verdicts.append(f"{label} {verdict}")
     return "Last orders: " + "; ".join(verdicts) + "."
 
 
@@ -255,11 +285,23 @@ def describe_orders(orders: list[dict]) -> str:
         if order["type"] == "move":
             facing = order.get("facing")
             parts.append(f"{order['unit']} move ({order['x']:.0f}, {order['z']:.0f})"
-                         + (f" facing {facing:.0f}" if facing is not None else "") + run)
+                         + (f" facing {facing:.0f}" if facing is not None else "")
+                         + (f" width {order['width']:.0f}" if order.get("width") else "") + run)
         elif order["type"] == "attack":
-            parts.append(f"{order['unit']} attack {order['target']}{run}")
+            mode = "" if order.get("mode", "auto") == "auto" else f" {order['mode']}"
+            parts.append(f"{order['unit']} attack {order['target']}{mode}{run}")
+        elif order["type"] == "behaviour":
+            parts.append(f"{order['unit']} {order['behaviour']} "
+                         + ("on" if order["enabled"] else "off"))
+        elif order["type"] == "ability":
+            target = order.get("target") or "self"
+            if order.get("x") is not None:
+                target = f"({order['x']:.0f}, {order['z']:.0f})"
+            parts.append(f"{order['unit']} ability {order['ability']} at {target}")
         else:
             parts.append(f"{order['unit']} halt")
+        if order.get("queue"):
+            parts[-1] += " [queued]"
     return ", ".join(parts)
 
 
@@ -278,7 +320,7 @@ class LLMPolicy:
         self.latency = None
         self.ack = None
         self.before: dict[str, tuple] = {}
-        self.sent: dict[str, dict] = {}
+        self.sent: list[dict] = []
         self.ordered: dict[str, dict] = {}
         self._metadata = {}
 
@@ -315,7 +357,7 @@ class LLMPolicy:
             self.notes = reply["notes"][:NOTES_LIMIT]
             metadata["notes"] = self.notes
         seconds = observation.get("time_ms", 0) / 1000
-        self.sent = {order["unit"]: dict(order, time_s=seconds) for order in reply["orders"]}
+        self.sent = [dict(order, time_s=seconds) for order in reply["orders"]]
         summary = describe_orders(reply["orders"])
         self.history.append(f"{seconds:.0f} s: {summary} ({reply['reason']})")
         metadata["reason"] = reply["reason"]
@@ -324,8 +366,20 @@ class LLMPolicy:
     def acknowledge(self, ack: dict, latency: dict) -> None:
         self.ack, self.latency = ack, latency
         for result in ack.get("results") or []:
-            if result.get("ok") and result["unit"] in self.sent:
-                self.ordered[result["unit"]] = self.sent[result["unit"]]
+            if not result.get("ok"):
+                continue
+            index = result.get("index")
+            order = (self.sent[index - 1] if index is not None and 0 < index <= len(self.sent)
+                     else next((o for o in self.sent if o["unit"] == result["unit"]), None))
+            if not order or order["type"] not in ("move", "attack", "halt"):
+                continue
+            unit = order["unit"]
+            # A submitted queue is not evidence that its final attack has started.
+            sequence = [o for o in self.sent if o["unit"] == unit and o.get("queue")]
+            if sequence:
+                self.ordered.pop(unit, None)
+            else:
+                self.ordered[unit] = order
 
     def metadata(self) -> dict:
         return self._metadata

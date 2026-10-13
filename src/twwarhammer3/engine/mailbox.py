@@ -13,12 +13,19 @@ Observation shape::
     {"schema": 1, "job", "battle", "seq", "phase", "time_ms", "speed", "awaiting_orders",
      "remaining_ms", "armies": {"player": {"faction"}, "enemy": {"faction"}},
      "friendly": [unit...], "enemy_roster": [{"id", "type"}...], "enemy": [visible unit...],
-     "orders": {"request", "based_on", "applied_ms", "results": [{"unit", "ok", "error"?}]} | null,
+     "orders": {"request", "based_on", "applied_ms",
+                "results": [{"index", "unit", "ok", "queued", "error"?}]} | null,
      "result": "won" | "lost" | "draw" | null,
      "final": {"friendly": {"men", "men0"}, "enemy": {...}} | null}
 
 ``final`` is both armies' true strength, published only with the result (after the last
 decision), for evaluation.
+
+Order indexes are one-based positions in the request, so a unit can receive a behavior
+change and a move/attack sequence in one batch. ``queued`` acknowledges submission to
+the engine queue, not execution. Friendly records include ``behaviours`` (supported
+toggle keys mapped to current booleans), ``abilities`` (owned active keys and can_use),
+formation ``width``, last requested ``attack_mode`` and last submitted ``command_queue``.
 
 Writers publish whole files (temporary file, then rename); readers treat a missing,
 locked or half-parsed file as "not yet".

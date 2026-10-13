@@ -19,6 +19,7 @@ local state = {
     paused = false, next_observe_ms = 0, force_observe = false, alliance = nil,
 }
 local session = nil
+local BEHAVIOURS = {"fire_at_will", "skirmish", "defend", "change_formation_spacing", "formed_attack"}
 
 local function read_file(path)
     local file = io.open(path, "r")
@@ -136,15 +137,31 @@ local function unit_record(id, unit, mine, class)
     end
     record.range = round(get(unit, "missile_range", 0))
     if mine then
+        local entry = state.friendly[id]
         record.ammo = get(unit, "ammo_left", 0)
         record.ammo0 = get(unit, "starting_ammo", 0)
         record.speed = {round(get(unit, "slow_speed", 0), 1), round(get(unit, "fast_speed", 0), 1)}
         record.fatigue = string.gsub(tostring(get(unit, "fatigue_state", "")), "^threshold_", "")
+        record.width = round(get(unit, "ordered_width", 0), 1)
+        record.attack_mode = entry.attack_mode
+        record.command_queue = entry.command_queue
+        record.behaviours = {}
+        for _, key in ipairs(BEHAVIOURS) do
+            if get(unit, "can_use_behaviour", false, key) then
+                record.behaviours[key] = get(unit, "is_behaviour_active", false, key)
+            end
+        end
+        record.abilities = {}
+        for _, key in ipairs(get(unit, "owned_non_passive_special_abilities", {})) do
+            record.abilities[#record.abilities + 1] = {
+                key = key, can_use = get(unit, "can_perform_special_ability", false, key),
+            }
+        end
         local target = get(unit, "current_target", nil)
         if target then record.target = state.enemy_by_ui[get(target, "unique_ui_id", -1)] end
         -- ordered_position is the unit's own position while it attacks.
         local destination = get(unit, "ordered_position", nil)
-        if destination and state.friendly[id].order == "move" and get(unit, "is_moving", false) then
+        if destination and entry.order == "move" and not record.target and get(unit, "is_moving", false) then
             record.dest = {round(destination:get_x(), 1), round(destination:get_z(), 1)}
         end
     end
@@ -220,29 +237,81 @@ local function apply_order(order)
             local y = get(bm.battle, "get_terrain_height", 0, x, z)
             local destination = vector(x, y, z)
             if not get(unit, "can_reach_position", true, destination) then error("unreachable") end
-            local facing = tonumber(order.facing)
-            if facing then
-                local width = get(unit, "ordered_width", 0)
-                controller:goto_location_angle_width(destination, facing,
-                                                     width > 0 and width or 40, order.run == true)
+            local facing, width = tonumber(order.facing), tonumber(order.width)
+            if width and width <= 0 then error("bad_width") end
+            if facing or width then
+                facing = facing or get(unit, "bearing", 0)
+                width = width or get(unit, "ordered_width", 0)
+                local method = order.queue and "goto_location_angle_width_q" or "goto_location_angle_width"
+                controller[method](controller, destination, facing,
+                                   width > 0 and width or 40, order.run == true)
             else
-                controller:goto_location(destination, order.run == true)
+                local method = order.queue and "goto_location_q" or "goto_location"
+                controller[method](controller, destination, order.run == true)
             end
         elseif order.type == "attack" then
             local target = state.enemy[order.target]
             if not target then error("unknown_target") end
             if get(target.unit, "number_of_men_alive", 0) == 0 then error("target_dead") end
             if not visible_to_player(target.unit) then error("target_not_visible") end
-            controller:attack_unit(target.unit, true, order.run == true)
+            local mode = order.mode or "auto"
+            if mode ~= "auto" and mode ~= "melee" and mode ~= "ranged" then error("bad_attack_mode") end
+            if mode == "ranged" and get(unit, "ammo_left", 0) <= 0 then error("no_ammunition") end
+            -- Queued attacks select the attack method without changing the current move.
+            if not order.queue then controller:melee(mode == "melee") end
+            local method = order.queue and "attack_unit_q" or "attack_unit"
+            controller[method](controller, target.unit, mode ~= "melee", order.run == true)
+            entry.attack_mode = mode
         elseif order.type == "halt" then
             controller:halt()
+        elseif order.type == "behaviour" then
+            local allowed = false
+            for _, key in ipairs(BEHAVIOURS) do if key == order.behaviour then allowed = true end end
+            if not allowed or not get(unit, "can_use_behaviour", false, order.behaviour) then
+                error("unavailable_behaviour")
+            end
+            if type(order.enabled) ~= "boolean" then error("bad_enabled") end
+            controller:change_behaviour_active(order.behaviour, order.enabled)
+        elseif order.type == "ability" then
+            local owned = false
+            for _, key in ipairs(get(unit, "owned_non_passive_special_abilities", {})) do
+                if key == order.ability then owned = true end
+            end
+            if not owned or not get(unit, "can_perform_special_ability", false, order.ability) then
+                error("unavailable_ability")
+            end
+            if order.x ~= nil then
+                if order.target ~= nil then error("ambiguous_ability_target") end
+                local x, z = tonumber(order.x), tonumber(order.z)
+                if not x or not z then error("bad_position") end
+                local y = get(bm.battle, "get_terrain_height", 0, x, z)
+                controller:perform_special_ability_ground(order.ability, vector(x, y, z),
+                                                         tonumber(order.facing) or 0, tonumber(order.width) or 0)
+            elseif order.target then
+                local target = state.friendly[order.target] or state.enemy[order.target]
+                if not target then error("unknown_target") end
+                if get(target.unit, "number_of_men_alive", 0) <= 0 then error("target_dead") end
+                if state.enemy[order.target] and not visible_to_player(target.unit) then
+                    error("target_not_visible")
+                end
+                controller:perform_special_ability(order.ability, target.unit)
+            else
+                controller:perform_special_ability(order.ability)
+            end
         else
             error("unknown_type")
         end
     end)
     if ok then
-        entry.order = order.type
-        return {unit = order.unit, ok = true}
+        if order.type == "move" or order.type == "attack" or order.type == "halt" then
+            if order.queue then
+                entry.command_queue = entry.command_queue or {entry.command}
+                entry.command_queue[#entry.command_queue + 1] = order
+            else
+                entry.order, entry.command, entry.command_queue = order.type, order, nil
+            end
+        end
+        return {unit = order.unit, ok = true, queued = order.queue == true}
     end
     return {unit = order.unit, ok = false, error = clean_error(err)}
 end
@@ -250,9 +319,21 @@ end
 local function apply_pending(now)
     local message = state.pending
     state.pending = nil
-    local results = {}
-    for _, order in ipairs(message.orders or {}) do
-        results[#results + 1] = apply_order(order)
+    local results, failed, previous = {}, {}, {}
+    for index, order in ipairs(message.orders or {}) do
+        local result
+        if order.queue and (failed[order.unit] or previous[order.unit] ~= "move"
+                            or (order.type ~= "move" and order.type ~= "attack")) then
+            result = {unit = order.unit, ok = false, error = "queue_predecessor_failed_or_missing"}
+        else
+            result = apply_order(order)
+        end
+        result.index = index
+        results[#results + 1] = result
+        if order.type == "move" or order.type == "attack" or order.type == "halt" then
+            previous[order.unit] = order.type
+            failed[order.unit] = not result.ok
+        end
     end
     state.applied = {
         request = message.request, based_on = message.based_on, applied_ms = now, results = results,
@@ -348,7 +429,7 @@ local function tick()
     if state.force_observe or now >= state.next_observe_ms then
         local awaiting = false
         if session.pause and state.started and not state.finished and not state.pending then
-            local interval = session.interval_ms or 5000
+            local interval = session.interval_ms or 0
             awaiting = state.applied_ms == nil or (now - state.applied_ms) >= interval
         end
         state.force_observe = false

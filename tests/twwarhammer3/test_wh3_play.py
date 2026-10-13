@@ -1,3 +1,4 @@
+import argparse
 import csv
 import json
 from collections import deque
@@ -6,6 +7,7 @@ from contextlib import nullcontext
 import pytest
 
 from gameai.ledger import BudgetExhausted
+from twwarhammer3.__main__ import add_session_arguments
 from twwarhammer3.battle import digest, play, stats
 from twwarhammer3.battle.scripted import AttackNearest, Hold
 from twwarhammer3.protocol import BattleRestarted, MailboxTimeout
@@ -133,6 +135,24 @@ def test_pause_mode_decides_only_when_the_game_awaits_orders(tmp_path):
     result = play.play_episode(tmp_path / "e", config, AttackNearest(), mailbox, not_battle=None)
     assert result["status"] == "lost" and result["decisions"] == 1
     assert mailbox.requests[0][1] == 2
+
+
+def test_default_has_no_wait_and_uses_ack_observation_for_next_decision(tmp_path):
+    parser = argparse.ArgumentParser()
+    add_session_arguments(parser)
+    assert parser.parse_args([]).interval_ms == 0
+    mailbox = FakeMailbox([
+        observation(0, 0), observation(1, 1000), observation(2, 2000, ack=True),
+        observation(3, 3000, ack=True, result="won"),
+    ])
+    result = play.play_episode(tmp_path / "e", {**CONFIG, "interval_ms": 0}, Hold(),
+                               mailbox, not_battle=None)
+    assert [r[1] for r in mailbox.requests] == [1, 2]
+    assert result["decisions"] == 2 and result["delays_ms"] == [500, 500]
+    events = [json.loads(line) for line in (tmp_path / "e/trace.jsonl").read_text().splitlines()]
+    assert [e["kind"] for e in events][-2:] == ["ack", "result"]
+    observations = [e for e in events if e["kind"] == "observation"]
+    assert observations[1]["since_previous_applied_ms"] == 500
 
 
 def test_silence_is_an_infrastructure_failure_and_a_new_battle_a_restart(tmp_path):
