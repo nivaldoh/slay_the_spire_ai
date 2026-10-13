@@ -55,8 +55,9 @@ class Mailbox:
         """Send one request; the previous one must have been consumed first."""
         return self._request(battle, {"based_on": based_on, "orders": orders}, timeout)
 
-    def write_control(self, battle: str, control: str, *, timeout: float = 15) -> str:
-        return self._request(battle, {"control": control}, timeout)
+    def write_control(self, battle: str, control: str, *, timeout: float = 15, **fields) -> str:
+        """``restart``, ``start`` (end deployment) or ``ui`` (with ``steps``, as in a menu)."""
+        return self._request(battle, {"control": control, **fields}, timeout)
 
     def write_menu(self, steps: list[dict]) -> None:
         self._publish("menu.json", {"schema": SCHEMA, "job": self.job, "steps": steps})

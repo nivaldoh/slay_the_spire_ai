@@ -57,6 +57,8 @@ def main() -> int:
     menu.add_argument("--find", nargs="+", help="component path for --dump or --click")
     menu.add_argument("--click", action="store_true", help="click the --find component")
     menu.add_argument("--wait", type=float, default=20, help="seconds to tail menu.log")
+    menu.add_argument("--battle", action="store_true",
+                      help="send the steps to the running battle script (tails mod.log)")
 
     play = commands.add_parser("play", help="Play custom battles with a policy; one job directory")
     play.add_argument("--policy", choices=["llm", "hold", "attack_nearest", "probe_move"],
@@ -159,15 +161,21 @@ def main() -> int:
             steps = [{"find": args.find, "click": args.click}]
         else:
             parser.error("menu needs --steps, --dump or --find")
-        offset = mailbox.log_offset("menu.log")
-        mailbox.write_menu(steps)
+        log = "mod.log" if args.battle else "menu.log"
+        offset = mailbox.log_offset(log)
+        if args.battle:
+            battle = mailbox.read_observation()["battle"]
+            mailbox.requests = int(time.time())  # request ids must differ from the job's
+            mailbox.write_control(battle, "ui", steps=steps)
+        else:
+            mailbox.write_menu(steps)
         deadline = time.monotonic() + args.wait
         while time.monotonic() < deadline:
-            text = mailbox.log_since(offset, "menu.log")
+            text = mailbox.log_since(offset, log)
             if text:
                 offset += len(text.encode())
                 print(text.rstrip(), flush=True)
-                if text.rstrip().endswith("done"):
+                if text.rstrip().endswith("done") or f"ui {len(steps)}:" in text:
                     break
             time.sleep(0.5)
         return 0

@@ -7,7 +7,9 @@
 -- friendly unit, and reports the result. engine/mailbox.py documents the messages.
 
 local BRIDGE = "C:/wh3-agent/bridge/"
+local REMATCH = {"in_battle_results_popup", "button_rematch"}
 local json = twwarhammer3_json
+local ui = twwarhammer3_ui
 
 local state = {
     battle = nil, seq = 0, started = false, finished = false, result = nil,
@@ -63,6 +65,13 @@ end
 local function clean_error(err)
     err = tostring(err)
     return string.match(err, ":%d+: (.*)$") or err
+end
+
+local function guarded(name, fn)
+    return function(...)
+        local ok, err = pcall(fn, ...)
+        if not ok then log(name .. " failed: " .. clean_error(err)) end
+    end
 end
 
 -- Engine queries, each isolated: a missing or failing method yields `default`.
@@ -255,6 +264,28 @@ local function finish()
     log("result " .. state.result)
 end
 
+-- The results popup's rematch button reloads the same battle (bm:restart_battle(), the
+-- RestartBattle context command, did nothing on the results screen). A decided battle is
+-- ended at once so the popup opens; RestartBattle is the fallback.
+local function restart()
+    if state.finished then pcall(function() bm:end_battle() end) end
+    local waited = 0
+    bm:repeat_real_callback(guarded("restart", function()
+        waited = waited + 1000
+        local button = ui.find(REMATCH)
+        if button then
+            bm:remove_real_callback("twwarhammer3_restart")
+            button:SetVisible(true)
+            button:SimulateLClick()
+            log("rematch clicked")
+        elseif waited >= (state.finished and 60000 or 3000) then
+            bm:remove_real_callback("twwarhammer3_restart")
+            log("no rematch button; RestartBattle")
+            bm:restart_battle()
+        end
+    end), 1000, "twwarhammer3_restart")
+end
+
 local function tick()
     local now = battle_time()
     if state.pending then apply_pending(now) end
@@ -295,7 +326,13 @@ local function poll()
     state.last_request = message.request
     if message.control == "restart" then
         log("restart requested by " .. tostring(message.request))
-        bm:restart_battle()
+        restart()
+        return
+    elseif message.control == "ui" then
+        for index, step in ipairs(message.steps or {}) do
+            local ok, done = pcall(ui.run, step, BRIDGE)
+            log(string.format("ui %d: %s", index, ok and tostring(done) or clean_error(done)))
+        end
         return
     elseif message.control == "start" then
         try_end_deployment()
@@ -343,13 +380,6 @@ local function start()
     state.force_observe = true
     bm:repeat_callback(tick, session.tick_ms or 250, "twwarhammer3_tick")
     log(string.format("started: %d friendly, %d enemy units", #state.friendly_ids, count))
-end
-
-local function guarded(name, fn)
-    return function(...)
-        local ok, err = pcall(fn, ...)
-        if not ok then log(name .. " failed: " .. clean_error(err)) end
-    end
 end
 
 local function load()

@@ -41,82 +41,28 @@ local function clean_error(err)
     return string.match(err, ":%d+: (.*)$") or err
 end
 
-local function dump(uic, depth, max_depth, lines)
-    local id = tostring(uic:Id())
-    local visible = uic:Visible() and "" or " [hidden]"
-    lines[#lines + 1] = string.rep("  ", depth) .. id .. visible .. " <" .. tostring(uic:CurrentState()) .. ">"
-    if depth >= max_depth then return end
-    for index = 0, uic:ChildCount() - 1 do
-        dump(UIComponent(uic:Find(index)), depth + 1, max_depth, lines)
-    end
-end
-
+local ui = twwarhammer3_ui
 local state = {steps = nil, index = 0, wait_polls = 0, retries = 0}
 
--- Visible itself and through every ancestor, when the game offers the check.
-local function visible(uic)
-    local ok, value = pcall(function() return uic:VisibleFromRoot() end)
-    if ok then return value end
-    return uic:Visible()
-end
-
+-- One step; nil means "not yet" (a timed find whose component is not visible yet).
 local function run_step(step)
     if step.wait_ms then
         state.wait_polls = math.ceil(step.wait_ms / POLL_MS)
         return "wait " .. step.wait_ms .. " ms"
-    elseif step.log then
-        return "log " .. tostring(step.log)
-    elseif step.dump then
-        local lines = {}
-        local root = core:get_ui_root()
-        if step.find then
-            root = find_uicomponent(root, unpack(step.find))
-            if not root then return "dump root not found" end
-        end
-        dump(root, 0, step.depth or 4, lines)
-        local file = io.open(BRIDGE .. step.dump, "w")
-        if not file then return "cannot write " .. step.dump end
-        file:write(table.concat(lines, "\n") .. "\n")
-        file:close()
-        return "dumped " .. #lines .. " lines to " .. step.dump
-    elseif step.key then
-        core:get_ui_root():SimulateKey(step.key)
-        return "key " .. step.key
-    elseif step.find then
-        local uic = find_uicomponent(core:get_ui_root(), unpack(step.find))
-        if step.timeout_ms and not (uic and visible(uic)) then
+    elseif step.find and step.timeout_ms then
+        local uic = ui.find(step.find)
+        if not (uic and ui.visible(uic)) then
             if state.retries * POLL_MS < step.timeout_ms then
                 state.retries = state.retries + 1
                 return nil
             end
             error("not found within " .. step.timeout_ms .. " ms: " .. table.concat(step.find, "/"))
         end
-        if not uic then return "not found: " .. table.concat(step.find, "/") end
-        local done = {"found " .. table.concat(step.find, "/")}
-        if state.retries > 0 then done[1] = done[1] .. " after " .. state.retries * POLL_MS .. " ms" end
-        if step.visible ~= nil then
-            uic:SetVisible(step.visible)
-            done[#done + 1] = "visible=" .. tostring(step.visible)
-        end
-        if step.state then
-            uic:SetState(step.state)
-            done[#done + 1] = "state=" .. step.state
-        end
-        if step.click then
-            uic:SimulateLClick()
-            done[#done + 1] = "clicked"
-        end
-        if step.dblclick then
-            uic:SimulateDblLClick()
-            done[#done + 1] = "double-clicked"
-        end
-        if step.rclick then
-            uic:SimulateRClick()
-            done[#done + 1] = "right-clicked"
-        end
-        return table.concat(done, ", ")
+        local done = ui.act(uic, step)
+        if state.retries > 0 then done = done .. " after " .. state.retries * POLL_MS .. " ms" end
+        return done
     end
-    return "unknown step"
+    return ui.run(step, BRIDGE)
 end
 
 local function poll()
