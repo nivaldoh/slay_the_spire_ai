@@ -56,48 +56,6 @@ class AttackNearest:
         return {"type": "attack_nearest"}
 
 
-class ProbeAbilities(AttackNearest):
-    """``attack_nearest`` that also casts each ability as soon as the state says it is
-    ready, to check readiness and casting in the engine: self abilities of units in melee,
-    and army abilities on our largest unit in melee (a ground one at its position)."""
-
-    RECAST_S = 5.0
-
-    def __init__(self):
-        super().__init__()
-        self.cast = {}
-
-    def decide(self, observation: dict) -> list[dict]:
-        orders = super().decide(observation)
-        now = observation.get("time_ms", 0) / 1000
-        fighting = [unit for unit in friendly_units(observation).values()
-                    if "melee" in unit.get("state", [])]
-        casts = [(unit["id"], ability, None) for unit in fighting
-                 for ability in unit.get("abilities", [])
-                 if ability.get("target") in ("Self", "Around self")]
-        if fighting:
-            largest = max(fighting, key=lambda unit: unit.get("men", 0))
-            casts += [("army", ability, largest)
-                      for ability in (observation.get("army") or {}).get("abilities", [])]
-        for caster, ability, at in casts:
-            if not ability.get("ready") or ability.get("can_use") is False or now - self.cast.get(
-                    (caster, ability["key"]),
-                                                               -math.inf) < self.RECAST_S:
-                continue
-            self.cast[(caster, ability["key"])] = now
-            order = {"unit": caster, "type": "ability", "ability": ability["key"],
-                     "target": None, "x": None, "z": None}
-            if at and "Ground" in (ability.get("target") or ""):
-                order.update(x=at["x"], z=at["z"])
-            elif at:
-                order["target"] = at["id"]
-            orders.append(order)
-        return orders
-
-    def metadata(self) -> dict:
-        return {"type": "probe_abilities"}
-
-
 class ProbeMove:
     """Milestone 3: move the first unit east, then north, then halt, to pin the axes."""
 
@@ -131,5 +89,4 @@ def _distance(a: dict, b: dict) -> float:
     return math.hypot(a["x"] - b["x"], a["z"] - b["z"])
 
 
-POLICIES = {"hold": Hold, "attack_nearest": AttackNearest, "probe_move": ProbeMove,
-            "probe_abilities": ProbeAbilities}
+POLICIES = {"hold": Hold, "attack_nearest": AttackNearest, "probe_move": ProbeMove}

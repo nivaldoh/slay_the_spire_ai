@@ -214,9 +214,10 @@ def main() -> int:
                 return kind(args.model, args.effort, ledger, send=send)
         else:
             from twwarhammer3.battle.scripted import POLICIES
-            from twwarhammer3.battle.skills import Skills
+            from twwarhammer3.battle.skills import ProbeAbilities, Skills
 
-            policy_factory = Skills if args.policy == "skills" else POLICIES[args.policy]
+            policy_factory = {"skills": Skills, "probe_abilities": ProbeAbilities,
+                              **POLICIES}[args.policy]
         manifest = run_play(args.output, config, policy_factory=policy_factory)
         return 0 if manifest["status"] == "completed" else 1
 

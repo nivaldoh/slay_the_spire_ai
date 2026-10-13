@@ -117,7 +117,7 @@ def test_abilities_must_be_ready_and_army_abilities_unlocked():
 
 
 def test_the_ability_probe_casts_ready_abilities_once_per_five_seconds():
-    from twwarhammer3.battle.scripted import ProbeAbilities
+    from twwarhammer3.battle.skills import ProbeAbilities
 
     probe = ProbeAbilities()
     state = {"time_ms": 10000, "friendly": [
