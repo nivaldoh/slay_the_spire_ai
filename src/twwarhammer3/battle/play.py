@@ -197,7 +197,8 @@ def _drive(config, policy, mailbox, not_battle, result, event, started) -> None:
             event("roster", observation=observation)
         if observation.get("result"):
             result.update(status=observation["result"], battle_ms=observation.get("time_ms"),
-                          battle_s=round(observation.get("time_ms", 0) / 1000))
+                          battle_s=round(observation.get("time_ms", 0) / 1000),
+                          final=observation.get("final"))
             event("result", observation=observation)
             return
         ack = observation.get("orders")

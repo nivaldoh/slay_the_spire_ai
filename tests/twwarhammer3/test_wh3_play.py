@@ -13,6 +13,7 @@ from twwarhammer3.protocol import BattleRestarted, MailboxTimeout
 
 def observation(seq, time_ms, *, battle="b1", phase="Deployed", result=None, ack=False,
                 awaiting=False, enemy=True):
+    final = {"friendly": {"men": 50, "men0": 100}, "enemy": {"men": 9, "men0": 90}}
     return {
         "schema": 1, "job": "job", "battle": battle, "seq": seq, "phase": phase,
         "time_ms": time_ms, "speed": 1, "awaiting_orders": awaiting, "remaining_ms": 100000,
@@ -22,7 +23,7 @@ def observation(seq, time_ms, *, battle="b1", phase="Deployed", result=None, ack
         "enemy_roster": [{"id": "e1", "type": "dwf_inf_b"}],
         "enemy": [{"id": "e1", "type": "dwf_inf_b", "class": "infantry", "x": 50.0, "z": 50.0,
                    "men": 90, "men0": 90, "hp": 1.0, "state": []}] if enemy else [],
-        "orders": None, "result": result, "ack": ack,
+        "orders": None, "result": result, "ack": ack, "final": final if result else None,
     }
 
 
@@ -206,12 +207,14 @@ def test_job_plays_episodes_with_restarts_and_records_rows(tmp_path, harness):
     assert mailbox.menu == [{"find": ["button_battle"], "click": True}]
     assert mailbox.session["interval_ms"] == 5000 and mailbox.job == "attack-v1-20261013"
     rows = list(csv.DictReader(results.open()))
-    assert [(r["episode"], r["outcome"], r["model"], r["harness"], r["mode"]) for r in rows] == [
-        ("episode-0000", "won", "attack_nearest", "1", "realtime"),
-        ("episode-0001", "lost", "attack_nearest", "1", "realtime"),
+    assert [(r["episode"], r["outcome"], r["model"], r["harness"], r["mode"], r["own_left"],
+             r["enemy_left"]) for r in rows] == [
+        ("episode-0000", "won", "attack_nearest", "1", "realtime", "0.5", "0.1"),
+        ("episode-0001", "lost", "attack_nearest", "1", "realtime", "0.5", "0.1"),
     ]
     table = stats.summary(results)
-    assert "| small | attack_nearest |  | 1 | realtime | 2 | 1 | 1 | 0 | 0 |" in table
+    assert ("| small | attack_nearest |  | 1 | realtime | 2 | 1 | 1 | 0 | 0 | 4 | 0.50 | 0.10 |"
+            in table)
     rebuilt = tmp_path / "rebuilt.csv"
     assert stats.rebuild(tmp_path, rebuilt) == 2
     assert rebuilt.read_text() == results.read_text()

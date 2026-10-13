@@ -186,7 +186,7 @@ local function observation(now, awaiting)
             enemy = {faction = get(bm:get_first_non_player_army(), "faction_key", "?")},
         },
         friendly = friendly, enemy_roster = roster, enemy = enemy,
-        orders = state.applied, result = state.result,
+        orders = state.applied, result = state.result, final = state.final,
     }
 end
 
@@ -269,6 +269,16 @@ local function try_end_deployment()
     log("start button click: " .. (clicked and "ok" or clean_error(err2)))
 end
 
+-- True strength of one side, alive and at the start, over every unit seen or not.
+local function strength(entries)
+    local men, men0 = 0, 0
+    for _, entry in pairs(entries) do
+        men = men + get(entry.unit, "number_of_men_alive", 0)
+        men0 = men0 + get(entry.unit, "initial_number_of_men", 0)
+    end
+    return {men = men, men0 = men0}
+end
+
 local function finish()
     if state.finished then return end
     local battle = bm.battle
@@ -282,6 +292,8 @@ local function finish()
         state.result = winner == mine and "won" or "lost"
     end
     state.finished = true
+    -- For evaluation only: the result observation ends the episode before any decision.
+    state.final = {friendly = strength(state.friendly), enemy = strength(state.enemy)}
     for _, entry in pairs(state.friendly) do
         pcall(function() entry.controller:release_control() end)
     end

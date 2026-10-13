@@ -14,7 +14,11 @@ Observation shape::
      "remaining_ms", "armies": {"player": {"faction"}, "enemy": {"faction"}},
      "friendly": [unit...], "enemy_roster": [{"id", "type"}...], "enemy": [visible unit...],
      "orders": {"request", "based_on", "applied_ms", "results": [{"unit", "ok", "error"?}]} | null,
-     "result": "won" | "lost" | "draw" | null}
+     "result": "won" | "lost" | "draw" | null,
+     "final": {"friendly": {"men", "men0"}, "enemy": {...}} | null}
+
+``final`` is both armies' true strength, published only with the result (after the last
+decision), for evaluation.
 
 Writers publish whole files (temporary file, then rename); readers treat a missing,
 locked or half-parsed file as "not yet".

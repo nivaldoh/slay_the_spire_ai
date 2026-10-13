@@ -18,13 +18,20 @@ RESULTS_PATH = REPO_ROOT / "docs/twwarhammer3/results.csv"
 JOBS_ROOT = REPO_ROOT / "runs/twwarhammer3/battle"
 FIELDS = [
     "date", "job", "episode", "scenario", "model", "effort", "harness", "source", "mode",
-    "speed", "interval_s", "outcome", "battle_s", "decisions", "invalid", "delay_s", "usd",
+    "speed", "interval_s", "outcome", "battle_s", "own_left", "enemy_left", "decisions",
+    "invalid", "delay_s", "usd",
 ]
 
 
 def harness_version(job: str) -> str:
     match = re.search(r"-v(\d+(?:\.\d+)*)-", job)
     return match.group(1) if match else ""
+
+
+def left(result: dict, side: str):
+    """The share of a side's men alive at the end (routing ones included), or ''."""
+    final = (result.get("final") or {}).get(side) or {}
+    return round(final["men"] / final["men0"], 2) if final.get("men0") else ""
 
 
 def row(job: Path, episode: Path) -> dict:
@@ -47,6 +54,8 @@ def row(job: Path, episode: Path) -> dict:
         "interval_s": config.get("interval_ms", 0) / 1000,
         "outcome": result["status"],
         "battle_s": round(result.get("battle_ms", 0) / 1000),
+        "own_left": left(result, "friendly"),
+        "enemy_left": left(result, "enemy"),
         "decisions": result.get("decisions", 0),
         "invalid": result.get("invalid", 0),
         "delay_s": round(statistics.mean(delays) / 1000, 2) if delays else "",
@@ -87,17 +96,22 @@ def summary(path: Path) -> str:
             groups[(item["scenario"], item["model"], item["effort"], item["harness"],
                     item["mode"])].append(item)
     lines = ["| Scenario | Model | Effort | Harness | Mode | Episodes | Won | Lost | Draw | "
-             "Other | Mean battle s | Mean delay s | USD |", "|" + "---|" * 13]
+             "Other | Mean battle s | Own left | Enemy left | Mean delay s | USD |",
+             "|" + "---|" * 15]
     for key, items in sorted(groups.items()):
         outcomes = [item["outcome"] for item in items]
         battle = [float(item["battle_s"]) for item in items if item["battle_s"]]
         delays = [float(item["delay_s"]) for item in items if item["delay_s"]]
+        own = [float(item["own_left"]) for item in items if item.get("own_left")]
+        enemy = [float(item["enemy_left"]) for item in items if item.get("enemy_left")]
         usd = sum(float(item["usd"] or 0) for item in items)
         lines.append("| " + " | ".join([
             *key, str(len(items)), str(outcomes.count("won")), str(outcomes.count("lost")),
             str(outcomes.count("draw")),
             str(sum(o not in ("won", "lost", "draw") for o in outcomes)),
             f"{statistics.mean(battle):.0f}" if battle else "",
+            f"{statistics.mean(own):.2f}" if own else "",
+            f"{statistics.mean(enemy):.2f}" if enemy else "",
             f"{statistics.mean(delays):.1f}" if delays else "", f"{usd:.2f}",
         ]) + " |")
     return "\n".join(lines)
