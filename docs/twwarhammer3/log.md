@@ -58,3 +58,18 @@ Reviews (two episodes): moves ordered to units in melee went from none in v1 to 
 10; after the withdrawals began the enemy lost almost no men; the lord flip-flopped
 between committing and withdrawing over a 3-point health gap, and lost 42% health while
 disengaging.
+
+## v3: commit and focus (best so far)
+
+Change (prompt): v2's withdrawal triggers replaced by a commit-and-focus doctrine: keep
+units in melee and send help into the enemy's flank instead; focus the enemy closest to
+breaking and the enemy lord; the lord leaves melee only below 35% health; spent missile
+units fight in melee; cavalry wait until the lines lock; "back" means toward our start.
+
+Job `llm-luna-v3-20261013` (source `2681d04`): lost at 303 s (38% of our men left, 49%
+of the enemy's), won at 419 s (11% against 18%), won at 392 s (28% against 24%); mean
+delay 4.5 s, think time back to v1's level.
+
+Across all episodes so far, the model orders `run` on about 90% of its moves and attacks
+(v1: 62 of 67; v2: 296 of 324), while `attack_nearest` never runs; the baseline's units
+always reach their first melee fresh, the model's often tired or exhausted.
