@@ -151,3 +151,12 @@ probes through `menu.json`, `stats` grouping scripted rows by source revision.
 
 Job `llm-luna-v6-20261013` (source `ac3c0bd`): won at 357 s (26% against 34%), won at
 496 s (8% against 24%), lost at 428 s (12% against 38%).
+
+Reviews: the new lines were used. The model put units back on the enemy lord after the
+game had moved them ("game's choice") 6-8 times per episode, and the horsemen's attack
+orders were no longer replaced over and over. But the always-on gang-up then misfired:
+in the loss the Bloodletters and Chaos Warriors stood "on" the enemy lord for 80 s while
+his health fell about 1 point a turn (he stood inside his own infantry), and the Dwarf
+Warriors wavered untouched beside them; the Herald was sent back at him 24-26 points
+behind. Support fire stayed useless (14 Skullcannon shots and 270 axes for about 2 kills
+in the first win); the hurt-lord rule parked the Herald for most of two battles.
