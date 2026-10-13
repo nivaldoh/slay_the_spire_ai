@@ -319,3 +319,10 @@ Empire jobs Wissenland, Empire or Golden Order, Dwarf jobs Dwarfs, Karak Kadrin 
 Ancestral Throng. Every comparison between versions above carries that variation (the
 first v6 Khorne job, 2 wins of 3, is the only one with wins and played Khorne against
 Arbaal, as did v9-v11's). The next fix pins each side's faction in the scenario.
+
+v12 was reverted (`main` runs v10) and the scenario steps now pin each side's faction
+(`61c5f7f`). First battle with pinned factions, Khorne against Khorne, v10
+(`llm-luna-v10-kho-pinned-20261013`, stopped after it at the owner's return): lost at
+248 s (32% against 52%). The enemy deployed at about (-23, -295), as in v12's job, not at
+(-148, -267) as with Arbaal's faction. Results before `61c5f7f` mix factions; versions
+should be compared again with pinned factions.

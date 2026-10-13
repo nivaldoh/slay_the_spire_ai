@@ -95,6 +95,7 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 | v9 melee | | 0/3, 35/65% | 1/3, 26/47% |
 | v10 shooters (`main`) | 0/3, 37/57% | 0/3, 42/68% | 0/3, 19/58% |
 | v11 lords (reverted) | 0/3, 34/76% | | 0/3, 26/61% |
+| v12 v6 + v10 fire (reverted) | | | 0/3, 16/55% |
 
 - With guns, crossbows or artillery on both sides, Luna lost every battle (0 of 11 in the
   Empire mirror, 0 of 11 in the Dwarf mirror), and so did `attack_nearest` (Empire, 0 of
@@ -121,21 +122,24 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 
 ## Next
 
-1. `main` runs v10 (v11 reverted after 0 of 6); v6's prompt (`6777a64`) is better in the
+1. Re-measure with pinned factions: until `61c5f7f` the game chose each side's faction
+   within the race, and it varied between jobs (see [log.md](log.md)), so the table above
+   mixes factions. Play v6 and v10 again, five or six battles per mirror.
+2. `main` runs v10 (v11 and v12 reverted after 0 of 6 and 0 of 3); v6's prompt (`6777a64`) is better in the
    Khorne mirror and on Khorne vs Dwarfs (5/6, untested with v8-v10). Find which v8-v10
    rule costs the melee mirror (v8's cavalry exemption from the lord gang-up and v10's
    fire doctrine for the Skullcannon and horsemen are suspects), with five or six battles
    per version. A shorter prompt is worth testing for think time.
-2. Candidate on branch `wh3-fire-report` (`832b233`, built on v9): the mod publishes kill
+3. Candidate on branch `wh3-fire-report` (`832b233`, built on v9): the mod publishes kill
    counts and enemy targets; an attack order shows shots fired and men killed since it
    was given, enemy lines show their target, our units show "attacked by e3 15 m rear".
    Ranked second by three reviews; untested in the engine (check that AI units report
    `current_target` and that `number_of_enemies_killed` returns numbers).
-3. A melee mode for units with ammunition (`unitcontroller:melee`, `attack_unit`'s
+4. A melee mode for units with ammunition (`unitcontroller:melee`, `attack_unit`'s
    primary-attack flag) and an approach point for attack orders (go there, then attack),
    both proposed by reviews; untested in the engine.
-4. The AI stats modifier (1.1) for mirror battles, and more mirrors (other races, maps).
-5. Unmerged candidate `wh3-v4-info` (`aa1ece5`): compass directions, enemy missiles in
+5. The AI stats modifier (1.1) for mirror battles, and more mirrors (other races, maps).
+6. Unmerged candidate `wh3-v4-info` (`aa1ece5`): compass directions, enemy missiles in
    reach and both armies' start points, for orientation errors the reviews still find.
 
 ## Commands
