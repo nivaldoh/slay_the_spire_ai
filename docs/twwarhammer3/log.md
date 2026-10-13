@@ -299,3 +299,12 @@ enemy's, in points): v6 Empire -48, Dwarfs -28, Khorne -8 (2 wins of 6); v10 Emp
 Dwarfs -26, Khorne -39 (no win in 9). v8-v10 traded the melee mirror for the gun mirrors;
 `main` keeps v10, and v6's prompt is at `6777a64` for comparison. Spend for the session
 about $0.25 (ledger total $0.68).
+
+## v12: v6's melee rules with v10's fire rules
+
+Change (prompt): v6's prompt with only v10's two fire bullets (shooters hit infantry in
+the open until contact; artillery then fires at missile units, then artillery; missile
+units never trade fire with enemy missile infantry; a shooter moves before it attacks).
+v8's cavalry rules and v9's and v11's lord rules are left out. The mirrors split the
+versions (v6 best in the Khorne mirror, v10 in the Empire mirror), and v10's fire rules
+are the change with the clearest measured basis.
