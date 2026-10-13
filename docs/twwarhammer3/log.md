@@ -326,3 +326,41 @@ v12 was reverted (`main` runs v10) and the scenario steps now pin each side's fa
 248 s (32% against 52%). The enemy deployed at about (-23, -295), as in v12's job, not at
 (-148, -267) as with Arbaal's faction. Results before `61c5f7f` mix factions; versions
 should be compared again with pinned factions.
+
+
+## v13: continuous decisions and expanded battle controls
+
+Owner-requested controller change. Implementation starts at `863d10b`; final code
+`6db8111`. Tactical rules remain based on v10, with command instructions updated.
+The default post-application wait is 0 ms (was 5000); positive `--interval-ms` remains
+an explicit pacing option. Terminal observations now record a matching acknowledgement
+before ending the episode, and decision observations record `since_previous_applied_ms`.
+
+The policy can select auto/melee/ranged attacks, queue moves and a final attack, choose
+formation width, toggle supported fire-at-will/skirmish/guard/spacing/formed-attack
+behaviors, and issue owned active abilities at self, friendly/visible enemy units or a
+ground point. Python validation and Lua dispatch enforce the targets/capabilities.
+Acknowledgements identify each order by index and distinguish queued from issued.
+A rejected queued successor does not erase the preceding successful move from memory.
+The prompt shows supported toggles, width, submitted queues, active ability keys,
+permission and last issue times, plus the player's magic pool/reserve. Cooldowns and
+uses remaining are explicitly unknown: `can_perform_special_ability` stays true after
+casting. An ability/queue acknowledgement is not a completion report.
+
+Validation: 71 WH3 tests pass; `ruff check src/twwarhammer3 tests/twwarhammer3` passes.
+Real engine evidence is in `runs/twwarhammer3/capability-probes/` (ignored), with source
+fingerprints, engine/pack pins, script copies, observations, requests, acknowledgements
+and checks. `khorne-dwarfs-r3` verified toggles, a 20 m width, queued waypoints, ranged
+fire followed by melee with 453 ammunition left, and rejection of successors to an
+unreachable move. Foe Seeker raised the lord's walk/run speeds from 1.9/4.8 to 2.4/6.0.
+Its 60-second Luna smoke made seven decisions, six acknowledged (zero invalid); every
+next decision used the acknowledgement snapshot with 0 ms added gap. Mean think time
+9.399 s, wall roundtrip 9.744 s; $0.003063. The final call ran across the episode timeout.
+
+`wizard-r3` verified friendly Glittering Robe, enemy Plague of Rust and ground Searing
+Doom orders with magic-pool decreases of 5, 4 and 6 respectively; a unit trying to use
+another unit's ability was rejected. Earlier probes found the undocumented requirement
+to pass a unit even for a self ability; the dispatcher now passes the caster. Spacing
+and formed-attack toggles were unavailable on the tested armies and correctly omitted.
+These are diagnostic battles with scripted prefixes, not comparable policy outcomes,
+so they add no rows to the results register. See integration.md for the limits.

@@ -4,16 +4,20 @@ Updated 2026-10-13. Read this first: what is running, what is current, what come
 History lives with each track ([full runs](fullrun/log.md),
 [first combat](first-combat/README.md)), not here.
 
-## Active work (last verified 2026-10-13 16:40 UTC)
+## Active work (last verified 2026-10-13 18:21 UTC)
 
-Owner-requested WH3 interface work: remove the default wait after orders apply; expose
-attack modes, queued orders, formation width, behavior toggles and abilities, including
-their observation/acknowledgement support. Implementation and engine validation underway.
+WH3 interface work completed: no extra wait by default; explicit attack modes, queued
+moves/attacks, formation width, supported behavior toggles and self/unit/ground abilities.
+The model also sees the added controls' state and its Winds of Magic. Code `6db8111`,
+71 WH3 tests and Ruff pass. Original-engine probes plus a short Luna run are in
+`runs/twwarhammer3/capability-probes/`; every following LLM decision had 0 ms extra
+battle-time gap. Spell cooldowns remain unknown and are labelled that way. All probes
+are stopped; no game/controller is running. See the WH3 track log's v13 entry.
 
 WH3 mirror battles (owner away 11:25-16:25 UTC): `gpt-6-luna` against the game AI with
 the same army on both sides (Khorne, Dwarf, Empire), and prompt versions v8-v11 chosen
 by the review workflow. Last job: `runs/twwarhammer3/battle/llm-luna-v10-kho-pinned-20261013` (stopped at the
-owner's return). Nothing is running.
+owner's return). That experiment and the subsequent capability probes are stopped.
 The Spire v10 job (`runs/fullrun/llm-luna-v10-dev-20261013`) died on floor 10 when WSL
 restarted at 04:36 UTC; Spire autoresearch is idle (v10 untested).
 
@@ -27,10 +31,12 @@ the selector's popup, units recruited by double-click), plays episodes in real t
 restarts through the rematch button, with no desktop input. On Khorne vs Dwarfs
 `attack_nearest` wins 3 of 3 and v6 won 5 of 6. In mirror battles Luna has not won with
 guns on both sides (Empire 0 of 11+, Dwarfs 0 of 11) and won 3 of 18 Khorne mirrors (2 of 6 for v6, none for v10); the
-AI's stats modifier preference is 1.1. `main` runs v10 (prompt changes v8-v10; v11 and v12 reverted). Until `61c5f7f` the
+AI's stats modifier preference is 1.1. `main` now runs the v13 controller with v10
+tactical rules (v11 and v12 tactics reverted). Until `61c5f7f` the
 game picked each side's faction within the race, so earlier mirror results mix factions. API spend about $0.7 of its own $25 ledger.
 
-Next: the README's list; first re-measuring with pinned factions, then the fire-report candidate (branch `wh3-fire-report`) and
+Next: evaluate the v13 interface with pinned factions (earlier runs had a 5 s extra wait),
+then the fire-report candidate (branch `wh3-fire-report`) and
 an owner decision on the AI stats modifier for mirrors. Branch `wh3-v4-info` holds an
 older unmerged state candidate.
 

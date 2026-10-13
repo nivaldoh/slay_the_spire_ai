@@ -123,3 +123,54 @@ Verified 2026-10-13 in `runs/twwarhammer3/battle/attack-m3-20261013` (Khorne vs 
 `goto_location_angle_width` width; `is_hidden()` for enemies in
 cover; `os.rename` collisions while the controller reads; a restart requested before the
 battle is decided (the script calls `RestartBattle` after 3 s without a results popup).
+
+## Expanded controller interface (2026-10-13)
+
+Source starts at `863d10b`, with engine corrections in `50e3bee`, `0511302` and
+`d76c5fa`. Evidence: `runs/twwarhammer3/capability-probes/`; these are diagnostic
+battles with scripted interventions, not policy win-rate evaluations.
+
+- `--interval-ms` defaults to zero. The observation acknowledging one request can be
+  passed straight into the next decision. The live Luna smoke in `khorne-dwarfs-r3`
+  issued seven decisions, six acknowledged before its time limit: every following
+  decision used the acknowledgement's battle timestamp (0 ms extra gap), with no
+  rejected orders. Think time averaged 9.399 s and wall roundtrip 9.744 s over the six
+  acknowledgements. Cost $0.003063. The seventh request was outstanding at truncation.
+  A positive interval still deliberately waits after issuing a batch.
+- Friendly observations expose only supported behavior keys from `can_use_behaviour`,
+  with `is_behaviour_active` values. Fire-at-will, skirmish and guard (`defend`) were
+  toggled and read back in Khorne battles. `change_formation_spacing` and `formed_attack`
+  were not supported by those units and are not offered for them.
+- Move width 20 m was read back as 20; two queued waypoints reached the second point.
+  `goto_location_angle_width_q` and `goto_location_q` are native engine queues.
+  The formation center can stop several metres from the ordered point; a short-distance
+  probe with a 5 m tolerance failed, while the longer path with a 15 m tolerance passed.
+- An attack has `auto`, `ranged` or `melee` mode. Immediate attacks set `melee(bool)`;
+  missile units' melee attacks select the secondary attack (`attack_unit`'s primary
+  flag false), while units without missile range retain their primary melee attack.
+  Queued attacks use `attack_unit_q` and its attack-method flag, so they do not toggle
+  the mode before the preceding move finishes. In `khorne-dwarfs-r3`, the horsemen
+  fired in ranged mode, then entered melee after a queued attack with 453 ammo left.
+- Each acknowledgement has a one-based `index`, `unit`, `ok`, and `queued` flag.
+  A failed move rejects its queued successors; an unreachable first point was verified.
+  An acknowledgement reports a call issued to the engine, not visible execution. For
+  native queues `applied_ms` is submission time, not the later start of each step.
+  `command_queue` is labelled as the last submitted sequence; completion is unconfirmed.
+- Active ability keys come from `owned_non_passive_special_abilities` and are checked
+  again at dispatch. Calling `perform_special_ability(key)` without a unit argument
+  raised `battle.unit expected, got no value` in the engine despite the optional target
+  in the documentation. Self abilities pass the caster explicitly. Foe Seeker worked:
+  the Herald's walk/run speeds rose from 1.9/4.8 to 2.4/6.0.
+- `can_perform_special_ability` stayed true after Foe Seeker was cast. It is exposed as
+  engine permission, not readiness; cooldown and uses remaining are explicitly unknown.
+  Each ability reports its last issue time. The player's Winds of Magic pool and reserve
+  are read from its army; individual spell costs are not currently supplied.
+- `wizard-r3` (`6db8111`) used Balthasar Gelt (`wh_main_emp_cha_balthasar_gelt_0`)
+  against the Empire mirror. Glittering Robe on friendly swordsmen reduced the magic
+  pool 12 -> 7; Plague of Rust on visible enemy infantry 11 -> 7; ground-targeted
+  Searing Doom 9 -> 3. Each order was acknowledged. A swordsman trying to use the
+  wizard's ability was rejected as `unavailable_ability` by the Lua dispatcher.
+  Separate casts when probing their effects: back-to-back spell requests in `wizard-r2`
+  produced ambiguous pool changes (a later command can interrupt an earlier cast).
+  Pool expenditure proves acceptance beyond the API call, not final damage or a
+  completed effect on every target. Cooldown/damage attribution remains unmeasured.

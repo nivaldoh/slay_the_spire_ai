@@ -2,8 +2,8 @@
 
 Second game, started 2026-10-13. The question: can an API model (`gpt-6-luna`, low
 effort, through `src/gameai/llm.py`) command a small army in a real-time custom battle
-against the game AI, with the delay between the state it saw and the moment its orders
-take effect measured and told to it, and can the autoresearch loop improve its
+against the game AI, with the delay between the state it saw and its orders
+being issued to the engine measured and told to it, and can the autoresearch loop improve its
 scaffolding? Campaign mode and model training come later.
 [integration.md](integration.md) holds the verified engine facts; [guide.txt](guide.txt)
 is the owner's modding guide that set the shape.
@@ -23,13 +23,29 @@ way. There is no external game API; the mod is the API.
   sets speed, pause, intervals; `menu.json` carries frontend steps (find a UI component by
   id and click it, dump the UI tree, press a key, wait); `observation.json` is rewritten by
   the battle script every observation interval; `orders.json` holds one outstanding
-  request (move, attack, halt per unit, or a `restart` control). The scripts are inert
+  request (unit orders or a `restart` control). The scripts are inert
   without a session file, so the installed pack changes nothing in ordinary play.
 - Real-time by design: the battle keeps running while the model thinks. Every request
   carries the observation it was based on; the acknowledgement carries the battle time at
-  which the orders applied, so `delay_ms` is measured per decision and goes into the next
-  prompt. `--pause` is a labelled alternative (the script pauses after publishing and
+  which the orders were issued or queued. `delay_ms` is measured per decision and goes
+  into the next prompt. `--pause` is a labelled alternative (the script pauses after publishing and
   resumes when orders arrive; polling runs on UI time so it survives the pause).
+- Decisions now start as soon as the preceding batch is acknowledged. `--interval-ms`
+  defaults to **0**; a positive value explicitly adds battle time after application.
+  `--observe-ms` controls state publication, independently of decision pacing. Traces
+  include `since_previous_applied_ms` so that observation age and intentional pacing
+  can be distinguished from model/application latency.
+- Orders: `move` (position, facing, width), `attack` (auto/melee/ranged), `halt`,
+  `behaviour` (fire-at-will, skirmish, guard/defend, spacing, formed attack), and
+  `ability` (owned active ability, self/unit/ground target). A move can be followed by
+  queued moves and a final attack in one reply. Each acknowledgement identifies its
+  one-based order index, including multiple orders for the same unit. Queue acceptance
+  does not prove execution; the state labels it as the last submitted sequence.
+  Friendly units show supported toggles and their state, owned active ability keys and
+  permission (cooldown unknown), last ability issue times, width and the last requested
+  attack mode. The state also gives the player's Winds of Magic pool/reserve.
+  [Integration facts](integration.md#expanded-controller-interface-2026-10-13) records
+  the engine probes and their limits.
 - Policies see dicts (`protocol.py`): friendly units in full, enemy units only while
   `is_visible_to_alliance` says the player can see them, plus the enemy roster as the
   custom battle screen shows it. `battle/scripted.py` has `hold`, `attack_nearest` and
@@ -43,7 +59,17 @@ way. There is no external game API; the mod is the API.
   `result.json` and `mod.log`; each finished episode appends a row to
   [results.csv](results.csv). Versions are logged in [log.md](log.md).
 
-## Status (2026-10-13 08:20 local)
+## Current interface (2026-10-13)
+
+Controller v13 keeps the v10 tactical rules, adds the controls listed above and removes
+extra waiting by default. Engine probes and a short Luna run are complete: 71 WH3 tests
+and Ruff pass; all six acknowledged decisions in the live Luna smoke led directly to the
+next decision (0 ms added battle-time gap). Missile cavalry fired and then entered melee
+with ammunition left; queued moves, width, toggles, self abilities and friendly/enemy/
+ground spell targets were exercised. Spell cooldowns, uses remaining and per-spell costs
+are still unknown; the prompt says so. These probes do not measure win-rate improvement.
+
+## Earlier battle results (2026-10-13 08:20 local)
 
 | Milestone | State | Evidence |
 |---|---|---|
@@ -55,7 +81,7 @@ way. There is no external game API; the mod is the API.
 | 5 Restart | done | rematch button and confirmation; 40 episodes in 14 jobs, none an infrastructure failure |
 | 6 Scripted baselines | done | `attack_nearest`: 3 wins of 3 at about 345 s |
 | 7 First LLM battles | done | v1: 1 win of 3 |
-| 8 Autoresearch loop | running | [log.md](log.md): v2 0/3, v3 3/5, v4 1/3 (1/3 paused), v5 4/6, v6 5/6, v7 2/6 (reverted); v8-v11 on mirror battles, no mirror win yet with guns |
+| 8 Autoresearch loop | stopped | [log.md](log.md): v2 0/3, v3 3/5, v4 1/3 (1/3 paused), v5 4/6, v6 5/6, v7 2/6 (reverted); v8-v11 on mirror battles, no mirror win yet with guns |
 | 9 Several scenarios | done | `configs/twwarhammer3/scenarios.json`: each side's race is picked in the selector's popup; Khorne, Dwarf and Empire mirrors |
 
 Results by version: `python -m twwarhammer3 stats`. With outcomes this noisy (a version's
@@ -122,10 +148,13 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 
 ## Next
 
-1. Re-measure with pinned factions: until `61c5f7f` the game chose each side's faction
+1. Evaluate the expanded interface (v13) with pinned factions and compare it to the
+   earlier interface; record the interval explicitly (old runs used 5000 ms, v13 uses 0).
+   Re-measure with pinned factions: until `61c5f7f` the game chose each side's faction
    within the race, and it varied between jobs (see [log.md](log.md)), so the table above
    mixes factions. Play v6 and v10 again, five or six battles per mirror.
-2. `main` runs v10 (v11 and v12 reverted after 0 of 6 and 0 of 3); v6's prompt (`6777a64`) is better in the
+2. `main` uses v10 tactics with the v13 interface (v11 and v12 tactics were reverted
+   after 0 of 6 and 0 of 3); v6's prompt (`6777a64`) is better in the
    Khorne mirror and on Khorne vs Dwarfs (5/6, untested with v8-v10). Find which v8-v10
    rule costs the melee mirror (v8's cavalry exemption from the lord gang-up and v10's
    fire doctrine for the Skullcannon and horsemen are suspects), with five or six battles
@@ -135,9 +164,8 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
    was given, enemy lines show their target, our units show "attacked by e3 15 m rear".
    Ranked second by three reviews; untested in the engine (check that AI units report
    `current_target` and that `number_of_enemies_killed` returns numbers).
-4. A melee mode for units with ammunition (`unitcontroller:melee`, `attack_unit`'s
-   primary-attack flag) and an approach point for attack orders (go there, then attack),
-   both proposed by reviews; untested in the engine.
+4. The melee mode and move-then-attack interface are now implemented and engine-tested;
+   evaluate how well the model uses them, along with spells and behavior toggles.
 5. The AI stats modifier (1.1) for mirror battles, and more mirrors (other races, maps).
 6. Unmerged candidate `wh3-v4-info` (`aa1ece5`): compass directions, enemy missiles in
    reach and both armies' start points, for orientation errors the reviews still find.
