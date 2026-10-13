@@ -69,11 +69,18 @@ function ui.act(uic, step)
     return table.concat(done, ", ")
 end
 
--- One step that needs no waiting: dump, key, find (once), log, or an expression on a
--- context object ({"context": "CcoBattleUnit", "id": "...", "expression": "..."}).
+-- One step that needs no waiting: dump, key, find (once), log, advisor text ("" closes
+-- it), or an expression on a context object ({"context": "CcoBattleUnit", "id": "...",
+-- "expression": "..."}).
 function ui.run(step, directory)
     if step.log then
         return "log " .. tostring(step.log)
+    elseif step.advice == "" then
+        bm:close_advisor()
+        return "advisor closed"
+    elseif step.advice then
+        common.advice(step.advice)
+        return "advice shown"
     elseif step.expression then
         local value = common.get_context_value(step.context, step.id or "", step.expression)
         return step.expression .. " = " .. tostring(value)
