@@ -186,9 +186,21 @@ uv run python -m twwarhammer3 stats                  # results.csv by policy, ha
 uv run python -m twwarhammer3 spend                  # runs/twwarhammer3/llm-spend.jsonl total
 ```
 
-Nothing sends desktop input: the first menu step waits (up to 240 s) for the main menu
-while the intro movies play out. An Escape press sent through `SendInput` once landed in
-the Spire game and opened its settings screen, so the intro skip was removed.
+`launch` and `play` automatically skip startup videos. While WH3 is stopped, runtime
+preparation sets `fe_game_intro_video_enabled false` in the existing profile and installs
+`data/zzz_twwarhammer3_skip_intro.pack`. This small PFH5 movie pack auto-loads for every
+launch, including ordinary Steam launches without the project's mod list. It overrides
+the five splash clips and all 13 localized warning clips with a blank video; the main
+cinematic (`gam_int.ca_vp8`) stays intact for the in-game viewer. Other preferences,
+comments and line endings are preserved, and identical startup files are not rewritten.
+
+`doctor` reports the installed startup pack's hash and effective preference without
+changing anything. Deployment evidence is saved in `launch`'s `deployment.json` and
+`play`'s manifest. Nothing sends desktop input; the first menu step still waits (up to
+240 s) for the main menu. To reverse the skip, stop WH3, remove the generated movie pack
+from `data/`, and set the preference back to `true`. The next project launch reinstalls
+the skip. The blank clip's source and MIT license are in
+`src/twwarhammer3/assets/LICENSE.twpatcher`.
 
 ## The loop
 

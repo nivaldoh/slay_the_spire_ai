@@ -1,6 +1,6 @@
 """PFH5 pack files: build the mod pack, list and extract vanilla packs.
 
-Layout (little-endian): ``PFH5``, u32 type (3 = mod), u32 dependency count, u32
+Layout (little-endian): ``PFH5``, u32 type (3 = mod, 4 = movie), u32 dependency count, u32
 dependency index bytes, u32 file count, u32 file index bytes, u32 timestamp; the
 dependency index (NUL-terminated pack names); the file index, one ``u32 size, u8
 compressed, path, NUL`` entry per file with backslash paths; then the file data in
@@ -16,6 +16,7 @@ from pathlib import Path
 
 MAGIC = b"PFH5"
 MOD = 3
+MOVIE = 4
 HEADER = struct.Struct("<4sIIIIII")
 
 
@@ -28,16 +29,24 @@ def files_in(root: Path) -> dict[str, bytes]:
     return files
 
 
-def write_pack(path: Path, files: dict[str, bytes], *, pack_type: int = MOD) -> None:
-    """Write an uncompressed pack atomically; a fixed timestamp keeps its hash reproducible."""
+def pack_bytes(files: dict[str, bytes], *, pack_type: int = MOD) -> bytes:
+    """Encode an uncompressed pack with a fixed timestamp for reproducible hashes."""
     names = sorted(files, key=str.lower)
     index = b"".join(
         struct.pack("<I", len(files[name])) + b"\0" + name.encode() + b"\0" for name in names
     )
     header = HEADER.pack(MAGIC, pack_type, 0, 0, len(names), len(index), 0)
+    return header + index + b"".join(files[name] for name in names)
+
+
+def write_pack(path: Path, files: dict[str, bytes], *, pack_type: int = MOD) -> None:
+    """Install atomically, leaving an identical pack untouched."""
+    data = pack_bytes(files, pack_type=pack_type)
+    if path.is_file() and path.read_bytes() == data:
+        return
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_bytes(header + index + b"".join(files[name] for name in names))
+    temporary.write_bytes(data)
     os.replace(temporary, path)
 
 

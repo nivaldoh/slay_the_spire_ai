@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from gameai.provenance import REPO_ROOT
+from gameai.provenance import REPO_ROOT, write_json
 
 LEDGER_PATH = REPO_ROOT / "runs/twwarhammer3/llm-spend.jsonl"
 RESULTS_PATH = REPO_ROOT / "docs/twwarhammer3/results.csv"
@@ -126,6 +126,7 @@ def main() -> int:
         output.mkdir(parents=True, exist_ok=True)
         with RuntimeLock():
             record = prepare_runtime()
+            write_json(output / "deployment.json", record)
             print(json.dumps(record, sort_keys=True))
             mailbox = Mailbox(BRIDGE_DIR, job=job)
             mailbox.reset()

@@ -14,7 +14,7 @@ from pathlib import Path
 from gameai.provenance import sha256
 from gameai.windows import probe
 from gameai.windows_game import conflicting_games
-from twwarhammer3.engine import runtime
+from twwarhammer3.engine import runtime, startup
 
 
 def collect_diagnostics() -> dict:
@@ -37,6 +37,13 @@ def collect_diagnostics() -> dict:
         preferences = None
         blockers.append(f"Cannot read the game preferences: {exc}")
     try:
+        startup_status = startup.status(
+            runtime.GAME_DIR, runtime.user_dir() / "scripts/preferences.script.txt"
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        startup_status = {"enabled": False, "error": str(exc)}
+        blockers.append(f"Cannot inspect the startup skip: {exc}")
+    try:
         conflicts = conflicting_games(Path(runtime.WINDOWS_GAME_DIR), runtime.CONFLICTS)
         if conflicts:
             pids = ", ".join(str(process["ProcessId"]) for process in conflicts)
@@ -53,6 +60,7 @@ def collect_diagnostics() -> dict:
         "blockers": blockers,
         "game": game,
         "preferences": preferences,
+        "startup": startup_status,
         "mod": {
             "files": files,
             "seen_in_mod_log": mod_log.is_file() and "twwarhammer3" in mod_log.read_text(
@@ -76,5 +84,11 @@ def render_diagnostics(report: dict) -> str:
             f"{key}={value}" for key, value in sorted(report["preferences"].items())
         ))
     lines.append(f"Mod files: {', '.join(report['mod']['files'])}")
+    startup_status = report["startup"]
+    lines.append("Startup skip: " + ("installed (all launches)" if startup_status["enabled"]
+                                    else "needs preparation"))
+    if "pack" in startup_status:
+        lines.append(f"Startup pack: {startup_status['pack']['path']} "
+                     f"(sha256={startup_status['pack']['sha256'] or 'missing'})")
     lines += [f"Blocked: {blocker}" for blocker in report["blockers"]]
     return "\n".join(lines)

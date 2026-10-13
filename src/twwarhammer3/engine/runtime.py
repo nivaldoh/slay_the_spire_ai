@@ -4,6 +4,8 @@ A launch builds the mod pack from ``src/twwarhammer3/mod`` into ``C:/wh3-agent/m
 writes a mod list into the game folder, copies the Windows supervisor, and starts
 ``Warhammer3.exe <mod list>;`` the way third-party mod managers do. The in-game
 scripts stay inert unless ``C:/wh3-agent/bridge/session.json`` enables them.
+Preparation also installs a separate startup movie pack and disables the profile's
+startup cinematic; those changes persist for ordinary Steam launches.
 """
 
 import functools
@@ -15,7 +17,8 @@ from pathlib import Path
 from gameai import windows
 from gameai.provenance import sha256
 from gameai.windows import WINDOWS_PYTHON  # noqa: F401  (re-exported for the doctor)
-from twwarhammer3.engine import pack
+from gameai.windows_game import conflicting_games
+from twwarhammer3.engine import pack, startup
 
 GAME_DIR = Path("/mnt/c/Program Files (x86)/Steam/steamapps/common/Total War WARHAMMER III")
 WINDOWS_GAME_DIR = r"C:\Program Files (x86)\Steam\steamapps\common\Total War WARHAMMER III"
@@ -33,7 +36,7 @@ PINS = {
 CONFLICTS = {"names": ["Warhammer3.exe"]}
 PREFERENCE_KEYS = (
     "gfx_fullscreen", "x_res", "y_res", "gfx_unit_size", "battle_ai_stats_modifier",
-    "battle_realism_mode", "multithreaded_model_enabled",
+    "battle_realism_mode", "multithreaded_model_enabled", startup.PREFERENCE,
 )
 
 
@@ -75,10 +78,15 @@ def mod_list_text(working_directory: str) -> str:
 
 
 def prepare_runtime() -> dict:
-    """Check the build pin, build and install the pack and mod list, deploy the supervisor."""
+    """While stopped and locked, install the mod, startup skip and supervisor."""
     build = steam_build_id()
     if build != PINS["steam_build_id"]:
         raise RuntimeError(f"Steam build {build} is not the pinned {PINS['steam_build_id']}")
+    conflicts = conflicting_games(Path(WINDOWS_GAME_DIR), CONFLICTS)
+    if conflicts:
+        pids = ", ".join(str(process["ProcessId"]) for process in conflicts)
+        raise RuntimeError(f"The game is already running (PIDs {pids}); cannot prepare runtime")
+    startup_record = startup.install(GAME_DIR, user_dir() / "scripts/preferences.script.txt")
     mods = RUNTIME_DIR / "mods"
     mods.mkdir(parents=True, exist_ok=True)
     BRIDGE_DIR.mkdir(exist_ok=True)
@@ -89,6 +97,7 @@ def prepare_runtime() -> dict:
     shutil.copy2(supervisor, RUNTIME_DIR / "windows_game.py")
     return {
         "steam_build_id": build,
+        "startup": startup_record,
         "pack": {"path": str(mods / PACK_NAME), "sha256": sha256(mods / PACK_NAME),
                  "files": sorted(files)},
         "mod_list": str(GAME_DIR / MOD_LIST),

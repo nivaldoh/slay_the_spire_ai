@@ -1,6 +1,6 @@
 import pytest
 
-from twwarhammer3.engine import doctor, runtime
+from twwarhammer3.engine import doctor, runtime, startup
 
 
 @pytest.fixture
@@ -12,6 +12,11 @@ def setup(tmp_path, monkeypatch):
     source = tmp_path / "mod/script/battle/mod"
     source.mkdir(parents=True)
     (source / "twwarhammer3_battle.lua").write_text("out('loaded')")
+    preferences = tmp_path / "profile/scripts/preferences.script.txt"
+    preferences.parent.mkdir(parents=True)
+    preferences.write_bytes(b"fe_game_intro_video_enabled true; # intro #\r\ngfx_unit_size 2;\r\n")
+    monkeypatch.setattr(runtime, "user_dir", lambda: tmp_path / "profile")
+    monkeypatch.setattr(runtime, "conflicting_games", lambda game_dir, rules: [])
     monkeypatch.setattr(runtime, "GAME_DIR", game)
     monkeypatch.setattr(runtime, "STEAM_MANIFEST", tmp_path / "steamapps/appmanifest_1142710.acf")
     monkeypatch.setattr(runtime, "RUNTIME_DIR", tmp_path / "mnt/c/wh3-agent")
@@ -27,6 +32,9 @@ def test_prepare_runtime_builds_the_pack_and_mod_list(setup):
     assert pack.read_bytes().startswith(b"PFH5")
     assert record["pack"]["files"] == ["script\\battle\\mod\\twwarhammer3_battle.lua"]
     assert record["steam_build_id"] == "25823491"
+    assert record["startup"]["enabled"]
+    assert record["startup"][startup.PREFERENCE] == "false"
+    assert record["startup"]["pack"]["sha256"] == record["startup"]["pack"]["expected_sha256"]
     assert (setup / "steamapps/common/game/twwarhammer3_mods.txt").read_text() == (
         'add_working_directory "C:/wh3-agent/mods";\nmod "twwarhammer3.pack";\n'
     )
@@ -72,3 +80,55 @@ def test_doctor_reports_blockers_without_launching(setup, monkeypatch):
     monkeypatch.setattr(doctor, "conflicting_games", lambda game_dir, rules: [])
     monkeypatch.setitem(runtime.PINS, "Warhammer3.exe", report["game"]["sha256"])
     assert doctor.collect_diagnostics()["status"] == "ready"
+
+
+def test_prepare_runtime_is_idempotent(setup):
+    first = runtime.prepare_runtime()
+    path = runtime.GAME_DIR / "data" / startup.PACK_NAME
+    preferences = runtime.user_dir() / "scripts/preferences.script.txt"
+    before = (path.stat().st_mtime_ns, preferences.stat().st_mtime_ns)
+    assert runtime.prepare_runtime() == first
+    assert (path.stat().st_mtime_ns, preferences.stat().st_mtime_ns) == before
+
+
+@pytest.mark.parametrize("probe_fails", [False, True])
+def test_prepare_runtime_checks_game_is_stopped_before_writing(setup, monkeypatch, probe_fails):
+    def conflicts(*args):
+        if probe_fails:
+            raise OSError("cannot list processes")
+        return [{"ProcessId": 99}]
+
+    monkeypatch.setattr(runtime, "conflicting_games", conflicts)
+    preferences = runtime.user_dir() / "scripts/preferences.script.txt"
+    before = preferences.read_bytes()
+    with pytest.raises((RuntimeError, OSError), match="running|cannot list"):
+        runtime.prepare_runtime()
+    assert preferences.read_bytes() == before
+    assert not (runtime.GAME_DIR / "data" / startup.PACK_NAME).exists()
+    assert not runtime.RUNTIME_DIR.exists()
+    assert not (runtime.GAME_DIR / runtime.MOD_LIST).exists()
+
+
+def test_doctor_reports_missing_installed_and_changed_startup_without_writing(setup, monkeypatch):
+    monkeypatch.setattr(doctor, "probe", lambda command: {"status": "ok", "output": "3.13"})
+    monkeypatch.setattr(doctor, "conflicting_games", lambda game_dir, rules: [])
+    preferences = runtime.user_dir() / "scripts/preferences.script.txt"
+    before = preferences.read_bytes()
+    missing = doctor.collect_diagnostics()
+    assert not missing["startup"]["enabled"]
+    assert missing["startup"]["pack"]["sha256"] is None
+    assert preferences.read_bytes() == before
+    assert not runtime.RUNTIME_DIR.exists()
+    runtime.prepare_runtime()
+    installed = doctor.collect_diagnostics()
+    assert installed["startup"]["enabled"]
+    assert "installed (all launches)" in doctor.render_diagnostics(installed)
+    path = runtime.GAME_DIR / "data" / startup.PACK_NAME
+    path.write_bytes(b"broken")
+    assert not doctor.collect_diagnostics()["startup"]["enabled"]
+    assert path.read_bytes() == b"broken"
+    runtime.prepare_runtime()
+    assert doctor.collect_diagnostics()["startup"]["enabled"]
+    preferences.write_bytes(before)
+    assert not doctor.collect_diagnostics()["startup"]["enabled"]
+    assert preferences.read_bytes() == before

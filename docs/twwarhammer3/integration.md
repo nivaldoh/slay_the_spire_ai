@@ -20,6 +20,17 @@ off, multithreaded model on.
   the list holding `add_working_directory "C:/wh3-agent/mods";` and
   `mod "twwarhammer3.pack";`. The main menu shows "(modded)". A direct launch works with
   Steam running (`steam_appid.txt` is in the game folder).
+- Startup skip: `engine/startup.py` installs a separate type-4 PFH5 movie pack,
+  `data/zzz_twwarhammer3_skip_intro.pack`, with 18 entries (five startup movies and 13
+  localized epilepsy warnings). Movie packs load without a mod-list entry. The 595-byte
+  blank CA-VP8 is from MIT-licensed
+  [twpatcher](https://github.com/Frodo45127/twpatcher/blob/a5783c5803d08cc4d5cdc40c9411549a55001c60/src/games/mod.rs);
+  its license and source hash are beside the vendored clip in `src/twwarhammer3/assets/`.
+  `gam_int.ca_vp8` is not overridden: `fe_game_intro_video_enabled false` disables its
+  startup playback and preserves the cinematic viewer. Preparation checks that WH3 is
+  stopped before writing any game files, preserves other preference bytes, and leaves
+  matching packs/preferences untouched. The deployment record and read-only doctor
+  expose the actual/expected pack hashes and effective preference.
 - `script/_lib/lib_header.lua` creates `core`, `bm` (battle), `tm` (frontend) and then
   requires `lib_mod_loader.lua`, which calls `core:load_mods("/script/_lib/mod/",
   "/script/battle/mod/")` in battle and `"/script/frontend/mod/"` in the frontend; each
@@ -66,9 +77,9 @@ off, multithreaded model on.
   accepted the same faction. Without that step the game picked a faction itself, and it
   varied between jobs on both sides. Unit card ids keep the race's main faction key
   (`...:wh3_main_kho_khorne:1`) whatever faction is selected.
-- Intro movies: the frontend script loads about 25 s after launch, but its real-time
-  callbacks do not run until the intro movies end on their own, about 2 minutes later.
-  No key press is needed; the first menu step waits for `buttons_holder/button_battle`.
+- Before the startup skip, the frontend script loaded about 25 s after launch, but its
+  real-time callbacks did not run until the intro movies ended, about 2 minutes later.
+  The first menu step waits for `buttons_holder/button_battle`; no key press is sent.
 - The frontend script unloads with the battle loading screen, so a step sequence that
   starts a battle never reaches its end; the controller takes the battle's first
   observation as the end of the menu.

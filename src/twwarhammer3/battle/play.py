@@ -155,8 +155,8 @@ def scenario_steps(name: str) -> list[dict]:
 def start_frontend(mailbox: Mailbox, config: dict, output: Path, steps: list[dict]) -> None:
     """Wait for the frontend script, then run the custom battle steps to the end.
 
-    No input is sent to the desktop: the first step waits for the main menu, so the
-    intro movies play out on their own. The frontend script unloads when the battle
+    Runtime preparation skips startup movies; the first step waits for the main menu
+    without desktop input. The frontend script unloads when the battle
     loads, so a battle observation also ends the wait.
     """
     if not config["menu"]:

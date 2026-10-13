@@ -6,6 +6,11 @@ History lives with each track ([full runs](fullrun/log.md),
 
 ## Active work (last verified 2026-10-13 18:21 UTC)
 
+WH3 startup skipping is in progress: measuring the unmodified launch, then installing
+a separate auto-loaded movie pack and disabling startup cinematic playback in the
+profile. One supervised game probe at a time; evidence under
+`runs/twwarhammer3/skip-intro-20261013/`. No battle-policy experiments are running.
+
 WH3 interface work completed: no extra wait by default; explicit attack modes, queued
 moves/attacks, formation width, supported behavior toggles and self/unit/ground abilities.
 The model also sees the added controls' state and its Winds of Magic. Code `6db8111`,
