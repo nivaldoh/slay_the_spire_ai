@@ -4,12 +4,16 @@ Updated 2026-10-13. Read this first: what is running, what is current, what come
 History lives with each track ([full runs](fullrun/log.md),
 [first combat](first-combat/README.md)), not here.
 
-## Active work (last verified 2026-10-13 18:21 UTC)
+## Active work (last verified 2026-10-13 18:50 UTC)
 
-WH3 startup skipping is in progress: measuring the unmodified launch, then installing
-a separate auto-loaded movie pack and disabling startup cinematic playback in the
-profile. One supervised game probe at a time; evidence under
-`runs/twwarhammer3/skip-intro-20261013/`. No battle-policy experiments are running.
+WH3 startup skipping is installed (`2793933`): menu time fell from 149.0 s to 17.7 s
+in one comparison; without the project mod list the menu was visible by 20.8 s.
+The separate movie pack also applies to ordinary Steam launches. At the owner's
+direction, battles now always run unpaused at 1x, including probes (`1c56ec2` removes
+pause/speed overrides). The corrected live smoke measured 23.4 battle seconds over
+23.401 wall seconds, five units per side, 77 acknowledged batches and no invalid orders.
+95 WH3 tests and Ruff pass. Evidence: `runs/twwarhammer3/skip-intro-20261013/`.
+All probes are stopped; doctor is ready, no game/controller is running.
 
 WH3 interface work completed: no extra wait by default; explicit attack modes, queued
 moves/attacks, formation width, supported behavior toggles and self/unit/ground abilities.

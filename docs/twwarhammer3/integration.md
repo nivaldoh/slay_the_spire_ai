@@ -135,6 +135,9 @@ Verified 2026-10-13 in `runs/twwarhammer3/battle/attack-m3-20261013` (Khorne vs 
   applied 600 ms of battle time after the state the model saw, whatever its think time.
   Current battles always run unpaused at 1x; the mod no longer pauses on publication
   or changes speed in response to orders. Old paused results remain labelled as such.
+  Replacement engine smoke `skip-intro-20261013/play-smoke-realtime` verified five units
+  per side, 77 acknowledged batches, zero invalid orders, and 23.4 battle seconds over
+  23.401 wall seconds. All decision observations had `awaiting_orders=false`.
 - `goto_location_angle_width(position, facing, width, run)` forms the unit up facing
   the given bearing (used by every v2+ battle line; the model's lines faced the enemy).
 - `unit:can_reach_position(vector)` is false near the map edge: v2's withdrawals into

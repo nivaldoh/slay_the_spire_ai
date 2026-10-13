@@ -388,3 +388,25 @@ installed 11,646-byte startup pack has SHA256
 `87c3964bdbbb4d07feef70e7befcbb919753c948bff47182d78a42caa24c03f1`.
 The live preference comparison changed only `true` to `false`, and attempting preparation
 during the patched probe was refused before writing.
+
+### Unpaused 1x battles only
+
+The first diagnostic `play-smoke` used `--pause`; the owner rejected this and requires
+all battles, including probes, to run unpaused at normal 1x. It remains labelled as a
+paused diagnostic in local evidence and contributes no policy result. Code `1c56ec2`
+removes automatic observation/order pauses from the Lua mod, sets the battle speed to
+1x at deployment, and removes the CLI's pause/speed overrides. Python rejects paused
+or altered-speed configurations, session writes, attached sessions and incompatible
+live observations before a policy decision. The prompt and repository instructions
+now explicitly require unpaused 1x. Historical results retain their recorded modes.
+
+Validation: 95 WH3 tests and repository-wide Ruff pass, including rejection of stale
+paused sessions and speed overrides. The replacement engine smoke is
+`runs/twwarhammer3/skip-intro-20261013/play-smoke-realtime/`.
+It reached a deployed five-versus-five battle, made 78 decisions and acknowledged
+77 batches with zero invalid orders. Every decision observation reports speed 1 and
+`awaiting_orders=false`; measured battle time advanced 23.4 s over 23.401 s of wall time.
+The run ended at its 50-second diagnostic timeout, with no gameplay outcome measured
+and no row added to the policy results register. Repeat installation preserved the
+startup pack/preference bytes and mtimes. All probes are stopped, session files cleared,
+and the final doctor reports ready with the startup skip installed.
