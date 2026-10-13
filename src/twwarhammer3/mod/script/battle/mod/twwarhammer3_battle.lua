@@ -14,7 +14,8 @@ local ui = twwarhammer3_ui
 
 local state = {
     battle = nil, seq = 0, started = false, finished = false, result = nil,
-    friendly = {}, friendly_ids = {}, enemy = {}, enemy_ids = {}, enemy_by_ui = {},
+    friendly = {}, friendly_ids = {}, friendly_by_ui = {},
+    enemy = {}, enemy_ids = {}, enemy_by_ui = {},
     pending = nil, last_request = nil, applied = nil, applied_ms = nil,
     paused = false, next_observe_ms = 0, force_observe = false, alliance = nil,
 }
@@ -135,13 +136,17 @@ local function unit_record(id, unit, mine, class)
         record.state[#record.state + 1] = "running"
     end
     record.range = round(get(unit, "missile_range", 0))
+    record.kills = get(unit, "number_of_enemies_killed", nil)
+    local target = get(unit, "current_target", nil)
+    if target then
+        local ids = mine and state.enemy_by_ui or state.friendly_by_ui
+        record.target = ids[get(target, "unique_ui_id", -1)]
+    end
     if mine then
         record.ammo = get(unit, "ammo_left", 0)
         record.ammo0 = get(unit, "starting_ammo", 0)
         record.speed = {round(get(unit, "slow_speed", 0), 1), round(get(unit, "fast_speed", 0), 1)}
         record.fatigue = string.gsub(tostring(get(unit, "fatigue_state", "")), "^threshold_", "")
-        local target = get(unit, "current_target", nil)
-        if target then record.target = state.enemy_by_ui[get(target, "unique_ui_id", -1)] end
         -- ordered_position is the unit's own position while it attacks.
         local destination = get(unit, "ordered_position", nil)
         if destination and state.friendly[id].order == "move" and get(unit, "is_moving", false) then
@@ -423,6 +428,7 @@ local function start()
         controller:take_control()
         state.friendly[id] = {unit = unit, controller = controller, class = unit_class(unit)}
         state.friendly_ids[#state.friendly_ids + 1] = id
+        state.friendly_by_ui[get(unit, "unique_ui_id", -1)] = id
     end
     local armies = bm:get_non_player_alliance():armies()
     local count = 0

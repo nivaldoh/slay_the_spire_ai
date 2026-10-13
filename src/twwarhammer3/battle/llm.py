@@ -84,6 +84,15 @@ def _distance(unit: dict, other: dict | None) -> str:
     return f" {math.hypot(other['x'] - unit['x'], other['z'] - unit['z']):.0f} m"
 
 
+def _side(unit: dict, other: dict) -> str:
+    """Where ``other`` stands relative to the way ``unit`` faces: front, left, right or rear."""
+    bearing = math.degrees(math.atan2(other["x"] - unit["x"], other["z"] - unit["z"]))
+    offset = (bearing - unit.get("bearing", 0) + 180) % 360 - 180
+    if abs(offset) <= 45:
+        return "front"
+    return "rear" if abs(offset) >= 135 else "right" if offset > 0 else "left"
+
+
 def _short_of(unit: dict, order: dict) -> float:
     return math.hypot(order["x"] - unit["x"], order["z"] - unit["z"])
 
@@ -109,6 +118,10 @@ def render_target(unit: dict, enemies: dict, order: dict | None) -> str:
     order = order or {}
     if order.get("type") == "attack":
         if shown == order["target"]:
+            shots = (order.get("ammo") or 0) - (unit.get("ammo") or 0)
+            if shots > 0 and None not in (order.get("kills"), unit.get("kills")):
+                return (f"{here} (your order, {order['time_s']:.0f} s: {shots} shots,"
+                        f" killed {unit['kills'] - order['kills']})")
             return f"{here} (your order, {order['time_s']:.0f} s)"
         return (f"{here}, game's choice; your order at {order['time_s']:.0f} s was"
                 f" {order['target']}{_distance(unit, enemies.get(order['target']))}")
@@ -120,9 +133,11 @@ def render_target(unit: dict, enemies: dict, order: dict | None) -> str:
 
 
 def render_unit(unit: dict, mine: bool, before: tuple | None = None,
-                enemies: dict | None = None, ordered: dict | None = None) -> str:
-    """``before`` is (men, hp %) at the previous decision; ``enemies`` and ``ordered`` (the
-    attack order the unit holds) annotate a friendly unit's target."""
+                enemies: dict | None = None, ordered: dict | None = None,
+                attackers: list[str] | None = None) -> str:
+    """``before`` is (men, hp %) at the previous decision; ``enemies`` (the other side's
+    units) and ``ordered`` (the attack order a friendly unit holds) annotate the target;
+    ``attackers`` are the visible enemies targeting a friendly unit."""
     if "error" in unit:
         return f"{unit['id']}: unreadable ({unit['error']})"
     if mine and not unit.get("men"):
@@ -145,9 +160,12 @@ def render_unit(unit: dict, mine: bool, before: tuple | None = None,
     if unit.get("state"):
         parts.append(" ".join(unit["state"]))
     target = (render_target(unit, enemies or {}, ordered) if mine
-              else f"target {unit['target']}" if unit.get("target") else "")
+              else f"target {unit['target']}{_distance(unit, (enemies or {}).get(unit['target']))}"
+              if unit.get("target") else "")
     if target:
         parts.append(target)
+    if attackers:
+        parts.append("attacked by " + ", ".join(attackers))
     if unit.get("dest"):
         parts.append(f"heading to ({unit['dest'][0]:.0f}, {unit['dest'][1]:.0f})")
     leaving = {"routing", "shattered"} & set(unit.get("state") or [])
@@ -171,17 +189,24 @@ def render_state(observation: dict, last_seen: dict, before: dict | None = None,
     """``before`` maps unit ids to (men, hp %) at the previous decision, ``ordered`` our
     units to the attack order they hold."""
     visible = visible_enemies(observation)
+    friendly = friendly_units(observation)
     before, ordered = before or {}, ordered or {}
+    attackers = {}
+    for enemy in visible.values():
+        unit = friendly.get(enemy.get("target"))
+        if unit and None not in (unit.get("x"), enemy.get("x")):
+            attackers.setdefault(unit["id"], []).append(
+                f"{enemy['id']}{_distance(unit, enemy)} {_side(unit, enemy)}")
     lines = ["Your units:"]
     lines += ["- " + render_unit(unit, True, before.get(unit["id"]), visible,
-                                 ordered.get(unit["id"]))
+                                 ordered.get(unit["id"]), attackers.get(unit["id"]))
               for unit in observation.get("friendly", [])]
     roster = observation.get("enemy_roster") or []
     lines.append("Enemy roster: " + (", ".join(
         f"{unit['id']} {short_type(unit.get('type'))}{' (destroyed)' if unit.get('dead') else ''}"
         for unit in roster) or "unknown"))
     lines.append("Visible enemies:")
-    lines += ["- " + render_unit(unit, False, before.get(unit["id"]))
+    lines += ["- " + render_unit(unit, False, before.get(unit["id"]), friendly)
               for unit in visible.values()] or ["- none"]
     unseen = [
         f"- {unit_id} {_describe_last_seen(seen, observation)}"
@@ -315,7 +340,11 @@ class LLMPolicy:
             self.notes = reply["notes"][:NOTES_LIMIT]
             metadata["notes"] = self.notes
         seconds = observation.get("time_ms", 0) / 1000
-        self.sent = {order["unit"]: dict(order, time_s=seconds) for order in reply["orders"]}
+        # Ammunition and kills when the order went out, to report what its fire achieved.
+        self.sent = {order["unit"]: dict(order, time_s=seconds,
+                                         ammo=friendly.get(order["unit"], {}).get("ammo"),
+                                         kills=friendly.get(order["unit"], {}).get("kills"))
+                     for order in reply["orders"]}
         summary = describe_orders(reply["orders"])
         self.history.append(f"{seconds:.0f} s: {summary} ({reply['reason']})")
         metadata["reason"] = reply["reason"]

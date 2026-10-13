@@ -199,7 +199,7 @@ def test_lapsed_orders_are_forgotten_and_dropped_moves_reported(tmp_path):
     prompt = agent.metadata()["prompt"]
     assert "stopped 100 m short of your move (30 s)" in prompt
     assert "your order" not in prompt.split("f2 chaos_warriors_0")[1].split("\n")[0]
-    assert agent.ordered == {"f1": dict(orders[0], time_s=30.0)}
+    assert agent.ordered == {"f1": dict(orders[0], time_s=30.0, ammo=0, kills=None)}
 
 
 def test_units_without_a_target_show_no_order_and_their_nearest_enemy():
@@ -211,3 +211,26 @@ def test_units_without_a_target_show_no_order_and_their_nearest_enemy():
     assert "fresh, no order, nearest enemy e1 256 m" in text
     assert "heading to (0, 20), nearest enemy e1 260 m" in text
     assert "nearest" not in text.split("- f3 ")[1].split("\n")[0]
+
+
+def test_fire_report_shows_what_an_order_achieved_and_who_attacks_whom(tmp_path):
+    orders = [{"unit": "f2", "type": "attack", "x": None, "z": None, "facing": None,
+               "target": "e1", "run": False}]
+    agent = policy(tmp_path, reply(orders), reply([]))
+    first = observation()
+    first["friendly"][1].update(ammo=100, ammo0=100, range=300, kills=4)
+    agent.decide(first)
+    agent.acknowledge({"request": "r1", "results": [{"unit": "f2", "ok": True}],
+                       "applied_ms": 34000}, {"think_s": 3.0, "delay_ms": 4000})
+    later = observation(time_ms=40000)
+    later["friendly"][1].update(ammo=70, ammo0=100, range=300, kills=6, target="e1",
+                                dest=None)
+    # e1 stands south-east of f1, which faces north: behind it, on the right.
+    later["enemy"][0].update(target="f1", x=20.0, z=-60.0)
+    agent.decide(later)
+    prompt = agent.metadata()["prompt"]
+    assert "target e1 28 m (your order, 30 s: 30 shots, killed 2)" in prompt
+    assert "attacked by e1 22 m rear" in prompt.split("- f1 ")[1].split("\n")[0]
+    assert "moving, target f1 22 m" in prompt.split("Visible enemies:")[1]
+    assert llm._side({"x": 0, "z": 0, "bearing": 90}, {"x": 0, "z": 10}) == "left"
+    assert llm._side({"x": 0, "z": 0, "bearing": 90}, {"x": 10, "z": 1}) == "front"
