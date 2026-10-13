@@ -161,8 +161,10 @@ def render_unit(unit: dict, mine: bool, before: tuple | None = None,
             parts.append("toggles " + " ".join(
                 f"{key}={'on' if value else 'off'}" for key, value in unit["behaviours"].items()))
         if unit.get("abilities"):
-            parts.append("abilities " + "; ".join(
-                f"{a['key']} ({'available' if a.get('can_use') else 'unavailable'})"
+            parts.append("abilities (cooldown unknown) " + "; ".join(
+                f"{a['key']} ({'permitted' if a.get('can_use') else 'blocked'}"
+                + (f", last issued {a['last_issued_ms'] / 1000:.1f} s"
+                   if a.get("last_issued_ms") is not None else "") + ")"
                 for a in unit["abilities"]))
         if unit.get("command_queue"):
             parts.append("last submitted sequence (completion unconfirmed): "

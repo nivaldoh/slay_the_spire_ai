@@ -24,7 +24,8 @@ decision), for evaluation.
 Order indexes are one-based positions in the request, so a unit can receive a behavior
 change and a move/attack sequence in one batch. ``queued`` acknowledges submission to
 the engine queue, not execution. Friendly records include ``behaviours`` (supported
-toggle keys mapped to current booleans), ``abilities`` (owned active keys and can_use),
+toggle keys mapped to current booleans), ``abilities`` (owned active keys, can_use and
+last_issued_ms; can_use does not report cooldown),
 formation ``width``, last requested ``attack_mode`` and last submitted ``command_queue``.
 
 Writers publish whole files (temporary file, then rename); readers treat a missing,

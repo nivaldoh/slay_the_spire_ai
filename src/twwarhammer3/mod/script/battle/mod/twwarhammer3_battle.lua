@@ -155,6 +155,7 @@ local function unit_record(id, unit, mine, class)
         for _, key in ipairs(get(unit, "owned_non_passive_special_abilities", {})) do
             record.abilities[#record.abilities + 1] = {
                 key = key, can_use = get(unit, "can_perform_special_ability", false, key),
+                last_issued_ms = entry.ability_issued and entry.ability_issued[key],
             }
         end
         local target = get(unit, "current_target", nil)
@@ -300,6 +301,8 @@ local function apply_order(order)
                 -- This build requires a unit argument even for an ability cast on self.
                 controller:perform_special_ability(order.ability, unit)
             end
+            entry.ability_issued = entry.ability_issued or {}
+            entry.ability_issued[order.ability] = battle_time()
         else
             error("unknown_type")
         end

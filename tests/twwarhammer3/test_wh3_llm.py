@@ -217,7 +217,8 @@ def test_capabilities_are_visible_and_queued_attack_is_not_mistaken_for_active(t
     obs = observation()
     unit = obs["friendly"][0]
     unit.update(width=25, ammo=5, behaviours={"fire_at_will": False},
-                abilities=[{"key": "buff", "can_use": True}], attack_mode="melee")
+                abilities=[{"key": "buff", "can_use": True, "last_issued_ms": 12300}],
+                attack_mode="melee")
     orders = [
         {"unit": "f1", "type": "behaviour", "behaviour": "fire_at_will", "enabled": True},
         {"unit": "f1", "type": "move", "x": 50, "z": 20, "width": 30},
@@ -234,7 +235,8 @@ def test_capabilities_are_visible_and_queued_attack_is_not_mistaken_for_active(t
     agent.decide(obs)
     prompt = agent.metadata()["prompt"]
     assert "formation width 25 m" in prompt and "fire_at_will=off" in prompt
-    assert "buff (available)" in prompt and "last requested attack mode melee" in prompt
+    assert "buff (permitted, last issued 12.3 s)" in prompt
+    assert "cooldown unknown" in prompt and "last requested attack mode melee" in prompt
     assert "f1 #3 queued" in prompt and "completion unconfirmed" in prompt
     assert "attack e1 melee [queued]" in prompt
     assert not agent.ordered
