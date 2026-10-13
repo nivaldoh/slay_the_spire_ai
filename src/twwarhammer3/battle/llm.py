@@ -8,6 +8,7 @@ engine's verdict on them, and where enemies were last seen. No transcript accumu
 
 import hashlib
 import json
+import math
 import re
 from collections import deque
 
@@ -28,6 +29,8 @@ MAX_OUTPUT_TOKENS = 4000
 NOTES_LIMIT = 2000
 HISTORY_LENGTH = 8
 INVALID_RETRIES = 2
+COMPASS = ("N", "NE", "E", "SE", "S", "SW", "W", "NW")
+CONTACT_M = 40  # every visible enemy this close (centre to centre) is listed, else the nearest
 REPLY_SCHEMA = {
     "type": "object",
     "properties": {
@@ -67,14 +70,14 @@ def _position(unit: dict) -> str:
     return f"at ({unit['x']:.0f}, {unit['z']:.0f}) facing {unit.get('bearing', 0):.0f}"
 
 
-def render_unit(unit: dict, mine: bool) -> str:
+def render_unit(unit: dict, mine: bool, change: int = 0) -> str:
     if "error" in unit:
         return f"{unit['id']}: unreadable ({unit['error']})"
     if mine and not unit.get("men"):
         return f"{unit['id']} {short_type(unit.get('type'))}: destroyed"
     parts = [
         f"{unit['id']} {short_type(unit.get('type'))} ({unit.get('class', '?')}) {_position(unit)}",
-        f"{unit.get('men', 0)}/{unit.get('men0', 0)} men",
+        f"{unit.get('men', 0)}/{unit.get('men0', 0)} men" + (f" ({change:+d})" if change else ""),
         f"hp {round(100 * (unit.get('hp') or 0))}%",
     ]
     if mine and unit.get("ammo0"):
@@ -95,16 +98,59 @@ def render_unit(unit: dict, mine: bool) -> str:
     return ", ".join(parts)
 
 
-def render_state(observation: dict, last_seen: dict) -> str:
+def _compass(dx: float, dz: float) -> str:
+    return COMPASS[round(math.degrees(math.atan2(dx, dz)) / 45) % 8]
+
+
+def render_relations(unit: dict, enemies: list[dict]) -> str:
+    """The unit's nearest visible enemies, and the enemy missiles that reach it."""
+    if unit.get("x") is None or not unit.get("men"):
+        return ""
+    placed = sorted(((math.hypot(e["x"] - unit["x"], e["z"] - unit["z"]), e)
+                     for e in enemies if e.get("x") is not None), key=lambda pair: pair[0])
+    if not placed:
+        return ""
+    near = [pair for pair in placed if pair[0] <= CONTACT_M][:3] or placed[:1]
+    text = "; nearest " + ", ".join(
+        f"{e['id']} {d:.0f} m {_compass(e['x'] - unit['x'], e['z'] - unit['z'])}" for d, e in near)
+    if "melee" not in (unit.get("state") or []):
+        reach = [f"{e['id']} ({d:.0f} of {e['range']:.0f} m)" for d, e in placed
+                 if e.get("range") and d <= e["range"]]
+        if reach:
+            text += "; in range of " + ", ".join(reach)
+    return text
+
+
+def _centre(units: list[dict]) -> tuple[float, float] | None:
+    placed = [u for u in units if u.get("x") is not None and u.get("men")]
+    if not placed:
+        return None
+    return (sum(u["x"] for u in placed) / len(placed), sum(u["z"] for u in placed) / len(placed))
+
+
+def render_state(observation: dict, last_seen: dict, before: dict | None = None,
+                 starts: tuple | None = None) -> str:
+    """``before`` maps unit ids to men at the previous decision; ``starts`` holds the
+    centres of both armies when first seen."""
     visible = visible_enemies(observation)
-    lines = ["Your units:"]
-    lines += ["- " + render_unit(unit, True) for unit in observation.get("friendly", [])]
+    before = before or {}
+    lines = []
+    if starts and starts[0]:
+        enemy = f"({starts[1][0]:.0f}, {starts[1][1]:.0f})" if starts[1] else "not seen yet"
+        lines.append(f"Start points: your army ({starts[0][0]:.0f}, {starts[0][1]:.0f}),"
+                     f" the enemy {enemy}.")
+    lines.append("Your units:")
+    lines += ["- " + render_unit(unit, True, unit.get("men", 0) - before.get(unit["id"],
+                                                                            unit.get("men", 0)))
+              + render_relations(unit, list(visible.values()))
+              for unit in observation.get("friendly", [])]
     roster = observation.get("enemy_roster") or []
     lines.append("Enemy roster: " + (", ".join(
         f"{unit['id']} {short_type(unit.get('type'))}{' (destroyed)' if unit.get('dead') else ''}"
         for unit in roster) or "unknown"))
     lines.append("Visible enemies:")
-    lines += ["- " + render_unit(unit, False) for unit in visible.values()] or ["- none"]
+    lines += ["- " + render_unit(unit, False, unit.get("men", 0) - before.get(
+        unit["id"], unit.get("men", 0))) for unit in visible.values()] or ["- none"]
     unseen = [
         f"- {unit_id} {_describe_last_seen(seen, observation)}"
         for unit_id, seen in last_seen.items() if unit_id not in visible
@@ -148,13 +194,14 @@ def render_ack(ack: dict | None) -> str:
 
 
 def render_prompt(observation: dict, notes: str, history: list[str], last_seen: dict,
-                  latency: dict | None, ack: dict | None) -> str:
+                  latency: dict | None, ack: dict | None, before: dict | None = None,
+                  starts: tuple | None = None) -> str:
     return "\n\n".join([
         "Battle notes:\n" + (notes or "(none)"),
         "Recent decisions, oldest first:\n" + ("\n".join(history) or "(none)"),
         render_timing(observation, latency),
         render_ack(ack),
-        render_state(observation, last_seen),
+        render_state(observation, last_seen, before, starts),
     ])
 
 
@@ -198,6 +245,8 @@ class LLMPolicy:
         self.last_seen: dict[str, dict] = {}
         self.latency = None
         self.ack = None
+        self.before: dict[str, int] = {}
+        self.starts = [None, None]
         self._metadata = {}
 
     def decide(self, observation: dict) -> list[dict]:
@@ -210,8 +259,13 @@ class LLMPolicy:
         for unit in observation.get("enemy_roster", []):
             if unit.get("dead"):
                 self.last_seen.pop(unit["id"], None)
+        for side, units in enumerate((observation.get("friendly", []),
+                                      observation.get("enemy", []))):
+            self.starts[side] = self.starts[side] or _centre(units)
         prompt = render_prompt(observation, self.notes, list(self.history), self.last_seen,
-                               self.latency, self.ack)
+                               self.latency, self.ack, self.before, tuple(self.starts))
+        self.before = {unit["id"]: unit.get("men", 0)
+                       for unit in observation.get("friendly", []) + observation.get("enemy", [])}
         self._metadata = metadata = {
             "type": "llm", "model": self.api.name, "effort": self.api.effort,
             "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(), "prompt": prompt,

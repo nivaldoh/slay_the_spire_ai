@@ -162,3 +162,21 @@ def test_dead_friendly_units_are_one_line_and_enemy_range_shows():
     assert "- f1 herald_of_khorne_0: destroyed\n" in text
     assert ("e1 dwarf_warriors_0 (infantry) at (100, 200) facing 180, 90/100 men, hp 90%,"
             " range 160") in text
+
+
+def test_prompt_shows_relations_losses_and_start_points(tmp_path):
+    agent = policy(tmp_path, reply([]), reply([]))
+    agent.decide(observation())
+    later = observation(time_ms=40000)
+    later["friendly"][1]["men"] = 105
+    later["enemy"][0].update(men=85, x=0.0, z=-10.0)
+    later["enemy"].append({"id": "e2", "type": "wh_main_dwf_art_grudge_thrower",
+                           "class": "artillery", "x": 0.0, "z": 300.0, "bearing": 180,
+                           "men": 4, "men0": 4, "hp": 1.0, "range": 440, "state": []})
+    agent.decide(later)
+    prompt = agent.metadata()["prompt"]
+    assert "Start points: your army (5, -40), the enemy (100, 200)." in prompt
+    assert ("f2 chaos_warriors_0 (infantry) at (0, -40) facing 0, 105/120 men (-5), hp 93%"
+            in prompt)
+    assert "nearest e1 30 m N; in range of e2 (340 of 440 m)" in prompt
+    assert "e1 dwarf_warriors_0 (infantry) at (0, -10) facing 180, 85/100 men (-5)" in prompt
