@@ -112,3 +112,13 @@ stops while the model thinks; orders apply 0.6 s of battle time after the state 
 against 5.5 s in real time): lost at 232 s (37% against 71%), lost at 579 s (8% against
 34%), won at 434 s (39% against 26%). One win of three, as in real time: the model's
 latency is not what separates it from the baseline.
+
+## v5: a hurt lord keeps fighting
+
+Change (prompt): below 35% health the lord stays out of melee only while a healthier
+enemy lord or hero is near, and goes back in as soon as that enemy has less health than
+he has (v4 parked him for minutes while the enemy lord was nearly dead).
+
+Job `llm-luna-v5-20261013` (source `33895de`): won at 333 s (64% of our men left, 29% of
+the enemy's: a wider margin than any baseline battle), won at 343 s (36% against 36%),
+lost at 417 s (10% against 48%).
