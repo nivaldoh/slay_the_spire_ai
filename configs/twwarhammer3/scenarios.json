@@ -94,5 +94,8 @@
     "wh_main_emp_art_great_cannon"
    ]
   }
+ },
+ "random": {
+  "random": true
  }
 }

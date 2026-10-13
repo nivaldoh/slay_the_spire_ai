@@ -3,6 +3,7 @@ import csv
 import json
 from collections import deque
 from contextlib import nullcontext
+from pathlib import Path
 
 import pytest
 
@@ -37,6 +38,7 @@ class FakeMailbox:
         self.controls = []
         self.pending = None
         self.menu = None
+        self.directory = Path("no-bridge")  # no menu dumps unless a test makes one
         self.menu_outcome = "step 1: found button_battle, clicked\ndone"
 
     def reset(self):
@@ -275,7 +277,7 @@ def test_job_plays_episodes_with_restarts_and_records_rows(tmp_path, harness):
     assert manifest["status"] == "completed"
     assert [e["status"] for e in manifest["episodes"]] == ["won", "lost"]
     assert mailbox.controls == [("b1", "restart")]
-    assert mailbox.menu == play.scenario_steps("kho5-dwf5")
+    assert mailbox.menu == play.scenario_steps(play.load_scenario({"scenario": "kho5-dwf5"}))
     assert mailbox.session["interval_ms"] == 5000 and mailbox.job == "attack-v1-20261013"
     rows = list(csv.DictReader(results.open()))
     assert [(r["episode"], r["outcome"], r["policy"], r["model"], r["harness"], r["mode"],
@@ -329,7 +331,7 @@ def test_a_battle_observation_ends_the_menu_wait(tmp_path, harness):
 
 
 def test_scenario_steps_pick_each_race_and_recruit_the_lord_first():
-    steps = play.scenario_steps("kho5-dwf5")
+    steps = play.scenario_steps(play.load_scenario({"scenario": "kho5-dwf5"}))
     races = [s["find"][1] for s in steps if s.get("find", [""])[0] == "button_select_race"]
     assert races == ["CcoSubcultureRecordwh3_main_sc_kho_khorne",
                      "CcoSubcultureRecordwh_main_sc_dwf_dwarfs"]
@@ -341,8 +343,31 @@ def test_scenario_steps_pick_each_race_and_recruit_the_lord_first():
     assert cards[5].endswith("wh_main_dwf_cha_lord_0:wh_main_dwf_dwarfs:1")
     assert len(cards) == 10 and all(card.endswith(":0") for card in cards[1:5] + cards[6:])
     assert steps[-1]["find"] == ["start_button_frame", "button_start_battle"]
-    for name in json.loads(play.SCENARIOS_PATH.read_text()):
-        assert len([s for s in play.scenario_steps(name) if s.get("dblclick")]) == 10
+    for name, scenario in json.loads(play.SCENARIOS_PATH.read_text()).items():
+        if not scenario.get("random"):
+            steps = play.scenario_steps(scenario)
+            assert len([s for s in steps if s.get("dblclick")]) == 10
+
+
+def test_a_random_scenario_draws_a_map_and_factions_and_autogenerates_both_armies():
+    config = {"scenario": "random", "seed": 7}
+    draw = play.load_scenario(config)
+    assert draw == play.load_scenario({"scenario": "random", "seed": 7})
+    catalogue = json.loads(play.CATALOGUE_PATH.read_text())
+    assert draw["map"] in catalogue["maps"]
+    for side in ("player", "enemy"):
+        assert draw[side]["faction"] in catalogue["races"][draw[side]["subculture"]]
+        assert draw[side]["units"] is None
+    steps = play.scenario_steps(draw)
+    finds = [s.get("find") for s in steps]
+    assert ["map_type_list", "CcoBattleTypeRecordclassic"] in finds
+    assert ["map_listview", "CcoCustomBattleMap" + draw["map"]] in finds
+    assert finds.count(["clear_autogen_parent", "button_autogen"]) == 2
+    assert not any(s.get("dblclick") for s in steps)
+    unseeded = {"scenario": "random", "seed": None}
+    play.load_scenario(unseeded)
+    assert isinstance(unseeded["seed"], int)
+    assert "wh_dlc03_sc_bst_beastmen" not in catalogue["races"]
 
 
 def test_attack_nearest_reorders_a_lapsed_attack_and_skips_the_dead():
@@ -382,3 +407,18 @@ def test_commander_jobs_snapshot_their_prompt_and_record_their_model(tmp_path, h
     assert (item["policy"], item["model"], item["effort"], item["harness"]) == (
         "commander", "gpt-6-luna", "low", "1")
     assert "policy commander gpt-6-luna/low" in digest.digest(job)
+
+
+def test_random_jobs_record_their_draw_and_keep_the_menu_dumps(tmp_path, harness):
+    mailbox = FakeMailbox([observation(0, 0), observation(1, 1000, result="won")])
+    mailbox.directory = tmp_path / "bridge"
+    mailbox.directory.mkdir()
+    (mailbox.directory / "map_list.txt").write_text("list_box\n")
+    harness.append(mailbox)
+    config = {**CONFIG, "scenario": "random", "seed": 3, "results": str(tmp_path / "r.csv")}
+    job = tmp_path / "job"
+    manifest = play.play(job, config, policy_factory=Hold)
+    assert manifest["scenario"] == play.load_scenario({"scenario": "random", "seed": 3})
+    assert mailbox.menu == play.scenario_steps(manifest["scenario"])
+    assert (job / "map_list.txt").read_text() == "list_box\n"
+    assert f"seed 3: {manifest['scenario']['player']['faction']} vs" in digest.digest(job)

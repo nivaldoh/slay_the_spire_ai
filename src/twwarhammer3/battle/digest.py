@@ -90,13 +90,23 @@ DIGEST_COLUMNS = ("episode", "outcome", "battle_s", "own_left", "enemy_left", "d
                   "invalid", "delay_s", "usd")
 
 
+def _draw(manifest: dict) -> str:
+    """A random job's draw: seed, map and both factions."""
+    scenario = manifest.get("scenario") or {}
+    if "seed" not in manifest["config"] or not scenario.get("map"):
+        return ""
+    return (f" (seed {manifest['config']['seed']}: {scenario['player']['faction']} vs"
+            f" {scenario['enemy']['faction']} on {scenario['map']})")
+
+
 def job_digest(job: Path) -> str:
     manifest = json.loads((job / "manifest.json").read_text())
     config = manifest["config"]
     lines = [f"{job.name}: {manifest['status']}, policy {config['policy']}"
              + (f" {config['model']}/{config['effort']}"
                 if config["policy"] in MODEL_POLICIES else "")
-             + f", scenario {config['scenario']}, source {manifest['source_revision'][:7]}",
+             + f", scenario {config['scenario']}" + _draw(manifest)
+             + f", source {manifest['source_revision'][:7]}",
              "| " + " | ".join(DIGEST_COLUMNS) + " |", "|" + "---|" * len(DIGEST_COLUMNS)]
     for result in sorted(job.glob("episode-*/result.json")):
         item = row(job, result.parent)
