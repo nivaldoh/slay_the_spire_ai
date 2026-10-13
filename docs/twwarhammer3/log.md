@@ -70,6 +70,15 @@ Job `llm-luna-v3-20261013` (source `2681d04`): lost at 303 s (38% of our men lef
 of the enemy's), won at 419 s (11% against 18%), won at 392 s (28% against 24%); mean
 delay 4.5 s, think time back to v1's level.
 
+Replicate `llm-luna-v3-20261013b`: lost at 257 s, won at 345 s. v3 in all: 3 wins of 5.
+
+Reviews: the Herald fought the enemy lord with no other melee unit on him in all 28 such
+turns (the baseline had help in 20 of 22 and its Herald survives); the model paired its
+units off one to one at contact ("f1 e1, f2 e2, f3 e3", from "strongest against
+strongest"); the game's automatic target is shown as if it were the order, so a unit
+the game had retargeted looked busy; units with ammunition shoot when ordered to attack,
+so the horsemen and the Skullcannon could not charge.
+
 Across all episodes so far, the model orders `run` on about 90% of its moves and attacks
 (v1: 62 of 67; v2: 296 of 324), while `attack_nearest` never runs; the baseline's units
 always reach their first melee fresh, the model's often tired or exhausted.
