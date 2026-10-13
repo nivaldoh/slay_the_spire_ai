@@ -91,3 +91,17 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-13,skills-v1.1-random-a-20261013,episode-0000,random,skills,,,1.1,900000a,realtime,1.0,0.0,lost,415,0.35,0.25,1345,0,0.3,0
 2026-10-13,commander-luna-v1-random-b-20261013,episode-0000,random,commander,gpt-6-luna,low,1,29c9325,realtime,1.0,0.0,lost,404,0.0,0.31,1319,21,0.3,0.0323
 2026-10-13,skills-v1.2-random-a-20261013,episode-0000,random,skills,,,1.2,55ab6b3,realtime,1.0,0.0,lost,346,0.4,0.7,1124,0,0.3,0
+2026-10-13,skills-v1.2-kho-20261013,episode-0000,kho5-dwf5,skills,,,1.2,cb12f6a,realtime,1.0,0.0,won,531,0.1,0.09,1737,0,0.3,0
+2026-10-13,skills-v1.2-kho-20261013,episode-0001,kho5-dwf5,skills,,,1.2,cb12f6a,realtime,1.0,0.0,won,323,0.15,0.26,1048,0,0.3,0
+2026-10-13,skills-v1.2-kho-20261013,episode-0002,kho5-dwf5,skills,,,1.2,cb12f6a,realtime,1.0,0.0,won,492,0.09,0.16,1607,0,0.3,0
+2026-10-13,skills-v1.2-kho-20261013,episode-0003,kho5-dwf5,skills,,,1.2,cb12f6a,realtime,1.0,0.0,lost,357,0.07,0.33,1160,0,0.3,0
+2026-10-13,skills-v1.2-kho-20261013,episode-0004,kho5-dwf5,skills,,,1.2,cb12f6a,realtime,1.0,0.0,won,531,0.1,0.09,1733,0,0.3,0
+2026-10-13,skills-v1.2-kho-20261013,episode-0005,kho5-dwf5,skills,,,1.2,cb12f6a,realtime,1.0,0.0,won,531,0.1,0.09,1732,0,0.3,0
+2026-10-13,commander-luna-v1.2-kho-20261013,episode-0000,kho5-dwf5,commander,gpt-6-luna,low,1.2,df390c1,realtime,1.0,0.0,won,369,0.21,0.19,1204,10,0.3,0.0222
+2026-10-13,commander-luna-v1.2-kho-20261013,episode-0001,kho5-dwf5,commander,gpt-6-luna,low,1.2,df390c1,realtime,1.0,0.0,lost,309,0.23,0.44,1000,0,0.3,0.0191
+2026-10-13,commander-luna-v1.2-kho-20261013,episode-0002,kho5-dwf5,commander,gpt-6-luna,low,1.2,df390c1,realtime,1.0,0.0,won,312,0.48,0.34,1012,8,0.3,0.0196
+2026-10-13,commander-luna-v1.2-kho-20261013,episode-0003,kho5-dwf5,commander,gpt-6-luna,low,1.2,df390c1,realtime,1.0,0.0,won,301,0.35,0.43,969,5,0.31,0.0187
+2026-10-13,commander-luna-v1.2-kho-20261013,episode-0004,kho5-dwf5,commander,gpt-6-luna,low,1.2,df390c1,realtime,1.0,0.0,won,353,0.14,0.25,1149,3,0.3,0.0226
+2026-10-13,commander-luna-v1.2-kho-20261013,episode-0005,kho5-dwf5,commander,gpt-6-luna,low,1.2,df390c1,realtime,1.0,0.0,won,329,0.22,0.33,1067,8,0.3,0.0206
+2026-10-13,llm-luna-v13-kho-20261013,episode-0000,kho5-dwf5,llm,gpt-6-luna,low,13,df390c1,realtime,1.0,0.0,won,244,0.66,0.28,43,7,5.62,0.0153
+2026-10-13,probe-abilities-random-s4-20261013,episode-0000,random,probe_abilities,,,,9bfee82,realtime,1.0,0.0,lost,228,0.56,0.9,729,0,0.31,0

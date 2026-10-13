@@ -179,21 +179,49 @@ Verified 2026-10-13 in `runs/twwarhammer3/battle/attack-m3-20261013` (Khorne vs 
 cover; `os.rename` collisions while the controller reads; a restart requested before the
 battle is decided (the script calls `RestartBattle` after 3 s without a results popup).
 
-Army abilities are not in the interface (owner report, 2026-10-13). These are army-wide
-abilities that are not owned by a unit, such as the three Khorne abilities that unlock
-as the army kills enemies. In a commander battle one became available near the end and
-went unused. The mod reads only unit abilities (`owned_non_passive_special_abilities`),
-so neither the state nor the order set includes them, for any controller. The
-documentation offers:
-- `battle_army:use_special_ability(key, position, [bearing], [width])`, with keys from
-  the `army_special_abilities` table;
-- battle currency through `army:has_currency(type)`, `army:currency_amount(type)` and
-  `reset_currency_amount`, which presumably drives the Khorne unlocks.
+Army abilities (owner report, 2026-10-13) are army-wide abilities not owned by a unit,
+such as the three Khorne abilities that unlock as the army kills. The script API has no
+getter for them or for any ability's cooldown; the UI's context system has both (next
+section). Casting goes through `battle_army:use_special_ability(key, position,
+[bearing], [width])`, keys from the `army_special_abilities` table.
 
-It gives no getter for which army abilities an army owns or can use now. To probe:
-- the battle UI's army ability panel (component ids and states), or the
-  `army_special_abilities` table together with the currency amounts;
-- a `use_special_ability` call on a Khorne army once one is unlocked.
+## Ability state through the UI context system (probed 2026-10-13)
+
+The game ships its UI context documentation in `data.pack`
+(`documentation\ui\documentation.html`, extracted to
+`runs/twwarhammer3/vanilla/documentation/ui/`). Script reads it with
+`common.get_context_value(type, id, expression)`. Verified live on `kho5-dwf5`
+(`runs/twwarhammer3/probe-army-abilities-20261013/` and the mod.log of
+`skills-v1.2-kho-20261013`):
+- A unit's `CcoBattleUnit` id is its `unique_ui_id` as a string (1001, 1002, ... for the
+  player's units).
+- Expressions chain and concatenate: `BattleAbilityList.JoinString(SetupAbilityContext.RecordKey
+  + "|" + CanCurrentlyPerform + "|" + RechargeTimeRemainingSecs, ";")` returned
+  `wh_main_character_abilities_foe_seeker|true|0.00;...`. Booleans become `true`/`false`
+  and floats two decimals. `Format("%S|%d", ...)` did not substitute.
+- `BattleAbilityList` holds every ability with live state: `CanCurrentlyPerform`,
+  `RechargeTimeRemainingSecs`, `RemainingUses` (-1 unlimited), `IsActive`, `CurrentState`.
+  `SetupAbilityContext` gives the static record: `RecordKey`, `TargetType` (with colour
+  markup such as `[[col:green]]Self[[/col]]`), `ManaUsed`, `RechargeTime` (the Herald:
+  Foe Seeker 60 s; Tormentor Sword, Deadly Onslaught and Locus of Wrath 90 s; Banner of
+  Hellfire 120 s).
+- `CcoBattleRoot` with id `""` reaches the player's army: `PlayerArmyContext`.
+  `ArmyAbilitiesList(false)` lists the army abilities in cost order. Khorne's:
+  - `horn_of_khorne`, target Ground or Ally, radius 35 m, recharge 90 s, active 31 s;
+  - `relentless_rage`, target Ally, recharge 90 s, active 20 s;
+  - `blade_of_khorne`, target Ground, recharge 120 s, active 8 s.
+
+  `ArmyAbilityCurrency` counts the points (0 at the start, 113 by 514 s in a 531 s
+  skills battle). `ArmyAbilityIndexCost(i)` is 100, 200 and 300, and
+  `IsArmyAbilityUnlocked(i)` turned true for index 0 at 100 points.
+  `HasArmyAbilityFillCurrency` is true. `ArmyAbilityIndex(key)` returned nil.
+  `ArmyWideEffects` was empty.
+- The HUD shows them at `army_ability_container > army_ability_parent >
+  button_holder_<key> > button_ability_<key>`. The button state was `inactive` while
+  locked and `active` once unlocked; children `lock`, `dy_time_remaining` (cooldown
+  text) and `cooldown_blocked`. The `lock` icon is hidden on unlocked abilities and also
+  on the one being charged, so it does not mean unlocked. The button's
+  `CcoBattleAbility` id (`<key>_<pointer>`) did not resolve through `get_context_value`.
 
 ## Expanded controller interface (2026-10-13)
 
