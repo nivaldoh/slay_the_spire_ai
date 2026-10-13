@@ -9,10 +9,10 @@ import subprocess
 import pytest
 import test_evidence
 
+from gameai.provenance import REPO_ROOT
 from spire.combat.evidence import EvidenceError, audit_run, normalized_observation_fingerprint
 from spire.language import demonstrations as demos
 from spire.protocol import Decision, decision_from_message
-from spire.provenance import REPO_ROOT
 
 evidence_run = test_evidence.run
 

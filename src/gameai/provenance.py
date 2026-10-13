@@ -1,7 +1,8 @@
 """Source provenance for attributable evidence.
 
 Every game launch records the committed revision and a hash of each implementation
-file, and refuses to start while files under ``SOURCE_PATHS`` have uncommitted edits.
+file, and refuses to start while files in its source scope have uncommitted edits. A
+game passes its own scope, so edits to another game's package do not touch its jobs.
 """
 
 from __future__ import annotations
@@ -32,16 +33,19 @@ def git(*args: str) -> str:
     return subprocess.check_output(["git", *args], cwd=REPO_ROOT, text=True)
 
 
-def source_fingerprints() -> dict[str, str]:
-    paths = list((REPO_ROOT / "src").rglob("*.py")) + list((REPO_ROOT / "scripts").rglob("*.py"))
-    paths += [path for path in (REPO_ROOT / "configs").rglob("*") if path.is_file()]
-    paths += [REPO_ROOT / name for name in ("pyproject.toml", "uv.lock", ".python-version")]
-    return {str(path.relative_to(REPO_ROOT)): sha256(path) for path in sorted(paths)}
+def source_fingerprints(paths: tuple[str, ...] = SOURCE_PATHS) -> dict[str, str]:
+    """A hash of every file in scope; a directory covers all files outside __pycache__."""
+    files = []
+    for name in paths:
+        path = REPO_ROOT / name
+        files += [p for p in path.rglob("*") if p.is_file() and "__pycache__" not in p.parts]
+        files += [path] if path.is_file() else []
+    return {str(path.relative_to(REPO_ROOT)): sha256(path) for path in sorted(files)}
 
 
-def committed_revision(purpose: str) -> str:
-    """HEAD of a clean checkout; refuses uncommitted implementation edits."""
-    status = git("status", "--porcelain", "--", *SOURCE_PATHS)
+def committed_revision(purpose: str, paths: tuple[str, ...] = SOURCE_PATHS) -> str:
+    """HEAD of a clean checkout; refuses uncommitted edits in scope."""
+    status = git("status", "--porcelain", "--", *paths)
     if status:
         raise ValueError(f"Commit implementation changes before {purpose}: {status}")
     return git("rev-parse", "HEAD").strip()

@@ -42,7 +42,7 @@ torch = [
 dev = ["pytest>=8.4,<10", "ruff>=0.14,<1"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/spire"]
+packages = ["src/gameai", "src/spire"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

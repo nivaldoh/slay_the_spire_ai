@@ -10,6 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
+from gameai.provenance import REPO_ROOT
 from spire.engine.bridge import (
     BridgeDisconnected,
     BridgeError,
@@ -17,7 +18,6 @@ from spire.engine.bridge import (
     BridgeServer,
     BridgeTimeout,
 )
-from spire.provenance import REPO_ROOT
 
 RELAY = REPO_ROOT / "src/spire/engine/windows_relay.py"
 

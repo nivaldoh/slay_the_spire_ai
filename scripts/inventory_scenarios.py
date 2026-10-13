@@ -15,11 +15,11 @@ from collections import Counter
 from contextlib import contextmanager
 from pathlib import Path
 
+from gameai.provenance import REPO_ROOT as ROOT
+from gameai.provenance import committed_revision, source_fingerprints, write_json
 from spire.combat.evidence import audit_run, compare_resets
 from spire.combat.rollout import rollout
 from spire.protocol import OBSERVATION_CONTRACT
-from spire.provenance import REPO_ROOT as ROOT
-from spire.provenance import committed_revision, source_fingerprints, write_json
 
 SEEDS = tuple(f"SPIREINV{number:02d}" for number in range(1, 13))
 FAMILIES = ("cultist", "jaw_worm", "two_louses")

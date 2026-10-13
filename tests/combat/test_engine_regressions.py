@@ -11,13 +11,13 @@ from pathlib import Path
 
 import pytest
 
+from gameai.provenance import REPO_ROOT
 from spire.protocol import (
     StaleActionError,
     combat_outcome,
     decision_from_message,
     validate_action,
 )
-from spire.provenance import REPO_ROOT
 
 FIXTURE_PATH = Path(__file__).parents[1] / "fixtures/engine_starter_transitions.json"
 FIXTURE = json.loads(FIXTURE_PATH.read_text())

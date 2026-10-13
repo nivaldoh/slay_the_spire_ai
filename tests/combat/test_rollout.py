@@ -4,9 +4,9 @@ import json
 
 import pytest
 
+from gameai.provenance import write_json
 from spire.combat.rollout import prefix_command
 from spire.protocol import ProtocolError
-from spire.provenance import write_json
 
 
 def neow(options):

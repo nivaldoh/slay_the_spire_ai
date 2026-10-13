@@ -8,7 +8,7 @@ import pytest
 import test_evidence
 import test_rollout_lifecycle
 
-from spire import provenance
+from gameai import provenance
 from spire.combat import catalog, evaluation, rollout
 from spire.combat.evidence import audit_run, normalized_observation_fingerprint
 from spire.engine import doctor

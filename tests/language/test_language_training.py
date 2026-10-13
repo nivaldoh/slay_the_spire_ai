@@ -17,9 +17,9 @@ import test_demonstrations
 torch = pytest.importorskip("torch")
 functional = torch.nn.functional
 
+from gameai.provenance import REPO_ROOT  # noqa: E402
 from spire.language import policy, training  # noqa: E402
 from spire.language.demonstrations import DemonstrationSource, export_demonstrations  # noqa: E402
-from spire.provenance import REPO_ROOT  # noqa: E402
 
 REAL_EXPORT = training._export
 REAL_DECLARATION = policy.create_declaration

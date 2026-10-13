@@ -13,9 +13,9 @@ pytest.importorskip("safetensors")
 
 import test_language_training as trainer_tests  # noqa: E402
 
+from gameai.provenance import REPO_ROOT  # noqa: E402
 from spire.language import policy, training  # noqa: E402
 from spire.language.demonstrations import DemonstrationSource, export_demonstrations  # noqa: E402
-from spire.provenance import REPO_ROOT  # noqa: E402
 
 SPEC = importlib.util.spec_from_file_location(
     "audit_language_training_script",

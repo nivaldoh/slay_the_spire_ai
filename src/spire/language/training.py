@@ -23,8 +23,8 @@ from pathlib import Path
 
 import torch
 
+from gameai.provenance import committed_revision, source_fingerprints, write_json
 from spire.language.demonstrations import DemonstrationSource, export_demonstrations
-from spire.provenance import committed_revision, source_fingerprints, write_json
 
 VERSION = "public-heuristic-completion-lora-v1"
 LORA = {

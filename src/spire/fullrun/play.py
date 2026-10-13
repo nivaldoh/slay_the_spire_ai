@@ -18,6 +18,8 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 
+from gameai.ledger import BudgetExhausted
+from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
 from spire import decisions
 from spire.engine.bridge import BridgeError, BridgeServer
 from spire.engine.doctor import collect_profile
@@ -31,12 +33,13 @@ from spire.engine.runtime import (
 )
 from spire.fullrun.llm import SYSTEM_PROMPT_PATH
 from spire.fullrun.stats import record
-from spire.ledger import BudgetExhausted
 from spire.protocol import BridgeCommandError, IllegalActionError, PolicyFailure, ProtocolError
-from spire.provenance import committed_revision, sha256, source_fingerprints, write_json
 
 # A run that ends in one of these is a scored attempt; anything else stops the job.
 SCORED = {"won", "lost", "policy_failure", "truncated"}
+# Edits outside this scope (another game's package) do not stop a running job.
+SOURCES = ("src/gameai", "src/spire", "configs/llm", "pyproject.toml", "uv.lock",
+           ".python-version")
 
 
 def _unsettled(message: dict) -> bool:
@@ -159,8 +162,8 @@ def play_run(directory: Path, config: dict, policy) -> dict:
 
 def _committed_source() -> dict:
     return {
-        "source_revision": committed_revision("attributable runs"),
-        "source_files": source_fingerprints(),
+        "source_revision": committed_revision("attributable runs", SOURCES),
+        "source_files": source_fingerprints(SOURCES),
     }
 
 
@@ -193,7 +196,7 @@ def play(output: Path, config: dict, *, policy_factory: Callable) -> dict:
     write_json(output / "manifest.json", manifest)
     try:
         for index, seed in enumerate(config["seeds"]):
-            if source_fingerprints() != manifest["source_files"]:
+            if source_fingerprints(SOURCES) != manifest["source_files"]:
                 raise RuntimeError("Implementation changed during the job; stopped before launch")
             run = output / f"run-{index:04d}"
             result = play_run(run, {**config, "seed": seed}, policy_factory())

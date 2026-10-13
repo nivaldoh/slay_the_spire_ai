@@ -8,6 +8,7 @@ import json
 from contextlib import nullcontext
 from pathlib import Path
 
+from gameai.provenance import write_json
 from spire.combat.evaluation import load_suite
 from spire.combat.evidence import summarize_run
 from spire.combat.rollout import rollout
@@ -20,7 +21,6 @@ from spire.language.policy import (
     validate_declaration,
 )
 from spire.protocol import Action, Decision
-from spire.provenance import write_json
 
 
 def language_snapshot(

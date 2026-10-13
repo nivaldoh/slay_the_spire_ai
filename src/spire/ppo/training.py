@@ -20,6 +20,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
+from gameai.provenance import committed_revision, source_fingerprints, write_json
 from spire.combat.evaluation import load_suite
 from spire.combat.evidence import (
     EvidenceError,
@@ -28,7 +29,6 @@ from spire.combat.evidence import (
     normalized_observation_fingerprint,
 )
 from spire.combat.rollout import run_episode
-from spire.provenance import committed_revision, source_fingerprints, write_json
 
 _TRAINING_LOCK_PATH = Path(f"/tmp/spire-training-{os.getuid()}.lock")
 _SCENARIO_SCHEDULE = "round_robin_scenarios_v1"

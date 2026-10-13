@@ -3,7 +3,7 @@
 Infrastructure, not scaffolding: the autoresearch loop does not tune this file. Standard
 library only. The key comes from ``OPENAI_API_KEY`` or the file named by
 ``SPIRE_OPENAI_KEY_FILE`` and is never logged or written to evidence. Every call is priced
-from its reported usage and charged to a ``spire.ledger.Ledger``, which refuses a call
+from its reported usage and charged to a ``gameai.ledger.Ledger``, which refuses a call
 before sending when its total plus the call's worst-case cost would exceed the budget.
 """
 
@@ -16,7 +16,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-from spire.provenance import REPO_ROOT
+from gameai.provenance import REPO_ROOT
 
 API_URL = "https://api.openai.com/v1/responses"
 # USD per million tokens (input, cached input, output), standard tier, read 2026-10-12

@@ -2,8 +2,8 @@ import json
 
 import pytest
 
+from gameai.provenance import REPO_ROOT
 from spire.combat.evaluation import load_suite
-from spire.provenance import REPO_ROOT
 
 SUITE = REPO_ROOT / "configs/suites/louse_diagnostic_development_v1.json"
 

@@ -10,8 +10,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from spire.ledger import Ledger
-from spire.provenance import REPO_ROOT
+from gameai.ledger import Ledger
+from gameai.provenance import REPO_ROOT
 
 # USD per million tokens (prefill, sample, train), from the Tinker catalog on 2026-10-12.
 # Keys are display names; confirm the catalog IDs in models.json before the first call.

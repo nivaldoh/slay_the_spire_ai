@@ -11,13 +11,13 @@ import pytest
 import test_evidence
 import test_rollout_lifecycle
 
-from spire import provenance
+from gameai import provenance
+from gameai.provenance import REPO_ROOT
 from spire.combat import rollout
 from spire.combat.evidence import audit_run, normalized_observation_fingerprint
 from spire.engine import doctor
 from spire.engine.bridge import BridgeDisconnected
 from spire.protocol import decision_from_message
-from spire.provenance import REPO_ROOT
 
 SCRIPT = REPO_ROOT / "scripts/inventory_scenarios.py"
 spec = importlib.util.spec_from_file_location("inventory_scenarios", SCRIPT)

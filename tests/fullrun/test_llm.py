@@ -5,9 +5,9 @@ import json
 import pytest
 from test_decisions import card, combat_message, message
 
+from gameai.ledger import BudgetExhausted, Ledger
 from spire import decisions
 from spire.fullrun import llm
-from spire.ledger import BudgetExhausted, Ledger
 from spire.protocol import PolicyFailure
 
 USAGE = {"input_tokens": 1000, "input_tokens_details": {"cached_tokens": 400},

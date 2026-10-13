@@ -6,11 +6,11 @@ import json
 import re
 from pathlib import Path
 
+from gameai.provenance import write_json
 from spire import policies
 from spire.combat.evidence import summarize_run
 from spire.combat.rollout import rollout
 from spire.protocol import OBSERVATION_CONTRACT
-from spire.provenance import write_json
 
 
 def load_suite(path: Path) -> dict:

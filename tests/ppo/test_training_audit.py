@@ -11,8 +11,8 @@ torch = pytest.importorskip("torch")
 
 import test_training  # noqa: E402
 
+from gameai.provenance import REPO_ROOT  # noqa: E402
 from spire.ppo import training  # noqa: E402
-from spire.provenance import REPO_ROOT  # noqa: E402
 
 training_setup = test_training.setup
 

@@ -12,6 +12,7 @@ from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
 
+from gameai.provenance import committed_revision, git, source_fingerprints, write_json
 from spire.engine.bridge import BridgeError, BridgeServer
 from spire.engine.doctor import collect_profile
 from spire.engine.runtime import (
@@ -31,7 +32,6 @@ from spire.protocol import (
     decision_from_message,
     validate_action,
 )
-from spire.provenance import committed_revision, git, source_fingerprints, write_json
 
 
 def prefix_command(message: dict) -> str:

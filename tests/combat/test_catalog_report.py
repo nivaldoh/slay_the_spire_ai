@@ -6,7 +6,7 @@ import shutil
 import pytest
 import test_catalog
 
-from spire import provenance
+from gameai import provenance
 from spire.combat import catalog, catalog_report
 from spire.engine.bridge import BridgeDisconnected
 

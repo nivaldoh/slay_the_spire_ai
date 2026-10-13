@@ -9,7 +9,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from spire import provenance  # noqa: E402
+from gameai import provenance  # noqa: E402
 from spire.combat import evaluation, rollout  # noqa: E402
 from spire.engine import doctor  # noqa: E402
 from spire.engine.bridge import BridgeDisconnected  # noqa: E402

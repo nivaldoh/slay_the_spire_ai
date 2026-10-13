@@ -17,6 +17,7 @@ from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
+from gameai.provenance import REPO_ROOT
 from spire.combat.evidence import EvidenceError, audit_run
 from spire.policies import RandomPolicy, StarterHeuristicPolicy
 from spire.protocol import (
@@ -26,7 +27,6 @@ from spire.protocol import (
     IllegalActionError,
     validate_action,
 )
-from spire.provenance import REPO_ROOT
 
 # Teacher and observation sources are pinned at their recorded paths in this directory.
 PACKAGE_DIR = REPO_ROOT / "src/spire"

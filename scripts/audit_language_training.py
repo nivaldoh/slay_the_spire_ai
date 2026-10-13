@@ -17,9 +17,9 @@ from pathlib import Path
 
 import torch
 
+from gameai.provenance import REPO_ROOT
 from spire.language import training
 from spire.language.policy import file_inventory, validate_declaration
-from spire.provenance import REPO_ROOT
 
 
 def require(condition, message):

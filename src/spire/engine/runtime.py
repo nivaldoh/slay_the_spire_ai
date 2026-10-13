@@ -12,7 +12,7 @@ import time
 import uuid
 from pathlib import Path
 
-from spire.provenance import sha256
+from gameai.provenance import sha256
 
 GAME_DIR = Path("/mnt/c/Program Files (x86)/Steam/steamapps/common/SlayTheSpire")
 WORKSHOP_DIR = Path("/mnt/c/Program Files (x86)/Steam/steamapps/workshop/content/646570")

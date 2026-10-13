@@ -5,8 +5,8 @@ import time
 
 from test_play import CONFIG, DEATH, MENU, NEOW, ScriptedPolicy, harness
 
+from gameai.provenance import write_json
 from spire.fullrun import play, watch
-from spire.provenance import write_json
 
 __all__ = ["harness"]
 

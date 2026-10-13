@@ -15,7 +15,7 @@ from test_language_policy import (  # noqa: E402
 )
 from test_rollout_lifecycle import combat_message, harness, terminal_message  # noqa: E402
 
-from spire import provenance  # noqa: E402
+from gameai import provenance  # noqa: E402
 from spire.combat import rollout  # noqa: E402
 from spire.combat.evidence import audit_run, normalized_observation_fingerprint  # noqa: E402
 from spire.engine.bridge import BridgeDisconnected  # noqa: E402

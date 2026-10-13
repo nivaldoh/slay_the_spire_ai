@@ -16,7 +16,7 @@ import os
 import re
 from pathlib import Path
 
-from spire.provenance import REPO_ROOT
+from gameai.provenance import REPO_ROOT
 
 RESULTS_PATH = REPO_ROOT / "docs/fullrun/results.csv"
 JOBS_ROOT = REPO_ROOT / "runs/fullrun"

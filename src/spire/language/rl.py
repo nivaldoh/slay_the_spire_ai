@@ -19,6 +19,7 @@ from pathlib import Path
 
 import torch
 
+from gameai.provenance import write_json
 from spire.combat.catalog import load_catalog
 from spire.combat.evidence import audit_run
 from spire.combat.rollout import rollout
@@ -37,7 +38,6 @@ from spire.language.sampling import SCORING, CandidateSampler
 from spire.language.training import _adapter, _dependencies, _finite, _source, tensor_hash
 from spire.ppo.learning import terminal_reward
 from spire.protocol import Action, Decision, UnsupportedStateError
-from spire.provenance import write_json
 
 VERSION = "language-candidate-reinforce-v1"
 REWARD = "won_one_plus_quarter_hp_fraction_else_minus_one_v1"

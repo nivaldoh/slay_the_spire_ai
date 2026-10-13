@@ -10,8 +10,8 @@ from unittest.mock import Mock
 
 import pytest
 
+from gameai.provenance import REPO_ROOT
 from spire.engine import runtime
-from spire.provenance import REPO_ROOT
 
 SCRIPT = REPO_ROOT / "src/spire/engine/windows_game.py"
 SPEC = importlib.util.spec_from_file_location("windows_game", SCRIPT)

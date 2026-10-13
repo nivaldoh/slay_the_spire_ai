@@ -14,11 +14,11 @@ from contextlib import ExitStack
 from pathlib import Path
 from statistics import mean
 
+from gameai.provenance import committed_revision, source_fingerprints, write_json
 from spire import policies
 from spire.combat import evaluation
 from spire.combat.evidence import _metrics, audit_run, compare_resets
 from spire.protocol import OBSERVATION_CONTRACT
-from spire.provenance import committed_revision, source_fingerprints, write_json
 
 DECLARATIONS = {
     "character": "IRONCLAD",

@@ -193,10 +193,10 @@ def main() -> int:
         print(json.dumps(result, indent=2))
         return 0 if result["status"] in {"completed", "budget_exhausted"} else 1
     if args.command == "play":
+        from gameai.ledger import Ledger
         from spire.fullrun.api import ResponsesClient, api_key
         from spire.fullrun.llm import LLMPolicy
         from spire.fullrun.play import play as run_play
-        from spire.ledger import Ledger
 
         config = vars(args).copy()
         output = config.pop("output")
@@ -220,7 +220,7 @@ def main() -> int:
         print(next_event(args.job))
         return 0
     if args.command == "spend":
-        from spire.ledger import Ledger
+        from gameai.ledger import Ledger
 
         print(f"${Ledger(args.ledger, budget_usd=0).spent:.4f} spent ({args.ledger})")
         return 0

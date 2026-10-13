@@ -9,7 +9,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from spire import provenance
+from gameai import provenance
 from spire.combat import rollout
 from spire.engine import doctor
 from spire.engine.bridge import BridgeDisconnected, BridgeServer
