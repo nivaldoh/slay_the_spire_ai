@@ -97,3 +97,12 @@ the enemy's), lost at 488 s (7% against 40%), won at 355 s (44% against 39%, the
 an LLM battle has come to the baseline's 45% against 33%). The model followed the
 doctrine: it walked on 55 of 76 moves and attacks (v3: 34 of 140), met the enemy at 95 s
 like the baseline (v3: 55-79 s) and helped its lord in 12 of 14 duel turns.
+
+Reviews: in both losses the Herald was parked at 20-23% health for 18 and 23 straight
+decisions while the enemy lord fell to 12-2% and the model itself called him "nearly
+defeated" (v4's "bring him back only to finish a routing or nearly dead enemy" had no
+threshold); in the win the enemy lord routed at about 160 s, earlier than in the
+baseline. The support units still did little: the Skullcannon fired its 12 shots for at
+most 3 kills, and the horsemen, ordered at the Quarrellers through the melee, stalled
+behind it and routed, throwing 6-26 axes where the baseline's threw about 170 into the
+Dwarf Warriors before contact. Moves to flank were acknowledged but the unit barely moved.
