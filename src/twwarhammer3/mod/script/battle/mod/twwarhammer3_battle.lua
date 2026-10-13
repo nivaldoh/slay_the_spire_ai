@@ -112,10 +112,10 @@ local function unit_class(unit)
     return class
 end
 
-local function unit_record(id, unit, mine)
+local function unit_record(id, unit, mine, class)
     local position = get(unit, "position", nil)
     local record = {
-        id = id, type = get(unit, "type", "?"), class = unit_class(unit),
+        id = id, type = get(unit, "type", "?"), class = class,
         commander = get(unit, "is_commanding_unit", false),
         x = position and round(position:get_x(), 1), z = position and round(position:get_z(), 1),
         bearing = round(get(unit, "bearing", 0)),
@@ -125,17 +125,21 @@ local function unit_record(id, unit, mine)
     local flags = {
         {"is_routing", "routing"}, {"is_shattered", "shattered"}, {"is_wavering", "wavering"},
         {"is_in_melee", "melee"}, {"is_under_missile_attack", "under_fire"},
-        {"is_moving_fast", "running"}, {"is_moving", "moving"}, {"is_idle", "idle"},
+        {"is_moving", "moving"}, {"is_idle", "idle"},
         {"is_hidden", "hidden"}, {"is_unstable", "unstable"}, {"is_crumbling", "crumbling"},
         {"is_rampaging", "rampaging"},
     }
     for _, flag in ipairs(flags) do
         if get(unit, flag[1], false) then record.state[#record.state + 1] = flag[2] end
     end
+    -- is_moving_fast follows the run setting, also while the unit stands.
+    if get(unit, "is_moving", false) and get(unit, "is_moving_fast", false) then
+        record.state[#record.state + 1] = "running"
+    end
+    record.range = round(get(unit, "missile_range", 0))
     if mine then
         record.ammo = get(unit, "ammo_left", 0)
         record.ammo0 = get(unit, "starting_ammo", 0)
-        record.range = round(get(unit, "missile_range", 0))
         record.speed = {round(get(unit, "slow_speed", 0), 1), round(get(unit, "fast_speed", 0), 1)}
         record.fatigue = string.gsub(tostring(get(unit, "fatigue_state", "")), "^threshold_", "")
         local target = get(unit, "current_target", nil)
@@ -161,7 +165,8 @@ local function observation(now, awaiting)
     state.seq = state.seq + 1
     local friendly, enemy, roster = {}, {}, {}
     for _, id in ipairs(state.friendly_ids) do
-        local ok, record = pcall(unit_record, id, state.friendly[id].unit, true)
+        local entry = state.friendly[id]
+        local ok, record = pcall(unit_record, id, entry.unit, true, entry.class)
         friendly[#friendly + 1] = ok and record or {id = id, error = clean_error(record)}
     end
     for _, id in ipairs(state.enemy_ids) do
@@ -172,7 +177,7 @@ local function observation(now, awaiting)
                                dead = (entry.seen and not alive) or nil}
         if alive and visible_to_player(entry.unit) then
             entry.seen = true
-            local ok, record = pcall(unit_record, id, entry.unit, false)
+            local ok, record = pcall(unit_record, id, entry.unit, false, entry.class)
             enemy[#enemy + 1] = ok and record or {id = id, error = clean_error(record)}
         end
     end
@@ -215,13 +220,15 @@ local function apply_order(order)
             local x, z = tonumber(order.x), tonumber(order.z)
             if not x or not z then error("bad_position") end
             local y = get(bm.battle, "get_terrain_height", 0, x, z)
+            local destination = vector(x, y, z)
+            if not get(unit, "can_reach_position", true, destination) then error("unreachable") end
             local facing = tonumber(order.facing)
             if facing then
                 local width = get(unit, "ordered_width", 0)
-                controller:goto_location_angle_width(vector(x, y, z), facing,
+                controller:goto_location_angle_width(destination, facing,
                                                      width > 0 and width or 40, order.run == true)
             else
-                controller:goto_location(vector(x, y, z), order.run == true)
+                controller:goto_location(destination, order.run == true)
             end
         elseif order.type == "attack" then
             local target = state.enemy[order.target]
@@ -407,7 +414,7 @@ local function start()
         local controller = army:create_unit_controller()
         controller:add_units(unit)
         controller:take_control()
-        state.friendly[id] = {unit = unit, controller = controller}
+        state.friendly[id] = {unit = unit, controller = controller, class = unit_class(unit)}
         state.friendly_ids[#state.friendly_ids + 1] = id
     end
     local armies = bm:get_non_player_alliance():armies()
@@ -418,7 +425,7 @@ local function start()
             local unit = enemy_units:item(index)
             count = count + 1
             local id = "e" .. count
-            state.enemy[id] = {unit = unit}
+            state.enemy[id] = {unit = unit, class = unit_class(unit)}
             state.enemy_ids[#state.enemy_ids + 1] = id
             state.enemy_by_ui[get(unit, "unique_ui_id", -1)] = id
         end

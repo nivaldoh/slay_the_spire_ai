@@ -152,3 +152,13 @@ def test_a_bad_facing_is_invalid(tmp_path):
     agent = policy(tmp_path, reply(bad), reply([]))
     agent.decide(observation())
     assert "facing must be a number" in agent.metadata()["attempts"][0]["error"]
+
+
+def test_dead_friendly_units_are_one_line_and_enemy_range_shows():
+    observation_ = observation()
+    observation_["friendly"][0].update(men=0, state=["idle", "melee"])
+    observation_["enemy"][0]["range"] = 160
+    text = llm.render_state(observation_, {})
+    assert "- f1 herald_of_khorne_0: destroyed\n" in text
+    assert ("e1 dwarf_warriors_0 (infantry) at (100, 200) facing 180, 90/100 men, hp 90%,"
+            " range 160") in text
