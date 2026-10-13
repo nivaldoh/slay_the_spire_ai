@@ -308,3 +308,14 @@ units never trade fire with enemy missile infantry; a shooter moves before it at
 v8's cavalry rules and v9's and v11's lord rules are left out. The mirrors split the
 versions (v6 best in the Khorne mirror, v10 in the Empire mirror), and v10's fire rules
 are the change with the clearest measured basis.
+
+Job `llm-luna-v12-kho-20261013` (source `42a8af7`): lost at 225 s (11% against 59%), 271 s
+(19% against 52%) and 265 s (19% against 54%).
+
+The scenarios were less fixed than intended. Picking a race leaves the faction within it
+to the game, and it varied between jobs on both sides: Khorne jobs played Khorne against
+Arbaal's faction or Crimson Skull against Khorne (v12's enemy also deployed elsewhere),
+Empire jobs Wissenland, Empire or Golden Order, Dwarf jobs Dwarfs, Karak Kadrin or the
+Ancestral Throng. Every comparison between versions above carries that variation (the
+first v6 Khorne job, 2 wins of 3, is the only one with wins and played Khorne against
+Arbaal, as did v9-v11's). The next fix pins each side's faction in the scenario.
