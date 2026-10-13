@@ -110,8 +110,9 @@ work starts, stops or changes direction.
 
 Four-space indentation, `snake_case` functions and modules, `PascalCase` classes,
 `UPPER_SNAKE_CASE` constants. Keep protocol handling separate from policy logic. Reserve
-bridge stdout for protocol traffic; send diagnostics elsewhere. Aim for simplicity and
-readability; avoid slop and overengineering. Match the surrounding code.
+bridge stdout for protocol traffic; send diagnostics elsewhere. Match the surrounding code.
+
+Aim for simplicity and readability. Avoid overengineering and bloat. This is not "enterprise production-grade" slop, so avoid excessive abstractions, overly safe code, etc. Keep the codebase clean and lean.
 
 ## Testing
 
