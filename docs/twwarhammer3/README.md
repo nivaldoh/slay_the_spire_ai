@@ -42,7 +42,7 @@ way. There is no external game API; the mod is the API.
   `result.json` and `mod.log`; each finished episode appends a row to
   [results.csv](results.csv). Versions are logged in [log.md](log.md).
 
-## Status (2026-10-13 07:40 local)
+## Status (2026-10-13 08:20 local)
 
 | Milestone | State | Evidence |
 |---|---|---|
@@ -51,10 +51,10 @@ way. There is no external game API; the mod is the API.
 | 2 Roster readable | done | 5 v 5 units with positions, strength, fatigue, flags, targets in every observation |
 | 3 Orders apply | done | attack, move (with facing) and halt through one unitcontroller per unit; acknowledgements carry the applied battle time |
 | 4 Result | done | "lost" and "won" from the engine at VictoryCountdown, with both armies' true strength for evaluation |
-| 5 Restart | done | rematch button and confirmation; 34 episodes in 12 jobs, none an infrastructure failure |
+| 5 Restart | done | rematch button and confirmation; 40 episodes in 14 jobs, none an infrastructure failure |
 | 6 Scripted baselines | done | `attack_nearest`: 3 wins of 3 at about 345 s |
 | 7 First LLM battles | done | v1: 1 win of 3 |
-| 8 Autoresearch loop | running | [log.md](log.md): v2 0/3, v3 3/5, v4 1/3 (1/3 paused), v5 4/6, v6 5/6, v7 running |
+| 8 Autoresearch loop | running | [log.md](log.md): v2 0/3, v3 3/5, v4 1/3 (1/3 paused), v5 4/6, v6 5/6, v7 2/6 (reverted; `main` runs v6) |
 
 Results by version: `python -m twwarhammer3 stats`. With outcomes this noisy (a version's
 battles swing between a clear win and a clear loss), three episodes rank versions only

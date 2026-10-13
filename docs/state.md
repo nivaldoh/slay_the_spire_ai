@@ -6,8 +6,8 @@ History lives with each track ([full runs](fullrun/log.md),
 
 ## Active work (last verified 2026-10-13 10:35 UTC)
 
-The WH3 session (owner away 04:40-11:40 UTC) ran the autoresearch loop to v7; its last job
-is `runs/twwarhammer3/battle/llm-luna-v7-20261013`. Nothing else is running. The Spire v10
+The WH3 session (owner away 04:40-11:40 UTC) ran the autoresearch loop to v7 (2 of 6,
+reverted; `main` runs v6, 5 of 6); its last job is `runs/twwarhammer3/battle/llm-luna-v7-20261013b`. Nothing else is running. The Spire v10
 job (`runs/fullrun/llm-luna-v10-dev-20261013`) died on floor 10 when WSL restarted at
 04:36 UTC, which also ended the Spire session; Spire autoresearch is idle (v10 untested).
 

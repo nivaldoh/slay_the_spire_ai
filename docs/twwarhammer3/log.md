@@ -175,3 +175,9 @@ on the game's choice and switch to the nearby enemy closest to breaking.
 Job `llm-luna-v7-20261013` (source `42d3054`): won at 451 s (10% against 27%), lost at
 334 s (30% against 17%: our army broke with more men left than the enemy's), won at 376 s
 (32% against 35%).
+
+Replicate `llm-luna-v7-20261013b`: lost at 256 s (35% against 64%), lost at 278 s (32%
+against 70%), lost at 434 s (22% against 29%). v7 in all: 2 wins of 6, against v6's 5 of
+6, so v7 was reverted: `main` runs the v6 prompt. Without the standing order to pile onto
+the enemy lord, the replicate's battles were lost fast; the race test seems to have taken
+units off him too early. The next version starts again from v6.
