@@ -178,6 +178,50 @@ ones were faster. Higher efforts will
 reason more and take longer; measure them before relying on them. One battle per model
 measures latency and cost, not strength.
 
+## Watching a battle (owner request, 2026-10-13)
+
+The owner wants to follow what the models receive and decide during a battle,
+summarized, together with other useful context. Nothing displays it live yet.
+
+**Already stored per episode in `trace.jsonl`:**
+- Commander: every request's full prompt (`prompt`, `prompt_sha256`), which includes the
+  Assignments section with each unit's skill and current phase. Every adopted plan
+  carries the assignments, abilities, the model's one-sentence `reason`, its running
+  `notes`, dropped items, `plan_age_s` and `attempts` (raw reply text, token usage,
+  seconds).
+- Direct controller: the prompt, reason, notes and attempts for every decision.
+- The API returns reasoning only as a token count, which is stored in the usage
+  figures; the reasoning text itself is not returned.
+- `digest` prints the plans with their age and reason after the fact. The commander has
+  no model subagents yet; specialists are a later design below.
+
+**Ways to show it, to probe before choosing:**
+1. **In the game's advisor window.** `bm:queue_advisor(text, duration, true)`, the
+   debug flag, shows plain text as-is (`lib_battle_manager.lua`; documented as "debug
+   only", so it may not display in a release build). This could show each adopted
+   plan's reason and changed assignments.
+2. **A text component of our own.** `uic:SetStateText(text)` on a component created or
+   borrowed by the battle script; it needs a layout to attach to.
+3. **Map markers.** `bm:add_ping_icon(x, y, z, type, waypoint, rotation)` and
+   `remove_ping_icon` could mark plan points: charge posts, move and firing spots.
+4. **Outside the game.** A live page or terminal view that tails `trace.jsonl` beside
+   the game. It is the richest and touches nothing in the game: plan timeline, reasons,
+   per-unit assignments and phases, plan age, cost so far, both sides' strength over
+   time.
+
+The mod passes text to the game through the mailbox the same way as orders, so options
+1-3 would add a display message to `orders.json` or a separate file. Battles stay
+unpaused at 1x.
+
+**Other information worth showing:**
+- per-unit assignment, phase and last order;
+- plan age and think time per plan;
+- dropped assignments and engine rejections;
+- the strength curve of both sides;
+- the enemy army composition as seen;
+- cost so far;
+- kill counts per fire order (candidate branch `wh3-fire-report`).
+
 ## Designs not built yet
 
 They are ordered by how much each is expected to teach for its cost. Each should be

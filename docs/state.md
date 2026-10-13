@@ -35,6 +35,9 @@ Next:
 1. Fix the shooter re-send loop the Skaven battle showed (see the WH3 log).
 2. The six-episode comparison of `llm`, `skills` and `commander`.
 3. Army abilities and ability readiness.
+4. Owner wish: show the models' inputs and outputs (summarized) live during a battle,
+   in the game or beside it; options in
+   [controllers.md](twwarhammer3/controllers.md#watching-a-battle-owner-request-2026-10-13).
 
 WH3 interface work completed: no extra wait by default; explicit attack modes, queued
 moves/attacks, formation width, supported behavior toggles and self/unit/ground abilities.
