@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import csv
 import json
-import os
 import re
 from pathlib import Path
 
@@ -62,15 +61,11 @@ def row(job: Path, run: Path) -> dict:
     }
 
 
-def _writer(handle) -> csv.DictWriter:
-    return csv.DictWriter(handle, FIELDS, lineterminator="\n")
-
-
 def record(path: Path, job: Path, run: Path) -> None:
     """Append one run's row, with the header first in a new register."""
     new = not path.exists() or path.stat().st_size == 0
     with path.open("a", newline="") as handle:
-        writer = _writer(handle)
+        writer = csv.DictWriter(handle, FIELDS, lineterminator="\n")
         if new:
             writer.writeheader()
         writer.writerow(row(job, run))
@@ -80,15 +75,11 @@ def rebuild(root: Path, path: Path) -> None:
     """Rewrite the register from every saved job, in the order ``record`` appends."""
     jobs = sorted((json.loads((job / "manifest.json").read_text())["created_at"], job)
                   for job in root.iterdir() if (job / "manifest.json").exists())
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    with temporary.open("w", newline="") as handle:
-        writer = _writer(handle)
-        writer.writeheader()
-        for _, job in jobs:
-            for run in sorted(job.glob("run-*")):
-                if (run / "result.json").exists():
-                    writer.writerow(row(job, run))
-    os.replace(temporary, path)
+    path.unlink(missing_ok=True)
+    for _, job in jobs:
+        for run in sorted(job.glob("run-*")):
+            if (run / "result.json").exists():
+                record(path, job, run)
 
 
 def summary(path: Path) -> str:

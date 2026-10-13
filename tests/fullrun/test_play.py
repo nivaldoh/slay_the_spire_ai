@@ -10,7 +10,6 @@ import pytest
 from test_decisions import combat_message, message
 
 from gameai.ledger import BudgetExhausted
-from spire.engine import doctor
 from spire.fullrun import play
 
 MENU = {"ready_for_command": True, "in_game": False, "available_commands": ["start", "state"],
@@ -80,9 +79,8 @@ def harness(monkeypatch):
     monkeypatch.setattr(play, "wsl_bridge_host", Mock(return_value="172.18.0.1"))
     monkeypatch.setattr(play, "prepare_runtime", Mock(return_value={"mods": {}}))
     monkeypatch.setattr(play, "collect_profile", Mock(return_value={"slot": 0}))
-    monkeypatch.setattr(doctor, "collect_diagnostics", lambda: {"schema_version": 1})
-    monkeypatch.setattr(play, "_committed_source",
-                        lambda: {"source_revision": "test", "source_files": {}})
+    monkeypatch.setattr(play, "collect_diagnostics", lambda: {"schema_version": 1})
+    monkeypatch.setattr(play, "committed_revision", lambda purpose, paths: "test")
     monkeypatch.setattr(play, "source_fingerprints", lambda paths: {})
     return sessions, sent
 

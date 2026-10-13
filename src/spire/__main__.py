@@ -10,9 +10,15 @@ from spire.fullrun.llm import LEDGER_PATH
 from spire.fullrun.stats import RESULTS_PATH
 
 
+def _seed(text: str) -> str:
+    # The seed goes into CommunicationMod's START command.
+    if not text.isalnum():
+        raise argparse.ArgumentTypeError("seeds are alphanumeric")
+    return text
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(prog="spire", description="Slay the Spire experiment tools")
-    parser.add_argument("--version", action="version", version="spire-agent 0.1.0")
     commands = parser.add_subparsers(dest="command", required=True)
     doctor = commands.add_parser("doctor", help="Inspect the game, mods and runtime (read-only)")
     doctor.add_argument("--json", action="store_true", help="Emit structured diagnostics")
@@ -56,7 +62,7 @@ def main() -> int:
     play = commands.add_parser("play", help="Full runs: play complete runs with an API model")
     play.add_argument("--model", required=True, choices=sorted(PRICES))
     play.add_argument("--effort", default="low", choices=EFFORTS)
-    play.add_argument("--seed", action="append", dest="seeds", required=True,
+    play.add_argument("--seed", type=_seed, action="append", dest="seeds", required=True,
                       help="Alphanumeric game seed; repeat for several runs")
     play.add_argument("--budget-usd", type=float, required=True,
                       help="Hard cap on the ledger's total spend, including earlier jobs")

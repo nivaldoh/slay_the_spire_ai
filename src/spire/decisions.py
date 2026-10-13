@@ -16,9 +16,7 @@ from typing import Any
 
 from spire.protocol import (
     ATTACK_INTENTS,
-    BridgeCommandError,
     Decision,
-    NotReadyError,
     ProtocolError,
     UnsupportedStateError,
     _freeze,
@@ -117,7 +115,7 @@ def _choice_label(game: dict, index: int, name: str) -> str:
     screen = game.get("screen_type")
     state = game.get("screen_state") or {}
 
-    def item(items: list, key: str = "name"):
+    def item(items: list):
         return items[index] if index < len(items) else None
 
     if screen == "MAP":
@@ -196,17 +194,9 @@ def _button_label(game: dict, command: str) -> str:
 
 
 def decision_from_message(message: dict, *, session_id: str, sequence: int) -> Decision:
-    """Build an immutable labeled choice set from a stable, in-game message."""
-    if "error" in message:
-        raise BridgeCommandError(str(message["error"]))
-    if message.get("ready_for_command") is not True:
-        raise NotReadyError("Wait for a stable ready_for_command=true message")
-    if message.get("in_game") is not True:
-        raise UnsupportedStateError("Main-menu commands belong to the run loop")
-    game = message.get("game_state")
-    commands = message.get("available_commands")
-    if not isinstance(game, dict) or not isinstance(commands, list):
-        raise ProtocolError("Message lacks game_state or available_commands")
+    """Build an immutable labeled choice set from a ready, in-game message; the run loop
+    handles errors, unready messages and the main menu before calling this."""
+    game, commands = message["game_state"], message["available_commands"]
     decision_id = f"{session_id}:{sequence}"
     choices: list[tuple[str, str]] = []
     combat = game.get("combat_state") or {}
