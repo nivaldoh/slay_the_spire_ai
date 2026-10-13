@@ -261,3 +261,19 @@ Job `llm-luna-v10-emp-20261013` (source `ffbc953`): lost at 237 s (37% against 7
 (22% against 38%: the enemy's lowest yet in this mirror) and 254 s (51% against 63%).
 Still no Empire win, but the margin has narrowed with each version: mean strength left,
 ours against the enemy's, v6 21/69%, v8 31/70%, v10 37/57%.
+
+Job `llm-luna-v10-dwf-20261013`: lost at 432 s (47% against 63%), 574 s (35% against 66%)
+and 394 s (44% against 75%); mean 42/68%, against v9's 35/65% and v6's 25/53%.
+
+## v11: the lords never fight alone
+
+Change (prompt, net shorter), chosen by the review of v10's Empire losses and v9's fast
+Khorne loss (all three judges): the lord bullet becomes one rule. Whenever the enemy
+lord is within 20 m of ours or fights any of our units, at least the nearest melee unit
+that is not cavalry must target him, even out of another melee, until he breaks; our
+lord attacks only an enemy another unit is on, never arrives first, and stays in melee
+once there. Gone: v9's 5-point condition (read literally, it forbade help in a losing
+duel, since our own lord counts as a unit on him), the 35% hurt-lord clause and "he is
+your best fighter", which is untrue against the AI's 1.1 stats modifier. The reviewers
+measured our lord, alone against the enemy lord, losing health 3 to 8 times faster than
+he did; he was the first unit to rout in the v10 Empire losses.
