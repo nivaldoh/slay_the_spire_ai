@@ -42,12 +42,12 @@ torch = [
 dev = ["pytest>=8.4,<10", "ruff>=0.14,<1"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/gameai", "src/spire"]
+packages = ["src/gameai", "src/spire", "src/twwarhammer3"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # Tests share fixtures by importing test modules across these directories.
-pythonpath = ["tests", "tests/engine", "tests/combat", "tests/ppo", "tests/language", "tests/fullrun"]
+pythonpath = ["tests", "tests/engine", "tests/combat", "tests/ppo", "tests/language", "tests/fullrun", "tests/twwarhammer3"]
 
 [tool.ruff]
 line-length = 100
