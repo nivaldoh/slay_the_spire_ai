@@ -737,5 +737,350 @@
    "wh3_dlc25"
   ],
   "calibration_change": "Replace Sigvald with the selectable Shadow Herald; both observed b1 controllers lost, including Luna after leaving Sigvald as the sole active enemy. Other units unchanged. Custom funds 30000 admits the explicit roster; the default funds rejected the Herald loadout before battle."
+ },
+ "brt-cavalry-emp-pikes": {
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "split": "development",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 8000,
+   "time_limit_s": 1200,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.0",
+   "player_defends": true
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
+  "status": "prototype_not_admitted",
+  "name": "brt-cavalry-emp-pikes",
+  "family": "cavalry against anti-large",
+  "player": {
+   "subculture": "wh_main_sc_brt_bretonnia",
+   "faction": "wh_main_brt_bretonnia",
+   "units": [
+    "wh_main_brt_cha_lord_0",
+    "wh_main_brt_cav_grail_knights",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_dlc07_brt_cav_questing_knights_0",
+    "wh_main_brt_cav_mounted_yeomen_1"
+   ],
+   "mounts": {
+    "0": "wh_main_brt_cha_lord_4"
+   }
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "units": [
+    "wh_main_emp_cha_general_0",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_art_great_cannon"
+   ]
+  },
+  "protected": [
+   "wh_main_brt_cav_grail_knights"
+  ],
+  "content": [
+   "wh_main",
+   "wh_dlc07"
+  ],
+  "brief": "Six fully mounted units; Grail Knights anchor the shock force. Four halberds cover two handguns and a cannon. Maneuver, engagement angle, target priority and disengagement compete; frontal grinding is the naive risk. Hypotheses, not a prescribed solution."
+ },
+ "brt-cavalry-emp-pikes-hard": {
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "split": "development",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 8000,
+   "time_limit_s": 1200,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.1",
+   "player_defends": true
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
+  "status": "prototype_not_admitted",
+  "name": "brt-cavalry-emp-pikes-hard",
+  "family": "cavalry against anti-large",
+  "player": {
+   "subculture": "wh_main_sc_brt_bretonnia",
+   "faction": "wh_main_brt_bretonnia",
+   "units": [
+    "wh_main_brt_cha_lord_0",
+    "wh_main_brt_cav_grail_knights",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_dlc07_brt_cav_questing_knights_0",
+    "wh_main_brt_cav_mounted_yeomen_1"
+   ],
+   "mounts": {
+    "0": "wh_main_brt_cha_lord_4"
+   }
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "units": [
+    "wh_main_emp_cha_general_0",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_art_great_cannon"
+   ]
+  },
+  "protected": [
+   "wh_main_brt_cav_grail_knights"
+  ],
+  "content": [
+   "wh_main",
+   "wh_dlc07"
+  ],
+  "brief": "Six fully mounted units; Grail Knights anchor the shock force. Four halberds cover two handguns and a cannon. Maneuver, engagement angle, target priority and disengagement compete; frontal grinding is the naive risk. Hypotheses, not a prescribed solution."
+ },
+ "brt-cavalry-emp-pikes-heldout-wastes": {
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "split": "held_out",
+  "map": "battle_preset_wh3_nur_wastes_01_04",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 8000,
+   "time_limit_s": 1200,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.0",
+   "player_defends": true
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
+  "status": "prototype_not_admitted",
+  "name": "brt-cavalry-emp-pikes-heldout-wastes",
+  "family": "cavalry against anti-large",
+  "player": {
+   "subculture": "wh_main_sc_brt_bretonnia",
+   "faction": "wh_main_brt_bretonnia",
+   "units": [
+    "wh_main_brt_cha_lord_0",
+    "wh_main_brt_cav_grail_knights",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_dlc07_brt_cav_questing_knights_0",
+    "wh_main_brt_cav_mounted_yeomen_1"
+   ],
+   "mounts": {
+    "0": "wh_main_brt_cha_lord_4"
+   }
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "units": [
+    "wh_main_emp_cha_general_0",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_art_great_cannon"
+   ]
+  },
+  "protected": [
+   "wh_main_brt_cav_grail_knights"
+  ],
+  "content": [
+   "wh_main",
+   "wh_dlc07"
+  ],
+  "brief": "Six fully mounted units; Grail Knights anchor the shock force. Four halberds cover two handguns and a cannon. Maneuver, engagement angle, target priority and disengagement compete; frontal grinding is the naive risk. Hypotheses, not a prescribed solution."
+ },
+ "tze-caster-skv-screen": {
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "split": "development",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 8000,
+   "time_limit_s": 1200,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.0",
+   "player_defends": true
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
+  "status": "prototype_not_admitted",
+  "name": "tze-caster-skv-screen",
+  "family": "caster-led force against rat screens",
+  "player": {
+   "subculture": "wh3_main_sc_tze_tzeentch",
+   "faction": "wh3_main_tze_tzeentch",
+   "units": [
+    "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0",
+    "wh3_main_tze_inf_blue_horrors_0",
+    "wh3_main_tze_inf_blue_horrors_0",
+    "wh3_main_tze_inf_forsaken_0",
+    "wh3_main_tze_mon_screamers_0"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh2_main_sc_skv_skaven",
+   "faction": "wh2_main_skv_skaven",
+   "units": [
+    "wh2_main_skv_cha_warlord_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrat_spearmen_0",
+    "wh2_main_skv_inf_clanrat_spearmen_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_warpfire_thrower",
+    "wh2_main_skv_art_plagueclaw_catapult"
+   ]
+  },
+  "protected": [
+   "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0"
+  ],
+  "content": [
+   "wh3_main",
+   "wh2_main",
+   "wh2_dlc17"
+  ],
+  "brief": "Kairos and four escorts face ten Skaven units. Spell value, shared magic, screening, barrier recovery and flying-unit risk compete with artillery pressure. This is a compact caster test, not the later massive-swarm scenario. Hypotheses, not a prescribed solution."
+ },
+ "tze-caster-skv-screen-hard": {
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "split": "development",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 8000,
+   "time_limit_s": 1200,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.1",
+   "player_defends": true
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
+  "status": "prototype_not_admitted",
+  "name": "tze-caster-skv-screen-hard",
+  "family": "caster-led force against rat screens",
+  "player": {
+   "subculture": "wh3_main_sc_tze_tzeentch",
+   "faction": "wh3_main_tze_tzeentch",
+   "units": [
+    "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0",
+    "wh3_main_tze_inf_blue_horrors_0",
+    "wh3_main_tze_inf_blue_horrors_0",
+    "wh3_main_tze_inf_forsaken_0",
+    "wh3_main_tze_mon_screamers_0"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh2_main_sc_skv_skaven",
+   "faction": "wh2_main_skv_skaven",
+   "units": [
+    "wh2_main_skv_cha_warlord_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrat_spearmen_0",
+    "wh2_main_skv_inf_clanrat_spearmen_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_warpfire_thrower",
+    "wh2_main_skv_art_plagueclaw_catapult"
+   ]
+  },
+  "protected": [
+   "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0"
+  ],
+  "content": [
+   "wh3_main",
+   "wh2_main",
+   "wh2_dlc17"
+  ],
+  "brief": "Kairos and four escorts face ten Skaven units. Spell value, shared magic, screening, barrier recovery and flying-unit risk compete with artillery pressure. This is a compact caster test, not the later massive-swarm scenario. Hypotheses, not a prescribed solution."
+ },
+ "tze-caster-skv-screen-heldout-wastes": {
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "split": "held_out",
+  "map": "battle_preset_wh3_nur_wastes_01_04",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 8000,
+   "time_limit_s": 1200,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.0",
+   "player_defends": true
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
+  "status": "prototype_not_admitted",
+  "name": "tze-caster-skv-screen-heldout-wastes",
+  "family": "caster-led force against rat screens",
+  "player": {
+   "subculture": "wh3_main_sc_tze_tzeentch",
+   "faction": "wh3_main_tze_tzeentch",
+   "units": [
+    "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0",
+    "wh3_main_tze_inf_blue_horrors_0",
+    "wh3_main_tze_inf_blue_horrors_0",
+    "wh3_main_tze_inf_forsaken_0",
+    "wh3_main_tze_mon_screamers_0"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh2_main_sc_skv_skaven",
+   "faction": "wh2_main_skv_skaven",
+   "units": [
+    "wh2_main_skv_cha_warlord_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrat_spearmen_0",
+    "wh2_main_skv_inf_clanrat_spearmen_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_warpfire_thrower",
+    "wh2_main_skv_art_plagueclaw_catapult"
+   ]
+  },
+  "protected": [
+   "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0"
+  ],
+  "content": [
+   "wh3_main",
+   "wh2_main",
+   "wh2_dlc17"
+  ],
+  "brief": "Kairos and four escorts face ten Skaven units. Spell value, shared magic, screening, barrier recovery and flying-unit risk compete with artillery pressure. This is a compact caster test, not the later massive-swarm scenario. Hypotheses, not a prescribed solution."
  }
 }

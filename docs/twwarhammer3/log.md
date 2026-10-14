@@ -1,5 +1,26 @@
 # WH3 battle versions
 
+## Benchmark harness b4 (2026-10-14, compact specialist prototypes)
+
+Adds two development candidates, each with a 1.1 modifier version and an untouched
+held-out map: six Bretonnian cavalry units against eight Empire units, and Kairos with
+four escorts against ten Skaven units. Their 8000 allowance is a cap, not a recruitment
+target. Both use explicit armies and default equipped upgrades; the cavalry lord's
+Barded Warhorse is pinned. These are screening prototypes, not admitted benchmarks.
+
+The frontend inventory verified selectable cards and excluded inactive DLC cards.
+The horse change returned `wh_main_brt_cha_lord_4`; Kairos recruited with his default
+spellbook. Evidence: `capability-probes/benchmark-specialist-rosters/`, including cost,
+mount and upgrade queries. No battle was started by that probe. The owned launch closed
+normally before the next jobs.
+
+Scenario `mounts` now maps recruitment indexes to mounted unit keys, with a required
+lobby read-back and a battle roster check. Declared funds/settings apply before
+recruitment as well as being verified afterward, so a previously low lobby budget does
+not prevent selecting the declared units or mounts. Validation: 69 benchmark/play tests
+and Ruff passed, including refusal of a lord that remains on foot. Specialist battle
+acceptance and calibration remain pending; screen the development variants first.
+
 ## Benchmark harness b3 (2026-10-14, specialist acceptance pending)
 
 The missing terrain field observed during b2 acceptance now fails benchmark setup

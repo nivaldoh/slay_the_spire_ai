@@ -101,6 +101,32 @@ def test_map_gate_and_required_steps(tmp_path):
         setup.check_menu(scenario, tmp_path)
 
 
+def test_mounted_roster_rejects_an_unmounted_lord():
+    from twwarhammer3.battle import play
+
+    scenario = play.load_scenario({"scenario": "brt-cavalry-emp-pikes"})
+    wanted = setup.battle_units(scenario["player"])
+    assert wanted[0] == "wh_main_brt_cha_lord_4"
+    assert wanted[1:] == scenario["player"]["units"][1:]
+    state = {"setup": {**scenario["expect"], "army_ai_stats_modifiers": [1., 1.]},
+             "armies": {side: {"faction": scenario[side]["faction"]}
+                        for side in ("player", "enemy")},
+             "terrain": {"rows": [".."]},
+             "friendly": [{"type": t} for t in wanted],
+             "enemy_roster": [{"type": t} for t in scenario["enemy"]["units"]]}
+    setup.check_battle(scenario, state)
+    state["friendly"][0]["type"] = scenario["player"]["units"][0]
+    with pytest.raises(ProtocolError, match="friendly roster mismatch"):
+        setup.check_battle(scenario, state)
+
+
+@pytest.mark.parametrize("mounts", [{"-1": "horse"}, {"2": "horse"},
+                                   {"00": "horse"}, {"0": ""}, {0: "horse"}])
+def test_bad_mount_declarations_are_refused(mounts):
+    with pytest.raises(ValueError, match="mounts must map"):
+        setup.battle_units({"units": ["lord", "infantry"], "mounts": mounts})
+
+
 def test_start_comparison_uses_circular_bearings_and_reports_missing_units():
     initial = {"friendly": {"f1": {"type": "a", "x": 0, "z": 0, "bearing": 359}}}
     same = {"friendly": {"f1": {"type": "a", "x": .1, "z": 0, "bearing": 1}}}

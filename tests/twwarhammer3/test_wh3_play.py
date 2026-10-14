@@ -464,6 +464,17 @@ def test_scenario_steps_pick_each_race_and_recruit_the_lord_first():
                 len(side["units"]) for side in play.sides(scenario))
 
 
+def test_mount_is_selected_after_recruitment_and_pinned_budget_before_it():
+    scenario = play.load_scenario({"scenario": "brt-cavalry-emp-pikes"})
+    steps = play.scenario_steps(scenario)
+    recruit = next(i for i, s in enumerate(steps) if s.get("dblclick"))
+    mount = next(i for i, s in enumerate(steps) if "ChangeMount(" in s.get("command", ""))
+    budgets = [i for i, s in enumerate(steps) if "SetCustomFundsAmount(" in s.get("command", "")]
+    assert budgets[0] < recruit < mount < budgets[-1]
+    assert steps[mount + 2]["expect"] == "wh_main_brt_cha_lord_4"
+    assert steps[mount + 2]["required"]
+
+
 def test_battle_type_scenarios_select_the_type_slots_and_roles():
     scenarios = json.loads(play.SCENARIOS_PATH.read_text())
     steps = play.scenario_steps(scenarios["siege-kho5-dwf5"])

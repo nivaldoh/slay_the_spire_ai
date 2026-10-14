@@ -18,6 +18,17 @@ LOBBY_FIELDS = {
 }
 
 
+def battle_units(army: dict) -> list[str]:
+    """Recruitment cards become their declared mounted variants in battle."""
+    units = list(army["units"])
+    for index, mounted in (army.get("mounts") or {}).items():
+        if (not isinstance(index, str) or not index.isdecimal() or str(int(index)) != index
+                or int(index) >= len(units) or not isinstance(mounted, str) or not mounted):
+            raise ValueError("mounts must map a zero-based recruitment index to a unit key")
+        units[int(index)] = mounted
+    return units
+
+
 def lobby_fields(scenario: dict) -> dict:
     fields = dict(LOBBY_FIELDS)
     if scenario["expect"].get("funds") == "funds_custom":
@@ -35,6 +46,7 @@ def validate_declaration(scenario: dict, config: dict, environment: dict) -> Non
     for side in sides:
         if not side.get("faction") or not side.get("units"):
             raise ValueError("benchmark armies must pin factions and explicit rosters")
+        battle_units(side)
     if config.get("attach") or not config.get("menu"):
         raise ValueError("benchmark setup requires its own launch and menu checks")
     expect = scenario["expect"]
@@ -117,9 +129,9 @@ def check_battle(scenario: dict, observation: dict) -> dict:
     checks["army_ai_stats_modifiers"] = modifiers
     enemy = scenario.get("enemy")
     enemies = enemy if isinstance(enemy, list) else [enemy] if enemy else []
-    enemy_units = [unit for army in enemies for unit in army["units"]]
+    enemy_units = [unit for army in enemies for unit in battle_units(army)]
     for side, roster, wanted in (
-        ("friendly", observation.get("friendly", []), scenario["player"]["units"]),
+        ("friendly", observation.get("friendly", []), battle_units(scenario["player"])),
         ("enemy", observation.get("enemy_roster", []), enemy_units),
     ):
         actual = Counter(unit.get("type") for unit in roster)
