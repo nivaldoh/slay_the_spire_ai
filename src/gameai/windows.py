@@ -44,14 +44,6 @@ class RuntimeLock:
         self._file.close()
 
 
-def desktop(*arguments: str, timeout: float = 30) -> None:
-    """Run ``windows_desktop.py`` (screenshot, click, key, ...) under Windows Python."""
-    script = subprocess.check_output(
-        ["wslpath", "-w", str(Path(__file__).with_name("windows_desktop.py"))], text=True
-    ).strip()
-    subprocess.run([str(WINDOWS_PYTHON), script, *arguments], check=True, timeout=timeout)
-
-
 def probe(command: list[str], timeout: float = 8) -> dict:
     """Run a bounded version or resource probe."""
     try:

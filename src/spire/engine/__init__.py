@@ -1,5 +1,6 @@
 """Original-game plumbing shared by every track: Windows runtime, relay bridge, doctor.
 
-``windows_game.py`` and ``windows_relay.py`` run under Windows Python; ``runtime`` deploys
-them to ``C:/spire-agent``. They import nothing from this package.
+``windows_relay.py`` runs under Windows Python and imports nothing from this package.
+``runtime`` deploys it, with the supervisor ``gameai/windows_game.py``, to
+``C:/spire-agent``.
 """

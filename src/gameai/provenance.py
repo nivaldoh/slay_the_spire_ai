@@ -1,8 +1,10 @@
 """Source provenance for attributable evidence.
 
 Every game launch records the committed revision and a hash of each implementation
-file, and refuses to start while files in its source scope have uncommitted edits. A
-game passes its own scope, so edits to another game's package do not touch its jobs.
+file, and refuses to start while files in its source scope have uncommitted edits.
+Each game's play loop passes its own scope, so edits to the other game do not touch its
+jobs. Spire's first-combat tools keep the repository-wide default, which covers every
+game.
 """
 
 from __future__ import annotations

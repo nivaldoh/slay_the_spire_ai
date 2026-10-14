@@ -1,10 +1,11 @@
 """OpenAI model calls for any game: transport, prices, spend and the reply-retry loop.
 
 Standard library only. The key comes from ``OPENAI_API_KEY`` or the file named by
-``SPIRE_OPENAI_KEY_FILE`` and is never logged or written to evidence. A ``Model``
-reserves each call's worst-case cost on its ledger before sending, so a call that could
-exceed the budget is never sent, and charges the reported cost after. The game supplies
-the instructions, the prompt, the reply schema and a parser.
+``SPIRE_OPENAI_KEY_FILE`` (named after the first game, shared by every game) and is never
+logged or written to evidence. A ``Model`` reserves each call's worst-case cost on its
+ledger before sending, so a call that could exceed the budget is never sent, and charges
+the reported cost after. The game supplies the instructions, the prompt, the reply
+schema and a parser.
 """
 
 from __future__ import annotations

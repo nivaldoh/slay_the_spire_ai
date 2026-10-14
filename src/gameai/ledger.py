@@ -1,8 +1,8 @@
 """Append-only spend ledgers with a hard budget, for every track that pays per call.
 
-Each provider keeps its own file (``runs/llm-spend.jsonl`` for OpenAI), and every job
-naming the same file shares one budget. A caller reserves a call's worst-case cost before
-sending it and charges the reported cost after.
+Each game keeps its own file (its package names the path), and every job naming the
+same file shares one budget. A caller reserves a call's worst-case cost before sending
+it and charges the reported cost after.
 """
 
 from __future__ import annotations

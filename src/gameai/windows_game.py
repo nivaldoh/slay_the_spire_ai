@@ -17,7 +17,7 @@ from pathlib import Path
 def join_kill_on_close_job() -> None:
     """Put this supervisor in a job that kills every member when its handle closes.
 
-    Join before creating the JVM, so no child is ever outside the job. The handle
+    Join before starting the game, so no child is ever outside the job. The handle
     is never closed explicitly: Windows closes it when this process exits, normally
     or by force, and then kills every remaining descendant.
     """

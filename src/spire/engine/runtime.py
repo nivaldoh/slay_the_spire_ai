@@ -10,7 +10,7 @@ from pathlib import Path
 
 from gameai import windows
 from gameai.provenance import sha256
-from gameai.windows import WINDOWS_PYTHON  # noqa: F401  (re-exported for doctor and tests)
+from gameai.windows import WINDOWS_PYTHON
 
 GAME_DIR = Path("/mnt/c/Program Files (x86)/Steam/steamapps/common/SlayTheSpire")
 WINDOWS_GAME_DIR = r"C:\Program Files (x86)\Steam\steamapps\common\SlayTheSpire"

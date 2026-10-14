@@ -1,8 +1,7 @@
-"""Command-line entry point."""
+"""Slay the Spire command line."""
 
 import argparse
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 
 from gameai.llm import EFFORTS, PRICES
@@ -18,7 +17,9 @@ def _seed(text: str) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(prog="spire", description="Slay the Spire experiment tools")
+    parser = argparse.ArgumentParser(
+        prog="spire", description="Slay the Spire 1: full runs and the first-combat benchmark"
+    )
     commands = parser.add_subparsers(dest="command", required=True)
     doctor = commands.add_parser("doctor", help="Inspect the game, mods and runtime (read-only)")
     doctor.add_argument("--json", action="store_true", help="Emit structured diagnostics")
@@ -30,7 +31,7 @@ def main() -> int:
     rollout.add_argument("--max-actions", type=int, default=500)
     rollout.add_argument("--episode-timeout", type=float, default=600)
     rollout.add_argument("--bridge-timeout", type=float, default=90)
-    rollout.add_argument("--output", type=Path)
+    rollout.add_argument("--output", type=Path, required=True)
     report = commands.add_parser("report", help="First combat: audit and compare saved evidence")
     report.add_argument("runs", type=Path, nargs="+")
     report.add_argument("--output", type=Path, help="Write a .json or Markdown report")
@@ -97,9 +98,7 @@ def main() -> int:
         from spire.combat.rollout import rollout as run_rollout
 
         config = vars(args).copy()
-        output = config.pop("output") or Path("runs") / datetime.now(timezone.utc).strftime(
-            "%Y%m%dT%H%M%S.%fZ"
-        )
+        output = config.pop("output")
         config.pop("command")
         manifest = run_rollout(output, config)
         print(f"Evidence: {output.resolve()}")
