@@ -558,12 +558,13 @@
   "expect": {
    "battle_type": "land_normal",
    "difficulty": "ai_level_very_hard",
-   "funds": "funds_large",
+   "funds": "funds_custom",
    "time_limit_s": 1200,
    "unit_scale": 0.75,
    "realism": false,
    "ai_stats_modifier": "1.0",
-   "player_defends": true
+   "player_defends": true,
+   "funds_amount": 30000
   },
   "protected": [
    "wh_main_dwf_inf_quarrellers_0",
@@ -579,7 +580,7 @@
    "wh3_dlc20",
    "wh3_dlc25"
   ],
-  "calibration_change": "Replace Sigvald with the selectable Shadow Herald; both observed b1 controllers lost, including Luna after leaving Sigvald as the sole active enemy. Other units unchanged."
+  "calibration_change": "Replace Sigvald with the selectable Shadow Herald; both observed b1 controllers lost, including Luna after leaving Sigvald as the sole active enemy. Other units unchanged. Custom funds 30000 admits the explicit roster; the default funds rejected the Herald loadout before battle."
  },
  "dwf-sla-herald-hard": {
   "name": "dwf-sla-herald-hard",
@@ -635,12 +636,13 @@
   "expect": {
    "battle_type": "land_normal",
    "difficulty": "ai_level_very_hard",
-   "funds": "funds_large",
+   "funds": "funds_custom",
    "time_limit_s": 1200,
    "unit_scale": 0.75,
    "realism": false,
    "ai_stats_modifier": "1.1",
-   "player_defends": true
+   "player_defends": true,
+   "funds_amount": 30000
   },
   "protected": [
    "wh_main_dwf_inf_quarrellers_0",
@@ -656,7 +658,7 @@
    "wh3_dlc20",
    "wh3_dlc25"
   ],
-  "calibration_change": "Replace Sigvald with the selectable Shadow Herald; both observed b1 controllers lost, including Luna after leaving Sigvald as the sole active enemy. Other units unchanged."
+  "calibration_change": "Replace Sigvald with the selectable Shadow Herald; both observed b1 controllers lost, including Luna after leaving Sigvald as the sole active enemy. Other units unchanged. Custom funds 30000 admits the explicit roster; the default funds rejected the Herald loadout before battle."
  },
  "dwf-sla-herald-heldout-wastes": {
   "name": "dwf-sla-herald-heldout-wastes",
@@ -712,12 +714,13 @@
   "expect": {
    "battle_type": "land_normal",
    "difficulty": "ai_level_very_hard",
-   "funds": "funds_large",
+   "funds": "funds_custom",
    "time_limit_s": 1200,
    "unit_scale": 0.75,
    "realism": false,
    "ai_stats_modifier": "1.0",
-   "player_defends": true
+   "player_defends": true,
+   "funds_amount": 30000
   },
   "protected": [
    "wh_main_dwf_inf_quarrellers_0",
@@ -733,6 +736,6 @@
    "wh3_dlc20",
    "wh3_dlc25"
   ],
-  "calibration_change": "Replace Sigvald with the selectable Shadow Herald; both observed b1 controllers lost, including Luna after leaving Sigvald as the sole active enemy. Other units unchanged."
+  "calibration_change": "Replace Sigvald with the selectable Shadow Herald; both observed b1 controllers lost, including Luna after leaving Sigvald as the sole active enemy. Other units unchanged. Custom funds 30000 admits the explicit roster; the default funds rejected the Herald loadout before battle."
  }
 }

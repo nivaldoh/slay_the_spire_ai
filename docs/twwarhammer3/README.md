@@ -155,7 +155,7 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
   handgunners, 52-58 of 60 quarrellers).
 - The game's AI stats modifier preference is 1.1 (pinned since the first night), so the
   AI's units are probably about 10% stronger: a mirror is not an even fight, and an even
-  trade loses. Whether to play mirrors at 1.0 is an owner decision.
+  trade loses. The owner subsequently authorized testing 1.0 and 1.1 during benchmark calibration.
 - The prompt changes traded the melee mirror for the gun mirrors. Margin (ours minus the
   enemy's strength left, in points): Empire v6 -48, v10 -20; Dwarfs v6 -28, v10 -26;
   Khorne v6 -8 over 6 battles (2 won; a replicate of 3 lost all), v10 -39 (0/3), v11 -35.
@@ -173,42 +173,21 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 
 ## Next
 
-1. Battle types ([battle-types.md](battle-types.md#next)): scenarios exist for all nine,
-   with victory points held and supplies left in the register; next are the time the
-   key point is held, units bought per type, and more maps and armies per type (the
-   `random-<type>` draws).
-2. Resume the random-draw comparison
-   ([log.md](log.md#random-battle-comparison-partial-2026-10-1314)) on its three remaining
-   seeds: 264482191 (Ogre Kingdoms vs Slaanesh), 1355466036 (Daemons vs Greenskins) and
-   238913231 (Cathay mirror), each played once by `skills`, the Luna `commander` and Luna
-   `llm`. Then Sol and Astra as commander
-   ([controllers.md](controllers.md#comparing-controllers)).
-3. The mod reports flying units that are not monsters, such as Harpies and the Feral
-   Manticore, as infantry: `unit_class` in `twwarhammer3_battle.lua` checks `can_fly`
-   only for monsters and unknown classes. Random draws bring many such units.
-4. The AI stats modifier is 1.1, which favours the enemy; whether to play at 1.0 is an
-   owner decision.
-5. `main` keeps v10 tactics (v11 and v12 were reverted after 0 of 6 and 0 of 3); v6's
-   prompt (`6777a64`) did better in the Khorne mirror and on Khorne vs Dwarfs (5/6,
-   untested with v8-v10). Find which v8-v10 rule costs the melee mirror (v8's cavalry
-   exemption from the lord gang-up and v10's fire doctrine for the Skullcannon and
-   horsemen are suspects). A shorter prompt is worth testing for think time.
-6. Evaluate how well the models use the newer controls: melee mode, move-then-attack
-   queues, behaviour toggles, spells and army abilities.
-7. Unmerged candidates, both from before the v13 interface (rebase before testing):
-   - `wh3-fire-report` (`832b233`, built on v9): the mod publishes kill counts and enemy
-     targets; an attack order shows shots fired and men killed since it was given, enemy
-     lines show their target, our units show "attacked by e3 15 m rear". Ranked second
-     by three reviews; untested in the engine (check that AI units report
-     `current_target` and that `number_of_enemies_killed` returns numbers).
-   - `wh3-v4-info` (`aa1ece5`, built on v3): compass directions to the nearest enemies,
-     enemy missiles in reach and both armies' start points, for orientation errors the
-     reviews still find.
-8. Owner idea, registered in [../state.md](../state.md): a WH3 LLM benchmark of
-   challenge battles where the enemy side is stronger, possibly AI-generated. The owner's
-   brief is [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md);
-   [benchmark.md](benchmark.md) maps it onto the harness and drafts a definition to
-   discuss (2026-10-14).
+Current work is the owner's benchmark goal; [benchmark-progress.md](benchmark-progress.md)
+tracks the evidence and [calibration-plan.md](calibration-plan.md) specifies the experiments.
+
+1. Finish live acceptance of the terrain, AI-modifier and setup-failure paths. The b1
+   five-controller rotation completed on one instance, with matched rematch starts and
+   engine results for every controller, including an imported controller.
+2. Calibrate the ranged-protection family at explicit AI modifiers 1.0/1.1, with paired
+   scripted baselines across fresh launches. Keep the declared held-out map out of tuning.
+3. Run paired added-observation-age arms 0/6/10 s, unpaused at 1x, and report uncertainty.
+4. Later resume the random-draw model comparison on seeds 264482191, 1355466036 and
+   238913231, then compare larger models on the same declared scenarios. Broader battle
+   types and offensive sieges need their remaining interfaces before benchmark admission.
+
+The earlier tactical candidates remain unmerged and untested: `wh3-fire-report` and
+`wh3-v4-info` predate the v13 interface and would need rebasing before evaluation.
 
 ## Other battle types (owner request, 2026-10-13)
 

@@ -334,8 +334,10 @@ def scenario_steps(scenario: dict) -> list[dict]:
 
 
 def save_dumps(mailbox: Mailbox, output: Path, steps: list[dict]) -> None:
+    log = mailbox.log_since(0, "menu.log")
     for step in steps:
-        if step.get("dump") and (mailbox.directory / step["dump"]).exists():
+        if (step.get("dump") and f" lines to {step['dump']}" in log
+                and (mailbox.directory / step["dump"]).exists()):
             shutil.copyfile(mailbox.directory / step["dump"], output / step["dump"])
 
 
@@ -359,8 +361,10 @@ def start_frontend(mailbox: Mailbox, config: dict, output: Path, steps: list[dic
         lines = mailbox.log_since(offset, "menu.log").splitlines()
         (output / "menu.log").write_text(mailbox.log_since(0, "menu.log"))
         if "failed" in lines:
+            save_dumps(mailbox, output, steps)
             raise ProtocolError("custom battle setup failed: " + lines[-2])
         if any(line.endswith(NOT_STARTED) for line in lines):
+            save_dumps(mailbox, output, steps)
             reason = next((line for line in lines if "ReadyStatusText" in line), "")
             reason = re.sub(r"\[\[.*?\]\]", "", reason.split(" = ", 1)[-1])
             raise ProtocolError("custom battle did not start: " + reason)
@@ -368,6 +372,7 @@ def start_frontend(mailbox: Mailbox, config: dict, output: Path, steps: list[dic
             save_dumps(mailbox, output, steps)
             return
         if time.time() > deadline:
+            save_dumps(mailbox, output, steps)
             raise MailboxTimeout("the custom battle steps did not finish")
         time.sleep(1)
 

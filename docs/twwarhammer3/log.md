@@ -17,6 +17,12 @@ Frontend probe on `7c0abdb` set/read AI modifiers 1.0/1.1 and the short 1200 s
 timer. The Herald calibration candidates now declare that timer. Battle validation and
 calibration remain pending. Source edits were isolated while b1 ran.
 
+The first Herald terrain job (`bench-b2-terrain-20261014`, `587d501`) was refused
+before battle because the enemy roster exceeded Default Funds; zero scored episodes.
+The funds probe read only Default/Custom options and verified custom 30000. Herald
+candidates retain their units and now pin that budget. Setup failures retain current
+menu dumps. Validation after this fix: 54 relevant tests passed; Ruff passed.
+
 ## Benchmark harness b1 (2026-10-14, acceptance rotation complete)
 
 Owner goal: complete paired benchmarks, difficulty/latency calibration and the scenario

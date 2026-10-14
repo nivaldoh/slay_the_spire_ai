@@ -84,6 +84,22 @@ def test_start_comparison_uses_circular_bearings_and_reports_missing_units():
     assert setup.compare_starts(initial, {})["flagged"]
 
 
+def test_custom_roster_budget_is_verified_before_scoring(tmp_path):
+    scenario = {"map": "intended", "expect": {"battle_type": "land_normal",
+                "difficulty": "ai_level_very_hard", "funds": "funds_custom",
+                "funds_amount": 30000, "time_limit_s": 1200, "ai_stats_modifier": "1.0"}}
+    lines = [f"{step['expression']} = {step['expect']}"
+             for step in setup.menu_checks(scenario) if "expression" in step]
+    log = "\n".join(lines)
+    (tmp_path / "menu.log").write_text(log)
+    (tmp_path / "map_list.txt").write_text("CcoCustomBattleMapintended <selected>\n")
+    assert setup.check_menu(scenario, tmp_path)["funds_amount"] == 30000
+    (tmp_path / "menu.log").write_text(log.replace("CustomBudgetAmount = 30000",
+                                                 "CustomBudgetAmount = 10000"))
+    with pytest.raises(ProtocolError, match="funds_amount"):
+        setup.check_menu(scenario, tmp_path)
+
+
 def make_job(tmp_path, name, results, *, revision="r1"):
     job = tmp_path / name
     job.mkdir()

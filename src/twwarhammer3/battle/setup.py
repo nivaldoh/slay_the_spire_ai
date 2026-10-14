@@ -1,5 +1,6 @@
 """Checks for declared benchmark scenarios; setup data never enters policy inputs."""
 
+import json
 import math
 import re
 from collections import Counter
@@ -17,6 +18,13 @@ LOBBY_FIELDS = {
 }
 
 
+def lobby_fields(scenario: dict) -> dict:
+    fields = dict(LOBBY_FIELDS)
+    if scenario["expect"].get("funds") == "funds_custom":
+        fields["funds_amount"] = "CustomBudgetAmount"
+    return fields
+
+
 def validate_declaration(scenario: dict, config: dict, environment: dict) -> None:
     if not scenario.get("expect"):
         return
@@ -30,10 +38,13 @@ def validate_declaration(scenario: dict, config: dict, environment: dict) -> Non
     if config.get("attach") or not config.get("menu"):
         raise ValueError("benchmark setup requires its own launch and menu checks")
     expect = scenario["expect"]
-    for key in (*LOBBY_FIELDS, "unit_scale", "realism", "ai_stats_modifier", "player_defends"):
+    for key in (*lobby_fields(scenario), "unit_scale", "realism", "player_defends"):
         if key not in expect:
             raise ValueError(f"benchmark scenario is missing expect.{key}")
     timer = expect["time_limit_s"]
+    if expect["funds"] == "funds_custom" and not (
+            isinstance(expect["funds_amount"], int) and expect["funds_amount"] > 0):
+        raise ValueError("custom funds must be a positive integer")
     if timer not in TIMERS or config["episode_timeout"] < timer + 120:
         raise ValueError("benchmark episode timeout must exceed a finite game timer by 120 s")
     if config["run_timeout"] < config["start_timeout"] + config["episodes"] * (
@@ -55,10 +66,18 @@ def menu_checks(scenario: dict) -> list[dict]:
                f'TimeLimitSettingList.FirstContext(Key == "{timer}"))', "required": True},
               {"context": "CcoFrontendRoot", "command":
                SETTINGS + f"SetBattleAiStatsModifier({modifier:g})", "required": True}]
+    checks.append({"context": "CcoFrontendRoot", "command": SETTINGS +
+                   'SetFundTypeSettingContext(' + SETTINGS +
+                   'FundTypeSettingList.FirstContext(Key == ' +
+                   json.dumps(scenario["expect"]["funds"]) + '))', "required": True})
+    if scenario["expect"]["funds"] == "funds_custom":
+        checks.append({"context": "CcoFrontendRoot", "command": SETTINGS +
+                       f'SetCustomFundsAmount("{scenario["expect"]["funds_amount"]}")',
+                       "required": True})
     return checks + [{"context": "CcoFrontendRoot", "expression": SETTINGS + field,
              "expect": modifier if key == "ai_stats_modifier" else scenario["expect"][key],
              "required": True}
-            for key, field in LOBBY_FIELDS.items()]
+            for key, field in lobby_fields(scenario).items()]
 
 
 def check_menu(scenario: dict, directory) -> dict:
@@ -70,7 +89,7 @@ def check_menu(scenario: dict, directory) -> dict:
     if selected != [scenario["map"]]:
         raise ProtocolError(f"setup map is {selected!r}, expected {scenario['map']!r}")
     checks = {"map": selected[0]}
-    for key, field in LOBBY_FIELDS.items():
+    for key, field in lobby_fields(scenario).items():
         wanted = str(scenario["expect"][key]).lower()
         matches = re.findall(re.escape(SETTINGS + field) + r" = ([^\r\n]+)", log)
         actual = matches[-1].lower() if matches else None

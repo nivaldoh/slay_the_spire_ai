@@ -2,7 +2,10 @@
 
 Written 2026-10-14 from the owner's brief,
 [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md).
-It is a definition to discuss before anything is built or run. Three reviewers checked a
+The analysis below describes the pre-implementation state. Current implementation and
+live evidence are in [benchmark-progress.md](benchmark-progress.md), the executable
+contract in [benchmark-run.md](benchmark-run.md), and the declared experiments in
+[calibration-plan.md](calibration-plan.md). Admission and latency results remain pending. Three reviewers checked a
 first draft against the code and the run records, three more critiqued the idea itself
 (validity, statistics, scope), and two audited the rewrite. Their corrections are folded
 in.

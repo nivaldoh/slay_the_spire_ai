@@ -99,15 +99,16 @@ slot, and every 10 s it calls in the cheapest unit it can afford.
 ## Measures
 
 `result.json` records `objectives` per episode:
-- `victory_held`: the share of the observations the job read in which each victory
-  point was ours, averaged over the points;
+- `victory_held`: since b1, ownership time integrated on engine ticks, divided by
+  observed time and averaged over victory points; older jobs used controller-read samples;
 - `key_held` (sieges, minor settlements): the same share for the key building alone,
   the centre the owner saw left empty (from `01e3abb`);
 - `supplies_left` and the `tickets` at the last observation;
 - the `build` and `reinforce` orders the engine accepted.
 
-The digest shows them. The register ([results.csv](results.csv)) has `battle_type`,
-`victory_held` and `supplies_left`; older rows stay blank until `stats --rebuild`.
+The digest shows them. The register ([results.csv](results.csv)) has `battle_type`, `victory_held`,
+`key_held`, `supplies_left` and `reinforcements_by_type`; unavailable older fields stay
+blank. The new tick-integrated fields still need an objective-mode live validation.
 
 ## Results
 

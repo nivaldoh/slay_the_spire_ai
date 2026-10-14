@@ -9,8 +9,8 @@ stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 WH3 benchmark work is active (owner goal, 2026-10-14): complete the paired benchmark,
 difficulty/latency calibration, and the interface fixes its scenarios require.
 The five-controller b1 acceptance job completed; all five trials ended on engine losses,
-with identical rematch starts. Frontend modifier/timer checks completed; no controller running. Next: b2 battle
-validation of terrain and starting stats, then broken-setup and calibration trials.
+with identical rematch starts. The funds probe completed; the Herald candidates now explicitly allow their fixed
+rosters with custom 30000 funds. No controller running; terrain retry is next.
 Implementation and live evidence: [benchmark-progress.md](twwarhammer3/benchmark-progress.md).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`

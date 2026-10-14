@@ -109,3 +109,18 @@ Merged b2 as `7c0abdb` after b1 stopped. The standalone frontend probe
 1.0 and 1.1 AI modifiers. Its controller exited normally after SIGINT. Calibration
 Herald variants now declare the verified 1200 s timer; b1 keeps its original 3600 s.
 All declared timers are explicitly selected and verified, independent of prior profile.
+
+### b2 battle setup finding
+
+`bench-b2-terrain-20261014` on `587d501` stopped with `setup_failure`, zero episodes:
+the CPU Herald army exceeded `funds_large`. Map/army dumps were copied from the bridge
+by the operator because this failure path did not retain them automatically. No terrain
+or modifier battle validation is claimed from it. A funds-options frontend probe
+(`benchmark-b2-funds`, started 15:45:19 UTC) is running before the roster budget is revised.
+
+The funds probe completed: this build offers `funds_large` (Default Funds) and
+`funds_custom` only; `funds_ultra` did not change the selection and its assertion failed.
+Selecting custom funds and setting 30000 both read back successfully. The three Herald
+candidates now declare custom 30000, with unchanged units. Failed-setup dumps are now
+saved when the current menu log confirms they were produced; stale bridge dumps are
+excluded. Regression checks cover the refused budget and retained failure evidence.
