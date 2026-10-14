@@ -16,9 +16,12 @@ visibility at observation. This is a source/contract change before G1/G2, not in
 midway through the b2 screen. Scoring still uses private totals for all units.
 
 The local engine API documentation identifies `CcoUnitStat.ValueBase` as excluding
-modifiers/buffs/debuffs, and `Value` as current. Startup now retains both privately;
-the b2 base-stat snapshots alone cannot establish applied AI stat bonuses. G1 must
-compare the current values from equivalent fresh starting conditions at 1.0 and 1.1.
+modifiers/buffs/debuffs, and `Value` as current. Startup now retains both privately.
+Subsequent b2 1.0/1.1 startup snapshots at 5.2 s show that the AI difficulty bonuses
+already enter ValueBase: all 12 enemy entries change (roughly +10% melee attack/defence,
+weapon damage and charge, +8 leadership); all 12 player entries stay identical. The
+general API description must not be read as excluding that difficulty layer. Current
+Value will distinguish additional active effects; its live b3 check remains pending.
 
 Validation: 192 WH3 tests passed with the Lua runtime; Ruff and Lua 5.1 parsing passed. Regression
 checks cover absent terrain, startup causes, and a throughput denominator containing a
