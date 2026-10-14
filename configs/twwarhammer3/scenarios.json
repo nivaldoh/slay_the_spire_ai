@@ -400,5 +400,32 @@
   "battle_type": "survival",
   "enemies": 0,
   "reinforcements": true
+ },
+ "siege-attack-kho5-dwf5": {
+  "battle_type": "siege",
+  "map": "battle_preset_wh2_dlc13_minor_settlement_empire_fort",
+  "attacker": "player",
+  "player": {
+   "subculture": "wh3_main_sc_kho_khorne",
+   "faction": "wh3_main_kho_khorne",
+   "units": [
+    "wh3_main_kho_cha_herald_of_khorne_0",
+    "wh3_main_kho_inf_chaos_warriors_0",
+    "wh3_main_kho_inf_bloodletters_0",
+    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
+    "wh3_main_kho_veh_skullcannon_0"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_dwf_dwarfs",
+   "faction": "wh_main_dwf_dwarfs",
+   "units": [
+    "wh_main_dwf_cha_lord_0",
+    "wh_main_dwf_inf_dwarf_warrior_0",
+    "wh_main_dwf_inf_longbeards",
+    "wh_main_dwf_inf_quarrellers_0",
+    "wh_main_dwf_art_grudge_thrower"
+   ]
+  }
  }
 }
