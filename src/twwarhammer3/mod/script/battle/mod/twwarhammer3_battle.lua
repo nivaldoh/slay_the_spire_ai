@@ -169,9 +169,9 @@ local CLASSES = {
 
 local function unit_class(unit)
     if get(unit, "is_commanding_unit", false) then return "lord" end
+    if get(unit, "can_fly", false) then return "flying" end
     local land_class = tostring(get(unit, "unit_class", ""))
     local class = CLASSES[string.match(land_class, "^(%a+)") or ""]
-    if (not class or class == "monster") and get(unit, "can_fly", false) then return "flying" end
     if not class then return land_class ~= "" and land_class or "monster" end
     if (get(unit, "missile_range", 0) or 0) > 0 then
         if class == "infantry" then return "missile" end
@@ -185,6 +185,8 @@ local function unit_record(id, unit, mine, class)
     local record = {
         id = id, type = get(unit, "type", "?"), class = class,
         commander = get(unit, "is_commanding_unit", false),
+        can_fly = get(unit, "can_fly", false),
+        flying = get(unit, "is_currently_flying", false),
         x = position and round(position:get_x(), 1), z = position and round(position:get_z(), 1),
         bearing = round(get(unit, "bearing", 0)),
         men = get(unit, "number_of_men_alive", 0), men0 = get(unit, "initial_number_of_men", 0),

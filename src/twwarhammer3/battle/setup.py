@@ -153,7 +153,8 @@ def check_battle(scenario: dict, observation: dict) -> dict:
 
 
 def fingerprint(observation: dict) -> dict:
-    fields = ("type", "x", "z", "bearing", "men", "men0", "hp", "ammo", "ammo0", "barrier")
+    fields = ("type", "x", "z", "bearing", "men", "men0", "hp", "ammo", "ammo0", "barrier",
+              "can_fly", "flying")
     start = {side: {unit["id"]: {key: unit.get(key) for key in fields}
                     for unit in observation.get(side, [])}
              for side in ("friendly", "enemy")}
@@ -186,7 +187,8 @@ def compare_starts(reference: dict, current: dict) -> dict:
             angle = (abs((before["bearing"] - after["bearing"] + 180) % 360 - 180)
                      if before["bearing"] is not None and after["bearing"] is not None else None)
             deltas[key] = {"distance_m": position, "bearing_deg": angle}
-            for field in ("men", "men0", "hp", "ammo", "ammo0", "barrier", "abilities"):
+            for field in ("men", "men0", "hp", "ammo", "ammo0", "barrier", "abilities",
+                          "can_fly", "flying"):
                 if before.get(field) != after.get(field):
                     changes[f"{key}/{field}"] = {"before": before.get(field),
                                                 "after": after.get(field)}

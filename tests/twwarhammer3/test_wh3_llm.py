@@ -189,6 +189,15 @@ def test_barriers_and_casting_limits_are_distinct_from_health_and_readiness():
             "9 magic; ready)") in text
 
 
+def test_flying_lord_keeps_role_and_reports_airborne_or_grounded_state():
+    state = observation()
+    state["friendly"][0].update(can_fly=True, flying=True)
+    text = llm.render_state(state, {})
+    assert "(lord)" in text and "can fly, airborne" in text
+    state["friendly"][0]["flying"] = False
+    assert "can fly, on the ground" in llm.render_state(state, {})
+
+
 def test_prompt_shows_changes_and_the_order_behind_each_target(tmp_path):
     orders = [{"unit": "f2", "type": "attack", "x": None, "z": None, "facing": None,
                "target": "e1", "run": False}]

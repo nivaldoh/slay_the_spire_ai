@@ -1,5 +1,20 @@
 # WH3 battle versions
 
+## Benchmark harness b5 (2026-10-14, draft while b4 screens run)
+
+The compact caster screen exposed missing flight information: the original engine
+reports Screamers as `inf_mel` despite `can_fly=true` and `is_currently_flying=true`.
+The old category rule rendered them as infantry. Flying non-commanders now take the
+flying category, while commanders retain their lord role. Units separately expose
+flight capability and current airborne/grounded state; both enter the initial-state
+comparison. The model sees those facts without a prescribed tactic.
+
+A read-only engine query at 84.5 s verified Kairos and Screamers airborne and all three
+ground escorts non-flying. Evidence: `capability-probes/benchmark-specialist-flight/`.
+The current b4 screen stays on its frozen source; this draft is not a mid-battle update.
+Validation: all 207 WH3 tests passed with Lua, Ruff passed, and all Lua scripts compiled
+under Lua 5.1. A later launch must verify the new rendered fields before calibration.
+
 ## Benchmark harness b4 (2026-10-14, compact specialist prototypes)
 
 Adds two development candidates, each with a 1.1 modifier version and an untouched
