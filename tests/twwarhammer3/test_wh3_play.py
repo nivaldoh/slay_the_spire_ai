@@ -544,3 +544,26 @@ def test_acknowledged_builds_and_reinforcements_are_counted(tmp_path):
                                not_battle=None)
     assert result["objectives"]["build"] == 1 and result["objectives"]["reinforce"] == 1
     assert result["objectives"]["supplies_left"] == 2000
+
+
+def test_random_draws_of_battle_types_and_the_old_classic_draws_stay_the_same():
+    # A draw played before battle types existed (seed 2028855463, 2026-10-13).
+    assert play.load_scenario({"scenario": "random", "seed": 2028855463}) == {
+        "map": "battle_preset_devastation_volcano_01_09",
+        "player": {"subculture": "wh2_main_sc_def_dark_elves", "units": None},
+        "enemy": {"subculture": "wh3_main_sc_nur_nurgle", "units": None}}
+    catalogue = json.loads(play.CATALOGUE_PATH.read_text())
+    siege = play.load_scenario({"scenario": "random-siege", "seed": 5})
+    assert siege["map"] in catalogue["battle_type_maps"]["siege"]
+    assert siege["battle_type"] == "siege" and siege["attacker"] == "enemy"
+    assert play.expected_mode(siege) == {"type": "settlement_standard", "role": "defender"}
+    ffa = play.load_scenario({"scenario": "random-ffa", "seed": 5})
+    assert len(play.sides(ffa)) == 4
+    survival = play.load_scenario({"scenario": "random-survival", "seed": 5})
+    assert survival["enemy"] is None and survival["player"]["reinforcements"] is None
+    steps = play.scenario_steps(survival)
+    finds = [s.get("find") for s in steps]
+    assert finds.count(["clear_autogen_reinforcement_parent",
+                        "button_autogen_reinforcements"]) == 1
+    domination = play.load_scenario({"scenario": "random-domination", "seed": 5})
+    assert all("reinforcements" in side for side in play.sides(domination))

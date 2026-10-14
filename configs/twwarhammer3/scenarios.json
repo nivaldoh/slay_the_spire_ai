@@ -354,5 +354,51 @@
    "reinforcements": null
   },
   "enemy": null
+ },
+ "random-conquest": {
+  "random": true,
+  "battle_type": "conquest",
+  "attacker": "enemy"
+ },
+ "random-domination": {
+  "random": true,
+  "battle_type": "domination",
+  "reinforcements": true
+ },
+ "random-ffa": {
+  "random": true,
+  "battle_type": "free_for_all",
+  "enemies": 3
+ },
+ "random-ambush": {
+  "random": true,
+  "battle_type": "ambush",
+  "attacker": "enemy"
+ },
+ "random-chokepoint": {
+  "random": true,
+  "battle_type": "river_crossing_battle",
+  "attacker": "enemy"
+ },
+ "random-underground": {
+  "random": true,
+  "battle_type": "underground_intercept",
+  "attacker": "enemy"
+ },
+ "random-settlement": {
+  "random": true,
+  "battle_type": "unfortified_settlement",
+  "attacker": "enemy"
+ },
+ "random-siege": {
+  "random": true,
+  "battle_type": "siege",
+  "attacker": "enemy"
+ },
+ "random-survival": {
+  "random": true,
+  "battle_type": "survival",
+  "enemies": 0,
+  "reinforcements": true
  }
 }
