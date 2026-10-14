@@ -65,7 +65,7 @@ def episode_digest(episode: Path) -> str:
         error = (f"; victory points held {held:.0%}" if held is not None else "") + "".join(
             f", {label} {measures[key]}" for key, label in (
                 ("supplies_left", "supplies left"), ("build", "built"),
-                ("reinforce", "reinforced")) if key in measures) + error
+                ("reinforce", "reinforced"), ("tickets", "tickets")) if key in measures) + error
     lines = [
         f"{episode.name}: {result['status']} at {result.get('battle_s', '?')} s battle time;"
         f" {result.get('decisions', 0)} decisions, {result.get('invalid', 0)} invalid;"

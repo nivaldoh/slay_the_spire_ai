@@ -531,6 +531,10 @@ def test_episodes_measure_victory_points_held_supplies_left_and_purchases():
     empty = {}
     play.track_objectives(empty, {"mode": {"type": "land_normal"}})
     assert empty == {}
+    conquest = {}
+    play.track_objectives(conquest, {"mode": {"tickets": [{"side": "us", "tickets": 600},
+                                                          {"side": "enemy", "tickets": 87}]}})
+    assert conquest["objectives"]["tickets"] == {"us": 600, "enemy": 87}
 
 
 def test_acknowledged_builds_and_reinforcements_are_counted(tmp_path):

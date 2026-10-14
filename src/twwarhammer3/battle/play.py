@@ -372,12 +372,13 @@ def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
 
 
 def track_objectives(result: dict, observation: dict) -> None:
-    """Measures of a battle type's objectives (owner, 2026-10-14): the share of observations
-    in which we held each victory point, averaged over the points, and the supplies left at
-    the last observation; acknowledgements add the builds and reinforcements that went in."""
+    """Measures of a battle type's objectives (owner, 2026-10-14): the share of the
+    observations the job read in which we held each victory point, averaged over the points,
+    and the supplies and tickets at the last one; acknowledgements add the builds and
+    reinforcements that went in."""
     mode = observation.get("mode") or {}
     points = [point for point in mode.get("capture_points") or [] if point.get("victory")]
-    if not points and mode.get("supplies") is None:
+    if not points and mode.get("supplies") is None and not mode.get("tickets"):
         return
     measures = result.setdefault("objectives", {"samples": 0, "victory_held": None})
     if points:
@@ -387,6 +388,8 @@ def track_objectives(result: dict, observation: dict) -> None:
         measures["victory_held"] = round(measures["held_sum"] / measures["samples"], 3)
     if mode.get("supplies") is not None:
         measures["supplies_left"] = mode["supplies"]
+    if mode.get("tickets"):
+        measures["tickets"] = {row["side"]: row["tickets"] for row in mode["tickets"]}
 
 
 def caption(observation: dict, behavior: dict, orders: list[dict]) -> str | None:
