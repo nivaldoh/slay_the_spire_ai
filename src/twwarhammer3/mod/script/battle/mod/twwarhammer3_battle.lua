@@ -16,7 +16,7 @@ local state = {
     battle = nil, seq = 0, started = false, finished = false, result = nil,
     friendly = {}, friendly_ids = {}, enemy = {}, enemy_ids = {}, enemy_by_ui = {},
     pending = nil, last_request = nil, applied = nil, applied_ms = nil,
-    next_observe_ms = 0, force_observe = false, alliance = nil,
+    next_observe_ms = 0, next_scan_ms = 0, force_observe = false, alliance = nil,
     army_abilities = {}, army_issued = {}, known = {}, info = {}, slots = {},
 }
 local session = nil
@@ -839,11 +839,14 @@ local function tick()
         finish()
         return
     end
+    -- Its own timer: a policy that decides every tick forces an observation with each
+    -- acknowledgement, which keeps pushing the regular observation back.
+    if now >= state.next_scan_ms then
+        state.next_scan_ms = now + 1000
+        local ok, err = pcall(scan)
+        if not ok then log("scan failed: " .. clean_error(err)) end
+    end
     if state.force_observe or now >= state.next_observe_ms then
-        if now >= state.next_observe_ms then
-            local ok, err = pcall(scan)
-            if not ok then log("scan failed: " .. clean_error(err)) end
-        end
         state.force_observe = false
         state.next_observe_ms = now + (session.observe_ms or 1000)
         publish_observation(now)
