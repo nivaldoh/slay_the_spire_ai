@@ -1,6 +1,7 @@
-# Full runs with an API language model
+# Slay the Spire full runs with an API language model
 
-Status: development, started 2026-10-12. The current version and spend are in
+Status: development since 2026-10-12; idle since the v10 job died to a WSL restart on
+2026-10-13, so v10 is untested. The current version and spend are in
 [state.md](../../state.md); every version, its evidence and its per-seed results are in
 [log.md](log.md). Code: `src/spire/fullrun/`, on top of `src/gameai/`.
 
@@ -21,10 +22,11 @@ the prompt and memory, not weight training.
   `gameai.llm.PRICES` (read 2026-10-12) and appended to a ledger. A call is refused
   before it is sent if the ledger's total plus that call's worst-case cost (prompt bytes as
   an upper bound on input tokens, plus 4,000 output tokens) would exceed `--budget-usd`. The
-  default ledger is `runs/llm-spend.jsonl`; the owner's cap is in [state.md](../../state.md). An API request that times out on our side may still be billed without a ledger
-  entry, so the OpenAI dashboard total is the final check.
-- Key: read from `OPENAI_API_KEY` or from the file named by `SPIRE_OPENAI_KEY_FILE`.
-  It is never logged; evidence records only response IDs and usage.
+  default ledger is `runs/llm-spend.jsonl`; the owner's cap is in [state.md](../../state.md).
+  An API request that times out on our side may still be billed without a ledger entry, so
+  the OpenAI dashboard total is the final check.
+- Key: `gameai.llm` reads it, for both games, from `OPENAI_API_KEY` or the file named by
+  `SPIRE_OPENAI_KEY_FILE`. It is never logged; evidence records only response IDs and usage.
 - Engine: the pinned original game, one fresh JVM per run, `START IRONCLAD 0 <seed>`. The
   run ends only on the engine's death or victory screen, or at a declared action or time
   limit.
@@ -141,7 +143,9 @@ damage against block and HP. They point into the traces and do not replace readi
 
 One iteration plays the three development seeds with the committed scaffolding version.
 There is no separate preflight: `spire play` refuses uncommitted source, an existing output
-directory, a second controller and a running game, and the ledger refuses calls over the cap.
+directory, a second Spire controller and a running Slay the Spire, and the ledger refuses
+calls over the cap. It cannot see a WH3 job, so check Active work in
+[state.md](../../state.md) first.
 
 ```bash
 export SPIRE_OPENAI_KEY_FILE=~/.config/robocasa/openai_api_key
@@ -168,10 +172,12 @@ time is, at roughly two to four iterations a night. Then:
    findings to a draft entry in [log.md](log.md) at once; `docs/` is not fingerprinted, so
    this is safe while the job runs.
 3. While the job runs, draft one change on the editable surface in a git worktree: a job
-   stops if `src/` or `configs/` changes between its seeds. Target the most damaging mistake
-   that recurs across runs. Before editing, read the decisions the reviews point to
-   (`--floor N`) and the source by function (`grep -n`, then that range). Add a test if
-   code changed.
+   stops if a file in `play.py`'s `SOURCES` changes between its seeds (`src/gameai/`,
+   `src/spire/`, `configs/llm/`, `pyproject.toml`, `uv.lock`, `.python-version`), so WH3
+   work that edits `src/gameai/`, `pyproject.toml` or `uv.lock` stops it too. Target the
+   most damaging mistake that recurs across runs. Before editing, read the decisions the
+   reviews point to (`--floor N`) and the source by function (`grep -n`, then that range).
+   Add a test if code changed.
 4. When the job ends, finish its log entry (the table is `spire digest $JOB`), merge the
    change, commit it with the new `results.csv` rows and push once, and run the next iteration on the same seeds. Keep a
    change if the targeted mistake stops and outcomes do not get worse. With three
@@ -202,7 +208,8 @@ With evidence so far, in priority order (v3–v10 took the earlier ones):
   line never appears and the model tracks keys only in its notes. v9 RUNDEV1 took an
   elite path for an Emerald Key it already held and died on that path. Candidate in
   `llm.py`: remember keys from the choices that take them (the Emerald and Sapphire Key
-  rewards, Recall at a rest site) and show them in the header.
+  rewards, Recall at a rest site) and show them in the header. Drafted as v11 on branch
+  `v11-keys` (`cd97667`), unmerged.
 - **Power rules**: v7 and v8 RUNDEV1 played Corruption+ without knowing it exhausts every
   skill (spending the last Defends; halving Second Wind+). Candidate: short checked notes
   for the player's powers, shown while active, like `monsters.json`.

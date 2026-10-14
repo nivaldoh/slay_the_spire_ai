@@ -4,9 +4,13 @@
 notes stay outside Git, under `runs/research-notes/`). "Estimate" marks a number a researcher
 computed from stated assumptions rather than one a source reported. "Self-reported" marks a
 result its authors published and nobody has reproduced. Prices are list prices read on
-2026-10-11. Project facts come from [state.md](../state.md) and [research.md](first-combat/research.md). An
-addendum dated 2026-10-12 comes before the sources; the owner's plan for a remotely trained
-open-weight model, also dated 2026-10-12, is in [open-weight/README.md](open-weight/README.md).*
+2026-10-11. Project facts come from the state page of that day (its first-combat facts now
+live in [first-combat/README.md](first-combat/README.md) and the records beside it) and
+[research.md](first-combat/research.md). An addendum dated 2026-10-12 comes before the
+sources; the owner's plan for a remotely trained open-weight model, also dated 2026-10-12, is
+in [open-weight/README.md](open-weight/README.md). "This project" means the Slay the Spire
+work in this repository; status statements hold as of their dates, and
+[state.md](../state.md) has the current state.*
 
 ## Summary
 
@@ -289,10 +293,10 @@ reference point: mini-spire, a C++ Ironclad-versus-Jaw-Worm fight in which rando
 steps in about four minutes ([mini-spire, June 2026](https://rhp.bearblog.dev/mini-spire/)).
 
 **What it would take here.** On the real engine, pure RL is limited to single fights. The
-budget-64 PPO run consumed 827 transitions ([state.md](../state.md)), about 60× fewer than
-mini-spire's ~50k steps, on a fight (the Louses) that gives no win/loss signal because random
-play wins it. Mini-spire's budget is reachable for one fight: at the measured 21–28 decisions per
-fight, 50k steps is about 1,800–2,400 combats, or roughly 15–40 hours of continuous engine time
+budget-64 PPO run consumed 827 transitions ([research.md](first-combat/research.md)), about 60×
+fewer than mini-spire's ~50k steps, on a fight (the Louses) that gives no win/loss signal because
+random play wins it. Mini-spire's budget is reachable for one fight: at the measured 21–28 decisions
+per fight, 50k steps is about 1,800–2,400 combats, or roughly 15–40 hours of continuous engine time
 (computed here from the measured figures; one research note calls even this budget out of reach),
 and roughly 0.4–4 hours if the real-engine speedups in the engine-speed section hold (estimate).
 Full-game RL is a different matter. The learned non-combat layer that gained 11 floors needed 15k
@@ -400,19 +404,19 @@ evidence behind them. LoRA should cover the MLP projections as well as the curre
 `q/k/v/o_proj` adapter. The base can move to Qwen3.5-2B or 4B, which fit the 12 GB card (4B is
 tight once 1.5–2K-token prompts and rollout groups are added) and need main-branch Transformers;
 slower HF generation costs little here, since measured inference was 8.3 s of a 46.6 s fight
-([state.md](../state.md)). Training should use scenarios that carry signal: in the stopped
-continuation all four Louse combats ended at 77 HP and contributed no gradient, and
-[language-rl-experiment.md](first-combat/language-rl-experiment.md) itself warns that a gain "may be a
-memorized line", so a held-out set is required. Turn-level credit is cheap to add, with per-turn
-HP lost as reward and GiGPO-style anchor-state grouping, because the catalog restarts fixed seeds
-and early states repeat exactly across a group. Adapters should be selected by outcome, not
-agreement: the heuristic-relabel adapter raised held-out agreement to 75.2% but cut macro HP from
-76.33 to 63.67 ([language-relabel-experiment.md](first-combat/language-relabel-experiment.md)). And with 7.7
-GiB of WSL RAM, plain HF generation is safer than colocating vLLM (untested). Engine time is the
-budget today: one 12-combat iteration costs about 6–12 minutes, 1,000 combats take 8.3–16.7 hours
-(estimate), and GiGPO-scale episode counts would take weeks. The engine-speed levers above would
-shrink the engine share, after which the model's own 8.7 s per fight dominates unless decisions
-are batched across parallel games.
+([language-experiment.md](first-combat/language-experiment.md)). Training should use scenarios that
+carry signal: in the stopped continuation all four Louse combats ended at 77 HP and contributed no
+gradient, and [language-rl-experiment.md](first-combat/language-rl-experiment.md) itself warns that
+a gain "may be a memorized line", so a held-out set is required. Turn-level credit is cheap to add,
+with per-turn HP lost as reward and GiGPO-style anchor-state grouping, because the catalog restarts
+fixed seeds and early states repeat exactly across a group. Adapters should be selected by outcome,
+not agreement: the heuristic-relabel adapter raised held-out agreement to 75.2% but cut macro HP
+from 76.33 to 63.67 ([language-relabel-experiment.md](first-combat/language-relabel-experiment.md)).
+And with 7.7 GiB of WSL RAM, plain HF generation is safer than colocating vLLM (untested). Engine
+time is the budget today: one 12-combat iteration costs about 6–12 minutes, 1,000 combats take
+8.3–16.7 hours (estimate), and GiGPO-scale episode counts would take weeks. The engine-speed levers
+above would shrink the engine share, after which the model's own 8.7 s per fight dominates unless
+decisions are batched across parallel games.
 
 **Risks.** Three deterministic scenarios invite memorization. Headroom is small: macro HP can
 reach at most 80 after Burning Blood, and the best result is 76.33. Small groups risk the Echo
@@ -935,7 +939,8 @@ report would be a useful result in its own right.
 MLP-inclusive LoRA, a Qwen3.5-2B or 4B base with thinking disabled, turn-level HP rewards with
 anchor-state grouping, and training only on scenarios that carry gradient. Report each change
 against the frozen 76.33 SFT adapter; the unevaluated two-update REINFORCE adapter is the natural
-first evaluation ([state.md](../state.md)).
+first evaluation
+([first-combat/README.md](first-combat/README.md#open-threads-if-this-track-resumes)).
 
 **Fourth, measure a frontier model on the same catalog** (tens of dollars). Run one cheap and one
 flagship model as policies under the existing `Decision` boundary, logging dollars and seconds per
@@ -979,12 +984,12 @@ Three further research notes compiled on 2026-10-11 back this section.
 Both build mainly on assets the project already has. Its 288 saved traces hold about 5,000 combat
 decision states (counted here; many repeat the same seeded states), each with its public
 `Decision`; a decision has a median of 5 legal candidates and at most 11. The Qwen policy
-gives an exact probability for every candidate (`candidate_log_probs` in `language_policy.py`), the
-PPO network a softmax, and the heuristic a deterministic pick. The state is structured, so single
-fields can be edited to make counterfactuals. One base model has a lineage of adapters with measured
-behavior (unchanged, Louse SFT, heuristic relabel, one and two REINFORCE updates). And the real
-engine can turn a claim about a model's internals into a prediction about wins and HP that it then
-confirms or refutes.
+gives an exact probability for every candidate (`candidate_log_probs` in
+`spire/language/policy.py`), the PPO network a softmax, and the heuristic a deterministic pick. The
+state is structured, so single fields can be edited to make counterfactuals. One base model has a
+lineage of adapters with measured behavior (unchanged, Louse SFT, heuristic relabel, one and two
+REINFORCE updates). And the real engine can turn a claim about a model's internals into a prediction
+about wins and HP that it then confirms or refutes.
 
 ### Interpretability: showing how each policy decides
 

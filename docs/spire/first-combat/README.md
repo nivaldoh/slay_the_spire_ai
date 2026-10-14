@@ -1,10 +1,11 @@
-# First-combat benchmark (2026-10-11, paused)
+# Slay the Spire first-combat benchmark (2026-10-11, paused)
 
-The project's first day built and verified the original-engine loop on fixed floor-1
-combats, then compared scripted, PPO and local language-model policies there. All of it is
-paused: the owner paused PPO on 2026-10-11 to advance language-model post-training, and on
-2026-10-12 moved to [full runs with an API model](../fullrun/README.md). This page is the
-summary. The files beside it are the detailed records, written as the work happened.
+The repository's first day built and verified the Slay the Spire original-engine loop on
+fixed floor-1 combats, then compared scripted, PPO and local language-model policies there.
+All of it is paused: the owner paused PPO on 2026-10-11 to advance language-model
+post-training, and on 2026-10-12 moved to [full runs with an API model](../fullrun/README.md).
+This page is the summary. The files beside it are the detailed records, written as the work
+happened.
 
 Code: `spire.combat`, `spire.ppo`, `spire.language`, plus `src/spire/protocol.py` and
 `src/spire/policies.py`. Evidence: `runs/first-combat/` (local) and [results/](results/).
@@ -122,8 +123,9 @@ for d in runs/first-combat/*/; do ln -s "first-combat/$(basename "$d")" runs/; d
 find runs -maxdepth 1 -type l -delete
 ```
 
-Compact results in [results/](results/) also record paths from before the move
-(`docs/results/…`, `runs/<name>`).
+Older records name this folder's earlier paths (`docs/` and `docs/results/…` until
+2026-10-12, then `docs/first-combat/` until 2026-10-13), and compact results in
+[results/](results/) also name `runs/<name>`.
 
 `spire/protocol.py` and `spire/policies.py` are frozen: demonstration export compares their
 syntax tree with the recorded teacher sources, so editing them breaks that verification.

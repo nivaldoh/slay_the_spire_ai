@@ -1,7 +1,9 @@
-# Original-engine integration audit
+# Slay the Spire integration audit
 
-Inspected 2026-10-11. This is evidence for the current bootstrap slice, not a
-whole-game compatibility or simulator-equivalence claim.
+Engine, mod and protocol facts for Slay the Spire 1 through CommunicationMod; Total War:
+WARHAMMER III's are in [twwarhammer3/integration.md](../twwarhammer3/integration.md).
+Inspected 2026-10-11 for the first-combat slice and extended during the full-run track. This
+is not a whole-game compatibility or simulator-equivalence claim.
 
 ## Runtime and source pins
 
@@ -29,8 +31,8 @@ claim that the Workshop binaries were reproduced from those revisions.
 | [CommunicationMod](https://github.com/ForgottenArbiter/CommunicationMod/tree/5e417eb189530986b9047a3c9426889fb261d146) | `5e417eb189530986b9047a3c9426889fb261d146` | MIT |
 | [spirecomm](https://github.com/ForgottenArbiter/spirecomm/tree/f308452dcdef1e4813e5a78fa7a36f9a779058f9) | `f308452dcdef1e4813e5a78fa7a36f9a779058f9` (0.6.0) | MIT |
 
-CommunicationMod and spirecomm source were inspected, not copied into the
-project. No spirecomm strategy is part of the baseline.
+CommunicationMod and spirecomm source were inspected, not copied into this
+repository. No spirecomm strategy is part of the baseline.
 
 CommunicationMod declares game version `11-30-2020`, whereas the installed
 engine is the final 2022 build. The first launch successfully initialized all
@@ -44,7 +46,9 @@ Host and process ownership:
 - The relay connects from Windows to the current WSL guest IPv4 on fixed port 19876.
 - Every launch owns one JVM in a Windows job object, which stops it and the relay on
   controller EOF, deadline or supervisor death. A WSL flock (`C:/spire-agent/owner.lock`)
-  allows one controller, and a game process already running causes a refusal.
+  allows one Spire controller, and a running Slay the Spire (its exe or a JVM running it)
+  causes a refusal. WH3 has its own lock (`C:/wh3-agent/owner.lock`) and neither game's
+  check sees the other, so check Active work in [state.md](../state.md) before a launch.
 - The directly launched JVM reports a Steam API initialization failure; gameplay works.
 
 ## Protocol boundary
@@ -114,7 +118,8 @@ Targeted inspection of the installed engine's `Metrics`, `Settings`,
   runs. The observed Steam API initialization failure is additional context,
   not the justification for relying on the mod gate.
 - Local run-history saving still executes. Unlock and profile changes remain
-  possible and must be recorded as specified in [state.md](../state.md).
+  possible and must be recorded as specified in
+  [state.md](../state.md#runtime-and-ownership).
 
 The Upload Data setting was left unchanged. This audit supports disabled
 engine run/crash metric uploads for this modded build; it is not a blanket
@@ -151,13 +156,15 @@ slice needs its own runtime compatibility and differential validation gate.
 
 ## Windows excluded-port regression
 
-One frozen evaluation could not connect before gameplay: Linux selected port53899
-from its ephemeral range, while Windows excludes TCP53849–53948. Native Windows
-bind failed with10013 and relay connect logged10061. The runner now uses loopback
-19876 under the existing exclusive ownership lock; TCP address reuse supports
-consecutive clean episodes. Fifty Windows-to-WSL socket round trips passed. This
-fix does not reconnect or retry commands within a game. A future local port
-collision still fails instead of taking over another process.
+One frozen evaluation could not connect before gameplay: Linux selected port 53899
+from its ephemeral range, while Windows excludes TCP 53849–53948. Native Windows
+bind failed with 10013 and relay connect logged 10061. The runner now uses fixed port
+19876, below both ephemeral ranges, under the existing exclusive ownership lock; TCP
+address reuse supports consecutive clean episodes. Fifty Windows-to-WSL socket round trips
+passed. This fix does not reconnect or retry commands within a game. A future local port
+collision still fails instead of taking over another process. The relay later moved from
+loopback to the WSL guest address
+([relay-startup-mitigation.md](first-combat/relay-startup-mitigation.md)).
 
 Each launch now records the intended relay address and captures only the new suffix
 of CommunicationMod's shared stderr log. See the preserved

@@ -1,9 +1,9 @@
-# Planned track: a remotely trained open-weight model
+# Planned Slay the Spire track: a remotely trained open-weight model
 
-*Owner direction, 2026-10-12. The API model track with `gpt-6-luna` continues. At some point the
-project will also test an open-weight model that is served and trained remotely. This page
-records the proposed plan. Only a code skeleton exists ([Code skeleton](#code-skeleton)). Facts
-were checked on 2026-10-12.*
+*Owner direction, 2026-10-12. The Spire full-run track with `gpt-6-luna` continues. At some
+point the Spire work will also test an open-weight model that is served and trained remotely.
+This page records the proposed plan. Only a code skeleton exists
+([Code skeleton](#code-skeleton)). Facts were checked on 2026-10-12.*
 
 **Question.** Does learning what actions do help an LLM become a better player, with less training
 and better generalization? The plan uses game-reward RL as the foundation and adds one experiment
@@ -108,7 +108,7 @@ dynamics experiment, then train the frontier model, then add search and distilla
 scaling, a short cloud pilot measures the actual cost of rollouts and updates, since long game
 histories can make tokens the deciding cost.
 
-**What this project's evidence adds.**
+**What the Spire tracks' evidence adds.**
 - **Engine time (estimate):**
   - On the real engine there is one controller, at about 38 s per combat.
   - A GRPO step of 64 combats takes about 40 minutes plus remote sampling latency, which has not
