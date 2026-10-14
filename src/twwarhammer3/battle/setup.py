@@ -134,17 +134,33 @@ def check_battle(scenario: dict, observation: dict) -> dict:
             if actual != army["faction"]:
                 raise ProtocolError(f"setup {side} faction: {actual!r}, "
                                     f"expected {army['faction']!r}")
+    if not (observation.get("terrain") or {}).get("rows"):
+        raise ProtocolError("setup: the declared terrain grid is missing")
+    checks["terrain_grid"] = True
     return checks
 
 
 def fingerprint(observation: dict) -> dict:
-    return {side: {unit["id"]: {key: unit.get(key) for key in ("type", "x", "z", "bearing")}
-                   for unit in observation.get(side, [])}
-            for side in ("friendly", "enemy")}
+    fields = ("type", "x", "z", "bearing", "men", "men0", "hp", "ammo", "ammo0", "barrier")
+    start = {side: {unit["id"]: {key: unit.get(key) for key in fields}
+                    for unit in observation.get(side, [])}
+             for side in ("friendly", "enemy")}
+    for unit in observation.get("friendly", []):
+        start["friendly"][unit["id"]]["abilities"] = sorted(
+            ({key: ability.get(key) for key in ("key", "target", "mana", "uses", "cooldown_s",
+                                               "cast_range", "radius", "duration_s")}
+             for ability in unit.get("abilities") or []), key=lambda ability: ability["key"])
+    mode = observation.get("mode") or {}
+    start["resources"] = {"magic": observation.get("magic"), "supplies": mode.get("supplies"),
+                          "tickets": mode.get("tickets")}
+    return start
 
 
 def compare_starts(reference: dict, current: dict) -> dict:
-    deltas, missing = {}, []
+    deltas, missing, changes = {}, [], {}
+    if reference.get("resources") != current.get("resources"):
+        changes["resources"] = {"before": reference.get("resources"),
+                                "after": current.get("resources")}
     for side in ("friendly", "enemy"):
         for unit_id in reference.get(side, {}).keys() | current.get(side, {}).keys():
             before, after = reference.get(side, {}).get(unit_id), current.get(side, {}).get(unit_id)
@@ -158,6 +174,11 @@ def compare_starts(reference: dict, current: dict) -> dict:
             angle = (abs((before["bearing"] - after["bearing"] + 180) % 360 - 180)
                      if before["bearing"] is not None and after["bearing"] is not None else None)
             deltas[key] = {"distance_m": position, "bearing_deg": angle}
+            for field in ("men", "men0", "hp", "ammo", "ammo0", "barrier", "abilities"):
+                if before.get(field) != after.get(field):
+                    changes[f"{key}/{field}"] = {"before": before.get(field),
+                                                "after": after.get(field)}
     flagged = missing or [key for key, delta in deltas.items()
                           if (delta["distance_m"] or 0) > 1 or (delta["bearing_deg"] or 0) > 10]
-    return {"flagged": bool(flagged), "missing_or_changed": missing, "units": deltas}
+    return {"flagged": bool(flagged or changes), "missing_or_changed": missing,
+            "units": deltas, "resource_or_loadout_changes": changes}

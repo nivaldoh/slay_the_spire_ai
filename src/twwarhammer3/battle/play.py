@@ -24,7 +24,7 @@ from pathlib import Path
 
 from gameai.ledger import BudgetExhausted
 from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
-from twwarhammer3.battle.controllers import card, rotation
+from twwarhammer3.battle.controllers import MODEL_POLICIES, card, rotation
 from twwarhammer3.battle.setup import (
     check_battle,
     check_menu,
@@ -89,14 +89,15 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
         "config": config,
         "scenario": scenario,
         "trials": trials,
-        "track": "obs-v1+terrain/act-v1/live-1x",
+        "track": "obs-v2+terrain/act-v1/live-1x",
         "status": "running",
         "episodes": [],
     }
-    for name in sorted(set(config["policy"].split(",")) & {"llm", "commander"}):
+    for name in sorted(set(config["policy"].split(",")) & MODEL_POLICIES):
         from twwarhammer3.battle import commander, llm
 
         prompt = (commander.PROMPT_PATH if name == "commander"
+                  else llm.RULES_PROMPT_PATH if name == "llm_rules"
                   else llm.SYSTEM_PROMPT_PATH)
         filename = "system_prompt.md" if "," not in config["policy"] else f"{name}_prompt.md"
         (output / filename).write_bytes(prompt.read_bytes())
@@ -162,8 +163,11 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
     except ProtocolError as exc:
         manifest.update(status="setup_failure", error=str(exc))
         raise
-    except BaseException:
-        manifest["status"] = "interrupted"
+    except BaseException as exc:
+        status = "interrupted" if isinstance(exc, (KeyboardInterrupt, SystemExit)) else (
+            "infrastructure_failure")
+        manifest.update(status=status, error=str(exc) or type(exc).__name__,
+                        error_type=type(exc).__name__)
         raise
     finally:
         manifest["finished_at"] = datetime.now(UTC).isoformat()
@@ -387,7 +391,7 @@ def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
     result = {"episode": directory.name, "status": "interrupted", "decisions": 0, "invalid": 0,
               "delays_ms": [], "think_s": [], "policy": config["policy"],
               "slot": config.get("slot"), "delay_ms": config.get("delay_ms", 0),
-              "track": "obs-v1+terrain/act-v1/live-1x" +
+              "track": "obs-v2+terrain/act-v1/live-1x" +
               (f"+age-{config['delay_ms']}ms" if config.get("delay_ms") else "")}
     log_offset = mailbox.log_offset()
 
@@ -447,10 +451,12 @@ def policy_call(policy, method: str, *args):
 
 
 def track_objectives(result: dict, observation: dict) -> None:
-    """Measures of a battle type's objectives (owner, 2026-10-14): the share of the
-    observations the job read in which we held each victory point, averaged over the points,
-    and the key building alone (settlements); the supplies and tickets at the last one;
-    acknowledgements add the builds and reinforcements that went in."""
+    """Time held per victory point and key building, plus final supplies/tickets.
+
+    Current engine records integrate ownership every tick, independently of decisions.
+    Legacy records fall back to the fraction of read observations. Acknowledgements
+    separately count accepted builds and reinforcement purchases.
+    """
     mode = observation.get("mode") or {}
     points = [point for point in mode.get("capture_points") or [] if point.get("victory")]
     if not points and mode.get("supplies") is None and not mode.get("tickets"):

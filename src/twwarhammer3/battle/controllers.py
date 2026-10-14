@@ -13,7 +13,7 @@ from twwarhammer3.battle.scripted import POLICIES
 from twwarhammer3.battle.skills import ProbeAbilities, Skills
 
 BUILTINS = {**POLICIES, "skills": Skills, "probe_abilities": ProbeAbilities}
-MODEL_POLICIES = {"llm", "commander"}
+MODEL_POLICIES = {"llm", "llm_rules", "commander"}
 
 
 def rotation(config: dict) -> list[dict]:
@@ -60,7 +60,7 @@ def card(name: str, policy, config: dict) -> dict:
     path = inspect.getsourcefile(type(policy))
     result = {
         "name": name, "kind": "hybrid" if name == "commander" else
-        "model" if name == "llm" else "scripted" if name in BUILTINS else "external",
+        "model" if name in MODEL_POLICIES else "scripted" if name in BUILTINS else "external",
         "class": f"{type(policy).__module__}:{type(policy).__qualname__}",
         "source_file": path, "source_sha256": sha256(Path(path)) if path else None,
         "model": config.get("model") if name in MODEL_POLICIES else None,
@@ -87,15 +87,19 @@ def factories(config: dict) -> dict:
         from gameai.ledger import Ledger
         from gameai.llm import api_key, post
         from twwarhammer3.battle.commander import CommanderPolicy
-        from twwarhammer3.battle.llm import LLMPolicy
+        from twwarhammer3.battle.llm import RULES_PROMPT_PATH, LLMPolicy
 
         if config.get("budget_usd") is None:
-            raise ValueError("llm and commander require --budget-usd")
+            raise ValueError("model controllers require --budget-usd")
         ledger = Ledger(Path(config["ledger"]), config["budget_usd"])
         send = partial(post, api_key(), record_transport=True)
-        for name, kind in (("llm", LLMPolicy), ("commander", CommanderPolicy)):
+        for name, kind in (("llm", LLMPolicy), ("llm_rules", LLMPolicy),
+                           ("commander", CommanderPolicy)):
             if name in names:
-                makers[name] = partial(kind, config["model"], config["effort"], ledger, send=send)
+                prompt = ({"system_prompt": RULES_PROMPT_PATH.read_text()}
+                          if name == "llm_rules" else {})
+                makers[name] = partial(kind, config["model"], config["effort"], ledger,
+                                      send=send, **prompt)
     for name in names - MODEL_POLICIES:
         makers[name] = controller_class(name)
     return makers

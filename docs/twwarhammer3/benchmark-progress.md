@@ -50,8 +50,8 @@ agree with traces. Settlement and domination ownership cases were all-held/never
 changing ownership is covered by the separate Lua sampler regression. Audit:
 `runs/twwarhammer3/reports/bench-b2-objective-audit.json`.
 
-Draft `9b73105` in `/tmp/wh3-benchmark-b3` is tested and awaiting merge, followed by a
-frontend roster inventory and specialist live acceptance. Current process handles and
+Draft `9b73105` from `/tmp/wh3-benchmark-b3` was merged after the queue completed.
+Next are the frontend roster inventory and specialist live acceptance. Current process handles and
 next actions are in [../state.md](../state.md). No scenario is admitted. The owner has
 superseded the unstarted generic Herald calibration plan with specialist candidate
 selection; the new candidate/reference must be frozen before G1/G2. The held-out Herald

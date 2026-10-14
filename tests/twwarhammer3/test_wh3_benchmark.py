@@ -41,6 +41,28 @@ def test_importable_controller_and_fresh_instances():
         controllers.controller_class("twwarhammer3.battle.scripted:_distance")
 
 
+def test_rules_controller_uses_its_own_prompt_and_shared_budget(tmp_path, monkeypatch):
+    from gameai import llm as transport
+    from twwarhammer3.battle import llm
+
+    monkeypatch.setattr(transport, "api_key", lambda: "test-only")
+    config = {"policy": "llm,llm_rules", "model": "gpt-6-luna", "effort": "low",
+              "ledger": str(tmp_path / "spend.jsonl"), "budget_usd": 1}
+    makers = controllers.factories(config)
+    original, rules = makers["llm"](), makers["llm_rules"]()
+    assert original.api.instructions == llm.SYSTEM_PROMPT_PATH.read_text()
+    assert rules.api.instructions == llm.RULES_PROMPT_PATH.read_text()
+    assert rules.api.instructions != original.api.instructions
+    assert rules.api.ledger is original.api.ledger
+    rules.notes = "previous battle"
+    assert makers["llm_rules"]().notes == ""
+    card = controllers.card("llm_rules", rules, config)
+    assert (card["kind"], card["model"], card["cost_source"]) == (
+        "model", "gpt-6-luna", "WH3 ledger")
+    with pytest.raises(ValueError, match="require --budget-usd"):
+        controllers.factories({**config, "policy": "llm_rules", "budget_usd": None})
+
+
 def test_setup_rejects_roster_multiplicity_factions_and_settings():
     scenario = {"expect": {"unit_scale": .75, "realism": False, "player_defends": True,
                            "ai_stats_modifier": "1.1"},
@@ -48,6 +70,7 @@ def test_setup_rejects_roster_multiplicity_factions_and_settings():
                 "enemy": {"faction": "e", "units": ["lord"]}}
     state = {"setup": {**scenario["expect"], "army_ai_stats_modifiers": [1.1, 1.1]},
              "armies": {"player": {"faction": "p"}, "enemy": {"faction": "e"}},
+             "terrain": {"rows": [".."]},
              "friendly": [{"type": t} for t in ("lord", "inf", "inf")],
              "enemy_roster": [{"type": "lord"}]}
     assert setup.check_battle(scenario, state)["friendly_roster"] == {"lord": 1, "inf": 2}
@@ -60,6 +83,8 @@ def test_setup_rejects_roster_multiplicity_factions_and_settings():
     with pytest.raises(ProtocolError, match="army AI modifiers"):
         setup.check_battle(scenario, {**state, "setup": {**state["setup"],
                                                        "army_ai_stats_modifiers": [1., 1.]}})
+    with pytest.raises(ProtocolError, match="terrain grid is missing"):
+        setup.check_battle(scenario, {**state, "terrain": None})
 
 
 def test_map_gate_and_required_steps(tmp_path):
@@ -82,6 +107,26 @@ def test_start_comparison_uses_circular_bearings_and_reports_missing_units():
     result = setup.compare_starts(initial, same)
     assert not result["flagged"] and result["units"]["friendly/f1"]["bearing_deg"] == 2
     assert setup.compare_starts(initial, {})["flagged"]
+
+
+def test_start_comparison_detects_changed_magic_or_spells_at_identical_positions():
+    from copy import deepcopy
+
+    state = {"friendly": [{"id": "f1", "type": "caster", "x": 1, "z": 2, "bearing": 0,
+                           "hp": 1, "men": 1, "men0": 1,
+                           "abilities": [{"key": "spell_a", "mana": 6}, {"key": "spell_b"}]}],
+             "magic": {"current": 20, "reserve": 60}}
+    first = setup.fingerprint(state)
+    reordered = deepcopy(state)
+    reordered["friendly"][0]["abilities"].reverse()
+    assert not setup.compare_starts(first, setup.fingerprint(reordered))["flagged"]
+    changed = deepcopy(state)
+    changed["magic"]["reserve"] = 30
+    changed["friendly"][0]["abilities"][0]["key"] = "spell_c"
+    result = setup.compare_starts(first, setup.fingerprint(changed))
+    assert result["flagged"]
+    assert set(result["resource_or_loadout_changes"]) == {"resources", "friendly/f1/abilities"}
+    assert result["units"]["friendly/f1"]["distance_m"] == 0
 
 
 def test_custom_roster_budget_is_verified_before_scoring(tmp_path):
@@ -146,6 +191,23 @@ def test_intervals_and_missing_active_strength():
     summary = report.mean_interval([0, 1, 2])
     assert summary["mean"] == 1
     assert summary["ci95"][1] == pytest.approx(1 + 4.303 / (3 ** .5))
+
+
+def test_rollout_throughput_includes_setup_failures_and_unknown_job_duration(tmp_path):
+    played = make_job(tmp_path, "played", [("hold", 0, "lost"), ("skills", .2, "won")])
+    failed = make_job(tmp_path, "failed", [])
+    for job, status, wall in ((played, "completed", 3600), (failed, "setup_failure", 1800)):
+        path = job / "manifest.json"
+        manifest = json.loads(path.read_text())
+        path.write_text(json.dumps({**manifest, "status": status, "wall_seconds": wall}))
+    result = report.collect([played, failed])
+    assert result["throughput"] == {"started_trials": 2, "valid_trials": 2, "job_wall_s": 5400,
+                                    "valid_trials_per_wall_hour": pytest.approx(4 / 3)}
+    assert "including setup, resets and failures; 1.33 valid trials/h" in report.render(result)
+    partial = make_job(tmp_path, "partial", [])
+    result = report.collect([played, failed, partial])
+    assert result["throughput"]["valid_trials_per_wall_hour"] is None
+    assert "throughput unavailable" in report.render(result)
 
 
 def test_terrain_and_rejected_move_alternatives_reach_both_model_renderers():

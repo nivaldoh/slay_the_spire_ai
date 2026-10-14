@@ -68,7 +68,7 @@ def main() -> int:
     play.add_argument("--model", default="gpt-6-luna", choices=sorted(PRICES))
     play.add_argument("--effort", default="low", choices=EFFORTS)
     play.add_argument("--budget-usd", type=float, default=None,
-                      help="required with --policy llm or commander")
+                      help="required with a model policy: llm, llm_rules or commander")
     play.add_argument("--ledger", type=Path, default=LEDGER_PATH)
     play.add_argument("--results", type=Path, default=RESULTS_PATH)
     play.add_argument("--episodes", type=int, default=None,

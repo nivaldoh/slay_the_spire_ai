@@ -89,7 +89,8 @@ end
 -- unit returns "key|field|...;key|..." rows (concatenation converts numbers and booleans).
 local ABILITY_SETUP = 'BattleAbilityList.JoinString(SetupAbilityContext.RecordKey + "|" + '
     .. 'SetupAbilityContext.TargetType + "|" + SetupAbilityContext.ManaUsed + "|" + '
-    .. 'SetupAbilityContext.RechargeTime, ";")'
+    .. 'SetupAbilityContext.RechargeTime + "|" + SetupAbilityContext.CastRange + "|" + '
+    .. 'SetupAbilityContext.EffectRange + "|" + SetupAbilityContext.ActiveTime, ";")'
 local ABILITY_STATE = 'BattleAbilityList.JoinString(SetupAbilityContext.RecordKey + "|" + '
     .. 'CanCurrentlyPerform + "|" + RechargeTimeRemainingSecs + "|" + RemainingUses + "|" + '
     .. 'IsActive, ";")'
@@ -189,6 +190,13 @@ local function unit_record(id, unit, mine, class)
         men = get(unit, "number_of_men_alive", 0), men0 = get(unit, "initial_number_of_men", 0),
         hp = round(get(unit, "unary_hitpoints", 0), 2), state = {},
     }
+    -- Only called for friendlies or currently visible enemies. Barrier HP is a
+    -- separate, replenishable resource; ordinary hitpoints do not include it.
+    local barrier = context_rows("CcoBattleUnit", tostring(get(unit, "unique_ui_id", "")),
+        'UnitDetailsContext.BarrierHp + "|" + UnitDetailsContext.BarrierMaxHp')[1]
+    if barrier and (tonumber(barrier[2]) or 0) > 0 then
+        record.barrier = {hp = round(tonumber(barrier[1])), max_hp = round(tonumber(barrier[2]))}
+    end
     local flags = {
         {"is_routing", "routing"}, {"is_shattered", "shattered"}, {"is_wavering", "wavering"},
         {"is_in_melee", "melee"}, {"is_under_missile_attack", "under_fire"},
@@ -236,6 +244,7 @@ local function unit_record(id, unit, mine, class)
                 recharge_s = recharge and recharge > 0 and round(recharge, 1) or nil,
                 uses = uses and uses >= 0 and uses or nil,
                 target = setup.target, mana = setup.mana, cooldown_s = setup.cooldown_s,
+                cast_range = setup.cast_range, radius = setup.radius, duration_s = setup.duration_s,
                 last_issued_ms = entry.ability_issued and entry.ability_issued[key],
             }
         end
@@ -478,6 +487,28 @@ local function mode_section()
     return section
 end
 
+-- The initial roster is public from the lobby. Later summons/reinforcements become
+-- known only on sight, and an earlier sighting does not reveal a later hidden death.
+local function enemy_observation(id, entry)
+    local alive = get(entry.unit, "number_of_men_alive", 0) > 0
+    local visible = visible_to_player(entry.unit)
+    if visible then
+        entry.seen = true
+        if not alive then entry.observed_dead = true end
+    end
+    local roster, record = nil, nil
+    if entry.initial or entry.seen then
+        roster = {id = id, type = get(entry.unit, "type", "?"), dead = entry.observed_dead,
+                  alliance = state.info.alliances > 2 and entry.alliance or nil}
+    end
+    if alive and visible then
+        local ok, value = pcall(unit_record, id, entry.unit, false, entry.class)
+        if ok and state.info.alliances > 2 then value.alliance = entry.alliance end
+        record = ok and value or {id = id, error = clean_error(value)}
+    end
+    return roster, record
+end
+
 local function observation(now)
     state.seq = state.seq + 1
     local friendly, enemy, roster = {}, {}, {}
@@ -487,18 +518,9 @@ local function observation(now)
         friendly[#friendly + 1] = ok and record or {id = id, error = clean_error(record)}
     end
     for _, id in ipairs(state.enemy_ids) do
-        local entry = state.enemy[id]
-        local alive = get(entry.unit, "number_of_men_alive", 0) > 0
-        -- A unit's destruction is reported only once the player has seen the unit.
-        roster[#roster + 1] = {id = id, type = get(entry.unit, "type", "?"),
-                               dead = (entry.seen and not alive) or nil,
-                               alliance = state.info.alliances > 2 and entry.alliance or nil}
-        if alive and visible_to_player(entry.unit) then
-            entry.seen = true
-            local ok, record = pcall(unit_record, id, entry.unit, false, entry.class)
-            if ok and state.info.alliances > 2 then record.alliance = entry.alliance end
-            enemy[#enemy + 1] = ok and record or {id = id, error = clean_error(record)}
-        end
+        local known, visible = enemy_observation(id, state.enemy[id])
+        if known then roster[#roster + 1] = known end
+        if visible then enemy[#enemy + 1] = visible end
     end
     local army = nil
     if #state.army_abilities > 0 then
@@ -858,14 +880,16 @@ local function register(unit, alliance, army)
                        ui_id = tostring(key), setup = {}}
         for _, row in ipairs(context_rows("CcoBattleUnit", entry.ui_id, ABILITY_SETUP)) do
             entry.setup[row[1]] = {target = plain(row[2]), mana = tonumber(row[3]),
-                                   cooldown_s = tonumber(row[4])}
+                                   cooldown_s = tonumber(row[4]), cast_range = tonumber(row[5]),
+                                   radius = tonumber(row[6]), duration_s = tonumber(row[7])}
         end
         state.friendly[id] = entry
         state.friendly_ids[#state.friendly_ids + 1] = id
         if state.started_ms then log("new friendly unit " .. id .. " " .. get(unit, "type", "?")) end
     else
         local id = "e" .. (#state.enemy_ids + 1)
-        state.enemy[id] = {unit = unit, class = unit_class(unit), alliance = alliance}
+        state.enemy[id] = {unit = unit, class = unit_class(unit), alliance = alliance,
+                           initial = not state.started_ms}
         state.enemy_ids[#state.enemy_ids + 1] = id
         state.enemy_by_ui[key] = id
         if state.started_ms then log("new enemy unit " .. id .. " " .. get(unit, "type", "?")) end
@@ -1028,6 +1052,12 @@ local function start()
         'ArmyList.JoinString(FactionContext.Key + "@" + UnitList.JoinString('
         .. 'UnitRecordContext.Key + ":" + UnitDetailsContext.StatList.JoinString('
         .. 'Key + "=" + ValueBase, "/"), ";"), "@@")')
+    -- ValueBase excludes modifiers/buffs; retain Value as well to measure the actual
+    -- starting-stat differences between the declared AI modifier settings.
+    state.setup.unit_current_stats = get_context(
+        'ArmyList.JoinString(FactionContext.Key + "@" + UnitList.JoinString('
+        .. 'UnitRecordContext.Key + ":" + UnitDetailsContext.StatList.JoinString('
+        .. 'Key + "=" + Value, "/"), ";"), "@@")')
     local terrain_ok, terrain = pcall(read_terrain)
     if terrain_ok then state.terrain = terrain else log("terrain failed: " .. clean_error(terrain)) end
     sample_objectives(state.started_ms)

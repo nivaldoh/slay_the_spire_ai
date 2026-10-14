@@ -1,5 +1,61 @@
 # WH3 battle versions
 
+## Benchmark harness b3 (2026-10-14, specialist acceptance pending)
+
+The missing terrain field observed during b2 acceptance now fails benchmark setup
+before a controller can act. Unexpected startup/source errors retain their cause and
+are infrastructure failures; interruptions remain separate. Paired reports also show
+valid trials per whole-job wall hour, counting setup, resets and failed jobs. If any
+supplied job lacks final wall timing, throughput is unavailable rather than estimated
+from episode durations.
+
+The boundary review also found that enemy registration could announce unseen arrivals,
+and an earlier sighting could reveal a later hidden death. `obs-v2+terrain` keeps the
+initial lobby roster public but adds later units only on sight; a death flag requires
+visibility at observation. This is a source/contract change before G1/G2, not installed
+midway through the b2 screen. Scoring still uses private totals for all units.
+
+The local engine API documentation identifies `CcoUnitStat.ValueBase` as excluding
+modifiers/buffs/debuffs, and `Value` as current. Startup now retains both privately.
+Subsequent b2 1.0/1.1 startup snapshots at 5.2 s show that the AI difficulty bonuses
+already enter ValueBase: all 12 enemy entries change (roughly +10% melee attack/defence,
+weapon damage and charge, +8 leadership); all 12 player entries stay identical. The
+general API description must not be read as excluding that difficulty layer. Current
+Value will distinguish additional active effects; its live b3 check remains pending.
+
+The owner's specialist-scenario direction also revealed restrictive v15 tactical rules
+(stay in melee, cavalry wait behind infantry, all units advance together). Added
+`llm_rules`: the same direct controller, memory, ledger, observations/actions and timing,
+with a separate rules-only prompt. The original `llm` remains available. Rotation,
+prompt snapshots/hashes, model cards, digest and the results register identify the new
+policy. This changes the controller prompt, not the model or its permissions; its first
+game check will be part of specialist screening after the completed b2 queue.
+
+Specialist-interface preparation adds current/maximum barrier HP and owned abilities'
+cast range, effect radius and duration. A read-only probe during the 1.1 skills screen
+returned Dwarf barrier 0/0 and Rune cast ranges 100 m with distinct durations/radii;
+the query output is retained in `capability-probes/benchmark-specialist-interface`.
+Nonzero barrier behavior and actual caster spells remain for the specialist smoke,
+before any scenario admission. Hidden enemies still never enter unit_record.
+
+Starting fingerprints now also record friendly spell loadouts, initial strength/ammo/
+barriers and magic/supplies/tickets. Resource/loadout changes flag a rematch even when
+formation positions match; ability list ordering alone does not. This is needed before
+claiming paired caster trials.
+
+Validation: 197 WH3 tests passed with the Lua runtime; Ruff and Lua 5.1 parsing passed. Regression
+checks cover absent terrain, startup causes, and a throughput denominator containing a
+setup failure, hidden summons/deaths and retained observed deaths, plus rules-prompt
+selection, fresh memory/shared budget and model metadata/prompt snapshots. Live b2 traces/
+reports remain separate by their recorded source; b3 live acceptance remains pending.
+
+Additional objective regression: executing the actual Lua sampler with ownership
+changes at unequal intervals gives 25% held time where snapshot voting gives 40%; a
+duplicate terminal sample adds no time and non-victory points are excluded. This test
+passes with Lupa and Ruff. Full source validation: 1041 passed, 4 skipped in the main
+dependency environment; the skipped Lua checks passed separately, and the remaining
+skips are the opt-in Windows process-ownership test and one local-evidence case.
+
 ## Benchmark harness b2 (2026-10-14, acceptance and diagnostic queue complete)
 
 Source `b476175` completed the terrain/Luna acceptance retry and the serial diagnostic
@@ -28,8 +84,8 @@ and both acceptance retry rows are committed with this entry. API ledger remains
 Owner steering now prioritizes specialist anchor-unit scenarios and faction mechanics
 ([scenario-recipe.md](scenario-recipe.md)). The unstarted Herald G1 plan is superseded;
 cavalry/anti-large and caster-led candidates come before repeated calibration. No
-scenario is admitted and no G1/G2 results exist. b3 is tested in an isolated worktree
-and will be merged after this queue, then receive live specialist acceptance.
+scenario is admitted and no G1/G2 results exist. b3 was tested in an isolated worktree
+and merged after this queue; live specialist acceptance follows.
 
 Read-only probes during b1 acceptance found the per-army AI modifier getter, stat
 previews and terrain APIs. b2 sets/reads the declared lobby modifier and checks it again

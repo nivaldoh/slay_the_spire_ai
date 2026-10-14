@@ -21,8 +21,8 @@ had matched rematches; these are screening instances, not calibration admission.
 Settlement/domination objective fields and register rows passed trace audits, including
 nine builds and 15 reinforcement purchases. Proofs and limits are in the progress page.
 
-Next: commit b2 evidence, merge tested draft `9b73105` from `/tmp/wh3-benchmark-b3`,
-then run the separate frontend inventory in
+b2 evidence is committed. Tested draft `9b73105` from `/tmp/wh3-benchmark-b3` is
+merged into main. Next, run the separate frontend inventory in
 `runs/twwarhammer3/capability-probes/benchmark-specialist-rosters/steps.json`.
 The draft adds the missing-terrain setup gate, detailed startup failures, whole-job
 throughput, corrected visibility (`obs-v2+terrain`), `llm_rules`, barrier/spell-range

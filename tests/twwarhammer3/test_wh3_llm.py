@@ -175,6 +175,20 @@ def test_dead_friendly_units_are_one_line_and_enemy_range_shows():
             " range 160") in text
 
 
+def test_barriers_and_casting_limits_are_distinct_from_health_and_readiness():
+    state = observation()
+    state["friendly"][0]["barrier"] = {"hp": 0, "max_hp": 600}
+    state["enemy"][0]["barrier"] = {"hp": 220, "max_hp": 400}
+    state["friendly"][0]["abilities"] = [{
+        "key": "test_spell", "target": "Ground", "cast_range": 150.0,
+        "radius": 8.0, "duration_s": 12, "mana": 9, "ready": True,
+    }]
+    text = llm.render_state(state, {})
+    assert "barrier 0/600" in text and "hp 90%, barrier 220/400" in text
+    assert ("test_spell (Ground; cast range 150 m; radius 8 m; duration 12 s; "
+            "9 magic; ready)") in text
+
+
 def test_prompt_shows_changes_and_the_order_behind_each_target(tmp_path):
     orders = [{"unit": "f2", "type": "attack", "x": None, "z": None, "facing": None,
                "target": "e1", "run": False}]
