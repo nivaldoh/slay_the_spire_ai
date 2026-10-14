@@ -100,3 +100,12 @@ This one instance gives no paired uncertainty estimate. Acceptance report:
 `runs/twwarhammer3/reports/bench-b1-acceptance.json`. The live process has exited.
 The declared [calibration plan](calibration-plan.md) fixes screening, admission and
 controlled delay experiments before those candidates are played.
+
+### b2 frontend validation
+
+Merged b2 as `7c0abdb` after b1 stopped. The standalone frontend probe
+`runs/twwarhammer3/capability-probes/benchmark-b2-frontend` read the timer options
+(1200, 2400, 3600 s and unlimited), set short and read 1200 s, and set/read both
+1.0 and 1.1 AI modifiers. Its controller exited normally after SIGINT. Calibration
+Herald variants now declare the verified 1200 s timer; b1 keeps its original 3600 s.
+All declared timers are explicitly selected and verified, independent of prior profile.

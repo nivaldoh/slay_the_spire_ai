@@ -90,5 +90,6 @@ Three additional candidates were frozen before their calibration: `dwf-sla-heral
 (1.0), `dwf-sla-herald-hard` (1.1), and `dwf-sla-herald-heldout-wastes` (1.0, Nurgle
 wastes map). They replace Sigvald with the selectable Shadow Herald, preserving every
 other unit. The first two are development variants; the third must stay out of tuning.
-They remain candidates, not admitted benchmark scenarios. A shorter finite lobby timer
-will be probed and declared separately before calibration to bound standoffs.
+They remain candidates, not admitted benchmark scenarios. The frontend probe verified
+the short timer as 1200 s; these three candidates explicitly set that timer. Use an
+episode wall cap of at least 1320 s (for example `--episode-timeout 1500`).

@@ -13,7 +13,9 @@ terminal failures. Herald development/held-out candidates are declared before tu
 
 Worktree checks: 1019 passed, 14 skipped (local evidence absent in that worktree),
 57 targeted tests passed after the follow-up changes, Ruff and Lua 5.1 parsing pass.
-No b2 game evidence or calibration claim yet. Source edits were isolated while b1 ran.
+Frontend probe on `7c0abdb` set/read AI modifiers 1.0/1.1 and the short 1200 s
+timer. The Herald calibration candidates now declare that timer. Battle validation and
+calibration remain pending. Source edits were isolated while b1 ran.
 
 ## Benchmark harness b1 (2026-10-14, acceptance rotation complete)
 

@@ -7,6 +7,7 @@ from collections import Counter
 from twwarhammer3.protocol import ProtocolError
 
 SETTINGS = "CustomBattleLobbyContext.SettingsContext."
+TIMERS = {1200: "time_limit_short", 2400: "time_limit_medium", 3600: "time_limit_long"}
 LOBBY_FIELDS = {
     "battle_type": "MapContext.BattleTypeString",
     "difficulty": "DifficultyLevelSettingContext.Key",
@@ -33,7 +34,7 @@ def validate_declaration(scenario: dict, config: dict, environment: dict) -> Non
         if key not in expect:
             raise ValueError(f"benchmark scenario is missing expect.{key}")
     timer = expect["time_limit_s"]
-    if timer <= 0 or config["episode_timeout"] < timer + 120:
+    if timer not in TIMERS or config["episode_timeout"] < timer + 120:
         raise ValueError("benchmark episode timeout must exceed a finite game timer by 120 s")
     if config["run_timeout"] < config["start_timeout"] + config["episodes"] * (
             config["episode_timeout"] + 60):
@@ -48,7 +49,11 @@ def menu_checks(scenario: dict) -> list[dict]:
     modifier = float(scenario["expect"]["ai_stats_modifier"])
     if not math.isfinite(modifier) or modifier <= 0:
         raise ValueError("AI stats modifier must be finite and positive")
-    checks = [{"context": "CcoFrontendRoot", "command":
+    timer = TIMERS[scenario["expect"]["time_limit_s"]]
+    checks = [{"context": "CcoFrontendRoot", "command": SETTINGS +
+               'SetTimeLimitSettingContext(' + SETTINGS +
+               f'TimeLimitSettingList.FirstContext(Key == "{timer}"))', "required": True},
+              {"context": "CcoFrontendRoot", "command":
                SETTINGS + f"SetBattleAiStatsModifier({modifier:g})", "required": True}]
     return checks + [{"context": "CcoFrontendRoot", "expression": SETTINGS + field,
              "expect": modifier if key == "ai_stats_modifier" else scenario["expect"][key],
