@@ -12,12 +12,12 @@ is in [benchmark.md](benchmark.md) and the original acceptance brief in
       development/held-out variants; setup read-backs reject mismatches before scoring.
 - [x] One launch rotates named or importable controllers in a recorded random order;
       rematch start fingerprints show pairing quality. Existing single-policy jobs work.
-- [ ] Every started trial is recorded; only engine won/lost/draw count as gameplay
+- [x] Every started trial is recorded; only engine won/lost/draw count as gameplay
       outcomes. Refusals reach the controller. Evaluation-only strength totals exclude
       routing/shattered units and exist at non-gameplay endings too.
-- [ ] Reports show denominators, failures, uncertainty, paired instance differences,
+- [x] Reports show denominators, failures, uncertainty, paired instance differences,
       objectives, timing, rejections, costs and reproducibility limitations.
-- [ ] Document an independently runnable evaluation, including controller contract and
+- [x] Document an independently runnable evaluation, including controller contract and
       setup requirements. Live acceptance includes an outside controller and Luna;
       a deliberately broken setup is rejected.
 - [ ] Verify the AI stats modifier read-back and behavior at 1.0 and 1.1; select and
@@ -29,7 +29,7 @@ is in [benchmark.md](benchmark.md) and the original acceptance brief in
       always live at 1x. Report sensitivity or the detectable-effect limit of a null.
 - [ ] Fix and engine-test the selected scenarios' terrain/path and control gaps;
       offensive siege variants require gate/wall orders and equipment before admission.
-- [ ] Align episode caps with game timers; finish time-weighted objective reporting,
+- [x] Align episode caps with game timers; finish time-weighted objective reporting,
       key-building register fields and reinforcement counts by unit type.
 - [ ] Appropriate regression tests, lint, live evidence, version log/results register,
       session state, commits and final requirement-by-requirement completion audit.
@@ -41,8 +41,15 @@ mechanics; [scenario-recipe.md](scenario-recipe.md) is part of candidate selecti
 The unstarted Herald G1 plan was superseded before any G1/G2 trials. b2 diagnostics and
 the specialist frontend inventory completed; b3 and b4 are merged. The first candidates
 are compact: cavalry six versus eight, caster five versus ten, each with an 8000 cap
-and unused funds. Next, screen both with `hold`, `attack_nearest` and Luna `llm_rules`,
-then freeze a competent reference appropriate to the chosen task before calibration.
+and unused funds. The serial screen on `e221324` stopped after five gameplay losses
+and one deliberate exploratory interruption. Caster: Luna/hold/attack-nearest lost
+963/613/301 s. Cavalry: hold/attack-nearest lost 415/262 s; Luna's untouched army was
+retreating for a timeout win when interrupted at about 292 s. Do not call that trial a
+win or loss. A faster enemy anchor is the next pressure hypothesis; the frontend mount
+inventory is prepared. Also review a cavalry rematch's 4.826 m/12-degree formation
+flag before freezing calibration. All resources/rosters matched. Completed harness
+items above rely on b1/b2 engine
+evidence and the regression checks below; they do not imply scenario admission.
 
 Source `b476175` completed acceptance and the serial diagnostic queue. All four queue
 jobs completed, and the queue/final controller exited successfully at 17:15:50 UTC.
@@ -53,11 +60,19 @@ changing ownership is covered by the separate Lua sampler regression. Audit:
 `runs/twwarhammer3/reports/bench-b2-objective-audit.json`.
 
 Draft `9b73105` from `/tmp/wh3-benchmark-b3` was merged after the queue completed.
-Next are the frontend roster inventory and specialist live acceptance. Current process handles and
-next actions are in [../state.md](../state.md). No scenario is admitted. The owner has
+The subsequent b4 frontend inventory verified cards, mounts and default spell loadouts.
+During the first caster battle, nonzero barriers, spell ranges, mana consumption,
+cooldowns and private current starting stats are live-observed. A read-only query found
+that Screamers' engine category is `inf_mel` despite being airborne; draft b5 `dde4cfe`
+in `/tmp/wh3-benchmark-b5` corrects classification and exposes flight state. Its 207 WH3
+tests, Ruff and Lua compilation pass. It is not installed into the running screen.
+The b4 queue and game controller exited at 18:24:45 UTC; no controller is active.
+Current process handles and next actions are in [../state.md](../state.md).
+No scenario is admitted. The owner has
 superseded the unstarted generic Herald calibration plan with specialist candidate
 selection; the new candidate/reference must be frozen before G1/G2. The held-out Herald
-map has not been used. API ledger is $3.3329 of the $25 cap.
+map has not been used; neither have the new specialist held-out maps. API ledger was
+$3.3329 before specialist screening; `twwarhammer3 spend` reads the current total.
 
 ## Implementation and live acceptance
 

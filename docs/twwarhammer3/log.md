@@ -21,6 +21,39 @@ not prevent selecting the declared units or mounts. Validation: 69 benchmark/pla
 and Ruff passed, including refusal of a lord that remains on foot. Specialist battle
 acceptance and calibration remain pending; screen the development variants first.
 
+The caster screen on `e221324` completed three matched trials: Luna `llm_rules` lost
+at 963 s, hold at 613 s, attack-nearest at 301 s. Active-strength margins were
+-0.642/-0.771/-0.777; refusals 88/0/0. Luna cost $0.06841. Whole-job wall time was
+2056.22 s, or 5.25 valid trials/hour. All recorded starts matched, including initial
+magic 12/68; current starting stats and nonzero barriers are captured. Unit-targeted
+spells consumed mana and entered cooldown. Both attempted unit-ground casts were
+refused, so that mechanic remains unverified for Kairos. The flying-unit information
+gap is fixed in isolated b5 before later calibration. No reference has demonstrated a
+win, and this single screening instance does not admit the caster scenario. Reports:
+`reports/bench-b4-screen-caster.json` and `reports/bench-b4-caster-interface-audit.json`.
+The cavalry screen follows on the same frozen source.
+
+The cavalry screen then recorded hold lost at 415 s (margin -0.928, no refusals) and
+attack-nearest lost at 262 s (-0.691, one refusal). The latter start was flagged:
+missile cavalry displaced 4.826 m and the enemy lord turned 12 degrees at the same
+position. Resources, loadouts, roster and strength matched. Preserve this variation
+and review it before calibration; do not silently drop the trial or call starts identical.
+
+Luna immediately chose evasion for a timeout win. With the whole army untouched after
+several minutes, the exploratory trial was deliberately interrupted at about 292 s to
+revise pressure/watchability. This is a legitimate strategy under the game's defender
+objective, and the trial has **no gameplay outcome**. The result/register say interrupted;
+the report excludes it from performance means. Cost $0.01765. Retirement decision:
+`calibration/b4-cavalry-retirement.json`. Job wall time 1148.78 s includes that interruption;
+two valid of three started trials yield 6.27 valid trials/hour. The serial runner stopped
+as expected, and both processes exited. Report: `reports/bench-b4-screen-cavalry.json`.
+
+A trace check measured Grail Knights at 2.01 m/s during approach and 7.58 m/s just
+before melee despite the script's walking setting. This verifies fast final movement,
+not a damage bonus; the running flag alone does not identify that acceleration.
+Evidence: `reports/bench-b4-cavalry-approach-check.json`. Next, inspect a faster enemy
+anchor to create pressure on evasive cavalry; the first prototype is not admitted.
+
 ## Benchmark harness b3 (2026-10-14, specialist acceptance pending)
 
 The missing terrain field observed during b2 acceptance now fails benchmark setup

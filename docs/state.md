@@ -1,38 +1,37 @@
 # Project state
 
-Updated 2026-10-14 17:31 UTC: what is running, where each game
+Updated 2026-10-14 18:25 UTC: what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
 WH3 benchmark work is active (owner goal, 2026-10-14): complete the paired benchmark,
-difficulty/latency calibration, and the interface fixes its scenarios require.
-Owner steering: prioritize specialist challenge scenarios with anchor units and faction
-mechanics, including cavalry/anti-large, caster-led forces, difficult sieges and Skaven
-swarms. [Scenario recipe](twwarhammer3/scenario-recipe.md) is now part of selection.
-The current queue finishes as diagnostics; choose a specialist candidate before G1/G2.
-The unstarted Herald G1 draft is superseded; freeze the new candidate/reference before G1.
-The b2 acceptance rotations and serial screening/objective queue have completed.
-The queue and final child exited successfully at 2026-10-14 17:15:50 UTC; no game
-controller from that queue remains active. b2 source was `b476175`. Herald 1.0: hold lost 448 s, skills won
-382 s, attack-nearest lost 249 s; 1.1: all three lost (242/266/265 s). Both launches
-had matched rematches; these are screening instances, not calibration admission.
-Settlement/domination objective fields and register rows passed trace audits, including
-nine builds and 15 reinforcement purchases. Proofs and limits are in the progress page.
+difficulty/latency calibration, and the interface fixes its scenarios require. Prioritize
+specialist anchor units, faction mechanics and compact armies; see the
+[scenario recipe](twwarhammer3/scenario-recipe.md). No scenario is admitted and no G1/G2
+trials have run. The unstarted generic Herald G1 draft remains superseded.
 
-b2 evidence is committed. Tested draft `9b73105` from `/tmp/wh3-benchmark-b3` is
-merged into main (`4d3caad`). The frontend-only specialist roster inventory completed;
-the owned launch exited normally. No game controller is active. Evidence is in
-`runs/twwarhammer3/capability-probes/benchmark-specialist-rosters/`.
-b4 (`7727ee6`) adds compact six-versus-eight cavalry and five-versus-ten caster
-prototypes, explicit horse selection and an 8000 budget cap. Next: screen both
-development variants with `hold`, `attack_nearest` and Luna `llm_rules`.
-The draft adds the missing-terrain setup gate, detailed startup failures, whole-job
-throughput, corrected visibility (`obs-v2+terrain`), `llm_rules`, barrier/spell-range
-observations and starting-resource/loadout comparisons. It passed 197 WH3 tests with
-Lua, a further Lua ownership test, 1041 broader tests with four explained skips, Ruff
-and Lua parsing. Specialist game acceptance remains pending. No G1/G2 trials have run.
+No game controller is active. The b4 screen on `e221324` stopped at 2026-10-14 18:24:45
+UTC after a deliberate exploratory interruption; its runner and game controller exited.
+Caster five versus ten: Luna lost 963 s, hold 613 s, attack-nearest 301 s. All recorded
+starts matched. Cavalry six versus eight: hold lost 415 s, attack-nearest 262 s. Luna
+immediately chose evasion for a timeout win and kept the whole army untouched; that
+trial was deliberately interrupted at about 292 s to revise pressure/watchability.
+Its outcome remains unknown, not a loss or a win. The attack-nearest start was flagged
+for 4.826 m missile-cavalry displacement and a 12-degree enemy-lord turn; resources and
+rosters matched. Review formation variation before the G1 plan, without discarding
+flagged trials or claiming identical starts. Reports are in `runs/twwarhammer3/reports/`.
+
+Draft b5 `3218360` in `/tmp/wh3-benchmark-b5` fixes flying-unit classification, exposes
+airborne state and preserves engine winners in timer-ended reports. Validation: all
+207 WH3 tests with Lua for flight changes, then 25 targeted tests for reporting (one new
+regression), Ruff and Lua compilation. Commit b4 evidence, then merge the draft.
+Next: the frontend-only Empire mount inventory in
+`runs/twwarhammer3/capability-probes/benchmark-pressure-mounts/steps.json`, to check a
+faster enemy anchor for the cavalry candidate. It is prepared, not run. A stronger
+reference and successful unit-ground spell use still need testing for the caster.
+Freeze revised candidates and a competent reference before calibration.
 Implementation and evidence: [benchmark-progress.md](twwarhammer3/benchmark-progress.md).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
@@ -44,8 +43,8 @@ command; clear it when the job stops.
 [battle types](twwarhammer3/battle-types.md), [controllers](twwarhammer3/controllers.md),
 [integration](twwarhammer3/integration.md), [log](twwarhammer3/log.md). `main` runs
 `llm` v15 and `commander` v3 (every battle type's objectives, `build` and `reinforce`
-orders) and the `skills` executor v1.2. API spend: $3.3329 of the $25 cap
-(ledger after b2 acceptance; the queued jobs are scripted).
+orders) and the `skills` executor v1.2. API spend: $3.4189 of the $25 cap
+(ledger after the b4 specialist screen).
 The owner has authorized benchmark calibration, including AI modifiers 1.0 and 1.1.
 Both lobby and battle read-backs passed. Fresh 5.2 s startup snapshots show all 12 AI
 unit entries changing at 1.1 (roughly +10% attack/defence/damage/charge, +8 leadership),
