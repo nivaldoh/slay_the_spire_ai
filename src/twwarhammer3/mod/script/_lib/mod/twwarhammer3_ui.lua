@@ -89,6 +89,7 @@ function ui.run(step, directory)
     elseif step.lua then
         local chunk, err = loadstring(step.lua)
         if not chunk then return "lua: " .. tostring(err) end
+        setfenv(chunk, getfenv(1))  -- the mod's environment, where bm and core live
         return "lua = " .. tostring(chunk())
     elseif step.command then
         common.call_context_command(step.context, step.id or "", step.command)

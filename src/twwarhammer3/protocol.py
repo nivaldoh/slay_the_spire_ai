@@ -62,6 +62,7 @@ def validate_orders(orders: list, observation: dict) -> None:
         raise IllegalActionError("orders must be a list")
     movement = {}
     settings = set()
+    purchases = {"spent": 0, "slots": set(), "units": []}
     for order in orders:
         if not isinstance(order, dict):
             raise IllegalActionError(f"order is not an object: {order!r}")
@@ -69,11 +70,8 @@ def validate_orders(orders: list, observation: dict) -> None:
         if unit == "army" and kind == "ability":
             _validate_army_ability(order, observation, friendly, enemies, settings)
             continue
-        if unit == "army" and kind == "build":
-            _validate_build(order, observation, settings)
-            continue
-        if unit == "army" and kind == "reinforce":
-            _validate_reinforce(order, observation, settings)
+        if unit == "army" and kind in ("build", "reinforce"):
+            _validate_purchase(order, observation, purchases)
             continue
         if unit not in friendly:
             raise IllegalActionError(f"unknown friendly unit {unit!r}")
@@ -141,43 +139,41 @@ def _validate_army_ability(order, observation, friendly, enemies, settings) -> N
     _validate_ability_target("army", order, friendly, enemies)
 
 
-def _validate_build(order, observation, settings) -> None:
-    """A tower or barricade on an empty slot, paid with the army's supplies."""
+def _validate_purchase(order, observation, purchases) -> None:
+    """A build (a tower or barricade on an empty slot the army can build on now) or a
+    reinforcement (a unit type from the army's pool, entering at one of its spawn zones),
+    paid with supplies. ``purchases`` holds what the batch has already spent and taken."""
     mode = observation.get("mode") or {}
-    slots = {slot["id"]: slot for slot in mode.get("slots") or []}
-    slot = slots.get(order.get("slot"))
-    if slot is None:
-        raise IllegalActionError(f"army: unknown building slot {order.get('slot')!r}")
-    if slot.get("built") or slot.get("building_s") is not None:
-        raise IllegalActionError(f"army: slot {slot['id']} already has a building")
-    options = {option["name"]: option for option in slot.get("options") or []}
-    if order.get("option") not in options:
-        raise IllegalActionError(f"army: slot {slot['id']} has no option {order.get('option')!r}")
-    cost = options[order["option"]].get("cost") or 0
-    if mode.get("supplies") is not None and cost > mode["supplies"]:
-        raise IllegalActionError(f"army: {order['option']} costs {cost}, supplies"
-                                 f" {mode['supplies']}")
-    if ("build", slot["id"]) in settings:
-        raise IllegalActionError(f"army: slot {slot['id']} ordered twice")
-    settings.add(("build", slot["id"]))
-
-
-def _validate_reinforce(order, observation, settings) -> None:
-    """A unit from the army's reinforcement pool, paid with supplies, at one of its zones."""
-    mode = observation.get("mode") or {}
-    pool = {unit["id"]: unit for unit in mode.get("reinforcements") or []}
-    unit = pool.get(order.get("reinforcement"))
-    if unit is None:
-        raise IllegalActionError(f"army: unknown reinforcement {order.get('reinforcement')!r}")
-    if order.get("zone") not in {zone["id"] for zone in mode.get("spawn_zones") or []}:
-        raise IllegalActionError(f"army: zone {order.get('zone')!r} is not one of yours")
-    spent = sum(pool[key].get("cost") or 0 for kind, key in settings if kind == "reinforce")
-    if mode.get("supplies") is not None and spent + (unit.get("cost") or 0) > mode["supplies"]:
-        raise IllegalActionError(f"army: {unit['id']} costs {unit.get('cost')}, supplies"
-                                 f" {mode['supplies']} ({spent} already ordered)")
-    if ("reinforce", unit["id"]) in settings:
-        raise IllegalActionError(f"army: reinforcement {unit['id']} ordered twice")
-    settings.add(("reinforce", unit["id"]))
+    if order["type"] == "build":
+        slot = {slot["id"]: slot for slot in mode.get("slots") or []}.get(order.get("slot"))
+        if slot is None:
+            raise IllegalActionError(f"army: unknown building slot {order.get('slot')!r}")
+        if slot.get("built") or slot.get("building_s") is not None:
+            raise IllegalActionError(f"army: slot {slot['id']} already has a building")
+        if not slot.get("usable"):
+            raise IllegalActionError(f"army: slot {slot['id']} cannot be built on now")
+        if slot["id"] in purchases["slots"]:
+            raise IllegalActionError(f"army: slot {slot['id']} ordered twice")
+        options = {option["name"]: option for option in slot.get("options") or []}
+        if order.get("option") not in options:
+            raise IllegalActionError(f"army: slot {slot['id']} has no option"
+                                     f" {order.get('option')!r}")
+        purchases["slots"].add(slot["id"])
+        name, cost = order["option"], options[order["option"]].get("cost") or 0
+    else:
+        name = order.get("reinforcement")
+        pool = [unit for unit in mode.get("reinforcements") or [] if unit.get("type") == name]
+        taken = purchases["units"].count(name)
+        if len(pool) <= taken:
+            raise IllegalActionError(f"army: no {name!r} left in the reinforcement pool")
+        if order.get("zone") not in {zone["id"] for zone in mode.get("spawn_zones") or []}:
+            raise IllegalActionError(f"army: zone {order.get('zone')!r} is not one of yours")
+        purchases["units"].append(name)
+        cost = pool[taken].get("cost") or 0
+    if mode.get("supplies") is not None and purchases["spent"] + cost > mode["supplies"]:
+        raise IllegalActionError(f"army: {name} costs {cost}, supplies {mode['supplies']}"
+                                 f" ({purchases['spent']} already ordered)")
+    purchases["spent"] += cost
 
 
 def _validate_ability_target(unit, order, friendly, enemies) -> None:

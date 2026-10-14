@@ -280,12 +280,14 @@ def test_the_ability_probe_builds_the_cheapest_option_on_each_usable_slot_once()
 def test_the_ability_probe_calls_in_the_cheapest_affordable_reinforcement_every_10_s():
     state = observation([unit("f1", "infantry", 0, 0)], [], time_ms=10000)
     state["mode"] = {"supplies": 500, "spawn_zones": [{"id": 14, "x": 320, "z": 0}],
-                     "reinforcements": [{"id": "r1", "type": "warriors", "cost": 900},
-                                        {"id": "r2", "type": "marauders", "cost": 400}]}
+                     "reinforcements": [{"type": "warriors", "cost": 900},
+                                        {"type": "marauders", "cost": 400}]}
     probe = skills.ProbeAbilities()
     calls = [o for o in probe.decide(state) if o["type"] == "reinforce"]
-    assert calls == [{"unit": "army", "type": "reinforce", "reinforcement": "r2", "zone": 14}]
+    assert calls == [{"unit": "army", "type": "reinforce", "reinforcement": "marauders",
+                      "zone": 14}]
     validate_orders(calls, state)
     assert not [o for o in probe.decide(state) if o["type"] == "reinforce"]
     state["time_ms"] = 20000
-    assert [o["reinforcement"] for o in probe.decide(state) if o["type"] == "reinforce"] == ["r2"]
+    assert [o["reinforcement"] for o in probe.decide(state)
+            if o["type"] == "reinforce"] == ["marauders"]

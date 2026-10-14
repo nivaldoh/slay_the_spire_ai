@@ -48,7 +48,7 @@ ABILITY_SCHEMA = _order_schema("ability", ability={"type": "string"}, target=STR
                                width=NUMBER_OR_NULL)
 BUILD_SCHEMA = _order_schema("build", slot={"type": "string"}, option={"type": "string"})
 REINFORCE_SCHEMA = _order_schema("reinforce", reinforcement={"type": "string"},
-                                 zone={"type": "integer"})
+                                 zone={"type": "integer"})  # a unit type from the pool
 REPLY_SCHEMA = {
     "type": "object",
     "properties": {
@@ -254,9 +254,11 @@ def render_mode(mode: dict | None) -> str | None:
     if mode.get("objectives"):
         lines.append("The game's description: " + mode["objectives"])
     if mode.get("tickets"):
-        goal = f" ({mode['tickets_goal']} wins)" if mode.get("tickets_goal") else ""
-        lines.append(f"Tickets{goal}: " + ", ".join(
-            f"{_side(row['side'])} {row['tickets']} (+{row['per_s']}/s)"
+        # Without a goal (a siege defender's tickets) the income figure does not apply.
+        goal = mode.get("tickets_goal")
+        lines.append(f"Tickets{f' ({goal} wins)' if goal else ''}: " + ", ".join(
+            f"{_side(row['side'])} {row['tickets']}"
+            + (f" ({row.get('per_s', 0):+d}/s)" if goal else "")
             for row in mode["tickets"]) + ".")
     if mode.get("capture_points"):
         lines.append("Capture points (units standing on a point capture it):")
@@ -264,9 +266,12 @@ def render_mode(mode: dict | None) -> str | None:
             flags = [flag for flag in ("contested", "locked") if point.get(flag)]
             if point.get("victory"):
                 flags.append("counts for victory")
+            # The engine reads 100% for held and for neutral points alike; less is progress.
+            if point.get("percent", 100) < 100:
+                flags.insert(0, f"{point['percent']}% captured")
             lines.append(f"- {point['id']} {point.get('name', '')} at ({point['x']:.0f},"
-                         f" {point['z']:.0f}): held by {_side(point.get('holder'))},"
-                         f" {point.get('percent', 0)}%" + "".join(f", {f}" for f in flags))
+                         f" {point['z']:.0f}): held by {_side(point.get('holder'))}"
+                         + "".join(f", {f}" for f in flags))
     for gate in mode.get("gates") or []:
         state = "destroyed" if gate.get("destroyed") else f"{gate.get('hp')}% health"
         lines.append(f"{gate.get('name') or 'Gate'} at ({gate['x']:.0f}, {gate['z']:.0f}):"
@@ -274,10 +279,10 @@ def render_mode(mode: dict | None) -> str | None:
     if mode.get("supplies") is not None:
         lines.append(f"Supplies: {mode['supplies']}.")
     if mode.get("reinforcements") is not None:
-        lines.append("Reinforcements (order with unit \"army\", type \"reinforce\", an id and"
-                     " one of your spawn zones; each costs supplies): " + (", ".join(
-                         f"{unit['id']} {short_type(unit.get('type'))} {unit.get('cost')}"
-                         for unit in mode["reinforcements"]) or "none left") + ".")
+        lines.append("Reinforcement pool (order with unit \"army\", type \"reinforce\", the unit"
+                     " type as written here and one of your spawn zones; each costs supplies): "
+                     + (", ".join(f"{unit.get('type')} {unit.get('cost')}"
+                                  for unit in mode["reinforcements"]) or "empty") + ".")
         lines.append("Your spawn zones: " + (", ".join(
             f"{zone['id']} at ({zone['x']:.0f}, {zone['z']:.0f})"
             for zone in mode.get("spawn_zones") or []) or "none") + ".")
@@ -440,7 +445,7 @@ def describe_orders(orders: list[dict]) -> str:
         elif order["type"] == "build":
             parts.append(f"{order['unit']} build {order['option']} on {order['slot']}")
         elif order["type"] == "reinforce":
-            parts.append(f"{order['unit']} reinforce {order['reinforcement']}"
+            parts.append(f"{order['unit']} reinforce {short_type(order['reinforcement'])}"
                          f" at zone {order['zone']}")
         else:
             parts.append(f"{order['unit']} halt")

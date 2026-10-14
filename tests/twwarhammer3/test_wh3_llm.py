@@ -331,8 +331,8 @@ def test_the_mode_section_states_role_objectives_tickets_and_points():
     text = llm.render_state({"mode": battle, "friendly": [], "enemy": []}, {})
     assert text.startswith("Battle: conquest; you are the defender; if time runs out, you win.")
     assert "Tickets (600 wins): you 11 (+1/s), enemy 87 (+0/s)." in text
-    assert ("- domination_1 Victory Location at (256, 0): held by nobody, 40%, contested,"
-            " counts for victory") in text
+    assert ("- domination_1 Victory Location at (256, 0): held by nobody, 40% captured,"
+            " contested, counts for victory") in text
     assert llm.render_mode(None) is None
     assert llm.render_mode({"type": "land_normal", "role": "attacker",
                               "timeout_winner": "enemy"}) == (
@@ -348,8 +348,8 @@ def test_a_siege_shows_the_defenders_tickets_without_a_goal_and_the_gate():
             "gates": [{"name": "Gatehouse", "x": -32, "z": -16, "hp": 37, "destroyed": False}],
             "supplies": 8034}
     text = llm.render_mode(mode)
-    assert "Tickets: you 1000 (+5/s)." in text
-    assert "- c1 Key Building at (0, 310): held by you, 100%, counts for victory" in text
+    assert "Tickets: you 1000." in text  # a defender's tickets have no goal and no income
+    assert "- c1 Key Building at (0, 310): held by you, counts for victory" in text
     assert "Gatehouse at (-32, -16): 37% health." in text
     assert text.endswith("Supplies: 8034.")
 
@@ -372,10 +372,11 @@ def test_building_slots_show_options_progress_and_build_orders_are_described():
 
 
 def test_the_reinforcement_pool_and_spawn_zones_are_listed():
-    pool = [{"id": "r1", "type": "wh3_main_kho_inf_chaos_warriors_1", "cost": 900}]
+    pool = [{"type": "wh3_main_kho_inf_chaos_warriors_1", "cost": 900}]
     text = llm.render_mode({"type": "survival", "supplies": 1120, "reinforcements": pool,
                             "spawn_zones": [{"id": 14, "x": 320, "z": 0}]})
-    assert "): r1 chaos_warriors_1 900." in text
+    assert "): wh3_main_kho_inf_chaos_warriors_1 900." in text
     assert "Your spawn zones: 14 at (320, 0)." in text
-    assert llm.describe_orders([{"unit": "army", "type": "reinforce", "reinforcement": "r1",
-                                 "zone": 14}]) == "army reinforce r1 at zone 14"
+    assert llm.describe_orders([{"unit": "army", "type": "reinforce", "zone": 14,
+                                 "reinforcement": "wh3_main_kho_inf_chaos_warriors_1"}]) == (
+        "army reinforce chaos_warriors_1 at zone 14")

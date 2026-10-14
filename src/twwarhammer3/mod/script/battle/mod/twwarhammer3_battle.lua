@@ -17,7 +17,7 @@ local state = {
     friendly = {}, friendly_ids = {}, enemy = {}, enemy_ids = {}, enemy_by_ui = {},
     pending = nil, last_request = nil, applied = nil, applied_ms = nil,
     next_observe_ms = 0, force_observe = false, alliance = nil,
-    army_abilities = {}, army_issued = {}, known = {}, info = {}, slots = {}, pool = {},
+    army_abilities = {}, army_issued = {}, known = {}, info = {}, slots = {},
 }
 local session = nil
 local BEHAVIOURS = {"fire_at_will", "skirmish", "defend", "change_formation_spacing", "formed_attack"}
@@ -275,12 +275,34 @@ local ZONES = 'SpawnZoneList.Filter(IsAvailableToAlliance(%d)).JoinString(Unique
 
 -- Slots where the army can build towers and barricades with supplies (sieges, settlements,
 -- survival): the slot's state each observation; options are read once at the start, named
--- by their icons (tower_piercing_1, ...) and keyed by the buildable's Index.
+-- by their icons (tower_piercing_1, barricade_trap, ...) and keyed by the buildable's Index.
+-- Inside a list expression the root's PlayerArmyContext does not resolve (it came back
+-- empty), but the global PlayerArmy does.
 local SLOT_LIST = "ToggleableSlotList(PlayerArmyContext)"
 local SLOTS = SLOT_LIST .. '.JoinString(CurrentIndex + "|" + IsConstructionInProgress + "|" + '
-    .. 'ConstructionTimeRemainingSeconds + "|" + IsDestroyed + "|" + CanInteract(PlayerArmyContext), ";")'
+    .. 'ConstructionTimeRemainingSeconds + "|" + IsDestroyed + "|" + CanInteract(PlayerArmy), ";")'
 local SLOT_SETUP = SLOT_LIST .. '.JoinString(TypeString + "|" + WorldPosition.x + "|" + WorldPosition.z + "|" + '
-    .. 'BuildablesList.JoinString(Index + ":" + Cost(0) + ":" + ParentContext.IconPathForIndex(PlayerArmyContext, Index), ","), ";")'
+    .. 'BuildablesList.JoinString(Index + ":" + Cost(0) + ":" + ParentContext.IconPathForIndex(PlayerArmy, Index), ","), ";")'
+
+-- The slots and their options; survival opens new slots as waves are beaten, so this is
+-- read again whenever the number of slots changes.
+local function read_slots()
+    state.slots = {}
+    for index, row in ipairs(context_rows("CcoBattleRoot", "", SLOT_SETUP)) do
+        local slot = {id = "s" .. index, type = row[1], x = round(tonumber(row[2]), 1),
+                      z = round(tonumber(row[3]), 1), names = {}, options = {}}
+        for option in string.gmatch(row[4] or "", "[^,]+") do
+            local key, cost, icon = string.match(option, "^(%-?%d+):([^:]*):(.*)$")
+            local name = icon and string.match(icon, "([^/]+)%.png$") or ("option_" .. tostring(key))
+            if key then
+                slot.names[tonumber(key)] = name
+                slot.options[#slot.options + 1] = {name = name, cost = round(tonumber(cost))}
+            end
+        end
+        table.sort(slot.options, function(a, b) return (a.cost or 0) < (b.cost or 0) end)
+        state.slots[index] = slot
+    end
+end
 
 local function side(alliance_id)
     if alliance_id < 0 then return nil end
@@ -327,10 +349,8 @@ local function mode_section()
     if #gates > 0 then section.gates = gates end
     if state.info.reinforcing then
         local pool = {}
-        state.pool = {}
-        for index, row in ipairs(pool_rows()) do
-            pool[#pool + 1] = {id = "r" .. index, type = row[1], cost = round(tonumber(row[2]))}
-            state.pool[pool[#pool].id] = pool[#pool]
+        for _, row in ipairs(pool_rows()) do
+            pool[#pool + 1] = {type = row[1], cost = round(tonumber(row[2]))}
         end
         section.reinforcements = pool
         local zones = {}
@@ -340,6 +360,7 @@ local function mode_section()
         end
         section.spawn_zones = zones
     end
+    if (tonumber(get_context(SLOT_LIST .. ".Size")) or 0) ~= #state.slots then read_slots() end
     if #state.slots > 0 then
         local slots = {}
         for index, row in ipairs(context_rows("CcoBattleRoot", "", SLOTS)) do
@@ -470,21 +491,19 @@ local function apply_build(order)
                       tostring(get_context("PlayerArmyContext.GlobalCurrency"))))
 end
 
--- Calling in a pool unit is the pool's PurchaseUnit at one of the army's spawn zones; the
--- unit joins the army as it enters and the next scan gives it an id. A purchase shifts the
--- pool's indexes, so the id the policy saw is matched by type and cost in the current pool.
+-- Calling in a pool unit is the pool's PurchaseUnit at one of the army's spawn zones (its
+-- UniqueID); the unit joins the army as it enters and the next scan gives it an id. The
+-- order names a unit type, and the first unit of that type in the pool is bought.
 local function apply_reinforce(order)
-    local wanted = state.pool[order.reinforcement]
-    if not wanted then error("unknown_reinforcement") end
     local index = nil
     for i, row in ipairs(pool_rows()) do
-        if not index and row[1] == wanted.type and round(tonumber(row[2])) == wanted.cost then index = i end
+        if not index and row[1] == order.reinforcement then index = i end
     end
     if not index then error("not_in_pool") end
     local zone = tonumber(order.zone)
     if not zone then error("bad_zone") end
-    -- The zone is a spawn zone's UniqueID. Some zones open to the alliance still refuse
-    -- purchases (in domination the two nearest the centre did), so the engine is asked first.
+    -- Some zones open to the alliance still refuse purchases (in domination the two
+    -- nearest the centre did), so the engine is asked first.
     local args = string.format("(%s.At(%d), PlayerArmyContext, %d)", POOL, index - 1, zone)
     if get_context("BattleReinforcementPoolContext.CanPurchaseUnit" .. args) ~= true then
         error("cannot_purchase_there")
@@ -493,7 +512,7 @@ local function apply_reinforce(order)
     common.call_context_command("CcoBattleRoot", "", "BattleReinforcementPoolContext.PurchaseUnit" .. args)
     local after = tonumber(get_context("PlayerArmyContext.GlobalCurrency"))
     if before and after and after >= before then error("not_purchased") end
-    log(string.format("reinforced with %s at zone %d for %s supplies", wanted.type, zone,
+    log(string.format("reinforced with %s at zone %d for %s supplies", order.reinforcement, zone,
                       tostring(before and after and before - after)))
 end
 
@@ -882,21 +901,9 @@ local function start()
     state.info = {alliances = bm:alliances():count()}
     local ok, info = pcall(battle_info)
     if ok then state.info = info else log("battle info failed: " .. clean_error(info)) end
-    for index, row in ipairs(context_rows("CcoBattleRoot", "", SLOT_SETUP)) do
-        local slot = {id = "s" .. index, type = row[1], x = round(tonumber(row[2]), 1),
-                      z = round(tonumber(row[3]), 1), names = {}, options = {}}
-        for option in string.gmatch(row[4] or "", "[^,]+") do
-            local key, cost, icon = string.match(option, "^(%-?%d+):([^:]*):(.*)$")
-            local name = icon and string.match(icon, "([^/]+)%.png$") or ("option_" .. tostring(key))
-            if key then
-                slot.names[tonumber(key)] = name
-                slot.options[#slot.options + 1] = {name = name, cost = round(tonumber(cost))}
-            end
-        end
-        table.sort(slot.options, function(a, b) return (a.cost or 0) < (b.cost or 0) end)
-        state.slots[index] = slot
-    end
-    scan()
+    read_slots()
+    local scanned, err = pcall(scan)
+    if not scanned then log("scan failed: " .. clean_error(err)) end
     state.started_ms = battle_time()
     local fill = get_context("HasArmyAbilityFillCurrency") == true
     for index, row in ipairs(context_rows("CcoBattleRoot", "", ARMY_SETUP)) do

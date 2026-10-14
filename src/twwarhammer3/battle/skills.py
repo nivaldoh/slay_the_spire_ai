@@ -373,7 +373,7 @@ class ProbeAbilities(Skills):
         if (pool and zones and pool[0].get("cost", 0) <= supplies
                 and now - self.reinforced_s >= self.REINFORCE_S):
             self.reinforced_s = now
-            orders.append({"unit": "army", "type": "reinforce", "reinforcement": pool[0]["id"],
+            orders.append({"unit": "army", "type": "reinforce", "reinforcement": pool[0]["type"],
                            "zone": zones[0]["id"]})
         return orders
 

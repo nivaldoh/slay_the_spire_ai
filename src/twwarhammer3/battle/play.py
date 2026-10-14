@@ -160,8 +160,9 @@ def sides(scenario: dict) -> list[dict]:
 def scenario_steps(scenario: dict) -> list[dict]:
     """Menu steps from the main menu to the start of a custom battle.
 
-    A scenario with a ``map`` first selects its ``battle_type`` (classic by default) and
-    that map; without one the screen keeps the last map. The lobby keeps its slots between
+    Every scenario selects its ``battle_type`` (classic by default), since the lobby keeps
+    the last one, and a scenario with a ``map`` selects that map; without one the screen
+    keeps the last map of the type. The lobby keeps its slots between
     battles (a survival battle removes the AI slot), so AI slots are added or removed until
     there is one per side, each step guarded by a ``when`` expression. ``attacker``
     ("player" or "enemy") swaps the teams if the player's team has the other role. Each
@@ -176,21 +177,23 @@ def scenario_steps(scenario: dict) -> list[dict]:
              {"find": ["buttons_holder", "button_battle"], "click": True, "timeout_ms": 240000},
              {"find": ["battle_frame", "button_practice_battle"], "click": True,
               "timeout_ms": 20000}]
+    # The lobby keeps the last battle type, so it is always selected.
+    steps += [
+        {"find": ["tab_buttons", "button_tab_maps"], "click": True, "timeout_ms": 30000},
+        {"wait_ms": 2000},
+        {"find": ["map_type_list", "CcoBattleTypeRecord" + scenario.get("battle_type", "classic")],
+         "click": True, "timeout_ms": 15000},
+        {"wait_ms": 1500},
+    ]
     if scenario.get("map"):
         steps += [
-            {"find": ["tab_buttons", "button_tab_maps"], "click": True, "timeout_ms": 30000},
-            {"wait_ms": 2000},
-            {"find": ["map_type_list",
-                      "CcoBattleTypeRecord" + scenario.get("battle_type", "classic")],
-             "click": True, "timeout_ms": 15000},
-            {"wait_ms": 1500},
             # Entries scrolled out of the list never read as visible, so this does not wait.
             {"find": ["map_listview", "CcoCustomBattleMap" + scenario["map"]], "click": True},
             {"wait_ms": 2500},
             {"dump": "map_list.txt", "depth": 1, "find": ["map_listview", "list_box"]},
-            {"find": ["tab_buttons", "button_tab_armies"], "click": True, "timeout_ms": 15000},
-            {"wait_ms": 2000},
         ]
+    steps += [{"find": ["tab_buttons", "button_tab_armies"], "click": True, "timeout_ms": 15000},
+              {"wait_ms": 2000}]
     armies = sides(scenario)
     for count in range(2, len(armies) + 1):
         steps += [{"find": ["bottom_team_parent", "button_add_ai"], "click": True,

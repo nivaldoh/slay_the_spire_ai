@@ -174,23 +174,44 @@ def test_build_orders_need_an_empty_slot_a_listed_option_and_the_supplies(order,
 
 SURVIVAL = {**OBSERVATION, "mode": {
     "supplies": 1000, "spawn_zones": [{"id": 14, "x": 320, "z": 0}],
-    "reinforcements": [{"id": "r1", "type": "marauders", "cost": 400},
-                       {"id": "r2", "type": "warriors", "cost": 900}],
+    "reinforcements": [{"type": "marauders", "cost": 400}, {"type": "warriors", "cost": 900},
+                       {"type": "marauders", "cost": 446}],
+    "slots": [{"id": "s1", "usable": True, "options": [{"name": "barricade_trap", "cost": 200}]},
+              {"id": "s2", "usable": False, "options": [{"name": "barricade_trap", "cost": 200}]}],
 }}
 
 
 @pytest.mark.parametrize("orders, error", [
-    ([{"reinforcement": "r1", "zone": 14}], None),
-    ([{"reinforcement": "r9", "zone": 14}], "unknown reinforcement"),
-    ([{"reinforcement": "r1", "zone": 3}], "not one of yours"),
-    ([{"reinforcement": "r1", "zone": 14}, {"reinforcement": "r2", "zone": 14}],
-     "r2 costs 900, supplies 1000 \\(400 already ordered\\)"),
-    ([{"reinforcement": "r1", "zone": 14}, {"reinforcement": "r1", "zone": 14}], "ordered twice"),
+    ([{"type": "reinforce", "reinforcement": "marauders", "zone": 14}], None),
+    ([{"type": "reinforce", "reinforcement": "marauders", "zone": 14}] * 2, None),
+    ([{"type": "reinforce", "reinforcement": "warriors", "zone": 14},
+      {"type": "reinforce", "reinforcement": "marauders", "zone": 14}],
+     "marauders costs 400, supplies 1000 \\(900 already ordered\\)"),
+    ([{"type": "reinforce", "reinforcement": "trolls", "zone": 14}], "no 'trolls' left"),
+    ([{"type": "reinforce", "reinforcement": "warriors", "zone": 14}] * 2, "no 'warriors' left"),
+    ([{"type": "reinforce", "reinforcement": "marauders", "zone": 3}], "not one of yours"),
+    ([{"type": "build", "slot": "s2", "option": "barricade_trap"}], "cannot be built on now"),
+    # Builds and reinforcements share the supplies: 900 + 200 > 1000.
+    ([{"type": "reinforce", "reinforcement": "warriors", "zone": 14},
+      {"type": "build", "slot": "s1", "option": "barricade_trap"}],
+     "barricade_trap costs 200, supplies 1000 \\(900 already ordered\\)"),
 ])
-def test_reinforcements_come_from_the_pool_at_an_own_zone_within_supplies(orders, error):
-    orders = [{"unit": "army", "type": "reinforce", **order} for order in orders]
+def test_purchases_come_from_the_pool_or_usable_slots_within_the_batchs_supplies(orders, error):
+    orders = [{"unit": "army", **order} for order in orders]
     if error is None:
         protocol.validate_orders(orders, SURVIVAL)
     else:
         with pytest.raises(protocol.IllegalActionError, match=error):
             protocol.validate_orders(orders, SURVIVAL)
+
+
+def test_a_purchase_after_a_unit_ability_or_toggle_in_the_same_batch_validates():
+    state = {**SURVIVAL, "friendly": [{"id": "f1", "behaviours": {"fire_at_will": True},
+                                       "abilities": [{"key": "a", "can_use": True,
+                                                      "ready": True}]}]}
+    protocol.validate_orders([
+        {"unit": "f1", "type": "behaviour", "behaviour": "fire_at_will", "enabled": False},
+        {"unit": "f1", "type": "ability", "ability": "a", "target": None, "x": None, "z": None},
+        {"unit": "army", "type": "reinforce", "reinforcement": "marauders", "zone": 14},
+        {"unit": "army", "type": "build", "slot": "s1", "option": "barricade_trap"},
+    ], state)
