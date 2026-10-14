@@ -1268,5 +1268,182 @@
   ],
   "brief": "Six fully mounted units, with Grail Knights as the player anchor, face four halberds, two handguns, a cannon and a general on an Imperial Pegasus. The faster flying lord is an enemy anchor intended to pressure simple evasion. Interception, engagement angle, target priority and disengagement compete. AI pursuit is a hypothesis to verify, not a guaranteed script.",
   "calibration_change": "The pikes-only development screen lost with both trivial controls; Luna chose untouched evasion for a timeout win and was deliberately interrupted, with no gameplay outcome. Replace the enemy foot general with the verified speed 105 Pegasus mount (versus friendly 84/92) while retaining all other units and the 8000 cap. Original screen remains recorded."
+ },
+ "brt-cavalry-emp-assault": {
+  "battle_type": "classic",
+  "attacker": "player",
+  "split": "development",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 8000,
+   "time_limit_s": 1200,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.0",
+   "player_defends": false
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
+  "status": "prototype_not_admitted",
+  "name": "brt-cavalry-emp-assault",
+  "family": "cavalry against anti-large",
+  "player": {
+   "subculture": "wh_main_sc_brt_bretonnia",
+   "faction": "wh_main_brt_bretonnia",
+   "units": [
+    "wh_main_brt_cha_lord_0",
+    "wh_main_brt_cav_grail_knights",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_dlc07_brt_cav_questing_knights_0",
+    "wh_main_brt_cav_mounted_yeomen_1"
+   ],
+   "mounts": {
+    "0": "wh_main_brt_cha_lord_4"
+   }
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "units": [
+    "wh_main_emp_cha_general_0",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_art_great_cannon"
+   ]
+  },
+  "protected": [
+   "wh_main_brt_cav_grail_knights"
+  ],
+  "content": [
+   "wh_main",
+   "wh_dlc07"
+  ],
+  "brief": "Six fully mounted units, anchored by Grail Knights, must assault an Empire defense of four halberds, two handguns, a cannon and a foot general. The attacker loses at the finite timer. Choice of approach, splitting the defense, engagement angles, target priority and disengagement compete; no tactic is prescribed to the controller.",
+  "calibration_change": "Reverse the player role of the original six-versus-eight foot-general prototype. Defender evasion was legitimate but offered weak tactical pressure; this new task requires defeating the enemy within 1200 seconds. Roster, map, funds and stat modifier retain their corresponding original values. This is a separate development hypothesis, not a continuation of earlier performance results."
+ },
+ "brt-cavalry-emp-assault-hard": {
+  "battle_type": "classic",
+  "attacker": "player",
+  "split": "development",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 8000,
+   "time_limit_s": 1200,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.1",
+   "player_defends": false
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
+  "status": "prototype_not_admitted",
+  "name": "brt-cavalry-emp-assault-hard",
+  "family": "cavalry against anti-large",
+  "player": {
+   "subculture": "wh_main_sc_brt_bretonnia",
+   "faction": "wh_main_brt_bretonnia",
+   "units": [
+    "wh_main_brt_cha_lord_0",
+    "wh_main_brt_cav_grail_knights",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_dlc07_brt_cav_questing_knights_0",
+    "wh_main_brt_cav_mounted_yeomen_1"
+   ],
+   "mounts": {
+    "0": "wh_main_brt_cha_lord_4"
+   }
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "units": [
+    "wh_main_emp_cha_general_0",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_art_great_cannon"
+   ]
+  },
+  "protected": [
+   "wh_main_brt_cav_grail_knights"
+  ],
+  "content": [
+   "wh_main",
+   "wh_dlc07"
+  ],
+  "brief": "Six fully mounted units, anchored by Grail Knights, must assault an Empire defense of four halberds, two handguns, a cannon and a foot general. The attacker loses at the finite timer. Choice of approach, splitting the defense, engagement angles, target priority and disengagement compete; no tactic is prescribed to the controller.",
+  "calibration_change": "Reverse the player role of the original six-versus-eight foot-general prototype. Defender evasion was legitimate but offered weak tactical pressure; this new task requires defeating the enemy within 1200 seconds. Roster, map, funds and stat modifier retain their corresponding original values. This is a separate development hypothesis, not a continuation of earlier performance results."
+ },
+ "brt-cavalry-emp-assault-heldout-wastes": {
+  "battle_type": "classic",
+  "attacker": "player",
+  "split": "held_out",
+  "map": "battle_preset_wh3_nur_wastes_01_04",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 8000,
+   "time_limit_s": 1200,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.0",
+   "player_defends": false
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
+  "status": "prototype_not_admitted",
+  "name": "brt-cavalry-emp-assault-heldout-wastes",
+  "family": "cavalry against anti-large",
+  "player": {
+   "subculture": "wh_main_sc_brt_bretonnia",
+   "faction": "wh_main_brt_bretonnia",
+   "units": [
+    "wh_main_brt_cha_lord_0",
+    "wh_main_brt_cav_grail_knights",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_dlc07_brt_cav_questing_knights_0",
+    "wh_main_brt_cav_mounted_yeomen_1"
+   ],
+   "mounts": {
+    "0": "wh_main_brt_cha_lord_4"
+   }
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "units": [
+    "wh_main_emp_cha_general_0",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_art_great_cannon"
+   ]
+  },
+  "protected": [
+   "wh_main_brt_cav_grail_knights"
+  ],
+  "content": [
+   "wh_main",
+   "wh_dlc07"
+  ],
+  "brief": "Six fully mounted units, anchored by Grail Knights, must assault an Empire defense of four halberds, two handguns, a cannon and a foot general. The attacker loses at the finite timer. Choice of approach, splitting the defense, engagement angles, target priority and disengagement compete; no tactic is prescribed to the controller.",
+  "calibration_change": "Reverse the player role of the original six-versus-eight foot-general prototype. Defender evasion was legitimate but offered weak tactical pressure; this new task requires defeating the enemy within 1200 seconds. Roster, map, funds and stat modifier retain their corresponding original values. This is a separate development hypothesis, not a continuation of earlier performance results."
  }
 }
