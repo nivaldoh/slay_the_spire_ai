@@ -222,6 +222,16 @@ The game ships its UI context documentation in `data.pack`
   text) and `cooldown_blocked`. The `lock` icon is hidden on unlocked abilities and also
   on the one being charged, so it does not mean unlocked. The button's
   `CcoBattleAbility` id (`<key>_<pointer>`) did not resolve through `get_context_value`.
+- Casting, verified in `probe-abilities-random-s245-20261014` (Khorne vs Skaven, seed
+  245, `--policy probe_abilities`). Horn of Khorne unlocked at 109 points, and
+  `bm:get_player_army():use_special_ability(key, battle_vector, 0, 0)` at our largest
+  unit's position was accepted at 260.5 s.
+  - The button then read `selected_inactive`, its `dy_time_remaining` text counting the
+    31 s active phase (28 at 264 s, 19 at 273 s).
+  - Then it read `inactive`, counting the 90 s recharge (85 at 297 s).
+  - Unit abilities cast the same way showed `IsActive` true and `CanCurrentlyPerform`
+    false afterwards, and a potion showed 0 uses left
+    (`probe-abilities-random-s4-20261013`).
 
 ## Expanded controller interface (2026-10-13)
 
