@@ -262,10 +262,6 @@ local TICKETS = 'AllianceList.JoinString(Id + "|" + TicketsRemaining + "|" + Tic
     .. 'CpKillScore + "|" + StartingTickets, ";")'
 local GATES = 'BuildingsList.Filter(IsGate).JoinString(Name + "|" + Position.x + "|" + Position.z + "|" + '
     .. 'GateCurrentHitpoints + "|" + GateMaxHitpoints + "|" + IsDestroyed, ";")'
--- Bridges are the crossings of a chokepoint battle; the state has no other terrain, and
--- moves across the river came back unreachable (17 in one battle).
-local BRIDGES = 'BuildingsList.Filter(IsBridge).JoinString(Name + "|" + Position.x + "|" + Position.z + "|" + '
-    .. 'IsDestroyed, ";")'
 -- Units the army can call in from its reinforcement pool with supplies (survival,
 -- domination) and the spawn zones open to it. The pool's second argument 1 lists the units
 -- (0 listed none in survival); costs take the army's unique id, read once at the start.
@@ -352,12 +348,6 @@ local function mode_section()
         }
     end
     if #gates > 0 then section.gates = gates end
-    local bridges = {}
-    for _, row in ipairs(context_rows("CcoBattleRoot", "", BRIDGES)) do
-        bridges[#bridges + 1] = {name = row[1], x = round(tonumber(row[2]), 1), z = round(tonumber(row[3]), 1),
-                                 destroyed = row[4] == "true" or nil}
-    end
-    if #bridges > 0 then section.bridges = bridges end
     if state.info.reinforcing then
         local pool, affordable = {}, {}
         local supplies = tonumber(get_context("PlayerArmyContext.GlobalCurrency")) or 0

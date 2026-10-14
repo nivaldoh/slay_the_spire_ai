@@ -272,11 +272,6 @@ def render_mode(mode: dict | None) -> str | None:
             lines.append(f"- {point['id']} {point.get('name', '')} at ({point['x']:.0f},"
                          f" {point['z']:.0f}): held by {_side(point.get('holder'))}"
                          + "".join(f", {f}" for f in flags))
-    if mode.get("bridges"):
-        crossings = [f"({bridge['x']:.0f}, {bridge['z']:.0f})"
-                     + (" destroyed" if bridge.get("destroyed") else "")
-                     for bridge in mode["bridges"]]
-        lines.append("Bridges (crossings): " + ", ".join(crossings) + ".")
     for gate in mode.get("gates") or []:
         state = "destroyed" if gate.get("destroyed") else f"{gate.get('hp')}% health"
         lines.append(f"{gate.get('name') or 'Gate'} at ({gate['x']:.0f}, {gate['z']:.0f}):"

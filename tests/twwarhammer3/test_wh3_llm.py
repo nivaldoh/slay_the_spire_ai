@@ -392,10 +392,3 @@ def test_the_reinforcement_pool_and_spawn_zones_are_listed():
     assert llm.describe_orders([{"unit": "army", "type": "reinforce", "zone": 14,
                                  "reinforcement": "wh3_main_kho_inf_chaos_warriors_1"}]) == (
         "army reinforce chaos_warriors_1 at zone 14")
-
-
-def test_bridges_are_listed_as_crossings():
-    text = llm.render_mode({"type": "land_bridge", "bridges": [
-        {"name": "Bridge", "x": 10.4, "z": -3}, {"name": "Bridge", "x": 200, "z": 5,
-                                                 "destroyed": True}]})
-    assert text.endswith("Bridges (crossings): (10, -3), (200, 5) destroyed.")
