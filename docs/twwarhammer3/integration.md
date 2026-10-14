@@ -286,6 +286,119 @@ battles with scripted interventions, not policy win-rate evaluations.
   Pool expenditure proves acceptance beyond the API call, not final damage or a
   completed effect on every target. Damage attribution remains unmeasured.
 
+## Battle types (probed 2026-10-14)
+
+Evidence: `runs/twwarhammer3/probe-battle-types-20261014/` (lobby dumps and read-backs of
+all ten types, `probe_types.out`) and the smoke jobs `runs/twwarhammer3/battle/smoke-*`
+and `probe-conquest-attack-20261014`. The scenarios and the `mode` state they produce:
+[battle-types.md](battle-types.md).
+
+Lobby (custom battle screen):
+- Battle type records `map_type_list/CcoBattleTypeRecord<key>`; map lists per type: 380
+  classic, 44 conquest, 21 domination, 13 free-for-all, 74 ambush, 69 river crossing
+  (chokepoint), 20 underground intercept, 70 unfortified settlement, 38 siege, 29
+  survival (`custom_battle.json` `battle_type_maps`).
+- Read-backs on `CustomBattleLobbyContext.SettingsContext`: conquest, ambush, chokepoint,
+  underground, settlements and sieges have attackers and defenders
+  (`HasAttackerDefender`, `CanToggleAttackingTeam`); domination, free-for-all and
+  survival do not. Conquest has a ticket limit (600 by default), domination 1500 and a
+  reinforcing army; survival has a reinforcing army and no AI slot (`CanAddAi` false).
+  Domination and survival hide the time limit. Siege adds a settlement level (level 1
+  costs 0).
+- The player's slot sits in the top team, the defenders (`AttackingTeamIndex` 1).
+  `team_spacer/button_swap_attacker_defender` swaps the roles;
+  `CustomBattleLobbyContext.LocalPlayerSlotContext.TeamContext.IsAttacker` reads them.
+- Lobby expressions take `!`, `==` and `<` (`...PlayerSlotList.Size < 2`).
+- Selecting survival removes the AI slot, and it stays removed after switching back to
+  another type; free-for-all slots stay too. `bottom_team_parent/button_add_ai` adds an
+  AI slot (it became `CcoCustomBattlePlayerSlotslot1`, then `slot2`, `slot3`);
+  `CcoCustomBattlePlayerSlotslot<n>/button_remove` removes one.
+- Domination and survival refuse to start without a reinforcing army: the start button
+  stays inactive and `ReadyStatusText` reads "You must select some reinforcing units."
+  `clear_autogen_reinforcement_parent/button_autogen_reinforcements` fills it (9 units in
+  domination, 17 in survival).
+
+Battle (context system on `CcoBattleRoot` unless noted):
+- `BattleTypeState`: `conquest`, `domination`, `survival`, `settlement_standard` (siege),
+  `settlement_unfortified` (minor settlement), `land_ambush`, `land_bridge` (chokepoint),
+  `underground_intercept` and `land_normal` (free-for-all; classic presumably too, unverified).
+  `SetupContext.IsPlayerAttacker` gives the role and `TimeoutWinningAllianceIndex` the
+  alliance that wins when time runs out (the defender; -1 in a free-for-all).
+- Alliance ids in the context system are 0-based (the player's was 0) and the script's
+  are 1-based. A free-for-all has four alliances (`bm:alliances():count()`);
+  `bm:get_non_player_alliance()` returns only one of them.
+- `BattleTypeCheatSheetList(0)` holds the objectives as the help panel words them, for
+  example (conquest) "Destroy or rout all enemy units before the timer expires or reach
+  500 victory tickets by seizing capture points." The column also explains the type's
+  mechanics (capture points and tickets, supplies, reinforcements), which the state
+  keeps, and the interface (time limit, balance of power, unit buttons, abilities),
+  which it drops.
+- `CapturePointList`: `Key`, `DisplayName`, `Position.x/z`, `CurrentHolderAlliance` (-1
+  for none), `IsContested`, `IsLocked`, `CapturePercent` (0-1), `ContributesToVictory`.
+  `Radius` read 0. Keys repeat: a siege had four `capture_point_tower_only`.
+- Tickets: `AllianceList.TicketsRemaining` counts up in conquest and domination (+1/s
+  for holding one point, +2/s for two) towards `CaptureLocationManagerContext
+  .TicketsGoal` (600, 1500). A siege defender starts with 1000 (`StartingTickets`, goal
+  0) and loses them with its points (`CapturePointScore` -500 for the key building).
+  Survival's goal reads -1.
+- Siege (Helmgart): 100 buildings, 36 enabled (key building, about 30 wall pieces,
+  gatehouse, four fort towers). `BuildingsList.Filter(IsGate)` gives the gate's
+  `GateCurrentHitpoints`/`GateMaxHitpoints`. Unbuilt tower options are buildings too
+  (`IsEnabled` false). The AI attacker had no siege equipment (`VehicleList` empty).
+- Supplies: `PlayerArmyContext.GlobalCurrency` when `HasSupplies`. The siege defender
+  starts with 6000 and gains about 9/s (6495 at 60 s, 9890 at 508 s with nothing built);
+  survival starts at 1000 and gains about 20-25/s (1120 at 12 s, 1853 at 46 s, 3392 at
+  100 s); domination 500, plus "additional supplies by dealing damage".
+- Building slots, `ToggleableSlotList(PlayerArmyContext)`: siege 8 tower slots (four
+  options, 500-2000), minor settlement 22 slots: 11 barricade slots (four options,
+  300-500) and 11 tower slots (the siege's four options).
+  `IconPathForIndex(army, Index)` names the options (`tower_piercing_1`,
+  `tower_cannon_4`, `barricade_trap`, ...); `Cost(0)` gives the cost; `CurrentIndex` the
+  built option; `IsConstructionInProgress` and `ConstructionTimeRemainingSeconds` the
+  construction (75 s for a piercing tower). `CanAfford(...)` read false even when
+  affordable. Evaluating `...BuildablesList.FirstContext(Index == i).PrimaryAction` with
+  `common.get_context_value` built the tower: supplies dropped by its cost.
+- Inside a list expression (`JoinString`, `Filter`) the root's `PlayerArmyContext` and
+  `PlayerAllianceContext` do not resolve (they came back empty), but the globals
+  `PlayerArmy` and `PlayerAlliance` do; literal ids work too.
+- Reinforcement pool: `BattleReinforcementPoolContext.UnitsForArmy(PlayerArmyContext, 1)`
+  lists it (with 0 the list was empty), `CostPerUnit(army id)` the costs.
+  `SpawnZoneList` with `IsAvailableToAlliance(id)` gives the army's zones (ids 6-10 in
+  domination). `common.call_context_command("CcoBattleRoot", "", "BattleReinforcement
+  PoolContext.PurchaseUnit(<pool>.At(1), PlayerArmyContext, 6)")` bought a unit: supplies
+  fell by its cost and it walked in from zone 6. The same purchase through
+  `get_context_value` did nothing. `CanPurchaseUnit(unit, army, zone)` changes during the
+  battle and depends on the unit too: at one moment of the domination probe zones 9 and
+  10, open to the alliance, refused; later every zone refused at some point, zone 9 also
+  accepted 5 purchases, and a unit bought back while recovering was refused everywhere.
+- A bought unit joins its army's `units()` list as it enters (the domination probe's
+  army had 8 units after three purchases, read at 88 s). A destroyed unit goes back to
+  the pool, and if bought again it returns as the same unit (`unique_ui_id`), so it keeps
+  its id in the state: 21 purchases in the llm domination battle gave 6 new ids. The reinforcement armies
+  (`bm.battle:reinforcements():reinforcement_army(i):army():units()`) hold the unbought
+  pools: ours and the enemy's, every unit `is_valid_target()` false. The scan walks
+  both, on its own one-second timer: a policy that decides every tick forces an
+  observation with each acknowledgement, which starved the scan when it ran with the
+  regular observation. With that fixed, the survival probe registered each bought unit
+  about a second after its purchase and 13 wave units as they arrived.
+- Build and purchase checks in the engine (`probe_abilities`, `aa5a62b`/`d62a751`):
+  the siege army started with 6000 supplies and built a `tower_piercing_1` on all 8 slots
+  at 5.5 s (500 each); the settlement army built 12 barricades and towers; domination
+  bought 12 units and was refused 7 times at its zone (`CanPurchaseUnit` false);
+  survival bought 6. The survival pool lists one type at two costs (marauders 446 and
+  400), so a reinforce order buys the cheapest of the type.
+- `loadstring` chunks run in the global environment, without `bm`; the `lua` probe step
+  gives them the mod's environment with `setfenv`.
+- Chokepoint (Amaxon Plain): no buildings (`BuildingsList.Size` 0) and no capture
+  points; the river crossings are terrain, which nothing in the context system exposes.
+- Ambush (Backwoods Path): the objective text names an escape zone for the defender,
+  but `HasAmbushWithdrawArea` is false in this custom battle and
+  `AmbushWithdrawAreaPosition` reads (0, 0).
+- Survival (The Hunting Fields): 10 enemy units at the start and eleven enemy
+  reinforcement armies queued (ten of 20 units, one of 2), three victory locations, no
+  building slots at the start. "Objective: Each wave will open the barrier to the next
+  area of the map."
+
 ## Advisor text (verified 2026-10-13)
 
 `common.advice(text)` from the battle script opens the advisor (`advice_interface` turns

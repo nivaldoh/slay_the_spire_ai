@@ -618,3 +618,59 @@ Three paired draws separate nothing yet, and these draws at very hard (with the 
 (Ogre Kingdoms vs Slaanesh), 1355466036 (Daemons vs Greenskins) and 238913231 (Cathay
 mirror). The chain script ran `play --scenario random --seed N --episodes 1` per
 controller.
+
+## Battle types: llm v15, commander v3 (2026-10-14, overnight)
+
+Owner goal (2026-10-14, away overnight): one minimal test scenario for each battle type
+beyond the land battle (conquest, domination, free-for-all, ambush, chokepoint,
+subterranean, minor settlement, siege, survival), as vertical slices toward the
+benchmark. Everything is in [battle-types.md](battle-types.md); engine facts in
+[integration.md](integration.md#battle-types-probed-2026-10-14).
+
+What changed (`0cf3646` to `aa5a62b` and after):
+- Setup: `battle_type`, `attacker`, several or no enemy sides, reinforcing armies;
+  lobby steps guarded by `when` expressions; the engine's type and the player's role
+  checked at the first observation; a start click that starts nothing fails at once.
+- State: the observation's `mode` (type, role, timeout winner, the game's objective
+  text, capture points, tickets, gates, supplies, building slots, reinforcement pool and
+  spawn zones); units of every enemy alliance and units that enter mid-battle.
+- Orders: `build` (towers and barricades) and `reinforce` (pool units), both paid with
+  supplies; `probe_abilities` uses both.
+- Prompts (llm v15, commander v3): the Battle section, the two orders, and the
+  objective rule, including the owner's siege notes (keep the victory points held,
+  spend supplies).
+- Three review workflows, each with reviewers per dimension and an adversarial verifier
+  per finding. The first (30 findings, 24 confirmed, 10 distinct) found a validation
+  crash, slot usability that always read false, shifting reinforcement ids and smaller
+  defects (fixed in `c7287f4`). The second found a running mean that froze after about a
+  thousand observations and a cost mismatch in the pool (`088a175`). The third found
+  zone usability judged by one unit, double purchases of one pool entry and doc errors
+  (`8f9d832`).
+- Engine findings during the battles fixed the same night: purchased units never got
+  ids, because the scan only ran with regular observations (`d62a751`); a reply invalid
+  three times ended the battle (`9f08da8`); spawn zones refuse purchases (`89f3f8c`).
+  A bridges field for the chokepoint (`2a0a1cd`) was removed again (`fcba267`): that
+  map has no buildings, its crossings are terrain.
+- Also: random draws per battle type (`9b0209f`), measures per episode (`ea646a3`,
+  `7a40889`, `01e3abb`: victory points and the key building held, supplies left,
+  tickets, builds and purchases) and three register columns (`ea66fef`).
+
+Results, one battle each ([battle-types.md](battle-types.md#results) has the tables):
+
+| Scenario | `attack_nearest` | `probe_abilities` | Luna `llm` v15 | Luna `commander` v3 |
+|---|---|---|---|---|
+| conquest | won 510 s | | won 197 s | lost 403 s |
+| domination | lost 742 s | lost 709 s | lost 1042 s (tickets 1156-1500) | lost 814 s |
+| free-for-all | won 942 s | | policy failure; replay won 560 s | lost 909 s |
+| ambush | won 173 s | | lost 699 s | truncated |
+| chokepoint | won 369 s | | won 421 s | won 878 s |
+| subterranean | lost 546 s | | won 391 s | won 503 s |
+| minor settlement | lost 302 s | won 390 s | won 242 s | won 300 s |
+| siege | won 510 s | won 430 s | won 368 s | won 450 s |
+| survival | lost 198 s | lost 249 s | lost 292 s | lost 325 s |
+
+One battle per cell separates nothing, but it shows each slice working. A siege with
+the player attacking (`siege-attack-kho5-dwf5`) set up correctly but could not breach:
+the gate stayed at 100% and the units idled outside the walls until the job was stopped
+at 730 s; attacking needs gate and wall orders and siege equipment. LLM v15 cost
+$0.32 for its ten battles; the commander $0.48.

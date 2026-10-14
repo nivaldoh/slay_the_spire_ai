@@ -82,10 +82,13 @@ way. There is no external game API; the mod is the API.
 
 ## Current controllers
 
-On `main`: the direct controller `llm` v14 (v10 tactical rules on the v13 interface of
-continuous decisions and expanded controls), the `commander` v2, and the `skills`
+On `main`: the direct controller `llm` v15 (v10 tactical rules on the v13 interface of
+continuous decisions and expanded controls), the `commander` v3, and the `skills`
 executor v1.2 that the commander drives. v14 and commander v2 (`9bfee82`, `739ce9c`)
-added ability readiness and army abilities, as above. `watch` follows a job beside the
+added ability readiness and army abilities, as above; v15 and commander v3 (2026-10-14)
+add every battle type's objectives, the `build` and `reinforce` orders and the objective
+rules ([battle-types.md](battle-types.md)), and v15 keeps a reply's valid orders when the
+retries run out instead of ending the battle. `watch` follows a job beside the
 game, and `play --show` puts each model reply in the advisor window. Latest results: on
 the fixed `kho5-dwf5`, `skills` and the Luna commander v1 won 5 of 6 each; on three
 paired random draws every controller lost all three
@@ -170,8 +173,10 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 
 ## Next
 
-1. [Other battle types](#other-battle-types-owner-request-2026-10-13), still at AI very
-   hard: first the frontend-only probe below, then conquest or domination.
+1. Battle types ([battle-types.md](battle-types.md#next)): scenarios exist for all nine,
+   with victory points held and supplies left in the register; next are the time the
+   key point is held, units bought per type, and more maps and armies per type (the
+   `random-<type>` draws).
 2. Resume the random-draw comparison
    ([log.md](log.md#random-battle-comparison-partial-2026-10-1314)) on its three remaining
    seeds: 264482191 (Ogre Kingdoms vs Slaanesh), 1355466036 (Daemons vs Greenskins) and
@@ -207,50 +212,13 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 
 ## Other battle types (owner request, 2026-10-13)
 
-The owner wants battle types beyond land battles (for example conquest), still at AI
-difficulty very hard, the top custom battle setting. The custom battle screen offers:
-ambush, classic, conquest, domination, free-for-all, river crossing, siege, survival,
-underground intercept and unfortified settlement. Only classic is driven today
-(`play.py` clicks `CcoBattleTypeRecordclassic`). Read-only research over the extracted
-API (`runs/twwarhammer3/vanilla/`) found:
-- **Battle type and roles.** In script: `bm:battle_type()`, `battle:is_siege_battle()`,
-  `bm:player_is_attacker()`. In the context system: `CcoBattleRoot.IsConquest` /
-  `IsDomination` / `IsSiege` / `IsSurvival`, and `CcoBattleAlliance.IsDefender` /
-  `WillWinOnTimeout`.
-- **Capture points.** `battle:capture_location_manager()`; each location gives its
-  position, type, holder, contested and locked flags, and whether it counts for
-  victory.
-- **Progress, tickets and score** exist only in the context system:
-  `CcoBattleCapturePoint.CapturePercent`, `CcoBattleAlliance.TicketsRemaining` and
-  `CpKillScore`, `CcoBattleCaptureLocationsManager.TicketsGoal`.
-- **Walls, gates and towers.** `battle:buildings()` gives health, owner, gate, wall and
-  tower.
-- **Siege equipment.** `battle:assault_equipment()` gives each vehicle's key and
-  position.
-- **Unit controller orders.** `occupy_vehicle`, `attack_building`, `besiege_building`,
-  `defend_building` and `occupy_zone` (wall positions); there is no ladder order.
-- **Setup screen.** `CcoCustomBattleSettings` lists maps per type
-  (`MapPresetList`, `SettlementMapList`), attacker/defender toggles
-  (`HasAttackerDefender`, `ToggleAttackingTeam`) and ticket settings.
-
-What the harness assumes today and would get wrong in these types:
-- the rosters are read once, with one enemy alliance, so reinforcements, purchased
-  units, survival waves and free-for-all are missed;
-- deployment ends at once, so siege and ambush placement is skipped.
-
-Ranked by effort:
-1. River crossing, underground intercept and ambush need little more than a map list
-   per type (and a role for ambush), but add little to test.
-2. Conquest or domination: a capture-point table in the state (id, position, radius,
-   holder, contested, capture %, locked) and tickets or score per side. Capturing uses
-   the existing move order.
-3. Unfortified settlement: the same, plus roles and buildable slots.
-4. Siege: buildings, vehicles, wall zones, new orders, a real deployment phase and
-   equipment in the setup.
-
-First step: a frontend-only probe that selects each type, dumps its map list and reads
-its attacker/defender and ticket settings. Then conquest or domination, whichever the
-probe shows is symmetric without supply purchases.
+Done for all nine on 2026-10-14 (overnight): [battle-types.md](battle-types.md) has one
+minimal scenario per type (conquest, domination, free-for-all, ambush, chokepoint,
+subterranean, minor settlement, siege, survival), the `mode` state that reports each
+type's objectives (role, timeout winner, the game's objective text, capture points,
+tickets, gates, supplies, building slots, reinforcement pool), the `build` and
+`reinforce` orders, and the results. Engine facts:
+[integration.md](integration.md#battle-types-probed-2026-10-14).
 
 ## Commands
 
