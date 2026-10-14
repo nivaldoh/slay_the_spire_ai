@@ -48,6 +48,15 @@ SESSION_KEYS = ("speed", "pause", "interval_ms", "observe_ms", "tick_ms", "autos
 LOBBY = "CustomBattleLobbyContext."
 PLAYER_ATTACKS = LOBBY + "LocalPlayerSlotContext.TeamContext.IsAttacker"
 NOT_STARTED = "the battle did not start"
+# The battle's BattleTypeState for each lobby battle type, as the 2026-10-14 smoke battles
+# reported them (classic is unverified, and free-for-all shares land_normal).
+ENGINE_TYPES = {
+    "conquest": "conquest", "domination": "domination", "free_for_all": "land_normal",
+    "ambush": "land_ambush", "river_crossing_battle": "land_bridge",
+    "underground_intercept": "underground_intercept",
+    "unfortified_settlement": "settlement_unfortified", "siege": "settlement_standard",
+    "survival": "survival",
+}
 
 
 def play(output: Path, config: dict, *, policy_factory) -> dict:
@@ -143,11 +152,15 @@ def load_scenario(config: dict) -> dict:
 
 
 def expected_mode(scenario: dict) -> dict:
-    """What the battle's first observation must show for the setup to count: the player's
-    role when the scenario names the attacker."""
-    if not scenario.get("attacker"):
-        return {}
-    return {"role": "attacker" if scenario["attacker"] == "player" else "defender"}
+    """What the battle's first observation must show for the setup to count: the engine's
+    type for a scenario that names its battle type, and the player's role when it names the
+    attacker."""
+    expect = {}
+    if scenario.get("battle_type") in ENGINE_TYPES:
+        expect["type"] = ENGINE_TYPES[scenario["battle_type"]]
+    if scenario.get("attacker"):
+        expect["role"] = "attacker" if scenario["attacker"] == "player" else "defender"
+    return expect
 
 
 def sides(scenario: dict) -> list[dict]:

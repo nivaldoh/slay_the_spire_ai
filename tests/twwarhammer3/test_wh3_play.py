@@ -471,7 +471,8 @@ def test_random_jobs_record_their_draw_and_keep_the_menu_dumps(tmp_path, harness
 def test_a_battle_with_the_wrong_role_is_not_scored(tmp_path):
     scenario = json.loads(play.SCENARIOS_PATH.read_text())["siege-kho5-dwf5"]
     expect = play.expected_mode(scenario)
-    assert expect == {"role": "defender"}
+    assert expect == {"type": "settlement_standard", "role": "defender"}
+    assert play.expected_mode(json.loads(play.SCENARIOS_PATH.read_text())["kho5-dwf5"]) == {}
     state = observation(2, 1000)
     state["mode"] = {"type": "settlement_standard", "role": "attacker"}
     result = play.play_episode(tmp_path / "e", CONFIG, Hold(),
@@ -480,6 +481,12 @@ def test_a_battle_with_the_wrong_role_is_not_scored(tmp_path):
     assert result["status"] == "unsupported_or_invalid"
     assert result["mode"] == {"type": "settlement_standard", "role": "attacker"}
     assert "role is 'attacker'" in result["error"]
+    wrong_type = observation(2, 1000)
+    wrong_type["mode"] = {"type": "land_normal", "role": "defender"}
+    result = play.play_episode(tmp_path / "f", CONFIG, Hold(),
+                               FakeMailbox([observation(1, 0), wrong_type]), not_battle=None,
+                               expect=expect)
+    assert "type is 'land_normal', the scenario wants 'settlement_standard'" in result["error"]
 
 
 def test_a_start_click_that_starts_no_battle_stops_the_job_with_the_lobbys_reason(
