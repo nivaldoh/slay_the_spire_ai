@@ -199,6 +199,26 @@ def test_silence_is_an_infrastructure_failure_and_a_new_battle_a_restart(tmp_pat
     assert result["status"] == "infrastructure_failure" and "b2" in result["error"]
 
 
+@pytest.mark.parametrize("status", ["won", "lost", "draw"])
+def test_expired_countdown_preserves_engine_outcome_after_timer_resets(tmp_path, status):
+    timer = {"observed_ms": 1204100, "remaining_ms": 945.6787109375,
+             "deadline_ms": 1205045.6787109375, "expired": True, "source": "countdown_deadline"}
+    terminal = {**observation(2, 1205200, result=status), "remaining_ms": -1, "timer": timer}
+    mailbox = FakeMailbox([observation(0, 0), terminal])
+    result = play.play_episode(tmp_path / "e", CONFIG, Hold(), mailbox, not_battle=None)
+    assert result["status"] == status and result["ended_by"] == "time_limit"
+    assert result["timer"] == timer and result["remaining_ms"] == -1
+    assert not mailbox.requests
+
+
+def test_unlimited_or_unexpired_timer_does_not_imply_timeout(tmp_path):
+    for name, timer in (("unlimited", None), ("early", {"expired": False})):
+        terminal = {**observation(2, 3000, result="lost"), "remaining_ms": -1, "timer": timer}
+        result = play.play_episode(tmp_path / name, CONFIG, Hold(),
+                                   FakeMailbox([observation(0, 0), terminal]), not_battle=None)
+        assert result["status"] == "lost" and result["ended_by"] == "engine_result"
+
+
 def test_illegal_scripted_orders_are_counted_and_not_sent(tmp_path):
     class Broken(Hold):
         def __init__(self):

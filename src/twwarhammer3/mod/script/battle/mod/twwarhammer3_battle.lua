@@ -523,6 +523,26 @@ local function enemy_observation(id, entry)
     return roster, record
 end
 
+-- The engine resets remaining_conflict_time to -1 at a timer result. Retain the
+-- last live sample on engine ticks, independently of controller/observation pacing.
+local function sample_countdown(now)
+    local remaining = get(bm.battle, "remaining_conflict_time", -1)
+    if remaining >= 0 then
+        state.countdown = {observed_ms = now, remaining_ms = remaining * 1000}
+    elseif not get(bm.battle, "battle_outcome_decided", false) then
+        state.countdown = nil
+    end
+    return remaining >= 0 and remaining * 1000 or -1
+end
+
+local function terminal_countdown(now)
+    if not state.finished or not state.countdown then return nil end
+    local sample = state.countdown
+    local deadline = sample.observed_ms + sample.remaining_ms
+    return {observed_ms = sample.observed_ms, remaining_ms = sample.remaining_ms,
+            deadline_ms = deadline, expired = now >= deadline, source = "countdown_deadline"}
+end
+
 local function observation(now)
     state.seq = state.seq + 1
     local friendly, enemy, roster = {}, {}, {}
@@ -541,14 +561,14 @@ local function observation(now)
         local ok, value = pcall(army_abilities)
         army = ok and value or {error = clean_error(value)}
     end
-    local remaining = get(bm.battle, "remaining_conflict_time", -1)
+    local remaining_ms = sample_countdown(now)
     local player = bm:get_player_army()
     local ok, section = pcall(mode_section)
     if not ok then section = {error = clean_error(section)} end
     return {
         schema = 1, job = session.job, battle = state.battle, seq = state.seq,
         phase = bm:get_current_phase_name(), time_ms = now, speed = 1,
-        awaiting_orders = false, remaining_ms = remaining >= 0 and remaining * 1000 or -1,
+        awaiting_orders = false, remaining_ms = remaining_ms, timer = terminal_countdown(now),
         armies = {
             player = {faction = get(bm:get_player_army(), "faction_key", "?")},
             enemy = {faction = get(bm:get_first_non_player_army(), "faction_key", "?")},
@@ -992,6 +1012,7 @@ end
 
 local function tick()
     local now = battle_time()
+    sample_countdown(now)
     sample_objectives(now)
     if state.pending then apply_pending(now) end
     if not state.finished and get(bm.battle, "battle_outcome_decided", false) then

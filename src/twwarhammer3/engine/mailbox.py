@@ -20,6 +20,7 @@ Observation shape::
      "orders": {"request", "based_on", "applied_ms",
                 "results": [{"index", "unit", "ok", "queued", "error"?}]} | null,
      "result": "won" | "lost" | "draw" | null,
+     "timer": {"observed_ms", "remaining_ms", "deadline_ms", "expired", "source"} | null,
      "final": {"friendly": {"men", "men0"}, "enemy": {...}} | null}
 
 ``evaluation`` carries both armies' true strength (men, men0, active_men excluding
@@ -27,6 +28,11 @@ routing/shattered units, and totals by unit type) and tick-integrated objective 
 The Python harness strips it and ``final`` before any controller receives a snapshot.
 ``final`` freezes these evaluation records at the engine result; on other endings the
 harness retains the last evaluation snapshot with its battle timestamp.
+
+Terminal ``timer`` retains the last finite countdown sampled on engine ticks. The raw
+``remaining_ms`` can reset to -1 when the result arrives. ``expired`` compares result
+time with that sample's deadline; it is a countdown inference, not an authoritative
+end-cause getter. The engine's won/lost/draw outcome is preserved independently.
 
 A request may carry ``say``, text the battle script shows in the advisor window. An
 ability order whose unit is ``"army"`` casts an army ability. Order indexes are
