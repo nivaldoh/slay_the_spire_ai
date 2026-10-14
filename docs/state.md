@@ -1,59 +1,55 @@
 # Project state
 
-Updated 2026-10-14 21:53 UTC: what is running, where each game
+Updated 2026-10-14 22:20 UTC: what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-WH3 benchmark work is active (owner goal, 2026-10-14): finish the paired benchmark,
-difficulty/latency calibration and required interface fixes. Prioritize specialist
-anchor units, faction mechanics and compact armies; see the
-[scenario recipe](twwarhammer3/scenario-recipe.md). No scenario is admitted and no G1/G2
-trials have run. The generic Herald G1 draft remains superseded; held-out maps are untouched.
+WH3 benchmark work stopped at the owner's request on 2026-10-14 at 22:19:59 UTC.
+The owner cleared the goal and wants to discuss difficulty calibration separately.
+**No game or experiment queue is running. Do not resume calibration automatically.**
+The controller and runner exited; the read-only doctor reports ready with no blockers.
 
-The b9 acceptance/reference queue completed at 21:53:04 UTC on `a8fdf34`.
-Runner/controller exited and doctor reports ready. No game is running. Its state is
-`runs/twwarhammer3/calibration/b9-timer-and-reference-plan-state.json`.
+The engineering and live acceptance work is preserved on `main`: paired rotations,
+external controllers, setup checks, uncertainty/failure reports, terrain, specialist
+controls, objective metrics, timer classification and the run-nearest baseline.
+b9 passed 223 WH3 tests with Lua, Ruff and Lua 5.1 parsing. The specialist recipe
+prioritizes anchor units, faction mechanics and compact forces; the current cavalry
+candidate is six versus eight, and the caster candidate five versus ten. All held-out
+maps remain untouched. No scenario is admitted; G1 is incomplete and G2 has not run.
 
-Timer acceptance passed: the idle attacker lost at 1205.2 s with both armies intact,
-correctly labelled `time_limit` with a retained expired countdown. Run-nearest also
-passed live effect acceptance: all six cavalry ran and moved after their attack orders.
-Reports: `reports/bench-b9-timer-acceptance.json` and `reports/bench-b9-rush-acceptance.json`.
+The first G1 paired launch on frozen source `6763d0e` completed at AI modifier 1.0:
 
-At 1.0, run-nearest lost at 210.7 s (active margin -0.791) and medium-effort Luna at
-214.4 s (-0.834). At 1.1, run-nearest lost at 256.7 s (-0.666) and Luna at 341.7 s
-(-0.513). Both rematch starts matched. Luna's 1.1 attack killed the general and routed
-the ranged line, but its remaining cavalry lost against the halberds. All four trials
-are valid; combined 1354.34 job-wall seconds, 10.63 valid trials/hour. Report:
-`runs/twwarhammer3/reports/bench-b9-assault-medium.json`. Six 1.1 ability refusals repeat
-accepted activations before UI readiness updates, the same documented b8 behavior;
-`reports/bench-b9-luna-ability-refusals.json` retains the evidence. WH3 spend: $6.3723
-of the cumulative $25 cap; never reset the ledger.
+- Walk-nearest lost at 411.2 s, active margin -0.796, no refusals.
+- Run-nearest lost at 247.7 s, margin -0.628, one refusal.
+- Sol low `llm_rules` won at 528.2 s, margin +0.544, $0.79336. It circled the defense,
+  routed the ranged line, separated infantry and disengaged/repositioned the cavalry.
+  Both rematch starts matched. One paired launch cannot establish admission or uncertainty.
 
-Next is the first repeated G1 calibration, frozen to the compact cavalry attacker
-family. Reference: `llm_rules`, `gpt-6-sol`, low effort, chosen from the earlier b7
-flanking win (432 s, margin +0.433, $0.62009); this is not a claim of admission.
-Baselines: walk-nearest and run-nearest. Six fresh launches per AI modifier 1.0/1.1,
-three controllers per launch, predeclared rotation seeds; every battle stays at 1x.
-No roster, prompt or interface change is being made after the b9 screens. The plan
-will be `runs/twwarhammer3/calibration/g1-cavalry-plan.json`, pinned to the committed
-freeze revision before launch. The $25 ledger cap remains enforced on every call.
+The following 1.1 launch was interrupted during frontend setup at the owner's request:
+zero episodes started, no gameplay outcome, 64.48 job-wall seconds. Preserve this as
+an owner interruption, not a tactical loss or unexplained infrastructure failure.
+The remaining ten planned launches were never started. Queue state:
+`runs/twwarhammer3/calibration/g1-cavalry-plan-state.json`; stop note:
+`runs/twwarhammer3/calibration/g1-owner-stop.json`. Partial reports:
+`runs/twwarhammer3/reports/g1-cavalry.json`, `g1-cavalry.txt` and
+`g1-cavalry-admission.json`. Three valid / three started battles across two launched
+jobs, 1438.13 wall seconds including interrupted setup, 7.51 valid battles/hour.
 
-Admission still requires 2–4/6 non-timer reference wins and positive paired raw-margin
-intervals against both baselines. If both modifiers pass, choose 1.1 for G2; if only
-one passes, use that one. Otherwise continue recorded development. G2 then rotates
-the same reference at added snapshot ages 0/6/10 s in six fresh launches. Geometry
-flags stay in primary results with an exclusion sensitivity; changed resources or
-loadouts stop subsequent jobs for review. Requested ages are minima, with actual
-ages reported. Held-out maps remain untouched.
+Earlier b9 screens: Luna medium lost both modifiers; run-nearest also lost both.
+At 1.1 Luna killed the general and routed the ranged line but lost to the halberds.
+The idle-attacker timer check correctly recorded an engine loss at 1205.2 s as
+`time_limit`, with retained countdown expiry evidence. Running movement was verified
+after accepted attacks. Full evidence and earlier failed/retired candidates remain in
+[the log](twwarhammer3/log.md); sources are not pooled. WH3 API spend is **$7.1656
+of the cumulative $25 cap**. Never reset the ledger.
 
-Core paired execution, external controllers, setup gates and reports are accepted.
-The selected cavalry controls and terrain have live evidence. Caster landing/take-off,
-barriers, morale and ground casting were also checked; caster scenario admission and
-siege-attacker controls remain later work. The b9 implementation passed 223 WH3 tests
-with Lua, Ruff and Lua 5.1 parsing. Preserve all earlier failures, including the one
-b8 observation stall, and do not pool its source with G1. Full history is in the log.
+Before further experiments, discuss the calibration objective, reference, thresholds,
+trial count and cost with the owner. The recorded plan used Sol low against walking
+and running baselines, six launches per modifier, then six launches rotating added
+snapshot ages 0/6/10 s. That work is unfinished, not automatically queued for resumption.
+The code, compact scenario candidates and historical design remain available for review.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -64,9 +60,9 @@ command; clear it when the job stops.
 [battle types](twwarhammer3/battle-types.md), [controllers](twwarhammer3/controllers.md),
 [integration](twwarhammer3/integration.md), [log](twwarhammer3/log.md). `main` runs
 `llm` v15 and `commander` v3 (every battle type's objectives, `build` and `reinforce`
-orders) and the `skills` executor v1.2. API spend: $6.3723 of the $25 cap
-(after the b9 medium-effort Luna screens).
-The owner has authorized benchmark calibration, including AI modifiers 1.0 and 1.1.
+orders) and the `skills` executor v1.2. API spend: $7.1656 of the $25 cap
+(after the first G1 Sol trial).
+The stopped calibration was authorized to test AI modifiers 1.0 and 1.1.
 Both lobby and battle read-backs passed. Fresh 5.2 s startup snapshots show all 12 AI
 unit entries changing at 1.1 (roughly +10% attack/defence/damage/charge, +8 leadership),
 with the 12 player entries unchanged. These differences appear even in UI ValueBase;
@@ -81,13 +77,13 @@ it needs and ended on an engine result with `attack_nearest`, Luna `llm` v15 and
 and gaps: [battle-types.md](twwarhammer3/battle-types.md); engine facts:
 [integration.md](twwarhammer3/integration.md#battle-types-probed-2026-10-14).
 
-Current owner goal: complete the first three benchmark steps recommended in the
-2026-10-14 status discussion (paired benchmarks, calibration/latency experiments, required
-interface fixes). Remaining longer-term directions:
+The owner cleared the benchmark goal on 2026-10-14 at 22:20 UTC. Its engineering
+work is preserved; difficulty and latency calibration remain incomplete and await a
+separate discussion. Remaining longer-term directions:
 1. Battle types toward benchmarks ([battle-types.md](twwarhammer3/battle-types.md#next)):
    variants per type (the `random-<type>` draws, both roles), calibration of the
-   scripted controllers per type, and the interface gaps found (no deployment phase, no
-   terrain, survival wave timing).
+   scripted controllers per type, and remaining interface gaps (deployment control, finer terrain detail and
+   survival wave timing).
 2. Resume the random-draw model comparison later (three seeds left, in the
    [log](twwarhammer3/log.md)), then Sol and Astra as commander on the same draws.
 3. Eventually we could turn this game into some kind of serious LLM benchmark? For now I'm just registering this here. Could try to create certain challenge scenario battles where the opponent side is stronger, and see how well different models perform and whether they discover certain key insights required to win these battles. Eventually these challenge scenarios could even be AI-generated themselves.

@@ -182,8 +182,10 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 
 ## Next
 
-Current work is the owner's benchmark goal; [benchmark-progress.md](benchmark-progress.md)
-tracks the evidence and [calibration-plan.md](calibration-plan.md) specifies the experiments.
+The owner stopped and cleared the benchmark goal on 2026-10-14 at 22:20 UTC.
+No game or queue is running. [benchmark-progress.md](benchmark-progress.md) retains
+the partial evidence; [calibration-plan.md](calibration-plan.md) records the stopped
+design. Discuss difficulty calibration before starting further experiments.
 
 1. Select specialist challenges using the owner's [scenario recipe](scenario-recipe.md):
    anchor units, faction mechanics, difficult tactical choices and watchable battles.

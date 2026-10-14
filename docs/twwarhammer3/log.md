@@ -1,5 +1,40 @@
 # WH3 battle versions
 
+## Partial G1 and owner-requested stop (2026-10-14)
+
+G1 started at 21:56:01 UTC on committed/pushed `6763d0e`, with the declared Sol low
+`llm_rules` reference, walk/run-nearest baselines, compact six-versus-eight cavalry
+attacker and the original rotation seeds. The first 1.0 launch completed:
+
+| Controller | Engine result | Battle seconds | Active margin | Refusals | API USD |
+|---|---|---|---|---|---|
+| Walk-nearest | Lost | 411.2 | -0.79623 | 0 | 0 |
+| Run-nearest | Lost | 247.7 | -0.62830 | 1 | 0 |
+| Sol low | Won | 528.2 | +0.54378 | 29 | 0.793363 |
+
+Both rematch starts matched. Clock ratios were 1.00091, 1.00076 and 0.99333.
+Sol made 96 decisions/calls, 393565 input / 30155 output tokens, including 164065
+cached and 9917 reasoning tokens. Its refusals were 23 unreachable moves, five
+no-longer-visible targets and one routing unit; it continued using the normal feedback.
+It circled west/north, broke the ranged line, drew infantry apart and disengaged before
+re-engaging. This is a useful specialist battle and one paired win, not admission.
+Report: `reports/g1-cavalry-ai10-01.json`; whole-job 1373.64 s, 7.86 valid battles/hour.
+
+At the owner's request to wrap up and discuss calibration separately, SIGINT stopped
+the next controller during frontend setup. The 1.1 job records `interrupted` /
+`KeyboardInterrupt`, zero episodes and 64.48 wall seconds. The runner stopped at
+22:19:59 UTC; both processes exited and doctor reports ready with no blockers.
+The owner then cleared the goal. The other ten scheduled launches were never started.
+Do not convert this deliberate stop into a gameplay loss or silently resume the queue.
+
+Partial combined report: `reports/g1-cavalry.json` / `.txt`, admission audit
+`reports/g1-cavalry-admission.json`, stop note `calibration/g1-owner-stop.json`.
+Three valid / three started battles across two launched jobs, 1438.13 wall seconds
+including interrupted setup, 7.51 valid battles/hour. No scenario is admitted, G1 is
+incomplete and G2 unstarted. All held-out maps remain untouched. Spend is $7.1656 of
+$25. The engineering work and evidence are preserved; further difficulty/latency
+experiments await the owner's separate discussion.
+
 ## Benchmark harness b9 (2026-10-14, timer classification and running baseline)
 
 The b8 hold screen reached the timer with both armies intact. Its last logged finite

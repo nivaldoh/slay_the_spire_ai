@@ -37,9 +37,21 @@ is in [benchmark.md](benchmark.md) and the original acceptance brief in
 
 ## Current work
 
-No scenario is admitted and no G1/G2 trials have run. The specialist recipe now
-selects the compact cavalry attacker (six versus eight) for repeated calibration.
-Caster five-versus-ten remains a development candidate. All held-out maps are untouched.
+The owner stopped work and cleared the goal at 22:20 UTC, asking to discuss difficulty
+calibration separately. No controller or queue remains running; doctor reports ready.
+Do not resume experiments automatically. No scenario is admitted; G1 is incomplete and
+G2 has not run. The specialist recipe and compact candidates remain available for review.
+
+One G1 launch on `6763d0e` completed at 1.0: walk-nearest lost at 411.2 s (margin
+-0.796), run-nearest lost at 247.7 s (-0.628), and Sol low won at 528.2 s (+0.544,
+$0.79336). Both rematch starts matched. This is one paired comparison, not calibration
+or a confidence interval. The following 1.1 job was stopped during frontend setup:
+zero episodes started, no gameplay outcome. The other ten launches were unstarted.
+Partial evidence: `reports/g1-cavalry.json`, `reports/g1-cavalry.txt` and
+`reports/g1-cavalry-admission.json` under WH3 runs. The report includes the interrupted
+setup in throughput: three valid / three started battles, two launched jobs, 1438.13
+wall seconds, 7.51 valid battles/hour. Stop note: `calibration/g1-owner-stop.json`.
+Current spend is $7.1656 of $25. Held-out maps remain untouched.
 
 b9 on `a8fdf34` completed at 21:53:04 UTC. Its idle-attacker timer acceptance passed:
 engine loss at 1205.2 s with both armies intact, retained expiry evidence and the
@@ -60,13 +72,13 @@ Both rematch starts matched; four valid / four started trials, 1354.34 wall seco
 `reports/bench-b9-assault-medium.json`. Luna's 1.1 attack killed the general and routed
 the ranged line but lost against the halberds. Its six ability refusals repeat previous
 accepted activations on stale readiness, the same b8 behavior; audit:
-`reports/bench-b9-luna-ability-refusals.json`. Spend is $6.3723 of $25.
+`reports/bench-b9-luna-ability-refusals.json`. Spend before G1 was $6.3723 of $25.
 
-The reference is frozen as Sol low through `llm_rules`, motivated by its b7 cavalry
+The stopped plan froze Sol low through `llm_rules`, motivated by its b7 cavalry
 flanking win (432 s, margin +0.433, $0.62009). That is a viability demonstration, not
-admission. G1 will compare it with walk-nearest and run-nearest over six fresh launches
+admission. G1 had scheduled comparison with walk-nearest and run-nearest over six launches
 per modifier. See the exact freeze and G2 selection rule in
-[calibration-plan.md](calibration-plan.md). G1/G2 retain the compact rosters, rules-only
+[calibration-plan.md](calibration-plan.md). The recorded G1/G2 design retains the compact rosters, rules-only
 prompt, existing interface and cumulative budget. The driver pins the source before
 execution and retains failures and geometry flags. No held-out tuning is allowed.
 

@@ -5,6 +5,13 @@ owner's first three next steps; progress/evidence are in
 [benchmark-progress.md](benchmark-progress.md). The current acceptance job is a harness
 check on one instance, not independent calibration data.
 
+**Stopped by the owner, 2026-10-14 22:20 UTC.** The goal was cleared so difficulty
+calibration can be discussed separately. One 1.0 launch completed (Sol won, both
+baselines lost); the next 1.1 launch was interrupted during setup before any episode.
+G1 is incomplete, no scenario is admitted, and G2 has not run. Do not automatically
+resume this schedule. The design below records the plan used for the partial evidence;
+review its reference, admission criteria, trial count and cost before further runs.
+
 ## Conditions kept fixed
 
 - Original pinned Windows game, one controller at a time, unpaused 1x throughout.

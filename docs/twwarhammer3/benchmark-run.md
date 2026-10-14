@@ -2,6 +2,9 @@
 
 Core live acceptance has passed: [benchmark-progress.md](benchmark-progress.md).
 No scenario has passed calibration yet. Design: [benchmark.md](benchmark.md).
+The owner stopped calibration after one paired launch and cleared the goal on
+2026-10-14. The commands below document the interface and recorded configuration;
+further experiments await a separate calibration discussion.
 
 ## Setup and commands
 
