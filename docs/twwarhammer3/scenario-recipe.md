@@ -61,6 +61,15 @@ verified the cards, the cavalry lord's horse and Kairos's default equipped spell
 battle viability and difficulty remain to be screened. Exact rosters and design
 hypotheses are recorded in `configs/twwarhammer3/scenarios.json`.
 
+The defender pilots exposed an incentive to evade until the timer. A Pegasus-mounted
+enemy general is one pressure hypothesis, but its faster movement capability alone
+does not guarantee pursuit: the Sol pilot also chose timeout preservation. The separate
+`brt-cavalry-emp-assault` family instead makes the player attack, retaining the original
+six-versus-eight foot-general roster, funds and corresponding maps/modifiers. The
+finite timer then requires an assault. Its 1.0/1.1 variants are development candidates;
+its held-out map is unplayed. Role reversal changes the task and needs its own live
+setup/viability checks, not pooled results from the defender pilots.
+
 The current Dwarf/Slaanesh Herald screens
 remain useful harness and difficulty evidence; they do not satisfy this new selection
 criterion automatically. Difficult sieges and the two swarm directions remain concrete

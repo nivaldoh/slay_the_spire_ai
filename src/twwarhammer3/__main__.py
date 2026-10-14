@@ -75,7 +75,7 @@ def main() -> int:
                       help="default: one trial per controller/delay combination")
     play.add_argument("--rotation-seed", type=int, default=None, help="recorded trial order seed")
     play.add_argument("--delay-seconds", default="0",
-                      help="comma-separated added observation ages, e.g. 0,6,10")
+                      help="minimum buffered snapshot ages in seconds, e.g. 0,6,10")
     play.add_argument("--scenario", required=True,
                       help="a battle in configs/twwarhammer3/scenarios.json; random draws a map"
                       " and both races, and autogenerates both armies")

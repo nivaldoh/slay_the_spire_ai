@@ -219,6 +219,40 @@ def test_intervals_and_missing_active_strength():
     assert summary["ci95"][1] == pytest.approx(1 + 4.303 / (3 ** .5))
 
 
+def test_start_flag_sensitivity_keeps_primary_trials_and_deltas(tmp_path):
+    jobs = [make_job(tmp_path, name, [("hold", 0, "lost"), ("skills", margin, "won")])
+            for name, margin in (("a", .1), ("b", .2), ("flagged", .5))]
+    path = jobs[-1] / "episode-0001/result.json"
+    comparison = {"flagged": True, "units": {"friendly/f1": {"distance_m": 4.8}}}
+    path.write_text(json.dumps({**json.loads(path.read_text()), "start_comparison": comparison}))
+    result = report.collect(jobs)
+    group = result["groups"][0]
+    assert len(group["trials"]) == 6
+    assert group["trials"][-1]["start_comparison"] == comparison
+    assert group["controllers"][1]["start_flagged_trials"] == 1
+    paired = group["paired"][0]
+    assert paired["n"] == 3 and paired["mean"] == pytest.approx(-.8 / 3)
+    sensitivity = paired["without_flagged_starts"]
+    assert sensitivity["n"] == 2 and sensitivity["mean"] == pytest.approx(-.15)
+    assert sensitivity["excluded_instances"] == [str(jobs[-1].resolve())]
+    assert "Primary results above retain these launches" in report.render(result)
+
+
+def test_report_distinguishes_snapshot_age_from_command_age_and_missing_timestamps(tmp_path):
+    events = [
+        {"kind": "decision", "time_ms": 5000, "decision_time_ms": 13000},
+        {"kind": "ack", "ack": {"results": [{"ok": True}]},
+         "latency": {"delay_ms": 15000}},
+        {"kind": "decision", "time_ms": 20000, "decision_time_ms": 26000},
+        {"kind": "decision", "time_ms": 30000},  # legacy record: age unknown
+    ]
+    (tmp_path / "trace.jsonl").write_text("".join(json.dumps(event) + "\n" for event in events))
+    metrics = report.trial_metrics(tmp_path, {})
+    assert metrics["snapshot_age_at_decision_s"]["n"] == 2
+    assert metrics["snapshot_age_at_decision_s"]["mean"] == 7
+    assert metrics["order_age_s"]["mean"] == 15
+
+
 def test_rollout_throughput_includes_setup_failures_and_unknown_job_duration(tmp_path):
     played = make_job(tmp_path, "played", [("hold", 0, "lost"), ("skills", .2, "won")])
     failed = make_job(tmp_path, "failed", [])
