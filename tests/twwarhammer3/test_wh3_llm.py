@@ -337,3 +337,18 @@ def test_the_mode_section_states_role_objectives_tickets_and_points():
     assert llm.render_mode({"type": "land_normal", "role": "attacker",
                               "timeout_winner": "enemy"}) == (
         "Battle: land_normal; you are the attacker; if time runs out, enemy wins.")
+
+
+def test_a_siege_shows_the_defenders_tickets_without_a_goal_and_the_gate():
+    mode = {"type": "settlement_standard", "role": "defender", "timeout_winner": "us",
+            "tickets": [{"side": "us", "tickets": 1000, "per_s": 5, "score": 728}],
+            "capture_points": [{"id": "c1", "key": "major_key_building_leadership",
+                                "name": "Key Building", "x": 0, "z": 310, "holder": "us",
+                                "percent": 100, "victory": True}],
+            "gates": [{"name": "Gatehouse", "x": -32, "z": -16, "hp": 37, "destroyed": False}],
+            "supplies": 8034}
+    text = llm.render_mode(mode)
+    assert "Tickets: you 1000 (+5/s)." in text
+    assert "- c1 Key Building at (0, 310): held by you, 100%, counts for victory" in text
+    assert "Gatehouse at (-32, -16): 37% health." in text
+    assert text.endswith("Supplies: 8034.")

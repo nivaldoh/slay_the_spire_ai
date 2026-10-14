@@ -253,13 +253,15 @@ local function army_abilities()
 end
 
 -- Objectives of the battle type, from the context system: capture points (alliance ids
--- there are 0-based, -1 for none; the script's are 1-based), tickets per alliance and the
--- army's supplies, for types that have them.
+-- there are 0-based, -1 for none; the script's are 1-based), tickets per alliance, gates
+-- and the army's supplies, for types that have them.
 local CAPTURE_POINTS = 'CapturePointList.JoinString(Key + "|" + DisplayName + "|" + Position.x + "|" + '
     .. 'Position.z + "|" + CurrentHolderAlliance + "|" + IsContested + "|" + IsLocked + "|" + '
     .. 'CapturePercent + "|" + ContributesToVictory, ";")'
 local TICKETS = 'AllianceList.JoinString(Id + "|" + TicketsRemaining + "|" + TicketsIncomePerSecond + "|" + '
     .. 'CpKillScore, ";")'
+local GATES = 'BuildingsList.Filter(IsGate).JoinString(Name + "|" + Position.x + "|" + Position.z + "|" + '
+    .. 'GateCurrentHitpoints + "|" + GateMaxHitpoints + "|" + IsDestroyed, ";")'
 
 local function side(alliance_id)
     if alliance_id < 0 then return nil end
@@ -272,17 +274,19 @@ local function mode_section()
     for key, value in pairs(state.info) do section[key] = value end
     section.alliances, section.player_alliance = nil, nil
     local points = {}
-    for _, row in ipairs(context_rows("CcoBattleRoot", "", CAPTURE_POINTS)) do
+    -- Keys repeat (a siege has four "capture_point_tower_only"), so points are numbered.
+    for index, row in ipairs(context_rows("CcoBattleRoot", "", CAPTURE_POINTS)) do
         points[#points + 1] = {
-            id = row[1], name = row[2], x = round(tonumber(row[3]), 1), z = round(tonumber(row[4]), 1),
+            id = "c" .. index, key = row[1], name = row[2],
+            x = round(tonumber(row[3]), 1), z = round(tonumber(row[4]), 1),
             holder = side(tonumber(row[5]) or -1), contested = row[6] == "true",
             locked = row[7] == "true", percent = round((tonumber(row[8]) or 0) * 100),
             victory = row[9] == "true",
         }
     end
     if #points > 0 then section.capture_points = points end
-    -- Tickets count up: an alliance earns them each second for the points it holds (and
-    -- for kills), and reaching the goal wins.
+    -- Conquest and domination tickets count up to a goal for the points a side holds; a
+    -- siege defender starts with tickets and loses them with its points (no goal).
     local goal = tonumber(get_context("CaptureLocationManagerContext.TicketsGoal")) or 0
     local tickets = {}
     for _, row in ipairs(context_rows("CcoBattleRoot", "", TICKETS)) do
@@ -292,7 +296,16 @@ local function mode_section()
             tickets[#tickets + 1] = {side = owner, tickets = count, per_s = income, score = tonumber(row[4])}
         end
     end
-    if #tickets > 0 then section.tickets, section.tickets_goal = tickets, goal end
+    if #tickets > 0 then section.tickets, section.tickets_goal = tickets, goal > 0 and goal or nil end
+    local gates = {}
+    for _, row in ipairs(context_rows("CcoBattleRoot", "", GATES)) do
+        local hp, max = tonumber(row[4]), tonumber(row[5])
+        gates[#gates + 1] = {
+            name = row[1], x = round(tonumber(row[2]), 1), z = round(tonumber(row[3]), 1),
+            hp = hp and max and max > 0 and round(100 * hp / max) or nil, destroyed = row[6] == "true",
+        }
+    end
+    if #gates > 0 then section.gates = gates end
     if get_context("HasSupplies") == true then
         section.supplies = tonumber(get_context("PlayerArmyContext.GlobalCurrency"))
     end

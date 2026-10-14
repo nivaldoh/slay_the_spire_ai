@@ -233,36 +233,41 @@ def _side(side: str | None) -> str:
     return {"us": "you", None: "nobody", "none": "nobody"}.get(side, side)
 
 
-def render_mode(battle: dict | None) -> str | None:
-    """The battle type and what wins it: role, objectives in the game's words, tickets,
+def render_mode(mode: dict | None) -> str | None:
+    """The mode type and what wins it: role, objectives in the game's words, tickets,
     capture points and supplies, as far as the type has them."""
-    if not battle or not battle.get("type"):
+    if not mode or not mode.get("type"):
         return None
-    head = f"Battle: {battle['type']}"
-    if battle.get("role"):
-        head += f"; you are the {battle['role']}"
-    winner = battle.get("timeout_winner")
+    head = f"Battle: {mode['type']}"
+    if mode.get("role"):
+        head += f"; you are the {mode['role']}"
+    winner = mode.get("timeout_winner")
     if winner:
         head += "; if time runs out, " + {"us": "you win", "none": "it is a draw"}.get(
             winner, f"{winner} wins")
     lines = [head + "."]
-    if battle.get("objectives"):
-        lines.append("The game's description: " + battle["objectives"])
-    if battle.get("tickets"):
-        lines.append(f"Tickets ({battle.get('tickets_goal')} wins): " + ", ".join(
+    if mode.get("objectives"):
+        lines.append("The game's description: " + mode["objectives"])
+    if mode.get("tickets"):
+        goal = f" ({mode['tickets_goal']} wins)" if mode.get("tickets_goal") else ""
+        lines.append(f"Tickets{goal}: " + ", ".join(
             f"{_side(row['side'])} {row['tickets']} (+{row['per_s']}/s)"
-            for row in battle["tickets"]) + ".")
-    if battle.get("capture_points"):
+            for row in mode["tickets"]) + ".")
+    if mode.get("capture_points"):
         lines.append("Capture points (units standing on a point capture it):")
-        for point in battle["capture_points"]:
+        for point in mode["capture_points"]:
             flags = [flag for flag in ("contested", "locked") if point.get(flag)]
             if point.get("victory"):
                 flags.append("counts for victory")
             lines.append(f"- {point['id']} {point.get('name', '')} at ({point['x']:.0f},"
                          f" {point['z']:.0f}): held by {_side(point.get('holder'))},"
                          f" {point.get('percent', 0)}%" + "".join(f", {f}" for f in flags))
-    if battle.get("supplies") is not None:
-        lines.append(f"Supplies: {battle['supplies']}.")
+    for gate in mode.get("gates") or []:
+        state = "destroyed" if gate.get("destroyed") else f"{gate.get('hp')}% health"
+        lines.append(f"{gate.get('name') or 'Gate'} at ({gate['x']:.0f}, {gate['z']:.0f}):"
+                     f" {state}.")
+    if mode.get("supplies") is not None:
+        lines.append(f"Supplies: {mode['supplies']}.")
     return "\n".join(lines)
 
 
