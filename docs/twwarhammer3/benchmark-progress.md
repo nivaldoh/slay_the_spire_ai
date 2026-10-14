@@ -57,7 +57,8 @@ and enemy flight/speed fields, but Sol chose defender timeout evasion. The pilot
 deliberately retired at 385.6 s, with all six cavalry units active at at least 93% health
 and the Pegasus 367.7 m away. It has no gameplay outcome. 80 decisions, nine unreachable
 moves, $0.46713. The queue/controller exited at 19:00:11 UTC before the caster job.
-No controller is active. Next: merge b7 and screen the caster plus a separate attacker
+No controller is active. b7 is merged as `79d2f7d`; 72 benchmark/play tests and Ruff
+pass. Next: screen the caster plus a separate attacker
 variant retaining the original six-versus-eight foot-general roster. No G1/G2 yet.
 The cavalry rematch's 4.826 m/12-degree formation flag remains recorded; the plan now
 declares all valid trials in the primary analysis and a secondary comparison excluding

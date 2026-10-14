@@ -48,11 +48,11 @@ the caster pilot was not started. Evidence: `calibration/b6-pegasus-retirement.j
 `reports/bench-b6-pegasus-development.json` and `reports/bench-b6-flight-speed-acceptance.json`
 under WH3 runs. No controller is active.
 
-Isolated b7 `2e643fe` in `/tmp/wh3-benchmark-b7` adds actual snapshot-age reporting and
+b7 `2e643fe`, merged as `79d2f7d`, adds actual snapshot-age reporting and
 paired sensitivity excluding launches with flagged starts (`88de61a`), plus separate
 six-versus-eight cavalry attacker variants retaining the original foot-general roster.
-27 targeted tests, Ruff, declaration checks and b4 trace recomputation pass. Merge b7,
-then screen Sol on the caster and the new attacker task. Successful unit-ground spell
+72 benchmark/play tests, Ruff, declaration checks and b4 trace recomputation pass.
+Next screen Sol on the caster and the new attacker task. Successful unit-ground spell
 use still needs verification. The calibration plan explicitly retains geometry flags,
 with a secondary sensitivity analysis; the requested 0/6/10 s age is a minimum and
 actual delivered age must be reported. No G1/G2 or held-out trials have run.

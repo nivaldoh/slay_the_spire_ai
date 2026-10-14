@@ -2,7 +2,7 @@
 
 ## Benchmark harness b7 (2026-10-14, snapshot age and cavalry attacker candidate)
 
-Isolated commits `88de61a` and `2e643fe` add actual snapshot age at decision separately
+Commits `88de61a` and `2e643fe`, merged as `79d2f7d`, add actual snapshot age separately
 from total order age, and retain start-comparison deltas plus a paired sensitivity
 analysis excluding launches with flagged starts. Primary results keep every valid
 trial. Requested 0/6/10 s ages are minima: synchronous model calls can leave gaps in
@@ -15,6 +15,7 @@ map. It reverses the original foot-general candidate's role: the same six cavalr
 must defeat eight Empire units before the 1200 s timer. Funds stay capped at 8000.
 Declaration and setup-generation checks pass. This is a new tactical task, pending live
 setup and viability checks; no results are pooled with the defender variants.
+After the merge, all 72 benchmark/play tests and Ruff pass.
 
 ## Benchmark harness b6 (2026-10-14, Pegasus pressure hypothesis)
 
