@@ -162,8 +162,11 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
     except ProtocolError as exc:
         manifest.update(status="setup_failure", error=str(exc))
         raise
-    except BaseException:
-        manifest["status"] = "interrupted"
+    except BaseException as exc:
+        status = "interrupted" if isinstance(exc, (KeyboardInterrupt, SystemExit)) else (
+            "infrastructure_failure")
+        manifest.update(status=status, error=str(exc) or type(exc).__name__,
+                        error_type=type(exc).__name__)
         raise
     finally:
         manifest["finished_at"] = datetime.now(UTC).isoformat()

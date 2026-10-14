@@ -48,6 +48,7 @@ def test_setup_rejects_roster_multiplicity_factions_and_settings():
                 "enemy": {"faction": "e", "units": ["lord"]}}
     state = {"setup": {**scenario["expect"], "army_ai_stats_modifiers": [1.1, 1.1]},
              "armies": {"player": {"faction": "p"}, "enemy": {"faction": "e"}},
+             "terrain": {"rows": [".."]},
              "friendly": [{"type": t} for t in ("lord", "inf", "inf")],
              "enemy_roster": [{"type": "lord"}]}
     assert setup.check_battle(scenario, state)["friendly_roster"] == {"lord": 1, "inf": 2}
@@ -60,6 +61,8 @@ def test_setup_rejects_roster_multiplicity_factions_and_settings():
     with pytest.raises(ProtocolError, match="army AI modifiers"):
         setup.check_battle(scenario, {**state, "setup": {**state["setup"],
                                                        "army_ai_stats_modifiers": [1., 1.]}})
+    with pytest.raises(ProtocolError, match="terrain grid is missing"):
+        setup.check_battle(scenario, {**state, "terrain": None})
 
 
 def test_map_gate_and_required_steps(tmp_path):
@@ -146,6 +149,23 @@ def test_intervals_and_missing_active_strength():
     summary = report.mean_interval([0, 1, 2])
     assert summary["mean"] == 1
     assert summary["ci95"][1] == pytest.approx(1 + 4.303 / (3 ** .5))
+
+
+def test_rollout_throughput_includes_setup_failures_and_unknown_job_duration(tmp_path):
+    played = make_job(tmp_path, "played", [("hold", 0, "lost"), ("skills", .2, "won")])
+    failed = make_job(tmp_path, "failed", [])
+    for job, status, wall in ((played, "completed", 3600), (failed, "setup_failure", 1800)):
+        path = job / "manifest.json"
+        manifest = json.loads(path.read_text())
+        path.write_text(json.dumps({**manifest, "status": status, "wall_seconds": wall}))
+    result = report.collect([played, failed])
+    assert result["throughput"] == {"started_trials": 2, "valid_trials": 2, "job_wall_s": 5400,
+                                    "valid_trials_per_wall_hour": pytest.approx(4 / 3)}
+    assert "including setup, resets and failures; 1.33 valid trials/h" in report.render(result)
+    partial = make_job(tmp_path, "partial", [])
+    result = report.collect([played, failed, partial])
+    assert result["throughput"]["valid_trials_per_wall_hour"] is None
+    assert "throughput unavailable" in report.render(result)
 
 
 def test_terrain_and_rejected_move_alternatives_reach_both_model_renderers():

@@ -411,6 +411,27 @@ def test_a_failed_menu_step_stops_the_job_before_any_episode(tmp_path, harness):
     assert "failed" in (tmp_path / "job/menu.log").read_text()
 
 
+@pytest.mark.parametrize("failure,status", [
+    (MailboxTimeout("frontend did not report in"), "infrastructure_failure"),
+    (RuntimeError("source changed"), "infrastructure_failure"),
+    (KeyboardInterrupt(), "interrupted"),
+])
+def test_startup_failure_preserves_its_cause(tmp_path, harness, monkeypatch, failure, status):
+    harness.append(FakeMailbox([]))
+
+    def fail(*args):
+        raise failure
+
+    monkeypatch.setattr(play, "start_frontend", fail)
+    with pytest.raises(type(failure)):
+        play.play(tmp_path / "job", {**CONFIG, "results": str(tmp_path / "r.csv")},
+                  policy_factory=Hold)
+    manifest = json.loads((tmp_path / "job/manifest.json").read_text())
+    assert manifest["status"] == status and manifest["episodes"] == []
+    assert manifest["error"] == (str(failure) or type(failure).__name__)
+    assert manifest["error_type"] == type(failure).__name__
+
+
 def test_a_battle_observation_ends_the_menu_wait(tmp_path, harness):
     # The frontend script unloads with the loading screen, before it can log "done".
     mailbox = FakeMailbox([observation(0, 0), observation(1, 1000, result="won")])
@@ -515,7 +536,8 @@ def test_attach_rejects_an_old_non_realtime_session(tmp_path, monkeypatch, harne
     with pytest.raises(ValueError, match="unpaused at 1x"):
         play.play(tmp_path / "job", {**CONFIG, "attach": True}, policy_factory=Hold)
     manifest = json.loads((tmp_path / "job/manifest.json").read_text())
-    assert manifest["status"] == "interrupted" and manifest["episodes"] == []
+    assert manifest["status"] == "infrastructure_failure" and manifest["episodes"] == []
+    assert manifest["error_type"] == "ValueError" and "unpaused at 1x" in manifest["error"]
 
 
 def test_commander_jobs_snapshot_their_prompt_and_record_their_model(tmp_path, harness):

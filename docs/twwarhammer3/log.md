@@ -1,5 +1,18 @@
 # WH3 battle versions
 
+## Benchmark harness b3 (draft, not installed in the running b2 queue)
+
+The missing terrain field observed during b2 acceptance now fails benchmark setup
+before a controller can act. Unexpected startup/source errors retain their cause and
+are infrastructure failures; interruptions remain separate. Paired reports also show
+valid trials per whole-job wall hour, counting setup, resets and failed jobs. If any
+supplied job lacks final wall timing, throughput is unavailable rather than estimated
+from episode durations. This leaves tactical decisions and timing rules unchanged.
+
+Validation: 190 WH3 tests passed, 1 skipped (optional Lua runtime); Ruff passed. Regression
+checks cover absent terrain, startup causes, and a throughput denominator containing a
+setup failure. Live b2 traces/reports remain separate by their recorded source.
+
 ## Benchmark harness b2 (2026-10-14, draft awaiting live validation)
 
 Read-only probes during b1 acceptance found the per-army AI modifier getter, stat

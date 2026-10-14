@@ -70,6 +70,10 @@ repeats), and Student-t paired margin intervals across launch means. Active-stre
 margin excludes routing/shattered men and does not weight unit value. Small samples
 are exploratory; a null latency result only bounds effects the experiment could detect.
 
+Whole-job throughput includes setup, resets and failed jobs in its wall-time denominator.
+It is unavailable for incomplete jobs or older records without total job timing. A
+missing terrain grid rejects benchmark setup before decisions.
+
 JSON retains all trials, objectives integrated on engine ticks, supplies, purchases by
 type, protected-unit survival, order/plan age, decision rate, rejection reasons and costs.
 Start displacements above 1 m or bearing changes above 10 degrees are flagged rather

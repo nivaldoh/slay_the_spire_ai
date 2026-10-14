@@ -134,6 +134,9 @@ def check_battle(scenario: dict, observation: dict) -> dict:
             if actual != army["faction"]:
                 raise ProtocolError(f"setup {side} faction: {actual!r}, "
                                     f"expected {army['faction']!r}")
+    if not (observation.get("terrain") or {}).get("rows"):
+        raise ProtocolError("setup: the declared terrain grid is missing")
+    checks["terrain_grid"] = True
     return checks
 
 

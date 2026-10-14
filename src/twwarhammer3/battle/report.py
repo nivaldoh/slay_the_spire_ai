@@ -215,7 +215,15 @@ def collect(jobs: list[Path]) -> dict:
                                                         - differences.keys())})
         output.append({"definition": json.loads(signature), "controllers": summaries,
                        "paired": paired, "trials": trials})
+    trials = [trial for group in output for trial in group["trials"]]
+    valid = sum(trial["valid"] for trial in trials)
+    walls = [job["wall_seconds"] for job in job_records]
+    total_wall = sum(walls) if all(value is not None for value in walls) else None
+    throughput = {"started_trials": len(trials), "valid_trials": valid,
+                  "job_wall_s": total_wall,
+                  "valid_trials_per_wall_hour": valid * 3600 / total_wall if total_wall else None}
     return {"schema": 1, "groups": output, "jobs": job_records,
+            "throughput": throughput,
             "limitations": "Exploratory comparisons. Whole latency includes network and retries. "
             "Orders are issued/queued, not confirmed to have taken effect. Engine timing has a "
             "roughly 0.3 s floor. Visibility-filtered observations are not verified "
@@ -231,6 +239,15 @@ def collect(jobs: list[Path]) -> dict:
 def render(report: dict) -> str:
     lines = [f"Job {Path(job['instance']).name}: recorded status {job['recorded_status']}; "
              f"error={job['error'] or 'none'}" for job in report.get("jobs", [])]
+    throughput = report.get("throughput") or {}
+    rate, wall = throughput.get("valid_trials_per_wall_hour"), throughput.get("job_wall_s")
+    if wall is not None:
+        frequency = f"{rate:.2f}" if rate is not None else "unavailable"
+        lines += ["", f"All supplied jobs: {throughput['valid_trials']} valid / "
+                  f"{throughput['started_trials']} started trials; {wall / 3600:.2f} job wall h "
+                  f"including setup, resets and failures; {frequency} valid trials/h."]
+    else:
+        lines += ["", "Whole-job throughput unavailable: at least one job lacks final wall timing."]
     lines.append("")
     for group in report["groups"]:
         definition = group["definition"]
