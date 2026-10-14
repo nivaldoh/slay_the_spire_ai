@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-14 08:30 UTC-3 (11:30 UTC): what is running, where each game
+Updated 2026-10-14 12:40 UTC-3 (15:40 UTC): what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -8,8 +8,10 @@ stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 
 WH3 benchmark work is active (owner goal, 2026-10-14): complete the paired benchmark,
 difficulty/latency calibration, and the interface fixes its scenarios require.
-No game job is running yet; runtime doctor reports ready. Implementation and live
-acceptance evidence are tracked in [benchmark-progress.md](twwarhammer3/benchmark-progress.md).
+The five-controller b1 acceptance job completed; all five trials ended on engine losses,
+with identical rematch starts. No game controller is running. Next: live b2 modifier,
+terrain and invalid-setup checks, then difficulty and delay calibration.
+Implementation and live evidence: [benchmark-progress.md](twwarhammer3/benchmark-progress.md).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -20,9 +22,11 @@ command; clear it when the job stops.
 [battle types](twwarhammer3/battle-types.md), [controllers](twwarhammer3/controllers.md),
 [integration](twwarhammer3/integration.md), [log](twwarhammer3/log.md). `main` runs
 `llm` v15 and `commander` v3 (every battle type's objectives, `build` and `reinforce`
-orders) and the `skills` executor v1.2. API spend: $3.23 of the $25 cap ($0.80 tonight)
-(`uv run python -m twwarhammer3 spend`, 2026-10-14). Open owner decision: the AI stats
-modifier is 1.1, which favours the enemy; whether to play at 1.0.
+orders) and the `skills` executor v1.2. API spend: $3.2937 of the $25 cap
+(`uv run python -m twwarhammer3 spend`, 2026-10-14, after b1 acceptance).
+The owner has now authorized benchmark calibration, including testing the AI stats
+modifier at 1.0 and 1.1. Live read-back of 1.1 and its stat previews succeeded; 1.0 and
+the explicit lobby setter await their probe. See the active benchmark progress page.
 
 2026-10-14 overnight (owner goal: one minimal test scenario per battle type, vertical
 slices toward the benchmark): done for all nine types (conquest, domination,
@@ -33,7 +37,9 @@ it needs and ended on an engine result with `attack_nearest`, Luna `llm` v15 and
 and gaps: [battle-types.md](twwarhammer3/battle-types.md); engine facts:
 [integration.md](twwarhammer3/integration.md#battle-types-probed-2026-10-14).
 
-Next (owner to choose; the owner will discuss the next features):
+Current owner goal: complete the first three benchmark steps recommended in the
+2026-10-14 status discussion (paired benchmarks, calibration/latency experiments, required
+interface fixes). Remaining longer-term directions:
 1. Battle types toward benchmarks ([battle-types.md](twwarhammer3/battle-types.md#next)):
    variants per type (the `random-<type>` draws, both roles), calibration of the
    scripted controllers per type, and the interface gaps found (no deployment phase, no

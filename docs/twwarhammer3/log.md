@@ -1,6 +1,6 @@
 # WH3 battle versions
 
-## Benchmark harness b1 (2026-10-14, live acceptance pending)
+## Benchmark harness b1 (2026-10-14, acceptance rotation complete)
 
 Owner goal: complete paired benchmarks, difficulty/latency calibration and the scenario
 interface fixes. Added recorded controller rotation and importable controllers; strict
@@ -14,6 +14,13 @@ run instructions: [benchmark-run.md](benchmark-run.md). No calibration claim yet
 Validation: 1030 tests passed, 1 skipped; Ruff passed; every mod script parses as Lua 5.1.
 Follow-up clock/refusal edits passed the 52 relevant benchmark/play tests. Live results
 and remaining acceptance work go in [benchmark-progress.md](benchmark-progress.md).
+
+Acceptance job `bench-b1-acceptance-20261014`, source `5cad165`: hold, Luna, skills,
+attack_nearest and imported ExternalHold all ended on engine losses (386, 824, 426,
+262 and 386 s). All rematch start fingerprints matched. Luna cost $0.0594; ledger
+$3.2937. Active margins -0.675, -0.002, -0.192, -0.594 and -0.675 respectively.
+One instance verifies the rotation/import path, not ranking confidence or calibration.
+The five rows are committed in the register; report and probes are linked in progress.
 
 One entry per harness version: what changed, the job, and the results. The scenario is
 fixed unless an entry says otherwise: `kho5-dwf5`, a custom battle on "An Ogre's Folly",
