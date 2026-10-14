@@ -259,7 +259,7 @@ local CAPTURE_POINTS = 'CapturePointList.JoinString(Key + "|" + DisplayName + "|
     .. 'Position.z + "|" + CurrentHolderAlliance + "|" + IsContested + "|" + IsLocked + "|" + '
     .. 'CapturePercent + "|" + ContributesToVictory, ";")'
 local TICKETS = 'AllianceList.JoinString(Id + "|" + TicketsRemaining + "|" + TicketsIncomePerSecond + "|" + '
-    .. 'CpKillScore, ";")'
+    .. 'CpKillScore + "|" + StartingTickets, ";")'
 local GATES = 'BuildingsList.Filter(IsGate).JoinString(Name + "|" + Position.x + "|" + Position.z + "|" + '
     .. 'GateCurrentHitpoints + "|" + GateMaxHitpoints + "|" + IsDestroyed, ";")'
 -- Bridges are the crossings of a chokepoint battle; the state has no other terrain, and
@@ -337,7 +337,8 @@ local function mode_section()
     for _, row in ipairs(context_rows("CcoBattleRoot", "", TICKETS)) do
         local owner = side(tonumber(row[1]) or -1)
         local count, income = tonumber(row[2]) or 0, tonumber(row[3]) or 0
-        if owner and (goal > 0 or count > 0) then
+        -- A siege defender whose tickets ran out keeps its row, at 0.
+        if owner and (goal > 0 or count > 0 or (tonumber(row[5]) or 0) > 0) then
             tickets[#tickets + 1] = {side = owner, tickets = count, per_s = income, score = tonumber(row[4])}
         end
     end
@@ -358,24 +359,30 @@ local function mode_section()
     end
     if #bridges > 0 then section.bridges = bridges end
     if state.info.reinforcing then
-        local pool, cheapest = {}, nil
+        local pool, affordable = {}, {}
+        local supplies = tonumber(get_context("PlayerArmyContext.GlobalCurrency")) or 0
         for index, row in ipairs(pool_rows()) do
             pool[#pool + 1] = {type = row[1], cost = round(tonumber(row[2]))}
-            if not cheapest or pool[#pool].cost < pool[cheapest].cost then cheapest = index end
+            if (pool[#pool].cost or 0) <= supplies then affordable[#affordable + 1] = index end
         end
+        table.sort(affordable, function(a, b) return pool[a].cost < pool[b].cost end)
         section.reinforcements = pool
         -- Zones open to the alliance can still refuse purchases (34 refusals in one llm
-        -- domination battle), so each zone says whether the pool's cheapest unit could be
-        -- bought there now (none can if it is not affordable).
+        -- domination battle), and the engine also refuses particular units (one bought back
+        -- and still recovering). A zone is usable if some affordable unit can be bought there
+        -- now, refusing if none can; with nothing affordable it is not judged.
         local zones = {}
         local query = string.format(ZONES, state.info.player_alliance or 0)
         for _, row in ipairs(context_rows("CcoBattleRoot", "", query)) do
-            local id = tonumber(row[1])
-            local usable = cheapest and get_context(string.format(
-                "BattleReinforcementPoolContext.CanPurchaseUnit(%s.At(%d), PlayerArmyContext, %d)",
-                POOL, cheapest - 1, id)) == true
+            local id, usable = tonumber(row[1]), nil
+            for _, index in ipairs(affordable) do
+                usable = get_context(string.format(
+                    "BattleReinforcementPoolContext.CanPurchaseUnit(%s.At(%d), PlayerArmyContext, %d)",
+                    POOL, index - 1, id)) == true
+                if usable then break end
+            end
             zones[#zones + 1] = {id = id, x = round(tonumber(row[2]), 1), z = round(tonumber(row[3]), 1),
-                                 usable = usable or false}
+                                 usable = usable}
         end
         section.spawn_zones = zones
     end
@@ -511,26 +518,29 @@ local function apply_build(order)
 end
 
 -- Calling in a pool unit is the pool's PurchaseUnit at one of the army's spawn zones (its
--- UniqueID); the unit joins the army as it enters and the next scan gives it an id. The
--- order names a unit type, and the cheapest unit of that type in the pool is bought (the
--- pool can hold a type at several costs).
+-- UniqueID); the unit joins the army as it enters and the next scan gives it an id (a unit
+-- bought back keeps its old one). The order names a unit type, and the cheapest unit of
+-- that type the engine will sell there is bought (the pool can hold a type at several costs).
 local function apply_reinforce(order)
-    local index, cheapest = nil, nil
-    for i, row in ipairs(pool_rows()) do
-        local cost = tonumber(row[2]) or 0
-        if row[1] == order.reinforcement and (not cheapest or cost < cheapest) then
-            index, cheapest = i, cost
-        end
-    end
-    if not index then error("not_in_pool") end
     local zone = tonumber(order.zone)
     if not zone then error("bad_zone") end
-    -- Some zones open to the alliance still refuse purchases (in domination the two
-    -- nearest the centre did), so the engine is asked first.
-    local args = string.format("(%s.At(%d), PlayerArmyContext, %d)", POOL, index - 1, zone)
-    if get_context("BattleReinforcementPoolContext.CanPurchaseUnit" .. args) ~= true then
-        error("cannot_purchase_there")
+    local entries = {}
+    for index, row in ipairs(pool_rows()) do
+        if row[1] == order.reinforcement then entries[#entries + 1] = {index = index, cost = tonumber(row[2]) or 0} end
     end
+    if #entries == 0 then error("not_in_pool") end
+    table.sort(entries, function(a, b) return a.cost < b.cost end)
+    -- A bought unit stays in the pool until it enters, and a unit bought back may be
+    -- recovering: the first entry the engine will sell at this zone is bought. Some zones
+    -- open to the alliance refuse purchases altogether.
+    local args = nil
+    for _, entry in ipairs(entries) do
+        local candidate = string.format("(%s.At(%d), PlayerArmyContext, %d)", POOL, entry.index - 1, zone)
+        if not args and get_context("BattleReinforcementPoolContext.CanPurchaseUnit" .. candidate) == true then
+            args = candidate
+        end
+    end
+    if not args then error("cannot_purchase_there") end
     local before = tonumber(get_context("PlayerArmyContext.GlobalCurrency"))
     common.call_context_command("CcoBattleRoot", "", "BattleReinforcementPoolContext.PurchaseUnit" .. args)
     local after = tonumber(get_context("PlayerArmyContext.GlobalCurrency"))
