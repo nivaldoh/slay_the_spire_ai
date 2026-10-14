@@ -587,7 +587,7 @@ Engine check, `probe-abilities-random-s4` (`--policy probe_abilities`, seed 4: K
   and not ready, and the potion with 0 uses left.
 - The army abilities showed locked, with costs 100/200/300.
 - The battle was lost at 228 s with 31 points, so no army ability unlocked. The probe
-  now runs on the `skills` executor (`39a2b5d`), which earned 113 points on `kho5-dwf5`.
+  now runs on the `skills` executor (`46f94d0`), which earned 113 points on `kho5-dwf5`.
 
 Second check, `probe-abilities-random-s245-20261014` (Khorne vs Skaven, seed 245):
 - Horn of Khorne unlocked at 109 points and was cast at our largest unit's position at
