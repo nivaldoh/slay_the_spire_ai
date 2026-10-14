@@ -174,8 +174,9 @@ def test_build_orders_need_an_empty_slot_a_listed_option_and_the_supplies(order,
 
 SURVIVAL = {**OBSERVATION, "mode": {
     "supplies": 1000, "spawn_zones": [{"id": 14, "x": 320, "z": 0}],
-    "reinforcements": [{"type": "marauders", "cost": 400}, {"type": "warriors", "cost": 900},
-                       {"type": "marauders", "cost": 446}],
+    # As in the survival pool: one type at two costs, the dearer listed first.
+    "reinforcements": [{"type": "marauders", "cost": 446}, {"type": "warriors", "cost": 900},
+                       {"type": "marauders", "cost": 400}],
     "slots": [{"id": "s1", "usable": True, "options": [{"name": "barricade_trap", "cost": 200}]},
               {"id": "s2", "usable": False, "options": [{"name": "barricade_trap", "cost": 200}]}],
 }}
@@ -186,7 +187,7 @@ SURVIVAL = {**OBSERVATION, "mode": {
     ([{"type": "reinforce", "reinforcement": "marauders", "zone": 14}] * 2, None),
     ([{"type": "reinforce", "reinforcement": "warriors", "zone": 14},
       {"type": "reinforce", "reinforcement": "marauders", "zone": 14}],
-     "marauders costs 400, supplies 1000 \\(900 already ordered\\)"),
+     "marauders costs 400, supplies 1000 \\(900 already ordered\\)"),  # the cheaper one first
     ([{"type": "reinforce", "reinforcement": "trolls", "zone": 14}], "no 'trolls' left"),
     ([{"type": "reinforce", "reinforcement": "warriors", "zone": 14}] * 2, "no 'warriors' left"),
     ([{"type": "reinforce", "reinforcement": "marauders", "zone": 3}], "not one of yours"),

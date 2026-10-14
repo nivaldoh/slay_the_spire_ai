@@ -41,7 +41,6 @@ class BattleRestarted(RuntimeError):
 
 
 ORDER_TYPES = ("move", "attack", "halt", "behaviour", "ability")
-ARMY_ORDER_TYPES = ("ability", "build", "reinforce")
 ATTACK_MODES = ("auto", "melee", "ranged")
 BEHAVIOURS = ("fire_at_will", "skirmish", "defend", "change_formation_spacing", "formed_attack")
 
@@ -169,7 +168,8 @@ def _validate_purchase(order, observation, purchases) -> None:
         if order.get("zone") not in {zone["id"] for zone in mode.get("spawn_zones") or []}:
             raise IllegalActionError(f"army: zone {order.get('zone')!r} is not one of yours")
         purchases["units"].append(name)
-        cost = pool[taken].get("cost") or 0
+        # The engine side buys the cheapest unit of the type, then the next cheapest.
+        cost = sorted(unit.get("cost") or 0 for unit in pool)[taken]
     if mode.get("supplies") is not None and purchases["spent"] + cost > mode["supplies"]:
         raise IllegalActionError(f"army: {name} costs {cost}, supplies {mode['supplies']}"
                                  f" ({purchases['spent']} already ordered)")

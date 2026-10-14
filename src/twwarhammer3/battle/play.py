@@ -382,10 +382,9 @@ def track_objectives(result: dict, observation: dict) -> None:
     measures = result.setdefault("objectives", {"samples": 0, "victory_held": None})
     if points:
         held = sum(point.get("holder") == "us" for point in points) / len(points)
-        samples = measures["samples"]
-        measures["victory_held"] = round(
-            ((measures["victory_held"] or 0) * samples + held) / (samples + 1), 3)
-        measures["samples"] = samples + 1
+        measures["held_sum"] = measures.get("held_sum", 0) + held
+        measures["samples"] += 1
+        measures["victory_held"] = round(measures["held_sum"] / measures["samples"], 3)
     if mode.get("supplies") is not None:
         measures["supplies_left"] = mode["supplies"]
 

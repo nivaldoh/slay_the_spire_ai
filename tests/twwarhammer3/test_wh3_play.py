@@ -519,7 +519,13 @@ def test_episodes_measure_victory_points_held_supplies_left_and_purchases():
         play.track_objectives(result, {"mode": {"supplies": supplies, "capture_points": [
             {"id": f"c{i}", "holder": holder, "victory": True} for i, holder in enumerate(holders)
         ] + [{"id": "c9", "holder": "enemy", "victory": False}]}})
-    assert result["objectives"] == {"samples": 3, "victory_held": 0.5, "supplies_left": 300}
+    assert result["objectives"]["samples"] == 3 and result["objectives"]["victory_held"] == 0.5
+    assert result["objectives"]["supplies_left"] == 300
+    long = {}
+    for held in [True] * 2000 + [False] * 2000:  # a long battle: no rounding drift
+        play.track_objectives(long, {"mode": {"capture_points": [
+            {"id": "c1", "holder": "us" if held else "enemy", "victory": True}]}})
+    assert long["objectives"]["victory_held"] == 0.5
     play.track_objectives(result, {"mode": {}})  # no objectives: nothing changes
     assert result["objectives"]["samples"] == 3
     empty = {}

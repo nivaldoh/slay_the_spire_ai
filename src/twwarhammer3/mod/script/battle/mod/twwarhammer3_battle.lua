@@ -493,11 +493,15 @@ end
 
 -- Calling in a pool unit is the pool's PurchaseUnit at one of the army's spawn zones (its
 -- UniqueID); the unit joins the army as it enters and the next scan gives it an id. The
--- order names a unit type, and the first unit of that type in the pool is bought.
+-- order names a unit type, and the cheapest unit of that type in the pool is bought (the
+-- pool can hold a type at several costs).
 local function apply_reinforce(order)
-    local index = nil
+    local index, cheapest = nil, nil
     for i, row in ipairs(pool_rows()) do
-        if not index and row[1] == order.reinforcement then index = i end
+        local cost = tonumber(row[2]) or 0
+        if row[1] == order.reinforcement and (not cheapest or cost < cheapest) then
+            index, cheapest = i, cost
+        end
     end
     if not index then error("not_in_pool") end
     local zone = tonumber(order.zone)
@@ -735,9 +739,9 @@ end
 
 -- Registers units not seen before: every unit at the start, then units that enter later.
 -- Friendly units get a controller each; enemies come from every other alliance (several in
--- a free-for-all). Units called in from a reinforcement pool or arriving in survival waves
--- belong to reinforcement armies, which the alliances' army lists leave out; they are
--- registered once they are on the field.
+-- a free-for-all). Units bought from a reinforcement pool join their alliance's army list;
+-- units of the reinforcement armies (the pools, survival waves) are registered once they
+-- are on the field.
 local function register(unit, alliance, army)
     local key = get(unit, "unique_ui_id", nil)
     if not key or state.known[key] then return end
@@ -766,7 +770,6 @@ local function register(unit, alliance, army)
 end
 
 local function scan()
-    local player = bm:get_player_army()
     local alliances = bm:alliances()
     for alliance = 1, alliances:count() do
         local armies = alliances:item(alliance):armies()
@@ -788,7 +791,7 @@ local function scan()
             local unit = units:item(unit_index)
             if get(unit, "is_valid_target", false) then
                 local alliance = get(unit, "alliance_index", nil)
-                if alliance then register(unit, alliance, alliance == bm:local_alliance() and army or player) end
+                if alliance then register(unit, alliance, army) end
             end
         end
     end
