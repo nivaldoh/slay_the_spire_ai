@@ -181,6 +181,14 @@ def render_unit(unit: dict, mine: bool, before: tuple | None = None,
         parts.append(target)
     if unit.get("dest"):
         parts.append(f"heading to ({unit['dest'][0]:.0f}, {unit['dest'][1]:.0f})")
+    if mine and unit.get("navigation"):
+        navigation = unit["navigation"]
+        rejected = navigation["rejected"]
+        alternatives = ", ".join(f"({p['x']:.0f},{p['z']:.0f})"
+                                 for p in navigation.get("alternatives") or []) or "none found"
+        parts.append(f"unreachable move ({rejected['x']:.0f},{rejected['z']:.0f}); "
+                     f"nearby reachable destinations at {navigation['sampled_ms'] / 1000:.1f}s: "
+                     + alternatives)
     leaving = {"routing", "shattered"} & set(unit.get("state") or [])
     if mine and not unit.get("target") and not leaving:
         if not (target or unit.get("dest")):
@@ -327,6 +335,15 @@ def render_state(observation: dict, last_seen: dict, before: dict | None = None,
     mode = render_mode(observation.get("mode"))
     if mode:
         lines.insert(0, mode)
+    if observation.get("terrain"):
+        terrain = observation["terrain"]
+        lines.insert(0, f"Terrain samples: first cell centre ({terrain['x0']},{terrain['z0']}), "
+                     f"columns increase x and rows increase z by {terrain['cell_m']} m. "
+                     f"'.' = {terrain['sample_width_m']} m square clear of path restrictions; "
+                     "'#' = restricted. Coarse deployment snapshot, not a path or a guarantee "
+                     "for this unit. Narrow crossings can lie between samples. "
+                     "Do not repeat an unreachable move: select a reported reachable "
+                     "alternative or another goal.\n" + "\n".join(terrain["rows"]))
     lines += ["- " + render_unit(unit, True, before.get(unit["id"]), visible,
                                  ordered.get(unit["id"]))
               for unit in observation.get("friendly", [])]

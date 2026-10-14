@@ -45,6 +45,7 @@ def wilson(wins: int, count: int) -> list[float] | None:
 
 def trial_metrics(directory: Path, result: dict) -> dict:
     kinds, rejections, ages, plan_ages, calls, decision_times = Counter(), Counter(), [], [], [], []
+    processing, models, seen_calls = [], set(), set()
     trace = directory / "trace.jsonl"
     if trace.exists():
         with trace.open() as handle:
@@ -63,8 +64,17 @@ def trial_metrics(directory: Path, result: dict) -> dict:
                     if meta.get("plan_age_s") is not None:
                         plan_ages.append(meta["plan_age_s"])
                     for attempt in meta.get("attempts") or []:
+                        response_id = attempt.get("response_id")
+                        if response_id and response_id in seen_calls:
+                            continue
+                        if response_id:
+                            seen_calls.add(response_id)
                         if attempt.get("seconds") is not None:
                             calls.append(attempt["seconds"])
+                        if attempt.get("provider_processing_ms") is not None:
+                            processing.append(attempt["provider_processing_ms"] / 1000)
+                        if attempt.get("actual_model"):
+                            models.add(attempt["actual_model"])
                 elif kind == "ack":
                     # Empty batches do not count as action latency.
                     if (event.get("ack") or {}).get("results"):
@@ -80,6 +90,7 @@ def trial_metrics(directory: Path, result: dict) -> dict:
         "margin": own - enemy if own != "" and enemy != "" else None,
         "order_age_s": distribution(ages), "plan_age_s": distribution(plan_ages),
         "call_seconds": distribution(calls), "rejections": dict(rejections),
+        "provider_processing_seconds": distribution(processing), "actual_models": sorted(models),
         "decisions_per_battle_s": result.get("decisions", 0) / duration if duration > 0 else None,
         "trace": dict(kinds),
     }
@@ -95,6 +106,7 @@ def distribution(values: list[float]) -> dict:
 def collect(jobs: list[Path]) -> dict:
     groups = defaultdict(list)
     seen = set()
+    job_records = []
     for job in jobs:
         job = job.resolve()
         if job in seen:
@@ -103,6 +115,11 @@ def collect(jobs: list[Path]) -> dict:
         manifest = json.loads((job / "manifest.json").read_text())
         config = manifest["config"]
         scenario = manifest.get("scenario") or {}
+        job_records.append({"instance": str(job), "recorded_status": manifest.get("status"),
+                            "planned_trials": manifest.get("trials"),
+                            "wall_seconds": manifest.get("wall_seconds"),
+                            "setup_checks": manifest.get("setup_checks"),
+                            "error": manifest.get("error")})
         environment_path = job / "environment.json"
         environment = json.loads(environment_path.read_text()) if environment_path.exists() else {}
         signature = json.dumps({"scenario": scenario, "source": manifest.get("source_revision"),
@@ -119,10 +136,13 @@ def collect(jobs: list[Path]) -> dict:
             path = directory / "result.json"
             index = int(directory.name.split("-")[-1])
             declared = (manifest.get("trials") or [{}] * (index + 1))[index]
-            result = json.loads(path.read_text()) if path.exists() else {"status": "interrupted"}
+            result = json.loads(path.read_text()) if path.exists() else {"status": "missing_result"}
             policy = result.get("policy", declared.get("policy", config["policy"]))
             delay = result.get("delay_ms", declared.get("delay_ms", 0))
             label = f"{policy} / +{delay / 1000:g}s"
+            card = result.get("card") or {}
+            if card.get("kind") == "external":
+                label += " / " + str(card.get("source_sha256", "unknown"))[:12]
             outcome = "time_limit" if result.get("ended_by") == "time_limit" else result["status"]
             metrics = trial_metrics(directory, result)
             protected = scenario.get("protected") or []
@@ -139,6 +159,7 @@ def collect(jobs: list[Path]) -> dict:
                 "card": result.get("card"), "metrics": metrics, "protected_left": protected_left,
                 "objectives": result.get("objectives"), "llm": result.get("llm") or {},
                 "wall_s": result.get("elapsed_seconds"), "battle_s": result.get("battle_s"),
+                "clock_ratio": result.get("clock_ratio"),
                 "error": result.get("error"),
             })
     output = []
@@ -150,6 +171,21 @@ def collect(jobs: list[Path]) -> dict:
             outcomes = Counter(trial["outcome"] for trial in items)
             valid = sum(trial["valid"] for trial in items)
             instance_counts = Counter(trial["instance"] for trial in items if trial["valid"])
+            means = {}
+            for field in ("margin", "decisions_per_battle_s"):
+                values = [trial["metrics"][field] for trial in items
+                          if trial["metrics"][field] is not None
+                          and (field != "margin" or trial["valid"])]
+                means[field] = statistics.mean(values) if values else None
+            for field in ("order_age_s", "plan_age_s", "call_seconds"):
+                values = [trial["metrics"][field]["mean"] for trial in items
+                          if trial["metrics"][field]["mean"] is not None]
+                means[field] = statistics.mean(values) if values else None
+            for field in ("victory_held", "key_held", "supplies_left"):
+                values = [(trial.get("objectives") or {}).get(field) for trial in items
+                          if trial["valid"]]
+                values = [value for value in values if value is not None]
+                means[field] = statistics.mean(values) if values else None
             summaries.append({
                 "controller": controller, "trials": len(items), "valid": valid,
                 "instances": len({trial["instance"] for trial in items}),
@@ -161,6 +197,9 @@ def collect(jobs: list[Path]) -> dict:
                 "usd": sum(trial["llm"].get("usd", 0) for trial in items),
                 "wall_s": sum(trial["wall_s"] or 0 for trial in items),
                 "unchecked_trials": sum(not trial["setup_checked"] for trial in items),
+                "means": means,
+                "input_tokens": sum(trial["llm"].get("input_tokens", 0) for trial in items),
+                "output_tokens": sum(trial["llm"].get("output_tokens", 0) for trial in items),
             })
         for a, b in itertools.combinations(controllers, 2):
             instances = defaultdict(lambda: defaultdict(list))
@@ -176,7 +215,7 @@ def collect(jobs: list[Path]) -> dict:
                                                         - differences.keys())})
         output.append({"definition": json.loads(signature), "controllers": summaries,
                        "paired": paired, "trials": trials})
-    return {"schema": 1, "groups": output,
+    return {"schema": 1, "groups": output, "jobs": job_records,
             "limitations": "Exploratory comparisons. Whole latency includes network and retries. "
             "Orders are issued/queued, not confirmed to have taken effect. Engine timing has a "
             "roughly 0.3 s floor. Visibility-filtered observations are not verified "
@@ -190,7 +229,9 @@ def collect(jobs: list[Path]) -> dict:
 
 
 def render(report: dict) -> str:
-    lines = []
+    lines = [f"Job {Path(job['instance']).name}: recorded status {job['recorded_status']}; "
+             f"error={job['error'] or 'none'}" for job in report.get("jobs", [])]
+    lines.append("")
     for group in report["groups"]:
         definition = group["definition"]
         scenario = definition["scenario"]
@@ -210,6 +251,19 @@ def render(report: dict) -> str:
                          for key in ("won", "lost", "draw", "time_limit")),
                 str(row["trials"] - row["valid"]), f"{rate:.2f}{ci}" if rate is not None else "—",
                 f"{row['usd']:.4f}", f"{row['wall_s'] / 3600:.2f}", str(row["unchecked_trials"]),
+            ]) + " |")
+        lines += ["", "Means: gameplay over valid trials; timing over all recorded trials. "
+                  "Unavailable values excluded.", "",
+                  "| Controller | Margin | Decisions/s | Order age s | Plan age s | Call s | "
+                  "Victory held | Key held | Supplies left | Tokens in/out |", "|" + "---|" * 10]
+        for row in group["controllers"]:
+            values = [row["means"][key] for key in
+                      ("margin", "decisions_per_battle_s", "order_age_s", "plan_age_s",
+                       "call_seconds", "victory_held", "key_held", "supplies_left")]
+            lines.append("| " + " | ".join([
+                row["controller"],
+                *(f"{value:.3f}" if value is not None else "—" for value in values),
+                f"{row['input_tokens']}/{row['output_tokens']}",
             ]) + " |")
         lines += ["", "Paired active-strength margin (A minus B; one mean per launch):", "",
                   "| A | B | Paired instances | Mean | 95% CI | Detectable difference | Unpaired |",

@@ -13,8 +13,9 @@ committed; do not run another game controller. The game stays unpaused at 1x.
 `dwf-sla-taurox` freezes a 12-v-12 development draw, including its map, factions,
 armies, DLC requirements and Runelord substitution. It expects very hard, large funds,
 3600 s, unit scale 0.75, realism off, the player defending and AI stats preference 1.1.
-These settings are checked, not automatically changed. The AI slider's relationship
-to the preference is still being probed. Setup mismatches stop the job before scoring.
+The AI modifier is explicitly set through the lobby and read back both there and from
+each battle army; other settings are checked, not automatically changed. This b2 setter
+still needs live acceptance. Setup mismatches stop the job before scoring.
 
 ```bash
 uv run python -m twwarhammer3 play --scenario dwf-sla-taurox \
@@ -72,3 +73,22 @@ JSON retains all trials, objectives integrated on engine ticks, supplies, purcha
 type, protected-unit survival, order/plan age, decision rate, rejection reasons and costs.
 Start displacements above 1 m or bearing changes above 10 degrees are flagged rather
 than discarded. Inspect setup checks, start flags, missing pairs and the limitations.
+
+## Terrain and calibration candidates (b2, live validation pending)
+
+The observation track is `obs-v1+terrain/act-v1/live-1x`. A deployment snapshot gives
+32 m spaced samples of 16 m squares clear of pathfinding restrictions. This is a coarse
+map, not a path planner: narrow crossings can be missed and buildings can later change.
+After an unreachable move, the unit reports nearby destinations tested with its own
+reachability query. The engine sends no replacement order; the controller must choose.
+
+The live b1 probes read the modifier as 1.1. Its stat previews say +10% attack, defence
+and weapon damage and +8 leadership; a setting read-back alone does not measure each
+unit's applied bonuses. Calibration explicitly tests 1.0 as well as 1.1.
+
+Three additional candidates were frozen before their calibration: `dwf-sla-herald`
+(1.0), `dwf-sla-herald-hard` (1.1), and `dwf-sla-herald-heldout-wastes` (1.0, Nurgle
+wastes map). They replace Sigvald with the selectable Shadow Herald, preserving every
+other unit. The first two are development variants; the third must stay out of tuning.
+They remain candidates, not admitted benchmark scenarios. A shorter finite lobby timer
+will be probed and declared separately before calibration to bound standoffs.

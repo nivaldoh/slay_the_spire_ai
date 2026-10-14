@@ -127,6 +127,37 @@ local function round(value, digits)
     return math.floor(value * scale + 0.5) / scale
 end
 
+local function vector(x, y, z)
+    if type(v) == "function" then return v(x, y, z) end
+    return battle_vector:new(x, y, z)
+end
+
+-- Coarse terrain information only, sampled once at deployment. This is not a path
+-- planner: narrow routes can fall between samples, buildings may later be destroyed,
+-- and reachability remains unit-specific. No enemy-unit information is queried.
+local function read_terrain()
+    local corners = {bm.battle:battle_boundaries()}
+    local min_x, max_x, min_z, max_z = math.huge, -math.huge, math.huge, -math.huge
+    for _, corner in ipairs(corners) do
+        min_x, max_x = math.min(min_x, corner:get_x()), math.max(max_x, corner:get_x())
+        min_z, max_z = math.min(min_z, corner:get_z()), math.max(max_z, corner:get_z())
+    end
+    local cell = 32
+    local rows = {}
+    for z = min_z + cell / 2, max_z - cell / 2, cell do
+        local row = {}
+        for x = min_x + cell / 2, max_x - cell / 2, cell do
+            local y = bm.battle:get_terrain_height(x, z)
+            local clear = bm.battle:is_area_clear(vector(x, y, z), 0, cell / 2, cell / 2)
+            row[#row + 1] = clear and "." or "#"
+        end
+        rows[#rows + 1] = table.concat(row)
+    end
+    return {x0 = min_x + cell / 2, z0 = min_z + cell / 2, cell_m = cell, rows = rows,
+            sample_width_m = cell / 2, sampled_ms = battle_time(),
+            bounds = {min_x = min_x, max_x = max_x, min_z = min_z, max_z = max_z}}
+end
+
 -- From the land_units class (inf_mel, inf_mis, cav_shk, cav_mis, art_fld, mon, com, ...);
 -- the is_* flags missed missile cavalry and war machines.
 local CLASSES = {
@@ -181,6 +212,7 @@ local function unit_record(id, unit, mine, class)
         record.width = round(get(unit, "ordered_width", 0), 1)
         record.attack_mode = entry.attack_mode
         record.command_queue = entry.command_queue
+        record.navigation = entry.navigation
         record.behaviours = {}
         for _, key in ipairs(BEHAVIOURS) do
             if get(unit, "can_use_behaviour", false, key) then
@@ -493,6 +525,7 @@ local function observation(now)
         orders = state.applied, result = state.result, final = state.final,
         evaluation = evaluation(),
         setup = state.setup,
+        terrain = state.terrain,
     }
 end
 
@@ -500,11 +533,6 @@ local function publish_observation(now)
     local ok, message = pcall(observation, now)
     if not ok then log("observation failed: " .. clean_error(message)); return false end
     return publish("observation.json", message)
-end
-
-local function vector(x, y, z)
-    if type(v) == "function" then return v(x, y, z) end
-    return battle_vector:new(x, y, z)
 end
 
 local function apply_army_ability(order)
@@ -616,7 +644,24 @@ local function apply_order(order)
             if not x or not z then error("bad_position") end
             local y = get(bm.battle, "get_terrain_height", 0, x, z)
             local destination = vector(x, y, z)
-            if not get(unit, "can_reach_position", true, destination) then error("unreachable") end
+            if not get(unit, "can_reach_position", true, destination) then
+                local alternatives = {}
+                for _, radius in ipairs({16, 32, 64}) do
+                    for angle = 0, 7 do
+                        local nx = x + radius * math.cos(angle * math.pi / 4)
+                        local nz = z + radius * math.sin(angle * math.pi / 4)
+                        local ny = get(bm.battle, "get_terrain_height", 0, nx, nz)
+                        if get(unit, "can_reach_position", false, vector(nx, ny, nz)) then
+                            alternatives[#alternatives + 1] = {x = round(nx, 1), z = round(nz, 1)}
+                        end
+                    end
+                    if #alternatives > 0 then break end
+                end
+                entry.navigation = {rejected = {x = x, z = z}, alternatives = alternatives,
+                                    sampled_ms = battle_time()}
+                error("unreachable")
+            end
+            entry.navigation = nil
             local facing, width = tonumber(order.facing), tonumber(order.width)
             if width and width <= 0 then error("bad_width") end
             if facing or width then
@@ -971,6 +1016,14 @@ local function start()
     state.started_ms = battle_time()
     state.setup = {unit_scale = get_context("UnitSize"), realism = get_context("IsRealismModeEnabled"),
                    player_defends = get_context("PlayerAllianceContext.IsDefender")}
+    local modifiers = {}
+    local query = 'ArmyList.JoinString("" + AiStatsModifier, ";")'
+    for _, row in ipairs(context_rows("CcoBattleRoot", "", query)) do
+        modifiers[#modifiers + 1] = tonumber(row[1])
+    end
+    state.setup.army_ai_stats_modifiers = modifiers
+    local terrain_ok, terrain = pcall(read_terrain)
+    if terrain_ok then state.terrain = terrain else log("terrain failed: " .. clean_error(terrain)) end
     sample_objectives(state.started_ms)
     local fill = get_context("HasArmyAbilityFillCurrency") == true
     for index, row in ipairs(context_rows("CcoBattleRoot", "", ARMY_SETUP)) do
