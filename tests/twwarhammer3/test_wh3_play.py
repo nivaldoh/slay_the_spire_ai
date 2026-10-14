@@ -10,7 +10,7 @@ import pytest
 
 from gameai.ledger import BudgetExhausted
 from twwarhammer3.__main__ import add_session_arguments, main
-from twwarhammer3.battle import commander, digest, llm, play, stats
+from twwarhammer3.battle import commander, controllers, digest, llm, play, stats
 from twwarhammer3.battle.scripted import AttackNearest, Hold
 from twwarhammer3.protocol import BattleRestarted, MailboxTimeout, PolicyFailure
 
@@ -197,6 +197,26 @@ def test_silence_is_an_infrastructure_failure_and_a_new_battle_a_restart(tmp_pat
     mailbox = FakeMailbox([observation(0, 0), observation(0, 0, battle="b2")])
     result = play.play_episode(tmp_path / "b", CONFIG, Hold(), mailbox, not_battle=None)
     assert result["status"] == "infrastructure_failure" and "b2" in result["error"]
+
+
+@pytest.mark.parametrize("status", ["won", "lost", "draw"])
+def test_expired_countdown_preserves_engine_outcome_after_timer_resets(tmp_path, status):
+    timer = {"observed_ms": 1204100, "remaining_ms": 945.6787109375,
+             "deadline_ms": 1205045.6787109375, "expired": True, "source": "countdown_deadline"}
+    terminal = {**observation(2, 1205200, result=status), "remaining_ms": -1, "timer": timer}
+    mailbox = FakeMailbox([observation(0, 0), terminal])
+    result = play.play_episode(tmp_path / "e", CONFIG, Hold(), mailbox, not_battle=None)
+    assert result["status"] == status and result["ended_by"] == "time_limit"
+    assert result["timer"] == timer and result["remaining_ms"] == -1
+    assert not mailbox.requests
+
+
+def test_unlimited_or_unexpired_timer_does_not_imply_timeout(tmp_path):
+    for name, timer in (("unlimited", None), ("early", {"expired": False})):
+        terminal = {**observation(2, 3000, result="lost"), "remaining_ms": -1, "timer": timer}
+        result = play.play_episode(tmp_path / name, CONFIG, Hold(),
+                                   FakeMailbox([observation(0, 0), terminal]), not_battle=None)
+        assert result["status"] == "lost" and result["ended_by"] == "engine_result"
 
 
 def test_illegal_scripted_orders_are_counted_and_not_sent(tmp_path):
@@ -525,10 +545,13 @@ def test_a_random_scenario_draws_a_map_and_races_and_autogenerates_both_armies()
     assert "wh_dlc03_sc_bst_beastmen" not in catalogue["races"]
 
 
-def test_attack_nearest_reorders_a_lapsed_attack_and_skips_the_dead():
-    policy = AttackNearest()
+@pytest.mark.parametrize("name,running", [("attack_nearest", False), ("rush_nearest", True)])
+def test_nearest_baselines_reorder_lapsed_attacks_and_skip_the_dead(name, running):
+    policy = controllers.controller_class(name)()
     first = observation(1, 1000)
-    assert [o["unit"] for o in policy.decide(first)] == ["f1"]
+    assert policy.decide(first) == [{"unit": "f1", "type": "attack", "target": "e1",
+                                     "run": running}]
+    assert policy.metadata()["type"] == name
     assert policy.decide(first) == []
     lapsed = observation(2, 6000)
     lapsed["friendly"][0].update(state=["idle"], target=None)

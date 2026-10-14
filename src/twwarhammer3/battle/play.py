@@ -601,10 +601,13 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, expect) 
             applied_ms = ack["applied_ms"]
             outstanding = None
         if observation.get("result"):
+            timer = observation.get("timer") or {}
             result.update(status=observation["result"], battle_ms=observation.get("time_ms"),
                           battle_s=round(observation.get("time_ms", 0) / 1000),
                           final=observation.get("final") or result.get("final"),
+                          timer=timer or None,
                           ended_by="time_limit" if observation.get("remaining_ms") == 0
+                          or timer.get("expired") is True
                           else "engine_result")
             event("result", observation=observation)
             return
