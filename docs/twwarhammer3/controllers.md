@@ -35,9 +35,9 @@ Two points from the research summary shape the designs below:
 | Policy | Who decides | Order latency | Notes |
 |---|---|---|---|
 | `attack_nearest` | script | one mod tick (~0.25 s) | every unit attacks its nearest visible enemy; the floor to beat |
-| `llm` (v1-v13) | API model, every decision, blocking | 4-11 s with Luna low | raw orders; prompt `configs/twwarhammer3/system_prompt.md`; history in [log.md](log.md) |
-| `skills` | scripted executor, class defaults | one mod tick | no model; `battle/skills.py` |
-| `commander` | API model sets standing assignments asynchronously; the executor acts on every observation | executor one mod tick; plans several seconds | `battle/commander.py`, prompt `configs/twwarhammer3/commander_prompt.md` |
+| `llm` (v1-v14) | API model, every decision, blocking | 4-11 s with Luna low | raw orders; prompt `configs/twwarhammer3/system_prompt.md`; history in [log.md](log.md) |
+| `skills` (executor v1.2) | scripted executor, class defaults | one mod tick | no model; `battle/skills.py` |
+| `commander` (v2) | API model sets standing assignments asynchronously; the executor acts on every observation | executor one mod tick; plans several seconds | `battle/commander.py`, prompt `configs/twwarhammer3/commander_prompt.md` |
 
 ### `skills`: persistent unit skills
 
@@ -118,24 +118,17 @@ What is recorded:
 Both new policies decide at the mod's tick rate (about 3-4 decisions per second), so the
 trace keeps every decision with orders, an error or new metadata, and quiet ones once
 per `--observe-ms`. `digest` prints only decisions with orders or a model's reason, and
-shows each adopted plan with its age.
-
-```bash
-uv run python -m twwarhammer3 play --policy skills --scenario kho5-dwf5 --episodes 6 \
-    --output runs/twwarhammer3/battle/skills-v1-kho-YYYYMMDD
-uv run python -m twwarhammer3 play --policy commander --model gpt-6-luna --effort low \
-    --budget-usd 25 --scenario kho5-dwf5 --episodes 6 \
-    --output runs/twwarhammer3/battle/commander-luna-v1-kho-YYYYMMDD
-uv run python -m twwarhammer3 stats      # grouped by scenario, policy, model, effort, harness
-```
+shows each adopted plan with its age. Commands: [README](README.md#commands).
 
 ## Comparing controllers
 
 The results register has a `policy` column. `model` and `effort` are filled only for the
 model-driven policies (`llm`, `commander`), and the harness version still comes from the
 job name (`-vN-`), counted separately per policy. A comparison should use:
-- the same scenarios with pinned factions (only jobs after `61c5f7f`);
-- at least six episodes per controller and scenario (three separated nothing before);
+- the same random seeds for every controller (paired draws, one job per seed); a
+  deterministic controller plays each seed once, since a rematch replays the same battle;
+- at least six seeds per controller (three separated nothing, on a fixed scenario or on
+  paired draws);
 - the same information boundary: enemies only while visible, no privileged state;
 - the AI's stats modifier (1.1) noted, since it favours the enemy in mirrors.
 
@@ -184,7 +177,17 @@ measures latency and cost, not strength.
 ## Watching a battle (owner request, 2026-10-13)
 
 The owner wants to follow what the models receive and decide during a battle,
-summarized, together with other useful context. Nothing displays it live yet.
+summarized, together with other useful context. Built in `9bfee82`:
+- **`watch`** (`battle/watch.py`), a terminal view beside the game that tails the job's
+  `trace.jsonl` and touches nothing in the game. It prints each model request with the
+  battle time and both sides' strength of its state, and what it reports as dropped or
+  rejected (`--prompts` prints it whole); each reply, a plan with its age, think time,
+  cost and reason or the direct controller's orders and reason, and the notes when they
+  change; engine rejections, a strength line every 30 s and each result.
+- **`play --show`**, each model reply in the game's advisor window through
+  `common.advice(text)`, sent as `say` with the orders in `orders.json`
+  ([integration.md](integration.md#advisor-text-verified-2026-10-13)). The debug
+  `bm:queue_advisor` call was not needed.
 
 **Already stored per episode in `trace.jsonl`:**
 - Commander: every request's full prompt (`prompt`, `prompt_sha256`), which includes the
@@ -198,31 +201,19 @@ summarized, together with other useful context. Nothing displays it live yet.
 - `digest` prints the plans with their age and reason after the fact. The commander has
   no model subagents yet; specialists are a later design below.
 
-**Ways to show it, to probe before choosing:**
-1. **In the game's advisor window.** `bm:queue_advisor(text, duration, true)`, the
-   debug flag, shows plain text as-is (`lib_battle_manager.lua`; documented as "debug
-   only", so it may not display in a release build). This could show each adopted
-   plan's reason and changed assignments.
-2. **A text component of our own.** `uic:SetStateText(text)` on a component created or
+**Not built, to probe before choosing:**
+1. **A text component of our own.** `uic:SetStateText(text)` on a component created or
    borrowed by the battle script; it needs a layout to attach to.
-3. **Map markers.** `bm:add_ping_icon(x, y, z, type, waypoint, rotation)` and
+2. **Map markers.** `bm:add_ping_icon(x, y, z, type, waypoint, rotation)` and
    `remove_ping_icon` could mark plan points: charge posts, move and firing spots.
-4. **Outside the game.** A live page or terminal view that tails `trace.jsonl` beside
-   the game. It is the richest and touches nothing in the game: plan timeline, reasons,
-   per-unit assignments and phases, plan age, cost so far, both sides' strength over
-   time.
 
-The mod passes text to the game through the mailbox the same way as orders, so options
-1-3 would add a display message to `orders.json` or a separate file. Battles stay
+Both would pass their text or points through the mailbox like `--show`. Battles stay
 unpaused at 1x.
 
-**Other information worth showing:**
-- per-unit assignment, phase and last order;
-- plan age and think time per plan;
-- dropped assignments and engine rejections;
-- the strength curve of both sides;
+**Other information worth showing, not shown yet:**
+- each unit's phase and last order;
+- a strength curve of both sides (`watch` prints only a line every 30 s);
 - the enemy army composition as seen;
-- cost so far;
 - kill counts per fire order (candidate branch `wh3-fire-report`).
 
 ## Designs not built yet
@@ -281,7 +272,7 @@ tested against the best implemented controller, one change at a time.
    propose changes to skills (as tested code) and to the commander prompt, and live
    battles only select among tested skills, never generated code.
 7. **Stronger models on the same executor.** Once the Luna commander is understood, run
-   the six-episode comparison for Sol and Astra (table above), at low and medium effort.
+   the paired-draw comparison for Sol and Astra (table above), at low and medium effort.
 8. **A learned local policy.** A small shared network or action ranker, not a language
    model, scores candidates (item 4) from structured state and the unit's assignment. It
    is trained from logged battles, or from stronger-model labels checked by outcome, with
@@ -299,11 +290,12 @@ tested against the best implemented controller, one change at a time.
      in StarCraft II. Its micro-combat wins rose only from 3 to 7 of 105 episodes, so the
      architecture alone does not produce skilled micro.
 
-Interface gaps that affect every controller, to fix before comparing them on spells:
-- **Army abilities**, such as Khorne's kill-unlocked abilities, are neither observed
-  nor orderable ([integration.md](integration.md#unverified-from-the-documentation-probe-before-relying-on-them)).
-- **Ability readiness**: unit ability cooldowns are unknown. All three commander smokes
-  re-cast lord abilities that the engine refused.
+Interface gap that affects every controller: the mod reports flying units that are not
+monsters, such as Harpies and the Feral Manticore, as infantry (`unit_class` in
+`twwarhammer3_battle.lua` checks `can_fly` only for monsters and unknown classes), and
+random draws bring many of them. Army abilities and ability readiness, missing until
+`9bfee82`, are in the state now
+([integration.md](integration.md#ability-state-through-the-ui-context-system-probed-2026-10-13)).
 
 Not planned: per-unit language models, dynamic agent spawning, debates per unit, and
 vision input. The structured state is already cleaner than screenshots.

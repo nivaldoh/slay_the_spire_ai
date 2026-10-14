@@ -175,17 +175,17 @@ Verified 2026-10-13 in `runs/twwarhammer3/battle/attack-m3-20261013` (Khorne vs 
 
 ## Unverified (from the documentation; probe before relying on them)
 
-`goto_location_angle_width` width; `is_hidden()` for enemies in
-cover; `os.rename` collisions while the controller reads; a restart requested before the
-battle is decided (the script calls `RestartBattle` after 3 s without a results popup).
+`is_hidden()` for enemies in cover; `os.rename` collisions while the controller reads; a
+restart requested before the battle is decided (the script calls `RestartBattle` after 3 s
+without a results popup).
+
+## Ability state through the UI context system (probed 2026-10-13)
 
 Army abilities (owner report, 2026-10-13) are army-wide abilities not owned by a unit,
 such as the three Khorne abilities that unlock as the army kills. The script API has no
-getter for them or for any ability's cooldown; the UI's context system has both (next
-section). Casting goes through `battle_army:use_special_ability(key, position,
-[bearing], [width])`, keys from the `army_special_abilities` table.
-
-## Ability state through the UI context system (probed 2026-10-13)
+getter for them or for any ability's cooldown; the UI's context system has both. Casting
+goes through `battle_army:use_special_ability(key, position, [bearing], [width])`
+(verified below).
 
 The game ships its UI context documentation in `data.pack`
 (`documentation\ui\documentation.html`, extracted to
@@ -274,6 +274,8 @@ battles with scripted interventions, not policy win-rate evaluations.
   engine permission, not readiness; cooldown and uses remaining are explicitly unknown.
   Each ability reports its last issue time. The player's Winds of Magic pool and reserve
   are read from its army; individual spell costs are not currently supplied.
+  (Superseded: since `9bfee82` readiness, cooldown, uses and magic cost come from the
+  [UI context system](#ability-state-through-the-ui-context-system-probed-2026-10-13).)
 - `wizard-r3` (`6db8111`) used Balthasar Gelt (`wh_main_emp_cha_balthasar_gelt_0`)
   against the Empire mirror. Glittering Robe on friendly swordsmen reduced the magic
   pool 12 -> 7; Plague of Rust on visible enemy infantry 11 -> 7; ground-targeted
@@ -282,7 +284,7 @@ battles with scripted interventions, not policy win-rate evaluations.
   Separate casts when probing their effects: back-to-back spell requests in `wizard-r2`
   produced ambiguous pool changes (a later command can interrupt an earlier cast).
   Pool expenditure proves acceptance beyond the API call, not final damage or a
-  completed effect on every target. Cooldown/damage attribution remains unmeasured.
+  completed effect on every target. Damage attribution remains unmeasured.
 
 ## Advisor text (verified 2026-10-13)
 

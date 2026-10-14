@@ -4,10 +4,11 @@ One entry per harness version: what changed, the job, and the results. The scena
 fixed unless an entry says otherwise: `kho5-dwf5`, a custom battle on "An Ogre's Folly",
 Khorne (player: Herald of Khorne, Chaos Warriors, Bloodletters, Marauder Horsemen with
 throwing axes, Skullcannon) against Dwarfs under the game AI (Lord, Dwarf Warriors,
-Longbeards, Quarrellers, Grudge Thrower), unit size large, real time at speed 1, a
-decision 5 s of battle time after the previous orders applied. Rows are in
-[results.csv](results.csv); `python -m twwarhammer3 digest <job>[/episode-NNNN]` reads
-the evidence.
+Longbeards, Quarrellers, Grudge Thrower), unit size large, real time at speed 1. Before
+v13 a decision came 5 s of battle time after the previous orders applied; since v13 it
+starts as soon as they are acknowledged. Later entries play random draws and say so.
+Rows are in [results.csv](results.csv);
+`python -m twwarhammer3 digest <job>[/episode-NNNN]` reads the evidence.
 
 ## Baselines
 
@@ -443,7 +444,8 @@ and traces stayed at 1.6-2.5 MB per battle after thinning.
 
 These battles show that the controller works, not that it is stronger: the direct
 controller won 5 of 6 on this scenario at v6 and `attack_nearest` 3 of 3. The comparison
-needs six or more episodes per controller ([README](README.md#next) item 0).
+needs six or more episodes per controller
+([controllers.md](controllers.md#comparing-controllers)).
 
 - **skills v1** found a defect. The observation published with an acknowledgement still
   shows the previous target, and shoot preferred the observed target. After the enemy

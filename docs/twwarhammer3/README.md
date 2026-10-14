@@ -1,7 +1,7 @@
 # Total War: WARHAMMER III battles
 
 Second game, started 2026-10-13. The question: can an API model (`gpt-6-luna`, low
-effort, through `src/gameai/llm.py`) command a small army in a real-time custom battle
+effort, through `src/gameai/llm.py`) command an army in a real-time custom battle
 against the game AI, with the delay between the state it saw and its orders
 being issued to the engine measured and told to it, and can the autoresearch loop improve its
 scaffolding? Campaign mode and model training come later.
@@ -15,9 +15,10 @@ way. There is no external game API; the mod is the API.
 
 - `src/twwarhammer3/mod/` is packed into `C:/wh3-agent/mods/twwarhammer3.pack` by
   `engine/pack.py` and loaded through a mod list the executable takes as its argument
-  (`engine/runtime.py`). Three scripts: `script/_lib/mod/twwarhammer3_json.lua` (vendored
-  rxi json.lua), `script/frontend/mod/twwarhammer3_frontend.lua` (drives the menus) and
-  `script/battle/mod/twwarhammer3_battle.lua` (observations, orders, result).
+  (`engine/runtime.py`). Four scripts: `script/_lib/mod/twwarhammer3_json.lua` (vendored
+  rxi json.lua), `script/_lib/mod/twwarhammer3_ui.lua` (UI steps shared by the frontend
+  and battle scripts), `script/frontend/mod/twwarhammer3_frontend.lua` (drives the menus)
+  and `script/battle/mod/twwarhammer3_battle.lua` (observations, orders, result).
 - The controller in WSL talks to the scripts through files in `C:/wh3-agent/bridge/`
   (`engine/mailbox.py` documents the messages): `session.json` enables the scripts and
   sets observation and decision intervals; `menu.json` carries frontend steps (find a UI component by
@@ -38,15 +39,21 @@ way. There is no external game API; the mod is the API.
   can be distinguished from model/application latency.
 - Orders: `move` (position, facing, width), `attack` (auto/melee/ranged), `halt`,
   `behaviour` (fire-at-will, skirmish, guard/defend, spacing, formed attack), and
-  `ability` (owned active ability, self/unit/ground target). A move can be followed by
-  queued moves and a final attack in one reply. Each acknowledgement identifies its
-  one-based order index, including multiple orders for the same unit. Queue acceptance
-  does not prove execution; the state labels it as the last submitted sequence.
-  Friendly units show supported toggles and their state, owned active ability keys and
-  permission (cooldown unknown), last ability issue times, width and the last requested
-  attack mode. The state also gives the player's Winds of Magic pool/reserve.
-  [Integration facts](integration.md#expanded-controller-interface-2026-10-13) records
-  the engine probes and their limits.
+  `ability` (owned active ability, self/unit/ground target; unit `"army"` for an army
+  ability). A move can be followed by queued moves and a final attack in one reply. Each
+  acknowledgement identifies its one-based order index, including multiple orders for the
+  same unit. Queue acceptance does not prove execution; the state labels it as the last
+  submitted sequence. Friendly units show supported toggles and their state, width, the
+  last requested attack mode and each active ability with its target type, magic cost,
+  cooldown, readiness (ready, recharging with the seconds left, active), uses left and
+  last issue time. Army abilities (Khorne's kill unlocks) show their target, radius,
+  unlock cost and readiness, with the points the army has earned. Unit ability state
+  comes from the UI context system; army ability readiness from the HUD button and its
+  timer. Validation refuses an ability that is not ready. The state also gives the
+  player's Winds of Magic pool/reserve.
+  [Integration facts](integration.md#expanded-controller-interface-2026-10-13) and
+  [ability state](integration.md#ability-state-through-the-ui-context-system-probed-2026-10-13)
+  record the engine probes and their limits.
 - Policies see dicts (`protocol.py`): friendly units in full, enemy units only while
   `is_visible_to_alliance` says the player can see them, plus the enemy roster as the
   custom battle screen shows it. `battle/scripted.py` has `hold`, `attack_nearest` and
@@ -73,17 +80,18 @@ way. There is no external game API; the mod is the API.
   `result.json` and `mod.log`; each finished episode appends a row to
   [results.csv](results.csv). Versions are logged in [log.md](log.md).
 
-## Current interface (2026-10-13)
+## Current controllers
 
-Controller v13 keeps the v10 tactical rules, adds the controls listed above and removes
-extra waiting by default. Engine probes and a short Luna run are complete: 71 WH3 tests
-and Ruff pass; all six acknowledged decisions in the live Luna smoke led directly to the
-next decision (0 ms added battle-time gap). Missile cavalry fired and then entered melee
-with ammunition left; queued moves, width, toggles, self abilities and friendly/enemy/
-ground spell targets were exercised. Spell cooldowns, uses remaining and per-spell costs
-are still unknown; the prompt says so. These probes do not measure win-rate improvement.
+On `main`: the direct controller `llm` v14 (v10 tactical rules on the v13 interface of
+continuous decisions and expanded controls), the `commander` v2, and the `skills`
+executor v1.2 that the commander drives. v14 and commander v2 (`9bfee82`, `739ce9c`)
+added ability readiness and army abilities, as above. `watch` follows a job beside the
+game, and `play --show` puts each model reply in the advisor window. Latest results: on
+the fixed `kho5-dwf5`, `skills` and the Luna commander v1 won 5 of 6 each; on three
+paired random draws every controller lost all three
+([log.md](log.md#random-battle-comparison-partial-2026-10-1314)).
 
-## Earlier battle results (2026-10-13 08:20 local)
+## Milestones (2026-10-13)
 
 | Milestone | State | Evidence |
 |---|---|---|
@@ -162,37 +170,37 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 
 ## Next
 
-0. Fix the shooter re-send loop found in the first random skills battle
-   ([log.md](log.md#random-battles)), then compare the controllers
-   ([controllers.md](controllers.md#comparing-controllers)): six
-   episodes each of `skills`, the Luna `commander` and the best `llm` version on the same
-   pinned scenarios, then Sol and Astra as commander. The smoke battles are in
-   [log.md](log.md#skills-and-commander-v1-2026-10-13).
-   Also add army abilities, which every controller is blind to today (Khorne's
-   kill-unlocked abilities went unused; [integration.md](integration.md#unverified-from-the-documentation-probe-before-relying-on-them)),
-   and ability readiness: engine rejections show the model re-casting lord abilities
-   that are not available.
-1. Evaluate the expanded interface (v13) with pinned factions and compare it to the
-   earlier interface; record the interval explicitly (old runs used 5000 ms, v13 uses 0).
-   Re-measure with pinned factions: until `61c5f7f` the game chose each side's faction
-   within the race, and it varied between jobs (see [log.md](log.md)), so the table above
-   mixes factions. Play v6 and v10 again, five or six battles per mirror.
-2. `main` uses v10 tactics with the v13 interface (v11 and v12 tactics were reverted
-   after 0 of 6 and 0 of 3); v6's prompt (`6777a64`) is better in the
-   Khorne mirror and on Khorne vs Dwarfs (5/6, untested with v8-v10). Find which v8-v10
-   rule costs the melee mirror (v8's cavalry exemption from the lord gang-up and v10's
-   fire doctrine for the Skullcannon and horsemen are suspects), with five or six battles
-   per version. A shorter prompt is worth testing for think time.
-3. Candidate on branch `wh3-fire-report` (`832b233`, built on v9): the mod publishes kill
-   counts and enemy targets; an attack order shows shots fired and men killed since it
-   was given, enemy lines show their target, our units show "attacked by e3 15 m rear".
-   Ranked second by three reviews; untested in the engine (check that AI units report
-   `current_target` and that `number_of_enemies_killed` returns numbers).
-4. The melee mode and move-then-attack interface are now implemented and engine-tested;
-   evaluate how well the model uses them, along with spells and behavior toggles.
-5. The AI stats modifier (1.1) for mirror battles, and more mirrors (other races, maps).
-6. Unmerged candidate `wh3-v4-info` (`aa1ece5`): compass directions, enemy missiles in
-   reach and both armies' start points, for orientation errors the reviews still find.
+1. [Other battle types](#other-battle-types-owner-request-2026-10-13), still at AI very
+   hard: first the frontend-only probe below, then conquest or domination.
+2. Resume the random-draw comparison
+   ([log.md](log.md#random-battle-comparison-partial-2026-10-1314)) on its three remaining
+   seeds: 264482191 (Ogre Kingdoms vs Slaanesh), 1355466036 (Daemons vs Greenskins) and
+   238913231 (Cathay mirror), each played once by `skills`, the Luna `commander` and Luna
+   `llm`. Then Sol and Astra as commander
+   ([controllers.md](controllers.md#comparing-controllers)).
+3. The mod reports flying units that are not monsters, such as Harpies and the Feral
+   Manticore, as infantry: `unit_class` in `twwarhammer3_battle.lua` checks `can_fly`
+   only for monsters and unknown classes. Random draws bring many such units.
+4. The AI stats modifier is 1.1, which favours the enemy; whether to play at 1.0 is an
+   owner decision.
+5. `main` keeps v10 tactics (v11 and v12 were reverted after 0 of 6 and 0 of 3); v6's
+   prompt (`6777a64`) did better in the Khorne mirror and on Khorne vs Dwarfs (5/6,
+   untested with v8-v10). Find which v8-v10 rule costs the melee mirror (v8's cavalry
+   exemption from the lord gang-up and v10's fire doctrine for the Skullcannon and
+   horsemen are suspects). A shorter prompt is worth testing for think time.
+6. Evaluate how well the models use the newer controls: melee mode, move-then-attack
+   queues, behaviour toggles, spells and army abilities.
+7. Unmerged candidates, both from before the v13 interface (rebase before testing):
+   - `wh3-fire-report` (`832b233`, built on v9): the mod publishes kill counts and enemy
+     targets; an attack order shows shots fired and men killed since it was given, enemy
+     lines show their target, our units show "attacked by e3 15 m rear". Ranked second
+     by three reviews; untested in the engine (check that AI units report
+     `current_target` and that `number_of_enemies_killed` returns numbers).
+   - `wh3-v4-info` (`aa1ece5`, built on v3): compass directions to the nearest enemies,
+     enemy missiles in reach and both armies' start points, for orientation errors the
+     reviews still find.
+8. Owner idea, registered in [../state.md](../state.md): a WH3 LLM benchmark of
+   challenge battles where the enemy side is stronger, possibly AI-generated.
 
 ## Other battle types (owner request, 2026-10-13)
 
@@ -244,20 +252,14 @@ probe shows is symmetric without supply purchases.
 ## Commands
 
 ```bash
-uv run python -m twwarhammer3 doctor                 # pins, preferences, running game, mod files
-uv run python -m twwarhammer3 pack --list PACK       # entries of any pack; --extract PACK NAME
-uv run python -m twwarhammer3 launch                 # build, install, run the game until Ctrl-C
-uv run python -m twwarhammer3 menu --dump 4          # UI tree of the current screen (ui_tree.txt)
-uv run python -m twwarhammer3 menu --steps steps.json  # click through components; tails menu.log
-uv run python -m twwarhammer3 menu --battle --steps steps.json  # the same in a battle (mod.log)
+uv run python -m twwarhammer3 play --policy commander --budget-usd 25 --scenario random \
+    --seed N --output runs/twwarhammer3/battle/commander-luna-vN-rand-N-YYYYMMDD
+uv run python -m twwarhammer3 play --policy llm --budget-usd 25 --scenario random \
+    --seed N --output runs/twwarhammer3/battle/llm-luna-vN-rand-N-YYYYMMDD
+uv run python -m twwarhammer3 play --policy skills --scenario random --seed N \
+    --output runs/twwarhammer3/battle/skills-vN-rand-N-YYYYMMDD
 uv run python -m twwarhammer3 play --policy llm --budget-usd 25 --scenario kho5-dwf5 \
-    --episodes 3 --output runs/twwarhammer3/battle/llm-luna-vN-YYYYMMDD
-uv run python -m twwarhammer3 play --policy commander --model gpt-6-luna --budget-usd 25 \
-    --scenario kho5-dwf5 --episodes 6 --output runs/twwarhammer3/battle/commander-luna-vN-YYYYMMDD
-uv run python -m twwarhammer3 play --policy skills --scenario kho5-dwf5 --episodes 6 \
-    --output runs/twwarhammer3/battle/skills-vN-YYYYMMDD
-uv run python -m twwarhammer3 play --policy skills --scenario random --seed 2 \
-    --output runs/twwarhammer3/battle/skills-vN-random-s2-YYYYMMDD
+    --episodes 3 --output runs/twwarhammer3/battle/llm-luna-vN-kho-YYYYMMDD  # diagnostics
 uv run python -m twwarhammer3 watch [runs/twwarhammer3/battle/<job>]  # live, beside the game
 uv run python -m twwarhammer3 play ... --show          # model replies in the advisor window
 uv run python -m twwarhammer3 play --policy probe_abilities --scenario random --seed 4 \
@@ -265,7 +267,18 @@ uv run python -m twwarhammer3 play --policy probe_abilities --scenario random --
 uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>[/episode-0000]
 uv run python -m twwarhammer3 stats                  # results.csv by policy, harness and mode
 uv run python -m twwarhammer3 spend                  # runs/twwarhammer3/llm-spend.jsonl total
+uv run python -m twwarhammer3 doctor                 # pins, preferences, running game, mod files
+uv run python -m twwarhammer3 pack --list PACK       # entries of any pack; --extract PACK NAME
+uv run python -m twwarhammer3 launch                 # build, install, run the game until Ctrl-C
+uv run python -m twwarhammer3 menu --dump 4          # UI tree of the current screen (ui_tree.txt)
+uv run python -m twwarhammer3 menu --steps steps.json  # click through components; tails menu.log
+uv run python -m twwarhammer3 menu --battle --steps steps.json  # the same in a battle (mod.log)
 ```
+
+`--model` (default `gpt-6-luna`) and `--effort` (default `low`) pick the API model for
+`llm` and `commander`. The key comes from `OPENAI_API_KEY` or the file named by
+`SPIRE_OPENAI_KEY_FILE`; the shared `gameai.llm` reads it for both games, so the
+variable keeps Spire's name.
 
 `launch` and `play` automatically skip startup videos. While WH3 is stopped, runtime
 preparation sets `fe_game_intro_video_enabled false` in the existing profile and installs
@@ -290,14 +303,18 @@ menu by the 20.8 s screenshot. The initial static loading splash remains;
 
 ## The loop
 
-As for Spire full runs: play three episodes of the fixed scenario per version (`play`
-needs a clean source tree and an API key through `SPIRE_OPENAI_KEY_FILE`), review them,
-make one change to the prompt, rendering or memory, and log the version in
+As for Spire full runs, on paired random seeds: play the same `--scenario random --seed N`
+draws with each version or controller being compared, one job per seed (a rematch
+replays the same draw, so a deterministic controller such as `skills` plays each seed
+once). Fixed scenarios are only for quick diagnostics. `play` needs a clean source tree
+and, for the model policies, an API key ([Commands](#commands)). Review the battles, make
+one change to the prompt, rendering, memory or executor, and log the version in
 [log.md](log.md). The review is the `wh3-version-review` workflow
 (`.claude/workflows/wh3-version-review.js`): a reviewer per episode reads the digest and
 the prompts and replies around the turning points, three proposers each suggest one
 change (tactics prompt, state and memory, order interface) with the version history and
-the baseline in view, and three judges score them. While it runs, replay the same
-version for two or three more episodes, and draft the next change in a git worktree: a
-job stops if its source scope changes. The WH3 ledger
-(`runs/twwarhammer3/llm-spend.jsonl`) is separate from Spire's, with its own $25 cap.
+the baseline in view, and three judges score them. While it runs, play more seeds with
+the same version, and draft the next change in a git worktree: a job stops if its
+source scope changes. Update Active work in [../state.md](../state.md#active-work) when
+a job starts and when it stops. The WH3 ledger (`runs/twwarhammer3/llm-spend.jsonl`) is
+separate from Spire's, with its own $25 cap.
