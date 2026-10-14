@@ -65,12 +65,24 @@ silently pool a changed task. Freeze this handling with the candidate before G1.
 
 Once a specialist candidate has an intermediate difficulty and working required controls,
 declare its competent reference and play six fresh launches per modifier, three
-controllers once per launch: `hold`, `attack_nearest`, and that reference. `skills` is
+controllers once per launch: two declared trivial baselines and that reference. `skills` is
 the default when it can express the required tactics; a specialist task may use a
 declared LLM, hybrid or specialist script instead. Freeze the choice before G1, not after
 viewing its repeated results. Record rotation seeds `2026101401` through
 `2026101406` for 1.0 and `2026101411` through `2026101416` for 1.1. The modifiers are
 separate strata; matching a rotation seed would not make two launches the same instance.
+
+Baseline amendment before G1, b8 development review (2026-10-14): on the cavalry
+attacker, hold lost at the 1200 s timer with both armies intact. Its raw strength
+margin is zero despite failing the objective, so it is an objective-failure control
+rather than a useful tactical margin comparator for this role. Keep its screening
+trials and engine outcomes. For this attacker family, the two G1 baselines are now
+`attack_nearest` (walk) and `rush_nearest` (run); the latter changes only the run flag,
+with no flanking, abilities or target priorities. It needs a live screen before G1.
+Other families still default to hold/attack-nearest unless separately declared.
+This changes neither the raw margin nor the admission threshold below; it replaces
+the inactive comparator before any G1/G2 data are collected. The six launches per
+modifier, rotation seeds and held-out separation remain unchanged.
 
 Admission requires both:
 

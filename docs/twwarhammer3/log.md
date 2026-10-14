@@ -1,5 +1,32 @@
 # WH3 battle versions
 
+## Benchmark harness b9 (2026-10-14, timer classification; isolated draft)
+
+The b8 hold screen reached the timer with both armies intact. Its last logged finite
+sample was 945.679 ms remaining at 1204100 ms; the engine loss arrived at 1205200 ms,
+154.321 ms past the implied deadline, with remaining time reset to -1. The existing
+zero-only classifier therefore incorrectly recorded `ended_by=engine_result`.
+The engine loss is authoritative; the timeout cause is inferred from its countdown.
+Raw records remain unchanged. Audit: `reports/bench-b8-timer-classification-audit.json`.
+
+Draft `9f05777` samples that countdown on engine ticks, retains its final deadline and
+records its expiry separately from the engine outcome. Unlimited timers, disabled or
+extended countdowns, and early battle results are covered by regressions. 222 WH3 tests
+with Lua pass; Ruff and all four scripts' Lua 5.1 syntax pass. A follow-up on the exact
+recorded timestamps passed 52 tests; replaying the recorded countdown through the Lua
+helper also identifies expiry. This is not yet a live test of the patched mod.
+Worktree: `/tmp/wh3-benchmark-b9`; merge only after the b8 queue exits.
+
+Follow-up `33b7e2b` adds `rush_nearest`, changing only AttackNearest's run flag.
+77 benchmark/play tests and Ruff pass. Before any G1/G2 trials, the calibration plan
+now uses walk-nearest and run-nearest as the cavalry attacker's two tactical baselines;
+hold remains its objective-failure control. Its untouched timer loss has raw margin
+zero, which is not a useful tactical comparator. Raw scoring, the 2–4/6 decisive-win
+criterion and positive paired intervals against both active baselines are unchanged.
+The running baseline still needs live acceptance before G1.
+The combined `33b7e2b` worktree passes all 223 WH3 tests with Lua and repository-wide
+Ruff; its working tree is clean. No live controller was launched by those checks.
+
 ## Benchmark harness b8 (2026-10-14, caster control)
 
 Draft `6b30737` adds the five-versus-ten caster attacker family, retaining the defender
@@ -19,9 +46,66 @@ for landing or take-off; Lua checks live state and availability before the norma
 command. The requested state prevents reversing an already completed change. These
 additions declare `obs-v3+terrain/act-v2/live-1x`; b7 stays on its frozen old contract.
 All 215 WH3 tests pass with Lua, Ruff and Lua 5.1 compilation pass; 72 benchmark/play
-tests pass after the track-label change. A separate real-game landing/repeated-landing/
-take-off probe is still required. Merged as `6a0fe53` after the b7 queue exited;
+tests pass after the track-label change. Merged as `6a0fe53` after the b7 queue exited;
 merged runtime/configuration files match the tested draft.
+
+The separate flight probe on `f179dbe` passed: both flyers grounded at 7.9 s, still
+grounded after the repeated landing request at 8.2 s, then airborne at 18.7 s after
+the cooldown expired. All six flight orders were accepted; normal 1x throughout.
+This checks completed transitions, not repeated requests during animation or every
+combat restriction. Evidence: `reports/bench-b8-flight-acceptance.json`. The battle
+then lost at 372 s under AttackNearest, margin -0.486, with two later combat refusals
+(dead target, routing unit) and no API spend. Whole-job throughput was 6.96 valid
+trials/hour. Report: `reports/bench-b8-flight-probe.json`. The serial queue next screens
+Luna/hold/attack-nearest on the compact cavalry attacker at 1.0/1.1, before G1/G2.
+
+The first cavalry 1.0 screen stopped at 19:56:04 UTC: attack-nearest received no new
+observation after sequence 1108 (340.7 s) for 60 s. Infrastructure failure, one refusal,
+1108 decisions, no API calls; Luna/hold and 1.1 remained unplayed. The mod log contains
+no reported Lua error, the Windows application query returned no matching event, and
+doctor was ready after the runner/controller exited. Cause remains unresolved. The
+failed job used 545.74 wall seconds and has no gameplay outcome; preserve it in reports.
+Evidence: `capability-probes/benchmark-b8-observation-stall/` and
+`reports/bench-b8-assault-screen-ai10-failure.json`. A separately named retry uses the
+same implementation, scenario and rotation seed, without profile changes.
+The 1.0 retry recovered: attack-nearest lost normally at 370 s, one refusal, active
+margin -0.808 and clock ratio 0.9996. Luna then started the paired rematch. Recovery
+does not identify the first stall's cause; its trial remains an infrastructure failure.
+Luna lost at 247 s, active margin -0.589, clock ratio 0.9976, matched start. It routed
+the cannon and both handgun units, but the lord and remaining cavalry lost against
+the general and halberdiers. 44 decisions, 12 refusals (six ability, six routing),
+47 calls, $0.01922. Hold is the remaining 1.0 trial; the 1.1 screen follows.
+All six ability refusals repeat an accepted activation on the immediate acknowledgement
+snapshot: `last_issued_ms` equals that snapshot's time, while readiness still says true.
+At refusal time the preceding activation is active. This is public readiness lag and
+repeated requests, not evidence of unsupported keys. Artifact:
+`reports/bench-b8-luna-ability-refusals.json`.
+Hold then lost at 1205 s with both armies intact, no refusals and a matched start;
+clock ratio 1.00004, raw margin 0. This exposes both the timer label bug above and a
+limitation of raw margin for idle attackers. The combined 1.0 report keeps the failed
+first launch: 3 valid / 4 started trials in 2555.77 wall seconds, 4.23 valid trials/hour.
+Report: `reports/bench-b8-assault-screen-ai10.json` (original timer label retained).
+The 1.1 screen follows in Luna/hold/attack-nearest order on the unchanged b8 source.
+Its Luna trial lost at 271 s, 45 decisions, 17 refusals, active margin -0.626, clock
+ratio 0.9878; 49 calls and $0.02274. It again routed the ranged units but lost against
+the general/halberdiers. Hold then started; attack-nearest remains queued.
+The first 1.0/1.1 snapshots are both at 5.3 s. Comparing base and current UI stats
+finds all six player entries unchanged and all eight AI entries changed; halberdiers
+have leadership 70→78, attack 26→29, defence 42→46, damage 28→31 and charge 8→9.
+Evidence: `reports/bench-b8-cavalry-modifier-stats.json`. These are applied settings,
+not evidence of a calibrated win rate.
+Hold at 1.1 also lost at 1205 s with both armies intact, no refusals, matched start
+and clock ratio 0.99992. The raw timer label again says `engine_result`; its countdown
+replicate is appended to `reports/bench-b8-timer-classification-audit.json`.
+Attack-nearest is the queue's final trial.
+Attack-nearest subsequently lost at 395 s, margin -0.868, no refusals and a matched
+start. The b8 retry queue completed at 21:05:37 UTC; runner/controller and the stall
+monitor exited, doctor ready. The 1.1 job has 3 valid trials in 2055.85 wall seconds,
+5.25 valid trials/hour. Combined cavalry screens retain the failed first attempt:
+6 valid / 7 started, 4611.62 wall seconds, 4.68 valid trials/hour. Reports:
+`reports/bench-b8-assault-screen-ai11.json` and `reports/bench-b8-assault-development.json`.
+The original timer labels remain in these reports, with the separate audit above.
+No scenario is admitted; no G1/G2 trials have run. Ledger total is $6.3315.
 
 ## Benchmark harness b7 (2026-10-14, snapshot age and cavalry attacker candidate)
 

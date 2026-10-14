@@ -45,6 +45,13 @@ For example, `--policy hold,attack_nearest,llm_rules --budget-usd 25`. Both name
 appear in a rotation; each prompt is saved and hashed separately. A prompt difference
 is a controller difference, not evidence about model capability alone.
 
+`rush_nearest` uses the same target selection and order persistence as `attack_nearest`,
+but requests running. It adds no flanking, priorities or ability use. The cavalry
+attacker's calibration compares both against the declared reference. Hold remains an
+objective-failure control: staying idle can lose at the timer with both armies intact,
+giving raw strength margin zero. See the pre-G1 amendment in
+[calibration-plan.md](calibration-plan.md); outcomes and raw margins remain separate.
+
 The default wall cap is 3900 s. Benchmarks require a finite game timer and a wall cap
 at least 120 s longer. The process cap must cover setup, every trial and reset allowance.
 Added age D supplies the newest buffered public snapshot at least D battle seconds old, retaining
@@ -86,6 +93,14 @@ engine winner. A timeout win remains a legitimate result under the battle's rule
 the initial calibration separately requires decisive wins. Undecided failures stop
 the launch; unplayed controllers
 remain missing pairs. Different scenarios/builds/source revisions are not pooled.
+
+The engine can reset remaining time to -1 at its result transition. b9 retains a
+countdown sample on each engine tick and records the last sample/deadline in terminal
+`timer` evidence. Timer classification uses expiry of that deadline; the actual
+won/lost/draw is always the engine's result. This is an inference about the ending
+cause, including uncertainty if combat and expiry coincide, not an authoritative
+end-cause getter. The original b8 hold records have the old incorrect `engine_result`
+label; their separate timer audit documents the correction without rewriting evidence.
 
 Reports include failures and denominators, Wilson win intervals (omitted for correlated
 repeats), and Student-t paired margin intervals across launch means. Active-strength
@@ -129,10 +144,12 @@ and this action; do not pool their trials with this contract.
 Owned abilities include their cast range, effect radius and duration where the engine
 provides them. These describe capabilities, not a suggested tactic. Rune ranges/durations
 and nonzero Tzeentch barriers are live-verified, as are unit-targeted spells and their
-mana/cooldown changes. Successful ground-targeted Kairos spells remain to be checked.
-Visible units also expose walk/run speeds and airborne/grounded state. The corrected
-flight queries passed read-only engine checks; their new observation fields need a
-pilot launch before admission.
+mana/cooldown changes. Kairos's ground-targeted Pendulum spent magic and entered
+cooldown after issuance in b7; the immediate acknowledgement snapshot still showed
+the earlier resources. Visible units also expose walk/run speeds and airborne/grounded
+state. b8 verified landing, a repeated landing request after the completed transition,
+and take-off for both Kairos and Screamers, with cooldowns in their public observations.
+Evidence and the limits of these checks are in [integration.md](integration.md).
 
 The live b1 probes read the modifier as 1.1. Its stat previews say +10% attack, defence
 and weapon damage and +8 leadership; a setting read-back alone does not measure each

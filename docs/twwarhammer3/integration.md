@@ -320,8 +320,17 @@ and `IsOrderable=true` for both Kairos and Screamers. By 1070.9 s Kairos's large
 effect was "Army losses", with `MoralePercent=-2.506`. Thus the UI's fraction can be
 negative. These explanations were absent from the model's observation. The UI API
 documents `CcoBattleUnit.ToggleFlying` as a normal player command, but these queries
-did not invoke it. Draft b8 exposes friendly morale and requests flight state; actual
-landing/take-off remains to be probed. Evidence: `capability-probes/benchmark-flight-toggle/`.
+did not invoke it. b8 exposes friendly morale and requests flight state. Evidence:
+`capability-probes/benchmark-flight-toggle/`.
+
+The separate `bench-b8-flight-probe-20261014` on `f179dbe` verified those controls at
+1x through public orders. Landing was issued at 5.5 s; both flyers were grounded at
+7.9 s. A repeated land request was accepted at 8.2 s during cooldown and left both
+grounded. After waiting for availability, take-off was issued at 18.4 s and both were
+airborne at 18.7 s. All six orders were accepted. This tests repeated requests after
+a completed transition, not during its animation or under every combat restriction.
+The public snapshots also contain leadership effects and flight cooldowns. Evidence:
+`reports/bench-b8-flight-acceptance.json`.
 
 ## Battle types (probed 2026-10-14)
 

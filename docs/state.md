@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-14 19:35 UTC: what is running, where each game
+Updated 2026-10-14 21:05 UTC: what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -12,40 +12,52 @@ anchor units, faction mechanics and compact armies; see the
 [scenario recipe](twwarhammer3/scenario-recipe.md). No scenario is admitted and no G1/G2
 trials have run. The generic Herald G1 draft remains superseded; held-out maps are untouched.
 
-The b7 queue on `82f5626` completed at 19:33:24 UTC; its runner and game controller
-exited. No controller is active. Two Sol low-effort `llm_rules` pilots:
-- Caster five versus ten: engine loss at 1077 s, five refusals, active margin -0.680,
-  $1.78329. Ground Pendulum consumed magic and entered cooldown after issuance.
-- Cavalry attacker six versus eight: engine win at 432 s, one refusal, active margin
-  +0.433, $0.62009. Sol broke both handguns and the cannon, then the general/halberdiers.
-  This demonstrates a viable strategy, not repeated calibration or admission.
-Reports: `runs/twwarhammer3/reports/bench-b7-{caster,assault}-sol.json`.
+The b8 cavalry retry queue on `f179dbe` completed at 21:05:37 UTC. Runner/controller
+and the read-only stall monitor exited; doctor reports ready. No game controller is
+active. Queue state: `runs/twwarhammer3/calibration/b8-assault-screen-r2-plan-state.json`.
 
-The caster exposed missing public morale feedback and flight control. Read-only UI
-queries showed the flyers' warning to attack by land at 793.3/836.2 s; at 1070.9 s
-Kairos's largest effect was Army losses. Both flyers could toggle flight at 836.2 s.
-No probe changed tactics. Evidence: `capability-probes/benchmark-flight-toggle/` and
-`reports/bench-b7-caster-ground-acceptance.json` under WH3 runs.
+At 1.0: attack-nearest lost at 370 s (margin -0.808), Luna low at 247 s (-0.589),
+hold at the timer at 1205 s (0). At 1.1: Luna low lost at 271 s (-0.626), hold at
+1205 s (0), attack-nearest at 395 s (-0.868). All rematch starts matched. Hold's two
+armies stayed intact; Luna routed the guns/cannon but lost against the remaining
+halberdiers/general. The initial 1.0 attempt's unexplained observation stall at 340.7 s
+remains an infrastructure failure, not a loss. The retry had no recurrence.
+Combined: 6 valid / 7 started trials in 4611.62 wall seconds, 4.68 valid trials/hour.
+Report: `runs/twwarhammer3/reports/bench-b8-assault-development.json`. WH3 spend:
+$6.3315 of $25. Keep the cumulative ledger; do not reset it.
 
-b8 `a0a7108`, merged as `6a0fe53`, adds friendly leadership fraction/effect,
-flight availability/cooldown and explicit landing/take-off requests for both model
-controllers. Contract: `obs-v3+terrain/act-v2/live-1x`. It also adds a five-versus-ten
-caster attacker family, retaining the roster/funds. All 215 WH3 tests with Lua, Ruff
-and Lua 5.1 compilation pass; 72 benchmark/play tests pass after the track-label change.
-Next: run a separate flight-transition diagnostic, then screen Luna with
-hold/attack-nearest on the cavalry attacker at 1.0/1.1 before freezing the reference.
-WH3 spend is $6.2895 of $25. Sol's $0.62 pilot leaves too little margin for 30 repeated
-reference trials; check the cheaper controller's competence first. No budget reset.
-The diagnostic module is `/tmp/wh3-benchmark-controllers/flight_probe.py`; it uses only
-public observations/orders, verifies landing, repeated landing and take-off, then
-finishes with AttackNearest. Its transitions are not yet engine-tested.
+The earlier b7 Sol low cavalry pilot won at 432 s (margin +0.433, $0.62009), proving
+one viable strategy but not admission. The caster pilot lost at 1077 s; it verified
+ground Pendulum resource/cooldown changes and exposed missing morale/flight controls.
+b8 added those controls. Its separate live probe verified both flyers grounded at
+7.9 s, still grounded after a repeated land request at 8.2 s, and airborne at 18.7 s.
+All six flight orders were accepted. Evidence: `reports/bench-b8-flight-acceptance.json`.
 
-Starting-formation geometry flags stay in primary comparisons, with a secondary
-comparison excluding flagged launches; changed rosters/resources still require review.
-Requested 0/6/10 s snapshot ages are minima; actual age at decision and issuance is
-reported. Freeze the candidate/reference before G1/G2. Earlier screens, the recovered
-b6 startup hang, and deliberately retired defender-evasion pilots remain in the
-[log](twwarhammer3/log.md) and [progress page](twwarhammer3/benchmark-progress.md).
+The timer endings exposed a label bug: the engine resets `remaining_ms` to -1 at
+VictoryCountdown, so b8 records `ended_by=engine_result`. The engine losses remain
+valid. Both countdown deadlines expired about 154 ms before the result; separate
+correction audit: `reports/bench-b8-timer-classification-audit.json`. Raw records stay
+unchanged. Isolated b9 `33b7e2b` in `/tmp/wh3-benchmark-b9` retains a countdown sampled
+on engine ticks and labels expiry as a countdown inference. It also adds `rush_nearest`,
+changing only AttackNearest's run flag. The clean combined worktree passes 223 WH3
+tests with Lua, repository-wide Ruff, Lua 5.1 parsing and recorded-countdown replay.
+Neither change has live acceptance yet; b9 is unmerged.
+
+Pre-G1 baseline amendment: for the cavalry attacker, compare walk-nearest/run-nearest
+against the reference. Hold stays an objective-failure control because an idle timer
+loss can have raw margin zero. Raw scoring, six launches per modifier, the 2–4/6
+non-timer-win threshold and positive paired intervals against both active baselines
+are unchanged. Geometry flags stay in primary comparisons, with a secondary result
+excluding flagged launches; changed resources/loadouts stop later jobs for review.
+Requested 0/6/10 s snapshot ages are minima; actual ages are reported.
+
+Next: merge b9 after committing the b8 evidence, then pin and launch
+`runs/twwarhammer3/calibration/b9-timer-and-reference-plan.json`. Its separate
+`run-experiment-b9.py` driver requires a valid timer result with retained expiry
+evidence before the paid screens. Then medium-effort Luna and run-nearest screen
+1.0/1.1 on the unchanged compact armies. The draft is not executable until its source
+revision/status are set. Freeze a competent reference and viable candidate before
+G1/G2. Earlier retired pilots and all failures remain in the [log](twwarhammer3/log.md).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -56,8 +68,8 @@ command; clear it when the job stops.
 [battle types](twwarhammer3/battle-types.md), [controllers](twwarhammer3/controllers.md),
 [integration](twwarhammer3/integration.md), [log](twwarhammer3/log.md). `main` runs
 `llm` v15 and `commander` v3 (every battle type's objectives, `build` and `reinforce`
-orders) and the `skills` executor v1.2. API spend: $6.2895 of the $25 cap
-(after the b7 specialist pilots).
+orders) and the `skills` executor v1.2. API spend: $6.3315 of the $25 cap
+(after both b8 Luna cavalry screens).
 The owner has authorized benchmark calibration, including AI modifiers 1.0 and 1.1.
 Both lobby and battle read-backs passed. Fresh 5.2 s startup snapshots show all 12 AI
 unit entries changing at 1.1 (roughly +10% attack/defence/damage/charge, +8 leadership),
@@ -155,6 +167,8 @@ Slay the Spire:
 
 ## Unmerged branches
 
+- `wh3-benchmark-b9` (`33b7e2b`): terminal countdown classification and running baseline,
+  tested, awaiting the b8 queue's exit before merge and live acceptance.
 - `integration/heldout-clip-continuation` (`940d698`): first-combat work, on `01f2984`.
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-fire-report` (`832b233`): WH3 fire-report candidate, on v9 (`d928965`); untested.

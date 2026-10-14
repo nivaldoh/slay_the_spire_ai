@@ -37,79 +37,75 @@ is in [benchmark.md](benchmark.md) and the original acceptance brief in
 
 ## Current work
 
-Owner steering now prioritizes specialist challenges with anchor units and faction
-mechanics; [scenario-recipe.md](scenario-recipe.md) is part of candidate selection.
-The unstarted Herald G1 plan was superseded before any G1/G2 trials. b2 diagnostics and
-the specialist frontend inventory completed; b3 and b4 are merged. The first candidates
-are compact: cavalry six versus eight, caster five versus ten, each with an 8000 cap
-and unused funds. The serial screen on `e221324` stopped after five gameplay losses
-and one deliberate exploratory interruption. Caster: Luna/hold/attack-nearest lost
-963/613/301 s. Cavalry: hold/attack-nearest lost 415/262 s; Luna's untouched army was
-retreating for a timeout win when interrupted at about 292 s. Do not call that trial a
-win or loss. A faster enemy anchor is the next pressure hypothesis; the frontend mount
-inventory passed: Pegasus speed 105 versus Griffon 90. b6 selects the Pegasus and
-exposes visible enemy speeds; its 209 WH3 tests with Lua, Ruff and Lua compilation
-pass. The first Sol launch on `1bd120b` stalled opening the custom-battle lobby and
-ended at its startup deadline: infrastructure failure, 903.87 s, zero episodes/calls.
-The owned process and queue exited; doctor reported ready. A separate retry on the
-same source/setup, without profile changes, recovered. It verified the mounted roster
-and enemy flight/speed fields, but Sol chose defender timeout evasion. The pilot was
-deliberately retired at 385.6 s, with all six cavalry units active at at least 93% health
-and the Pegasus 367.7 m away. It has no gameplay outcome. 80 decisions, nine unreachable
-moves, $0.46713. The queue/controller exited at 19:00:11 UTC before the caster job.
-b7 is merged as `79d2f7d`; 72 benchmark/play tests and Ruff pass. A new two-job queue
-started at 19:03:20 UTC on `82f5626`: Sol on the caster, then the separate attacker
-variant retaining the original six-versus-eight foot-general roster. Queue state:
-`runs/twwarhammer3/calibration/b7-specialist-sol-plan-state.json`. No G1/G2 yet.
-During the caster pilot, a ground Pendulum cast was accepted at 64.6 s; at 70.9 s
-magic had been spent and its cooldown had started. The immediate acknowledgement
-snapshot still showed the earlier resources/readiness. This verifies unit-ground
-casting, without claiming exact damage attribution or a gameplay outcome. Screamers
-also render as flying and airborne. Evidence:
-`runs/twwarhammer3/reports/bench-b7-caster-ground-acceptance.json`.
-The caster subsequently lost at 1077 s, five refusals and $1.78329; active margin
--0.680. It exposed a missing public morale explanation and landing control: at
-793.3/836.2 s the flyers' UI warned that they must attack by land, while the model
-kept planning an airborne timeout win. At 1070.9 s the largest effect was Army losses.
-Read-only queries verified both flyers could toggle flight; no tactical commands were
-sent by the probe. b8 `a0a7108` adds that feedback and explicit flight-state requests
-in an isolated worktree, with 215 WH3 tests, Ruff and Lua compilation passing. The
-control still needs a separate live transition test. Cavalry assault then won at 432 s,
-one refusal, active margin +0.433, $0.62009; guns/artillery broke before the general and
-halberdiers. The b7 queue/controller exited at 19:33:24 UTC. No controller is active.
-b8 is merged as `6a0fe53`; next verify flight transitions and screen Luna with the two trivial controls
-on cavalry attacker 1.0/1.1 before freezing a reference. Spend is $6.2895 of $25; Sol's
-pilot cost leaves too little margin for the full repeated reference schedule. No
-scenario is admitted.
-The cavalry rematch's 4.826 m/12-degree formation flag remains recorded; the plan now
-declares all valid trials in the primary analysis and a secondary comparison excluding
-flagged launches. All resources/rosters matched in that case. Completed harness
-items above rely on b1/b2 engine
-evidence and the regression checks below; they do not imply scenario admission.
+No scenario is admitted and no G1/G2 trials have run. The owner's specialist brief
+is in [scenario-recipe.md](scenario-recipe.md): compact forces, anchor units, faction
+mechanics and meaningful tactical choices. The first prototypes are cavalry six
+versus eight and caster five versus ten, each with an 8000 cap and unused funds.
+The unstarted generic Herald G1 plan was superseded; every held-out map remains unused.
 
-Source `b476175` completed acceptance and the serial diagnostic queue. All four queue
-jobs completed, and the queue/final controller exited successfully at 17:15:50 UTC.
-The objective audits passed: the 15 domination purchases match nine new IDs plus six
-old IDs restored from zero men, by type; final supplies, ownership and register rows
-agree with traces. Settlement and domination ownership cases were all-held/never-held;
-changing ownership is covered by the separate Lua sampler regression. Audit:
-`runs/twwarhammer3/reports/bench-b2-objective-audit.json`.
+Core paired execution, setup gates, outside controllers, reports and objective metrics
+have passed acceptance. Terrain, nonzero barriers, ability ranges, spell resource use,
+visible flight/speeds, public morale and normal landing/take-off have live evidence.
+The latest flight probe on `f179dbe` verified both flyers grounded at 7.9 s, still
+grounded after a repeated landing request at 8.2 s, and airborne at 18.7 s. All six
+orders were accepted. Its later scripted battle lost at 372 s; no API calls.
+Artifact: `reports/bench-b8-flight-acceptance.json` under WH3 runs.
 
-Draft `9b73105` from `/tmp/wh3-benchmark-b3` was merged after the queue completed.
-The subsequent b4 frontend inventory verified cards, mounts and default spell loadouts.
-During the first caster battle, nonzero barriers, spell ranges, mana consumption,
-cooldowns and private current starting stats are live-observed. A read-only query found
-that Screamers' engine category is `inf_mel` despite being airborne; b5 `3218360`,
-merged as `b07b57b` after the screen, corrects classification and exposes flight state.
-It also keeps the engine outcome explicit for timer endings. Its tests, Ruff and Lua
-compilation passed; the next pilot must verify the new observation fields.
-The b4 queue exited at 18:24:45 UTC and the b6 retry at 19:00:11 UTC.
-Current process handles and next actions are in [../state.md](../state.md).
-No scenario is admitted. The owner has
-superseded the unstarted generic Herald calibration plan with specialist candidate
-selection; the new candidate/reference must be frozen before G1/G2. The held-out Herald
-map has not been used; neither have the new specialist held-out maps. API ledger was
-$3.3329 before specialist screening; `twwarhammer3 spend` reads the current total.
+Recent specialist development results (not pooled across sources):
+
+| Source / controller | Scenario | Engine outcome | Active margin | API USD |
+|---|---|---|---|---|
+| b7 Sol low | Caster defender 5v10 | Lost, 1077 s | -0.680 | 1.78329 |
+| b7 Sol low | Cavalry attacker 6v8, 1.0 | Won, 432 s | +0.433 | 0.62009 |
+| b8 attack-nearest | Cavalry attacker, 1.0 retry | Lost, 370 s | -0.808 | 0 |
+| b8 Luna low | Cavalry attacker, 1.0 retry | Lost, 247 s | -0.589 | 0.01922 |
+| b8 hold | Cavalry attacker, 1.0 retry | Lost at timer, 1205 s | 0 | 0 |
+| b8 Luna low | Cavalry attacker, 1.1 | Lost, 271 s | -0.626 | 0.02274 |
+
+Sol's one cavalry win establishes a viable strategy, not admission. Luna routed the
+ranged units in both pilots but lost to the remaining general/halberdiers. Its six
+1.0 ability refusals repeated accepted activations before the UI readiness updated;
+subsequent states show those abilities active. Earlier defender-evasion pilots,
+the recovered b6 startup hang, and all retired/interrupted trials remain in the
+[version log](log.md). No interrupted trial is counted as a gameplay outcome.
+
+The first b8 cavalry 1.0 trial stopped at 340.7 s with observation silence, an
+infrastructure failure of unresolved cause. No Lua error or matching Windows
+application event was retained. A separate unchanged retry recovered. Its combined
+1.0 report retains 3 valid / 4 started trials, 4.23 valid trials/hour. Both 1.0 rematch
+starts matched. The 1.1 hold also lost at 1205 s (margin 0) and attack-nearest at 395 s (-0.868),
+with matched starts. The queue on `f179dbe` completed at 21:05:37 UTC; the controller
+and stall monitor exited, and doctor reports ready. Combined screens: 6 valid / 7
+started trials, 4.68 valid trials/hour. Current actions are in [../state.md](../state.md).
+Queue: `runs/twwarhammer3/calibration/b8-assault-screen-r2-plan-state.json`.
+Spend is $6.3315 of the cumulative $25 cap.
+
+The untouched hold loss exposed two issues before G1:
+- The engine resets remaining time to -1 at its result, so b8 mislabels the timer
+  cause as `engine_result`. Its won/lost/draw remains valid. A separate countdown
+  audit preserves the raw records: `reports/bench-b8-timer-classification-audit.json`.
+  Isolated b9 `9f05777` retains a tick-sampled deadline. 222 WH3 tests with Lua,
+  Ruff, Lua 5.1 parsing and recorded-countdown replay pass; live acceptance is pending.
+- An idle attacker can lose with raw strength margin zero. The pre-G1 calibration
+  amendment replaces hold with `rush_nearest` as this family's second tactical
+  comparator. Hold stays an objective-failure control. b9 `33b7e2b` adds only a run-flag
+  change to AttackNearest; 77 benchmark/play tests and Ruff pass. It needs a live screen.
+  Raw scoring, the 2–4/6 decisive-win threshold, positive paired intervals against both
+  active baselines, rotation seeds and held-out separation are unchanged.
+
+Do not merge b9 until the b8 queue exits. The draft successor is
+`runs/twwarhammer3/calibration/b9-timer-and-reference-plan.json`: timer acceptance,
+then medium-effort Luna against run-nearest at 1.0/1.1 on the same compact armies.
+It is not executable until the source is merged/pinned. The separate local b9 driver
+has the timer-result gate and its hash is recorded. Freeze a competent reference and viable candidate before
+G1, then complete the 0/6/10 s G2 experiment and final requirement audit.
+
+Starting-formation geometry flags remain in primary results, with a secondary paired
+comparison omitting flagged launches. Changed resources/loadouts stop later jobs for
+review. Requested snapshot ages are minima; reports preserve actual age at decision
+and issuance. Neither an accepted order nor a matched start proves its effect or
+statistical independence. The detailed evidence below and [integration.md](integration.md)
+record these limits.
 
 ## Implementation and live acceptance
 
