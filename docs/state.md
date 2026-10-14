@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-14 21:05 UTC: what is running, where each game
+Updated 2026-10-14 21:07 UTC: what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -41,7 +41,8 @@ unchanged. Isolated b9 `33b7e2b` in `/tmp/wh3-benchmark-b9` retains a countdown 
 on engine ticks and labels expiry as a countdown inference. It also adds `rush_nearest`,
 changing only AttackNearest's run flag. The clean combined worktree passes 223 WH3
 tests with Lua, repository-wide Ruff, Lua 5.1 parsing and recorded-countdown replay.
-Neither change has live acceptance yet; b9 is unmerged.
+Neither change has live acceptance yet. b8 evidence is committed as `4e4de1c` and b9
+is merged as `90a8796`; runtime and tests exactly match the tested worktree.
 
 Pre-G1 baseline amendment: for the cavalry attacker, compare walk-nearest/run-nearest
 against the reference. Hold stays an objective-failure control because an idle timer
@@ -51,7 +52,7 @@ are unchanged. Geometry flags stay in primary comparisons, with a secondary resu
 excluding flagged launches; changed resources/loadouts stop later jobs for review.
 Requested 0/6/10 s snapshot ages are minima; actual ages are reported.
 
-Next: merge b9 after committing the b8 evidence, then pin and launch
+Next: pin and launch
 `runs/twwarhammer3/calibration/b9-timer-and-reference-plan.json`. Its separate
 `run-experiment-b9.py` driver requires a valid timer result with retained expiry
 evidence before the paid screens. Then medium-effort Luna and run-nearest screen
@@ -167,8 +168,6 @@ Slay the Spire:
 
 ## Unmerged branches
 
-- `wh3-benchmark-b9` (`33b7e2b`): terminal countdown classification and running baseline,
-  tested, awaiting the b8 queue's exit before merge and live acceptance.
 - `integration/heldout-clip-continuation` (`940d698`): first-combat work, on `01f2984`.
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-fire-report` (`832b233`): WH3 fire-report candidate, on v9 (`d928965`); untested.

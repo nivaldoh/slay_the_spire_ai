@@ -332,6 +332,22 @@ a completed transition, not during its animation or under every combat restricti
 The public snapshots also contain leadership effects and flight cooldowns. Evidence:
 `reports/bench-b8-flight-acceptance.json`.
 
+## Timer result transition (2026-10-14)
+
+Both b8 cavalry-attacker hold trials ended on an engine loss at 1205.2 s with both
+armies intact. `remaining_conflict_time()` reset to -1 at VictoryCountdown. The last
+logged finite samples imply deadlines near 1205.046 s, about 154 ms before the result.
+Thus b8's `remaining_ms == 0` check mislabels the cause as `engine_result`; the engine
+loss itself is valid. Raw trials/register rows are preserved, with a separate audit:
+`reports/bench-b8-timer-classification-audit.json` under WH3 runs.
+
+b9 samples the countdown on engine ticks and includes its last finite sample/deadline
+in terminal `timer` evidence. Expiry is inferred by comparing that deadline with result
+time, not read from an authoritative end-cause getter. Combat and timer expiry in the
+same tick may remain ambiguous. The original engine won/lost/draw is independent of
+this label. Regression tests and replay of the recorded countdown pass; a live test of
+the patched mod is pending.
+
 ## Battle types (probed 2026-10-14)
 
 Evidence: `runs/twwarhammer3/probe-battle-types-20261014/` (lobby dumps and read-backs of

@@ -93,10 +93,11 @@ The untouched hold loss exposed two issues before G1:
   Raw scoring, the 2–4/6 decisive-win threshold, positive paired intervals against both
   active baselines, rotation seeds and held-out separation are unchanged.
 
-Do not merge b9 until the b8 queue exits. The draft successor is
+b8 evidence is committed as `4e4de1c` and b9 merged as `90a8796` after the queue
+exited. Its runtime/tests exactly match the tested `33b7e2b` worktree. The successor is
 `runs/twwarhammer3/calibration/b9-timer-and-reference-plan.json`: timer acceptance,
 then medium-effort Luna against run-nearest at 1.0/1.1 on the same compact armies.
-It is not executable until the source is merged/pinned. The separate local b9 driver
+It is not executable until the source is pinned. The separate local b9 driver
 has the timer-result gate and its hash is recorded. Freeze a competent reference and viable candidate before
 G1, then complete the 0/6/10 s G2 experiment and final requirement audit.
 

@@ -1,6 +1,6 @@
 # WH3 battle versions
 
-## Benchmark harness b9 (2026-10-14, timer classification; isolated draft)
+## Benchmark harness b9 (2026-10-14, timer classification and running baseline)
 
 The b8 hold screen reached the timer with both armies intact. Its last logged finite
 sample was 945.679 ms remaining at 1204100 ms; the engine loss arrived at 1205200 ms,
@@ -26,6 +26,9 @@ criterion and positive paired intervals against both active baselines are unchan
 The running baseline still needs live acceptance before G1.
 The combined `33b7e2b` worktree passes all 223 WH3 tests with Lua and repository-wide
 Ruff; its working tree is clean. No live controller was launched by those checks.
+After the b8 queue exited and its evidence was committed as `4e4de1c`, b9 merged as
+`90a8796`. Runtime and test files exactly match the tested worktree. Live timer
+acceptance and medium-effort reference screens are next, before G1/G2.
 
 ## Benchmark harness b8 (2026-10-14, caster control)
 
