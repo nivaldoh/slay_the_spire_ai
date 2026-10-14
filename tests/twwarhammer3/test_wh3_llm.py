@@ -293,7 +293,7 @@ def test_abilities_show_target_cost_and_readiness_and_army_abilities_their_unloc
         {"key": "horn_of_khorne", "target": "Ground, Ally", "radius": 35, "cooldown_s": 90,
          "cost": 100, "unlocked": True, "button": "active", "ready": True},
         {"key": "relentless_rage", "target": "Ally", "radius": 0, "cooldown_s": 90,
-         "cost": 200, "unlocked": True, "button": "inactive", "ready": False, "timer": "1:02"},
+         "cost": 200, "unlocked": True, "button": "inactive", "ready": False, "timer": "62"},
         {"key": "blade_of_khorne", "target": "Ground", "cooldown_s": 120, "cost": 300,
          "unlocked": False, "button": "inactive", "ready": False}]}
     text = llm.render_state(state, {})
@@ -303,7 +303,7 @@ def test_abilities_show_target_cost_and_readiness_and_army_abilities_their_unloc
     assert text.startswith(
         'Army abilities (order with unit "army"; points 71, next unlock at 100):'
         " horn_of_khorne (Ground, Ally; radius 35 m; ready; cooldown 90 s); relentless_rage"
-        " (Ally; recharging, 1:02 left; cooldown 90 s); blade_of_khorne (Ground; locked,"
+        " (Ally; recharging, 62 s left; cooldown 90 s); blade_of_khorne (Ground; locked,"
         " unlocks at 300 points; cooldown 120 s)\n")
 
 
@@ -313,3 +313,5 @@ def test_engine_permission_wins_over_readiness_and_unlocks_may_be_complete():
     assert llm.render_army({"currency": 320, "abilities": [
         {"key": "horn", "unlocked": True, "ready": True}]}) == (
         'Army abilities (order with unit "army"; points 320): horn (ready)')
+    assert llm.render_ability({"key": "horn", "unlocked": True, "button": "selected_inactive",
+                               "timer": "28", "ready": False}) == "horn (active now, 28 s left)"

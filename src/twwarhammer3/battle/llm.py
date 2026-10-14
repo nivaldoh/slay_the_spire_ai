@@ -201,7 +201,9 @@ def render_ability(ability: dict) -> str:
     elif ability.get("recharge_s"):
         facts.append(f"recharging, {ability['recharge_s']:.0f} s left")
     elif ability.get("timer"):
-        facts.append(f"recharging, {ability['timer']} left")
+        # An army ability's HUD timer counts its active time, then its recharge.
+        phase = "active now" if ability.get("button") == "selected_inactive" else "recharging"
+        facts.append(f"{phase}, {ability['timer']} s left")
     elif ability.get("ready"):
         facts.append("ready")
     elif ability.get("ready") is False:
