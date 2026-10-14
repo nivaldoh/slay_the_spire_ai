@@ -200,7 +200,10 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
      enemy missiles in reach and both armies' start points, for orientation errors the
      reviews still find.
 8. Owner idea, registered in [../state.md](../state.md): a WH3 LLM benchmark of
-   challenge battles where the enemy side is stronger, possibly AI-generated.
+   challenge battles where the enemy side is stronger, possibly AI-generated. The owner's
+   brief is [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md);
+   [benchmark.md](benchmark.md) maps it onto the harness and drafts a definition to
+   discuss (2026-10-14).
 
 ## Other battle types (owner request, 2026-10-13)
 

@@ -30,6 +30,8 @@ Next (owner to choose; the owner will discuss the next features):
 2. Resume the random-draw model comparison later (three seeds left, in the
    [log](twwarhammer3/log.md)), then Sol and Astra as commander on the same draws.
 3. Eventually we could turn this game into some kind of serious LLM benchmark? For now I'm just registering this here. Could try to create certain challenge scenario battles where the opponent side is stronger, and see how well different models perform and whether they discover certain key insights required to win these battles. Eventually these challenge scenarios could even be AI-generated themselves.
+   2026-10-14: the owner's brief and a draft definition to discuss (analysis of the
+   harness, spec, one concrete instance): [twwarhammer3/benchmark.md](twwarhammer3/benchmark.md).
 
 ## Slay the Spire
 
