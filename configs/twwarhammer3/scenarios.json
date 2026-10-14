@@ -137,7 +137,8 @@
     "wh3_main_kho_inf_bloodletters_0",
     "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
     "wh3_main_kho_veh_skullcannon_0"
-   ]
+   ],
+   "reinforcements": null
   },
   "enemy": {
    "subculture": "wh_main_sc_dwf_dwarfs",
@@ -148,7 +149,8 @@
     "wh_main_dwf_inf_longbeards",
     "wh_main_dwf_inf_quarrellers_0",
     "wh_main_dwf_art_grudge_thrower"
-   ]
+   ],
+   "reinforcements": null
   }
  },
  "ffa-kho5-dwf5-emp5-kho5": {
@@ -348,7 +350,8 @@
     "wh3_main_kho_inf_bloodletters_0",
     "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
     "wh3_main_kho_veh_skullcannon_0"
-   ]
+   ],
+   "reinforcements": null
   },
   "enemy": null
  }
