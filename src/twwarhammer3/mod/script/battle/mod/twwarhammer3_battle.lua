@@ -18,6 +18,7 @@ local state = {
     pending = nil, last_request = nil, applied = nil, applied_ms = nil,
     next_observe_ms = 0, next_scan_ms = 0, force_observe = false, alliance = nil,
     army_abilities = {}, army_issued = {}, known = {}, info = {}, slots = {},
+    objective_totals = {},
 }
 local session = nil
 local BEHAVIOURS = {"fire_at_will", "skirmish", "defend", "change_formation_spacing", "formed_attack"}
@@ -310,6 +311,50 @@ local function side(alliance_id)
     return state.info.alliances > 2 and ("alliance " .. (alliance_id + 1)) or "enemy"
 end
 
+-- Sample on every model tick, independently of controller speed. Ownership between
+-- samples uses the preceding sample (at most one tick of boundary uncertainty).
+local function sample_objectives(now)
+    for index, row in ipairs(context_rows("CcoBattleRoot", "", CAPTURE_POINTS)) do
+        if row[9] == "true" then
+            local id = "c" .. index
+            local total = state.objective_totals[id]
+            if not total then
+                total = {key = row[1], held_ms = 0, observed_ms = 0, since_ms = now}
+                state.objective_totals[id] = total
+            end
+            local elapsed = math.max(0, now - total.since_ms)
+            total.observed_ms = total.observed_ms + elapsed
+            if total.held then total.held_ms = total.held_ms + elapsed end
+            total.held = side(tonumber(row[5]) or -1) == "us"
+            total.since_ms = now
+        end
+    end
+end
+
+-- Evaluation only: hidden enemy totals must be stripped at the Python policy boundary.
+local function strength(entries)
+    local total = {men = 0, men0 = 0, active_men = 0, by_type = {}}
+    for _, entry in pairs(entries) do
+        local unit = entry.unit
+        local men, men0 = get(unit, "number_of_men_alive", 0), get(unit, "initial_number_of_men", 0)
+        local active = not get(unit, "is_routing", false) and not get(unit, "is_shattered", false)
+        local key = get(unit, "type", "?")
+        local group = total.by_type[key] or {men = 0, men0 = 0, active_men = 0}
+        total.by_type[key] = group
+        for _, item in ipairs({total, group}) do
+            item.men = item.men + men
+            item.men0 = item.men0 + men0
+            item.active_men = item.active_men + (active and men or 0)
+        end
+    end
+    return total
+end
+
+local function evaluation()
+    return {friendly = strength(state.friendly), enemy = strength(state.enemy),
+            objectives = state.objective_totals}
+end
+
 local function mode_section()
     local section = {}
     for key, value in pairs(state.info) do section[key] = value end
@@ -446,6 +491,8 @@ local function observation(now)
         },
         army = army, mode = section,
         orders = state.applied, result = state.result, final = state.final,
+        evaluation = evaluation(),
+        setup = state.setup,
     }
 end
 
@@ -696,16 +743,6 @@ local function try_end_deployment()
     log("start button click: " .. (clicked and "ok" or clean_error(err2)))
 end
 
--- True strength of one side, alive and at the start, over every unit seen or not.
-local function strength(entries)
-    local men, men0 = 0, 0
-    for _, entry in pairs(entries) do
-        men = men + get(entry.unit, "number_of_men_alive", 0)
-        men0 = men0 + get(entry.unit, "initial_number_of_men", 0)
-    end
-    return {men = men, men0 = men0}
-end
-
 local function finish()
     if state.finished then return end
     local battle = bm.battle
@@ -720,7 +757,8 @@ local function finish()
     end
     state.finished = true
     -- For evaluation only: the result observation ends the episode before any decision.
-    state.final = {friendly = strength(state.friendly), enemy = strength(state.enemy)}
+    sample_objectives(battle_time())
+    state.final = evaluation()
     for _, entry in pairs(state.friendly) do
         pcall(function() entry.controller:release_control() end)
     end
@@ -856,6 +894,7 @@ end
 
 local function tick()
     local now = battle_time()
+    sample_objectives(now)
     if state.pending then apply_pending(now) end
     if not state.finished and get(bm.battle, "battle_outcome_decided", false) then
         finish()
@@ -930,6 +969,9 @@ local function start()
     local scanned, err = pcall(scan)
     if not scanned then log("scan failed: " .. clean_error(err)) end
     state.started_ms = battle_time()
+    state.setup = {unit_scale = get_context("UnitSize"), realism = get_context("IsRealismModeEnabled"),
+                   player_defends = get_context("PlayerAllianceContext.IsDefender")}
+    sample_objectives(state.started_ms)
     local fill = get_context("HasArmyAbilityFillCurrency") == true
     for index, row in ipairs(context_rows("CcoBattleRoot", "", ARMY_SETUP)) do
         state.army_abilities[index] = {

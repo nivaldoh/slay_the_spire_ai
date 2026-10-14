@@ -22,8 +22,11 @@ Observation shape::
      "result": "won" | "lost" | "draw" | null,
      "final": {"friendly": {"men", "men0"}, "enemy": {...}} | null}
 
-``final`` is both armies' true strength, published only with the result (after the last
-decision), for evaluation.
+``evaluation`` carries both armies' true strength (men, men0, active_men excluding
+routing/shattered units, and totals by unit type) and tick-integrated objective ownership.
+The Python harness strips it and ``final`` before any controller receives a snapshot.
+``final`` freezes these evaluation records at the engine result; on other endings the
+harness retains the last evaluation snapshot with its battle timestamp.
 
 A request may carry ``say``, text the battle script shows in the advisor window. An
 ability order whose unit is ``"army"`` casts an army ability. Order indexes are

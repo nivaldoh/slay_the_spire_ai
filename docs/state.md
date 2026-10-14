@@ -6,8 +6,10 @@ stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 
 ## Active work
 
-Nothing is running: no game, controller or job. The overnight battle-type work
-(2026-10-14, 03:58-11:46 UTC) is finished; see the WH3 section below.
+WH3 benchmark work is active (owner goal, 2026-10-14): complete the paired benchmark,
+difficulty/latency calibration, and the interface fixes its scenarios require.
+No game job is running yet; runtime doctor reports ready. Implementation and live
+acceptance evidence are tracked in [benchmark-progress.md](twwarhammer3/benchmark-progress.md).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.

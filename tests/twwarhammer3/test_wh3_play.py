@@ -246,6 +246,73 @@ def test_the_observation_a_failing_decision_saw_is_kept_in_the_trace(tmp_path):
     assert kinds[-1] == "observation"
 
 
+def test_delayed_policy_gets_old_public_state_but_results_use_current_evaluation(tmp_path):
+    class Reader(Hold):
+        def __init__(self):
+            self.times = []
+
+        def decide(self, observation):
+            assert "evaluation" not in observation and "final" not in observation
+            assert "setup" not in observation
+            self.times.append(observation["time_ms"])
+            return []
+
+    states = [observation(0, 0)] + [observation(i, i * 1000, ack=True) for i in range(1, 6)]
+    for state in states:
+        state["evaluation"] = {"friendly": {"men0": 100, "active_men": 40},
+                               "enemy": {"men0": 100, "active_men": 20}}
+        state["setup"] = {"private": True}
+    reader = Reader()
+    mailbox = FakeMailbox(states)
+    result = play.play_episode(tmp_path / "e", {**CONFIG, "delay_ms": 2000, "interval_ms": 0},
+                               reader, mailbox, not_battle=None)
+    assert reader.times == [1000, 2000, 3000]
+    assert [request[1] for request in mailbox.requests] == [1, 2, 3]
+    assert result["delays_ms"] == [2500, 2500]
+    assert result["status"] == "infrastructure_failure"
+    assert result["final_time_ms"] == 5000 and result["final"]["enemy"]["active_men"] == 20
+
+
+def test_controller_exception_stops_rotation_and_is_recorded(tmp_path, harness):
+    class Broken(Hold):
+        def decide(self, observation):
+            raise ValueError("bad controller")
+
+    harness.append(FakeMailbox([observation(0, 0), observation(1, 1000)]))
+    job = tmp_path / "job"
+    result = play.play(job, {**CONFIG, "episodes": 2, "results": str(tmp_path / "results.csv")},
+                       policy_factory=Broken)
+    assert result["status"] == "stopped" and len(result["episodes"]) == 1
+    assert result["episodes"][0]["status"] == "policy_failure"
+    assert harness[0].controls == []
+
+
+def test_interrupted_trial_is_kept_in_manifest_and_register(tmp_path, harness):
+    class Interrupted(Hold):
+        def decide(self, observation):
+            raise KeyboardInterrupt
+
+    harness.append(FakeMailbox([observation(0, 0), observation(1, 1000)]))
+    job, register = tmp_path / "job", tmp_path / "results.csv"
+    with pytest.raises(KeyboardInterrupt):
+        play.play(job, {**CONFIG, "results": str(register)}, policy_factory=Interrupted)
+    manifest = json.loads((job / "manifest.json").read_text())
+    assert manifest["episodes"][0]["status"] == "interrupted"
+    assert next(csv.DictReader(register.open()))["outcome"] == "interrupted"
+
+
+def test_tick_integrals_override_controller_sample_bias():
+    result = {}
+    play.track_objectives(result, {
+        "mode": {"capture_points": [{"id": "c1", "holder": "enemy", "victory": True}]},
+        "evaluation": {"objectives": {"c1": {"key": "major_key_building", "held_ms": 9000,
+                                                "observed_ms": 10000}}},
+    })
+    assert result["objectives"]["victory_held"] == .9
+    assert result["objectives"]["key_held"] == .9
+    assert result["objectives"]["method"] == "engine_tick_time_weighted"
+
+
 @pytest.fixture
 def harness(tmp_path, monkeypatch):
     boxes = []
@@ -362,7 +429,8 @@ def test_scenario_steps_pick_each_race_and_recruit_the_lord_first():
     for name, scenario in json.loads(play.SCENARIOS_PATH.read_text()).items():
         if not scenario.get("random"):
             steps = play.scenario_steps(scenario)
-            assert len([s for s in steps if s.get("dblclick")]) == 5 * len(play.sides(scenario))
+            assert len([s for s in steps if s.get("dblclick")]) == sum(
+                len(side["units"]) for side in play.sides(scenario))
 
 
 def test_battle_type_scenarios_select_the_type_slots_and_roles():

@@ -63,16 +63,19 @@ def main() -> int:
                       help="send the steps to the running battle script (tails mod.log)")
 
     play = commands.add_parser("play", help="Play custom battles with a policy; one job directory")
-    play.add_argument("--policy", default="llm", choices=[
-        "llm", "commander", "skills", "hold", "attack_nearest", "probe_move",
-        "probe_abilities"])
+    play.add_argument("--policy", default="llm",
+                      help="built-in name or package.module:Class; comma-separated names rotate")
     play.add_argument("--model", default="gpt-6-luna", choices=sorted(PRICES))
     play.add_argument("--effort", default="low", choices=EFFORTS)
     play.add_argument("--budget-usd", type=float, default=None,
                       help="required with --policy llm or commander")
     play.add_argument("--ledger", type=Path, default=LEDGER_PATH)
     play.add_argument("--results", type=Path, default=RESULTS_PATH)
-    play.add_argument("--episodes", type=int, default=1)
+    play.add_argument("--episodes", type=int, default=None,
+                      help="default: one trial per controller/delay combination")
+    play.add_argument("--rotation-seed", type=int, default=None, help="recorded trial order seed")
+    play.add_argument("--delay-seconds", default="0",
+                      help="comma-separated added observation ages, e.g. 0,6,10")
     play.add_argument("--scenario", required=True,
                       help="a battle in configs/twwarhammer3/scenarios.json; random draws a map"
                       " and both races, and autogenerates both armies")
@@ -80,7 +83,8 @@ def main() -> int:
     add_session_arguments(play)
     play.add_argument("--start-timeout", type=float, default=900)
     play.add_argument("--observation-timeout", type=float, default=60)
-    play.add_argument("--episode-timeout", type=float, default=3600)
+    play.add_argument("--episode-timeout", type=float, default=3900,
+                      help="wall limit; benchmark runs require at least game timer + 120 s")
     play.add_argument("--run-timeout", type=float, default=8 * 3600, help="game process limit")
     play.add_argument("--attach", action="store_true", help="use the game a launch started")
     play.add_argument("--show", action="store_true",
@@ -98,6 +102,10 @@ def main() -> int:
     stats = commands.add_parser("stats", help="Summarise the results register")
     stats.add_argument("--results", type=Path, default=RESULTS_PATH)
     stats.add_argument("--rebuild", action="store_true", help="rewrite it from runs/")
+    stats.add_argument("--report", nargs="+", type=Path, metavar="JOB",
+                       help="paired benchmark report from these job directories")
+    stats.add_argument("--report-json", type=Path,
+                       help="save full benchmark metrics and trial list")
 
     spend = commands.add_parser("spend", help="Print the API ledger total")
     spend.add_argument("--ledger", type=Path, default=LEDGER_PATH)
@@ -200,28 +208,14 @@ def main() -> int:
         for key, value in config.items():
             if isinstance(value, Path):
                 config[key] = str(value)
-        if args.policy in ("llm", "commander"):
-            from functools import partial
+        from twwarhammer3.battle.controllers import factories, rotation
 
-            from gameai.ledger import Ledger
-            from gameai.llm import api_key, post
-            from twwarhammer3.battle.commander import CommanderPolicy
-            from twwarhammer3.battle.llm import LLMPolicy
-
-            if args.budget_usd is None:
-                parser.error(f"--policy {args.policy} needs --budget-usd")
-            ledger = Ledger(args.ledger, args.budget_usd)
-            send = partial(post, api_key())
-            kind = LLMPolicy if args.policy == "llm" else CommanderPolicy
-            def policy_factory():
-                return kind(args.model, args.effort, ledger, send=send)
-        else:
-            from twwarhammer3.battle.scripted import POLICIES
-            from twwarhammer3.battle.skills import ProbeAbilities, Skills
-
-            policy_factory = {"skills": Skills, "probe_abilities": ProbeAbilities,
-                              **POLICIES}[args.policy]
-        manifest = run_play(args.output, config, policy_factory=policy_factory)
+        try:
+            rotation(config)
+            makers = factories(config)
+        except (ValueError, ImportError, AttributeError) as exc:
+            parser.error(str(exc))
+        manifest = run_play(args.output, config, policy_factory=makers)
         return 0 if manifest["status"] == "completed" else 1
 
     if args.command == "digest":
@@ -248,6 +242,16 @@ def main() -> int:
     if args.command == "stats":
         from twwarhammer3.battle.stats import rebuild, summary
 
+        if args.report:
+            from twwarhammer3.battle.report import collect, render
+
+            report = collect(args.report)
+            if args.report_json:
+                write_json(args.report_json, report)
+            print(render(report))
+            return 0
+        if args.report_json:
+            parser.error("--report-json requires --report JOB...")
         if args.rebuild:
             print(f"{rebuild(JOBS_ROOT, args.results)} rows")
         print(summary(args.results))

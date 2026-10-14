@@ -1,5 +1,20 @@
 # WH3 battle versions
 
+## Benchmark harness b1 (2026-10-14, live acceptance pending)
+
+Owner goal: complete paired benchmarks, difficulty/latency calibration and the scenario
+interface fixes. Added recorded controller rotation and importable controllers; strict
+benchmark setup checks; observation-age arms; private evaluation totals excluding
+routing/shattered units; objective ownership integrated on game ticks; reinforcement
+counts by type; trial failure/interruption accounting; and paired reports with explicit
+denominators, uncertainty and missing pairs. Policies remain llm v15/commander v3.
+
+The frozen `dwf-sla-taurox` development scenario starts the acceptance work. Independent
+run instructions: [benchmark-run.md](benchmark-run.md). No calibration claim yet.
+Validation: 1030 tests passed, 1 skipped; Ruff passed; every mod script parses as Lua 5.1.
+Follow-up clock/refusal edits passed the 52 relevant benchmark/play tests. Live results
+and remaining acceptance work go in [benchmark-progress.md](benchmark-progress.md).
+
 One entry per harness version: what changed, the job, and the results. The scenario is
 fixed unless an entry says otherwise: `kho5-dwf5`, a custom battle on "An Ogre's Folly",
 Khorne (player: Herald of Khorne, Chaos Warriors, Bloodletters, Marauder Horsemen with

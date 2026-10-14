@@ -99,7 +99,7 @@ local function poll()
     state.index, state.retries = state.index + 1, 0
     if ok then
         log(string.format("step %d: %s", state.index, tostring(result)))
-    elseif step.timeout_ms then
+    elseif step.timeout_ms or step.required then
         log(string.format("step %d: %s", state.index, clean_error(result)))
         log("failed")
         state.steps = nil

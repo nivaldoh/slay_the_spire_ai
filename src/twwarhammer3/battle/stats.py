@@ -20,6 +20,8 @@ FIELDS = [
     "date", "job", "episode", "scenario", "policy", "model", "effort", "harness", "source",
     "mode", "speed", "interval_s", "outcome", "battle_s", "own_left", "enemy_left",
     "decisions", "invalid", "delay_s", "usd", "battle_type", "victory_held", "supplies_left",
+    "key_held", "reinforcements_by_type", "own_active", "enemy_active", "added_age_s",
+    "ended_by",
 ]
 MODEL_POLICIES = ("llm", "commander")
 
@@ -39,14 +41,15 @@ def row(job: Path, episode: Path) -> dict:
     manifest = json.loads((job / "manifest.json").read_text())
     result = json.loads((episode / "result.json").read_text())
     config = manifest["config"]
-    llm = config.get("policy") in MODEL_POLICIES
+    policy = result.get("policy", config.get("policy", ""))
+    llm = policy in MODEL_POLICIES
     delays = result.get("delays_ms") or []
     return {
         "date": manifest["created_at"][:10],
         "job": job.name,
         "episode": episode.name,
         "scenario": config.get("scenario", ""),
-        "policy": config.get("policy", ""),
+        "policy": policy,
         "model": config.get("model", "") if llm else "",
         "effort": config.get("effort", "") if llm else "",
         "harness": harness_version(job.name),
@@ -55,7 +58,7 @@ def row(job: Path, episode: Path) -> dict:
         "speed": config.get("speed", 1),
         "interval_s": config.get("interval_ms", 0) / 1000,
         "outcome": result["status"],
-        "battle_s": round(result.get("battle_ms", 0) / 1000),
+        "battle_s": round(result["battle_ms"] / 1000) if "battle_ms" in result else "",
         "own_left": left(result, "friendly"),
         "enemy_left": left(result, "enemy"),
         "decisions": result.get("decisions", 0),
@@ -65,7 +68,22 @@ def row(job: Path, episode: Path) -> dict:
         "battle_type": (manifest.get("scenario") or {}).get("battle_type", "classic"),
         "victory_held": (result.get("objectives") or {}).get("victory_held", ""),
         "supplies_left": (result.get("objectives") or {}).get("supplies_left", ""),
+        "key_held": (result.get("objectives") or {}).get("key_held", ""),
+        "reinforcements_by_type": json.dumps(result["objectives"]["reinforcements_by_type"],
+                                            sort_keys=True)
+        if (result.get("objectives") or {}).get("reinforcements_by_type") else "",
+        "own_active": active_left(result, "friendly"),
+        "enemy_active": active_left(result, "enemy"),
+        "added_age_s": result.get("delay_ms", 0) / 1000,
+        "ended_by": result.get("ended_by", ""),
     }
+
+
+def active_left(result: dict, side: str):
+    final = (result.get("final") or {}).get(side) or {}
+    if final.get("men0") and "active_men" in final:
+        return final["active_men"] / final["men0"]
+    return ""
 
 
 def record(path: Path, job: Path, episode: Path) -> None:

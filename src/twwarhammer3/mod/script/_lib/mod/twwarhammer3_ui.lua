@@ -96,6 +96,9 @@ function ui.run(step, directory)
         return "command " .. step.command
     elseif step.expression then
         local value = common.get_context_value(step.context, step.id or "", step.expression)
+        if step.expect ~= nil and value ~= step.expect then
+            error(step.expression .. " = " .. tostring(value) .. ", expected " .. tostring(step.expect))
+        end
         return step.expression .. " = " .. tostring(value)
     elseif step.dump then
         return ui.dump(step, directory)
@@ -104,7 +107,11 @@ function ui.run(step, directory)
         return "key " .. step.key
     elseif step.find then
         local uic = ui.find(step.find)
-        if not uic then return "not found: " .. table.concat(step.find, "/") end
+        if not uic then
+            local message = "not found: " .. table.concat(step.find, "/")
+            if step.required then error(message) end
+            return message
+        end
         return ui.act(uic, step)
     end
     return "unknown step"

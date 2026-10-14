@@ -18,11 +18,21 @@ import secrets
 import shutil
 import statistics
 import time
+from collections import deque
 from datetime import UTC, datetime
 from pathlib import Path
 
 from gameai.ledger import BudgetExhausted
 from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
+from twwarhammer3.battle.controllers import card, rotation
+from twwarhammer3.battle.setup import (
+    check_battle,
+    check_menu,
+    compare_starts,
+    fingerprint,
+    menu_checks,
+    validate_declaration,
+)
 from twwarhammer3.battle.stats import record
 from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox, require_realtime
@@ -37,7 +47,7 @@ from twwarhammer3.protocol import (
     validate_orders,
 )
 
-SCORED = {"won", "lost", "draw", "policy_failure", "truncated"}
+SCORED = {"won", "lost", "draw"}
 SOURCES = ("src/gameai", "src/twwarhammer3", "configs/twwarhammer3", "pyproject.toml",
            "uv.lock", ".python-version")
 SCENARIOS_PATH = Path(__file__).resolve().parents[3] / "configs/twwarhammer3/scenarios.json"
@@ -61,11 +71,14 @@ ENGINE_TYPES = {
 
 def play(output: Path, config: dict, *, policy_factory) -> dict:
     require_realtime(config)
+    trials = rotation(config)
     scenario = load_scenario(config)
     steps = scenario_steps(scenario)
     expect = expected_mode(scenario)
     output.mkdir(parents=True)
-    write_json(output / "environment.json", collect_diagnostics())
+    environment = collect_diagnostics()
+    write_json(output / "environment.json", environment)
+    validate_declaration(scenario, config, environment)
     manifest = {
         "schema_version": 1,
         "created_at": datetime.now(UTC).isoformat(),
@@ -73,32 +86,48 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
         "source_files": source_fingerprints(SOURCES),
         "config": config,
         "scenario": scenario,
+        "trials": trials,
+        "track": "obs-v1/act-v1/live-1x",
         "status": "running",
         "episodes": [],
     }
-    if config["policy"] in ("llm", "commander"):
+    for name in sorted(set(config["policy"].split(",")) & {"llm", "commander"}):
         from twwarhammer3.battle import commander, llm
 
-        prompt = (commander.PROMPT_PATH if config["policy"] == "commander"
+        prompt = (commander.PROMPT_PATH if name == "commander"
                   else llm.SYSTEM_PROMPT_PATH)
-        (output / "system_prompt.md").write_bytes(prompt.read_bytes())
-        manifest["system_prompt_sha256"] = sha256(prompt)
+        filename = "system_prompt.md" if "," not in config["policy"] else f"{name}_prompt.md"
+        (output / filename).write_bytes(prompt.read_bytes())
+        manifest[filename.removesuffix(".md") + "_sha256"] = sha256(prompt)
     write_json(output / "manifest.json", manifest)
     session = {key: config[key] for key in SESSION_KEYS}
 
     def episodes(mailbox: Mailbox) -> str:
         previous = None
-        for index in range(config["episodes"]):
+        for index, trial in enumerate(trials):
             if source_fingerprints(SOURCES) != manifest["source_files"]:
                 raise RuntimeError("Implementation changed during the job; stopped")
             if index:
                 mailbox.write_control(previous, "restart")
-            result = play_episode(output / f"episode-{index:04d}", config, policy_factory(),
-                                  mailbox, not_battle=previous, expect=expect)
+            directory = output / f"episode-{index:04d}"
+            trial_config = {**config, **trial, "slot": index}
+            if scenario.get("expect"):
+                trial_config["benchmark_scenario"] = scenario
+            if manifest["episodes"]:
+                trial_config["start_reference"] = manifest["episodes"][0].get("start")
+            factory = (policy_factory[trial["policy"]] if isinstance(policy_factory, dict)
+                       else policy_factory)
+            try:
+                result = play_episode(directory, trial_config, None, mailbox,
+                                      policy_factory=factory, not_battle=previous, expect=expect)
+            finally:
+                # KeyboardInterrupt still leaves the started trial in both records.
+                if (directory / "result.json").exists():
+                    saved = json.loads((directory / "result.json").read_text())
+                    manifest["episodes"].append(saved)
+                    write_json(output / "manifest.json", manifest)
+                    record(Path(config["results"]), output, directory)
             previous = result.get("battle")
-            manifest["episodes"].append(result)
-            write_json(output / "manifest.json", manifest)
-            record(Path(config["results"]), output, output / f"episode-{index:04d}")
             print(json.dumps({key: result.get(key) for key in (
                 "episode", "status", "battle_s", "decisions", "invalid", "delay_s", "error",
             )}, sort_keys=True), flush=True)
@@ -124,6 +153,9 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
                 with OwnedGame(output / "game.log", timeout=config["run_timeout"]) as game:
                     manifest["game"] = game.info
                     start_frontend(mailbox, config, output, steps)
+                    if scenario.get("expect"):
+                        manifest["setup_checks"] = check_menu(scenario, output)
+                        write_json(output / "manifest.json", manifest)
                     manifest["status"] = episodes(mailbox)
     except BaseException:
         manifest["status"] = "interrupted"
@@ -274,13 +306,18 @@ def scenario_steps(scenario: dict) -> list[dict]:
                       {"wait_ms": 3000}]
         for index, unit in enumerate(side["units"] or []):
             card = f"CcoUnitsCustomBattlePermissionRecord{unit}:{side['faction']}:{int(index == 0)}"
-            steps += [{"find": [card, "unit_card"], "dblclick": True, "timeout_ms": 15000},
+            steps += [{"find": [card, "unit_card"], "dblclick": True},
                       {"wait_ms": 600}]
-    return steps + [
+    steps += [
         {"find": ["teams_parent", "CcoCustomBattlePlayerSlotslot0"], "click": True,
          "timeout_ms": 30000},
         {"wait_ms": 1500},
         {"dump": "army_player.txt", "depth": 1, "find": ["recruited_army_parent", "unit_list"]},
+    ]
+    if scenario.get("expect"):
+        steps += menu_checks(scenario)
+        steps = [{**step, "required": True} for step in steps]
+    return steps + [
         {"find": ["start_button_frame", "button_start_battle"], "click": True, "timeout_ms": 15000},
         # The frontend unloads when the battle loads; still running, it says why not.
         {"wait_ms": 20000},
@@ -304,9 +341,9 @@ def start_frontend(mailbox: Mailbox, config: dict, output: Path, steps: list[dic
     """
     if not config["menu"]:
         return
-    deadline = time.monotonic() + config["start_timeout"]
+    deadline = time.time() + config["start_timeout"]
     while "frontend loaded" not in mailbox.log_since(0, "menu.log"):
-        if time.monotonic() > deadline:
+        if time.time() > deadline:
             raise MailboxTimeout("the frontend script did not report in")
         time.sleep(1)
     offset = mailbox.log_offset("menu.log")
@@ -323,29 +360,39 @@ def start_frontend(mailbox: Mailbox, config: dict, output: Path, steps: list[dic
         if "done" in lines or mailbox.read_observation() is not None:
             save_dumps(mailbox, output, steps)
             return
-        if time.monotonic() > deadline:
+        if time.time() > deadline:
             raise MailboxTimeout("the custom battle steps did not finish")
         time.sleep(1)
 
 
 def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
-                 not_battle: str | None, expect: dict | None = None) -> dict:
+                 not_battle: str | None, expect: dict | None = None, policy_factory=None) -> dict:
     require_realtime(config)
     directory.mkdir()
     trace = (directory / "trace.jsonl").open("x", buffering=1)
-    started = time.monotonic()
+    started = wall_started = time.time()
+    monotonic_started = time.monotonic()
     result = {"episode": directory.name, "status": "interrupted", "decisions": 0, "invalid": 0,
-              "delays_ms": [], "think_s": []}
+              "delays_ms": [], "think_s": [], "policy": config["policy"],
+              "slot": config.get("slot"), "delay_ms": config.get("delay_ms", 0),
+              "track": "obs-v1/act-v1/live-1x" +
+              (f"+age-{config['delay_ms']}ms" if config.get("delay_ms") else "")}
     log_offset = mailbox.log_offset()
 
     def event(kind: str, **fields) -> None:
-        trace.write(json.dumps({"kind": kind, "elapsed": round(time.monotonic() - started, 3),
+        trace.write(json.dumps({"kind": kind, "elapsed": round(time.time() - wall_started, 3),
                                 **fields}, sort_keys=True) + "\n")
 
     try:
+        if policy is None:
+            try:
+                policy = policy_factory()
+            except Exception as exc:
+                raise PolicyFailure(f"controller construction: {exc}") from exc
+        result["card"] = card(config["policy"], policy, config)
         _drive(config, policy, mailbox, not_battle, result, event, started, expect or {})
     except MailboxTimeout as exc:
-        past = time.monotonic() - started > config["episode_timeout"]
+        past = time.time() - started > config["episode_timeout"]
         result.update(status="truncated" if past else "infrastructure_failure", error=str(exc))
     except BattleRestarted as exc:
         result.update(status="infrastructure_failure", error=str(exc))
@@ -360,15 +407,31 @@ def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
                       error_type=type(exc).__name__)
     finally:
         if hasattr(policy, "close"):
-            policy.close()  # a call still in flight is waited for and charged
-        result["elapsed_seconds"] = round(time.monotonic() - started, 1)
+            try:
+                policy_call(policy, "close")  # in-flight calls are waited for and charged
+            except Exception as exc:
+                result.update(status="policy_failure", error=f"controller close: {exc}")
+        result["elapsed_seconds"] = round(time.time() - wall_started, 3)
+        result["monotonic_seconds"] = round(time.monotonic() - monotonic_started, 3)
         result["llm"] = dict(getattr(policy, "totals", {}))
+        if result.get("start") and config.get("start_reference"):
+            result["start_comparison"] = compare_starts(config["start_reference"], result["start"])
         delays = result["delays_ms"]
         result["delay_s"] = round(statistics.mean(delays) / 1000, 2) if delays else None
         (directory / "mod.log").write_text(mailbox.log_since(log_offset))
         write_json(directory / "result.json", result)
         trace.close()
     return result
+
+
+def policy_call(policy, method: str, *args):
+    try:
+        return getattr(policy, method)(*args)
+    except (PolicyFailure, BudgetExhausted):
+        raise
+    except Exception as exc:
+        raise PolicyFailure(f"{method}: {type(exc).__name__}: {exc}",
+                            failure={"method": method, "error_type": type(exc).__name__}) from exc
 
 
 def track_objectives(result: dict, observation: dict) -> None:
@@ -395,6 +458,17 @@ def track_objectives(result: dict, observation: dict) -> None:
         measures["supplies_left"] = mode["supplies"]
     if mode.get("tickets"):
         measures["tickets"] = {row["side"]: row["tickets"] for row in mode["tickets"]}
+    totals = (observation.get("evaluation") or {}).get("objectives") or {}
+    observed = [value for value in totals.values() if value["observed_ms"] > 0]
+    if observed:
+        measures["method"] = "engine_tick_time_weighted"
+        measures["points"] = totals
+        measures["victory_held"] = statistics.mean(
+            value["held_ms"] / value["observed_ms"] for value in observed)
+        keys = [value for value in observed if "key_building" in value["key"]]
+        if keys:
+            measures["key_held"] = statistics.mean(
+                value["held_ms"] / value["observed_ms"] for value in keys)
 
 
 def caption(observation: dict, behavior: dict, orders: list[dict]) -> str | None:
@@ -425,8 +499,11 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, expect) 
     applied_ms = None
     outstanding = None
     logged_ms, logged_behavior = None, None
+    history = deque()
+    delay_ms = config.get("delay_ms", 0)
+    active_wall_start = None
     while True:
-        remaining = deadline - time.monotonic()
+        remaining = deadline - time.time()
         if remaining <= 0:
             result.update(status="truncated", reason="episode_timeout")
             return
@@ -435,6 +512,11 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, expect) 
         if observation.get("awaiting_orders") or observation.get("speed", 1) != 1:
             raise ProtocolError("WH3 observation is not from an unpaused 1x battle")
         seq = observation["seq"]
+        if observation.get("evaluation"):
+            result["final"] = observation["evaluation"]
+            result["final_time_ms"] = observation["time_ms"]
+        result["battle_ms"] = observation["time_ms"]
+        result["remaining_ms"] = observation.get("remaining_ms")
         if "scenario" not in result and observation.get("friendly"):
             result["scenario"] = scenario_key(observation)
             result["roster"] = {
@@ -444,16 +526,26 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, expect) 
             event("roster", observation=observation)
             mode = observation.get("mode") or {}
             result["mode"] = {key: mode.get(key) for key in ("type", "role")}
+            result["start"] = fingerprint(observation)
+            result["start_time_ms"] = observation["time_ms"]
+            active_wall_start = time.time()
+            if config.get("benchmark_scenario"):
+                result["setup_checks"] = check_battle(config["benchmark_scenario"], observation)
             for key, wanted in expect.items():
                 if mode.get(key) != wanted:
                     raise ProtocolError(f"setup: the battle's {key} is {mode.get(key)!r},"
                                         f" the scenario wants {wanted!r}")
         track_objectives(result, observation)
+        if active_wall_start is not None:
+            duration = time.time() - active_wall_start
+            result["active_wall_s"] = duration
+            result["clock_ratio"] = ((observation["time_ms"] - result["start_time_ms"]) / 1000
+                                     / duration if duration > 0 else None)
         ack = observation.get("orders")
         if outstanding and ack and ack.get("request") == outstanding["request"]:
             latency = {
                 "think_s": round(outstanding["sent"] - outstanding["read"], 3),
-                "roundtrip_s": round(time.monotonic() - outstanding["read"], 3),
+                "roundtrip_s": round(time.time() - outstanding["read"], 3),
                 "delay_ms": ack["applied_ms"] - outstanding["observed_ms"],
             }
             result["invalid"] += sum(1 for item in ack.get("results", []) if not item.get("ok"))
@@ -462,50 +554,81 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, expect) 
                 kind = outstanding["orders"][item["index"] - 1]["type"] if item.get("index") else ""
                 if item.get("ok") and kind in ("build", "reinforce") and "objectives" in result:
                     result["objectives"][kind] = result["objectives"].get(kind, 0) + 1
+                    if kind == "reinforce":
+                        unit_type = outstanding["orders"][item["index"] - 1]["reinforcement"]
+                        counts = result["objectives"].setdefault("reinforcements_by_type", {})
+                        counts[unit_type] = counts.get(unit_type, 0) + 1
             result["think_s"].append(latency["think_s"])
             if outstanding["logged"]:
                 event("ack", request=ack["request"], ack=ack, latency=latency)
-            policy.acknowledge(ack, latency)
+            feedback = ack
+            if outstanding.get("refusal"):
+                feedback = {**ack, **outstanding["refusal"]}
+            policy_call(policy, "acknowledge", feedback, latency)
             applied_ms = ack["applied_ms"]
             outstanding = None
         if observation.get("result"):
             result.update(status=observation["result"], battle_ms=observation.get("time_ms"),
                           battle_s=round(observation.get("time_ms", 0) / 1000),
-                          final=observation.get("final"))
+                          final=observation.get("final") or result.get("final"),
+                          ended_by="time_limit" if observation.get("remaining_ms") == 0
+                          else "engine_result")
             event("result", observation=observation)
             return
+        # Evaluation contains hidden enemy totals. It never enters the controller or
+        # its delayed input queue, even on a non-gameplay ending.
+        public = {key: value for key, value in observation.items()
+                  if key not in ("evaluation", "final", "setup")}
+        if observation.get("phase") == "Deployed":
+            history.append(public)
         if outstanding or observation.get("phase") != "Deployed":
             continue
         if applied_ms is not None and observation["time_ms"] < applied_ms + config["interval_ms"]:
             continue
-        read_at = time.monotonic()
+        cutoff = observation["time_ms"] - delay_ms
+        while len(history) > 1 and history[1]["time_ms"] <= cutoff:
+            history.popleft()
+        if not history or history[0]["time_ms"] > cutoff:
+            continue
+        basis = history[0]
+        read_at = time.time()
         since = observation["time_ms"] - applied_ms if applied_ms is not None else None
         try:
-            orders, invalid = policy.decide(observation), None
+            orders, invalid = policy_call(policy, "decide", basis), None
         except BaseException:
-            event("observation", observation=observation, since_previous_applied_ms=since)
+            event("observation", observation=basis, since_previous_applied_ms=since)
             raise
+        refusal = None
         try:
-            validate_orders(orders, observation)
+            validate_orders(orders, basis)
         except IllegalActionError as exc:
             invalid = {"error": str(exc), "orders": orders}
             result["invalid"] += 1
+            refusal = {
+                "validation_error": str(exc),
+                "results": [{"index": index + 1, "unit": order.get("unit"), "ok": False,
+                             "error": str(exc)} for index, order in enumerate(orders)
+                            if isinstance(order, dict)] if isinstance(orders, list) else [],
+            }
             orders = []
-        behavior = policy.metadata()
+        behavior = policy_call(policy, "metadata")
         # A fast policy decides at the tick rate: quiet decisions are logged once per
         # observe_ms, and every decision with orders, an error or new metadata is logged.
         logged = (orders or invalid or behavior != logged_behavior or logged_ms is None
                   or observation["time_ms"] - logged_ms >= config["observe_ms"])
         if logged:
-            event("observation", observation=observation, since_previous_applied_ms=since)
+            event("observation", observation=basis, since_previous_applied_ms=since,
+                  decision_time_ms=observation["time_ms"])
             if invalid:
                 event("invalid", **invalid)
-        say = caption(observation, behavior, orders) if config.get("show") else None
-        request = mailbox.write_orders(battle, observation["seq"], orders, say=say)
+        say = caption(basis, behavior, orders) if config.get("show") else None
+        request = mailbox.write_orders(battle, basis["seq"], orders, say=say)
         if logged:
-            event("decision", seq=observation["seq"], time_ms=observation["time_ms"],
+            event("decision", seq=basis["seq"], time_ms=basis["time_ms"],
+                  decision_time_ms=observation["time_ms"],
                   request=request, orders=orders, behavior=behavior)
             logged_ms, logged_behavior = observation["time_ms"], behavior
-        outstanding = {"request": request, "observed_ms": observation["time_ms"], "orders": orders,
-                       "read": read_at, "sent": time.monotonic(), "logged": bool(logged)}
+        outstanding = {"request": request, "observed_ms": basis["time_ms"], "orders": orders,
+                       "read": read_at, "sent": time.time(), "logged": bool(logged),
+                       "refusal": refusal}
         result["decisions"] += 1
