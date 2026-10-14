@@ -315,3 +315,25 @@ def test_engine_permission_wins_over_readiness_and_unlocks_may_be_complete():
         'Army abilities (order with unit "army"; points 320): horn (ready)')
     assert llm.render_ability({"key": "horn", "unlocked": True, "button": "selected_inactive",
                                "timer": "28", "ready": False}) == "horn (active now, 28 s left)"
+
+
+def test_the_mode_section_states_role_objectives_tickets_and_points():
+    battle = {
+        "type": "conquest", "role": "defender", "timeout_winner": "us",
+        "objectives": "Objectives: reach 500 victory tickets by seizing capture points.",
+        "tickets": [{"side": "us", "tickets": 11, "per_s": 1, "score": 1080},
+                    {"side": "enemy", "tickets": 87, "per_s": 0, "score": 700}],
+        "tickets_goal": 600,
+        "capture_points": [{"id": "domination_1", "name": "Victory Location", "x": 256.0,
+                            "z": 0.0, "holder": None, "contested": True, "locked": False,
+                            "percent": 40, "victory": True}],
+    }
+    text = llm.render_state({"mode": battle, "friendly": [], "enemy": []}, {})
+    assert text.startswith("Battle: conquest; you are the defender; if time runs out, you win.")
+    assert "Tickets (600 wins): you 11 (+1/s), enemy 87 (+0/s)." in text
+    assert ("- domination_1 Victory Location at (256, 0): held by nobody, 40%, contested,"
+            " counts for victory") in text
+    assert llm.render_mode(None) is None
+    assert llm.render_mode({"type": "land_normal", "role": "attacker",
+                              "timeout_winner": "enemy"}) == (
+        "Battle: land_normal; you are the attacker; if time runs out, enemy wins.")

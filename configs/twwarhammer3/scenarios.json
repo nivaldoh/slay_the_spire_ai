@@ -97,5 +97,259 @@
  },
  "random": {
   "random": true
+ },
+ "conquest-kho5-dwf5": {
+  "battle_type": "conquest",
+  "map": "battle_preset_wh_mp_alpine_ridge_conquest",
+  "attacker": "enemy",
+  "player": {
+   "subculture": "wh3_main_sc_kho_khorne",
+   "faction": "wh3_main_kho_khorne",
+   "units": [
+    "wh3_main_kho_cha_herald_of_khorne_0",
+    "wh3_main_kho_inf_chaos_warriors_0",
+    "wh3_main_kho_inf_bloodletters_0",
+    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
+    "wh3_main_kho_veh_skullcannon_0"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_dwf_dwarfs",
+   "faction": "wh_main_dwf_dwarfs",
+   "units": [
+    "wh_main_dwf_cha_lord_0",
+    "wh_main_dwf_inf_dwarf_warrior_0",
+    "wh_main_dwf_inf_longbeards",
+    "wh_main_dwf_inf_quarrellers_0",
+    "wh_main_dwf_art_grudge_thrower"
+   ]
+  }
+ },
+ "domination-kho5-dwf5": {
+  "battle_type": "domination",
+  "map": "battle_preset_wh3_main_domination_arnheim",
+  "player": {
+   "subculture": "wh3_main_sc_kho_khorne",
+   "faction": "wh3_main_kho_khorne",
+   "units": [
+    "wh3_main_kho_cha_herald_of_khorne_0",
+    "wh3_main_kho_inf_chaos_warriors_0",
+    "wh3_main_kho_inf_bloodletters_0",
+    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
+    "wh3_main_kho_veh_skullcannon_0"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_dwf_dwarfs",
+   "faction": "wh_main_dwf_dwarfs",
+   "units": [
+    "wh_main_dwf_cha_lord_0",
+    "wh_main_dwf_inf_dwarf_warrior_0",
+    "wh_main_dwf_inf_longbeards",
+    "wh_main_dwf_inf_quarrellers_0",
+    "wh_main_dwf_art_grudge_thrower"
+   ]
+  }
+ },
+ "ffa-kho5-dwf5-emp5-kho5": {
+  "battle_type": "free_for_all",
+  "map": "battle_preset_wh2_mp_ffa_04",
+  "player": {
+   "subculture": "wh3_main_sc_kho_khorne",
+   "faction": "wh3_main_kho_khorne",
+   "units": [
+    "wh3_main_kho_cha_herald_of_khorne_0",
+    "wh3_main_kho_inf_chaos_warriors_0",
+    "wh3_main_kho_inf_bloodletters_0",
+    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
+    "wh3_main_kho_veh_skullcannon_0"
+   ]
+  },
+  "enemy": [
+   {
+    "subculture": "wh_main_sc_dwf_dwarfs",
+    "faction": "wh_main_dwf_dwarfs",
+    "units": [
+     "wh_main_dwf_cha_lord_0",
+     "wh_main_dwf_inf_dwarf_warrior_0",
+     "wh_main_dwf_inf_longbeards",
+     "wh_main_dwf_inf_quarrellers_0",
+     "wh_main_dwf_art_grudge_thrower"
+    ]
+   },
+   {
+    "subculture": "wh_main_sc_emp_empire",
+    "faction": "wh_main_emp_empire",
+    "units": [
+     "wh_main_emp_cha_general_0",
+     "wh_main_emp_inf_swordsmen",
+     "wh_main_emp_inf_handgunners",
+     "wh_main_emp_cav_empire_knights",
+     "wh_main_emp_art_great_cannon"
+    ]
+   },
+   {
+    "subculture": "wh3_main_sc_kho_khorne",
+    "faction": "wh3_main_kho_khorne",
+    "units": [
+     "wh3_main_kho_cha_herald_of_khorne_0",
+     "wh3_main_kho_inf_chaos_warriors_0",
+     "wh3_main_kho_inf_bloodletters_0",
+     "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
+     "wh3_main_kho_veh_skullcannon_0"
+    ]
+   }
+  ]
+ },
+ "ambush-kho5-dwf5": {
+  "battle_type": "ambush",
+  "map": "battle_preset_wh3_main_brt_forest_01_09",
+  "attacker": "enemy",
+  "player": {
+   "subculture": "wh3_main_sc_kho_khorne",
+   "faction": "wh3_main_kho_khorne",
+   "units": [
+    "wh3_main_kho_cha_herald_of_khorne_0",
+    "wh3_main_kho_inf_chaos_warriors_0",
+    "wh3_main_kho_inf_bloodletters_0",
+    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
+    "wh3_main_kho_veh_skullcannon_0"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_dwf_dwarfs",
+   "faction": "wh_main_dwf_dwarfs",
+   "units": [
+    "wh_main_dwf_cha_lord_0",
+    "wh_main_dwf_inf_dwarf_warrior_0",
+    "wh_main_dwf_inf_longbeards",
+    "wh_main_dwf_inf_quarrellers_0",
+    "wh_main_dwf_art_grudge_thrower"
+   ]
+  }
+ },
+ "chokepoint-kho5-dwf5": {
+  "battle_type": "river_crossing_battle",
+  "map": "battle_preset_wh2_main_chokepoint_lzd_lustria_river_b",
+  "attacker": "enemy",
+  "player": {
+   "subculture": "wh3_main_sc_kho_khorne",
+   "faction": "wh3_main_kho_khorne",
+   "units": [
+    "wh3_main_kho_cha_herald_of_khorne_0",
+    "wh3_main_kho_inf_chaos_warriors_0",
+    "wh3_main_kho_inf_bloodletters_0",
+    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
+    "wh3_main_kho_veh_skullcannon_0"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_dwf_dwarfs",
+   "faction": "wh_main_dwf_dwarfs",
+   "units": [
+    "wh_main_dwf_cha_lord_0",
+    "wh_main_dwf_inf_dwarf_warrior_0",
+    "wh_main_dwf_inf_longbeards",
+    "wh_main_dwf_inf_quarrellers_0",
+    "wh_main_dwf_art_grudge_thrower"
+   ]
+  }
+ },
+ "underground-kho5-dwf5": {
+  "battle_type": "underground_intercept",
+  "map": "battle_preset_wh_main_subterranean_b",
+  "attacker": "enemy",
+  "player": {
+   "subculture": "wh3_main_sc_kho_khorne",
+   "faction": "wh3_main_kho_khorne",
+   "units": [
+    "wh3_main_kho_cha_herald_of_khorne_0",
+    "wh3_main_kho_inf_chaos_warriors_0",
+    "wh3_main_kho_inf_bloodletters_0",
+    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
+    "wh3_main_kho_veh_skullcannon_0"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_dwf_dwarfs",
+   "faction": "wh_main_dwf_dwarfs",
+   "units": [
+    "wh_main_dwf_cha_lord_0",
+    "wh_main_dwf_inf_dwarf_warrior_0",
+    "wh_main_dwf_inf_longbeards",
+    "wh_main_dwf_inf_quarrellers_0",
+    "wh_main_dwf_art_grudge_thrower"
+   ]
+  }
+ },
+ "settlement-kho5-dwf5": {
+  "battle_type": "unfortified_settlement",
+  "map": "battle_preset_minor_a_emp",
+  "attacker": "enemy",
+  "player": {
+   "subculture": "wh3_main_sc_kho_khorne",
+   "faction": "wh3_main_kho_khorne",
+   "units": [
+    "wh3_main_kho_cha_herald_of_khorne_0",
+    "wh3_main_kho_inf_chaos_warriors_0",
+    "wh3_main_kho_inf_bloodletters_0",
+    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
+    "wh3_main_kho_veh_skullcannon_0"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_dwf_dwarfs",
+   "faction": "wh_main_dwf_dwarfs",
+   "units": [
+    "wh_main_dwf_cha_lord_0",
+    "wh_main_dwf_inf_dwarf_warrior_0",
+    "wh_main_dwf_inf_longbeards",
+    "wh_main_dwf_inf_quarrellers_0",
+    "wh_main_dwf_art_grudge_thrower"
+   ]
+  }
+ },
+ "siege-kho5-dwf5": {
+  "battle_type": "siege",
+  "map": "battle_preset_wh2_dlc13_minor_settlement_empire_fort",
+  "attacker": "enemy",
+  "player": {
+   "subculture": "wh3_main_sc_kho_khorne",
+   "faction": "wh3_main_kho_khorne",
+   "units": [
+    "wh3_main_kho_cha_herald_of_khorne_0",
+    "wh3_main_kho_inf_chaos_warriors_0",
+    "wh3_main_kho_inf_bloodletters_0",
+    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
+    "wh3_main_kho_veh_skullcannon_0"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_dwf_dwarfs",
+   "faction": "wh_main_dwf_dwarfs",
+   "units": [
+    "wh_main_dwf_cha_lord_0",
+    "wh_main_dwf_inf_dwarf_warrior_0",
+    "wh_main_dwf_inf_longbeards",
+    "wh_main_dwf_inf_quarrellers_0",
+    "wh_main_dwf_art_grudge_thrower"
+   ]
+  }
+ },
+ "survival-kho5": {
+  "battle_type": "survival",
+  "map": "battle_preset_wh3_endless_survival_kho",
+  "player": {
+   "subculture": "wh3_main_sc_kho_khorne",
+   "faction": "wh3_main_kho_khorne",
+   "units": [
+    "wh3_main_kho_cha_herald_of_khorne_0",
+    "wh3_main_kho_inf_chaos_warriors_0",
+    "wh3_main_kho_inf_bloodletters_0",
+    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
+    "wh3_main_kho_veh_skullcannon_0"
+   ]
+  },
+  "enemy": null
  }
 }

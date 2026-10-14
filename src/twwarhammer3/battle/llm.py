@@ -227,6 +227,43 @@ def render_army(army: dict) -> str:
             + "; ".join(render_ability(a) for a in army.get("abilities", [])))
 
 
+def _side(side: str | None) -> str:
+    return {"us": "you", None: "nobody", "none": "nobody"}.get(side, side)
+
+
+def render_mode(battle: dict | None) -> str | None:
+    """The battle type and what wins it: role, objectives in the game's words, tickets,
+    capture points and supplies, as far as the type has them."""
+    if not battle or not battle.get("type"):
+        return None
+    head = f"Battle: {battle['type']}"
+    if battle.get("role"):
+        head += f"; you are the {battle['role']}"
+    winner = battle.get("timeout_winner")
+    if winner:
+        head += "; if time runs out, " + {"us": "you win", "none": "it is a draw"}.get(
+            winner, f"{winner} wins")
+    lines = [head + "."]
+    if battle.get("objectives"):
+        lines.append("The game's description: " + battle["objectives"])
+    if battle.get("tickets"):
+        lines.append(f"Tickets ({battle.get('tickets_goal')} wins): " + ", ".join(
+            f"{_side(row['side'])} {row['tickets']} (+{row['per_s']}/s)"
+            for row in battle["tickets"]) + ".")
+    if battle.get("capture_points"):
+        lines.append("Capture points (units standing on a point capture it):")
+        for point in battle["capture_points"]:
+            flags = [flag for flag in ("contested", "locked") if point.get(flag)]
+            if point.get("victory"):
+                flags.append("counts for victory")
+            lines.append(f"- {point['id']} {point.get('name', '')} at ({point['x']:.0f},"
+                         f" {point['z']:.0f}): held by {_side(point.get('holder'))},"
+                         f" {point.get('percent', 0)}%" + "".join(f", {f}" for f in flags))
+    if battle.get("supplies") is not None:
+        lines.append(f"Supplies: {battle['supplies']}.")
+    return "\n".join(lines)
+
+
 def _nearest(unit: dict, enemies: dict) -> dict | None:
     placed = [enemy for enemy in enemies.values() if enemy.get("x") is not None]
     if unit.get("x") is None or not placed:
@@ -247,6 +284,9 @@ def render_state(observation: dict, last_seen: dict, before: dict | None = None,
                      f"{magic.get('reserve', 'unknown')} reserve.")
     if (observation.get("army") or {}).get("abilities"):
         lines.insert(0, render_army(observation["army"]))
+    mode = render_mode(observation.get("mode"))
+    if mode:
+        lines.insert(0, mode)
     lines += ["- " + render_unit(unit, True, before.get(unit["id"]), visible,
                                  ordered.get(unit["id"]))
               for unit in observation.get("friendly", [])]

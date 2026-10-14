@@ -360,7 +360,34 @@ def test_scenario_steps_pick_each_race_and_recruit_the_lord_first():
     for name, scenario in json.loads(play.SCENARIOS_PATH.read_text()).items():
         if not scenario.get("random"):
             steps = play.scenario_steps(scenario)
-            assert len([s for s in steps if s.get("dblclick")]) == 10
+            assert len([s for s in steps if s.get("dblclick")]) == 5 * len(play.sides(scenario))
+
+
+def test_battle_type_scenarios_select_the_type_slots_and_roles():
+    scenarios = json.loads(play.SCENARIOS_PATH.read_text())
+    steps = play.scenario_steps(scenarios["siege-kho5-dwf5"])
+    finds = [s.get("find") for s in steps]
+    assert ["map_type_list", "CcoBattleTypeRecordsiege"] in finds
+    # A survival battle before this one removed the AI slot; it is added back only then.
+    add = [s for s in steps if s.get("find") == ["bottom_team_parent", "button_add_ai"]]
+    assert [s["when"] for s in add] == [play.LOBBY + "PlayerSlotList.Size < 2"]
+    swap = next(s for s in steps if s.get("find", [""])[-1] == "button_swap_attacker_defender")
+    assert swap["when"] == play.PLAYER_ATTACKS  # the player defends: swap only if attacking
+    assert finds.index(swap["find"]) < finds.index(["teams_parent",
+                                                    "CcoCustomBattlePlayerSlotslot1"])
+
+    ffa = play.scenario_steps(scenarios["ffa-kho5-dwf5-emp5-kho5"])
+    add = [s["when"] for s in ffa if s.get("find") == ["bottom_team_parent", "button_add_ai"]]
+    assert add == [play.LOBBY + f"PlayerSlotList.Size < {n}" for n in (2, 3, 4)]
+    slots = [s["find"][1] for s in ffa if s.get("find", [""])[0] == "teams_parent"]
+    assert slots == [f"CcoCustomBattlePlayerSlotslot{n}" for n in (0, 1, 2, 3, 0)]
+    assert not any("swap" in s.get("find", [""])[-1] for s in ffa)
+
+    survival = play.scenario_steps(scenarios["survival-kho5"])
+    assert not any(s.get("find") == ["bottom_team_parent", "button_add_ai"] for s in survival)
+    removes = [s for s in survival if s.get("find", [""])[-1] == "button_remove"]
+    assert removes[-1]["find"][0] == "CcoCustomBattlePlayerSlotslot1"
+    assert removes[-1]["when"] == play.LOBBY + "PlayerSlotList.Size > 1"
 
 
 def test_a_random_scenario_draws_a_map_and_races_and_autogenerates_both_armies():

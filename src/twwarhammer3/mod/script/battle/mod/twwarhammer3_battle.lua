@@ -17,7 +17,7 @@ local state = {
     friendly = {}, friendly_ids = {}, enemy = {}, enemy_ids = {}, enemy_by_ui = {},
     pending = nil, last_request = nil, applied = nil, applied_ms = nil,
     next_observe_ms = 0, force_observe = false, alliance = nil,
-    army_abilities = {}, army_issued = {},
+    army_abilities = {}, army_issued = {}, known = {}, info = {},
 }
 local session = nil
 local BEHAVIOURS = {"fire_at_will", "skirmish", "defend", "change_formation_spacing", "formed_attack"}
@@ -252,6 +252,53 @@ local function army_abilities()
     }
 end
 
+-- Objectives of the battle type, from the context system: capture points (alliance ids
+-- there are 0-based, -1 for none; the script's are 1-based), tickets per alliance and the
+-- army's supplies, for types that have them.
+local CAPTURE_POINTS = 'CapturePointList.JoinString(Key + "|" + DisplayName + "|" + Position.x + "|" + '
+    .. 'Position.z + "|" + CurrentHolderAlliance + "|" + IsContested + "|" + IsLocked + "|" + '
+    .. 'CapturePercent + "|" + ContributesToVictory, ";")'
+local TICKETS = 'AllianceList.JoinString(Id + "|" + TicketsRemaining + "|" + TicketsIncomePerSecond + "|" + '
+    .. 'CpKillScore, ";")'
+
+local function side(alliance_id)
+    if alliance_id < 0 then return nil end
+    if alliance_id == (state.info.player_alliance or bm:local_alliance() - 1) then return "us" end
+    return state.info.alliances > 2 and ("alliance " .. (alliance_id + 1)) or "enemy"
+end
+
+local function mode_section()
+    local section = {}
+    for key, value in pairs(state.info) do section[key] = value end
+    section.alliances, section.player_alliance = nil, nil
+    local points = {}
+    for _, row in ipairs(context_rows("CcoBattleRoot", "", CAPTURE_POINTS)) do
+        points[#points + 1] = {
+            id = row[1], name = row[2], x = round(tonumber(row[3]), 1), z = round(tonumber(row[4]), 1),
+            holder = side(tonumber(row[5]) or -1), contested = row[6] == "true",
+            locked = row[7] == "true", percent = round((tonumber(row[8]) or 0) * 100),
+            victory = row[9] == "true",
+        }
+    end
+    if #points > 0 then section.capture_points = points end
+    -- Tickets count up: an alliance earns them each second for the points it holds (and
+    -- for kills), and reaching the goal wins.
+    local goal = tonumber(get_context("CaptureLocationManagerContext.TicketsGoal")) or 0
+    local tickets = {}
+    for _, row in ipairs(context_rows("CcoBattleRoot", "", TICKETS)) do
+        local owner = side(tonumber(row[1]) or -1)
+        local count, income = tonumber(row[2]) or 0, tonumber(row[3]) or 0
+        if owner and (goal > 0 or count > 0) then
+            tickets[#tickets + 1] = {side = owner, tickets = count, per_s = income, score = tonumber(row[4])}
+        end
+    end
+    if #tickets > 0 then section.tickets, section.tickets_goal = tickets, goal end
+    if get_context("HasSupplies") == true then
+        section.supplies = tonumber(get_context("PlayerArmyContext.GlobalCurrency"))
+    end
+    return section
+end
+
 local function observation(now)
     state.seq = state.seq + 1
     local friendly, enemy, roster = {}, {}, {}
@@ -265,10 +312,12 @@ local function observation(now)
         local alive = get(entry.unit, "number_of_men_alive", 0) > 0
         -- A unit's destruction is reported only once the player has seen the unit.
         roster[#roster + 1] = {id = id, type = get(entry.unit, "type", "?"),
-                               dead = (entry.seen and not alive) or nil}
+                               dead = (entry.seen and not alive) or nil,
+                               alliance = state.info.alliances > 2 and entry.alliance or nil}
         if alive and visible_to_player(entry.unit) then
             entry.seen = true
             local ok, record = pcall(unit_record, id, entry.unit, false, entry.class)
+            if ok and state.info.alliances > 2 then record.alliance = entry.alliance end
             enemy[#enemy + 1] = ok and record or {id = id, error = clean_error(record)}
         end
     end
@@ -279,6 +328,8 @@ local function observation(now)
     end
     local remaining = get(bm.battle, "remaining_conflict_time", -1)
     local player = bm:get_player_army()
+    local ok, section = pcall(mode_section)
+    if not ok then section = {error = clean_error(section)} end
     return {
         schema = 1, job = session.job, battle = state.battle, seq = state.seq,
         phase = bm:get_current_phase_name(), time_ms = now, speed = 1,
@@ -292,7 +343,7 @@ local function observation(now)
             current = get(player, "winds_of_magic_current", nil),
             reserve = get(player, "winds_of_magic_reserve", nil),
         },
-        army = army,
+        army = army, mode = section,
         orders = state.applied, result = state.result, final = state.final,
     }
 end
@@ -540,6 +591,69 @@ local function restart()
     end), 1000, "twwarhammer3_restart")
 end
 
+-- Registers units not seen before: every unit at the start, then reinforcements, survival
+-- waves and purchased units as they enter the field. Friendly units get a controller each;
+-- enemies come from every other alliance (several in a free-for-all).
+local function scan()
+    local army = bm:get_player_army()
+    local units = army:units()
+    for index = 1, units:count() do
+        local unit = units:item(index)
+        local key = get(unit, "unique_ui_id", nil)
+        if key and not state.known[key] then
+            state.known[key] = true
+            local id = "f" .. (#state.friendly_ids + 1)
+            local controller = army:create_unit_controller()
+            controller:add_units(unit)
+            controller:take_control()
+            local entry = {unit = unit, controller = controller, class = unit_class(unit),
+                           ui_id = tostring(key), setup = {}}
+            for _, row in ipairs(context_rows("CcoBattleUnit", entry.ui_id, ABILITY_SETUP)) do
+                entry.setup[row[1]] = {target = plain(row[2]), mana = tonumber(row[3]),
+                                       cooldown_s = tonumber(row[4])}
+            end
+            state.friendly[id] = entry
+            state.friendly_ids[#state.friendly_ids + 1] = id
+            if state.started_ms then log("new friendly unit " .. id .. " " .. get(unit, "type", "?")) end
+        end
+    end
+    local alliances = bm:alliances()
+    for alliance = 1, alliances:count() do
+        local armies = alliance ~= bm:local_alliance() and alliances:item(alliance):armies()
+        for army_index = 1, armies and armies:count() or 0 do
+            local enemy_units = armies:item(army_index):units()
+            for index = 1, enemy_units:count() do
+                local unit = enemy_units:item(index)
+                local key = get(unit, "unique_ui_id", nil)
+                if key and not state.known[key] then
+                    state.known[key] = true
+                    local id = "e" .. (#state.enemy_ids + 1)
+                    state.enemy[id] = {unit = unit, class = unit_class(unit), alliance = alliance}
+                    state.enemy_ids[#state.enemy_ids + 1] = id
+                    state.enemy_by_ui[key] = id
+                    if state.started_ms then log("new enemy unit " .. id .. " " .. get(unit, "type", "?")) end
+                end
+            end
+        end
+    end
+end
+
+-- What the battle type is and asks for, read once: the player's role, who wins when time
+-- runs out, and the objectives as the game's battle-type cheat sheet states them.
+local function battle_info()
+    local info = {alliances = bm:alliances():count(), type = get_context("BattleTypeState"),
+                  player_alliance = tonumber(get_context("PlayerAllianceContext.Id"))}
+    state.info.player_alliance = info.player_alliance
+    local attacker = get_context("SetupContext.IsPlayerAttacker")
+    if type(attacker) == "boolean" then info.role = attacker and "attacker" or "defender" end
+    local timeout = get_context("TimeoutWinningAllianceIndex")
+    if type(timeout) == "number" then info.timeout_winner = side(timeout) or "none" end
+    local objectives = get_context('BattleTypeCheatSheetList(0).JoinString(HeaderText + ": " + '
+                                   .. 'DescriptionText, " ")')
+    if type(objectives) == "string" and objectives ~= "" then info.objectives = objectives end
+    return info
+end
+
 local function tick()
     local now = battle_time()
     if state.pending then apply_pending(now) end
@@ -548,6 +662,10 @@ local function tick()
         return
     end
     if state.force_observe or now >= state.next_observe_ms then
+        if now >= state.next_observe_ms then
+            local ok, err = pcall(scan)
+            if not ok then log("scan failed: " .. clean_error(err)) end
+        end
         state.force_observe = false
         state.next_observe_ms = now + (session.observe_ms or 1000)
         publish_observation(now)
@@ -601,24 +719,12 @@ end
 local function start()
     if state.started then return end
     state.started = true
-    local army = bm:get_player_army()
     state.alliance = bm:get_player_alliance()
-    local units = army:units()
-    for index = 1, units:count() do
-        local unit = units:item(index)
-        local id = "f" .. index
-        local controller = army:create_unit_controller()
-        controller:add_units(unit)
-        controller:take_control()
-        local entry = {unit = unit, controller = controller, class = unit_class(unit),
-                       ui_id = tostring(get(unit, "unique_ui_id", "")), setup = {}}
-        for _, row in ipairs(context_rows("CcoBattleUnit", entry.ui_id, ABILITY_SETUP)) do
-            entry.setup[row[1]] = {target = plain(row[2]), mana = tonumber(row[3]),
-                                   cooldown_s = tonumber(row[4])}
-        end
-        state.friendly[id] = entry
-        state.friendly_ids[#state.friendly_ids + 1] = id
-    end
+    state.info = {alliances = bm:alliances():count()}
+    local ok, info = pcall(battle_info)
+    if ok then state.info = info else log("battle info failed: " .. clean_error(info)) end
+    scan()
+    state.started_ms = battle_time()
     local fill = get_context("HasArmyAbilityFillCurrency") == true
     for index, row in ipairs(context_rows("CcoBattleRoot", "", ARMY_SETUP)) do
         state.army_abilities[index] = {
@@ -627,23 +733,11 @@ local function start()
             cost = fill and get_context("PlayerArmyContext.ArmyAbilityIndexCost(" .. (index - 1) .. ")") or nil,
         }
     end
-    local armies = bm:get_non_player_alliance():armies()
-    local count = 0
-    for army_index = 1, armies:count() do
-        local enemy_units = armies:item(army_index):units()
-        for index = 1, enemy_units:count() do
-            local unit = enemy_units:item(index)
-            count = count + 1
-            local id = "e" .. count
-            state.enemy[id] = {unit = unit, class = unit_class(unit)}
-            state.enemy_ids[#state.enemy_ids + 1] = id
-            state.enemy_by_ui[get(unit, "unique_ui_id", -1)] = id
-        end
-    end
     bm:modify_battle_speed(1, true)
     state.force_observe = true
     bm:repeat_callback(tick, session.tick_ms or 250, "twwarhammer3_tick")
-    log(string.format("started: %d friendly, %d enemy units", #state.friendly_ids, count))
+    log(string.format("started: %s, %d alliances, %d friendly, %d enemy units", tostring(state.info.type),
+                      state.info.alliances, #state.friendly_ids, #state.enemy_ids))
 end
 
 local function load()

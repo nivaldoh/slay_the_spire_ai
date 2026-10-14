@@ -5,8 +5,9 @@
 -- of {"find": [names...], "click": true} (or "dblclick"/"rclick"), {"find": [...], "state": "name"}, {"key": "name"},
 -- {"dump": "file.txt", "depth": N}, {"wait_ms": N} or {"log": "text"}. A find step with
 -- "timeout_ms" retries until the component is visible and stops the sequence ("failed")
--- if it never is. Results go to menu.log; the file is deleted when read and "done" is
--- logged after the last step.
+-- if it never is. A step with "when" (a context expression on the frontend root, such as
+-- "CustomBattleLobbyContext.PlayerSlotList.Size < 2") runs only if it is true. Results go
+-- to menu.log; the file is deleted when read and "done" is logged after the last step.
 
 local BRIDGE = "C:/wh3-agent/bridge/"
 local json = twwarhammer3_json
@@ -46,6 +47,10 @@ local state = {steps = nil, index = 0, wait_polls = 0, retries = 0}
 
 -- One step; nil means "not yet" (a timed find whose component is not visible yet).
 local function run_step(step)
+    if step.when then
+        local value = common.get_context_value("CcoFrontendRoot", "", step.when)
+        if value ~= true then return "skipped: " .. step.when .. " is " .. tostring(value) end
+    end
     if step.wait_ms then
         state.wait_polls = math.ceil(step.wait_ms / POLL_MS)
         return "wait " .. step.wait_ms .. " ms"

@@ -43,6 +43,9 @@ SCENARIOS_PATH = Path(__file__).resolve().parents[3] / "configs/twwarhammer3/sce
 CATALOGUE_PATH = SCENARIOS_PATH.with_name("custom_battle.json")
 CAPTION_LIMIT = 400
 SESSION_KEYS = ("speed", "pause", "interval_ms", "observe_ms", "tick_ms", "autostart", "menu")
+# Lobby expressions that guard menu steps ("when").
+LOBBY = "CustomBattleLobbyContext."
+PLAYER_ATTACKS = LOBBY + "LocalPlayerSlotContext.TeamContext.IsAttacker"
 
 
 def play(output: Path, config: dict, *, policy_factory) -> dict:
@@ -136,15 +139,25 @@ def load_scenario(config: dict) -> dict:
     return draw
 
 
+def sides(scenario: dict) -> list[dict]:
+    """The player, then each AI side in slot order: one enemy, a list of them (free-for-all)
+    or none (survival, whose waves the game brings)."""
+    enemy = scenario.get("enemy")
+    return [scenario["player"], *(enemy if isinstance(enemy, list) else [enemy] if enemy else [])]
+
+
 def scenario_steps(scenario: dict) -> list[dict]:
     """Menu steps from the main menu to the start of a custom battle.
 
-    A scenario with a ``map`` first selects the classic battle type and that map; without
-    one the screen keeps the last map. Each side picks its race, then its faction if the
-    scenario names one (without it the game picks one, which varied between jobs), and
-    clears the army; it then recruits its units by double-click (the first unit is the
-    lord: the last field of a lord's card id is 1), or with ``units`` null the game's
-    Autogenerate army button fills it.
+    A scenario with a ``map`` first selects its ``battle_type`` (classic by default) and
+    that map; without one the screen keeps the last map. The lobby keeps its slots between
+    battles (a survival battle removes the AI slot), so AI slots are added or removed until
+    there is one per side, each step guarded by a ``when`` expression. ``attacker``
+    ("player" or "enemy") swaps the teams if the player's team has the other role. Each
+    side picks its race, then its faction if the scenario names one (without it the game
+    picks one, which varied between jobs), and clears the army; it then recruits its units
+    by double-click (the first unit is the lord: the last field of a lord's card id is 1),
+    or with ``units`` null the game's Autogenerate army button fills it.
     """
     steps = [{"log": "custom battle; waiting for the main menu"},
              {"find": ["buttons_holder", "button_battle"], "click": True, "timeout_ms": 240000},
@@ -154,8 +167,9 @@ def scenario_steps(scenario: dict) -> list[dict]:
         steps += [
             {"find": ["tab_buttons", "button_tab_maps"], "click": True, "timeout_ms": 30000},
             {"wait_ms": 2000},
-            {"find": ["map_type_list", "CcoBattleTypeRecordclassic"], "click": True,
-             "timeout_ms": 15000},
+            {"find": ["map_type_list",
+                      "CcoBattleTypeRecord" + scenario.get("battle_type", "classic")],
+             "click": True, "timeout_ms": 15000},
             {"wait_ms": 1500},
             # Entries scrolled out of the list never read as visible, so this does not wait.
             {"find": ["map_listview", "CcoCustomBattleMap" + scenario["map"]], "click": True},
@@ -164,7 +178,20 @@ def scenario_steps(scenario: dict) -> list[dict]:
             {"find": ["tab_buttons", "button_tab_armies"], "click": True, "timeout_ms": 15000},
             {"wait_ms": 2000},
         ]
-    for slot, side in enumerate((scenario["player"], scenario["enemy"])):
+    armies = sides(scenario)
+    for count in range(2, len(armies) + 1):
+        steps += [{"find": ["bottom_team_parent", "button_add_ai"], "click": True,
+                   "timeout_ms": 15000, "when": f"{LOBBY}PlayerSlotList.Size < {count}"},
+                  {"wait_ms": 1500}]
+    for slot in range(7, len(armies) - 1, -1):
+        steps += [{"find": [f"CcoCustomBattlePlayerSlotslot{slot}", "button_remove"],
+                   "click": True, "when": f"{LOBBY}PlayerSlotList.Size > {slot}"}]
+    if scenario.get("attacker"):
+        swap = PLAYER_ATTACKS if scenario["attacker"] == "enemy" else "!" + PLAYER_ATTACKS
+        steps += [{"find": ["team_spacer", "button_swap_attacker_defender"], "click": True,
+                   "timeout_ms": 15000, "when": swap},
+                  {"wait_ms": 1500}]
+    for slot, side in enumerate(armies):
         steps += [
             {"find": ["teams_parent", f"CcoCustomBattlePlayerSlotslot{slot}"], "click": True,
              "timeout_ms": 30000},
