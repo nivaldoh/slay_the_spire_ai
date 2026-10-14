@@ -7,12 +7,12 @@ __pycache__/
 dist/
 build/
 *:Zone.Identifier
-.local/
 *.jar
 *.class
 *.exe
 *.dll
 *.sav
+*.pack
 *.autosave*
 *.pt
 *.pth
