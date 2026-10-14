@@ -4,17 +4,17 @@ The original read-only review covered revision
 `741d96aafd176da201105f06f4527ce9126392e7` on 2026-10-11 without launching games
 or training policies. Subsequent [inventory evidence](results/starter-inventory-20261011.json)
 admitted Cultist `SPIREINV07` and Jaw Worm `SPIREINV09` after exact public-trace
-replays. The [three-scenario catalog](../../configs/suites/starter_three_encounter_development_v1.json)
+replays. The [three-scenario catalog](../../../configs/suites/starter_three_encounter_development_v1.json)
 combines them with the existing mixed Louses under the same fresh-JVM reset and
 public-information boundary. It remains development-only; catalog policy scores
 have not yet been collected. The single-scenario v1 suite and its results are preserved.
 
 ## Coverage and concrete limits
 
-The [adapter](../../src/spire/protocol.py) restricts cards and screens, not monster
+The [adapter](../../../src/spire/protocol.py) restricts cards and screens, not monster
 species. For ordinary Ironclad A0 combat it uses engine-reported playability and
 retains original target indices. Strike, Defend, Bash and END need no new command
-for the proposed encounters. The [learner](../../src/spire/ppo/learning.py) already
+for the proposed encounters. The [learner](../../../src/spire/ppo/learning.py) already
 encodes visible attack damage/hits, block, Strength, `Weakened`, Vulnerable,
 Curl Up and Ritual, including mixed attack/buff/defend intents.
 
@@ -28,8 +28,8 @@ Public monster names and the Ritual/Curl Up/Weak/Strength tooltip meanings were
 checked against the installed engine's English localization resources, under the
 engine hash in [integration.md](../integration.md). No enemy move probabilities,
 private move history, RNG state or future draw order were used. The
-[inventory fixture](../../tests/fixtures/engine_inventory_transitions.json) and its
-[regressions](../../tests/combat/test_inventory_engine_regressions.py) preserve 16 exact public
+[inventory fixture](../../../tests/fixtures/engine_inventory_transitions.json) and its
+[regressions](../../../tests/combat/test_inventory_engine_regressions.py) preserve 16 exact public
 transitions. These observations do not establish general mechanics formulas or
 admit unseen seeds. Four 88-HP discoveries and six unsupported attempts remain
 excluded, with no replacement seeds sampled.
@@ -51,7 +51,7 @@ Actual limitations found:
   `UnsupportedStateError`. Potions and choice screens remain excluded. Do not
   include additional encounter families or Neow card/relic changes merely because
   their first observation passes; check an entire fight for new actions.
-- The [prefix](../../src/spire/combat/rollout.py) supports max-HP or 100-gold Neow choices and
+- The [prefix](../../../src/spire/combat/rollout.py) supports max-HP or 100-gold Neow choices and
   the leftmost map option. It rejects a seeded menu with neither supported reward.
   Thus an arbitrary seed is not automatically an eligible scenario. Initial HP,
   deck, relics, actual Neow choice and settled intent must be recorded and pinned.

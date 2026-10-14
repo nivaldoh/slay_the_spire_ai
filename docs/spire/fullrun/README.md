@@ -1,7 +1,7 @@
 # Full runs with an API language model
 
 Status: development, started 2026-10-12. The current version and spend are in
-[state.md](../state.md); every version, its evidence and its per-seed results are in
+[state.md](../../state.md); every version, its evidence and its per-seed results are in
 [log.md](log.md). Code: `src/spire/fullrun/`, on top of `src/gameai/`.
 
 ## Question
@@ -21,7 +21,7 @@ the prompt and memory, not weight training.
   `gameai.llm.PRICES` (read 2026-10-12) and appended to a ledger. A call is refused
   before it is sent if the ledger's total plus that call's worst-case cost (prompt bytes as
   an upper bound on input tokens, plus 4,000 output tokens) would exceed `--budget-usd`. The
-  default ledger is `runs/llm-spend.jsonl`; the owner's cap is in [state.md](../state.md). An API request that times out on our side may still be billed without a ledger
+  default ledger is `runs/llm-spend.jsonl`; the owner's cap is in [state.md](../../state.md). An API request that times out on our side may still be billed without a ledger
   entry, so the OpenAI dashboard total is the final check.
 - Key: read from `OPENAI_API_KEY` or from the file named by `SPIRE_OPENAI_KEY_FILE`.
   It is never logged; evidence records only response IDs and usage.
@@ -177,10 +177,10 @@ time is, at roughly two to four iterations a night. Then:
    change if the targeted mistake stops and outcomes do not get worse. With three
    stochastic runs per version, do not claim more than that.
 
-Update "Active work" in [state.md](../state.md) when the loop starts and when it stops, with
+Update "Active work" in [state.md](../../state.md) when the loop starts and when it stops, with
 the time from `date -u`, rather than at every launch. To save context, a session reads
-[state.md](../state.md), this page and only the newest entry of [log.md](log.md), and never
-reads `docs/approaches.md` whole.
+[state.md](../../state.md), this page and only the newest entry of [log.md](log.md), and never
+reads `docs/spire/approaches.md` whole.
 
 Review prompt, one subagent per finished run:
 
@@ -192,7 +192,7 @@ Review prompt, one subagent per finished run:
 > different outcome. Reply in at most 300 words: the outcome and cause of death, with floor
 > and turn; the flags; up to three costliest mistakes, each with floor and turn, the
 > model's stated reason and why it was wrong; and which of them match the candidate
-> changes in docs/fullrun/README.md. Report what the trace shows, not guesses.
+> changes in docs/spire/fullrun/README.md. Report what the trace shows, not guesses.
 
 ## Candidate changes
 

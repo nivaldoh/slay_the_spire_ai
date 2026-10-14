@@ -17,9 +17,9 @@ Code: `spire.combat`, `spire.ppo`, `spire.language`, plus `src/spire/protocol.py
   combat snapshot or reset exists.
 - Observation contract `ironclad-starter-combat-v1` (`spire/protocol.py`): allowlisted
   public state, the draw pile as an unordered multiset, starter cards only, no potions.
-- Single-scenario suite [louse_diagnostic_development_v1](../../configs/suites/louse_diagnostic_development_v1.json):
+- Single-scenario suite [louse_diagnostic_development_v1](../../../configs/suites/louse_diagnostic_development_v1.json):
   two Louses on `SPIREAI1`, normalized start SHA-256 `177b2fcd…`, eight attempts.
-- Three-scenario catalog [starter_three_encounter_development_v1](../../configs/suites/starter_three_encounter_development_v1.json):
+- Three-scenario catalog [starter_three_encounter_development_v1](../../../configs/suites/starter_three_encounter_development_v1.json):
   the Louses, Cultist `SPIREINV07` and Jaw Worm `SPIREINV09`, four policy seeds each.
   Admitted from an original-engine inventory and exact repeat traces.
 - Only an engine-confirmed win or death is a gameplay outcome. `spire report` rebuilds every
@@ -145,10 +145,10 @@ uv run --extra train python -m spire evaluate --checkpoint <exported-policy.json
 # Figures, with the external renderer they were verified on (Python 3.13.5, Matplotlib
 # 3.11.0, NumPy 2.3.3, Pillow 12.3.0); SVGs are byte-reproducible, PNGs stay in runs/.
 /home/niv/miniconda3/bin/python scripts/plot_results.py \
-  --comparison docs/first-combat/results/ppo-budget64-development-v1.json \
-  --distribution docs/first-combat/results/ppo-budget64-distribution-diagnostic.json \
-  --gradients docs/first-combat/results/ppo-budget64-gradient-diagnostic.json \
-  --output docs/first-combat/figures --png-directory runs/first-combat/diagnostic-figures
+  --comparison docs/spire/first-combat/results/ppo-budget64-development-v1.json \
+  --distribution docs/spire/first-combat/results/ppo-budget64-distribution-diagnostic.json \
+  --gradients docs/spire/first-combat/results/ppo-budget64-gradient-diagnostic.json \
+  --output docs/spire/first-combat/figures --png-directory runs/first-combat/diagnostic-figures
 ```
 
 `evaluate --suite` also takes schema-2 catalogs and `--language-artifact` declarations;

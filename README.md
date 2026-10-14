@@ -7,9 +7,9 @@ game, see only what a player could see, and leave an audited record of every dec
 
 | Track | Status | Page |
 | --- | --- | --- |
-| Full runs with an API model | **Current.** `gpt-6-luna` plays complete runs from a labeled list of public choices; its scaffolding changes one observed mistake at a time. Results per version: [log](docs/fullrun/log.md). | [docs/fullrun](docs/fullrun/README.md) |
-| First-combat benchmark | **Paused.** Verified original-engine loop on fixed floor-1 combats. PPO updated weights without playing better; a Qwen3-0.6B LoRA imitated the scripted heuristic (catalog HP 76.33 against 76.00). | [docs/first-combat](docs/first-combat/README.md) |
-| Remotely trained open-weight model | **Planned.** Game-reward RL on Tinker, with a dynamics-prediction experiment. | [docs/open-weight](docs/open-weight/README.md) |
+| Full runs with an API model | **Current.** `gpt-6-luna` plays complete runs from a labeled list of public choices; its scaffolding changes one observed mistake at a time. Results per version: [log](docs/spire/fullrun/log.md). | [docs/spire/fullrun](docs/spire/fullrun/README.md) |
+| First-combat benchmark | **Paused.** Verified original-engine loop on fixed floor-1 combats. PPO updated weights without playing better; a Qwen3-0.6B LoRA imitated the scripted heuristic (catalog HP 76.33 against 76.00). | [docs/spire/first-combat](docs/spire/first-combat/README.md) |
+| Remotely trained open-weight model | **Planned.** Game-reward RL on Tinker, with a dynamics-prediction experiment. | [docs/spire/open-weight](docs/spire/open-weight/README.md) |
 
 What is running and what comes next: [docs/state.md](docs/state.md). Repository layout
 and working rules: [AGENTS.md](AGENTS.md). Game-neutral pieces (OpenAI calls with a spend
@@ -26,7 +26,7 @@ uv run python -m spire doctor     # read-only check of the game, mods and runtim
 
 The game runs on Windows from its Steam install and is driven from WSL through
 CommunicationMod, with ModTheSpire and BaseMod from the Steam Workshop. The game and mod
-jars stay outside Git; [docs/integration.md](docs/integration.md) records their pins and
+jars stay outside Git; [docs/spire/integration.md](docs/spire/integration.md) records their pins and
 the protocol's quirks.
 
 ## Play a full run

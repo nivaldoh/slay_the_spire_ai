@@ -4,7 +4,7 @@
 notes stay outside Git, under `runs/research-notes/`). "Estimate" marks a number a researcher
 computed from stated assumptions rather than one a source reported. "Self-reported" marks a
 result its authors published and nobody has reproduced. Prices are list prices read on
-2026-10-11. Project facts come from [state.md](state.md) and [research.md](first-combat/research.md). An
+2026-10-11. Project facts come from [state.md](../state.md) and [research.md](first-combat/research.md). An
 addendum dated 2026-10-12 comes before the sources; the owner's plan for a remotely trained
 open-weight model, also dated 2026-10-12, is in [open-weight/README.md](open-weight/README.md).*
 
@@ -289,7 +289,7 @@ reference point: mini-spire, a C++ Ironclad-versus-Jaw-Worm fight in which rando
 steps in about four minutes ([mini-spire, June 2026](https://rhp.bearblog.dev/mini-spire/)).
 
 **What it would take here.** On the real engine, pure RL is limited to single fights. The
-budget-64 PPO run consumed 827 transitions ([state.md](state.md)), about 60× fewer than
+budget-64 PPO run consumed 827 transitions ([state.md](../state.md)), about 60× fewer than
 mini-spire's ~50k steps, on a fight (the Louses) that gives no win/loss signal because random
 play wins it. Mini-spire's budget is reachable for one fight: at the measured 21–28 decisions per
 fight, 50k steps is about 1,800–2,400 combats, or roughly 15–40 hours of continuous engine time
@@ -400,7 +400,7 @@ evidence behind them. LoRA should cover the MLP projections as well as the curre
 `q/k/v/o_proj` adapter. The base can move to Qwen3.5-2B or 4B, which fit the 12 GB card (4B is
 tight once 1.5–2K-token prompts and rollout groups are added) and need main-branch Transformers;
 slower HF generation costs little here, since measured inference was 8.3 s of a 46.6 s fight
-([state.md](state.md)). Training should use scenarios that carry signal: in the stopped
+([state.md](../state.md)). Training should use scenarios that carry signal: in the stopped
 continuation all four Louse combats ended at 77 HP and contributed no gradient, and
 [language-rl-experiment.md](first-combat/language-rl-experiment.md) itself warns that a gain "may be a
 memorized line", so a held-out set is required. Turn-level credit is cheap to add, with per-turn
@@ -935,7 +935,7 @@ report would be a useful result in its own right.
 MLP-inclusive LoRA, a Qwen3.5-2B or 4B base with thinking disabled, turn-level HP rewards with
 anchor-state grouping, and training only on scenarios that carry gradient. Report each change
 against the frozen 76.33 SFT adapter; the unevaluated two-update REINFORCE adapter is the natural
-first evaluation ([state.md](state.md)).
+first evaluation ([state.md](../state.md)).
 
 **Fourth, measure a frontier model on the same catalog** (tens of dollars). Run one cheap and one
 flagship model as policies under the existing `Decision` boundary, logging dollars and seconds per

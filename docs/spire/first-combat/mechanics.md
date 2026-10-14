@@ -1,6 +1,6 @@
 # Original-engine starter mechanics evidence
 
-The [captured fixture](../../tests/fixtures/engine_starter_transitions.json) contains
+The [captured fixture](../../../tests/fixtures/engine_starter_transitions.json) contains
 12 transitions from three completed original-engine combats on 2026-10-11:
 `runs/first-combat/first-random-v2-20261011/episode-0000` and
 `runs/first-combat/heuristic-replay-20261011/episode-0000`, plus
@@ -35,7 +35,7 @@ decompiled source and is under 50 KB.
 | `victory_heal_capped` | A second engine terminal observation changes HP 78 → maximum 80 with Burning Blood present. |
 | `end_turn_engine_death` | END changes HP 1 → 0 and produces `GAME_OVER` / `DEATH` with `victory=false`, even though `room_phase` remains `COMBAT`. |
 
-The [regressions](../../tests/combat/test_engine_regressions.py) feed these captured states
+The [regressions](../../../tests/combat/test_engine_regressions.py) feed these captured states
 through the adapter. They check observed commands against its legal candidates,
 card/target identity, public damage/block/power values, ordinary energy costs,
 stale-action rejection, zero-energy action masks, and terminal recognition.

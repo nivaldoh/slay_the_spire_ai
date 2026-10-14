@@ -26,7 +26,7 @@ src/spire/         Slay the Spire 1
   fullrun/         Current track: play.py (complete-run loop for any policy), llm.py (prompt,
                    memory and replies: the tuning surface), digest.py (trace summaries and
                    mistake flags), watch.py (job events), stats.py (the results register,
-                   docs/fullrun/results.csv)
+                   docs/spire/fullrun/results.csv)
   openweight/      Planned remote open-weight track (skeleton, mostly NotImplementedError): tasks
                    and seed splits, env backends, Tinker policy, rewards, rollout, GRPO, dynamics
   combat/          First-combat benchmark: rollout, suites (evaluation), catalogs, evidence audits
@@ -113,7 +113,7 @@ an unordered multiset, candidates tied to that decision's id) and never the raw 
 `decisions.py` builds it for full runs, `protocol.py` for the starter-card first
 combat. On the wire, cards are one-based; monster targets, potion slots and `choose`
 indexes are zero-based. Keep raw target positions after monsters die.
-[docs/integration.md](docs/integration.md) records the other protocol quirks.
+[docs/spire/integration.md](docs/spire/integration.md) records the other protocol quirks.
 
 Failure taxonomy: `BridgeError` subclasses and protocol errors (`StaleActionError`,
 `IllegalActionError`, `UnsupportedStateError`, `PolicyFailure`, …) are infrastructure or
@@ -125,9 +125,9 @@ Run evidence goes in `runs/<track>/<job>/` and stays out of Git (layout in
 `runs/README.md`). Each game has its own API spend ledger: Slay the Spire's is
 `runs/llm-spend.jsonl`, another game's `runs/<game>/llm-spend.jsonl`. Never move or reset a
 ledger; its budget cap is computed from its total.
-Compact first-combat results are committed in `docs/first-combat/results/`. `spire play`
-appends one row per run to `docs/fullrun/results.csv`; commit it with the version's log
-entry. Log every full-run version in `docs/fullrun/log.md`, and update `docs/state.md` when
+Compact first-combat results are committed in `docs/spire/first-combat/results/`. `spire play`
+appends one row per run to `docs/spire/fullrun/results.csv`; commit it with the version's log
+entry. Log every full-run version in `docs/spire/fullrun/log.md`, and update `docs/state.md` when
 work starts, stops or changes direction.
 
 ## Coding Style

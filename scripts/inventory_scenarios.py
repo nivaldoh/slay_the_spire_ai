@@ -1,7 +1,7 @@
-"""Collect the fixed, bounded development inventory in docs/first-combat/research.md.
+"""Collect the fixed, bounded development inventory in docs/spire/first-combat/research.md.
 
 No resume or implicit replacement seeds. All game work uses ordinary one-episode
-rollouts; policies never receive inventory metadata. See docs/first-combat/inventory.md.
+rollouts; policies never receive inventory metadata. See docs/spire/first-combat/inventory.md.
 """
 
 from __future__ import annotations
@@ -66,7 +66,7 @@ def source() -> dict:
         "source_revision": committed_revision("inventory collection"),
         "source_files": source_fingerprints(),
         "driver_sha256": digest(Path(__file__)),
-        "research_sha256": digest(ROOT / "docs/first-combat/research.md"),
+        "research_sha256": digest(ROOT / "docs/spire/first-combat/research.md"),
     }
 
 

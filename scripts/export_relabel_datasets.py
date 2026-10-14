@@ -4,7 +4,7 @@ Selection rule, with no outcome or policy-quality filtering: every complete,
 independently audited run under ``--runs`` with a single public start, excluding
 language-policy behavior. Training uses only the pinned settled SPIREAI1 two-Louse
 start; the offline test split uses every other start. Pre-settle SPIREAI1 starts are
-skipped. See docs/first-combat/language-relabel-experiment.md.
+skipped. See docs/spire/first-combat/language-relabel-experiment.md.
 
     uv run python scripts/export_relabel_datasets.py --runs runs/first-combat \
         --train-output runs/first-combat/new-train --test-output runs/first-combat/new-test

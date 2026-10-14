@@ -114,7 +114,7 @@ Targeted inspection of the installed engine's `Metrics`, `Settings`,
   runs. The observed Steam API initialization failure is additional context,
   not the justification for relying on the mod gate.
 - Local run-history saving still executes. Unlock and profile changes remain
-  possible and must be recorded as specified in [state.md](state.md).
+  possible and must be recorded as specified in [state.md](../state.md).
 
 The Upload Data setting was left unchanged. This audit supports disabled
 engine run/crash metric uploads for this modded build; it is not a blanket

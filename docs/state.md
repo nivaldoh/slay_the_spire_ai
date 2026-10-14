@@ -1,8 +1,8 @@
 # Project state
 
 Updated 2026-10-13. Read this first: what is running, what is current, what comes next.
-History lives with each track ([full runs](fullrun/log.md),
-[first combat](first-combat/README.md)), not here.
+History lives with each track ([full runs](spire/fullrun/log.md),
+[first combat](spire/first-combat/README.md)), not here.
 
 ## Active work (last verified 2026-10-14 00:45 UTC)
 
@@ -77,8 +77,8 @@ older unmerged state candidate.
 
 ## Current track: full runs with an API model
 
-[fullrun/README.md](fullrun/README.md) is the reference and loop;
-[fullrun/log.md](fullrun/log.md) is the version history.
+[fullrun/README.md](spire/fullrun/README.md) is the reference and loop;
+[fullrun/log.md](spire/fullrun/log.md) is the version history.
 
 The first overnight autoresearch session (2026-10-12, 02:28–11:04 local, UTC-3) played
 scaffolding v2–v7 on `RUNDEV1`–`RUNDEV3` (v7 on `RUNDEV2` only). Best floors per seed:
@@ -101,20 +101,20 @@ Next steps:
    Chip, 112 cards, 47 potions) and changes no other prompt.
 3. Keys memory (drafted as v11 on branch `v11-keys`, unmerged): CommunicationMod 1.2.1 never sends `keys`, so the model cannot see the
    keys it holds; v9 RUNDEV1 died on an elite path taken for a key it had
-   ([integration.md](integration.md), [candidates](fullrun/README.md#candidate-changes)).
+   ([integration.md](spire/integration.md), [candidates](spire/fullrun/README.md#candidate-changes)).
 4. A results table across versions (owner request): the register is built.
-   `spire play` appends each run to the committed `docs/fullrun/results.csv` (backfilled
+   `spire play` appends each run to the committed `docs/spire/fullrun/results.csv` (backfilled
    for v1–v9), and `spire stats` prints acts reached, wins and floors per version. Still
    to add: SpireBench's other measures, before more versions are compared
-   ([fullrun/README.md](fullrun/README.md#ideas-from-related-work-2026-10-12)). SpireBench
+   ([fullrun/README.md](spire/fullrun/README.md#ideas-from-related-work-2026-10-12)). SpireBench
    released no code; its metric definitions and fixed held-out seeds carry over.
 5. Optional runner fix: close the settings screen (opened by an Escape press on the game
    window) with a logged key press instead of stopping the run.
 6. An open StS1 full-run benchmark, built from this harness: owner interest, scoped in the
-   [approaches.md addendum](approaches.md#addendum-2026-10-12-evening-an-open-sts1-benchmark).
+   [approaches.md addendum](spire/approaches.md#addendum-2026-10-12-evening-an-open-sts1-benchmark).
    Its first step is the same results table as item 4.
 
-Open owner decisions: [fullrun/README.md](fullrun/README.md#open-owner-decisions).
+Open owner decisions: [fullrun/README.md](spire/fullrun/README.md#open-owner-decisions).
 
 ## Owner direction
 
@@ -129,11 +129,11 @@ Open owner decisions: [fullrun/README.md](fullrun/README.md#open-owner-decisions
   autoresearch from observed mistakes. `gpt-6-luna` at low reasoning effort, a hard $25 API
   cap for the first overnight work, and lean code.
 - 2026-10-12: later, test a remotely trained open-weight model (Qwen3.6-35B-A3B, then
-  GLM-5.3, with RL on Tinker). The plan is in [open-weight/README.md](open-weight/README.md);
+  GLM-5.3, with RL on Tinker). The plan is in [open-weight/README.md](spire/open-weight/README.md);
   only a code skeleton exists, in `src/spire/openweight/`.
 - 2026-10-11: PPO paused in favor of language-model post-training, which in turn paused
   with the move to full runs. Results and open threads:
-  [first-combat/README.md](first-combat/README.md).
+  [first-combat/README.md](spire/first-combat/README.md).
 
 ## Housekeeping
 
@@ -146,7 +146,7 @@ request bodies and ledger charges; a 40-action smoke run passed (API spend now $
 The repository was reorganized on 2026-10-12 into per-track packages, test directories,
 docs and run folders; [AGENTS.md](../AGENTS.md) has the map. Evidence from 2026-10-11 moved
 to `runs/first-combat/`, and the records inside keep their old absolute paths
-([how to re-audit](first-combat/README.md#evidence-and-tools)).
+([how to re-audit](spire/first-combat/README.md#evidence-and-tools)).
 
 Pending owner cleanup: 49 local branches whose commits are all in `main`. Keep
 `integration/heldout-clip-continuation`, which holds unmerged first-combat work, and
@@ -156,7 +156,7 @@ checkouts were pruned on 2026-10-13 (`git worktree prune`; no branch was touched
 
 ## Runtime and ownership
 
-Host, engine, mod and process facts: [integration.md](integration.md#runtime-and-source-pins).
+Host, engine, mod and process facts: [integration.md](spire/integration.md#runtime-and-source-pins).
 
 The owner authorizes the installed Steam game and personal profile slot 0, including
 changes to stats, unlock progress, run history and achievements (Ironclad unlock level was

@@ -80,7 +80,7 @@ JRE, so compiler availability is a separate preparation step.
 Before execution, freeze source/configuration hashes, patch source and binary
 hashes, engine/mod hashes, profile snapshot, command, and a candidate reset version
 such as `owned_jvm_menu_reset_then_seeded_start-v1`. Use the existing
-[development suite](../../configs/suites/louse_diagnostic_development_v1.json), public
+[development suite](../../../configs/suites/louse_diagnostic_development_v1.json), public
 observation contract and settled prefix. Keep this probe out of training data.
 
 Proposed cap: **14 attempts and 10 minutes**, whichever comes first, with the

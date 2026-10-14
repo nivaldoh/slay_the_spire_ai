@@ -5,7 +5,7 @@
     python -m spire digest runs/fullrun/<job>/run-0000 --picks     also every choice and reason
     python -m spire digest runs/fullrun/<job>/run-0000 --floor N   one floor, turn by turn
 
-A job prints the per-seed table used in docs/fullrun/log.md. A run prints one line per
+A job prints the per-seed table used in docs/spire/fullrun/log.md. A run prints one line per
 floor (HP change, room), flags that count recurring mistakes and point at their floors, and
 the model's final notes; --picks adds its noncombat choices and reasons. It only reads
 evidence.

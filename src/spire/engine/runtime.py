@@ -25,7 +25,7 @@ CONFLICTS = {
 # The exclusive runtime's fixed port, below both ephemeral ranges. The exact WSL eth0
 # address bypasses Windows localhost forwarding for game runs.
 BRIDGE_PORT = 19876
-# Workshop item ID and SHA-256 of each pinned jar; docs/integration.md has the versions.
+# Workshop item ID and SHA-256 of each pinned jar; docs/spire/integration.md has the versions.
 PINS = {
     "ModTheSpire.jar": (
         "1605060445",

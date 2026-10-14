@@ -17,7 +17,7 @@ from pathlib import Path
 
 from gameai.provenance import REPO_ROOT
 
-RESULTS_PATH = REPO_ROOT / "docs/fullrun/results.csv"
+RESULTS_PATH = REPO_ROOT / "docs/spire/fullrun/results.csv"
 JOBS_ROOT = REPO_ROOT / "runs/fullrun"
 FIELDS = ["date", "job", "run", "seed", "character", "ascension", "model", "effort",
           "harness", "source", "outcome", "act", "floor", "score", "usd"]

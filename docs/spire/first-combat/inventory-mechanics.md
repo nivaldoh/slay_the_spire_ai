@@ -1,6 +1,6 @@
 # Original-engine inventory mechanics evidence
 
-The [inventory fixture](../../tests/fixtures/engine_inventory_transitions.json)
+The [inventory fixture](../../../tests/fixtures/engine_inventory_transitions.json)
 captures 16 transitions from six completed original-engine episodes in
 `runs/first-combat/starter-inventory-20261011`. These extend the earlier
 [starter mechanics evidence](mechanics.md) with Cultist, Jaw Worm, and two

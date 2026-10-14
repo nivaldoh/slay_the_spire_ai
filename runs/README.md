@@ -13,7 +13,7 @@ runs/
   first-combat/       Frozen 2026-10-11 evidence: rollouts, evaluations, catalogs, PPO and
                       language training runs, their sidecar logs, audits and declarations, and
                       scripts/ with the one-off launch and summary scripts that produced them.
-  research-notes/     Source notes for docs/approaches.md, kept out of Git.
+  research-notes/     Source notes for docs/spire/approaches.md, kept out of Git.
   twwarhammer3/       Total War: WARHAMMER III: llm-spend.jsonl (its own ledger), launch-*/
                       probe logs and UI tree dumps, and later battle/<job>/episode-NNNN/.
 ```
@@ -25,6 +25,6 @@ configuration; `environment.json`; and one subdirectory per run or episode with 
 trace, result and game logs.
 
 Records in `first-combat/` name their original `runs/<name>` paths; see
-[docs/first-combat/README.md](../docs/first-combat/README.md#evidence-and-tools) before
+[docs/spire/first-combat/README.md](../docs/spire/first-combat/README.md#evidence-and-tools) before
 re-evaluating or re-auditing them. Its two SFT jobs hold about 16 GB of intermediate
 checkpoints (`checkpoints/*.pt`); the final adapters are under each job's `artifacts/`.
