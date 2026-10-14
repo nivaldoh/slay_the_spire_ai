@@ -16,7 +16,6 @@ from pathlib import Path
 
 from gameai import windows
 from gameai.provenance import sha256
-from gameai.windows import WINDOWS_PYTHON  # noqa: F401  (re-exported for the doctor)
 from gameai.windows_game import conflicting_games
 from twwarhammer3.engine import pack, startup
 

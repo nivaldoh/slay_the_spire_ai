@@ -7,10 +7,10 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from gameai.provenance import REPO_ROOT, write_json
-
-LEDGER_PATH = REPO_ROOT / "runs/twwarhammer3/llm-spend.jsonl"
-RESULTS_PATH = REPO_ROOT / "docs/twwarhammer3/results.csv"
+from gameai.llm import EFFORTS, PRICES
+from gameai.provenance import write_json
+from twwarhammer3.battle.llm import LEDGER_PATH
+from twwarhammer3.battle.stats import JOBS_ROOT, RESULTS_PATH
 
 
 def add_session_arguments(parser: argparse.ArgumentParser) -> None:
@@ -33,7 +33,10 @@ def session_from(args: argparse.Namespace) -> dict:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(prog="twwarhammer3", description="WH3 battles for a policy")
+    parser = argparse.ArgumentParser(
+        prog="twwarhammer3",
+        description="Total War: WARHAMMER III custom battles for scripted and API-model policies",
+    )
     commands = parser.add_subparsers(dest="command", required=True)
 
     doctor = commands.add_parser("doctor", help="Inspect the game and runtime (read-only)")
@@ -63,8 +66,8 @@ def main() -> int:
     play.add_argument("--policy", default="llm", choices=[
         "llm", "commander", "skills", "hold", "attack_nearest", "probe_move",
         "probe_abilities"])
-    play.add_argument("--model", default="gpt-6-luna")
-    play.add_argument("--effort", default="low")
+    play.add_argument("--model", default="gpt-6-luna", choices=sorted(PRICES))
+    play.add_argument("--effort", default="low", choices=EFFORTS)
     play.add_argument("--budget-usd", type=float, default=None,
                       help="required with --policy llm or commander")
     play.add_argument("--ledger", type=Path, default=LEDGER_PATH)
@@ -231,7 +234,7 @@ def main() -> int:
         from twwarhammer3.battle.watch import follow
         from twwarhammer3.engine.runtime import BRIDGE_DIR
 
-        path = args.path or REPO_ROOT / "runs/twwarhammer3/battle" / json.loads(
+        path = args.path or JOBS_ROOT / json.loads(
             (BRIDGE_DIR / "session.json").read_text())["job"]
         if not path.is_dir():
             parser.error(f"no job or episode directory at {path}")
@@ -243,7 +246,7 @@ def main() -> int:
         return 0
 
     if args.command == "stats":
-        from twwarhammer3.battle.stats import JOBS_ROOT, rebuild, summary
+        from twwarhammer3.battle.stats import rebuild, summary
 
         if args.rebuild:
             print(f"{rebuild(JOBS_ROOT, args.results)} rows")
@@ -253,7 +256,7 @@ def main() -> int:
     if args.command == "spend":
         from gameai.ledger import Ledger
 
-        print(f"{Ledger(args.ledger, float('inf')).spent:.4f} USD")
+        print(f"${Ledger(args.ledger, budget_usd=0).spent:.4f} spent ({args.ledger})")
         return 0
     return 1
 

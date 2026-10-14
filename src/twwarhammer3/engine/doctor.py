@@ -12,7 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from gameai.provenance import sha256
-from gameai.windows import probe
+from gameai.windows import WINDOWS_PYTHON, probe
 from gameai.windows_game import conflicting_games
 from twwarhammer3.engine import runtime, startup
 
@@ -29,7 +29,7 @@ def collect_diagnostics() -> dict:
         blockers.append("Warhammer3.exe is missing or differs from the pinned hash")
     if game["steam_build_id"] != runtime.PINS["steam_build_id"]:
         blockers.append(f"Steam build {game['steam_build_id']} is not the pinned build")
-    probes = {"windows_python": probe([str(runtime.WINDOWS_PYTHON), "--version"])}
+    probes = {"windows_python": probe([str(WINDOWS_PYTHON), "--version"])}
     blockers += [f"{key} did not run" for key, item in probes.items() if item["status"] != "ok"]
     try:
         preferences = runtime.preferences()

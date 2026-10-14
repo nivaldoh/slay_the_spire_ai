@@ -1,6 +1,7 @@
 import argparse
 import csv
 import json
+import sys
 from collections import deque
 from contextlib import nullcontext
 from pathlib import Path
@@ -8,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from gameai.ledger import BudgetExhausted
-from twwarhammer3.__main__ import add_session_arguments
+from twwarhammer3.__main__ import add_session_arguments, main
 from twwarhammer3.battle import commander, digest, play, stats
 from twwarhammer3.battle.scripted import AttackNearest, Hold
 from twwarhammer3.protocol import BattleRestarted, MailboxTimeout, PolicyFailure
@@ -147,6 +148,18 @@ def test_cli_cannot_request_paused_or_changed_speed_battles(arguments):
     assert default.speed == 1 and not default.pause
     with pytest.raises(SystemExit):
         parser.parse_args(arguments)
+
+
+@pytest.mark.parametrize("option", [["--model", "gpt-6-lunar"], ["--effort", "max"]])
+def test_cli_rejects_an_unknown_model_or_effort_before_launch(tmp_path, monkeypatch, capsys,
+                                                               option):
+    output = tmp_path / "job"
+    monkeypatch.setattr(sys, "argv", [
+        "twwarhammer3", "play", "--scenario", "random", "--output", str(output), *option])
+    with pytest.raises(SystemExit):
+        main()
+    assert "invalid choice" in capsys.readouterr().err
+    assert not output.exists()
 
 
 @pytest.mark.parametrize("change", [{"awaiting_orders": True}, {"speed": 0.5}])
@@ -290,7 +303,8 @@ def test_job_plays_episodes_with_restarts_and_records_rows(tmp_path, harness):
             " 0.10 |" in table)
     rebuilt = tmp_path / "rebuilt.csv"
     assert stats.rebuild(tmp_path, rebuilt) == 2
-    assert rebuilt.read_text() == results.read_text()
+    assert b"\r" not in results.read_bytes()  # LF like Spire's register, not csv's CRLF
+    assert rebuilt.read_bytes() == results.read_bytes()
 
 
 def test_budget_exhaustion_stops_the_job(tmp_path, harness):

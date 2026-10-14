@@ -69,7 +69,7 @@ def record(path: Path, job: Path, episode: Path) -> None:
     new = not path.exists() or path.stat().st_size == 0
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", newline="") as handle:
-        writer = csv.DictWriter(handle, FIELDS)
+        writer = csv.DictWriter(handle, FIELDS, lineterminator="\n")
         if new:
             writer.writeheader()
         writer.writerow(row(job, episode))
@@ -84,7 +84,7 @@ def rebuild(root: Path, path: Path) -> int:
             rows.append((created, row(job, result.parent)))
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, FIELDS)
+        writer = csv.DictWriter(handle, FIELDS, lineterminator="\n")
         writer.writeheader()
         for _, item in sorted(rows, key=lambda pair: pair[0]):
             writer.writerow(item)
