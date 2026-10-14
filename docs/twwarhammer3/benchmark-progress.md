@@ -46,7 +46,10 @@ and one deliberate exploratory interruption. Caster: Luna/hold/attack-nearest lo
 963/613/301 s. Cavalry: hold/attack-nearest lost 415/262 s; Luna's untouched army was
 retreating for a timeout win when interrupted at about 292 s. Do not call that trial a
 win or loss. A faster enemy anchor is the next pressure hypothesis; the frontend mount
-inventory is prepared. Also review a cavalry rematch's 4.826 m/12-degree formation
+inventory passed: Pegasus speed 105 versus Griffon 90. b6 selects the Pegasus and
+exposes visible enemy speeds; its 209 WH3 tests with Lua, Ruff and Lua compilation
+pass. Next are single-battle Sol reference pilots on Pegasus cavalry and the caster.
+Also review a cavalry rematch's 4.826 m/12-degree formation
 flag before freezing calibration. All resources/rosters matched. Completed harness
 items above rely on b1/b2 engine
 evidence and the regression checks below; they do not imply scenario admission.
@@ -63,9 +66,10 @@ Draft `9b73105` from `/tmp/wh3-benchmark-b3` was merged after the queue complete
 The subsequent b4 frontend inventory verified cards, mounts and default spell loadouts.
 During the first caster battle, nonzero barriers, spell ranges, mana consumption,
 cooldowns and private current starting stats are live-observed. A read-only query found
-that Screamers' engine category is `inf_mel` despite being airborne; draft b5 `dde4cfe`
-in `/tmp/wh3-benchmark-b5` corrects classification and exposes flight state. Its 207 WH3
-tests, Ruff and Lua compilation pass. It is not installed into the running screen.
+that Screamers' engine category is `inf_mel` despite being airborne; b5 `3218360`,
+merged as `b07b57b` after the screen, corrects classification and exposes flight state.
+It also keeps the engine outcome explicit for timer endings. Its tests, Ruff and Lua
+compilation passed; the next pilot must verify the new observation fields.
 The b4 queue and game controller exited at 18:24:45 UTC; no controller is active.
 Current process handles and next actions are in [../state.md](../state.md).
 No scenario is admitted. The owner has

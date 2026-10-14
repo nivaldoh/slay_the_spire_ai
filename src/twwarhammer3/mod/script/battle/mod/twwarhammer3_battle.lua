@@ -214,11 +214,11 @@ local function unit_record(id, unit, mine, class)
         record.state[#record.state + 1] = "running"
     end
     record.range = round(get(unit, "missile_range", 0))
+    record.speed = {round(get(unit, "slow_speed", 0), 1), round(get(unit, "fast_speed", 0), 1)}
     if mine then
         local entry = state.friendly[id]
         record.ammo = get(unit, "ammo_left", 0)
         record.ammo0 = get(unit, "starting_ammo", 0)
-        record.speed = {round(get(unit, "slow_speed", 0), 1), round(get(unit, "fast_speed", 0), 1)}
         record.fatigue = string.gsub(tostring(get(unit, "fatigue_state", "")), "^threshold_", "")
         record.width = round(get(unit, "ordered_width", 0), 1)
         record.attack_mode = entry.attack_mode

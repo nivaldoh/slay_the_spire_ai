@@ -198,6 +198,14 @@ def test_flying_lord_keeps_role_and_reports_airborne_or_grounded_state():
     assert "can fly, on the ground" in llm.render_state(state, {})
 
 
+def test_visible_enemy_speed_is_reported_with_its_flight_capability():
+    state = observation()
+    state["enemy"][0].update(speed=[10.5, 10.5], can_fly=True, flying=True)
+    text = llm.render_state(state, {})
+    enemy_line = next(line for line in text.splitlines() if line.startswith("- e1 "))
+    assert "can fly, airborne" in enemy_line and "walk 10.5 run 10.5" in enemy_line
+
+
 def test_prompt_shows_changes_and_the_order_behind_each_target(tmp_path):
     orders = [{"unit": "f2", "type": "attack", "x": None, "z": None, "facing": None,
                "target": "e1", "run": False}]

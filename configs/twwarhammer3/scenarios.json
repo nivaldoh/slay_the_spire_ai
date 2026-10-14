@@ -1082,5 +1082,191 @@
    "wh2_dlc17"
   ],
   "brief": "Kairos and four escorts face ten Skaven units. Spell value, shared magic, screening, barrier recovery and flying-unit risk compete with artillery pressure. This is a compact caster test, not the later massive-swarm scenario. Hypotheses, not a prescribed solution."
+ },
+ "brt-cavalry-emp-pegasus": {
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "split": "development",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 8000,
+   "time_limit_s": 1200,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.0",
+   "player_defends": true
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
+  "status": "prototype_not_admitted",
+  "name": "brt-cavalry-emp-pegasus",
+  "family": "cavalry against anti-large",
+  "player": {
+   "subculture": "wh_main_sc_brt_bretonnia",
+   "faction": "wh_main_brt_bretonnia",
+   "units": [
+    "wh_main_brt_cha_lord_0",
+    "wh_main_brt_cav_grail_knights",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_dlc07_brt_cav_questing_knights_0",
+    "wh_main_brt_cav_mounted_yeomen_1"
+   ],
+   "mounts": {
+    "0": "wh_main_brt_cha_lord_4"
+   }
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "units": [
+    "wh_main_emp_cha_general_0",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_art_great_cannon"
+   ],
+   "mounts": {
+    "0": "wh_main_emp_cha_general_2"
+   }
+  },
+  "protected": [
+   "wh_main_brt_cav_grail_knights"
+  ],
+  "content": [
+   "wh_main",
+   "wh_dlc07"
+  ],
+  "brief": "Six fully mounted units, with Grail Knights as the player anchor, face four halberds, two handguns, a cannon and a general on an Imperial Pegasus. The faster flying lord is an enemy anchor intended to pressure simple evasion. Interception, engagement angle, target priority and disengagement compete. AI pursuit is a hypothesis to verify, not a guaranteed script.",
+  "calibration_change": "The pikes-only development screen lost with both trivial controls; Luna chose untouched evasion for a timeout win and was deliberately interrupted, with no gameplay outcome. Replace the enemy foot general with the verified speed 105 Pegasus mount (versus friendly 84/92) while retaining all other units and the 8000 cap. Original screen remains recorded."
+ },
+ "brt-cavalry-emp-pegasus-hard": {
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "split": "development",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 8000,
+   "time_limit_s": 1200,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.1",
+   "player_defends": true
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
+  "status": "prototype_not_admitted",
+  "name": "brt-cavalry-emp-pegasus-hard",
+  "family": "cavalry against anti-large",
+  "player": {
+   "subculture": "wh_main_sc_brt_bretonnia",
+   "faction": "wh_main_brt_bretonnia",
+   "units": [
+    "wh_main_brt_cha_lord_0",
+    "wh_main_brt_cav_grail_knights",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_dlc07_brt_cav_questing_knights_0",
+    "wh_main_brt_cav_mounted_yeomen_1"
+   ],
+   "mounts": {
+    "0": "wh_main_brt_cha_lord_4"
+   }
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "units": [
+    "wh_main_emp_cha_general_0",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_art_great_cannon"
+   ],
+   "mounts": {
+    "0": "wh_main_emp_cha_general_2"
+   }
+  },
+  "protected": [
+   "wh_main_brt_cav_grail_knights"
+  ],
+  "content": [
+   "wh_main",
+   "wh_dlc07"
+  ],
+  "brief": "Six fully mounted units, with Grail Knights as the player anchor, face four halberds, two handguns, a cannon and a general on an Imperial Pegasus. The faster flying lord is an enemy anchor intended to pressure simple evasion. Interception, engagement angle, target priority and disengagement compete. AI pursuit is a hypothesis to verify, not a guaranteed script.",
+  "calibration_change": "The pikes-only development screen lost with both trivial controls; Luna chose untouched evasion for a timeout win and was deliberately interrupted, with no gameplay outcome. Replace the enemy foot general with the verified speed 105 Pegasus mount (versus friendly 84/92) while retaining all other units and the 8000 cap. Original screen remains recorded."
+ },
+ "brt-cavalry-emp-pegasus-heldout-wastes": {
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "split": "held_out",
+  "map": "battle_preset_wh3_nur_wastes_01_04",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 8000,
+   "time_limit_s": 1200,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.0",
+   "player_defends": true
+  },
+  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
+  "status": "prototype_not_admitted",
+  "name": "brt-cavalry-emp-pegasus-heldout-wastes",
+  "family": "cavalry against anti-large",
+  "player": {
+   "subculture": "wh_main_sc_brt_bretonnia",
+   "faction": "wh_main_brt_bretonnia",
+   "units": [
+    "wh_main_brt_cha_lord_0",
+    "wh_main_brt_cav_grail_knights",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_main_brt_cav_knights_of_the_realm",
+    "wh_dlc07_brt_cav_questing_knights_0",
+    "wh_main_brt_cav_mounted_yeomen_1"
+   ],
+   "mounts": {
+    "0": "wh_main_brt_cha_lord_4"
+   }
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_emp_empire",
+   "faction": "wh_main_emp_empire",
+   "units": [
+    "wh_main_emp_cha_general_0",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_halberdiers",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_inf_handgunners",
+    "wh_main_emp_art_great_cannon"
+   ],
+   "mounts": {
+    "0": "wh_main_emp_cha_general_2"
+   }
+  },
+  "protected": [
+   "wh_main_brt_cav_grail_knights"
+  ],
+  "content": [
+   "wh_main",
+   "wh_dlc07"
+  ],
+  "brief": "Six fully mounted units, with Grail Knights as the player anchor, face four halberds, two handguns, a cannon and a general on an Imperial Pegasus. The faster flying lord is an enemy anchor intended to pressure simple evasion. Interception, engagement angle, target priority and disengagement compete. AI pursuit is a hypothesis to verify, not a guaranteed script.",
+  "calibration_change": "The pikes-only development screen lost with both trivial controls; Luna chose untouched evasion for a timeout win and was deliberately interrupted, with no gameplay outcome. Replace the enemy foot general with the verified speed 105 Pegasus mount (versus friendly 84/92) while retaining all other units and the 8000 cap. Original screen remains recorded."
  }
 }

@@ -1,5 +1,24 @@
 # WH3 battle versions
 
+## Benchmark harness b6 (2026-10-14, Pegasus pressure hypothesis)
+
+Adds `brt-cavalry-emp-pegasus` with 1.0/1.1 development settings and an untouched
+held-out map. It keeps the six-versus-eight roster and 8000 cap, replacing only the
+enemy foot general with an Imperial Pegasus mount. The frontend enemy-slot change
+and exact unit key passed. The Pegasus shows speed 105 and cost 1800; a Griffon was
+also checked (speed 90, cost 2050). Our cavalry's speed stats are 84/92. A faster flying
+enemy is intended to create pressure on passive evasion; its AI behavior is still a
+live hypothesis, not a guaranteed pursuit script. Evidence:
+`capability-probes/benchmark-pressure-mounts/`. The owned frontend launch is closed.
+
+Visible enemies now expose walk/run speeds, alongside b5's flight capability/state.
+This uses the same unit queries as friendlies, only after visibility filtering. The
+rules prompt describes the facts without suggesting an engagement strategy. Validation:
+209 WH3 tests with Lua, Ruff and Lua 5.1 compilation passed. New pilot launches will
+verify those fields and test a stronger `gpt-6-sol` low-effort rules-only reference on
+the Pegasus and caster development scenarios, within the existing $25 ledger cap.
+No G1/G2 trials or held-out trials have run; neither candidate is admitted.
+
 ## Benchmark harness b5 (2026-10-14, draft while b4 screens run)
 
 The compact caster screen exposed missing flight information: the original engine

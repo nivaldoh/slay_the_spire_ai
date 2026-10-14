@@ -82,6 +82,13 @@ way. There is no external game API; the mod is the API.
 
 ## Current controllers
 
+Benchmark screening also has `llm_rules`: the direct controller with a separate prompt
+describing objectives and the interface, without the v15 tactical prescriptions. It
+uses the same memory, actions, timing and ledger. Specialist candidates, paired
+rotations and setup checks are documented in [benchmark-run.md](benchmark-run.md);
+none has passed calibration yet. Benchmark declarations explicitly set funds, the
+finite timer and AI stat modifier, then verify them in the lobby and battle.
+
 On `main`: the direct controller `llm` v15 (v10 tactical rules on the v13 interface of
 continuous decisions and expanded controls), the `commander` v3, and the `skills`
 executor v1.2 that the commander drives. v14 and commander v2 (`9bfee82`, `739ce9c`)

@@ -115,8 +115,11 @@ reachability query. The engine sends no replacement order; the controller must c
 For specialist units, current/maximum barrier HP is separate from ordinary health.
 Owned abilities include their cast range, effect radius and duration where the engine
 provides them. These describe capabilities, not a suggested tactic. Rune ranges/durations
-and zero-barrier queries passed a live read-only probe; a nonzero Tzeentch barrier and
-caster spell use still require the specialist smoke battle before admission.
+and nonzero Tzeentch barriers are live-verified, as are unit-targeted spells and their
+mana/cooldown changes. Successful ground-targeted Kairos spells remain to be checked.
+Visible units also expose walk/run speeds and airborne/grounded state. The corrected
+flight queries passed read-only engine checks; their new observation fields need a
+pilot launch before admission.
 
 The live b1 probes read the modifier as 1.1. Its stat previews say +10% attack, defence
 and weapon damage and +8 leadership; a setting read-back alone does not measure each

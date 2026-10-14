@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-14 18:25 UTC: what is running, where each game
+Updated 2026-10-14 18:35 UTC: what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -12,7 +12,7 @@ specialist anchor units, faction mechanics and compact armies; see the
 [scenario recipe](twwarhammer3/scenario-recipe.md). No scenario is admitted and no G1/G2
 trials have run. The unstarted generic Herald G1 draft remains superseded.
 
-No game controller is active. The b4 screen on `e221324` stopped at 2026-10-14 18:24:45
+The b4 screen on `e221324` stopped at 2026-10-14 18:24:45
 UTC after a deliberate exploratory interruption; its runner and game controller exited.
 Caster five versus ten: Luna lost 963 s, hold 613 s, attack-nearest 301 s. All recorded
 starts matched. Cavalry six versus eight: hold lost 415 s, attack-nearest 262 s. Luna
@@ -23,14 +23,18 @@ for 4.826 m missile-cavalry displacement and a 12-degree enemy-lord turn; resour
 rosters matched. Review formation variation before the G1 plan, without discarding
 flagged trials or claiming identical starts. Reports are in `runs/twwarhammer3/reports/`.
 
-Draft b5 `3218360` in `/tmp/wh3-benchmark-b5` fixes flying-unit classification, exposes
+b5 `3218360` was merged as `b07b57b`; it fixes flying-unit classification, exposes
 airborne state and preserves engine winners in timer-ended reports. Validation: all
 207 WH3 tests with Lua for flight changes, then 25 targeted tests for reporting (one new
-regression), Ruff and Lua compilation. Commit b4 evidence, then merge the draft.
-Next: the frontend-only Empire mount inventory in
-`runs/twwarhammer3/capability-probes/benchmark-pressure-mounts/steps.json`, to check a
-faster enemy anchor for the cavalry candidate. It is prepared, not run. A stronger
-reference and successful unit-ground spell use still need testing for the caster.
+regression), Ruff and Lua compilation. The b4 evidence/register is committed as `570597e`.
+The frontend-only Empire mount inventory completed and the owned launch exited.
+Evidence: `runs/twwarhammer3/capability-probes/benchmark-pressure-mounts/`. The Pegasus
+mount is speed 105, cost 1800; Griffon speed 90, cost 2050. b6 selects Pegasus for the
+new six-versus-eight cavalry variant and exposes visible enemies' movement speeds.
+All 209 WH3 tests with Lua, Ruff and Lua compilation passed. Next, two single-battle
+`gpt-6-sol` low-effort `llm_rules` pilots on Pegasus cavalry and the original caster,
+within the existing $25 ledger cap. Neither is a G1/G2 trial. Successful unit-ground
+spell use still needs testing for the caster; the faster enemy's pursuit is a hypothesis.
 Freeze revised candidates and a competent reference before calibration.
 Implementation and evidence: [benchmark-progress.md](twwarhammer3/benchmark-progress.md).
 
