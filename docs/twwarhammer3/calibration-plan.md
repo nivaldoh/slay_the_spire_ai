@@ -61,8 +61,10 @@ separate strata; matching a rotation seed would not make two launches the same i
 
 Admission requires both:
 
-1. The declared competent reference wins roughly 30–70% (2–4 of 6), counting timer endings as
-   valid trials without counting them as wins.
+1. The declared competent reference wins before the timer roughly 30–70% (2–4 of 6),
+   counting timer endings as valid trials without including them in this decisive-win
+   measure. Preserve and report the engine's result at the timer: a defender's timeout
+   win is a legitimate game win, but does not satisfy this initial admission criterion.
 2. That reference beats both trivial controllers on active-strength margin, with each paired
    instance interval above zero. This tests the better of the two trivial baselines.
 

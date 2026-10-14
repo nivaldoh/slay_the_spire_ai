@@ -77,7 +77,11 @@ not be pooled with this corrected observation contract.
 
 Every started trial is recorded, including interruptions. Only engine won/lost/draw
 are gameplay outcomes; a timer ending is labelled `time_limit` in the report while
-retaining its engine outcome. Undecided failures stop the launch; unplayed controllers
+retaining its engine outcome explicitly, including a defender's win. The report labels
+its existing win-rate measure "non-timer win rate" and also counts timer outcomes by
+engine winner. A timeout win remains a legitimate result under the battle's rules;
+the initial calibration separately requires decisive wins. Undecided failures stop
+the launch; unplayed controllers
 remain missing pairs. Different scenarios/builds/source revisions are not pooled.
 
 Reports include failures and denominators, Wilson win intervals (omitted for correlated

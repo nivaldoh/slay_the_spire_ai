@@ -156,6 +156,8 @@ def render_unit(unit: dict, mine: bool, before: tuple | None = None,
     if unit.get("barrier"):
         barrier = unit["barrier"]
         parts.append(f"barrier {barrier.get('hp', '?')}/{barrier['max_hp']}")
+    if unit.get("can_fly"):
+        parts.append("can fly, " + ("airborne" if unit.get("flying") else "on the ground"))
     if mine and unit.get("ammo0"):
         parts.append(f"ammo {unit['ammo']}/{unit['ammo0']} range {unit.get('range') or 0:.0f}")
     elif not mine and unit.get("range"):

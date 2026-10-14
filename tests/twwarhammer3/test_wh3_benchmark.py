@@ -236,6 +236,22 @@ def test_rollout_throughput_includes_setup_failures_and_unknown_job_duration(tmp
     assert "throughput unavailable" in report.render(result)
 
 
+def test_timer_win_retains_engine_outcome_and_labels_non_timer_win_rate(tmp_path):
+    job = make_job(tmp_path, "timer", [("hold", -.7, "won")])
+    path = job / "episode-0000/result.json"
+    path.write_text(json.dumps({**json.loads(path.read_text()), "ended_by": "time_limit"}))
+    result = report.collect([job])
+    group = result["groups"][0]
+    trial = group["trials"][0]
+    assert trial["outcome"] == "time_limit" and trial["engine_outcome"] == "won"
+    assert trial["valid"]
+    controller = group["controllers"][0]
+    assert controller["win_rate"] == 0
+    assert controller["time_limit_engine_outcomes"] == {"won": 1}
+    text = report.render(result)
+    assert "Non-timer win rate" in text and "time_limit (engine won)" in text
+
+
 def test_terrain_and_rejected_move_alternatives_reach_both_model_renderers():
     state = {"terrain": {"x0": -16, "z0": -16, "cell_m": 32, "sample_width_m": 16,
                          "rows": [".#", ".."]},
