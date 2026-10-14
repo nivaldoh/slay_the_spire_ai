@@ -170,3 +170,27 @@ def test_build_orders_need_an_empty_slot_a_listed_option_and_the_supplies(order,
     if error is None:
         with pytest.raises(protocol.IllegalActionError, match="ordered twice"):
             protocol.validate_orders(twice, SIEGE)
+
+
+SURVIVAL = {**OBSERVATION, "mode": {
+    "supplies": 1000, "spawn_zones": [{"id": 14, "x": 320, "z": 0}],
+    "reinforcements": [{"id": "r1", "type": "marauders", "cost": 400},
+                       {"id": "r2", "type": "warriors", "cost": 900}],
+}}
+
+
+@pytest.mark.parametrize("orders, error", [
+    ([{"reinforcement": "r1", "zone": 14}], None),
+    ([{"reinforcement": "r9", "zone": 14}], "unknown reinforcement"),
+    ([{"reinforcement": "r1", "zone": 3}], "not one of yours"),
+    ([{"reinforcement": "r1", "zone": 14}, {"reinforcement": "r2", "zone": 14}],
+     "r2 costs 900, supplies 1000 \\(400 already ordered\\)"),
+    ([{"reinforcement": "r1", "zone": 14}, {"reinforcement": "r1", "zone": 14}], "ordered twice"),
+])
+def test_reinforcements_come_from_the_pool_at_an_own_zone_within_supplies(orders, error):
+    orders = [{"unit": "army", "type": "reinforce", **order} for order in orders]
+    if error is None:
+        protocol.validate_orders(orders, SURVIVAL)
+    else:
+        with pytest.raises(protocol.IllegalActionError, match=error):
+            protocol.validate_orders(orders, SURVIVAL)

@@ -47,6 +47,8 @@ ABILITY_SCHEMA = _order_schema("ability", ability={"type": "string"}, target=STR
                                x=NUMBER_OR_NULL, z=NUMBER_OR_NULL, facing=NUMBER_OR_NULL,
                                width=NUMBER_OR_NULL)
 BUILD_SCHEMA = _order_schema("build", slot={"type": "string"}, option={"type": "string"})
+REINFORCE_SCHEMA = _order_schema("reinforce", reinforcement={"type": "string"},
+                                 zone={"type": "integer"})
 REPLY_SCHEMA = {
     "type": "object",
     "properties": {
@@ -62,6 +64,7 @@ REPLY_SCHEMA = {
                           enabled={"type": "boolean"}),
             ABILITY_SCHEMA,
             BUILD_SCHEMA,
+            REINFORCE_SCHEMA,
         ]}},
         "reason": {"type": "string"},
         "notes": STRING_OR_NULL,
@@ -270,6 +273,14 @@ def render_mode(mode: dict | None) -> str | None:
                      f" {state}.")
     if mode.get("supplies") is not None:
         lines.append(f"Supplies: {mode['supplies']}.")
+    if mode.get("reinforcements") is not None:
+        lines.append("Reinforcements (order with unit \"army\", type \"reinforce\", an id and"
+                     " one of your spawn zones; each costs supplies): " + (", ".join(
+                         f"{unit['id']} {short_type(unit.get('type'))} {unit.get('cost')}"
+                         for unit in mode["reinforcements"]) or "none left") + ".")
+        lines.append("Your spawn zones: " + (", ".join(
+            f"{zone['id']} at ({zone['x']:.0f}, {zone['z']:.0f})"
+            for zone in mode.get("spawn_zones") or []) or "none") + ".")
     if mode.get("slots"):
         lines.append("Building slots (order with unit \"army\", type \"build\", slot and option):")
         for slot in mode["slots"]:
@@ -428,6 +439,9 @@ def describe_orders(orders: list[dict]) -> str:
             parts.append(f"{order['unit']} ability {order['ability']} at {target}")
         elif order["type"] == "build":
             parts.append(f"{order['unit']} build {order['option']} on {order['slot']}")
+        elif order["type"] == "reinforce":
+            parts.append(f"{order['unit']} reinforce {order['reinforcement']}"
+                         f" at zone {order['zone']}")
         else:
             parts.append(f"{order['unit']} halt")
         if order.get("queue"):

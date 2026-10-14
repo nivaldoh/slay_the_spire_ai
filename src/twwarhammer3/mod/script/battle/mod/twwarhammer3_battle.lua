@@ -17,7 +17,7 @@ local state = {
     friendly = {}, friendly_ids = {}, enemy = {}, enemy_ids = {}, enemy_by_ui = {},
     pending = nil, last_request = nil, applied = nil, applied_ms = nil,
     next_observe_ms = 0, force_observe = false, alliance = nil,
-    army_abilities = {}, army_issued = {}, known = {}, info = {}, slots = {},
+    army_abilities = {}, army_issued = {}, known = {}, info = {}, slots = {}, pool = {},
 }
 local session = nil
 local BEHAVIOURS = {"fire_at_will", "skirmish", "defend", "change_formation_spacing", "formed_attack"}
@@ -262,6 +262,17 @@ local TICKETS = 'AllianceList.JoinString(Id + "|" + TicketsRemaining + "|" + Tic
     .. 'CpKillScore, ";")'
 local GATES = 'BuildingsList.Filter(IsGate).JoinString(Name + "|" + Position.x + "|" + Position.z + "|" + '
     .. 'GateCurrentHitpoints + "|" + GateMaxHitpoints + "|" + IsDestroyed, ";")'
+-- Units the army can call in from its reinforcement pool with supplies (survival,
+-- domination) and the spawn zones open to it. The pool's second argument 1 lists the units
+-- (0 listed none in survival); costs take the army's unique id, read once at the start.
+local POOL = "BattleReinforcementPoolContext.UnitsForArmy(PlayerArmyContext, 1)"
+local function pool_rows()
+    return context_rows("CcoBattleRoot", "", string.format(
+        '%s.JoinString(UnitContext.UnitRecordContext.Key + "|" + CostPerUnit(%d), ";")',
+        POOL, state.info.army_id or 1))
+end
+local ZONES = 'SpawnZoneList.Filter(IsAvailableToAlliance(%d)).JoinString(UniqueID + "|" + Position.x + "|" + Position.z, ";")'
+
 -- Slots where the army can build towers and barricades with supplies (sieges, settlements,
 -- survival): the slot's state each observation; options are read once at the start, named
 -- by their icons (tower_piercing_1, ...) and keyed by the buildable's Index.
@@ -280,7 +291,7 @@ end
 local function mode_section()
     local section = {}
     for key, value in pairs(state.info) do section[key] = value end
-    section.alliances, section.player_alliance = nil, nil
+    section.alliances, section.player_alliance, section.army_id, section.reinforcing = nil, nil, nil, nil
     local points = {}
     -- Keys repeat (a siege has four "capture_point_tower_only"), so points are numbered.
     for index, row in ipairs(context_rows("CcoBattleRoot", "", CAPTURE_POINTS)) do
@@ -314,6 +325,21 @@ local function mode_section()
         }
     end
     if #gates > 0 then section.gates = gates end
+    if state.info.reinforcing then
+        local pool = {}
+        state.pool = {}
+        for index, row in ipairs(pool_rows()) do
+            pool[#pool + 1] = {id = "r" .. index, type = row[1], cost = round(tonumber(row[2]))}
+            state.pool[pool[#pool].id] = pool[#pool]
+        end
+        section.reinforcements = pool
+        local zones = {}
+        local query = string.format(ZONES, state.info.player_alliance or 0)
+        for _, row in ipairs(context_rows("CcoBattleRoot", "", query)) do
+            zones[#zones + 1] = {id = tonumber(row[1]), x = round(tonumber(row[2]), 1), z = round(tonumber(row[3]), 1)}
+        end
+        section.spawn_zones = zones
+    end
     if #state.slots > 0 then
         local slots = {}
         for index, row in ipairs(context_rows("CcoBattleRoot", "", SLOTS)) do
@@ -444,7 +470,33 @@ local function apply_build(order)
                       tostring(get_context("PlayerArmyContext.GlobalCurrency"))))
 end
 
+-- Calling in a pool unit is the pool's PurchaseUnit at one of the army's spawn zones; the
+-- unit joins the army as it enters and the next scan gives it an id. A purchase shifts the
+-- pool's indexes, so the id the policy saw is matched by type and cost in the current pool.
+local function apply_reinforce(order)
+    local wanted = state.pool[order.reinforcement]
+    if not wanted then error("unknown_reinforcement") end
+    local index = nil
+    for i, row in ipairs(pool_rows()) do
+        if not index and row[1] == wanted.type and round(tonumber(row[2])) == wanted.cost then index = i end
+    end
+    if not index then error("not_in_pool") end
+    local zone = tonumber(order.zone)
+    if not zone then error("bad_zone") end
+    local before = tonumber(get_context("PlayerArmyContext.NumReinforcements"))
+    common.call_context_command("CcoBattleRoot", "", string.format(
+        "BattleReinforcementPoolContext.PurchaseUnit(%s.At(%d), PlayerArmyContext, %d)", POOL, index - 1, zone))
+    local after = tonumber(get_context("PlayerArmyContext.NumReinforcements"))
+    if before and after and after >= before then error("not_purchased") end
+    log(string.format("reinforced with %s at zone %d", order.unit_type, zone))
+end
+
 local function apply_order(order)
+    if order.unit == "army" and order.type == "reinforce" then
+        if not state.started then return {unit = order.unit, ok = false, error = "deployment"} end
+        local ok, err = pcall(apply_reinforce, order)
+        return {unit = order.unit, ok = ok, error = not ok and clean_error(err) or nil}
+    end
     if order.unit == "army" and order.type == "build" then
         if not state.started then return {unit = order.unit, ok = false, error = "deployment"} end
         local ok, err = pcall(apply_build, order)
@@ -729,7 +781,9 @@ end
 -- runs out, and the objectives as the game's battle-type cheat sheet states them.
 local function battle_info()
     local info = {alliances = bm:alliances():count(), type = get_context("BattleTypeState"),
-                  player_alliance = tonumber(get_context("PlayerAllianceContext.Id"))}
+                  player_alliance = tonumber(get_context("PlayerAllianceContext.Id")),
+                  army_id = tonumber(get_context("PlayerArmyContext.UniqueID")),
+                  reinforcing = get_context("DoesHaveReinforcementPurchasing") == true or nil}
     state.info.player_alliance = info.player_alliance
     local attacker = get_context("SetupContext.IsPlayerAttacker")
     if type(attacker) == "boolean" then info.role = attacker and "attacker" or "defender" end

@@ -320,14 +320,18 @@ class ProbeAbilities(Skills):
     each ability as soon as the state says it is ready, to check readiness and casting in
     the engine: self abilities of units in melee, and army abilities on our largest unit
     in melee (a ground one at its position). Where the battle has building slots, it
-    builds the cheapest option on each usable empty slot once supplies allow."""
+    builds the cheapest option on each usable empty slot once supplies allow; where it has
+    a reinforcement pool, it calls in the cheapest unit it can afford every 10 s at its
+    first spawn zone."""
 
     RECAST_S = 5.0
+    REINFORCE_S = 10.0
 
     def __init__(self):
         super().__init__()
         self.cast = {}
         self.built = set()
+        self.reinforced_s = -math.inf
 
     def decide(self, observation: dict) -> list[dict]:
         orders = super().decide(observation)
@@ -364,6 +368,13 @@ class ProbeAbilities(Skills):
                 supplies -= cheapest["cost"]
                 orders.append({"unit": "army", "type": "build", "slot": slot["id"],
                                "option": cheapest["name"]})
+        pool = sorted(mode.get("reinforcements") or [], key=lambda unit: unit.get("cost") or 0)
+        zones = mode.get("spawn_zones") or []
+        if (pool and zones and pool[0].get("cost", 0) <= supplies
+                and now - self.reinforced_s >= self.REINFORCE_S):
+            self.reinforced_s = now
+            orders.append({"unit": "army", "type": "reinforce", "reinforcement": pool[0]["id"],
+                           "zone": zones[0]["id"]})
         return orders
 
     def metadata(self) -> dict:

@@ -41,7 +41,7 @@ class BattleRestarted(RuntimeError):
 
 
 ORDER_TYPES = ("move", "attack", "halt", "behaviour", "ability")
-ARMY_ORDER_TYPES = ("ability", "build")
+ARMY_ORDER_TYPES = ("ability", "build", "reinforce")
 ATTACK_MODES = ("auto", "melee", "ranged")
 BEHAVIOURS = ("fire_at_will", "skirmish", "defend", "change_formation_spacing", "formed_attack")
 
@@ -71,6 +71,9 @@ def validate_orders(orders: list, observation: dict) -> None:
             continue
         if unit == "army" and kind == "build":
             _validate_build(order, observation, settings)
+            continue
+        if unit == "army" and kind == "reinforce":
+            _validate_reinforce(order, observation, settings)
             continue
         if unit not in friendly:
             raise IllegalActionError(f"unknown friendly unit {unit!r}")
@@ -157,6 +160,24 @@ def _validate_build(order, observation, settings) -> None:
     if ("build", slot["id"]) in settings:
         raise IllegalActionError(f"army: slot {slot['id']} ordered twice")
     settings.add(("build", slot["id"]))
+
+
+def _validate_reinforce(order, observation, settings) -> None:
+    """A unit from the army's reinforcement pool, paid with supplies, at one of its zones."""
+    mode = observation.get("mode") or {}
+    pool = {unit["id"]: unit for unit in mode.get("reinforcements") or []}
+    unit = pool.get(order.get("reinforcement"))
+    if unit is None:
+        raise IllegalActionError(f"army: unknown reinforcement {order.get('reinforcement')!r}")
+    if order.get("zone") not in {zone["id"] for zone in mode.get("spawn_zones") or []}:
+        raise IllegalActionError(f"army: zone {order.get('zone')!r} is not one of yours")
+    spent = sum(pool[key].get("cost") or 0 for kind, key in settings if kind == "reinforce")
+    if mode.get("supplies") is not None and spent + (unit.get("cost") or 0) > mode["supplies"]:
+        raise IllegalActionError(f"army: {unit['id']} costs {unit.get('cost')}, supplies"
+                                 f" {mode['supplies']} ({spent} already ordered)")
+    if ("reinforce", unit["id"]) in settings:
+        raise IllegalActionError(f"army: reinforcement {unit['id']} ordered twice")
+    settings.add(("reinforce", unit["id"]))
 
 
 def _validate_ability_target(unit, order, friendly, enemies) -> None:

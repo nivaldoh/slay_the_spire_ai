@@ -22,6 +22,7 @@ from twwarhammer3.battle.llm import (
     MAX_OUTPUT_TOKENS,
     NOTES_LIMIT,
     NUMBER_OR_NULL,
+    REINFORCE_SCHEMA,
     STRING_OR_NULL,
     _hp,
     describe_orders,
@@ -51,7 +52,8 @@ REPLY_SCHEMA = {
     "type": "object",
     "properties": {
         "assignments": {"type": "array", "items": ASSIGNMENT_SCHEMA},
-        "abilities": {"type": "array", "items": {"anyOf": [ABILITY_SCHEMA, BUILD_SCHEMA]}},
+        "abilities": {"type": "array",
+                      "items": {"anyOf": [ABILITY_SCHEMA, BUILD_SCHEMA, REINFORCE_SCHEMA]}},
         "reason": {"type": "string"},
         "notes": STRING_OR_NULL,
     },
