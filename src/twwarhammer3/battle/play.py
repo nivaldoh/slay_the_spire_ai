@@ -358,6 +358,25 @@ def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
     return result
 
 
+def track_objectives(result: dict, observation: dict) -> None:
+    """Measures of a battle type's objectives (owner, 2026-10-14): the share of observations
+    in which we held each victory point, averaged over the points, and the supplies left at
+    the last observation; acknowledgements add the builds and reinforcements that went in."""
+    mode = observation.get("mode") or {}
+    points = [point for point in mode.get("capture_points") or [] if point.get("victory")]
+    if not points and mode.get("supplies") is None:
+        return
+    measures = result.setdefault("objectives", {"samples": 0, "victory_held": None})
+    if points:
+        held = sum(point.get("holder") == "us" for point in points) / len(points)
+        samples = measures["samples"]
+        measures["victory_held"] = round(
+            ((measures["victory_held"] or 0) * samples + held) / (samples + 1), 3)
+        measures["samples"] = samples + 1
+    if mode.get("supplies") is not None:
+        measures["supplies_left"] = mode["supplies"]
+
+
 def caption(observation: dict, behavior: dict, orders: list[dict]) -> str | None:
     """Advisor text for a decision that carries a model's reply: what it saw and decided."""
     if not behavior.get("reason"):
@@ -409,6 +428,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, expect) 
                 if mode.get(key) != wanted:
                     raise ProtocolError(f"setup: the battle's {key} is {mode.get(key)!r},"
                                         f" the scenario wants {wanted!r}")
+        track_objectives(result, observation)
         ack = observation.get("orders")
         if outstanding and ack and ack.get("request") == outstanding["request"]:
             latency = {
@@ -418,6 +438,10 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, expect) 
             }
             result["invalid"] += sum(1 for item in ack.get("results", []) if not item.get("ok"))
             result["delays_ms"].append(latency["delay_ms"])
+            for item in ack.get("results", []):
+                kind = outstanding["orders"][item["index"] - 1]["type"] if item.get("index") else ""
+                if item.get("ok") and kind in ("build", "reinforce") and "objectives" in result:
+                    result["objectives"][kind] = result["objectives"].get(kind, 0) + 1
             result["think_s"].append(latency["think_s"])
             if outstanding["logged"]:
                 event("ack", request=ack["request"], ack=ack, latency=latency)
@@ -462,6 +486,6 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, expect) 
             event("decision", seq=observation["seq"], time_ms=observation["time_ms"],
                   request=request, orders=orders, behavior=behavior)
             logged_ms, logged_behavior = observation["time_ms"], behavior
-        outstanding = {"request": request, "observed_ms": observation["time_ms"],
+        outstanding = {"request": request, "observed_ms": observation["time_ms"], "orders": orders,
                        "read": read_at, "sent": time.monotonic(), "logged": bool(logged)}
         result["decisions"] += 1
