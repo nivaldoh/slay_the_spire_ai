@@ -1,165 +1,99 @@
 # Project state
 
-Updated 2026-10-13. Read this first: what is running, what is current, what comes next.
-History lives with each track ([full runs](spire/fullrun/log.md),
-[first combat](spire/first-combat/README.md)), not here.
+Updated 2026-10-13 22:00 UTC-3 (2026-10-14 01:00 UTC): what is running, where each game
+stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
+[Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
-## Active work (last verified 2026-10-14 00:45 UTC)
+## Active work
 
-Nothing is running: no game, controller or job.
+WH3 benchmark probe, run by another Claude session from a detached worktree at `f2c8463`:
+it holds the game and `C:/wh3-agent` from about 2026-10-14 01:10 UTC for about an hour,
+one `llm` and one `commander` episode, into `runs/twwarhammer3/benchmark-probe-20261014/`.
+Start no WH3 job and leave `Warhammer3.exe` alone until it ends. Nothing else is running.
 
-WH3 controllers (owner request, 2026-10-13): the direct `llm` controller, `skills`
-(persistent per-unit skills run by a scripted executor) and `commander` (an API model
-setting those skills asynchronously). Designs and how to compare them are in
-[twwarhammer3/controllers.md](twwarhammer3/controllers.md); versions and results in the
-[WH3 log](twwarhammer3/log.md).
+When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
+command; clear it when the job stops.
 
-Engineering steps finished this session (2026-10-13 evening to 2026-10-14):
-1. Shooter re-send loop fixed (`55ab6b3`). In the Skaven validation battle no shooter
-   repeated an order more than 3 times in a row.
-2. Controller comparison:
-   - `kho5-dwf5`: `skills` 5/6 and the Luna `commander` 5/6 (`llm` v13 1/1, stopped).
-     The small fixed battle does not separate them.
-   - Random draws, the same seeds for every controller: all 9 battles over 3 seeds
-     lost, then paused at the owner's word ("compare models later"). The remaining
-     seeds are in the log.
-3. Ability readiness, magic costs, uses and army abilities, read through the UI
-   context system (`9bfee82`, `739ce9c`). Verified in the engine: unit casts and their
-   readiness changes, and Khorne's Horn cast through
-   `battle_army:use_special_ability` with its active and recharge timers.
-4. Live view of model inputs and outputs:
-   - `python -m twwarhammer3 watch` beside the game, verified live;
-   - `play --show`, which puts each model reply in the game's advisor window (verified
-     in battle).
+## Total War: WARHAMMER III battles
+
+[README](twwarhammer3/README.md) (track page, full [Next](twwarhammer3/README.md#next)),
+[controllers](twwarhammer3/controllers.md), [integration](twwarhammer3/integration.md),
+[log](twwarhammer3/log.md). `main` runs `llm` v14 (v10 tactics) and `commander` v2, both
+with ability readiness and army abilities, and the `skills` executor v1.2. Latest: all 9
+battles on 3 paired random draws at very hard were lost. API spend: $2.44 of the $25 cap
+(`uv run python -m twwarhammer3 spend`, 2026-10-13). Open owner decision: the AI stats
+modifier is 1.1, which favours the enemy; whether to play at 1.0.
 
 Next (owner to choose; the owner will discuss the next features):
-1. Other battle types (owner direction, 2026-10-13 late), at AI difficulty very hard,
-   the top setting. A research plan ranked by effort is in
-   [twwarhammer3/README.md](twwarhammer3/README.md#other-battle-types-owner-request-2026-10-13).
+1. Other battle types at AI difficulty very hard, the top setting
+   ([plan ranked by effort](twwarhammer3/README.md#other-battle-types-owner-request-2026-10-13)).
    Conquest or domination first, after a frontend probe of each type's maps and roles.
-2. Resume the random-draw model comparison later (three seeds left), then Sol and Astra
-   as commander on the same draws.
-5. Eventually we could turn this game into some kind of serious LLM benchmark? For now I'm just registering this here. Could try to create certain challenge scenario battles where the opponent side is stronger, and see how well different models perform and whether they discover certain key insights required to win these battles. Eventually these challenge scenarios could even be AI-generated themselves.
+2. Resume the random-draw model comparison later (three seeds left, in the
+   [log](twwarhammer3/log.md)), then Sol and Astra as commander on the same draws.
+3. Eventually we could turn this game into some kind of serious LLM benchmark? For now I'm just registering this here. Could try to create certain challenge scenario battles where the opponent side is stronger, and see how well different models perform and whether they discover certain key insights required to win these battles. Eventually these challenge scenarios could even be AI-generated themselves.
 
-WH3 interface work completed: no extra wait by default; explicit attack modes, queued
-moves/attacks, formation width, supported behavior toggles and self/unit/ground abilities.
-The model also sees the added controls' state and its Winds of Magic. Code `6db8111`,
-71 WH3 tests and Ruff pass. Original-engine probes plus a short Luna run are in
-`runs/twwarhammer3/capability-probes/`; every following LLM decision had 0 ms extra
-battle-time gap. Spell cooldowns remain unknown and are labelled that way. All probes
-are stopped; no game/controller is running. See the WH3 track log's v13 entry.
+## Slay the Spire
 
-WH3 mirror battles (owner away 11:25-16:25 UTC): `gpt-6-luna` against the game AI with
-the same army on both sides (Khorne, Dwarf, Empire), and prompt versions v8-v11 chosen
-by the review workflow. Last job: `runs/twwarhammer3/battle/llm-luna-v10-kho-pinned-20261013` (stopped at the
-owner's return). That experiment and the subsequent capability probes are stopped.
-The Spire v10 job (`runs/fullrun/llm-luna-v10-dev-20261013`) died on floor 10 when WSL
-restarted at 04:36 UTC; Spire autoresearch is idle (v10 untested).
-
-## Second game: Total War: WARHAMMER III (started 2026-10-13)
-
-[twwarhammer3/README.md](twwarhammer3/README.md) is the track page, status, findings and
-next steps; [twwarhammer3/integration.md](twwarhammer3/integration.md) the verified engine
-facts; [twwarhammer3/log.md](twwarhammer3/log.md) the versions. A job launches the game,
-sets up the `--scenario` battle from `configs/twwarhammer3/scenarios.json` (race picked in
-the selector's popup, units recruited by double-click), plays episodes in real time and
-restarts through the rematch button, with no desktop input. On Khorne vs Dwarfs
-`attack_nearest` wins 3 of 3 and v6 won 5 of 6. In mirror battles Luna has not won with
-guns on both sides (Empire 0 of 11+, Dwarfs 0 of 11) and won 3 of 18 Khorne mirrors (2 of 6 for v6, none for v10); the
-AI's stats modifier preference is 1.1. `main` now runs the v13 controller with v10
-tactical rules (v11 and v12 tactics reverted). Until `61c5f7f` the
-game picked each side's faction within the race, so earlier mirror results mix factions. API spend about $0.7 of its own $25 ledger.
-
-Next: evaluate the v13 interface with pinned factions (earlier runs had a 5 s extra wait),
-then the fire-report candidate (branch `wh3-fire-report`) and
-an owner decision on the AI stats modifier for mirrors. Branch `wh3-v4-info` holds an
-older unmerged state candidate.
-
-## Current track: full runs with an API model
-
-[fullrun/README.md](spire/fullrun/README.md) is the reference and loop;
-[fullrun/log.md](spire/fullrun/log.md) is the version history.
-
-The first overnight autoresearch session (2026-10-12, 02:28–11:04 local, UTC-3) played
-scaffolding v2–v7 on `RUNDEV1`–`RUNDEV3` (v7 on `RUNDEV2` only). Best floors per seed:
-29, 50 and 42 (v1.1 baseline: 16, 33, 16). No run has won yet. API spend: $1.68 of the
-$25 cap (`uv run python -m spire spend`).
-
-A second session (2026-10-12, 15:40–20:16 local) replayed v7 on all three seeds (floors
-16, 33 and 16, against 29, 50 and 42 for the same prompts' earlier runs: run-to-run
-variance is that large), played v8, skipped-reward memory (50, 54 and 16; RUNDEV2 reached
-Act 4, the furthest yet, and the reopen loop nearly stopped), and started v9, card keywords
-(RUNDEV1 29; RUNDEV2 stopped on floor 38 when an accidental Escape press opened the game's
-settings screen; RUNDEV3 not played). API spend: $2.49 of the $25 cap.
+Full runs with an API model ([README](spire/fullrun/README.md): reference and loop;
+[log](spire/fullrun/log.md): versions), idle since 2026-10-13; v10 is on `main`, untested.
+No run has won; the furthest reached Act 4 (v8, floor 54); `uv run python -m spire stats`
+gives acts, wins and floors per version. API spend: $2.52 of the $25 cap
+(`uv run python -m spire spend`, 2026-10-13). Open owner decisions:
+[fullrun/README.md](spire/fullrun/README.md#open-owner-decisions). Paused: the first-combat
+track ([README](spire/first-combat/README.md)). Planned: a remotely trained open-weight
+model ([README](spire/open-weight/README.md); only a skeleton in `src/spire/openweight/`).
 
 Next steps:
-
-1. Replay v9 on all three seeds; it is untested on Ethereal cards so far.
-2. v10, hand-select purpose, is commit `cb4c90d` on local branch `v10-hand-select`, rebased
-   onto `main`: a line naming the card, potion or Gambling Chip behind each hand selection.
-   Replaying the saved traces, it adds that line to all 385 hand-select prompts (226 Gambling
-   Chip, 112 cards, 47 potions) and changes no other prompt.
-3. Keys memory (drafted as v11 on branch `v11-keys`, unmerged): CommunicationMod 1.2.1 never sends `keys`, so the model cannot see the
-   keys it holds; v9 RUNDEV1 died on an elite path taken for a key it had
-   ([integration.md](spire/integration.md), [candidates](spire/fullrun/README.md#candidate-changes)).
-4. A results table across versions (owner request): the register is built.
-   `spire play` appends each run to the committed `docs/spire/fullrun/results.csv` (backfilled
-   for v1–v9), and `spire stats` prints acts reached, wins and floors per version. Still
-   to add: SpireBench's other measures, before more versions are compared
-   ([fullrun/README.md](spire/fullrun/README.md#ideas-from-related-work-2026-10-12)). SpireBench
-   released no code; its metric definitions and fixed held-out seeds carry over.
-5. Optional runner fix: close the settings screen (opened by an Escape press on the game
-   window) with a logged key press instead of stopping the run.
-6. An open StS1 full-run benchmark, built from this harness: owner interest, scoped in the
+1. Replay v10 (`54a5967`, hand-select purpose) on `RUNDEV1`–`RUNDEV3`: its only job died
+   on floor 10 at a WSL restart, so it and its settings-screen `key cancel` are untested.
+2. Keys memory (drafted as v11 on branch `v11-keys`, unmerged): CommunicationMod 1.2.1
+   never sends `keys`, so the model cannot see the keys it holds; v9 RUNDEV1 died on an
+   elite path taken for a key it had ([integration.md](spire/integration.md),
+   [candidates](spire/fullrun/README.md#candidate-changes)).
+3. The rest of the results register ([results.csv](spire/fullrun/results.csv)): SpireBench's
+   other measures, before more versions are compared. SpireBench released no code; its
+   metric definitions and fixed held-out seeds carry over
+   ([ideas](spire/fullrun/README.md#ideas-from-related-work-2026-10-12)).
+4. An open StS1 full-run benchmark built from this harness: owner interest, scoped in the
    [approaches.md addendum](spire/approaches.md#addendum-2026-10-12-evening-an-open-sts1-benchmark).
-   Its first step is the same results table as item 4.
-
-Open owner decisions: [fullrun/README.md](spire/fullrun/README.md#open-owner-decisions).
 
 ## Owner direction
 
-- 2026-10-13: WH3 battles always run unpaused at 1x, including diagnostic probes; no
-  pausing or slowing the simulation while the policy thinks.
-- 2026-10-13: a WH3 battle track driven by the same API model; real-time with the order
-  delay measured; control through an in-game mod, not screenshots or desktop input;
-  paused after the first probes for a review of how to proceed.
-- 2026-10-12: interest in turning this harness into an open-source StS1 benchmark, since
-  SpireBench's code is not public (checked 2026-10-12); see the approaches.md addendum.
-- 2026-10-12: run a frontier API model through complete runs, with scaffolding found by
-  autoresearch from observed mistakes. `gpt-6-luna` at low reasoning effort, a hard $25 API
-  cap for the first overnight work, and lean code.
-- 2026-10-12: later, test a remotely trained open-weight model (Qwen3.6-35B-A3B, then
-  GLM-5.3, with RL on Tinker). The plan is in [open-weight/README.md](spire/open-weight/README.md);
-  only a code skeleton exists, in `src/spire/openweight/`.
-- 2026-10-11: PPO paused in favor of language-model post-training, which in turn paused
-  with the move to full runs. Results and open threads:
-  [first-combat/README.md](spire/first-combat/README.md).
+WH3:
+- 2026-10-13: an API model plays real-time battles, with the order delay measured; control
+  through an in-game mod, never screenshots or desktop input; a hard $25 cap on its own
+  ledger, `runs/twwarhammer3/llm-spend.jsonl`. Battles always run unpaused at 1x.
+- 2026-10-13 (evening): an asynchronous `commander` over scripted `skills`, beside the
+  direct `llm`; the other designs wait in [controllers.md](twwarhammer3/controllers.md).
+- 2026-10-13 (late): evaluate on paired random draws (`--scenario random`, the same seeds
+  for every controller, races drawn, armies autogenerated) at AI difficulty very hard;
+  fixed scenarios only for quick diagnostics. Other battle types next.
 
-## Housekeeping
-
-2026-10-12 (late): game-neutral code moved to `src/gameai/` (OpenAI calls and spend,
-ledgers, scoped provenance) so other games can reuse it, and the full-run loop and engine
-were simplified. Replaying all 30 saved full-run traces gave byte-identical prompts,
-request bodies and ledger charges; a 40-action smoke run passed (API spend now $2.50).
-`docs/agent-guide.md` was removed (in Git history).
-
-The repository was reorganized on 2026-10-12 into per-track packages, test directories,
-docs and run folders; [AGENTS.md](../AGENTS.md) has the map. Evidence from 2026-10-11 moved
-to `runs/first-combat/`, and the records inside keep their old absolute paths
-([how to re-audit](spire/first-combat/README.md#evidence-and-tools)).
-
-Pending owner cleanup: 49 local branches whose commits are all in `main`. Keep
-`integration/heldout-clip-continuation`, which holds unmerged first-combat work, and
-`v11-keys` (`cd97667`, "Remember the keys taken and show them in the state header"), the
-Spire session's unmerged v11 draft. The stale `git worktree` records for deleted `/tmp`
-checkouts were pruned on 2026-10-13 (`git worktree prune`; no branch was touched).
+Slay the Spire:
+- 2026-10-12: complete runs by a frontier API model (`gpt-6-luna`, low effort), scaffolding
+  found by autoresearch from observed mistakes; a hard $25 cap on `runs/llm-spend.jsonl`.
+- 2026-10-12: interest in an open StS1 benchmark, since SpireBench's code is not public.
+  Later, a remotely trained open-weight model (Qwen3.6-35B-A3B, then GLM-5.3, RL on Tinker).
+- 2026-10-11: PPO paused for language-model post-training, itself paused for full runs.
 
 ## Runtime and ownership
 
-Host, engine, mod and process facts: [integration.md](spire/integration.md#runtime-and-source-pins).
+- Slay the Spire ([runtime facts](spire/integration.md#runtime-and-source-pins)): the owner
+  authorizes the installed Steam game and personal profile slot 0, including changes to
+  stats, unlock progress, run history and achievements (Ironclad unlock level was 3 of 5
+  on 2026-10-11; runs record profile evidence).
+- WH3: [engine facts](twwarhammer3/integration.md). A launch builds the mod into
+  `C:/wh3-agent/mods`, writes `twwarhammer3_mods.txt` into the game folder, installs the
+  startup-video skip pack `data/zzz_twwarhammer3_skip_intro.pack` and sets
+  `fe_game_intro_video_enabled false`; both persist for ordinary Steam launches
+  ([how to reverse](twwarhammer3/README.md#commands)).
+- Also authorized: game windows, local GPU work, commits and pushes to public `main`, and
+  paid OpenAI API use within each ledger's cap. One game controller at a time across both
+  games (each game's lock and process check cover only that game); one GPU job at a time.
 
-The owner authorizes the installed Steam game and personal profile slot 0, including
-changes to stats, unlock progress, run history and achievements (Ironclad unlock level was
-3 of 5 on 2026-10-11; runs record profile evidence). Also authorized: game windows, local
-GPU work, commits and pushes to public `main`, and paid OpenAI API use within the declared
-cap. One game runner and one GPU training job at a time.
+## Unmerged branches
+
+- `integration/heldout-clip-continuation` (`940d698`): first-combat work, on `01f2984`.
+- `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
+- `wh3-fire-report` (`832b233`): WH3 fire-report candidate, on v9 (`d928965`); untested.
+- `wh3-v4-info` (`aa1ece5`): WH3 orientation and losses candidate, on v3 (`c34c246`).
