@@ -1,5 +1,27 @@
 # WH3 battle versions
 
+## Benchmark harness b8 (2026-10-14, isolated caster-control draft)
+
+Draft `6b30737` adds the five-versus-ten caster attacker family, retaining the defender
+roster and spellbook; only role changes. Its 1.0/1.1 settings and untouched held-out map
+pass declaration/setup-generation checks. The recipe now requires checking objective
+incentives and the opponent's actual pressure alongside specialist unit capabilities.
+
+The b7 caster pilot then exposed missing public morale feedback and flight control.
+Read-only UI queries at 793.3/836.2 s reported the warning that the flyers must attack
+by land. The corrected boolean query showed both could toggle flight with no cooldown.
+At 1070.9 s Kairos's largest effect was Army losses and the fraction was -2.506. No
+query changed tactics or speed. Evidence: `capability-probes/benchmark-flight-toggle/`.
+
+Draft `a0a7108` exposes friendly leadership fraction and its largest current effect,
+plus flight-change availability/cooldown. Both model controllers accept `flight` requests
+for landing or take-off; Lua checks live state and availability before the normal UI
+command. The requested state prevents reversing an already completed change. These
+additions declare `obs-v3+terrain/act-v2/live-1x`; b7 stays on its frozen old contract.
+All 215 WH3 tests pass with Lua, Ruff and Lua 5.1 compilation pass; 72 benchmark/play
+tests pass after the track-label change. A separate real-game landing/repeated-landing/
+take-off probe is still required. The draft remains isolated during the b7 queue.
+
 ## Benchmark harness b7 (2026-10-14, snapshot age and cavalry attacker candidate)
 
 Commits `88de61a` and `2e643fe`, merged as `79d2f7d`, add actual snapshot age separately
@@ -16,6 +38,33 @@ must defeat eight Empire units before the 1200 s timer. Funds stay capped at 800
 Declaration and setup-generation checks pass. This is a new tactical task, pending live
 setup and viability checks; no results are pooled with the defender variants.
 After the merge, all 72 benchmark/play tests and Ruff pass.
+
+The Sol low-effort caster pilot on `82f5626` lost at 1077 s: 281 decisions, five
+refusals, active margin -0.680, clock ratio 0.9956, 282 calls and $1.78329. Whole-job
+wall time 1223.91 s gives 2.94 valid trials/hour. The model struck the artillery with
+spells, then withdrew and hid its escorts, planning a defender timeout win. After
+contact around 650 s the escorts were lost; the surviving flyers kept evading. The
+read-only queries above revealed missing morale feedback, followed later by Army losses.
+This is an engine loss, not a timer ending. Report: `reports/bench-b7-caster-sol.json`.
+
+Ground Pendulum was verified: accepted at 64.6 s, magic spent and cooldown visible
+at 70.9 s; the immediate acknowledgement snapshot still showed pre-cast resources and
+readiness. Exact damage attribution is not claimed. The b4 refused ground casts also
+had insufficient magic by acknowledgement after preceding casts took effect (11<16,
+9<12), despite sufficient resources in their basis snapshots. Evidence:
+`reports/bench-b7-caster-ground-acceptance.json` and
+`reports/bench-b4-ground-refusal-resources.json`.
+The cavalry assault pilot follows on the same source, starting at 19:23:44 UTC.
+
+The cavalry assault won at 432 s: 91 decisions, one refusal, active margin +0.433,
+mean action age 5.862 s, clock ratio 0.9934, 92 calls/$0.62009. Both handguns and the
+cannon routed first; Sol then concentrated on the general while the remaining cavalry
+fought the halberdiers. This establishes a viable strategy, not admission from one
+instance. Whole-job time 580.28 s gives 6.20 valid trials/hour. Report:
+`reports/bench-b7-assault-sol.json`. Queue/controller exited at 19:33:24 UTC.
+Both b7 results are in the register. Ledger $6.2895 of $25; next screen Luna's
+competence on this same compact task before freezing a repeated reference, because
+30 repetitions at the observed Sol cost would leave almost no budget margin.
 
 ## Benchmark harness b6 (2026-10-14, Pegasus pressure hypothesis)
 

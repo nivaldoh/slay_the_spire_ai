@@ -1,63 +1,51 @@
 # Project state
 
-Updated 2026-10-14 19:01 UTC: what is running, where each game
+Updated 2026-10-14 19:35 UTC: what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-WH3 benchmark work is active (owner goal, 2026-10-14): complete the paired benchmark,
-difficulty/latency calibration, and the interface fixes its scenarios require. Prioritize
-specialist anchor units, faction mechanics and compact armies; see the
+WH3 benchmark work is active (owner goal, 2026-10-14): finish the paired benchmark,
+difficulty/latency calibration and required interface fixes. Prioritize specialist
+anchor units, faction mechanics and compact armies; see the
 [scenario recipe](twwarhammer3/scenario-recipe.md). No scenario is admitted and no G1/G2
-trials have run. The unstarted generic Herald G1 draft remains superseded.
+trials have run. The generic Herald G1 draft remains superseded; held-out maps are untouched.
 
-The b4 screen on `e221324` stopped at 2026-10-14 18:24:45
-UTC after a deliberate exploratory interruption; its runner and game controller exited.
-Caster five versus ten: Luna lost 963 s, hold 613 s, attack-nearest 301 s. All recorded
-starts matched. Cavalry six versus eight: hold lost 415 s, attack-nearest 262 s. Luna
-immediately chose evasion for a timeout win and kept the whole army untouched; that
-trial was deliberately interrupted at about 292 s to revise pressure/watchability.
-Its outcome remains unknown, not a loss or a win. The attack-nearest start was flagged
-for 4.826 m missile-cavalry displacement and a 12-degree enemy-lord turn; resources and
-rosters matched. Review formation variation before the G1 plan, without discarding
-flagged trials or claiming identical starts. Reports are in `runs/twwarhammer3/reports/`.
+The b7 queue on `82f5626` completed at 19:33:24 UTC; its runner and game controller
+exited. No controller is active. Two Sol low-effort `llm_rules` pilots:
+- Caster five versus ten: engine loss at 1077 s, five refusals, active margin -0.680,
+  $1.78329. Ground Pendulum consumed magic and entered cooldown after issuance.
+- Cavalry attacker six versus eight: engine win at 432 s, one refusal, active margin
+  +0.433, $0.62009. Sol broke both handguns and the cannon, then the general/halberdiers.
+  This demonstrates a viable strategy, not repeated calibration or admission.
+Reports: `runs/twwarhammer3/reports/bench-b7-{caster,assault}-sol.json`.
 
-b5 `3218360` was merged as `b07b57b`; it fixes flying-unit classification, exposes
-airborne state and preserves engine winners in timer-ended reports. Validation: all
-207 WH3 tests with Lua for flight changes, then 25 targeted tests for reporting (one new
-regression), Ruff and Lua compilation. The b4 evidence/register is committed as `570597e`.
-The frontend-only Empire mount inventory completed and the owned launch exited.
-Evidence: `runs/twwarhammer3/capability-probes/benchmark-pressure-mounts/`. The Pegasus
-mount is speed 105, cost 1800; Griffon speed 90, cost 2050. b6 selects Pegasus for the
-new six-versus-eight cavalry variant and exposes visible enemies' movement speeds.
-All 209 WH3 tests with Lua, Ruff and Lua compilation passed. The first Sol pilot launch
-on `1bd120b` stalled at menu step 3 and reached its startup deadline: infrastructure
-failure, 903.87 s, no episodes or model calls. The runner/controller exited at 18:50:58
-UTC, and doctor then reported ready. Saved evidence:
-`runs/twwarhammer3/capability-probes/benchmark-startup-hang/` and
-`runs/twwarhammer3/reports/bench-b6-startup-failure.json`.
+The caster exposed missing public morale feedback and flight control. Read-only UI
+queries showed the flyers' warning to attack by land at 793.3/836.2 s; at 1070.9 s
+Kairos's largest effect was Army losses. Both flyers could toggle flight at 836.2 s.
+No probe changed tactics. Evidence: `capability-probes/benchmark-flight-toggle/` and
+`reports/bench-b7-caster-ground-acceptance.json` under WH3 runs.
 
-The retry recovered without profile changes and verified the mounted battle roster,
-Pegasus flight and visible speed fields. Sol nevertheless chose defender timeout evasion.
-At 385.6 s all six cavalry units remained active with at least 93% health and the
-Pegasus was 367.7 m from the nearest unit. Following the recorded development review
-rule, the pilot was deliberately interrupted; it has no gameplay outcome. 80 decisions,
-nine unreachable-move refusals, $0.46713. Queue/controller exited at 19:00:11 UTC;
-the caster pilot was not started. Evidence: `calibration/b6-pegasus-retirement.json`,
-`reports/bench-b6-pegasus-development.json` and `reports/bench-b6-flight-speed-acceptance.json`
-under WH3 runs. No controller is active.
+Isolated b8 `a0a7108` in `/tmp/wh3-benchmark-b8` adds friendly leadership fraction/effect,
+flight availability/cooldown and explicit landing/take-off requests for both model
+controllers. Contract: `obs-v3+terrain/act-v2/live-1x`. It also adds a five-versus-ten
+caster attacker family, retaining the roster/funds. All 215 WH3 tests with Lua, Ruff
+and Lua 5.1 compilation pass; 72 benchmark/play tests pass after the track-label change.
+Next: merge b8, run a separate flight-transition diagnostic, then screen Luna with
+hold/attack-nearest on the cavalry attacker at 1.0/1.1 before freezing the reference.
+WH3 spend is $6.2895 of $25. Sol's $0.62 pilot leaves too little margin for 30 repeated
+reference trials; check the cheaper controller's competence first. No budget reset.
+The diagnostic module is `/tmp/wh3-benchmark-controllers/flight_probe.py`; it uses only
+public observations/orders, verifies landing, repeated landing and take-off, then
+finishes with AttackNearest. Its transitions are not yet engine-tested.
 
-b7 `2e643fe`, merged as `79d2f7d`, adds actual snapshot-age reporting and
-paired sensitivity excluding launches with flagged starts (`88de61a`), plus separate
-six-versus-eight cavalry attacker variants retaining the original foot-general roster.
-72 benchmark/play tests, Ruff, declaration checks and b4 trace recomputation pass.
-Next screen Sol on the caster and the new attacker task. Successful unit-ground spell
-use still needs verification. The calibration plan explicitly retains geometry flags,
-with a secondary sensitivity analysis; the requested 0/6/10 s age is a minimum and
-actual delivered age must be reported. No G1/G2 or held-out trials have run.
-Freeze revised candidates and a competent reference before calibration.
-Implementation and evidence: [benchmark-progress.md](twwarhammer3/benchmark-progress.md).
+Starting-formation geometry flags stay in primary comparisons, with a secondary
+comparison excluding flagged launches; changed rosters/resources still require review.
+Requested 0/6/10 s snapshot ages are minima; actual age at decision and issuance is
+reported. Freeze the candidate/reference before G1/G2. Earlier screens, the recovered
+b6 startup hang, and deliberately retired defender-evasion pilots remain in the
+[log](twwarhammer3/log.md) and [progress page](twwarhammer3/benchmark-progress.md).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -68,8 +56,8 @@ command; clear it when the job stops.
 [battle types](twwarhammer3/battle-types.md), [controllers](twwarhammer3/controllers.md),
 [integration](twwarhammer3/integration.md), [log](twwarhammer3/log.md). `main` runs
 `llm` v15 and `commander` v3 (every battle type's objectives, `build` and `reinforce`
-orders) and the `skills` executor v1.2. API spend: $3.8861 of the $25 cap
-(ledger after the b6 specialist pilot).
+orders) and the `skills` executor v1.2. API spend: $6.2895 of the $25 cap
+(after the b7 specialist pilots).
 The owner has authorized benchmark calibration, including AI modifiers 1.0 and 1.1.
 Both lobby and battle read-backs passed. Fresh 5.2 s startup snapshots show all 12 AI
 unit entries changing at 1.1 (roughly +10% attack/defence/damage/charge, +8 leadership),
@@ -167,6 +155,8 @@ Slay the Spire:
 
 ## Unmerged branches
 
+- `wh3-benchmark-b8` (`a0a7108`): compact caster attacker candidates, morale feedback and
+  flight-state requests; isolated while b7 runs, landing/take-off still need an engine test.
 - `integration/heldout-clip-continuation` (`940d698`): first-combat work, on `01f2984`.
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-fire-report` (`832b233`): WH3 fire-report candidate, on v9 (`d928965`); untested.

@@ -286,6 +286,43 @@ battles with scripted interventions, not policy win-rate evaluations.
   Pool expenditure proves acceptance beyond the API call, not final damage or a
   completed effect on every target. Damage attribution remains unmeasured.
 
+## Specialist unit state (verified 2026-10-14)
+
+The compact Tzeentch pilot found that Screamers have engine category `inf_mel` while
+`can_fly()` and `is_currently_flying()` are true. Classification now gives flying
+non-commanders the `flying` class; lords retain their role. Flight capability and
+airborne state are separate observation fields. The b7 caster start verified Screamers
+rendered as flying/airborne, with movement speeds 8.5/8.5 m/s. The b6 cavalry start
+verified the horse-mounted player lord and the Imperial Pegasus general, airborne at
+10.5/10.5 m/s. Visible enemies now receive the same walk/run capability queries as
+friendlies. These are capabilities, not measured current velocities or proof of pursuit.
+Evidence: `reports/bench-b6-flight-speed-acceptance.json` under WH3 runs.
+
+Kairos's ground Pendulum order was accepted at 64.6 s in
+`bench-b7-caster-sol-20261014`. That immediate snapshot still showed 21 magic and the
+spell ready. At 70.9 s, the pool was 10 (12 spent with intervening regeneration) and
+the spell had 39.8 s of cooldown remaining. This verifies resource use and cooldown
+after issuance; it does not isolate damage. Artifact:
+`reports/bench-b7-caster-ground-acceptance.json`.
+
+The two earlier refused Pendulum orders in the b4 caster pilot illustrate the same
+timing issue. At issuance feedback, magic was already below the requested spell cost:
+11 versus 16, and 9 versus 12, after earlier accepted spells took effect. Their decision
+snapshots had shown enough magic. The generic engine error, "does not support this
+special ability", therefore did not establish an unsupported spell. Record issued
+orders and inspect later resources/readiness before interpreting that error. Timelines:
+`reports/bench-b4-ground-refusal-resources.json`.
+
+After the b7 caster's ground escorts died, read-only queries at 793.3/836.2 s returned
+the flyers' `MoraleGreatestEffect`: "The enemy is in control of the battlefield - you
+must attack by land!" At 836.2 s `CanToggleFlying=true`, `ToggleFlyingCooldownTimer=0`
+and `IsOrderable=true` for both Kairos and Screamers. By 1070.9 s Kairos's largest
+effect was "Army losses", with `MoralePercent=-2.506`. Thus the UI's fraction can be
+negative. These explanations were absent from the model's observation. The UI API
+documents `CcoBattleUnit.ToggleFlying` as a normal player command, but these queries
+did not invoke it. Draft b8 exposes friendly morale and requests flight state; actual
+landing/take-off remains to be probed. Evidence: `capability-probes/benchmark-flight-toggle/`.
+
 ## Battle types (probed 2026-10-14)
 
 Evidence: `runs/twwarhammer3/probe-battle-types-20261014/` (lobby dumps and read-backs of

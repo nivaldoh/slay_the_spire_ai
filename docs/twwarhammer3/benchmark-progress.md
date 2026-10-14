@@ -57,9 +57,30 @@ and enemy flight/speed fields, but Sol chose defender timeout evasion. The pilot
 deliberately retired at 385.6 s, with all six cavalry units active at at least 93% health
 and the Pegasus 367.7 m away. It has no gameplay outcome. 80 decisions, nine unreachable
 moves, $0.46713. The queue/controller exited at 19:00:11 UTC before the caster job.
-No controller is active. b7 is merged as `79d2f7d`; 72 benchmark/play tests and Ruff
-pass. Next: screen the caster plus a separate attacker
-variant retaining the original six-versus-eight foot-general roster. No G1/G2 yet.
+b7 is merged as `79d2f7d`; 72 benchmark/play tests and Ruff pass. A new two-job queue
+started at 19:03:20 UTC on `82f5626`: Sol on the caster, then the separate attacker
+variant retaining the original six-versus-eight foot-general roster. Queue state:
+`runs/twwarhammer3/calibration/b7-specialist-sol-plan-state.json`. No G1/G2 yet.
+During the caster pilot, a ground Pendulum cast was accepted at 64.6 s; at 70.9 s
+magic had been spent and its cooldown had started. The immediate acknowledgement
+snapshot still showed the earlier resources/readiness. This verifies unit-ground
+casting, without claiming exact damage attribution or a gameplay outcome. Screamers
+also render as flying and airborne. Evidence:
+`runs/twwarhammer3/reports/bench-b7-caster-ground-acceptance.json`.
+The caster subsequently lost at 1077 s, five refusals and $1.78329; active margin
+-0.680. It exposed a missing public morale explanation and landing control: at
+793.3/836.2 s the flyers' UI warned that they must attack by land, while the model
+kept planning an airborne timeout win. At 1070.9 s the largest effect was Army losses.
+Read-only queries verified both flyers could toggle flight; no tactical commands were
+sent by the probe. b8 `a0a7108` adds that feedback and explicit flight-state requests
+in an isolated worktree, with 215 WH3 tests, Ruff and Lua compilation passing. The
+control still needs a separate live transition test. Cavalry assault then won at 432 s,
+one refusal, active margin +0.433, $0.62009; guns/artillery broke before the general and
+halberdiers. The b7 queue/controller exited at 19:33:24 UTC. No controller is active.
+Next merge b8, verify flight transitions, and screen Luna with the two trivial controls
+on cavalry attacker 1.0/1.1 before freezing a reference. Spend is $6.2895 of $25; Sol's
+pilot cost leaves too little margin for the full repeated reference schedule. No
+scenario is admitted.
 The cavalry rematch's 4.826 m/12-degree formation flag remains recorded; the plan now
 declares all valid trials in the primary analysis and a secondary comparison excluding
 flagged launches. All resources/rosters matched in that case. Completed harness

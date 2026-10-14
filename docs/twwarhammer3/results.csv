@@ -175,3 +175,5 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-14,bench-b4-screen-cavalry-20261014,episode-0001,brt-cavalry-emp-pikes,attack_nearest,,,,e221324,realtime,1.0,0.0,lost,262,0.36,0.69,850,1,0.3,0,classic,,,,,0.0,0.690566037735849,0.0,engine_result
 2026-10-14,bench-b4-screen-cavalry-20261014,episode-0002,brt-cavalry-emp-pikes,llm_rules,gpt-6-luna,low,,e221324,realtime,1.0,0.0,interrupted,289,1.0,1.0,51,25,5.57,0.0176,classic,,,,,1.0,1.0,0.0,
 2026-10-14,bench-b6-pegasus-sol-r2-20261014,episode-0000,brt-cavalry-emp-pegasus,llm_rules,gpt-6-sol,low,,1bd120b,realtime,1.0,0.0,interrupted,384,0.98,1.0,80,9,4.74,0.4671,classic,,,,,0.9815668202764977,1.0,0.0,
+2026-10-14,bench-b7-caster-sol-20261014,episode-0000,tze-caster-skv-screen,llm_rules,gpt-6-sol,low,,82f5626,realtime,1.0,0.0,lost,1077,0.0,0.68,281,5,3.83,1.7833,classic,,,,,0.0,0.67982924226254,0.0,engine_result
+2026-10-14,bench-b7-assault-sol-20261014,episode-0000,brt-cavalry-emp-assault,llm_rules,gpt-6-sol,low,,82f5626,realtime,1.0,0.0,won,432,0.53,0.4,91,1,4.72,0.6201,classic,,,,,0.43317972350230416,0.0,0.0,engine_result
