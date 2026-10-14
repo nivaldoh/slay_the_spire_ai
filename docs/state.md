@@ -27,12 +27,12 @@ Kairos's largest effect was Army losses. Both flyers could toggle flight at 836.
 No probe changed tactics. Evidence: `capability-probes/benchmark-flight-toggle/` and
 `reports/bench-b7-caster-ground-acceptance.json` under WH3 runs.
 
-Isolated b8 `a0a7108` in `/tmp/wh3-benchmark-b8` adds friendly leadership fraction/effect,
+b8 `a0a7108`, merged as `6a0fe53`, adds friendly leadership fraction/effect,
 flight availability/cooldown and explicit landing/take-off requests for both model
 controllers. Contract: `obs-v3+terrain/act-v2/live-1x`. It also adds a five-versus-ten
 caster attacker family, retaining the roster/funds. All 215 WH3 tests with Lua, Ruff
 and Lua 5.1 compilation pass; 72 benchmark/play tests pass after the track-label change.
-Next: merge b8, run a separate flight-transition diagnostic, then screen Luna with
+Next: run a separate flight-transition diagnostic, then screen Luna with
 hold/attack-nearest on the cavalry attacker at 1.0/1.1 before freezing the reference.
 WH3 spend is $6.2895 of $25. Sol's $0.62 pilot leaves too little margin for 30 repeated
 reference trials; check the cheaper controller's competence first. No budget reset.
@@ -155,8 +155,6 @@ Slay the Spire:
 
 ## Unmerged branches
 
-- `wh3-benchmark-b8` (`a0a7108`): compact caster attacker candidates, morale feedback and
-  flight-state requests; isolated while b7 runs, landing/take-off still need an engine test.
 - `integration/heldout-clip-continuation` (`940d698`): first-combat work, on `01f2984`.
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-fire-report` (`832b233`): WH3 fire-report candidate, on v9 (`d928965`); untested.

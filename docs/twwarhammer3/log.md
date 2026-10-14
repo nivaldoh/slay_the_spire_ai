@@ -1,6 +1,6 @@
 # WH3 battle versions
 
-## Benchmark harness b8 (2026-10-14, isolated caster-control draft)
+## Benchmark harness b8 (2026-10-14, caster control)
 
 Draft `6b30737` adds the five-versus-ten caster attacker family, retaining the defender
 roster and spellbook; only role changes. Its 1.0/1.1 settings and untouched held-out map
@@ -20,7 +20,8 @@ command. The requested state prevents reversing an already completed change. The
 additions declare `obs-v3+terrain/act-v2/live-1x`; b7 stays on its frozen old contract.
 All 215 WH3 tests pass with Lua, Ruff and Lua 5.1 compilation pass; 72 benchmark/play
 tests pass after the track-label change. A separate real-game landing/repeated-landing/
-take-off probe is still required. The draft remains isolated during the b7 queue.
+take-off probe is still required. Merged as `6a0fe53` after the b7 queue exited;
+merged runtime/configuration files match the tested draft.
 
 ## Benchmark harness b7 (2026-10-14, snapshot age and cavalry attacker candidate)
 

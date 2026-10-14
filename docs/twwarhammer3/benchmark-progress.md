@@ -77,7 +77,7 @@ in an isolated worktree, with 215 WH3 tests, Ruff and Lua compilation passing. T
 control still needs a separate live transition test. Cavalry assault then won at 432 s,
 one refusal, active margin +0.433, $0.62009; guns/artillery broke before the general and
 halberdiers. The b7 queue/controller exited at 19:33:24 UTC. No controller is active.
-Next merge b8, verify flight transitions, and screen Luna with the two trivial controls
+b8 is merged as `6a0fe53`; next verify flight transitions and screen Luna with the two trivial controls
 on cavalry attacker 1.0/1.1 before freezing a reference. Spend is $6.2895 of $25; Sol's
 pilot cost leaves too little margin for the full repeated reference schedule. No
 scenario is admitted.
