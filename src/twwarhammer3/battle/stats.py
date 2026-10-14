@@ -19,7 +19,7 @@ JOBS_ROOT = REPO_ROOT / "runs/twwarhammer3/battle"
 FIELDS = [
     "date", "job", "episode", "scenario", "policy", "model", "effort", "harness", "source",
     "mode", "speed", "interval_s", "outcome", "battle_s", "own_left", "enemy_left",
-    "decisions", "invalid", "delay_s", "usd",
+    "decisions", "invalid", "delay_s", "usd", "battle_type", "victory_held", "supplies_left",
 ]
 MODEL_POLICIES = ("llm", "commander")
 
@@ -62,12 +62,24 @@ def row(job: Path, episode: Path) -> dict:
         "invalid": result.get("invalid", 0),
         "delay_s": round(statistics.mean(delays) / 1000, 2) if delays else "",
         "usd": round((result.get("llm") or {}).get("usd", 0), 4),
+        "battle_type": (manifest.get("scenario") or {}).get("battle_type", "classic"),
+        "victory_held": (result.get("objectives") or {}).get("victory_held", ""),
+        "supplies_left": (result.get("objectives") or {}).get("supplies_left", ""),
     }
 
 
 def record(path: Path, job: Path, episode: Path) -> None:
     new = not path.exists() or path.stat().st_size == 0
     path.parent.mkdir(parents=True, exist_ok=True)
+    if not new:
+        with path.open(newline="") as handle:
+            reader = csv.DictReader(handle)
+            rows = list(reader) if reader.fieldnames != FIELDS else None
+        if rows is not None:  # a register from before newer columns: rewrite its header
+            with path.open("w", newline="") as handle:
+                writer = csv.DictWriter(handle, FIELDS, restval="", lineterminator="\n")
+                writer.writeheader()
+                writer.writerows(rows)
     with path.open("a", newline="") as handle:
         writer = csv.DictWriter(handle, FIELDS, lineterminator="\n")
         if new:

@@ -567,3 +567,15 @@ def test_random_draws_of_battle_types_and_the_old_classic_draws_stay_the_same():
                         "button_autogen_reinforcements"]) == 1
     domination = play.load_scenario({"scenario": "random-domination", "seed": 5})
     assert all("reinforcements" in side for side in play.sides(domination))
+
+
+def test_an_older_register_gets_the_new_columns_before_the_next_row(tmp_path, harness):
+    results = tmp_path / "r.csv"
+    old_fields = stats.FIELDS[:stats.FIELDS.index("battle_type")]
+    results.write_text(",".join(old_fields) + "\n" + ",".join(["x"] * len(old_fields)) + "\n")
+    mailbox = FakeMailbox([observation(0, 0), observation(1, 1000, result="won")])
+    harness.append(mailbox)
+    play.play(tmp_path / "job", {**CONFIG, "results": str(results)}, policy_factory=Hold)
+    rows = list(csv.DictReader(results.open()))
+    assert list(rows[0]) == stats.FIELDS and rows[0]["battle_type"] == ""
+    assert rows[1]["battle_type"] == "classic" and rows[1]["outcome"] == "won"
