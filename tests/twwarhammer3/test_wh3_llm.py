@@ -86,14 +86,25 @@ def test_prompt_shows_units_timing_delay_and_last_seen(tmp_path):
     assert agent.totals["calls"] == 2
 
 
-def test_invalid_orders_are_retried_with_feedback_then_fail(tmp_path):
-    bad = [{"unit": "f9", "type": "halt", "x": None, "z": None, "target": None, "run": False}]
-    agent = policy(tmp_path, reply(bad), reply(bad), reply(bad))
+def test_invalid_orders_are_retried_with_feedback_then_dropped_from_the_last_reply(tmp_path):
+    bad = {"unit": "f9", "type": "halt"}
+    good = {"unit": "f2", "type": "halt"}
+    agent = policy(tmp_path, reply([bad]), reply([bad]), reply([good, bad]), reply([]))
+    assert agent.decide(observation()) == [good]  # the battle goes on without the bad order
+    assert "unknown friendly unit 'f9'" in agent.fake.bodies[1]["input"][0]["content"]
+    assert len(agent.metadata()["attempts"]) == 3
+    assert agent.metadata()["dropped"] == ["f9 halt: unknown friendly unit 'f9'"]
+    agent.decide(observation(time_ms=45000))
+    assert "f2 halt; dropped as still invalid: f9 halt: unknown friendly unit 'f9'" in (
+        agent.metadata()["prompt"])
+
+
+def test_a_reply_that_is_not_json_after_the_retries_is_a_policy_failure(tmp_path):
+    agent = policy(tmp_path, "not json", "not json", "not json")
     with pytest.raises(PolicyFailure) as failure:
         agent.decide(observation())
     assert failure.value.failure["kind"] == "invalid_reply"
     assert len(failure.value.failure["attempts"]) == 3
-    assert "unknown friendly unit 'f9'" in agent.fake.bodies[1]["input"][0]["content"]
 
 
 def test_attack_on_an_unseen_enemy_is_invalid(tmp_path):

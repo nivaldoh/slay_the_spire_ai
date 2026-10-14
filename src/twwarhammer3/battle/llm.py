@@ -420,6 +420,26 @@ def parse_reply(text: str, observation: dict) -> dict:
     return reply
 
 
+def salvage(attempts: list[dict], observation: dict) -> tuple[dict, list[str]] | None:
+    """The last attempt's reply without the orders that are still invalid, so one order
+    the model keeps repeating (a cast on cooldown, say) does not end the battle; None if
+    that reply is not even JSON."""
+    try:
+        reply = json.loads(attempts[-1]["text"])
+        orders = reply["orders"]
+    except (IndexError, KeyError, TypeError, ValueError):
+        return None
+    kept, dropped = [], []
+    for order in orders:
+        try:
+            validate_orders(kept + [order], observation)
+            kept.append(order)
+        except (IllegalActionError, KeyError, TypeError) as error:
+            dropped.append(f"{describe_orders([order]) if isinstance(order, dict) else order}:"
+                           f" {error}")
+    return dict(reply, orders=kept), dropped
+
+
 def describe_orders(orders: list[dict]) -> str:
     if not orders:
         return "no new orders"
@@ -491,15 +511,21 @@ class LLMPolicy:
                 prompt, REPLY_SCHEMA, lambda text: parse_reply(text, observation),
                 INVALID_RETRIES)
         except InvalidReply as error:
-            raise PolicyFailure(str(error), failure={
-                "kind": "invalid_reply", "attempts": error.attempts,
-            }) from None
+            salvaged = salvage(error.attempts, observation)
+            if salvaged is None:
+                raise PolicyFailure(str(error), failure={
+                    "kind": "invalid_reply", "attempts": error.attempts,
+                }) from None
+            reply, metadata["dropped"] = salvaged
+            metadata["attempts"] = error.attempts
         if reply["notes"] is not None:
             self.notes = reply["notes"][:NOTES_LIMIT]
             metadata["notes"] = self.notes
         seconds = observation.get("time_ms", 0) / 1000
         self.sent = [dict(order, time_s=seconds) for order in reply["orders"]]
         summary = describe_orders(reply["orders"])
+        if metadata.get("dropped"):
+            summary += "; dropped as still invalid: " + "; ".join(metadata["dropped"])
         self.history.append(f"{seconds:.0f} s: {summary} ({reply['reason']})")
         metadata["reason"] = reply["reason"]
         return reply["orders"]
