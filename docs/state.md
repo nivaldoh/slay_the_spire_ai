@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-14 18:35 UTC: what is running, where each game
+Updated 2026-10-14 19:01 UTC: what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -31,10 +31,31 @@ The frontend-only Empire mount inventory completed and the owned launch exited.
 Evidence: `runs/twwarhammer3/capability-probes/benchmark-pressure-mounts/`. The Pegasus
 mount is speed 105, cost 1800; Griffon speed 90, cost 2050. b6 selects Pegasus for the
 new six-versus-eight cavalry variant and exposes visible enemies' movement speeds.
-All 209 WH3 tests with Lua, Ruff and Lua compilation passed. Next, two single-battle
-`gpt-6-sol` low-effort `llm_rules` pilots on Pegasus cavalry and the original caster,
-within the existing $25 ledger cap. Neither is a G1/G2 trial. Successful unit-ground
-spell use still needs testing for the caster; the faster enemy's pursuit is a hypothesis.
+All 209 WH3 tests with Lua, Ruff and Lua compilation passed. The first Sol pilot launch
+on `1bd120b` stalled at menu step 3 and reached its startup deadline: infrastructure
+failure, 903.87 s, no episodes or model calls. The runner/controller exited at 18:50:58
+UTC, and doctor then reported ready. Saved evidence:
+`runs/twwarhammer3/capability-probes/benchmark-startup-hang/` and
+`runs/twwarhammer3/reports/bench-b6-startup-failure.json`.
+
+The retry recovered without profile changes and verified the mounted battle roster,
+Pegasus flight and visible speed fields. Sol nevertheless chose defender timeout evasion.
+At 385.6 s all six cavalry units remained active with at least 93% health and the
+Pegasus was 367.7 m from the nearest unit. Following the recorded development review
+rule, the pilot was deliberately interrupted; it has no gameplay outcome. 80 decisions,
+nine unreachable-move refusals, $0.46713. Queue/controller exited at 19:00:11 UTC;
+the caster pilot was not started. Evidence: `calibration/b6-pegasus-retirement.json`,
+`reports/bench-b6-pegasus-development.json` and `reports/bench-b6-flight-speed-acceptance.json`
+under WH3 runs. No controller is active.
+
+Isolated b7 `2e643fe` in `/tmp/wh3-benchmark-b7` adds actual snapshot-age reporting and
+paired sensitivity excluding launches with flagged starts (`88de61a`), plus separate
+six-versus-eight cavalry attacker variants retaining the original foot-general roster.
+27 targeted tests, Ruff, declaration checks and b4 trace recomputation pass. Merge b7,
+then screen Sol on the caster and the new attacker task. Successful unit-ground spell
+use still needs verification. The calibration plan explicitly retains geometry flags,
+with a secondary sensitivity analysis; the requested 0/6/10 s age is a minimum and
+actual delivered age must be reported. No G1/G2 or held-out trials have run.
 Freeze revised candidates and a competent reference before calibration.
 Implementation and evidence: [benchmark-progress.md](twwarhammer3/benchmark-progress.md).
 
@@ -47,8 +68,8 @@ command; clear it when the job stops.
 [battle types](twwarhammer3/battle-types.md), [controllers](twwarhammer3/controllers.md),
 [integration](twwarhammer3/integration.md), [log](twwarhammer3/log.md). `main` runs
 `llm` v15 and `commander` v3 (every battle type's objectives, `build` and `reinforce`
-orders) and the `skills` executor v1.2. API spend: $3.4189 of the $25 cap
-(ledger after the b4 specialist screen).
+orders) and the `skills` executor v1.2. API spend: $3.8861 of the $25 cap
+(ledger after the b6 specialist pilot).
 The owner has authorized benchmark calibration, including AI modifiers 1.0 and 1.1.
 Both lobby and battle read-backs passed. Fresh 5.2 s startup snapshots show all 12 AI
 unit entries changing at 1.1 (roughly +10% attack/defence/damage/charge, +8 leadership),

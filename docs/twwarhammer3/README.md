@@ -183,13 +183,14 @@ mirror. Wins and mean true strength left at the end (ours/enemy), from
 Current work is the owner's benchmark goal; [benchmark-progress.md](benchmark-progress.md)
 tracks the evidence and [calibration-plan.md](calibration-plan.md) specifies the experiments.
 
-1. Finish live acceptance of the terrain, AI-modifier and setup-failure paths. The b1
-   five-controller rotation completed on one instance, with matched rematch starts and
-   engine results for every controller, including an imported controller.
-2. Select specialist challenges using the owner's [scenario recipe](scenario-recipe.md):
+1. Select specialist challenges using the owner's [scenario recipe](scenario-recipe.md):
    anchor units, faction mechanics, difficult tactical choices and watchable battles.
    Screen cavalry/anti-large and caster-led prototypes before committing to repeated
-   calibration at AI modifiers 1.0/1.1. Keep held-out variants out of tuning.
+   calibration at AI modifiers 1.0/1.1. Compact forces are the starting point; keep
+   held-out variants out of tuning.
+2. Freeze a viable candidate and competent reference, review starting-formation
+   variation, then run repeated paired calibration. Terrain, modifier and failed-setup
+   acceptance checks have passed; they do not establish scenario difficulty or admission.
 3. Run paired added-observation-age arms 0/6/10 s, unpaused at 1x, and report uncertainty.
 4. Later resume the random-draw model comparison on seeds 264482191, 1355466036 and
    238913231, then compare larger models on the same declared scenarios. Broader battle

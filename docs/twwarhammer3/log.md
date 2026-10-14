@@ -1,5 +1,21 @@
 # WH3 battle versions
 
+## Benchmark harness b7 (2026-10-14, snapshot age and cavalry attacker candidate)
+
+Isolated commits `88de61a` and `2e643fe` add actual snapshot age at decision separately
+from total order age, and retain start-comparison deltas plus a paired sensitivity
+analysis excluding launches with flagged starts. Primary results keep every valid
+trial. Requested 0/6/10 s ages are minima: synchronous model calls can leave gaps in
+the observation buffer. The runbook and CLI help now state that limit. 27 targeted
+tests and Ruff pass; recomputing the completed b4 traces retains their original primary
+samples and exposes the flagged cavalry launch in the secondary comparison.
+
+`brt-cavalry-emp-assault` adds 1.0/1.1 development settings and an untouched held-out
+map. It reverses the original foot-general candidate's role: the same six cavalry units
+must defeat eight Empire units before the 1200 s timer. Funds stay capped at 8000.
+Declaration and setup-generation checks pass. This is a new tactical task, pending live
+setup and viability checks; no results are pooled with the defender variants.
+
 ## Benchmark harness b6 (2026-10-14, Pegasus pressure hypothesis)
 
 Adds `brt-cavalry-emp-pegasus` with 1.0/1.1 development settings and an untouched
@@ -18,6 +34,30 @@ rules prompt describes the facts without suggesting an engagement strategy. Vali
 verify those fields and test a stronger `gpt-6-sol` low-effort rules-only reference on
 the Pegasus and caster development scenarios, within the existing $25 ledger cap.
 No G1/G2 trials or held-out trials have run; neither candidate is admitted.
+
+The first pilot launch, `bench-b6-pegasus-sol-20261014` on `1bd120b`, hung after menu
+step 3 (opening custom battle). Windows reported the game unresponsive while CPU time
+increased. The declared startup deadline ended the job as `infrastructure_failure`
+after 903.87 s, with zero episodes and no model calls. The supervisor closed the game;
+the queue stopped before its second job. Doctor then reported no blockers. Evidence:
+`capability-probes/benchmark-startup-hang/`, `calibration/b6-startup-observations.jsonl`
+and `reports/bench-b6-startup-failure.json`. There is no gameplay result to register.
+A separately recorded retry on the identical source/setup, with no profile changes,
+started at 18:51:24 UTC (`calibration/b6-specialist-sol-r2-plan.json`).
+
+The retry recovered without profile changes. Its original-engine roster verified the
+horse-mounted player lord and airborne Pegasus general, with enemy movement speeds
+10.5/10.5 m/s. Sol initially moved for a flank, then chose defender timeout preservation.
+At 385.6 s all six friendly units remained active with at least 93% health; the Pegasus
+was still 367.7 m from the closest one. Following the six-minute development review
+rule, the pilot was deliberately interrupted for inadequate pressure, not scored as a
+win or loss. Result: 80 decisions, nine unreachable-move refusals, $0.46713, clock
+ratio 1.00004. Both runner/controller exited at 19:00:11 UTC before the caster job.
+Its interrupted row is in the results register. Evidence:
+`calibration/b6-pegasus-review-rule.json`, `calibration/b6-pegasus-retirement.json`,
+`reports/bench-b6-flight-speed-acceptance.json` and `reports/bench-b6-pegasus-development.json`.
+The two launches together used 1431.02 wall seconds with no valid gameplay outcomes.
+Next screen the caster and the separate cavalry attacker task after merging b7.
 
 ## Benchmark harness b5 (2026-10-14, draft while b4 screens run)
 

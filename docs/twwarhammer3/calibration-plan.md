@@ -29,12 +29,14 @@ screen cavalry/anti-large and caster-led prototypes before choosing the G1 candi
 The unstarted 36-battle Herald draft plan is superseded. No G1/G2 trials have been played.
 The original Herald design and its results below are retained as development evidence.
 
-Finish the five-controller b1 job, including the imported external controller. Then
-validate the new modifier setter/read-backs, coarse terrain and reachable alternatives,
-and reject a deliberately misspelled recruitment card before scoring. Test the updated
-interface with one Luna trial; all subsequent scripted experiments have no API cost.
+Completed acceptance includes the five-controller b1 job with an imported external
+controller, modifier setter/read-backs, coarse terrain and reachable alternatives,
+a deliberately misspelled recruitment card rejected before scoring, and Luna trials.
+The specialist candidates also need their particular flight/spell controls checked.
+Any selected API reference uses the existing cumulative $25 WH3 ledger cap; its model,
+effort and prompt are frozen with the experiment.
 
-The first candidate family is ranged protection: a Dwarf army with shooters against
+The earlier candidate family was ranged protection: a Dwarf army with shooters against
 fast Slaanesh flankers. The original Sigvald version has now lost with hold, Luna and
 skills on the acceptance instance. The fallback replaces only Sigvald with the
 selectable Shadow Herald. `dwf-sla-herald` and `dwf-sla-herald-hard` differ only in the
@@ -49,6 +51,17 @@ cannot separate the controllers, examine the existing settlement objective famil
 its building-capable scripted baseline. Do not declare success from a single battle.
 
 ## G1: calibration
+
+Starting-condition review before G1 (b4 development evidence): one cavalry rematch
+flagged a 4.826 m missile-cavalry displacement and a 12-degree enemy-lord bearing change
+at 5.3 s versus the reference's 5.2 s. Rosters, strength, loadouts and resources matched.
+The game is already live at these snapshots; identical trajectories are not promised.
+Keep the existing 1 m/10-degree flags and include every valid trial in the primary
+comparison. Report flagged trials and their deltas explicitly, and give a secondary
+paired comparison omitting launches with a flagged start. Do not replace such launches
+or stop a queue solely for a geometry flag. A changed roster, strength, loadout or
+resource stops subsequent jobs for investigation; retain its started trials and do not
+silently pool a changed task. Freeze this handling with the candidate before G1.
 
 Once a specialist candidate has an intermediate difficulty and working required controls,
 declare its competent reference and play six fresh launches per modifier, three
@@ -81,6 +94,9 @@ On the admitted scenario/settings, six fresh launches rotate the same competent 
 remains included. The original buffered snapshot supplies the order's basis sequence;
 the engine clock supplies total information age at issuance. Initial buffer-fill time
 is part of the declared condition. No pausing or slowing is allowed.
+The requested age is a minimum: observations read into the buffer can be farther apart
+when synchronous model calls take time. Report the actual snapshot age at decision
+alongside total age at issuance; do not describe these arms as exact 6/10 s delays.
 
 The primary contrast is 10 s minus 0 s active-strength margin. A 95% paired interval
 below zero establishes sensitivity at that delay. The 6 s contrast is secondary and

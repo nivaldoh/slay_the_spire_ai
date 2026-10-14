@@ -20,11 +20,12 @@ is in [benchmark.md](benchmark.md) and the original acceptance brief in
 - [x] Document an independently runnable evaluation, including controller contract and
       setup requirements. Live acceptance includes an outside controller and Luna;
       a deliberately broken setup is rejected.
-- [ ] Verify the AI stats modifier read-back and behavior at 1.0 and 1.1; select and
-      document calibrated settings instead of assuming a 10% effect.
+- [x] Verify the AI stats modifier read-back and starting-stat effects at 1.0 and 1.1;
+      paired startup snapshots establish the effects rather than assuming 10%.
 - [ ] Run paired scripted calibration across independent launches, tune development
       scenarios if all controllers hit floor/ceiling, and establish competent versus
-      trivial separation with uncertainty. Keep held-out variants out of tuning.
+      trivial separation with uncertainty. Select and document calibrated modifier
+      settings; keep held-out variants out of tuning.
 - [ ] Run controlled 0/6/10 s delay trials with natural latency retained and battle
       always live at 1x. Report sensitivity or the detectable-effect limit of a null.
 - [ ] Fix and engine-test the selected scenarios' terrain/path and control gaps;
@@ -48,9 +49,19 @@ retreating for a timeout win when interrupted at about 292 s. Do not call that t
 win or loss. A faster enemy anchor is the next pressure hypothesis; the frontend mount
 inventory passed: Pegasus speed 105 versus Griffon 90. b6 selects the Pegasus and
 exposes visible enemy speeds; its 209 WH3 tests with Lua, Ruff and Lua compilation
-pass. Next are single-battle Sol reference pilots on Pegasus cavalry and the caster.
-Also review a cavalry rematch's 4.826 m/12-degree formation
-flag before freezing calibration. All resources/rosters matched. Completed harness
+pass. The first Sol launch on `1bd120b` stalled opening the custom-battle lobby and
+ended at its startup deadline: infrastructure failure, 903.87 s, zero episodes/calls.
+The owned process and queue exited; doctor reported ready. A separate retry on the
+same source/setup, without profile changes, recovered. It verified the mounted roster
+and enemy flight/speed fields, but Sol chose defender timeout evasion. The pilot was
+deliberately retired at 385.6 s, with all six cavalry units active at at least 93% health
+and the Pegasus 367.7 m away. It has no gameplay outcome. 80 decisions, nine unreachable
+moves, $0.46713. The queue/controller exited at 19:00:11 UTC before the caster job.
+No controller is active. Next: merge b7 and screen the caster plus a separate attacker
+variant retaining the original six-versus-eight foot-general roster. No G1/G2 yet.
+The cavalry rematch's 4.826 m/12-degree formation flag remains recorded; the plan now
+declares all valid trials in the primary analysis and a secondary comparison excluding
+flagged launches. All resources/rosters matched in that case. Completed harness
 items above rely on b1/b2 engine
 evidence and the regression checks below; they do not imply scenario admission.
 
@@ -70,7 +81,7 @@ that Screamers' engine category is `inf_mel` despite being airborne; b5 `3218360
 merged as `b07b57b` after the screen, corrects classification and exposes flight state.
 It also keeps the engine outcome explicit for timer endings. Its tests, Ruff and Lua
 compilation passed; the next pilot must verify the new observation fields.
-The b4 queue and game controller exited at 18:24:45 UTC; no controller is active.
+The b4 queue exited at 18:24:45 UTC and the b6 retry at 19:00:11 UTC.
 Current process handles and next actions are in [../state.md](../state.md).
 No scenario is admitted. The owner has
 superseded the unstarted generic Herald calibration plan with specialist candidate
