@@ -33,11 +33,12 @@ Still missing:
 - a way to plug in a controller without editing the CLI;
 - a report with denominators and intervals.
 
-**Does the idea make sense?** As a reproducible benchmark of real-time tactical control,
-yes. As a *latency-aware* benchmark, not yet:
-- **Latency has never been varied with everything else held fixed.** The only test,
-  pausing the battle during inference, found no effect, but three battles per arm could
-  only have detected a very large one.
+**Does the idea make sense?** Yes, as a reproducible benchmark of real-time tactical
+control. Each controller is measured with its whole latency, network included, because
+real deployments pay it too (owner, 2026-10-14). Three things are not shown yet:
+- **That latency changes outcomes on any scenario.** It has never been varied with
+  everything else held fixed. The only test, pausing the battle during inference, found
+  no effect, but three battles per arm could only have detected a very large one.
 - **No scenario played so far shows competent control beating trivial play.** On
   `kho5-dwf5` the trivial `attack_nearest` won 4 of 5, as often as `skills` and the
   commander, while the `llm` won 17 of 33. Every other scenario was lost by nearly every
@@ -58,10 +59,15 @@ acceptance job:
    - calibration: does one of `hold`, `attack_nearest` and `skills` win 30-70%, and does
      `skills` beat the better of `hold` and `attack_nearest` on the paired margin?
    - latency sensitivity: does `skills` get worse when its information is made 6 or 10 s
-     old?
+     old? That shows whether the scenario can reveal latency differences between
+     controllers.
 
-Their results decide whether to build the rest, and whether "latency-aware" is an honest
-name.
+Their results decide whether to build the rest, and which scenarios can show latency
+effects.
+
+**Later: robotics models.** The owner wants to test robotics models eventually. A
+vision-language-action (VLA) model needs a visual track: a screenshot with each
+observation, beside the existing text (2.3, 2.6).
 
 ## Part 1. Where the repository stands
 
@@ -260,12 +266,16 @@ was never read.
    - pass the refusal reason to the controller;
    - store the model id the API returns;
    - register every started episode;
-   - take wall times from a clock checked against battle time.
+   - take wall times from a clock checked against battle time;
+   - store the provider's processing time per call, so network and queueing time can be
+     told apart from inference.
 5. **A margin that agrees with the outcome** (routing units counted as lost) and exists at
    every ending.
 6. **Evidence that latency matters** on a given scenario.
 7. **A calibrated scenario**: one that some controller wins roughly 30-70% of the time,
    and on which `skills` beats the better of `hold` and `attack_nearest`.
+8. **A visual observation** for vision models, robotics VLAs among them (later, owner
+   direction): a screenshot beside the structured text (2.3).
 
 ### What still needs an in-game check
 
@@ -347,8 +357,9 @@ Rules:
    This is the brief's test.
 2. **It is neither floor nor ceiling.** One of the three scripted controllers wins roughly
    30-70%. The levers are the AI stats modifier, funds and rosters.
-3. **It earns the "latency-aware" label** only if the latency check (2.5) shows
-   degradation beyond noise. Otherwise its results are labelled "real-time".
+3. **It is latency-sensitive** only if the latency check (2.5) shows degradation beyond
+   noise. Every scenario reports each controller's whole latency; only a
+   latency-sensitive one can show that latency changed an outcome.
 
 A cheap screen ranks scenarios for that check: the reaction-window share. From a `hold`
 trace, take the protected units and measure the time from an enemy coming within 100 m to
@@ -370,7 +381,7 @@ Families, each tied to what the interface can express:
 | Challenge (the owner's idea in [state.md](../state.md)) | A stronger enemy that one tactic beats, such as breaking its lord, holding a choke point or kiting slow infantry | Whether the controller finds and carries out the tactic. A family measure records it. AI-generated challenges pass the same admission |
 | Coordinated attack | A melee army against a defensive line with artillery | Arriving together rather than piecemeal |
 | Disengagement | Needs a declared starting contact | Only if teleport arrangements work |
-| Frozen draws | Admitted random draws, larger armies (owner preference) | General control. Unlikely to be latency-sensitive, so labelled "real-time" |
+| Frozen draws | Admitted random draws, larger armies (owner preference) | General control. Unlikely to be latency-sensitive |
 
 ### 2.3 Observation contract `obs-v1`
 
@@ -414,6 +425,38 @@ Known limits, stated in every report:
 
 A reduced track (`obs-v2`: rounded positions, men as a health band) would be named
 separately and never pooled with `obs-v1`.
+
+**A visual track for vision models: `obs-v1+image`** (later; owner direction,
+2026-10-14). Robotics models such as vision-language-action (VLA) models take camera
+images. This track adds a screenshot to each observation a controller decides on, beside
+the unchanged structured text. It is a separate track, never pooled with text-only
+results. It must declare:
+- **The image.** A game screenshot at a declared resolution, with the HUD shown or hidden.
+  The HUD may carry the balance-of-power bar, which `obs-v1` withholds. A top-down map
+  rendered from `obs-v1` would be cheaper and exactly in sync, but it is not the game's
+  picture, so it would be a different track.
+- **The camera.** With no human at the controls, the battle camera stays where it starts,
+  and the frame shows whatever that view holds. The battle script can place the camera
+  through the game's `battle_camera` API, for example in a fixed overhead view or one that
+  follows the army. That rule is part of the track.
+- **Timing.** Each image records when it was captured, on the wall clock and as the battle
+  time of the observation it goes with. Capture, encoding and upload add to the
+  controller's latency, which counts like any other (2.5). A decision's basis is the older
+  of its image and its structured state.
+- **What it shows.** The frame shows what the game renders for the player. Whether enemies
+  out of sight are also hidden on screen is the same open check as the visibility filter
+  (Part 1).
+- **Capture.** It stays passive, with no desktop input (owner rule).
+  - A full-desktop capture through PowerShell's `CopyFromScreen` worked on the main menu
+    in the startup-skip probe (`runs/twwarhammer3/skip-intro-20261013/`). Its helper has
+    since been removed (`gameai/windows_desktop.py`, last at `e4ad8e8`).
+  - Starting PowerShell for each frame is unlikely to keep up with an observation every
+    1.2 s (unmeasured), so the track needs a capture process that keeps running on
+    Windows.
+  - To check in battle: that capture works with the game fullscreen, how long a frame
+    takes, and how capture lines up with the mod's tick.
+- **Cost.** API vision models bill image tokens, so each call records the image size and
+  its tokens.
 
 ### 2.4 Action contract `act-v1`
 
@@ -464,6 +507,30 @@ clicks, keys, context expressions), and reading or writing bridge files. Advisor
   Observations keep being overwritten.
 - A reply based on an old observation is applied as it is, with its basis recorded.
 
+**What counts as latency.** Each controller's whole latency is part of what the benchmark
+measures (owner, 2026-10-14). Real deployments pay all of it, and in some real-life
+settings it decides the outcome. It has four parts:
+- model inference;
+- the network to and from the provider, with the provider's queueing;
+- the controller's own code;
+- the harness's floor of one tick.
+
+Primary results therefore come from `live-1x` with natural latency, and the delay tracks
+below are diagnostics.
+
+The records split the latency where it can be observed:
+- the battle-time age at which orders take effect (`delay_ms`);
+- each model call's wall time;
+- the provider's own processing time. OpenAI documents an `openai-processing-ms` response
+  header, so network and queueing time is the call time minus that.
+
+Network conditions are measured, not controlled. They vary with the time of day and the
+provider's load, which makes them a source of variance between trials. Interleaving
+controllers within a launch spreads that variance over all of them. The deployment
+belongs on the controller's card: provider and endpoint for an API model, or the machine
+and GPU for a local one. A local model can therefore be compared with a cloud model on
+the latency each one really has.
+
 **Clocks.** Information age is measured on the battle clock (`delay_ms`), which is immune
 to WSL's drift. Today wall durations (think time, model latency, throughput) come from
 WSL's monotonic clock, which ran slow; the system clock agreed with battle time. M1 takes
@@ -478,14 +545,17 @@ Recorded per decision:
 | Applied (`applied_ms`) and information age (`delay_ms`) | Battle | exists |
 | Decision time (`think_s`, from reading the observation to writing the request) | Wall | exists, on WSL's monotonic clock until M1. For the commander this is the executor's milliseconds |
 | Model latency per call (`attempts[].seconds`) | Wall | exists, on WSL's monotonic clock until M1. This is the think time for model and hybrid controllers |
+| Provider processing time per call (`openai-processing-ms` header) | Wall | M1. Call time minus processing time is the network and queueing time |
 | Plan age when adopted (`plan_age_s`, commander) | Battle | exists |
 | Plan basis for each later executor order of a hybrid | Battle | later |
 | Observations not decided on | Battle | per episode, the final `seq` minus the decisions |
 | Battle time at which the mod read the request | Battle | later |
 | Effect onset (first observation showing the order's effect) | Battle | later, as an estimate. The interval is (previous observation, this one], up to 1.2 s wide for a blocking controller and 0.3 s for one deciding every tick, and the observation on the application tick cannot show the effect |
 
-**The latency check** (gate experiment G2). The delay line is built with M1 in
-`play._drive` and needs no mod change. It hands the policy the newest buffered observation
+**The latency check** (gate experiment G2) measures what information age costs on a
+scenario. That shows whether the scenario can reveal latency differences between
+controllers; latency counts in the results either way. The delay line is built with M1
+in `play._drive` and needs no mod change. It hands the policy the newest buffered observation
 that is at least D old, and sends it as `based_on`, so `delay_ms` stays correct. A fast
 controller keeps its 0.3 s decision period, so only the information age changes. Each
 episode records its D.
@@ -502,7 +572,8 @@ excludes zero. A null result rules out only effects above G2's minimum detectabl
 difference, which its report states. These trials carry their D and are never pooled
 with `live-1x`.
 
-Later tracks, never pooled with `live-1x`:
+Later tracks are diagnostics. They separate reasoning from speed and never replace or pool
+with the end-to-end `live-1x` results:
 - **`age-D/P`**: apply each batch at its basis time plus D, with decision period P.
   - The name carries both axes, because with one request in flight a fixed age also fixes
     the period.
@@ -538,7 +609,8 @@ Rules for every controller, stated on the "run it yourself" page:
    from the traces.
 
 **Disclosure.** A `card` dict is recorded for each episode: kind, automation, memory,
-model, timing. The built-in controllers' cards:
+model, timing and deployment. Deployment means the provider and endpoint for an API
+model, or the machine and GPU for a local one. The built-in controllers' cards:
 
 | Controller | Kind | Automation and memory | Timing |
 |---|---|---|---|
@@ -553,6 +625,20 @@ reach the bridge directory, so harness powers are out of reach only in a sandbox
 user, or a container without `/mnt/c`). Until then this holds by review. An
 out-of-process adapter (`exec:`, JSON lines over stdin and stdout) waits until someone has
 a controller not written in Python.
+
+**Robotics models** (later; owner direction, 2026-10-14). VLAs and other robot policies
+are planned as controllers. They need:
+- the visual track (2.3);
+- an adapter from their action output (continuous end-effector actions or action tokens)
+  to `act-v1` orders. The card discloses it as part of the controller, like any tactical
+  helper;
+- their hardware on the card. They usually run on a local GPU, so their latency has no
+  network part, a real contrast with API models.
+
+They are trained on robot camera views and arm actions, not battles, so a first test
+measures transfer, and any fine-tuning becomes part of the controller. The timing tracks
+suit them: acting on delayed observations while the next action chunk is computed is
+the same problem as in robotics (real-time chunking, [controllers.md](controllers.md)).
 
 ### 2.7 Episode lifecycle
 
@@ -631,7 +717,7 @@ list of trials. No composite score.
 | Margin | Own minus enemy men alive over starting men, from `final`. Today routing men count as alive, and the sign is opposite to the outcome in 16 of 108 battles (Part 1). M1 adds a second total for both sides that counts routing and shattered units as lost, and publishes `final` at every ending. The second total is the margin used by admission (2.2), the paired test (2.11), G1 and G2. Weighting by unit value needs unit costs (later) |
 | Family measure | From the declared `protected` keys, in the friendly records of the last observation, with routing and shattered units counted as lost |
 | Information age | Per batch that carries orders (`delay_ms`; every order in a batch has the same age), on the battle clock: 50th and 90th percentiles. For hybrids also the plan age |
-| Model latency | Per call, in wall seconds from the system clock (M1) |
+| Model latency | Per call, in wall seconds from the system clock (M1), split into the provider's processing time and the rest (network and queueing) |
 | Decision rate | Decisions with orders per battle minute; observations not decided on, per episode |
 | Rejections | Contract refusals per decision; engine rejections per 100 orders, by code |
 | Model use | Calls, input, cached, output and reasoning tokens, and USD per battle |
@@ -650,7 +736,7 @@ What M1 adds to today's manifest, trace, `result.json` and register:
 - per episode: the policy, its slot in the launch, its `card` and the delay D; for an
   outside controller, its source hash and git revision;
 - the refusal reason passed to the controller;
-- the model id each response returns;
+- the model id each response returns, and the provider's processing time per call;
 - the setup gate's read-backs in the manifest;
 - both sides' unit-card lists from the lobby;
 - the second strength total in `final`;
@@ -731,7 +817,7 @@ the interface, is what limits reinforcement learning here.
    the list (correlated repeats, 2.11). Names or `package.module:Class`.
 4. Record fixes:
    - the refusal reason to `acknowledge()`;
-   - `response.model` per call;
+   - `response.model` and the `openai-processing-ms` header per call;
    - register every started episode;
    - a wall cap above the game timer;
    - wall times from the system clock, and each episode's clock ratio;
@@ -790,6 +876,7 @@ M1 is done when:
 | An imposed battle-time limit | Battles run too long for the throughput budget, after the undecided restart is verified |
 | A value-weighted margin and evaluation series | The two-total margin still disagrees with outcomes |
 | Per-controller USD caps | A comparison with a costly model |
+| The visual track (`obs-v1+image`) and robotics controllers (VLAs) | Owner direction (2026-10-14), after M1. Needs a candidate model, its action adapter, and frame capture checked in battle |
 | The `exec:` adapter | A controller not written in Python |
 | `obs-v2` | Player equivalence becomes a goal |
 | A suite of families with held-out variants | One scenario passes admission |
@@ -933,9 +1020,14 @@ The reviewers agree on what is sound:
 
 What would make the benchmark misleading, and what to do about each:
 
-1. **"Latency-aware" is a label until G2 says otherwise.**
-   - Under `live-1x`, each controller's latency is fixed by its design. Latency therefore
-     moves together with the controller's identity, automation and decision rate.
+1. **Latency counts, but no scenario has yet shown it matters.**
+   - By the owner's direction, each controller's whole latency, network included, is part
+     of its result, as it would be in a real deployment. A slow controller that loses
+     because it is slow has lost.
+   - Under `live-1x`, each controller's latency is fixed by its design and deployment.
+     Latency therefore moves together with the controller's identity, automation and
+     decision rate. Why one controller beat another is then not separable from speed.
+     G2 and the diagnostic tracks (2.5) separate the two.
    - The one manipulation, `llm` v4 live against paused, cut the age from 5.5 s to 0.6 s
      and found no difference: mean margins -0.17 and -0.16, 1 of 3 won each. With 3
      battles per arm it could only have detected effects of about 0.5-0.7 margin.
@@ -947,8 +1039,10 @@ What would make the benchmark misleading, and what to do about each:
      `llm`'s 6 s age plus about 6.5 s period. The next shortest, 13.2 s, is just over that.
 
    G2 can show sensitivity if the effect is large. A null result rules out only effects
-   above its minimum detectable difference. Below that, "latency-aware" stays unproven,
-   and the honest name is a real-time tactical benchmark.
+   above its minimum detectable difference. Below that, the scenario still measures
+   controllers end to end, latency included. It just cannot show that a controller won or
+   lost because of its speed. Scenarios with short reaction windows are the ones to look
+   at for that.
 2. **No scenario so far separates competent from trivial play.** Wins by scenario:
    - `kho5-dwf5`: the trivial `attack_nearest` won 4 of 5, as often as `skills` (5 of 7)
      and the commander (8 of 9), while the `llm` won 17 of 33;
@@ -1002,8 +1096,12 @@ Decisions for the owner:
    `hold` was reached and beaten at 298 s. Keep that, or swap sides so the player must
    attack? Swapping is untried: the lobby's `button_swap_attacker_defender` was found but
    never clicked.
-4. **Framing.** Accept "real-time tactical benchmark" if G2 cannot show a latency effect?
-5. **Families.** Ranged protection and the owner's challenge battles first, with frozen
-   draws as a general-control family labelled "real-time"?
-6. **Model spend.** Luna only for now, or a budget for Sol or Astra commanders?
-7. **Held-out variants.** Which maps and armies to lock away before any tuning?
+4. **Families.** Ranged protection and the owner's challenge battles first, with frozen
+   draws as a general-control family?
+5. **Model spend.** Luna only for now, or a budget for Sol or Astra commanders?
+6. **Held-out variants.** Which maps and armies to lock away before any tuning?
+7. **Robotics models, when their turn comes.** Which VLA or robot policy to try first, and
+   should its picture be a game screenshot or a map rendered from the state (2.3)?
+
+Settled on 2026-10-14: each controller's whole latency, network included, is part of what
+the benchmark measures.
