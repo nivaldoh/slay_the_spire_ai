@@ -40,7 +40,7 @@ class BattleRestarted(RuntimeError):
         self.observation = observation
 
 
-ORDER_TYPES = ("move", "attack", "halt", "behaviour", "ability")
+ORDER_TYPES = ("move", "attack", "halt", "behaviour", "ability", "flight")
 ATTACK_MODES = ("auto", "melee", "ranged")
 BEHAVIOURS = ("fire_at_will", "skirmish", "defend", "change_formation_spacing", "formed_attack")
 
@@ -112,6 +112,15 @@ def validate_orders(orders: list, observation: dict) -> None:
                 raise IllegalActionError(f"{unit}: unavailable behaviour {behaviour!r}")
             if not isinstance(order.get("enabled"), bool):
                 raise IllegalActionError(f"{unit}: enabled must be a boolean")
+        if kind == "flight":
+            if not isinstance(order.get("flying"), bool):
+                raise IllegalActionError(f"{unit}: flying must be a boolean")
+            current = friendly[unit]
+            if not current.get("can_fly"):
+                raise IllegalActionError(f"{unit}: cannot fly")
+            if (current.get("flying") != order["flying"]
+                    and (current.get("flight") or {}).get("can_toggle") is not True):
+                raise IllegalActionError(f"{unit}: flight change is unavailable now")
         if kind == "ability":
             ability = order.get("ability")
             available = {a["key"]: a for a in friendly[unit].get("abilities", [])}

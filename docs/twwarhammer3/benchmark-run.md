@@ -113,13 +113,19 @@ alone does not establish a matched caster's resources or spell loadout.
 
 ## Terrain, specialist interface and calibration candidates
 
-The observation track is `obs-v2+terrain/act-v1/live-1x`. A deployment snapshot gives
+The observation track is `obs-v3+terrain/act-v2/live-1x`. A deployment snapshot gives
 32 m spaced samples of 16 m squares clear of pathfinding restrictions. This is a coarse
 map, not a path planner: narrow crossings can be missed and buildings can later change.
 After an unreachable move, the unit reports nearby destinations tested with its own
 reachability query. The engine sends no replacement order; the controller must choose.
 
 For specialist units, current/maximum barrier HP is separate from ordinary health.
+Friendly leadership includes its UI fraction and largest current morale effect. This
+can expose warnings such as losing battlefield control while all survivors are flying.
+Flyers report flight-change availability/cooldown; a `flight` order requests take-off
+(`flying: true`) or landing (`false`). Availability is checked again in the engine,
+and later airborne state confirms the transition. Earlier tracks lack these fields
+and this action; do not pool their trials with this contract.
 Owned abilities include their cast range, effect radius and duration where the engine
 provides them. These describe capabilities, not a suggested tactic. Rune ranges/durations
 and nonzero Tzeentch barriers are live-verified, as are unit-targeted spells and their

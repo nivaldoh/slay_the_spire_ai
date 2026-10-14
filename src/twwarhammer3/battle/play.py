@@ -89,7 +89,7 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
         "config": config,
         "scenario": scenario,
         "trials": trials,
-        "track": "obs-v2+terrain/act-v1/live-1x",
+        "track": "obs-v3+terrain/act-v2/live-1x",
         "status": "running",
         "episodes": [],
     }
@@ -405,7 +405,7 @@ def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
     result = {"episode": directory.name, "status": "interrupted", "decisions": 0, "invalid": 0,
               "delays_ms": [], "think_s": [], "policy": config["policy"],
               "slot": config.get("slot"), "delay_ms": config.get("delay_ms", 0),
-              "track": "obs-v2+terrain/act-v1/live-1x" +
+              "track": "obs-v3+terrain/act-v2/live-1x" +
               (f"+age-{config['delay_ms']}ms" if config.get("delay_ms") else "")}
     log_offset = mailbox.log_offset()
 

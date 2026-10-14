@@ -423,3 +423,14 @@ def test_the_reinforcement_pool_and_spawn_zones_are_listed():
     assert llm.describe_orders([{"unit": "army", "type": "reinforce", "zone": 14,
                                  "reinforcement": "wh3_main_kho_inf_chaos_warriors_1"}]) == (
         "army reinforce chaos_warriors_1 at zone 14")
+
+
+def test_public_morale_warning_and_flight_control_are_rendered():
+    unit = {"id": "f1", "type": "caster", "men": 1, "men0": 1, "hp": 1,
+            "can_fly": True, "flying": True,
+            "flight": {"can_toggle": True, "cooldown_s": 0},
+            "morale": {"fraction": .3, "effect": "You must attack by land!"}}
+    text = llm.render_unit(unit, True)
+    assert "leadership 30%; largest effect: You must attack by land!" in text
+    assert "airborne" in text and "flight change available; cooldown 0 s" in text
+    assert llm.describe_orders([{"unit": "f1", "type": "flight", "flying": False}]) == "f1 land"

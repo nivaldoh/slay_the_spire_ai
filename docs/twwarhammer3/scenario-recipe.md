@@ -25,6 +25,13 @@ battle around one secret trick. Write these as author hypotheses, not instructio
 the controller's prompt. Supply the actual public rules and capabilities consistently
 to every controller, without revealing scoring state or suggesting a solution.
 
+Choose the role and victory condition with the tactical question. In the compact
+classic-battle pilots, defender timeout wins incentivized evasion, and even a faster
+flying enemy stayed with its main army. Evasion remains legitimate gameplay. When the
+intended challenge needs sustained engagement, an attacker role or contested capture
+objective can supply that pressure. Verify the AI's actual response; a unit's advertised
+speed or nominal range does not establish that it will force a fight.
+
 Each candidate records:
 
 - The tactical question, faction mechanic, anchor units and why the support roster matters.
@@ -69,6 +76,11 @@ six-versus-eight foot-general roster, funds and corresponding maps/modifiers. Th
 finite timer then requires an assault. Its 1.0/1.1 variants are development candidates;
 its held-out map is unplayed. Role reversal changes the task and needs its own live
 setup/viability checks, not pooled results from the defender pilots.
+
+The separate `tze-caster-skv-assault` family similarly retains Kairos's five-versus-ten
+roster and spellbook while making the player attack. Ground casting is verified in the
+defender pilot; attacker setup and viability remain untested. The new family declares
+1.0/1.1 development variants and an untouched held-out map.
 
 The current Dwarf/Slaanesh Herald screens
 remain useful harness and difficulty evidence; they do not satisfy this new selection

@@ -19,6 +19,7 @@ from gameai.provenance import REPO_ROOT
 from twwarhammer3.battle.llm import (
     ABILITY_SCHEMA,
     BUILD_SCHEMA,
+    FLIGHT_SCHEMA,
     MAX_OUTPUT_TOKENS,
     NOTES_LIMIT,
     NUMBER_OR_NULL,
@@ -53,7 +54,8 @@ REPLY_SCHEMA = {
     "properties": {
         "assignments": {"type": "array", "items": ASSIGNMENT_SCHEMA},
         "abilities": {"type": "array",
-                      "items": {"anyOf": [ABILITY_SCHEMA, BUILD_SCHEMA, REINFORCE_SCHEMA]}},
+                      "items": {"anyOf": [ABILITY_SCHEMA, BUILD_SCHEMA, REINFORCE_SCHEMA,
+                                          FLIGHT_SCHEMA]}},
         "reason": {"type": "string"},
         "notes": STRING_OR_NULL,
     },
