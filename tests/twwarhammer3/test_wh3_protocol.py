@@ -39,6 +39,25 @@ def test_scenario_key_counts_the_roster_not_the_visible_enemies():
     assert protocol.scenario_key(OBSERVATION) == "wh3_main_cth_cathay(2) vs wh3_main_grn(3)"
 
 
+def test_flight_requests_use_capability_readiness_and_requested_state():
+    unit = {"id": "f1", "can_fly": True, "flying": True, "flight": {"can_toggle": True}}
+    state = {"friendly": [unit]}
+    land = {"unit": "f1", "type": "flight", "flying": False}
+    protocol.validate_orders([land], state)
+    with pytest.raises(protocol.IllegalActionError, match="repeated flight"):
+        protocol.validate_orders([land, land], state)
+    with pytest.raises(protocol.IllegalActionError, match="boolean"):
+        protocol.validate_orders([{**land, "flying": 0}], state)
+    unit["flight"]["can_toggle"] = False
+    with pytest.raises(protocol.IllegalActionError, match="unavailable now"):
+        protocol.validate_orders([land], state)
+    unit["flying"] = False
+    protocol.validate_orders([land], state)  # already landed; a repeated request is a no-op
+    unit["can_fly"] = False
+    with pytest.raises(protocol.IllegalActionError, match="cannot fly"):
+        protocol.validate_orders([land], state)
+
+
 def capable_observation():
     return {**OBSERVATION, "friendly": [{"id": "f1", "ammo": 10,
             "behaviours": {"fire_at_will": True, "skirmish": False},

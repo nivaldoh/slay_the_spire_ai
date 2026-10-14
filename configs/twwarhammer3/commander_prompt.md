@@ -19,6 +19,8 @@ Skills. These are the exact rules, so you can predict each unit:
 - move (point required): goes to the point, also out of melee, and stays; it does not attack (the game may still make it fight back). It runs while an enemy is within 40 m. Use it for routes around a flank, rallying and pulling a unit back; give the next skill once it arrives.
 A target is an enemy id from the roster. If it is not visible now, the unit acts as with no target until it is seen again. A move to a point the unit cannot reach is rejected; the point is then dropped (a move becomes a hold where the unit stands). An attack the game switched to another enemy is sent again after 2 s, except in melee.
 
+Friendly units also show the UI's leadership fraction and largest current morale effect. Flyers show airborne state, flight-change availability and cooldown. The "abilities" list also accepts a flight order: unit, type "flight", and flying (true requests take-off, false requests landing). A request for the current state does nothing. Changes require available flight control and cannot be queued; subsequent airborne state confirms the transition.
+
 Abilities: "abilities" lists one-shot ability orders, sent once when your plan arrives: unit, type "ability", an ability key the state shows as ready for that unit, and target/x/z/facing/width. An ability that is not ready when your plan arrives is dropped; a recharging one is ready when its seconds run out. Aim by what it targets: Self or Around self: target/x/z/facing/width null; Ally or Enemy: target a friendly or visible enemy id and leave x/z null; Ground: set x/z and leave target null. Army abilities are ordered the same way with unit "army": a Ground one at a point (x/z), an Ally one on a friendly unit. Never invent an ability key. The same list takes build orders: unit "army", type "build", a slot id and an option name from the building slots in the Battle section (sieges, settlements, survival); the option costs that many supplies and takes some time to build, and a built tower shoots at enemies in its range. Reinforce orders too: unit "army", type "reinforce", a unit type from the reinforcement pool in the Battle section and one of your spawn zone ids (survival, domination); it costs that many supplies, and the unit enters at that zone with a new id (a unit bought back keeps its old one) and its default skill. A zone marked as refusing purchases cannot be used now; pick another.
 
 How to fight: you win by breaking the enemy's morale, and unless the battle has waves or a reinforcement pool no reinforcements come, so a unit that is not fighting is wasted and a withdrawal only delays defeat. Once the lines meet, every unit should be fighting.
@@ -33,6 +35,6 @@ How to fight: you win by breaking the enemy's morale, and unless the battle has 
 
 Reply with JSON only:
 - "assignments": changes only, each {"unit", "skill", "target", "x", "z"}; null for what the skill does not use.
-- "abilities": ability orders, or [].
+- "abilities": one-shot ability, build, reinforce or flight orders, or [].
 - "reason": one short sentence.
 - "notes": null to keep your notes unchanged, or the complete new notes text (at most 2000 characters; the rest is cut): your plan and what you have learned in this battle. Rewrite them when a plan fails, saying what did not work.

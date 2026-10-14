@@ -217,6 +217,18 @@ local function unit_record(id, unit, mine, class)
     record.speed = {round(get(unit, "slow_speed", 0), 1), round(get(unit, "fast_speed", 0), 1)}
     if mine then
         local entry = state.friendly[id]
+        local morale = context_rows("CcoBattleUnit", entry.ui_id,
+            'MoralePercent + "|" + MoraleGreatestEffect')[1]
+        if morale then
+            record.morale = {fraction = tonumber(morale[1]), effect = plain(morale[2])}
+        end
+        if record.can_fly then
+            local flight = context_rows("CcoBattleUnit", entry.ui_id,
+                'CanToggleFlying + "|" + ToggleFlyingCooldownTimer')[1]
+            if flight then
+                record.flight = {can_toggle = flight[1] == "true", cooldown_s = tonumber(flight[2])}
+            end
+        end
         record.ammo = get(unit, "ammo_left", 0)
         record.ammo0 = get(unit, "starting_ammo", 0)
         record.fatigue = string.gsub(tostring(get(unit, "fatigue_state", "")), "^threshold_", "")
@@ -639,6 +651,18 @@ local function apply_reinforce(order)
                       tostring(before and after and before - after)))
 end
 
+-- Check actual state before toggling to avoid reversing an already completed change.
+-- The UI command is a normal player action; the following observations confirm landing/takeoff.
+local function apply_flight(entry, order)
+    if type(order.flying) ~= "boolean" then error("bad_flying") end
+    if not get(entry.unit, "can_fly", false) then error("cannot_fly") end
+    if get(entry.unit, "is_currently_flying", false) == order.flying then return end
+    if common.get_context_value("CcoBattleUnit", entry.ui_id, "CanToggleFlying") ~= true then
+        error("flight_change_unavailable")
+    end
+    common.call_context_command("CcoBattleUnit", entry.ui_id, "ToggleFlying")
+end
+
 local function apply_order(order)
     if order.unit == "army" and order.type == "reinforce" then
         if not state.started then return {unit = order.unit, ok = false, error = "deployment"} end
@@ -715,6 +739,8 @@ local function apply_order(order)
             entry.attack_mode = mode
         elseif order.type == "halt" then
             controller:halt()
+        elseif order.type == "flight" then
+            apply_flight(entry, order)
         elseif order.type == "behaviour" then
             local allowed = false
             for _, key in ipairs(BEHAVIOURS) do if key == order.behaviour then allowed = true end end

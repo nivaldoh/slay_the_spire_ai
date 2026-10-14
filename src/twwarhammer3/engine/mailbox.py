@@ -37,6 +37,13 @@ toggle keys mapped to current booleans), ``abilities`` (owned active keys with c
 the engine's permission, and from the UI context system ready, active, recharge_s left,
 uses left, target type, mana cost and cooldown_s; plus last_issued_ms),
 formation ``width``, last requested ``attack_mode`` and last submitted ``command_queue``.
+Friendlies also expose ``morale`` (``fraction`` of best leadership, potentially negative,
+and the UI's largest current ``effect``). Flyers have ``flight`` availability
+(``can_toggle`` and ``cooldown_s``), alongside ``can_fly`` and actual ``flying`` state.
+A ``flight`` order requests ``flying: true`` to take off or ``false`` to land; an
+already completed state change is not toggled again. The engine re-checks availability,
+and subsequent observations confirm the transition. These additions use the benchmark
+track ``obs-v3+terrain/act-v2/live-1x``; earlier tracks lack this feedback/control.
 
 Writers publish whole files (temporary file, then rename); readers treat a missing,
 locked or half-parsed file as "not yet".

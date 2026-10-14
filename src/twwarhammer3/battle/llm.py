@@ -48,6 +48,7 @@ ABILITY_SCHEMA = _order_schema("ability", ability={"type": "string"}, target=STR
                                x=NUMBER_OR_NULL, z=NUMBER_OR_NULL, facing=NUMBER_OR_NULL,
                                width=NUMBER_OR_NULL)
 BUILD_SCHEMA = _order_schema("build", slot={"type": "string"}, option={"type": "string"})
+FLIGHT_SCHEMA = _order_schema("flight", flying={"type": "boolean"})
 REINFORCE_SCHEMA = _order_schema("reinforce", reinforcement={"type": "string"},
                                  zone={"type": "integer"})  # a unit type from the pool
 REPLY_SCHEMA = {
@@ -66,6 +67,7 @@ REPLY_SCHEMA = {
             ABILITY_SCHEMA,
             BUILD_SCHEMA,
             REINFORCE_SCHEMA,
+            FLIGHT_SCHEMA,
         ]}},
         "reason": {"type": "string"},
         "notes": STRING_OR_NULL,
@@ -168,6 +170,17 @@ def render_unit(unit: dict, mine: bool, before: tuple | None = None,
         parts.append(f"walk {walk or 0:.1f} run {run or 0:.1f}")
     if mine:
         parts.append(unit.get("fatigue") or "fresh")
+        if unit.get("morale"):
+            morale = unit["morale"]
+            fraction = morale.get("fraction")
+            amount = f"{fraction:.0%}" if fraction is not None else "unknown"
+            parts.append(f"leadership {amount}; largest effect: "
+                         + (morale.get("effect") or "unknown"))
+        if unit.get("flight"):
+            flight = unit["flight"]
+            parts.append("flight change " + ("available" if flight.get("can_toggle")
+                                             else "unavailable")
+                         + f"; cooldown {flight.get('cooldown_s', '?')} s")
         if unit.get("width"):
             parts.append(f"formation width {unit['width']:.0f} m")
         if unit.get("attack_mode"):
@@ -486,6 +499,8 @@ def describe_orders(orders: list[dict]) -> str:
         elif order["type"] == "behaviour":
             parts.append(f"{order['unit']} {order['behaviour']} "
                          + ("on" if order["enabled"] else "off"))
+        elif order["type"] == "flight":
+            parts.append(f"{order['unit']} " + ("take off" if order["flying"] else "land"))
         elif order["type"] == "ability":
             target = order.get("target") or "self"
             if order.get("x") is not None and order.get("z") is not None:
