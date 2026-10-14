@@ -10,7 +10,7 @@ import pytest
 
 from gameai.ledger import BudgetExhausted
 from twwarhammer3.__main__ import add_session_arguments, main
-from twwarhammer3.battle import commander, digest, llm, play, stats
+from twwarhammer3.battle import commander, controllers, digest, llm, play, stats
 from twwarhammer3.battle.scripted import AttackNearest, Hold
 from twwarhammer3.protocol import BattleRestarted, MailboxTimeout, PolicyFailure
 
@@ -545,10 +545,13 @@ def test_a_random_scenario_draws_a_map_and_races_and_autogenerates_both_armies()
     assert "wh_dlc03_sc_bst_beastmen" not in catalogue["races"]
 
 
-def test_attack_nearest_reorders_a_lapsed_attack_and_skips_the_dead():
-    policy = AttackNearest()
+@pytest.mark.parametrize("name,running", [("attack_nearest", False), ("rush_nearest", True)])
+def test_nearest_baselines_reorder_lapsed_attacks_and_skip_the_dead(name, running):
+    policy = controllers.controller_class(name)()
     first = observation(1, 1000)
-    assert [o["unit"] for o in policy.decide(first)] == ["f1"]
+    assert policy.decide(first) == [{"unit": "f1", "type": "attack", "target": "e1",
+                                     "run": running}]
+    assert policy.metadata()["type"] == name
     assert policy.decide(first) == []
     lapsed = observation(2, 6000)
     lapsed["friendly"][0].update(state=["idle"], target=None)

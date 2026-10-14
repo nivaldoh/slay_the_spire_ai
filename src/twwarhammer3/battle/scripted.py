@@ -56,6 +56,19 @@ class AttackNearest:
         return {"type": "attack_nearest"}
 
 
+class RushNearest(AttackNearest):
+    """AttackNearest with running enabled; no flanking, target priorities or abilities."""
+
+    def decide(self, observation: dict) -> list[dict]:
+        orders = super().decide(observation)
+        for order in orders:
+            order["run"] = True
+        return orders
+
+    def metadata(self) -> dict:
+        return {"type": "rush_nearest"}
+
+
 class ProbeMove:
     """Milestone 3: move the first unit east, then north, then halt, to pin the axes."""
 
@@ -89,4 +102,5 @@ def _distance(a: dict, b: dict) -> float:
     return math.hypot(a["x"] - b["x"], a["z"] - b["z"])
 
 
-POLICIES = {"hold": Hold, "attack_nearest": AttackNearest, "probe_move": ProbeMove}
+POLICIES = {"hold": Hold, "attack_nearest": AttackNearest, "rush_nearest": RushNearest,
+            "probe_move": ProbeMove}
