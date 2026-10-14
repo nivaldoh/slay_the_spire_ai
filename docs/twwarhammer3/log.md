@@ -49,6 +49,13 @@ setup failure, hidden summons/deaths and retained observed deaths, plus rules-pr
 selection, fresh memory/shared budget and model metadata/prompt snapshots. Live b2 traces/
 reports remain separate by their recorded source; b3 live acceptance remains pending.
 
+Additional objective regression: executing the actual Lua sampler with ownership
+changes at unequal intervals gives 25% held time where snapshot voting gives 40%; a
+duplicate terminal sample adds no time and non-victory points are excluded. This test
+passes with Lupa and Ruff. Full source validation: 1041 passed, 4 skipped in the main
+dependency environment; the skipped Lua checks passed separately, and the remaining
+skips are the opt-in Windows process-ownership test and one local-evidence case.
+
 ## Benchmark harness b2 (2026-10-14, draft awaiting live validation)
 
 Read-only probes during b1 acceptance found the per-army AI modifier getter, stat
