@@ -465,3 +465,17 @@ def test_random_jobs_record_their_draw_and_keep_the_menu_dumps(tmp_path, harness
     assert mailbox.menu == play.scenario_steps(manifest["scenario"])
     assert (job / "map_list.txt").read_text() == "list_box\n"
     assert f"seed 3: {manifest['scenario']['player']['subculture']} vs" in digest.digest(job)
+
+
+def test_a_battle_with_the_wrong_role_is_not_scored(tmp_path):
+    scenario = json.loads(play.SCENARIOS_PATH.read_text())["siege-kho5-dwf5"]
+    expect = play.expected_mode(scenario)
+    assert expect == {"role": "defender"}
+    state = observation(2, 1000)
+    state["mode"] = {"type": "settlement_standard", "role": "attacker"}
+    result = play.play_episode(tmp_path / "e", CONFIG, Hold(),
+                               FakeMailbox([observation(1, 0), state]), not_battle=None,
+                               expect=expect)
+    assert result["status"] == "unsupported_or_invalid"
+    assert result["mode"] == {"type": "settlement_standard", "role": "attacker"}
+    assert "role is 'attacker'" in result["error"]

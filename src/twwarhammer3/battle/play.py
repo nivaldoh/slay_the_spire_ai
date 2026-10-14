@@ -52,6 +52,7 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
     require_realtime(config)
     scenario = load_scenario(config)
     steps = scenario_steps(scenario)
+    expect = expected_mode(scenario)
     output.mkdir(parents=True)
     write_json(output / "environment.json", collect_diagnostics())
     manifest = {
@@ -82,7 +83,7 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
             if index:
                 mailbox.write_control(previous, "restart")
             result = play_episode(output / f"episode-{index:04d}", config, policy_factory(),
-                                  mailbox, not_battle=previous)
+                                  mailbox, not_battle=previous, expect=expect)
             previous = result.get("battle")
             manifest["episodes"].append(result)
             write_json(output / "manifest.json", manifest)
@@ -137,6 +138,14 @@ def load_scenario(config: dict) -> dict:
     for side in ("player", "enemy"):
         draw[side] = {"subculture": rng.choice(catalogue["races"]), "units": None}
     return draw
+
+
+def expected_mode(scenario: dict) -> dict:
+    """What the battle's first observation must show for the setup to count: the player's
+    role when the scenario names the attacker."""
+    if not scenario.get("attacker"):
+        return {}
+    return {"role": "attacker" if scenario["attacker"] == "player" else "defender"}
 
 
 def sides(scenario: dict) -> list[dict]:
@@ -270,7 +279,7 @@ def start_frontend(mailbox: Mailbox, config: dict, output: Path, steps: list[dic
 
 
 def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
-                 not_battle: str | None) -> dict:
+                 not_battle: str | None, expect: dict | None = None) -> dict:
     require_realtime(config)
     directory.mkdir()
     trace = (directory / "trace.jsonl").open("x", buffering=1)
@@ -284,7 +293,7 @@ def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
                                 **fields}, sort_keys=True) + "\n")
 
     try:
-        _drive(config, policy, mailbox, not_battle, result, event, started)
+        _drive(config, policy, mailbox, not_battle, result, event, started, expect or {})
     except MailboxTimeout as exc:
         past = time.monotonic() - started > config["episode_timeout"]
         result.update(status="truncated" if past else "infrastructure_failure", error=str(exc))
@@ -331,7 +340,7 @@ def caption(observation: dict, behavior: dict, orders: list[dict]) -> str | None
     return f"{head}\n{behavior['reason']}\n{decided}"[:CAPTION_LIMIT]
 
 
-def _drive(config, policy, mailbox, not_battle, result, event, started) -> None:
+def _drive(config, policy, mailbox, not_battle, result, event, started, expect) -> None:
     deadline = started + config["episode_timeout"]
     first = mailbox.wait_new_battle(not_battle=not_battle, timeout=config["start_timeout"])
     battle = result["battle"] = first["battle"]
@@ -357,6 +366,12 @@ def _drive(config, policy, mailbox, not_battle, result, event, started) -> None:
                 "enemy": [unit.get("type") for unit in observation.get("enemy_roster", [])],
             }
             event("roster", observation=observation)
+            mode = observation.get("mode") or {}
+            result["mode"] = {key: mode.get(key) for key in ("type", "role")}
+            for key, wanted in expect.items():
+                if mode.get(key) != wanted:
+                    raise ProtocolError(f"setup: the battle's {key} is {mode.get(key)!r},"
+                                        f" the scenario wants {wanted!r}")
         ack = observation.get("orders")
         if outstanding and ack and ack.get("request") == outstanding["request"]:
             latency = {

@@ -27,6 +27,22 @@ def _strength(observation: dict) -> str:
             f"  seen {len(enemy)}/{roster}u {sum(u.get('men', 0) for u in enemy)}m")
 
 
+def _objectives(observation: dict) -> str:
+    """Tickets and the holders of capture points, for battle types that have them."""
+    mode = observation.get("mode") or {}
+    parts = []
+    if mode.get("tickets"):
+        parts.append("tickets " + " ".join(f"{row['side']} {row['tickets']}"
+                                           for row in mode["tickets"])
+                     + f" of {mode.get('tickets_goal')}")
+    if mode.get("capture_points"):
+        holders = [point.get("holder") or "-" for point in mode["capture_points"]]
+        parts.append("points " + ",".join(holders))
+    if mode.get("supplies") is not None:
+        parts.append(f"supplies {mode['supplies']}")
+    return ("  " + "; ".join(parts)) if parts else ""
+
+
 def _units(observation: dict) -> list[str]:
     lines = []
     for side in ("friendly", "enemy"):
@@ -68,6 +84,7 @@ def episode_digest(episode: Path) -> str:
             plan = (f"  plan ({behavior['plan_age_s']:.1f} s old): "
                     f"{describe_plan(behavior['plan'])}" if "plan" in behavior else "")
             lines.append(f"{record['time_ms'] / 1000:6.0f}s  {_strength(observation)}"
+                         f"{_objectives(observation)}"
                          f"  {describe_orders(record['orders'])}{plan}{reason}")
         elif kind == "ack" and record["request"] in pending:
             index = pending.pop(record["request"])
@@ -79,7 +96,8 @@ def episode_digest(episode: Path) -> str:
         elif kind == "invalid":
             lines.append(f"        invalid: {record['error']}")
     if last:
-        lines.append(f"final at {last.get('time_ms', 0) / 1000:.0f} s: {_strength(last)}")
+        lines.append(f"final at {last.get('time_ms', 0) / 1000:.0f} s: {_strength(last)}"
+                     f"{_objectives(last)}")
         lines += _units(last)
     if notes:
         lines.append("notes: " + notes.replace("\n", " / "))

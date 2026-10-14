@@ -140,8 +140,10 @@ def render_unit(unit: dict, mine: bool, before: tuple | None = None,
     if mine and not unit.get("men"):
         return f"{unit['id']} {short_type(unit.get('type'))}: destroyed"
     men0, hp0 = before or (None, None)
+    side = f" of alliance {unit['alliance']}" if unit.get("alliance") else ""
     parts = [
-        f"{unit['id']} {short_type(unit.get('type'))} ({unit.get('class', '?')}) {_position(unit)}",
+        f"{unit['id']} {short_type(unit.get('type'))}{side} ({unit.get('class', '?')})"
+        f" {_position(unit)}",
         f"{unit.get('men', 0)}/{unit.get('men0', 0)} men{_change(unit.get('men', 0), men0)}",
         f"hp {_hp(unit)}%{_change(_hp(unit), hp0)}",
     ]
@@ -292,7 +294,9 @@ def render_state(observation: dict, last_seen: dict, before: dict | None = None,
               for unit in observation.get("friendly", [])]
     roster = observation.get("enemy_roster") or []
     lines.append("Enemy roster: " + (", ".join(
-        f"{unit['id']} {short_type(unit.get('type'))}{' (destroyed)' if unit.get('dead') else ''}"
+        f"{unit['id']} {short_type(unit.get('type'))}"
+        f"{' of alliance ' + str(unit['alliance']) if unit.get('alliance') else ''}"
+        f"{' (destroyed)' if unit.get('dead') else ''}"
         for unit in roster) or "unknown"))
     lines.append("Visible enemies:")
     lines += ["- " + render_unit(unit, False, before.get(unit["id"]))

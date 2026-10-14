@@ -638,6 +638,28 @@ local function scan()
     end
 end
 
+-- The first column of the battle-type cheat sheet (the help panel), as plain text without
+-- the entries that explain the interface: the objectives and the type's own mechanics.
+local INTERFACE = {
+    ["Time Limit & Controls"] = true, ["Balance of Power Bar"] = true,
+    ["Unit Buttons"] = true, ["Abilities"] = true,
+}
+
+local function objectives()
+    local text = get_context('BattleTypeCheatSheetList(0).JoinString(HeaderText + "##" + DescriptionText, "@@")')
+    if type(text) ~= "string" then return nil end
+    local entries = {}
+    for entry in string.gmatch(text .. "@@", "(.-)@@") do
+        local header, description = string.match(entry, "^(.-)##(.*)$")
+        header = header and string.gsub(plain(header), ":%s*$", "")
+        if header and not INTERFACE[header] then
+            description = string.gsub(string.gsub(plain(description), "%s+", " "), "^ ", "")
+            entries[#entries + 1] = header .. ": " .. description
+        end
+    end
+    return #entries > 0 and table.concat(entries, " ") or nil
+end
+
 -- What the battle type is and asks for, read once: the player's role, who wins when time
 -- runs out, and the objectives as the game's battle-type cheat sheet states them.
 local function battle_info()
@@ -648,9 +670,7 @@ local function battle_info()
     if type(attacker) == "boolean" then info.role = attacker and "attacker" or "defender" end
     local timeout = get_context("TimeoutWinningAllianceIndex")
     if type(timeout) == "number" then info.timeout_winner = side(timeout) or "none" end
-    local objectives = get_context('BattleTypeCheatSheetList(0).JoinString(HeaderText + ": " + '
-                                   .. 'DescriptionText, " ")')
-    if type(objectives) == "string" and objectives ~= "" then info.objectives = objectives end
+    info.objectives = objectives()
     return info
 end
 
