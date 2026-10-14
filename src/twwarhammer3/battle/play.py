@@ -538,6 +538,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, expect) 
             active_wall_start = time.time()
             if config.get("benchmark_scenario"):
                 result["setup_checks"] = check_battle(config["benchmark_scenario"], observation)
+                result["setup"] = observation.get("setup")
             for key, wanted in expect.items():
                 if mode.get(key) != wanted:
                     raise ProtocolError(f"setup: the battle's {key} is {mode.get(key)!r},"

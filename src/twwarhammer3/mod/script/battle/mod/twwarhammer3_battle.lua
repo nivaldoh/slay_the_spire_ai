@@ -524,7 +524,7 @@ local function observation(now)
         army = army, mode = section,
         orders = state.applied, result = state.result, final = state.final,
         evaluation = evaluation(),
-        setup = state.setup,
+        setup = not state.applied and state.setup or nil,
         terrain = state.terrain,
     }
 end
@@ -1022,6 +1022,11 @@ local function start()
         modifiers[#modifiers + 1] = tonumber(row[1])
     end
     state.setup.army_ai_stats_modifiers = modifiers
+    -- Private setup evidence for modifier calibration, before any controller orders.
+    state.setup.unit_base_stats = get_context(
+        'ArmyList.JoinString(FactionContext.Key + "@" + UnitList.JoinString('
+        .. 'UnitRecordContext.Key + ":" + UnitDetailsContext.StatList.JoinString('
+        .. 'Key + "=" + ValueBase, "/"), ";"), "@@")')
     local terrain_ok, terrain = pcall(read_terrain)
     if terrain_ok then state.terrain = terrain else log("terrain failed: " .. clean_error(terrain)) end
     sample_objectives(state.started_ms)
