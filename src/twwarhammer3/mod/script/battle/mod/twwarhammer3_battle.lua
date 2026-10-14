@@ -362,8 +362,8 @@ local function mode_section()
         local pool, affordable = {}, {}
         local supplies = tonumber(get_context("PlayerArmyContext.GlobalCurrency")) or 0
         for index, row in ipairs(pool_rows()) do
-            pool[#pool + 1] = {type = row[1], cost = round(tonumber(row[2]))}
-            if (pool[#pool].cost or 0) <= supplies then affordable[#affordable + 1] = index end
+            pool[#pool + 1] = {type = row[1], cost = round(tonumber(row[2])) or 0}
+            if pool[#pool].cost <= supplies then affordable[#affordable + 1] = index end
         end
         table.sort(affordable, function(a, b) return pool[a].cost < pool[b].cost end)
         section.reinforcements = pool
