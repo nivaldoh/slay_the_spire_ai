@@ -880,6 +880,27 @@ M1 is done when:
 | The `exec:` adapter | A controller not written in Python |
 | `obs-v2` | Player equivalence becomes a goal |
 | A suite of families with held-out variants | One scenario passes admission |
+| Model against model, possibly in teams | Owner idea (2026-10-14), some day; see below |
+
+**Model against model, possibly in teams** (owner idea, 2026-10-14, for some day). Models
+would fight each other instead of the game AI, perhaps several to a side. There are two
+routes; both are untried:
+1. **One game client.** The battle script takes control of the enemy army too, with the
+   same unit controllers it uses for ours, and serves each side its own observation
+   (`is_visible_to_alliance` for that side) and orders.
+   - The custom battle screen can add armies to a side (`button_add_ai`), which gives
+     teams, for example 2v2 with one model per army.
+   - To check: that the game AI lets go of units the script takes, and what teammates may
+     tell each other.
+2. **Real multiplayer, hosted locally.** Each side runs its own game client with the mod,
+   which needs separate Steam accounts and copies of the game.
+   - The mod stays inert in multiplayer today (its `is_multiplayer` check).
+   - The game's scripting notes warn that script actions that differ between clients
+     cause desyncs, so orders fed in from outside on one client may break the battle.
+   - This route is riskier, so try route 1 first.
+
+Either way, both sides' latency counts. Results become relative to the opponents faced
+(pairings, ratings) rather than win rates against one fixed AI.
 
 ## Part 3. A concrete scenario: `dwf-sla-taurox`
 
