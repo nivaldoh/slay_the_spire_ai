@@ -8,7 +8,7 @@ is in [benchmark.md](benchmark.md) and the original acceptance brief in
 
 ## Acceptance checklist
 
-- [ ] Frozen scenarios: explicit maps, factions, armies, roles, settings, content and
+- [x] Frozen scenarios: explicit maps, factions, armies, roles, settings, content and
       development/held-out variants; setup read-backs reject mismatches before scoring.
 - [x] One launch rotates named or importable controllers in a recorded random order;
       rematch start fingerprints show pairing quality. Existing single-policy jobs work.
@@ -28,7 +28,7 @@ is in [benchmark.md](benchmark.md) and the original acceptance brief in
       settings; keep held-out variants out of tuning.
 - [ ] Run controlled 0/6/10 s delay trials with natural latency retained and battle
       always live at 1x. Report sensitivity or the detectable-effect limit of a null.
-- [ ] Fix and engine-test the selected scenarios' terrain/path and control gaps;
+- [x] Fix and engine-test the selected scenarios' terrain/path and control gaps;
       offensive siege variants require gate/wall orders and equipment before admission.
 - [x] Align episode caps with game timers; finish time-weighted objective reporting,
       key-building register fields and reinforcement counts by unit type.
@@ -37,76 +37,46 @@ is in [benchmark.md](benchmark.md) and the original acceptance brief in
 
 ## Current work
 
-No scenario is admitted and no G1/G2 trials have run. The owner's specialist brief
-is in [scenario-recipe.md](scenario-recipe.md): compact forces, anchor units, faction
-mechanics and meaningful tactical choices. The first prototypes are cavalry six
-versus eight and caster five versus ten, each with an 8000 cap and unused funds.
-The unstarted generic Herald G1 plan was superseded; every held-out map remains unused.
+No scenario is admitted and no G1/G2 trials have run. The specialist recipe now
+selects the compact cavalry attacker (six versus eight) for repeated calibration.
+Caster five-versus-ten remains a development candidate. All held-out maps are untouched.
 
-Core paired execution, setup gates, outside controllers, reports and objective metrics
-have passed acceptance. Terrain, nonzero barriers, ability ranges, spell resource use,
-visible flight/speeds, public morale and normal landing/take-off have live evidence.
-The latest flight probe on `f179dbe` verified both flyers grounded at 7.9 s, still
-grounded after a repeated landing request at 8.2 s, and airborne at 18.7 s. All six
-orders were accepted. Its later scripted battle lost at 372 s; no API calls.
-Artifact: `reports/bench-b8-flight-acceptance.json` under WH3 runs.
+b9 on `a8fdf34` completed at 21:53:04 UTC. Its idle-attacker timer acceptance passed:
+engine loss at 1205.2 s with both armies intact, retained expiry evidence and the
+correct `time_limit` label. Run-nearest effect acceptance also passed: all six initial
+attacks were accepted and later public running states/displacement confirmed movement.
+Reports under WH3 runs: `reports/bench-b9-timer-acceptance.json` and
+`reports/bench-b9-rush-acceptance.json`.
 
-Recent specialist development results (not pooled across sources):
-
-| Source / controller | Scenario | Engine outcome | Active margin | API USD |
+| b9 controller | AI modifier | Outcome / seconds | Active margin | API USD |
 |---|---|---|---|---|
-| b7 Sol low | Caster defender 5v10 | Lost, 1077 s | -0.680 | 1.78329 |
-| b7 Sol low | Cavalry attacker 6v8, 1.0 | Won, 432 s | +0.433 | 0.62009 |
-| b8 attack-nearest | Cavalry attacker, 1.0 retry | Lost, 370 s | -0.808 | 0 |
-| b8 Luna low | Cavalry attacker, 1.0 retry | Lost, 247 s | -0.589 | 0.01922 |
-| b8 hold | Cavalry attacker, 1.0 retry | Lost at timer, 1205 s | 0 | 0 |
-| b8 Luna low | Cavalry attacker, 1.1 | Lost, 271 s | -0.626 | 0.02274 |
+| Run-nearest | 1.0 | Lost / 210.7 | -0.791 | 0 |
+| Luna medium | 1.0 | Lost / 214.4 | -0.834 | 0.01520 |
+| Run-nearest | 1.1 | Lost / 256.7 | -0.666 | 0 |
+| Luna medium | 1.1 | Lost / 341.7 | -0.513 | 0.02566 |
 
-Sol's one cavalry win establishes a viable strategy, not admission. Luna routed the
-ranged units in both pilots but lost to the remaining general/halberdiers. Its six
-1.0 ability refusals repeated accepted activations before the UI readiness updated;
-subsequent states show those abilities active. Earlier defender-evasion pilots,
-the recovered b6 startup hang, and all retired/interrupted trials remain in the
-[version log](log.md). No interrupted trial is counted as a gameplay outcome.
+Both rematch starts matched; four valid / four started trials, 1354.34 wall seconds,
+10.63 valid trials/hour including setup/reset. Report:
+`reports/bench-b9-assault-medium.json`. Luna's 1.1 attack killed the general and routed
+the ranged line but lost against the halberds. Its six ability refusals repeat previous
+accepted activations on stale readiness, the same b8 behavior; audit:
+`reports/bench-b9-luna-ability-refusals.json`. Spend is $6.3723 of $25.
 
-The first b8 cavalry 1.0 trial stopped at 340.7 s with observation silence, an
-infrastructure failure of unresolved cause. No Lua error or matching Windows
-application event was retained. A separate unchanged retry recovered. Its combined
-1.0 report retains 3 valid / 4 started trials, 4.23 valid trials/hour. Both 1.0 rematch
-starts matched. The 1.1 hold also lost at 1205 s (margin 0) and attack-nearest at 395 s (-0.868),
-with matched starts. The queue on `f179dbe` completed at 21:05:37 UTC; the controller
-and stall monitor exited, and doctor reports ready. Combined screens: 6 valid / 7
-started trials, 4.68 valid trials/hour. Current actions are in [../state.md](../state.md).
-Queue: `runs/twwarhammer3/calibration/b8-assault-screen-r2-plan-state.json`.
-Spend is $6.3315 of the cumulative $25 cap.
+The reference is frozen as Sol low through `llm_rules`, motivated by its b7 cavalry
+flanking win (432 s, margin +0.433, $0.62009). That is a viability demonstration, not
+admission. G1 will compare it with walk-nearest and run-nearest over six fresh launches
+per modifier. See the exact freeze and G2 selection rule in
+[calibration-plan.md](calibration-plan.md). G1/G2 retain the compact rosters, rules-only
+prompt, existing interface and cumulative budget. The driver pins the source before
+execution and retains failures and geometry flags. No held-out tuning is allowed.
 
-The untouched hold loss exposed two issues before G1:
-- The engine resets remaining time to -1 at its result, so b8 mislabels the timer
-  cause as `engine_result`. Its won/lost/draw remains valid. A separate countdown
-  audit preserves the raw records: `reports/bench-b8-timer-classification-audit.json`.
-  Isolated b9 `9f05777` retains a tick-sampled deadline. 222 WH3 tests with Lua,
-  Ruff, Lua 5.1 parsing and recorded-countdown replay pass; live acceptance is pending.
-- An idle attacker can lose with raw strength margin zero. The pre-G1 calibration
-  amendment replaces hold with `rush_nearest` as this family's second tactical
-  comparator. Hold stays an objective-failure control. b9 `33b7e2b` adds only a run-flag
-  change to AttackNearest; 77 benchmark/play tests and Ruff pass. It needs a live screen.
-  Raw scoring, the 2–4/6 decisive-win threshold, positive paired intervals against both
-  active baselines, rotation seeds and held-out separation are unchanged.
-
-b8 evidence is committed as `4e4de1c` and b9 merged as `90a8796` after the queue
-exited. Its runtime/tests exactly match the tested `33b7e2b` worktree. The successor is
-`runs/twwarhammer3/calibration/b9-timer-and-reference-plan.json`: timer acceptance,
-then medium-effort Luna against run-nearest at 1.0/1.1 on the same compact armies.
-It is not executable until the source is pinned. The separate local b9 driver
-has the timer-result gate and its hash is recorded. Freeze a competent reference and viable candidate before
-G1, then complete the 0/6/10 s G2 experiment and final requirement audit.
-
-Starting-formation geometry flags remain in primary results, with a secondary paired
-comparison omitting flagged launches. Changed resources/loadouts stop later jobs for
-review. Requested snapshot ages are minima; reports preserve actual age at decision
-and issuance. Neither an accepted order nor a matched start proves its effect or
-statistical independence. The detailed evidence below and [integration.md](integration.md)
-record these limits.
+The selected cavalry controls, terrain, setup gates, imported controllers, reports and
+objective metrics have live acceptance. Specialist flight/morale/barrier/ground-spell
+checks also passed during caster development. b9 passed 223 WH3 tests with Lua,
+repository-wide Ruff and Lua 5.1 parsing. The remaining release evidence is admitted
+repeated calibration, completed 0/6/10 s G2 trials, their uncertainty/limits, and the
+final audit/log/register/state. Historical evidence below and the [log](log.md) retain
+all retired candidates and failures; sources are not pooled.
 
 ## Implementation and live acceptance
 

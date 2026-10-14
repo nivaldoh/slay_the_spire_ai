@@ -30,6 +30,45 @@ After the b8 queue exited and its evidence was committed as `4e4de1c`, b9 merged
 `90a8796`. Runtime and test files exactly match the tested worktree. Live timer
 acceptance and medium-effort reference screens are next, before G1/G2.
 
+Live b9 on `a8fdf34` passed timer acceptance: hold lost at 1205.2 s with both armies
+intact, no refusals or API calls, clock ratio 0.999616. The terminal raw countdown
+is -1, but retained timer evidence says deadline 1205045.875 ms and expired=true;
+`ended_by=time_limit` is now correct. Whole-job time 1346.59 s including setup,
+2.67 valid trials/hour. Report: `reports/bench-b9-timer-acceptance.json`. The queue's
+timer gate passed and its paired rush-nearest/medium-effort Luna 1.0 screen started
+at 21:30:30 UTC, with 1.1 queued afterward. These are development screens, not G1.
+Run-nearest live acceptance passed in that first trial: all six initial run=true
+attacks were accepted; at 8.9 s each unit publicly reports running and has moved
+13.5–23.7 m from its 5.3 s start. Artifact: `reports/bench-b9-rush-acceptance.json`.
+That baseline then lost at 210.7 s, one refusal; the paired Luna rematch follows.
+The early result correctly retains an unexpired timer and ended_by=engine_result.
+The paired medium-effort Luna trial lost at 214.4 s, margin -0.834 versus the
+baseline's -0.791. Matched start, 21 decisions, three routing refusals, $0.01520,
+clock ratio 0.98169; mean issued order age 9.857 s. Its direct attacks were intercepted
+by the halberds and its lord fought the general alone. Both trials are valid;
+589.81 s whole-job time gives 12.21 valid trials/hour. The 1.1 screen follows.
+Report: `reports/bench-b9-assault-medium-ai10.json`.
+
+At 1.1, run-nearest lost at 256.7 s (margin -0.666, no refusals, clock 0.99837).
+Medium Luna lost at 341.7 s (-0.513), 35 decisions, 13 refusals, matched start,
+clock 0.98596, 39 calls/$0.02566 and mean order age 9.339 s. It killed the general
+and routed the cannon/handgunners, then lost to the remaining halberds. Six ability
+refusals were immediate repeats of accepted activations before readiness updated;
+three were dead targets and four routing units. Audit:
+`reports/bench-b9-luna-ability-refusals.json`. Report:
+`reports/bench-b9-assault-medium-ai11.json`. Combined screens: four valid / four
+started, 1354.34 wall seconds, 10.63 valid trials/hour. Both rematch starts matched.
+The queue ended at 21:53:04 UTC, both processes exited and doctor reports ready.
+Cumulative WH3 spend is $6.3723 of $25.
+
+Before any G1 data, freeze the existing compact cavalry attacker family and Sol low
+`llm_rules` as reference, with walk-nearest and run-nearest baselines. Its prior b7
+flanking win motivates the choice; the Luna low/medium screens did not establish
+competence. The source/prompt/rosters remain fixed during repeated calibration.
+Six launches per modifier use the original unused G1 seeds. If both modifiers meet
+admission, choose 1.1 for G2; otherwise use the sole passing setting, or continue
+recorded development if neither passes. See the calibration plan for exact conditions.
+
 ## Benchmark harness b8 (2026-10-14, caster control)
 
 Draft `6b30737` adds the five-versus-ten caster attacker family, retaining the defender

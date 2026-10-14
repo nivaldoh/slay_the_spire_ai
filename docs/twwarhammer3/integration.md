@@ -345,8 +345,12 @@ b9 samples the countdown on engine ticks and includes its last finite sample/dea
 in terminal `timer` evidence. Expiry is inferred by comparing that deadline with result
 time, not read from an authoritative end-cause getter. Combat and timer expiry in the
 same tick may remain ambiguous. The original engine won/lost/draw is independent of
-this label. Regression tests and replay of the recorded countdown pass; a live test of
-the patched mod is pending.
+this label. Regression tests and replay of the recorded countdown pass. Live job
+`bench-b9-timer-acceptance-20261014` on `a8fdf34` then passed: engine loss at
+1205200 ms with raw remaining_ms=-1, retained deadline 1205045.875 ms, expired=true
+and ended_by=time_limit. Both armies stayed intact; clock ratio 0.999616. This
+confirms the label on an isolated timer ending, not simultaneous combat/expiry.
+Report: `reports/bench-b9-timer-acceptance.json` under WH3 runs.
 
 ## Battle types (probed 2026-10-14)
 

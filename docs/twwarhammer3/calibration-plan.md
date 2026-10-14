@@ -84,6 +84,37 @@ This changes neither the raw margin nor the admission threshold below; it replac
 the inactive comparator before any G1/G2 data are collected. The six launches per
 modifier, rotation seeds and held-out separation remain unchanged.
 
+### Frozen cavalry calibration (2026-10-14, after b9 screening)
+
+The selected development family is `brt-cavalry-emp-assault` / `-hard`: six Bretonnian
+cavalry units versus eight Empire units, the original foot general, 8000 funds cap,
+1200 s timer, Taurox map, player attacking, very-hard tactical AI and modifiers 1.0/1.1.
+The matching Nurgle-wastes held-out variant remains unplayed. Exact rosters/settings
+are in the committed scenario definitions; setup checks run on every trial.
+
+The reference is now frozen as `llm_rules`, `gpt-6-sol`, effort `low`, with the existing
+rules-only prompt, actions, memory and natural inference latency. The b7 pilot won by
+flanking the obstruction, breaking the ranged line and concentrating on the general.
+Luna low and medium lost both modifier screens; medium sometimes chose useful targets
+but did not establish competence. Sol's one win motivates this reference choice, not
+admission or a measured intermediate win rate. G1 will establish those repeated results.
+No prompt, roster or controller tuning will occur during G1 or G2.
+
+Run the 12 launches above, alternating modifiers and rotating
+`attack_nearest,rush_nearest,llm_rules` once per launch. Use `--episodes 3`, added age 0,
+`--start-timeout 900 --episode-timeout 1320 --run-timeout 5400 --budget-usd 25 --show`.
+The local frozen plan is `runs/twwarhammer3/calibration/g1-cavalry-plan.json`; it records
+the full committed revision and driver hash before launch. All model calls share the
+existing ledger ($6.3723 before G1); its cumulative $25 cap remains in force. An
+infrastructure or resource/loadout failure stops later jobs for investigation, retaining
+the started trials. Geometry flags alone do not stop it. No early stopping or reference
+replacement based on gameplay outcomes is planned.
+
+Evaluate admission separately per modifier. If both pass, select 1.1 for G2; if only
+one passes, select that setting. If neither passes, record failure and continue
+scenario development. G2 keeps the same reference/source and uses the previously
+declared six rotation seeds. These are development comparisons, not held-out rankings.
+
 Admission requires both:
 
 1. The declared competent reference wins before the timer roughly 30–70% (2–4 of 6),

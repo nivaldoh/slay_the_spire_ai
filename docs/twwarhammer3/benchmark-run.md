@@ -1,6 +1,6 @@
 # Running a paired WH3 benchmark
 
-Live acceptance is in progress: [benchmark-progress.md](benchmark-progress.md).
+Core live acceptance has passed: [benchmark-progress.md](benchmark-progress.md).
 No scenario has passed calibration yet. Design: [benchmark.md](benchmark.md).
 
 ## Setup and commands
@@ -10,26 +10,34 @@ Use Windows/WSL2, Steam logged in, the pinned game and Windows Python at
 Run `uv sync --locked` and `uv run python -m twwarhammer3 doctor`. Source must be
 committed; do not run another game controller. The game stays unpaused at 1x.
 
-`dwf-sla-taurox` freezes a 12-v-12 development draw, including its map, factions,
-armies, DLC requirements and Runelord substitution. It expects very hard, large funds,
-3600 s, unit scale 0.75, realism off, the player defending and AI stats preference 1.1.
-The AI modifier is explicitly set through the lobby and read back both there and from
-each battle army. Funds mode and finite timer are also explicitly selected; custom
-funds amounts are set and checked when declared. Other settings are checked. The lobby
-setters and battle-side 1.0/1.1 read-backs passed. Fresh starting-stat comparisons found
-bonuses on the AI side only. Setup mismatches stop the job before scoring.
+The frozen G1 candidate is `brt-cavalry-emp-assault` (AI modifier 1.0) and its
+`-hard` variant (1.1): six Bretonnian cavalry units against eight Empire units on
+the Taurox map, with the player attacking. Exact factions, cards, lord mount, anchor
+hypotheses and content requirements are in `configs/twwarhammer3/scenarios.json`.
+The 8000 funds cap leaves unused funds; army size is part of the tactical problem.
+Settings are very-hard tactical AI, 1200 s timer, unit scale 0.75 and realism off.
+The lobby explicitly sets funds, timer and AI modifier, then setup checks verify them
+again in battle. Mismatches stop the job before scoring. Held-out variants stay out
+of development tuning.
+
+One paired launch with the frozen reference and both trivial baselines:
 
 ```bash
-uv run python -m twwarhammer3 play --scenario dwf-sla-taurox \
-  --policy hold,attack_nearest,skills --rotation-seed 101 \
-  --output runs/twwarhammer3/battle/bench-calibration-01
-uv run python -m twwarhammer3 play --scenario dwf-sla-taurox \
-  --policy skills --delay-seconds 0,6,10 --rotation-seed 102 \
-  --output runs/twwarhammer3/battle/bench-delay-01
+uv run python -m twwarhammer3 play --scenario brt-cavalry-emp-assault \
+  --policy attack_nearest,rush_nearest,llm_rules --episodes 3 --rotation-seed 2026101401 \
+  --model gpt-6-sol --effort low --budget-usd 25 --delay-seconds 0 \
+  --start-timeout 900 --episode-timeout 1320 --run-timeout 5400 --show \
+  --output runs/twwarhammer3/battle/my-cavalry-calibration-01
 uv run python -m twwarhammer3 stats \
-  --report runs/twwarhammer3/battle/bench-calibration-01 \
-  --report-json runs/twwarhammer3/bench-calibration-report.json
+  --report runs/twwarhammer3/battle/my-cavalry-calibration-01 \
+  --report-json runs/twwarhammer3/my-cavalry-calibration-report.json
 ```
+
+Repeat independent launches using the declared schedule in
+[calibration-plan.md](calibration-plan.md); a single launch cannot establish admission.
+After a modifier is admitted, the same reference's G2 launch uses
+`--policy llm_rules --episodes 3 --delay-seconds 0,6,10` and its declared G2 rotation
+seed, with the same source, model, effort, timer and budget. G2 has not run yet.
 
 Every new launch needs a new output directory. Pass multiple job directories to
 `--report`. One launch is one instance; controllers rotate through rematches in a
