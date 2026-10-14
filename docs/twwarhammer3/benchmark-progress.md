@@ -124,3 +124,28 @@ Selecting custom funds and setting 30000 both read back successfully. The three 
 candidates now declare custom 30000, with unchanged units. Failed-setup dumps are now
 saved when the current menu log confirms they were produced; stale bridge dumps are
 excluded. Regression checks cover the refused budget and retained failure evidence.
+
+### Broken-setup acceptance passed
+
+`bench-b2-broken-setup-20261014` on `acb97f5` rejected
+`deliberately_missing_benchmark_unit` at recruitment step 37. Manifest: setup_failure,
+zero episodes; the current map dump was retained automatically. The diagnostic driver
+and scenario hashes are in `capability-probes/benchmark-b2-broken-setup/probe.json`.
+The b2 acceptance retry rotates TerrainProbe then Luna on the corrected Herald 1.0
+scenario (`bench-b2-acceptance-20261014`, session 98256). TerrainProbe asserts that an
+out-of-bounds move is refused, selects one reported alternative, checks its acceptance,
+records movement after six seconds, then halts and holds. No scores from this diagnostic
+controller will be used for scenario calibration.
+
+### b2 battle read-back and terrain fix
+
+The corrected Herald scenario passed every lobby and in-battle setup check on
+`acb97f5`; both army modifier getters returned 1.0, and the private starting-stat string
+contains both full rosters. The diagnostic then failed before issuing orders because
+terrain was absent: `mod.log` reports the game has no `math.huge`. This was retained as
+a policy failure with the last private evaluation, and Luna was left unplayed.
+The sampler now initializes bounds from its first actual corner. A Lua 5.1 regression
+removes `math.huge` and checks the grid geometry; it passes with `uv run --with lupa
+pytest tests/twwarhammer3/test_wh3_lua_terrain.py`. Vanilla battle code uses the other
+trigonometry APIs in the new navigation code. Full suite before this one-line Lua fix:
+1033 passed, 1 skipped; Ruff clean. All mod scripts parse after the fix.

@@ -23,6 +23,14 @@ The funds probe read only Default/Custom options and verified custom 30000. Hera
 candidates retain their units and now pin that budget. Setup failures retain current
 menu dumps. Validation after this fix: 54 relevant tests passed; Ruff passed.
 
+`bench-b2-broken-setup-20261014` (`acb97f5`) refused the nonexistent card before
+scoring and saved its map dump. `bench-b2-acceptance-20261014` passed the corrected
+Herald setup (1.0, 1200 s, custom 30000) and recorded both armies' starting stats, then
+stopped at the terrain diagnostic: this game lacks `math.huge`, so the grid was absent.
+The sampler now starts from its first corner; a Lua 5.1 regression reproducing the missing
+constant passes. The failed trial is in the register, Luna was not played. Full suite
+before the Lua fix: 1033 passed, 1 skipped; Ruff and post-fix Lua syntax passed.
+
 ## Benchmark harness b1 (2026-10-14, acceptance rotation complete)
 
 Owner goal: complete paired benchmarks, difficulty/latency calibration and the scenario

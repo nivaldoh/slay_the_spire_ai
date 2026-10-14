@@ -137,7 +137,8 @@ end
 -- and reachability remains unit-specific. No enemy-unit information is queried.
 local function read_terrain()
     local corners = {bm.battle:battle_boundaries()}
-    local min_x, max_x, min_z, max_z = math.huge, -math.huge, math.huge, -math.huge
+    local min_x, max_x = corners[1]:get_x(), corners[1]:get_x()
+    local min_z, max_z = corners[1]:get_z(), corners[1]:get_z()
     for _, corner in ipairs(corners) do
         min_x, max_x = math.min(min_x, corner:get_x()), math.max(max_x, corner:get_x())
         min_z, max_z = math.min(min_z, corner:get_z()), math.max(max_z, corner:get_z())

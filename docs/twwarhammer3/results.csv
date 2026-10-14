@@ -157,3 +157,4 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-14,bench-b1-acceptance-20261014,episode-0002,dwf-sla-taurox,skills,,,,5cad165,realtime,1.0,0.0,lost,426,0.26,0.24,1369,0,0.31,0,classic,,,,,0.0,0.19213973799126638,0.0,engine_result
 2026-10-14,bench-b1-acceptance-20261014,episode-0003,dwf-sla-taurox,attack_nearest,,,,5cad165,realtime,1.0,0.0,lost,262,0.51,0.62,835,5,0.31,0,classic,,,,,0.0,0.5938864628820961,0.0,engine_result
 2026-10-14,bench-b1-acceptance-20261014,episode-0004,dwf-sla-taurox,external_controller:ExternalHold,,,,5cad165,realtime,1.0,0.0,lost,386,0.27,0.67,1238,0,0.31,0,classic,,,,,0.0,0.6746724890829694,0.0,engine_result
+2026-10-14,bench-b2-acceptance-20261014,episode-0000,dwf-sla-herald,terrain_probe:TerrainProbe,,,,acb97f5,realtime,1.0,0.0,policy_failure,5,1.0,1.0,0,0,,0,classic,,,,,1.0,1.0,0.0,
