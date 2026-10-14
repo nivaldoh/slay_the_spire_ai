@@ -59,8 +59,9 @@ LOBBY = "CustomBattleLobbyContext."
 PLAYER_ATTACKS = LOBBY + "LocalPlayerSlotContext.TeamContext.IsAttacker"
 NOT_STARTED = "the battle did not start"
 # The battle's BattleTypeState for each lobby battle type, as the 2026-10-14 smoke battles
-# reported them (classic is unverified, and free-for-all shares land_normal).
+# reported them; classic was checked in b1 acceptance and free-for-all shares land_normal.
 ENGINE_TYPES = {
+    "classic": "land_normal",
     "conquest": "conquest", "domination": "domination", "free_for_all": "land_normal",
     "ambush": "land_ambush", "river_crossing_battle": "land_bridge",
     "underground_intercept": "underground_intercept",
