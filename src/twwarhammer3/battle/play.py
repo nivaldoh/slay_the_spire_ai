@@ -24,7 +24,7 @@ from pathlib import Path
 
 from gameai.ledger import BudgetExhausted
 from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
-from twwarhammer3.battle.controllers import card, rotation
+from twwarhammer3.battle.controllers import MODEL_POLICIES, card, rotation
 from twwarhammer3.battle.setup import (
     check_battle,
     check_menu,
@@ -93,10 +93,11 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
         "status": "running",
         "episodes": [],
     }
-    for name in sorted(set(config["policy"].split(",")) & {"llm", "commander"}):
+    for name in sorted(set(config["policy"].split(",")) & MODEL_POLICIES):
         from twwarhammer3.battle import commander, llm
 
         prompt = (commander.PROMPT_PATH if name == "commander"
+                  else llm.RULES_PROMPT_PATH if name == "llm_rules"
                   else llm.SYSTEM_PROMPT_PATH)
         filename = "system_prompt.md" if "," not in config["policy"] else f"{name}_prompt.md"
         (output / filename).write_bytes(prompt.read_bytes())

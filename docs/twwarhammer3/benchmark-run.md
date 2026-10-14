@@ -36,6 +36,14 @@ recorded random order and start with fresh state. Repeated rematches are correla
 Add `llm` or `commander` and `--budget-usd 25` to use the existing WH3 ledger; the cap
 includes earlier jobs. Never reset or move the ledger.
 
+`llm_rules` uses the same direct model, memory, actions, ledger and timing as `llm`, with
+a separately saved rules-only prompt. It describes objectives and the interface without
+the v15 instructions to stay in melee, advance together or wait behind infantry.
+Use it when screening specialist scenarios; `llm` remains the tactical-prompt baseline.
+For example, `--policy hold,attack_nearest,llm_rules --budget-usd 25`. Both names can
+appear in a rotation; each prompt is saved and hashed separately. A prompt difference
+is a controller difference, not evidence about model capability alone.
+
 The default wall cap is 3900 s. Benchmarks require a finite game timer and a wall cap
 at least 120 s longer. The process cap must cover setup, every trial and reset allowance.
 Added age D supplies the newest public snapshot at least D battle seconds old, retaining

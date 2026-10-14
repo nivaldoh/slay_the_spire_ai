@@ -41,6 +41,28 @@ def test_importable_controller_and_fresh_instances():
         controllers.controller_class("twwarhammer3.battle.scripted:_distance")
 
 
+def test_rules_controller_uses_its_own_prompt_and_shared_budget(tmp_path, monkeypatch):
+    from gameai import llm as transport
+    from twwarhammer3.battle import llm
+
+    monkeypatch.setattr(transport, "api_key", lambda: "test-only")
+    config = {"policy": "llm,llm_rules", "model": "gpt-6-luna", "effort": "low",
+              "ledger": str(tmp_path / "spend.jsonl"), "budget_usd": 1}
+    makers = controllers.factories(config)
+    original, rules = makers["llm"](), makers["llm_rules"]()
+    assert original.api.instructions == llm.SYSTEM_PROMPT_PATH.read_text()
+    assert rules.api.instructions == llm.RULES_PROMPT_PATH.read_text()
+    assert rules.api.instructions != original.api.instructions
+    assert rules.api.ledger is original.api.ledger
+    rules.notes = "previous battle"
+    assert makers["llm_rules"]().notes == ""
+    card = controllers.card("llm_rules", rules, config)
+    assert (card["kind"], card["model"], card["cost_source"]) == (
+        "model", "gpt-6-luna", "WH3 ledger")
+    with pytest.raises(ValueError, match="require --budget-usd"):
+        controllers.factories({**config, "policy": "llm_rules", "budget_usd": None})
+
+
 def test_setup_rejects_roster_multiplicity_factions_and_settings():
     scenario = {"expect": {"unit_scale": .75, "realism": False, "player_defends": True,
                            "ai_stats_modifier": "1.1"},

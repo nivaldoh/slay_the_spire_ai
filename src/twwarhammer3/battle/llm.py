@@ -26,6 +26,7 @@ from twwarhammer3.protocol import (
 )
 
 SYSTEM_PROMPT_PATH = REPO_ROOT / "configs/twwarhammer3/system_prompt.md"
+RULES_PROMPT_PATH = SYSTEM_PROMPT_PATH.with_name("rules_prompt.md")
 # Every WH3 job shares this spend file, and so one budget; Spire keeps its own.
 LEDGER_PATH = REPO_ROOT / "runs/twwarhammer3/llm-spend.jsonl"
 MAX_OUTPUT_TOKENS = 4000

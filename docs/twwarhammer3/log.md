@@ -23,9 +23,18 @@ weapon damage and charge, +8 leadership); all 12 player entries stay identical. 
 general API description must not be read as excluding that difficulty layer. Current
 Value will distinguish additional active effects; its live b3 check remains pending.
 
-Validation: 192 WH3 tests passed with the Lua runtime; Ruff and Lua 5.1 parsing passed. Regression
+The owner's specialist-scenario direction also revealed restrictive v15 tactical rules
+(stay in melee, cavalry wait behind infantry, all units advance together). Added
+`llm_rules`: the same direct controller, memory, ledger, observations/actions and timing,
+with a separate rules-only prompt. The original `llm` remains available. Rotation,
+prompt snapshots/hashes, model cards, digest and the results register identify the new
+policy. This changes the controller prompt, not the model or its permissions; its first
+game check will be part of specialist screening after the current queue ends.
+
+Validation: 195 WH3 tests passed with the Lua runtime; Ruff and Lua 5.1 parsing passed. Regression
 checks cover absent terrain, startup causes, and a throughput denominator containing a
-setup failure, plus hidden summons/deaths and retained observed deaths. Live b2 traces/
+setup failure, hidden summons/deaths and retained observed deaths, plus rules-prompt
+selection, fresh memory/shared budget and model metadata/prompt snapshots. Live b2 traces/
 reports remain separate by their recorded source; b3 live acceptance remains pending.
 
 ## Benchmark harness b2 (2026-10-14, draft awaiting live validation)

@@ -23,7 +23,7 @@ FIELDS = [
     "key_held", "reinforcements_by_type", "own_active", "enemy_active", "added_age_s",
     "ended_by",
 ]
-MODEL_POLICIES = ("llm", "commander")
+MODEL_POLICIES = ("llm", "llm_rules", "commander")
 
 
 def harness_version(job: str) -> str:
