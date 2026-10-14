@@ -74,8 +74,8 @@ function ui.act(uic, step)
 end
 
 -- One step that needs no waiting: dump, key, find (once), log, advisor text ("" closes
--- it), or an expression on a context object ({"context": "CcoBattleUnit", "id": "...",
--- "expression": "..."}).
+-- it), an expression on a context object ({"context": "CcoBattleUnit", "id": "...",
+-- "expression": "..."}) or a context command ({"context": ..., "command": "..."}).
 function ui.run(step, directory)
     if step.log then
         return "log " .. tostring(step.log)
@@ -85,6 +85,9 @@ function ui.run(step, directory)
     elseif step.advice then
         common.advice(step.advice)
         return "advice shown"
+    elseif step.command then
+        common.call_context_command(step.context, step.id or "", step.command)
+        return "command " .. step.command
     elseif step.expression then
         local value = common.get_context_value(step.context, step.id or "", step.expression)
         return step.expression .. " = " .. tostring(value)
