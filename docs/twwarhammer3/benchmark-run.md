@@ -47,10 +47,13 @@ is a controller difference, not evidence about model capability alone.
 
 The default wall cap is 3900 s. Benchmarks require a finite game timer and a wall cap
 at least 120 s longer. The process cap must cover setup, every trial and reset allowance.
-Added age D supplies the newest public snapshot at least D battle seconds old, retaining
+Added age D supplies the newest buffered public snapshot at least D battle seconds old, retaining
 its original sequence as the order basis. D=0 includes natural transport/engine delay.
 The initial D seconds fill the buffer without decisions. Actual order feedback still
 arrives. Delay arms remain separately labelled; total age is measured at issuance.
+The buffer is populated between controller calls. A synchronous model call can leave
+gaps, so actual age can exceed D. Reports give snapshot age at decision separately from
+order age at issuance, preserving this distinction for the controlled-delay comparisons.
 
 ## Outside controllers
 
@@ -101,6 +104,10 @@ type, protected-unit survival, order/plan age, decision rate, rejection reasons 
 Start displacements above 1 m or bearing changes above 10 degrees are flagged rather
 than discarded. Starts also record friendly ability loadouts, initial strength/ammunition/
 barriers and magic/supplies/tickets; differences are flagged even when positions match.
+The JSON retains each comparison's deltas. Paired reports keep all valid trials in the
+primary estimate and also give a sensitivity comparison excluding launches with any
+flagged start. This secondary comparison is not a replacement for investigating a
+changed roster or resources.
 Inspect setup checks, start flags, missing pairs and the limitations. A matched formation
 alone does not establish a matched caster's resources or spell loadout.
 

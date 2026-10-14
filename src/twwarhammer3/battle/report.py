@@ -44,7 +44,7 @@ def wilson(wins: int, count: int) -> list[float] | None:
 
 
 def trial_metrics(directory: Path, result: dict) -> dict:
-    kinds, rejections, ages, plan_ages, calls, decision_times = Counter(), Counter(), [], [], [], []
+    kinds, rejections, ages, plan_ages, calls, snapshot_ages = Counter(), Counter(), [], [], [], []
     processing, models, seen_calls = [], set(), set()
     trace = directory / "trace.jsonl"
     if trace.exists():
@@ -59,7 +59,9 @@ def trial_metrics(directory: Path, result: dict) -> dict:
                 if kind == "decision":
                     kinds["logged_decisions"] += 1
                     kinds["orders"] += len(event.get("orders") or [])
-                    decision_times.append(event.get("decision_time_ms", event.get("time_ms", 0)))
+                    if (event.get("decision_time_ms") is not None
+                            and event.get("time_ms") is not None):
+                        snapshot_ages.append((event["decision_time_ms"] - event["time_ms"]) / 1000)
                     meta = event.get("behavior") or {}
                     if meta.get("plan_age_s") is not None:
                         plan_ages.append(meta["plan_age_s"])
@@ -89,6 +91,7 @@ def trial_metrics(directory: Path, result: dict) -> dict:
     return {
         "margin": own - enemy if own != "" and enemy != "" else None,
         "order_age_s": distribution(ages), "plan_age_s": distribution(plan_ages),
+        "snapshot_age_at_decision_s": distribution(snapshot_ages),
         "call_seconds": distribution(calls), "rejections": dict(rejections),
         "provider_processing_seconds": distribution(processing), "actual_models": sorted(models),
         "decisions_per_battle_s": result.get("decisions", 0) / duration if duration > 0 else None,
@@ -158,6 +161,7 @@ def collect(jobs: list[Path]) -> dict:
                 "valid": result["status"] in OUTCOMES,
                 "setup_checked": bool(manifest.get("setup_checks") and result.get("setup_checks")),
                 "start_flagged": (result.get("start_comparison") or {}).get("flagged"),
+                "start_comparison": result.get("start_comparison"),
                 "card": result.get("card"), "metrics": metrics, "protected_left": protected_left,
                 "objectives": result.get("objectives"), "llm": result.get("llm") or {},
                 "wall_s": result.get("elapsed_seconds"), "battle_s": result.get("battle_s"),
@@ -179,7 +183,8 @@ def collect(jobs: list[Path]) -> dict:
                           if trial["metrics"][field] is not None
                           and (field != "margin" or trial["valid"])]
                 means[field] = statistics.mean(values) if values else None
-            for field in ("order_age_s", "plan_age_s", "call_seconds"):
+            for field in ("order_age_s", "plan_age_s", "call_seconds",
+                          "snapshot_age_at_decision_s"):
                 values = [trial["metrics"][field]["mean"] for trial in items
                           if trial["metrics"][field]["mean"] is not None]
                 means[field] = statistics.mean(values) if values else None
@@ -202,10 +207,12 @@ def collect(jobs: list[Path]) -> dict:
                 "usd": sum(trial["llm"].get("usd", 0) for trial in items),
                 "wall_s": sum(trial["wall_s"] or 0 for trial in items),
                 "unchecked_trials": sum(not trial["setup_checked"] for trial in items),
+                "start_flagged_trials": sum(bool(trial["start_flagged"]) for trial in items),
                 "means": means,
                 "input_tokens": sum(trial["llm"].get("input_tokens", 0) for trial in items),
                 "output_tokens": sum(trial["llm"].get("output_tokens", 0) for trial in items),
             })
+        flagged_instances = {trial["instance"] for trial in trials if trial["start_flagged"]}
         for a, b in itertools.combinations(controllers, 2):
             instances = defaultdict(lambda: defaultdict(list))
             for trial in trials:
@@ -214,8 +221,15 @@ def collect(jobs: list[Path]) -> dict:
                     instances[trial["instance"]][trial["controller"]].append(margin)
             differences = {instance: statistics.mean(values[a]) - statistics.mean(values[b])
                            for instance, values in instances.items() if a in values and b in values}
+            unflagged = {instance: value for instance, value in differences.items()
+                         if instance not in flagged_instances}
             paired.append({"a": a, "b": b, **mean_interval(list(differences.values())),
                            "differences_by_instance": differences,
+                           "without_flagged_starts": {
+                               **mean_interval(list(unflagged.values())),
+                               "differences_by_instance": unflagged,
+                               "excluded_instances": sorted(
+                                   differences.keys() & flagged_instances)},
                            "unpaired_instances": sorted(set(t["instance"] for t in trials)
                                                         - differences.keys())})
         output.append({"definition": json.loads(signature), "controllers": summaries,
@@ -230,6 +244,9 @@ def collect(jobs: list[Path]) -> dict:
     return {"schema": 1, "groups": output, "jobs": job_records,
             "throughput": throughput,
             "limitations": "Exploratory comparisons. Whole latency includes network and retries. "
+            "Added age is a minimum: available buffered snapshots can be older, especially "
+            "when a synchronous controller blocks observation reads. Actual age at decision "
+            "and at order issuance are reported separately. "
             "Orders are issued/queued, not confirmed to have taken effect. Engine timing has a "
             "roughly 0.3 s floor. Visibility-filtered observations are not verified "
             "player-equivalent. "
@@ -276,11 +293,14 @@ def render(report: dict) -> str:
             ]) + " |")
         lines += ["", "Means: gameplay over valid trials; timing over all recorded trials. "
                   "Unavailable values excluded.", "",
-                  "| Controller | Margin | Decisions/s | Order age s | Plan age s | Call s | "
-                  "Victory held | Key held | Supplies left | Tokens in/out |", "|" + "---|" * 10]
+                  "| Controller | Margin | Decisions/s | Snapshot age at decision s | "
+                  "Order age s | Plan age s | Call s | Victory held | Key held | Supplies left | "
+                  "Tokens in/out |",
+                  "|" + "---|" * 11]
         for row in group["controllers"]:
             values = [row["means"][key] for key in
-                      ("margin", "decisions_per_battle_s", "order_age_s", "plan_age_s",
+                      ("margin", "decisions_per_battle_s", "snapshot_age_at_decision_s",
+                       "order_age_s", "plan_age_s",
                        "call_seconds", "victory_held", "key_held", "supplies_left")]
             lines.append("| " + " | ".join([
                 row["controller"],
@@ -300,6 +320,16 @@ def render(report: dict) -> str:
                 f"{difference:.3f}" if difference is not None else "unavailable",
                 str(len(row["unpaired_instances"])),
             ]) + " |")
+        for row in group["paired"]:
+            sensitivity = row["without_flagged_starts"]
+            if sensitivity["excluded_instances"]:
+                ci = sensitivity["ci95"]
+                interval = f"[{ci[0]:.3f}, {ci[1]:.3f}]" if ci else "unavailable"
+                mean = sensitivity["mean"]
+                lines += ["", "Sensitivity excluding launches with flagged starts: "
+                          f"{row['a']} minus {row['b']}; n={sensitivity['n']}, "
+                          f"mean={mean if mean is not None else 'unavailable'}, 95% CI {interval}. "
+                          "Primary results above retain these launches."]
         lines += ["", "Trials (JSON report retains objective and rejection breakdowns):", ""]
         for trial in group["trials"]:
             age = trial["metrics"]["order_age_s"]["mean"]
