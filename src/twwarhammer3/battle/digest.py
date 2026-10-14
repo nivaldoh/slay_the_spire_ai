@@ -34,7 +34,7 @@ def _objectives(observation: dict) -> str:
     if mode.get("tickets"):
         parts.append("tickets " + " ".join(f"{row['side']} {row['tickets']}"
                                            for row in mode["tickets"])
-                     + f" of {mode.get('tickets_goal')}")
+                     + (f" of {mode['tickets_goal']}" if mode.get("tickets_goal") else ""))
     if mode.get("capture_points"):
         holders = [point.get("holder") or "-" for point in mode["capture_points"]]
         parts.append("points " + ",".join(holders))
