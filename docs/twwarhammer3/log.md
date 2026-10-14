@@ -31,7 +31,14 @@ prompt snapshots/hashes, model cards, digest and the results register identify t
 policy. This changes the controller prompt, not the model or its permissions; its first
 game check will be part of specialist screening after the current queue ends.
 
-Validation: 195 WH3 tests passed with the Lua runtime; Ruff and Lua 5.1 parsing passed. Regression
+Specialist-interface preparation adds current/maximum barrier HP and owned abilities'
+cast range, effect radius and duration. A read-only probe during the 1.1 skills screen
+returned Dwarf barrier 0/0 and Rune cast ranges 100 m with distinct durations/radii;
+the query output is retained in `capability-probes/benchmark-specialist-interface`.
+Nonzero barrier behavior and actual caster spells remain for the specialist smoke,
+before any scenario admission. Hidden enemies still never enter unit_record.
+
+Validation: 196 WH3 tests passed with the Lua runtime; Ruff and Lua 5.1 parsing passed. Regression
 checks cover absent terrain, startup causes, and a throughput denominator containing a
 setup failure, hidden summons/deaths and retained observed deaths, plus rules-prompt
 selection, fresh memory/shared budget and model metadata/prompt snapshots. Live b2 traces/

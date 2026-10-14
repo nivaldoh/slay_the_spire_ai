@@ -89,7 +89,8 @@ end
 -- unit returns "key|field|...;key|..." rows (concatenation converts numbers and booleans).
 local ABILITY_SETUP = 'BattleAbilityList.JoinString(SetupAbilityContext.RecordKey + "|" + '
     .. 'SetupAbilityContext.TargetType + "|" + SetupAbilityContext.ManaUsed + "|" + '
-    .. 'SetupAbilityContext.RechargeTime, ";")'
+    .. 'SetupAbilityContext.RechargeTime + "|" + SetupAbilityContext.CastRange + "|" + '
+    .. 'SetupAbilityContext.EffectRange + "|" + SetupAbilityContext.ActiveTime, ";")'
 local ABILITY_STATE = 'BattleAbilityList.JoinString(SetupAbilityContext.RecordKey + "|" + '
     .. 'CanCurrentlyPerform + "|" + RechargeTimeRemainingSecs + "|" + RemainingUses + "|" + '
     .. 'IsActive, ";")'
@@ -189,6 +190,13 @@ local function unit_record(id, unit, mine, class)
         men = get(unit, "number_of_men_alive", 0), men0 = get(unit, "initial_number_of_men", 0),
         hp = round(get(unit, "unary_hitpoints", 0), 2), state = {},
     }
+    -- Only called for friendlies or currently visible enemies. Barrier HP is a
+    -- separate, replenishable resource; ordinary hitpoints do not include it.
+    local barrier = context_rows("CcoBattleUnit", tostring(get(unit, "unique_ui_id", "")),
+        'UnitDetailsContext.BarrierHp + "|" + UnitDetailsContext.BarrierMaxHp')[1]
+    if barrier and (tonumber(barrier[2]) or 0) > 0 then
+        record.barrier = {hp = round(tonumber(barrier[1])), max_hp = round(tonumber(barrier[2]))}
+    end
     local flags = {
         {"is_routing", "routing"}, {"is_shattered", "shattered"}, {"is_wavering", "wavering"},
         {"is_in_melee", "melee"}, {"is_under_missile_attack", "under_fire"},
@@ -236,6 +244,7 @@ local function unit_record(id, unit, mine, class)
                 recharge_s = recharge and recharge > 0 and round(recharge, 1) or nil,
                 uses = uses and uses >= 0 and uses or nil,
                 target = setup.target, mana = setup.mana, cooldown_s = setup.cooldown_s,
+                cast_range = setup.cast_range, radius = setup.radius, duration_s = setup.duration_s,
                 last_issued_ms = entry.ability_issued and entry.ability_issued[key],
             }
         end
@@ -871,7 +880,8 @@ local function register(unit, alliance, army)
                        ui_id = tostring(key), setup = {}}
         for _, row in ipairs(context_rows("CcoBattleUnit", entry.ui_id, ABILITY_SETUP)) do
             entry.setup[row[1]] = {target = plain(row[2]), mana = tonumber(row[3]),
-                                   cooldown_s = tonumber(row[4])}
+                                   cooldown_s = tonumber(row[4]), cast_range = tonumber(row[5]),
+                                   radius = tonumber(row[6]), duration_s = tonumber(row[7])}
         end
         state.friendly[id] = entry
         state.friendly_ids[#state.friendly_ids + 1] = id

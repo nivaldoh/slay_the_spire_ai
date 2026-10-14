@@ -153,6 +153,9 @@ def render_unit(unit: dict, mine: bool, before: tuple | None = None,
         f"{unit.get('men', 0)}/{unit.get('men0', 0)} men{_change(unit.get('men', 0), men0)}",
         f"hp {_hp(unit)}%{_change(_hp(unit), hp0)}",
     ]
+    if unit.get("barrier"):
+        barrier = unit["barrier"]
+        parts.append(f"barrier {barrier.get('hp', '?')}/{barrier['max_hp']}")
     if mine and unit.get("ammo0"):
         parts.append(f"ammo {unit['ammo']}/{unit['ammo0']} range {unit.get('range') or 0:.0f}")
     elif not mine and unit.get("range"):
@@ -203,8 +206,12 @@ def render_ability(ability: dict) -> str:
     """``key (Ground; 8 magic; recharging, 42 s left; last issued 61 s)``: target type, cost
     and readiness as the game's ability panel shows them."""
     facts = [ability["target"]] if ability.get("target") else []
+    if ability.get("cast_range", 0) > 0:
+        facts.append(f"cast range {ability['cast_range']:.0f} m")
     if ability.get("radius"):
         facts.append(f"radius {ability['radius']:.0f} m")
+    if ability.get("duration_s", 0) > 0:
+        facts.append(f"duration {ability['duration_s']:.0f} s")
     if ability.get("mana"):
         facts.append(f"{ability['mana']} magic")
     if ability.get("unlocked") is False:

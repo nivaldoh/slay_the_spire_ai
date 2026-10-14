@@ -104,6 +104,12 @@ map, not a path planner: narrow crossings can be missed and buildings can later 
 After an unreachable move, the unit reports nearby destinations tested with its own
 reachability query. The engine sends no replacement order; the controller must choose.
 
+For specialist units, current/maximum barrier HP is separate from ordinary health.
+Owned abilities include their cast range, effect radius and duration where the engine
+provides them. These describe capabilities, not a suggested tactic. Rune ranges/durations
+and zero-barrier queries passed a live read-only probe; a nonzero Tzeentch barrier and
+caster spell use still require the specialist smoke battle before admission.
+
 The live b1 probes read the modifier as 1.1. Its stat previews say +10% attack, defence
 and weapon damage and +8 leadership; a setting read-back alone does not measure each
 unit's applied bonuses. Calibration explicitly tests 1.0 as well as 1.1.
