@@ -109,6 +109,26 @@ def test_start_comparison_uses_circular_bearings_and_reports_missing_units():
     assert setup.compare_starts(initial, {})["flagged"]
 
 
+def test_start_comparison_detects_changed_magic_or_spells_at_identical_positions():
+    from copy import deepcopy
+
+    state = {"friendly": [{"id": "f1", "type": "caster", "x": 1, "z": 2, "bearing": 0,
+                           "hp": 1, "men": 1, "men0": 1,
+                           "abilities": [{"key": "spell_a", "mana": 6}, {"key": "spell_b"}]}],
+             "magic": {"current": 20, "reserve": 60}}
+    first = setup.fingerprint(state)
+    reordered = deepcopy(state)
+    reordered["friendly"][0]["abilities"].reverse()
+    assert not setup.compare_starts(first, setup.fingerprint(reordered))["flagged"]
+    changed = deepcopy(state)
+    changed["magic"]["reserve"] = 30
+    changed["friendly"][0]["abilities"][0]["key"] = "spell_c"
+    result = setup.compare_starts(first, setup.fingerprint(changed))
+    assert result["flagged"]
+    assert set(result["resource_or_loadout_changes"]) == {"resources", "friendly/f1/abilities"}
+    assert result["units"]["friendly/f1"]["distance_m"] == 0
+
+
 def test_custom_roster_budget_is_verified_before_scoring(tmp_path):
     scenario = {"map": "intended", "expect": {"battle_type": "land_normal",
                 "difficulty": "ai_level_very_hard", "funds": "funds_custom",

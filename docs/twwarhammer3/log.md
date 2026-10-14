@@ -38,7 +38,12 @@ the query output is retained in `capability-probes/benchmark-specialist-interfac
 Nonzero barrier behavior and actual caster spells remain for the specialist smoke,
 before any scenario admission. Hidden enemies still never enter unit_record.
 
-Validation: 196 WH3 tests passed with the Lua runtime; Ruff and Lua 5.1 parsing passed. Regression
+Starting fingerprints now also record friendly spell loadouts, initial strength/ammo/
+barriers and magic/supplies/tickets. Resource/loadout changes flag a rematch even when
+formation positions match; ability list ordering alone does not. This is needed before
+claiming paired caster trials.
+
+Validation: 197 WH3 tests passed with the Lua runtime; Ruff and Lua 5.1 parsing passed. Regression
 checks cover absent terrain, startup causes, and a throughput denominator containing a
 setup failure, hidden summons/deaths and retained observed deaths, plus rules-prompt
 selection, fresh memory/shared budget and model metadata/prompt snapshots. Live b2 traces/

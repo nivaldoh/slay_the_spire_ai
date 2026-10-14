@@ -94,7 +94,10 @@ missing terrain grid rejects benchmark setup before decisions.
 JSON retains all trials, objectives integrated on engine ticks, supplies, purchases by
 type, protected-unit survival, order/plan age, decision rate, rejection reasons and costs.
 Start displacements above 1 m or bearing changes above 10 degrees are flagged rather
-than discarded. Inspect setup checks, start flags, missing pairs and the limitations.
+than discarded. Starts also record friendly ability loadouts, initial strength/ammunition/
+barriers and magic/supplies/tickets; differences are flagged even when positions match.
+Inspect setup checks, start flags, missing pairs and the limitations. A matched formation
+alone does not establish a matched caster's resources or spell loadout.
 
 ## Terrain and calibration candidates (b2, live validation pending)
 
