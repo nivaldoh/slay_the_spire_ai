@@ -17,7 +17,7 @@ from pathlib import Path
 
 import torch
 
-from gameai.provenance import REPO_ROOT
+from gameai.provenance import REPO_ROOT, SOURCE_PATHS
 from spire.language import training
 from spire.language.policy import file_inventory, validate_declaration
 
@@ -57,24 +57,16 @@ def within(root, value):
 
 
 def archived_source(revision):
+    """Hashes of the committed files in the scope that training fingerprints."""
     names = subprocess.check_output(
-        ["git", "ls-tree", "-r", "--name-only", revision], cwd=REPO_ROOT, text=True
+        ["git", "ls-tree", "-r", "--name-only", revision, "--", *SOURCE_PATHS],
+        cwd=REPO_ROOT, text=True,
     ).splitlines()
-    selected = [
-        name
-        for name in names
-        if (
-            name.startswith(("src/", "scripts/"))
-            and name.endswith(".py")
-            or name.startswith("configs/")
-            or name in {"pyproject.toml", "uv.lock", ".python-version"}
-        )
-    ]
     return {
         name: hashlib.sha256(
             subprocess.check_output(["git", "show", f"{revision}:{name}"], cwd=REPO_ROOT)
         ).hexdigest()
-        for name in selected
+        for name in names
     }
 
 
