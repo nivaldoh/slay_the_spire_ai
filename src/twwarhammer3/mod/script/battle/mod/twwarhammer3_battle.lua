@@ -483,12 +483,18 @@ local function apply_reinforce(order)
     if not index then error("not_in_pool") end
     local zone = tonumber(order.zone)
     if not zone then error("bad_zone") end
-    local before = tonumber(get_context("PlayerArmyContext.NumReinforcements"))
-    common.call_context_command("CcoBattleRoot", "", string.format(
-        "BattleReinforcementPoolContext.PurchaseUnit(%s.At(%d), PlayerArmyContext, %d)", POOL, index - 1, zone))
-    local after = tonumber(get_context("PlayerArmyContext.NumReinforcements"))
+    -- The zone is a spawn zone's UniqueID. Some zones open to the alliance still refuse
+    -- purchases (in domination the two nearest the centre did), so the engine is asked first.
+    local args = string.format("(%s.At(%d), PlayerArmyContext, %d)", POOL, index - 1, zone)
+    if get_context("BattleReinforcementPoolContext.CanPurchaseUnit" .. args) ~= true then
+        error("cannot_purchase_there")
+    end
+    local before = tonumber(get_context("PlayerArmyContext.GlobalCurrency"))
+    common.call_context_command("CcoBattleRoot", "", "BattleReinforcementPoolContext.PurchaseUnit" .. args)
+    local after = tonumber(get_context("PlayerArmyContext.GlobalCurrency"))
     if before and after and after >= before then error("not_purchased") end
-    log(string.format("reinforced with %s at zone %d", order.unit_type, zone))
+    log(string.format("reinforced with %s at zone %d for %s supplies", wanted.type, zone,
+                      tostring(before and after and before - after)))
 end
 
 local function apply_order(order)
@@ -708,48 +714,62 @@ local function restart()
     end), 1000, "twwarhammer3_restart")
 end
 
--- Registers units not seen before: every unit at the start, then reinforcements, survival
--- waves and purchased units as they enter the field. Friendly units get a controller each;
--- enemies come from every other alliance (several in a free-for-all).
-local function scan()
-    local army = bm:get_player_army()
-    local units = army:units()
-    for index = 1, units:count() do
-        local unit = units:item(index)
-        local key = get(unit, "unique_ui_id", nil)
-        if key and not state.known[key] then
-            state.known[key] = true
-            local id = "f" .. (#state.friendly_ids + 1)
-            local controller = army:create_unit_controller()
-            controller:add_units(unit)
-            controller:take_control()
-            local entry = {unit = unit, controller = controller, class = unit_class(unit),
-                           ui_id = tostring(key), setup = {}}
-            for _, row in ipairs(context_rows("CcoBattleUnit", entry.ui_id, ABILITY_SETUP)) do
-                entry.setup[row[1]] = {target = plain(row[2]), mana = tonumber(row[3]),
-                                       cooldown_s = tonumber(row[4])}
-            end
-            state.friendly[id] = entry
-            state.friendly_ids[#state.friendly_ids + 1] = id
-            if state.started_ms then log("new friendly unit " .. id .. " " .. get(unit, "type", "?")) end
+-- Registers units not seen before: every unit at the start, then units that enter later.
+-- Friendly units get a controller each; enemies come from every other alliance (several in
+-- a free-for-all). Units called in from a reinforcement pool or arriving in survival waves
+-- belong to reinforcement armies, which the alliances' army lists leave out; they are
+-- registered once they are on the field.
+local function register(unit, alliance, army)
+    local key = get(unit, "unique_ui_id", nil)
+    if not key or state.known[key] then return end
+    state.known[key] = true
+    if alliance == bm:local_alliance() then
+        local id = "f" .. (#state.friendly_ids + 1)
+        local controller = army:create_unit_controller()
+        controller:add_units(unit)
+        controller:take_control()
+        local entry = {unit = unit, controller = controller, class = unit_class(unit),
+                       ui_id = tostring(key), setup = {}}
+        for _, row in ipairs(context_rows("CcoBattleUnit", entry.ui_id, ABILITY_SETUP)) do
+            entry.setup[row[1]] = {target = plain(row[2]), mana = tonumber(row[3]),
+                                   cooldown_s = tonumber(row[4])}
         end
+        state.friendly[id] = entry
+        state.friendly_ids[#state.friendly_ids + 1] = id
+        if state.started_ms then log("new friendly unit " .. id .. " " .. get(unit, "type", "?")) end
+    else
+        local id = "e" .. (#state.enemy_ids + 1)
+        state.enemy[id] = {unit = unit, class = unit_class(unit), alliance = alliance}
+        state.enemy_ids[#state.enemy_ids + 1] = id
+        state.enemy_by_ui[key] = id
+        if state.started_ms then log("new enemy unit " .. id .. " " .. get(unit, "type", "?")) end
     end
+end
+
+local function scan()
+    local player = bm:get_player_army()
     local alliances = bm:alliances()
     for alliance = 1, alliances:count() do
-        local armies = alliance ~= bm:local_alliance() and alliances:item(alliance):armies()
-        for army_index = 1, armies and armies:count() or 0 do
-            local enemy_units = armies:item(army_index):units()
-            for index = 1, enemy_units:count() do
-                local unit = enemy_units:item(index)
-                local key = get(unit, "unique_ui_id", nil)
-                if key and not state.known[key] then
-                    state.known[key] = true
-                    local id = "e" .. (#state.enemy_ids + 1)
-                    state.enemy[id] = {unit = unit, class = unit_class(unit), alliance = alliance}
-                    state.enemy_ids[#state.enemy_ids + 1] = id
-                    state.enemy_by_ui[key] = id
-                    if state.started_ms then log("new enemy unit " .. id .. " " .. get(unit, "type", "?")) end
-                end
+        local armies = alliances:item(alliance):armies()
+        for army_index = 1, armies:count() do
+            local army = armies:item(army_index)
+            -- Allied AI armies (none in our scenarios) are neither ours nor enemies.
+            if alliance ~= bm:local_alliance() or army_index == 1 then
+                local units = army:units()
+                for index = 1, units:count() do register(units:item(index), alliance, army) end
+            end
+        end
+    end
+    local reinforcements = bm.battle:reinforcements()
+    for index = 1, reinforcements:reinforcement_army_count() do
+        local reinforcement = reinforcements:reinforcement_army(index)
+        local army = reinforcement:army()
+        local units = army:units()
+        for unit_index = 1, units:count() do
+            local unit = units:item(unit_index)
+            if get(unit, "is_valid_target", false) then
+                local alliance = get(unit, "alliance_index", nil)
+                if alliance then register(unit, alliance, alliance == bm:local_alliance() and army or player) end
             end
         end
     end

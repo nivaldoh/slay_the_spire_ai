@@ -75,7 +75,8 @@ end
 
 -- One step that needs no waiting: dump, key, find (once), log, advisor text ("" closes
 -- it), an expression on a context object ({"context": "CcoBattleUnit", "id": "...",
--- "expression": "..."}) or a context command ({"context": ..., "command": "..."}).
+-- "expression": "..."}), a context command ({"context": ..., "command": "..."}) or, for
+-- probing the script API, a Lua chunk whose return value is logged ({"lua": "return ..."}).
 function ui.run(step, directory)
     if step.log then
         return "log " .. tostring(step.log)
@@ -85,6 +86,10 @@ function ui.run(step, directory)
     elseif step.advice then
         common.advice(step.advice)
         return "advice shown"
+    elseif step.lua then
+        local chunk, err = loadstring(step.lua)
+        if not chunk then return "lua: " .. tostring(err) end
+        return "lua = " .. tostring(chunk())
     elseif step.command then
         common.call_context_command(step.context, step.id or "", step.command)
         return "command " .. step.command
