@@ -141,3 +141,32 @@ def test_the_ability_probe_casts_ready_abilities_once_per_five_seconds():
     assert not [o for o in probe.decide(dict(state, time_ms=14000)) if o["type"] == "ability"]
     assert len([o for o in probe.decide(dict(state, time_ms=15000))
                 if o["type"] == "ability"]) == 3
+
+
+SIEGE = {**OBSERVATION, "mode": {"supplies": 1000, "slots": [
+    {"id": "s1", "type": "tower", "x": 55, "z": 192, "usable": True,
+     "options": [{"name": "tower_piercing_1", "cost": 500}, {"name": "tower_cannon_4",
+                                                              "cost": 2000}]},
+    {"id": "s2", "type": "tower", "x": -56, "z": 192, "usable": True,
+     "built": "tower_piercing_1"},
+]}}
+
+
+@pytest.mark.parametrize("order, error", [
+    ({"slot": "s1", "option": "tower_piercing_1"}, None),
+    ({"slot": "s9", "option": "tower_piercing_1"}, "unknown building slot"),
+    ({"slot": "s2", "option": "tower_piercing_1"}, "already has a building"),
+    ({"slot": "s1", "option": "tower_cannon_9"}, "has no option"),
+    ({"slot": "s1", "option": "tower_cannon_4"}, "costs 2000, supplies 1000"),
+])
+def test_build_orders_need_an_empty_slot_a_listed_option_and_the_supplies(order, error):
+    orders = [{"unit": "army", "type": "build", **order}]
+    if error is None:
+        protocol.validate_orders(orders, SIEGE)
+    else:
+        with pytest.raises(protocol.IllegalActionError, match=error):
+            protocol.validate_orders(orders, SIEGE)
+    twice = [orders[0], orders[0]]
+    if error is None:
+        with pytest.raises(protocol.IllegalActionError, match="ordered twice"):
+            protocol.validate_orders(twice, SIEGE)

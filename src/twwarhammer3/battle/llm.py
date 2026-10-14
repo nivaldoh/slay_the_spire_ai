@@ -46,6 +46,7 @@ def _order_schema(kind: str, **fields) -> dict:
 ABILITY_SCHEMA = _order_schema("ability", ability={"type": "string"}, target=STRING_OR_NULL,
                                x=NUMBER_OR_NULL, z=NUMBER_OR_NULL, facing=NUMBER_OR_NULL,
                                width=NUMBER_OR_NULL)
+BUILD_SCHEMA = _order_schema("build", slot={"type": "string"}, option={"type": "string"})
 REPLY_SCHEMA = {
     "type": "object",
     "properties": {
@@ -60,6 +61,7 @@ REPLY_SCHEMA = {
             _order_schema("behaviour", behaviour={"type": "string", "enum": list(BEHAVIOURS)},
                           enabled={"type": "boolean"}),
             ABILITY_SCHEMA,
+            BUILD_SCHEMA,
         ]}},
         "reason": {"type": "string"},
         "notes": STRING_OR_NULL,
@@ -234,8 +236,8 @@ def _side(side: str | None) -> str:
 
 
 def render_mode(mode: dict | None) -> str | None:
-    """The mode type and what wins it: role, objectives in the game's words, tickets,
-    capture points and supplies, as far as the type has them."""
+    """The battle type and what wins it: role, objectives in the game's words, tickets,
+    capture points, gates and supplies, as far as the type has them."""
     if not mode or not mode.get("type"):
         return None
     head = f"Battle: {mode['type']}"
@@ -268,6 +270,20 @@ def render_mode(mode: dict | None) -> str | None:
                      f" {state}.")
     if mode.get("supplies") is not None:
         lines.append(f"Supplies: {mode['supplies']}.")
+    if mode.get("slots"):
+        lines.append("Building slots (order with unit \"army\", type \"build\", slot and option):")
+        for slot in mode["slots"]:
+            if slot.get("building_s") is not None:
+                state = f"building {slot.get('built')}, {slot['building_s']:.0f} s left"
+            elif slot.get("built"):
+                state = "built " + slot["built"] + (" (destroyed)" if slot.get("destroyed") else "")
+            else:
+                state = "empty, options " + ", ".join(
+                    f"{option['name']} {option['cost']}" for option in slot.get("options") or [])
+                if not slot.get("usable"):
+                    state += " (cannot build now)"
+            lines.append(f"- {slot['id']} {slot.get('type')} at ({slot['x']:.0f},"
+                         f" {slot['z']:.0f}): {state}")
     return "\n".join(lines)
 
 
@@ -410,6 +426,8 @@ def describe_orders(orders: list[dict]) -> str:
             if order.get("x") is not None and order.get("z") is not None:
                 target = f"({order['x']:.0f}, {order['z']:.0f})"
             parts.append(f"{order['unit']} ability {order['ability']} at {target}")
+        elif order["type"] == "build":
+            parts.append(f"{order['unit']} build {order['option']} on {order['slot']}")
         else:
             parts.append(f"{order['unit']} halt")
         if order.get("queue"):

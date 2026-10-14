@@ -258,3 +258,20 @@ def test_artillery_waits_longer_and_out_of_range_time_does_not_count():
     assert step(walker, [shooter(state=["moving"])], [far], 40000) == []
     assert step(walker, [shooter(state=["moving"])], [near], 54000) == []
     assert walker.phase["f1"] == "shooting e1 (1 in range)"
+
+
+def test_the_ability_probe_builds_the_cheapest_option_on_each_usable_slot_once():
+    state = observation([unit("f1", "infantry", 0, 0)], [])
+    state["mode"] = {"supplies": 1200, "slots": [
+        {"id": "s1", "usable": True, "options": [{"name": "tower_piercing_1", "cost": 500},
+                                                 {"name": "tower_cannon_4", "cost": 2000}]},
+        {"id": "s2", "usable": False, "options": [{"name": "tower_piercing_1", "cost": 500}]},
+        {"id": "s3", "usable": True, "options": [{"name": "barricade_1", "cost": 900}]},
+        {"id": "s4", "usable": True, "built": "tower_piercing_1"},
+    ]}
+    probe = skills.ProbeAbilities()
+    builds = [o for o in probe.decide(state) if o["type"] == "build"]
+    assert builds == [{"unit": "army", "type": "build", "slot": "s1",
+                       "option": "tower_piercing_1"}]  # s3 costs more than is left
+    validate_orders(builds, state)
+    assert not [o for o in probe.decide(state) if o["type"] == "build" and o["slot"] == "s1"]

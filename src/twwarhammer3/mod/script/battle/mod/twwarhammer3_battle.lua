@@ -17,7 +17,7 @@ local state = {
     friendly = {}, friendly_ids = {}, enemy = {}, enemy_ids = {}, enemy_by_ui = {},
     pending = nil, last_request = nil, applied = nil, applied_ms = nil,
     next_observe_ms = 0, force_observe = false, alliance = nil,
-    army_abilities = {}, army_issued = {}, known = {}, info = {},
+    army_abilities = {}, army_issued = {}, known = {}, info = {}, slots = {},
 }
 local session = nil
 local BEHAVIOURS = {"fire_at_will", "skirmish", "defend", "change_formation_spacing", "formed_attack"}
@@ -262,6 +262,14 @@ local TICKETS = 'AllianceList.JoinString(Id + "|" + TicketsRemaining + "|" + Tic
     .. 'CpKillScore, ";")'
 local GATES = 'BuildingsList.Filter(IsGate).JoinString(Name + "|" + Position.x + "|" + Position.z + "|" + '
     .. 'GateCurrentHitpoints + "|" + GateMaxHitpoints + "|" + IsDestroyed, ";")'
+-- Slots where the army can build towers and barricades with supplies (sieges, settlements,
+-- survival): the slot's state each observation; options are read once at the start, named
+-- by their icons (tower_piercing_1, ...) and keyed by the buildable's Index.
+local SLOT_LIST = "ToggleableSlotList(PlayerArmyContext)"
+local SLOTS = SLOT_LIST .. '.JoinString(CurrentIndex + "|" + IsConstructionInProgress + "|" + '
+    .. 'ConstructionTimeRemainingSeconds + "|" + IsDestroyed + "|" + CanInteract(PlayerArmyContext), ";")'
+local SLOT_SETUP = SLOT_LIST .. '.JoinString(TypeString + "|" + WorldPosition.x + "|" + WorldPosition.z + "|" + '
+    .. 'BuildablesList.JoinString(Index + ":" + Cost(0) + ":" + ParentContext.IconPathForIndex(PlayerArmyContext, Index), ","), ";")'
 
 local function side(alliance_id)
     if alliance_id < 0 then return nil end
@@ -306,6 +314,23 @@ local function mode_section()
         }
     end
     if #gates > 0 then section.gates = gates end
+    if #state.slots > 0 then
+        local slots = {}
+        for index, row in ipairs(context_rows("CcoBattleRoot", "", SLOTS)) do
+            local setup = state.slots[index]
+            if setup then
+                local built, left = tonumber(row[1]) or -1, tonumber(row[3])
+                slots[#slots + 1] = {
+                    id = setup.id, type = setup.type, x = setup.x, z = setup.z,
+                    built = built >= 0 and setup.names[built] or nil,
+                    building_s = row[2] == "true" and round(left, 1) or nil,
+                    destroyed = row[4] == "true" or nil, usable = row[5] == "true",
+                    options = built < 0 and setup.options or nil,
+                }
+            end
+        end
+        section.slots = slots
+    end
     if get_context("HasSupplies") == true then
         section.supplies = tonumber(get_context("PlayerArmyContext.GlobalCurrency"))
     end
@@ -397,7 +422,34 @@ local function apply_army_ability(order)
     state.army_issued[order.ability] = battle_time()
 end
 
+-- Building an option on a slot is the buildable's PrimaryAction (the radial menu's click),
+-- evaluated through the context system; the cost comes off the army's supplies.
+local function apply_build(order)
+    local index, slot = nil, nil
+    for i, setup in ipairs(state.slots) do
+        if setup.id == order.slot then index, slot = i, setup end
+    end
+    if not slot then error("unknown_slot") end
+    local option = nil
+    for key, name in pairs(slot.names) do
+        if name == order.option then option = key end
+    end
+    if not option then error("unknown_option") end
+    local before = tonumber(get_context("PlayerArmyContext.GlobalCurrency"))
+    get_context(string.format("%s.At(%d).BuildablesList.FirstContext(Index == %d).PrimaryAction",
+                              SLOT_LIST, index - 1, option))
+    local current = tonumber(get_context(string.format("%s.At(%d).CurrentIndex", SLOT_LIST, index - 1)))
+    if current ~= option then error("not_built") end
+    log(string.format("built %s on %s (supplies %s -> %s)", order.option, order.slot, tostring(before),
+                      tostring(get_context("PlayerArmyContext.GlobalCurrency"))))
+end
+
 local function apply_order(order)
+    if order.unit == "army" and order.type == "build" then
+        if not state.started then return {unit = order.unit, ok = false, error = "deployment"} end
+        local ok, err = pcall(apply_build, order)
+        return {unit = order.unit, ok = ok, error = not ok and clean_error(err) or nil}
+    end
     if order.unit == "army" and order.type == "ability" then
         if not state.started then return {unit = order.unit, ok = false, error = "deployment"} end
         local ok, err = pcall(apply_army_ability, order)
@@ -756,6 +808,20 @@ local function start()
     state.info = {alliances = bm:alliances():count()}
     local ok, info = pcall(battle_info)
     if ok then state.info = info else log("battle info failed: " .. clean_error(info)) end
+    for index, row in ipairs(context_rows("CcoBattleRoot", "", SLOT_SETUP)) do
+        local slot = {id = "s" .. index, type = row[1], x = round(tonumber(row[2]), 1),
+                      z = round(tonumber(row[3]), 1), names = {}, options = {}}
+        for option in string.gmatch(row[4] or "", "[^,]+") do
+            local key, cost, icon = string.match(option, "^(%-?%d+):([^:]*):(.*)$")
+            local name = icon and string.match(icon, "([^/]+)%.png$") or ("option_" .. tostring(key))
+            if key then
+                slot.names[tonumber(key)] = name
+                slot.options[#slot.options + 1] = {name = name, cost = round(tonumber(cost))}
+            end
+        end
+        table.sort(slot.options, function(a, b) return (a.cost or 0) < (b.cost or 0) end)
+        state.slots[index] = slot
+    end
     scan()
     state.started_ms = battle_time()
     local fill = get_context("HasArmyAbilityFillCurrency") == true

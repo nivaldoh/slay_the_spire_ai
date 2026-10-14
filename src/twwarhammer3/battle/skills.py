@@ -319,13 +319,15 @@ class ProbeAbilities(Skills):
     """The ``skills`` executor (strong enough to earn Khorne's kill points) that also casts
     each ability as soon as the state says it is ready, to check readiness and casting in
     the engine: self abilities of units in melee, and army abilities on our largest unit
-    in melee (a ground one at its position)."""
+    in melee (a ground one at its position). Where the battle has building slots, it
+    builds the cheapest option on each usable empty slot once supplies allow."""
 
     RECAST_S = 5.0
 
     def __init__(self):
         super().__init__()
         self.cast = {}
+        self.built = set()
 
     def decide(self, observation: dict) -> list[dict]:
         orders = super().decide(observation)
@@ -352,6 +354,16 @@ class ProbeAbilities(Skills):
             elif at:
                 order["target"] = at["id"]
             orders.append(order)
+        mode = observation.get("mode") or {}
+        supplies = mode.get("supplies") or 0
+        for slot in mode.get("slots") or []:
+            cheapest = (slot.get("options") or [None])[0]
+            if (cheapest and slot.get("usable") and slot["id"] not in self.built
+                    and cheapest["cost"] <= supplies):
+                self.built.add(slot["id"])
+                supplies -= cheapest["cost"]
+                orders.append({"unit": "army", "type": "build", "slot": slot["id"],
+                               "option": cheapest["name"]})
         return orders
 
     def metadata(self) -> dict:

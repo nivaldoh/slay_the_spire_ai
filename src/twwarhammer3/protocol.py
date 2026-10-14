@@ -3,7 +3,8 @@
 Observations are the dicts the Lua side publishes (``engine/mailbox.py`` has the
 shape). Orders have a unit, type and command-specific fields for movement, attacks,
 toggles or abilities; move/attack sequences use ``queue``. An army ability (Khorne's kill
-unlocks) is an ``ability`` order whose unit is ``"army"``. Only an engine-reported
+unlocks) is an ``ability`` order whose unit is ``"army"``, and so is a ``build`` order (a
+tower or barricade on a slot, paid with supplies). Only an engine-reported
 battle result is a gameplay outcome; everything below is an
 infrastructure, protocol or policy failure.
 """
@@ -40,6 +41,7 @@ class BattleRestarted(RuntimeError):
 
 
 ORDER_TYPES = ("move", "attack", "halt", "behaviour", "ability")
+ARMY_ORDER_TYPES = ("ability", "build")
 ATTACK_MODES = ("auto", "melee", "ranged")
 BEHAVIOURS = ("fire_at_will", "skirmish", "defend", "change_formation_spacing", "formed_attack")
 
@@ -66,6 +68,9 @@ def validate_orders(orders: list, observation: dict) -> None:
         unit, kind = order.get("unit"), order.get("type")
         if unit == "army" and kind == "ability":
             _validate_army_ability(order, observation, friendly, enemies, settings)
+            continue
+        if unit == "army" and kind == "build":
+            _validate_build(order, observation, settings)
             continue
         if unit not in friendly:
             raise IllegalActionError(f"unknown friendly unit {unit!r}")
@@ -131,6 +136,27 @@ def _validate_army_ability(order, observation, friendly, enemies, settings) -> N
     if order.get("target") is None and order.get("x") is None:
         raise IllegalActionError(f"army: {ability!r} needs a unit target or x/z")
     _validate_ability_target("army", order, friendly, enemies)
+
+
+def _validate_build(order, observation, settings) -> None:
+    """A tower or barricade on an empty slot, paid with the army's supplies."""
+    mode = observation.get("mode") or {}
+    slots = {slot["id"]: slot for slot in mode.get("slots") or []}
+    slot = slots.get(order.get("slot"))
+    if slot is None:
+        raise IllegalActionError(f"army: unknown building slot {order.get('slot')!r}")
+    if slot.get("built") or slot.get("building_s") is not None:
+        raise IllegalActionError(f"army: slot {slot['id']} already has a building")
+    options = {option["name"]: option for option in slot.get("options") or []}
+    if order.get("option") not in options:
+        raise IllegalActionError(f"army: slot {slot['id']} has no option {order.get('option')!r}")
+    cost = options[order["option"]].get("cost") or 0
+    if mode.get("supplies") is not None and cost > mode["supplies"]:
+        raise IllegalActionError(f"army: {order['option']} costs {cost}, supplies"
+                                 f" {mode['supplies']}")
+    if ("build", slot["id"]) in settings:
+        raise IllegalActionError(f"army: slot {slot['id']} ordered twice")
+    settings.add(("build", slot["id"]))
 
 
 def _validate_ability_target(unit, order, friendly, enemies) -> None:

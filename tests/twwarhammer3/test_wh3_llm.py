@@ -352,3 +352,20 @@ def test_a_siege_shows_the_defenders_tickets_without_a_goal_and_the_gate():
     assert "- c1 Key Building at (0, 310): held by you, 100%, counts for victory" in text
     assert "Gatehouse at (-32, -16): 37% health." in text
     assert text.endswith("Supplies: 8034.")
+
+
+def test_building_slots_show_options_progress_and_build_orders_are_described():
+    text = llm.render_mode({"type": "settlement_standard", "supplies": 900, "slots": [
+        {"id": "s1", "type": "tower", "x": 55.2, "z": 191.7, "usable": True,
+         "options": [{"name": "tower_piercing_1", "cost": 500}]},
+        {"id": "s2", "type": "tower", "x": -56, "z": 192, "usable": True,
+         "built": "tower_piercing_1", "building_s": 74.9},
+        {"id": "s3", "type": "barricade", "x": 0, "z": 0, "usable": False,
+         "options": [{"name": "barricade_1", "cost": 300}]},
+    ]})
+    assert "- s1 tower at (55, 192): empty, options tower_piercing_1 500" in text
+    assert "- s2 tower at (-56, 192): building tower_piercing_1, 75 s left" in text
+    assert "- s3 barricade at (0, 0): empty, options barricade_1 300 (cannot build now)" in text
+    assert llm.describe_orders([{"unit": "army", "type": "build", "slot": "s1",
+                                 "option": "tower_piercing_1"}]) == (
+        "army build tower_piercing_1 on s1")
