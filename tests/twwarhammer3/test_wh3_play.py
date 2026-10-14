@@ -201,14 +201,24 @@ def test_silence_is_an_infrastructure_failure_and_a_new_battle_a_restart(tmp_pat
 
 def test_illegal_scripted_orders_are_counted_and_not_sent(tmp_path):
     class Broken(Hold):
+        def __init__(self):
+            self.feedback = []
+
         def decide(self, observation):
             return [{"unit": "f9", "type": "halt"}]
 
+        def acknowledge(self, ack, latency):
+            self.feedback.append((ack, latency))
+
     mailbox = FakeMailbox([observation(0, 0), observation(1, 1000),
                            observation(2, 2000, ack=True), observation(3, 3000, result="draw")])
-    result = play.play_episode(tmp_path / "e", CONFIG, Broken(), mailbox, not_battle=None)
+    policy = Broken()
+    result = play.play_episode(tmp_path / "e", CONFIG, policy, mailbox, not_battle=None)
     assert result["status"] == "draw" and result["invalid"] == 1
     assert mailbox.requests[0][2] == []
+    assert "f9" in policy.feedback[0][0]["validation_error"]
+    assert policy.feedback[0][0]["results"][0]["ok"] is False
+    assert policy.feedback[0][1]["delay_ms"] == 500
 
 
 def test_quiet_decisions_of_a_fast_policy_are_logged_once_per_observe_interval(tmp_path):
@@ -397,7 +407,7 @@ def test_a_failed_menu_step_stops_the_job_before_any_episode(tmp_path, harness):
         play.play(tmp_path / "job", {**CONFIG, "results": str(tmp_path / "r.csv")},
                   policy_factory=Hold)
     manifest = json.loads((tmp_path / "job/manifest.json").read_text())
-    assert manifest["status"] == "interrupted" and manifest["episodes"] == []
+    assert manifest["status"] == "setup_failure" and manifest["episodes"] == []
     assert "failed" in (tmp_path / "job/menu.log").read_text()
 
 

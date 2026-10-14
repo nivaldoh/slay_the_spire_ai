@@ -1,5 +1,20 @@
 # WH3 battle versions
 
+## Benchmark harness b2 (2026-10-14, draft awaiting live validation)
+
+Read-only probes during b1 acceptance found the per-army AI modifier getter, stat
+previews and terrain APIs. b2 sets/reads the declared lobby modifier and checks it again
+on every army. It exposes coarse terrain and tested nearby destinations after an
+unreachable move, without replacing an order. Both model renderers receive these
+observations (`obs-v1+terrain`); the tactical policies otherwise remain unchanged.
+It also records API wall latency, returned model and optional provider processing header
+for WH3 only, retains setup failures in reports, and separates partial traces from
+terminal failures. Herald development/held-out candidates are declared before tuning.
+
+Worktree checks: 1019 passed, 14 skipped (local evidence absent in that worktree),
+57 targeted tests passed after the follow-up changes, Ruff and Lua 5.1 parsing pass.
+No b2 game evidence or calibration claim yet. Source edits were isolated while b1 ran.
+
 ## Benchmark harness b1 (2026-10-14, acceptance rotation complete)
 
 Owner goal: complete paired benchmarks, difficulty/latency calibration and the scenario

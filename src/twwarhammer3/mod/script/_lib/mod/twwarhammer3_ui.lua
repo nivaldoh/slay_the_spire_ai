@@ -96,7 +96,11 @@ function ui.run(step, directory)
         return "command " .. step.command
     elseif step.expression then
         local value = common.get_context_value(step.context, step.id or "", step.expression)
-        if step.expect ~= nil and value ~= step.expect then
+        local matches = value == step.expect
+        if type(value) == "number" and type(step.expect) == "number" then
+            matches = math.abs(value - step.expect) < 0.000001
+        end
+        if step.expect ~= nil and not matches then
             error(step.expression .. " = " .. tostring(value) .. ", expected " .. tostring(step.expect))
         end
         return step.expression .. " = " .. tostring(value)

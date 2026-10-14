@@ -3,6 +3,7 @@ import json
 import pytest
 
 from twwarhammer3.battle import controllers, report, setup
+from twwarhammer3.battle.llm import render_state
 from twwarhammer3.protocol import ProtocolError
 
 
@@ -41,10 +42,11 @@ def test_importable_controller_and_fresh_instances():
 
 
 def test_setup_rejects_roster_multiplicity_factions_and_settings():
-    scenario = {"expect": {"unit_scale": .75, "realism": False, "player_defends": True},
+    scenario = {"expect": {"unit_scale": .75, "realism": False, "player_defends": True,
+                           "ai_stats_modifier": "1.1"},
                 "player": {"faction": "p", "units": ["lord", "inf", "inf"]},
                 "enemy": {"faction": "e", "units": ["lord"]}}
-    state = {"setup": dict(scenario["expect"]),
+    state = {"setup": {**scenario["expect"], "army_ai_stats_modifiers": [1.1, 1.1]},
              "armies": {"player": {"faction": "p"}, "enemy": {"faction": "e"}},
              "friendly": [{"type": t} for t in ("lord", "inf", "inf")],
              "enemy_roster": [{"type": "lord"}]}
@@ -55,13 +57,17 @@ def test_setup_rejects_roster_multiplicity_factions_and_settings():
         setup.check_battle(scenario, {**state, "setup": {**state["setup"], "unit_scale": 1}})
     with pytest.raises(ProtocolError, match="faction"):
         setup.check_battle(scenario, {**state, "armies": {"player": {"faction": "wrong"}}})
+    with pytest.raises(ProtocolError, match="army AI modifiers"):
+        setup.check_battle(scenario, {**state, "setup": {**state["setup"],
+                                                       "army_ai_stats_modifiers": [1., 1.]}})
 
 
 def test_map_gate_and_required_steps(tmp_path):
     scenario = {"map": "intended", "expect": {"battle_type": "land_normal",
-                "difficulty": "ai_level_very_hard", "funds": "funds_large", "time_limit_s": 3600}}
+                "difficulty": "ai_level_very_hard", "funds": "funds_large", "time_limit_s": 3600,
+                "ai_stats_modifier": "1.0"}}
     lines = [f"step {i}: {step['expression']} = {step['expect']}"
-             for i, step in enumerate(setup.menu_checks(scenario))]
+             for i, step in enumerate(setup.menu_checks(scenario)) if "expression" in step]
     (tmp_path / "menu.log").write_text("\n".join(lines))
     (tmp_path / "map_list.txt").write_text("  CcoCustomBattleMapintended <selected>\n")
     assert setup.check_menu(scenario, tmp_path)["map"] == "intended"
@@ -124,3 +130,16 @@ def test_intervals_and_missing_active_strength():
     summary = report.mean_interval([0, 1, 2])
     assert summary["mean"] == 1
     assert summary["ci95"][1] == pytest.approx(1 + 4.303 / (3 ** .5))
+
+
+def test_terrain_and_rejected_move_alternatives_reach_both_model_renderers():
+    state = {"terrain": {"x0": -16, "z0": -16, "cell_m": 32, "sample_width_m": 16,
+                         "rows": [".#", ".."]},
+             "friendly": [{"id": "f1", "type": "inf", "men": 10, "men0": 10,
+                           "hp": 1, "x": 0, "z": 0, "state": [], "navigation": {
+                               "rejected": {"x": 100, "z": 100}, "sampled_ms": 5000,
+                               "alternatives": [{"x": 84, "z": 100}]}}]}
+    text = render_state(state, {})
+    assert "columns increase x and rows increase z by 32 m" in text
+    assert "Narrow crossings can lie between samples" in text
+    assert "unreachable move (100,100)" in text and "(84,100)" in text

@@ -67,15 +67,28 @@ def usage_cost(model: str, usage: dict) -> float:
     ) / 1e6
 
 
-def post(key: str, body: dict, attempts: int = 3) -> dict:
+def post(key: str, body: dict, attempts: int = 3, *, record_transport: bool = False) -> dict:
     """One Responses API call; retries only transient transport and service errors."""
     data = json.dumps(body).encode()
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+    started = time.time()
     for attempt in range(1, attempts + 1):
         try:
             request = urllib.request.Request(API_URL, data=data, headers=headers)
             with urllib.request.urlopen(request, timeout=60) as response:
-                return json.load(response)
+                value = json.load(response)
+                if record_transport:
+                    processing = response.headers.get("openai-processing-ms")
+                    try:
+                        processing = float(processing) if processing else None
+                    except ValueError:
+                        processing = None
+                    value["_transport"] = {
+                        "wall_seconds": time.time() - started,
+                        "provider_processing_ms": processing,
+                        "actual_model": value.get("model"), "transport_attempts": attempt,
+                    }
+                return value
         except urllib.error.HTTPError as error:
             detail = error.read(500).decode(errors="replace").replace(key, "<key>")
             if error.code not in TRANSIENT_HTTP or attempt == attempts:
@@ -139,6 +152,12 @@ class Model:
             "usd": usd,
             "text": _output_text(response),
         }
+        # Opt-in for WH3; the existing Spire trace schema and timing stay unchanged.
+        if "_transport" in response:
+            transport = response["_transport"]
+            attempt.update({key: transport[key] for key in
+                            ("provider_processing_ms", "actual_model", "transport_attempts")})
+            attempt["seconds"] = transport["wall_seconds"]
         self.totals.update(
             calls=1, usd=usd, seconds=attempt["seconds"], input_tokens=usage["input_tokens"],
             output_tokens=usage["output_tokens"],

@@ -503,5 +503,236 @@
    "wh3_dlc20",
    "wh3_dlc25"
   ]
+ },
+ "dwf-sla-herald": {
+  "name": "dwf-sla-herald",
+  "family": "ranged protection",
+  "frozen_from": "--scenario random --seed 322117462 (2026-10-13): Autogenerate army gave these rosters in all three launches (skills, commander, llm jobs); factions were left to the game then and are pinned here",
+  "substitutions": [
+   {
+    "from": "wh_dlc06_dwf_cha_runelord_1",
+    "to": "wh_dlc06_dwf_cha_runelord_0",
+    "why": "the custom battle screen lists only the _0 Runelord card; _1 is a variant picked inside the card"
+   }
+  ],
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "player": {
+   "subculture": "wh_main_sc_dwf_dwarfs",
+   "faction": "wh_main_dwf_dwarfs",
+   "units": [
+    "wh_dlc06_dwf_cha_runelord_0",
+    "wh_main_dwf_inf_longbeards",
+    "wh_main_dwf_inf_longbeards_1",
+    "wh_main_dwf_inf_hammerers",
+    "wh_main_dwf_inf_ironbreakers",
+    "wh3_dlc25_dwf_inf_doomseekers_ror",
+    "wh_main_dwf_inf_quarrellers_0",
+    "wh_main_dwf_inf_quarrellers_1",
+    "wh_main_dwf_inf_irondrakes_0",
+    "wh3_dlc25_dwf_inf_thunderers_ror",
+    "wh_main_dwf_veh_gyrocopter_1",
+    "wh_main_dwf_art_grudge_thrower"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh3_main_sc_sla_slaanesh",
+   "faction": "wh3_main_sla_slaanesh",
+   "units": [
+    "wh3_main_sla_cha_herald_of_slaanesh_shadow_0",
+    "wh3_main_sla_inf_marauders_1",
+    "wh3_main_sla_inf_daemonette_0",
+    "wh3_dlc20_chs_inf_chaos_warriors_msla",
+    "wh3_dlc20_chs_inf_chaos_warriors_msla",
+    "wh3_dlc20_chs_inf_forsaken_msla",
+    "wh3_main_sla_cav_hellstriders_1",
+    "wh3_main_sla_veh_seeker_chariot_0",
+    "wh3_dlc20_chs_cav_chaos_chariot_msla_ror",
+    "wh3_main_sla_mon_spawn_of_slaanesh_0",
+    "wh3_main_sla_mon_fiends_of_slaanesh_0",
+    "wh3_main_sla_mon_soul_grinder_0"
+   ]
+  },
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "split": "development",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_large",
+   "time_limit_s": 3600,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.0",
+   "player_defends": true
+  },
+  "protected": [
+   "wh_main_dwf_inf_quarrellers_0",
+   "wh_main_dwf_inf_quarrellers_1",
+   "wh_main_dwf_inf_irondrakes_0",
+   "wh3_dlc25_dwf_inf_thunderers_ror",
+   "wh_main_dwf_art_grudge_thrower"
+  ],
+  "content": [
+   "wh_dlc01",
+   "wh_dlc06",
+   "wh2_dlc17",
+   "wh3_dlc20",
+   "wh3_dlc25"
+  ],
+  "calibration_change": "Replace Sigvald with the selectable Shadow Herald; both observed b1 controllers lost, including Luna after leaving Sigvald as the sole active enemy. Other units unchanged."
+ },
+ "dwf-sla-herald-hard": {
+  "name": "dwf-sla-herald-hard",
+  "family": "ranged protection",
+  "frozen_from": "--scenario random --seed 322117462 (2026-10-13): Autogenerate army gave these rosters in all three launches (skills, commander, llm jobs); factions were left to the game then and are pinned here",
+  "substitutions": [
+   {
+    "from": "wh_dlc06_dwf_cha_runelord_1",
+    "to": "wh_dlc06_dwf_cha_runelord_0",
+    "why": "the custom battle screen lists only the _0 Runelord card; _1 is a variant picked inside the card"
+   }
+  ],
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "player": {
+   "subculture": "wh_main_sc_dwf_dwarfs",
+   "faction": "wh_main_dwf_dwarfs",
+   "units": [
+    "wh_dlc06_dwf_cha_runelord_0",
+    "wh_main_dwf_inf_longbeards",
+    "wh_main_dwf_inf_longbeards_1",
+    "wh_main_dwf_inf_hammerers",
+    "wh_main_dwf_inf_ironbreakers",
+    "wh3_dlc25_dwf_inf_doomseekers_ror",
+    "wh_main_dwf_inf_quarrellers_0",
+    "wh_main_dwf_inf_quarrellers_1",
+    "wh_main_dwf_inf_irondrakes_0",
+    "wh3_dlc25_dwf_inf_thunderers_ror",
+    "wh_main_dwf_veh_gyrocopter_1",
+    "wh_main_dwf_art_grudge_thrower"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh3_main_sc_sla_slaanesh",
+   "faction": "wh3_main_sla_slaanesh",
+   "units": [
+    "wh3_main_sla_cha_herald_of_slaanesh_shadow_0",
+    "wh3_main_sla_inf_marauders_1",
+    "wh3_main_sla_inf_daemonette_0",
+    "wh3_dlc20_chs_inf_chaos_warriors_msla",
+    "wh3_dlc20_chs_inf_chaos_warriors_msla",
+    "wh3_dlc20_chs_inf_forsaken_msla",
+    "wh3_main_sla_cav_hellstriders_1",
+    "wh3_main_sla_veh_seeker_chariot_0",
+    "wh3_dlc20_chs_cav_chaos_chariot_msla_ror",
+    "wh3_main_sla_mon_spawn_of_slaanesh_0",
+    "wh3_main_sla_mon_fiends_of_slaanesh_0",
+    "wh3_main_sla_mon_soul_grinder_0"
+   ]
+  },
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "split": "development",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_large",
+   "time_limit_s": 3600,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.1",
+   "player_defends": true
+  },
+  "protected": [
+   "wh_main_dwf_inf_quarrellers_0",
+   "wh_main_dwf_inf_quarrellers_1",
+   "wh_main_dwf_inf_irondrakes_0",
+   "wh3_dlc25_dwf_inf_thunderers_ror",
+   "wh_main_dwf_art_grudge_thrower"
+  ],
+  "content": [
+   "wh_dlc01",
+   "wh_dlc06",
+   "wh2_dlc17",
+   "wh3_dlc20",
+   "wh3_dlc25"
+  ],
+  "calibration_change": "Replace Sigvald with the selectable Shadow Herald; both observed b1 controllers lost, including Luna after leaving Sigvald as the sole active enemy. Other units unchanged."
+ },
+ "dwf-sla-herald-heldout-wastes": {
+  "name": "dwf-sla-herald-heldout-wastes",
+  "family": "ranged protection",
+  "frozen_from": "--scenario random --seed 322117462 (2026-10-13): Autogenerate army gave these rosters in all three launches (skills, commander, llm jobs); factions were left to the game then and are pinned here",
+  "substitutions": [
+   {
+    "from": "wh_dlc06_dwf_cha_runelord_1",
+    "to": "wh_dlc06_dwf_cha_runelord_0",
+    "why": "the custom battle screen lists only the _0 Runelord card; _1 is a variant picked inside the card"
+   }
+  ],
+  "map": "battle_preset_wh3_nur_wastes_01_04",
+  "player": {
+   "subculture": "wh_main_sc_dwf_dwarfs",
+   "faction": "wh_main_dwf_dwarfs",
+   "units": [
+    "wh_dlc06_dwf_cha_runelord_0",
+    "wh_main_dwf_inf_longbeards",
+    "wh_main_dwf_inf_longbeards_1",
+    "wh_main_dwf_inf_hammerers",
+    "wh_main_dwf_inf_ironbreakers",
+    "wh3_dlc25_dwf_inf_doomseekers_ror",
+    "wh_main_dwf_inf_quarrellers_0",
+    "wh_main_dwf_inf_quarrellers_1",
+    "wh_main_dwf_inf_irondrakes_0",
+    "wh3_dlc25_dwf_inf_thunderers_ror",
+    "wh_main_dwf_veh_gyrocopter_1",
+    "wh_main_dwf_art_grudge_thrower"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh3_main_sc_sla_slaanesh",
+   "faction": "wh3_main_sla_slaanesh",
+   "units": [
+    "wh3_main_sla_cha_herald_of_slaanesh_shadow_0",
+    "wh3_main_sla_inf_marauders_1",
+    "wh3_main_sla_inf_daemonette_0",
+    "wh3_dlc20_chs_inf_chaos_warriors_msla",
+    "wh3_dlc20_chs_inf_chaos_warriors_msla",
+    "wh3_dlc20_chs_inf_forsaken_msla",
+    "wh3_main_sla_cav_hellstriders_1",
+    "wh3_main_sla_veh_seeker_chariot_0",
+    "wh3_dlc20_chs_cav_chaos_chariot_msla_ror",
+    "wh3_main_sla_mon_spawn_of_slaanesh_0",
+    "wh3_main_sla_mon_fiends_of_slaanesh_0",
+    "wh3_main_sla_mon_soul_grinder_0"
+   ]
+  },
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "split": "held_out",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_large",
+   "time_limit_s": 3600,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.0",
+   "player_defends": true
+  },
+  "protected": [
+   "wh_main_dwf_inf_quarrellers_0",
+   "wh_main_dwf_inf_quarrellers_1",
+   "wh_main_dwf_inf_irondrakes_0",
+   "wh3_dlc25_dwf_inf_thunderers_ror",
+   "wh_main_dwf_art_grudge_thrower"
+  ],
+  "content": [
+   "wh_dlc01",
+   "wh_dlc06",
+   "wh2_dlc17",
+   "wh3_dlc20",
+   "wh3_dlc25"
+  ],
+  "calibration_change": "Replace Sigvald with the selectable Shadow Herald; both observed b1 controllers lost, including Luna after leaving Sigvald as the sole active enemy. Other units unchanged."
  }
 }

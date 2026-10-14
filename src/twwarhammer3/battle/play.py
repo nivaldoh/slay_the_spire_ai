@@ -59,8 +59,9 @@ LOBBY = "CustomBattleLobbyContext."
 PLAYER_ATTACKS = LOBBY + "LocalPlayerSlotContext.TeamContext.IsAttacker"
 NOT_STARTED = "the battle did not start"
 # The battle's BattleTypeState for each lobby battle type, as the 2026-10-14 smoke battles
-# reported them (classic is unverified, and free-for-all shares land_normal).
+# reported them; classic was checked in b1 acceptance and free-for-all shares land_normal.
 ENGINE_TYPES = {
+    "classic": "land_normal",
     "conquest": "conquest", "domination": "domination", "free_for_all": "land_normal",
     "ambush": "land_ambush", "river_crossing_battle": "land_bridge",
     "underground_intercept": "underground_intercept",
@@ -70,6 +71,7 @@ ENGINE_TYPES = {
 
 
 def play(output: Path, config: dict, *, policy_factory) -> dict:
+    job_started = time.time()
     require_realtime(config)
     trials = rotation(config)
     scenario = load_scenario(config)
@@ -87,7 +89,7 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
         "config": config,
         "scenario": scenario,
         "trials": trials,
-        "track": "obs-v1/act-v1/live-1x",
+        "track": "obs-v1+terrain/act-v1/live-1x",
         "status": "running",
         "episodes": [],
     }
@@ -157,10 +159,15 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
                         manifest["setup_checks"] = check_menu(scenario, output)
                         write_json(output / "manifest.json", manifest)
                     manifest["status"] = episodes(mailbox)
+    except ProtocolError as exc:
+        manifest.update(status="setup_failure", error=str(exc))
+        raise
     except BaseException:
         manifest["status"] = "interrupted"
         raise
     finally:
+        manifest["finished_at"] = datetime.now(UTC).isoformat()
+        manifest["wall_seconds"] = time.time() - job_started
         write_json(output / "manifest.json", manifest)
     return manifest
 
@@ -375,7 +382,7 @@ def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
     result = {"episode": directory.name, "status": "interrupted", "decisions": 0, "invalid": 0,
               "delays_ms": [], "think_s": [], "policy": config["policy"],
               "slot": config.get("slot"), "delay_ms": config.get("delay_ms", 0),
-              "track": "obs-v1/act-v1/live-1x" +
+              "track": "obs-v1+terrain/act-v1/live-1x" +
               (f"+age-{config['delay_ms']}ms" if config.get("delay_ms") else "")}
     log_offset = mailbox.log_offset()
 
@@ -531,6 +538,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, expect) 
             active_wall_start = time.time()
             if config.get("benchmark_scenario"):
                 result["setup_checks"] = check_battle(config["benchmark_scenario"], observation)
+                result["setup"] = observation.get("setup")
             for key, wanted in expect.items():
                 if mode.get(key) != wanted:
                     raise ProtocolError(f"setup: the battle's {key} is {mode.get(key)!r},"

@@ -92,7 +92,7 @@ def factories(config: dict) -> dict:
         if config.get("budget_usd") is None:
             raise ValueError("llm and commander require --budget-usd")
         ledger = Ledger(Path(config["ledger"]), config["budget_usd"])
-        send = partial(post, api_key())
+        send = partial(post, api_key(), record_transport=True)
         for name, kind in (("llm", LLMPolicy), ("commander", CommanderPolicy)):
             if name in names:
                 makers[name] = partial(kind, config["model"], config["effort"], ledger, send=send)

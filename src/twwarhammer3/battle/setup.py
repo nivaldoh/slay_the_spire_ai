@@ -12,6 +12,7 @@ LOBBY_FIELDS = {
     "difficulty": "DifficultyLevelSettingContext.Key",
     "funds": "FundTypeSettingContext.Key",
     "time_limit_s": "TimeLimitSeconds",
+    "ai_stats_modifier": "BattleAiStatsModifier",
 }
 
 
@@ -38,15 +39,20 @@ def validate_declaration(scenario: dict, config: dict, environment: dict) -> Non
             config["episode_timeout"] + 60):
         raise ValueError("run timeout must cover setup and every episode timeout plus 60 s reset")
     prefs = environment.get("preferences") or {}
-    for key, value in (("battle_ai_stats_modifier", str(expect["ai_stats_modifier"])),
-                       ("battle_realism_mode", str(expect["realism"]).lower())):
+    for key, value in (("battle_realism_mode", str(expect["realism"]).lower()),):
         if str(prefs.get(key)) != value:
             raise ProtocolError(f"setup preference {key}: {prefs.get(key)!r}, expected {value!r}")
 
 
 def menu_checks(scenario: dict) -> list[dict]:
-    return [{"context": "CcoFrontendRoot", "expression": SETTINGS + field,
-             "expect": scenario["expect"][key], "required": True}
+    modifier = float(scenario["expect"]["ai_stats_modifier"])
+    if not math.isfinite(modifier) or modifier <= 0:
+        raise ValueError("AI stats modifier must be finite and positive")
+    checks = [{"context": "CcoFrontendRoot", "command":
+               SETTINGS + f"SetBattleAiStatsModifier({modifier:g})", "required": True}]
+    return checks + [{"context": "CcoFrontendRoot", "expression": SETTINGS + field,
+             "expect": modifier if key == "ai_stats_modifier" else scenario["expect"][key],
+             "required": True}
             for key, field in LOBBY_FIELDS.items()]
 
 
@@ -62,7 +68,10 @@ def check_menu(scenario: dict, directory) -> dict:
     for key, field in LOBBY_FIELDS.items():
         wanted = str(scenario["expect"][key]).lower()
         matches = re.findall(re.escape(SETTINGS + field) + r" = ([^\r\n]+)", log)
-        if not matches or matches[-1].lower() != wanted:
+        actual = matches[-1].lower() if matches else None
+        equal = (actual == wanted if key != "ai_stats_modifier" else
+                 actual is not None and math.isclose(float(actual), float(wanted), abs_tol=1e-6))
+        if not equal:
             raise ProtocolError(f"setup {key}: {matches!r}, expected {wanted!r}")
         checks[key] = scenario["expect"][key]
     return checks
@@ -76,6 +85,12 @@ def check_battle(scenario: dict, observation: dict) -> dict:
         if settings.get(key) != expected[key]:
             raise ProtocolError(f"setup {key}: {settings.get(key)!r}, expected {expected[key]!r}")
         checks[key] = settings[key]
+    modifiers = settings.get("army_ai_stats_modifiers") or []
+    if not modifiers or any(not math.isclose(value, float(expected["ai_stats_modifier"]),
+                                             abs_tol=1e-6) for value in modifiers):
+        raise ProtocolError(f"setup army AI modifiers: {modifiers!r}, "
+                            f"expected {expected['ai_stats_modifier']!r}")
+    checks["army_ai_stats_modifiers"] = modifiers
     enemy = scenario.get("enemy")
     enemies = enemy if isinstance(enemy, list) else [enemy] if enemy else []
     enemy_units = [unit for army in enemies for unit in army["units"]]

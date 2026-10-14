@@ -66,3 +66,23 @@ def test_ask_retries_rejected_replies_with_feedback_then_gives_up(tmp_path):
     with pytest.raises(api.InvalidReply) as error:
         model.ask("Wall ahead.", {}, lambda text: parse("jump"), retries=0)
     assert len(error.value.attempts) == 1 and model.totals["calls"] == 4
+
+
+def test_wh3_transport_opt_in_records_wall_time_header_and_actual_model(tmp_path, monkeypatch):
+    class Response(io.BytesIO):
+        headers = {"openai-processing-ms": "1234.5"}
+
+    monkeypatch.setattr(api.urllib.request, "urlopen", lambda *a, **kw: Response(
+        b'{"id":"r", "model":"actual-snapshot", "usage":{"input_tokens":1,"output_tokens":1}}'))
+    ticks = iter([100., 102.])
+    monkeypatch.setattr(api.time, "time", lambda: next(ticks))
+    response = api.post("test-key", {}, record_transport=True)
+    assert response["_transport"] == {
+        "wall_seconds": 2., "provider_processing_ms": 1234.5,
+        "actual_model": "actual-snapshot", "transport_attempts": 1,
+    }
+    model = api.Model("gpt-6-luna", "none", Ledger(tmp_path / "ledger", 1),
+                      instructions="test", max_output_tokens=10, send=lambda body: response)
+    attempt = model.call("test", {})
+    assert attempt["seconds"] == 2 and attempt["actual_model"] == "actual-snapshot"
+    assert attempt["provider_processing_ms"] == 1234.5
