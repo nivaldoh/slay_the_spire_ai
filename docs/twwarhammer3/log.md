@@ -1,6 +1,35 @@
 # WH3 battle versions
 
-## Benchmark harness b2 (2026-10-14, draft awaiting live validation)
+## Benchmark harness b2 (2026-10-14, acceptance and diagnostic queue complete)
+
+Source `b476175` completed the terrain/Luna acceptance retry and the serial diagnostic
+queue; the controller and queue exited successfully at 17:15:50 UTC. Acceptance:
+TerrainProbe lost at 350 s after demonstrating unreachable-move rejection, choosing a
+reported alternative and moving; Luna lost at 442 s with transport timing/model records.
+
+Herald screens, one launch each (not calibration admission):
+- 1.0: hold lost 448 s, skills won 382 s, attack-nearest lost 249 s. Active margins
+  -0.412/+0.372/-0.710; both rematch starts matched; 8.41 valid trials/wall hour.
+- 1.1: attack-nearest/hold/skills lost 242/266/265 s. Margins -0.761/-0.658/-0.481;
+  matched starts; 11.17 valid trials/wall hour. Fresh snapshots show difficulty bonuses
+  only in enemy stats (+8 leadership, roughly +10% melee attack/defence, damage/charge).
+
+Objective probes: settlement lost at 244 s while holding every point throughout, nine
+accepted barricade builds and 204 supplies left; domination lost at 776 s, tickets
+0–1500, 514 supplies left and 15 accepted purchases across nine types. Trace inspection
+finds nine new friendly IDs and six old IDs restored from zero men, matching purchases
+by type exactly. Objective fields and results-register rows agree with the saved traces;
+ownership-time reconstruction differs by at most the initial 300 ms sample gap. These
+live ownership probes cover all-held and never-held cases; changing ownership at uneven
+intervals is additionally checked by the b3 Lua regression. Full audit artifact:
+`runs/twwarhammer3/reports/bench-b2-objective-audit.json`. All eight screening/probe rows
+and both acceptance retry rows are committed with this entry. API ledger remains $3.3329.
+
+Owner steering now prioritizes specialist anchor-unit scenarios and faction mechanics
+([scenario-recipe.md](scenario-recipe.md)). The unstarted Herald G1 plan is superseded;
+cavalry/anti-large and caster-led candidates come before repeated calibration. No
+scenario is admitted and no G1/G2 results exist. b3 is tested in an isolated worktree
+and will be merged after this queue, then receive live specialist acceptance.
 
 Read-only probes during b1 acceptance found the per-army AI modifier getter, stat
 previews and terrain APIs. b2 sets/reads the declared lobby modifier and checks it again

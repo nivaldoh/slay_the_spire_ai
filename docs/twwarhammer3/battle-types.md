@@ -108,7 +108,10 @@ slot, and every 10 s it calls in the cheapest unit it can afford.
 
 The digest shows them. The register ([results.csv](results.csv)) has `battle_type`, `victory_held`,
 `key_held`, `supplies_left` and `reinforcements_by_type`; unavailable older fields stay
-blank. The new tick-integrated fields still need an objective-mode live validation.
+blank. b2 live settlement/domination probes matched objective fields and register rows
+against traces, including 15 purchases by type (nine new IDs plus six returning IDs).
+Their ownership was all-held/never-held respectively; the b3 Lua regression additionally
+checks ownership changes at uneven intervals. [Evidence](benchmark-progress.md).
 
 ## Results
 

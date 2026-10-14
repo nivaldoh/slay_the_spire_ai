@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-14 12:40 UTC-3 (15:40 UTC): what is running, where each game
+Updated 2026-10-14 17:19 UTC: what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -8,11 +8,28 @@ stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 
 WH3 benchmark work is active (owner goal, 2026-10-14): complete the paired benchmark,
 difficulty/latency calibration, and the interface fixes its scenarios require.
-The five-controller b1 acceptance job completed; all five trials ended on engine losses,
-with identical rematch starts. The b2 acceptance job stopped at the terrain diagnostic: game Lua lacks math.huge.
-Its corrected Herald setup and private starting stats passed; Luna was not played.
-The sampler fix and Lua regression are ready; no controller running.
-Implementation and live evidence: [benchmark-progress.md](twwarhammer3/benchmark-progress.md).
+Owner steering: prioritize specialist challenge scenarios with anchor units and faction
+mechanics, including cavalry/anti-large, caster-led forces, difficult sieges and Skaven
+swarms. [Scenario recipe](twwarhammer3/scenario-recipe.md) is now part of selection.
+The current queue finishes as diagnostics; choose a specialist candidate before G1/G2.
+The unstarted Herald G1 draft is superseded; freeze the new candidate/reference before G1.
+The b2 acceptance rotations and serial screening/objective queue have completed.
+The queue and final child exited successfully at 2026-10-14 17:15:50 UTC; no game
+controller is active. b2 source was `b476175`. Herald 1.0: hold lost 448 s, skills won
+382 s, attack-nearest lost 249 s; 1.1: all three lost (242/266/265 s). Both launches
+had matched rematches; these are screening instances, not calibration admission.
+Settlement/domination objective fields and register rows passed trace audits, including
+nine builds and 15 reinforcement purchases. Proofs and limits are in the progress page.
+
+Next: commit b2 evidence, merge tested draft `9b73105` from `/tmp/wh3-benchmark-b3`,
+then run the separate frontend inventory in
+`runs/twwarhammer3/capability-probes/benchmark-specialist-rosters/steps.json`.
+The draft adds the missing-terrain setup gate, detailed startup failures, whole-job
+throughput, corrected visibility (`obs-v2+terrain`), `llm_rules`, barrier/spell-range
+observations and starting-resource/loadout comparisons. It passed 197 WH3 tests with
+Lua, a further Lua ownership test, 1041 broader tests with four explained skips, Ruff
+and Lua parsing. Specialist game acceptance remains pending. No G1/G2 trials have run.
+Implementation and evidence: [benchmark-progress.md](twwarhammer3/benchmark-progress.md).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -23,11 +40,13 @@ command; clear it when the job stops.
 [battle types](twwarhammer3/battle-types.md), [controllers](twwarhammer3/controllers.md),
 [integration](twwarhammer3/integration.md), [log](twwarhammer3/log.md). `main` runs
 `llm` v15 and `commander` v3 (every battle type's objectives, `build` and `reinforce`
-orders) and the `skills` executor v1.2. API spend: $3.2937 of the $25 cap
-(`uv run python -m twwarhammer3 spend`, 2026-10-14, after b1 acceptance).
-The owner has now authorized benchmark calibration, including testing the AI stats
-modifier at 1.0 and 1.1. Live read-back of 1.1 and its stat previews succeeded; 1.0 and
-the explicit lobby setter await their probe. See the active benchmark progress page.
+orders) and the `skills` executor v1.2. API spend: $3.3329 of the $25 cap
+(ledger after b2 acceptance; the queued jobs are scripted).
+The owner has authorized benchmark calibration, including AI modifiers 1.0 and 1.1.
+Both lobby and battle read-backs passed. Fresh 5.2 s startup snapshots show all 12 AI
+unit entries changing at 1.1 (roughly +10% attack/defence/damage/charge, +8 leadership),
+with the 12 player entries unchanged. These differences appear even in UI ValueBase;
+b3 also captures current Value to distinguish other active effects. See the progress page.
 
 2026-10-14 overnight (owner goal: one minimal test scenario per battle type, vertical
 slices toward the benchmark): done for all nine types (conquest, domination,
@@ -81,6 +100,10 @@ Next steps:
 ## Owner direction
 
 WH3:
+- 2026-10-14 (benchmark steering): specialist anchor units and faction-specific mechanics
+  should drive scenario design. Prioritize extreme tactical problems (cavalry against
+  anti-large, caster-led forces, difficult sieges, commanding/fighting Skaven swarms),
+  meaningful creative choices and battles worth watching; well-rounded armies can follow.
 - 2026-10-13: an API model plays real-time battles, with the order delay measured; control
   through an in-game mod, never screenshots or desktop input; a hard $25 cap on its own
   ledger, `runs/twwarhammer3/llm-spend.jsonl`. Battles always run unpaused at 1x.

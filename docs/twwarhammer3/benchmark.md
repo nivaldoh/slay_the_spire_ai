@@ -310,6 +310,13 @@ was never read.
 
 ### 2.2 Scenarios
 
+**Owner update (2026-10-14):** the current selection recipe is
+[scenario-recipe.md](scenario-recipe.md): specialist anchor units, faction-specific
+mechanics, extreme tactical problems and watchable decisions. The earlier generic
+families and `skills`-specific admission text below are historical; the updated
+[calibration plan](calibration-plan.md) declares a suitable competent reference before
+repeated trials. The core requirement remains competent-versus-trivial separation.
+
 A benchmark scenario is an entry in `configs/twwarhammer3/scenarios.json`, in the format
 `play.scenario_steps` reads, plus three fields:
 - `expect`: the values the setup gate checks;

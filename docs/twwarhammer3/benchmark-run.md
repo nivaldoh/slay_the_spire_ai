@@ -16,7 +16,8 @@ armies, DLC requirements and Runelord substitution. It expects very hard, large 
 The AI modifier is explicitly set through the lobby and read back both there and from
 each battle army. Funds mode and finite timer are also explicitly selected; custom
 funds amounts are set and checked when declared. Other settings are checked. The lobby
-setters passed live read-back; battle-side modifier validation is pending. Setup mismatches stop the job before scoring.
+setters and battle-side 1.0/1.1 read-backs passed. Fresh starting-stat comparisons found
+bonuses on the AI side only. Setup mismatches stop the job before scoring.
 
 ```bash
 uv run python -m twwarhammer3 play --scenario dwf-sla-taurox \

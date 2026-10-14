@@ -179,8 +179,10 @@ tracks the evidence and [calibration-plan.md](calibration-plan.md) specifies the
 1. Finish live acceptance of the terrain, AI-modifier and setup-failure paths. The b1
    five-controller rotation completed on one instance, with matched rematch starts and
    engine results for every controller, including an imported controller.
-2. Calibrate the ranged-protection family at explicit AI modifiers 1.0/1.1, with paired
-   scripted baselines across fresh launches. Keep the declared held-out map out of tuning.
+2. Select specialist challenges using the owner's [scenario recipe](scenario-recipe.md):
+   anchor units, faction mechanics, difficult tactical choices and watchable battles.
+   Screen cavalry/anti-large and caster-led prototypes before committing to repeated
+   calibration at AI modifiers 1.0/1.1. Keep held-out variants out of tuning.
 3. Run paired added-observation-age arms 0/6/10 s, unpaused at 1x, and report uncertainty.
 4. Later resume the random-draw model comparison on seeds 264482191, 1355466036 and
    238913231, then compare larger models on the same declared scenarios. Broader battle

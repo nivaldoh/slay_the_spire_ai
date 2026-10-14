@@ -22,6 +22,13 @@ check on one instance, not independent calibration data.
 
 ## Acceptance and inexpensive screening
 
+Owner update, 2026-10-14: specialist challenges and faction-specific anchor units now
+guide candidate selection; see [scenario-recipe.md](scenario-recipe.md). Complete the
+already running Herald modifier screens and objective probes as diagnostics, then
+screen cavalry/anti-large and caster-led prototypes before choosing the G1 candidate.
+The unstarted 36-battle Herald draft plan is superseded. No G1/G2 trials have been played.
+The original Herald design and its results below are retained as development evidence.
+
 Finish the five-controller b1 job, including the imported external controller. Then
 validate the new modifier setter/read-backs, coarse terrain and reachable alternatives,
 and reject a deliberately misspelled recruitment card before scoring. Test the updated
@@ -43,16 +50,20 @@ its building-capable scripted baseline. Do not declare success from a single bat
 
 ## G1: calibration
 
-Once a candidate has an intermediate difficulty, play six fresh launches per modifier,
-three controllers once per launch. Record rotation seeds `2026101401` through
+Once a specialist candidate has an intermediate difficulty and working required controls,
+declare its competent reference and play six fresh launches per modifier, three
+controllers once per launch: `hold`, `attack_nearest`, and that reference. `skills` is
+the default when it can express the required tactics; a specialist task may use a
+declared LLM, hybrid or specialist script instead. Freeze the choice before G1, not after
+viewing its repeated results. Record rotation seeds `2026101401` through
 `2026101406` for 1.0 and `2026101411` through `2026101416` for 1.1. The modifiers are
 separate strata; matching a rotation seed would not make two launches the same instance.
 
 Admission requires both:
 
-1. One scripted controller wins roughly 30–70% (2–4 of 6), counting timer endings as
+1. The declared competent reference wins roughly 30–70% (2–4 of 6), counting timer endings as
    valid trials without counting them as wins.
-2. Skills beats both trivial controllers on active-strength margin, with each paired
+2. That reference beats both trivial controllers on active-strength margin, with each paired
    instance interval above zero. This tests the better of the two trivial baselines.
 
 Report outcomes, uncertainty, failure denominators, paired differences, protected-unit
@@ -63,7 +74,7 @@ admission fails, recalibrate the development scenario; keep the failures in the 
 
 ## G2: controlled information age
 
-On the admitted scenario/settings, six fresh launches rotate skills at added ages
+On the admitted scenario/settings, six fresh launches rotate the same competent reference at added ages
 0, 6 and 10 s, using rotation seeds `2026101421` through `2026101426`. Natural latency
 remains included. The original buffered snapshot supplies the order's basis sequence;
 the engine clock supplies total information age at issuance. Initial buffer-fill time
