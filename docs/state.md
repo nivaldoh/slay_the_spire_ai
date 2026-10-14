@@ -6,10 +6,9 @@ stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 
 ## Active work
 
-WH3 benchmark probe, run by another Claude session from a detached worktree at `f2c8463`:
-it holds the game and `C:/wh3-agent` from about 2026-10-14 01:10 UTC for about an hour,
-one `llm` and one `commander` episode, into `runs/twwarhammer3/benchmark-probe-20261014/`.
-Start no WH3 job and leave `Warhammer3.exe` alone until it ends. Nothing else is running.
+Nothing is running: no game, controller or job. A WH3 benchmark probe
+(`runs/twwarhammer3/benchmark-probe-20261014/`) was stopped at the owner's request on
+2026-10-14; the owner wants the benchmark defined and discussed before anything runs.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
