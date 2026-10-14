@@ -374,8 +374,8 @@ def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
 def track_objectives(result: dict, observation: dict) -> None:
     """Measures of a battle type's objectives (owner, 2026-10-14): the share of the
     observations the job read in which we held each victory point, averaged over the points,
-    and the supplies and tickets at the last one; acknowledgements add the builds and
-    reinforcements that went in."""
+    and the key building alone (settlements); the supplies and tickets at the last one;
+    acknowledgements add the builds and reinforcements that went in."""
     mode = observation.get("mode") or {}
     points = [point for point in mode.get("capture_points") or [] if point.get("victory")]
     if not points and mode.get("supplies") is None and not mode.get("tickets"):
@@ -386,6 +386,11 @@ def track_objectives(result: dict, observation: dict) -> None:
         measures["held_sum"] = measures.get("held_sum", 0) + held
         measures["samples"] += 1
         measures["victory_held"] = round(measures["held_sum"] / measures["samples"], 3)
+        # A settlement's centre (siege or minor settlement), which the owner saw left empty.
+        keys = [point for point in points if "key_building" in (point.get("key") or "")]
+        if keys:
+            measures["key_sum"] = measures.get("key_sum", 0) + (keys[0].get("holder") == "us")
+            measures["key_held"] = round(measures["key_sum"] / measures["samples"], 3)
     if mode.get("supplies") is not None:
         measures["supplies_left"] = mode["supplies"]
     if mode.get("tickets"):

@@ -531,6 +531,14 @@ def test_episodes_measure_victory_points_held_supplies_left_and_purchases():
     empty = {}
     play.track_objectives(empty, {"mode": {"type": "land_normal"}})
     assert empty == {}
+    siege = {}
+    for key_holder in ("us", "enemy", "us", "us"):
+        play.track_objectives(siege, {"mode": {"capture_points": [
+            {"id": "c1", "key": "major_key_building_leadership", "holder": key_holder,
+             "victory": True},
+            {"id": "c2", "key": "minor_point_supplies", "holder": "us", "victory": True}]}})
+    assert siege["objectives"]["key_held"] == 0.75
+    assert siege["objectives"]["victory_held"] == 0.875
     conquest = {}
     play.track_objectives(conquest, {"mode": {"tickets": [{"side": "us", "tickets": 600},
                                                           {"side": "enemy", "tickets": 87}]}})

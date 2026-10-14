@@ -62,7 +62,9 @@ def episode_digest(episode: Path) -> str:
     measures = result.get("objectives") or {}
     if measures:
         held = measures.get("victory_held")
-        error = (f"; victory points held {held:.0%}" if held is not None else "") + "".join(
+        key = measures.get("key_held")
+        error = (f"; victory points held {held:.0%}" if held is not None else "") + (
+            f", key building {key:.0%}" if key is not None else "") + "".join(
             f", {label} {measures[key]}" for key, label in (
                 ("supplies_left", "supplies left"), ("build", "built"),
                 ("reinforce", "reinforced"), ("tickets", "tickets")) if key in measures) + error
