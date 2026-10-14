@@ -58,6 +58,12 @@ contain full friendlies, visible enemies and public roster/objectives; player eq
 is unverified. `evaluation`, `final` and `setup` are stripped before controller calls.
 Order refusals reach `acknowledge`. Engine acceptance means issued/queued, not effect.
 
+The lobby's initial enemy roster is public. Later enemy arrivals enter the known roster
+only when visible; a previously seen enemy's death is reported only if the engine also
+marks it visible then. Otherwise its last known state persists. Earlier b1/b2 sources
+could expose hidden arrivals and later deaths; their acceptance/screening results must
+not be pooled with this corrected observation contract.
+
 ## Records and interpretation
 
 Every started trial is recorded, including interruptions. Only engine won/lost/draw
@@ -69,6 +75,9 @@ Reports include failures and denominators, Wilson win intervals (omitted for cor
 repeats), and Student-t paired margin intervals across launch means. Active-strength
 margin excludes routing/shattered men and does not weight unit value. Small samples
 are exploratory; a null latency result only bounds effects the experiment could detect.
+Each side's denominator includes every registered unit's initial men, including summons
+and reinforcements that entered during battle. It is not strictly the starting roster's
+survival fraction; the by-type totals preserve these additions for inspection.
 
 Whole-job throughput includes setup, resets and failed jobs in its wall-time denominator.
 It is unavailable for incomplete jobs or older records without total job timing. A
@@ -81,7 +90,7 @@ than discarded. Inspect setup checks, start flags, missing pairs and the limitat
 
 ## Terrain and calibration candidates (b2, live validation pending)
 
-The observation track is `obs-v1+terrain/act-v1/live-1x`. A deployment snapshot gives
+The observation track is `obs-v2+terrain/act-v1/live-1x`. A deployment snapshot gives
 32 m spaced samples of 16 m squares clear of pathfinding restrictions. This is a coarse
 map, not a path planner: narrow crossings can be missed and buildings can later change.
 After an unreachable move, the unit reports nearby destinations tested with its own

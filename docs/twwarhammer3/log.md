@@ -7,11 +7,18 @@ before a controller can act. Unexpected startup/source errors retain their cause
 are infrastructure failures; interruptions remain separate. Paired reports also show
 valid trials per whole-job wall hour, counting setup, resets and failed jobs. If any
 supplied job lacks final wall timing, throughput is unavailable rather than estimated
-from episode durations. This leaves tactical decisions and timing rules unchanged.
+from episode durations.
 
-Validation: 190 WH3 tests passed, 1 skipped (optional Lua runtime); Ruff passed. Regression
+The boundary review also found that enemy registration could announce unseen arrivals,
+and an earlier sighting could reveal a later hidden death. `obs-v2+terrain` keeps the
+initial lobby roster public but adds later units only on sight; a death flag requires
+visibility at observation. This is a source/contract change before G1/G2, not installed
+midway through the b2 screen. Scoring still uses private totals for all units.
+
+Validation: 192 WH3 tests passed with the Lua runtime; Ruff and Lua 5.1 parsing passed. Regression
 checks cover absent terrain, startup causes, and a throughput denominator containing a
-setup failure. Live b2 traces/reports remain separate by their recorded source.
+setup failure, plus hidden summons/deaths and retained observed deaths. Live b2 traces/
+reports remain separate by their recorded source; b3 live acceptance remains pending.
 
 ## Benchmark harness b2 (2026-10-14, draft awaiting live validation)
 

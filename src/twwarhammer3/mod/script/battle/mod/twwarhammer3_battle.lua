@@ -478,6 +478,28 @@ local function mode_section()
     return section
 end
 
+-- The initial roster is public from the lobby. Later summons/reinforcements become
+-- known only on sight, and an earlier sighting does not reveal a later hidden death.
+local function enemy_observation(id, entry)
+    local alive = get(entry.unit, "number_of_men_alive", 0) > 0
+    local visible = visible_to_player(entry.unit)
+    if visible then
+        entry.seen = true
+        if not alive then entry.observed_dead = true end
+    end
+    local roster, record = nil, nil
+    if entry.initial or entry.seen then
+        roster = {id = id, type = get(entry.unit, "type", "?"), dead = entry.observed_dead,
+                  alliance = state.info.alliances > 2 and entry.alliance or nil}
+    end
+    if alive and visible then
+        local ok, value = pcall(unit_record, id, entry.unit, false, entry.class)
+        if ok and state.info.alliances > 2 then value.alliance = entry.alliance end
+        record = ok and value or {id = id, error = clean_error(value)}
+    end
+    return roster, record
+end
+
 local function observation(now)
     state.seq = state.seq + 1
     local friendly, enemy, roster = {}, {}, {}
@@ -487,18 +509,9 @@ local function observation(now)
         friendly[#friendly + 1] = ok and record or {id = id, error = clean_error(record)}
     end
     for _, id in ipairs(state.enemy_ids) do
-        local entry = state.enemy[id]
-        local alive = get(entry.unit, "number_of_men_alive", 0) > 0
-        -- A unit's destruction is reported only once the player has seen the unit.
-        roster[#roster + 1] = {id = id, type = get(entry.unit, "type", "?"),
-                               dead = (entry.seen and not alive) or nil,
-                               alliance = state.info.alliances > 2 and entry.alliance or nil}
-        if alive and visible_to_player(entry.unit) then
-            entry.seen = true
-            local ok, record = pcall(unit_record, id, entry.unit, false, entry.class)
-            if ok and state.info.alliances > 2 then record.alliance = entry.alliance end
-            enemy[#enemy + 1] = ok and record or {id = id, error = clean_error(record)}
-        end
+        local known, visible = enemy_observation(id, state.enemy[id])
+        if known then roster[#roster + 1] = known end
+        if visible then enemy[#enemy + 1] = visible end
     end
     local army = nil
     if #state.army_abilities > 0 then
@@ -865,7 +878,8 @@ local function register(unit, alliance, army)
         if state.started_ms then log("new friendly unit " .. id .. " " .. get(unit, "type", "?")) end
     else
         local id = "e" .. (#state.enemy_ids + 1)
-        state.enemy[id] = {unit = unit, class = unit_class(unit), alliance = alliance}
+        state.enemy[id] = {unit = unit, class = unit_class(unit), alliance = alliance,
+                           initial = not state.started_ms}
         state.enemy_ids[#state.enemy_ids + 1] = id
         state.enemy_by_ui[key] = id
         if state.started_ms then log("new enemy unit " .. id .. " " .. get(unit, "type", "?")) end

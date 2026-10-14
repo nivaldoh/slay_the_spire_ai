@@ -89,7 +89,7 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
         "config": config,
         "scenario": scenario,
         "trials": trials,
-        "track": "obs-v1+terrain/act-v1/live-1x",
+        "track": "obs-v2+terrain/act-v1/live-1x",
         "status": "running",
         "episodes": [],
     }
@@ -390,7 +390,7 @@ def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
     result = {"episode": directory.name, "status": "interrupted", "decisions": 0, "invalid": 0,
               "delays_ms": [], "think_s": [], "policy": config["policy"],
               "slot": config.get("slot"), "delay_ms": config.get("delay_ms", 0),
-              "track": "obs-v1+terrain/act-v1/live-1x" +
+              "track": "obs-v2+terrain/act-v1/live-1x" +
               (f"+age-{config['delay_ms']}ms" if config.get("delay_ms") else "")}
     log_offset = mailbox.log_offset()
 
@@ -450,10 +450,12 @@ def policy_call(policy, method: str, *args):
 
 
 def track_objectives(result: dict, observation: dict) -> None:
-    """Measures of a battle type's objectives (owner, 2026-10-14): the share of the
-    observations the job read in which we held each victory point, averaged over the points,
-    and the key building alone (settlements); the supplies and tickets at the last one;
-    acknowledgements add the builds and reinforcements that went in."""
+    """Time held per victory point and key building, plus final supplies/tickets.
+
+    Current engine records integrate ownership every tick, independently of decisions.
+    Legacy records fall back to the fraction of read observations. Acknowledgements
+    separately count accepted builds and reinforcement purchases.
+    """
     mode = observation.get("mode") or {}
     points = [point for point in mode.get("capture_points") or [] if point.get("victory")]
     if not points and mode.get("supplies") is None and not mode.get("tickets"):
