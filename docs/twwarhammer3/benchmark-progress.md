@@ -38,9 +38,11 @@ is in [benchmark.md](benchmark.md) and the original acceptance brief in
 
 Owner steering now prioritizes specialist challenges with anchor units and faction
 mechanics; [scenario-recipe.md](scenario-recipe.md) is part of candidate selection.
-The unstarted Herald G1 plan was superseded before any G1/G2 trials. Complete the
-current diagnostic queue, install b3, then inventory/screen cavalry and caster candidates
-and freeze a competent reference appropriate to the chosen task before calibration.
+The unstarted Herald G1 plan was superseded before any G1/G2 trials. b2 diagnostics and
+the specialist frontend inventory completed; b3 and b4 are merged. The first candidates
+are compact: cavalry six versus eight, caster five versus ten, each with an 8000 cap
+and unused funds. Next, screen both with `hold`, `attack_nearest` and Luna `llm_rules`,
+then freeze a competent reference appropriate to the chosen task before calibration.
 
 Source `b476175` completed acceptance and the serial diagnostic queue. All four queue
 jobs completed, and the queue/final controller exited successfully at 17:15:50 UTC.

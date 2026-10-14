@@ -13,6 +13,12 @@ target, protect a casting window, lure a counter away, or sacrifice something el
 An anchor can be ours or the enemy's. A roster of famous units is not sufficient if all
 of them can simply attack the nearest target.
 
+Army size and funds are design choices, not difficulty targets. Small forces on either
+or both sides can produce the same specialist dilemmas with clearer individual decisions.
+Start the cavalry/caster prototypes compact; add units only when they create a needed
+pressure or option. Large Skaven swarms are a distinct candidate, not the default scale.
+Use a budget appropriate to the pinned roster rather than filling a generous allowance.
+
 Give the agent a real disadvantage or constraint, and identify the obvious approach
 that should be costly. Keep several plausible responses open; do not design every
 battle around one secret trick. Write these as author hypotheses, not instructions in
@@ -48,7 +54,14 @@ Selectable cards, mounts, spell loadouts and mechanics must be checked before fr
 | Command a Skaven swarm | Many cheap bodies supporting a few unusual weapons, monsters or casters | Use expendable units to buy space/time, preserve the scarce damage source, choose acceptable losses and exploit the faction's asymmetry. Verify performance with the larger unit count. |
 | Survive a Skaven swarm | A much smaller force with limited crowd-clearing anchors | Shape the approach, preserve ammunition/magic, prioritize threats inside the swarm and avoid encirclement. Large numbers alone must not turn the task into an uninformative loss. |
 
-Cavalry and caster prototypes come first. The current Dwarf/Slaanesh Herald screens
+Cavalry and caster prototypes come first. b4 defines `brt-cavalry-emp-pikes` (six versus
+eight) and `tze-caster-skv-screen` (five versus ten), with 8000 budget caps, explicit
+rosters, 1.0/1.1 development settings and untouched held-out maps. The frontend inventory
+verified the cards, the cavalry lord's horse and Kairos's default equipped spellbook;
+battle viability and difficulty remain to be screened. Exact rosters and design
+hypotheses are recorded in `configs/twwarhammer3/scenarios.json`.
+
+The current Dwarf/Slaanesh Herald screens
 remain useful harness and difficulty evidence; they do not satisfy this new selection
 criterion automatically. Difficult sieges and the two swarm directions remain concrete
 follow-ups, not a requirement to admit every family in the first release.

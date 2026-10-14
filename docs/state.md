@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-14 17:19 UTC: what is running, where each game
+Updated 2026-10-14 17:31 UTC: what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -15,15 +15,19 @@ The current queue finishes as diagnostics; choose a specialist candidate before 
 The unstarted Herald G1 draft is superseded; freeze the new candidate/reference before G1.
 The b2 acceptance rotations and serial screening/objective queue have completed.
 The queue and final child exited successfully at 2026-10-14 17:15:50 UTC; no game
-controller is active. b2 source was `b476175`. Herald 1.0: hold lost 448 s, skills won
+controller from that queue remains active. b2 source was `b476175`. Herald 1.0: hold lost 448 s, skills won
 382 s, attack-nearest lost 249 s; 1.1: all three lost (242/266/265 s). Both launches
 had matched rematches; these are screening instances, not calibration admission.
 Settlement/domination objective fields and register rows passed trace audits, including
 nine builds and 15 reinforcement purchases. Proofs and limits are in the progress page.
 
 b2 evidence is committed. Tested draft `9b73105` from `/tmp/wh3-benchmark-b3` is
-merged into main. Next, run the separate frontend inventory in
-`runs/twwarhammer3/capability-probes/benchmark-specialist-rosters/steps.json`.
+merged into main (`4d3caad`). The frontend-only specialist roster inventory completed;
+the owned launch exited normally. No game controller is active. Evidence is in
+`runs/twwarhammer3/capability-probes/benchmark-specialist-rosters/`.
+b4 (`7727ee6`) adds compact six-versus-eight cavalry and five-versus-ten caster
+prototypes, explicit horse selection and an 8000 budget cap. Next: screen both
+development variants with `hold`, `attack_nearest` and Luna `llm_rules`.
 The draft adds the missing-terrain setup gate, detailed startup failures, whole-job
 throughput, corrected visibility (`obs-v2+terrain`), `llm_rules`, barrier/spell-range
 observations and starting-resource/loadout comparisons. It passed 197 WH3 tests with
@@ -104,6 +108,8 @@ WH3:
   should drive scenario design. Prioritize extreme tactical problems (cavalry against
   anti-large, caster-led forces, difficult sieges, commanding/fighting Skaven swarms),
   meaningful creative choices and battles worth watching; well-rounded armies can follow.
+  Small armies on either or both sides are equally suitable; high funds and large
+  rosters are not requirements. Start the first specialist prototypes compact.
 - 2026-10-13: an API model plays real-time battles, with the order delay measured; control
   through an in-game mod, never screenshots or desktop input; a hard $25 cap on its own
   ledger, `runs/twwarhammer3/llm-spend.jsonl`. Battles always run unpaused at 1x.
