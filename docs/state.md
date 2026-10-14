@@ -1,14 +1,13 @@
 # Project state
 
-Updated 2026-10-13 22:00 UTC-3 (2026-10-14 01:00 UTC): what is running, where each game
+Updated 2026-10-14 08:30 UTC-3 (11:30 UTC): what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-Nothing is running: no game, controller or job. A WH3 benchmark probe
-(`runs/twwarhammer3/benchmark-probe-20261014/`) was stopped at the owner's request on
-2026-10-14; the owner wants the benchmark defined and discussed before anything runs.
+Nothing is running: no game, controller or job. The overnight battle-type work
+(2026-10-14, 03:58-11:46 UTC) is finished; see the WH3 section below.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -16,22 +15,34 @@ command; clear it when the job stops.
 ## Total War: WARHAMMER III battles
 
 [README](twwarhammer3/README.md) (track page, full [Next](twwarhammer3/README.md#next)),
-[controllers](twwarhammer3/controllers.md), [integration](twwarhammer3/integration.md),
-[log](twwarhammer3/log.md). `main` runs `llm` v14 (v10 tactics) and `commander` v2, both
-with ability readiness and army abilities, and the `skills` executor v1.2. Latest: all 9
-battles on 3 paired random draws at very hard were lost. API spend: $2.44 of the $25 cap
-(`uv run python -m twwarhammer3 spend`, 2026-10-13). Open owner decision: the AI stats
+[battle types](twwarhammer3/battle-types.md), [controllers](twwarhammer3/controllers.md),
+[integration](twwarhammer3/integration.md), [log](twwarhammer3/log.md). `main` runs
+`llm` v15 and `commander` v3 (every battle type's objectives, `build` and `reinforce`
+orders) and the `skills` executor v1.2. API spend: $3.23 of the $25 cap ($0.80 tonight)
+(`uv run python -m twwarhammer3 spend`, 2026-10-14). Open owner decision: the AI stats
 modifier is 1.1, which favours the enemy; whether to play at 1.0.
 
+2026-10-14 overnight (owner goal: one minimal test scenario per battle type, vertical
+slices toward the benchmark): done for all nine types (conquest, domination,
+free-for-all, ambush, chokepoint, subterranean, minor settlement, siege, survival).
+Each sets up unattended, reports its objectives in the state (`mode`), has the orders
+it needs and ended on an engine result with `attack_nearest`, Luna `llm` v15 and Luna
+`commander` v3; `probe_abilities` verified building and buying in the engine. Results
+and gaps: [battle-types.md](twwarhammer3/battle-types.md); engine facts:
+[integration.md](twwarhammer3/integration.md#battle-types-probed-2026-10-14).
+
 Next (owner to choose; the owner will discuss the next features):
-1. Other battle types at AI difficulty very hard, the top setting
-   ([plan ranked by effort](twwarhammer3/README.md#other-battle-types-owner-request-2026-10-13)).
-   Conquest or domination first, after a frontend probe of each type's maps and roles.
+1. Battle types toward benchmarks ([battle-types.md](twwarhammer3/battle-types.md#next)):
+   variants per type (the `random-<type>` draws, both roles), calibration of the
+   scripted controllers per type, and the interface gaps found (no deployment phase, no
+   terrain, survival wave timing).
 2. Resume the random-draw model comparison later (three seeds left, in the
    [log](twwarhammer3/log.md)), then Sol and Astra as commander on the same draws.
 3. Eventually we could turn this game into some kind of serious LLM benchmark? For now I'm just registering this here. Could try to create certain challenge scenario battles where the opponent side is stronger, and see how well different models perform and whether they discover certain key insights required to win these battles. Eventually these challenge scenarios could even be AI-generated themselves.
    2026-10-14: the owner's brief and a draft definition to discuss (analysis of the
    harness, spec, one concrete instance): [twwarhammer3/benchmark.md](twwarhammer3/benchmark.md).
+   Owner notes on sieges (2026-10-14 night): benchmark who holds the victory points
+   over time and the supplies left unspent; both are now measured per episode.
 
 ## Slay the Spire
 
