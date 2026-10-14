@@ -15,6 +15,13 @@ The current b4 screen stays on its frozen source; this draft is not a mid-battle
 Validation: all 207 WH3 tests passed with Lua, Ruff passed, and all Lua scripts compiled
 under Lua 5.1. A later launch must verify the new rendered fields before calibration.
 
+Timer-ended reports now retain the engine's won/lost/draw alongside `time_limit`, with
+separate timeout-outcome counts and an explicit "non-timer win rate" label. This avoids
+hiding legitimate defender wins at the timer while preserving the declared calibration
+criterion for decisive wins. The timer-win regression and all 25 report/setup/controller
+tests pass; Ruff passes. Underlying result files and the existing outcome criterion are
+unchanged.
+
 ## Benchmark harness b4 (2026-10-14, compact specialist prototypes)
 
 Adds two development candidates, each with a 1.1 modifier version and an untouched

@@ -153,6 +153,8 @@ def collect(jobs: list[Path]) -> dict:
             groups[signature].append({
                 "instance": str(job), "episode": directory.name, "controller": label,
                 "policy": policy, "delay_ms": delay, "outcome": outcome,
+                "engine_outcome": result["status"] if result["status"] in OUTCOMES else None,
+                "ended_by": result.get("ended_by"),
                 "valid": result["status"] in OUTCOMES,
                 "setup_checked": bool(manifest.get("setup_checks") and result.get("setup_checks")),
                 "start_flagged": (result.get("start_comparison") or {}).get("flagged"),
@@ -190,6 +192,9 @@ def collect(jobs: list[Path]) -> dict:
                 "controller": controller, "trials": len(items), "valid": valid,
                 "instances": len({trial["instance"] for trial in items}),
                 "outcomes": dict(outcomes), "win_rate": outcomes["won"] / valid if valid else None,
+                "time_limit_engine_outcomes": dict(Counter(
+                    trial["engine_outcome"] for trial in items
+                    if trial["outcome"] == "time_limit" and trial["engine_outcome"])),
                 # Wilson assumes one Bernoulli trial per instance. Do not report it
                 # on correlated rematch repeats; retain the raw rate and denominator.
                 "win_ci95": wilson(outcomes["won"], valid)
@@ -255,7 +260,7 @@ def render(report: dict) -> str:
         lines += [f"Scenario: {scenario.get('name') or scenario.get('map', 'unlabelled')}; "
                   f"source {str(definition['source'])[:7]}", "",
                   "| Controller / added age | Instances | Started | Valid | W/L/D/time | Other | "
-                  "Win rate [95% CI] | USD | Wall h | Unchecked |",
+                  "Non-timer win rate [95% CI] | USD | Wall h | Unchecked |",
                   "|" + "---|" * 10]
         for row in group["controllers"]:
             outcomes = row["outcomes"]
@@ -298,8 +303,11 @@ def render(report: dict) -> str:
         lines += ["", "Trials (JSON report retains objective and rejection breakdowns):", ""]
         for trial in group["trials"]:
             age = trial["metrics"]["order_age_s"]["mean"]
+            outcome = trial["outcome"]
+            if outcome == "time_limit":
+                outcome += f" (engine {trial['engine_outcome']})"
             lines.append(f"- {Path(trial['instance']).name}/{trial['episode']}: "
-                         f"{trial['controller']}, {trial['outcome']}; "
+                         f"{trial['controller']}, {outcome}; "
                          f"order age {age if age is not None else 'unavailable'} s; "
                          f"start flagged={trial['start_flagged']}; "
                          f"error={trial['error'] or 'none'}")
