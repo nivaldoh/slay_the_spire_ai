@@ -173,7 +173,8 @@ def test_build_orders_need_an_empty_slot_a_listed_option_and_the_supplies(order,
 
 
 SURVIVAL = {**OBSERVATION, "mode": {
-    "supplies": 1000, "spawn_zones": [{"id": 14, "x": 320, "z": 0}],
+    "supplies": 1000, "spawn_zones": [{"id": 14, "x": 320, "z": 0, "usable": True},
+                                      {"id": 9, "x": 0, "z": 0, "usable": False}],
     # As in the survival pool: one type at two costs, the dearer listed first.
     "reinforcements": [{"type": "marauders", "cost": 446}, {"type": "warriors", "cost": 900},
                        {"type": "marauders", "cost": 400}],
@@ -191,6 +192,7 @@ SURVIVAL = {**OBSERVATION, "mode": {
     ([{"type": "reinforce", "reinforcement": "trolls", "zone": 14}], "no 'trolls' left"),
     ([{"type": "reinforce", "reinforcement": "warriors", "zone": 14}] * 2, "no 'warriors' left"),
     ([{"type": "reinforce", "reinforcement": "marauders", "zone": 3}], "not one of yours"),
+    ([{"type": "reinforce", "reinforcement": "marauders", "zone": 9}], "refuses purchases now"),
     ([{"type": "build", "slot": "s2", "option": "barricade_trap"}], "cannot be built on now"),
     # Builds and reinforcements share the supplies: 900 + 200 > 1000.
     ([{"type": "reinforce", "reinforcement": "warriors", "zone": 14},

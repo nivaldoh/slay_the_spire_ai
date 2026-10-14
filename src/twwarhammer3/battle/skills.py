@@ -369,7 +369,7 @@ class ProbeAbilities(Skills):
                 orders.append({"unit": "army", "type": "build", "slot": slot["id"],
                                "option": cheapest["name"]})
         pool = sorted(mode.get("reinforcements") or [], key=lambda unit: unit.get("cost") or 0)
-        zones = mode.get("spawn_zones") or []
+        zones = [zone for zone in mode.get("spawn_zones") or [] if zone.get("usable") is not False]
         if (pool and zones and pool[0].get("cost", 0) <= supplies
                 and now - self.reinforced_s >= self.REINFORCE_S):
             self.reinforced_s = now

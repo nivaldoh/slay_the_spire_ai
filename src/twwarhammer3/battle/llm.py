@@ -290,6 +290,7 @@ def render_mode(mode: dict | None) -> str | None:
                                   for unit in mode["reinforcements"]) or "empty") + ".")
         lines.append("Your spawn zones: " + (", ".join(
             f"{zone['id']} at ({zone['x']:.0f}, {zone['z']:.0f})"
+            + (" (refuses purchases now)" if zone.get("usable") is False else "")
             for zone in mode.get("spawn_zones") or []) or "none") + ".")
     if mode.get("slots"):
         lines.append("Building slots (order with unit \"army\", type \"build\", slot and option):")

@@ -358,15 +358,24 @@ local function mode_section()
     end
     if #bridges > 0 then section.bridges = bridges end
     if state.info.reinforcing then
-        local pool = {}
-        for _, row in ipairs(pool_rows()) do
+        local pool, cheapest = {}, nil
+        for index, row in ipairs(pool_rows()) do
             pool[#pool + 1] = {type = row[1], cost = round(tonumber(row[2]))}
+            if not cheapest or pool[#pool].cost < pool[cheapest].cost then cheapest = index end
         end
         section.reinforcements = pool
+        -- Zones open to the alliance can still refuse purchases (34 refusals in one llm
+        -- domination battle), so each zone says whether the pool's cheapest unit could be
+        -- bought there now (none can if it is not affordable).
         local zones = {}
         local query = string.format(ZONES, state.info.player_alliance or 0)
         for _, row in ipairs(context_rows("CcoBattleRoot", "", query)) do
-            zones[#zones + 1] = {id = tonumber(row[1]), x = round(tonumber(row[2]), 1), z = round(tonumber(row[3]), 1)}
+            local id = tonumber(row[1])
+            local usable = cheapest and get_context(string.format(
+                "BattleReinforcementPoolContext.CanPurchaseUnit(%s.At(%d), PlayerArmyContext, %d)",
+                POOL, cheapest - 1, id)) == true
+            zones[#zones + 1] = {id = id, x = round(tonumber(row[2]), 1), z = round(tonumber(row[3]), 1),
+                                 usable = usable or false}
         end
         section.spawn_zones = zones
     end

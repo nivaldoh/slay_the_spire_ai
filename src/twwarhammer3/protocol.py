@@ -165,8 +165,11 @@ def _validate_purchase(order, observation, purchases) -> None:
         taken = purchases["units"].count(name)
         if len(pool) <= taken:
             raise IllegalActionError(f"army: no {name!r} left in the reinforcement pool")
-        if order.get("zone") not in {zone["id"] for zone in mode.get("spawn_zones") or []}:
+        zones = {zone["id"]: zone for zone in mode.get("spawn_zones") or []}
+        if order.get("zone") not in zones:
             raise IllegalActionError(f"army: zone {order.get('zone')!r} is not one of yours")
+        if zones[order["zone"]].get("usable") is False:
+            raise IllegalActionError(f"army: zone {order['zone']} refuses purchases now")
         purchases["units"].append(name)
         # The engine side buys the cheapest unit of the type, then the next cheapest.
         cost = sorted(unit.get("cost") or 0 for unit in pool)[taken]

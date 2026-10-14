@@ -385,9 +385,10 @@ def test_building_slots_show_options_progress_and_build_orders_are_described():
 def test_the_reinforcement_pool_and_spawn_zones_are_listed():
     pool = [{"type": "wh3_main_kho_inf_chaos_warriors_1", "cost": 900}]
     text = llm.render_mode({"type": "survival", "supplies": 1120, "reinforcements": pool,
-                            "spawn_zones": [{"id": 14, "x": 320, "z": 0}]})
+                            "spawn_zones": [{"id": 14, "x": 320, "z": 0, "usable": True},
+                                            {"id": 9, "x": 0, "z": 246, "usable": False}]})
     assert "): wh3_main_kho_inf_chaos_warriors_1 900." in text
-    assert "Your spawn zones: 14 at (320, 0)." in text
+    assert "Your spawn zones: 14 at (320, 0), 9 at (0, 246) (refuses purchases now)." in text
     assert llm.describe_orders([{"unit": "army", "type": "reinforce", "zone": 14,
                                  "reinforcement": "wh3_main_kho_inf_chaos_warriors_1"}]) == (
         "army reinforce chaos_warriors_1 at zone 14")
