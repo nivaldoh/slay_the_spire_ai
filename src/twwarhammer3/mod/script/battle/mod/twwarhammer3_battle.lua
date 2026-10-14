@@ -1042,6 +1042,12 @@ local function start()
         'ArmyList.JoinString(FactionContext.Key + "@" + UnitList.JoinString('
         .. 'UnitRecordContext.Key + ":" + UnitDetailsContext.StatList.JoinString('
         .. 'Key + "=" + ValueBase, "/"), ";"), "@@")')
+    -- ValueBase excludes modifiers/buffs; retain Value as well to measure the actual
+    -- starting-stat differences between the declared AI modifier settings.
+    state.setup.unit_current_stats = get_context(
+        'ArmyList.JoinString(FactionContext.Key + "@" + UnitList.JoinString('
+        .. 'UnitRecordContext.Key + ":" + UnitDetailsContext.StatList.JoinString('
+        .. 'Key + "=" + Value, "/"), ";"), "@@")')
     local terrain_ok, terrain = pcall(read_terrain)
     if terrain_ok then state.terrain = terrain else log("terrain failed: " .. clean_error(terrain)) end
     sample_objectives(state.started_ms)

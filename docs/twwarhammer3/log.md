@@ -15,6 +15,11 @@ initial lobby roster public but adds later units only on sight; a death flag req
 visibility at observation. This is a source/contract change before G1/G2, not installed
 midway through the b2 screen. Scoring still uses private totals for all units.
 
+The local engine API documentation identifies `CcoUnitStat.ValueBase` as excluding
+modifiers/buffs/debuffs, and `Value` as current. Startup now retains both privately;
+the b2 base-stat snapshots alone cannot establish applied AI stat bonuses. G1 must
+compare the current values from equivalent fresh starting conditions at 1.0 and 1.1.
+
 Validation: 192 WH3 tests passed with the Lua runtime; Ruff and Lua 5.1 parsing passed. Regression
 checks cover absent terrain, startup causes, and a throughput denominator containing a
 setup failure, plus hidden summons/deaths and retained observed deaths. Live b2 traces/
