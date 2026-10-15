@@ -155,9 +155,15 @@ stats)"; both cavalry challenges explain why a frontal charge is risky (the halb
 gun claims already checked in the game database); scenarios carry a `group`.
 
 Reviews: three independent critiques (target reader, information design, rigor) and a
-synthesis, then a second reader and rigor round on the rebuilt page. Both rounds' findings
-were applied except a latency-against-outcome scatter, rejected because speed is
-confounded with the model here; the added-delay experiment is the controlled test.
+synthesis, then a second reader and rigor round on the rebuilt page, then an acceptance
+review against each requirement of the request plus a maintainability review of the code.
+Their findings were applied except a latency-against-outcome scatter, rejected because
+speed is confounded with the model here; the added-delay experiment is the controlled test.
+The acceptance round moved the battle onto the first desktop screen (the page opens on the
+key maneuver's moment and plays it once in view), kept the decision panel's orders in view
+with a two-line run card, capped route columns at three maps, put the view age on one
+0–25 s scale everywhere, removed data the page never read and a duplicate model test, and
+repaired a browser check that had stopped asserting routes.
 
 Validation: full `uv run pytest -q` and lint; prettier (width 100); the offline browser
 check passed on the canonical page, a copy, the synthetic demo and the two-model pair page

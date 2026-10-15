@@ -178,10 +178,10 @@ def test_g1_matches_trace_and_never_invents_general_death():
         re.search(r'id="report-data" type="application/json">(.*?)</script>', html, re.S)[1])
     # The page embeds the fields it draws, rounded (report_html.compact), and its route outline.
     assert json.loads(gzip.decompress(base64.b64decode(embedded["replays"]["g0-t2"]))) == {
-        **report_html.compact(sol), "highlights": [], "selected": False}
+        **report_html.compact(sol), "highlights": []}
     # 87 batches of orders, one never acknowledged: its age is unknown, not zero.
     timing = embedded["battles"]["g0-t2"]["timing"]
-    assert timing["batches"] == len(timing["ages"]) == 86 and timing["moved"] == []
+    assert len(timing["ages"]) == 86 and timing["moved"] == []
     assert len(embedded["prompts"]) == 1
 
 

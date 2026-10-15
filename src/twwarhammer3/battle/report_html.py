@@ -7,10 +7,10 @@ the code and settings that shape play: presentation-only files are left out of i
 collector's JSON and text keep the strict, never-pooled groups and paired statistics.
 
 Each scenario has a featured trial: a curated selection, whose record the page states
-beside it, else the first by chronology. Diagnostic probes stay in the data, off the page.
-Reader-facing scenario and unit text comes from
-configs/twwarhammer3/report_notes.json. Recorded game stills are embedded as WebP, which
-needs Pillow.
+beside it, else the first finished model battle, else the first battle, by chronology.
+Diagnostic probes stay in the data, off the page. Reader-facing scenario and unit text
+comes from configs/twwarhammer3/report_notes.json. Recorded game stills are embedded as
+WebP, which needs Pillow.
 """
 
 import base64
@@ -132,17 +132,18 @@ def commander(trial: dict, definition: dict) -> dict:
     def detail(*parts):
         return " · ".join(filter(None, [*parts, extra]))
 
+    # `short` tells rows of one name apart in tight spaces: effort and added age only.
     if base in MODEL_POLICIES or card.get("kind") in ("model", "hybrid", "demo"):
         name = model or definition.get("model") or base
         return {"kind": "model", "family": name, "name": name,
                 "detail": detail(effort and f"{effort} reasoning", PROMPTS.get(base)),
-                "prompt": PROMPTS.get(base)}
+                "short": detail(effort and f"{effort} reasoning"), "prompt": PROMPTS.get(base)}
     if base in SCRIPTED:
         name, rule = SCRIPTED[base]
         return {"kind": "scripted", "family": "Scripted", "name": name,
-                "detail": detail(f"scripted: {rule}")}
+                "detail": detail(f"scripted: {rule}"), "short": detail()}
     return {"kind": "diagnostic", "family": None, "name": "Diagnostic probe",
-            "detail": detail(trial["policy"].split(":")[-1])}
+            "detail": detail(trial["policy"].split(":")[-1]), "short": detail()}
 
 
 def _share(numerator, denominator) -> float | None:
@@ -190,11 +191,6 @@ def stills(episode: Path, entries: list[dict], *, embed: bool) -> list[dict]:
     return output
 
 
-def _model_trial(trial: dict) -> bool:
-    return ((trial.get("card") or {}).get("kind") == "model"
-            or policy_parts(trial["policy"], {})[0] in MODEL_POLICIES)
-
-
 def _title(note: dict, scenario: dict) -> str:
     return (note.get("title") or scenario.get("family") or scenario.get("name")
             or "No scenario recorded")
@@ -232,9 +228,12 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
 
     trials, chronology = _chronology(data)
     battles, by_name = {}, {}
+
+    def group_of(key):  # "g2-t5" -> group 2
+        return data["groups"][int(key[1:].split("-")[0])]
     for key in sorted(trials, key=chronology):
         trial = trials[key]
-        definition = data["groups"][int(key[1:].split("-")[0])]["definition"]
+        definition = group_of(key)["definition"]
         soldiers = (trial.get("measures") or {}).get("soldiers") or {}
         enemy, own = soldiers.get("enemy") or {}, soldiers.get("friendly") or {}
         battles[key] = {
@@ -284,12 +283,13 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
         hidden += [key for key in every if key not in keys]
         if not keys:
             continue
-        definition = data["groups"][int(keys[0][1:].split("-")[0])]["definition"]
+        definition = group_of(keys[0])["definition"]
         scenario = definition.get("scenario") or {}
         note = scenario_notes.get(name) or {}
         selected = [key for key in keys if (runs.get(
             f"{trials[key]['instance']}/{trials[key]['episode']}") or {}).get("selected") is True]
-        models = [key for key in keys if trials[key]["valid"] and _model_trial(trials[key])]
+        models = [key for key in keys
+                  if trials[key]["valid"] and battles[key]["commander"]["kind"] == "model"]
         reason, pool = next((reason, pool) for reason, pool in (
             ("selected", selected), ("first_model_run", models), ("first_run", keys)) if pool)
         rows = {}
@@ -307,7 +307,6 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             "group": note.get("group") or ("Other battle types (pilots)"
                                            if not scenario.get("family")
                                            else "Specialist scenarios"),
-            "brief": scenario.get("brief"), "expect": scenario.get("expect"),
             "split": scenario.get("split"), "status": scenario.get("status"),
             "battle_type": scenario.get("battle_type") or "unrecorded",
             "armies": armies(scenario), "battles": keys,
@@ -342,8 +341,7 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
                                "title": _title(scenario_notes.get(name) or {},
                                                {**scenario, "name": name})})
     return {"schema": 2, "evidence_kind": kind, "report": data, "battles": battles,
-            "scenarios": scenarios, "setup_only": setup_only, "diagnostics": hidden,
-            "model_policies": sorted(MODEL_POLICIES)}  # base names: a trial's may add @MODEL
+            "scenarios": scenarios, "setup_only": setup_only, "diagnostics": hidden}
 
 
 def _round(value, digits=1):
@@ -393,9 +391,7 @@ def timing(payload: dict) -> dict:
              if d.get("after_frame") is not None] if payload.get("recorder_version") else []
     return {"ages": [_round(d["age_s"]) for d in batches],
             "plans": [_round(d["plan_age_s"]) for d in plans],
-            "moved": [round(value) for value in moved], "replies": replies,
-            "decisions": len(payload["decisions"]), "batches": len(batches),
-            "rejected": payload["summary"]["rejections"]}
+            "moved": [round(value) for value in moved], "replies": replies}
 
 
 def route(payload: dict) -> dict:
@@ -415,8 +411,6 @@ def route(payload: dict) -> dict:
                 path = paths.setdefault(u["id"], [])
                 if not path or math.dist(path[-1], (u["x"], u["z"])) >= ROUTE_STEP_M:
                     path.append([round(u["x"]), round(u["z"])])
-    glyphs = {entry["id"]: entry.get("glyph") for entry in payload["roster"]}
-
     def end(uid):
         u = last[uid]
         return ("down" if u.get("men") == 0 else
@@ -426,10 +420,8 @@ def route(payload: dict) -> dict:
         point = [round(last[uid]["x"]), round(last[uid]["z"])]
         if path[-1] != point:
             path.append(point)
-    return {"friendly": [{"id": uid, "glyph": glyphs.get(uid), "end": end(uid), "path": path}
-                         for uid, path in paths.items()],
-            "enemy": [{"id": uid, "glyph": glyphs.get(uid), "at": point}
-                      for uid, point in first_seen.items()]}
+    return {"friendly": [{"end": end(uid), "path": path} for uid, path in paths.items()],
+            "enemy": [{"at": point} for point in first_seen.values()]}
 
 
 def render(report: dict, notes: dict | None = None) -> str:
@@ -455,8 +447,7 @@ def render(report: dict, notes: dict | None = None) -> str:
                                                         sorted(job.glob("*prompt.md"))}
             if payload is not None:
                 run = runs.get(f"{trials[key]['instance']}/{trial['episode']}") or {}
-                payloads[key] = {**compact(payload), "highlights": run.get("highlights") or [],
-                                 "selected": run.get("selected") is True}
+                payloads[key] = {**compact(payload), "highlights": run.get("highlights") or []}
                 if payload["frames"]:
                     data["battles"][key].update(timing=timing(payloads[key]),
                                                 route=route(payloads[key]))

@@ -91,13 +91,14 @@ A dark stage, then the results on a light page, then the method:
   scenarios, models, scripted baselines, dates) and, beside it, the **headline**: the
   first notes group's largest controlled comparison (the commanders shared by two launches
   of one harness, in the most such launches; C1 today), one mark per battle on the progress
-  axis, its win counts and median order age. Its caption says "once in each launch" only
-  when that holds and that prompts were tuned on it only for a development scenario. On a
+  axis, its win counts and median order age. The page calls a launch a "round"; the caption
+  says "once in every round" only when that holds and names a development scenario. On a
   phone it follows the viewer.
-- **The battle**: the scenario's question and challenge, then the viewer with the featured
-  battle, which plays its key maneuver once when 30% of the map is in view (not under
-  reduced motion, nor after the replay was moved). The scenario and battle selects sit in
-  the run card. The run card names
+- **The battle**: the scenario's name, question and challenge, then the viewer with the
+  featured battle. Unless the reader prefers less motion, it opens on the key maneuver's
+  moment and plays it once when half the map is in view ("Key maneuver" replays it with its
+  lead-in). The run card: commander and detail on one line, the outcome and its record here,
+  the measures, then the scenario and battle selects side by side. The run card names
   the commander (model, then reasoning effort and prompt, or the scripted rule), the
   engine outcome with its duration, the commander's record here and the battle's measures;
   a curated pick adds that it was selected for its analyst notes, not as a typical result.
@@ -106,7 +107,7 @@ A dark stage, then the results on a light page, then the method:
   the order of battle and up to four game stills ("spectator camera, not what the model
   saw").
 - **Same battle, different plans**: per commander, a column of route maps, one per
-  battle: every friendly path over the whole battle (thinned to a point every 6 m, □ start,
+  battle (three, in order, until "+N more"): every friendly path over the whole battle (thinned to a point every 6 m, □ start,
   ● end, × destroyed) and each enemy unit where first seen, over one framing per scenario;
   wins are outlined. Commanders whose armies never moved are left out.
 - **How far each commander got**: one row per commander. Columns: enemy army broken (one
@@ -120,11 +121,11 @@ A dark stage, then the results on a light page, then the method:
 - **The battle doesn't wait for the model**: a sentence quoting one model's median order
   age and the median movement meanwhile, both from the same 1 Hz recorder battles; then per
   commander, one minute of its first finished battle as a sawtooth of the age of its latest
-  view on one shared scale up to 30 s (each drop is a reply, kept orders included; a red
-  caret marks a taller tooth), its median order age and 90th percentile for replies with
-  new orders, and the battle/wall clock ratio range. "See what moved during one
-  reply" pins the median-age reply of the battle in the viewer. A labelled placeholder
-  names the planned added-delay experiment.
+  view on the shared 0–25 s scale (each drop is a reply, kept orders included; a red caret
+  marks a taller tooth), its median order age and 90th percentile for replies with new
+  orders, and the battle/wall clock ratio range. "See what moved during one
+  reply" pins, in the viewer, the median-age reply with orders inside the key maneuver
+  (else the whole battle). A labelled placeholder names the planned added-delay experiment.
 - **All scenarios**: groups from the notes (pilots folded), aligned columns, one mark per
   battle for each model and for the scripted baselines ("no baseline yet" where none ran);
   † marks a cell pooling different settings or harness versions, listed in its tooltip.
@@ -176,8 +177,9 @@ that reached the game (for the asynchronous commander, the latest adopted plan's
 view), joined by a line to where the unit is now, with "Outlines: where units stood N s
 ago" in a caption; live markers recede meanwhile. It is off in ordinary playback. The
 timeline labels its rows (notes, replies, events) and its lowest band is the same view
-age, second by second, scaled to the battle. The waiting line says how long ago the
-model was asked.
+age, second by second, on the shared 0–25 s scale. The waiting line counts how long ago the
+model was asked. Map labels that would overlap another are dropped, except the selected
+unit's; the roster and hover still name every unit.
 
 The moment panel shows the latest decision applied by the replay time, never a reply
 before it was applied ("Waiting for the model's next reply" until then): the stated
@@ -189,8 +191,8 @@ accepted them", with the seen and accepted times and the reply's wall-clock time
 commander, its plan's age or the unit skills following it). Message, reply, timing detail
 and cost stay collapsed. "See what moved while it waited" pins the reply: the ordered units,
 their targets and every unit that moved 5 m or more, as outlines in the basis observation
-and solid in the first frame after application, joined by straight lines. On wide screens the panel is as
-tall as the map column and scrolls.
+and solid in the first frame after application, joined by straight lines. On wide screens
+the panel is as tall as the map column and scrolls.
 
 More than 1.5 × the sample interval past the last frame, the map says "No observation
 recorded during this interval". A run without the 1 Hz recorder shows one notice instead:

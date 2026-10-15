@@ -125,17 +125,18 @@ def test_commanders_get_readable_names_kinds_and_families():
 
     assert name("llm_rules") == {"kind": "model", "family": "gpt-6-sol", "name": "gpt-6-sol",
                                  "detail": "low reasoning · no tactical advice",
-                                 "prompt": "no tactical advice"}
+                                 "short": "low reasoning", "prompt": "no tactical advice"}
     assert name("llm_rules@gpt-6-luna/medium")["detail"] == "medium reasoning · no tactical advice"
     assert name("commander", card={"kind": "hybrid", "model": "gpt-6-luna"})["family"] == (
         "gpt-6-luna")
     assert name("rush_nearest", delay_ms=6000) == {
         "kind": "scripted", "family": "Scripted", "name": "Charge nearest",
         "detail": "scripted: every unit runs at the nearest visible enemy · "
-                  "+6 s added observation age"}
+                  "+6 s added observation age",
+        "short": "+6 s added observation age"}
     assert name("terrain_probe:TerrainProbe") == {
         "kind": "diagnostic", "family": None, "name": "Diagnostic probe",
-        "detail": "TerrainProbe"}
+        "detail": "TerrainProbe", "short": ""}
 
 
 def test_compact_timing_and_route_keep_only_what_the_page_draws():
@@ -172,17 +173,15 @@ def test_compact_timing_and_route_keep_only_what_the_page_draws():
     assert compacted["decisions"][0]["displacements"][0]["from"] == [0.0, 0.0]
     # A plan adoption makes it a commander battle: only adoptions are the model's replies.
     assert report_html.timing(compacted) == {
-        "ages": [4.2], "plans": [2.0], "moved": [20], "decisions": 3, "batches": 1,
-        "rejected": 2, "replies": [[4000, 9000]]}
+        "ages": [4.2], "plans": [2.0], "moved": [20], "replies": [[4000, 9000]]}
     blocking = deepcopy(compacted)
     blocking["decisions"][1].pop("plan_age_s")
     assert report_html.timing(blocking)["replies"] == [[1000, 5250], [6000, 9000]]
     # Distance needs the 1 Hz recorder: sparse controller observations would overstate it.
     assert report_html.timing({**compacted, "recorder_version": None})["moved"] == []
     assert report_html.route(compacted) == {
-        "friendly": [{"id": "f1", "glyph": "cavalry", "end": "down",
-                      "path": [[0, 0], [7, 0], [20, 0], [21, 0]]}],
-        "enemy": [{"id": "e1", "glyph": "infantry", "at": [500, 0]}]}
+        "friendly": [{"end": "down", "path": [[0, 0], [7, 0], [20, 0], [21, 0]]}],
+        "enemy": [{"at": [500, 0]}]}
 
 
 def test_timer_missing_metrics_repeats_and_setup_only_interruption_are_preserved(tmp_path):
@@ -425,8 +424,7 @@ def test_scenarios_feature_the_selected_run_and_follow_the_notes_order(tmp_path)
     assert frozen["battles"] == ["g0-t1", "g0-t0"]
     payloads = [json.loads(gzip.decompress(base64.b64decode(data["replays"][key])))
                 for key in ("g0-t0", "g0-t1")]
-    assert payloads[0]["highlights"] == [highlight] and payloads[0]["selected"] is True
-    assert payloads[1]["highlights"] == [] and payloads[1]["selected"] is False
+    assert payloads[0]["highlights"] == [highlight] and payloads[1]["highlights"] == []
     scenario = report_html.display_data(source)["scenarios"][1]  # without notes
     assert (scenario["featured"], scenario["featured_reason"]) == ("g0-t1", "first_model_run")
     assert (scenario["title"], scenario["question"]) == ("frozen", None)
@@ -463,6 +461,4 @@ def test_two_models_of_one_policy_are_two_controllers_paired_within_each_launch(
     ] * 2 + [("llm_rules", "gpt-6-sol", "high"), ("llm_rules@gpt-6-luna/medium", None, None)]
     # The page finds the prompt and the readable name by the base policy name.
     assert data["prompts"]["pair-a"] == {"llm_rules_prompt.md": "Invented rules-only prompt."}
-    assert "llm_rules" in data["model_policies"]
-    assert report_html._model_trial({"policy": "commander@gpt-6-luna", "card": {"kind": "hybrid"}})
-    assert not report_html._model_trial({"policy": "hold", "card": {"kind": "scripted"}})
+    assert {battle["commander"]["kind"] for battle in data["battles"].values()} == {"model"}

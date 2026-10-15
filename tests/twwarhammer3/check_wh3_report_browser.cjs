@@ -125,7 +125,7 @@ async function main() {
     if (scenario.featured_reason === "selected")
       assert.match(
         runLine,
-        /won \d+ of its \d+ finished battles here[\s\S]*not as a typical result/,
+        /won \d+ of its \d+ here[\s\S]*featured for its analyst notes, not as typical/,
       );
     if (data.scenarios.some((item) => item.controlled)) {
       assert.match(await text("#scoreboard"), /controlled comparison/i);
@@ -163,7 +163,7 @@ async function main() {
     for (const fact of first.next) assert.ok(panel.includes(fact.text));
     assert.doesNotMatch(panel, /[{[]\s*"|"\w+"\s*:/, "no JSON in the default panel");
     assert.equal(await count("#moment details[open]"), 0);
-    assert.match(panel, /These orders were \d+\.\d s old when the game accepted them/);
+    assert.match(panel, /\d+\.\d s old when the game accepted these orders/);
     assert.match(await text("#method"), /accepted is not the same as carried out/);
 
     // Keyboard: ←/→ step through decisions, [ ] through events, Space plays and pauses.
@@ -193,7 +193,7 @@ async function main() {
       if (d.applied_ms - requested < 200) continue;
       await seek(d.applied_ms - 1);
       const before = await text("#moment");
-      const waiting = `Waiting for the (model|controller)'s next reply · asked \\d+\\.\\d s ago`;
+      const waiting = `Waiting for the (model|controller)'s next reply · \\d+\\.\\d s`;
       assert.match(before, new RegExp(waiting));
       const heading = await panelHeading();
       const previous = applied[applied.indexOf(d) - 1];
@@ -229,31 +229,29 @@ async function main() {
     assert.ok((await text("#moment .unit-card")).includes(lord.role));
     await page.locator("#moment .unit-card button").click();
 
-    // Unselected units' recent routes start at the unit, toward its engine destination.
-    const moving = replay.frames.find(
-      (f) => f.time_ms > first.applied_ms && f.friendly.some((u) => u.dest),
+    // Unselected units' recent routes start at the unit, through the waypoints still ahead.
+    const mover = applied.find((d) =>
+      d.steps.some((step) => step.kind === "move" && step.status !== "rejected"),
     );
-    if (moving) {
-      await seek(moving.time_ms);
-      const faint = await page.evaluate(() => {
-        const at = new Set(
-          [...document.querySelectorAll("#map-layer .unit")].map((node) =>
-            node
-              .getAttribute("transform")
-              .match(/translate\(([^)]+)\)/)[1]
-              .replace(" ", ","),
-          ),
-        );
-        const starts = [
-          ...document.querySelectorAll(
-            '#map-layer > g[opacity="0.3"] > polyline[stroke="#56b4e9"]',
-          ),
-        ].map((line) => line.getAttribute("points").split(" ")[0]);
-        return { drawn: starts.length, loose: starts.filter((p) => !at.has(p)) };
-      });
-      assert.ok(faint.drawn > 0, "faint routes are drawn for moving units");
-      assert.deepEqual(faint.loose, [], "every faint route starts at a unit");
-    }
+    const moving = mover && replay.frames.find((f) => f.time_ms > mover.applied_ms);
+    assert.ok(moving, "a recorded battle with an accepted move has a frame after it");
+    await seek(moving.time_ms);
+    const faint = await page.evaluate(() => {
+      const at = new Set(
+        [...document.querySelectorAll("#map-layer .unit")].map((node) =>
+          node
+            .getAttribute("transform")
+            .match(/translate\(([^)]+)\)/)[1]
+            .replace(" ", ","),
+        ),
+      );
+      const starts = [
+        ...document.querySelectorAll('#map-layer > g[opacity="0.3"] > polyline[stroke="#56b4e9"]'),
+      ].map((line) => line.getAttribute("points").split(" ")[0]);
+      return { drawn: starts.length, loose: starts.filter((p) => !at.has(p)) };
+    });
+    assert.ok(faint.drawn > 0, "faint routes are drawn for moving units");
+    assert.deepEqual(faint.loose, [], "every faint route starts at a unit");
 
     // Watch the featured maneuver plays from the highlight's lead-in.
     if (replay.highlights?.length) {

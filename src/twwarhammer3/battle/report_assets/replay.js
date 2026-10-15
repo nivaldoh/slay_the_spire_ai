@@ -13,11 +13,10 @@ const svg = (tag, attrs = {}, text) => {
   return node;
 };
 const json = (value) => JSON.stringify(value, null, 2);
-const pad = (number) => String(number).padStart(2, "0");
 // Battle clock as the engine counts it (6:22); tenths only where a sequence needs them.
 const clock = (ms) => {
   const s = Math.max(0, Math.floor(ms / 1000));
-  return `${Math.floor(s / 60)}:${pad(s % 60)}`;
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 };
 const clockTenths = (ms) => {
   const tenths = Math.max(0, Math.floor(ms / 100));
@@ -60,6 +59,21 @@ const GLYPHS = [
 const glyphKey = (key) => (GLYPHS.includes(key) ? key : "unknown");
 // The two armies' colours: they mean the armies everywhere and nothing else.
 const TEAM = { friendly: "#56b4e9", enemy: "#e69f00" };
+// One scale wherever a view's age is drawn (the replay strip, the real-time rows).
+const AGE_SCALE_S = 25;
+// The impassable terrain cells as one SVG path, through a projection's x and y.
+function blockedPath(terrain, x, y, scale) {
+  const cell = terrain.cell_m,
+    size = (cell * scale).toFixed(1);
+  let path = "";
+  terrain.rows.forEach((row, j) =>
+    [...row].forEach((value, i) => {
+      if (value === "#")
+        path += `M${x(terrain.x0 + i * cell - cell / 2).toFixed(1)} ${y(terrain.z0 + j * cell + cell / 2).toFixed(1)}h${size}v${size}h-${size}z`;
+    }),
+  );
+  return path;
+}
 // Age of the newest view a controller has answered, over [t0, t1] on the battle clock:
 // [view_ms, applied_ms] replies make a sawtooth that drops whenever a reply lands.
 function ageSeries(replies, [t0, t1]) {
@@ -69,7 +83,7 @@ function ageSeries(replies, [t0, t1]) {
   for (const [view, applied] of landed) {
     if (applied > t1) break;
     if (applied > t0 && basis != null) points.push([applied, applied - basis]);
-    basis = basis == null || applied <= t0 ? view : Math.max(basis, view);
+    basis = basis == null ? view : Math.max(basis, view);
     if (applied >= t0) points.push([applied, applied - basis]);
   }
   if (basis != null) points.push([t1, t1 - basis]);
@@ -373,18 +387,9 @@ const Viewer = (() => {
           fill: MAP,
         }),
       );
-      let path = "";
-      const cell = terrain.cell_m,
-        size = (cell * proj.scale).toFixed(2);
-      terrain.rows.forEach((row, j) =>
-        [...row].forEach((value, i) => {
-          if (value !== "#") return;
-          const left = proj.x(terrain.x0 + i * cell - cell / 2),
-            top = proj.y(terrain.z0 + j * cell + cell / 2);
-          path += `M${left.toFixed(1)} ${top.toFixed(1)}h${size}v${size}h-${size}z`;
-        }),
+      ground.append(
+        svg("path", { d: blockedPath(terrain, proj.x, proj.y, proj.scale), fill: "#33454f" }),
       );
-      ground.append(svg("path", { d: path, fill: "#33454f" }));
     } else ground.append(svg("rect", { width: proj.w, height: proj.h, fill: MAP }));
     // A faint 100 m grid helps judge distances without competing with the units.
     const grid = svg("g", { stroke: "#ffffff", "stroke-opacity": 0.045 });
@@ -505,8 +510,8 @@ const Viewer = (() => {
   // One dashed route through the issued waypoints; attack targets as rings, never as arrows.
   // A rejected move rejects the steps queued after it, so a route turns red at most once.
   // A strong route starts where the model saw the unit. A faint route starts where the unit
-  // is now and runs through the waypoint nearest the engine's move destination (`dest`) and
-  // the later ones; a unit with no destination recorded gets none.
+  // is now and runs through the waypoints it has not yet come within ARRIVED_M of; a unit out
+  // of view gets none.
   function drawRoute(layer, d, id, fi, strong) {
     const steps = d.steps.filter((s) => s.unit === id && ["move", "attack"].includes(s.kind));
     if (!steps.length) return;
@@ -691,7 +696,7 @@ const Viewer = (() => {
       Math.max(0, Math.min(a[3], b[3]) - Math.max(a[1], b[1]));
     for (const l of labels.sort((a, b) => a.rank - b.rank)) {
       if (!l.text) continue;
-      const w = (l.text.length + (l.note ? l.note.length + 1 : 0)) * 7.2,
+      const w = (l.text.length + (l.note ? l.note.length + 1 : 0)) * 7.4,
         h = 12,
         d = radius + 3;
       const options = [
@@ -705,7 +710,7 @@ const Viewer = (() => {
       const cost = (box) => taken.reduce((sum, other) => sum + overlap(box, other), 0);
       const box =
         options.find((option) => !cost(option)) ||
-        (l.rank < 2 && options.sort((a, b) => cost(a) - cost(b))[0]);
+        (l.rank === 0 && options.sort((a, b) => cost(a) - cost(b))[0]);
       if (!box) continue;
       taken.push(box);
       const text = svg(
@@ -788,13 +793,13 @@ const Viewer = (() => {
     placeLabels(layer);
   }
 
-  // The model's view: the observation behind the latest reply that reached the game (for the
-  // asynchronous commander, its plan's older one), drawn as outlines joined to where each
-  // unit is now.
   // Replies whose view the overlay and strip follow: every applied decision, or for the
   // asynchronous commander only its plan adoptions (its executor follows the latest plan).
   const planned = () => r.decisions.some((d) => d.plan_age_s != null);
   const answers = (d) => d.applied_ms != null && (!planned() || d.plan_age_s != null);
+  // The model's view: the observation behind the latest reply that reached the game (for the
+  // asynchronous commander, its plan's older one), drawn as outlines joined to where each
+  // unit is now.
   function viewOf(now) {
     if (now.current < 0) return null;
     let i = now.current;
@@ -903,8 +908,8 @@ const Viewer = (() => {
       .filter(answers)
       .map((d) => [d.time_ms - (d.plan_age_s || 0) * 1000, d.applied_ms]);
     const series = ageSeries(replies, [start, end]);
-    const top = Math.max(5, Math.ceil(Math.max(0, ...series.map((p) => p[1])) / 5) * 5);
-    const ageY = (age) => AGE_TOP + AGE_H - (age / top) * AGE_H;
+    const top = AGE_SCALE_S;
+    const ageY = (age) => AGE_TOP + AGE_H - (Math.min(age, top) / top) * AGE_H;
     const label = (y, text) => svg("text", { x: 8, y, fill: "#8fa3ad", "font-size": 11 }, text);
     g.append(
       label(15, "Notes"),
@@ -999,7 +1004,7 @@ const Viewer = (() => {
     else
       line.append(
         el("span", null, "pulse"),
-        `Waiting for ${who} ${now.current < 0 ? "first" : "next"} reply · asked ${((time - requested(d)) / 1000).toFixed(1)} s ago`,
+        `Waiting for ${who} ${now.current < 0 ? "first" : "next"} reply · ${((time - requested(d)) / 1000).toFixed(1)} s`,
       );
     return line;
   }
@@ -1119,30 +1124,29 @@ const Viewer = (() => {
 
   function ageSection(d, i) {
     const section = el("section");
-    section.append(el("h4", "How old was its information?"));
+    section.append(el("h4", "Age of its information"));
     if (d.age_s == null) {
       section.append(el("p", "Not measured: no acknowledgement was recorded for this reply."));
       return section;
     }
     const sentence = el("p", null, "age-sentence"),
-      seen = `seen ${clockTenths(d.time_ms)}, accepted ${clockTenths(d.applied_ms)}`;
+      seen = `seen ${clockTenths(d.time_ms)} → accepted ${clockTenths(d.applied_ms)}`;
     if (d.plan_age_s != null)
       sentence.append(
-        "The model's plan adopted here came from a view of the battle ",
+        "Plan made from a view ",
         el("strong", `${seconds(d.plan_age_s)} old`),
-        `; the unit skills acting on it read the battle ${seconds(d.age_s)} before the game accepted their orders.`,
+        `; unit skills act on fresh views (${seconds(d.age_s)}).`,
       );
     else if (planned())
       sentence.append(
-        `Scripted unit skills issued these orders from a view `,
+        "Unit skills, from a view ",
         el("strong", `${seconds(d.age_s)} old`),
-        ` (${seen}), following the model's latest plan.`,
+        ` (${seen}), follow the model's latest plan.`,
       );
     else
       sentence.append(
-        `${d.steps.length ? "These orders were" : "This reply was"} `,
         el("strong", `${seconds(d.age_s)} old`),
-        ` when the game accepted ${d.steps.length ? "them" : "it"} (${seen}; ${run.kind === "model" ? "model" : "controller"} reply ${seconds(d.reply_s)} on the wall clock).`,
+        ` when the game accepted ${d.steps.length ? "these orders" : "this reply"} (${seen}; reply ${seconds(d.reply_s)} on the wall clock).`,
       );
     section.append(sentence);
     if (d.basis_frame != null && d.after_frame != null) {
@@ -1632,13 +1636,13 @@ const Viewer = (() => {
     if (selected) $("moment").scrollTop = 0;
     if (selected && intoView) reveal();
   }
-  // Play from `from` at 4× and stop at `to` when given: the battle itself ran at 1×. Watching
-  // analyst note k keeps its units bright and its caption shown; a key event dims nothing.
   function setLag(on) {
     lag = Boolean(on) && !$("lag-toggle").disabled;
     keys.map = null;
     render();
   }
+  // Play from `from` at 4× and stop at `to` when given: the battle itself ran at 1×. Watching
+  // analyst note k keeps its units bright and its caption shown; a key event dims nothing.
   function watch(from, to = null, k = null, intoView = true) {
     if (!r) return;
     pinned = null;
@@ -1728,13 +1732,9 @@ const Viewer = (() => {
     show,
     clear,
     seek,
-    jump,
     reveal,
     watch,
-    select,
-    pause,
     pin,
-    setLag,
     onTime: (listener) => listeners.push(listener),
     get time() {
       return time;

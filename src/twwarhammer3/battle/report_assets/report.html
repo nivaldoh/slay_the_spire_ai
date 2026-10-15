@@ -39,6 +39,7 @@
 
     <section id="watch" class="wrap watch" aria-labelledby="question">
       <div class="scenario-head">
+        <p id="scenario-title" class="eyebrow"></p>
         <h2 id="question"></h2>
         <p id="challenge" class="challenge"></p>
       </div>
@@ -51,8 +52,8 @@
               <p id="map-status" class="map-status" hidden></p>
               <p id="map-synthetic" class="map-synthetic" hidden>SYNTHETIC DEMO · invented frames</p>
             </div>
-            <p id="map-lag" class="map-lag" hidden></p>
             <div class="map-bottom">
+              <p id="map-lag" class="map-lag" hidden></p>
               <p class="map-legend"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-friendly"/></svg><span id="map-army">The model's army</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-enemy"/></svg><span>Game AI</span></p>
               <button id="lag-toggle" class="lag-toggle" type="button" aria-pressed="false" title="Outline every unit where it stood in the view behind the latest reply">Model's view</button>
             </div>
@@ -95,8 +96,10 @@
               <button id="watch-featured" class="primary" type="button">▶ Key maneuver</button>
               <button id="watch-full" type="button">▶ Full battle</button>
             </div>
-            <p id="scenario-pick" class="scenario-pick" hidden><label for="scenario">Scenario</label><select id="scenario"></select></p>
-            <label class="run-pick"><span>Battle</span><select id="run-select"></select></label>
+            <div class="picks">
+              <p id="scenario-pick" class="scenario-pick" hidden><label for="scenario">Scenario</label><select id="scenario"></select></p>
+              <label class="run-pick"><span>Battle</span><select id="run-select"></select></label>
+            </div>
           </div>
           <div id="moment" class="moment" aria-label="This moment in the battle"></div>
         </aside>

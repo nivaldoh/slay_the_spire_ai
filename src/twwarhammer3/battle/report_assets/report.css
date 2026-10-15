@@ -29,7 +29,7 @@
   --t-m: 15px;
   --t-l: 19px;
   --t-xl: clamp(22px, 2.6vw, 30px);
-  --t-xxl: clamp(30px, 3.6vw, 44px);
+  --t-xxl: clamp(30px, 3.4vw, 42px);
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   --sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
@@ -276,7 +276,7 @@ button.link {
   border: 1px solid var(--stage-line);
   border-radius: 10px;
 }
-.scoreboard .scenario {
+.stage-band .scoreboard .scenario {
   justify-self: start;
   min-height: 0;
   padding: 0;
@@ -286,10 +286,6 @@ button.link {
   font-weight: 650;
   text-align: left;
   color: var(--stage-ink);
-}
-.stage-band .scoreboard .scenario {
-  background: none;
-  border: 0;
 }
 .scoreboard .scenario:hover {
   text-decoration: underline;
@@ -306,6 +302,7 @@ button.link {
   line-height: 1.2;
 }
 .headline .name small {
+  line-height: 1.25;
   font-size: 11.5px;
   color: var(--stage-muted);
 }
@@ -314,22 +311,29 @@ button.link {
   color: var(--stage-muted);
 }
 .scoreboard .note {
+  margin: 0;
   color: var(--stage-muted);
 }
 .scoreboard .dot {
-  width: 10px;
-  height: 10px;
-  margin: 0 0 -5px -5px;
+  width: 9px;
+  height: 9px;
+  margin: 0 0 -4.5px -4.5px;
   border-width: 1.5px;
 }
 .watch {
-  margin-top: 28px;
+  margin-top: 24px;
   scroll-margin-top: 8px;
 }
 .scenario-head {
   display: grid;
   gap: 4px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+}
+.scenario-head .eyebrow {
+  color: var(--stage-muted);
+}
+.scenario-head .eyebrow:empty {
+  display: none;
 }
 .scenario-head h2 {
   font-size: var(--t-xl);
@@ -348,7 +352,6 @@ button.link {
 }
 .challenge {
   color: var(--stage-ink-2);
-  max-width: 900px;
 }
 
 /* Viewer: map and controls on the left, the run and this moment on the right. */
@@ -482,7 +485,7 @@ button.link {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  max-width: calc(100% - 120px);
+  max-width: calc(100% - 110px);
 }
 .map-legend {
   display: flex;
@@ -508,10 +511,8 @@ button.link {
   box-shadow: 0 0 0 1px var(--stage-ink) inset;
 }
 .map-lag {
-  position: absolute;
-  left: 10px;
-  bottom: 50px;
-  max-width: min(460px, calc(100% - 20px));
+  flex-basis: 100%;
+  max-width: 460px;
 }
 .map-empty {
   position: absolute;
@@ -749,6 +750,12 @@ button.link {
   color: #ffb4a8;
   border-color: #7d2a1f;
 }
+.run-line .title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
 .run-line .name {
   font-size: var(--t-l);
   font-weight: 700;
@@ -782,6 +789,11 @@ button.link {
 }
 .run-pick {
   gap: 4px;
+}
+.picks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
 }
 .run-pick span {
   color: var(--stage-muted);
@@ -1020,12 +1032,10 @@ blockquote {
   height: 16px;
   flex: none;
 }
-.friendly .glyph,
-.unit-card.friendly .glyph {
+.friendly .glyph {
   color: var(--friendly);
 }
-.enemy .glyph,
-.unit-card.enemy .glyph {
+.enemy .glyph {
   color: var(--enemy);
 }
 
@@ -1300,6 +1310,15 @@ blockquote {
 .route[aria-current="true"] svg {
   outline: 2px solid var(--ink);
   outline-offset: 1px;
+}
+/* Three maps per commander until "+N more" opens the rest. */
+.route-list:not(.open) .route:nth-child(n + 4) {
+  display: none;
+}
+.route-list .more {
+  justify-self: start;
+  min-height: 30px;
+  font-size: var(--t-xs);
 }
 .route span {
   font-size: var(--t-xs);
@@ -1606,9 +1625,6 @@ blockquote {
 .matrix thead th {
   color: var(--muted);
 }
-.matrix td:first-child {
-  width: 38%;
-}
 .matrix .scenario {
   min-height: 0;
   padding: 0;
@@ -1830,6 +1846,15 @@ blockquote {
     order: 3;
     margin: 28px var(--gutter) 0;
   }
+  /* Each commander's marks get a full-width row under its name and counts. */
+  .headline {
+    grid-template-columns: minmax(0, 1fr) max-content max-content;
+    grid-auto-flow: row dense;
+  }
+  .headline .track,
+  .headline .axis {
+    grid-column: 1 / -1;
+  }
   .pitch {
     font-size: var(--t-m);
   }
@@ -1838,12 +1863,6 @@ blockquote {
   }
   .scenario-head {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .challenge {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    overflow: hidden;
   }
   .roster {
     grid-template-columns: 1fr;
@@ -1927,8 +1946,5 @@ blockquote {
   .matrix td {
     padding: 4px 0;
     border: 0;
-  }
-  .matrix td:first-child {
-    width: auto;
   }
 }
