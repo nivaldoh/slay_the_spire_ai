@@ -171,17 +171,13 @@ def test_compact_timing_and_route_keep_only_what_the_page_draws():
     assert compacted["frames"][0]["mode"] == {"role": "attacker"}
     assert "magic" not in compacted["frames"][0]
     assert compacted["decisions"][0]["displacements"][0]["from"] == [0.0, 0.0]
-    # A plan adoption makes it a commander battle: only adoptions are the model's replies.
-    assert report_html.timing(compacted) == {
-        "ages": [4.2], "plans": [2.0], "moved": [20], "replies": [[4000, 9000]]}
-    blocking = deepcopy(compacted)
-    blocking["decisions"][1].pop("plan_age_s")
-    assert report_html.timing(blocking)["replies"] == [[1000, 5250], [6000, 9000]]
-    # Distance needs the 1 Hz recorder: sparse controller observations would overstate it.
-    assert report_html.timing({**compacted, "recorder_version": None})["moved"] == []
-    assert report_html.route(compacted) == {
-        "friendly": [{"end": "down", "path": [[0, 0], [7, 0], [20, 0], [21, 0]]}],
-        "enemy": [{"at": [500, 0]}]}
+    # Ages of acknowledged batches with orders; a commander's plans keep their own age.
+    assert report_html.timing(compacted) == {"ages": [4.2], "plans": [2.0]}
+    # The army track: one centroid per 5 s of battle time, units still fighting only.
+    spaced = {**compacted, "frames": [{**frame, "time_ms": frame["time_ms"] * 3}
+                                      for frame in compacted["frames"]]}
+    assert report_html.route(spaced) == {"track": [[0, 0, 0], [5, 7, 0]],
+                                         "enemy": [{"at": [500, 0]}]}
 
 
 def test_timer_missing_metrics_repeats_and_setup_only_interruption_are_preserved(tmp_path):

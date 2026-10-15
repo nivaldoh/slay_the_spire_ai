@@ -1,16 +1,17 @@
 {
   "scenarios": {
     "brt-cavalry-emp-assault": {
-      "title": "Cavalry assault, standard stats",
+      "title": "Cavalry assault",
       "group": "Challenges",
       "question": "Can an AI get its cavalry past the defenders and reach the guns?",
       "challenge": "Six mounted units face eight enemy units: four halberd units screening two units of handgunners and a cannon. Halberds are built to stop cavalry, so a frontal charge into them risks a losing grind; the gunners behind them are weak in melee. The attacker must defeat the defenders before the 20-minute timer runs out."
     },
     "brt-cavalry-emp-assault-hard": {
-      "title": "Cavalry assault, +10% enemy stats",
+      "title": "Cavalry assault (hard)",
       "group": "Challenges",
       "question": "Can an AI get its cavalry past the defenders and reach the guns?",
-      "challenge": "Six mounted units face eight enemy units: four halberd units screening two units of handgunners and a cannon. Halberds are built to stop cavalry, so a frontal charge into them risks a losing grind; the gunners behind them are weak in melee. Every enemy unit's stats are raised by 10%. The attacker must defeat the defenders before the 20-minute timer runs out."
+      "challenge": "Six mounted units face eight enemy units: four halberd units screening two units of handgunners and a cannon. Halberds are built to stop cavalry, so a frontal charge into them risks a losing grind; the gunners behind them are weak in melee. The attacker must defeat the defenders before the 20-minute timer runs out.",
+      "footnote": "Hard: every enemy unit's stats are raised by 10%."
     },
     "skv-swarm-dwf-line": {
       "title": "Command a Skaven swarm",

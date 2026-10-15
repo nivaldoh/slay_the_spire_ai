@@ -18,7 +18,6 @@ import gzip
 import hashlib
 import io
 import json
-import math
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -45,7 +44,7 @@ SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the neares
 # Unit fields and frame fields the page draws; the job directory keeps the rest.
 UNIT_KEEP = ("id", "x", "z", "bearing", "men", "men0", "hp", "state", "target", "ammo", "ammo0")
 MODE_KEEP = ("role", "capture_points", "supplies", "tickets")
-ROUTE_STEP_M = 6  # a route outline keeps a point once a unit has moved this far
+TRACK_STEP_MS = 5000  # an army track keeps one centroid per this much battle time
 
 
 def scenario_name(definition: dict) -> str | None:
@@ -307,6 +306,7 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             "title": _title(note, {**scenario, "name": name}),
             "question": note.get("question"),
             "challenge": note.get("challenge") or scenario.get("brief"),
+            "footnote": note.get("footnote"),
             "group": note.get("group") or ("Other battle types (pilots)"
                                            if not scenario.get("family")
                                            else "Specialist scenarios"),
@@ -379,53 +379,35 @@ def compact(payload: dict) -> dict:
 
 
 def timing(payload: dict) -> dict:
-    """Per batch of new orders: how old its battlefield view was when the game took it, and,
-    with the 1 Hz recorder only, the farthest any unit moved between that view and the first
-    frame after (sparser frames would overstate it). Commander plans keep their own age.
-    `replies` pairs each applied reply's view time with its application time (battle clock,
-    0.1 s); for the commander, only its plan adoptions, each view plan age before them."""
+    """How old each batch of new orders' battlefield view was when the game took it, and the
+    age of each commander plan's view when the plan was adopted (its executor's other ticks
+    act on fresh views but follow that older plan)."""
     applied = [d for d in payload["decisions"] if d.get("applied_ms") is not None]
-    # The asynchronous commander's model speaks only when a plan is adopted (plan_age_s);
-    # its executor's other ticks act on fresh views but follow that older plan.
     plans = [d for d in applied if d.get("plan_age_s") is not None]
-    replies = [[round(d["time_ms"] - 1000 * (d.get("plan_age_s") or 0), -2), d["applied_ms"]]
-               for d in plans or applied]
     batches = [d for d in payload["decisions"] if d["orders"] and d.get("age_s") is not None]
-    moved = [max((m["metres"] for m in d["displacements"]), default=0) for d in batches
-             if d.get("after_frame") is not None] if payload.get("recorder_version") else []
     return {"ages": [_round(d["age_s"]) for d in batches],
-            "plans": [_round(d["plan_age_s"]) for d in plans],
-            "moved": [round(value) for value in moved], "replies": replies}
+            "plans": [_round(d["plan_age_s"]) for d in plans]}
 
 
 def route(payload: dict) -> dict:
-    """Each friendly unit's observed path, thinned to a point every few metres, how it ended,
-    and where each enemy unit was first seen: the outline of a whole battle."""
-    paths, first_seen, last = {}, {}, {}
-    for frame in payload["frames"]:
-        for side in ("friendly", "enemy"):
-            for u in frame[side]:
-                if not (isinstance(u.get("x"), (int, float)) and isinstance(u.get("z"), (int,
-                                                                                         float))):
-                    continue
-                last[u["id"]] = u
-                if side == "enemy":
-                    first_seen.setdefault(u["id"], [round(u["x"]), round(u["z"])])
-                    continue
-                path = paths.setdefault(u["id"], [])
-                if not path or math.dist(path[-1], (u["x"], u["z"])) >= ROUTE_STEP_M:
-                    path.append([round(u["x"]), round(u["z"])])
-    def end(uid):
-        u = last[uid]
-        return ("down" if u.get("men") == 0 else
-                "fled" if {"routing", "shattered"} & set(u.get("state") or []) else "up")
+    """Where the friendly army went, as the centroid of its units still fighting at the start
+    of every 5 s of battle time, and where each enemy unit was first seen."""
+    def placed(u):
+        return isinstance(u.get("x"), (int, float)) and isinstance(u.get("z"), (int, float))
 
-    for uid, path in paths.items():
-        point = [round(last[uid]["x"]), round(last[uid]["z"])]
-        if path[-1] != point:
-            path.append(point)
-    return {"friendly": [{"end": end(uid), "path": path} for uid, path in paths.items()],
-            "enemy": [{"at": point} for point in first_seen.values()]}
+    track, first_seen, due = [], {}, 0
+    for frame in payload["frames"]:
+        for u in frame["enemy"]:
+            if placed(u):
+                first_seen.setdefault(u["id"], [round(u["x"]), round(u["z"])])
+        up = [u for u in frame["friendly"] if placed(u) and u.get("men") != 0
+              and not {"routing", "shattered"} & set(u.get("state") or [])]
+        if frame["time_ms"] >= due and up:
+            step = frame["time_ms"] // TRACK_STEP_MS
+            track.append([step * TRACK_STEP_MS // 1000, round(sum(u["x"] for u in up) / len(up)),
+                          round(sum(u["z"] for u in up) / len(up))])
+            due = (step + 1) * TRACK_STEP_MS
+    return {"track": track, "enemy": [{"at": point} for point in first_seen.values()]}
 
 
 def render(report: dict, notes: dict | None = None) -> str:

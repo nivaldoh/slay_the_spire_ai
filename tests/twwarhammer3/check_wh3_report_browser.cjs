@@ -28,7 +28,7 @@ const clock = (ms) => {
 // The run line's outcome: always the engine's result, with the battle clock duration. A battle
 // that reached the scenario's timer ended there, whatever older jobs recorded as `ended_by`.
 const outcome = (trial, group) => {
-  if (!trial.valid) return `Did not finish${trial.error ? `: ${trial.error}` : ""}`;
+  if (!trial.valid) return "Did not finish";
   const word = { won: "Won", lost: "Lost", draw: "Draw" }[trial.engine_outcome];
   const ms = trial.battle_ms ?? trial.battle_s * 1000,
     duration = clock(ms),
@@ -127,16 +127,34 @@ async function main() {
         runLine,
         /won \d+ of \d+ here[\s\S]*featured for its analyst notes, not as typical/,
       );
-    if (data.scenarios.some((item) => item.controlled)) {
-      assert.match(await text("#scoreboard"), /controlled comparison/i);
-      // A win reads as a filled mark on the dark card, never as the card's own colour.
-      const fills = await page
-        .locator("#scoreboard .dot.won")
-        .evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).backgroundColor));
-      const card = await page
-        .locator("#scoreboard")
-        .evaluate((node) => getComputedStyle(node).backgroundColor);
-      assert.ok(fills.every((fill) => fill !== card && fill !== "rgba(0, 0, 0, 0)"));
+    // A battle's score: 100 for a win, else the share of the enemy army broken, in percent.
+    const scoreOf = (key) => {
+      const [, gi, ti] = key.match(/^g(\d+)-t(\d+)$/),
+        trial = saved.groups[gi].trials[ti],
+        progress = data.battles[key].progress;
+      if (!trial.valid) return null;
+      if (trial.engine_outcome === "won") return 100;
+      return progress == null ? null : 100 * progress;
+    };
+    const meanScore = (keys) => {
+      const scores = keys.map(scoreOf).filter((v) => v != null);
+      return scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
+    };
+    // Figure 1: the controlled comparison, one score per commander.
+    const headline = data.scenarios.find((item) => item.controlled);
+    if (headline) {
+      assert.match(await text("#headline"), /Figure 1\./);
+      const subset = new Set(headline.controlled.battles);
+      const rows = headline.rows
+        .map((row) => row.battles.filter((key) => subset.has(key)))
+        .filter((keys) => keys.length);
+      assert.equal(await count("#headline .board-row"), rows.length);
+      const shown = await page.locator("#headline .board-row .score b").allInnerTexts();
+      assert.deepEqual(
+        shown.map(Number),
+        rows.map((keys) => meanScore(keys)).filter((v) => v != null),
+      );
+      assert.match(await text("#finding"), /scores \d+/);
     }
     await page.screenshot({ path: path.join(output, "desktop.png") });
 
@@ -297,61 +315,41 @@ async function main() {
     assert.doesNotMatch(page_text, /capture_failed|throttled|Capture missing|Not measured yet/i);
     if (embedded.length) assert.match(await text("#stills-block"), /not what the model saw/);
 
-    // How each commander did: one row per commander, one mark per battle, opening it.
+    // Figure 2: one map and one score per commander; a map opens its first battle, and every
+    // battle opens from the battle select.
     const trialOf = (key) => {
       const [, gi, ti] = key.match(/^g(\d+)-t(\d+)$/);
       return saved.groups[gi].trials[ti];
     };
     const outcomeOf = (key) => outcome(trialOf(key), saved.groups[key.match(/^g(\d+)/)[1]]);
-    assert.equal(await count("#rows .row"), scenario.rows.length);
+    assert.equal(await count("#routes .plan"), scenario.rows.length);
     for (const [index, item] of scenario.rows.entries()) {
-      const rowNode = page.locator("#rows .row").nth(index);
+      const plan = page.locator("#routes .plan").nth(index);
       assert.equal(
-        (await rowNode.locator(".who-cell strong").innerText()).replace("†", ""),
+        (await plan.locator(".who-cell strong").innerText()).replace("†", ""),
         item.name,
       );
-      assert.equal(await rowNode.locator(".dot").count(), item.battles.length);
       const finished = item.battles.map(trialOf).filter((trial) => trial.valid);
       const wins = finished.filter((trial) => trial.engine_outcome === "won");
       assert.equal(
-        (await rowNode.locator(".won-cell b").innerText()).replace(/\s/g, ""),
-        `${wins.length}/${finished.length}`,
+        await plan.locator("dd").first().innerText(),
+        `${wins.length} of ${finished.length}`,
+      );
+      const score = meanScore(item.battles);
+      if (score != null) assert.equal(Number(await plan.locator(".score b").innerText()), score);
+      await plan.locator(".plan-map").click();
+      await page.waitForFunction(
+        (k) => document.getElementById("run-select").value === k,
+        item.battles[0],
       );
     }
     for (const key of scenario.battles) {
-      await page.locator(`#rows .dot[data-key="${key}"]`).click();
-      await page.waitForFunction(
-        (k) =>
-          document.querySelector(`#rows .dot[data-key="${k}"]`).getAttribute("aria-current") ===
-          "true",
-        key,
-      );
+      await page.selectOption("#run-select", key);
       await page.waitForSelector("#map-layer .unit");
       assert.ok((await text("#run-line")).includes(outcomeOf(key)), `${key} opens its run`);
-      assert.equal(await page.locator("#run-select").inputValue(), key);
     }
-    await page.locator("#results").scrollIntoViewIfNeeded();
-    await page.locator("#results").screenshot({ path: path.join(output, "compare.png") });
-    // Routes, the real-time rows and the matrix open battles and scenarios too.
-    if (await count("#routes .route")) {
-      const route = page.locator("#routes .route").first();
-      const routeKey = await route.getAttribute("data-key");
-      await route.click();
-      await page.waitForFunction(
-        (k) => document.getElementById("run-select").value === k,
-        routeKey,
-      );
-    }
-    // A commander charts when one of its finished battles recorded replies and order ages.
-    const timed = scenario.rows.filter(
-      (item) =>
-        item.battles.some(
-          (key) => trialOf(key).valid && data.battles[key].timing?.replies.length,
-        ) && item.battles.some((key) => data.battles[key].timing?.ages.length),
-    );
-    assert.equal(await count("#latency .lat-row"), timed.length);
-    if (timed.length) assert.match(await text("#realtime-lede"), /\d\.\d s/);
-    await page.locator("#realtime").screenshot({ path: path.join(output, "realtime.png") });
+    await page.locator("#plans").scrollIntoViewIfNeeded();
+    await page.locator("#plans").screenshot({ path: path.join(output, "compare.png") });
     assert.equal(await count("#matrix tr[data-scenario]"), data.scenarios.length);
     // Unrun or setup-only scenarios never become a scenario or run option.
     assert.equal(await page.locator("#run-select option").count(), scenario.battles.length);
@@ -398,8 +396,7 @@ async function main() {
       if (data.scenarios.length > 1)
         assert.equal(await page.locator("#scenario").inputValue(), String(index));
       assert.ok((await text("#run-line")).includes(outcomeOf(item.featured)));
-      assert.equal(await count("#rows .row"), item.rows.length);
-      assert.equal(await count("#rows .dot"), item.battles.length);
+      assert.equal(await count("#routes .plan"), item.rows.length);
       if (data.replays[item.featured]) {
         await page.waitForFunction(() => !document.getElementById("download-replay").disabled);
         await page.waitForSelector("#map-layer .unit");
@@ -412,7 +409,7 @@ async function main() {
         const { units, objective_time } = trialOf(key).measures;
         const both = units.friendly && units.enemy;
         if (!both && !objective_time.points.length) continue;
-        await page.locator(`#rows .dot[data-key="${key}"]`).click();
+        await page.selectOption("#run-select", key);
         await page.waitForFunction((k) => document.getElementById("run-select").value === k, key);
         const card = await text("#run-line");
         if (both)
@@ -441,14 +438,14 @@ async function main() {
     const sol = (effort) => ["gpt-6-sol", `${effort} reasoning · no tactical advice`],
       luna = ["gpt-6-luna", "medium reasoning · no tactical advice"];
     const names = await page
-      .locator("#rows .who-cell")
+      .locator("#routes .who-cell")
       .evaluateAll((cells) =>
         cells.map((cell) => [...cell.children].map((child) => child.textContent)),
       );
     assert.deepEqual(names, [luna, sol("high"), sol("low")]);
-    assert.match(await page.locator("#rows .row").first().innerText(), /\+1 did not finish/);
+    assert.match(await page.locator("#routes .plan").first().innerText(), /\+1 did not finish/);
     const lunaKey = `g0-t${pairData.report.groups[0].trials.findIndex((t) => t.policy.includes("@"))}`;
-    await page.locator(`#rows .dot[data-key="${lunaKey}"]`).click();
+    await page.selectOption("#run-select", lunaKey);
     await page.waitForSelector("#map-layer .unit");
     await page.locator("#open-settings").click();
     const settings = await text("#settings-body");
@@ -476,16 +473,26 @@ async function main() {
     const refusedPanel = await text("#moment");
     assert.match(refusedPanel, /refused by validation/);
     assert.doesNotMatch(refusedPanel, /Keeping current orders/);
-    assert.equal(await count("#rows .row"), 9);
-    const labels = await page
-      .locator("#rows .dot")
-      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute("aria-label")).join("\n"));
-    assert.match(labels, /at the time limit/);
-    assert.match(labels, /Did not finish: Synthetic policy failure/);
-    assert.match(await text("#rows"), /\+1 did not finish/);
+    assert.equal(await count("#routes .plan"), 9);
+    const options = await page.locator("#run-select option").allInnerTexts();
+    assert.ok(options.some((option) => /time limit/.test(option)));
+    const failed = await page
+      .locator("#run-select option", { hasText: "Did not finish" })
+      .first()
+      .getAttribute("value");
+    assert.match(await text("#routes"), /\+1 did not finish/);
     assert.match(await text("#method"), /stopped during setup/);
     assert.match(await text("#run-line"), /objectives held 60% of the time observed/);
     assert.match(await text("#run-line"), /500 supplies left/);
+    // A battle that did not finish names its failure in Run settings, not in the page.
+    await page.selectOption("#run-select", failed);
+    await page.locator("#open-settings").click();
+    assert.match(await text("#settings-body"), /Synthetic policy failure/);
+    await page.locator("#close-settings").click();
+    await page.selectOption(
+      "#run-select",
+      await page.locator("#run-select option").first().getAttribute("value"),
+    );
     // The demo tag sits clear of the scale bar and north arrow.
     const tag = await page.locator("#map-synthetic").boundingBox(),
       furniture = await page.locator("#map-furniture").boundingBox();

@@ -1,38 +1,43 @@
-/* Two surfaces: a dark stage for the battle, a light page for the results. Team colours
-   (Okabe-Ito sky blue and orange) mean the two armies everywhere and nothing else; the UI
-   uses a neutral accent. One type scale; monospace only for clocks and numbers. */
+/* A paper report around one dark replay panel. DIN-style lettering for headings, labels and
+   numbers, a book serif for prose. Team colours (Okabe-Ito sky blue and orange) mean the two
+   armies everywhere and nothing else. */
 :root {
-  --page: #f3f2ee;
-  --sheet: #ffffff;
-  --ink: #111518;
-  --ink-2: #3a4247;
-  --muted: #6a7277;
-  --faint: #a3aaae;
-  --line: #dcdad3;
-  --line-2: #e9e7e1;
-  --win: #1d8a4c;
-  --bad: #b8432f;
-  --stage: #0b1216;
-  --stage-2: #111b21;
-  --stage-3: #17242b;
-  --stage-line: #24353e;
+  --page: #f1f3f1;
+  --sheet: #fbfcfb;
+  --ink: #1a2125;
+  --ink-2: #46525a;
+  --muted: #6b767d;
+  --faint: #a5aeb3;
+  --line: #d3d9d6;
+  --line-2: #e3e7e5;
+  --win: #1f7a46;
+  --bad: #a8402c;
+  --stage: #121c22;
+  --stage-2: #18252d;
+  --stage-3: #1f2f38;
+  --stage-line: #2b3d47;
   --stage-ink: #e9eef0;
   --stage-ink-2: #c4d0d5;
-  --stage-muted: #8a9da6;
-  --map: #13212a;
+  --stage-muted: #8c9fa8;
+  --map: #16232b;
   --friendly: #56b4e9;
   --enemy: #e69f00;
-  --note: #f3efe4;
+  /* The armies' colours dark enough for text and marks on paper. */
+  --friendly-ink: #1c6ea6;
+  --enemy-ink: #a86400;
+  --note: #e6ece8;
   --accent: var(--ink);
   --t-xs: 12px;
   --t-s: 13.5px;
-  --t-m: 15px;
+  --t-m: 15.5px;
   --t-l: 19px;
-  --t-xl: clamp(22px, 2.6vw, 30px);
-  --t-xxl: clamp(30px, 2.95vw, 42px);
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-  --sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --t-xl: clamp(22px, 2.2vw, 27px);
+  --t-xxl: clamp(34px, 3.9vw, 54px);
+  --sans: Bahnschrift, "DIN Alternate", "DIN 2014", "D-DIN", "Ubuntu Sans", "Segoe UI", system-ui,
+    sans-serif;
+  --serif: Charter, "Bitstream Charter", "Sitka Text", Cambria, "Iowan Old Style", "DejaVu Serif",
+    Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
   --gutter: 32px;
 }
 * {
@@ -54,7 +59,7 @@ body {
   margin: 0;
   background: var(--page);
   color: var(--ink);
-  font: var(--t-m) / 1.55 var(--sans);
+  font: var(--t-m) / 1.5 var(--sans);
   font-variant-numeric: tabular-nums;
 }
 h1,
@@ -65,6 +70,8 @@ p,
 figure,
 ul,
 ol,
+dl,
+dd,
 blockquote {
   margin: 0;
 }
@@ -72,9 +79,8 @@ h1,
 h2,
 h3,
 h4 {
-  font-weight: 650;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  font-weight: 600;
+  line-height: 1.15;
 }
 a {
   color: inherit;
@@ -94,7 +100,7 @@ select {
   min-height: 36px;
   padding: 0 12px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 4px;
   background: var(--sheet);
   cursor: pointer;
 }
@@ -112,18 +118,22 @@ input:disabled {
   outline-offset: 2px;
 }
 button.primary {
-  font-weight: 650;
+  font-weight: 600;
   background: var(--ink);
   border-color: var(--ink);
   color: #fff;
 }
-button.link {
+button.link,
+button.inline {
   min-height: 0;
   padding: 0;
   border: 0;
   background: none;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+button.inline {
+  font-weight: 600;
 }
 .wrap {
   width: min(1320px, 100% - 2 * var(--gutter));
@@ -158,188 +168,103 @@ button.link {
 .muted {
   color: var(--muted);
 }
-/* The one label style: small, semibold, sentence case; eyebrows alone are uppercase. */
-.eyebrow,
-.rows-head b,
-.lat-head b,
+/* The one label style: small, semibold, sentence case. */
 .moment h4,
 .roster-side h3,
 .run-pick span,
 .scenario-pick label,
 .matrix thead th,
-.matrix summary {
+.matrix summary,
+.board-head {
   font: 600 var(--t-xs) / 1.3 var(--sans);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+
+/* The masthead: the benchmark's name and date, the title, one paragraph and its size. */
+.masthead {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 0 56px;
+  align-items: end;
+  padding: 18px 0 34px;
+}
+.imprint {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 20px;
+  grid-column: 1 / -1;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--ink);
+  font-size: var(--t-s);
+}
+.imprint span {
+  color: var(--muted);
+}
+.masthead h1 {
+  margin-top: 30px;
+  text-wrap: balance;
+  font-size: var(--t-xxl);
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+}
+.about {
+  margin-top: 24px;
+}
+.dek {
+  max-width: 60ch;
+  font: 19px / 1.55 var(--serif);
+  color: var(--ink-2);
+}
+.facts-line {
+  margin-top: 10px;
+  font-size: var(--t-s);
   color: var(--muted);
 }
 
-/* The stage: masthead, pitch and the battle viewer on dark. */
-.stage-band {
-  --accent: var(--stage-ink);
-  background: var(--stage);
-  color: var(--stage-ink);
-  padding-bottom: 40px;
-}
-.masthead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--stage-line);
-}
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-weight: 700;
-}
-.brand svg {
-  width: 20px;
-  height: 20px;
-  fill: none;
-  stroke: var(--stage-ink);
-  stroke-width: 1.6;
-  stroke-linejoin: round;
-}
-.badge {
-  font: 600 11px/1 var(--sans);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--stage-muted);
-  border: 1px solid var(--stage-line);
-  border-radius: 99px;
-  padding: 4px 8px;
-}
-.masthead nav {
-  display: flex;
-  gap: 4px 18px;
-  flex-wrap: wrap;
-  font-size: var(--t-s);
-}
-.masthead nav a {
-  color: var(--stage-ink-2);
-  text-decoration: none;
-}
-.masthead nav a:hover {
-  color: #fff;
-}
-.hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(340px, 520px);
-  gap: 24px 56px;
-  align-items: center;
-  padding: 14px 0 0;
-}
-.hero h1 {
-  text-wrap: balance;
-  font-size: var(--t-xxl);
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.06;
-}
-.pitch {
-  margin-top: 14px;
-  font-size: 17px;
-  line-height: 1.5;
-  color: var(--stage-ink-2);
-  max-width: 720px;
-}
-.hero-facts {
-  margin-top: 14px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 20px;
-  font-size: var(--t-s);
-  color: var(--stage-muted);
-}
-.hero-facts b {
-  color: var(--stage-ink);
-  font: 600 var(--t-s) / 1.4 var(--mono);
-}
-/* The headline: the largest controlled comparison, one mark per battle. */
-.scoreboard {
-  --line: var(--stage-line);
-  --sheet: var(--stage-2);
-  --ink-2: var(--stage-ink-2);
-  --muted: var(--stage-muted);
-  --faint: var(--stage-muted);
-  --win: #3fbf75;
-  --page: var(--stage-2);
-  display: grid;
-  gap: 8px;
-  padding: 14px 16px;
-  background: var(--stage-2);
-  border: 1px solid var(--stage-line);
-  border-radius: 10px;
-}
-.stage-band .scoreboard .scenario {
-  justify-self: start;
-  min-height: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  font-size: var(--t-m);
-  font-weight: 650;
-  text-align: left;
-  color: var(--stage-ink);
-}
-.scoreboard .scenario:hover {
-  text-decoration: underline;
-}
-.headline {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr) max-content max-content;
-  gap: 2px 12px;
-  align-items: center;
-  font-size: var(--t-s);
-}
-.headline .name {
-  display: grid;
-  padding: 2px 0;
-  line-height: 1.2;
-}
-.headline .name small {
-  line-height: 1.25;
-  font-size: 11.5px;
-  color: var(--stage-muted);
-}
-.headline .count {
-  font: 500 var(--t-xs) / 1 var(--mono);
-  color: var(--stage-muted);
-}
-.scoreboard .note {
-  margin: 0;
-  color: var(--stage-muted);
-}
-.scoreboard .dot {
-  width: 9px;
-  height: 9px;
-  margin: 0 0 -4.5px -4.5px;
-  border-width: 1.5px;
-}
+/* The battle on show: its scenario, then the replay. */
+/* Wide: the question and the challenge side by side above the replay. Narrow: the challenge
+   follows the replay, so the battle comes first. */
 .watch {
-  margin-top: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 56px;
   scroll-margin-top: 8px;
+}
+.watch > * {
+  grid-column: 1 / -1;
+}
+.watch > .scenario-head {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
+}
+.watch > .challenge {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
 }
 .scenario-head {
   display: grid;
   gap: 4px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
-.scenario-head .eyebrow {
-  color: var(--stage-muted);
+.kicker {
+  font-size: var(--t-s);
+  color: var(--muted);
 }
-.scenario-head .eyebrow:empty {
+.kicker:empty {
   display: none;
 }
 .scenario-head h2 {
   font-size: var(--t-xl);
-  font-weight: 650;
+}
+.challenge {
+  max-width: 75ch;
+  margin-bottom: 16px;
+  font: 16px / 1.55 var(--serif);
+  color: var(--ink-2);
 }
 .scenario-pick {
   display: grid;
@@ -352,19 +277,19 @@ button.link {
 .scenario-pick select {
   min-width: 0;
 }
-.challenge {
-  margin-top: 10px;
-  max-width: 900px;
-  font-size: var(--t-s);
-  color: var(--stage-ink-2);
-}
 
-/* Viewer: map and controls on the left, the run and this moment on the right. */
+/* The replay: a dark panel, map and controls on the left, the battle and this moment on the
+   right. */
 .viewer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
-  gap: 20px;
+  gap: 22px;
   align-items: start;
+  padding: 14px;
+  border-radius: 6px;
+  background: var(--stage);
+  color: var(--stage-ink);
+  --accent: var(--stage-ink);
 }
 .stage {
   min-width: 0;
@@ -372,8 +297,7 @@ button.link {
 .map-wrap {
   position: relative;
   background: #0d171d;
-  border: 1px solid var(--stage-line);
-  border-radius: 10px;
+  border-radius: 4px;
   overflow: hidden;
   line-height: 0;
 }
@@ -533,22 +457,22 @@ button.link {
   font-size: var(--t-s);
 }
 /* Chart marks are buttons too: they keep their own colours. */
-.stage-band button:not(.primary, .link, .dot),
-.stage-band select {
+.viewer button:not(.primary, .link, .dot),
+.viewer select {
   background: var(--stage-2);
   color: var(--stage-ink);
   border-color: var(--stage-line);
 }
-.stage-band button:not(.primary, .link, .dot):hover {
+.viewer button:not(.primary, .link, .dot):hover {
   border-color: var(--stage-muted);
 }
-.stage-band button.primary {
+.viewer button.primary {
   background: var(--stage-ink);
   border-color: var(--stage-ink);
   color: var(--stage);
 }
 /* As specific as the stage button rule above, and after it, so the icon stays. */
-.stage-band button.lag-toggle {
+.viewer button.lag-toggle {
   padding: 0 10px 0 30px;
   background: rgba(9, 16, 20, 0.88)
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='6' cy='8' r='4' fill='none' stroke='%2356b4e9' stroke-width='1.5'/%3E%3Ccircle cx='11' cy='8' r='3.4' fill='%2356b4e9' fill-opacity='.5'/%3E%3C/svg%3E")
@@ -559,7 +483,7 @@ button.link {
   font-weight: 650;
 }
 .clock {
-  font: 600 var(--t-m) / 1 var(--mono);
+  font: 600 var(--t-m) / 1 var(--sans);
   min-width: 100px;
 }
 .step-group {
@@ -569,7 +493,7 @@ button.link {
   border-radius: 6px;
   background: var(--stage-2);
 }
-.stage-band .step-group button {
+.viewer .step-group button {
   border: 0;
   background: none;
   min-width: 36px;
@@ -735,10 +659,8 @@ button.link {
 }
 .run-card {
   gap: 12px;
-  padding: 16px;
-  background: var(--stage-2);
-  border: 1px solid var(--stage-line);
-  border-radius: 10px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--stage-line);
 }
 .run-line {
   display: grid;
@@ -746,18 +668,12 @@ button.link {
 }
 .run-line .tag {
   justify-self: start;
-  font: 600 11px/1 var(--sans);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--note);
-  border: 1px solid rgba(243, 239, 228, 0.4);
-  border-radius: 99px;
-  padding: 4px 8px;
+  font-size: var(--t-xs);
+  color: var(--stage-muted);
   cursor: help;
 }
 .run-line .tag.synthetic {
   color: #ffb4a8;
-  border-color: #7d2a1f;
 }
 .run-line .title {
   display: flex;
@@ -818,10 +734,6 @@ button.link {
   color: var(--stage-muted);
 }
 .moment {
-  padding: 16px;
-  background: var(--stage-2);
-  border: 1px solid var(--stage-line);
-  border-radius: 10px;
   font-size: 14.5px;
   color: var(--stage-ink-2);
 }
@@ -919,7 +831,7 @@ blockquote {
 .orders li.unacknowledged {
   border-left-style: dashed;
 }
-.stage-band .orders .who {
+.viewer .orders .who {
   min-height: 0;
   padding: 0;
   border: 0;
@@ -939,16 +851,16 @@ blockquote {
   gap: 8px;
   align-items: baseline;
 }
-.stage-band .jump {
+.viewer .jump {
   flex: none;
   min-height: 26px;
   padding: 0 7px;
-  font: 600 var(--t-xs) / 1 var(--mono);
+  font: 600 var(--t-xs) / 1 var(--sans);
 }
 .age-sentence strong {
   color: var(--stage-ink);
 }
-.stage-band .inspect {
+.viewer .inspect {
   margin-top: 10px;
 }
 .moment details {
@@ -1039,7 +951,7 @@ blockquote {
 }
 .stats dd {
   margin: 0;
-  font: 600 var(--t-s) / 1.3 var(--mono);
+  font: 600 var(--t-s) / 1.3 var(--sans);
   color: var(--stage-ink);
 }
 .glyph {
@@ -1054,19 +966,19 @@ blockquote {
   color: var(--enemy);
 }
 
-/* Analyst notes as chapters: titles in a row, the one playing shows its sentence. */
+/* Analyst notes under the replay: titles in a row, the one playing shows its sentence. */
 .chapters-head {
   margin-top: 22px;
   font-size: var(--t-xs);
-  color: var(--stage-muted);
+  color: var(--muted);
 }
 .chapters-head b {
-  color: var(--stage-ink-2);
+  color: var(--ink);
 }
 .chapters {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px;
+  gap: 12px 18px;
   align-items: start;
   margin-top: 8px;
   padding: 0;
@@ -1078,54 +990,47 @@ blockquote {
 .chapters li {
   display: grid;
 }
-.stage-band .chapter {
+.chapter {
   display: grid;
   align-content: start;
   gap: 4px;
   width: 100%;
   min-height: 0;
-  padding: 10px 12px;
+  padding: 8px 0 0;
   text-align: left;
-  border-radius: 10px;
-  background: var(--stage-2);
-  border-color: var(--stage-line);
+  border: 0;
+  border-top: 2px solid var(--line);
+  border-radius: 0;
+  background: none;
 }
-.stage-band .chapter:hover,
-.stage-band .chapter.active {
-  border-color: var(--note);
+.chapter:hover,
+.chapter.active {
+  border-top-color: var(--ink);
 }
 .chapter .label {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: var(--t-xs);
-  color: var(--stage-muted);
+  color: var(--muted);
 }
 .chapter .number {
-  display: inline-grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--note);
-  color: var(--map);
   font-weight: 700;
-  font-size: 11px;
+  color: var(--ink);
 }
 .chapter strong {
-  color: var(--stage-ink);
   font-size: var(--t-m);
   line-height: 1.3;
 }
 .chapter .text {
   display: none;
-  font-size: var(--t-s);
-  line-height: 1.45;
-  color: var(--stage-ink-2);
+  font: 14.5px / 1.5 var(--serif);
+  color: var(--ink-2);
 }
 .chapter.active .text {
   display: block;
 }
+
 .below {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -1143,7 +1048,7 @@ blockquote {
   align-items: center;
   gap: 8px;
   margin-bottom: 6px;
-  color: var(--stage-muted);
+  color: var(--muted);
 }
 .roster-side ul {
   display: grid;
@@ -1157,7 +1062,7 @@ blockquote {
   gap: 6px;
   flex-wrap: wrap;
   padding: 4px 0;
-  border-bottom: 1px solid var(--stage-line);
+  border-bottom: 1px solid var(--line);
 }
 .roster .unit-chip,
 .roster .group {
@@ -1170,7 +1075,7 @@ blockquote {
   padding: 2px 0;
   text-align: left;
 }
-.stage-band .roster .unit-chip {
+.roster .unit-chip {
   background: none;
   border: 0;
 }
@@ -1178,25 +1083,25 @@ blockquote {
   display: grid;
   line-height: 1.25;
   font-size: var(--t-s);
-  color: var(--stage-ink);
+  color: var(--ink);
 }
 .roster small {
   font-size: var(--t-xs);
-  color: var(--stage-muted);
+  color: var(--muted);
 }
 .roster .code {
   margin-left: 4px;
-  font: 600 11px/1 var(--mono);
-  color: var(--stage-muted);
+  font: 600 11px/1 var(--sans);
+  color: var(--muted);
 }
-.stage-band .code-chip {
+.code-chip {
   min-height: 26px;
   padding: 0 7px;
-  font: 600 11px/1 var(--mono);
+  font: 600 11px/1 var(--sans);
 }
 .code-chip[aria-pressed="true"],
 .unit-chip[aria-pressed="true"] {
-  outline: 1.5px solid var(--stage-ink);
+  outline: 1.5px solid var(--ink);
   outline-offset: 1px;
 }
 .code-chip.down,
@@ -1228,7 +1133,7 @@ blockquote {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
-.stage-band .thumb {
+.thumb {
   display: block;
   padding: 0;
   overflow: hidden;
@@ -1242,173 +1147,120 @@ blockquote {
 }
 .stills-block figcaption {
   font-size: var(--t-xs);
-  color: var(--stage-muted);
+  color: var(--muted);
 }
 
-/* Results page. */
+/* Results: three figures, each with a numbered caption. */
 .section {
-  padding: 64px 0 8px;
+  padding-top: 64px;
   scroll-margin-top: 8px;
 }
-.section-head {
-  display: grid;
-  gap: 6px;
-  margin-bottom: 20px;
-}
-.section-head h2 {
+.section > h2 {
+  padding-bottom: 10px;
+  margin-bottom: 18px;
+  border-bottom: 2px solid var(--ink);
   font-size: var(--t-xl);
-  font-weight: 700;
-  letter-spacing: -0.02em;
 }
-.subhead {
-  margin: 48px 0 12px;
-  font-size: var(--t-l);
+.finding {
+  max-width: 62ch;
+  font: 20px / 1.5 var(--serif);
 }
-.caption {
-  max-width: 820px;
-  color: var(--muted);
-  font-size: var(--t-s);
-}
-.lede {
-  max-width: 820px;
-  font-size: 17px;
+.figcap,
+.figure figcaption {
+  max-width: 85ch;
+  margin-top: 12px;
+  font: 14.5px / 1.5 var(--serif);
   color: var(--ink-2);
 }
-.lede strong {
-  color: var(--ink);
-}
+.foot,
 .rows-foot {
-  margin-top: 10px;
+  margin-top: 6px;
   font-size: var(--t-xs);
   color: var(--muted);
-  max-width: 900px;
 }
-
-/* Same battle, different plans: a column of route maps per commander, one framing. */
-.routes {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
-  gap: 20px 16px;
-  align-items: start;
-}
-.route-group {
-  display: grid;
-  gap: 8px;
-}
-/* Headings of one height, so the first maps of every column line up. */
-.route-group .who-cell {
-  min-height: 4em;
-}
-.who-cell sup {
-  line-height: 0;
-}
-.route-list {
-  display: grid;
-  gap: 10px;
-}
-.route {
-  display: grid;
-  gap: 4px;
-  width: 100%;
-  min-height: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  text-align: left;
-}
-.route svg {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-  background: var(--map);
-  outline: 1px solid rgba(0, 0, 0, 0.08);
-}
-.route.won svg {
-  outline: 2px solid var(--win);
-  outline-offset: 1px;
-}
-.route:hover svg,
-.route[aria-current="true"] svg {
-  outline: 2px solid var(--ink);
-  outline-offset: 1px;
-}
-/* Three maps per commander until "+N more" opens the rest. */
-.route-list:not(.open) .route:nth-child(n + 4) {
+.foot:empty {
   display: none;
 }
-.route-list .more {
-  justify-self: start;
-  min-height: 30px;
-  font-size: var(--t-xs);
-}
-.route span {
-  font-size: var(--t-xs);
-  line-height: 1.3;
-  color: var(--ink-2);
-}
-.route span b.won {
-  color: var(--win);
-}
-.route span b.failed {
-  color: var(--bad);
+.caption {
+  color: var(--muted);
 }
 
-/* How far each commander got: one row per commander, each column a chart on a shared axis. */
-.rows {
-  border-top: 1.5px solid var(--ink);
+/* Figure 1: one row per commander, its score on the shared 0–100 scale. */
+.board {
+  margin-top: 22px;
 }
-.rows-head,
-.row {
+.board-head,
+.board-row {
   display: grid;
-  grid-template-columns:
-    minmax(170px, 1.1fr) minmax(240px, 2fr) 104px minmax(170px, 1.3fr)
-    80px;
-  gap: 18px;
+  grid-template-columns: minmax(150px, 220px) minmax(200px, 1fr) 76px 84px;
+  gap: 20px;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--line);
 }
-.rows-head {
-  align-items: end;
-  padding: 10px 0 8px;
-}
-.rows-head > div,
-.lat-head > div {
-  display: grid;
-  gap: 2px;
-}
-.rows-head b,
-.lat-head b {
-  color: var(--ink);
-}
-.rows-head small,
-.lat-head small {
-  font-size: var(--t-xs);
+.board-head {
+  padding-bottom: 6px;
   color: var(--muted);
 }
-.axis {
+.board-row {
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.board-row > span {
+  font-size: var(--t-m);
+}
+/* A score: its number, then a bar to the mean with a line from the worst to the best battle. */
+.score {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+.score b {
+  font-size: 22px;
+  line-height: 1;
+}
+.score .bar {
+  position: relative;
+  height: 22px;
+  background: linear-gradient(var(--line), var(--line)) 0 50% / 100% 1px no-repeat;
+}
+.score .bar i {
+  position: absolute;
+  left: 0;
+}
+.score .fill {
+  top: 4px;
+  height: 10px;
+  background: var(--ink);
+}
+.scripted .score .fill {
+  background: var(--faint);
+}
+.score .range {
+  bottom: 0;
+  height: 2px;
+  background: var(--ink-2);
+}
+.score .none {
+  grid-column: 1 / -1;
+  font-size: var(--t-s);
+  color: var(--muted);
+}
+.scale {
   position: relative;
   height: 14px;
-  margin-top: 4px;
-  font: 500 11px/1 var(--mono);
+  font-size: 11px;
   color: var(--muted);
 }
-.axis span {
+.scale span {
   position: absolute;
   top: 0;
-  white-space: nowrap;
   transform: translateX(-50%);
 }
-.axis span:first-child {
+.scale span:first-child {
   transform: none;
 }
-.axis span:last-child {
+.scale span:last-child {
   transform: translateX(-100%);
-}
-.axis .na {
-  left: 0;
-  color: var(--faint);
 }
 .who-cell strong {
   display: block;
@@ -1421,215 +1273,112 @@ blockquote {
   color: var(--muted);
 }
 .who-cell .versions {
+  line-height: 0;
   margin-left: 2px;
   color: var(--muted);
   cursor: help;
 }
-/* Shown on phones only, where the column heads are hidden. */
-.phone-key {
-  display: none;
-}
-/* Dots sit on a baseline 11 px above the bottom; stacked dots rise above it. */
-.track {
-  position: relative;
-  height: 22px;
-  background: linear-gradient(var(--line), var(--line)) var(--pad, 0) calc(100% - 10.5px) /
-    calc(100% - var(--pad, 0px)) 1px no-repeat;
-}
-.dot {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  min-height: 0;
-  margin: 0 0 -7px -7px;
-  padding: 0;
-  border-radius: 50%;
-  border: 2px solid var(--ink-2);
-  background: var(--sheet);
-  z-index: 1;
-}
-.dot.won {
-  border-color: var(--win);
-  background: var(--win);
-}
-.dot.draw {
-  background: linear-gradient(90deg, var(--ink-2) 50%, var(--sheet) 50%);
-}
-.dot.failed {
-  border: 0;
-  border-radius: 0;
-  background: none;
-}
-.dot.failed::before,
-.dot.failed::after {
-  content: "";
-  position: absolute;
-  left: 6px;
-  top: 0;
-  width: 2px;
-  height: 14px;
-  background: var(--bad);
-  transform: rotate(45deg);
-}
-.dot.failed::after {
-  transform: rotate(-45deg);
-}
-.dot.unknown:not(.won) {
-  border-style: dashed;
-  border-color: var(--faint);
-}
-.dot:hover,
-.dot:focus-visible,
-.dot[aria-current="true"] {
-  box-shadow:
-    0 0 0 3px var(--page),
-    0 0 0 5px var(--accent);
-  z-index: 2;
-}
-.won-cell {
-  display: grid;
-  gap: 2px;
-}
-.won-cell b {
-  font-size: var(--t-l);
-  font-weight: 700;
-}
-.won-cell b span {
-  font-weight: 450;
-  color: var(--muted);
-}
-.won-cell small,
-.age-cell small {
-  font-size: 11.5px;
-  color: var(--muted);
-  white-space: nowrap;
-}
-.age-cell {
-  display: grid;
-  gap: 3px;
-}
-/* A box plot: whiskers at the 10th and 90th percentiles, the middle half boxed. */
-.boxplot {
-  position: relative;
-  height: 14px;
-  background: linear-gradient(var(--line-2), var(--line-2)) 0 50% / 100% 1px no-repeat;
-}
-.boxplot i {
-  position: absolute;
-  top: 50%;
-}
-.boxplot .whisker {
-  height: 1.5px;
-  margin-top: -0.75px;
-  background: var(--ink-2);
-}
-.boxplot .iqr {
-  height: 10px;
-  margin-top: -5px;
-  border-radius: 2px;
-  background: #c9ced1;
-}
-.boxplot .mid {
-  width: 3px;
-  height: 14px;
-  margin: -7px 0 0 -1.5px;
-  background: var(--ink);
-}
-.age-cell .value,
-.cost-cell {
-  font: 600 var(--t-s) / 1.2 var(--mono);
-}
 
-/* The battle doesn't wait: the age of each commander's latest view, second by second. */
-.latency {
-  margin-top: 22px;
-  border-top: 1.5px solid var(--ink);
-}
-.lat-head,
-.lat-row {
+/* Figure 2: one map per commander, its battles thin and their mean thick, then its numbers. */
+.plans {
   display: grid;
-  grid-template-columns: minmax(170px, 1fr) minmax(260px, 3fr) 150px;
-  gap: 22px;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--line);
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 28px 22px;
+  align-items: start;
 }
-.lat-head {
-  align-items: end;
+.plan {
+  display: grid;
+  gap: 10px;
 }
-.age-chart {
-  position: relative;
-}
-.age-chart svg {
+.plan-map {
   display: block;
   width: 100%;
-  height: 48px;
-  border-bottom: 1px solid var(--line);
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  line-height: 0;
+  background: var(--map);
 }
-.age-chart .grid {
-  stroke: var(--line-2);
-  vector-effect: non-scaling-stroke;
+.plan-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
-.age-chart .age {
-  fill: #9aa5ab;
-  fill-opacity: 0.55;
-  stroke: var(--ink-2);
-  stroke-width: 1.2;
+.plan-map:hover,
+.plan[aria-current="true"] .plan-map {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.plan .blocked {
+  fill: #33454f;
+}
+.plan .foe {
+  fill: var(--enemy);
+}
+.plan .trace {
+  fill: none;
+  stroke: var(--friendly);
+  stroke-width: 1.3;
   stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
+  opacity: 0.4;
 }
-.age-chart .clipped {
-  fill: var(--bad);
+.plan .trace.won {
+  opacity: 0.85;
 }
-.age-chart .age.model {
-  fill: var(--ink-2);
-  fill-opacity: 0.35;
+.plan .mean {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
-.age-value {
+.plan .start {
+  fill: var(--map);
+  stroke: #fff;
+  stroke-width: 1.6;
+}
+.plan .end {
+  fill: #fff;
+}
+.plan figcaption {
   display: grid;
-  gap: 1px;
+  gap: 8px;
 }
-.age-value b {
-  font: 700 var(--t-l) / 1.1 var(--mono);
+/* Headings of one height, so the scores of a row of maps line up. */
+.plan .who-cell {
+  min-height: 3.65em;
 }
-.age-value small {
+.plan dl {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  justify-content: start;
+  gap: 0 18px;
+}
+.plan dt {
+  grid-row: 1;
+  font-size: 11px;
+  color: var(--muted);
+}
+.plan dd {
+  grid-row: 2;
+  font-size: var(--t-s);
+}
+.failed-note {
   font-size: var(--t-xs);
-  color: var(--muted);
-}
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 14px;
-  margin-top: 18px;
-}
-.actions .hint {
-  font-size: var(--t-s);
-  color: var(--muted);
-}
-.next {
-  display: grid;
-  gap: 6px;
-  max-width: 820px;
-  margin-top: 28px;
-  padding: 14px 16px;
-  border: 1px dashed var(--faint);
-  border-radius: 10px;
-  color: var(--ink-2);
-  font-size: var(--t-s);
+  color: var(--bad);
 }
 
-/* All scenarios: outcomes of every battle by scenario and model. */
+/* Figure 3: every scenario's scores, darker for higher. */
 .matrix details {
-  border-top: 1.5px solid var(--ink);
   margin-bottom: 18px;
 }
 .matrix summary {
   padding: 10px 0;
   cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--ink-2);
+  border-bottom: 1px solid var(--ink);
+  font-size: var(--t-s);
 }
 .matrix table {
   width: 100%;
@@ -1639,12 +1388,13 @@ blockquote {
 }
 .matrix th,
 .matrix td {
-  padding: 9px 12px 9px 0;
+  padding: 4px 10px 4px 0;
   border-bottom: 1px solid var(--line);
   text-align: left;
   vertical-align: middle;
 }
 .matrix thead th {
+  padding-top: 10px;
   color: var(--muted);
 }
 .matrix .scenario {
@@ -1665,55 +1415,51 @@ blockquote {
   color: var(--muted);
 }
 .cell {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  max-width: 240px;
+  display: grid;
+  gap: 1px;
+  max-width: 150px;
+  padding: 6px 10px;
+  border-radius: 3px;
+  background: rgb(26 33 37 / calc(var(--score, 0) * 0.3));
 }
-.cell .dot {
-  position: relative;
-  margin: 0;
-  width: 13px;
-  height: 13px;
+.cell b {
+  font-size: 18px;
+  line-height: 1.1;
 }
-.cell .dot.failed::before,
-.cell .dot.failed::after {
-  left: 5.5px;
-  height: 13px;
-}
-.cell .count {
-  margin-left: 4px;
-  font: 600 var(--t-xs) / 1 var(--mono);
+.cell small {
   color: var(--ink-2);
 }
 .cell .pooled {
-  font-weight: 700;
-  color: var(--muted);
+  margin-left: 2px;
+  font-size: 12px;
+  color: var(--ink-2);
   cursor: help;
 }
 .cell .none {
   color: var(--faint);
 }
+.cell:has(.none) {
+  background: none;
+}
 
-/* Footer: the interface, method and data. */
+/* Method: the interface, the definitions and the data. */
 .footer {
-  margin-top: 72px;
-  padding: 44px 0 56px;
-  background: var(--stage);
-  color: var(--stage-ink-2);
+  margin-top: 80px;
+  padding: 0 0 64px;
   font-size: var(--t-s);
-  --accent: var(--stage-ink);
+  color: var(--ink-2);
 }
 .footer h2 {
-  margin-bottom: 16px;
-  font-size: var(--t-l);
-  color: var(--stage-ink);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--ink);
+  font-size: var(--t-xl);
+  color: var(--ink);
 }
 .interface {
   display: grid;
   gap: 8px;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 .io {
   display: grid;
@@ -1723,60 +1469,42 @@ blockquote {
 .io h3 {
   margin-bottom: 4px;
   font-size: var(--t-s);
-  color: var(--stage-ink);
+  color: var(--ink);
 }
 .io .raw {
   height: 300px;
   max-height: none;
   margin: 0;
-  border: 1px solid var(--stage-line);
 }
 .interface figcaption {
-  font-size: var(--t-xs);
-  color: var(--stage-muted);
+  font: 14px / 1.5 var(--serif);
+  color: var(--muted);
 }
 .method-notes {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 14px 32px;
+  gap: 18px 36px;
   padding: 0;
   list-style: none;
+  font: 14.5px / 1.55 var(--serif);
 }
 .method-notes b {
   display: block;
-  color: var(--stage-ink);
+  margin-bottom: 2px;
+  font: 600 var(--t-s) / 1.3 var(--sans);
+  color: var(--ink);
 }
 .links {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 22px;
-  margin-top: 26px;
-  padding-top: 18px;
-  border-top: 1px solid var(--stage-line);
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
 }
 .links a,
 .links button {
-  color: var(--stage-ink);
-}
-
-/* A shared tooltip for chart marks. */
-.tip {
-  position: fixed;
-  z-index: 20;
-  max-width: 300px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  background: var(--ink);
-  color: #fff;
-  font-size: var(--t-xs);
-  line-height: 1.4;
-  pointer-events: none;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-  white-space: pre-line;
-}
-.tip b {
-  display: block;
-  font-size: var(--t-s);
+  color: var(--ink);
 }
 
 .dialog {
@@ -1827,65 +1555,23 @@ blockquote {
 }
 
 @media (max-width: 1080px) {
+  .masthead,
+  .scenario-head,
   .viewer,
-  .hero,
   .below,
   .io {
     grid-template-columns: minmax(0, 1fr);
   }
-  /* Single column: the battle comes first, the headline chart follows the viewer. */
-  .stage-band {
-    display: flex;
-    flex-direction: column;
+  .about {
+    margin-top: 16px;
   }
-  .hero {
-    display: contents;
+  .watch > .scenario-head,
+  .watch > .challenge {
+    grid-column: 1 / -1;
+    grid-row: auto;
   }
-  .hero > div:first-child {
-    order: 1;
-    padding: 20px var(--gutter) 0;
-  }
-  .watch {
-    order: 2;
-  }
-  .scoreboard {
-    order: 3;
-    margin: 28px var(--gutter) 0;
-  }
-}
-/* The results rows stack before their five columns get too narrow. */
-@media (max-width: 900px) {
-  .rows-head {
-    display: none;
-  }
-  .row {
-    grid-template-columns: 1fr auto;
-    grid-template-areas: "who won" "track track" "age cost";
-    gap: 10px 12px;
-  }
-  .row .who-cell {
-    grid-area: who;
-  }
-  .row .won-cell {
-    grid-area: won;
-    text-align: right;
-  }
-  .row .track-cell {
-    grid-area: track;
-  }
-  .row .age-cell {
-    grid-area: age;
-  }
-  .row .cost-cell {
-    grid-area: cost;
-    align-self: end;
-  }
-  .row [data-label]::before {
-    content: attr(data-label);
-    display: block;
-    margin-bottom: 4px;
-    font: 600 11px/1.2 var(--sans);
-    color: var(--muted);
+  .watch > .challenge {
+    margin: 16px 0 0;
   }
 }
 @media (max-width: 760px) {
@@ -1895,31 +1581,19 @@ blockquote {
   body {
     font-size: 14.5px;
   }
-  .masthead nav,
-  .hero-facts {
+  .masthead h1 {
+    margin-top: 22px;
+  }
+  .dek {
+    font-size: 16.5px;
+  }
+  .facts-line {
     display: none;
   }
-  .brand {
-    font-size: var(--t-s);
-    white-space: nowrap;
-  }
-  /* Each commander's marks get a full-width row under its name and counts. */
-  .headline {
-    grid-template-columns: minmax(0, 1fr) max-content max-content;
-    grid-auto-flow: row dense;
-  }
-  .headline .track,
-  .headline .axis {
-    grid-column: 1 / -1;
-  }
-  .pitch {
-    font-size: var(--t-m);
-  }
-  .watch {
-    margin-top: 24px;
-  }
-  .scenario-head {
-    grid-template-columns: minmax(0, 1fr);
+  .viewer {
+    margin-inline: calc(-1 * var(--gutter));
+    padding: 10px;
+    border-radius: 0;
   }
   .roster {
     grid-template-columns: 1fr;
@@ -1930,36 +1604,39 @@ blockquote {
   .map-selection .role {
     display: none;
   }
-  .phone-key {
-    display: grid;
-    gap: 2px;
-    padding: 8px 0;
-    font-size: var(--t-xs);
-    color: var(--muted);
-    border-bottom: 1px solid var(--line);
-  }
   .stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .lat-head {
-    display: none;
+  /* Figure 1: the name and counts on one line, the score across the full width below. */
+  .board-head,
+  .board-row {
+    grid-template-columns: minmax(0, 1fr) 56px 64px;
+    gap: 6px 12px;
   }
-  .matrix td[data-label]::before {
-    content: attr(data-label);
-    display: block;
-    margin-bottom: 4px;
-    font: 600 11px/1.2 var(--sans);
-    color: var(--muted);
+  .board-head > :nth-child(3) {
+    grid-column: 2;
   }
-  .lat-row {
-    grid-template-columns: 1fr;
-    gap: 6px;
+  .board-head > :nth-child(4) {
+    grid-column: 3;
   }
-  .routes {
+  .plan .who-cell {
+    min-height: 4.6em;
+  }
+  .board-head .score,
+  .board-row .score {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .plans {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 14px;
   }
-  /* All scenarios: one block per scenario, a labelled line per model. */
-  .matrix thead {
+  .plan dl {
+    gap: 0 12px;
+  }
+  /* Figure 3: one block per scenario, a labelled score per model. */
+  .matrix thead,
+  .matrix colgroup {
     display: none;
   }
   .matrix table,
@@ -1969,15 +1646,25 @@ blockquote {
     display: block;
     width: auto;
   }
-  .matrix colgroup {
-    display: none;
-  }
   .matrix tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
     padding: 10px 0;
     border-bottom: 1px solid var(--line);
   }
   .matrix td {
-    padding: 4px 0;
+    padding: 0;
     border: 0;
+  }
+  .matrix td:first-child {
+    grid-column: 1 / -1;
+  }
+  .matrix td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 2px;
+    font-size: 11px;
+    color: var(--muted);
   }
 }

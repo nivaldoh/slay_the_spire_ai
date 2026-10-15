@@ -29,10 +29,10 @@ command; clear it when the job stops.
   C1 remains development evidence, with no automatic easier calibration block.
 - Both swarm prototypes have working screens; every player army routed. Existing reports
   are `c1-cavalry-ai11`, `swarm-screens` and `cavalry-assault` in
-  `runs/twwarhammer3/reports/`. The canonical `benchmark.html` (27 MB, 55 jobs) was
-  redesigned for outside readers: commander rows instead of run sets, per-battle progress
-  marks, route maps, a view-age sawtooth for real time and C1 as the headline
-  ([log](twwarhammer3/log.md#2026-10-15-report-redesign-for-outside-readers)); offline
+  `runs/twwarhammer3/reports/`. The canonical `benchmark.html` (26 MB, 55 jobs) now
+  shows one score per commander after the owner's review: the C1 controlled comparison,
+  one mean-path map per commander and a score matrix, on a paper page around the replay
+  ([log](twwarhammer3/log.md#2026-10-15-report-one-score-per-commander)); offline
   browser validation passed.
 - API spend: $14.3146 of the $25 cap on 2026-10-15.
 

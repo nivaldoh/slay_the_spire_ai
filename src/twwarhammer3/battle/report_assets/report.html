@@ -23,23 +23,18 @@
   <a class="skip" href="#viewer">Skip to the replay</a>
   <p id="demo-banner" class="demo-banner" hidden>SYNTHETIC DEMO · Every value on this page is invented to exercise the layout. No game or model was run.</p>
 
-  <div class="stage-band">
-    <header class="wrap masthead">
-      <p class="brand"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 1.5l8 4.6v7.8l-8 4.6-8-4.6V6.1z"/><path d="M6 10.5l2.6 2.6L14.5 7"/></svg>WH3 Commander Bench <span class="badge">early results</span></p>
-      <nav aria-label="Sections"><a href="#watch">Battle</a><a href="#results">Results</a><a href="#realtime">Real time</a><a href="#all">All scenarios</a><a href="#method">Method</a></nav>
-    </header>
-    <div class="wrap hero">
-      <div>
-        <h1>Language models commanding armies in real time</h1>
-        <p class="pitch">Each model reads a text report of a <cite>Total War: WARHAMMER III</cite> battle and commands its regiments through a game mod, and the battle never pauses while it thinks.</p>
-        <p id="facts" class="hero-facts"></p>
-      </div>
-      <div id="scoreboard" class="scoreboard" hidden></div>
+  <header class="wrap masthead">
+    <p class="imprint"><b>WH3 Commander Bench</b><span id="imprint-date">Early results</span></p>
+    <h1>Language models commanding armies in real time</h1>
+    <div class="about">
+      <p class="dek">Each model reads a text report of a <cite>Total War: WARHAMMER III</cite> battle and gives its regiments orders through a game mod. The battle keeps running while it thinks.</p>
+      <p id="facts" class="facts-line"></p>
     </div>
+  </header>
 
     <section id="watch" class="wrap watch" aria-labelledby="question">
       <div class="scenario-head">
-        <p id="scenario-title" class="eyebrow"></p>
+        <p id="scenario-title" class="kicker"></p>
         <h2 id="question"></h2>
       </div>
       <div id="viewer" class="viewer">
@@ -72,7 +67,6 @@
           </div>
           <input id="scrubber" class="scrubber" type="range" min="0" max="1" step="0.1" value="0" aria-label="Battle time in seconds">
           <svg id="strip" class="strip" role="img" aria-label="Timeline: decisions, rejections, highlights and key events"><g id="strip-static"></g><line id="strip-cursor" class="strip-cursor" x1="0" x2="0" y1="0" y2="0"/></svg>
-          <p id="challenge" class="challenge"></p>
           <details class="map-key">
             <summary>Map key</summary>
             <p>
@@ -104,6 +98,7 @@
           <div id="moment" class="moment" aria-label="This moment in the battle"></div>
         </aside>
       </div>
+      <p id="challenge" class="challenge"></p>
       <p id="chapters-head" class="chapters-head" hidden><b>Analyst notes</b> written after the battle from its recorded frames and orders (drafted with AI assistance and checked against the records); not the model's words.</p>
       <ol id="highlights" class="chapters" aria-label="Analyst notes"></ol>
       <div class="below">
@@ -114,39 +109,26 @@
         </figure>
       </div>
     </section>
-  </div>
 
-  <main>
-    <section id="results" class="wrap section" aria-labelledby="results-heading">
-      <header class="section-head">
-        <p class="eyebrow" id="results-scenario"></p>
-        <h2 id="results-heading">Same battle, different plans</h2>
-        <p class="caption">Every recorded path of each commander's army, one map per battle, same framing (□ start, ● end, × destroyed, ◆ enemy where first seen). Click one to watch it.</p>
-      </header>
-      <div id="routes" class="routes"></div>
-      <h3 class="subhead">How far each commander got</h3>
-      <div id="rows" class="rows"></div>
+  <main class="wrap">
+    <section id="results" class="section" aria-labelledby="results-heading">
+      <h2 id="results-heading">Results</h2>
+      <p id="finding" class="finding"></p>
+      <figure id="headline" class="figure board" hidden>
+        <div id="headline-table"></div>
+        <figcaption id="headline-caption"></figcaption>
+        <p id="headline-foot" class="foot"></p>
+      </figure>
     </section>
 
-    <section id="realtime" class="wrap section" aria-labelledby="realtime-heading">
-      <header class="section-head">
-        <p class="eyebrow">Real time</p>
-        <h2 id="realtime-heading">The battle doesn't wait for the model</h2>
-      </header>
-      <p id="realtime-lede" class="lede"></p>
-      <div id="latency" class="latency"></div>
-      <p class="actions"><button id="show-lag" class="primary" type="button">▶ See what moved during one reply</button> <span class="hint">or turn on <b>Model's view</b> on the map while it plays</span></p>
-      <aside class="next">
-        <p class="eyebrow">Planned</p>
-        <p>An added-delay experiment: the same model with its observations aged by a further 2, 5 and 10 s, to measure how much progress each second costs. Natural latency differences between models are observed here, not controlled.</p>
-      </aside>
+    <section id="plans" class="section" aria-labelledby="plans-heading">
+      <h2 id="plans-heading">Same battle, different plans</h2>
+      <div id="routes" class="plans"></div>
+      <p id="plans-caption" class="figcap"></p>
     </section>
 
-    <section id="all" class="wrap section" aria-labelledby="all-heading">
-      <header class="section-head">
-        <p class="eyebrow">Every battle so far</p>
-        <h2 id="all-heading">All scenarios</h2>
-      </header>
+    <section id="all" class="section" aria-labelledby="all-heading">
+      <h2 id="all-heading">Every scenario</h2>
       <div id="matrix" class="matrix"></div>
     </section>
   </main>
@@ -171,7 +153,6 @@
       <p id="export-status" class="sr-only" aria-live="polite"></p>
     </div>
   </footer>
-  <div id="tip" class="tip" role="tooltip" hidden></div>
   <dialog id="settings-dialog" class="dialog" aria-labelledby="settings-title">
     <div class="dialog-head"><h2 id="settings-title">Run settings</h2><button id="close-settings" type="button">Close</button></div>
     <div id="settings-body"></div>

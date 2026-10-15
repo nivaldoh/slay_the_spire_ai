@@ -38,7 +38,6 @@
     underground_intercept: "Subterranean",
     free_for_all: "Free-for-all",
   };
-  const AGE_WINDOW_MS = 60000; // one minute of a battle in the real-time chart
   const entries = new Map();
   report.groups.forEach((group, g) =>
     group.trials.forEach((trial, t) => {
@@ -104,7 +103,7 @@
     const trial = entry.trial;
     if (!trial.valid)
       return {
-        text: `Did not finish${trial.error ? `: ${trial.error}` : ""}`,
+        text: "Did not finish",
         short: "Did not finish",
         tone: "failed",
       };
@@ -126,6 +125,17 @@
   const level = (item) => item.difficulty?.replace(/^ai_level_/, "").replaceAll("_", " ");
   const won = (entry) =>
     entry.trial.valid && (entry.trial.engine_outcome || entry.trial.outcome) === "won";
+  // A battle's score: 100 for a win, else the share of the enemy army broken at the end. A
+  // battle that did not finish, or recorded no enemy measure, has none.
+  const scoreOf = (entry) =>
+    !entry.trial.valid
+      ? null
+      : won(entry)
+        ? 100
+        : entry.battle.progress == null
+          ? null
+          : 100 * entry.battle.progress;
+  const mean = (values) => values.reduce((sum, value) => sum + value, 0) / values.length;
   function context(entry) {
     return { kind: who(entry).kind, rule: who(entry).detail, synthetic };
   }
@@ -133,27 +143,6 @@
     return item.battles.map((key) => entries.get(key));
   }
 
-  // A shared tooltip for chart marks; marks are buttons, so focus shows it too.
-  function tip(node, lines) {
-    const show = () => {
-      const box = $("tip"),
-        rect = node.getBoundingClientRect();
-      box.replaceChildren(el("b", lines[0]), ...lines.slice(1).map((line) => el("div", line)));
-      box.hidden = false;
-      const width = box.offsetWidth,
-        height = box.offsetHeight;
-      box.style.left = `${Math.max(8, Math.min(innerWidth - width - 8, rect.left + rect.width / 2 - width / 2))}px`;
-      box.style.top = `${rect.top - height - 8 < 8 ? rect.bottom + 8 : rect.top - height - 8}px`;
-    };
-    const hide = () => {
-      $("tip").hidden = true;
-    };
-    node.addEventListener("mouseenter", show);
-    node.addEventListener("focus", show);
-    node.addEventListener("mouseleave", hide);
-    node.addEventListener("blur", hide);
-    node.setAttribute("aria-label", lines.join(". "));
-  }
   // The battle's measures in a few words; absent ones are left out, never zeroed.
   function measures(entry) {
     const m = entry.trial.measures || {},
@@ -181,46 +170,11 @@
     if (out.length && m.basis === "last_observation") out[0] = `at failure: ${out[0]}`;
     return out;
   }
-  // One mark per battle: filled won, hollow lost, half draw, a cross when it did not finish.
-  function dot(entry, onTrack = false) {
-    const result = outcome(entry),
-      progress = entry.battle.progress;
-    const node = button("", () => openRun(entry.key, true), `dot ${result.tone}`);
-    if (onTrack && progress == null && entry.trial.valid) node.classList.add("unknown");
-    node.dataset.key = entry.key;
-    const plans = entry.battle.timing?.plans || [],
-      ages = plans.length ? plans : entry.battle.timing?.ages || [];
-    const soldiers = entry.trial.measures?.soldiers?.enemy;
-    tip(
-      node,
-      [
-        fullName(entry),
-        `${result.text}${on(entry)}`,
-        ...(progress == null && soldiers?.net_losses != null
-          ? [
-              `Enemy still fighting not recorded (${soldiers.net_losses} of ${soldiers.registered} soldiers lost)`,
-            ]
-          : measures(entry).slice(0, 2)),
-        ages.length
-          ? `Median ${plans.length ? "plan" : "order"} age ${seconds(median(ages))}`
-          : null,
-        data.replays[entry.key] ? "Click to watch" : "No replay recorded",
-      ].filter(Boolean),
-    );
-    return node;
-  }
   function markCurrent() {
-    for (const node of document.querySelectorAll("[data-key]"))
-      node.setAttribute("aria-current", String(node.dataset.key === openKey));
+    for (const node of document.querySelectorAll("[data-keys]"))
+      node.setAttribute("aria-current", String(node.dataset.keys.split(" ").includes(openKey)));
     for (const row of document.querySelectorAll("#matrix tr[data-scenario]"))
       row.setAttribute("aria-current", String(row.dataset.scenario === scenario?.id));
-    // A battle beyond a column's first three route maps opens that column.
-    const route = document.querySelector('#routes .route[aria-current="true"]'),
-      list = route?.parentElement;
-    if (list && [...list.children].indexOf(route) >= 3) {
-      list.classList.add("open");
-      list.querySelector(".more")?.remove();
-    }
   }
 
   async function decode(key) {
@@ -256,126 +210,115 @@
         : from.split(" ").slice(1).join(" ") === to.split(" ").slice(1).join(" ")
           ? `${from.split(" ")[0]}–${to}`
           : `${from} – ${to}`;
-    const fact = (strong, text) => {
-      const node = el("span");
-      node.append(el("b", strong), text ? ` ${text}` : "");
-      return node;
-    };
-    $("facts").replaceChildren(
-      fact(all.length, `battles in ${data.scenarios.length} scenarios`),
-      fact(models.join(", ") || "no models"),
-      ...(scripted.size ? [fact(scripted.size, "scripted baselines")] : []),
-      ...(span ? [el("span", span)] : []),
-    );
+    $("imprint-date").textContent = span ? `Early results, ${span}` : "Early results";
+    $("facts").textContent =
+      `${all.length} battles in ${data.scenarios.length} scenarios so far, ${models.join(" and ") || "no models"}${scripted.size ? ` against ${scripted.size} scripted baselines` : ""}.`;
   }
 
-  // Charts on a shared 0–100% axis; `pad` px at the left hold battles without a value.
-  const along = (at, pad = 0) => `calc(${pad}px + (100% - ${pad}px) * ${at})`;
-  function axis(ticks, pad = 0) {
-    const node = el("div", null, "axis");
-    if (pad) node.append(el("span", "n/a", "na"));
-    for (const [at, label] of ticks) {
-      const tick = el("span", label);
-      tick.style.left = along(at, pad);
+  // The score scale, 0 to 100, shared by every score bar.
+  function scale() {
+    const node = el("div", null, "scale");
+    for (const value of [0, 50, 100]) {
+      const tick = el("span", String(value));
+      tick.style.left = `${value}%`;
       node.append(tick);
     }
     return node;
   }
-  const BROKEN_TICKS = [
-    [0, "0%"],
-    [0.5, "50%"],
-    [1, "100%"],
-  ];
-  // Dots stack upward where battles land within 4% of each other.
-  function track(items, pad, step = 16) {
-    const node = el("div", null, "track"),
-      levels = new Map();
-    node.style.setProperty("--pad", `${pad}px`);
-    let top = 0;
-    for (const entry of [...items].sort(
-      (a, b) => (a.battle.progress ?? -1) - (b.battle.progress ?? -1),
-    )) {
-      const x = entry.battle.progress,
-        bin = x == null ? -1 : Math.round(x * 25),
-        level = levels.get(bin) || 0;
-      levels.set(bin, level + 1);
-      top = Math.max(top, level);
-      const mark = dot(entry, true);
-      mark.style.left = x == null ? "7px" : along(x, pad);
-      mark.style.bottom = `${10.5 + level * step}px`;
-      node.append(mark);
+  // A commander's score: the bar reaches its mean, the line spans its worst to its best battle.
+  function scoreBar(s) {
+    const node = el("div", null, "score");
+    if (s.score == null) {
+      node.append(el("span", "no finished battle", "none"));
+      return node;
     }
-    node.style.height = `${22 + top * step}px`;
+    const bar = el("span", null, "bar"),
+      fill = el("i", null, "fill");
+    fill.style.width = `${s.score}%`;
+    bar.append(fill);
+    if (s.scores.length > 1) {
+      const range = el("i", null, "range"),
+        low = Math.min(...s.scores);
+      range.style.left = `${low}%`;
+      range.style.width = `${Math.max(...s.scores) - low}%`;
+      bar.append(range);
+    }
+    node.append(el("b", String(Math.round(s.score))), bar);
     return node;
   }
-  function header(label, sub, extra) {
-    const node = el("div");
-    node.append(el("b", label));
-    if (sub) node.append(el("small", sub));
-    if (extra) node.append(extra);
-    return node;
-  }
-  function whoCell(row, extra) {
+  function whoCell(row, short = false) {
     const cell = el("div", null, "who-cell");
-    cell.append(el("strong", row.name), el("small", row.detail));
+    cell.append(el("strong", row.name));
+    if (short ? row.short : row.detail) cell.append(el("small", short ? row.short : row.detail));
     if (row.harnesses > 1) {
       const mark = el("sup", "†", "versions");
       mark.title = `Battles from ${row.harnesses} harness versions (controller, interface or game code). Run settings names each battle's; the report JSON keeps per-version groups.`;
       cell.firstChild.append(mark);
     }
-    if (extra) cell.append(el("small", extra));
     return cell;
   }
+  const won_of = (s) => `${s.won} of ${s.valid.length}`;
+  const ageText = (s) => (s.ages.length ? seconds(s.box[2]) : s.timed ? "no orders" : "–");
 
-  // The hero: the first group's largest controlled comparison, battle by battle.
+  // Figure 1: the first group's largest controlled comparison, one score per commander.
   function renderHeadline() {
     const group = data.scenarios[0]?.group;
     const item = data.scenarios
       .filter((s) => s.group === group && s.controlled)
       .sort((a, b) => b.controlled.launches - a.controlled.launches)[0];
     if (!item) return;
-    const keys = new Set(item.controlled.battles),
-      rows = item.rows
-        .map((row) => ({
-          row,
-          items: row.battles.filter((k) => keys.has(k)).map((k) => entries.get(k)),
-        }))
-        .filter((r) => r.items.length);
-    const box = $("scoreboard"),
-      title = button(item.title, pick(data.scenarios.indexOf(item)), "scenario");
-    box.replaceChildren(
-      el("p", `Controlled comparison · ${item.controlled.launches} game launches`, "eyebrow"),
-      title,
-    );
-    const pad = rows.some((r) => r.items.some((e) => e.battle.progress == null)) ? 30 : 0;
-    const list = el("div", null, "headline");
-    list.append(el("span"), axis(BROKEN_TICKS, pad), el("span"), el("span", "order age", "count"));
-    for (const { row, items } of rows) {
-      const valid = items.filter((e) => e.trial.valid),
-        name = el("span", row.name, "name");
-      name.title = row.detail;
-      if (row.short) name.append(el("small", row.short));
-      const stats = rowStats({ ...row, battles: items.map((e) => e.key) });
-      list.append(
-        name,
-        track(items, pad, 5),
-        el("span", `${valid.filter(won).length}/${valid.length} won`, "count"),
-        el(
-          "span",
-          stats.ages.length ? seconds(stats.box[2]) : stats.timed ? "no orders" : "–",
-          "count",
-        ),
-      );
+    const keys = new Set(item.controlled.battles);
+    // The controlled subset is one harness by construction.
+    const all = item.rows
+      .map((row) => ({ ...row, battles: row.battles.filter((key) => keys.has(key)), harnesses: 1 }))
+      .filter((row) => row.battles.length)
+      .map((row) => ({ row, ...rowStats(row) }));
+    const table = $("headline-table");
+    table.replaceChildren();
+    const head = el("div", null, "board-head");
+    const axis = el("div", null, "score");
+    axis.append(el("span", "Score"), scale());
+    head.append(el("span"), axis, el("span", "Won"), el("span", "Order age"));
+    table.append(head);
+    for (const s of all) {
+      const line = el("div", null, `board-row ${s.row.kind}`);
+      line.append(whoCell(s.row, true), scoreBar(s), el("span", won_of(s)), el("span", ageText(s)));
+      table.append(line);
     }
-    box.append(
-      list,
-      el(
-        "p",
-        `Enemy army broken at the end (● won ○ lost), median order age · each commander ${item.controlled.once ? "once " : ""}per launch, same harness${level(item) ? ` · enemy AI on ${level(item)}` : ""}${item.split === "development" ? " · prompts tuned on this scenario" : ""}.`,
-        "note",
-      ),
+    const title = button(item.title, pick(data.scenarios.indexOf(item)), "inline");
+    $("headline-caption").replaceChildren(
+      el("b", "Figure 1. "),
+      title,
+      item.footnote ? "*" : "",
+      `: ${item.controlled.launches} game launches, each commander ${item.controlled.once ? "once " : ""}per launch with the same harness${level(item) ? `, against the game's AI on ${level(item)}` : ""}${item.split === "development" ? "; prompts were tuned on this scenario" : ""}.`,
     );
-    box.hidden = false;
+    $("headline-foot").textContent = item.footnote ? `* ${item.footnote}` : "";
+    $("finding").replaceChildren(...finding(item, all));
+    $("headline").hidden = false;
+  }
+  // The headline in two sentences, from the same numbers as Figure 1.
+  function finding(item, all) {
+    const models = all.filter((s) => s.row.kind === "model" && s.score != null),
+      scripts = all.filter((s) => s.row.kind === "scripted" && s.score != null);
+    if (!models.length) return [];
+    const span = (values) =>
+      Math.min(...values) === Math.max(...values)
+        ? seconds(values[0])
+        : `${Math.min(...values).toFixed(1)}–${seconds(Math.max(...values))}`;
+    const aged = models.filter((s) => s.ages.length),
+      best = Math.max(...scripts.map((s) => s.score));
+    return [
+      `${level(item) ? `Against the game's AI on ${level(item)}, ` : ""}${models.map((s) => `${s.row.name} scores ${Math.round(s.score)}`).join(" and ")}${scripts.length ? `; the best scripted rule, ${Math.round(best)}` : ""}. `,
+      ...(aged.length
+        ? [
+            "The models' orders act on views of the battle ",
+            el("strong", `${span(aged.map((s) => s.box[2]))} old`),
+            scripts.some((s) => s.ages.length)
+              ? `; the rules' on ${span(scripts.filter((s) => s.ages.length).map((s) => s.box[2]))}.`
+              : ".",
+          ]
+        : []),
+    ];
   }
 
   function renderScenario(index, open = true) {
@@ -384,26 +327,29 @@
     $("question").textContent = scenario.question || scenario.title;
     $("scenario-title").textContent = [
       scenario.question && scenario.title,
-      level(scenario) && `enemy: the game's AI on ${level(scenario)}`,
+      level(scenario) && `against the game's AI on ${level(scenario)}`,
     ]
       .filter(Boolean)
-      .join(" · ");
+      .join(", ");
     $("challenge").textContent = scenario.challenge || "";
-    $("results-scenario").textContent = scenario.title;
+    // Figure 2 pools every battle: it says so when counts or harness versions differ.
+    const counts = new Set(scenario.rows.map((row) => row.battles.length));
+    $("plans-caption").replaceChildren(
+      el("b", "Figure 2. "),
+      `${scenario.title}: where each commander's army went, the centre of its units still fighting, in every battle (thin lines) and on average (thick; □ start). ◆ enemy where first seen. Click a map to watch its battles.${counts.size > 1 || scenario.rows.some((row) => row.harnesses > 1) ? " All battles, not a controlled comparison: battle counts or harness versions differ." : ""}`,
+    );
     document.title = `${synthetic ? "SYNTHETIC DEMO — " : ""}${scenario.title} · WH3 Commander Bench`;
     $("run-select").replaceChildren(
       ...scenarioEntries().map((entry) => {
         const option = el(
           "option",
-          `${who(entry).name}${who(entry).short ? ` (${who(entry).short.replace(" reasoning", "")})` : ""} · ${outcome(entry).short}`,
+          `${outcome(entry).short} · ${who(entry).name}${who(entry).short ? ` (${who(entry).short.replace(" reasoning", "")})` : ""}`,
         );
         option.value = entry.key;
         return option;
       }),
     );
-    renderRoutes();
-    renderRows();
-    renderLatency();
+    renderPlans();
     markCurrent();
     return open ? openRun(scenario.featured, false) : null;
   }
@@ -466,8 +412,6 @@
     }
     if (openKey !== key) return;
     payload = decoded;
-    // A commander's plan has no single reply to pin; Model's view shows the plan's view.
-    $("show-lag").disabled = Boolean(payload?.decisions?.some((d) => d.plan_age_s != null));
     if (payload?.frames?.length) Viewer.show(payload, context(entry));
     else Viewer.clear(problem || "No replay was recorded for this battle.");
     $("map-army").textContent = `${who(entry).name}'s army`;
@@ -481,410 +425,169 @@
     if (scroll) Viewer.reveal();
   }
 
-  // Same battle, different plans: every friendly path over the whole battle, one framing.
-  function renderRoutes() {
+  // Figure 2: one map per commander, every battle's army track thin and their mean thick.
+  function renderPlans() {
     const box = $("routes");
     box.replaceChildren();
-    const routes = scenarioEntries().filter((entry) => entry.battle.route);
-    const points = routes.flatMap((entry) => [
-      ...entry.battle.route.friendly.flatMap((u) => u.path),
-      ...entry.battle.route.enemy.map((u) => u.at),
-    ]);
-    if (!points.length) {
-      box.append(el("p", "No positions were recorded for this scenario.", "caption"));
+    const tracked = scenarioEntries().filter((entry) => entry.battle.route?.track.length);
+    if (!tracked.length) {
+      box.append(el("p", "No army positions were recorded in this scenario.", "caption"));
       return;
     }
+    // One framing for every map: all tracks and where the enemy was first seen.
+    const points = tracked.flatMap((entry) => [
+      ...entry.battle.route.track.map(([, x, z]) => [x, z]),
+      ...entry.battle.route.enemy.map((u) => u.at),
+    ]);
     const xs = points.map((p) => p[0]),
       zs = points.map((p) => p[1]);
     let [x0, z0, x1, z1] = [Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs)];
-    const margin = Math.max(30, 0.06 * Math.max(x1 - x0, z1 - z0));
+    const margin = Math.max(40, 0.08 * Math.max(x1 - x0, z1 - z0));
     [x0, z0, x1, z1] = [x0 - margin, z0 - margin, x1 + margin, z1 + margin];
-    const aspect = Math.max(0.5, Math.min(1.25, (z1 - z0) / (x1 - x0)));
-    const w = 200,
+    const aspect = Math.max(0.6, Math.min(1.2, (z1 - z0) / (x1 - x0)));
+    const w = 240,
       h = Math.round(w * aspect),
       scale = Math.min(w / (x1 - x0), h / (z1 - z0));
     const px = (x) => w / 2 + (x - (x0 + x1) / 2) * scale,
       py = (z) => h / 2 - (z - (z0 + z1) / 2) * scale;
+    const line = (path) =>
+      path.map(([x, z]) => `${px(x).toFixed(1)},${py(z).toFixed(1)}`).join(" ");
     const ground = scenario.terrain ? blockedPath(scenario.terrain, px, py, scale) : "";
+    const enemy = tracked[0].battle.route.enemy;
     for (const row of scenario.rows) {
-      const items = row.battles.map((key) => entries.get(key)).filter((e) => e.battle.route);
-      // An army that never moved (hold position) has no route to show.
-      if (!items.some((e) => e.battle.route.friendly.some((u) => u.path.length > 2))) continue;
-      const group = el("section", null, "route-group"),
-        list = el("div", null, "route-list");
-      for (const entry of items) {
-        const map = svg("svg", { viewBox: `0 0 ${w} ${h}`, "aria-hidden": "true" });
-        if (ground) map.append(svg("path", { d: ground, fill: "#33454f" }));
-        for (const u of entry.battle.route.enemy)
-          map.append(
-            svg("path", {
-              d: `M${px(u.at[0])} ${py(u.at[1]) - 3.2}l3.2 3.2-3.2 3.2-3.2-3.2z`,
-              fill: TEAM.enemy,
-              opacity: 0.9,
-            }),
-          );
-        for (const u of entry.battle.route.friendly) {
-          const line = u.path.map((p) => `${px(p[0]).toFixed(1)},${py(p[1]).toFixed(1)}`).join(" ");
-          const [sx, sz] = u.path[0],
-            [ex, ez] = u.path.at(-1);
-          map.append(
-            svg("rect", {
-              x: px(sx) - 2,
-              y: py(sz) - 2,
-              width: 4,
-              height: 4,
-              fill: "none",
-              stroke: TEAM.friendly,
-              "stroke-width": 1,
-              opacity: 0.8,
-            }),
-            svg("polyline", {
-              points: line,
-              fill: "none",
-              stroke: TEAM.friendly,
-              "stroke-width": 1.4,
-              "stroke-linejoin": "round",
-              "stroke-linecap": "round",
-              opacity: 0.85,
-            }),
-            u.end === "down"
-              ? svg("path", {
-                  d: `M${px(ex) - 2.6} ${py(ez) - 2.6}l5.2 5.2m0-5.2l-5.2 5.2`,
-                  stroke: "#ffffff",
-                  "stroke-width": 1.4,
-                })
-              : svg("circle", {
-                  cx: px(ex),
-                  cy: py(ez),
-                  r: 2.6,
-                  fill: u.end === "up" ? TEAM.friendly : "none",
-                  stroke: TEAM.friendly,
-                  "stroke-width": 1.2,
-                }),
-          );
-        }
-        const result = outcome(entry),
-          label = el("span");
-        label.append(el("b", result.short, result.tone));
-        if (entry.battle.progress != null && !won(entry))
-          label.append(` · ${broken(entry.battle.progress)} broken`);
-        const card = button("", () => openRun(entry.key, true), `route ${result.tone}`);
-        card.dataset.key = entry.key;
-        card.setAttribute(
-          "aria-label",
-          `Watch ${fullName(entry)}: ${result.text}. Map of every path its army took.`,
+      const items = row.battles.map((key) => entries.get(key)),
+        tracks = items.filter((e) => e.battle.route?.track.length),
+        s = rowStats(row);
+      const map = svg("svg", { viewBox: `0 0 ${w} ${h}`, "aria-hidden": "true" });
+      if (ground) map.append(svg("path", { d: ground, class: "blocked" }));
+      for (const u of enemy)
+        map.append(
+          svg("path", {
+            d: `M${px(u.at[0])} ${py(u.at[1]) - 3.4}l3.4 3.4-3.4 3.4-3.4-3.4z`,
+            class: "foe",
+          }),
         );
-        card.append(map, label);
-        list.append(card);
-      }
-      // Three maps per commander, in order; the rest behind a button.
-      if (items.length > 3) {
-        const more = button(
-          `+${items.length - 3} more`,
-          () => {
-            list.classList.add("open");
-            more.remove();
-          },
-          "more",
+      for (const entry of tracks)
+        map.append(
+          svg("polyline", {
+            points: line(entry.battle.route.track.map(([, x, z]) => [x, z])),
+            class: `trace ${won(entry) ? "won" : ""}`,
+          }),
         );
-        list.append(more);
+      if (tracks.length) {
+        const path = meanTrack(tracks.map((e) => e.battle.route.track)),
+          [sx, sz] = path[0],
+          [ex, ez] = path.at(-1);
+        map.append(
+          svg("polyline", { points: line(path), class: "mean" }),
+          svg("rect", { x: px(sx) - 3.5, y: py(sz) - 3.5, width: 7, height: 7, class: "start" }),
+          svg("circle", { cx: px(ex), cy: py(ez), r: 3.5, class: "end" }),
+        );
       }
-      group.append(whoCell(row), list);
-      box.append(group);
+      const card = el("figure", null, `plan ${row.kind}`),
+        open = button("", () => openRun(items[0].key, true), "plan-map");
+      open.append(map);
+      open.setAttribute(
+        "aria-label",
+        `Watch ${row.name}'s battles here, starting with the first. Its army's route in every battle.`,
+      );
+      card.dataset.keys = row.battles.join(" ");
+      const facts = el("dl");
+      for (const [label, value] of [
+        ["Won", won_of(s)],
+        [s.executor != null ? "Plan age" : "Order age", ageText(s)],
+        ["Cost", row.kind !== "model" ? "$0" : s.usd == null ? "–" : money(s.usd)],
+      ])
+        facts.append(el("dt", label), el("dd", value));
+      const failed = items.length - s.valid.length;
+      const about = el("figcaption");
+      about.append(whoCell(row), scoreBar(s), facts);
+      if (failed) about.append(el("small", `+${failed} did not finish`, "failed-note"));
+      card.append(open, about);
+      box.append(card);
     }
-    if (!box.childElementCount)
-      box.append(el("p", "No commander's army moved in this scenario.", "caption"));
+    markCurrent();
+  }
+  // The mean of several tracks, step by step in battle time; a battle that has ended holds its
+  // last position. It runs as long as the median battle.
+  function meanTrack(tracks) {
+    const ends = tracks.map((track) => track.at(-1)[0]).sort((a, b) => a - b),
+      until = ends[Math.floor((ends.length - 1) / 2)],
+      out = [];
+    for (let t = Math.min(...tracks.map((track) => track[0][0])); t <= until; t += 5) {
+      const at = tracks.map((track) => track.findLast(([time]) => time <= t) ?? track[0]);
+      out.push([mean(at.map((p) => p[1])), mean(at.map((p) => p[2]))]);
+    }
+    return out;
   }
 
-  // How far each commander got: rows of the scenario, every column a small chart.
+  // What every figure says about one commander in one scenario.
   function rowStats(row) {
     const items = row.battles.map((key) => entries.get(key));
     const timings = items.map((entry) => entry.battle.timing).filter(Boolean);
     const valid = items.filter((entry) => entry.trial.valid);
-    const instances = new Set(valid.map((entry) => entry.trial.instance));
     const plans = timings.flatMap((t) => t.plans);
     // A commander's model plans: their age is the model's latency, the executor's is not.
     const ages = plans.length ? plans : timings.flatMap((t) => t.ages);
+    const scores = valid.map(scoreOf).filter((value) => value != null);
     return {
       items,
       valid,
       timed: timings.length,
       won: valid.filter(won).length,
+      scores,
+      score: scores.length ? mean(scores) : null,
       ages,
       executor: plans.length ? median(timings.flatMap((t) => t.ages)) : null,
       box: [0.1, 0.25, 0.5, 0.75, 0.9].map((q) => quantile(ages, q)),
-      // A 95% interval only for five or more finished battles from separate launches of one harness.
-      interval:
-        valid.length >= 5 && instances.size === valid.length && row.harnesses === 1
-          ? wilson(valid.filter(won).length, valid.length)
-          : null,
       usd: items.every((entry) => entry.trial.llm?.usd != null)
         ? items.reduce((sum, entry) => sum + entry.trial.llm.usd, 0) / items.length
         : null,
     };
   }
-  const niceMax = (value, step) => Math.max(step, Math.ceil(value / step) * step);
-  function renderRows() {
-    const box = $("rows"),
-      stats = scenario.rows.map((row) => ({ row, ...rowStats(row) }));
-    const pad = scenarioEntries().some((entry) => entry.battle.progress == null) ? 30 : 0;
-    const ageMax = niceMax(Math.max(0, ...stats.map((s) => s.box[4] ?? 0)), 5);
-    const head = el("div", null, "rows-head");
-    head.append(
-      header("Commander"),
-      header(
-        "Enemy army broken when the battle ended",
-        "dead or fleeing; each mark is one battle: ● won ○ lost × did not finish",
-        axis(BROKEN_TICKS, pad),
-      ),
-      header("Won", "of finished"),
-      header(
-        "Order age",
-        "how old its view of the battle was when orders reached the game",
-        axis(
-          [
-            [0, "0 s"],
-            [0.5, `${ageMax / 2} s`],
-            [1, `${ageMax} s`],
-          ],
-          0,
-        ),
-      ),
-      header("Cost", "per battle"),
-    );
-    box.replaceChildren(head);
-    for (const s of stats) {
-      const row = el("div", null, `row ${s.row.kind}`),
-        trackCell = el("div", null, "track-cell");
-      trackCell.dataset.label = "Enemy army broken";
-      trackCell.append(track(s.items, pad));
-      const wonCell = el("div", null, "won-cell"),
-        count = el("b", String(s.won));
-      count.append(el("span", ` / ${s.valid.length}`));
-      wonCell.append(count);
-      const failed = s.items.length - s.valid.length;
-      if (failed) wonCell.append(el("small", `+${failed} did not finish`));
-      if (s.interval)
-        wonCell.append(el("small", `95% CI ${percent(s.interval[0])}–${percent(s.interval[1])}`));
-      // A box plot: whiskers at the 10th and 90th percentiles, the middle half boxed.
-      const ageCell = el("div", null, "age-cell");
-      ageCell.dataset.label = s.executor != null ? "Plan age" : "Order age";
-      if (!s.ages.length) ageCell.append(el("small", s.timed ? "no orders" : "not recorded"));
-      else {
-        const plot = el("div", null, "boxplot"),
-          at = (v) => `${(Math.min(v, ageMax) / ageMax) * 100}%`;
-        const whisker = el("i", null, "whisker"),
-          iqr = el("i", null, "iqr"),
-          mid = el("i", null, "mid");
-        whisker.style.left = at(s.box[0]);
-        whisker.style.width = `calc(${at(s.box[4])} - ${at(s.box[0])})`;
-        iqr.style.left = at(s.box[1]);
-        iqr.style.width = `calc(${at(s.box[3])} - ${at(s.box[1])})`;
-        mid.style.left = at(s.box[2]);
-        plot.append(whisker, iqr, mid);
-        tip(plot, [
-          `${s.executor != null ? "Plan" : "Order"} age, ${s.ages.length} batches in ${s.items.length} battles`,
-          `median ${seconds(s.box[2])} · middle half ${seconds(s.box[1])}–${seconds(s.box[3])}`,
-          `10th–90th percentile ${seconds(s.box[0])}–${seconds(s.box[4])}`,
-        ]);
-        plot.tabIndex = 0;
-        ageCell.append(plot, el("span", seconds(s.box[2]), "value"));
-        if (s.executor != null)
-          ageCell.append(
-            el("small", `model plans; unit skills act on ${seconds(s.executor)}-old views`),
-          );
-      }
-      const cost = el(
-        "div",
-        s.row.kind !== "model" ? "$0" : s.usd == null ? "—" : money(s.usd),
-        "cost-cell",
-      );
-      cost.dataset.label = "Cost / battle";
-      row.append(whoCell(s.row), trackCell, wonCell, ageCell, cost);
-      box.append(row);
-    }
-    const key = el("div", null, "phone-key");
-    key.append(
-      el("small", "Enemy army broken: ● won ○ lost × did not finish"),
-      axis(BROKEN_TICKS, pad),
-    );
-    head.after(key);
-    if (stats.some((s) => s.row.harnesses > 1))
-      box.append(
-        el(
-          "p",
-          "† Battles from more than one harness version; Run settings names each battle's.",
-          "rows-foot",
-        ),
-      );
-  }
 
-  // The battle doesn't wait: how old each commander's latest view was, second by second.
-  function renderLatency() {
-    const box = $("latency"),
-      lede = $("realtime-lede");
-    box.replaceChildren();
-    const stats = scenario.rows
-      .map((row) => {
-        const s = rowStats(row);
-        // The commander's earliest finished battle with replies: never chosen by outcome.
-        const sample = s.items.find((e) => e.trial.valid && e.battle.timing?.replies.length);
-        return { row, ...s, sample };
-      })
-      .filter((s) => s.sample && s.ages.length);
-    $("show-lag").hidden = !stats.length;
-    if (!stats.length) {
-      lede.textContent = "No orders with a measured age were recorded in this scenario.";
-      return;
-    }
-    // The lede quotes age and movement from the same battles: those with the 1 Hz recorder.
-    const model = stats
-      .filter((s) => s.row.kind === "model" && s.executor == null)
-      .map((s) => {
-        const measured = s.items.filter((e) => e.battle.timing?.moved.length);
-        return {
-          ...s,
-          measured,
-          moved: measured.flatMap((e) => e.battle.timing.moved),
-          measuredAges: measured.flatMap((e) => e.battle.timing.ages),
-        };
-      })
-      .sort((a, b) => b.moved.length - a.moved.length || b.ages.length - a.ages.length)[0];
-    lede.replaceChildren();
-    const twin = model && stats.filter((s) => s.row.name === model.row.name).length > 1;
-    if (model && twin)
-      model.row = { ...model.row, name: `${model.row.name} (${model.row.detail})` };
-    if (model?.moved.length) {
-      const n = model.measured.length;
-      lede.append(
-        `The game runs at normal speed while a model thinks. In ${n === 1 ? "one battle" : `${n} battles`} here, orders from ${model.row.name} reached the game based on a view of the battle a median `,
-        el("strong", seconds(median(model.measuredAges))),
-        " old; by then the farthest-moving unit in view had moved a median ",
-        el("strong", `${Math.round(median(model.moved))} m`),
-        ".",
-      );
-    } else if (model) {
-      lede.append(
-        `The game runs at normal speed while a model thinks. Here orders from ${model.row.name} reached the game based on a view of the battle a median `,
-        el("strong", seconds(median(model.ages))),
-        ` old (${model.ages.length} batches of orders).`,
-      );
-    } else lede.textContent = "The game runs at normal speed while each commander decides.";
-    const yMax = AGE_SCALE_S; // shared with the replay's view-age band; taller teeth get a caret
-    const head = el("div", null, "lat-head");
-    head.append(
-      header("Commander"),
-      header(
-        "Age of the commander's latest view of the battle",
-        `one minute of its first finished battle here, 0–${yMax} s; each drop is a reply, including replies that kept the current orders`,
-        axis(
-          [
-            [0, "+0 s"],
-            [0.5, "+30 s"],
-            [1, "+60 s"],
-          ],
-          0,
-        ),
-      ),
-      header("Typical order age", "replies with new orders"),
-    );
-    box.append(
-      head,
-      el(
-        "p",
-        `Age of each commander's latest view · one minute per row · 0–${yMax} s`,
-        "phone-key",
-      ),
-    );
-    for (const s of stats) {
-      const row = el("div", null, "lat-row"),
-        chart = svg("svg", {
-          viewBox: "0 0 600 60",
-          preserveAspectRatio: "none",
-          role: "img",
-          "aria-label": `${s.row.name}: age of its latest view over one minute, 0 to ${yMax} s`,
-        });
-      const [t0, t1] = windowOf(s.sample),
-        x = (t) => ((t - t0) / (t1 - t0)) * 600,
-        y = (age) => 60 - (Math.min(age, yMax) / yMax) * 56;
-      for (let tick = yMax > 15 ? 10 : 5; tick < yMax; tick += yMax > 15 ? 10 : 5)
-        chart.append(svg("line", { x1: 0, x2: 600, y1: y(tick), y2: y(tick), class: "grid" }));
-      const series = ageSeries(s.sample.battle.timing.replies, [t0, t1]);
-      chart.append(
-        svg("path", {
-          d: `M${x(t0)} 60${series.map(([t, a]) => `L${x(t).toFixed(1)} ${y(a).toFixed(1)}`).join("")}L${x(t1)} 60Z`,
-          class: `age ${s.row.kind}`,
-        }),
-      );
-      for (const [t, a] of series.filter(([, a]) => a > yMax))
-        chart.append(svg("path", { d: `M${x(t) - 4} 0h8l-4 5z`, class: "clipped" }));
-      const plot = el("div", null, "age-chart");
-      plot.append(chart);
-      const value = el("div", null, "age-value");
-      value.append(
-        el("b", seconds(s.box[2])),
-        el("small", `median · 90th percentile ${seconds(s.box[4])}`),
-        el(
-          "small",
-          s.executor != null
-            ? "model plans; unit skills act on fresh views"
-            : `${s.ages.length} replies with orders in ${s.items.length} battle${s.items.length > 1 ? "s" : ""}`,
-        ),
-      );
-      row.append(whoCell(s.row), plot, value);
-      box.append(row);
-    }
-    const ratios = scenarioEntries()
-      .map((entry) => entry.trial.clock_ratio)
-      .filter((value) => value != null);
-    if (ratios.length)
-      box.append(
-        el(
-          "p",
-          `Battle clock against wall clock: ${Math.min(...ratios).toFixed(2)}–${Math.max(...ratios).toFixed(2)}× over ${ratios.length} battles here; the game never paused for a reply.`,
-          "rows-foot",
-        ),
-      );
-  }
-  const windowOf = (entry) => {
-    const first = entry.battle.timing.replies[0][1];
-    return [first, first + AGE_WINDOW_MS];
-  };
-
-  // All scenarios: each battle's outcome by model, and the scripted baselines together.
+  // Figure 3: each model's score in every scenario, and the best scripted rule's.
   function families() {
     const all = [...shown].map((key) => entries.get(key));
     const names = [...new Set(all.filter(isModel).map((entry) => who(entry).family))].sort();
     if (all.some((entry) => who(entry).kind === "scripted")) names.push("Scripted");
     return names;
   }
-  function outcomeCell(item, family) {
+  function scoreCell(item, family) {
     const cell = el("div", null, "cell"),
-      mine = scenarioEntries(item).filter((entry) => who(entry).family === family);
-    if (!mine.length) {
+      rows = item.rows.filter((row) => row.family === family);
+    if (!rows.length) {
       cell.append(el("span", family === "Scripted" ? "no baseline yet" : "–", "none"));
       return cell;
     }
-    for (const entry of mine) cell.append(dot(entry));
-    const valid = mine.filter((entry) => entry.trial.valid);
+    // A model pools its commanders here; the scripted column shows its best rule.
+    const stats = rows.map((row) => ({ row, ...rowStats(row) }));
+    const pooled = rowStats({ battles: rows.flatMap((row) => row.battles) }),
+      best = stats.filter((s) => s.score != null).sort((a, b) => b.score - a.score)[0],
+      shown = family === "Scripted" ? best : pooled;
+    if (shown?.score == null) {
+      cell.append(el("span", "did not finish", "none"));
+      return cell;
+    }
+    cell.style.setProperty("--score", shown.score / 100);
+    cell.append(el("b", String(Math.round(shown.score))));
     cell.append(
       el(
-        "span",
-        valid.length ? `${valid.filter(won).length}/${valid.length}` : "did not finish",
-        "count",
+        "small",
+        family === "Scripted"
+          ? best.row.name
+          : `${shown.scores.length} battle${shown.scores.length > 1 ? "s" : ""}`,
       ),
     );
-    // A cell that pools several commanders or harness versions says so.
-    const rows = item.rows.filter((row) => row.family === family);
-    if (rows.length > 1 || rows.some((row) => row.harnesses > 1)) {
-      const mark = el("span", "†", "pooled");
-      mark.title = rows
-        .map((row) => {
-          const n = row.battles.filter((key) => entries.get(key).trial.valid);
-          return `${row.name} · ${row.detail}: ${n.filter((key) => won(entries.get(key))).length}/${n.length}${row.harnesses > 1 ? `, ${row.harnesses} harness versions` : ""}`;
-        })
+    if (family !== "Scripted" && (rows.length > 1 || rows.some((row) => row.harnesses > 1))) {
+      const mark = el("sup", "†", "pooled");
+      mark.title = stats
+        .map(
+          (s) =>
+            `${s.row.name}, ${s.row.detail}: ${s.score == null ? "no finished battle" : Math.round(s.score)}${s.row.harnesses > 1 ? ` (${s.row.harnesses} harness versions)` : ""}`,
+        )
         .join("\n");
-      cell.append(mark);
+      cell.firstChild.append(mark);
     }
     return cell;
   }
@@ -900,7 +603,7 @@
     for (const group of groups) {
       const items = data.scenarios.filter((item) => item.group === group);
       // Pilots predate the benchmark's setup checks: folded away by default.
-      const fold = details(`${group} · ${items.length}`);
+      const fold = details(`${group} (${items.length})`);
       fold.open = groups.length === 1 || !/pilot/i.test(group);
       // Fixed column widths, so each model's column lines up across the groups.
       const table = el("table"),
@@ -910,7 +613,7 @@
       columns.firstChild.style.width = "40%";
       for (const label of [
         "Scenario",
-        ...all.map((f) => (f === "Scripted" ? "Scripted baselines" : f)),
+        ...all.map((f) => (f === "Scripted" ? "Best scripted rule" : f)),
       ]) {
         const th = el("th", label);
         th.scope = "col";
@@ -932,8 +635,8 @@
         tr.append(name);
         for (const family of all) {
           const td = el("td");
-          td.dataset.label = family === "Scripted" ? "Scripted baselines" : family;
-          td.append(outcomeCell(item, family));
+          td.dataset.label = family === "Scripted" ? "Best scripted rule" : family;
+          td.append(scoreCell(item, family));
           tr.append(td);
         }
         body.append(tr);
@@ -945,7 +648,7 @@
     box.append(
       el(
         "p",
-        "Each mark is one battle: ● won ○ lost × did not finish. † pools commanders with different settings or harness versions: not a controlled comparison.",
+        "Figure 3. Every scenario: each model's score over all its battles there, darker for higher. † pools a model's commanders with different settings or harness versions: not a controlled comparison.",
         "rows-foot",
       ),
     );
@@ -1075,21 +778,21 @@
         "Text only, at every decision: its own units, the enemy units its army can see right now, the enemy roster shown on the custom-battle screen, a coarse passability grid where the interface provides one, its last orders, notes it wrote itself and how late its previous orders landed. Prompted models answer with orders per unit (move, attack, halt, change behaviour, use an ability; fly, build or reinforce where the battle allows); the commander answers with plans that scripted unit skills carry out.",
       ],
       [
-        "Real time",
-        "The battle runs at normal speed from start to finish and never waits for a reply. Order age is measured on the battle clock, from the observation to the game accepting the orders; accepted is not the same as carried out.",
+        "Order age",
+        "The battle runs at normal speed from start to finish and never waits for a reply. Order age is measured on the battle clock, from the observation behind the orders to the game accepting them (the median over replies with new orders); accepted is not the same as carried out. Planned: the same model with its observations aged by a further 2, 5 and 10 s, to measure what each second costs.",
       ],
       [
         "Opponent and baselines",
         "The game's own battle AI commands the enemy (difficulty in Run settings). Scripted baselines: attack nearest (walk), charge nearest (run), hold position, and per-unit skills with no model.",
       ],
       [
-        "Enemy army broken",
-        "The share of the enemy's soldiers dead, fleeing or otherwise out of the fight when the battle ended. Land attacks are won only at 100%; a defender at the timer or an objective battle can win without it. The engine decides every outcome.",
+        "Score",
+        "Per battle: 100 for a win, else the share of the enemy's soldiers dead, fleeing or otherwise out of the fight when it ended, in percent. A commander's score is the mean over its finished battles; the line under the bar spans its worst to its best battle. The engine decides every outcome.",
       ],
       ["Status", status()],
       [
         "Rows and versions",
-        "A row holds every battle of one commander in a scenario; a row marked † spans several harness versions, and Run settings names each battle's. The report JSON keeps strict per-version groups and paired statistics.",
+        "A commander's figures hold all its battles in a scenario; one marked † spans several harness versions, and Run settings names each battle's. The report JSON keeps strict per-version groups and paired statistics.",
       ],
     ];
     const setup =
@@ -1169,6 +872,7 @@
             .join(" · "),
         ],
         ["Added observation age", `${(trial.delay_ms || 0) / 1000} s`],
+        ["Failure", trial.error],
         ["Harness version", entry.battle.harness],
         ["Interface track", definition.track],
         ["Controller version", trial.card?.version || "unrecorded; see source revision"],
@@ -1272,41 +976,21 @@
         intoView,
       );
   };
-  // One reply of the battle in the viewer, inspected: the median-age reply with orders, taken
-  // from the key maneuver when there is one (the decisive phase), else from the whole battle.
-  function showDelay() {
-    const all = (payload?.decisions || [])
-      .map((d, i) => ({ d, i }))
-      .filter(
-        ({ d }) =>
-          d.steps.length && d.age_s != null && d.basis_frame != null && d.after_frame != null,
-      );
-    const moment = featured && span(featured),
-      inside = moment
-        ? all.filter(({ d }) => d.applied_ms >= moment.from && d.applied_ms <= moment.to)
-        : [];
-    const candidates = (inside.length ? inside : all).sort((a, b) => a.d.age_s - b.d.age_s);
-    if (!candidates.length) return;
-    Viewer.pin(candidates[Math.floor((candidates.length - 1) / 2)].i);
-    Viewer.reveal();
-  }
   async function setup() {
     if (synthetic) $("demo-banner").hidden = false;
     $("watch-featured").addEventListener("click", () => watchFeatured());
     $("watch-full").addEventListener("click", () => Viewer.watch(0));
     $("run-select").addEventListener("change", (e) => openRun(e.target.value, false));
-    $("show-lag").addEventListener("click", showDelay);
     $("open-settings").addEventListener("click", openSettings);
     $("close-settings").addEventListener("click", () => $("settings-dialog").close());
     $("close-still").addEventListener("click", () => $("still-dialog").close());
-    addEventListener("scroll", () => ($("tip").hidden = true), { passive: true });
     Viewer.onTime(markHighlights);
     downloads();
     renderFacts();
     renderMethod();
     if (!data.scenarios.length) {
       $("question").textContent = "No recorded battles in this report";
-      for (const id of ["viewer", "results", "realtime", "all"]) $(id).hidden = true;
+      for (const id of ["viewer", "results", "plans", "all"]) $(id).hidden = true;
       for (const id of [
         "watch-featured",
         "watch-full",
@@ -1344,8 +1028,10 @@
         ([seen]) => {
           if (!seen.isIntersecting) return;
           observer.disconnect();
-          if (Viewer.time === start && openKey === scenario.featured)
-            Viewer.watch(start, featured.end_ms ?? null, k, false);
+          if (Viewer.time !== start || openKey !== scenario.featured) return;
+          // With Model's view on: outlines show where the model last saw each unit.
+          Viewer.setLag(true);
+          Viewer.watch(start, featured.end_ms ?? null, k, false);
         },
         { threshold: 0.25 },
       );

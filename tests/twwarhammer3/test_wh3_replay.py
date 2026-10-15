@@ -181,7 +181,7 @@ def test_g1_matches_trace_and_never_invents_general_death():
         **report_html.compact(sol), "highlights": []}
     # 87 batches of orders, one never acknowledged: its age is unknown, not zero.
     timing = embedded["battles"]["g0-t2"]["timing"]
-    assert len(timing["ages"]) == 86 and timing["moved"] == []
+    assert len(timing["ages"]) == 86
     assert len(embedded["prompts"]) == 1
 
 

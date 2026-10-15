@@ -1737,6 +1737,7 @@ const Viewer = (() => {
     reveal,
     watch,
     pin,
+    setLag,
     onTime: (listener) => listeners.push(listener),
     get time() {
       return time;

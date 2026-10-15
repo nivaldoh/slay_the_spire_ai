@@ -38,11 +38,12 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | benchmark harness | b11 (2026-10-15), evaluator v2, track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Two b11 engine outcomes; whole-unit counters and unchanged rematch checked. C1 remains development evidence |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
-| report | redesigned for outside readers (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | `reports/benchmark.html` (27 MB): 55 jobs, 85 battles shown in 19 scenarios (6 diagnostic probes held back), headline C1 |
+| report | one score per commander, paper redesign (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | `reports/benchmark.html` (26 MB): 55 jobs, 85 battles shown in 19 scenarios (6 diagnostic probes held back), headline C1 |
 
 ## Index
 
-- 2026-10-15: [Report redesign for outside readers](#2026-10-15-report-redesign-for-outside-readers) ·
+- 2026-10-15: [Report: one score per commander](#2026-10-15-report-one-score-per-commander) ·
+  [Report redesign for outside readers](#2026-10-15-report-redesign-for-outside-readers) ·
   [Harness b11: common measures and one report](#2026-10-15-harness-b11-common-measures-and-one-report) ·
   [Integrate llm v17 and commander v4](#2026-10-15-integrate-llm-v17-and-commander-v4) ·
   [Prioritize scenario variety and shared measures](#2026-10-15-prioritize-scenario-variety-and-shared-measures) ·
@@ -98,6 +99,37 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
+
+## 2026-10-15: Report: one score per commander
+
+The owner's review of the outside-reader redesign: it still looked generated (the header
+above all), showed every attempt where one item per commander would do, repeated "+10%
+enemy stats", and the real-time section was bloat. Changes:
+
+- **Aggregation**: a commander's battles in a scenario become one score (per battle, 100
+  for a win, else the percentage of the enemy army broken; the mean over finished
+  battles, defined once in Method) shown as a bar with a worst-to-best line. Figure 1 (the
+  C1 controlled comparison), Figure 2 (one map per commander: every battle's army track
+  thin, their mean thick, with score, wins, order age and cost) and Figure 3 (each model's
+  score in every scenario, the best scripted rule beside it) replace the per-battle marks,
+  the per-battle route maps, the results rows and the matrix of marks. A finding sentence
+  from Figure 1's numbers opens Results.
+- **Cut**: "The battle doesn't wait for the model" (sawtooths, lede, inspection button and
+  its placeholder; the added-delay experiment is now one line in Method). Latency stays
+  as order age beside every score and in the replay (waiting counter, view-age band,
+  Model's view, now on while the key maneuver autoplays).
+- **Style**: a paper page around one dark replay panel; DIN-style lettering for headings
+  and numbers, a book serif for prose; no icon, badge, nav, all-caps labels or cards; the
+  replay is the page's first figure under a two-column masthead.
+- **Text**: the hard variant is "Cavalry assault (hard)", its +10% stated once as Figure
+  1's footnote (a notes `footnote` field); a battle that did not finish reads "Did not
+  finish", its failure in Run settings.
+- **Data**: `route` keeps one army centroid per 5 s instead of every unit's path; `timing`
+  keeps order and plan ages only (26.3 MB page).
+
+Checks: `uv run pytest` and `uv run ruff check .` pass; the offline browser check
+(rewritten for the figures) passes on `reports/benchmark.html`. The moving army is on the
+first screen at 1440×900, 1280×800, 1536×750, 1024×768 and 390×844.
 
 ## 2026-10-15: Report redesign for outside readers
 
