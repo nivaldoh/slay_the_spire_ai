@@ -1,9 +1,12 @@
 import base64
 import io
+import json
+from pathlib import Path
 
 import pytest
 
 from twwarhammer3.battle import imagery, visual_probe
+from twwarhammer3.battle.setup import validate_declaration
 
 
 def test_stills_resize_preserve_provenance_and_report_failures(tmp_path):
@@ -37,6 +40,18 @@ def test_probe_commands_are_scripted_and_keep_normal_game_timing(tmp_path):
 def test_probe_rejects_existing_output_before_touching_runtime(tmp_path):
     with pytest.raises(ValueError, match="new directory"):
         visual_probe.run(tmp_path, "imagery")
+
+
+def test_probe_timeouts_satisfy_declared_benchmark_requirements(tmp_path):
+    scenarios = json.loads(Path("configs/twwarhammer3/scenarios.json").read_text())
+    for case in ("off", "on", "imagery"):
+        command = visual_probe.command(tmp_path / case, case)
+        scenario = scenarios[command[command.index("--scenario") + 1]]
+        validate_declaration(scenario, {
+            "menu": True, "start_timeout": 900, "episodes": 1,
+            "episode_timeout": float(command[command.index("--episode-timeout") + 1]),
+            "run_timeout": float(command[command.index("--run-timeout") + 1]),
+        }, {"preferences": {"battle_realism_mode": "false"}})
 
 
 def test_imagery_probe_is_valid_lua51():

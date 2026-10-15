@@ -64,9 +64,10 @@ return "scheduled imagery probe; battle remains unpaused at 1x"
 
 def command(output: Path, case: str) -> list[str]:
     args = [sys.executable, "-m", "twwarhammer3", "play", "--policy", "rush_nearest",
-            "--scenario", "brt-cavalry-emp-assault", "--episodes", "1", "--output", str(output),
+            "--scenario", "kho5-dwf5" if case == "imagery" else "brt-cavalry-emp-assault",
+            "--episodes", "1", "--output", str(output),
             "--episode-timeout", "90" if case == "imagery" else "1320",
-            "--run-timeout", "420" if case == "imagery" else "1800"]
+            "--run-timeout", "1200" if case == "imagery" else "2800"]
     if case != "off":
         args.append("--record-replay")
     return args
