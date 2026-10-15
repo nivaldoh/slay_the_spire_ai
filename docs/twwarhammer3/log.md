@@ -14,13 +14,26 @@ retained in `visual-probe-metadata.json`. No world/pixel registration is establi
 the report uses the grid and separate game stills. A follow-up raises the permitted
 camera height and requests a 60-degree downward view aimed at public units.
 
+The follow-up `visual-probes/passive-imagery-20261015` on `081f30f` completed its
+90 s cutoff with no invalid decisions, ten names and two captured stills; first contact
+was explicitly throttled because it followed the first rout by less than 30 s. Passive
+grabs took 54.34 and 42.82 ms in the capture process (including PNG writes, 296.66 and
+256.36 ms), while the order loop continued. `stills.json` retains timing and failures.
+
+Raising the ordinary camera height range still clamped the view. An in-game diagnostic
+at 36.2 s enabled the cinematic-camera flag and reached the requested overhead
+position/target exactly at 36.7 s; passive capture at 67.1 s showed the armies. Probe
+code, coordinates and image are retained beside the job. Production now uses that
+camera flag with the same unpaused 1× battle; it starts no cutscene and changes no
+unit controls. Images remain separate from the grid because terrain/pixel registration
+is unverified. The Sol acceptance is next.
+
 Production capture now uses passive Windows Pillow capture in a background thread,
 with job/battle and foreground-process checks. Capture errors are presentation metadata;
 there is no wait between decision and order submission. The native call is retained
 only in the diagnostic probe. Pillow is already installed for Windows Python here;
 on another installation its absence is recorded as a failed capture. Image conversion
-for the offline report uses the optional WSL `report` extra. The short passive check
-and Sol acceptance are still pending. No API spend in either imagery probe.
+for the offline report uses the optional WSL `report` extra. The passive check passed; Sol acceptance remains. No API spend in either imagery probe.
 
 ## Recorder acceptance and imagery candidate (2026-10-15 UTC)
 

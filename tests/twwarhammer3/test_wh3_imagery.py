@@ -165,9 +165,9 @@ def test_lua_capture_triggers_use_public_cluster_and_keep_camera_failures():
                     get_z = function() return z end}
         end
         camera = {position = function() return position end, target = function() return target end,
-            change_height_range = function() end,
             move_to = function(_, p, t) position, target = p, t end}
         bm = {battle = {get_terrain_height = function() return 20 end,
+                       enable_cinematic_camera = function(_, value) cinematic = value end,
                        time_elapsed_ms = function() return clock_ms end},
               camera = function() return camera end,
               repeat_real_callback = function(_, fn, interval, name) callbacks[name] = fn end,
@@ -188,6 +188,7 @@ def test_lua_capture_triggers_use_public_cluster_and_keep_camera_failures():
     lua.execute("sample(1000, {{id='f1', x=0, z=0, men=1, state={}}})")
     g = lua.globals()
     assert g.saved.stills[1].status == "pending" and g.captures == 0
+    assert g.cinematic is True
     lua.execute("clock_ms = 1500; callbacks.wh3_still_opening()")
     assert g.saved.stills[1].time_ms == 1500 and g.captures == 0
     assert g.saved.stills[1].status == "capture_ready"

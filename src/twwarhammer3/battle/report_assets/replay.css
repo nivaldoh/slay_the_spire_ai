@@ -9,6 +9,9 @@
 .replay-stills figure {
   margin: 20px 0;
 }
+.replay-stills figure:first-child {
+  grid-column: 1 / -1;
+}
 .replay-stills img {
   width: 100%;
   height: auto;

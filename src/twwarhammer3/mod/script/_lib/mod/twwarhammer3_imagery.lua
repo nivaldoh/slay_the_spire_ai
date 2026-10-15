@@ -62,11 +62,13 @@ local function capture(trigger, frame, units)
         local ground = bm.battle:get_terrain_height(target.x, target.z)
         local opening = trigger == "opening"
         local height = opening and 500 or 160
-        -- Respect the observed 60-degree pitch limit, and extend the altitude range.
-        local position = v(target.x, ground + height, target.z - height / math.tan(math.rad(60)))
+        local offset = opening and 0.1 or height / math.tan(math.rad(60))
+        local position = v(target.x, ground + height, target.z - offset)
         local look = v(target.x, ground, target.z)
         shot.requested_camera = {position = xyz(position), target = xyz(look), fov = 45}
-        bm:camera():change_height_range(5, 800)
+        -- The ordinary camera clamps both altitude and pitch. This affects only
+        -- the view: no cutscene, pause, input events or unit-control changes.
+        bm.battle:enable_cinematic_camera(true)
         bm:camera():move_to(position, look, 0, true, 45)
     end)
     shot.camera_cpu_ms = (os.clock() - began) * 1000
@@ -89,7 +91,7 @@ end
 
 function twwarhammer3_imagery(frame, names)
     if not evidence then
-        evidence = {version = 1, job = frame.job, battle = frame.battle, names = names or {},
+        evidence = {version = 2, job = frame.job, battle = frame.battle, names = names or {},
             stills = {}, policy_input = false}
         save()
     end
