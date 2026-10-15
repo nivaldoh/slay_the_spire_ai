@@ -386,6 +386,42 @@ async function main() {
       await page.locator("#open-settings").click();
       assert.match(await text("#settings-body"), /Evaluator version/);
       await page.locator("#close-settings").click();
+
+      // New evaluations can share a scenario with featured historical evidence.
+      // Open every run with whole-unit counts, including non-featured smoke checks.
+      const measured = item.comparisons.flatMap((ci) =>
+        data.comparisons[ci].groups.flatMap((gi) =>
+          saved.groups[gi].trials.flatMap((trial, ti) =>
+            trial.measures.units.friendly ? [{ key: `g${gi}-t${ti}`, trial }] : [],
+          ),
+        ),
+      );
+      for (const { key, trial } of measured) {
+        await page.locator(`#progress-runs button[data-key="${key}"]`).click();
+        assert.equal(await page.locator("#run-select").inputValue(), key);
+        assert.ok((await text("#common-measures")).includes(outcome(trial)));
+        const row = page
+          .locator(`#progress-runs button[data-key="${key}"]`)
+          .locator("xpath=ancestor::tr");
+        for (const side of ["friendly", "enemy"]) {
+          const u = trial.measures.units[side];
+          if (!u) continue;
+          assert.ok(
+            (await row.innerText()).includes(
+              `${u.alive} alive, ${u.destroyed} destroyed, ${u.active} active / ${u.registered} registered`,
+            ),
+          );
+          assert.ok(
+            (await text("#common-measures")).includes(
+              `Routing/shattered ${u.routed}; leaving ${u.leaving}; absent/deploying ${u.absent}`,
+            ),
+          );
+        }
+        await page.locator("#open-settings").click();
+        if (trial.card?.version)
+          assert.ok((await text("#settings-body")).includes(trial.card.version));
+        await page.locator("#close-settings").click();
+      }
     }
     // Expanded overview and progress tables remain usable on a phone.
     await page.setViewportSize({ width: 390, height: 844 });
