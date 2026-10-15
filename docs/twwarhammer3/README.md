@@ -1,298 +1,201 @@
 # Total War: WARHAMMER III battles
 
-Second game, started 2026-10-13. The question: can an API model (`gpt-6-luna`, low
-effort, through `src/gameai/llm.py`) command an army in a real-time custom battle
-against the game AI, with the delay between the state it saw and its orders
-being issued to the engine measured and told to it, and can the autoresearch loop improve its
-scaffolding? Campaign mode and model training come later.
-[integration.md](integration.md) holds the verified engine facts; [guide.txt](guide.txt)
-is the owner's modding guide that set the shape.
+Can an API model command an army in a real-time custom battle against the game AI, with
+the delay between the state it saw and its orders measured and told to it, and can the
+autoresearch loop improve its scaffolding? A Lua mod is the only interface, and the battle
+keeps running unpaused at 1x while the model thinks. Campaign mode and model training come
+later. What is running and the versions on `main`: [../state.md](../state.md); every
+version, job and finding: [log.md](log.md).
+
+The owner's initial modding guide (8 October 2026) set the first shape. This page and
+[integration.md](integration.md) supersede it, and git keeps it:
+`git show 001d1ce:docs/twwarhammer3/guide.txt`.
+
+## Pages
+
+| Page | Read it for |
+|---|---|
+| [integration.md](integration.md) | engine facts: packs, menus, lobby settings, unit API, context system, battle types, capture |
+| [controllers.md](controllers.md) | the policies and their versions, comparing them, candidate changes, designs not built |
+| [battle-types.md](battle-types.md) | the battle-type scenarios, the `mode` state, the `build` and `reinforce` orders |
+| [benchmark.md](benchmark.md) | the latency-aware benchmark: definition, scenarios, the stopped calibration |
+| [benchmark-run.md](benchmark-run.md) | running paired benchmark trials, outside controllers |
+| [reports.md](reports.md) | the offline HTML report and replay |
+| [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md) | the owner's benchmark brief |
+| [log.md](log.md) | dated history: versions, harness revisions, jobs, costs |
+| [results.csv](results.csv) | the results register, one row per episode, appended by `play` |
+
+## Terms
+
+- **Job, episode, trial**: one `play` run (`runs/twwarhammer3/battle/<job>/`); one battle
+  in it (`episode-NNNN/`, later ones rematches); a trial is an episode of a rotation.
+- **Job names**: `<policy>[-<model>]-v<version>-<scenario>-<date>`, such as
+  `commander-luna-v2-rand-322117462-20261013`; benchmark jobs are
+  `bench-<bN or g1>-<purpose>-<date>`, such as `bench-b9-timer-acceptance-20261014` or
+  `bench-g1-cavalry-ai10-01-20261014`.
+- **vN**: a version of the `llm` or `commander` prompt and harness; `v1.N` the `skills`
+  executor. Each has a log.md entry. The register's `harness` column is the `-vN-` segment
+  of the job name (`stats.harness_version`), blank for `bench-*` jobs.
+- **b1-b9**: benchmark harness revisions, each a "Benchmark harness bN" entry in log.md.
+- **G1, G2**: the calibration stages in [benchmark.md](benchmark.md): G1 repeats paired
+  controllers on one candidate scenario at AI stats modifiers 1.0 and 1.1; G2 adds
+  observation-age arms (0, 6 and 10 s). G1 is incomplete and G2 never ran.
+- **Track** `obs-v3+terrain/act-v2/live-1x`: the observation, action and timing contract
+  a manifest records (`play.TRACK`); trials on different tracks are not pooled.
+- **Luna, Sol, Astra**: `gpt-6-luna`, `gpt-6-sol`, `gpt-6-astra` (the 2026-10-13
+  commander smoke used `gpt-6.1-sol`). "Low" is `--effort low`; "Sol low" in the
+  benchmark work is `gpt-6-sol` at low effort.
+- **walk-nearest, run-nearest**: the scripted policies `attack_nearest` and `rush_nearest`.
+- **`llm`, `llm_rules`, `commander`**: the direct model controller with the tactical prompt
+  (`system_prompt.md`), the same controller with a rules-only prompt (`rules_prompt.md`),
+  and the asynchronous model that sets skills for the `skills` executor.
+- **Scenario names** such as `kho5-dwf5`: the player's army, then the enemy's, by race
+  and unit count. `-hard` variants set AI stats modifier 1.1; `-heldout-*` variants are
+  kept out of tuning.
 
 ## How it works
 
-Everything the game knows leaves it through a Lua mod, and every order enters the same
-way. There is no external game API; the mod is the API.
+There is no external game API; the mod is the API. Everything the game knows leaves
+through it, and every order enters through it.
 
-- `src/twwarhammer3/mod/` is packed into `C:/wh3-agent/mods/twwarhammer3.pack` by
-  `engine/pack.py` and loaded through a mod list the executable takes as its argument
-  (`engine/runtime.py`). Five scripts: `script/_lib/mod/twwarhammer3_json.lua` (vendored
-  rxi json.lua), `script/_lib/mod/twwarhammer3_ui.lua` (UI steps shared by the frontend
-  and battle scripts), `script/frontend/mod/twwarhammer3_frontend.lua` (drives the menus)
-  `script/_lib/mod/twwarhammer3_imagery.lua` (optional presentation capture), and
-  `script/battle/mod/twwarhammer3_battle.lua` (observations, orders, result).
-- The controller in WSL talks to the scripts through files in `C:/wh3-agent/bridge/`
-  (`engine/mailbox.py` documents the messages): `session.json` enables the scripts and
-  sets observation and decision intervals; `menu.json` carries frontend steps (find a UI component by
-  id and click it, dump the UI tree, press a key, wait); `observation.json` is rewritten by
-  the battle script every observation interval; `orders.json` holds one outstanding
-  request (unit orders or a `restart` control). The scripts are inert
-  without a session file, so the installed pack changes nothing in ordinary play.
-- Real-time by design: the battle keeps running while the model thinks. Every request
-  carries the observation it was based on; the acknowledgement carries the battle time at
-  which the orders were issued or queued. `delay_ms` is measured per decision and goes
-  into the next prompt. Battles always run unpaused at normal 1x speed, including
-  diagnostic probes. The CLI has no pause or speed override; stale session settings
-  requesting either are rejected.
-- Decisions now start as soon as the preceding batch is acknowledged. `--interval-ms`
-  defaults to **0**; a positive value explicitly adds battle time after application.
-  `--observe-ms` controls state publication, independently of decision pacing. Traces
-  include `since_previous_applied_ms` so that observation age and intentional pacing
-  can be distinguished from model/application latency.
-- Orders: `move` (position, facing, width), `attack` (auto/melee/ranged), `halt`,
-  `behaviour` (fire-at-will, skirmish, guard/defend, spacing, formed attack), and
-  `ability` (owned active ability, self/unit/ground target; unit `"army"` for an army
-  ability). A move can be followed by queued moves and a final attack in one reply. Each
-  acknowledgement identifies its one-based order index, including multiple orders for the
-  same unit. Queue acceptance does not prove execution; the state labels it as the last
-  submitted sequence. Friendly units show supported toggles and their state, width, the
-  last requested attack mode and each active ability with its target type, magic cost,
-  cooldown, readiness (ready, recharging with the seconds left, active), uses left and
-  last issue time. Army abilities (Khorne's kill unlocks) show their target, radius,
-  unlock cost and readiness, with the points the army has earned. Unit ability state
-  comes from the UI context system; army ability readiness from the HUD button and its
-  timer. Validation refuses an ability that is not ready. The state also gives the
-  player's Winds of Magic pool/reserve.
-  [Integration facts](integration.md#expanded-controller-interface-2026-10-13) and
-  [ability state](integration.md#ability-state-through-the-ui-context-system-probed-2026-10-13)
-  record the engine probes and their limits.
-- Policies see dicts (`protocol.py`): friendly units in full, enemy units only while
-  `is_visible_to_alliance` says the player can see them, plus the enemy roster as the
-  custom battle screen shows it. `battle/scripted.py` has `hold`, `attack_nearest` and
-  `probe_move` (the axis probe); `battle/llm.py` and `configs/twwarhammer3/` are the
-  API-model policy and the autoresearch loop's editable surface. Since 2026-10-13 two
-  more: `skills` (persistent per-unit skills run by a scripted executor on every
-  observation) and `commander` (an API model setting those skills asynchronously, so
-  units keep acting while it thinks). [controllers.md](controllers.md) describes every
-  controller, how to compare them, and the researched designs not built yet.
-- A job (`battle/play.py`) launches the game, runs the custom battle steps it builds
-  from the `--scenario` entry in `configs/twwarhammer3/scenarios.json` (each side's race,
-  faction and units, optionally the map; no desktop input), plays episodes and restarts the
-  same battle between them through the results popup's rematch button. `--scenario
-  random` (2026-10-13) draws a classic-battle map and each side's race from
-  `configs/twwarhammer3/custom_battle.json` with `--seed` (recorded; drawn when omitted).
-  It leaves the faction to the game, because it only changes banner colours, and fills
-  both armies with the game's Autogenerate army button (13 units a side in the
-  first draw, seed 2; the probe's single click filled a cleared Khorne army with 11).
-  The draw is in the manifest's `scenario`; the armies the game generated are in each
-  episode's roster. Rematches replay the same draw, so a job is one matchup. Funds, unit
-  size (large), time limit (long) and AI difficulty (very hard) stay as the profile has
-  them ([integration.md](integration.md#frontend-automation)). Each episode
-  writes `trace.jsonl` (every observation, prompt, reply and acknowledgement),
-  `result.json` and `mod.log`; each finished episode appends a row to
-  [results.csv](results.csv). Versions are logged in [log.md](log.md).
-
-## Current controllers
-
-The frozen cavalry calibration uses `llm_rules` with Sol low as its reference: the direct controller with a separate prompt
-describing objectives and the interface, without the v15 tactical prescriptions. It
-uses the same memory, actions, timing and ledger. Specialist candidates, paired
-rotations and setup checks are documented in [benchmark-run.md](benchmark-run.md);
-none has passed calibration yet. Walk-nearest and run-nearest are its two simple
-baselines; the timer and running-control checks passed in b9. Benchmark declarations
-explicitly set funds, the
-finite timer and AI stat modifier, then verify them in the lobby and battle.
-
-On `main`: the direct controller `llm` v15 (v10 tactical rules on the v13 interface of
-continuous decisions and expanded controls), the `commander` v3, and the `skills`
-executor v1.2 that the commander drives. v14 and commander v2 (`9bfee82`, `739ce9c`)
-added ability readiness and army abilities, as above; v15 and commander v3 (2026-10-14)
-add every battle type's objectives, the `build` and `reinforce` orders and the objective
-rules ([battle-types.md](battle-types.md)), and v15 keeps a reply's valid orders when the
-retries run out instead of ending the battle. `watch` follows a job beside the
-game, and `play --show` puts each model reply in the advisor window. Latest results: on
-the fixed `kho5-dwf5`, `skills` and the Luna commander v1 won 5 of 6 each; on three
-paired random draws every controller lost all three
-([log.md](log.md#random-battle-comparison-partial-2026-10-1314)).
-
-## Milestones (2026-10-13)
-
-| Milestone | State | Evidence |
-|---|---|---|
-| 1 Mod loads | done | `runs/twwarhammer3/launch-m1/` |
-| 1b Unattended custom battle | done | menu steps recruit both armies by double-click and start the battle; `runs/twwarhammer3/battle/*/menu.log` |
-| 2 Roster readable | done | 5 v 5 units with positions, strength, fatigue, flags, targets in every observation |
-| 3 Orders apply | done | attack, move (with facing) and halt through one unitcontroller per unit; acknowledgements carry the applied battle time |
-| 4 Result | done | "lost" and "won" from the engine at VictoryCountdown, with both armies' true strength for evaluation |
-| 5 Restart | done | rematch button and confirmation; 40 episodes in 14 jobs, none an infrastructure failure |
-| 6 Scripted baselines | done | `attack_nearest`: 3 wins of 3 at about 345 s |
-| 7 First LLM battles | done | v1: 1 win of 3 |
-| 8 Autoresearch loop | stopped | [log.md](log.md): v2 0/3, v3 3/5, v4 1/3 (1/3 paused), v5 4/6, v6 5/6, v7 2/6 (reverted); v8-v11 on mirror battles, no mirror win yet with guns |
-| 9 Several scenarios | done | `configs/twwarhammer3/scenarios.json`: each side's race is picked in the selector's popup; Khorne, Dwarf and Empire mirrors |
-
-Results by version: `python -m twwarhammer3 stats`. With outcomes this noisy (a version's
-battles swing between a clear win and a clear loss), three episodes rank versions only
-roughly; `own_left` and `enemy_left` (true strength at the end) add a finer measure.
-
-The [offline benchmark field report](field-report.md) adds scenario briefs, selectable
-controller comparisons, timing/cost charts and expandable evidence. Regenerate it from
-saved jobs with `stats --report JOB... --report-html FILE`; no game or API call is needed.
-
-The [visual report](visual-report-plan.md) now includes tactical replay from saved
-public observations, decision timing, exact prompts/replies, factual bookmarks and
-shared-scale trial tracks. The public 1 Hz recorder defaults on after its live cost check
-(`--no-record-replay` disables it). Optional `--stills` adds an overhead opening and closer oblique action images,
-with at most four images per battle. Passive capture runs outside the order loop;
-readable unit names and images were validated in scripted probes and a Sol low battle.
-The map keeps the public grid, since image registration is unverified. Event captions are
-rule-based; quoted model reasons remain labelled as stated rationale.
-
-## What the first night showed (2026-10-13)
-
-- The model can command a real-time battle through the mod: about one decision per 10 s
-  of battle time, orders applied about 5 s after the state it saw, no invalid replies,
-  about $0.01 per battle.
-- The fixed script that sends every unit at its nearest enemy, walking, wins this battle
-  every time. The model's early losses came from what it added: passivity (v1), retreats
-  out of melee (v2), running everywhere and arriving tired, pairing its units off one to
-  one, and above all leaving its lord to duel the enemy lord alone, or parking him while
-  the enemy lord was nearly dead. Each version's prompt change targeted the costliest
-  mistake the reviewers measured in the traces.
-- Latency is not the gap: pausing the battle while the model thinks (orders applied 0.6 s
-  after the state instead of 5.5 s) gave the same 1 of 3 for v4.
-- The state must say what the game did with an order: the game retargets units on its
-  own, and showing its choice as if it were the model's order made the model believe
-  plans were running that were not (v6 fixed this; 5 wins of 6).
-- Still weak in every version: the Skullcannon and the missile horsemen. An attack order
-  only makes a unit with ammunition shoot, and their fire killed almost nothing.
-
-## What the mirror battles showed (2026-10-13, second session)
-
-Same army on both sides of the same map, the player starting north; 9 to 12 battles per
-mirror. Wins and mean true strength left at the end (ours/enemy), from
-`python -m twwarhammer3 stats`:
-
-| Version | Empire (guns, cannon, knights) | Dwarfs (crossbows, catapult) | Khorne (melee) |
-|---|---|---|---|
-| attack_nearest | 0/2, 26/82% | | |
-| v6 | 0/3, 21/69% | 0/3, 25/53% | 2/3, 34/25%; replicate 0/3, 38/64% |
-| v8 guns | 0/3, 31/70% | 0/2, 30/76% | |
-| v9 melee | | 0/3, 35/65% | 1/3, 26/47% |
-| v10 shooters (`main`) | 0/3, 37/57% | 0/3, 42/68% | 0/3, 19/58% |
-| v11 lords (reverted) | 0/3, 34/76% | | 0/3, 26/61% |
-| v12 v6 + v10 fire (reverted) | | | 0/3, 16/55% |
-
-- With guns, crossbows or artillery on both sides, Luna lost every battle (0 of 11 in the
-  Empire mirror, 0 of 11 in the Dwarf mirror), and so did `attack_nearest` (Empire, 0 of
-  2). The losses follow one pattern: the AI's missile units and artillery shoot our units
-  while they fight, and its missile infantry ends the battle untouched (66-67 of 68
-  handgunners, 52-58 of 60 quarrellers).
-- The game's AI stats modifier preference is 1.1 (pinned since the first night), so the
-  AI's units are probably about 10% stronger: a mirror is not an even fight, and an even
-  trade loses. The owner subsequently authorized testing 1.0 and 1.1 during benchmark calibration.
-- The prompt changes traded the melee mirror for the gun mirrors. Margin (ours minus the
-  enemy's strength left, in points): Empire v6 -48, v10 -20; Dwarfs v6 -28, v10 -26;
-  Khorne v6 -8 over 6 battles (2 won; a replicate of 3 lost all), v10 -39 (0/3), v11 -35.
-  Averaged over the three mirrors v6 and v10 are level (-28). Battles swing widely, so
-  three per mirror and version separate little.
-- Measured by the reviews over the traces: artillery killed about 2 men a shot at
-  infantry in the open, 1 in 2 shots at missile infantry and 1 in 3 at crews; our missile
-  units shooting enemy missile infantry killed about 1 man per 100 shots; our lord alone
-  against the enemy lord lost health 3 to 8 times faster than he did.
-- Harness gaps found: enemy units' targets never reached the state (llm.py rendered a
-  field the mod never sent), there is no record of what a fire order killed, an attack
-  order replaces a move (a shooter walks straight at a target out of range), and units
-  with ammunition cannot be sent into melee. The decision delay grew from about 6 s to
-  7-10 s as the prompt grew.
-
-## Next
-
-The owner stopped and cleared the benchmark goal on 2026-10-14 at 22:20 UTC.
-No game or queue is running. [benchmark-progress.md](benchmark-progress.md) retains
-the partial evidence; [calibration-plan.md](calibration-plan.md) records the stopped
-design. Discuss difficulty calibration before starting further experiments.
-
-1. Select specialist challenges using the owner's [scenario recipe](scenario-recipe.md):
-   anchor units, faction mechanics, difficult tactical choices and watchable battles.
-   Screen cavalry/anti-large and caster-led prototypes before committing to repeated
-   calibration at AI modifiers 1.0/1.1. Compact forces are the starting point; keep
-   held-out variants out of tuning.
-2. Freeze a viable candidate and competent reference, review starting-formation
-   variation, then run repeated paired calibration. Terrain, modifier and failed-setup
-   acceptance checks have passed; they do not establish scenario difficulty or admission.
-3. Run paired added-observation-age arms 0/6/10 s, unpaused at 1x, and report uncertainty.
-4. Later resume the random-draw model comparison on seeds 264482191, 1355466036 and
-   238913231, then compare larger models on the same declared scenarios. Broader battle
-   types and offensive sieges need their remaining interfaces before benchmark admission.
-
-The earlier tactical candidates remain unmerged and untested: `wh3-fire-report` and
-`wh3-v4-info` predate the v13 interface and would need rebasing before evaluation.
-
-## Other battle types (owner request, 2026-10-13)
-
-Done for all nine on 2026-10-14 (overnight): [battle-types.md](battle-types.md) has one
-minimal scenario per type (conquest, domination, free-for-all, ambush, chokepoint,
-subterranean, minor settlement, siege, survival), the `mode` state that reports each
-type's objectives (role, timeout winner, the game's objective text, capture points,
-tickets, gates, supplies, building slots, reinforcement pool), the `build` and
-`reinforce` orders, and the results. Engine facts:
-[integration.md](integration.md#battle-types-probed-2026-10-14).
+- **Mod and launch.** `src/twwarhammer3/mod/` holds five Lua scripts: battle, frontend,
+  shared UI steps, presentation capture and a vendored JSON library. `engine/pack.py`
+  packs them into `C:/wh3-agent/mods/twwarhammer3.pack`; `engine/runtime.py` writes the
+  mod list and starts `Warhammer3.exe` once per job under the `gameai.windows`
+  supervisor. The scripts stay inert without `C:/wh3-agent/bridge/session.json`, so the
+  installed pack changes nothing in ordinary play
+  ([packs and loading](integration.md#packs-and-loading)).
+- **Bridge.** The controller in WSL and the scripts exchange whole JSON files in
+  `C:/wh3-agent/bridge/`. The `engine/mailbox.py` docstring is the reference for every
+  file and observation field. `protocol.py` holds the orders: `ORDER_TYPES` (move,
+  attack, halt, behaviour, ability, flight), the army's own orders (unit `"army"`:
+  ability, build, reinforce) and `validate_orders`.
+- **Real time.** The battle keeps running while a policy decides. Each request names the
+  observation it was based on; its acknowledgement gives the battle time each order was
+  issued or queued, and that delay goes into the next prompt. The next decision starts
+  when the previous batch is acknowledged. `--observe-ms` sets how often the state is
+  published, `--interval-ms` adds a wait after orders apply, and `--delay-seconds`
+  buffers observations to a minimum age. There is no pause or speed option.
+- **Information boundary.** A policy gets the observation without its `evaluation`,
+  `final` and `setup` sections: friendly units in full, enemy units only while the player
+  can see them, and the enemy roster the custom battle screen shows.
+- **Setup.** `battle/setup.py` turns a `--scenario` entry of
+  `configs/twwarhammer3/scenarios.json` into custom battle menu steps (no desktop input);
+  its docstring is the scenario field reference. `random` entries draw a map and each
+  side's race from `configs/twwarhammer3/custom_battle.json` with `--seed` and
+  autogenerate the armies. An entry with `expect` is a declared benchmark scenario: the
+  lobby sets and reads back its timer, AI stats modifier and funds, and the battle checks
+  the rest ([lobby settings](integration.md#lobby-settings-and-declared-scenarios)).
+  Other entries leave funds, unit size, time limit and difficulty as the lobby has them.
+- **Jobs.** `battle/play.py` launches the game once, plays the episodes and replays the
+  same battle between them through the results popup's rematch. `battle/controllers.py`
+  names the policies ([controllers.md](controllers.md)). The files of a job and an
+  episode are listed in [runs/README.md](../../runs/README.md); each episode appends a
+  row to [results.csv](results.csv).
 
 ## Commands
 
 ```bash
-uv run python -m twwarhammer3 play --policy commander --budget-usd 25 --scenario random \
-    --seed N --output runs/twwarhammer3/battle/commander-luna-vN-rand-N-YYYYMMDD
-uv run python -m twwarhammer3 play --policy llm --budget-usd 25 --scenario random \
-    --seed N --output runs/twwarhammer3/battle/llm-luna-vN-rand-N-YYYYMMDD
-uv run python -m twwarhammer3 play --policy skills --scenario random --seed N \
-    --output runs/twwarhammer3/battle/skills-vN-rand-N-YYYYMMDD
-uv run python -m twwarhammer3 play --policy llm --budget-usd 25 --scenario kho5-dwf5 \
-    --episodes 3 --output runs/twwarhammer3/battle/llm-luna-vN-kho-YYYYMMDD  # diagnostics
-uv run python -m twwarhammer3 watch [runs/twwarhammer3/battle/<job>]  # live, beside the game
-uv run python -m twwarhammer3 play ... --show          # model replies in the advisor window
-uv run python -m twwarhammer3 play --policy probe_abilities --scenario random --seed 4 \
-    --output runs/twwarhammer3/battle/probe-abilities-...  # casts abilities when ready
-uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>[/episode-0000]
-uv run python -m twwarhammer3 stats                  # results.csv by policy, harness and mode
-uv run python -m twwarhammer3 spend                  # runs/twwarhammer3/llm-spend.jsonl total
-uv run python -m twwarhammer3 doctor                 # pins, preferences, running game, mod files
-uv run python -m twwarhammer3 pack --list PACK       # entries of any pack; --extract PACK NAME
-uv run python -m twwarhammer3 launch                 # build, install, run the game until Ctrl-C
-uv run python -m twwarhammer3 menu --dump 4          # UI tree of the current screen (ui_tree.txt)
-uv run python -m twwarhammer3 menu --steps steps.json  # click through components; tails menu.log
-uv run python -m twwarhammer3 menu --battle --steps steps.json  # the same in a battle (mod.log)
+# Play: a new --output, a clean source scope; model policies need --budget-usd
+uv run python -m twwarhammer3 play --policy llm --budget-usd 25 --scenario random --seed N \
+    --output runs/twwarhammer3/battle/llm-luna-vN-rand-N-YYYYMMDD
+uv run python -m twwarhammer3 play --policy commander --budget-usd 25 --scenario kho5-dwf5 \
+    --episodes 3 --output runs/twwarhammer3/battle/commander-luna-vN-kho-YYYYMMDD
+uv run python -m twwarhammer3 play --scenario brt-cavalry-emp-assault \
+    --policy llm_rules,attack_nearest,rush_nearest --model gpt-6-sol --budget-usd 25 \
+    --rotation-seed N --output runs/twwarhammer3/battle/bench-bN-<purpose>-YYYYMMDD
+uv run python scripts/wh3_queue.py PLAN.json      # a frozen plan of play jobs, one at a time
+# Follow and review
+uv run python -m twwarhammer3 watch [JOB]                 # live beside the game; --prompts
+uv run python -m twwarhammer3 watch JOB --next            # wait for an episode, stall or end
+uv run python -m twwarhammer3 digest JOB[/episode-NNNN]   # per-episode table, or one battle
+uv run python -m twwarhammer3 digest JOB/episode-NNNN --at SECONDS  # one decision in full
+uv run python -m twwarhammer3 stats                       # results.csv by scenario and controller
+uv run python -m twwarhammer3 report JOB [JOB ...] --output runs/twwarhammer3/reports/NAME
+uv run python -m twwarhammer3 spend                       # runs/twwarhammer3/llm-spend.jsonl
+# Runtime and probes
+uv run python -m twwarhammer3 doctor                      # read-only: pins, preferences, game
+uv run python -m twwarhammer3 launch                      # build, install, run until Ctrl-C
+uv run python -m twwarhammer3 menu --dump 4               # UI tree of the screen (ui_tree.txt)
+uv run python -m twwarhammer3 menu [--battle] --steps steps.json  # tails menu.log or mod.log
+uv run python -m twwarhammer3 pack --list PACK            # --extract PACK NAME; bare: build
+uv run pytest tests/twwarhammer3                          # Lua (lupa) and image tests included
 ```
 
-`--model` (default `gpt-6-luna`) and `--effort` (default `low`) pick the API model for
-`llm` and `commander`. The key comes from `OPENAI_API_KEY` or the file named by
-`SPIRE_OPENAI_KEY_FILE`; the shared `gameai.llm` reads it for both games, so the
-variable keeps Spire's name.
-
-`launch` and `play` automatically skip startup videos. While WH3 is stopped, runtime
-preparation sets `fe_game_intro_video_enabled false` in the existing profile and installs
-`data/zzz_twwarhammer3_skip_intro.pack`. This small PFH5 movie pack auto-loads for every
-launch, including ordinary Steam launches without the project's mod list. It overrides
-the five splash clips and all 13 localized warning clips with a blank video; the main
-cinematic (`gam_int.ca_vp8`) stays intact for the in-game viewer. Other preferences,
-comments and line endings are preserved, and identical startup files are not rewritten.
-
-`doctor` reports the installed startup pack's hash and effective preference without
-changing anything. Deployment evidence is saved in `launch`'s `deployment.json` and
-`play`'s manifest. Nothing sends desktop input; the first menu step still waits (up to
-240 s) for the main menu. To reverse the skip, stop WH3, remove the generated movie pack
-from `data/`, and set the preference back to `true`. The next project launch reinstalls
-the skip. The blank clip's source and MIT license are in
-`src/twwarhammer3/assets/LICENSE.twpatcher`.
-
-Measured on 2026-10-13: main menu in 149.0 s before the skip and 17.7 s after (about
-131 s saved in one comparison). A launch without the project mod list also showed the
-menu by the 20.8 s screenshot. The initial static loading splash remains;
-[integration.md](integration.md) records the evidence.
+- `--model` (default `gpt-6-luna`) and `--effort` (default `low`) pick the API model of
+  `llm`, `llm_rules` and `commander`. The key comes from `OPENAI_API_KEY` or the file
+  named by `SPIRE_OPENAI_KEY_FILE` (the shared `gameai.llm` keeps Spire's name).
+- Comma-separated `--policy` names rotate in an order drawn from `--rotation-seed`;
+  `--delay-seconds 0,6,10` crosses them with observation-age arms; `--episodes` defaults
+  to one per combination. `--policy package.module:Class` loads an outside controller
+  ([benchmark-run.md](benchmark-run.md)).
+- `--episode-timeout` defaults to a declared scenario's timer plus 120 s (else 3900 s)
+  and `--run-timeout` to 8 h, or longer if every episode needs it. A declared scenario
+  refuses `--attach` (which plays in the game `launch` started).
+- `--show` puts each model reply in the game's advisor window; `--stills` captures up to
+  four presentation stills; `--no-record-replay` turns off the 1 Hz replay recorder.
+- `report` writes `NAME.html`, `NAME.json` and `NAME.txt` offline ([reports.md](reports.md)).
+- `scripts/wh3_queue.py`: the plan format is in its docstring. It refuses to start unless
+  HEAD is the plan's `source_revision` with a clean source scope, and it stops at the
+  first job that fails.
+- `launch` and `play` install a startup-video skip that persists for ordinary Steam
+  launches: `data/zzz_twwarhammer3_skip_intro.pack` in the game folder and
+  `fe_game_intro_video_enabled false` in the game's preferences. To reverse it, stop WH3,
+  delete the pack and set the preference back to `true`; the next project launch
+  reinstalls both ([details](integration.md#packs-and-loading)).
 
 ## The loop
 
-As for Spire full runs, on paired random seeds: play the same `--scenario random --seed N`
-draws with each version or controller being compared, one job per seed (a rematch
-replays the same draw, so a deterministic controller such as `skills` plays each seed
-once). Fixed scenarios are only for quick diagnostics. `play` needs a clean source tree
-and, for the model policies, an API key ([Commands](#commands)). Review the battles, make
-one change to the prompt, rendering, memory or executor, and log the version in
+Compare versions or controllers on paired battles: the same `--scenario random --seed N`
+draws for each (one job per seed; a rematch replays the same draw, so a deterministic
+controller plays each seed once), or one job rotating the controllers on a declared
+scenario. Fixed scenarios such as `kho5-dwf5` are quick diagnostics. Review the battles,
+make one change to the prompt, rendering, memory or executor, and log the version in
 [log.md](log.md). The review is the `wh3-version-review` workflow
 (`.claude/workflows/wh3-version-review.js`): a reviewer per episode reads the digest and
-the prompts and replies around the turning points, three proposers each suggest one
-change (tactics prompt, state and memory, order interface) with the version history and
-the baseline in view, and three judges score them. While it runs, play more seeds with
-the same version, and draft the next change in a git worktree: a job stops if its
-source scope changes. Update Active work in [../state.md](../state.md#active-work) when
-a job starts and when it stops. The WH3 ledger (`runs/twwarhammer3/llm-spend.jsonl`) is
-separate from Spire's, with its own $25 cap.
+the prompts and replies at the turning points (`digest EPISODE --at SECONDS`), three
+proposers each suggest one change (tactics prompt, state and memory, order interface)
+with the version history and the baseline in view, and three judges score them. While it
+runs, play more seeds with the same version and draft the next change in a git worktree:
+a job stops if its source scope changes. Note each job's start and stop in
+[Active work](../state.md#active-work). The WH3 ledger (`runs/twwarhammer3/llm-spend.jsonl`)
+is separate from Spire's, with its own $25 cap.
+
+## Next
+
+Status and the owner's current direction are in [../state.md](../state.md). Candidate
+work:
+1. Specialist scenarios ([benchmark.md](benchmark.md)): anchor units, faction mechanics,
+   hard tactical choices and watchable battles, starting compact. Screen the cavalry
+   against anti-large and caster-led prototypes before repeated calibration at AI
+   modifiers 1.0 and 1.1; keep held-out variants out of tuning.
+2. Freeze a viable candidate and a competent reference, review starting-formation
+   variation, then run repeated paired calibration (G1).
+3. Paired added-observation-age arms (`--delay-seconds 0,6,10`), unpaused at 1x, reported
+   with uncertainty (G2).
+4. The random-draw comparison on its three remaining seeds (264482191, 1355466036,
+   238913231), then Sol and Astra as commander on the same draws.
+5. Battle types: variants, both roles and the interface gaps in
+   [battle-types.md](battle-types.md#next).
+6. The next `llm`/`commander` version:
+   [candidate changes](controllers.md#candidate-changes-for-the-next-version). The older
+   branches `wh3-fire-report` and `wh3-v4-info` predate the v13 interface and would need
+   rebasing.
+
+Deferred cleanups:
+- Lua changes that each need one engine smoke battle: drop the pause-mode leftovers
+  (the observation's constant `speed` and `awaiting_orders`, session `speed` and `pause`,
+  `mailbox.require_realtime` and its guards); remove dead paths (the `start` control,
+  `state.applied_ms`, restart's fallback before a decision with its
+  [Unverified](integration.md#unverified) entry, the duplicate imagery throttle and
+  `shot.backend` in `twwarhammer3_imagery.lua`); stop reading the always-true session
+  switches `enabled`, `autostart` and `menu`, then drop them from `play.session`; split
+  `apply_order`, share the observation-building code, split `mode_section`, and move the
+  file helpers into the shared `_lib` script.
+- `play --attach`: request ids restart at `r1` for every `Mailbox`, and the battle drops a
+  request repeating its last id, so a second attach job on the same battle can stall
+  until its episode timeout. A per-mailbox id prefix fixes it.
+- `LLMPolicy.acknowledge` keeps its fallback for acknowledgements without `index`
+  (traces before `863d10b`); dropping it is the owner's call.
+- Single-job reports still list the 15 unrun catalogue scenarios as placeholders;
+  removing them is the owner's call ([reports.md](reports.md)).

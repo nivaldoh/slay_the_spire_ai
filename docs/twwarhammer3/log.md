@@ -1,170 +1,359 @@
-# WH3 battle versions
+# WH3 log
 
-## Sol visual acceptance and closer action views (2026-10-15 UTC)
+Dated history of the Total War: WARHAMMER III track, newest first: each controller
+version, benchmark harness revision and notable job, with what changed, the jobs, their
+outcomes and costs, and the decisions taken. Status is in [state.md](../state.md); the
+reference pages are listed in the [README](README.md#pages), whose [Terms](README.md#terms)
+define the labels: `vN` an `llm`/`commander` version, `v1.N` the `skills` executor, `bN` a
+benchmark harness revision, G1 and G2 the calibration stages.
 
-The separately authorized `battle/visual-sol-low-20261015` on `7136d6a` ran
-`llm_rules`, gpt-6-sol low, on `brt-cavalry-emp-assault`, unpaused at 1× with default
-recording and `--stills`. It won at 382.4 s: 92 decisions, four engine refusals,
-4.11 s mean information delay, $0.6292834. Ledger total: $7.7949 of $25. This is
-visual acceptance, not a resumed calibration or a comparable extra G1 trial.
+- Jobs are `runs/twwarhammer3/battle/<job>/`. Bare `reports/`, `calibration/`,
+  `capability-probes/` and `visual-probes/` paths are under `runs/twwarhammer3/`
+  ([runs/README.md](../../runs/README.md)); code paths such as `battle/llm.py` are under
+  `src/twwarhammer3/`. Each episode is a row of [results.csv](results.csv);
+  `uv run python -m twwarhammer3 digest <job>[/episode-NNNN]` reads a job's evidence.
+- Until the 2026-10-14 benchmark work the scenario is `kho5-dwf5` unless an entry says
+  otherwise: a custom battle on "An Ogre's Folly", Khorne (player: Herald of Khorne, Chaos
+  Warriors, Bloodletters, Marauder Horsemen with throwing axes, Skullcannon) against
+  Dwarfs under the game AI (Lord, Dwarf Warriors, Longbeards, Quarrellers, Grudge
+  Thrower), unit size large, real time at speed 1. Before v13 a decision came 5 s of
+  battle time after the previous orders applied; since v13 it starts as soon as they are
+  acknowledged.
+- The benchmark entries (b1-b9 and G1, 2026-10-14) are development screens: no scenario
+  was admitted, G1 is incomplete and G2 never ran. "Margin" is the active-strength margin
+  and "clock ratio" battle time over wall time
+  ([benchmark.md](benchmark.md#outcomes-measures-and-comparison)).
+- A new entry goes at the top, and "On main" is updated with it.
 
-The replay has 473 frames, 168 submitted orders, 167 acknowledged and one unacknowledged
-at ending. It embeds all prompts/replies, 14 readable names and two captured stills
-(first melee at 179.9 s and ending at 382.4 s). The opening foreground check failed;
-first rout at 208.1 s was throttled. Both are retained explicitly. Passive grabs took
-62.6 / 32.5 ms in the independent capture process. Recorder terminal and public-id
-checks passed (`visual-probes/sol-recorder-acceptance.json`). The new model trial,
-old G1 triple and interrupted launch remain in separate compatibility views.
+## On main
 
-Owner follow-up: closer, oblique action views, preferably before contact. Imagery v3
-uses an observed closing gap within 100 m before melee, with incoming fire / first
-melee as fallbacks for the same one action slot. Camera height is about 28 m above
-the focus terrain, with a side offset; opening stays overhead. Four-image maximum
-and 30 s throttle remain. Captions do not infer charge intent.
+| Piece | Version | Defined in | Latest results |
+|---|---|---|---|
+| `llm` | v15 (2026-10-14) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | battle types, Luna low: 6 wins in 10 jobs (`llm-luna-v15-*-20261014-*`); `bench-b2-acceptance-r2-20261014` lost at 442 s |
+| `llm_rules` | unversioned, added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | Sol low won `visual-sol-low-20261015` (382 s, $0.63) and the G1 trial of `bench-g1-cavalry-ai10-01-20261014` (528 s, $0.79) |
+| `commander` | v3 (2026-10-14) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | battle types, Luna low: 4 wins in 9 jobs (`commander-luna-v3-*-20261014-*`) |
+| `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
+| scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
+| benchmark harness | b9, track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | G1 stopped: 1 of 12 launches completed, the next interrupted |
+| replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
+| stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 
-The scripted `visual-probes/close-imagery-20261015` on `981eb2d` completed its
-planned 90 s cutoff (truncated, no engine outcome). Opening at 5.9 s and first rout
-at 56.6 s captured; the low oblique view shows units clearly and requested/actual
-camera coordinates match. Grabs took 74.8 / 37.2 ms outside the order loop. Incoming
-fire at 16.1 s was throttled and consumed the action slot. The follow-up retains that
-trigger and defers capture until spacing permits, still in the same slot; it aims at
-units under fire instead of an empty army centroid. A regression covers the observed
-sequence. The recheck `visual-probes/close-imagery-r2-20261015` on `8aaabcd`
-completed its planned 90 s cutoff with 279 decisions, no invalid decisions and no
-model spend. The final 0.124 s deadline surfaced as a mailbox timeout; status remains
-`truncated`, with no engine outcome. Opening at 5.9 s and incoming fire at 36.8 s
-captured (39.5 / 49.0 ms grabs); the deferred metadata retains the initial 16.1 s trigger.
-First rout at 59.0 s was throttled. The low view shows missile cavalry and the opposing
-line before first observed melee at 71.0 s. Both camera requests match actual placement
-within 0.001 m. Audit: `visual-probes/close-camera-acceptance.json`.
+## Index
 
-Final artifacts: `reports/visual-report.html` (about 1.64 MB), `reports/close-camera.html`
-and `reports/close-camera.png`; older images are not reconstructed or replaced.
-Full repository validation before the timing fix: 1119 passed, one skipped. Final
-WH3 checks: 273 passed with Lua 5.1 and report extra; Ruff passed. Offline Chromium
-validated both reports' image decoding, evidence, downloads and 390 px layout without
-network access. All requested visual-report work is complete; calibration stays stopped.
+- 2026-10-15: [Track cleanup for agents and reviewers](#2026-10-15-track-cleanup-for-agents-and-reviewers) ·
+  [Sol visual acceptance and closer action views](#2026-10-15-sol-visual-acceptance-and-closer-action-views) ·
+  [Native imagery probe and passive capture](#2026-10-15-native-imagery-probe-and-passive-capture) ·
+  [Recorder acceptance and imagery candidate](#2026-10-15-recorder-acceptance-and-imagery-candidate) ·
+  [Visual replay v1 and recorder candidate](#2026-10-15-visual-replay-v1-and-recorder-candidate)
+- 2026-10-14: [Offline benchmark field report v1](#2026-10-14-offline-benchmark-field-report-v1) ·
+  [Partial G1 and owner-requested stop](#2026-10-14-partial-g1-and-owner-requested-stop) ·
+  [Benchmark harness b9 (timer classification and running baseline)](#2026-10-14-benchmark-harness-b9-timer-classification-and-running-baseline) ·
+  [Benchmark harness b8 (caster control)](#2026-10-14-benchmark-harness-b8-caster-control) ·
+  [Benchmark harness b7 (snapshot age and cavalry attacker candidate)](#2026-10-14-benchmark-harness-b7-snapshot-age-and-cavalry-attacker-candidate) ·
+  [Benchmark harness b6 (Pegasus pressure hypothesis)](#2026-10-14-benchmark-harness-b6-pegasus-pressure-hypothesis) ·
+  [Benchmark harness b5 (draft while b4 screens ran)](#2026-10-14-benchmark-harness-b5-draft-while-b4-screens-ran) ·
+  [Benchmark harness b4 (compact specialist prototypes)](#2026-10-14-benchmark-harness-b4-compact-specialist-prototypes) ·
+  [Benchmark harness b3 (specialist interface and `llm_rules`)](#2026-10-14-benchmark-harness-b3-specialist-interface-and-llm_rules) ·
+  [Benchmark harness b2 (terrain, lobby modifier, Herald screens)](#2026-10-14-benchmark-harness-b2-terrain-lobby-modifier-herald-screens) ·
+  [Benchmark harness b1 (paired trials, acceptance rotation)](#2026-10-14-benchmark-harness-b1-paired-trials-acceptance-rotation) ·
+  [Battle types, llm v15 and commander v3 (overnight)](#2026-10-14-battle-types-llm-v15-and-commander-v3-overnight)
+- 2026-10-13: [Random-battle comparison, partial (into 2026-10-14)](#2026-10-13-random-battle-comparison-partial-into-2026-10-14) ·
+  [Ability readiness and army abilities, llm v14 and commander v2 (`9bfee82`)](#2026-10-13-ability-readiness-and-army-abilities-llm-v14-and-commander-v2-9bfee82) ·
+  [Controller comparison on `kho5-dwf5`, stopped for random battles (late)](#2026-10-13-controller-comparison-on-kho5-dwf5-stopped-for-random-battles-late) ·
+  [Shooter re-send fix, executor v1.2 (`55ab6b3`)](#2026-10-13-shooter-re-send-fix-executor-v12-55ab6b3) ·
+  [Random battles](#2026-10-13-random-battles) ·
+  [Skills and commander v1](#2026-10-13-skills-and-commander-v1) ·
+  [Unpaused 1x battles only](#2026-10-13-unpaused-1x-battles-only) ·
+  [Automatic startup video skipping](#2026-10-13-automatic-startup-video-skipping) ·
+  [v13, continuous decisions and expanded battle controls](#2026-10-13-v13-continuous-decisions-and-expanded-battle-controls) ·
+  [Early findings (milestones, first night, mirror battles)](#2026-10-13-early-findings-milestones-first-night-mirror-battles) ·
+  [v12, v6's melee rules with v10's fire rules](#2026-10-13-v12-v6s-melee-rules-with-v10s-fire-rules) ·
+  [v11, the lords never fight alone](#2026-10-13-v11-the-lords-never-fight-alone) ·
+  [v10, shooters hit infantry in the open](#2026-10-13-v10-shooters-hit-infantry-in-the-open) ·
+  [v9, fight the enemy holding you](#2026-10-13-v9-fight-the-enemy-holding-you) ·
+  [v8, answer the enemy's guns](#2026-10-13-v8-answer-the-enemys-guns) ·
+  [Mirror battles (second session)](#2026-10-13-mirror-battles-second-session) ·
+  [v7, the enemy lord only while he is losing the lords' race](#2026-10-13-v7-the-enemy-lord-only-while-he-is-losing-the-lords-race) ·
+  [v6, show what each unit is really doing](#2026-10-13-v6-show-what-each-unit-is-really-doing) ·
+  [v5, a hurt lord keeps fighting](#2026-10-13-v5-a-hurt-lord-keeps-fighting) ·
+  [v4, one body, gang up on the enemy lord](#2026-10-13-v4-one-body-gang-up-on-the-enemy-lord) ·
+  [v3, commit and focus (best so far)](#2026-10-13-v3-commit-and-focus-best-so-far) ·
+  [v2, a battle doctrine (worse)](#2026-10-13-v2-a-battle-doctrine-worse) ·
+  [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
+  [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
+  [First baseline](#2026-10-13-first-baseline)
 
-## Native imagery probe and passive capture (2026-10-15 UTC)
+## 2026-10-15: Track cleanup for agents and reviewers
 
-`visual-probes/imagery-20261015` on `f395275` ran the scripted Khorne–Dwarf probe at
-unpaused 1× until its planned 90 s wall cutoff (truncated, no engine result). Native
-`common.take_screenshot` wrote a 1920×1080 TGA (8,294,418 bytes) at 6.1 battle seconds;
-the Lua call measured 43.007 ms. `UnitRecordContext.Name` and `UnitDetailsContext.Name`
-both returned “Herald of Khorne”; the other two candidate fields returned nil.
+The owner asked for the WH3 code and repository to be easier for agents and outside
+reviewers to read and navigate: less bloat, redundancy and stale or confusing docs. An
+audit of eight areas fed six code lanes and three docs lanes. No game ran and no model was
+called; the work was uncommitted when this entry was written.
 
-The requested camera position was about 500 m above the terrain, but the engine kept
-it about 100 m above ground and clamped its pitch. Actual camera position/target are
-retained in `visual-probe-metadata.json`. No world/pixel registration is established;
-the report uses the grid and separate game stills. A follow-up raises the permitted
-camera height and requests a 60-degree downward view aimed at public units.
+What changed in the code:
+- CLI. `twwarhammer3 report JOB [JOB ...] --output STEM` writes `STEM.html`, `STEM.json`
+  and `STEM.txt` and replaces `stats --report/--report-json/--report-html`. `stats
+  --rebuild` is gone: it rebuilt only from `battle/`, so it dropped six visual-probe rows,
+  re-added two interrupted episodes and rewrote 288 cells; the register is append-only
+  history. New: `digest EPISODE --at SECONDS` (one decision in full: the prompt its reply
+  answers, the raw reply, the orders and the engine's verdicts) and `watch JOB --next
+  [--stall-minutes M]` (waits for the next episode result, the job's end, a stall or a job
+  that never started, prints it and exits). `play` lost `--ledger`, `--results`,
+  `--no-autostart` and `--no-menu`; `launch` lost `--interval-ms`, `--no-autostart` and
+  `--no-menu`, and `play --attach` uses its own `--interval-ms`. `--episode-timeout`
+  defaults to a declared scenario's timer plus 120 s (else 3900 s) and `--run-timeout` to
+  8 h, or longer when the episodes need it.
+- Job loop and scenarios. Scenario loading, lobby steps and benchmark checks moved from
+  `battle/play.py` to `battle/setup.py`, whose docstring is the scenario field reference.
+  A `scenarios.json` entry can inherit another with `base` (the file went from 1623 to
+  576 lines; the resolved scenarios that manifests record are identical). A refused
+  declaration, realism preference or uncommitted source scope no longer leaves a job
+  directory, so the same `--output` can be retried. Model jobs snapshot
+  their prompt as `<policy>_prompt.md`. Objective shares come only from the mod's tick
+  integrals. The setup saves its menu dumps on every exit. `session.json` no longer
+  carries `interval_ms`. `scripts/wh3_queue.py` runs a frozen plan of `play` jobs one at
+  a time; the untracked `calibration/run-*.py` runners are evidence only.
+- Controllers. `probe_move` is gone. `battle/controllers.py` holds the one table of model
+  policies and their prompts. `llm.py` shares `split_valid`, `strengths`, `render_clock`
+  and `invalid_reply` with the commander and lost its unreachable paused-battle sentence;
+  `scripted.distance` is public. `tests/twwarhammer3/test_wh3_prompts.py` compares the
+  exact rendered prompts of `llm` (whose input `llm_rules` shares) and `commander` with
+  golden files: no prompt byte changed.
+- Reports and capture. `battle/capture.py` replaces `imagery.py` and `recording.py`;
+  `visual_probe.py` and `report_html.py`'s `--demo` entry are deleted, and the synthetic
+  demo comes from `tests/twwarhammer3/make_wh3_report_demo.py`. The replay payload lost
+  its derived duplicates and names controllers as the controller table does; `replay.css`
+  merged into `report.css`; a report with stills fails loudly without Pillow. The replay
+  verdict's median information age is now the collector's order-age median over
+  non-empty batches: 5.25 s instead of 5.1 s for the G1 Sol trial, 4.2 s instead of
+  3.9 s for `visual-sol-low-20261015`. The saved artifacts in `reports/` predate this.
+- Tools. The job digest has a policy column and no longer crashes on random survival and
+  free-for-all draws; the episode digest folds runs of decisions without new orders into
+  one line (`no new orders xN until T s`). `watch` no longer crashes at a classic
+  battle's result and shares the commander's report header. New register rows round
+  `own_active` and `enemy_active` to 3 decimals. The `engine/mailbox.py` docstring is the
+  bridge and observation reference; a job start also clears the previous job's per-battle
+  replay, imagery, still and capture files from the bridge.
+- Tests. lupa and Pillow joined the dev group, so plain `uv run pytest` runs the Lua and
+  image tests (21 Lua tests skipped before). The six `test_wh3_lua_*.py` files became
+  `test_wh3_battle_lua.py`, which loads battle-script definitions by name
+  (`tests/twwarhammer3/wh3_lua.py`); `test_wh3_mod_scripts.py` compiles every mod script
+  under Lua 5.1, replacing the manual parse step. `tests/test_doc_links.py` checks every
+  relative link and anchor in the repository's Markdown. `uv sync --locked` now removes the
+  `llm` and `train` extras' packages; restore them with `uv sync --locked --extra llm` (or
+  `--extra train`).
 
-The follow-up `visual-probes/passive-imagery-20261015` on `081f30f` completed its
-90 s cutoff with no invalid decisions, ten names and two captured stills; first contact
-was explicitly throttled because it followed the first rout by less than 30 s. Passive
-grabs took 54.34 and 42.82 ms in the capture process (including PNG writes, 296.66 and
-256.36 ms), while the order loop continued. `stills.json` retains timing and failures.
+Docs: `benchmark.md` is the benchmark as built, `benchmark-run.md` the runbook and the new
+`reports.md` the report page. `benchmark-progress.md`, `calibration-plan.md`,
+`scenario-recipe.md`, `field-report.md` and `visual-report-plan.md` were folded into them;
+their text stays at `d606d39`. The owner's modding guide `guide.txt` (dated 2026-10-08,
+unchanged since `001d1ce`) left the tree: `git show 001d1ce:docs/twwarhammer3/guide.txt`
+restores it, and its API links are in integration.md "References". The README,
+integration.md, controllers.md and battle-types.md are reference pages now: the README's
+milestones, first-night and mirror sections and battle-types.md's per-job tables moved
+into this log; integration.md is grouped by subject, with the "Expanded controller
+interface", "Specialist unit state" and "Timer result transition" sections folded into
+"Battle" and the "Unverified" heading shortened; controllers.md lists every registered
+policy, drops the flying-unit gap fixed in `dde4cfe` and records three prompt/code
+contradictions for the next version. This log is newest first throughout, with "On main"
+above; `docs/state.md` is a short status page; AGENTS.md, the root README and
+`runs/README.md` match the code.
 
-Raising the ordinary camera height range still clamped the view. An in-game diagnostic
-at 36.2 s enabled the cinematic-camera flag and reached the requested overhead
-position/target exactly at 36.7 s; passive capture at 67.1 s showed the armies. Probe
-code, coordinates and image are retained beside the job. Production now uses that
-camera flag with the same unpaused 1× battle; it starts no cutscene and changes no
-unit controls. Images remain separate from the grid because terrain/pixel registration
-is unverified. The Sol acceptance is next.
+Evidence moved (untracked, local): the outside controllers of recorded trials
+(ExternalHold and the flight probe) from `/tmp/wh3-benchmark-controllers/` to
+`capability-probes/external-controllers/`, and the old replay-demo generator to
+`reports/make-wh3-replay-demo.py`.
 
-Production capture now uses passive Windows Pillow capture in a background thread,
-with job/battle and foreground-process checks. Capture errors are presentation metadata;
-there is no wait between decision and order submission. The native call is retained
-only in the diagnostic probe. Pillow is already installed for Windows Python here;
-on another installation its absence is recorded as a failed capture. Image conversion
-for the offline report uses the optional WSL `report` extra. The passive check passed; Sol acceptance remains. No API spend in either imagery probe.
+Validation (2026-10-15, before the commit): `uv run pytest -q` passes with 14 skips (13
+need the `train`/`llm` extras' torch, one is the opt-in Windows process-ownership test);
+`uv run pytest tests/twwarhammer3` passes with none skipped; `uv run ruff check .` passes;
+the review workflow parses as JavaScript.
 
-## Recorder acceptance and imagery candidate (2026-10-15 UTC)
+Deferred, with the reason:
+- Lua cleanups, each needing one engine smoke battle, and no game could run: the
+  pause-mode leftovers (constant `speed` and `awaiting_orders`, session `speed` and
+  `pause`, `mailbox.require_realtime`), dead paths (the `start` control,
+  `state.applied_ms`, restart's fallback before a decision, the duplicate imagery
+  throttle and `shot.backend`), the always-true session switches `enabled`, `autostart`
+  and `menu`, splitting `apply_order` and `mode_section`, sharing the observation code,
+  and moving the file helpers into `_lib`.
+- Three prompt/code contradictions for the next `llm`/`commander` version
+  ([controllers.md](controllers.md#candidate-changes-for-the-next-version)): prompt bytes
+  change only with a logged version and regenerated golden prompts.
+- `LLMPolicy.acknowledge` keeps its fallback for acknowledgements without `index`: about
+  2,900 of 25,300 acknowledgement results in `battle/` traces (30 jobs before `863d10b`)
+  lack it. The owner decides.
+- Single-job reports still list the 15 unrun catalogue scenarios as placeholders
+  (unchanged from `d606d39`); removing them is the owner's decision.
+- `play --attach` request ids restart at `r1`, so a second attach job on the same battle
+  can stall until its episode timeout; a per-mailbox id prefix fixes it.
+- The 49 unrounded `own_active`/`enemy_active` values already in results.csv: the register
+  is append-only history, so rewriting old rows is the owner's call.
+- Stale `/tmp` worktrees and merged WH3 branches: the agent had no permission to remove
+  them; the owner will, with `git worktree remove /tmp/wh3-benchmark-bN` for b2, b3, b4,
+  b5, b7, b8 and b9 and `git worktree remove /tmp/wh3-visual-imagery`, then
+  `git branch -d wh3-benchmark-b2 wh3-benchmark-b3 wh3-benchmark-b4 wh3-benchmark-b5
+  wh3-benchmark-b7 wh3-benchmark-b8 wh3-benchmark-b9 wh3-visual-final` and
+  `git branch -D wh3-visual-imagery` (patch-identical to `main`'s `ca397ab` per
+  `git cherry`). Whether to archive the unmerged `wh3-fire-report` and `wh3-v4-info`
+  (pre-v13 candidates) is the owner's call.
+
+## 2026-10-15: Sol visual acceptance and closer action views
+
+The separately authorized `visual-sol-low-20261015` on `7136d6a` ran `llm_rules`
+(`gpt-6-sol`, low) on `brt-cavalry-emp-assault`, unpaused at 1x with default recording and
+`--stills`. It won at 382.4 s: 92 decisions, four engine refusals, 4.11 s mean information
+delay, $0.6292834; ledger $7.7949 of $25. This is visual acceptance, not a resumed
+calibration or an extra G1 trial. The replay has 473 frames and 168 submitted orders (167
+acknowledged, one unacknowledged at the end), and embeds every prompt and reply, 14
+readable names and two stills (first melee at 179.9 s, ending at 382.4 s). The opening
+foreground check failed and the first rout at 208.1 s was throttled; both are kept as
+such. Passive grabs took 62.6 / 32.5 ms in the separate capture process. Recorder terminal
+and public-id checks passed (`visual-probes/sol-recorder-acceptance.json`). The report
+keeps the new trial, the G1 triple and the interrupted launch in separate views.
+
+Owner follow-up (2026-10-15): closer, low oblique action views, ideally before a charge,
+melee or projectiles, chosen from observed public motion, within the four-still cap.
+Imagery v3 takes an observed closing gap within 100 m before melee, with incoming fire or
+first melee as fallbacks for the same action slot. The camera sits about 28 m above the
+focus terrain with a side offset; the opening stays overhead; the 30 s throttle remains;
+captions do not infer charge intent.
+
+The scripted `visual-probes/close-imagery-20261015` on `981eb2d` ran to its planned 90 s
+cutoff (truncated, no engine result): the opening at 5.9 s and the first rout at 56.6 s
+were captured, requested and actual camera coordinates matched, and grabs took
+74.8 / 37.2 ms. Incoming fire at 16.1 s was throttled and used up the action slot, so
+`8aaabcd` keeps that trigger and defers the capture until spacing permits, aimed at the
+units under fire instead of the army centroid (regression test). The recheck
+`visual-probes/close-imagery-r2-20261015` on `8aaabcd` ran to its 90 s cutoff with 279
+decisions, none invalid, and no model spend; its last 0.124 s deadline surfaced as a
+mailbox timeout, so it stays `truncated`. The opening at 5.9 s and incoming fire at 36.8 s
+were captured (39.5 / 49.0 ms; the metadata keeps the initial 16.1 s trigger) and the
+first rout at 59.0 s was throttled. The low view shows the missile cavalry and the
+opposing line before the first observed melee at 71.0 s; camera placement matched within
+0.001 m (`visual-probes/close-camera-acceptance.json`).
+
+Artifacts: `reports/visual-report.html` (about 1.64 MB), `reports/close-camera.html` and
+`reports/close-camera.png`; older images were not reconstructed. Validation: 1119
+repository tests passed, one skipped (before the timing fix); the WH3 suite 273 passed with
+Lua 5.1 and the report extra; Ruff passed; offline Chromium checked both reports' images,
+evidence, downloads and 390 px layout. The requested visual-report work was complete;
+calibration stayed stopped.
+
+## 2026-10-15: Native imagery probe and passive capture
+
+`visual-probes/imagery-20261015` on `f395275` ran the scripted Khorne-Dwarf probe at
+unpaused 1x to its planned 90 s wall cutoff (truncated, no engine result). The native
+`common.take_screenshot` wrote a 1920×1080 TGA (8,294,418 bytes) at 6.1 battle seconds in
+43.007 ms. `UnitRecordContext.Name` and `UnitDetailsContext.Name` both returned "Herald of
+Khorne"; the other two candidate fields returned nil. The engine kept the camera about 100 m above
+ground instead of the requested 500 m and clamped its pitch (actual position in
+`visual-probe-metadata.json`); no world/pixel registration is established.
+
+`visual-probes/passive-imagery-20261015` on `081f30f` completed its 90 s cutoff with no
+invalid decisions, ten names and two stills; first contact was throttled because it came
+less than 30 s after the first rout. Passive grabs took 54.34 and 42.82 ms in the capture
+process (PNG writes 296.66 and 256.36 ms) while the order loop continued; `stills.json`
+keeps timing and failures. A wider camera height range still clamped the view; an in-game
+diagnostic at 36.2 s enabled the cinematic-camera flag and reached the requested overhead
+position exactly at 36.7 s, and the passive capture at 67.1 s showed the armies (probe
+code, coordinates and image beside the job). Decisions: production uses that camera flag
+(no cutscene, no change to unit controls, battle unpaused at 1x) and passive Windows
+Pillow capture in a background thread with job, battle and foreground-process checks;
+capture errors are presentation metadata, and nothing waits between decision and order.
+Only the diagnostic probe used the native call. Images stay beside the grid, not on it.
+No API spend in either probe. Engine facts:
+[integration.md](integration.md#visual-recording-and-presentation-probed-2026-10-15).
+
+## 2026-10-15: Recorder acceptance and imagery candidate
 
 Owner-requested visual acceptance, not calibration. Source `581119e` ran sequential
-`rush_nearest` cavalry probes at unpaused 1×. Recorder off
-(`visual-probes/recorder-off-20261015-r3`) lost at 391.7 s, with no refusals;
-recorder on (`visual-probes/recorder-on-20261015`) lost at 263.7 s, with one
-`unit_routing` refusal after the lord routed before application. These outcomes are
-not a controller comparison. Both result rows are retained.
+`rush_nearest` cavalry probes at unpaused 1x: recorder off
+(`visual-probes/recorder-off-20261015-r3`) lost at 391.7 s with no refusals; recorder on
+(`visual-probes/recorder-on-20261015`) lost at 263.7 s with one `unit_routing` refusal
+(the lord routed before the order applied). Not a controller comparison; both rows are in
+the register. The first off attempt was refused before launch by timeout validation. The
+r2 attempt stalled before the frontend timer; bringing the game forward unblocked it, but
+the 900 s startup deadline expired after Start Battle: an infrastructure failure with zero
+episodes, not a loss.
 
-The recorder saved 260 frames (1,564,778 bytes), including the terminal result.
-Intervals were 0.9/1.2 s around the 1 Hz target; maximum 1.2 s. All 104 timestamps
-shared with the trace had matching public unit ids/types. No evaluation, setup or
-hidden final state entered the recorder. Total sample CPU time averaged 2.851 ms,
-median 2.991 ms, p90 3.998 ms, maximum 7.019 ms. Battle/wall-clock ratios over the
-Deployed trace span were 0.998213 off and 0.997703 on. One pair cannot establish a
-precise overhead effect, but the measured cost supports recording by default, with
-`--no-record-replay` available. Audit and script: `visual-probes/recorder-acceptance.json`
-and `visual-probes/analyze_recording.py`.
+The recorder saved 260 frames (1,564,778 bytes) including the terminal result, at
+0.9-1.2 s intervals around the 1 Hz target. All 104 timestamps shared with the trace had
+matching public unit ids and types; no evaluation, setup or hidden final state entered the
+recorder. Sample CPU time: mean 2.851 ms, median 2.991, p90 3.998, maximum 7.019.
+Battle/wall ratios over the deployed span: 0.998213 off, 0.997703 on. One pair cannot
+establish a precise overhead, but the cost supports recording by default, with
+`--no-record-replay` (`visual-probes/recorder-acceptance.json`,
+`visual-probes/analyze_recording.py`).
 
-The first off attempt was rejected before launch by timeout validation. The r2 attempt
-stalled before the frontend timer; bringing the game forward unblocked it, but the
-900 s startup deadline expired after Start Battle. Retain it as infrastructure failure
-with zero episodes, not a loss. The r3 and on launches then started normally.
+The imagery candidate added `--stills`, public-position camera triggers, readable names,
+capture failure metadata and WebP embedding within the report size budget; featured trials
+are the earliest completed, whatever their outcome. No API spend.
 
-The imagery candidate adds `--stills`, public-position camera triggers, separate
-readable names, capture failure metadata and WebP embedding within the report size
-budget. Earliest completed trials are chosen by chronology, independent of outcome.
-Native capture, names and camera behavior still await the short scripted probe, then
-the separately authorized Sol low acceptance. No new API spend yet.
+## 2026-10-15: Visual replay v1 and recorder candidate
 
-## Visual replay v1 and recorder candidate (2026-10-15 UTC)
+Implemented phase 1 of the visual report plan (now [reports.md](reports.md); the plan is
+`visual-report-plan.md` at `d606d39`) and the opt-in 1 Hz public recorder. The report keeps
+the collector summaries, embeds gzip/base64 replay evidence and adds an SVG map, timing
+and resource strips, unit lanes, exact prompts, stated reasons and notes, factual events
+and shared-scale trial tracks. The recorder has its own visibility memory and per-battle
+files, copied after each episode including interruptions; its version and settings enter
+comparison compatibility.
 
-Implemented phase 1 of [the visual report plan](visual-report-plan.md) and the opt-in
-1 Hz public recorder. The report preserves collector summaries, embeds gzip/base64
-replay evidence, and adds an SVG map, timing/resource strips, unit lanes, exact prompts,
-stated reasons/notes, factual events and shared-scale trial tracks. The recorder has
-independent visibility memory and per-battle files, copied after each episode, including
-interruption evidence. Recorder version/settings enter comparison compatibility.
+The original G1 Sol trace has 441 submitted orders, 436 acknowledged, 29 rejected and five
+unacknowledged at battle end; it confirms the enemy general's rout, not his death. All
+three G1 payloads are under 160 KB compressed; nine trials fit under 20 MiB.
 
-The original Sol trace contains 441 submitted orders, 436 acknowledged, 29 rejected and
-five without an acknowledgement before battle end. It confirms the enemy general's
-rout, not his death. The report retains those distinctions. All three G1 payloads are
-under 160 KB compressed, and the nine-trial budget check is below 20 MiB.
+Owner decisions (2026-10-14): no unit art from the game's packs; exact prompts included,
+collapsed in the inspector, with the system prompt shown once per job (this replaced the
+field report's rule of leaving prompts out); scripted camera moves accepted during
+unattended jobs. Design figures from the first G1 Sol trial: order age median 5.1 s by the
+replay's measure (5.25 s as the collector's non-empty-batch median), 90th percentile 7.2 s,
+maximum 11.1 s; between consecutive decision states friendly units moved 22 m (median) and
+49 m (90th percentile); 17 ability orders, notes rewritten in 29 decisions, nine decisions
+without new orders; prompts and replies 855 KB raw, 44 KB compressed. Replay frames per G1
+trial: 423/302/98.
 
-Validation before live probes: 1102 repository tests passed, one skipped, with the
-optional report dependency and Lua 5.1 runtime; Ruff passed. Offline Chromium checked
-replay selection, playback, keyboard, exact counts, synthetic exports, 390 px layout,
-and the existing statistics/download/print behavior. Artifacts:
-`runs/twwarhammer3/reports/visual-report.html`, `visual-report-demo.html`, and
-`visual-browser/`. No new result rows or spend yet. Owner subsequently requested
-scripted recorder off/on and imagery probes, plus the later Sol low check (~$0.80).
-These are visual-report acceptance, separate from the stopped calibration.
+Validation: 1102 repository tests passed, one skipped (with the report dependency and the
+Lua 5.1 runtime); Ruff passed; offline Chromium checked replay selection, playback,
+keyboard, exact counts, synthetic exports, 390 px layout and the statistics, download and
+print behaviour. Artifacts: `reports/visual-report.html`, `visual-report-demo.html`,
+`visual-browser/`. No new rows or spend. The owner then asked for scripted recorder off/on
+and imagery probes and a later Sol low check (about $0.80), as visual-report acceptance
+separate from the stopped calibration.
 
-## Offline benchmark field report v1 (2026-10-14)
+## 2026-10-14: Offline benchmark field report v1
 
-Added `stats --report JOB... --report-html FILE`, calling the existing collector once
-alongside the text and JSON outputs. A Python exporter embeds separate HTML/CSS/JS
-assets and compact evidence in one file, with scenario briefs, selectable/sortable
-controller comparisons, native SVG timing/cost/added-age charts, tactical metrics,
-expandable uncertainty/failure/provenance records, image/JSON downloads and printing.
-Different model/effort groups can display together only under matching known scenario,
-source, game, interface and timing settings. Their summaries and pairs stay separate.
+Added `stats --report JOB... --report-html FILE` (since 2026-10-15 `twwarhammer3
+report`), calling the collector once beside the text and JSON outputs. One HTML file
+embeds the assets and compact evidence: scenario briefs, selectable and sortable
+controller comparisons, SVG timing, cost and added-age charts, tactical metrics,
+expandable uncertainty, failure and provenance records, image and JSON downloads, and
+printing. Different model/effort groups display together only under matching scenario,
+source, game, interface and timing; their summaries and pairs stay separate.
 
-Initial artifact: `runs/twwarhammer3/reports/field-report.html`, from the existing G1
-cavalry 1.0 launch and interrupted 1.1 setup. It labels the result **Development pilot:
-one independent launch** and retains the interruption with zero started trials.
-All prior JSON values are unchanged; job definitions and provenance are additive.
-Current catalogue entries supply labelled unrun placeholders, never historical briefs.
-The separate `field-report-demo.html` and committed synthetic fixture use invented
-Demo controller A/B/C results, 0/6/10-second arms and missing/failure/timer/repeat cases.
-Synthetic evidence cannot mix with recorded evidence in the exporter.
+`reports/field-report.html` came from the G1 cavalry 1.0 launch and the interrupted 1.1
+setup, labelled **Development pilot: one independent launch**, with the interruption kept
+at zero trials. Prior JSON values were unchanged; job definitions and provenance were
+added. Catalogue entries give labelled unrun placeholders, never historical briefs. The
+separate `field-report-demo.html` and a committed synthetic fixture used invented Demo
+controller A/B/C results, 0/6/10 s arms and missing, failure, timer and repeat cases
+(replaced on 2026-10-15 by `tests/twwarhammer3/make_wh3_report_demo.py`); synthetic
+evidence cannot mix with recorded evidence.
 
-Validation: reporting regressions and the WH3 suite; Ruff; offline Chromium checks of
-exact collector summaries, filters, sorting, keyboard controls, a 390 px layout,
-SVG/PNG/JSON downloads, timer/missing metrics, setup interruptions and evidence
-separation. Desktop/narrow/demo screenshots, chart PNG and a three-page selected
-comparison PDF were inspected. Browser verification artifacts are outside game runs
-under `/tmp/wh3-report-browser/`. Commands and semantics: [field-report.md](field-report.md).
-No games or API calls were made; the results register and ledger have no new entries.
+Validation: reporting regressions, the WH3 suite, Ruff, and offline Chromium checks of the
+summaries, filters, sorting, keyboard controls, 390 px layout, SVG/PNG/JSON downloads,
+timer and missing metrics, setup interruptions and evidence separation, with screenshots,
+a chart PNG and a three-page PDF inspected (browser artifacts in
+`/tmp/wh3-report-browser/`). No games, API calls, register rows or ledger entries. Page:
+[reports.md](reports.md).
 
-## Partial G1 and owner-requested stop (2026-10-14)
+## 2026-10-14: Partial G1 and owner-requested stop
 
-G1 started at 21:56:01 UTC on committed/pushed `6763d0e`, with the declared Sol low
-`llm_rules` reference, walk/run-nearest baselines, compact six-versus-eight cavalry
-attacker and the original rotation seeds. The first 1.0 launch completed:
+G1 started at 21:56:01 UTC on committed `6763d0e`, with the declared Sol low `llm_rules`
+reference, the walk- and run-nearest baselines, the compact six-versus-eight cavalry
+attacker (`brt-cavalry-emp-assault`) and the original rotation seeds. The first 1.0
+launch, `bench-g1-cavalry-ai10-01-20261014`, completed:
 
 | Controller | Engine result | Battle seconds | Active margin | Refusals | API USD |
 |---|---|---|---|---|---|
@@ -172,892 +361,732 @@ attacker and the original rotation seeds. The first 1.0 launch completed:
 | Run-nearest | Lost | 247.7 | -0.62830 | 1 | 0 |
 | Sol low | Won | 528.2 | +0.54378 | 29 | 0.793363 |
 
-Both rematch starts matched. Clock ratios were 1.00091, 1.00076 and 0.99333.
-Sol made 96 decisions/calls, 393565 input / 30155 output tokens, including 164065
-cached and 9917 reasoning tokens. Its refusals were 23 unreachable moves, five
-no-longer-visible targets and one routing unit; it continued using the normal feedback.
-It circled west/north, broke the ranged line, drew infantry apart and disengaged before
-re-engaging. This is a useful specialist battle and one paired win, not admission.
-Report: `reports/g1-cavalry-ai10-01.json`; whole-job 1373.64 s, 7.86 valid battles/hour.
+Both rematch starts matched; clock ratios 1.00091, 1.00076 and 0.99333. Sol made 96
+decisions and calls, 393565 input and 30155 output tokens (164065 cached, 9917
+reasoning). Its refusals were 23 unreachable moves, five targets no longer visible and one
+routing unit; it carried on with the normal feedback. It circled west and north, broke the
+ranged line, drew the infantry apart and disengaged before re-engaging: a useful
+specialist battle and one paired win, not admission. Report `reports/g1-cavalry-ai10-01.json`;
+whole job 1373.64 s, 7.86 valid battles/hour.
 
-At the owner's request to wrap up and discuss calibration separately, SIGINT stopped
-the next controller during frontend setup. The 1.1 job records `interrupted` /
-`KeyboardInterrupt`, zero episodes and 64.48 wall seconds. The runner stopped at
-22:19:59 UTC; both processes exited and doctor reports ready with no blockers.
-The owner then cleared the goal. The other ten scheduled launches were never started.
-Do not convert this deliberate stop into a gameplay loss or silently resume the queue.
+At the owner's request to wrap up and discuss calibration separately, SIGINT stopped the
+next job, `bench-g1-cavalry-ai11-01-20261014` (modifier 1.1), during frontend setup:
+`interrupted` / `KeyboardInterrupt`, zero episodes, 64.48 wall seconds. The runner stopped
+at 22:19:59 UTC and the owner then cleared the goal; the other ten planned launches never
+started. This is an owner interruption, not a gameplay loss or an unexplained failure, and
+the queue is not to be resumed silently. Combined report `reports/g1-cavalry.json` /
+`.txt`, admission audit `reports/g1-cavalry-admission.json`, queue state
+`calibration/g1-cavalry-plan-state.json`, stop note `calibration/g1-owner-stop.json`:
+three valid of three started battles in two launched jobs, 1438.13 wall seconds including
+the interrupted setup, 7.51 valid battles/hour. No scenario admitted, G1 incomplete, G2
+unstarted, held-out maps untouched. Spend $7.1656 of $25. Further difficulty and latency
+experiments wait for the owner's discussion
+([benchmark.md](benchmark.md#calibration-stopped-2026-10-14)).
 
-Partial combined report: `reports/g1-cavalry.json` / `.txt`, admission audit
-`reports/g1-cavalry-admission.json`, stop note `calibration/g1-owner-stop.json`.
-Three valid / three started battles across two launched jobs, 1438.13 wall seconds
-including interrupted setup, 7.51 valid battles/hour. No scenario is admitted, G1 is
-incomplete and G2 unstarted. All held-out maps remain untouched. Spend is $7.1656 of
-$25. The engineering work and evidence are preserved; further difficulty/latency
-experiments await the owner's separate discussion.
+## 2026-10-14: Benchmark harness b9 (timer classification and running baseline)
 
-## Benchmark harness b9 (2026-10-14, timer classification and running baseline)
-
-The b8 hold screen reached the timer with both armies intact. Its last logged finite
+The b8 hold screen reached the timer with both armies intact. Its last finite countdown
 sample was 945.679 ms remaining at 1204100 ms; the engine loss arrived at 1205200 ms,
-154.321 ms past the implied deadline, with remaining time reset to -1. The existing
-zero-only classifier therefore incorrectly recorded `ended_by=engine_result`.
-The engine loss is authoritative; the timeout cause is inferred from its countdown.
-Raw records remain unchanged. Audit: `reports/bench-b8-timer-classification-audit.json`.
-
-Draft `9f05777` samples that countdown on engine ticks, retains its final deadline and
-records its expiry separately from the engine outcome. Unlimited timers, disabled or
-extended countdowns, and early battle results are covered by regressions. 222 WH3 tests
-with Lua pass; Ruff and all four scripts' Lua 5.1 syntax pass. A follow-up on the exact
-recorded timestamps passed 52 tests; replaying the recorded countdown through the Lua
-helper also identifies expiry. This is not yet a live test of the patched mod.
-Worktree: `/tmp/wh3-benchmark-b9`; merge only after the b8 queue exits.
-
-Follow-up `33b7e2b` adds `rush_nearest`, changing only AttackNearest's run flag.
-77 benchmark/play tests and Ruff pass. Before any G1/G2 trials, the calibration plan
-now uses walk-nearest and run-nearest as the cavalry attacker's two tactical baselines;
-hold remains its objective-failure control. Its untouched timer loss has raw margin
-zero, which is not a useful tactical comparator. Raw scoring, the 2–4/6 decisive-win
-criterion and positive paired intervals against both active baselines are unchanged.
-The running baseline still needs live acceptance before G1.
-The combined `33b7e2b` worktree passes all 223 WH3 tests with Lua and repository-wide
-Ruff; its working tree is clean. No live controller was launched by those checks.
-After the b8 queue exited and its evidence was committed as `4e4de1c`, b9 merged as
-`90a8796`. Runtime and test files exactly match the tested worktree. Live timer
-acceptance and medium-effort reference screens are next, before G1/G2.
-
-Live b9 on `a8fdf34` passed timer acceptance: hold lost at 1205.2 s with both armies
-intact, no refusals or API calls, clock ratio 0.999616. The terminal raw countdown
-is -1, but retained timer evidence says deadline 1205045.875 ms and expired=true;
-`ended_by=time_limit` is now correct. Whole-job time 1346.59 s including setup,
-2.67 valid trials/hour. Report: `reports/bench-b9-timer-acceptance.json`. The queue's
-timer gate passed and its paired rush-nearest/medium-effort Luna 1.0 screen started
-at 21:30:30 UTC, with 1.1 queued afterward. These are development screens, not G1.
-Run-nearest live acceptance passed in that first trial: all six initial run=true
-attacks were accepted; at 8.9 s each unit publicly reports running and has moved
-13.5–23.7 m from its 5.3 s start. Artifact: `reports/bench-b9-rush-acceptance.json`.
-That baseline then lost at 210.7 s, one refusal; the paired Luna rematch follows.
-The early result correctly retains an unexpired timer and ended_by=engine_result.
-The paired medium-effort Luna trial lost at 214.4 s, margin -0.834 versus the
-baseline's -0.791. Matched start, 21 decisions, three routing refusals, $0.01520,
-clock ratio 0.98169; mean issued order age 9.857 s. Its direct attacks were intercepted
-by the halberds and its lord fought the general alone. Both trials are valid;
-589.81 s whole-job time gives 12.21 valid trials/hour. The 1.1 screen follows.
-Report: `reports/bench-b9-assault-medium-ai10.json`.
-
-At 1.1, run-nearest lost at 256.7 s (margin -0.666, no refusals, clock 0.99837).
-Medium Luna lost at 341.7 s (-0.513), 35 decisions, 13 refusals, matched start,
-clock 0.98596, 39 calls/$0.02566 and mean order age 9.339 s. It killed the general
-and routed the cannon/handgunners, then lost to the remaining halberds. Six ability
-refusals were immediate repeats of accepted activations before readiness updated;
-three were dead targets and four routing units. Audit:
-`reports/bench-b9-luna-ability-refusals.json`. Report:
-`reports/bench-b9-assault-medium-ai11.json`. Combined screens: four valid / four
-started, 1354.34 wall seconds, 10.63 valid trials/hour. Both rematch starts matched.
-The queue ended at 21:53:04 UTC, both processes exited and doctor reports ready.
-Cumulative WH3 spend is $6.3723 of $25.
-
-Before any G1 data, freeze the existing compact cavalry attacker family and Sol low
-`llm_rules` as reference, with walk-nearest and run-nearest baselines. Its prior b7
-flanking win motivates the choice; the Luna low/medium screens did not establish
-competence. The source/prompt/rosters remain fixed during repeated calibration.
-Six launches per modifier use the original unused G1 seeds. If both modifiers meet
-admission, choose 1.1 for G2; otherwise use the sole passing setting, or continue
-recorded development if neither passes. See the calibration plan for exact conditions.
-
-## Benchmark harness b8 (2026-10-14, caster control)
-
-Draft `6b30737` adds the five-versus-ten caster attacker family, retaining the defender
-roster and spellbook; only role changes. Its 1.0/1.1 settings and untouched held-out map
-pass declaration/setup-generation checks. The recipe now requires checking objective
-incentives and the opponent's actual pressure alongside specialist unit capabilities.
-
-The b7 caster pilot then exposed missing public morale feedback and flight control.
-Read-only UI queries at 793.3/836.2 s reported the warning that the flyers must attack
-by land. The corrected boolean query showed both could toggle flight with no cooldown.
-At 1070.9 s Kairos's largest effect was Army losses and the fraction was -2.506. No
-query changed tactics or speed. Evidence: `capability-probes/benchmark-flight-toggle/`.
-
-Draft `a0a7108` exposes friendly leadership fraction and its largest current effect,
-plus flight-change availability/cooldown. Both model controllers accept `flight` requests
-for landing or take-off; Lua checks live state and availability before the normal UI
-command. The requested state prevents reversing an already completed change. These
-additions declare `obs-v3+terrain/act-v2/live-1x`; b7 stays on its frozen old contract.
-All 215 WH3 tests pass with Lua, Ruff and Lua 5.1 compilation pass; 72 benchmark/play
-tests pass after the track-label change. Merged as `6a0fe53` after the b7 queue exited;
-merged runtime/configuration files match the tested draft.
-
-The separate flight probe on `f179dbe` passed: both flyers grounded at 7.9 s, still
-grounded after the repeated landing request at 8.2 s, then airborne at 18.7 s after
-the cooldown expired. All six flight orders were accepted; normal 1x throughout.
-This checks completed transitions, not repeated requests during animation or every
-combat restriction. Evidence: `reports/bench-b8-flight-acceptance.json`. The battle
-then lost at 372 s under AttackNearest, margin -0.486, with two later combat refusals
-(dead target, routing unit) and no API spend. Whole-job throughput was 6.96 valid
-trials/hour. Report: `reports/bench-b8-flight-probe.json`. The serial queue next screens
-Luna/hold/attack-nearest on the compact cavalry attacker at 1.0/1.1, before G1/G2.
-
-The first cavalry 1.0 screen stopped at 19:56:04 UTC: attack-nearest received no new
-observation after sequence 1108 (340.7 s) for 60 s. Infrastructure failure, one refusal,
-1108 decisions, no API calls; Luna/hold and 1.1 remained unplayed. The mod log contains
-no reported Lua error, the Windows application query returned no matching event, and
-doctor was ready after the runner/controller exited. Cause remains unresolved. The
-failed job used 545.74 wall seconds and has no gameplay outcome; preserve it in reports.
-Evidence: `capability-probes/benchmark-b8-observation-stall/` and
-`reports/bench-b8-assault-screen-ai10-failure.json`. A separately named retry uses the
-same implementation, scenario and rotation seed, without profile changes.
-The 1.0 retry recovered: attack-nearest lost normally at 370 s, one refusal, active
-margin -0.808 and clock ratio 0.9996. Luna then started the paired rematch. Recovery
-does not identify the first stall's cause; its trial remains an infrastructure failure.
-Luna lost at 247 s, active margin -0.589, clock ratio 0.9976, matched start. It routed
-the cannon and both handgun units, but the lord and remaining cavalry lost against
-the general and halberdiers. 44 decisions, 12 refusals (six ability, six routing),
-47 calls, $0.01922. Hold is the remaining 1.0 trial; the 1.1 screen follows.
-All six ability refusals repeat an accepted activation on the immediate acknowledgement
-snapshot: `last_issued_ms` equals that snapshot's time, while readiness still says true.
-At refusal time the preceding activation is active. This is public readiness lag and
-repeated requests, not evidence of unsupported keys. Artifact:
-`reports/bench-b8-luna-ability-refusals.json`.
-Hold then lost at 1205 s with both armies intact, no refusals and a matched start;
-clock ratio 1.00004, raw margin 0. This exposes both the timer label bug above and a
-limitation of raw margin for idle attackers. The combined 1.0 report keeps the failed
-first launch: 3 valid / 4 started trials in 2555.77 wall seconds, 4.23 valid trials/hour.
-Report: `reports/bench-b8-assault-screen-ai10.json` (original timer label retained).
-The 1.1 screen follows in Luna/hold/attack-nearest order on the unchanged b8 source.
-Its Luna trial lost at 271 s, 45 decisions, 17 refusals, active margin -0.626, clock
-ratio 0.9878; 49 calls and $0.02274. It again routed the ranged units but lost against
-the general/halberdiers. Hold then started; attack-nearest remains queued.
-The first 1.0/1.1 snapshots are both at 5.3 s. Comparing base and current UI stats
-finds all six player entries unchanged and all eight AI entries changed; halberdiers
-have leadership 70→78, attack 26→29, defence 42→46, damage 28→31 and charge 8→9.
-Evidence: `reports/bench-b8-cavalry-modifier-stats.json`. These are applied settings,
-not evidence of a calibrated win rate.
-Hold at 1.1 also lost at 1205 s with both armies intact, no refusals, matched start
-and clock ratio 0.99992. The raw timer label again says `engine_result`; its countdown
-replicate is appended to `reports/bench-b8-timer-classification-audit.json`.
-Attack-nearest is the queue's final trial.
-Attack-nearest subsequently lost at 395 s, margin -0.868, no refusals and a matched
-start. The b8 retry queue completed at 21:05:37 UTC; runner/controller and the stall
-monitor exited, doctor ready. The 1.1 job has 3 valid trials in 2055.85 wall seconds,
-5.25 valid trials/hour. Combined cavalry screens retain the failed first attempt:
-6 valid / 7 started, 4611.62 wall seconds, 4.68 valid trials/hour. Reports:
-`reports/bench-b8-assault-screen-ai11.json` and `reports/bench-b8-assault-development.json`.
-The original timer labels remain in these reports, with the separate audit above.
-No scenario is admitted; no G1/G2 trials have run. Ledger total is $6.3315.
-
-## Benchmark harness b7 (2026-10-14, snapshot age and cavalry attacker candidate)
-
-Commits `88de61a` and `2e643fe`, merged as `79d2f7d`, add actual snapshot age separately
-from total order age, and retain start-comparison deltas plus a paired sensitivity
-analysis excluding launches with flagged starts. Primary results keep every valid
-trial. Requested 0/6/10 s ages are minima: synchronous model calls can leave gaps in
-the observation buffer. The runbook and CLI help now state that limit. 27 targeted
-tests and Ruff pass; recomputing the completed b4 traces retains their original primary
-samples and exposes the flagged cavalry launch in the secondary comparison.
-
-`brt-cavalry-emp-assault` adds 1.0/1.1 development settings and an untouched held-out
-map. It reverses the original foot-general candidate's role: the same six cavalry units
-must defeat eight Empire units before the 1200 s timer. Funds stay capped at 8000.
-Declaration and setup-generation checks pass. This is a new tactical task, pending live
-setup and viability checks; no results are pooled with the defender variants.
-After the merge, all 72 benchmark/play tests and Ruff pass.
-
-The Sol low-effort caster pilot on `82f5626` lost at 1077 s: 281 decisions, five
-refusals, active margin -0.680, clock ratio 0.9956, 282 calls and $1.78329. Whole-job
-wall time 1223.91 s gives 2.94 valid trials/hour. The model struck the artillery with
-spells, then withdrew and hid its escorts, planning a defender timeout win. After
-contact around 650 s the escorts were lost; the surviving flyers kept evading. The
-read-only queries above revealed missing morale feedback, followed later by Army losses.
-This is an engine loss, not a timer ending. Report: `reports/bench-b7-caster-sol.json`.
-
-Ground Pendulum was verified: accepted at 64.6 s, magic spent and cooldown visible
-at 70.9 s; the immediate acknowledgement snapshot still showed pre-cast resources and
-readiness. Exact damage attribution is not claimed. The b4 refused ground casts also
-had insufficient magic by acknowledgement after preceding casts took effect (11<16,
-9<12), despite sufficient resources in their basis snapshots. Evidence:
-`reports/bench-b7-caster-ground-acceptance.json` and
-`reports/bench-b4-ground-refusal-resources.json`.
-The cavalry assault pilot follows on the same source, starting at 19:23:44 UTC.
-
-The cavalry assault won at 432 s: 91 decisions, one refusal, active margin +0.433,
-mean action age 5.862 s, clock ratio 0.9934, 92 calls/$0.62009. Both handguns and the
-cannon routed first; Sol then concentrated on the general while the remaining cavalry
-fought the halberdiers. This establishes a viable strategy, not admission from one
-instance. Whole-job time 580.28 s gives 6.20 valid trials/hour. Report:
-`reports/bench-b7-assault-sol.json`. Queue/controller exited at 19:33:24 UTC.
-Both b7 results are in the register. Ledger $6.2895 of $25; next screen Luna's
-competence on this same compact task before freezing a repeated reference, because
-30 repetitions at the observed Sol cost would leave almost no budget margin.
-
-## Benchmark harness b6 (2026-10-14, Pegasus pressure hypothesis)
-
-Adds `brt-cavalry-emp-pegasus` with 1.0/1.1 development settings and an untouched
-held-out map. It keeps the six-versus-eight roster and 8000 cap, replacing only the
-enemy foot general with an Imperial Pegasus mount. The frontend enemy-slot change
-and exact unit key passed. The Pegasus shows speed 105 and cost 1800; a Griffon was
-also checked (speed 90, cost 2050). Our cavalry's speed stats are 84/92. A faster flying
-enemy is intended to create pressure on passive evasion; its AI behavior is still a
-live hypothesis, not a guaranteed pursuit script. Evidence:
-`capability-probes/benchmark-pressure-mounts/`. The owned frontend launch is closed.
-
-Visible enemies now expose walk/run speeds, alongside b5's flight capability/state.
-This uses the same unit queries as friendlies, only after visibility filtering. The
-rules prompt describes the facts without suggesting an engagement strategy. Validation:
-209 WH3 tests with Lua, Ruff and Lua 5.1 compilation passed. New pilot launches will
-verify those fields and test a stronger `gpt-6-sol` low-effort rules-only reference on
-the Pegasus and caster development scenarios, within the existing $25 ledger cap.
-No G1/G2 trials or held-out trials have run; neither candidate is admitted.
-
-The first pilot launch, `bench-b6-pegasus-sol-20261014` on `1bd120b`, hung after menu
-step 3 (opening custom battle). Windows reported the game unresponsive while CPU time
-increased. The declared startup deadline ended the job as `infrastructure_failure`
-after 903.87 s, with zero episodes and no model calls. The supervisor closed the game;
-the queue stopped before its second job. Doctor then reported no blockers. Evidence:
-`capability-probes/benchmark-startup-hang/`, `calibration/b6-startup-observations.jsonl`
-and `reports/bench-b6-startup-failure.json`. There is no gameplay result to register.
-A separately recorded retry on the identical source/setup, with no profile changes,
-started at 18:51:24 UTC (`calibration/b6-specialist-sol-r2-plan.json`).
-
-The retry recovered without profile changes. Its original-engine roster verified the
-horse-mounted player lord and airborne Pegasus general, with enemy movement speeds
-10.5/10.5 m/s. Sol initially moved for a flank, then chose defender timeout preservation.
-At 385.6 s all six friendly units remained active with at least 93% health; the Pegasus
-was still 367.7 m from the closest one. Following the six-minute development review
-rule, the pilot was deliberately interrupted for inadequate pressure, not scored as a
-win or loss. Result: 80 decisions, nine unreachable-move refusals, $0.46713, clock
-ratio 1.00004. Both runner/controller exited at 19:00:11 UTC before the caster job.
-Its interrupted row is in the results register. Evidence:
-`calibration/b6-pegasus-review-rule.json`, `calibration/b6-pegasus-retirement.json`,
-`reports/bench-b6-flight-speed-acceptance.json` and `reports/bench-b6-pegasus-development.json`.
-The two launches together used 1431.02 wall seconds with no valid gameplay outcomes.
-Next screen the caster and the separate cavalry attacker task after merging b7.
-
-## Benchmark harness b5 (2026-10-14, draft while b4 screens run)
-
-The compact caster screen exposed missing flight information: the original engine
-reports Screamers as `inf_mel` despite `can_fly=true` and `is_currently_flying=true`.
-The old category rule rendered them as infantry. Flying non-commanders now take the
-flying category, while commanders retain their lord role. Units separately expose
-flight capability and current airborne/grounded state; both enter the initial-state
-comparison. The model sees those facts without a prescribed tactic.
-
-A read-only engine query at 84.5 s verified Kairos and Screamers airborne and all three
-ground escorts non-flying. Evidence: `capability-probes/benchmark-specialist-flight/`.
-The current b4 screen stays on its frozen source; this draft is not a mid-battle update.
-Validation: all 207 WH3 tests passed with Lua, Ruff passed, and all Lua scripts compiled
-under Lua 5.1. A later launch must verify the new rendered fields before calibration.
-
-Timer-ended reports now retain the engine's won/lost/draw alongside `time_limit`, with
-separate timeout-outcome counts and an explicit "non-timer win rate" label. This avoids
-hiding legitimate defender wins at the timer while preserving the declared calibration
-criterion for decisive wins. The timer-win regression and all 25 report/setup/controller
-tests pass; Ruff passes. Underlying result files and the existing outcome criterion are
-unchanged.
-
-## Benchmark harness b4 (2026-10-14, compact specialist prototypes)
-
-Adds two development candidates, each with a 1.1 modifier version and an untouched
-held-out map: six Bretonnian cavalry units against eight Empire units, and Kairos with
-four escorts against ten Skaven units. Their 8000 allowance is a cap, not a recruitment
-target. Both use explicit armies and default equipped upgrades; the cavalry lord's
-Barded Warhorse is pinned. These are screening prototypes, not admitted benchmarks.
-
-The frontend inventory verified selectable cards and excluded inactive DLC cards.
-The horse change returned `wh_main_brt_cha_lord_4`; Kairos recruited with his default
-spellbook. Evidence: `capability-probes/benchmark-specialist-rosters/`, including cost,
-mount and upgrade queries. No battle was started by that probe. The owned launch closed
-normally before the next jobs.
-
-Scenario `mounts` now maps recruitment indexes to mounted unit keys, with a required
-lobby read-back and a battle roster check. Declared funds/settings apply before
-recruitment as well as being verified afterward, so a previously low lobby budget does
-not prevent selecting the declared units or mounts. Validation: 69 benchmark/play tests
-and Ruff passed, including refusal of a lord that remains on foot. Specialist battle
-acceptance and calibration remain pending; screen the development variants first.
-
-The caster screen on `e221324` completed three matched trials: Luna `llm_rules` lost
-at 963 s, hold at 613 s, attack-nearest at 301 s. Active-strength margins were
--0.642/-0.771/-0.777; refusals 88/0/0. Luna cost $0.06841. Whole-job wall time was
-2056.22 s, or 5.25 valid trials/hour. All recorded starts matched, including initial
-magic 12/68; current starting stats and nonzero barriers are captured. Unit-targeted
-spells consumed mana and entered cooldown. Both attempted unit-ground casts were
-refused, so that mechanic remains unverified for Kairos. The flying-unit information
-gap is fixed in isolated b5 before later calibration. No reference has demonstrated a
-win, and this single screening instance does not admit the caster scenario. Reports:
-`reports/bench-b4-screen-caster.json` and `reports/bench-b4-caster-interface-audit.json`.
-The cavalry screen follows on the same frozen source.
-
-The cavalry screen then recorded hold lost at 415 s (margin -0.928, no refusals) and
-attack-nearest lost at 262 s (-0.691, one refusal). The latter start was flagged:
-missile cavalry displaced 4.826 m and the enemy lord turned 12 degrees at the same
-position. Resources, loadouts, roster and strength matched. Preserve this variation
-and review it before calibration; do not silently drop the trial or call starts identical.
-
-Luna immediately chose evasion for a timeout win. With the whole army untouched after
-several minutes, the exploratory trial was deliberately interrupted at about 292 s to
-revise pressure/watchability. This is a legitimate strategy under the game's defender
-objective, and the trial has **no gameplay outcome**. The result/register say interrupted;
-the report excludes it from performance means. Cost $0.01765. Retirement decision:
-`calibration/b4-cavalry-retirement.json`. Job wall time 1148.78 s includes that interruption;
-two valid of three started trials yield 6.27 valid trials/hour. The serial runner stopped
-as expected, and both processes exited. Report: `reports/bench-b4-screen-cavalry.json`.
-
-A trace check measured Grail Knights at 2.01 m/s during approach and 7.58 m/s just
-before melee despite the script's walking setting. This verifies fast final movement,
-not a damage bonus; the running flag alone does not identify that acceleration.
-Evidence: `reports/bench-b4-cavalry-approach-check.json`. Next, inspect a faster enemy
-anchor to create pressure on evasive cavalry; the first prototype is not admitted.
-
-## Benchmark harness b3 (2026-10-14, specialist acceptance pending)
-
-The missing terrain field observed during b2 acceptance now fails benchmark setup
-before a controller can act. Unexpected startup/source errors retain their cause and
-are infrastructure failures; interruptions remain separate. Paired reports also show
-valid trials per whole-job wall hour, counting setup, resets and failed jobs. If any
-supplied job lacks final wall timing, throughput is unavailable rather than estimated
-from episode durations.
-
-The boundary review also found that enemy registration could announce unseen arrivals,
-and an earlier sighting could reveal a later hidden death. `obs-v2+terrain` keeps the
-initial lobby roster public but adds later units only on sight; a death flag requires
-visibility at observation. This is a source/contract change before G1/G2, not installed
-midway through the b2 screen. Scoring still uses private totals for all units.
-
-The local engine API documentation identifies `CcoUnitStat.ValueBase` as excluding
-modifiers/buffs/debuffs, and `Value` as current. Startup now retains both privately.
-Subsequent b2 1.0/1.1 startup snapshots at 5.2 s show that the AI difficulty bonuses
-already enter ValueBase: all 12 enemy entries change (roughly +10% melee attack/defence,
-weapon damage and charge, +8 leadership); all 12 player entries stay identical. The
-general API description must not be read as excluding that difficulty layer. Current
-Value will distinguish additional active effects; its live b3 check remains pending.
-
-The owner's specialist-scenario direction also revealed restrictive v15 tactical rules
-(stay in melee, cavalry wait behind infantry, all units advance together). Added
-`llm_rules`: the same direct controller, memory, ledger, observations/actions and timing,
-with a separate rules-only prompt. The original `llm` remains available. Rotation,
-prompt snapshots/hashes, model cards, digest and the results register identify the new
-policy. This changes the controller prompt, not the model or its permissions; its first
-game check will be part of specialist screening after the completed b2 queue.
-
-Specialist-interface preparation adds current/maximum barrier HP and owned abilities'
-cast range, effect radius and duration. A read-only probe during the 1.1 skills screen
-returned Dwarf barrier 0/0 and Rune cast ranges 100 m with distinct durations/radii;
-the query output is retained in `capability-probes/benchmark-specialist-interface`.
-Nonzero barrier behavior and actual caster spells remain for the specialist smoke,
-before any scenario admission. Hidden enemies still never enter unit_record.
-
-Starting fingerprints now also record friendly spell loadouts, initial strength/ammo/
-barriers and magic/supplies/tickets. Resource/loadout changes flag a rematch even when
-formation positions match; ability list ordering alone does not. This is needed before
-claiming paired caster trials.
-
-Validation: 197 WH3 tests passed with the Lua runtime; Ruff and Lua 5.1 parsing passed. Regression
-checks cover absent terrain, startup causes, and a throughput denominator containing a
-setup failure, hidden summons/deaths and retained observed deaths, plus rules-prompt
-selection, fresh memory/shared budget and model metadata/prompt snapshots. Live b2 traces/
-reports remain separate by their recorded source; b3 live acceptance remains pending.
-
-Additional objective regression: executing the actual Lua sampler with ownership
-changes at unequal intervals gives 25% held time where snapshot voting gives 40%; a
-duplicate terminal sample adds no time and non-victory points are excluded. This test
-passes with Lupa and Ruff. Full source validation: 1041 passed, 4 skipped in the main
-dependency environment; the skipped Lua checks passed separately, and the remaining
-skips are the opt-in Windows process-ownership test and one local-evidence case.
-
-## Benchmark harness b2 (2026-10-14, acceptance and diagnostic queue complete)
-
-Source `b476175` completed the terrain/Luna acceptance retry and the serial diagnostic
-queue; the controller and queue exited successfully at 17:15:50 UTC. Acceptance:
-TerrainProbe lost at 350 s after demonstrating unreachable-move rejection, choosing a
-reported alternative and moving; Luna lost at 442 s with transport timing/model records.
-
-Herald screens, one launch each (not calibration admission):
-- 1.0: hold lost 448 s, skills won 382 s, attack-nearest lost 249 s. Active margins
-  -0.412/+0.372/-0.710; both rematch starts matched; 8.41 valid trials/wall hour.
-- 1.1: attack-nearest/hold/skills lost 242/266/265 s. Margins -0.761/-0.658/-0.481;
-  matched starts; 11.17 valid trials/wall hour. Fresh snapshots show difficulty bonuses
-  only in enemy stats (+8 leadership, roughly +10% melee attack/defence, damage/charge).
-
-Objective probes: settlement lost at 244 s while holding every point throughout, nine
-accepted barricade builds and 204 supplies left; domination lost at 776 s, tickets
-0–1500, 514 supplies left and 15 accepted purchases across nine types. Trace inspection
-finds nine new friendly IDs and six old IDs restored from zero men, matching purchases
-by type exactly. Objective fields and results-register rows agree with the saved traces;
-ownership-time reconstruction differs by at most the initial 300 ms sample gap. These
-live ownership probes cover all-held and never-held cases; changing ownership at uneven
-intervals is additionally checked by the b3 Lua regression. Full audit artifact:
-`runs/twwarhammer3/reports/bench-b2-objective-audit.json`. All eight screening/probe rows
-and both acceptance retry rows are committed with this entry. API ledger remains $3.3329.
-
-Owner steering now prioritizes specialist anchor-unit scenarios and faction mechanics
-([scenario-recipe.md](scenario-recipe.md)). The unstarted Herald G1 plan is superseded;
-cavalry/anti-large and caster-led candidates come before repeated calibration. No
-scenario is admitted and no G1/G2 results exist. b3 was tested in an isolated worktree
-and merged after this queue; live specialist acceptance follows.
-
-Read-only probes during b1 acceptance found the per-army AI modifier getter, stat
-previews and terrain APIs. b2 sets/reads the declared lobby modifier and checks it again
-on every army. It exposes coarse terrain and tested nearby destinations after an
-unreachable move, without replacing an order. Both model renderers receive these
-observations (`obs-v1+terrain`); the tactical policies otherwise remain unchanged.
-It also records API wall latency, returned model and optional provider processing header
-for WH3 only, retains setup failures in reports, and separates partial traces from
-terminal failures. Herald development/held-out candidates are declared before tuning.
-
-Worktree checks: 1019 passed, 14 skipped (local evidence absent in that worktree),
-57 targeted tests passed after the follow-up changes, Ruff and Lua 5.1 parsing pass.
-Frontend probe on `7c0abdb` set/read AI modifiers 1.0/1.1 and the short 1200 s
-timer. The Herald calibration candidates now declare that timer. Battle validation and
-calibration remain pending. Source edits were isolated while b1 ran.
-
-The first Herald terrain job (`bench-b2-terrain-20261014`, `587d501`) was refused
-before battle because the enemy roster exceeded Default Funds; zero scored episodes.
-The funds probe read only Default/Custom options and verified custom 30000. Herald
-candidates retain their units and now pin that budget. Setup failures retain current
-menu dumps. Validation after this fix: 54 relevant tests passed; Ruff passed.
-
-`bench-b2-broken-setup-20261014` (`acb97f5`) refused the nonexistent card before
-scoring and saved its map dump. `bench-b2-acceptance-20261014` passed the corrected
-Herald setup (1.0, 1200 s, custom 30000) and recorded both armies' starting stats, then
-stopped at the terrain diagnostic: this game lacks `math.huge`, so the grid was absent.
-The sampler now starts from its first corner; a Lua 5.1 regression reproducing the missing
-constant passes. The failed trial is in the register, Luna was not played. Full suite
-before the Lua fix: 1033 passed, 1 skipped; Ruff and post-fix Lua syntax passed.
-
-## Benchmark harness b1 (2026-10-14, acceptance rotation complete)
-
-Owner goal: complete paired benchmarks, difficulty/latency calibration and the scenario
-interface fixes. Added recorded controller rotation and importable controllers; strict
-benchmark setup checks; observation-age arms; private evaluation totals excluding
-routing/shattered units; objective ownership integrated on game ticks; reinforcement
-counts by type; trial failure/interruption accounting; and paired reports with explicit
-denominators, uncertainty and missing pairs. Policies remain llm v15/commander v3.
-
-The frozen `dwf-sla-taurox` development scenario starts the acceptance work. Independent
-run instructions: [benchmark-run.md](benchmark-run.md). No calibration claim yet.
-Validation: 1030 tests passed, 1 skipped; Ruff passed; every mod script parses as Lua 5.1.
-Follow-up clock/refusal edits passed the 52 relevant benchmark/play tests. Live results
-and remaining acceptance work go in [benchmark-progress.md](benchmark-progress.md).
-
-Acceptance job `bench-b1-acceptance-20261014`, source `5cad165`: hold, Luna, skills,
-attack_nearest and imported ExternalHold all ended on engine losses (386, 824, 426,
-262 and 386 s). All rematch start fingerprints matched. Luna cost $0.0594; ledger
-$3.2937. Active margins -0.675, -0.002, -0.192, -0.594 and -0.675 respectively.
-One instance verifies the rotation/import path, not ranking confidence or calibration.
-The five rows are committed in the register; report and probes are linked in progress.
-
-One entry per harness version: what changed, the job, and the results. The scenario is
-fixed unless an entry says otherwise: `kho5-dwf5`, a custom battle on "An Ogre's Folly",
-Khorne (player: Herald of Khorne, Chaos Warriors, Bloodletters, Marauder Horsemen with
-throwing axes, Skullcannon) against Dwarfs under the game AI (Lord, Dwarf Warriors,
-Longbeards, Quarrellers, Grudge Thrower), unit size large, real time at speed 1. Before
-v13 a decision came 5 s of battle time after the previous orders applied; since v13 it
-starts as soon as they are acknowledged. Later entries play random draws and say so.
-Rows are in [results.csv](results.csv);
-`python -m twwarhammer3 digest <job>[/episode-NNNN]` reads the evidence.
-
-## Baselines
-
-`attack_nearest` (every unit attacks its nearest visible enemy), source `60314c3`, job
-`attack-m3-20261013`: lost at 344 s, won at 400 s. Before `c3c9177` the baseline did not
-re-order units whose attack had lapsed, so units stood idle under fire for minutes; the
-two episodes understate it.
-
-## v1: first LLM battles
-
-Source `b615830`, job `llm-luna-v1-20261013`, `gpt-6-luna` low effort: won at 446 s,
-lost at 503 s, lost at 366 s; 132 decisions, no invalid orders, mean delay 4.0 s between
-the state seen and the orders applied (think time 3-6 s), $0.035 in all.
-
-Reviews (one subagent per episode, `wh3-version-review` workflow): the Herald died in all
-three episodes, each time sent into a fight at 21-38% health (twice at the enemy lord);
-the Skullcannon spent all 36 of its shots across the episodes on the Grudge Thrower crew
-and never killed one; the Marauder Horsemen were committed before the lines met and lost
-missile duels to the Quarrellers; 83 of 132 replies gave no orders ("all units have
-active orders", from the prompt's "leave out units that are carrying out your orders"),
-including minutes when the lord bled out; "back toward the army" moves went to the
-enemy side of the melee (no sense of the front). Misleading state: "running" on standing
-units, the Skullcannon's class flipping with its ammunition, dead units listed with stale
-flags, no enemy missile range, moves to unreachable points acknowledged as applied.
-
-## Baseline after the lapse fix
-
-`attack_nearest`, source `7b31ce9`, job `attack-b2-20261013`: won 3 of 3 at 346, 344 and
-346 s, with 45% of our men left against 33% of the enemy's. A fixed policy gives nearly
-the same battle every time; the model's variance comes from its own orders.
-
-## v2: a battle doctrine (worse)
-
-Change (prompt): check every unit each turn and pull back units that waver, lose men
-faster than their target, or are under fire with nothing to hit; pull the lord back
-below 40% health; switch fire targets that lose no men; keep missile cavalry out of
-enemy missile range; charge only once the lines are locked. State fixes in the same
-version: "running" only while moving, a unit's class fixed at the start, enemy missile
-range shown, dead units on one line, moves to unreachable points rejected.
-
-Job `llm-luna-v2-20261013` (source `f807f64`): lost at 569 s (none of our men left,
-77% of the enemy's), lost at 614 s (2% against 45%) and lost at 1226 s (10% against 20%,
-66 rejected orders). The model turned "pull back"
-into a slow general withdrawal: units left melee (which costs men and morale in Total
-War) and the army drifted to the map corner, where about 25 moves per episode were
-rejected as unreachable. Think time doubled to about 8 s with the longer prompt.
-Reviews (two episodes): moves ordered to units in melee went from none in v1 to 14 and
-10; after the withdrawals began the enemy lost almost no men; the lord flip-flopped
-between committing and withdrawing over a 3-point health gap, and lost 42% health while
-disengaging.
-
-## v3: commit and focus (best so far)
-
-Change (prompt): v2's withdrawal triggers replaced by a commit-and-focus doctrine: keep
-units in melee and send help into the enemy's flank instead; focus the enemy closest to
-breaking and the enemy lord; the lord leaves melee only below 35% health; spent missile
-units fight in melee; cavalry wait until the lines lock; "back" means toward our start.
-
-Job `llm-luna-v3-20261013` (source `2681d04`): lost at 303 s (38% of our men left, 49%
-of the enemy's), won at 419 s (11% against 18%), won at 392 s (28% against 24%); mean
-delay 4.5 s, think time back to v1's level.
-
-Replicate `llm-luna-v3-20261013b`: lost at 257 s, won at 345 s. v3 in all: 3 wins of 5.
-
-Reviews: the Herald fought the enemy lord with no other melee unit on him in all 28 such
-turns (the baseline had help in 20 of 22 and its Herald survives); the model paired its
-units off one to one at contact ("f1 e1, f2 e2, f3 e3", from "strongest against
-strongest"); the game's automatic target is shown as if it were the order, so a unit
-the game had retargeted looked busy; units with ammunition shoot when ordered to attack,
-so the horsemen and the Skullcannon could not charge.
-
-Across all episodes so far, the model orders `run` on about 90% of its moves and attacks
-(v1: 62 of 67; v2: 296 of 324), while `attack_nearest` never runs; the baseline's units
-always reach their first melee fresh, the model's often tired or exhausted.
-
-## v4: one body, gang up on the enemy lord
-
-Change (prompt): the lord and the melee units advance side by side at a walk; two or
-three units on one enemy, the enemy lord first at contact; every melee unit within 40 m
-attacks the enemy lord when he engages; our lord attacks only targets another unit is on
-and parks 30-50 m behind the line below 35% health. From the v3 reviews: the Herald fought
-the enemy lord with no other melee unit on him in all 28 such turns (the baseline had help
-in 20 of 22), and the model paired its units off one to one.
-
-Job `llm-luna-v4-20261013` (source `0547bfb`): lost at 603 s (9% of our men left, 32% of
-the enemy's), lost at 488 s (7% against 40%), won at 355 s (44% against 39%, the closest
-an LLM battle has come to the baseline's 45% against 33%). The model followed the
-doctrine: it walked on 55 of 76 moves and attacks (v3: 34 of 140), met the enemy at 95 s
-like the baseline (v3: 55-79 s) and helped its lord in 12 of 14 duel turns.
-
-Reviews: in both losses the Herald was parked at 20-23% health for 18 and 23 straight
-decisions while the enemy lord fell to 12-2% and the model itself called him "nearly
-defeated" (v4's "bring him back only to finish a routing or nearly dead enemy" had no
-threshold); in the win the enemy lord routed at about 160 s, earlier than in the
-baseline. The support units still did little: the Skullcannon fired its 12 shots for at
-most 3 kills, and the horsemen, ordered at the Quarrellers through the melee, stalled
-behind it and routed, throwing 6-26 axes where the baseline's threw about 170 into the
-Dwarf Warriors before contact. Moves to flank were acknowledged but the unit barely moved.
-
-Pause-mode ablation, job `llm-luna-v4-pause-20261013` (same source, `--pause`: the battle
-stops while the model thinks; orders apply 0.6 s of battle time after the state seen,
-against 5.5 s in real time): lost at 232 s (37% against 71%), lost at 579 s (8% against
-34%), won at 434 s (39% against 26%). One win of three, as in real time: the model's
-latency is not what separates it from the baseline.
-
-## v5: a hurt lord keeps fighting
-
-Change (prompt): below 35% health the lord stays out of melee only while a healthier
-enemy lord or hero is near, and goes back in as soon as that enemy has less health than
-he has (v4 parked him for minutes while the enemy lord was nearly dead).
-
-Job `llm-luna-v5-20261013` (source `33895de`): won at 333 s (64% of our men left, 29% of
-the enemy's: a wider margin than any baseline battle), won at 343 s (36% against 36%),
-lost at 417 s (10% against 48%).
-
-Reviews: the wins came from the lord and both infantry units walking in together and
-all three going onto the enemy lord in the same reply at contact (he routed at 162 s in
-the first win, our lord at 58%); the hurt-lord rule mattered in the second win (the
-Herald fought on at 42% once the lords' health was level). The loss turned on the lord
-duel: the Herald's line move carried him past the engaged Chaos Warriors, he alone was
-sent onto the enemy lord, and when the game retargeted him and the Bloodletters onto
-other enemies the model read it as its own gang-up, leaving the enemy lord untouched at
-80% for 90 s. The support units achieved little in all three: the Skullcannon's 12 shots
-killed almost no one and the horsemen's attacks on the Quarrellers were replaced by the
-game 7 times, each acknowledged as applied.
-
-Replicate `llm-luna-v5-20261013b`: won at 333 s, won at 418 s, lost at 329 s (32% against
-54%). v5 in all: 4 wins of 6.
-
-## v6: show what each unit is really doing
-
-Change (state rendering, `llm.py`, with the prompt's description of it): each friendly
-target is marked as the ordered one ("target e1 3 m (your order, 95 s)") or the game's
-choice with the order it replaced; a move the game dropped reads "stopped N m short of
-your move"; a unit with no target or destination reads "no order" and shows its nearest
-visible enemy; men and health show the change since the previous decision for both sides;
-orders are forgotten once the game no longer carries them out. In the same merge, fixes
-from a review of this session's code (not visible to the model in this scenario): flying
-monsters labelled flying again, the restart fallback only before a decision, battle UI
-probes through `menu.json`, `stats` grouping scripted rows by source revision.
-
-Job `llm-luna-v6-20261013` (source `ac3c0bd`): won at 357 s (26% against 34%), won at
-496 s (8% against 24%), lost at 428 s (12% against 38%).
-
-Reviews: the new lines were used. The model put units back on the enemy lord after the
-game had moved them ("game's choice") 6-8 times per episode, and the horsemen's attack
-orders were no longer replaced over and over. But the always-on gang-up then misfired:
-in the loss the Bloodletters and Chaos Warriors stood "on" the enemy lord for 80 s while
-his health fell about 1 point a turn (he stood inside his own infantry), and the Dwarf
-Warriors wavered untouched beside them; the Herald was sent back at him 24-26 points
-behind. Support fire stayed useless (14 Skullcannon shots and 270 axes for about 2 kills
-in the first win); the hurt-lord rule parked the Herald for most of two battles.
-
-Replicate `llm-luna-v6-20261013b`: won at 462 s (16% against 34%), won at 381 s (51%
-against 18%), won at 374 s (56% against 19%: the widest margins of any battle so far,
-the baseline included). v6 in all: 5 wins of 6.
-
-## v7: the enemy lord only while he is losing the lords' race
-
-Change (prompt): v4's always-on "every melee unit within 40 m attacks the enemy lord" is
-gone. After contact the enemy lord stays the focus only while his health is below our
-lord's or fell 5 points or more since the last turn; otherwise units leave melee targets
-on the game's choice and switch to the nearby enemy closest to breaking.
-
-Job `llm-luna-v7-20261013` (source `42d3054`): won at 451 s (10% against 27%), lost at
-334 s (30% against 17%: our army broke with more men left than the enemy's), won at 376 s
-(32% against 35%).
-
-Replicate `llm-luna-v7-20261013b`: lost at 256 s (35% against 64%), lost at 278 s (32%
-against 70%), lost at 434 s (22% against 29%). v7 in all: 2 wins of 6, against v6's 5 of
-6, so v7 was reverted: `main` runs the v6 prompt. Without the standing order to pile onto
-the enemy lord, the replicate's battles were lost fast; the race test seems to have taken
-units off him too early. The next version starts again from v6.
-
-## Mirror battles (2026-10-13, second session)
-
-Scenarios are now named in `configs/twwarhammer3/scenarios.json` (each side's race,
-faction and units; the menu steps pick the race in the selector's popup). Mirror battles
-put the same army on both sides of the same map, the player starting north:
-`kho5-kho5` (the Khorne army above), `dwf5-dwf5` (the Dwarf army above) and `emp5-emp5`
-(Empire: General, Swordsmen, Handgunners, Empire Knights, Great Cannon).
-
-Empire mirror, source `b1c9ce0`:
-- `attack_nearest` (`attack-emp-mirror-20261013`): lost at 228 s and 232 s.
-- v6 (`llm-luna-v6-emp-20261013`): lost at 270 s (8% against 71%), 242 s (19% against
-  71%) and 246 s (37% against 65%). In every loss the enemy handgunners and cannon ended
-  nearly untouched (64-66 of 68 men, 33 of 33) while ours were destroyed.
-
-Khorne and Dwarf mirrors, v6, source `6777a64`:
-- `llm-luna-v6-kho-20261013`: won at 265 s (39% against 17%), lost at 282 s (25% against
-  33%), won at 247 s (37% against 25%).
-- `llm-luna-v6-dwf-20261013`: lost at 499 s (31% against 66%), 576 s (24% against 50%) and
-  629 s (20% against 43%).
-
-v6 in the mirrors: 2 wins of 9, both in the melee-heavy Khorne mirror. The armies with
-guns, crossbows and artillery beat the model every time.
-
-## v8: answer the enemy's guns
-
-Change (prompt), chosen by the review of the Empire mirror (all three judges): artillery
-fires first at enemy artillery in range ("never at small crews" had made the model take
-the cannon off the enemy cannon, the game's own pick, at 5 s in all three battles);
-missile infantry stands 40-60 m to the side of the melee line, never straight behind it
-(the handgunners fired 167 rounds through our own melee for 2 kills); a shooter whose
-target loses no men for two turns moves to a clear line or switches; cavalry shelled
-while waiting ride wide onto the enemy artillery instead of shuffling about in its range;
-cavalry are left out of the enemy-lord gang-up.
-
-Job `llm-luna-v8-emp-20261013` (source `fbcdf99`): lost at 321 s (25% against 69%), 203 s
-(30% against 83%) and 343 s (38% against 57%). The enemy cannon was hit hard each time
-(7, 33 and 15 of 33 crew left, against 33 of 33 under v6) and our side kept more (25-38%
-against v6's 8-37%), but the enemy handgunners still ended untouched (66-67 of 68).
-
-Job `llm-luna-v8-dwf-20261013` (source `3879027`, stopped after two battles when v9 was
-merged): lost at 487 s (33% against 77%) and 605 s (26% against 75%). The enemy Grudge
-Thrower broke under counter-battery fire, but the enemy infantry kept more than under v6
-(43-66%): shells that went at the enemy artillery no longer thinned its infantry, and the
-melee was lost as before.
-
-## v9: fight the enemy holding you
-
-Change (prompt), chosen by the review of the v6 Dwarf mirror losses and the Khorne
-mirror loss (all three judges): after contact, a unit the game moved onto another enemy
-stays on it; the enemy-lord rule sends units back to him only while he lost 5 or more
-health since the last turn or none of ours is on him; no unit leaves a wavering enemy.
-The reviewers counted 11-15 pulls onto the enemy lord per Dwarf battle while he stood
-inside his own infantry, losing about 1.4 points a turn, and the enemy holding each
-pulled unit hit its flank (f3 Longbeards 68→48 men against e3's 75→71 in one loss).
-
-Job `llm-luna-v9-dwf-20261013` (source `d928965`): lost at 554 s (27% against 59%), 696 s
-(33% against 49%) and 332 s (45% against 86%). Job `llm-luna-v9-kho-20261013`: lost at
-205 s (25% against 70%), won at 218 s (35% against 36%), lost at 297 s (17% against 36%).
-In the Khorne mirror v9 (with v8 under it) did worse than v6 (2 of 3, 34% against 25% on
-average), and the mean delay rose from 7.2 s to 9.6 s as the prompt grew; which of v8 or
-v9 cost the Khorne battles is not separated.
-
-## v10: shooters hit infantry in the open
-
-Change (prompt), chosen by the review of two v9 Dwarf and two v8 Empire losses (all three
-judges): the reviewers measured, over the gun mirrors, artillery killing about 2 men a
-shot at infantry in the open, 1 in 2 shots at missile infantry and 1 in 3 at crews, and
-missile units killing about 1 man per 100 shots at enemy missile infantry. So until the
-enemy infantry reaches our line every shooter fires at it; after that artillery fires at
-the enemy's missile units, then its artillery (replacing v8's counter-battery first); a
-missile unit never trades fire with enemy missile infantry and shoots infantry not in
-melee, or from 40-60 m to the side of a fight; a shooter moves to its spot before the
-attack (an attack replaces a move and walks a shooter straight at a target out of
-range: about 20 such orders cut a shooter's own move in 14 gun-mirror battles).
-
-Job `llm-luna-v10-emp-20261013` (source `ffbc953`): lost at 237 s (37% against 71%), 296 s
-(22% against 38%: the enemy's lowest yet in this mirror) and 254 s (51% against 63%).
-Still no Empire win, but the margin has narrowed with each version: mean strength left,
-ours against the enemy's, v6 21/69%, v8 31/70%, v10 37/57%.
-
-Job `llm-luna-v10-dwf-20261013`: lost at 432 s (47% against 63%), 574 s (35% against 66%)
-and 394 s (44% against 75%); mean 42/68%, against v9's 35/65% and v6's 25/53%.
-
-## v11: the lords never fight alone
-
-Change (prompt, net shorter), chosen by the review of v10's Empire losses and v9's fast
-Khorne loss (all three judges): the lord bullet becomes one rule. Whenever the enemy
-lord is within 20 m of ours or fights any of our units, at least the nearest melee unit
-that is not cavalry must target him, even out of another melee, until he breaks; our
-lord attacks only an enemy another unit is on, never arrives first, and stays in melee
-once there. Gone: v9's 5-point condition (read literally, it forbade help in a losing
-duel, since our own lord counts as a unit on him), the 35% hurt-lord clause and "he is
-your best fighter", which is untrue against the AI's 1.1 stats modifier. The reviewers
-measured our lord, alone against the enemy lord, losing health 3 to 8 times faster than
-he did; he was the first unit to rout in the v10 Empire losses.
-
-Job `llm-luna-v11-kho-20261013` (source `1eb75aa`): lost at 246 s (27% against 46%), 232 s
-(28% against 63%) and 198 s (22% against 74%).
-
-To check whether v8-v11 cost the Khorne mirror, v6 was replayed there from a worktree at
-`6777a64` (same ledger and results file): `llm-luna-v6-kho-20261013b` lost at 214 s (44%
-against 77%), 227 s (37% against 50%) and 185 s (34% against 65%). v6 in the Khorne
-mirror: 2 wins of 6; v9 1 of 3, v11 0 of 3. The first v6 job's two wins look like luck
-more than a better prompt; the newer prompts are not shown to be worse there.
-
-Job `llm-luna-v11-emp-20261013`: lost at 160 s (39% against 79%), 249 s (20% against
-77%) and 189 s (42% against 73%). v11 in all: 0 of 6, and the Empire margin went back to
--42 points from v10's -20, so v11 was reverted: `main` runs v10.
-
-Job `llm-luna-v10-kho-20261013` (source `9c8f995`, the v10 prompt): lost at 298 s (25%
-against 37%), 211 s (15% against 68%) and 194 s (18% against 70%).
-
-Where the mirrors stand at the end of the session (mean strength left, ours minus the
-enemy's, in points): v6 Empire -48, Dwarfs -28, Khorne -8 (2 wins of 6); v10 Empire -20,
-Dwarfs -26, Khorne -39 (no win in 9). v8-v10 traded the melee mirror for the gun mirrors;
-`main` keeps v10, and v6's prompt is at `6777a64` for comparison. Spend for the session
-about $0.25 (ledger total $0.68).
-
-## v12: v6's melee rules with v10's fire rules
-
-Change (prompt): v6's prompt with only v10's two fire bullets (shooters hit infantry in
-the open until contact; artillery then fires at missile units, then artillery; missile
-units never trade fire with enemy missile infantry; a shooter moves before it attacks).
-v8's cavalry rules and v9's and v11's lord rules are left out. The mirrors split the
-versions (v6 best in the Khorne mirror, v10 in the Empire mirror), and v10's fire rules
-are the change with the clearest measured basis.
-
-Job `llm-luna-v12-kho-20261013` (source `42a8af7`): lost at 225 s (11% against 59%), 271 s
-(19% against 52%) and 265 s (19% against 54%).
-
-The scenarios were less fixed than intended. Picking a race leaves the faction within it
-to the game, and it varied between jobs on both sides: Khorne jobs played Khorne against
-Arbaal's faction or Crimson Skull against Khorne (v12's enemy also deployed elsewhere),
-Empire jobs Wissenland, Empire or Golden Order, Dwarf jobs Dwarfs, Karak Kadrin or the
-Ancestral Throng. Every comparison between versions above carries that variation (the
-first v6 Khorne job, 2 wins of 3, is the only one with wins and played Khorne against
-Arbaal, as did v9-v11's). The next fix pins each side's faction in the scenario.
-
-v12 was reverted (`main` runs v10) and the scenario steps now pin each side's faction
-(`61c5f7f`). First battle with pinned factions, Khorne against Khorne, v10
-(`llm-luna-v10-kho-pinned-20261013`, stopped after it at the owner's return): lost at
-248 s (32% against 52%). The enemy deployed at about (-23, -295), as in v12's job, not at
-(-148, -267) as with Arbaal's faction. Results before `61c5f7f` mix factions; versions
-should be compared again with pinned factions.
-
-
-## v13: continuous decisions and expanded battle controls
-
-Owner-requested controller change. Implementation starts at `863d10b`; final code
-`6db8111`. Tactical rules remain based on v10, with command instructions updated.
-The default post-application wait is 0 ms (was 5000); positive `--interval-ms` remains
-an explicit pacing option. Terminal observations now record a matching acknowledgement
-before ending the episode, and decision observations record `since_previous_applied_ms`.
-
-The policy can select auto/melee/ranged attacks, queue moves and a final attack, choose
-formation width, toggle supported fire-at-will/skirmish/guard/spacing/formed-attack
-behaviors, and issue owned active abilities at self, friendly/visible enemy units or a
-ground point. Python validation and Lua dispatch enforce the targets/capabilities.
-Acknowledgements identify each order by index and distinguish queued from issued.
-A rejected queued successor does not erase the preceding successful move from memory.
-The prompt shows supported toggles, width, submitted queues, active ability keys,
-permission and last issue times, plus the player's magic pool/reserve. Cooldowns and
-uses remaining are explicitly unknown: `can_perform_special_ability` stays true after
-casting. An ability/queue acknowledgement is not a completion report.
-
-Validation: 71 WH3 tests pass; `ruff check src/twwarhammer3 tests/twwarhammer3` passes.
-Real engine evidence is in `runs/twwarhammer3/capability-probes/` (ignored), with source
-fingerprints, engine/pack pins, script copies, observations, requests, acknowledgements
-and checks. `khorne-dwarfs-r3` verified toggles, a 20 m width, queued waypoints, ranged
-fire followed by melee with 453 ammunition left, and rejection of successors to an
-unreachable move. Foe Seeker raised the lord's walk/run speeds from 1.9/4.8 to 2.4/6.0.
-Its 60-second Luna smoke made seven decisions, six acknowledged (zero invalid); every
-next decision used the acknowledgement snapshot with 0 ms added gap. Mean think time
-9.399 s, wall roundtrip 9.744 s; $0.003063. The final call ran across the episode timeout.
-
-`wizard-r3` verified friendly Glittering Robe, enemy Plague of Rust and ground Searing
-Doom orders with magic-pool decreases of 5, 4 and 6 respectively; a unit trying to use
-another unit's ability was rejected. Earlier probes found the undocumented requirement
-to pass a unit even for a self ability; the dispatcher now passes the caster. Spacing
-and formed-attack toggles were unavailable on the tested armies and correctly omitted.
-These are diagnostic battles with scripted prefixes, not comparable policy outcomes,
-so they add no rows to the results register. See integration.md for the limits.
-
-## Automatic startup video skipping (2026-10-13)
-
-Code `2793933`. `launch` and `play` install a separate auto-loaded PFH5 movie pack in
-the game's `data/` directory and set `fe_game_intro_video_enabled false` in the existing
-profile. The change persists for ordinary Steam launches. The pack replaces the five
-startup movies and all 13 localized warning movies with twpatcher's 595-byte blank clip
-(MIT attribution in `src/twwarhammer3/assets/LICENSE.twpatcher`). It leaves the main
-cinematic intact for the viewer. Preparation refuses to change game files while WH3
-is running, preserves all other preference bytes, and leaves matching startup files
-untouched. Doctor reports the effective setting and actual/expected pack hashes;
-deployment evidence includes them. No new CLI options or desktop input.
-
-Validation: 83 WH3 tests and repository-wide Ruff pass. Engine evidence is under
-`runs/twwarhammer3/skip-intro-20261013/`. The baseline reached the visible Battle button
-at 149.014 s; the patched launch at 17.735 s, saving 131.279 s in one comparison.
-Without the project mod list, the menu is visible in the capture completed at 20.774 s,
-and the game's Lua log shows no project scripts. These were direct executable launches
-with Steam running; the Steam launcher UI was not exercised. The static loading splash
-remains. All 18 overridden paths exist in the installed engine's `movies.pack`; the
-installed 11,646-byte startup pack has SHA256
-`87c3964bdbbb4d07feef70e7befcbb919753c948bff47182d78a42caa24c03f1`.
-The live preference comparison changed only `true` to `false`, and attempting preparation
-during the patched probe was refused before writing.
-
-### Unpaused 1x battles only
-
-The first diagnostic `play-smoke` used `--pause`; the owner rejected this and requires
-all battles, including probes, to run unpaused at normal 1x. It remains labelled as a
-paused diagnostic in local evidence and contributes no policy result. Code `1c56ec2`
-removes automatic observation/order pauses from the Lua mod, sets the battle speed to
-1x at deployment, and removes the CLI's pause/speed overrides. Python rejects paused
-or altered-speed configurations, session writes, attached sessions and incompatible
-live observations before a policy decision. The prompt and repository instructions
-now explicitly require unpaused 1x. Historical results retain their recorded modes.
-
-Validation: 95 WH3 tests and repository-wide Ruff pass, including rejection of stale
-paused sessions and speed overrides. The replacement engine smoke is
-`runs/twwarhammer3/skip-intro-20261013/play-smoke-realtime/`.
-It reached a deployed five-versus-five battle, made 78 decisions and acknowledged
-77 batches with zero invalid orders. Every decision observation reports speed 1 and
-`awaiting_orders=false`; measured battle time advanced 23.4 s over 23.401 s of wall time.
-The run ended at its 50-second diagnostic timeout, with no gameplay outcome measured
-and no row added to the policy results register. Repeat installation preserved the
-startup pack/preference bytes and mtimes. All probes are stopped, session files cleared,
-and the final doctor reports ready with the startup skip installed.
-
-## Skills and commander v1 (2026-10-13)
+154.321 ms past the implied deadline, with the remaining time reset to -1, so the
+zero-only classifier recorded `ended_by=engine_result`. The engine loss is authoritative
+and the timeout cause is inferred from its countdown; raw records are unchanged
+(`reports/bench-b8-timer-classification-audit.json`).
+
+Changes: `9f05777` samples the countdown on engine ticks, keeps its final deadline and
+records its expiry apart from the engine outcome (regressions for unlimited timers,
+disabled or extended countdowns and early results; replaying the recorded countdown
+through the Lua helper identifies expiry). `33b7e2b` adds `rush_nearest`, AttackNearest
+with the run flag. The calibration plan then took walk-nearest and run-nearest as the
+cavalry attacker's tactical baselines and kept hold as its objective-failure control (an
+untouched timer loss has raw margin zero); raw scoring, the 2-4/6 decisive-win criterion
+and positive paired intervals against both active baselines were unchanged. After the b8
+queue's evidence was committed as `4e4de1c`, b9 merged as `90a8796`. Validation: 223 WH3
+tests with Lua and repository-wide Ruff.
+
+Live on `a8fdf34`:
+- `bench-b9-timer-acceptance-20261014`: hold lost at 1205.2 s with both armies intact, no
+  refusals or API calls, clock ratio 0.999616. The raw countdown ends at -1, but the timer
+  evidence gives deadline 1205045.875 ms and expired=true, so `ended_by=time_limit`. Whole
+  job 1346.59 s, 2.67 valid trials/hour (`reports/bench-b9-timer-acceptance.json`).
+- `bench-b9-assault-medium-ai10-20261014` (started 21:30:30 UTC): run-nearest's six
+  initial run=true attacks were all accepted, and at 8.9 s each unit reported running,
+  13.5-23.7 m from its 5.3 s start (`reports/bench-b9-rush-acceptance.json`). Run-nearest
+  lost at 210.7 s (one refusal; the timer correctly unexpired, `ended_by=engine_result`).
+  Luna `llm_rules` at medium effort lost at 214.4 s, margin -0.834 against the baseline's
+  -0.791: matched start, 21 decisions, three routing refusals, $0.01520, clock 0.98169,
+  mean issued order age 9.857 s; the halberds intercepted its direct attacks and its lord
+  fought the general alone. Whole job 589.81 s, 12.21 valid trials/hour
+  (`reports/bench-b9-assault-medium-ai10.json`).
+- `bench-b9-assault-medium-ai11-20261014` (1.1): run-nearest lost at 256.7 s (margin
+  -0.666, no refusals, clock 0.99837). Medium Luna lost at 341.7 s (-0.513): 35
+  decisions, 13 refusals, matched start, clock 0.98596, 39 calls, $0.02566, mean order age
+  9.339 s. It killed the general and routed the cannon and handgunners, then lost to the
+  remaining halberds. Six ability refusals repeated accepted activations before readiness
+  updated; three were dead targets and four routing units
+  (`reports/bench-b9-luna-ability-refusals.json`, `reports/bench-b9-assault-medium-ai11.json`).
+  Both screens: four valid of four started, 1354.34 wall seconds, 10.63 valid
+  trials/hour, rematch starts matched. Spend $6.3723 of $25.
+
+Decision before G1: freeze the compact cavalry attacker family and Sol low `llm_rules` as
+the reference (b7's flanking win motivates it; the Luna low and medium screens did not
+show competence), with walk- and run-nearest as baselines and source, prompt and rosters
+fixed during calibration. Six launches per modifier on the original unused G1 seeds; if
+both modifiers meet admission, G2 uses 1.1, else the passing one, else development
+continues.
+
+## 2026-10-14: Benchmark harness b8 (caster control)
+
+Changes: `6b30737` adds the five-versus-ten caster attacker family (the defender's roster
+and spellbook, only the role changes) with 1.0/1.1 settings and an untouched held-out map,
+passing the declaration and setup-generation checks; the scenario recipe now also checks
+objective incentives and the opponent's actual pressure. The b7 caster pilot had exposed
+missing morale feedback and flight control: read-only UI queries at 793.3 and 836.2 s
+reported that the flyers must attack by land, the corrected boolean query showed both
+could toggle flight with no cooldown, and at 1070.9 s Kairos's largest effect was Army
+losses and the fraction was -2.506; no query changed tactics or speed
+(`capability-probes/benchmark-flight-toggle/`). `a0a7108` exposes friendly leadership
+fraction and largest current effect plus flight availability and cooldown; both model
+controllers accept `flight` orders, which the Lua checks against live state before the UI
+command, and the requested state prevents reversing a completed change. The track became
+`obs-v3+terrain/act-v2/live-1x` (b7 stays on its old contract). 215 WH3 tests with Lua,
+Ruff and Lua 5.1 compilation passed; merged as `6a0fe53` after the b7 queue.
+
+Live on `f179dbe`:
+- `bench-b8-flight-probe-20261014` (`flight_probe:ProbeFlight`): both flyers grounded at
+  7.9 s, still grounded after a repeated landing request at 8.2 s, airborne at 18.7 s once
+  the cooldown expired; all six flight orders accepted. This checks completed transitions,
+  not repeated requests mid-animation or every combat restriction
+  (`reports/bench-b8-flight-acceptance.json`). The battle was lost at 372 s under
+  AttackNearest, margin -0.486, two later refusals (dead target, routing unit), no spend,
+  6.96 valid trials/hour (`reports/bench-b8-flight-probe.json`).
+- `bench-b8-assault-screen-ai10-20261014` stopped at 19:56:04 UTC: attack-nearest received
+  no new observation after sequence 1108 (340.7 s) for 60 s. Infrastructure failure: one
+  refusal, 1108 decisions, no API calls, 545.74 wall seconds, no gameplay outcome; Luna,
+  hold and the 1.1 screen unplayed. No Lua error in the mod log and no matching Windows
+  application event; the cause is unresolved
+  (`capability-probes/benchmark-b8-observation-stall/`,
+  `reports/bench-b8-assault-screen-ai10-failure.json`).
+- The retry `bench-b8-assault-screen-ai10-r2-20261014` (same implementation, scenario and
+  rotation seed, no profile changes) recovered, which does not identify the stall's cause.
+  Attack-nearest lost at 370 s (one refusal, margin -0.808, clock 0.9996). Luna
+  `llm_rules` lost at 247 s (margin -0.589, clock 0.9976, matched start): it routed the
+  cannon and both handgun units, but the lord and remaining cavalry lost to the general
+  and halberdiers; 44 decisions, 12 refusals (six ability, six routing), 47 calls,
+  $0.01922. All six ability refusals repeated an accepted activation on the immediate
+  acknowledgement snapshot (`last_issued_ms` equal to its time while readiness still said
+  true): readiness lag and repeated requests, not unsupported keys
+  (`reports/bench-b8-luna-ability-refusals.json`). Hold lost at 1205 s with both armies
+  intact (no refusals, matched start, clock 1.00004, raw margin 0), which exposed the timer
+  label bug fixed in b9 and the limit of raw margin for idle attackers. With the failed
+  first launch: 3 valid of 4 started, 2555.77 wall seconds, 4.23 valid trials/hour
+  (`reports/bench-b8-assault-screen-ai10.json`, original timer label kept).
+- `bench-b8-assault-screen-ai11-r2-20261014` (1.1): Luna lost at 271 s (45 decisions, 17
+  refusals, margin -0.626, clock 0.9878, 49 calls, $0.02274), again routing the ranged
+  units but losing to the general and halberdiers; hold lost at 1205 s with both armies
+  intact (no refusals, matched start, clock 0.99992; raw label again `engine_result`, its
+  countdown replicate appended to the timer audit); attack-nearest lost at 395 s (margin
+  -0.868, no refusals, matched start). The queue completed at 21:05:37 UTC: 3 valid trials
+  in 2055.85 wall seconds, 5.25 valid trials/hour. All cavalry screens with the failed
+  attempt: 6 valid of 7 started, 4611.62 wall seconds, 4.68 valid trials/hour
+  (`reports/bench-b8-assault-screen-ai11.json`, `reports/bench-b8-assault-development.json`,
+  original timer labels kept beside the audit).
+- The first 1.0 and 1.1 snapshots, both at 5.3 s, have all six player entries unchanged
+  and all eight AI entries changed; the halberdiers' leadership 70→78, attack 26→29,
+  defence 42→46, damage 28→31, charge 8→9 (`reports/bench-b8-cavalry-modifier-stats.json`):
+  the applied settings, not a calibrated win rate.
+
+No scenario admitted; ledger $6.3315.
+
+## 2026-10-14: Benchmark harness b7 (snapshot age and cavalry attacker candidate)
+
+Changes: `88de61a` and `2e643fe`, merged as `79d2f7d`, record the actual snapshot age
+apart from the total order age, and keep start-comparison deltas plus a paired
+sensitivity analysis without launches whose starts were flagged; primary results keep
+every valid trial. Requested 0/6/10 s ages are minima (synchronous model calls can leave
+gaps in the observation buffer); the runbook and CLI help say so. Recomputing the b4
+traces keeps their primary samples and exposes the flagged cavalry launch in the secondary
+comparison. `brt-cavalry-emp-assault` reverses the original foot-general candidate: the
+same six cavalry units must defeat eight Empire units before the 1200 s timer, funds
+capped at 8000, with 1.0/1.1 development settings and an untouched held-out map; a new
+task, not pooled with the defender variants. 72 benchmark/play tests and Ruff passed after
+the merge.
+
+Sol low `llm_rules` pilots on `82f5626`:
+- Caster `bench-b7-caster-sol-20261014` (`tze-caster-skv-screen`) lost at 1077 s: 281
+  decisions, five refusals, margin -0.680, clock 0.9956, 282 calls, $1.78329; whole job
+  1223.91 s, 2.94 valid trials/hour. It struck the artillery with spells, then withdrew and
+  hid its escorts, planning a defender timeout win; after contact around 650 s the escorts
+  were lost and the surviving flyers kept evading. An engine loss, not a timer ending
+  (`reports/bench-b7-caster-sol.json`). Ground Pendulum was verified: accepted at 64.6 s,
+  magic spent and cooldown visible at 70.9 s, while the immediate acknowledgement snapshot
+  still showed pre-cast resources and readiness; exact damage attribution is not claimed.
+  The b4 refused ground casts also lacked magic by acknowledgement after earlier casts
+  took effect (11<16, 9<12), though their basis snapshots had enough
+  (`reports/bench-b7-caster-ground-acceptance.json`,
+  `reports/bench-b4-ground-refusal-resources.json`).
+- Cavalry assault `bench-b7-assault-sol-20261014` (started 19:23:44 UTC) won at 432 s: 91
+  decisions, one refusal, margin +0.433, mean action age 5.862 s, clock 0.9934, 92 calls,
+  $0.62009; whole job 580.28 s, 6.20 valid trials/hour. Both handgun units and the cannon
+  routed first; Sol then concentrated on the general while the remaining cavalry fought
+  the halberdiers: a viable strategy, not admission (`reports/bench-b7-assault-sol.json`).
+
+Both results are in the register; ledger $6.2895 of $25. Next was to screen Luna on the
+same task before freezing a repeated reference, because 30 repetitions at Sol's cost would
+leave almost no budget margin.
+
+## 2026-10-14: Benchmark harness b6 (Pegasus pressure hypothesis)
+
+`brt-cavalry-emp-pegasus` (1.0/1.1 development settings, untouched held-out map) keeps the
+six-versus-eight roster and 8000 cap and replaces the enemy foot general with an Imperial
+Pegasus mount. The frontend enemy-slot change and unit key passed; the Pegasus shows speed
+105 and cost 1800 (a Griffon: 90 and 2050) against our cavalry's 84/92
+(`capability-probes/benchmark-pressure-mounts/`). A faster flying enemy was meant to
+pressure passive evasion; its AI behaviour was a hypothesis. Visible enemies now expose
+walk/run speeds beside b5's flight fields, through the same queries as friendlies after
+visibility filtering; the rules prompt states the facts without a strategy. 209 WH3 tests
+with Lua, Ruff and Lua 5.1 compilation passed. The pilots were to try `gpt-6-sol` at low
+effort as a stronger rules-only reference on the Pegasus and caster scenarios.
+
+`bench-b6-pegasus-sol-20261014` on `1bd120b` hung after menu step 3 (opening custom
+battle): Windows reported the game unresponsive while its CPU time grew, and the startup
+deadline ended the job as `infrastructure_failure` after 903.87 s with zero episodes and
+no model calls; the supervisor closed the game and the queue stopped
+(`capability-probes/benchmark-startup-hang/`, `calibration/b6-startup-observations.jsonl`,
+`reports/bench-b6-startup-failure.json`). The retry `bench-b6-pegasus-sol-r2-20261014`
+(identical source and setup, no profile changes, started 18:51:24 UTC,
+`calibration/b6-specialist-sol-r2-plan.json`) recovered. Its roster verified the
+horse-mounted player lord and the airborne Pegasus general, with enemy speeds 10.5/10.5 m/s.
+Sol moved for a flank, then chose to preserve a defender timeout win: at 385.6 s all six
+friendly units were active with at least 93% health and the Pegasus was 367.7 m from the
+nearest. Under the six-minute development review rule the pilot was interrupted for
+inadequate pressure, not scored: 80 decisions, nine unreachable-move refusals, $0.46713,
+clock 1.00004; the interrupted row is in the register (`calibration/b6-pegasus-review-rule.json`,
+`calibration/b6-pegasus-retirement.json`, `reports/bench-b6-flight-speed-acceptance.json`,
+`reports/bench-b6-pegasus-development.json`). The two launches used 1431.02 wall seconds
+with no valid gameplay outcome; the runner stopped at 19:00:11 UTC, before the caster job.
+
+## 2026-10-14: Benchmark harness b5 (draft while b4 screens ran)
+
+The compact caster screen exposed missing flight information: the engine reports
+Screamers as `inf_mel` despite `can_fly=true` and `is_currently_flying=true`, so the old
+category rule rendered them as infantry. Flying non-commanders now take the flying
+category (commanders keep their lord role), and units expose flight capability and
+current airborne state, both in the initial-state comparison, without a prescribed tactic
+(`dde4cfe`). A read-only query at 84.5 s verified Kairos and the Screamers airborne and
+the three ground escorts not (`capability-probes/benchmark-specialist-flight/`). The b4
+screen stayed on its frozen source. Timer-ended reports keep the engine's won/lost/draw
+beside `time_limit`, with separate timeout-outcome counts and a "non-timer win rate"
+label, so defender wins at the timer stay visible while the decisive-win criterion is
+kept. Validation: 207 WH3 tests with Lua, Ruff and Lua 5.1 compilation; 25
+report/setup/controller tests.
+
+## 2026-10-14: Benchmark harness b4 (compact specialist prototypes)
+
+Two development candidates, each with a 1.1 version and an untouched held-out map: six
+Bretonnian cavalry units against eight Empire units (`brt-cavalry-emp-pikes`), and Kairos
+with four escorts against ten Skaven units (`tze-caster-skv-screen`). The 8000 allowance
+is a cap, not a target; both use explicit armies and default upgrades, and the cavalry
+lord's Barded Warhorse is pinned. The frontend inventory verified the selectable cards and
+excluded inactive DLC; the horse change returned `wh_main_brt_cha_lord_4` and Kairos
+recruited with his default spellbook (`capability-probes/benchmark-specialist-rosters/`,
+no battle). Scenario `mounts` maps recruitment indexes to mounted unit keys, with a lobby
+read-back and a battle roster check; declared funds and settings now apply before
+recruitment as well as being verified after. 69 benchmark/play tests and Ruff passed,
+including refusal of a lord left on foot.
+
+Screens on `e221324`:
+- Caster `bench-b4-screen-caster-20261014`: Luna `llm_rules` lost at 963 s, hold at 613 s,
+  attack-nearest at 301 s; margins -0.642/-0.771/-0.777; refusals 88/0/0; Luna $0.06841;
+  whole job 2056.22 s, 5.25 valid trials/hour. Starts matched, including initial magic
+  12/68; starting stats and nonzero barriers were captured. Unit-targeted spells used mana
+  and entered cooldown; both unit-ground casts were refused, so that mechanic stayed
+  unverified for Kairos (see b7). No reference won (`reports/bench-b4-screen-caster.json`,
+  `reports/bench-b4-caster-interface-audit.json`).
+- Cavalry `bench-b4-screen-cavalry-20261014`: hold lost at 415 s (margin -0.928, no
+  refusals), attack-nearest at 262 s (-0.691, one refusal). That start was flagged: the
+  missile cavalry displaced 4.826 m and the enemy lord turned 12 degrees in place, with
+  resources, loadouts, roster and strength matching; the variation is kept for review, not
+  dropped. Luna chose evasion for a timeout win; with the army untouched after several
+  minutes the trial was interrupted at about 292 s to revise pressure and watchability: a
+  legitimate defender strategy with **no gameplay outcome**, excluded from performance
+  means, $0.01765 (`calibration/b4-cavalry-retirement.json`). Whole job 1148.78 s, two
+  valid of three started, 6.27 valid trials/hour (`reports/bench-b4-screen-cavalry.json`).
+
+A trace check measured Grail Knights at 2.01 m/s during the approach and 7.58 m/s just
+before melee despite the walking setting: fast final movement, not a damage bonus
+(`reports/bench-b4-cavalry-approach-check.json`). Next: a faster enemy anchor to pressure
+evasive cavalry (b6).
+
+## 2026-10-14: Benchmark harness b3 (specialist interface and `llm_rules`)
+
+Draft commits `a9b066b` (missing-terrain gate, startup causes, whole-job throughput),
+`7c71deb` (the `obs-v2+terrain` roster boundary), `6caacec` (ValueBase and Value kept
+privately), `51c1796` (`llm_rules`), `2bdb0e5` (barrier and ability ranges) and `37f3ebf`
+(starting resources):
+- The missing terrain field seen in b2 acceptance fails setup before a controller acts.
+  Unexpected startup or source errors keep their cause and are infrastructure failures;
+  interruptions stay separate. Paired reports give valid trials per whole-job wall hour,
+  counting setup, resets and failed jobs, or nothing when a job lacks final wall timing.
+- Enemy registration could announce unseen arrivals, and an earlier sighting could reveal
+  a later hidden death. `obs-v2+terrain` keeps the initial lobby roster public but adds
+  later units only on sight; a death flag needs visibility. Scoring still uses private
+  totals.
+- The engine documentation says `CcoUnitStat.ValueBase` excludes modifiers and `Value` is
+  current; startup keeps both privately. The b2 snapshots show that the AI difficulty
+  bonuses already enter ValueBase (see b2).
+- The owner's specialist-scenario direction exposed restrictive v15 tactical rules (stay
+  in melee, cavalry wait behind infantry, all units advance together). `llm_rules` is the
+  same direct controller, memory, ledger, observations, actions and timing with a separate
+  rules-only prompt; `llm` stays. Rotation, prompt snapshots and hashes, model cards,
+  digest and the register identify it.
+- Specialist interface: current and maximum barrier HP, and owned abilities' cast range,
+  effect radius and duration. A read-only probe during the 1.1 skills screen returned
+  Dwarf barrier 0/0 and Rune cast ranges of 100 m with distinct durations and radii
+  (`capability-probes/benchmark-specialist-interface`). Hidden enemies never enter
+  unit_record.
+- Starting fingerprints add friendly spell loadouts, initial strength, ammunition and
+  barriers, and magic, supplies and tickets; a resource or loadout change flags a rematch
+  even when positions match.
+
+Recomputing the broken setup, the failed first b2 attempt and the retry gave 2 valid of 3
+started trials in 0.38 job wall hours, 5.32 valid trials per hour
+(`reports/bench-b3-report-preview.json`). An objective regression runs the Lua sampler
+with ownership changes at unequal intervals: 25% held time where snapshot voting gives
+40%. Validation: 1041 passed, 4 skipped in the main environment (the skipped Lua checks
+passed separately); a fresh worktree passed 785 tests with 15 skips.
+
+## 2026-10-14: Benchmark harness b2 (terrain, lobby modifier, Herald screens)
+
+Read-only probes during b1 acceptance found the per-army AI modifier getter, stat previews
+and terrain APIs. b2 sets and reads back the declared lobby modifier and checks it on
+every army, and exposes coarse terrain and tested nearby destinations after an
+unreachable move, without replacing the order; both model renderers receive them
+(`obs-v1+terrain`), tactics otherwise unchanged. It records API wall latency, the returned
+model and the optional provider processing header (WH3 only), keeps setup failures in
+reports and separates partial traces from terminal failures. Herald development and
+held-out candidates were declared before tuning. A frontend probe on `7c0abdb` set and
+read AI modifiers 1.0/1.1 and the short 1200 s timer, which the Herald candidates declare.
+Worktree checks: 1019 passed, 14 skipped; Ruff and Lua 5.1 parsing.
+
+Setup failures, each with zero scored episodes:
+- `bench-b2-terrain-20261014` (`587d501`): the enemy roster exceeded Default Funds. The
+  operator copied its failed-setup dumps by hand. The funds probe
+  (`capability-probes/benchmark-b2-funds`, 15:45:19 UTC) read only the Default/Custom
+  options, verified custom 30000 and found that `funds_ultra` did not change the
+  selection. The Herald candidates now pin custom 30000, and setup failures keep their menu
+  dumps (54 relevant tests passed).
+- `bench-b2-broken-setup-20261014` (`acb97f5`) refused the nonexistent card at recruitment
+  step 37 and saved its map dump (hashes in
+  `capability-probes/benchmark-b2-broken-setup/probe.json`).
+- `bench-b2-acceptance-20261014` passed the corrected Herald setup (1.0, 1200 s, custom
+  30000) and recorded both armies' starting stats, then stopped at the terrain diagnostic:
+  the game lacks `math.huge`, so the grid was absent. The failed TerrainProbe trial is in
+  the register; Luna was not played. The sampler now starts from its first corner (Lua 5.1
+  regression). Full suite before the fix: 1033 passed, 1 skipped.
+
+On `b476175` (the controller and queue exited at 17:15:50 UTC):
+- Acceptance retry `bench-b2-acceptance-r2-20261014` (tool session 70797): at 5.5 s the
+  engine refused f2's move to (-520, 130.6) and returned three tested nearby positions;
+  TerrainProbe chose (-504, 130.6), which was accepted, and f2 moved 6.29 m in six seconds
+  before the accepted halt (`capability-probes/benchmark-b2-controllers/navigation-proof.json`).
+  It lost at 350 s (clock 1.0066). Luna (`llm` v15) lost at 442 s: its first call returned
+  actual_model `gpt-6-luna` (an alias, not a pinned snapshot), provider processing
+  7.280 s, call wall time 8.122 s, one transport attempt; 68 decisions, 14 refused orders,
+  $0.03919. Its ability refusals were repeats during readiness lag (Whirlwind accepted at
+  139.6 s, its retry refused at 145.3 s); the engine's "does not support this special
+  ability" also appears in these temporary states (`reports/bench-b2-acceptance-r2.json`).
+- Herald screens, one launch each. `bench-b2-screen-ai10-20261014` (started 16:17:05 UTC):
+  hold lost at 448 s, skills won at 382 s, attack-nearest lost at 249 s; margins
+  -0.412/+0.372/-0.710; invalid 0/0/5; whole job 1283.63 s, 8.41 valid trials/hour.
+  `bench-b2-screen-ai11-20261014` (16:38:28): attack-nearest, hold and skills lost at
+  242/266/265 s; margins -0.761/-0.658/-0.481; invalid 3/0/0; 967.02 s, 11.17 valid
+  trials/hour. All rematch starts matched (`reports/bench-b2-screen-ai10.json`,
+  `reports/bench-b2-screen-ai11.json`). Fresh snapshots at 5.2 s show the difficulty
+  bonuses only in enemy stats, already in ValueBase: all 12 enemy entries change (about
+  +10% melee attack and defence, weapon damage and charge, +8 leadership), all 12 player
+  entries stay identical; at 1.1 the Marauders' attack went 28→31, defence 32→35, weapon
+  damage 25→28, charge 6→7, leadership 60→68
+  (`reports/bench-b2-starting-base-stat-comparison.json`). The first roster snapshots of
+  the 1.0 screen and the acceptance retry, both at 5.2 s, had five unit positions more than
+  1 m apart (up to 6.8 m): fresh launches vary.
+- Objective probes (`probe_abilities`). `bench-b2-objectives-settlement-20261014`
+  (16:54:35) lost at 244 s holding every point throughout, with nine accepted barricade
+  builds and 204 supplies left; at its final snapshot eight built slots were destroyed and
+  one still constructing, so build counts are accepted purchases, not surviving structures
+  (`reports/bench-b2-settlement-objective-audit.json`).
+  `bench-b2-objectives-domination-20261014` (17:00:42) lost at 776 s, tickets 0-1500, 514
+  supplies left, 15 accepted purchases across nine types; the trace shows nine new
+  friendly IDs and six old IDs restored from zero men, matching the purchases by type.
+  Objective fields and register rows agree with the traces; the ownership-time
+  reconstruction differs by at most the initial 300 ms sample gap
+  (`reports/bench-b2-objective-audit.json`).
+
+Ledger $3.3329. Owner steering then put specialist anchor-unit scenarios and faction
+mechanics first ([benchmark.md](benchmark.md#scenario-design)): the unstarted Herald G1
+plan was superseded, and cavalry/anti-large and caster-led candidates came before repeated
+calibration.
+
+## 2026-10-14: Benchmark harness b1 (paired trials, acceptance rotation)
+
+Owner goal: complete paired benchmarks, difficulty and latency calibration and the
+scenario interface fixes. b1 added recorded controller rotation and importable
+controllers, strict benchmark setup checks, observation-age arms, private evaluation
+totals excluding routing and shattered units, objective ownership integrated on game
+ticks, reinforcement counts by type, trial failure and interruption accounting, and paired
+reports with explicit denominators, uncertainty and missing pairs. Policies stayed `llm`
+v15 and `commander` v3. Runbook: [benchmark-run.md](benchmark-run.md). Validation: 1030
+tests passed, 1 skipped; Ruff; every mod script parses as Lua 5.1; the follow-up clock
+and refusal edits passed 52 benchmark/play tests.
+
+Acceptance `bench-b1-acceptance-20261014` on `5cad165` (started 14:54:39 UTC, frozen
+development scenario `dwf-sla-taurox`): hold, Luna (`llm` v15), skills, attack_nearest and
+the imported ExternalHold all ended on engine losses at 386, 824, 426, 262 and 386 s;
+active margins -0.675, -0.002, -0.192, -0.594 and -0.675. All rematch start fingerprints
+matched; clock ratios 0.9967 (hold) and 0.9985 (Luna). Luna cost $0.0594 (ledger
+$3.2937); its 21 rejections were 9 unreachable moves, 7 routing units, 1 dead target and 4
+spell refusals, and its later plan hid survivors for the defender's 60-minute timeout,
+but Sigvald broke the remaining army first. The imported controller was
+`/tmp/wh3-benchmark-controllers/external_controller.py` (sha256
+`91410140291a601bab524e73a37755738d92d04b2e04339e965be00296957ea2`), now kept untracked at
+`capability-probes/external-controllers/external_controller.py` beside the flight
+diagnostic `flight_probe.py`. One instance verifies rotation and import, not ranking
+confidence. Report: `reports/bench-b1-acceptance.json`.
+
+Setup probe before b1: `runs/twwarhammer3/benchmark-probe-20261014` (`bench_probe.py`, run
+from a clean worktree at `f2c8463`) built `dwf-sla-taurox` unattended. It selected and read
+back the map ("Dread Crossing – Quest Battle"), pinned both factions, recruited all 24
+cards by id and matched both rosters. Lobby read-backs: land_normal, 3600 s,
+ai_level_very_hard, funds_large. Battle read-backs: IsDefender true, WillWinOnTimeout
+true, UnitSize 0.75, BalanceOfPowerPercent 0.51 at 61 s. `hold` lost at 298 s (0.41 vs
+0.65 men alive), and all five protected units were routing at the end. Its 965 empty
+requests applied after 300 ms (954) or 600 ms (11). The protected units met melee 8.4,
+13.2, 24.0, 46.2 and 47.4 s after an enemy came within 100 m. On the first rematch,
+`attack_nearest` started from the same positions; the owner stopped it at 262 s.
+
+## 2026-10-14: Battle types, llm v15 and commander v3 (overnight)
+
+Owner goal (2026-10-14, away overnight): one minimal test scenario for each battle type
+beyond the land battle (conquest, domination, free-for-all, ambush, chokepoint,
+subterranean, minor settlement, siege, survival), as vertical slices toward the
+benchmark. Reference: [battle-types.md](battle-types.md); engine facts in
+[integration.md](integration.md#battle-types-probed-2026-10-14).
+
+What changed (`0cf3646` to `aa5a62b` and after):
+- Setup: `battle_type`, `attacker`, several or no enemy sides, reinforcing armies;
+  lobby steps guarded by `when` expressions; the engine's type and the player's role
+  checked at the first observation; a start click that starts nothing fails at once.
+- State: the observation's `mode` (type, role, timeout winner, the game's objective
+  text, capture points, tickets, gates, supplies, building slots, reinforcement pool and
+  spawn zones); units of every enemy alliance and units that enter mid-battle.
+- Orders: `build` (towers and barricades) and `reinforce` (pool units), both paid with
+  supplies; `probe_abilities` uses both.
+- Prompts (llm v15, commander v3): the Battle section, the two orders, and the
+  objective rule, including the owner's siege notes (keep the victory points held,
+  spend supplies).
+- Three review workflows, each with reviewers per dimension and an adversarial verifier
+  per finding. The first (30 findings, 24 confirmed, 10 distinct) found a validation
+  crash, slot usability that always read false, shifting reinforcement ids and smaller
+  defects (fixed in `c7287f4`). The second found a running mean that froze after about a
+  thousand observations and a cost mismatch in the pool (`088a175`). The third found
+  zone usability judged by one unit, double purchases of one pool entry and doc errors
+  (`8f9d832`).
+- Engine findings during the battles fixed the same night: purchased units never got
+  ids, because the scan only ran with regular observations (`d62a751`); a reply invalid
+  three times ended the battle (`9f08da8`); spawn zones refuse purchases (`89f3f8c`).
+  A bridges field for the chokepoint (`2a0a1cd`) was removed again (`fcba267`): that
+  map has no buildings, its crossings are terrain.
+- Also: random draws per battle type (`9b0209f`), measures per episode (`ea646a3`,
+  `7a40889`, `01e3abb`: victory points and the key building held, supplies left,
+  tickets, builds and purchases) and three register columns (`ea66fef`).
+
+Results, one battle each (per-job tables below):
+
+| Scenario | `attack_nearest` | `probe_abilities` | Luna `llm` v15 | Luna `commander` v3 |
+|---|---|---|---|---|
+| conquest | won 510 s | | won 197 s | lost 403 s |
+| domination | lost 742 s | lost 709 s | lost 1042 s (tickets 1156-1500) | lost 814 s |
+| free-for-all | won 942 s | | policy failure; replay won 560 s | lost 909 s |
+| ambush | won 173 s | | lost 699 s | truncated |
+| chokepoint | won 369 s | | won 421 s | won 878 s |
+| subterranean | lost 546 s | | won 391 s | won 503 s |
+| minor settlement | lost 302 s | won 390 s | won 242 s | won 300 s |
+| siege | won 510 s | won 430 s | won 368 s | won 450 s |
+| survival | lost 198 s | lost 249 s | lost 292 s | lost 325 s |
+
+One battle per cell separates nothing, but it shows each slice working. A siege with
+the player attacking (`siege-attack-kho5-dwf5`) set up correctly but could not breach:
+the gate stayed at 100% and the units idled outside the walls until the job was stopped
+at 730 s; attacking needs gate and wall orders and siege equipment. LLM v15 cost
+$0.32 for its ten battles; the commander $0.48.
+
+"Strength left" is the men alive out of the initial men of every unit registered (at the
+start, or when it entered), ours / the enemy's (every enemy army in the free-for-all).
+Jobs before `e8eb0b6` and `d62a751` missed units that entered later. "Rejected" counts
+the engine's rejections and orders refused by validation.
+
+Smoke battles, `attack_nearest` (every unit at its nearest visible enemy, objectives ignored):
+
+| Scenario | Job | Source | Result | Battle | Strength left | Rejected |
+|---|---|---|---|---|---|---|
+| conquest | `smoke-conquest-kho5-dwf5-attack_nearest-20261014-0245` | `aa5a62b` | won | 510 s | 29/197 / 78/235 | 0 |
+| domination | `smoke-domination-kho5-dwf5-attack_nearest-20261014-0159` | `8b84632` | lost | 742 s | 0/197 / 207/235 | 0 |
+| free-for-all | `smoke-ffa-kho5-dwf5-emp5-kho5-attack_nearest-20261014-0114` | `0cf3646` | won | 942 s | 103/197 / 36/669 | 3 |
+| ambush | `smoke-ambush-kho5-dwf5-attack_nearest-20261014-0221` | `e8eb0b6` | won | 173 s | 162/197 / 117/235 | 0 |
+| chokepoint | `smoke-chokepoint-kho5-dwf5-attack_nearest-20261014-0226` | `c7287f4` | won | 369 s | 72/197 / 55/235 | 5 |
+| subterranean | `smoke-underground-kho5-dwf5-attack_nearest-20261014-0234` | `c7287f4` | lost | 546 s | 15/197 / 110/235 | 0 |
+| minor settlement | `smoke-settlement-kho5-dwf5-attack_nearest-20261014-0214` | `e8eb0b6` | lost | 302 s | 43/197 / 121/235 | 1 |
+| siege | `smoke-siege-kho5-dwf5-attack_nearest-20261014-0132` | `2dac47b` | won | 510 s | 117/197 / 82/235 | 0 |
+| survival | `smoke-survival-kho5-attack_nearest-20261014-0154` | `1a5ec0c` | lost | 198 s | 38/197 / 434/448 | 1 |
+
+- Before these, `probe-conquest-attack-20261014` (`12078dc`) played a conquest battle set
+  up by hand with menu steps and was won at 331 s.
+- The siege smoke had one tower built by hand mid-battle (the build-command probe), and
+  the domination smoke one unit bought by hand (the purchase probe).
+- The first survival job (`smoke-survival-kho5-attack_nearest-20261014-0143`) never
+  started, because the lobby wants a reinforcing army; it was killed after 10 minutes.
+- The free-for-all job predates the recorded `mode`; its trace shows `land_normal`.
+
+`probe_abilities` (the `skills` executor plus abilities, builds and reinforcements) on the
+four types with supplies:
+
+| Scenario | Job | Source | Result | Battle | Strength left | Orders |
+|---|---|---|---|---|---|---|
+| siege | `smoke-siege-kho5-dwf5-probe_abilities-20261014-0255` | `aa5a62b` | won | 430 s | 133/197 / 109/235 | 8 towers built at 5.5 s (6000 supplies to 2000) |
+| minor settlement | `smoke-settlement-kho5-dwf5-probe_abilities-20261014-0305` | `aa5a62b` | won | 390 s | 17/197 / 43/235 | 12 barricades and towers |
+| domination | `smoke-domination-kho5-dwf5-probe_abilities-20261014-0313` | `aa5a62b` | lost | 709 s | 59/197 / 214/235 | 12 units bought, 7 refused at the zone; the bought units never got ids (fixed in `d62a751`) |
+| survival | `smoke-survival-kho5-probe_abilities-20261014-0327` | `d62a751` | lost | 249 s | 227/611 / 1323/1405 | 6 units bought, each registered about 1 s later; 13 wave units registered as they came |
+
+The probe won the minor settlement, which `attack_nearest` had lost, building as it went.
+
+Luna `llm` v15 (`gpt-6-luna`, low; the source moved during the chain, each row names its revision):
+
+| Scenario | Job | Source | Result | Battle | Strength left | Rejected | Objectives | Cost |
+|---|---|---|---|---|---|---|---|---|
+| conquest | `llm-luna-v15-conquest-kho5-dwf5-20261014-0453` | `89f3f8c` | won | 197 s | 162/197 / 102/235 | 4 | points held 12% | $0.014 |
+| domination | `llm-luna-v15-domination-kho5-dwf5-20261014-0427` | `7a40889` | lost | 1042 s | 416/617 / 648/698 | 56 | points held 38%, supplies left 234, bought 21; tickets 1156 to the enemy's 1500 | $0.084 |
+| free-for-all | `llm-luna-v15-ffa-kho5-dwf5-emp5-kho5-20261014-0335` | `ea646a3` | policy failure | | | 1 | | $0.014 |
+| free-for-all | `llm-luna-v15-ffa-kho5-dwf5-emp5-kho5-20261014-0458` | `89f3f8c` | won | 560 s | 54/197 / 26/669 | 13 | | $0.039 |
+| ambush | `llm-luna-v15-ambush-kho5-dwf5-20261014-0341` | `ea66fef` | lost | 699 s | 0/197 / 60/235 | 21 | | $0.042 |
+| chokepoint | `llm-luna-v15-chokepoint-kho5-dwf5-20261014-0355` | `9f08da8` | won | 421 s | 75/197 / 24/235 | 28 | | $0.028 |
+| subterranean | `llm-luna-v15-underground-kho5-dwf5-20261014-0404` | `088a175` | won | 391 s | 158/197 / 37/235 | 4 | | $0.026 |
+| minor settlement | `llm-luna-v15-settlement-kho5-dwf5-20261014-0421` | `5cf042e` | won | 242 s | 118/197 / 94/235 | 5 | points held 100%, supplies left 796, built 5 | $0.020 |
+| siege | `llm-luna-v15-siege-kho5-dwf5-20261014-0412` | `2a0a1cd` | won | 368 s | 120/197 / 69/235 | 8 | points held 100%, supplies left 2258, built 8 | $0.028 |
+| survival | `llm-luna-v15-survival-kho5-20261014-0446` | `7a40889` | lost | 292 s | 450/737 / 1449/1555 | 10 | points held 20%, supplies left 2833, bought 7 | $0.024 |
+
+- It read the Battle section and took and held capture points. In the siege it built 6
+  towers in the first 30 s (6000 supplies to about 200), the last two at 74 s and 123 s;
+  in the minor settlement 5 builds over the first 160 s. It called in reinforcements in
+  domination (21) and survival (7) and commanded each new unit once it appeared.
+- The owner's siege concern did not recur with the model: siege and minor settlement held
+  every victory point throughout and were won. Survival ended with 2833 supplies unspent.
+- The first free-for-all was a policy failure: the model ordered its lord's ability while
+  it recharged, in three replies running, and the third invalid reply ended the battle.
+  Since `9f08da8` a reply's valid orders are kept when the retries run out.
+- Rejected orders: moves to unreachable points (17 each in ambush and chokepoint, across
+  the river or off the forest path); purchases at zones that refuse them (34 in
+  domination; zones marked since `89f3f8c` and `8f9d832`); orders to routing units; a few
+  self abilities refused with "does not support this special ability".
+- The first conquest job (`llm-luna-v15-conquest-kho5-dwf5-20261014-0333`) stopped before
+  its battle: a merge during its lobby setup changed the source. The replay won by
+  breaking the enemy, not on tickets.
+
+Luna `commander` v3 (build and reinforce in its one-shot list):
+
+| Scenario | Job | Source | Result | Battle | Strength left | Rejected | Objectives | Cost |
+|---|---|---|---|---|---|---|---|---|
+| conquest | `commander-luna-v3-conquest-kho5-dwf5-20261014-0611` | `01e3abb` | lost | 403 s | 51/197 / 100/235 | 0 | points held 38% | $0.022 |
+| domination | `commander-luna-v3-domination-kho5-dwf5-20261014-0636` | `838044b` | lost | 814 s | 394/618 / 591/698 | 7 | points held 8%, supplies left 355, bought 15 | $0.058 |
+| free-for-all | `commander-luna-v3-ffa-kho5-dwf5-emp5-kho5-20261014-0659` | `838044b` | lost | 909 s | 2/197 / 35/669 | 4 | | $0.052 |
+| ambush | `commander-luna-v3-ambush-kho5-dwf5-20261014-0717` | `838044b` | truncated | | | 58 | | $0.183 |
+| chokepoint | `commander-luna-v3-chokepoint-kho5-dwf5-20261014-0803` | `838044b` | won | 878 s | 1/197 / 73/235 | 53 | | $0.054 |
+| subterranean | `commander-luna-v3-underground-kho5-dwf5-20261014-0820` | `fcba267` | won | 503 s | 34/197 / 102/235 | 17 | | $0.034 |
+| minor settlement | `commander-luna-v3-settlement-kho5-dwf5-20261014-0629` | `838044b` | won | 300 s | 60/197 / 66/235 | 6 | points held 100%, key building 100%, supplies left 1060, built 5 | $0.022 |
+| siege | `commander-luna-v3-siege-kho5-dwf5-20261014-0620` | `838044b` | won | 450 s | 171/197 / 19/235 | 4 | points held 100%, key building 100%, supplies left 3296, built 8 | $0.026 |
+| survival | `commander-luna-v3-survival-kho5-20261014-0652` | `838044b` | lost | 325 s | 113/461 / 1515/1614 | 9 | points held 14%, supplies left 5980, bought 4 | $0.026 |
+
+- It built 8 in the siege and 5 in the minor settlement, held the key building throughout
+  both, and bought 15 units in domination and 4 in survival. Domination was lost with the
+  points held 8% of the time.
+- Almost every rejected order was a move to an unreachable point: 53 at the chokepoint,
+  57 in the ambush, 17 underground.
+- The ambush ended in a standoff, truncated by the job's 40-minute episode cap
+  (`--episode-timeout 2400`): its last unit, the horsemen, stood hidden and idle against
+  one enemy crossbow unit; as defender it would have won when the 60-minute battle limit
+  ran out. It cost $0.18 for that reason. Types where time decides need an episode
+  timeout above the battle's limit.
+
+Siege attack: `siege-attack-kho5-dwf5` (added in `42b0c2f`), played by `probe_abilities`
+in `smoke-siege-attack-kho5-dwf5-probe_abilities-20261014-0830` on `fcba267`, stopped by
+hand at 730 s; the gate untouched at 100%, defenders on the walls holding every point and
+all 1000 tickets, our units down to 63 of 197 men idle outside.
+
+First four random battle-type draws, each played once by `skills` (which neither builds
+nor buys; jobs `smoke-random-<type>-skills-20261014-*`), source `89f3f8c` for the siege,
+`01e3abb` for the others:
+
+| Draw | Seed | Map | Armies (units) | Result | Battle | Strength left | Objectives |
+|---|---|---|---|---|---|---|---|
+| `random-siege` | 632937498 | Gaean Vale (High Elves) | Chaos Dwarfs (15) defending against Dark Elves (20) | lost | 377 s | 207/734 / 400/858 | points held 100%, supplies left 9342 |
+| `random-ffa` | 1161544204 | Moonlight Ridge | Daemons (10) against Lizardmen, Skaven and Slaanesh (42 in all) | lost | 1648 s | 275/403 / 46/2422 | |
+| `random-survival` | 2113589463 | Endless Chaos Dwarfs | Ogre Kingdoms (14) against waves | lost | 514 s | 27/144 / 2340/3389 | points held 48%, supplies left 15449 |
+| `random-domination` | 2063442117 | Toothgrass Hill | Wood Elves (6) against Lizardmen (11) | lost | 639 s | 6/327 / 1134/1262 | points held 0%, lost on tickets (0 to 1500), supplies left 10010 |
+
+Each set up, played and ended on an engine result with no infrastructure failure. The
+siege was lost with every victory point held (the army broke first). In the free-for-all
+the last alliance standing was not ours although 275 of our men were alive (routing,
+presumably). The spawn-zone `usable` field read true for all five domination zones.
+
+Owner notes (2026-10-14): watching the siege smoke played by `attack_nearest`, the owner
+saw the controller ignore the goal: every unit fought at the gate while enemy infantry
+walked to the undefended key building, and the battle ended with more than 9,000
+supplies unspent. The engine still scored it won (the enemy army broke). Both became
+benchmark measures (victory points held over time, supplies left), both prompts now say
+so, and the controllers can build and reinforce.
+
+## 2026-10-13: Random-battle comparison, partial (into 2026-10-14)
+
+Three seeds of the planned six, each played once by every controller (`9bfee82`, AI very
+hard, autogenerated armies), then stopped at the owner's word to finish the engineering
+first. All nine battles were lost:
+
+| Seed: draw | `skills` | Luna `commander` v2 | Luna `llm` v14 |
+|---|---|---|---|
+| 2028855463: Dark Elves vs Nurgle | 434 s, 0.06 vs 0.34 | 299 s, 0.15 vs 0.56 | 618 s, 0.00 vs 0.31 |
+| 1202868312: Daemons of Chaos vs Nurgle | 259 s, 0.00 vs 0.67 | 293 s, 0.00 vs 0.75 | 280 s, 0.00 vs 0.54 |
+| 322117462: Dwarfs vs Slaanesh | 382 s, 0.31 vs 0.30 | 231 s, 0.43 vs 0.58 | 317 s, 0.46 vs 0.60 |
+
+Cells show battle length and strength left (ours vs the enemy's). Costs: commander
+$0.018-0.025 a battle, llm $0.025-0.040. The direct controller decided every 6-7 s
+(49-89 decisions a battle).
+
+Three paired draws separate nothing yet, and these draws at very hard (with the AI's
+1.1 stats modifier) are hard for every controller. The remaining seeds are 264482191
+(Ogre Kingdoms vs Slaanesh), 1355466036 (Daemons vs Greenskins) and 238913231 (Cathay
+mirror). The chain script ran `play --scenario random --seed N --episodes 1` per
+controller.
+
+## 2026-10-13: Ability readiness and army abilities, llm v14 and commander v2 (`9bfee82`)
+
+The script API has no ability cooldown getter, but the UI's context system has one
+([integration.md](integration.md#ability-state-through-the-ui-context-system-probed-2026-10-13)).
+Each friendly ability now carries:
+- target type, magic cost and cooldown;
+- `ready`, `active`, seconds of recharge left and uses left.
+
+Army abilities, such as Khorne's three kill-unlocks, carry target, radius, unlock cost,
+`unlocked` and `ready`. An `ability` order with unit `"army"` casts one. Validation
+refuses an ability that is not ready, and both prompts describe the new state.
+
+`watch` follows a job beside the game, and `play --show` puts each model reply in the
+advisor window.
+
+Engine check, `probe-abilities-random-s4` (`--policy probe_abilities`, seed 4: Khorne
+(Arbaal) vs Dark Elves, autogenerated):
+- The lord's and the hero's self abilities (Fight or Die, Potion of Toughness, Deadly
+  Onslaught) were cast when ready and accepted. Afterwards the state showed them active
+  and not ready, and the potion with 0 uses left.
+- The army abilities showed locked, with costs 100/200/300.
+- The battle was lost at 228 s with 31 points, so no army ability unlocked. The probe
+  now runs on the `skills` executor (`46f94d0`), which earned 113 points on `kho5-dwf5`.
+
+Second check, `probe-abilities-random-s245-20261014` (Khorne vs Skaven, seed 245):
+- Horn of Khorne unlocked at 109 points and was cast at our largest unit's position at
+  260 s. The engine accepted it, and its HUD timer counted 31 s active, then 90 s of
+  recharge. The state now shows those phases (`739ce9c`).
+- The lord's and hero's casts were accepted as before. The battle was lost at 337 s.
+
+## 2026-10-13: Controller comparison on `kho5-dwf5`, stopped for random battles (late)
+
+Six episodes each on the fixed Khorne vs Dwarfs battle, unpaused at 1x, AI very hard:
+
+| Job | Source | Won | Mean battle s | Own left | Enemy left | Cost |
+|---|---|---|---|---|---|---|
+| `skills-v1.2-kho` | `cb12f6a` | 5/6 | 461 | 0.10 | 0.17 | $0 |
+| `commander-luna-v1.2-kho` | `df390c1` | 5/6 | 329 | 0.27 | 0.33 | $0.12 |
+| `llm-luna-v13-kho` (1 episode) | `df390c1` | 1/1 | 244 | 0.66 | 0.28 | $0.02 |
+
+(Commander v1.2 is the v1 commander over executor v1.2; there was no v1.1 commander.)
+
+- The scenario does not separate controllers: `skills`, the Luna commander and the v6
+  direct controller all won 5 of 6 on it.
+- Three `skills` episodes were identical (531 s, 0.10 vs 0.09 left). With a deterministic
+  controller, a rematch replays the same battle, so its episodes are not independent
+  samples.
+- The commander's 34 engine rejections in 6 battles: 26 refused lord ability casts and 8
+  unreachable moves.
+- The owner asked why we were still playing small fixed battles, so the `llm` job was
+  stopped after its first episode (won). The comparison moved to random draws: six
+  seeds, each played once by every controller, so the draws are paired.
+
+## 2026-10-13: Shooter re-send fix, executor v1.2 (`55ab6b3`)
+
+Diagnosis from the Skaven trace: the four shooters spent most of their attack time moving,
+with no target shown by the engine and no shots (779 such observations against 131
+with shots). Many of those stretches were chases of fast chariots (Chaos Chariot,
+Warwolves Chariot) kept in range for 15-42 s without a shot. The lapse rule read "no
+target" as a dropped attack and re-sent it every 2 s. Two changes:
+- an attack is not lapsed while the unit moves with no target and no move destination
+  (closing in, finding a line of fire or evading as a skirmisher); it lapses when the
+  unit is idle, shows another target, or stands without one. Replayed over the logged
+  orders, this suppresses 118 of the 195 shooter re-sends;
+- a shooter that fires no shot (ammunition unchanged) at a target in range for 15 s
+  (30 s for artillery, whose reloads were up to about 20 s) skips that target for 30 s
+  and picks another; its phase says so.
+
+Validation, `skills-v1.2-random-a` (seed 255179936, same draw and the same
+autogenerated armies): no shooter repeated an identical order more than 3 times in a row,
+against stretches of up to 21 before. Orders per shooter fell from 69-102 in 415 s to
+47-60 in 346 s; what remains is target switching as enemies enter and leave range.
+Ammunition spent changed both ways (Night Runners 387 -> 162, Globadiers 96 -> 132,
+Gutter Runners 1080 -> 880, Death Globes 146 -> 99), so one battle says nothing about
+firing volume. Lost at 346 s with 0.40 of our men left against 0.70 (before: 0.35 vs
+0.25 at 415 s). The draw is hard: fast Norscan cavalry and chariots against short-range
+skirmishers.
+
+## 2026-10-13: Random battles
+
+Owner request: use the custom battle screen's Autogenerate army on random factions, and
+randomize the map too. A UI probe (`runs/twwarhammer3/probe-random-army-20261013/`,
+[integration.md](integration.md#frontend-automation)) found:
+- the button `clear_autogen_parent/button_autogen`;
+- the classic battle types' 380 maps;
+- the faction list of each of 23 owned races (307 factions);
+- the profile's fixed settings, including AI difficulty very hard.
+
+`--scenario random [--seed N]` draws the map and both races from
+`configs/twwarhammer3/custom_battle.json` and autogenerates both armies. The battle type
+stays classic: sieges, capture points and survival need interface work first.
+
+The first draw, `commander-luna-v1-random-s2-smoke`, was seed 2 on
+`land_of_the_dead_01_04`. Dark Elves (Blessed Dread) had 13 units: a Dreadlord,
+Corsairs, Executioners, Black Guard, Dark Riders, Cold One Knights, a Cold One chariot,
+three Harpies, a Feral Manticore and a Reaper Bolt Thrower. Nurgle (Pallid Nurslings)
+also had 13. The commander won at 407 s with 0.40 of its men left against 0.23, from 62
+plans: mean plan age 6.5 s, think time 6.2 s, about 4,800 input tokens per call, $0.03.
+All 9 rejections were refused lord ability casts. The trace was 5.5 MB.
+
+A `skills` job on the same seed was stopped at the owner's word: a repeated draw shows
+nothing new, and a job is one matchup. The draw also picked a faction for each side
+(`5a2fc8d`), but the owner noted that a faction within a race only changes colours. The
+next commit draws races only, a fresh seed per job. The mod reports the Harpies and the
+Feral Manticore as infantry: its class mapping checks `can_fly` only for monsters.
+
+Two fresh draws followed, each lost:
+
+| Job | Draw | Outcome | Battle s | Own left | Enemy left | Notes |
+|---|---|---|---|---|---|---|
+| `skills-v1.1-random-a` (`900000a`) | Skaven (20 units) vs Norsca (13), `wh3_nur_wastes_01_04`, seed 255179936 | lost | 415 | 0.35 | 0.25 | 0 rejections |
+| `commander-luna-v1-random-b` (`29c9325`) | Vampire Counts vs Lizardmen, `wh3_tze_wastes_02_01`, seed 369290826 | lost | 404 | 0.00 | 0.31 | 70 plans, plan age 5.6 s, $0.03 |
+
+In the commander battle, 19 of 21 rejections were refused lord ability casts. A defect
+to fix before the comparison: in the skills battle four Skaven missile units (Night
+Runners, Gutter Runners, Globadiers, Death Globe Bombardiers) re-sent the same ranged
+attack every 2 s for long stretches, 69-102 orders each. The engine never showed the
+ordered target, probably for lack of line of sight, so the redirected-attack lapse rule
+from `0f8eb39` fired on its 2-second repeat. A shooter should give up on a target the
+engine keeps refusing and pick another.
+
+## 2026-10-13: Skills and commander v1
 
 Owner request: build the simplest design from a research summary (ChatGPT 6 Astra Pro,
 2026-10-13), an asynchronous API-model commander over persistent scripted skills, and
@@ -1120,202 +1149,472 @@ needs six or more episodes per controller
   for Luna, 5.8 s for Sol and 4.8 s for Astra. Astra's first call took 12.5 s. Total WH3
   spend after these jobs: $2.08 of the $25 ledger.
 
-### Random battles
+Every commander smoke call sent about 3,500 input tokens, about 2,100 of them cached.
+Cost per call: about $0.0004 for Luna, $0.004 for Sol (`gpt-6.1-sol`) and $0.019 for
+Astra, at the 2026-10-12 standard-tier prices per million input/cached/output tokens of
+0.10/0.01/0.50, 2.00/0.10/10.00 and 10.00/1.00/50.00.
 
-Owner request: use the custom battle screen's Autogenerate army on random factions, and
-randomize the map too. A UI probe (`runs/twwarhammer3/probe-random-army-20261013/`,
-[integration.md](integration.md#frontend-automation)) found:
-- the button `clear_autogen_parent/button_autogen`;
-- the classic battle types' 380 maps;
-- the faction list of each of 23 owned races (307 factions);
-- the profile's fixed settings, including AI difficulty very hard.
+## 2026-10-13: Unpaused 1x battles only
 
-`--scenario random [--seed N]` draws the map and both races from
-`configs/twwarhammer3/custom_battle.json` and autogenerates both armies. The battle type
-stays classic: sieges, capture points and survival need interface work first.
+The first diagnostic `play-smoke` used `--pause`; the owner rejected this and requires
+all battles, including probes, to run unpaused at normal 1x. It remains labelled as a
+paused diagnostic in local evidence and contributes no policy result. Code `1c56ec2`
+removes automatic observation/order pauses from the Lua mod, sets the battle speed to
+1x at deployment, and removes the CLI's pause/speed overrides. Python rejects paused
+or altered-speed configurations, session writes, attached sessions and incompatible
+live observations before a policy decision. The prompt and repository instructions
+now explicitly require unpaused 1x. Historical results retain their recorded modes.
 
-The first draw, `commander-luna-v1-random-s2-smoke`, was seed 2 on
-`land_of_the_dead_01_04`. Dark Elves (Blessed Dread) had 13 units: a Dreadlord,
-Corsairs, Executioners, Black Guard, Dark Riders, Cold One Knights, a Cold One chariot,
-three Harpies, a Feral Manticore and a Reaper Bolt Thrower. Nurgle (Pallid Nurslings)
-also had 13. The commander won at 407 s with 0.40 of its men left against 0.23, from 62
-plans: mean plan age 6.5 s, think time 6.2 s, about 4,800 input tokens per call, $0.03.
-All 9 rejections were refused lord ability casts. The trace was 5.5 MB.
+Validation: 95 WH3 tests and repository-wide Ruff pass, including rejection of stale
+paused sessions and speed overrides. The replacement engine smoke is
+`runs/twwarhammer3/skip-intro-20261013/play-smoke-realtime/`.
+It reached a deployed five-versus-five battle, made 78 decisions and acknowledged
+77 batches with zero invalid orders. Every decision observation reports speed 1 and
+`awaiting_orders=false`; measured battle time advanced 23.4 s over 23.401 s of wall time.
+The run ended at its 50-second diagnostic timeout, with no gameplay outcome measured
+and no row added to the policy results register. Repeat installation preserved the
+startup pack/preference bytes and mtimes. All probes are stopped, session files cleared,
+and the final doctor reports ready with the startup skip installed.
 
-A `skills` job on the same seed was stopped at the owner's word: a repeated draw shows
-nothing new, and a job is one matchup. The draw also picked a faction for each side
-(`5a2fc8d`), but the owner noted that a faction within a race only changes colours. The
-next commit draws races only, a fresh seed per job. The mod reports the Harpies and the
-Feral Manticore as infantry: its class mapping checks `can_fly` only for monsters.
+## 2026-10-13: Automatic startup video skipping
 
-Two fresh draws followed, each lost:
+Code `2793933`. `launch` and `play` install a separate auto-loaded PFH5 movie pack in
+the game's `data/` directory and set `fe_game_intro_video_enabled false` in the existing
+profile. The change persists for ordinary Steam launches. The pack replaces the five
+startup movies and all 13 localized warning movies with twpatcher's 595-byte blank clip
+(MIT attribution in `src/twwarhammer3/assets/LICENSE.twpatcher`). It leaves the main
+cinematic intact for the viewer. Preparation refuses to change game files while WH3
+is running, preserves all other preference bytes, and leaves matching startup files
+untouched. Doctor reports the effective setting and actual/expected pack hashes;
+deployment evidence includes them. No new CLI options or desktop input.
 
-| Job | Draw | Outcome | Battle s | Own left | Enemy left | Notes |
-|---|---|---|---|---|---|---|
-| `skills-v1.1-random-a` (`900000a`) | Skaven (20 units) vs Norsca (13), `wh3_nur_wastes_01_04`, seed 255179936 | lost | 415 | 0.35 | 0.25 | 0 rejections |
-| `commander-luna-v1-random-b` (`29c9325`) | Vampire Counts vs Lizardmen, `wh3_tze_wastes_02_01`, seed 369290826 | lost | 404 | 0.00 | 0.31 | 70 plans, plan age 5.6 s, $0.03 |
+Before the skip, the frontend script loaded about 25 s after launch, but its real-time
+callbacks did not run until the intro movies ended, about 2 minutes later.
 
-In the commander battle, 19 of 21 rejections were refused lord ability casts. A defect
-to fix before the comparison: in the skills battle four Skaven missile units (Night
-Runners, Gutter Runners, Globadiers, Death Globe Bombardiers) re-sent the same ranged
-attack every 2 s for long stretches, 69-102 orders each. The engine never showed the
-ordered target, probably for lack of line of sight, so the redirected-attack lapse rule
-from `0f8eb39` fired on its 2-second repeat. A shooter should give up on a target the
-engine keeps refusing and pick another.
+Validation: 83 WH3 tests and repository-wide Ruff pass. Engine evidence is under
+`runs/twwarhammer3/skip-intro-20261013/`. The baseline reached the visible Battle button
+at 149.014 s; the patched launch at 17.735 s, saving 131.279 s in one comparison.
+Without the project mod list, the menu is visible in the capture completed at 20.774 s,
+and the game's Lua log shows no project scripts. These were direct executable launches
+with Steam running; the Steam launcher UI was not exercised. The static loading splash
+remains. All 18 overridden paths exist in the installed engine's `movies.pack`; the
+installed 11,646-byte startup pack has SHA256
+`87c3964bdbbb4d07feef70e7befcbb919753c948bff47182d78a42caa24c03f1`.
+The live preference comparison changed only `true` to `false`, and attempting preparation
+during the patched probe was refused before writing.
 
-### Shooter re-send fix: executor v1.2 (`55ab6b3`)
+## 2026-10-13: v13, continuous decisions and expanded battle controls
 
-Diagnosis from the Skaven trace: the four shooters spent most of their attack time moving,
-with no target shown by the engine and no shots (779 such observations against 131
-with shots). Many of those stretches were chases of fast chariots (Chaos Chariot,
-Warwolves Chariot) kept in range for 15-42 s without a shot. The lapse rule read "no
-target" as a dropped attack and re-sent it every 2 s. Two changes:
-- an attack is not lapsed while the unit moves with no target and no move destination
-  (closing in, finding a line of fire or evading as a skirmisher); it lapses when the
-  unit is idle, shows another target, or stands without one. Replayed over the logged
-  orders, this suppresses 118 of the 195 shooter re-sends;
-- a shooter that fires no shot (ammunition unchanged) at a target in range for 15 s
-  (30 s for artillery, whose reloads were up to about 20 s) skips that target for 30 s
-  and picks another; its phase says so.
+Owner-requested controller change. Implementation starts at `863d10b`; final code
+`6db8111`. Tactical rules remain based on v10, with command instructions updated.
+The default post-application wait is 0 ms (was 5000); positive `--interval-ms` remains
+an explicit pacing option. Terminal observations now record a matching acknowledgement
+before ending the episode, and decision observations record `since_previous_applied_ms`.
 
-Validation, `skills-v1.2-random-a` (seed 255179936, same draw and the same
-autogenerated armies): no shooter repeated an identical order more than 3 times in a row,
-against stretches of up to 21 before. Orders per shooter fell from 69-102 in 415 s to
-47-60 in 346 s; what remains is target switching as enemies enter and leave range.
-Ammunition spent changed both ways (Night Runners 387 -> 162, Globadiers 96 -> 132,
-Gutter Runners 1080 -> 880, Death Globes 146 -> 99), so one battle says nothing about
-firing volume. Lost at 346 s with 0.40 of our men left against 0.70 (before: 0.35 vs
-0.25 at 415 s). The draw is hard: fast Norscan cavalry and chariots against short-range
-skirmishers.
+The policy can select auto/melee/ranged attacks, queue moves and a final attack, choose
+formation width, toggle supported fire-at-will/skirmish/guard/spacing/formed-attack
+behaviors, and issue owned active abilities at self, friendly/visible enemy units or a
+ground point. Python validation and Lua dispatch enforce the targets/capabilities.
+Acknowledgements identify each order by index and distinguish queued from issued.
+A rejected queued successor does not erase the preceding successful move from memory.
+The prompt shows supported toggles, width, submitted queues, active ability keys,
+permission and last issue times, plus the player's magic pool/reserve. Cooldowns and
+uses remaining are explicitly unknown: `can_perform_special_ability` stays true after
+casting. An ability/queue acknowledgement is not a completion report.
 
+Validation: 71 WH3 tests pass; `ruff check src/twwarhammer3 tests/twwarhammer3` passes.
+Real engine evidence is in `runs/twwarhammer3/capability-probes/` (ignored), with source
+fingerprints, engine/pack pins, script copies, observations, requests, acknowledgements
+and checks. `khorne-dwarfs-r3` verified toggles, a 20 m width, queued waypoints, ranged
+fire followed by melee with 453 ammunition left, and rejection of successors to an
+unreachable move. Foe Seeker raised the lord's walk/run speeds from 1.9/4.8 to 2.4/6.0.
+Its 60-second Luna smoke made seven decisions, six acknowledged (zero invalid); every
+next decision used the acknowledgement snapshot with 0 ms added gap. Mean think time
+9.399 s, wall roundtrip 9.744 s; $0.003063. The final call ran across the episode timeout.
 
-## Controller comparison on `kho5-dwf5`, stopped for random battles (2026-10-13, late)
+`wizard-r3` verified friendly Glittering Robe, enemy Plague of Rust and ground Searing
+Doom orders with magic-pool decreases of 5, 4 and 6 respectively; a unit trying to use
+another unit's ability was rejected. Earlier probes found the undocumented requirement
+to pass a unit even for a self ability; the dispatcher now passes the caster. Spacing
+and formed-attack toggles were unavailable on the tested armies and correctly omitted.
+These are diagnostic battles with scripted prefixes, not comparable policy outcomes,
+so they add no rows to the results register. See integration.md for the limits.
 
-Six episodes each on the fixed Khorne vs Dwarfs battle, unpaused at 1x, AI very hard:
+## 2026-10-13: Early findings (milestones, first night, mirror battles)
 
-| Job | Source | Won | Mean battle s | Own left | Enemy left | Cost |
-|---|---|---|---|---|---|---|
-| `skills-v1.2-kho` | `cb12f6a` | 5/6 | 461 | 0.10 | 0.17 | $0 |
-| `commander-luna-v1.2-kho` | `df390c1` | 5/6 | 329 | 0.27 | 0.33 | $0.12 |
-| `llm-luna-v13-kho` (1 episode) | `df390c1` | 1/1 | 244 | 0.66 | 0.28 | $0.02 |
+Moved from the track README on 2026-10-15. Milestones of the first day:
 
-(Commander v1.2 is the v1 commander over executor v1.2; there was no v1.1 commander.)
+| Milestone | State | Evidence |
+|---|---|---|
+| 1 Mod loads | done | `runs/twwarhammer3/launch-m1/` |
+| 1b Unattended custom battle | done | menu steps recruit both armies by double-click and start the battle; `runs/twwarhammer3/battle/*/menu.log` |
+| 2 Roster readable | done | 5 v 5 units with positions, strength, fatigue, flags, targets in every observation |
+| 3 Orders apply | done | attack, move (with facing) and halt through one unitcontroller per unit; acknowledgements carry the applied battle time |
+| 4 Result | done | "lost" and "won" from the engine at VictoryCountdown, with both armies' true strength for evaluation |
+| 5 Restart | done | rematch button and confirmation; 40 episodes in 14 jobs, none an infrastructure failure |
+| 6 Scripted baselines | done | `attack_nearest`: 3 wins of 3 at about 345 s |
+| 7 First LLM battles | done | v1: 1 win of 3 |
+| 8 Autoresearch loop | stopped | v2 0/3, v3 3/5, v4 1/3 (1/3 paused), v5 4/6, v6 5/6, v7 2/6 (reverted); v8-v11 on mirror battles, no mirror win yet with guns |
+| 9 Several scenarios | done | `configs/twwarhammer3/scenarios.json`: each side's race picked in the selector's popup; Khorne, Dwarf and Empire mirrors |
 
-- The scenario does not separate controllers: `skills`, the Luna commander and the v6
-  direct controller all won 5 of 6 on it.
-- Three `skills` episodes were identical (531 s, 0.10 vs 0.09 left). With a deterministic
-  controller, a rematch replays the same battle, so its episodes are not independent
-  samples.
-- The commander's 34 engine rejections in 6 battles: 26 refused lord ability casts and 8
-  unreachable moves.
-- The owner asked why we were still playing small fixed battles, so the `llm` job was
-  stopped after its first episode (won). The comparison moved to random draws: six
-  seeds, each played once by every controller, so the draws are paired.
+What the first night showed:
+- The model can command a real-time battle through the mod: about one decision per 10 s
+  of battle time, orders applied about 5 s after the state it saw, no invalid replies,
+  about $0.01 per battle.
+- The fixed script that sends every unit at its nearest enemy, walking, wins this battle
+  every time. The model's early losses came from what it added: passivity (v1), retreats
+  out of melee (v2), running everywhere and arriving tired, pairing its units off one to
+  one, and above all leaving its lord to duel the enemy lord alone, or parking him while
+  the enemy lord was nearly dead.
+- Latency is not the gap: pausing the battle while the model thinks (orders applied 0.6 s
+  after the state instead of 5.5 s) gave the same 1 of 3 for v4.
+- The state must say what the game did with an order: the game retargets units on its
+  own, and showing its choice as the model's order made the model believe plans were
+  running that were not (v6 fixed this; 5 wins of 6).
+- Still weak in every version: the Skullcannon and the missile horsemen. An attack order
+  only makes a unit with ammunition shoot, and their fire killed almost nothing.
 
-## Ability readiness and army abilities: llm v14, commander v2 (`9bfee82`)
+What the mirror battles showed (same army on both sides of the same map, player starting
+north; 9 to 12 battles per mirror; wins and mean true strength left, ours/enemy, from
+`python -m twwarhammer3 stats`):
 
-The script API has no ability cooldown getter, but the UI's context system has one
-([integration.md](integration.md#ability-state-through-the-ui-context-system-probed-2026-10-13)).
-Each friendly ability now carries:
-- target type, magic cost and cooldown;
-- `ready`, `active`, seconds of recharge left and uses left.
-
-Army abilities, such as Khorne's three kill-unlocks, carry target, radius, unlock cost,
-`unlocked` and `ready`. An `ability` order with unit `"army"` casts one. Validation
-refuses an ability that is not ready, and both prompts describe the new state.
-
-`watch` follows a job beside the game, and `play --show` puts each model reply in the
-advisor window.
-
-Engine check, `probe-abilities-random-s4` (`--policy probe_abilities`, seed 4: Khorne
-(Arbaal) vs Dark Elves, autogenerated):
-- The lord's and the hero's self abilities (Fight or Die, Potion of Toughness, Deadly
-  Onslaught) were cast when ready and accepted. Afterwards the state showed them active
-  and not ready, and the potion with 0 uses left.
-- The army abilities showed locked, with costs 100/200/300.
-- The battle was lost at 228 s with 31 points, so no army ability unlocked. The probe
-  now runs on the `skills` executor (`46f94d0`), which earned 113 points on `kho5-dwf5`.
-
-Second check, `probe-abilities-random-s245-20261014` (Khorne vs Skaven, seed 245):
-- Horn of Khorne unlocked at 109 points and was cast at our largest unit's position at
-  260 s. The engine accepted it, and its HUD timer counted 31 s active, then 90 s of
-  recharge. The state now shows those phases (`739ce9c`).
-- The lord's and hero's casts were accepted as before. The battle was lost at 337 s.
-
-## Random-battle comparison, partial (2026-10-13/14)
-
-Three seeds of the planned six, each played once by every controller (`9bfee82`, AI very
-hard, autogenerated armies), then stopped at the owner's word to finish the engineering
-first. All nine battles were lost:
-
-| Seed: draw | `skills` | Luna `commander` v2 | Luna `llm` v14 |
+| Version | Empire (guns, cannon, knights) | Dwarfs (crossbows, catapult) | Khorne (melee) |
 |---|---|---|---|
-| 2028855463: Dark Elves vs Nurgle | 434 s, 0.06 vs 0.34 | 299 s, 0.15 vs 0.56 | 618 s, 0.00 vs 0.31 |
-| 1202868312: Daemons of Chaos vs Nurgle | 259 s, 0.00 vs 0.67 | 293 s, 0.00 vs 0.75 | 280 s, 0.00 vs 0.54 |
-| 322117462: Dwarfs vs Slaanesh | 382 s, 0.31 vs 0.30 | 231 s, 0.43 vs 0.58 | 317 s, 0.46 vs 0.60 |
+| attack_nearest | 0/2, 26/82% | | |
+| v6 | 0/3, 21/69% | 0/3, 25/53% | 2/3, 34/25%; replicate 0/3, 38/64% |
+| v8 guns | 0/3, 31/70% | 0/2, 30/76% | |
+| v9 melee | | 0/3, 35/65% | 1/3, 26/47% |
+| v10 shooters | 0/3, 37/57% | 0/3, 42/68% | 0/3, 19/58% |
+| v11 lords (reverted) | 0/3, 34/76% | | 0/3, 26/61% |
+| v12 v6 + v10 fire (reverted) | | | 0/3, 16/55% |
 
-Cells show battle length and strength left (ours vs the enemy's). Costs: commander
-$0.018-0.025 a battle, llm $0.025-0.040. The direct controller decided every 6-7 s
-(49-89 decisions a battle).
+- With guns, crossbows or artillery on both sides, Luna lost every battle (0 of 11 in the
+  Empire mirror, 0 of 11 in the Dwarf mirror), and so did `attack_nearest` (Empire, 0 of
+  2): the AI's missile units and artillery shot our units while they fought, and its
+  missile infantry ended untouched (66-67 of 68 handgunners, 52-58 of 60 quarrellers).
+- The profile's AI stats modifier was 1.1, so the AI's units are probably about 10%
+  stronger and a mirror is not an even fight. The owner later authorized testing 1.0 and
+  1.1 during benchmark calibration.
+- Harness gaps found: enemy units' targets never reached the state (llm.py rendered a
+  field the mod never sent), no record of what a fire order killed, an attack order
+  replaces a move (a shooter walks straight at a target out of range), and units with
+  ammunition could not be sent into melee. The decision delay grew from about 6 s to
+  7-10 s as the prompt grew.
 
-Three paired draws separate nothing yet, and these draws at very hard (with the AI's
-1.1 stats modifier) are hard for every controller. The remaining seeds are 264482191
-(Ogre Kingdoms vs Slaanesh), 1355466036 (Daemons vs Greenskins) and 238913231 (Cathay
-mirror). The chain script ran `play --scenario random --seed N --episodes 1` per
-controller.
+## 2026-10-13: v12, v6's melee rules with v10's fire rules
 
-## Battle types: llm v15, commander v3 (2026-10-14, overnight)
+Change (prompt): v6's prompt with only v10's two fire bullets (shooters hit infantry in
+the open until contact; artillery then fires at missile units, then artillery; missile
+units never trade fire with enemy missile infantry; a shooter moves before it attacks).
+v8's cavalry rules and v9's and v11's lord rules are left out. The mirrors split the
+versions (v6 best in the Khorne mirror, v10 in the Empire mirror), and v10's fire rules
+are the change with the clearest measured basis.
 
-Owner goal (2026-10-14, away overnight): one minimal test scenario for each battle type
-beyond the land battle (conquest, domination, free-for-all, ambush, chokepoint,
-subterranean, minor settlement, siege, survival), as vertical slices toward the
-benchmark. Everything is in [battle-types.md](battle-types.md); engine facts in
-[integration.md](integration.md#battle-types-probed-2026-10-14).
+Job `llm-luna-v12-kho-20261013` (source `42a8af7`): lost at 225 s (11% against 59%), 271 s
+(19% against 52%) and 265 s (19% against 54%).
 
-What changed (`0cf3646` to `aa5a62b` and after):
-- Setup: `battle_type`, `attacker`, several or no enemy sides, reinforcing armies;
-  lobby steps guarded by `when` expressions; the engine's type and the player's role
-  checked at the first observation; a start click that starts nothing fails at once.
-- State: the observation's `mode` (type, role, timeout winner, the game's objective
-  text, capture points, tickets, gates, supplies, building slots, reinforcement pool and
-  spawn zones); units of every enemy alliance and units that enter mid-battle.
-- Orders: `build` (towers and barricades) and `reinforce` (pool units), both paid with
-  supplies; `probe_abilities` uses both.
-- Prompts (llm v15, commander v3): the Battle section, the two orders, and the
-  objective rule, including the owner's siege notes (keep the victory points held,
-  spend supplies).
-- Three review workflows, each with reviewers per dimension and an adversarial verifier
-  per finding. The first (30 findings, 24 confirmed, 10 distinct) found a validation
-  crash, slot usability that always read false, shifting reinforcement ids and smaller
-  defects (fixed in `c7287f4`). The second found a running mean that froze after about a
-  thousand observations and a cost mismatch in the pool (`088a175`). The third found
-  zone usability judged by one unit, double purchases of one pool entry and doc errors
-  (`8f9d832`).
-- Engine findings during the battles fixed the same night: purchased units never got
-  ids, because the scan only ran with regular observations (`d62a751`); a reply invalid
-  three times ended the battle (`9f08da8`); spawn zones refuse purchases (`89f3f8c`).
-  A bridges field for the chokepoint (`2a0a1cd`) was removed again (`fcba267`): that
-  map has no buildings, its crossings are terrain.
-- Also: random draws per battle type (`9b0209f`), measures per episode (`ea646a3`,
-  `7a40889`, `01e3abb`: victory points and the key building held, supplies left,
-  tickets, builds and purchases) and three register columns (`ea66fef`).
+The scenarios were less fixed than intended. Picking a race leaves the faction within it
+to the game, and it varied between jobs on both sides: Khorne jobs played Khorne against
+Arbaal's faction or Crimson Skull against Khorne (v12's enemy also deployed elsewhere),
+Empire jobs Wissenland, Empire or Golden Order, Dwarf jobs Dwarfs, Karak Kadrin or the
+Ancestral Throng. Every comparison between versions above carries that variation (the
+first v6 Khorne job, 2 wins of 3, is the only one with wins and played Khorne against
+Arbaal, as did v9-v11's). The next fix pins each side's faction in the scenario.
 
-Results, one battle each ([battle-types.md](battle-types.md#results) has the tables):
+v12 was reverted (`main` runs v10) and the scenario steps now pin each side's faction
+(`61c5f7f`). First battle with pinned factions, Khorne against Khorne, v10
+(`llm-luna-v10-kho-pinned-20261013`, stopped after it at the owner's return): lost at
+248 s (32% against 52%). The enemy deployed at about (-23, -295), as in v12's job, not at
+(-148, -267) as with Arbaal's faction. Results before `61c5f7f` mix factions; versions
+should be compared again with pinned factions.
 
-| Scenario | `attack_nearest` | `probe_abilities` | Luna `llm` v15 | Luna `commander` v3 |
-|---|---|---|---|---|
-| conquest | won 510 s | | won 197 s | lost 403 s |
-| domination | lost 742 s | lost 709 s | lost 1042 s (tickets 1156-1500) | lost 814 s |
-| free-for-all | won 942 s | | policy failure; replay won 560 s | lost 909 s |
-| ambush | won 173 s | | lost 699 s | truncated |
-| chokepoint | won 369 s | | won 421 s | won 878 s |
-| subterranean | lost 546 s | | won 391 s | won 503 s |
-| minor settlement | lost 302 s | won 390 s | won 242 s | won 300 s |
-| siege | won 510 s | won 430 s | won 368 s | won 450 s |
-| survival | lost 198 s | lost 249 s | lost 292 s | lost 325 s |
+## 2026-10-13: v11, the lords never fight alone
 
-One battle per cell separates nothing, but it shows each slice working. A siege with
-the player attacking (`siege-attack-kho5-dwf5`) set up correctly but could not breach:
-the gate stayed at 100% and the units idled outside the walls until the job was stopped
-at 730 s; attacking needs gate and wall orders and siege equipment. LLM v15 cost
-$0.32 for its ten battles; the commander $0.48.
+Change (prompt, net shorter), chosen by the review of v10's Empire losses and v9's fast
+Khorne loss (all three judges): the lord bullet becomes one rule. Whenever the enemy
+lord is within 20 m of ours or fights any of our units, at least the nearest melee unit
+that is not cavalry must target him, even out of another melee, until he breaks; our
+lord attacks only an enemy another unit is on, never arrives first, and stays in melee
+once there. Gone: v9's 5-point condition (read literally, it forbade help in a losing
+duel, since our own lord counts as a unit on him), the 35% hurt-lord clause and "he is
+your best fighter", which is untrue against the AI's 1.1 stats modifier. The reviewers
+measured our lord, alone against the enemy lord, losing health 3 to 8 times faster than
+he did; he was the first unit to rout in the v10 Empire losses.
+
+Job `llm-luna-v11-kho-20261013` (source `1eb75aa`): lost at 246 s (27% against 46%), 232 s
+(28% against 63%) and 198 s (22% against 74%).
+
+To check whether v8-v11 cost the Khorne mirror, v6 was replayed there from a worktree at
+`6777a64` (same ledger and results file): `llm-luna-v6-kho-20261013b` lost at 214 s (44%
+against 77%), 227 s (37% against 50%) and 185 s (34% against 65%). v6 in the Khorne
+mirror: 2 wins of 6; v9 1 of 3, v11 0 of 3. The first v6 job's two wins look like luck
+more than a better prompt; the newer prompts are not shown to be worse there.
+
+Job `llm-luna-v11-emp-20261013`: lost at 160 s (39% against 79%), 249 s (20% against
+77%) and 189 s (42% against 73%). v11 in all: 0 of 6, and the Empire margin went back to
+-42 points from v10's -20, so v11 was reverted: `main` runs v10.
+
+Job `llm-luna-v10-kho-20261013` (source `9c8f995`, the v10 prompt): lost at 298 s (25%
+against 37%), 211 s (15% against 68%) and 194 s (18% against 70%).
+
+Where the mirrors stand at the end of the session (mean strength left, ours minus the
+enemy's, in points): v6 Empire -48, Dwarfs -28, Khorne -8 (2 wins of 6); v10 Empire -20,
+Dwarfs -26, Khorne -39 (no win in 9). v8-v10 traded the melee mirror for the gun mirrors;
+`main` keeps v10, and v6's prompt is at `6777a64` for comparison. Spend for the session
+about $0.25 (ledger total $0.68).
+
+## 2026-10-13: v10, shooters hit infantry in the open
+
+Change (prompt), chosen by the review of two v9 Dwarf and two v8 Empire losses (all three
+judges): the reviewers measured, over the gun mirrors, artillery killing about 2 men a
+shot at infantry in the open, 1 in 2 shots at missile infantry and 1 in 3 at crews, and
+missile units killing about 1 man per 100 shots at enemy missile infantry. So until the
+enemy infantry reaches our line every shooter fires at it; after that artillery fires at
+the enemy's missile units, then its artillery (replacing v8's counter-battery first); a
+missile unit never trades fire with enemy missile infantry and shoots infantry not in
+melee, or from 40-60 m to the side of a fight; a shooter moves to its spot before the
+attack (an attack replaces a move and walks a shooter straight at a target out of
+range: about 20 such orders cut a shooter's own move in 14 gun-mirror battles).
+
+Job `llm-luna-v10-emp-20261013` (source `ffbc953`): lost at 237 s (37% against 71%), 296 s
+(22% against 38%: the enemy's lowest yet in this mirror) and 254 s (51% against 63%).
+Still no Empire win, but the margin has narrowed with each version: mean strength left,
+ours against the enemy's, v6 21/69%, v8 31/70%, v10 37/57%.
+
+Job `llm-luna-v10-dwf-20261013`: lost at 432 s (47% against 63%), 574 s (35% against 66%)
+and 394 s (44% against 75%); mean 42/68%, against v9's 35/65% and v6's 25/53%.
+
+## 2026-10-13: v9, fight the enemy holding you
+
+Change (prompt), chosen by the review of the v6 Dwarf mirror losses and the Khorne
+mirror loss (all three judges): after contact, a unit the game moved onto another enemy
+stays on it; the enemy-lord rule sends units back to him only while he lost 5 or more
+health since the last turn or none of ours is on him; no unit leaves a wavering enemy.
+The reviewers counted 11-15 pulls onto the enemy lord per Dwarf battle while he stood
+inside his own infantry, losing about 1.4 points a turn, and the enemy holding each
+pulled unit hit its flank (f3 Longbeards 68→48 men against e3's 75→71 in one loss).
+
+Job `llm-luna-v9-dwf-20261013` (source `d928965`): lost at 554 s (27% against 59%), 696 s
+(33% against 49%) and 332 s (45% against 86%). Job `llm-luna-v9-kho-20261013`: lost at
+205 s (25% against 70%), won at 218 s (35% against 36%), lost at 297 s (17% against 36%).
+In the Khorne mirror v9 (with v8 under it) did worse than v6 (2 of 3, 34% against 25% on
+average), and the mean delay rose from 7.2 s to 9.6 s as the prompt grew; which of v8 or
+v9 cost the Khorne battles is not separated.
+
+## 2026-10-13: v8, answer the enemy's guns
+
+Change (prompt), chosen by the review of the Empire mirror (all three judges): artillery
+fires first at enemy artillery in range ("never at small crews" had made the model take
+the cannon off the enemy cannon, the game's own pick, at 5 s in all three battles);
+missile infantry stands 40-60 m to the side of the melee line, never straight behind it
+(the handgunners fired 167 rounds through our own melee for 2 kills); a shooter whose
+target loses no men for two turns moves to a clear line or switches; cavalry shelled
+while waiting ride wide onto the enemy artillery instead of shuffling about in its range;
+cavalry are left out of the enemy-lord gang-up.
+
+Job `llm-luna-v8-emp-20261013` (source `fbcdf99`): lost at 321 s (25% against 69%), 203 s
+(30% against 83%) and 343 s (38% against 57%). The enemy cannon was hit hard each time
+(7, 33 and 15 of 33 crew left, against 33 of 33 under v6) and our side kept more (25-38%
+against v6's 8-37%), but the enemy handgunners still ended untouched (66-67 of 68).
+
+Job `llm-luna-v8-dwf-20261013` (source `3879027`, stopped after two battles when v9 was
+merged): lost at 487 s (33% against 77%) and 605 s (26% against 75%). The enemy Grudge
+Thrower broke under counter-battery fire, but the enemy infantry kept more than under v6
+(43-66%): shells that went at the enemy artillery no longer thinned its infantry, and the
+melee was lost as before.
+
+## 2026-10-13: Mirror battles (second session)
+
+Scenarios are now named in `configs/twwarhammer3/scenarios.json` (each side's race,
+faction and units; the menu steps pick the race in the selector's popup). Mirror battles
+put the same army on both sides of the same map, the player starting north:
+`kho5-kho5` (the Khorne army above), `dwf5-dwf5` (the Dwarf army above) and `emp5-emp5`
+(Empire: General, Swordsmen, Handgunners, Empire Knights, Great Cannon).
+
+Empire mirror, source `b1c9ce0`:
+- `attack_nearest` (`attack-emp-mirror-20261013`): lost at 228 s and 232 s.
+- v6 (`llm-luna-v6-emp-20261013`): lost at 270 s (8% against 71%), 242 s (19% against
+  71%) and 246 s (37% against 65%). In every loss the enemy handgunners and cannon ended
+  nearly untouched (64-66 of 68 men, 33 of 33) while ours were destroyed.
+
+Khorne and Dwarf mirrors, v6, source `6777a64`:
+- `llm-luna-v6-kho-20261013`: won at 265 s (39% against 17%), lost at 282 s (25% against
+  33%), won at 247 s (37% against 25%).
+- `llm-luna-v6-dwf-20261013`: lost at 499 s (31% against 66%), 576 s (24% against 50%) and
+  629 s (20% against 43%).
+
+v6 in the mirrors: 2 wins of 9, both in the melee-heavy Khorne mirror. The armies with
+guns, crossbows and artillery beat the model every time.
+
+## 2026-10-13: v7, the enemy lord only while he is losing the lords' race
+
+Change (prompt): v4's always-on "every melee unit within 40 m attacks the enemy lord" is
+gone. After contact the enemy lord stays the focus only while his health is below our
+lord's or fell 5 points or more since the last turn; otherwise units leave melee targets
+on the game's choice and switch to the nearby enemy closest to breaking.
+
+Job `llm-luna-v7-20261013` (source `42d3054`): won at 451 s (10% against 27%), lost at
+334 s (30% against 17%: our army broke with more men left than the enemy's), won at 376 s
+(32% against 35%).
+
+Replicate `llm-luna-v7-20261013b`: lost at 256 s (35% against 64%), lost at 278 s (32%
+against 70%), lost at 434 s (22% against 29%). v7 in all: 2 wins of 6, against v6's 5 of
+6, so v7 was reverted: `main` runs the v6 prompt. Without the standing order to pile onto
+the enemy lord, the replicate's battles were lost fast; the race test seems to have taken
+units off him too early. The next version starts again from v6.
+
+## 2026-10-13: v6, show what each unit is really doing
+
+Change (state rendering, `llm.py`, with the prompt's description of it): each friendly
+target is marked as the ordered one ("target e1 3 m (your order, 95 s)") or the game's
+choice with the order it replaced; a move the game dropped reads "stopped N m short of
+your move"; a unit with no target or destination reads "no order" and shows its nearest
+visible enemy; men and health show the change since the previous decision for both sides;
+orders are forgotten once the game no longer carries them out. In the same merge, fixes
+from a review of this session's code (not visible to the model in this scenario): flying
+monsters labelled flying again, the restart fallback only before a decision, battle UI
+probes through `menu.json`, `stats` grouping scripted rows by source revision.
+
+Job `llm-luna-v6-20261013` (source `ac3c0bd`): won at 357 s (26% against 34%), won at
+496 s (8% against 24%), lost at 428 s (12% against 38%).
+
+Reviews: the new lines were used. The model put units back on the enemy lord after the
+game had moved them ("game's choice") 6-8 times per episode, and the horsemen's attack
+orders were no longer replaced over and over. But the always-on gang-up then misfired:
+in the loss the Bloodletters and Chaos Warriors stood "on" the enemy lord for 80 s while
+his health fell about 1 point a turn (he stood inside his own infantry), and the Dwarf
+Warriors wavered untouched beside them; the Herald was sent back at him 24-26 points
+behind. Support fire stayed useless (14 Skullcannon shots and 270 axes for about 2 kills
+in the first win); the hurt-lord rule parked the Herald for most of two battles.
+
+Replicate `llm-luna-v6-20261013b`: won at 462 s (16% against 34%), won at 381 s (51%
+against 18%), won at 374 s (56% against 19%: the widest margins of any battle so far,
+the baseline included). v6 in all: 5 wins of 6.
+
+## 2026-10-13: v5, a hurt lord keeps fighting
+
+Change (prompt): below 35% health the lord stays out of melee only while a healthier
+enemy lord or hero is near, and goes back in as soon as that enemy has less health than
+he has (v4 parked him for minutes while the enemy lord was nearly dead).
+
+Job `llm-luna-v5-20261013` (source `33895de`): won at 333 s (64% of our men left, 29% of
+the enemy's: a wider margin than any baseline battle), won at 343 s (36% against 36%),
+lost at 417 s (10% against 48%).
+
+Reviews: the wins came from the lord and both infantry units walking in together and
+all three going onto the enemy lord in the same reply at contact (he routed at 162 s in
+the first win, our lord at 58%); the hurt-lord rule mattered in the second win (the
+Herald fought on at 42% once the lords' health was level). The loss turned on the lord
+duel: the Herald's line move carried him past the engaged Chaos Warriors, he alone was
+sent onto the enemy lord, and when the game retargeted him and the Bloodletters onto
+other enemies the model read it as its own gang-up, leaving the enemy lord untouched at
+80% for 90 s. The support units achieved little in all three: the Skullcannon's 12 shots
+killed almost no one and the horsemen's attacks on the Quarrellers were replaced by the
+game 7 times, each acknowledged as applied.
+
+Replicate `llm-luna-v5-20261013b`: won at 333 s, won at 418 s, lost at 329 s (32% against
+54%). v5 in all: 4 wins of 6.
+
+## 2026-10-13: v4, one body, gang up on the enemy lord
+
+Change (prompt): the lord and the melee units advance side by side at a walk; two or
+three units on one enemy, the enemy lord first at contact; every melee unit within 40 m
+attacks the enemy lord when he engages; our lord attacks only targets another unit is on
+and parks 30-50 m behind the line below 35% health. From the v3 reviews: the Herald fought
+the enemy lord with no other melee unit on him in all 28 such turns (the baseline had help
+in 20 of 22), and the model paired its units off one to one.
+
+Job `llm-luna-v4-20261013` (source `0547bfb`): lost at 603 s (9% of our men left, 32% of
+the enemy's), lost at 488 s (7% against 40%), won at 355 s (44% against 39%, the closest
+an LLM battle has come to the baseline's 45% against 33%). The model followed the
+doctrine: it walked on 55 of 76 moves and attacks (v3: 34 of 140), met the enemy at 95 s
+like the baseline (v3: 55-79 s) and helped its lord in 12 of 14 duel turns.
+
+Reviews: in both losses the Herald was parked at 20-23% health for 18 and 23 straight
+decisions while the enemy lord fell to 12-2% and the model itself called him "nearly
+defeated" (v4's "bring him back only to finish a routing or nearly dead enemy" had no
+threshold); in the win the enemy lord routed at about 160 s, earlier than in the
+baseline. The support units still did little: the Skullcannon fired its 12 shots for at
+most 3 kills, and the horsemen, ordered at the Quarrellers through the melee, stalled
+behind it and routed, throwing 6-26 axes where the baseline's threw about 170 into the
+Dwarf Warriors before contact. Moves to flank were acknowledged but the unit barely moved.
+
+Pause-mode ablation, job `llm-luna-v4-pause-20261013` (same source, `--pause`: the battle
+stops while the model thinks; orders apply 0.6 s of battle time after the state seen,
+against 5.5 s in real time): lost at 232 s (37% against 71%), lost at 579 s (8% against
+34%), won at 434 s (39% against 26%). One win of three, as in real time: the model's
+latency is not what separates it from the baseline.
+
+## 2026-10-13: v3, commit and focus (best so far)
+
+Change (prompt): v2's withdrawal triggers replaced by a commit-and-focus doctrine: keep
+units in melee and send help into the enemy's flank instead; focus the enemy closest to
+breaking and the enemy lord; the lord leaves melee only below 35% health; spent missile
+units fight in melee; cavalry wait until the lines lock; "back" means toward our start.
+
+Job `llm-luna-v3-20261013` (source `2681d04`): lost at 303 s (38% of our men left, 49%
+of the enemy's), won at 419 s (11% against 18%), won at 392 s (28% against 24%); mean
+delay 4.5 s, think time back to v1's level.
+
+Replicate `llm-luna-v3-20261013b`: lost at 257 s, won at 345 s. v3 in all: 3 wins of 5.
+
+Reviews: the Herald fought the enemy lord with no other melee unit on him in all 28 such
+turns (the baseline had help in 20 of 22 and its Herald survives); the model paired its
+units off one to one at contact ("f1 e1, f2 e2, f3 e3", from "strongest against
+strongest"); the game's automatic target is shown as if it were the order, so a unit
+the game had retargeted looked busy; units with ammunition shoot when ordered to attack,
+so the horsemen and the Skullcannon could not charge.
+
+Across all episodes so far, the model orders `run` on about 90% of its moves and attacks
+(v1: 62 of 67; v2: 296 of 324), while `attack_nearest` never runs; the baseline's units
+always reach their first melee fresh, the model's often tired or exhausted.
+
+## 2026-10-13: v2, a battle doctrine (worse)
+
+Change (prompt): check every unit each turn and pull back units that waver, lose men
+faster than their target, or are under fire with nothing to hit; pull the lord back
+below 40% health; switch fire targets that lose no men; keep missile cavalry out of
+enemy missile range; charge only once the lines are locked. State fixes in the same
+version: "running" only while moving, a unit's class fixed at the start, enemy missile
+range shown, dead units on one line, moves to unreachable points rejected.
+
+Job `llm-luna-v2-20261013` (source `f807f64`): lost at 569 s (none of our men left,
+77% of the enemy's), lost at 614 s (2% against 45%) and lost at 1226 s (10% against 20%,
+66 rejected orders). The model turned "pull back"
+into a slow general withdrawal: units left melee (which costs men and morale in Total
+War) and the army drifted to the map corner, where about 25 moves per episode were
+rejected as unreachable. Think time doubled to about 8 s with the longer prompt.
+Reviews (two episodes): moves ordered to units in melee went from none in v1 to 14 and
+10; after the withdrawals began the enemy lost almost no men; the lord flip-flopped
+between committing and withdrawing over a 3-point health gap, and lost 42% health while
+disengaging.
+
+## 2026-10-13: Baseline after the lapse fix
+
+`attack_nearest`, source `7b31ce9`, job `attack-b2-20261013`: won 3 of 3 at 346, 344 and
+346 s, with 45% of our men left against 33% of the enemy's. A fixed policy gives nearly
+the same battle every time; the model's variance comes from its own orders.
+
+## 2026-10-13: v1, first LLM battles
+
+Source `b615830`, job `llm-luna-v1-20261013`, `gpt-6-luna` low effort: won at 446 s,
+lost at 503 s, lost at 366 s; 132 decisions, no invalid orders, mean delay 4.0 s between
+the state seen and the orders applied (think time 3-6 s), $0.035 in all.
+
+Reviews (one subagent per episode, `wh3-version-review` workflow): the Herald died in all
+three episodes, each time sent into a fight at 21-38% health (twice at the enemy lord);
+the Skullcannon spent all 36 of its shots across the episodes on the Grudge Thrower crew
+and never killed one; the Marauder Horsemen were committed before the lines met and lost
+missile duels to the Quarrellers; 83 of 132 replies gave no orders ("all units have
+active orders", from the prompt's "leave out units that are carrying out your orders"),
+including minutes when the lord bled out; "back toward the army" moves went to the
+enemy side of the melee (no sense of the front). Misleading state: "running" on standing
+units, the Skullcannon's class flipping with its ammunition, dead units listed with stale
+flags, no enemy missile range, moves to unreachable points acknowledged as applied.
+
+## 2026-10-13: First baseline
+
+`attack_nearest` (every unit attacks its nearest visible enemy), source `60314c3`, job
+`attack-m3-20261013`: lost at 344 s, won at 400 s. Before `c3c9177` the baseline did not
+re-order units whose attack had lapsed, so units stood idle under fire for minutes; the
+two episodes understate it.

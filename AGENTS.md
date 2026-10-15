@@ -39,28 +39,40 @@ src/spire/         Slay the Spire 1
                    sampling, REINFORCE
 src/twwarhammer3/  Total War: WARHAMMER III custom battles
   __main__.py      CLI: doctor, pack, launch, menu (runtime and UI probes); play, digest,
-                   watch, stats, spend (battle jobs)
-  protocol.py      Order validation and the error taxonomy; observations stay dicts
+                   watch, stats, report, spend (battle jobs)
+  protocol.py      Order types and validation, the error taxonomy; observations stay dicts
   engine/          runtime (pins, pack build, mod list, launch), startup (video skip), pack
-                   (PFH5), mailbox (the file protocol with the Lua scripts), doctor
-  mod/             Lua scripts packed into the game: JSON, UI steps, frontend menus, battle
+                   (PFH5), mailbox (bridge files; its docstring is the observation
+                   reference), doctor, windows_capture.py (passive stills, Windows Python)
+  mod/             Lua scripts packed into the game: battle, frontend menus, and in _lib/
+                   UI steps, JSON and twwarhammer3_imagery.lua (the stills camera)
   assets/          The blank startup clip and its MIT license
-  battle/          play.py (job loop: launch, scenario setup, episodes, rematch), llm.py
-                   (direct API-model controller), skills.py (per-unit skill executor),
-                   commander.py (asynchronous API model over skills), scripted.py (hold,
-                   attack nearest, axis probe), digest.py, watch.py (live), stats.py
+  battle/          play.py (job loop: launch, setup, episodes, rematch, register row),
+                   setup.py (scenarios with `base` inheritance, lobby steps, benchmark
+                   checks; its docstring is the scenario field reference), controllers.py
+                   (policy names, model prompts, rotation, outside controllers), llm.py
+                   (direct API-model controller: llm, llm_rules), commander.py
+                   (asynchronous API model over skills), skills.py (per-unit skill
+                   executor, probe_abilities), scripted.py (hold, attack_nearest,
+                   rush_nearest), capture.py (1 Hz replay recorder and stills), digest.py
+                   (trace summaries), watch.py (follow a job), stats.py (results
+                   register), report.py (paired statistics), report_html.py, replay.py
+                   and report_assets/ (the offline HTML report and its replay)
 configs/
   llm/             Spire: full-run system prompt and enemy rules notes (its tuning surface)
   suites/          Spire: first-combat suite and catalog declarations
-  twwarhammer3/    WH3: llm and commander prompts, named scenarios, random-draw catalogue
+  twwarhammer3/    WH3: system_prompt.md (llm), rules_prompt.md (llm_rules),
+                   commander_prompt.md, scenarios.json, custom_battle.json (random draws)
 scripts/           Spire first-combat tools (inventory, audits, dataset export, training
-                   drivers, plots)
-tests/             One directory per package; tests/fixtures holds Spire engine transitions
+                   drivers, plots); wh3_queue.py runs a frozen plan of WH3 play jobs
+tests/             One directory per package; tests/fixtures holds Spire engine transitions;
+                   test_doc_links.py checks every Markdown link and anchor
 docs/
-  state.md         The session page for both games
+  state.md         The session page for both games: status only
   spire/           integration.md (engine and protocol facts), approaches.md (survey),
                    fullrun/, first-combat/, open-weight/ (one folder per track)
-  twwarhammer3/    Track page, integration facts, controllers, log and results register
+  twwarhammer3/    README.md (track page; its Pages table lists the others), log.md
+                   (newest first, versions on main at the top), results.csv
 runs/              Local evidence, ignored by Git; see runs/README.md
 .claude/workflows/ wh3-version-review.js, the review step of the WH3 autoresearch loop
 ```
@@ -93,22 +105,27 @@ uv run python -m spire watch runs/fullrun/<job>    # wait for the next finished 
 uv run python -m spire spend       # Spire API ledger total
 uv run python -m spire stats       # milestones per model, effort and harness; --rebuild from runs/
 uv run python -m twwarhammer3 doctor   # read-only: pins, preferences, running game
-uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>   # add /episode-0000
+uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>   # add /episode-0000 [--at S]
 uv run python -m twwarhammer3 watch    # follow the running job beside the game; --prompts
-uv run python -m twwarhammer3 stats    # results by policy, harness and mode; --rebuild
+uv run python -m twwarhammer3 watch runs/twwarhammer3/battle/<job> --next   # next episode, stall or end
+uv run python -m twwarhammer3 stats    # results by scenario, policy, model, harness and mode
+uv run python -m twwarhammer3 report <job> [<job> ...] --output runs/twwarhammer3/reports/<name>
 uv run python -m twwarhammer3 spend    # WH3 API ledger total
 ```
 
-- The `train` (CPU torch) and `llm` (CUDA torch, transformers, peft) extras conflict; use
-  one per command: `uv run --extra train ...` for PPO, `uv run --locked --extra llm ...` for
-  local language models. Without them, those tests skip through `importorskip`.
+- The dev group includes lupa (Lua 5.1) and Pillow, so `uv run pytest` runs the WH3 Lua and
+  image tests. The `train` (CPU torch) and `llm` (CUDA torch, transformers, peft) extras
+  conflict; use one per command: `uv run --extra train ...` for PPO, `uv run --locked
+  --extra llm ...` for local language models. Without them, those tests skip through
+  `importorskip`; `uv sync --locked` removes their packages again.
 - The original-engine regressions in `tests/combat/` read `runs/first-combat/` (override with
   `SPIRE_EVIDENCE_ROOT`) and skip when it is absent.
 - `spire play`, `rollout`, `evaluate`, `train`, `scripts/inventory_scenarios.py`,
-  `twwarhammer3 play` and `twwarhammer3 launch` run a real game (`menu` and `play --attach`
-  use the game `launch` started). Both `play`s, `rollout`, `evaluate` and `train` need a new
-  output directory and refuse uncommitted changes in their source scope: `src/gameai/`,
-  `src/spire/` and `configs/llm/` for `spire play` (`fullrun/play.py` `SOURCES`);
+  `twwarhammer3 play`, `twwarhammer3 launch` and `scripts/wh3_queue.py` (a queue of WH3
+  `play` jobs) run a real game (`menu` and `play --attach` use the game `launch` started).
+  Both `play`s, `rollout`, `evaluate` and `train` need a new output directory and refuse
+  uncommitted changes in their source scope: `src/gameai/`, `src/spire/` and
+  `configs/llm/` for `spire play` (`fullrun/play.py` `SOURCES`);
   `src/gameai/`, `src/twwarhammer3/` and `configs/twwarhammer3/` for `twwarhammer3 play`
   (`battle/play.py` `SOURCES`); both add `pyproject.toml`, `uv.lock` and `.python-version`.
   The first-combat tools use the default `gameai.provenance.SOURCE_PATHS`: all of `src/`
@@ -167,14 +184,18 @@ hash are pinned in `twwarhammer3/engine/runtime.py`. Under `RuntimeLock`
 (`C:/wh3-agent/owner.lock`), `runtime.prepare_runtime` packs and installs the mod, and
 `runtime.OwnedGame` starts `Warhammer3.exe` once per job under the same `windows_game.py`
 supervisor. The controller and the Lua scripts exchange JSON files in
-`C:/wh3-agent/bridge/` (`engine/mailbox.py` documents them). `battle/play.py` turns
+`C:/wh3-agent/bridge/` (`engine/mailbox.py` documents them). `battle/setup.py` turns
 `--scenario` into custom battle menu steps (no desktop input). Each episode repeats
 observation → policy → validated orders → acknowledgement with the battle time they were
 issued at; the battle keeps running meanwhile, and the measured delay goes into the next
-prompt. Later episodes replay the battle through the results popup's rematch button.
+prompt. Later episodes replay the battle through the results popup's rematch button; one
+job can rotate several controllers over them (`--policy a,b`), and `report` compares
+them.
 
 Information boundary: friendly units in full; enemy units only while
-`is_visible_to_alliance`, plus the enemy roster the custom battle screen shows. Failure
+`is_visible_to_alliance`, plus the enemy roster the custom battle screen shows; the
+observation's `evaluation`, `final` and `setup` never reach a policy, nor do replay
+frames or stills. Failure
 taxonomy (`protocol.py`): `ProtocolError`, `IllegalActionError`, `PolicyFailure`,
 `MailboxTimeout` and `BattleRestarted` are infrastructure, protocol or policy failures; a
 batch that fails validation is recorded as invalid and sent as no orders. Only an
@@ -191,13 +212,17 @@ move or reset a ledger. Compact first-combat results are committed in
 game's results register (`docs/spire/fullrun/results.csv`,
 `docs/twwarhammer3/results.csv`). Log every version in `docs/spire/fullrun/log.md` or
 `docs/twwarhammer3/log.md` and commit the register with that entry. Update `docs/state.md`
-when work starts, stops or changes direction.
+when work starts, stops or changes direction, and keep it short: what runs, what is
+stopped and why, what is next, with links. Results, validation counts and history go in
+the logs.
 
 ## Coding Style
 
 Four-space indentation, `snake_case` functions and modules, `PascalCase` classes,
 `UPPER_SNAKE_CASE` constants. Keep protocol handling separate from policy logic. Reserve
 bridge stdout for protocol traffic; send diagnostics elsewhere. Match the surrounding code.
+`uv run ruff check .` must pass; do not run `ruff format` on hand-formatted files (most
+modules are). The WH3 report JavaScript uses `prettier --print-width 100`.
 
 Aim for simplicity and readability. Avoid overengineering and bloat. This is not
 "enterprise production-grade" slop, so avoid excessive abstractions, overly safe code, etc.
@@ -209,6 +234,12 @@ Pytest, `tests/<package>/test_*.py`; no coverage threshold. Prioritize action an
 identity, stale observations, terminal transitions, reproducible resets and bridge
 failures. Add a regression for every observed failure. Fixtures alone do not demonstrate
 working game integration; validate mechanics against the original engine.
+
+WH3 specifics: `tests/twwarhammer3/test_wh3_prompts.py` compares the exact rendered model
+prompts with `tests/twwarhammer3/prompts/`; regenerate them (`WH3_WRITE_PROMPTS=1`) only
+for an intended prompt change, which is a logged version. The Lua tests run the mod under
+Lua 5.1 and load battle-script definitions by name (`tests/twwarhammer3/wh3_lua.py`), so
+every top-level definition in `twwarhammer3_battle.lua` ends with an unindented `end` or `}`.
 
 ## Commits
 

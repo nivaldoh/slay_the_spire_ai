@@ -1,127 +1,45 @@
 # Project state
 
-Updated 2026-10-15 02:10 UTC: what is running, where each game
-stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
-[Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
+Updated 2026-10-15 04:44 UTC: what is running, where each game stands and what comes
+next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
+[Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-WH3 [visual report redesign plan](twwarhammer3/visual-report-plan.md) is complete,
-including the owner's closer-camera follow-up. No game controller is running.
-Artifacts: `runs/twwarhammer3/reports/visual-report.html` (Sol acceptance plus the
-original G1 evidence in separate views), `close-camera.html` / `close-camera.png`
-(the scripted closer-view probe), and the explicitly synthetic `visual-report-demo.html`.
-
-The authorized Sol low job `battle/visual-sol-low-20261015` on `7136d6a` won at
-382.4 s, with 92 decisions and $0.6292834 spend. It retained the terminal recorder
-frame, 14 names and two images; opening foreground failure and first-rout throttling
-remain explicit. API ledger total: $7.7949 of $25.
-
-Closer views passed `visual-probes/close-imagery-r2-20261015` on `8aaabcd`, ending at
-its planned 90 s cutoff (truncated, no engine result). The action image at 36.8 s shows
-missile cavalry and the opposing line, before first observed melee at 71.0 s. Its
-16.1 s incoming-fire trigger was retained and deferred to respect 30 s spacing.
-Camera placement matched within 0.001 m; no invalid decisions. Four-image cap,
-unpaused 1× and passive capture outside the order loop remain. No further run is queued.
-
-Recording defaults on after its off/on cost audit (2.851 ms mean CPU/sample;
-battle/wall ratios 0.998213 off / 0.997703 on), with `--no-record-replay` available.
-`--stills` is optional. Validation: full repository 1119 passed, one skipped before
-the final timing fix; final WH3 suite 273 passed, Ruff passed, and offline Chromium
-checked both model and closer-camera reports, images, downloads and narrow layout.
-Calibration remains stopped and requires a separate discussion.
-
-WH3 [offline field report](twwarhammer3/field-report.md) implementation is complete.
-Generated `runs/twwarhammer3/reports/field-report.html` from the saved cavalry jobs;
-`field-report-demo.html` is a separate, explicitly synthetic demonstration. The exporter
-preserves statistical groups and adds local charts, data/image downloads and printing.
-No new battles or model calls; calibration remains stopped.
-
-WH3 benchmark work stopped at the owner's request on 2026-10-14 at 22:19:59 UTC.
-The owner cleared the goal and wants to discuss difficulty calibration separately.
-**Do not resume calibration automatically.** Its controller and runner exited. The separately requested visual-report acceptance probes are now complete;
-no further game run is queued.
-
-The engineering and live acceptance work is preserved on `main`: paired rotations,
-external controllers, setup checks, uncertainty/failure reports, terrain, specialist
-controls, objective metrics, timer classification and the run-nearest baseline.
-b9 passed 223 WH3 tests with Lua, Ruff and Lua 5.1 parsing. The specialist recipe
-prioritizes anchor units, faction mechanics and compact forces; the current cavalry
-candidate is six versus eight, and the caster candidate five versus ten. All held-out
-maps remain untouched. No scenario is admitted; G1 is incomplete and G2 has not run.
-
-The first G1 paired launch on frozen source `6763d0e` completed at AI modifier 1.0:
-
-- Walk-nearest lost at 411.2 s, active margin -0.796, no refusals.
-- Run-nearest lost at 247.7 s, margin -0.628, one refusal.
-- Sol low `llm_rules` won at 528.2 s, margin +0.544, $0.79336. It circled the defense,
-  routed the ranged line, separated infantry and disengaged/repositioned the cavalry.
-  Both rematch starts matched. One paired launch cannot establish admission or uncertainty.
-
-The following 1.1 launch was interrupted during frontend setup at the owner's request:
-zero episodes started, no gameplay outcome, 64.48 job-wall seconds. Preserve this as
-an owner interruption, not a tactical loss or unexplained infrastructure failure.
-The remaining ten planned launches were never started. Queue state:
-`runs/twwarhammer3/calibration/g1-cavalry-plan-state.json`; stop note:
-`runs/twwarhammer3/calibration/g1-owner-stop.json`. Partial reports:
-`runs/twwarhammer3/reports/g1-cavalry.json`, `g1-cavalry.txt` and
-`g1-cavalry-admission.json`. Three valid / three started battles across two launched
-jobs, 1438.13 wall seconds including interrupted setup, 7.51 valid battles/hour.
-
-Earlier b9 screens: Luna medium lost both modifiers; run-nearest also lost both.
-At 1.1 Luna killed the general and routed the ranged line but lost to the halberds.
-The idle-attacker timer check correctly recorded an engine loss at 1205.2 s as
-`time_limit`, with retained countdown expiry evidence. Running movement was verified
-after accepted attacks. Full evidence and earlier failed/retired candidates remain in
-[the log](twwarhammer3/log.md); sources are not pooled. WH3 API spend is **$7.7949
-of the cumulative $25 cap**. Never reset the ledger.
-
-Before further experiments, discuss the calibration objective, reference, thresholds,
-trial count and cost with the owner. The recorded plan used Sol low against walking
-and running baselines, six launches per modifier, then six launches rotating added
-snapshot ages 0/6/10 s. That work is unfinished, not automatically queued for resumption.
-The code, compact scenario candidates and historical design remain available for review.
+No game controller is running. Stale `/tmp` worktrees and merged WH3 branches await the
+owner's removal (commands in the
+[cleanup entry](twwarhammer3/log.md#2026-10-15-track-cleanup-for-agents-and-reviewers)).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
 
 ## Total War: WARHAMMER III battles
 
-[README](twwarhammer3/README.md) (track page, full [Next](twwarhammer3/README.md#next)),
-[battle types](twwarhammer3/battle-types.md), [controllers](twwarhammer3/controllers.md),
-[integration](twwarhammer3/integration.md), [log](twwarhammer3/log.md). `main` runs
-`llm` v15 and `commander` v3 (every battle type's objectives, `build` and `reinforce`
-orders) and the `skills` executor v1.2. API spend: $7.7949 of the $25 cap
-(after visual-report Sol acceptance).
-The stopped calibration was authorized to test AI modifiers 1.0 and 1.1.
-Both lobby and battle read-backs passed. Fresh 5.2 s startup snapshots show all 12 AI
-unit entries changing at 1.1 (roughly +10% attack/defence/damage/charge, +8 leadership),
-with the 12 player entries unchanged. These differences appear even in UI ValueBase;
-b3 also captures current Value to distinguish other active effects. See the progress page.
+[README](twwarhammer3/README.md) (track page and [Next](twwarhammer3/README.md#next)),
+[log](twwarhammer3/log.md) (newest first, with the versions on `main` at the top),
+[results.csv](twwarhammer3/results.csv).
 
-2026-10-14 overnight (owner goal: one minimal test scenario per battle type, vertical
-slices toward the benchmark): done for all nine types (conquest, domination,
-free-for-all, ambush, chokepoint, subterranean, minor settlement, siege, survival).
-Each sets up unattended, reports its objectives in the state (`mode`), has the orders
-it needs and ended on an engine result with `attack_nearest`, Luna `llm` v15 and Luna
-`commander` v3; `probe_abilities` verified building and buying in the engine. Results
-and gaps: [battle-types.md](twwarhammer3/battle-types.md); engine facts:
-[integration.md](twwarhammer3/integration.md#battle-types-probed-2026-10-14).
+- On `main`: `llm` v15 and `llm_rules` (the same controller with a rules-only prompt),
+  `commander` v3 over the `skills` executor v1.2, the scripted `attack_nearest`,
+  `rush_nearest` and `hold`, and benchmark harness b9 with the 1 Hz replay recorder and
+  optional stills.
+- Stopped: benchmark calibration, at the owner's request on 2026-10-14 at 22:20 UTC, after
+  1 of 12 planned G1 launches completed and the second was interrupted during setup
+  ([partial G1](twwarhammer3/log.md#2026-10-14-partial-g1-and-owner-requested-stop)).
+  **Do not resume it**: the owner will first discuss its objective, reference,
+  thresholds, trial count and cost
+  ([recorded plan](twwarhammer3/benchmark.md#calibration-stopped-2026-10-14); it was
+  authorized to test AI stats modifiers 1.0 and 1.1). No scenario is admitted; G2 never
+  ran.
+- Last finished: the visual report and its closer-camera follow-up (2026-10-15); the
+  reports are in `runs/twwarhammer3/reports/` ([reports.md](twwarhammer3/reports.md)).
+- API spend: $7.7949 of the $25 cap on 2026-10-15 (`uv run python -m twwarhammer3 spend`).
 
-The owner cleared the benchmark goal on 2026-10-14 at 22:20 UTC. Its engineering
-work is preserved; difficulty and latency calibration remain incomplete and await a
-separate discussion. Remaining longer-term directions:
-1. Battle types toward benchmarks ([battle-types.md](twwarhammer3/battle-types.md#next)):
-   variants per type (the `random-<type>` draws, both roles), calibration of the
-   scripted controllers per type, and remaining interface gaps (deployment control, finer terrain detail and
-   survival wave timing).
-2. Resume the random-draw model comparison later (three seeds left, in the
-   [log](twwarhammer3/log.md)), then Sol and Astra as commander on the same draws.
-3. Eventually we could turn this game into some kind of serious LLM benchmark? For now I'm just registering this here. Could try to create certain challenge scenario battles where the opponent side is stronger, and see how well different models perform and whether they discover certain key insights required to win these battles. Eventually these challenge scenarios could even be AI-generated themselves.
-   2026-10-14: the owner's brief and a draft definition to discuss (analysis of the
-   harness, spec, one concrete instance): [twwarhammer3/benchmark.md](twwarhammer3/benchmark.md).
-   Owner notes on sieges (2026-10-14 night): benchmark who holds the victory points
-   over time and the supplies left unspent; both are now measured per episode.
+Next steps:
+1. The calibration discussion with the owner, before any benchmark run.
+2. Then the [README's Next](twwarhammer3/README.md#next): specialist scenarios, the next
+   `llm`/`commander` version, the random-draw comparison, battle-type variants and the
+   deferred Lua cleanups.
 
 ## Slay the Spire
 
@@ -157,6 +75,14 @@ WH3:
   meaningful creative choices and battles worth watching; well-rounded armies can follow.
   Small armies on either or both sides are equally suitable; high funds and large
   rosters are not requirements. Start the first specialist prototypes compact.
+- 2026-10-14 (night, sieges): benchmark who holds the victory points over time and the
+  supplies left unspent; both are now measured per episode.
+- 2026-10-13 (benchmark idea, the owner's words): "Eventually we could turn this game into
+  some kind of serious LLM benchmark? For now I'm just registering this here. Could try to
+  create certain challenge scenario battles where the opponent side is stronger, and see
+  how well different models perform and whether they discover certain key insights
+  required to win these battles. Eventually these challenge scenarios could even be
+  AI-generated themselves."
 - 2026-10-13: an API model plays real-time battles, with the order delay measured; control
   through an in-game mod, never screenshots or desktop input; a hard $25 cap on its own
   ledger, `runs/twwarhammer3/llm-spend.jsonl`. Battles always run unpaused at 1x.
@@ -194,3 +120,5 @@ Slay the Spire:
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-fire-report` (`832b233`): WH3 fire-report candidate, on v9 (`d928965`); untested.
 - `wh3-v4-info` (`aa1ece5`): WH3 orientation and losses candidate, on v3 (`c34c246`).
+- `wh3-visual-imagery` (`af8f76e`): patch-identical to `main`'s `ca397ab` (stills); remove
+  with `git branch -D`.

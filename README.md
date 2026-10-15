@@ -8,7 +8,7 @@ what a player could see, and leave an audited record of every decision.
 
 | Game | Track | Status | Page |
 | --- | --- | --- | --- |
-| WH3 | Battles with an API model | **Current.** `gpt-6-luna` commands one army in real-time custom battles against the very hard AI, through a Lua mod. Controllers: direct `llm` (v14), a scripted per-unit `skills` executor (v1.2) and an asynchronous `commander` (v2) over it. Results per version: [log](docs/twwarhammer3/log.md). | [docs/twwarhammer3](docs/twwarhammer3/README.md) |
+| WH3 | Battles with an API model | **Idle since 2026-10-15; benchmark calibration stopped on 2026-10-14 pending an owner discussion.** An API model (`gpt-6-luna` or `gpt-6-sol`) commands one army in real-time custom battles against the very hard AI, through a Lua mod. Controllers: direct `llm` (v15) and its rules-only variant `llm_rules`, an asynchronous `commander` (v3) over a scripted per-unit `skills` executor (v1.2), and scripted baselines. Paired benchmark trials and an offline HTML report with a replay. Results per version: [log](docs/twwarhammer3/log.md). | [docs/twwarhammer3](docs/twwarhammer3/README.md) |
 | Slay the Spire | Full runs with an API model | **Idle since 2026-10-13.** `gpt-6-luna` plays complete runs from a labeled list of public choices; its scaffolding changes one observed mistake at a time. v10 is untested: its only job stopped on floor 10 when WSL restarted. Results per version: [log](docs/spire/fullrun/log.md). | [docs/spire/fullrun](docs/spire/fullrun/README.md) |
 | Slay the Spire | First-combat benchmark | **Paused.** Verified original-engine loop on fixed floor-1 combats. PPO updated weights without playing better; a Qwen3-0.6B LoRA imitated the scripted heuristic (catalog HP 76.33 against 76.00). | [docs/spire/first-combat](docs/spire/first-combat/README.md) |
 | Slay the Spire | Remotely trained open-weight model | **Planned.** Game-reward RL on Tinker, with a dynamics-prediction experiment. | [docs/spire/open-weight](docs/spire/open-weight/README.md) |
@@ -59,10 +59,14 @@ uv run python -m twwarhammer3 play --policy commander --budget-usd 25 --scenario
   --seed 2 --output runs/twwarhammer3/battle/example
 uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/example               # episodes
 uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/example/episode-0000  # orders
+uv run python -m twwarhammer3 report runs/twwarhammer3/battle/example \
+  --output runs/twwarhammer3/reports/example     # example.html, .json and .txt
 ```
 
 `--scenario random` draws a map and both races from `--seed` and lets the game
-autogenerate both armies. `--policy skills` needs no model or budget.
+autogenerate both armies. `--policy skills` needs no model or budget; comma-separated
+policies (`--policy llm_rules,attack_nearest`) take turns on rematches of one battle.
+[docs/twwarhammer3/README.md](docs/twwarhammer3/README.md#commands) lists every command.
 
 Every API call is priced from its reported usage and refused in advance if its game's
 ledger could exceed `--budget-usd`: `runs/llm-spend.jsonl` for Slay the Spire,

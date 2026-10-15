@@ -18,16 +18,27 @@ runs/
   research-notes/     Source notes for docs/spire/approaches.md, kept out of Git.
   twwarhammer3/       Total War: WARHAMMER III
     llm-spend.jsonl   Its own spend ledger, shared by every `twwarhammer3 play` job
-    battle/           One directory per `twwarhammer3 play` job, named
-                      <policy>[-<model>]-v<version>-<scenario>-<date> (e.g.
-                      commander-luna-v2-rand-322117462-20261013), with <job>.log beside it.
-                      `play` and `stats --rebuild` record the name's `-v<version>-` (e.g.
-                      v14, v1.2) as the results register's harness version.
-    visual-probes/   Scripted recorder/camera/capture checks, with audits beside job folders
-    reports/         Regenerated offline HTML/JSON reports and browser validation images
+    battle/           One directory per `twwarhammer3 play` job, with <job>.log beside it.
+                      Version jobs are <policy>[-<model>]-v<version>-<scenario>-<date>
+                      (e.g. commander-luna-v2-rand-322117462-20261013); the version after
+                      -v (15, 1.2) fills the results register's harness column. Other
+                      names leave it blank, and `stats` groups them by source revision:
+                      attack-... (the first scripted baselines), bench-b<N>-... and
+                      bench-g1-... (benchmark screens and calibration), smoke-... (battle
+                      types), probe-... (engine checks), visual-sol-low-20261015.
+    visual-probes/    Scripted recorder, camera and capture checks (play jobs) and their
+                      audits
+    calibration/      Benchmark queue plans and their state files, logs, stop and
+                      retirement decisions, and the untracked runners and audit scripts
+                      that produced them (run-g1.py, audit-g1.py, ...)
+    capability-probes/ Engine and UI probes with their scripts and outputs;
+                      external-controllers/ keeps the outside controllers recorded trials
+                      imported (ExternalHold, the flight probe)
+    reports/          `twwarhammer3 report` outputs (HTML, JSON, text), browser checks, and
+                      the old replay-demo generator; they predate the 2026-10-15 cleanup
     launch-*/         `twwarhammer3 launch` logs, deployment records and UI tree dumps
-    probe-*/, ...     Engine and frontend probes, the startup-skip evidence, and the first
-                      battle jobs from before battle/ existed
+    probe-*/, ...     Frontend probes, the startup-skip evidence, the benchmark setup probe
+                      and the first battle jobs from before battle/ existed
     vanilla/          Scripts and scripting docs extracted from the game's packs, read when
                       probing the engine. Proprietary: never commit or copy them into Git.
 ```
@@ -35,7 +46,9 @@ runs/
 New tracks get their own folder: `runs/<track>/<job>` for Slay the Spire,
 `runs/<game>/<track>/<job>` for other games. A job directory holds what its runner wrote:
 `manifest.json` with the source revision, file fingerprints and configuration;
-`environment.json`; `system_prompt.md` for API-model policies; and one subdirectory per
+`environment.json`; the prompt of each API-model policy (WH3: `<policy>_prompt.md`, where
+single-policy jobs recorded before the 2026-10-15 cleanup, `visual-sol-low-20261015`
+included, wrote `system_prompt.md`); and one subdirectory per
 run or episode with the raw trace and result. A Spire `run-NNNN/` is one game launch and
 holds its game logs. A WH3 `episode-NNNN/` is one battle (its `mod.log` beside the trace);
 the game is launched once per job, so `game.log` and `menu.log` sit in the job directory,
