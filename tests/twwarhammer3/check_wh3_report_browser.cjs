@@ -195,7 +195,8 @@ async function main() {
     await page.screenshot({ path: path.join(output, "unit.png") });
     await page.locator("#moment .unit-card button").click();
     const lord = replay.roster[0];
-    await page.locator(`#map-layer [data-unit="${lord.id}"]`).first().click({ force: true });
+    // Dispatched on the marker: another unit's marker may lie on top of it at this moment.
+    await page.locator(`#map-layer [data-unit="${lord.id}"]`).first().dispatchEvent("click");
     assert.ok((await text("#moment .unit-card")).includes(lord.role));
     await page.locator("#moment .unit-card button").click();
 
