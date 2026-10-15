@@ -259,7 +259,7 @@ window.wh3Replay = (() => {
           {
             opening: "Opening view",
             approach: "Closing formations",
-            incoming_fire: "First observed incoming fire",
+            incoming_fire: "Incoming fire",
             first_contact: "First observed melee",
             first_rout: "First observed rout",
             ending: "Battle ending",

@@ -2,6 +2,7 @@
 -- Nothing here submits orders or changes battle speed. Camera registration is unverified.
 local evidence, seen, last_capture, last_second = nil, {}, -30000, nil
 local previous = {}
+local deferred_action
 local BRIDGE = "C:/wh3-agent/bridge/"
 
 local function save()
@@ -29,8 +30,13 @@ local function centre(units)
 end
 
 -- Connected groups within 80 m; choose the group containing the most melee units.
-local function action_centre(units)
+local function action_centre(units, trigger)
     local melee, used, largest = {}, {}, {}
+    if trigger == "incoming_fire" then
+        local targets = {}
+        for _, unit in ipairs(units) do if has(unit, "under_fire") then targets[#targets + 1] = unit end end
+        if #targets > 0 then return centre(targets) end
+    end
     for _, unit in ipairs(units) do if has(unit, "melee") then melee[#melee + 1] = unit end end
     for index, unit in ipairs(melee) do
         if not used[index] then
@@ -75,8 +81,8 @@ local function approach_pair(frame)
     return closest, distance
 end
 
-local function capture(trigger, frame, units, pair, distance)
-    local target = trigger == "opening" and centre(units) or pair and centre(pair) or action_centre(units)
+local function capture(trigger, frame, units, pair, distance, deferred)
+    local target = trigger == "opening" and centre(units) or pair and centre(pair) or action_centre(units, trigger)
     local shot = {trigger = trigger, trigger_time_ms = frame.time_ms, status = "pending",
         policy_input = false, visibility = "Visibility not audited; may show units hidden from the controller.",
         projection = "unregistered; use the public passability grid for positions"}
@@ -84,7 +90,13 @@ local function capture(trigger, frame, units, pair, distance)
         shot.focus_units, shot.distance_m = {pair[1].id, pair[2].id}, distance
         shot.caption = "Visible opposing units closing within 100 m, before observed melee."
     end
-    evidence.stills[#evidence.stills + 1] = shot
+    if deferred then
+        shot.deferred_from = {trigger = evidence.stills[deferred].trigger, time_ms = evidence.stills[deferred].time_ms}
+        shot.caption = (shot.caption or "") .. " Capture deferred to maintain 30 s spacing."
+        evidence.stills[deferred] = shot
+    else
+        evidence.stills[#evidence.stills + 1] = shot
+    end
     local began = os.clock()
     local ok, err = pcall(function()
         local ground = bm.battle:get_terrain_height(target.x, target.z)
@@ -163,13 +175,17 @@ function twwarhammer3_imagery(frame, names)
         or action or rout and not seen.first_rout and "first_rout"
     if not trigger then return end
     seen[trigger] = true
-    if trigger == action then seen.action = true end
     if frame.time_ms - last_capture < 30000 and not frame.terminal then
-        evidence.stills[#evidence.stills + 1] = {trigger = trigger, time_ms = frame.time_ms,
-            status = "throttled", error = "Within 30 battle seconds of the preceding still"}
-        save()
+        if trigger ~= action or not deferred_action then
+            evidence.stills[#evidence.stills + 1] = {trigger = trigger, time_ms = frame.time_ms,
+                status = "throttled", error = "Within 30 battle seconds of the preceding still"}
+            if trigger == action then deferred_action = #evidence.stills end
+            save()
+        end
         return
     end
+    if trigger == action then seen.action = true end
     last_capture = frame.time_ms
-    capture(trigger, frame, units, trigger == "approach" and pair or nil, trigger == "approach" and distance or nil)
+    capture(trigger, frame, units, trigger == "approach" and pair or nil,
+        trigger == "approach" and distance or nil, trigger == action and deferred_action or nil)
 end

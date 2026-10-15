@@ -268,6 +268,27 @@ def test_incoming_fire_uses_action_slot_without_inventing_approach(imagery_lua):
     assert lua.globals().saved.stills[2].trigger == "incoming_fire"
 
 
+def test_early_fire_defers_action_capture_instead_of_consuming_slot(imagery_lua):
+    lua = imagery_lua
+    lua.execute('''
+        sample(5000, {{id='f1',x=0,z=0,men=10}})
+        sample(16000, {{id='f1',x=10,z=20,men=10,state={'under_fire'}}})
+        sample(17000, {{id='f1',x=10,z=20,men=10,state={'under_fire'}}})
+    ''')
+    assert len(lua.globals().saved.stills) == 2
+    assert lua.globals().saved.stills[2].status == "throttled"
+    lua.execute('''
+        sample(35000, {{id='f1',x=10,z=20,men=10,state={'under_fire'}},
+                       {id='f2',x=1000,z=1000,men=10}})
+        callbacks.wh3_still_incoming_fire()
+    ''')
+    g = lua.globals()
+    assert len(g.saved.stills) == 2
+    assert g.saved.stills[2].status == "capture_ready"
+    assert g.saved.stills[2].deferred_from.time_ms == 16000
+    assert g.target.get_x() == 10 and g.target.get_z() == 20
+
+
 def test_lua_presentation_never_queries_hidden_enemy_positions_or_policy_memory():
     lua = pytest.importorskip("lupa.lua51").LuaRuntime()
     lua.execute('''

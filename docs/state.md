@@ -7,7 +7,7 @@ stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 ## Active work
 
 WH3 [visual report redesign plan](twwarhammer3/visual-report-plan.md) implementation
-is active. No game controller is running. Recorder off/on, native/passive imagery and
+is active. A scripted camera probe is running. Recorder off/on, native/passive imagery and
 the owner-authorized Sol low acceptance are complete. The Sol job
 `runs/twwarhammer3/battle/visual-sol-low-20261015` on `7136d6a` won at 382.4 s,
 with 92 decisions and $0.6292834 spend; the recorder retained its terminal frame.
@@ -17,8 +17,10 @@ check and first rout was throttled; both remain explicit in the report.
 The owner's latest request adds closer, oblique action views and an early capture
 when visible opposing formations close within 100 m before observed melee, with
 incoming fire / first melee as fallbacks. One action slot preserves the four-still cap
-and 30 s throttle. Next: commit this small camera change and validate it in one
-90 s scripted `kho5-dwf5` probe (`--stills`, unpaused 1×, no paid model calls).
+and 30 s throttle. A 90 s scripted `kho5-dwf5` probe (`--stills`, unpaused 1×, no paid model calls)
+started at 2026-10-15T01:59:41.801761+00:00 on `981eb2d`: 
+`runs/twwarhammer3/visual-probes/close-imagery-20261015`.
+Watch: `uv run python -m twwarhammer3 watch runs/twwarhammer3/visual-probes/close-imagery-20261015`.
 Calibration stays stopped. Artifacts: `runs/twwarhammer3/reports/visual-report.html`
 and the explicitly synthetic `visual-report-demo.html`.
 
