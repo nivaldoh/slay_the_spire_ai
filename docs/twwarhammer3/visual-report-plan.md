@@ -1,12 +1,12 @@
 # WH3 Visual Battle Report
 
-Status: implementation in progress, 2026-10-15. Phases 1 and 2 are implemented;
-offline validation and the live recorder off/on audit passed. Recording now defaults
-on, with `--no-record-replay` available. The phase 3 capture/name/report candidate is
-implemented; its native probe confirmed capture and names, but measured a 43 ms
-capture call and clamped camera placement. A passive capture follow-up and the
-authorized Sol low acceptance still follow. It extends the [offline field report](field-report.md); calibration
-stays stopped. The owner requested these live checks separately.
+Status: complete, including the owner's closer-camera follow-up (2026-10-15). Offline replay, recorder off/on, passive imagery, readable names and the
+Sol low acceptance passed. Recording defaults on (`--no-record-replay` opts out);
+`--stills` enables presentation images. Native capture measured 43 ms, so production
+uses the passive capture fallback outside the order loop. World/pixel registration
+remains unverified: the map uses the exact passability grid and separate stills.
+This extends the [offline field report](field-report.md). Calibration stays stopped;
+the owner requested these live checks separately.
 
 ## Goal
 
@@ -151,9 +151,12 @@ that setting with the recorder version.
   height and field of view map world coordinates to pixels? If so, that shot is the map
   background. If not, the map keeps the passability grid, with the still shown beside it.
 - Unattended, the camera remains where deployment leaves it. Action stills therefore need
-  the script to aim it, at the centroid of the largest melee, on at most three throttled
-  triggers (first contact, first rout and the end). Moving the camera changes only the
-  display, not gameplay.
+  the script to aim it. The owner's closer-view follow-up uses a low oblique camera
+  for one early action slot: visible opposing formations closing within 100 m before
+  observed melee, or incoming fire / first melee as fallbacks. First rout and ending
+  supply two further opportunities. Opening stays overhead. Four stills maximum,
+  with 30 battle seconds between captures except the ending; suppressed triggers are
+  recorded. The view alone changes; battles stay unpaused at 1×.
 - Can the UI context return localised unit names? Prettified type keys are the
   fallback.
 
@@ -231,6 +234,10 @@ Without opening logs, a reader can:
    the decision inspector, and the system prompt appears once per job. This replaces
    the field report's rule of leaving prompts out.
 3. **Scripted camera moves** during unattended jobs are accepted.
+4. **Closer action views** (2026-10-15): make selected moments more cinematic with
+   low oblique views, ideally before a charge, melee or projectiles. Use public
+   observed motion and events, without asserting charge intent or adding a model.
+   This replaces the first-contact-only action slot while preserving the image cap.
 
 ## Implementation evidence (2026-10-14)
 
@@ -275,8 +282,36 @@ uv run --extra report python -m twwarhammer3.battle.visual_probe --case imagery 
 ```
 
 These run sequentially with `rush_nearest`, unpaused at 1×, without paid model calls.
-The short imagery probe measures an actual native screenshot and records camera
-position/target and candidate UI name lookups. No world-to-pixel registration is claimed
-before examining that evidence. If native capture blocks gameplay, use the passive
-capture fallback. Production triggers are implemented behind `--stills`; the probe must establish
-the native capture behavior before the authorized Sol low page check.
+The native diagnostic confirmed file output and localised names. Its 43 ms capture
+call justified passive Windows capture in an independent process. The ordinary camera
+clamps altitude/pitch even after changing its height range; the camera-only cinematic
+flag reached the requested coordinates exactly. No cutscene, speed or unit-control
+change is used. Camera positioning and screenshot timestamps are saved separately.
+Foreground checks prevent capturing another application; failures stay visible.
+
+The Sol low acceptance (`battle/visual-sol-low-20261015`, source `7136d6a`) won at
+382.4 s, with 92 decisions, four refusals and $0.6292834 cost. Its 473-frame replay
+contains 168 submitted / 167 acknowledged orders, one unacknowledged ending batch,
+all exact prompts/replies, 14 names and two images. The failed opening capture and
+throttled first rout remain explicit. The final HTML with this trial and the original
+G1 evidence is about 1.64 MB. Sources remain separate compatibility views, preserving
+the original three-way paired comparison without pooling the new acceptance run.
+Offline Chromium passed keyboard, selection, downloads, image decoding, printing and
+390 px layout with no network requests. Recorder audit:
+`runs/twwarhammer3/visual-probes/sol-recorder-acceptance.json`.
+
+
+The closer-camera follow-up passed `visual-probes/close-imagery-r2-20261015` on
+`8aaabcd`. It captured the missile cavalry under fire at 36.8 s, before the recorded
+first melee at 71.0 s. Incoming fire first observed at 16.1 s was deferred to preserve
+30 s spacing; that initial trigger remains in metadata. Camera coordinates matched
+within 0.001 m. This was a planned 90 s scripted cutoff, not an engine outcome.
+The live check covers the low view and deferred incoming-fire branch; closing-pair
+selection is covered by Lua tests for visible, recently observed motion, including
+visibility loss, retreat and existing melee. The four-still cap remains.
+
+Preview: `runs/twwarhammer3/reports/close-camera.html` and `close-camera.png`, separate
+from the Sol trial's historical images. Audit: `visual-probes/close-camera-acceptance.json`.
+Full suite before the final timing fix: 1119 passed, one skipped; final WH3 suite:
+273 passed with Lua 5.1 and Pillow, plus Ruff. Offline Chromium checked the closer-view
+captions/images and narrow layout as well as the full model report.

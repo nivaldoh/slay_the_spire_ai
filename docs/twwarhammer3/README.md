@@ -130,8 +130,10 @@ saved jobs with `stats --report JOB... --report-html FILE`; no game or API call 
 The [visual report](visual-report-plan.md) now includes tactical replay from saved
 public observations, decision timing, exact prompts/replies, factual bookmarks and
 shared-scale trial tracks. The public 1 Hz recorder defaults on after its live cost check
-(`--no-record-replay` disables it). Game imagery acceptance is in progress behind
-`--stills`. Event captions are
+(`--no-record-replay` disables it). Optional `--stills` adds an overhead opening and closer oblique action images,
+with at most four images per battle. Passive capture runs outside the order loop;
+readable unit names and images were validated in scripted probes and a Sol low battle.
+The map keeps the public grid, since image registration is unverified. Event captions are
 rule-based; quoted model reasons remain labelled as stated rationale.
 
 ## What the first night showed (2026-10-13)

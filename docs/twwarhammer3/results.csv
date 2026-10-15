@@ -199,3 +199,4 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-15,passive-imagery-20261015,episode-0000,kho5-dwf5,rush_nearest,,,,081f30f,realtime,1.0,0.0,truncated,92,0.83,0.96,285,0,0.31,0,classic,,,,,0.8324873096446701,0.9617021276595744,0.0,
 2026-10-15,visual-sol-low-20261015,episode-0000,brt-cavalry-emp-assault,llm_rules,gpt-6-sol,low,,7136d6a,realtime,1.0,0.0,won,382,0.46,0.39,92,4,4.11,0.6293,classic,,,,,0.43317972350230416,0.0,0.0,engine_result
 2026-10-15,close-imagery-20261015,episode-0000,kho5-dwf5,rush_nearest,,,,981eb2d,realtime,1.0,0.0,truncated,93,0.96,0.89,289,1,0.3,0,classic,,,,,0.9644670050761421,0.8936170212765957,0.0,
+2026-10-15,close-imagery-r2-20261015,episode-0000,kho5-dwf5,rush_nearest,,,,8aaabcd,realtime,1.0,0.0,truncated,90,0.94,0.93,279,0,0.31,0,classic,,,,,0.9390862944162437,0.9276595744680851,0.0,

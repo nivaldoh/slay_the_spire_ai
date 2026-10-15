@@ -472,3 +472,41 @@ visible) and shows the text as is, in a custom battle unpaused at 1x. `play --sh
 each model reply as `say` with the orders; in `commander-luna-v2-rand-2028855463` the
 advisor's `Text` component read "23 s: gpt-6-luna plan from the state at 15 s / Keep the
 infantry advancing together, ... / f8 shoot e3". Each reply replaces the previous text.
+
+
+## Visual recording and presentation (probed 2026-10-15)
+
+The 1 Hz recorder saves public unit/resource frames with separate enemy sighting
+memory and flushes the terminal frame before publishing the result. Its scripted
+off/on pair measured 2.851 ms CPU per sample and battle/wall ratios 0.998213 / 0.997703.
+This supports the default-on setting; one pair does not establish exact overhead.
+
+`common.take_screenshot` writes the requested TGA path (1920×1080, 8,294,418 bytes)
+but took 43.007 ms in the native probe. Production `--stills` uses Windows Pillow
+`ImageGrab` in an independent process instead, checking game PID/foreground and
+job/battle identity before and after capture. Failures become metadata, never order
+errors. Windows Python needs Pillow; the WSL `report` extra converts successful
+captures to WebP after gameplay. Capture intervals use surrounding public observation
+timestamps rather than claiming an exact render timestamp.
+
+The ordinary battle camera clamps altitude and pitch. `change_height_range(5,800)`
+did not remove that limit. `bm.battle:enable_cinematic_camera(true)` followed by
+`camera:move_to` reached the requested 500 m overhead position/target exactly. This
+flag changes the camera only; there is no cutscene, pause, slowdown or desktop input.
+No world/pixel registration is verified. Stills appear separately from the public grid.
+
+`CcoBattleUnit` expressions `UnitRecordContext.Name` and `UnitDetailsContext.Name`
+both returned “Herald of Khorne”; `OnscreenName` and `LocalisedName` returned nil.
+Production uses `UnitRecordContext.Name` for already public units and initial lobby
+roster entries, with type-key fallback. Names remain presentation data. The completed
+Sol acceptance supplied 14 names and two captured stills; foreground/throttle failures
+were retained. Probe artifacts and source revisions are in [the log](log.md).
+
+
+The low oblique follow-up positions the camera about 28 m above the focus terrain
+(with an 8 m minimum above terrain at the camera), 65 m or more behind and 30 m to
+the side, using a 55-degree FOV. The incoming-fire image at 36.8 s in
+`visual-probes/close-imagery-r2-20261015` showed the cavalry and opposing line before
+first observed melee at 71.0 s; requested/actual coordinates agreed within 0.001 m.
+An early event inside the 30 s spacing now defers the action slot, retaining its original
+time. Four slots cover opening, one early action, first rout and engine ending.

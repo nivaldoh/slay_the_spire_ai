@@ -20,8 +20,30 @@ Owner follow-up: closer, oblique action views, preferably before contact. Imager
 uses an observed closing gap within 100 m before melee, with incoming fire / first
 melee as fallbacks for the same one action slot. Camera height is about 28 m above
 the focus terrain, with a side offset; opening stays overhead. Four-image maximum
-and 30 s throttle remain. Captions do not infer charge intent. Scripted live framing
-validation follows; no further paid model run is needed.
+and 30 s throttle remain. Captions do not infer charge intent.
+
+The scripted `visual-probes/close-imagery-20261015` on `981eb2d` completed its
+planned 90 s cutoff (truncated, no engine outcome). Opening at 5.9 s and first rout
+at 56.6 s captured; the low oblique view shows units clearly and requested/actual
+camera coordinates match. Grabs took 74.8 / 37.2 ms outside the order loop. Incoming
+fire at 16.1 s was throttled and consumed the action slot. The follow-up retains that
+trigger and defers capture until spacing permits, still in the same slot; it aims at
+units under fire instead of an empty army centroid. A regression covers the observed
+sequence. The recheck `visual-probes/close-imagery-r2-20261015` on `8aaabcd`
+completed its planned 90 s cutoff with 279 decisions, no invalid decisions and no
+model spend. The final 0.124 s deadline surfaced as a mailbox timeout; status remains
+`truncated`, with no engine outcome. Opening at 5.9 s and incoming fire at 36.8 s
+captured (39.5 / 49.0 ms grabs); the deferred metadata retains the initial 16.1 s trigger.
+First rout at 59.0 s was throttled. The low view shows missile cavalry and the opposing
+line before first observed melee at 71.0 s. Both camera requests match actual placement
+within 0.001 m. Audit: `visual-probes/close-camera-acceptance.json`.
+
+Final artifacts: `reports/visual-report.html` (about 1.64 MB), `reports/close-camera.html`
+and `reports/close-camera.png`; older images are not reconstructed or replaced.
+Full repository validation before the timing fix: 1119 passed, one skipped. Final
+WH3 checks: 273 passed with Lua 5.1 and report extra; Ruff passed. Offline Chromium
+validated both reports' image decoding, evidence, downloads and 390 px layout without
+network access. All requested visual-report work is complete; calibration stays stopped.
 
 ## Native imagery probe and passive capture (2026-10-15 UTC)
 

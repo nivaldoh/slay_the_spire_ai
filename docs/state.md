@@ -1,35 +1,35 @@
 # Project state
 
-Updated 2026-10-15 02:00 UTC: what is running, where each game
+Updated 2026-10-15 02:10 UTC: what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-WH3 [visual report redesign plan](twwarhammer3/visual-report-plan.md) implementation
-is active. A scripted camera probe is running. Recorder off/on, native/passive imagery and
-the owner-authorized Sol low acceptance are complete. The Sol job
-`runs/twwarhammer3/battle/visual-sol-low-20261015` on `7136d6a` won at 382.4 s,
-with 92 decisions and $0.6292834 spend; the recorder retained its terminal frame.
-Two stills and 14 readable names are present. The opening capture failed the foreground
-check and first rout was throttled; both remain explicit in the report.
+WH3 [visual report redesign plan](twwarhammer3/visual-report-plan.md) is complete,
+including the owner's closer-camera follow-up. No game controller is running.
+Artifacts: `runs/twwarhammer3/reports/visual-report.html` (Sol acceptance plus the
+original G1 evidence in separate views), `close-camera.html` / `close-camera.png`
+(the scripted closer-view probe), and the explicitly synthetic `visual-report-demo.html`.
 
-The owner's latest request adds closer, oblique action views and an early capture
-when visible opposing formations close within 100 m before observed melee, with
-incoming fire / first melee as fallbacks. One action slot preserves the four-still cap
-and 30 s throttle. A 90 s scripted `kho5-dwf5` probe (`--stills`, unpaused 1×, no paid model calls)
-started at 2026-10-15T01:59:41.801761+00:00 on `981eb2d`: 
-`runs/twwarhammer3/visual-probes/close-imagery-20261015`.
-Watch: `uv run python -m twwarhammer3 watch runs/twwarhammer3/visual-probes/close-imagery-20261015`.
-Calibration stays stopped. Artifacts: `runs/twwarhammer3/reports/visual-report.html`
-and the explicitly synthetic `visual-report-demo.html`.
+The authorized Sol low job `battle/visual-sol-low-20261015` on `7136d6a` won at
+382.4 s, with 92 decisions and $0.6292834 spend. It retained the terminal recorder
+frame, 14 names and two images; opening foreground failure and first-rout throttling
+remain explicit. API ledger total: $7.7949 of $25.
 
-The recorder off/on audit passed: 260 public frames including the terminal result,
-2.851 ms mean CPU/sample, clock ratios 0.998213 off / 0.997703 on. Recording now
-defaults on with `--no-record-replay` available. Native capture measured 43 ms;
-production uses passive capture outside the order loop. Camera placement and name
-lookup passed the live probes. Prior full suite: 1112 passed, one skipped, followed
-by the foreground-process regression and camera-only checks.
+Closer views passed `visual-probes/close-imagery-r2-20261015` on `8aaabcd`, ending at
+its planned 90 s cutoff (truncated, no engine result). The action image at 36.8 s shows
+missile cavalry and the opposing line, before first observed melee at 71.0 s. Its
+16.1 s incoming-fire trigger was retained and deferred to respect 30 s spacing.
+Camera placement matched within 0.001 m; no invalid decisions. Four-image cap,
+unpaused 1× and passive capture outside the order loop remain. No further run is queued.
+
+Recording defaults on after its off/on cost audit (2.851 ms mean CPU/sample;
+battle/wall ratios 0.998213 off / 0.997703 on), with `--no-record-replay` available.
+`--stills` is optional. Validation: full repository 1119 passed, one skipped before
+the final timing fix; final WH3 suite 273 passed, Ruff passed, and offline Chromium
+checked both model and closer-camera reports, images, downloads and narrow layout.
+Calibration remains stopped and requires a separate discussion.
 
 WH3 [offline field report](twwarhammer3/field-report.md) implementation is complete.
 Generated `runs/twwarhammer3/reports/field-report.html` from the saved cavalry jobs;
@@ -39,8 +39,8 @@ No new battles or model calls; calibration remains stopped.
 
 WH3 benchmark work stopped at the owner's request on 2026-10-14 at 22:19:59 UTC.
 The owner cleared the goal and wants to discuss difficulty calibration separately.
-**Do not resume calibration automatically.** Its controller and runner exited. Only the
-separately requested visual-report acceptance probes above may run.
+**Do not resume calibration automatically.** Its controller and runner exited. The separately requested visual-report acceptance probes are now complete;
+no further game run is queued.
 
 The engineering and live acceptance work is preserved on `main`: paired rotations,
 external controllers, setup checks, uncertainty/failure reports, terrain, specialist

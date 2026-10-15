@@ -77,6 +77,14 @@ Use the previous/next decision and event controls, or focus the map and use arro
 brackets and Space. Narrow layouts stack the map above the inspector. Replay scenes
 are excluded from printing; the existing statistical print view remains available.
 
+Optional `play --stills` supplies game images and localised unit names. Opening uses
+an overhead view; action stills use a closer oblique view, with an observed approach,
+incoming fire or melee in the first action slot. Capture is passive and independent
+of order submission. Images are never policy inputs, and failed or throttled captures
+stay labelled. The game must be foreground for capture. The public grid remains the
+map because world/pixel registration is unverified. Still images are capped at four
+per featured controller trial and 256 KiB each; WSL conversion needs `--extra report`.
+
 ## Separate synthetic demonstration
 
 `tests/fixtures/wh3_field_report_demo.json` contains **invented** Demo controller A/B/C

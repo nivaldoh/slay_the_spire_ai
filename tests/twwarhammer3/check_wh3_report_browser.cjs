@@ -6,10 +6,11 @@ const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright");
 
 async function main() {
-  const [recorded, demo, output] = process.argv.slice(2);
+  const [recorded, demo, output, modelReport, cameraReport] =
+    process.argv.slice(2);
   assert(
     recorded && demo && output,
-    "Usage: node check_wh3_report_browser.cjs RECORDED.html DEMO.html OUTPUT_DIR",
+    "Usage: node check_wh3_report_browser.cjs RECORDED.html DEMO.html OUTPUT_DIR [MODEL.html] [CAMERA.html]",
   );
   await fs.mkdir(output, { recursive: true });
   const browser = await chromium.launch({ headless: true });
@@ -280,6 +281,81 @@ async function main() {
       await checkbox.uncheck();
     assert.equal(await page.locator(".point").count(), 0);
     assert.equal(await page.locator("#export-svg").isDisabled(), true);
+    if (modelReport) {
+      await go(modelReport);
+      await page.waitForFunction(
+        () => document.querySelectorAll("#replay-stills img").length > 0,
+      );
+      const model = JSON.parse(
+        await fs.readFile(
+          await saveDownload("#replay-download", "model-replay.json"),
+          "utf8",
+        ),
+      ).replay;
+      assert.equal(model.recorder_version, 1);
+      assert.ok(model.frames.length > model.decisions.length);
+      assert.ok(
+        model.roster.some((unit) => unit.name_source === "unit_names.json"),
+      );
+      assert.ok(model.stills.some((shot) => shot.image));
+      assert.ok(model.stills.every((shot) => shot.policy_input === false));
+      assert.ok(
+        await page
+          .locator("#replay-stills img")
+          .evaluateAll((images) =>
+            images.every((image) => image.naturalWidth > 0),
+          ),
+      );
+      await page.locator("#replay-stills").screenshot({
+        path: path.join(output, "model-stills.png"),
+      });
+      await page.locator("#replay-section").screenshot({
+        path: path.join(output, "model-replay.png"),
+      });
+      await page.setViewportSize({ width: 390, height: 844 });
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+        true,
+      );
+      await page.screenshot({
+        path: path.join(output, "model-narrow.png"),
+        fullPage: true,
+      });
+    }
+    if (cameraReport) {
+      await page.setViewportSize({ width: 1440, height: 1100 });
+      await go(cameraReport);
+      await page.waitForFunction(
+        () => document.querySelectorAll("#replay-stills img").length >= 2,
+      );
+      assert.match(
+        await page.locator("#replay-verdict").textContent(),
+        /truncated/,
+      );
+      assert.match(
+        await page.locator("#replay-stills").textContent(),
+        /Capture deferred to maintain 30 s spacing/,
+      );
+      assert.ok(
+        await page
+          .locator("#replay-stills img")
+          .evaluateAll((images) =>
+            images.every((image) => image.naturalWidth > 0),
+          ),
+      );
+      await page.locator("#replay-stills").screenshot({
+        path: path.join(output, "close-camera.png"),
+      });
+      await page.setViewportSize({ width: 390, height: 844 });
+      assert.equal(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+        true,
+      );
+    }
     assert.deepEqual(requests, []);
     assert.deepEqual(errors, []);
     console.log(
