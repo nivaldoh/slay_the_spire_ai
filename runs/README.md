@@ -51,7 +51,9 @@ where single-policy jobs recorded before the 2026-10-15 cleanup, `visual-sol-low
 included, wrote `system_prompt.md`); and one subdirectory per
 run or episode with the raw trace and result. A Spire `run-NNNN/` is one game launch and
 holds its game logs. A WH3 `episode-NNNN/` is one battle (its `mod.log` beside the trace);
-the game is launched once per job, so `game.log` and `menu.log` sit in the job directory,
+the game is launched once per job, so `game.log`, `menu.log`, `map_list.txt`,
+`army_player.txt` and `cards_slot<N>.txt` (the recruitment cards each army's race offered)
+sit in the job directory,
 and later episodes are rematches of the same battle. WH3 episodes can also contain
 `replay.jsonl` (public 1 Hz frames), `unit_names.json`, `imagery.json`, `stills.json`
 and `still-<battle>-<trigger>.png` presentation captures. Replay exports embed derived
