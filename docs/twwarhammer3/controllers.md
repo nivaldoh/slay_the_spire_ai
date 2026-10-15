@@ -197,6 +197,11 @@ golden prompts:
    but neither prompt says that attacking beyond it walks the unit forward; the unit line
    could print the target's distance against the range, or the rules could say it.
    Drafted on branch `wh3-llm-range`, unmerged while C1 freezes the controllers.
+6. **Last sightings do not say a unit was fleeing.** In `bench-c1-cavalry-ai11-01-20261015`
+   episode 3 Sol spent 600 s of a lost battle looking for guns that had routed off the
+   map, listed in the last-sighting memory at the map edges with no state. Carrying the
+   last observed state (routing, shattered) with each sighting changes the observation,
+   so it is a track change as well as a version (`obs-v4`).
 
 ## Designs not built yet
 

@@ -117,6 +117,18 @@ the ×1.0 runs; at that rate launches 3-6 cost about $4-6. The per-policy rotati
 each trial's own model end to end (manifest, card, register). The register rows of the
 screens and these launches are committed with this entry. WH3 ledger: $10.0391 of $25.
 
+Sol's win against its loss, from the traces (a read-only review): both openings went
+south of the obstruction for the guns ("Advance the cavalry around the south side of the
+central obstruction to approach the enemy flank" in the win), and the guns broke at
+similar times (186-236 s and 197-226 s). After that the win kept fighting the halberdiers
+until the last broke at 487 s (they fell from 360 to 93 men). The loss withdrew, and from
+376 to 1002 s 100 of its 114 reasons were about finding the routed guns, which the
+prompt's last-sighting memory listed at the map edges without saying they were fleeing;
+the halberdiers lost 58 men and the army routed at 1005 s. Supported: continuing against
+the halberdiers separated the two. Plausible, not shown: the last-sighting entries led the
+search. Unsupported: the route or losses on the way in decided it (124 and 120 knights at
+about 257 s).
+
 ## 2026-10-15: Skaven swarm screens
 
 Both swarm drafts ran one screen each under the owner's authorization, on harness b10
