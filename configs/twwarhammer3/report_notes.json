@@ -64,6 +64,24 @@
       "title": "Four-army pilot",
       "question": "Can Khorne survive a four-army free-for-all?",
       "challenge": "Historical battle-type pilot with compact armies. Exploratory mechanics evidence; these runs predate full benchmark setup checks."
+    },
+    "dwf-sla-taurox": {
+      "title": "Dwarf guns versus Sigvald"
+    },
+    "dwf-sla-herald": {
+      "title": "Dwarf guns versus a Herald"
+    },
+    "dwf-sla-herald-hard": {
+      "title": "Dwarf guns versus a stronger Herald army"
+    },
+    "brt-cavalry-emp-pikes": {
+      "title": "Cavalry versus halberds"
+    },
+    "brt-cavalry-emp-pegasus": {
+      "title": "Cavalry versus halberds and a Pegasus"
+    },
+    "tze-caster-skv-screen": {
+      "title": "Kairos and escorts versus Skaven screens"
     }
   },
   "units": {

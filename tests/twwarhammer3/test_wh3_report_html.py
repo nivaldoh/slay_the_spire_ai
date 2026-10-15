@@ -14,6 +14,14 @@ from wh3_fixtures import configured_job, embedded, make_job
 from twwarhammer3.battle import report, report_html
 
 
+def test_curated_suite_titles_distinguish_related_challenges():
+    notes = json.loads(report_html.NOTES_PATH.read_text())["scenarios"]
+    names = ("dwf-sla-taurox", "dwf-sla-herald", "dwf-sla-herald-hard",
+             "brt-cavalry-emp-pikes", "brt-cavalry-emp-pegasus")
+    titles = [notes[name]["title"] for name in names]
+    assert len(set(titles)) == len(names)
+
+
 def test_unnamed_historical_modes_use_saved_config_and_shared_measure_coverage(tmp_path):
     jobs = []
     for mode in ("siege", "survival"):
