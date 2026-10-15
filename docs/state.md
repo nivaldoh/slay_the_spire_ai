@@ -1,14 +1,15 @@
 # Project state
 
-Updated 2026-10-15 16:20 UTC: what is running, where each game stands and what comes
+Updated 2026-10-15 16:52 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-No game controller is running (C1 finished about 13:10 UTC-3 on 2026-10-15). Stale `/tmp`
-worktrees and merged WH3 branches await the owner's removal (commands in the
-[cleanup entry](twwarhammer3/log.md#2026-10-15-track-cleanup-for-agents-and-reviewers)).
+No game controller is running (C1 finished about 13:10 UTC-3 on 2026-10-15). The revised
+WH3 plan and documentation/stale-work cleanup are complete
+([log](twwarhammer3/log.md#2026-10-15-plan-revision-and-preparation)); implementation and
+new experiments have not started.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -24,26 +25,20 @@ command; clear it when the job stops.
   harness b10: the 1 Hz replay recorder, optional stills, per-policy models (one launch
   pairs `llm_rules` on Sol with `llm_rules@gpt-6-luna`), a plan queue that stops on changed
   rematch starts, and the redesigned HTML report.
-- Calibration block C1 (`brt-cavalry-emp-assault-hard`, AI ×1.1), decided under the owner's
-  delegation on 2026-10-15 ([decisions](twwarhammer3/benchmark.md#calibration-decided-2026-10-15)):
-  all 6 launches done: Sol 1 of 6, Luna and both baselines 0 of 6; not yet analysed or read
-  against the rule ([log](twwarhammer3/log.md#2026-10-15-calibration-c1-launches-3-to-6)).
-  No scenario is admitted yet; G1 (2026-10-14) stays a partial earlier attempt.
-- Last finished (2026-10-15 morning): the two Skaven swarm screens (both prototypes work;
-  every player army routed) and C1 launches 1-2 ([log](twwarhammer3/log.md)); reports
-  `c1-cavalry-ai11`, `swarm-screens` and `cavalry-assault` in `runs/twwarhammer3/reports/`.
-- API spend: $14.2179 of the $25 cap on 2026-10-15 (`uv run python -m twwarhammer3 spend`).
+- C1 is complete: on `brt-cavalry-emp-assault-hard` (AI ×1.1), Sol won 1 of 6;
+  Luna and both baselines 0 of 6 ([log](twwarhammer3/log.md#2026-10-15-calibration-c1-launches-3-to-6)).
+  The owner has replaced win-rate admission with hard challenges and partial progress;
+  C1 remains development evidence, with no automatic easier calibration block.
+- Both swarm prototypes have working screens; every player army routed. Existing reports
+  are `c1-cavalry-ai11`, `swarm-screens` and `cavalry-assault` in
+  `runs/twwarhammer3/reports/`. The planned canonical `benchmark.html` does not exist yet.
+- API spend: $14.2179 of the $25 cap on 2026-10-15; no calls during preparation.
 
-Next steps:
-1. The owner's review of C1 (`runs/twwarhammer3/reports/c1-cavalry-ai11.html`) and of the
-   delegated decisions ([log](twwarhammer3/log.md#2026-10-15-harness-b10-llm-v16-and-the-calibration-decisions)),
-   before any analysis or next block.
-2. Ready when wanted: `wh3-llm-v17` (merge now that C1 is over) and the Sol swarm screens
-   (`runs/twwarhammer3/calibration/swarm-sol-screens-plan.json`, regenerate its
-   `source_revision`).
-3. Then the [README's Next](twwarhammer3/README.md#next): specialist scenarios, the next
-   `llm`/`commander` version, the random-draw comparison, battle-type variants and the
-   deferred Lua cleanups.
+Next: the [implementation plan](twwarhammer3/benchmark.md#implementation-plan), prepared
+but not implemented. Integrate v17 and version the commander's shared rendering change;
+add progress measures and one report; then run a small matched cavalry/swarm comparison
+with repeats budgeted. Natural latency stays measured; added-delay experiments, siege
+controls and broader comparisons follow later. Old calibration queues are historical.
 
 ## Slay the Spire
 
@@ -73,6 +68,11 @@ Next steps:
 ## Owner direction
 
 WH3:
+- 2026-10-15: prepare the revised plan without implementing it: difficult battles with
+  odds against the player, scenario milestones/partial progress alongside engine results,
+  no repeated win-rate admission campaigns, and one HTML report for the whole benchmark
+  (supporting files allowed). Keep interface versions as comparison metadata; added-delay
+  experiments can wait. See the [plan](twwarhammer3/benchmark.md#implementation-plan).
 - 2026-10-14 (benchmark steering): specialist anchor units and faction-specific mechanics
   should drive scenario design. Prioritize extreme tactical problems (cavalry against
   anti-large, caster-led forces, difficult sieges, commanding/fighting Skaven swarms),
@@ -120,15 +120,14 @@ Slay the Spire:
 
 ## Unmerged branches
 
-- `wh3-llm-v17` (`c1cc14b`): both candidates below combined and tested (348 WH3 tests), ready
-  to merge after C1 as `llm` v17 on track `obs-v4`.
+- `wh3-llm-v17` (`c1cc14b`): combines both candidates below (348 WH3 tests recorded).
+  Pending integration and current-main validation as `llm` v17 plus commander v4 because
+  they share rendering/memory. The environment track stays unchanged; no `obs-v4` is needed.
 - `wh3-obs-last-state` (`287cfba`): last sightings keep a fleeing enemy's state ("routing when
-  last seen"), on `94eef9c`; an `obs-v4` track change, after C1.
-- `wh3-llm-range` (`b58d327`): `llm`/`llm_rules` flag a shooter's target beyond its range
-  ("it advances to shoot"), on `da6f3bb`; merge after C1, as the next `llm` version.
+  last seen"), on `94eef9c`; included in v17, no change to the public observation contract.
+- `wh3-llm-range` (`b58d327`): flag a shooter's target beyond range ("it advances to shoot"),
+  on `da6f3bb`; included in v17, also affects the commander's shared state rendering.
 - `integration/heldout-clip-continuation` (`940d698`): first-combat work, on `01f2984`.
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-fire-report` (`832b233`): WH3 fire-report candidate, on v9 (`d928965`); untested.
 - `wh3-v4-info` (`aa1ece5`): WH3 orientation and losses candidate, on v3 (`c34c246`).
-- `wh3-visual-imagery` (`af8f76e`): patch-identical to `main`'s `ca397ab` (stills); remove
-  with `git branch -D`.

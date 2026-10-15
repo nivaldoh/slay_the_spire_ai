@@ -161,8 +161,10 @@ Toward battle-type benchmarks:
 1. **Variants.** More maps and armies per type, starting with the `random-<type>` draws,
    then each type at both roles where it has them. The siege attacker needs siege
    equipment and gate and wall orders ([above](#the-player-attacking-a-siege)).
-2. **Calibration per type**: which scripted controller wins 30-70%, and whether `skills`
-   beats `attack_nearest`, under the calibration rules of [benchmark.md](benchmark.md).
+2. **Progress per type**: define useful accomplishments alongside engine outcomes, using
+   existing point-control and resource records where applicable. Check controls and
+   measurement before matched model/baseline runs; no 30-70% win-rate gate. These variants
+   follow the initial cavalry/swarm suite in the [plan](benchmark.md#implementation-plan).
 3. **Interface gaps:**
    - no deployment phase: ambushes and sieges start at once;
    - the escape zone that the ambush objective text mentions does not exist in custom

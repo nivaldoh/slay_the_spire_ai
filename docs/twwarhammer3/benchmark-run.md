@@ -56,7 +56,9 @@ uv run pytest tests/twwarhammer3/test_wh3_setup.py
 
 Commit the entry before playing it. Declare held-out variants (`split: held_out`) before
 any tuning, and never use them to choose rosters, settings or controllers. The scenario
-rules and admission criteria are in [benchmark.md](benchmark.md#scenarios).
+rules and readiness checks are in [benchmark.md](benchmark.md#scenarios). The old
+win-rate admission rule is retired; the current [implementation plan](benchmark.md#implementation-plan)
+has not been executed.
 
 ## One launch
 
@@ -179,10 +181,14 @@ It refuses to start unless HEAD is the plan's full revision with no uncommitted 
 in play's source scope or the runner, no output exists and the plan has no state file.
 It checks the source again before each job, stops at the first job that exits nonzero
 (play does for any manifest status but `completed`) or whose rematch started with a
-missing or changed unit or changed strength, loadout or resources (the G1 rule; position
+missing or changed unit or changed strength, loadout or resources (position
 and bearing flags alone stay in the result), and never retries: continue with a new plan. `my-plan-state.json` beside the plan holds the runner's pid, status (running,
 completed, failed, interrupted), the current job and each exit code. Exit codes: 0
 completed, 1 failed or refused, 130 interrupted. Follow each job with `watch JOB --next`.
+
+The old G1 plans, completed C1 plans and unstarted `swarm-sol-screens-plan.json` are
+historical. Future suite comparisons need new plans with their declared measures,
+controllers, repeat counts, cost allowance and final committed source revision.
 
 ## Stopping
 
@@ -210,3 +216,9 @@ It prints the text report and writes `my-cavalry.txt`, `.json` and the offline
 `.html`. Before drawing conclusions, read the setup checks, start flags, missing pairs
 and limitations: a matched formation alone does not show a matched caster's resources or
 spell loadout. Everything else is in [reports.md](reports.md).
+
+For the planned suite, pass the explicit input jobs for all scenarios to this same
+command and use the canonical output stem `runs/twwarhammer3/reports/benchmark`.
+Different scenarios and controller versions can share one HTML file while their
+comparison conditions remain distinct. The overview and progress measures are planned;
+no consolidated report was generated during preparation.

@@ -18,7 +18,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [integration.md](integration.md) | engine facts: packs, menus, lobby settings, unit API, context system, battle types, capture |
 | [controllers.md](controllers.md) | the policies and their versions, comparing them, candidate changes, designs not built |
 | [battle-types.md](battle-types.md) | the battle-type scenarios, the `mode` state, the `build` and `reinforce` orders |
-| [benchmark.md](benchmark.md) | the latency-aware benchmark: definition, scenarios, the stopped calibration |
+| [benchmark.md](benchmark.md) | the benchmark contract, scenario progress and the implementation plan |
 | [benchmark-run.md](benchmark-run.md) | running paired benchmark trials, outside controllers |
 | [reports.md](reports.md) | the offline HTML report and replay, its curated notes |
 | [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md) | the owner's benchmark brief |
@@ -37,12 +37,13 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 - **vN**: a version of the `llm` or `commander` prompt and harness; `v1.N` the `skills`
   executor. Each has a log.md entry. The register's `harness` column is the `-vN-` segment
   of the job name (`stats.harness_version`), blank for `bench-*` jobs.
-- **b1-b9**: benchmark harness revisions, each a "Benchmark harness bN" entry in log.md.
-- **G1, G2**: the calibration stages in [benchmark.md](benchmark.md): G1 repeats paired
-  controllers on one candidate scenario at AI stats modifiers 1.0 and 1.1; G2 adds
-  observation-age arms (0, 6 and 10 s). G1 is incomplete and G2 never ran.
+- **b1-b10**: benchmark harness revisions, each logged in log.md.
+- **G1, G2, C1**: historical calibration designs in [benchmark.md](benchmark.md).
+  G1 is incomplete, C1 finished and G2 never ran. The 2026-10-15 plan retires win-rate
+  admission; added observation-age experiments (0, 6 and 10 s) remain deferred.
 - **Track** `obs-v3+terrain/act-v2/live-1x`: the observation, action and timing contract
-  a manifest records (`play.TRACK`); trials on different tracks are not pooled.
+  a manifest records (`play.TRACK`). Controller memory/prompt versions and evaluator
+  versions are separate. Different conditions can share a report without pooling trials.
 - **Luna, Sol, Astra**: `gpt-6-luna`, `gpt-6-sol`, `gpt-6-astra` (the 2026-10-13
   commander smoke used `gpt-6.1-sol`). "Low" is `--effort low`; "Sol low" in the
   benchmark work is `gpt-6-sol` at low effort.
@@ -167,25 +168,30 @@ is separate from Spire's, with its own $25 cap.
 
 ## Next
 
-Status and the owner's current direction are in [../state.md](../state.md). Candidate
-work:
-1. Calibration C1 on `brt-cavalry-emp-assault-hard` (launches 3-6 of 6, frozen plan in
-   `runs/twwarhammer3/calibration/c1-plan-rest.json`), then its reading
-   ([benchmark.md](benchmark.md#calibration-decided-2026-10-15)); keep held-out variants
-   out of tuning.
-2. Specialist scenarios ([benchmark.md](benchmark.md#scenario-design)): Sol screens of the
-   two Skaven swarm prototypes, then a siege, which first needs gate and wall orders.
-3. Paired added-observation-age arms (`--delay-seconds 0,6,10`) on an admitted setting,
-   unpaused at 1x, reported with uncertainty (G2).
-4. The random-draw comparison on its three remaining seeds (264482191, 1355466036,
-   238913231), then Sol and Astra as commander on the same draws.
-5. Battle types: variants, both roles and the interface gaps in
-   [battle-types.md](battle-types.md#next).
-6. The next `llm`/`commander` version after C1:
-   [candidate changes](controllers.md#candidate-changes-for-the-next-version), with
-   `wh3-llm-v17` (out-of-range attacks, last sightings that keep a fleeing state) ready to
-   merge. The older branches `wh3-fire-report` and `wh3-v4-info` predate the v13 interface and would need
-   rebasing.
+The [implementation plan](benchmark.md#implementation-plan) is prepared; the owner has
+requested no implementation or new runs yet. Its next milestone is three difficult
+challenges, interpretable partial progress and one report covering the suite:
+1. Integrate `wh3-llm-v17` (range feedback and last-sighting state), including the
+   commander's shared rendering change. Keep the existing environment track; these
+   changes version the controllers. C1 is complete and no longer freezes the branch.
+2. Define and implement per-scenario progress from existing evidence first. Preserve
+   engine outcomes; replace the 30-70% admission gate with working setup, controls and
+   measurement. Do not automatically lower the cavalry challenge from AI ×1.1.
+3. Consolidate the report at `runs/twwarhammer3/reports/benchmark.html`, with a suite
+   overview and in-page scenarios, comparisons and replays. Multi-scenario input already
+   works; the canonical artifact and progress view have not been built.
+4. Freeze a small matched Sol/Luna/baseline batch across cavalry and both swarm scenarios,
+   budget for repetitions, run it after implementation, and update that same report.
+   Old queue plans are historical; create a fresh plan from the committed implementation.
+5. Keep natural latency and cost in every result. Added-delay experiments wait for a
+   concrete question about progress. A siege needs gate/wall/equipment controls; broader
+   battle-type variants, random draws and commander/model expansion follow later.
+
+The unfinished random-draw comparison has seeds 264482191, 1355466036 and 238913231 left,
+then Sol and Astra as commander. Other candidates remain in
+[controllers.md](controllers.md#candidate-changes-for-the-next-version) and
+[battle-types.md](battle-types.md#next). The unique older branches `wh3-fire-report` and
+`wh3-v4-info` are retained; both predate the v13 interface and need review before reuse.
 
 Deferred cleanups:
 - Lua changes that each need one engine smoke battle: drop the pause-mode leftovers

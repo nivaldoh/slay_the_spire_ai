@@ -20,7 +20,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
   battle time after the previous orders applied; since v13 it starts as soon as they are
   acknowledged.
 - The benchmark entries (b1-b9 and G1, 2026-10-14) are development screens: no scenario
-  was admitted, G1 is incomplete and G2 never ran. "Margin" is the active-strength margin
+  was admitted under the former rule, G1 is incomplete and G2 never ran. Win-rate admission
+  was retired in the 2026-10-15 plan revision below. "Margin" is the active-strength margin
   and "clock ratio" battle time over wall time
   ([benchmark.md](benchmark.md#outcomes-measures-and-comparison)).
 - A new entry goes at the top, and "On main" is updated with it.
@@ -34,14 +35,15 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v3 (2026-10-14) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | battle types, Luna low: 4 wins in 9 jobs (`commander-luna-v3-*-20261014-*`) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b10 (2026-10-15; b9 2026-10-14), track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | C1 finished: Sol 1 of 6 at ×1.1, Luna and both baselines 0 of 6; not yet analysed |
+| benchmark harness | b10 (2026-10-15; b9 2026-10-14), track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | C1 finished: Sol 1 of 6 at ×1.1, Luna and both baselines 0 of 6; retained as development evidence under the revised plan |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | redesign (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | rebuilt from `visual-sol-low-20261015` and the G1 jobs |
 
 ## Index
 
-- 2026-10-15: [Calibration C1, launches 3 to 6](#2026-10-15-calibration-c1-launches-3-to-6) ·
+- 2026-10-15: [Plan revision and preparation](#2026-10-15-plan-revision-and-preparation) ·
+  [Calibration C1, launches 3 to 6](#2026-10-15-calibration-c1-launches-3-to-6) ·
   [Calibration C1, launches 1 and 2](#2026-10-15-calibration-c1-launches-1-and-2) ·
   [Skaven swarm screens](#2026-10-15-skaven-swarm-screens) ·
   [Harness b10, `llm` v16 and the calibration decisions](#2026-10-15-harness-b10-llm-v16-and-the-calibration-decisions) ·
@@ -92,6 +94,50 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
+
+## 2026-10-15: Plan revision and preparation
+
+The owner requested planning, documentation updates and stale-file cleanup, with no
+implementation of the five discussed changes. The
+[plan](benchmark.md#implementation-plan) now starts with hard cavalry/swarm challenges,
+partial progress beside engine outcomes, model comparisons under declared conditions,
+natural latency, and one canonical HTML report for the suite. The 30-70% admission gate
+and automatic switch to AI ×1.0 after C1 are retired. Added-delay experiments and broader
+scenario/model work are deferred. C1 and the swarm screens remain development evidence;
+this preparation does not claim new experimental findings.
+
+The implementation audit refined the plan:
+- `wh3-llm-v17` changes controller memory/rendering only, not the environment's public
+  observations, actions or timing; the earlier `obs-v4` description was wrong. The
+  commander shares those functions, so integration needs both controller versions and
+  their tests. The branch remains unmerged.
+- Final evaluation totals already support casualties and active survivors by unit type,
+  and objective integrals exist for applicable battle types. Exact per-unit milestones,
+  HP/value scores and original-roster-only denominators need more recording. Routing is
+  not destruction; report missing measurements explicitly. New derived measures will
+  version the evaluator, without rewriting old results.
+- Multi-scenario HTML already works. The missing pieces are a canonical report build,
+  suite overview and progress presentation. Supporting assets may remain embedded;
+  splitting them is conditional on measured size/loading, not a new requirement.
+
+Updated the state, root/track READMEs, benchmark, runbook, controller candidates, battle-type
+next steps and report docs. C1's six-launch completion and the swarm's actual Warlord
+roster/protected Engineer are now consistent across them. Compressed obsolete calibration
+discussion to historical summaries with its existing link anchors; the full former text
+remains at `ae7ca31:docs/twwarhammer3/benchmark.md`. The original owner briefs are retained.
+
+Cleanup under this request: pruned eight worktree records whose `/tmp` directories no
+longer exist; deleted the merged branches `wh3-benchmark-b2`, `-b3`, `-b4`, `-b5`, `-b7`,
+`-b8`, `-b9` and `wh3-visual-final`; deleted `wh3-visual-imagery` (`af8f76e`) after
+`git cherry main wh3-visual-imagery` verified its only commit was patch-equivalent to
+main's `ca397ab`. No working files or unique work were removed. Kept v17 and its
+component branches, the unique older candidates, all saved runs/reports, queue plans,
+register rows and ledgers. Old queues are explicitly historical, not next-run commands.
+
+No source/configuration code changed, no report was rebuilt, no game ran and no paid
+model call was made. Validation: `uv run pytest tests/test_doc_links.py -q` (43 passed),
+`uv run ruff check .` and `git diff --check` passed. Game/source tests are reserved for
+implementation; this change is documentation and repository housekeeping only.
 
 ## 2026-10-15: Calibration C1, launches 3 to 6
 

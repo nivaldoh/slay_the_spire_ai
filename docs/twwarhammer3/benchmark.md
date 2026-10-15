@@ -1,7 +1,8 @@
 # WH3 latency-aware battle benchmark
 
-The benchmark as built: what it measures, the contract a controller plays under, how
-scenarios are declared and admitted, and how results are computed. The owner's brief is
+The benchmark as built, with the [implementation plan](#implementation-plan) for the
+owner's 2026-10-15 revision: difficult scenarios, partial progress and one report for the
+suite. Planned measures are distinguished from recorded ones. The owner's brief is
 [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md).
 How to run it: [benchmark-run.md](benchmark-run.md). The report: [reports.md](reports.md).
 What is running now: [docs/state.md](../state.md). Dated history: [log.md](log.md).
@@ -35,7 +36,7 @@ it is slow has lost. Delay arms (below) are diagnostics beside that primary resu
 | §7 Records | Manifest (revision, file hashes, resolved scenario, deployment pins, prompts), trace, result, register | [benchmark-run.md](benchmark-run.md) |
 | §8 Path to RL | Episode boundaries, basis observations, orders, battle times, `ended_by`, throughput | [Outcomes](#outcomes-measures-and-comparison) |
 | §9 First milestone | Built and accepted in the game (b1-b9 in the log) | [log.md](log.md) |
-| §9 Initial release | Not reached: no scenario is admitted and no reference results exist | [Calibration](#calibration-stopped-2026-10-14) |
+| §9 Initial release | In preparation: scenario progress measures and a consolidated suite comparison remain to be implemented | [Implementation plan](#implementation-plan) |
 
 ## Terms
 
@@ -51,7 +52,11 @@ it is slow has lost. Delay arms (below) are diagnostics beside that primary resu
 ## Observation and action contract
 
 The track is `obs-v3+terrain/act-v2/live-1x` (`play.TRACK`); a trial with added age D
-appends `+age-<D ms>ms`. Results are never pooled across tracks. History: `obs-v1/act-v1`
+appends `+age-<D ms>ms`. A track versions the information and actions supplied by the
+environment and its timing rules. Controller memory or prompt changes are controller
+versions; scoring changes are evaluator versions. They need not create new tracks.
+Results from different conditions can appear in the same report, labelled separately;
+they are never pooled across tracks. History: `obs-v1/act-v1`
 (b1), `obs-v1+terrain` (b2, terrain grid), `obs-v2+terrain` (b3, enemy roster boundary
 fix), `obs-v3+terrain/act-v2` (b8, morale and flight). The code is the reference:
 - `engine/mailbox.py` module docstring: the observation, the acknowledgement and every
@@ -157,28 +162,30 @@ Declared families: ranged protection (`dwf-sla-taurox`, `dwf-sla-herald`), caval
 against anti-large (`brt-cavalry-emp-pikes`, `-pegasus` and the attacking `-assault`) and
 a caster-led force (`tze-caster-skv-screen` and the attacking `-assault`). All but
 `dwf-sla-taurox` have a `-hard` variant at modifier 1.1 and a `-heldout-wastes` map. None
-is admitted. Two Skaven swarm prototypes (`skv-swarm-dwf-line`, `dwf-line-skv-swarm`) were
-screened on 2026-10-15; see [Scenario design](#scenario-design).
+passed the former admission rule. Two Skaven swarm prototypes (`skv-swarm-dwf-line`,
+`dwf-line-skv-swarm`) were screened on 2026-10-15; see [Scenario design](#scenario-design).
 
 ### Admission
 
-A scenario joins a suite when, over repeated independent launches:
-1. a declared competent reference wins before the timer roughly 30-70% of the time
-   (neither floor nor ceiling; timer endings count as valid trials, not as wins here);
-2. that reference beats the better trivial baseline on the paired active margin, with a
-   95% interval above zero.
+The 30-70% reference win-rate gate and paired-margin admission test were retired by the
+owner's 2026-10-15 direction. G1 and C1 remain development evidence. Difficulty is not
+adjusted automatically to a reference model's win rate.
 
-The reference is frozen before the repeated trials: `skills` if it can express the needed
-tactics, else a declared model, hybrid or specialist script with its prompts and tuning
-history recorded. Setup must be repeatable and the required controls must work. A
-scenario is latency-sensitive only if an added-age experiment shows degradation.
+For the planned suite, check that setup repeats correctly, the controls needed for the
+challenge work, the engine result is recorded, and declared progress measures are
+available. A hard scenario can remain useful when every controller loses but reaches
+different milestones. If neither outcomes nor progress distinguish play, review the
+scenario or measurement; do not assume an easier opponent is the remedy. Repetitions
+measure variability, not eligibility. A claim of latency sensitivity still needs an
+added-age experiment. Existing configuration labels such as `prototype_not_admitted`
+are legacy metadata, pending the implementation below.
 
 ## Scenario design
 
 Owner direction, 2026-10-14: prioritize distinctive tactical challenges over balanced
 general-purpose armies. Scenarios should give agents reasons to use specialist knowledge,
 try unusual approaches and make difficult decisions. Battles should also be interesting
-to watch. This is part of benchmark selection, not an optional showcase after calibration.
+to watch. These properties guide scenario selection alongside measurable progress.
 
 - **Start with a tactical problem**: a faction mechanic and one or a few anchor units,
   ours or the enemy's, whose use changes the battle. Supporting units create decisions
@@ -205,7 +212,7 @@ development and held-out variants; its entry's `brief` holds the summary.
 | Command a Skaven swarm | Many cheap bodies around a few unusual weapons or casters | Spend expendable units for space and time, preserve the scarce damage |
 | Survive a Skaven swarm | A much smaller force with limited crowd-clearing anchors | Shape the approach, save ammunition and magic, avoid encirclement |
 
-**Skaven swarm drafts (2026-10-15, definitions only, never run).** Both pin the Taurox
+**Skaven swarm prototypes (screened 2026-10-15).** Both pin the Taurox
 map, very hard AI, modifier 1.0, unit scale 0.75, custom funds 12000 and the 1200 s
 timer, and use base Skaven (`wh2_main`) and Dwarf (`wh_main`) units whose keys exist in
 the game's English localisation; both pass `validate_declaration` and build their lobby
@@ -213,9 +220,9 @@ steps offline.
 
 | | `skv-swarm-dwf-line` (command a swarm) | `dwf-line-skv-swarm` (survive a swarm) |
 |---|---|---|
-| Player | 20 Skaven, attacking: Grey Seer (Ruin), Warlock Engineer, 6 Skavenslaves, 4 Clanrats, 2 Skavenslave Slingers, 2 Warpfire Throwers, Poisoned Wind Globadiers, Warp Lightning Cannon, Doomwheel, Rat Ogres | 7 Dwarfs, defending: Lord, 2 Ironbreakers, Longbeards, Irondrakes, Thunderers, Organ Gun |
+| Player | 20 Skaven, attacking: Warlord, Warlock Engineer, 6 Skavenslaves, 4 Clanrats, 2 Skavenslave Slingers, 2 Warpfire Throwers, Poisoned Wind Globadiers, Warp Lightning Cannon, Doomwheel, Rat Ogres | 7 Dwarfs, defending: Lord, 2 Ironbreakers, Longbeards, Irondrakes, Thunderers, Organ Gun |
 | Enemy | 9 Dwarfs: Lord, Hammerers, 2 Ironbreakers, Longbeards, 2 Thunderers, Irondrakes, Organ Gun | 20 Skaven: Warlord, Plague Priest, 5 Skavenslaves, 5 Clanrats, 2 Stormvermin, 2 Plague Monks, 2 Skavenslave Slingers, Warp Lightning Cannon, Rat Ogres |
-| Protected | Grey Seer, Warp Lightning Cannon | Irondrakes, Organ Gun |
+| Protected | Warlock Engineer, Warp Lightning Cannon | Irondrakes, Organ Gun |
 | Naive risk | one all-in charge into the guns, then a cascade of routs | spreading out and being encircled |
 | A viewer should see | slaves screening and pinning, weapon teams arriving together, the caster kept alive | a refused flank, ammunition saved for clusters, the line holding or folding |
 
@@ -241,9 +248,10 @@ fought alone and fled first (the gun at 202 s), and at 128 s the reply called th
 403 m away, "now-in-range". The rejections began after the line broke. Over three
 quarters of every shooter's ammunition went unspent in both battles. The abilities refused in the first match the known causes
 (readiness lag and magic spent by issuance; [integration.md](integration.md)), not
-audited one by one. Next: the same screens with Sol before any calibration.
+audited one by one. Next: include both scenarios in the matched model comparison after
+v17 and the progress measures are ready, with no further win-rate admission block.
 
-A siege attacker needs gate, wall and equipment orders before admission. Review traces
+A siege attacker needs gate, wall and equipment orders before evaluation. Review traces
 for whether meaningful specialist decisions occurred: a win by an unrelated exploit or a
 grossly superior anchor does not establish the challenge. Keep that review qualitative
 and separate from outcomes; there is no creativity or entertainment score.
@@ -324,160 +332,193 @@ this page before its rewrite (`git show d606d39:docs/twwarhammer3/benchmark.md`)
   snapshots. Lobby options, modifier getters and terrain sampling are in
   [integration.md](integration.md).
 
+## Implementation plan
+
+Prepared on 2026-10-15 at the owner's request. This is the next implementation, not
+completed functionality or an instruction to launch jobs now. No controller, metric,
+scenario configuration or report output changed during preparation.
+
+### 1. Hard challenges and partial progress
+
+Keep engine victory, defeat, draw, timer endings and failures. Add a small, versioned
+mapping of scenario measures in `battle/report.py`, keyed by declared unit types, with
+its definitions included in report JSON and explained in HTML. Start with the three
+existing challenges below; no general scoring framework or composite leaderboard score.
+A milestone is an accomplishment, not a requirement to use the designer's preferred
+route or tactic. Declare measures before collecting the next comparison. Measures
+applied retrospectively to C1 or the swarm screens are exploratory.
+
+The audit of `strength()` in the battle Lua, `play.track_objectives`, `report.collect`
+and recorded C1/swarm results found:
+
+| Measure | Available evidence and next work |
+|---|---|
+| Casualties by unit type | Final hidden totals already contain `men0` and `men` per type. Derive `(men0 - men) / men0` where the denominator is positive; describe it as soldier/entity losses, not HP damage or unit value. |
+| Active survivors by unit type | `active_men / men0` is recorded; excludes routing and shattered units. Show it separately from survivors including routed men. Existing `protected_left` is an active-men fraction, despite the broad name. |
+| Point control and resources | Engine-tick point ownership integrals, final supplies and tickets already exist for applicable battle types. Show duration and ownership time/share together; leftover supplies are descriptive, not a reward for refusing to spend. |
+| Destruction, routing and event times | Current final totals aggregate by type, not individual unit. Public replay events depend on visibility; zero active men does not prove destruction. Exact per-unit milestones and authoritative first-achievement times need additional evaluation-only recording. |
+| Army value or HP damage | Final totals do not contain either. Defer weighting and HP scores until starting values, damage, summons, healing and reinforcement treatment are defined and recorded. Raw headcount is not a universal army score. |
+
+Proposed first measures (engine outcome, natural order delay, cost and failures accompany
+all rows):
+
+| Scenario | Initial progress view |
+|---|---|
+| `brt-cavalry-emp-assault-hard` | Casualty and active fractions for enemy Great Cannons, Handgunners and Halberdiers; surviving and active player cavalry by type. Keep AI ×1.1. |
+| `skv-swarm-dwf-line` | Enemy gun-line and elite-infantry casualties by type; own weapon-team survivors; caster survival. A one-model lord/caster's men count gives alive/dead, not health. |
+| `dwf-line-skv-swarm` | Enemy losses by type, protected Irondrake/Organ Gun survivors and active strength, duration beside outcome. No points exist on this land map; duration alone must not reward hiding. |
+
+Before implementing fractions, specify denominators and missing-data behavior. The
+current `men0` includes units registered after the start, including summons; do not call
+it the original army. Preserve that recorded denominator and label it for the first
+view. Scoring only the original force, especially when summons share a type, needs
+per-unit initial-membership recording. Missing fields mean unavailable, not zero.
+Historical traces/results and `results.csv` stay unchanged; derived measures belong in
+reports with their evaluator version. Scoring data remains outside policy inputs and
+the public replay. Timing from sparse observations is an observed bound, not an exact
+achievement time. These limits leave room for later milestones without delaying a
+useful first progress comparison.
+
+### 2. Integrate v17 and use the right version labels
+
+`wh3-llm-v17` (`c1cc14b`) changes only `battle/llm.py` and its regression tests: shooter
+range feedback and last-sighting memory. It consumes already-public observations;
+`play.TRACK`, the Lua observation and the action/timing contracts are unchanged. Keep
+`obs-v3+terrain/act-v2/live-1x`; earlier notes calling this `obs-v4` were incorrect.
+The commander imports `remember` and `render_state`, so the integration must also be
+logged as its next version (v4), alongside `llm`/`llm_rules` v17. This branch has not
+been merged by the planning work.
+
+Review the branch against current main, run the LLM/commander/prompt tests, change golden
+prompts only where their expected rendering intentionally changes, then the WH3 suite
+and lint. Check the two feedback cases in a real battle during the first evaluation
+launch. Historical results retain their original revisions. Compare models on the same
+controller version and conditions; show older controller versions in the same report
+without attributing their differences solely to model quality. An actual future change
+to environment information, actions or timing would change the track. New evaluator
+measures need their own version, not a new observation track.
+
+### 3. Evaluate the first suite, then expand
+
+Use the three scenarios above as development challenges; the existing screens already
+establish working setup. First proposed batch: one new launch per scenario, each rotating
+Sol low and Luna low under `llm_rules`, plus run-nearest/walk-nearest on cavalry,
+run-nearest on the swarm attack and `hold` on the Dwarf defence (10 battles total).
+This is an exploratory comparison, not a stable model ranking. Keep rosters, controller
+code, prompts, observation timing and recording settings fixed across the batch; retain
+the rematch-start checks and held-out variants. Replace legacy admission status labels
+in `configs/twwarhammer3/scenarios.json` as part of that implementation, without changing
+rosters or silently rewriting old manifests.
+
+Before launching, declare a small fixed repeat batch and cost allowance. Repetitions
+use independent launches with matched controllers; do not stop when a preferred model
+wins or a significance threshold is crossed. Additional batches may follow interesting
+findings, labelled exploratory with their selection reason and all earlier trials shown.
+The $25 cumulative ledger cap has $10.7821 left at preparation time; C1 Sol battles cost
+$0.67-1.44 in its first two launches, and swarm Sol cost is unknown. Estimate the first
+batch conservatively and retain room for repeats before adding models or scenarios.
+No paid run is part of this preparation.
+
+Generate a new queue plan only after implementation is committed. The old G1 plans,
+completed C1 plans and unstarted `swarm-sol-screens-plan.json` are historical inputs;
+do not resume or merely repin them as the new suite. A siege follows when gate, wall
+and equipment controls work. Broader random draws, commander comparisons, other battle
+types and army-size/context experiments remain later work, not initial-release gates.
+
+### 4. Keep natural latency; defer added delay
+
+Every comparison retains measured order age, outcome/progress, cost and reliability at
+unpaused 1x. The existing `--delay-seconds 0,6,10` capability remains available, but no
+G2 block is scheduled. Use it later on a scenario with interpretable progress measures
+and a concrete latency question, without requiring a particular win rate. Compare the
+same frozen controller across added ages and report actual information age; natural
+latency differences between models alone do not establish a causal latency effect.
+
+### 5. One benchmark report
+
+Use `runs/twwarhammer3/reports/benchmark.html` as the planned canonical entry point for
+the entire suite, with `.json` and `.txt` companions. Existing `report JOB [JOB ...]`
+already accepts all scenarios and `report_html.display_data` provides navigation between
+them. Extend that path; no separate site, server or new report framework is needed.
+
+Add a compact suite overview (coverage, outcomes and scenario progress per model), then
+in-page access to each challenge's comparison, run settings, notes and replays. Preserve
+the current watch/understand/compare experience. Missing runs or measures stay explicit;
+there is no aggregate ranking across unlike scenario measures. Historical runs and
+interface/controller versions remain accessible with labelled conditions, not pooled
+into current results. Existing grouping is conservative about source revisions; retain
+it initially rather than inventing new compatibility inference.
+
+Select an explicit list of input jobs, including failures and older evidence; the report
+JSON already records this list. Do not glob all local runs into the benchmark or choose
+only successes. Keep existing reports as historical artifacts until the canonical one
+is validated. Start with the current embedded assets. Supporting files are allowed if
+measured size or load time warrants them; any such packaging must still open locally
+without a service and be tested as a copied bundle. A giant JSON `fetch` from `file://`
+is not assumed to work. No consolidated report has been generated during preparation.
+
+### Delivery order and checks
+
+1. Integrate and log v17 plus the commander's shared rendering change. Keep other prompt
+   or executor changes outside this batch.
+2. Implement the first report-derived measures and overview using saved evidence; test
+   casualty/active distinctions, zero or missing denominators, summons, historical data,
+   and the scoring/policy boundary. Use existing report, replay and Lua test modules as
+   appropriate; do not rewrite the register or saved jobs.
+3. Build the single report from an explicit historical job list. Extend the browser
+   check with several actual scenarios, navigation, missing metrics, mixed controller
+   versions and replays; check desktop/mobile, offline opening, size and load time.
+4. Freeze scoring definitions, code and the first run batch; run the matched launches,
+   inspect real-game behavior, then rebuild the same canonical report. Do not promise
+   new Lua mechanics or exact milestones on fixture evidence alone.
+
+The next milestone is complete when the three challenges and model/baseline rows can
+be inspected in that one report, with clear progress definitions, sample counts,
+failures, conditions and replays. Further instrumentation is justified by gaps that
+prevent useful comparison, not by a predetermined reference win rate.
+
 ## Calibration (stopped 2026-10-14)
 
-The owner stopped calibration on 2026-10-14 (the runner exited at 22:19:59 UTC) and wants
-to discuss its objective, reference, thresholds, trial count and cost before any further
-run. Do not resume the recorded queue. What follows is the recorded plan, unchanged.
+Historical design, superseded by the implementation plan above. G1 proposed six launches
+at each AI modifier (×1.0 and ×1.1), rotating Sol low `llm_rules`, walk-nearest and
+run-nearest. Admission required Sol to win 2-4 of 6 before the timer and beat both
+baselines on paired active margin with a 95% interval above zero. G2 would then rotate
+0/6/10 s added ages on an admitted variant. The owner stopped G1 on 2026-10-14; it remains
+partial, and G2 never ran. Outcomes and stop details are in the
+[log](log.md#2026-10-14-partial-g1-and-owner-requested-stop).
 
-**Objective.** G1 finds a modifier at which the scenario passes [admission](#admission);
-G2 then measures whether added information age costs the reference anything.
-
-**G1 design** (frozen on source `6763d0e`):
-- scenario `brt-cavalry-emp-assault` (modifier 1.0) and `-hard` (1.1): six Bretonnian
-  cavalry units, Grail Knights as anchor, must defeat eight Empire units (four halberds,
-  two handguns, a cannon, a foot general) on the Taurox map before the 1200 s timer;
-  very hard AI, custom funds 8000, unit scale 0.75, realism off;
-- reference: `llm_rules` on `gpt-6-sol`, effort low, rules prompt sha256 `f20379b6...`,
-  chosen for its b7 flanking win, which is a viability demonstration, not admission;
-- baselines: walk-nearest (`attack_nearest`) and run-nearest (`rush_nearest`); `hold`
-  is an objective-failure control only (an idle attacker loses at the timer with both
-  armies intact, margin 0);
-- 12 launches alternating modifiers, each `--episodes 3` rotating the three controllers,
-  rotation seeds 2026101401-06 (1.0) and 2026101411-16 (1.1), added age 0, start/
-  episode/run timeouts 900/1320/5400 s, `--budget-usd 25 --show`;
-- admission per modifier: the reference wins 2-4 of 6 before the timer, and its paired
-  margin over each baseline has a 95% interval above zero. If both modifiers pass, G2
-  uses 1.1; if one, that one; if neither, no G2 and scenario development continues;
-- start flags: geometry flags stay in the primary result, with the secondary comparison
-  without them; a changed roster, strength, loadout or resource stops later jobs for
-  investigation. No tuning of prompt, rosters or controllers during G1 or G2.
-
-**G2 design**: on the admitted setting, six launches rotate the reference at added ages
-0, 6 and 10 s, seeds 2026101421-26. Primary contrast: 10 s minus 0 s active margin; a 95%
-paired interval below zero shows sensitivity. The 6 s contrast is secondary. A null
-result bounds only the detectable effect.
-
-**What ran.** `bench-g1-cavalry-ai10-01-20261014` (1.0): walk-nearest lost at 411.2 s
-(margin -0.796), run-nearest lost at 247.7 s (-0.628), Sol won at 528.2 s (+0.544,
-$0.793363); 1373.64 s for the whole job. `bench-g1-cavalry-ai11-01-20261014` (1.1) was
-interrupted during frontend setup, with no episode. The other ten launches never started.
-
-**Size and cost of the recorded plan.** 54 battles: G1 36 (12 of them Sol), G2 18 (all
-Sol). At about 23 minutes a launch, the 17 unplayed launches take about 6.5 hours of
-machine time. Sol cost $0.62-0.79 a battle on this scenario (b7, G1 and the visual
-acceptance), so the 29 unplayed Sol trials would cost about $18-23. Every model call draws
-on the cumulative $25 WH3 ledger, which held $7.7949 on 2026-10-15 (`uv run python -m
-twwarhammer3 spend`): the plan does not fit the cap at Sol prices. Sizing estimates from
-the register (made with the old raw margin, 2026-10-14): six launches resolve a paired
-gap of about 0.2 margin, three about 0.4; a 20-point win-rate difference is about
-0.12-0.14 margin and needs 17-28 paired launches per contrast (36 with a Holm correction
-over three); wins alone need about 97 battles per controller.
-
-**Where it is.** Plan and queue state: `runs/twwarhammer3/calibration/g1-cavalry-plan.json`
-and `g1-cavalry-plan-state.json`; stop note `g1-owner-stop.json`. Partial reports:
-`runs/twwarhammer3/reports/g1-cavalry.json` and `.txt`, admission audit
-`g1-cavalry-admission.json`, HTML `field-report.html`. G1 ran through the untracked
-driver `calibration/run-g1.py`, with `audit-g1.py` checking admission. A resumed plan
-would run through `scripts/wh3_queue.py` ([benchmark-run.md](benchmark-run.md#running-a-plan)),
-which applies the start-change stop rule since 2026-10-15; admission is still audited
-separately.
+Plans, state files, audits and runners under `runs/twwarhammer3/calibration/` remain
+historical evidence; `scripts/wh3_queue.py` is the supported runner for future jobs.
+The full former design and its estimates remain in git at `ae7ca31:docs/twwarhammer3/benchmark.md`.
 
 ## Calibration: options for the owner's discussion (2026-10-15)
 
-A proposal, not a plan: nothing below runs until the owner decides. It answers the five
-questions the owner asked before any further calibration (objective, reference,
-thresholds, trial count, cost) from the evidence already recorded. No game ran and no
-model was called to write it.
-
-**What the register already shows** on the cavalry assault (development screens and G1,
-three source revisions, so descriptive only and never pooled into a result):
-
-| Controller | `brt-cavalry-emp-assault` (AI ×1.0) | `-hard` (AI ×1.1) |
-|---|---|---|
-| `llm_rules`, Sol low | won 3 of 3: 432, 528 and 382 s; $0.62-0.79 a battle | not played |
-| `llm_rules`, Luna low | lost 1 of 1 (247 s); $0.02 | lost 1 of 1 (271 s) |
-| `llm_rules`, Luna medium | lost 1 of 1 (214 s) | lost 1 of 1 (342 s) |
-| run-nearest | lost 4 of 4 | lost 1 of 1 |
-| walk-nearest | lost 2 of 2 (one more ended in an infrastructure failure) | lost 1 of 1 |
-| `hold` | lost 2 of 2 at the timer | lost 1 of 1 at the timer |
-
-At ×1.0 the scenario already separates Sol from Luna and from the scripted baselines on
-the outcome alone. Sol's 3 of 3 is compatible with any win rate from 44% to 100% (95%
-Wilson), so ×1.0 may sit at Sol's ceiling, which the admission rule's 30-70% band was
-meant to avoid; ×1.1 has never been played by Sol.
-
-**1. Objective.** Proposed: decide whether one variant *discriminates*: the reference
-wins sometimes but not always, while the cheaper model and the scripted baselines
-rarely win. The recorded G1/G2 plan remains the alternative.
-
-**2. Primary measure and thresholds.** The report redesign retired the active-strength
-margin as a headline: it counts routing men as lost and weighs a cannon crew like a
-lord. Proposed: the engine outcome before the timer is primary (wins out of battles,
-with the time-limit rule stated), battle length and protected-unit survival are
-descriptive, and the margin stays in the JSON. Admission rule 2 (paired margin interval
-above zero) would become: every scripted baseline wins none of its battles and the
-reference's wins exceed the best baseline's. Rule 1 (reference between 30 and 70%)
-stays.
-
-**3. Reference and rows.** `llm_rules` on `gpt-6-sol`, low effort, unchanged prompt;
-`gpt-6-luna` low on the same prompt as a cheap second model row; run-nearest and
-walk-nearest as baselines. `hold` is dropped: it can only lose at the timer, which is
-already shown. Per-policy models are built, so the Luna row is paired within Sol's
-launches: `--policy llm_rules,llm_rules@gpt-6-luna,rush_nearest,attack_nearest` with
-`--model gpt-6-sol --effort low` rotates all four (`NAME@MODEL/EFFORT` also sets the
-effort). Separate Luna launches would be unpaired.
-
-**4. Variant and trial count.** Proposed: ×1.1 first, six launches, each rotating the
-four controllers (24 battles: 6 per row). Reading it: Sol 2-4 of 6 with the baselines at
-0 admits ×1.1; Sol 5-6 of 6 means both settings are likely too easy for Sol, and the
-next step is a harder declaration (for example the Pegasus general variant) rather than
-more trials; Sol 0-1 of 6 means ×1.0 is the setting to repeat. Six battles a row detect
-only large gaps (2 of 6 against 0 of 6 is not significant on its own), so a second
-block of six would follow before any claim beyond "admitted for development".
-
-**5. Cost and time.** Sol: 6 × about $0.70 = about $4.20 (the 1077 s caster battle cost
-$1.78, so a long battle can double it); Luna: 6 × about $0.02. The WH3 ledger held
-$7.7949 of $25 on 2026-10-15, so the block fits with about $12.8 to spare. Machine time:
-a G1 launch of three battles took 23 minutes; four battles about 30 minutes, so about 3
-hours for six launches, unattended.
-
-**6. A controller fix to decide first.** In the G1 Sol battle the first observation
-after the opening orders (taken the instant they applied, before any unit moved) told
-the model all six units had "stopped 300-350 m short", and it re-issued every route at
-0:12, 0:20 and 0:30. The fix is on branch `wh3-llm-fresh-move`, unmerged: it changes
-prompt text, so `llm` and `llm_rules` would get a new version and Sol results before
-it would not pool with results after it. Proposed: merge it before the block above,
-because a resumed calibration starts a new run set anyway.
-
-**7. Delay (G2) afterwards.** With a win/loss outcome, three arms of six launches can
-detect only a collapse. Proposed: run G2 only on an admitted variant, read it on wins
-and battle length, and size it after the block above shows the reference's win rate.
+Historical alternatives, adopted as C1 below and now superseded. They proposed engine
+outcome as the primary measure, Sol as reference, adding Luna to the paired rotation,
+and trying ×1.1 first. The options also proposed fixing fresh moves mislabelled as
+stopped before running; that fix became v16. The original discussion remains at the
+revision above; the [decision entry](log.md#2026-10-15-harness-b10-llm-v16-and-the-calibration-decisions)
+records what was adopted.
 
 ## Calibration decided (2026-10-15)
 
-The owner delegated the decisions above to the agent on 2026-10-15. Adopted as proposed,
-as block C1:
-- objective: whether `brt-cavalry-emp-assault-hard` (AI ×1.1) discriminates; primary
-  measure the engine outcome before the timer, margin kept in the JSON only;
-- rows, rotated in every launch: `llm_rules` on `gpt-6-sol` low (reference, `llm` v16),
-  `llm_rules@gpt-6-luna` (low), run-nearest, walk-nearest; added age 0; no stills;
-- six launches, rotation seeds 2026101501-06; launches 1-2 ran on the morning of
-  2026-10-15, launches 3-6 wait in `runs/twwarhammer3/calibration/c1-plan-rest.json`;
-- reading: Sol 2-4 of 6 with both baselines at 0 admits ×1.1 for development; 5-6 of 6
-  moves the next block to a harder declaration; 0-1 of 6 moves it to ×1.0. No prompt,
-  roster or controller change during C1.
-- status after launches 1-2 (2026-10-15): Sol 1 of 2 (lost at 1017 s, won at 487 s), Luna
-  and both baselines 0 of 2; Sol cost $0.67-1.44 a battle here
-  ([log](log.md#2026-10-15-calibration-c1-launches-1-and-2)). What the traces show so far:
-  Sol went round the obstruction and took the guns first in both battles and won the one
-  where it kept fighting the halberds afterwards; Luna and both scripted baselines charged
-  the halberd line directly. The scenario rewards the flank-then-commit sequence it was
-  designed around, which supports keeping it as the C1 candidate.
+Historical C1 design: six launches of `brt-cavalry-emp-assault-hard`, rotation seeds
+2026101501-06, `llm` v16 on harness b10, added age 0, no stills. Every launch rotated
+`llm_rules` on Sol low, `llm_rules@gpt-6-luna` low, run-nearest and walk-nearest.
+The original rule admitted ×1.1 on Sol 2-4 wins with both baselines at zero, made it
+harder on 5-6, and moved to ×1.0 on 0-1. It is no longer the next-run rule.
+
+All six launches finished on 2026-10-15: Sol 1 of 6; Luna and both baselines 0 of 6,
+all engine outcomes. The report is `runs/twwarhammer3/reports/c1-cavalry-ai11.html`.
+[Launches 1-2](log.md#2026-10-15-calibration-c1-launches-1-and-2) include early trace
+reviews; [launches 3-6](log.md#2026-10-15-calibration-c1-launches-3-to-6) complete the
+register. The revised plan retains these trials as development evidence and does not
+schedule an easier calibration block.
 
 ## Experiments the report should eventually present (definitions only)
 
-From the report brief's section 10; none is built or scheduled.
+From the report brief's section 10; none of these experiment series has run or is
+scheduled. Added observation age is already supported by the harness.
 
 - **Army size.** The cavalry assault at about ×0.5 (3 against 4 units), ×1 (6 against
   8) and ×2 (12 against 16), same composition ratios, map and timer, funds scaled. The
@@ -494,7 +535,7 @@ From the report brief's section 10; none is built or scheduled.
   the report's one-line unit roles to the observation against raw unit names. Reported
   with tokens, reply time and cost beside outcomes; the viewer's role text never reaches
   a controller unless it is the treatment.
-- **Delay.** G2 above: added observation age (`--delay-seconds`), which is not the same
+- **Delay.** Deferred added observation age (`--delay-seconds`), which is not the same
   intervention as a slower model; natural latency differences between models stay
   observations, not a dose-response curve.
 

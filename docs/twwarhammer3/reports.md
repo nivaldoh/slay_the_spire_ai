@@ -10,6 +10,25 @@ replay from `battle/replay.py`, the presentation from `battle/report_html.py` an
 `battle/report_assets/`, curated text from `configs/twwarhammer3/report_notes.json`, and
 frames and stills from `battle/capture.py` during play ([integration.md](integration.md)).
 
+## Planned suite report
+
+Owner direction, 2026-10-15: one entry point for the entire benchmark,
+`runs/twwarhammer3/reports/benchmark.html`, with supporting files allowed. This artifact
+has not been generated. Existing scenario-specific reports remain historical evidence;
+the [implementation plan](benchmark.md#implementation-plan) defines the remaining work.
+
+Multi-scenario input and an in-page scenario selector already work. Add a suite overview
+and declared progress measures, then expose each challenge's comparisons and replays
+inside the same page. Controller versions and environment tracks are labelled run
+conditions, not reasons to require another report. Keep incompatible samples distinct,
+missing measures explicit and the evaluator version recorded; do not aggregate unlike
+progress measures into a single model score.
+
+Use an explicit input-job list, retained in report JSON, including failures. Start with
+embedded assets; only split large assets if measured size or loading warrants it, and
+verify offline opening of a copied bundle. No website hosting or new framework is part
+of this plan. The sections below describe the current renderer, not these future additions.
+
 ## Making a report
 
 ```bash
@@ -225,7 +244,7 @@ Under `runs/twwarhammer3/reports/` (local, not in Git), read from each JSON's `j
 | `field-report.{html,json,txt}`, `g1-cavalry.{json,txt}`, `g1-cavalry-admission.json` | `battle/bench-g1-cavalry-ai10-01-20261014`, `battle/bench-g1-cavalry-ai11-01-20261014` |
 | `g1-cavalry-ai10-01.{json,txt}` | `battle/bench-g1-cavalry-ai10-01-20261014` |
 | `cavalry-assault.{html,json,txt}` | the redesigned page: `battle/visual-sol-low-20261015` and the two G1 jobs |
-| `c1-cavalry-ai11.{html,json,txt}` | C1 launches 1-2: `battle/bench-c1-cavalry-ai11-0{1,2}-20261015` |
+| `c1-cavalry-ai11.{html,json,txt}` | All six C1 launches: `battle/bench-c1-cavalry-ai11-0{1,2,3,4,5,6}-20261015` |
 | `swarm-screens.{html,json,txt}` | `battle/bench-b10-screen-skv-swarm-r2-20261015`, `battle/bench-b10-screen-dwf-line-20261015`, and the setup-only first attempt |
 | `visual-report.{html,json,txt}` | `battle/visual-sol-low-20261015` and the two G1 jobs |
 | `visual-report-g1.{html,json}` | the two G1 jobs |

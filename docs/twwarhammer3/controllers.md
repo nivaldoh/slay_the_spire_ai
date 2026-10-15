@@ -196,13 +196,21 @@ golden prompts:
    shooters left the defensive line and fled first. The state gives each unit's `range`
    but neither prompt says that attacking beyond it walks the unit forward; the unit line
    could print the target's distance against the range, or the rules could say it.
-   Drafted on branch `wh3-llm-range`, unmerged while C1 freezes the controllers.
+   Drafted on branch `wh3-llm-range`, included in `wh3-llm-v17`. C1 is complete;
+   integration is planned, not performed yet.
 6. **Last sightings do not say a unit was fleeing.** In `bench-c1-cavalry-ai11-01-20261015`
    episode 3 Sol spent 600 s of a lost battle looking for guns that had routed off the
    map, listed in the last-sighting memory at the map edges with no state. Carrying the
-   last observed state (routing, shattered) with each sighting changes the observation,
-   so it is a track change as well as a version (`obs-v4`). Drafted on branch
-   `wh3-obs-last-state`, unmerged while C1 freezes the controllers.
+   last observed state (routing, shattered) with each sighting changes controller memory
+   and rendered text, using already-public information. Drafted on `wh3-obs-last-state`,
+   included in `wh3-llm-v17`; no change to the environment observation track is needed.
+
+Integration note (2026-10-15): the v17 branch changes only `llm.py` and its tests. The
+commander imports the same `remember` and `render_state`, so both fixes also affect it.
+Log `llm`/`llm_rules` v17 and commander v4 together when integrating, and validate both;
+keep unrelated prompt/executor changes out of that comparison. The branch's earlier
+348-test result is historical, not validation against current main. See the
+[implementation plan](benchmark.md#implementation-plan).
 
 ## Designs not built yet
 
