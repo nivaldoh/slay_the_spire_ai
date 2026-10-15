@@ -205,6 +205,22 @@ def test_lapsed_orders_are_forgotten_and_dropped_moves_reported(tmp_path):
     assert agent.ordered == {"f1": dict(orders[0], time_s=30.0)}
 
 
+def test_a_move_applied_at_the_observed_instant_is_not_reported_stopped(tmp_path):
+    # bench-g1-cavalry-ai10-01-20261014 episode 2: the state taken as the opening batch
+    # applied showed every unit idle, and the prompt called all six moves stopped short.
+    orders = [{"unit": "f1", "type": "move", "x": 10.0, "z": 60.0, "facing": None,
+               "width": None, "run": False, "queue": False}]
+    agent = policy(tmp_path, reply(orders), reply([]), reply([]))
+    agent.decide(observation())
+    agent.acknowledge({"request": "r1", "results": [{"unit": "f1", "ok": True}],
+                       "applied_ms": 34000}, {"think_s": 3.0, "delay_ms": 4000})
+    agent.decide(observation(time_ms=34000))
+    prompt = agent.metadata()["prompt"]
+    assert "your move to (10, 60) issued this instant" in prompt and "stopped" not in prompt
+    agent.decide(observation(time_ms=40000))
+    assert "stopped 100 m short of your move (30 s)" in agent.metadata()["prompt"]
+
+
 def test_units_without_a_target_show_no_order_and_their_nearest_enemy():
     observation_ = observation()
     observation_["friendly"][0]["state"] = []

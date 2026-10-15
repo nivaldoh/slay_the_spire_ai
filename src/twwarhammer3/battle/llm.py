@@ -129,7 +129,10 @@ def render_target(unit: dict, enemies: dict, order: dict | None) -> str:
         return (f"{here}, game's choice; your order at {order['time_s']:.0f} s was"
                 f" {order['target']}{_distance_text(unit, enemies.get(order['target']))}")
     if order.get("type") == "move" and not unit.get("dest"):
-        stopped = (f"stopped {distance(unit, order):.0f} m short of your move"
+        # The state taken as a batch applies predates the move: the unit has not started.
+        stopped = (f"your move to ({order['x']:.0f}, {order['z']:.0f}) issued this instant"
+                   if order.get("fresh") else
+                   f"stopped {distance(unit, order):.0f} m short of your move"
                    f" ({order['time_s']:.0f} s)")
         return f"{here}, game's choice; {stopped}" if shown else stopped
     return f"{here}, game's choice" if shown else ""
@@ -553,8 +556,12 @@ class LLMPolicy:
         friendly = friendly_units(observation)
         self.ordered = {unit_id: order for unit_id, order in self.ordered.items()
                         if unit_id in friendly and holds(friendly[unit_id], order)}
+        applied = (self.ack or {}).get("applied_ms")
+        fresh = applied is not None and observation.get("time_ms", 0) <= applied
+        shown = {unit_id: dict(order, fresh=True) if fresh and order in self.sent else order
+                 for unit_id, order in self.ordered.items()}
         prompt = render_prompt(observation, self.notes, list(self.history), self.last_seen,
-                               self.latency, self.ack, self.before, self.ordered)
+                               self.latency, self.ack, self.before, shown)
         self.before = strengths(observation)
         self._metadata = metadata = {
             "type": "llm", "model": self.api.name, "effort": self.api.effort,
