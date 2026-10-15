@@ -3,13 +3,14 @@
 }
 .replay-stills {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 .replay-stills figure {
   margin: 20px 0;
 }
-.replay-stills figure:first-child {
+.replay-stills figure:first-child,
+.replay-stills .featured-still {
   grid-column: 1 / -1;
 }
 .replay-stills img {
@@ -18,6 +19,11 @@
 }
 .replay-stills figcaption {
   font-size: 0.8rem;
+}
+@media (max-width: 650px) {
+  .replay-stills {
+    grid-template-columns: 1fr;
+  }
 }
 #replay-verdict h2 {
   font-size: clamp(1.2rem, 2.5vw, 2rem);

@@ -246,23 +246,32 @@ window.wh3Replay = (() => {
     }
   }
   function stills() {
+    const firstImage = (replay.stills || []).findIndex((shot) => shot.image);
     $("background").querySelector('[value="game"]').textContent =
       replay.stills?.some((shot) => shot.image)
         ? "Game stills above · no registered map background"
         : "Game imagery · not recorded";
     $("stills").replaceChildren(
-      ...(replay.stills || []).map((shot) => {
+      ...(replay.stills || []).map((shot, index) => {
         const figure = node("figure");
+        if (index === firstImage) figure.className = "featured-still";
+        const title =
+          {
+            opening: "Opening view",
+            first_contact: "First observed melee",
+            first_rout: "First observed rout",
+            ending: "Battle ending",
+          }[shot.trigger] || "Game still";
         if (shot.image) {
           const img = node("img");
           img.src = shot.image;
-          img.alt = `Recorded game still: ${shot.trigger || "capture"} at ${seconds(shot.time_ms)}`;
+          img.alt = `${title} at ${seconds(shot.time_ms)}`;
           figure.append(img);
         }
         figure.append(
           node(
             "figcaption",
-            `${shot.trigger || "Game still"} · ${shot.time_ms != null ? seconds(shot.time_ms) : "time unavailable"} · ${shot.image ? "Presentation only; never policy input." : shot.status || "Capture missing"} ${shot.visibility || "Visibility not audited: the image may include information hidden from the controller."} ${shot.error || ""}`,
+            `${title} · ${shot.time_ms != null ? seconds(shot.time_ms) : "time unavailable"} · ${shot.image ? "Presentation only; never policy input." : shot.status?.replaceAll("_", " ") || "Capture missing"} ${shot.visibility || "Visibility not audited: the image may include information hidden from the controller."} ${shot.error || ""}`,
           ),
         );
         figure.append(
