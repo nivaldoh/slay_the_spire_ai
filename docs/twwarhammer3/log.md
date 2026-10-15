@@ -136,6 +136,17 @@ Checks: `uv run pytest` (992) and `uv run ruff check .` pass; the browser check 
 `reports/benchmark.html`, now also asserting the mode sections, the placeholders and every
 Figure 3 model score against a recomputation.
 
+A second independent review (structure, data, design) found the request met: no divide
+left, 11 sections covering every lobby type, every score matching a recomputation, and no
+generated-design tells left. Its follow-ups, applied: disclosure markers on the mode
+sections, the scenario select grouped by mode, the page opening on Figure 1's scenario by
+choice rather than notes order, the current scenario's fold opening, Figure 1's caption
+naming the mode and saying Figures 2 and 3 pool all its battles, a † on Figure 3's scripted
+cell when it spans harness versions (Charge nearest's 29 against Figure 1's 28), Figure 2
+counting every battle and opening the earliest finished one, the casualty-only note
+counting the 7 affected losses, and small type fixes (a two-line title, no hyphen break in
+model names, aligned captions, no double rule, no pulsing dot).
+
 ## 2026-10-15: Report: one score per commander
 
 The owner's review of the outside-reader redesign: it still looked generated (the header

@@ -106,8 +106,8 @@ strings.
   card names the commander (model, then reasoning effort and prompt, or the scripted
   rule), the engine outcome with its duration, the commander's record here and the
   battle's score and measures; a curated pick adds that it was selected for its analyst
-  notes, not as a typical result; then the scenario and battle selects (battles by
-  commander, outcome first). The analyst notes follow as a row of numbered titles, the
+  notes, not as a typical result; then the scenario select (grouped by game mode) and the
+  battle select (battles by commander, outcome first). The analyst notes follow as a row of numbered titles, the
   playing one's sentence under them, labelled as written after the battle with AI
   assistance and checked against the records. Then up to four game stills ("spectator
   camera, not what the model saw") and the two armies, folded.
@@ -115,22 +115,24 @@ strings.
   **Figure 1**: the largest controlled comparison (the commanders shared by two launches
   of one harness, in the most such launches; C1 today), one row per commander: its score
   as a bar on the shared 0–100 scale with a line from its worst to its best battle,
-  battles won, median order age and API cost per battle. The caption says "once per
-  launch" only when that holds, names the enemy AI's difficulty and says when prompts were
-  tuned on the scenario. Its footnotes are the only place the page defines the scenario's
+  battles won, median order age and API cost per battle. The caption names the mode, says
+  "once per launch" only when that holds, names the enemy AI's difficulty, says when
+  prompts were tuned on the scenario and that Figures 2 and 3 pool all its battles. Its footnotes are the only place the page defines the scenario's
   variant (the stronger enemy's +10% stats), the score and order age.
 - **Same battle, different plans** (**Figure 2**), for the scenario in the replay: one
   map per model (its settings pooled, † with the breakdown in a tooltip) and per scripted
   rule, its army's track in every battle (thin; brighter for wins) and their mean
   position over time (thick, □ start, ● end) with the enemy where first seen in its first
-  battle; under it the battles and wins. A map opens the first battle. Commanders that
-  never give orders (Hold position) are left out, and the caption says so.
-- **Every scenario** (**Figure 3**): one fold per game mode in the game's order (the
-  opening scenario's open, the rest closed; empty ones say "No battles of this type yet");
+  battle; under it the battles, wins and battles that did not finish. A map opens the
+  earliest finished battle. Commanders that never give orders (Hold position) or recorded
+  no positions are left out by name, and a scenario with one commander says so.
+- **Every scenario** (**Figure 3**): one fold per game mode in page order, each with a
+  disclosure marker and its scenario count (Figure 1's mode and the current scenario's
+  open, the rest closed; empty ones say "No battles of this type yet");
   per scenario, each model's mean score over its finished battles there (tinted darker for
   higher, † when it pools settings or harness versions, listed in its tooltip; "not
-  measured" or "did not finish" when it has none) and the best scripted rule's ("no
-  baseline yet" where none ran). On a phone each scenario is a block.
+  measured" or "did not finish" when it has none) and the best scripted rule's (with † when
+  its battles span harness versions; "no baseline yet" where none ran). On a phone each scenario is a block.
 - **Method**, one column: verbatim lines of one message (the first reply with orders that
   reports its previous delay, in the first scenario's featured battle), abridged by
   section, and its reply one order per line, with the size of the fixed system prompt;
@@ -144,8 +146,8 @@ dead, fleeing or otherwise out of the fight when it ended, in percent; a command
 is the mean over its finished battles (battles without the enemy measure are left out). A
 win is 100 even when a defender wins at the timer with the enemy largely intact. Printed
 scores never round a loss up to 100 (a 99.8% loss reads 99). Battles that recorded
-casualties only (17 older pilot battles) count the enemy killed, not those who fled;
-Figure 3's caption says how many.
+casualties only (17 older pilot battles) count the enemy killed, not those who fled, a
+lower bound for the 7 that were lost; Figure 3's caption says how many losses.
 
 A commander's figures hold all its battles (model, effort, prompt or scripted rule, added
 age) in a scenario. When battles ran under different harnesses its name carries a † (the

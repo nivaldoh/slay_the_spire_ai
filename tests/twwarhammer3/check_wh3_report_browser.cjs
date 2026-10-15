@@ -46,6 +46,12 @@ const plansOf = (data, item) => {
   );
 };
 
+// The scenario the page opens on: Figure 1's, the largest controlled comparison, else the first.
+const opening = (data) =>
+  data.scenarios
+    .filter((s) => s.controlled)
+    .sort((a, b) => b.controlled.launches - a.controlled.launches)[0] || data.scenarios[0];
+
 const outcome = (trial, group) => {
   if (!trial.valid) return "Did not finish";
   const word = { won: "Won", lost: "Lost", draw: "Draw" }[trial.engine_outcome];
@@ -131,7 +137,7 @@ async function main() {
       data.report.groups.map((group) => group.controllers),
       saved.groups.map((group) => group.controllers),
     );
-    const scenario = data.scenarios[0];
+    const scenario = opening(data);
     assert.equal(await text("#question"), scenario.question || scenario.title);
     const [, g, t] = scenario.featured.match(/^g(\d+)-t(\d+)$/);
     const featured = saved.groups[g].trials[t];
@@ -354,15 +360,17 @@ async function main() {
       );
       const finished = item.battles.map(trialOf).filter((trial) => trial.valid);
       const wins = finished.filter((trial) => trial.engine_outcome === "won");
-      assert.match(
+      const failed = item.battles.length - finished.length;
+      assert.equal(
         await plan.locator("figcaption small").innerText(),
-        new RegExp(`^${finished.length} battles?, ${wins.length} won`),
+        `${item.battles.length} battle${item.battles.length === 1 ? "" : "s"}: ${wins.length} won${failed ? `, ${failed} did not finish` : ""}`,
       );
+      // A map opens the commander's earliest finished battle here.
+      const first =
+        scenario.battles.find((key) => item.battles.includes(key) && trialOf(key).valid) ||
+        scenario.battles.find((key) => item.battles.includes(key));
       await plan.locator(".plan-map").click();
-      await page.waitForFunction(
-        (k) => document.getElementById("run-select").value === k,
-        item.battles[0],
-      );
+      await page.waitForFunction((k) => document.getElementById("run-select").value === k, first);
     }
     for (const key of scenario.battles) {
       await page.selectOption("#run-select", key);
@@ -372,8 +380,8 @@ async function main() {
     await page.locator("#plans").scrollIntoViewIfNeeded();
     await page.locator("#plans").screenshot({ path: path.join(output, "compare.png") });
     assert.equal(await count("#matrix tr[data-scenario]"), data.scenarios.length);
-    // Figure 3: one section per game mode in the game's order, the empty ones as placeholders;
-    // the first scenario's mode is open.
+    // Figure 3: one section per game mode in page order (report_html.MODES), the empty ones as
+    // placeholders; the opening scenario's mode is open.
     const sections = await page.locator("#matrix > details > summary span").allInnerTexts();
     assert.deepEqual(
       sections.slice(0, data.modes.length),
@@ -528,7 +536,7 @@ async function main() {
     assert.match(refusedPanel, /refused by validation/);
     assert.doesNotMatch(refusedPanel, /Keeping current orders/);
     const demoData = JSON.parse(await page.locator("#report-data").textContent());
-    assert.equal(await count("#routes .plan"), plansOf(demoData, demoData.scenarios[0]).length);
+    assert.equal(await count("#routes .plan"), plansOf(demoData, opening(demoData)).length);
     const options = await page.locator("#run-select option").allInnerTexts();
     assert.ok(options.some((option) => /time limit/.test(option)));
     const failed = await page

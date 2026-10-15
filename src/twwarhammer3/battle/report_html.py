@@ -45,9 +45,10 @@ SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the neares
 UNIT_KEEP = ("id", "x", "z", "bearing", "men", "men0", "hp", "state", "target", "ammo", "ammo0")
 MODE_KEEP = ("role", "capture_points", "supplies", "tickets")
 TRACK_STEP_MS = 5000  # an army track keeps one centroid per this much battle time
-# The game's custom battle modes in page order, each with its section title and its name for
-# one battle; sieges split by the player's role, as their objectives differ. A mode without
-# scenarios yet keeps its place on the page.
+# The game's custom battle modes in page order (land battles first, then the objective modes,
+# sieges and settlements before survival and the points modes, the rarer layouts last), each
+# with its section title and its name for one battle. Sieges split by the player's role, as
+# their objectives differ. A mode without scenarios yet keeps its place on the page.
 MODES = [("land", "Land battles", "land battle"),
          ("siege_defence", "Siege defence", "siege defence"),
          ("siege_attack", "Siege attack", "siege attack"),

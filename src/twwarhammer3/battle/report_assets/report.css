@@ -178,7 +178,7 @@ button.inline {
   padding: 30px 0 34px;
 }
 .masthead h1 {
-  max-width: 24ch;
+  max-width: 30ch;
   text-wrap: balance;
   font-size: var(--t-xxl);
   font-weight: 600;
@@ -730,17 +730,6 @@ button.inline {
   flex: none;
   border-radius: 50%;
   background: var(--stage-ink-2);
-  animation: pulse 1.2s ease-in-out infinite alternate;
-}
-@keyframes pulse {
-  to {
-    opacity: 0.25;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .status-line .pulse {
-    animation: none;
-  }
 }
 .pinned-line {
   display: flex;
@@ -1244,8 +1233,13 @@ blockquote {
   line-height: 1.35;
   color: var(--muted);
 }
-.who-cell .versions {
+sup {
   line-height: 0;
+}
+.nowrap {
+  white-space: nowrap;
+}
+.who-cell .versions {
   margin-left: 2px;
   color: var(--muted);
   cursor: help;
@@ -1322,7 +1316,6 @@ blockquote {
   font-size: var(--t-xs);
   color: var(--muted);
 }
-/* Headings of one height, so the scores of a row of maps line up. */
 
 /* Figure 3: every scenario's scores, darker for higher. */
 /* One section per game mode; a mode without battles still has its place. */
@@ -1331,10 +1324,21 @@ blockquote {
 }
 .matrix summary {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 12px;
+  gap: 0 8px;
   padding: 12px 0;
   cursor: pointer;
+}
+.matrix summary::before {
+  content: "▸";
+}
+.matrix details[open] > summary::before {
+  content: "▾";
+}
+.matrix tbody tr:last-child,
+.matrix tbody tr:last-child > * {
+  border-bottom: 0;
 }
 .matrix summary span {
   font-size: var(--t-l);

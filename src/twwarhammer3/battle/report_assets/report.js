@@ -106,7 +106,7 @@
         ? 100
         : entry.battle.progress == null
           ? null
-          : 100 * entry.battle.progress;
+          : Math.min(99.99, 100 * entry.battle.progress);
   const mean = (values) => values.reduce((sum, value) => sum + value, 0) / values.length;
   // A score as printed: never rounded up to a win's 100 (a 99.8% loss reads 99).
   const points = (value) => (value >= 100 ? "100" : String(Math.min(99, Math.round(value))));
@@ -127,7 +127,7 @@
     if (won(entry)) out.push("score 100");
     else if (b.progress != null)
       out.push(
-        `score ${points(100 * b.progress)}${b.progress_basis === "killed" ? " (enemy killed, fled not recorded)" : ""}`,
+        `score ${points(Math.min(99.99, 100 * b.progress))}${b.progress_basis === "killed" ? " (enemy killed, fled not recorded)" : ""}`,
       );
     if (b.own_left != null) out.push(`own soldiers alive ${percent(b.own_left)}`);
     const units = m.units || {};
@@ -240,11 +240,13 @@
   const ageText = (s) => (s.ages.length ? seconds(s.box[2]) : s.timed ? "no orders" : "–");
   const costText = (s) => (s.row.kind !== "model" ? "$0" : s.usd == null ? "–" : money(s.usd));
 
-  // Figure 1: the first group's largest controlled comparison, one score per commander.
+  // Figure 1's scenario: the largest controlled comparison anywhere. The page opens on it.
+  const headline = data.scenarios
+    .filter((s) => s.controlled)
+    .sort((a, b) => b.controlled.launches - a.controlled.launches)[0];
+  // Figure 1: one score per commander in that comparison; definitions as its footnotes.
   function renderHeadline() {
-    const item = data.scenarios
-      .filter((s) => s.controlled)
-      .sort((a, b) => b.controlled.launches - a.controlled.launches)[0];
+    const item = headline;
     if (!item) return;
     const keys = new Set(item.controlled.battles);
     // The controlled subset is one harness by construction.
@@ -275,7 +277,7 @@
       el("b", "Figure 1. "),
       title,
       item.footnote ? "*" : "",
-      `: ${item.controlled.launches} game launches, each commander ${item.controlled.once ? "once " : ""}per launch with the same harness${level(item) ? `, against the game's AI on ${level(item)}` : ""}${item.split === "development" ? "; prompts were tuned on this scenario" : ""}.`,
+      `, a ${modeOf(item)?.name || "battle"}: ${item.controlled.launches} game launches, each commander ${item.controlled.once ? "once " : ""}per launch with the same harness${level(item) ? `, against the game's AI on ${level(item)}` : ""}${item.split === "development" ? "; prompts were tuned on this scenario" : ""}. Figures 2 and 3 pool all ${item.battles.length} of its battles.`,
     );
     $("headline-foot").replaceChildren(
       ...[
@@ -301,7 +303,13 @@
     const aged = models.filter((s) => s.ages.length),
       best = Math.max(...scripts.map((s) => s.score));
     return [
-      `In ${item.title}${level(item) ? `, against the game's AI on ${level(item)}` : ""}, ${models.map((s) => `${s.row.name} scores ${points(s.score)}`).join(" and ")}${scripts.length ? `; the best scripted rule, ${points(best)}` : ""}. `,
+      `In ${item.title}${level(item) ? `, against the game's AI on ${level(item)}` : ""}, `,
+      ...models.flatMap((s, i) => [
+        i ? " and " : "",
+        el("span", s.row.name, "nowrap"),
+        ` scores ${points(s.score)}`,
+      ]),
+      `${scripts.length ? `; the best scripted rule, ${points(best)}` : ""}. `,
       ...(aged.length
         ? [
             "The models' orders act on views of the battle ",
@@ -320,7 +328,7 @@
     $("question").textContent = scenario.question || scenario.title;
     const mode = modeOf(scenario)?.name || "battle";
     $("challenge").textContent = [
-      `${/^[aeiou]/.test(mode) ? "An" : "A"} ${mode}${level(scenario) ? ` against the game's AI on ${level(scenario)}` : ""}${scenario.question ? `: ${scenario.title}` : ""}.`,
+      `${/^[aeiou]/.test(mode) ? "An" : "A"} ${mode}${level(scenario) ? ` against the game's AI on ${level(scenario)}` : ""}${scenario.question && !scenario.title.toLowerCase().startsWith(mode.split(" ")[0]) ? `: ${scenario.title}` : ""}.`,
       scenario.challenge,
     ]
       .filter(Boolean)
@@ -341,6 +349,10 @@
     );
     renderPlans();
     markCurrent();
+    $("matrix")
+      .querySelector(`tr[data-scenario="${scenario.id}"]`)
+      ?.closest("details")
+      ?.setAttribute("open", "");
     return open ? openRun(scenario.featured, false) : null;
   }
 
@@ -436,14 +448,18 @@
     );
     const caption = [
       el("b", "Figure 2. "),
-      `${scenario.title}: where each model's army went (the centre of its units still fighting), in every battle as a thin line, brighter for wins, and as the mean position over time, thick from □ to ●. ◆ enemy units where first seen. Click a map to watch its first battle.`,
+      `${scenario.title}: where each model's army went (the centre of its units still fighting), in every battle as a thin line, brighter for wins, and as the mean position over time, thick from □ to ●. ◆ enemy units where first seen in its first battle. Click a map to watch its first finished battle.`,
     ];
     if (shown.some((item) => item.rows.length > 1 || item.harnesses > 1))
       caption.push(" † pools several settings or harness versions.");
     if (silent.length)
       caption.push(
-        ` Left out: ${silent.map((item) => item.name).join(", ")}, which never gives orders.`,
+        ` Left out: ${silent.map((item) => item.name).join(", ")}, which never ${silent.length > 1 ? "give" : "gives"} orders.`,
       );
+    const untracked = items.filter((item) => !silent.includes(item) && !shown.includes(item));
+    if (untracked.length)
+      caption.push(` No positions recorded: ${untracked.map((item) => item.name).join(", ")}.`);
+    if (shown.length === 1) caption.push(" Only one commander has played this scenario so far.");
     $("plans-caption").replaceChildren(...caption);
     if (!shown.length) {
       box.append(el("p", "No army positions were recorded in this scenario.", "caption"));
@@ -499,10 +515,15 @@
         svg("rect", { x: px(sx) - 3.5, y: py(sz) - 3.5, width: 7, height: 7, class: "start" }),
         svg("circle", { cx: px(ex), cy: py(ez), r: 3.5, class: "end" }),
       );
+      // The earliest finished battle, in the scenario's chronological order.
+      const ordered = [...battles].sort(
+          (a, b) => scenario.battles.indexOf(a.key) - scenario.battles.indexOf(b.key),
+        ),
+        first = ordered.find((e) => e.trial.valid) || ordered[0];
       const card = el("figure", null, `plan ${item.kind}`),
-        open = button("", () => openRun(battles[0].key, true), "plan-map");
+        open = button("", () => openRun(first.key, true), "plan-map");
       open.append(map);
-      open.setAttribute("aria-label", `Watch ${item.name}'s first battle here`);
+      open.setAttribute("aria-label", `Watch ${item.name}'s first finished battle here`);
       card.dataset.keys = item.battles.join(" ");
       const name = el("strong", item.name);
       if (item.rows.length > 1 || item.harnesses > 1) {
@@ -516,7 +537,7 @@
         name,
         el(
           "small",
-          `${s.valid.length} battle${s.valid.length === 1 ? "" : "s"}, ${s.won} won${failed ? `, ${failed} did not finish` : ""}`,
+          `${battles.length} battle${battles.length === 1 ? "" : "s"}: ${s.won} won${failed ? `, ${failed} did not finish` : ""}`,
         ),
       );
       card.append(open, about);
@@ -590,6 +611,11 @@
     cell.append(
       el("small", family === "Scripted" ? best.row.name : `${shown.scores.length} finished`),
     );
+    if (family === "Scripted" && best.row.harnesses > 1) {
+      const mark = el("sup", "†", "pooled");
+      mark.title = `${best.row.name}: battles from ${best.row.harnesses} harness versions`;
+      cell.firstChild.append(mark);
+    }
     if (family !== "Scripted" && (rows.length > 1 || rows.some((row) => row.harnesses > 1))) {
       const mark = el("sup", "†", "pooled");
       mark.title = stats
@@ -622,15 +648,10 @@
         head = el("summary");
       head.append(
         el("span", mode.title),
-        el(
-          "small",
-          items.length
-            ? `${items.length} scenario${items.length > 1 ? "s" : ""}`
-            : "no battles yet",
-        ),
+        el("small", `${items.length} scenario${items.length === 1 ? "" : "s"}`),
       );
       fold.append(head);
-      fold.open = items.includes(data.scenarios[0]);
+      fold.open = items.includes(headline || data.scenarios[0]);
       if (!items.length) {
         fold.append(el("p", "No battles of this type yet.", "placeholder"));
         box.append(fold);
@@ -674,11 +695,13 @@
       box.append(fold);
     }
     // Older pilots recorded casualties only: their losses score the enemy killed.
-    const killed = [...shown].filter((key) => data.battles[key].progress_basis === "killed");
+    const killed = [...shown].filter(
+      (key) => data.battles[key].progress_basis === "killed" && !won(entries.get(key)),
+    );
     box.append(
       el(
         "p",
-        `Figure 3. Each model's mean score over its finished battles in every scenario, darker for higher, beside the best scripted rule's; one section per game mode, open one to see its scenarios. † pools a model's settings or harness versions: not a controlled comparison.${killed.length ? ` ${killed.length} older battles recorded casualties only; their losses count the enemy killed, not those who fled.` : ""}`,
+        `Figure 3. Each model's mean score over its finished battles in every scenario, darker for higher, beside the best scripted rule's; one section per game mode. † pools settings or harness versions: not a controlled comparison.${killed.length ? ` ${killed.length} lost pilot battles recorded casualties only; their scores count the enemy killed, not those who fled (lower bounds).` : ""}`,
         "figcap",
       ),
     );
@@ -1025,19 +1048,22 @@
       return;
     }
     if (data.scenarios.length > 1) {
-      $("scenario").replaceChildren(
-        ...data.scenarios.map((item, index) => {
-          const option = el("option", item.title);
-          option.value = String(index);
-          return option;
-        }),
-      );
+      const groups = new Map();
+      data.scenarios.forEach((item, index) => {
+        const label = modeOf(item)?.title || "Other battles";
+        if (!groups.has(label)) groups.set(label, el("optgroup"));
+        groups.get(label).label = label;
+        const option = el("option", item.title);
+        option.value = String(index);
+        groups.get(label).append(option);
+      });
+      $("scenario").replaceChildren(...groups.values());
       $("scenario").addEventListener("change", (e) => renderScenario(Number(e.target.value)));
       $("scenario-pick").hidden = false;
     }
     renderHeadline();
     renderMatrix();
-    await renderScenario(0);
+    await renderScenario(Math.max(0, data.scenarios.indexOf(headline)));
     renderInterface(entries.get(scenario.featured), payload);
     // Open on the key maneuver itself (the army is mid-map there) and play it once a quarter of
     // the map is in view, unless the reader prefers less motion or has already moved the replay.
