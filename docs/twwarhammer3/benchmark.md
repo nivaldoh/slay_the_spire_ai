@@ -384,7 +384,9 @@ stays.
 **3. Reference and rows.** `llm_rules` on `gpt-6-sol`, low effort, unchanged prompt;
 `gpt-6-luna` low on the same prompt as a cheap second model row; run-nearest and
 walk-nearest as baselines. `hold` is dropped: it can only lose at the timer, which is
-already shown.
+already shown. A job has one `--model`, so a Luna row paired within Sol's launches needs
+per-policy models (for example `--policy llm_rules,llm_rules@gpt-6-luna`; not built);
+separate Luna launches would be unpaired.
 
 **4. Variant and trial count.** Proposed: ×1.1 first, six launches, each rotating the
 four controllers (24 battles: 6 per row). Reading it: Sol 2-4 of 6 with the baselines at
