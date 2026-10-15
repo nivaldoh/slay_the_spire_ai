@@ -24,11 +24,17 @@
   <header class="topbar">
     <div class="wrap topbar-row">
       <p class="kicker">Total War: WARHAMMER III · AI commander benchmark · development results</p>
-      <nav aria-label="Sections"><a href="#watch">Watch</a><a href="#happened">What happened</a><a href="#compare">Compare</a></nav>
+      <nav aria-label="Sections"><a href="#suite">Suite</a><a href="#watch">Watch</a><a href="#happened">What happened</a><a href="#compare">Compare</a></nav>
     </div>
     <p id="demo-banner" class="demo-banner" hidden>SYNTHETIC DEMO · Every value on this page is invented to exercise the layout. No game or model was run.</p>
   </header>
   <main>
+    <details id="suite" class="wrap suite">
+      <summary id="suite-summary">Benchmark overview</summary>
+      <p class="lede">Different armies and objectives, compared within their recorded conditions. These development battles are exploratory; there is no combined score across scenarios.</p>
+      <div id="suite-table"></div>
+      <p id="suite-failures" class="footnotes"></p>
+    </details>
     <section id="watch" class="watch" aria-labelledby="question">
       <div class="wrap intro">
         <p id="scenario-pick" class="scenario-pick" hidden><label for="scenario">Scenario</label> <select id="scenario"></select></p>
@@ -100,7 +106,12 @@
     </section>
 
     <section id="compare" class="wrap section" aria-labelledby="compare-heading">
-      <h2 id="compare-heading">Under the same conditions, who wins, how delayed are their orders, and what does it cost?</h2>
+      <h2 id="compare-heading">How much progress did each army make?</h2>
+      <p class="lede">Raw counts retain each army's size. Soldiers/entities include later registered summons, purchases and waves. Net losses are registered headcount minus survivors, not cumulative kills or army value. Routing is not death.</p>
+      <div id="progress-runs"></div>
+      <div id="common-measures" class="common-measures" aria-live="polite"></div>
+      <p class="footnotes">Whole units are regiments, characters or monster units. Active units are alive and deployed, excluding deploying, routing, shattered or leaving units. Duration alone is not success; unspent supplies are not automatically better. Historical measures that were not recorded remain unavailable.</p>
+      <h3 class="outcomes-heading">Outcomes, order delay and cost</h3>
       <div id="run-sets"></div>
       <ul id="footnotes" class="footnotes"></ul>
       <p id="setup-only" class="setup-only" hidden></p>

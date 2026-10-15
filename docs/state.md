@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-15 17:19 UTC: what is running, where each game stands and what comes
+Updated 2026-10-15 17:35 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -22,7 +22,7 @@ command; clear it when the job stops.
 
 - On `main`: `llm` v17 (`llm_rules` shares its input), `commander` v4 over the `skills`
   executor v1.2, the scripted `attack_nearest`, `rush_nearest` and `hold`, and benchmark
-  harness b10: the 1 Hz replay recorder, optional stills, per-policy models (one launch
+  harness b11 / evaluator v2: the 1 Hz replay recorder, optional stills, per-policy models (one launch
   pairs `llm_rules` on Sol with `llm_rules@gpt-6-luna`), a plan queue that stops on changed
   rematch starts, and the redesigned HTML report.
 - C1 is complete: on `brt-cavalry-emp-assault-hard` (AI ×1.1), Sol won 1 of 6;
@@ -31,15 +31,15 @@ command; clear it when the job stops.
   C1 remains development evidence, with no automatic easier calibration block.
 - Both swarm prototypes have working screens; every player army routed. Existing reports
   are `c1-cavalry-ai11`, `swarm-screens` and `cavalry-assault` in
-  `runs/twwarhammer3/reports/`. The planned canonical `benchmark.html` does not exist yet.
+  `runs/twwarhammer3/reports/`. The canonical `benchmark.html` now consolidates the
+  explicit job selection; browser and in-game validation are in progress.
 - API spend: $14.2179 of the $25 cap on 2026-10-15; no calls during preparation.
 
-Next: the [implementation plan](twwarhammer3/benchmark.md#implementation-plan), prepared
-but not implemented. Integrate v17 and version the commander's shared rendering change;
-use shared measures and one report; prioritize varied armies, siege defence, survival
-and conquest, with 2-3 exploratory battles total per new scenario. Scenario-specific
-scoring, deeper model comparisons and added-delay experiments can follow later. Siege
-attack has control gaps; defence already works. Old calibration queues are historical.
+Next: finish validation of v17/commander v4, common measures and the consolidated report
+([b11 log](twwarhammer3/log.md#2026-10-15-harness-b11-common-measures-and-one-report)).
+Then expand varied armies, siege defence, survival and conquest, with 2-3 exploratory
+battles total per new scenario. Scenario-specific scoring, deeper comparisons and added
+delay remain later. Steam is now pinned to 9.0.4; old evidence keeps its original build.
 
 ## Slay the Spire
 
@@ -69,7 +69,9 @@ Next steps:
 ## Owner direction
 
 WH3:
-- 2026-10-15 (refined): planning only. Prioritize scenarios that look and play very
+- 2026-10-15 (implementation): authorized the first three steps: controller integration,
+  common measures and one report. Scenario expansion remains next.
+- 2026-10-15 (refined): planning only at that stage. Prioritize scenarios that look and play very
   differently: varied armies, siege, survival, conquest and other modes. Start with
   general measures (kills, survivors, objective time, etc.); scenario-specific points
   are a possible future improvement. Play 2-3 exploratory battles total per new scenario,

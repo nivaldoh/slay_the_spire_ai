@@ -19,6 +19,7 @@ from twwarhammer3.battle.controllers import policy_parts
 
 SCENARIO = {
     "name": "synthetic-citadel-assault", "family": "Demo: citadel assault", "map": "demo-map",
+    "battle_type": "siege",
     "brief": "Invented tactical problem and invented measurements for exercising comparison, "
              "latency and objective layouts. No game was run.",
     "attacker": "player", "split": "development", "status": "synthetic",
@@ -82,11 +83,17 @@ def result(model: str, launch: int, episode: int, delay: int, outcome: str) -> d
         "card": {"kind": "demo", "name": model, "source_sha256": "synthetic", "timing": "blocking",
                  "description": "Invented controller; no model or engine execution."},
         "llm": {"usd": usd + .01 * (launch - 1), "input_tokens": 1000, "output_tokens": 300},
-        "final": {"friendly": {"men0": 100, "active_men": round(100 * (margin + .3)),
+        "final": {"version": 2, "friendly": {"men0": 100, "men": 95,
+                               "active_men": round(100 * (margin + .3)),
+                               "units": {"registered": 3, "alive": 2, "destroyed": 1,
+                                         "active": 1, "routed": 1, "leaving": 0,
+                                         "absent": 0, "unknown": 0},
                                "by_type": {"demo-caster": {"men0": 10,
                                                            "active_men": 10 if survived else 0}}},
-                  "enemy": {"men0": 100, "active_men": 30}},
+                  "enemy": {"men0": 100, "men": 40, "active_men": 30}},
         "objectives": {"method": "engine_tick_time_weighted", "victory_held": .6 - .02 * delay,
+                       "points": {"c1": {"key": "demo_gate", "held_ms": 180000,
+                                         "observed_ms": 300000}},
                        "key_held": .5 - .02 * delay, "supplies_left": supplies + 50 * episode,
                        "reinforcements_by_type": {"demo-infantry": 4}},
     }

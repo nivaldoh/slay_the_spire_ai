@@ -389,11 +389,30 @@ end
 
 -- Evaluation only: hidden enemy totals must be stripped at the Python policy boundary.
 local function strength(entries)
-    local total = {men = 0, men0 = 0, active_men = 0, by_type = {}}
+    local counts = {registered = 0, destroyed = 0, alive = 0, active = 0,
+                    routed = 0, leaving = 0, absent = 0, unknown = 0}
+    local total = {men = 0, men0 = 0, active_men = 0, by_type = {}, units = counts}
     for _, entry in pairs(entries) do
         local unit = entry.unit
-        local men, men0 = get(unit, "number_of_men_alive", 0), get(unit, "initial_number_of_men", 0)
+        local alive = get(unit, "number_of_men_alive", nil)
+        local men, men0 = alive or 0, get(unit, "initial_number_of_men", 0)
         local active = not get(unit, "is_routing", false) and not get(unit, "is_shattered", false)
+        -- Count each registered id once, including later arrivals. Invalid targets can be
+        -- hidden or withdrawing: only an authoritative zero living entities means dead.
+        counts.registered = counts.registered + 1
+        if alive == nil then
+            counts.unknown = counts.unknown + 1
+        elseif alive == 0 then
+            counts.destroyed = counts.destroyed + 1
+        else
+            counts.alive = counts.alive + 1
+            local leaving = get(unit, "is_leaving_battle", false)
+            local absent = not get(unit, "is_deployed", false) or get(unit, "is_deploying", false)
+            if not active then counts.routed = counts.routed + 1 end
+            if leaving then counts.leaving = counts.leaving + 1 end
+            if absent then counts.absent = counts.absent + 1 end
+            if active and not leaving and not absent then counts.active = counts.active + 1 end
+        end
         local key = get(unit, "type", "?")
         local group = total.by_type[key] or {men = 0, men0 = 0, active_men = 0}
         total.by_type[key] = group
@@ -407,7 +426,7 @@ local function strength(entries)
 end
 
 local function evaluation()
-    return {friendly = strength(state.friendly), enemy = strength(state.enemy),
+    return {version = 2, friendly = strength(state.friendly), enemy = strength(state.enemy),
             objectives = state.objective_totals}
 end
 

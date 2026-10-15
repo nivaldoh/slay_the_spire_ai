@@ -75,6 +75,15 @@ engine result; on other endings the harness keeps the last ``evaluation``. ``set
 until the first request is applied, has the unit scale, realism mode and the armies' AI
 stat modifiers and unit stats.
 
+Evaluator ``version: 2`` adds ``units`` to each side: ``registered``, ``destroyed``
+(engine reports zero living entities), ``alive``, ``active`` (alive, deployed, not
+deploying, routing, shattered or leaving), ``routed`` (routing or shattered), ``leaving``,
+``absent`` (not deployed or currently deploying), and ``unknown`` (failed living-entity
+query). Routed/leaving/absent are overlapping subsets of alive, not deaths. Registration
+deduplicates returning unit ids and includes summons, purchases and waves when registered;
+these are not original-army totals. The existing headcounts and ``active_men`` definition
+are unchanged. Older results have no whole-unit counts or explicit evaluator version.
+
 ``timer`` appears with the result and keeps the last finite countdown sampled on engine
 ticks, since ``remaining_ms`` can reset to -1 when the result arrives. ``expired`` compares
 the result time with that sample's deadline: an inference, not an engine end cause.

@@ -113,7 +113,9 @@ def main() -> int:
 
     report = commands.add_parser(
         "report", help="Paired benchmark report of jobs: print it, save text, JSON and HTML")
-    report.add_argument("jobs", nargs="+", type=Path, metavar="JOB", help="job directory")
+    report.add_argument("jobs", nargs="*", type=Path, metavar="JOB", help="job directory")
+    report.add_argument("--jobs-file", type=Path,
+                        help="JSON list of job paths, relative to the working directory")
     report.add_argument("--output", type=Path, required=True, metavar="STEM",
                         help="writes STEM.txt, STEM.json and the offline field report STEM.html")
 
@@ -269,7 +271,18 @@ def main() -> int:
         from twwarhammer3.battle.report import collect, render
         from twwarhammer3.battle.report_html import write
 
-        data = collect(args.jobs)
+        jobs = list(args.jobs)
+        if args.jobs_file:
+            try:
+                listed = json.loads(args.jobs_file.read_text())
+            except (OSError, ValueError) as exc:
+                parser.error(f"cannot read --jobs-file: {exc}")
+            if not isinstance(listed, list) or any(not isinstance(p, str) or not p for p in listed):
+                parser.error("--jobs-file must contain a JSON list of job paths")
+            jobs.extend(Path(path) for path in listed)
+        if not jobs:
+            parser.error("report needs JOB directories or --jobs-file")
+        data = collect(jobs)
         text = render(data)
         stem = args.output
         stem.parent.mkdir(parents=True, exist_ok=True)

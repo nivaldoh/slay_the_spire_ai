@@ -25,10 +25,51 @@ NOTES_PATH = REPO_ROOT / "configs/twwarhammer3/report_notes.json"
 MAX_STILL_BYTES = 256 * 1024
 # Definition fields a comparison view can differ in, in reading order; plain settings
 # are written with their label.
-DIFFERENCES = ("source", "game", "track", "recorder", "imagery", "observe_ms", "tick_ms",
-               "interval_ms", "scenario")
+DIFFERENCES = ("source", "game", "track", "evaluator_version", "recorder", "imagery",
+               "observe_ms", "tick_ms", "interval_ms", "scenario")
 SETTINGS = {"track": "track {}", "observe_ms": "observation interval {} ms",
-            "tick_ms": "mod tick {} ms", "interval_ms": "wait after orders {} ms"}
+            "tick_ms": "mod tick {} ms", "interval_ms": "wait after orders {} ms",
+            "evaluator_version": "evaluator {}"}
+
+
+def scenario_name(definition: dict) -> str | None:
+    return (definition.get("scenario") or {}).get("name") or definition.get("scenario_name")
+
+
+def suite_summary(scenario: dict, trials: list[dict]) -> dict:
+    """Coverage and declared armies, not a score across unlike battles."""
+    def army(side):
+        if not side:
+            return "Starting army unavailable"
+        if isinstance(side, list):
+            return "; ".join(army(item) for item in side)
+        faction = side.get("faction") or side.get("subculture") or "Unknown faction"
+        faction = re.sub(r"^wh\d?_(?:main|dlc\d+|pro\d+)_(?:sc_)?[a-z]+_", "", faction)
+        count = len(side["units"]) if isinstance(side.get("units"), list) else None
+        return (f"{replay.title(faction)} · {count} units" if count is not None
+                else replay.title(faction))
+
+    coverage = {}
+    for key in ("soldiers", "units", "objective_time"):
+        counts = {"available": 0, "unavailable": 0, "not_applicable": 0}
+        for trial in trials:
+            measure = (trial.get("measures") or {}).get(key) or {}
+            if key == "objective_time":
+                status = measure.get("status", "unavailable")
+            elif key == "units":
+                status = ("available" if all(measure.get(side) for side in ("friendly", "enemy"))
+                          else "unavailable")
+            else:
+                status = "available" if all((measure.get(side) or {}).get("remaining") is not None
+                                             for side in ("friendly", "enemy")) else "unavailable"
+            counts[status] += 1
+        coverage[key] = counts
+    return {"battle_type": scenario.get("battle_type") or "unrecorded",
+            "armies": {"friendly": army(scenario.get("player")),
+                       "enemy": "Waves" if scenario.get("battle_type") == "survival"
+                       and scenario.get("enemy") is None else army(scenario.get("enemy"))},
+            "started": len(trials), "finished": sum(trial["valid"] for trial in trials),
+            "coverage": coverage}
 
 
 def _json(value: object) -> str:
@@ -250,7 +291,7 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
     by_name = {}
     for index, view in enumerate(comparisons):
         if view["groups"]:
-            by_name.setdefault(view["definition"].get("scenario", {}).get("name"), []).append(index)
+            by_name.setdefault(scenario_name(view["definition"]), []).append(index)
     scenarios = []
     for name, indexes in by_name.items():
         scenario = comparisons[indexes[0]]["definition"].get("scenario") or {}
@@ -273,11 +314,12 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
                 comparisons[index], reference, data)
         scenarios.append({
             "id": f"scenario-{len(scenarios) + 1}", "name": name,
-            "title": _title(note, scenario),
+            "title": _title(note, {**scenario, "name": name}),
             "question": note.get("question"),
             "challenge": note.get("challenge") or scenario.get("brief"),
             "brief": scenario.get("brief"), "expect": scenario.get("expect"),
             "comparisons": indexes, "featured": featured, "featured_reason": reason,
+            "overview": suite_summary(scenario, [trials[key] for key in options]),
             "setup_only_jobs": []})
     scenarios.sort(key=lambda entry: (entry["featured_reason"] != "selected", str(entry["name"])))
 
@@ -288,13 +330,14 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
         if job["instance"] in started:
             continue
         scenario = (job.get("definition") or {}).get("scenario") or {}
-        name = scenario.get("name")
+        name = scenario_name(job.get("definition") or {})
         entry = next((entry for entry in scenarios if entry["name"] == name), None)
         if entry:
             entry["setup_only_jobs"].append(index)
         else:
             setup_only.append({"job": index, "scenario": name,
-                               "title": _title(scenario_notes.get(name) or {}, scenario)})
+                               "title": _title(scenario_notes.get(name) or {},
+                                               {**scenario, "name": name})})
     return {"schema": 1, "evidence_kind": kind, "report": data, "comparisons": comparisons,
             "scenarios": scenarios, "setup_only": setup_only,
             "model_policies": sorted(MODEL_POLICIES)}  # base names: a trial's may add @MODEL

@@ -37,7 +37,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 - **vN**: a version of the `llm` or `commander` prompt and harness; `v1.N` the `skills`
   executor. Each has a log.md entry. The register's `harness` column is the `-vN-` segment
   of the job name (`stats.harness_version`), blank for `bench-*` jobs.
-- **b1-b10**: benchmark harness revisions, each logged in log.md.
+- **b1-b11**: benchmark harness revisions, each logged in log.md.
 - **G1, G2, C1**: historical calibration designs in [benchmark.md](benchmark.md).
   G1 is incomplete, C1 finished and G2 never ran. The 2026-10-15 plan retires win-rate
   admission; added observation-age experiments (0, 6 and 10 s) remain deferred.
@@ -169,18 +169,18 @@ is separate from Spire's, with its own $25 cap.
 ## Next
 
 The [implementation plan](benchmark.md#implementation-plan) prioritizes visibly different
-scenarios, general measures and one report. The owner has requested planning only;
-implementation and new runs have not started.
+scenarios, general measures and one report. The first three steps are implemented;
+validation is in progress. Scenario expansion remains next.
 
-1. Integrate `wh3-llm-v17` (range feedback and last-sighting state), including the
-   commander's shared rendering change. Keep the existing environment track.
-2. Use shared measures: casualties, soldiers and whole units remaining/destroyed,
+1. Integrated `llm`/`llm_rules` v17 and commander v4 (range feedback and last-sighting
+   state). The environment track remains unchanged.
+2. Added shared measures: casualties, soldiers and whole units remaining/destroyed,
    objective time where applicable, duration, natural latency, cost and failures.
-   Add minimal common evaluation counters where missing. Scenario-specific scoring is
+   Evaluator v2 supplies whole-unit counters; old results retain missing values. Scenario-specific scoring is
    a possible later improvement, not a requirement for adding a scenario.
-3. Consolidate the report at `runs/twwarhammer3/reports/benchmark.html`, with an overview
+3. Consolidated the report at `runs/twwarhammer3/reports/benchmark.html`, with an overview
    of battle types and armies and in-page comparisons/replays. Multi-scenario input
-   already works; update the same report as scenarios are added.
+   uses the explicit `configs/twwarhammer3/benchmark_jobs.json` list; update it as scenarios grow.
 4. Expand first into siege defence, survival, conquest and a contrasting caster/monster
    or other land army. Reuse existing battle-type support with distinctive forces and
    objectives. Play 2-3 exploratory battles total per newly implemented scenario, then

@@ -176,6 +176,231 @@
     return [...entries.values()].filter((entry) => groups.has(entry.g));
   }
 
+  const value = (n) => (n == null ? "unavailable" : String(n));
+  const availability = (status) => (status === "not_applicable" ? "not applicable" : "unavailable");
+  const BATTLE_TYPES = {
+    classic: "Land",
+    siege: "Siege",
+    survival: "Survival",
+    conquest: "Conquest",
+    domination: "Domination",
+    ambush: "Ambush",
+    river_crossing_battle: "Chokepoint",
+    unfortified_settlement: "Settlement",
+    underground_intercept: "Subterranean",
+    free_for_all: "Free-for-all",
+  };
+  function measureTable(columns, rows, className) {
+    const table = el("table", null, `results ${className}`),
+      head = el("thead"),
+      tr = el("tr"),
+      body = el("tbody");
+    for (const label of columns) {
+      const th = el("th", label);
+      th.scope = "col";
+      tr.append(th);
+    }
+    head.append(tr);
+    for (const cells of rows) {
+      const row = el("tr");
+      cells.forEach((content, i) => {
+        const td = el("td");
+        td.dataset.label = columns[i];
+        td.append(content);
+        row.append(td);
+      });
+      body.append(row);
+    }
+    table.append(head, body);
+    return table;
+  }
+  function renderSuite() {
+    const types = new Set(data.scenarios.map((s) => s.overview.battle_type));
+    const started = [...entries.values()].length;
+    $("suite-summary").textContent =
+      `Benchmark overview · ${data.scenarios.length} scenarios · ${types.size} battle types · ${started} battles`;
+    const rows = data.scenarios.map((item, index) => {
+      const s = item.overview,
+        coverage = [];
+      for (const [key, label] of [
+        ["soldiers", "Soldiers"],
+        ["units", "Whole units"],
+        ["objective_time", "Objective time"],
+      ]) {
+        const c = s.coverage[key];
+        coverage.push(
+          `${label}: ${c.available}/${s.started} recorded${c.unavailable ? `, ${c.unavailable} unavailable` : ""}${c.not_applicable ? `, ${c.not_applicable} not applicable` : ""}`,
+        );
+      }
+      const select = button(
+        item.title,
+        () => {
+          $("scenario").value = String(index);
+          renderScenario(index);
+          $("watch").scrollIntoView();
+        },
+        "link",
+      );
+      return [
+        select,
+        BATTLE_TYPES[s.battle_type] || s.battle_type,
+        `${s.armies.friendly} vs ${s.armies.enemy}`,
+        `${s.finished}/${s.started} finished · ${s.started - s.finished} failed`,
+        coverage.join("; "),
+      ];
+    });
+    $("suite-table").replaceChildren(
+      measureTable(
+        ["Scenario", "Battle type", "Starting armies", "Coverage", "Shared measures"],
+        rows,
+        "suite-results",
+      ),
+    );
+    const startedJobs = new Set([...entries.values()].map((entry) => entry.trial.instance));
+    const failed = (report.jobs || []).filter((job) => !startedJobs.has(job.instance));
+    $("suite-failures").textContent = failed.length
+      ? `Setup-only launches retained (${failed.length}): ${failed.map((job) => `${job.instance}: ${job.recorded_status}${job.error ? ` — ${job.error}` : ""}`).join("; ")}`
+      : "";
+  }
+  function armyCounts(measures, kind, field) {
+    return ["friendly", "enemy"]
+      .map((side) => {
+        const counts = measures?.[kind]?.[side];
+        return counts ? `${value(counts[field])} / ${value(counts.registered)}` : "unavailable";
+      })
+      .join(" · ");
+  }
+  function renderProgress() {
+    const rows = scenarioKeys().map((entry) => {
+      const { trial, group } = entry,
+        m = trial.measures;
+      const name = el("div"),
+        choose = button(
+          `${controllerName(entry)} · ${outcome(trial).short}`,
+          () => openRun(entry.key, false),
+          "link",
+        );
+      choose.dataset.key = entry.key;
+      name.append(
+        choose,
+        el(
+          "small",
+          `${trial.instance}/${trial.episode} · source ${String(group.definition.source || "unrecorded").slice(0, 7)}${trial.card?.version ? ` · controller ${trial.card.version}` : ""}`,
+          "extra",
+        ),
+      );
+      const unitText = ["friendly", "enemy"]
+        .map((side) => {
+          const u = m?.units?.[side];
+          return `${capital(side)}: ${u ? `${value(u.alive)} alive, ${value(u.destroyed)} destroyed, ${value(u.active)} active / ${value(u.registered)} registered${u.unknown ? `; ${u.unknown} unknown` : ""}` : "unavailable"}`;
+        })
+        .join("; ");
+      return [
+        name,
+        armyCounts(m, "soldiers", "net_losses"),
+        armyCounts(m, "soldiers", "remaining"),
+        unitText,
+        m?.objective_time.status === "available"
+          ? `${m.objective_time.points.length} points; select battle for time held`
+          : availability(m?.objective_time.status),
+      ];
+    });
+    $("progress-runs").replaceChildren(
+      measureTable(
+        [
+          "Battle / conditions",
+          "Net losses: friendly · enemy",
+          "Survivors: friendly · enemy",
+          "Whole units",
+          "Objectives",
+        ],
+        rows,
+        "progress-results",
+      ),
+    );
+  }
+  function renderMeasures(entry) {
+    const m = entry.trial.measures,
+      box = $("common-measures");
+    box.replaceChildren(el("h3", `Selected battle · ${controllerName(entry)}`));
+    if (!m) {
+      box.append(el("p", "Shared measures unavailable."));
+      return;
+    }
+    box.append(
+      el(
+        "p",
+        `${outcome(entry.trial).text} · ${m.basis === "engine_result" ? "At the engine result" : m.basis === "last_observation" ? "Last recorded observation before failure; partial progress" : "No evaluation recorded"} · evaluator ${m.evaluator_version ?? "unversioned"}`,
+      ),
+    );
+    const u = ["friendly", "enemy"].map((side) => {
+      const counts = m.units[side];
+      return [
+        capital(side),
+        counts
+          ? `Routing/shattered ${value(counts.routed)}; leaving ${value(counts.leaving)}; absent/deploying ${value(counts.absent)}; unreadable ${value(counts.unknown)}. These categories can overlap.`
+          : "Whole-unit counts unavailable",
+      ];
+    });
+    const r = m.resources,
+      p = m.objective_time,
+      ages = entry.trial.metrics.order_age_s;
+    box.append(
+      keyValues([
+        ["Battle duration", m.duration_s == null ? "unavailable" : seconds(m.duration_s)],
+        ["Typical order age", ages.p50 == null ? "unavailable" : seconds(ages.p50)],
+        [
+          "Inference cost",
+          entry.trial.llm?.usd != null
+            ? money(entry.trial.llm.usd)
+            : entry.trial.card?.kind === "scripted"
+              ? "$0 (scripted)"
+              : "unavailable",
+        ],
+        ...u,
+        [
+          "Objective time",
+          p.status === "available"
+            ? "Friendly time held, sampled on engine ticks"
+            : availability(p.status),
+        ],
+        [
+          "Supplies / construction / purchases",
+          r.status === "available"
+            ? `${value(r.supplies_left)} supplies left; ${value(r.build)} accepted builds; ${value(r.reinforce)} accepted reinforcement purchases`
+            : availability(r.status),
+        ],
+        [
+          "Tickets",
+          r.tickets
+            ? Object.entries(r.tickets)
+                .map(([side, n]) => `${side}: ${n}`)
+                .join(" · ")
+            : availability(r.status),
+        ],
+        [
+          "Rejected orders / batches",
+          Object.entries(entry.trial.metrics.rejections || {})
+            .map(([reason, n]) => `${n} ${reason}`)
+            .join("; ") || "0 recorded",
+        ],
+      ]),
+    );
+    if (p.points.length)
+      box.append(
+        measureTable(
+          ["Point", "Time held", "Time observed", "Share held"],
+          p.points.map((point) => [
+            `${point.id} · ${point.key}`,
+            seconds(point.held_s),
+            seconds(point.observed_s),
+            point.share == null ? "unavailable" : `${(point.share * 100).toFixed(1)}%`,
+          ]),
+          "objective-results",
+        ),
+      );
+  }
+
   function renderScenario(index) {
     scenario = data.scenarios[index];
     $("question").textContent = scenario.question || scenario.title;
@@ -193,6 +418,7 @@
       }),
     );
     renderCompare();
+    renderProgress();
     return openRun(scenario.featured, false);
   }
 
@@ -235,6 +461,7 @@
     const entry = entries.get(key);
     $("run-select").value = key;
     renderRunLine(entry);
+    renderMeasures(entry);
     markReplays();
     $("download-replay").disabled = true;
     $("watch-featured").hidden = true;
@@ -747,6 +974,11 @@
         ],
         ["Added observation age", `${(trial.delay_ms || 0) / 1000} s`],
         ["Interface track", definition.track],
+        ["Controller version", trial.card?.version || "unrecorded; see source revision"],
+        [
+          "Evaluator version",
+          trial.measures?.evaluator_version ?? definition.evaluator_version ?? "unversioned",
+        ],
         [
           "Observation interval",
           definition.observe_ms == null
@@ -813,7 +1045,20 @@
         {
           ...(synthetic ? { notice: NOTICE } : {}),
           evidence_kind: data.evidence_kind,
-          trial: entry.trial,
+          // Evaluation belongs to the report, not the public replay export.
+          trial: Object.fromEntries(
+            [
+              "instance",
+              "episode",
+              "policy",
+              "outcome",
+              "engine_outcome",
+              "ended_by",
+              "valid",
+              "battle_ms",
+              "battle_s",
+            ].map((key) => [key, entry.trial[key]]),
+          ),
           replay: payload,
         },
         `wh3-${synthetic ? "SYNTHETIC-DEMO-" : ""}replay-${entry.trial.instance}-${entry.trial.episode}.json`,
@@ -848,6 +1093,7 @@
     }).observe($("lanes"));
     Viewer.onTime(markHighlights);
     downloads();
+    renderSuite();
     if (!data.scenarios.length) {
       $("question").textContent = "No recorded battles in this report";
       for (const id of ["viewer", "happened", "compare"]) $(id).hidden = true;

@@ -106,6 +106,60 @@ def distribution(values: list[float]) -> dict:
             "p90": ordered[math.ceil(len(values) * 0.9) - 1] if values else None}
 
 
+def shared_measures(result: dict, scenario: dict) -> dict:
+    """Common per-trial counts; never reconstruct missing regiments from type totals.
+
+    Historical snapshot-voting shares are not ownership time. A missing measurement is
+    distinct from a measure that does not apply to the recorded battle type.
+    """
+    final = result.get("final") or {}
+    soldiers, units = {}, {}
+    for side in ("friendly", "enemy"):
+        total = final.get(side) or {}
+        registered, remaining = total.get("men0"), total.get("men")
+        soldiers[side] = {
+            "registered": registered, "remaining": remaining,
+            "net_losses": registered - remaining
+            if registered is not None and remaining is not None else None,
+            "active": total.get("active_men"),
+        }
+        units[side] = total.get("units") or None
+    objectives = result.get("objectives") or {}
+    points = objectives.get("points") or final.get("objectives") or {}
+    mode = (result.get("mode") or {}).get("type") or scenario.get("battle_type")
+    no_objectives = mode in {"classic", "land_normal", "land_ambush", "ambush",
+                             "land_bridge", "river_crossing_battle", "free_for_all",
+                             "underground_intercept"}
+    ownership = [{"id": key, "key": point.get("key"),
+                  "held_s": point["held_ms"] / 1000,
+                  "observed_s": point["observed_ms"] / 1000,
+                  "share": point["held_ms"] / point["observed_ms"]
+                  if point["observed_ms"] > 0 else None}
+                 for key, point in sorted(points.items())
+                 if point.get("held_ms") is not None and point.get("observed_ms") is not None]
+    resource_keys = ("supplies_left", "build", "reinforce", "tickets")
+    resources = {key: objectives.get(key) for key in resource_keys}
+    resources["status"] = ("available" if any(value is not None for value in resources.values())
+                           else "not_applicable" if no_objectives else "unavailable")
+    # Build/purchase counters were emitted sparsely: zero after a measured mode was
+    # tracked, unavailable otherwise. Do not fabricate a supply/ticket value.
+    if objectives:
+        for key in ("build", "reinforce"):
+            resources[key] = objectives.get(key, 0)
+    end_ms = result.get("battle_ms", result.get("final_time_ms"))
+    return {
+        "evaluator_version": final.get("version"),
+        "basis": ("engine_result" if result.get("status") in OUTCOMES else "last_observation")
+        if final else "unavailable",
+        "soldiers": soldiers, "units": units,
+        "objective_time": {"status": "available" if ownership else
+                           "not_applicable" if no_objectives else "unavailable",
+                           "points": ownership},
+        "resources": resources,
+        "duration_s": end_ms / 1000 if end_ms is not None else result.get("battle_s"),
+    }
+
+
 def collect(jobs: list[Path]) -> dict:
     groups = defaultdict(list)
     seen = set()
@@ -127,6 +181,8 @@ def collect(jobs: list[Path]) -> dict:
         environment_path = job / "environment.json"
         environment = json.loads(environment_path.read_text()) if environment_path.exists() else {}
         signature = json.dumps({"scenario": scenario, "source": manifest.get("source_revision"),
+                                "scenario_name": scenario.get("name") or config.get("scenario"),
+                                "evaluator_version": manifest.get("evaluator_version"),
                                 "game": environment.get("game"),
                                 "track": manifest.get("track"),
                                 "recorder": manifest.get("recorder"),
@@ -174,6 +230,7 @@ def collect(jobs: list[Path]) -> dict:
                 "start_flagged": (result.get("start_comparison") or {}).get("flagged"),
                 "start_comparison": result.get("start_comparison"),
                 "card": result.get("card"), "metrics": metrics, "protected_left": protected_left,
+                "measures": shared_measures(result, scenario), "mode": result.get("mode"),
                 "objectives": result.get("objectives"), "llm": result.get("llm") or {},
                 "wall_s": result.get("elapsed_seconds"), "battle_s": result.get("battle_s"),
                 "battle_ms": result.get("battle_ms"),
@@ -359,5 +416,18 @@ def render(report: dict) -> str:
                          f"order age {age if age is not None else 'unavailable'} s; "
                          f"start flagged={trial['start_flagged']}; "
                          f"error={trial['error'] or 'none'}")
+            measures = trial.get("measures") or {}
+            for side, counts in measures.get("soldiers", {}).items():
+                counts = {key: value if value is not None else "unavailable"
+                          for key, value in counts.items()}
+                lines.append(f"  {side}: soldiers/entities registered {counts['registered']}, "
+                             f"net losses {counts['net_losses']}, "
+                             f"remaining {counts['remaining']}, active {counts['active']}; "
+                             f"whole units {measures['units'][side] or 'unavailable'}")
+            if measures:
+                lines.append(f"  Evaluator: {measures['evaluator_version'] or 'unversioned'}; "
+                             f"basis: {measures['basis']}; duration: {measures['duration_s']} s; "
+                             f"objective time: {measures['objective_time']}; "
+                             f"resources: {measures['resources']}")
         lines.append("")
     return "\n".join([*lines, report["limitations"]])

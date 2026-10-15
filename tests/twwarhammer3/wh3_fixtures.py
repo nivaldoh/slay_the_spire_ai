@@ -121,6 +121,7 @@ def fake_install(root, monkeypatch):
     game.mkdir(parents=True)
     (game / "Warhammer3.exe").write_bytes(b"not the game")
     (root / "steamapps/appmanifest_1142710.acf").write_text('"buildid"\t\t"25823491"\n')
+    monkeypatch.setitem(runtime.PINS, "steam_build_id", "25823491")
     source = root / "mod/script/battle/mod"
     source.mkdir(parents=True)
     (source / "twwarhammer3_battle.lua").write_text("out('loaded')")

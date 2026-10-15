@@ -26,6 +26,7 @@ BUILTINS = {**POLICIES, "skills": Skills, "probe_abilities": ProbeAbilities}
 MODEL_PROMPTS = {"llm": llm.SYSTEM_PROMPT_PATH, "llm_rules": llm.RULES_PROMPT_PATH,
                  "commander": commander.PROMPT_PATH}
 MODEL_POLICIES = frozenset(MODEL_PROMPTS)
+VERSIONS = {"llm": "v17", "llm_rules": "v17", "commander": "v4", "skills": "v1.2"}
 
 
 def policy_parts(name: str, config: dict) -> tuple[str, str | None, str | None]:
@@ -93,6 +94,7 @@ def card(name: str, policy, config: dict) -> dict:
     result = {
         "name": name, "kind": "hybrid" if base == "commander" else
         "model" if base in MODEL_POLICIES else "scripted" if base in BUILTINS else "external",
+        "version": VERSIONS.get(base),
         "class": f"{type(policy).__module__}:{type(policy).__qualname__}",
         "source_file": path, "source_sha256": sha256(Path(path)) if path else None,
         "model": model, "effort": effort,

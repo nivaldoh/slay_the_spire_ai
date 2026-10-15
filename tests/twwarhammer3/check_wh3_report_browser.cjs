@@ -27,6 +27,7 @@ const clock = (ms) => {
 };
 // The run line's outcome: always the engine's result, with the battle clock duration.
 const outcome = (trial) => {
+  if (!trial.valid) return `Did not finish${trial.error ? `: ${trial.error}` : ""}`;
   const word = { won: "Won", lost: "Lost", draw: "Draw" }[trial.engine_outcome];
   const duration = clock(trial.battle_ms ?? trial.battle_s * 1000);
   if (trial.ended_by === "time_limit") return `${word} at the time limit (${duration})`;
@@ -34,17 +35,20 @@ const outcome = (trial) => {
 };
 
 async function main() {
-  const [output, ...jobs] = process.argv.slice(2).map((arg) => path.resolve(arg));
+  const [outputArg, ...args] = process.argv.slice(2);
+  const output = outputArg && path.resolve(outputArg);
+  const reuse = args[0] === "--report" ? path.resolve(args[1]) : null;
+  const jobs = reuse ? [] : args.map((arg) => path.resolve(arg));
   assert(
-    output && jobs.length,
-    "Usage: node check_wh3_report_browser.cjs OUTPUT_DIR JOB [JOB ...]",
+    output && (jobs.length || reuse),
+    "Usage: node check_wh3_report_browser.cjs OUTPUT_DIR JOB [JOB ...] | OUTPUT_DIR --report STEM",
   );
   await fs.mkdir(output, { recursive: true });
-  const stem = path.join(output, "recorded"),
+  const stem = reuse || path.join(output, "recorded"),
     demo = path.join(output, "demo.html"),
     pair = path.join(output, "pair.html");
   const uv = (...args) => execFileSync("uv", ["run", ...args], { cwd: ROOT, stdio: "inherit" });
-  uv("python", "-m", "twwarhammer3", "report", ...jobs, "--output", stem);
+  if (!reuse) uv("python", "-m", "twwarhammer3", "report", ...jobs, "--output", stem);
   uv("python", "tests/twwarhammer3/make_wh3_report_demo.py", demo, pair);
   const browser = await chromium.launch({ headless: true });
   try {
@@ -115,6 +119,8 @@ async function main() {
 
     const { value: replayFile } = await downloaded("#download-replay", "recorded-replay.json");
     const replay = replayFile.replay;
+    assert.ok(!("measures" in replayFile.trial), "evaluation stays outside public replay exports");
+    assert.ok(replay.frames.every((frame) => !("evaluation" in frame) && !("final" in frame)));
     assert.ok(replay.frames.length && replay.decisions.length);
     assert.ok(replay.stills?.every((shot) => shot.policy_input === false) ?? true);
     const applied = replay.decisions.filter((d) => d.applied_ms != null);
@@ -333,6 +339,62 @@ async function main() {
     assert.ok(map.y < 844, "the map starts on the first phone screen");
     await page.screenshot({ path: path.join(output, "phone.png"), fullPage: true });
 
+    // The copied HTML is self-contained; every scenario has its own measures and replay.
+    const copied = path.join(output, "copied-benchmark.html");
+    await fs.copyFile(`${stem}.html`, copied);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await go(copied);
+    await page.locator("#suite > summary").click();
+    assert.equal(await count("#suite-table tbody tr"), data.scenarios.length);
+    assert.match(await text("#suite"), /Whole units/);
+    await page.screenshot({ path: path.join(output, "suite.png") });
+    for (const [index, item] of data.scenarios.entries()) {
+      if (data.scenarios.length > 1) await page.selectOption("#scenario", String(index));
+      await page.waitForFunction(
+        (key) => document.getElementById("run-select").value === key,
+        item.featured,
+      );
+      const [, gi, ti] = item.featured.match(/^g(\d+)-t(\d+)$/);
+      const trial = saved.groups[gi].trials[ti];
+      assert.equal(await count("#progress-runs tbody tr"), item.overview.started);
+      assert.ok((await text("#common-measures")).includes(outcome(trial)));
+      const progressRow = page
+        .locator(`#progress-runs button[data-key="${item.featured}"]`)
+        .locator("xpath=ancestor::tr");
+      for (const side of ["friendly", "enemy"]) {
+        const counts = trial.measures.soldiers[side];
+        assert.ok(
+          (await progressRow.innerText()).includes(
+            `${counts.remaining ?? "unavailable"} / ${counts.registered ?? "unavailable"}`,
+          ),
+        );
+      }
+      const objective = trial.measures.objective_time;
+      if (objective.status === "available") {
+        assert.equal(
+          await count("#common-measures .objective-results tbody tr"),
+          objective.points.length,
+        );
+        for (const point of objective.points) {
+          assert.ok((await text("#common-measures")).includes(`${point.id} · ${point.key}`));
+        }
+      } else assert.match(await text("#common-measures"), /not applicable|unavailable/);
+      if (data.replays[item.featured]) {
+        await page.waitForFunction(() => !document.getElementById("download-replay").disabled);
+        await page.waitForSelector("#map-layer .unit");
+      }
+      await page.locator("#open-settings").click();
+      assert.match(await text("#settings-body"), /Evaluator version/);
+      await page.locator("#close-settings").click();
+    }
+    // Expanded overview and progress tables remain usable on a phone.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await noHorizontalScroll();
+    await page.locator("#suite").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(output, "suite-phone.png") });
+    await page.locator("#compare").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(output, "progress-phone.png") });
+
     // Two models of llm_rules paired in each launch: every row names the model and effort its
     // runs played with, a run whose controller failed to build (pair-c, --effort high) takes
     // them from its policy name, and the suffixed run finds its base policy's prompt.
@@ -384,6 +446,9 @@ async function main() {
     assert.match(await text("#run-sets"), /1 at the time limit/);
     assert.match(await text("#run-sets"), /failed: Synthetic policy failure/);
     assert.match(await text("#setup-only"), /stopped during setup/);
+    assert.match(await text("#progress-runs"), /2 alive, 1 destroyed, 1 active \/ 3 registered/);
+    assert.match(await text("#common-measures"), /c1 · demo_gate/);
+    assert.match(await text("#common-measures"), /60.0%/);
     // A key event's watch (no analyst notes) dims nothing.
     if (await count("#highlights .highlight .watch")) {
       await page.locator("#highlights .highlight .watch").first().click();

@@ -56,6 +56,58 @@ FLIGHT_GET = """
 """
 
 
+def test_whole_unit_counts_separate_death_routing_withdrawal_absence_and_failed_queries():
+    lua = runtime()
+    lua.execute(FLIGHT_GET)
+    strength, evaluate = load_battle(lua, "strength", "evaluation")
+    units = [
+        {"number_of_men_alive": 60},
+        {"number_of_men_alive": 0},
+        {"number_of_men_alive": 40, "is_routing": True},
+        {"number_of_men_alive": 20, "is_shattered": True, "is_leaving_battle": True},
+        {"number_of_men_alive": 50, "is_leaving_battle": True},
+        {"number_of_men_alive": 70, "is_deployed": False},
+        {"number_of_men_alive": 80, "is_deploying": True},
+        {},  # failed headcount read must never become a destroyed unit
+    ]
+    entries = lua.table_from({str(i): {"unit": {"type": "same_type", "initial_number_of_men": 100,
+                                              "is_deployed": True, **unit}}
+                              for i, unit in enumerate(units)}, recursive=True)
+    total = strength(entries)
+    assert dict(total["units"]) == {"registered": 8, "destroyed": 1, "alive": 6, "active": 1,
+                                    "routed": 2, "leaving": 2, "absent": 2, "unknown": 1}
+    assert total["men"] == 320 and total["men0"] == 800
+    assert total["active_men"] == 260  # historical headcount definition stays unchanged
+    assert total["by_type"]["same_type"]["men"] == 320
+    # A returning/replenished unit changes state, not the registered denominator.
+    entries["5"]["unit"]["is_deployed"] = True
+    entries["1"]["unit"]["number_of_men_alive"] = 10
+    assert strength(entries)["units"]["registered"] == 8
+    assert strength(entries)["units"]["active"] == 3
+    lua.globals().state = lua.table_from({"friendly": entries, "enemy": {},
+                                         "objective_totals": {}}, recursive=True)
+    assert evaluate()["version"] == 2
+
+
+def test_register_deduplicates_returning_units_and_includes_late_arrivals():
+    lua = runtime()
+    lua.execute(FLIGHT_GET + """
+        state = {known = {}, enemy = {}, enemy_ids = {}, enemy_by_ui = {}}
+        bm = {local_alliance = function() return 1 end}
+        function unit_class() return "infantry" end
+        function log() end
+    """)
+    register, strength = load_battle(lua, "register", "strength")
+    unit = lua.table_from({"unique_ui_id": 10, "number_of_men_alive": 40, "is_deployed": True})
+    register(unit, 2, None)
+    lua.globals().state["started_ms"] = 1000
+    register(unit, 2, None)
+    register(lua.table_from({"unique_ui_id": 11, "number_of_men_alive": 30,
+                              "is_deployed": True}), 2, None)
+    counts = strength(lua.globals().state["enemy"])["units"]
+    assert counts["registered"] == counts["alive"] == counts["active"] == 2
+
+
 def test_morale_warning_and_flight_readiness_are_friendly_only():
     lua = runtime()
     lua.execute(FLIGHT_GET + """

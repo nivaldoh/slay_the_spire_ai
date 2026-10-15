@@ -27,10 +27,10 @@ BRIDGE_DIR = RUNTIME_DIR / "bridge"
 MOD_SOURCE = Path(__file__).resolve().parents[1] / "mod"
 PACK_NAME = "twwarhammer3.pack"
 MOD_LIST = "twwarhammer3_mods.txt"
-# Patch 9.0 (build 4366297, 2026-10-07); docs/twwarhammer3/integration.md records the pins.
+# Installed patch 9.0.4 (2026-10-15); docs/twwarhammer3/integration.md records the pins.
 PINS = {
-    "steam_build_id": "25823491",
-    "Warhammer3.exe": "518c4f292f275142df13b96b9db704a3db7b4870b2c519df83d850596ecc822a",
+    "steam_build_id": "25961564",
+    "Warhammer3.exe": "9bd58c63bd7fc5c9909b3d3d9b6b7a6ae4eac784369bf91a9e53c3e9f42be496",
 }
 CONFLICTS = {"names": ["Warhammer3.exe"]}
 PREFERENCE_KEYS = (

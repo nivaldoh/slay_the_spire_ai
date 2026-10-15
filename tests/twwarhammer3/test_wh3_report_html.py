@@ -14,6 +14,29 @@ from wh3_fixtures import configured_job, embedded, make_job
 from twwarhammer3.battle import report, report_html
 
 
+def test_unnamed_historical_modes_use_saved_config_and_shared_measure_coverage(tmp_path):
+    jobs = []
+    for mode in ("siege", "survival"):
+        job = configured_job(tmp_path, mode, scenario={"battle_type": mode,
+            "player": {"faction": "wh_main_dwf_dwarfs", "units": ["lord", "infantry"]},
+            "enemy": None})
+        path = job / "manifest.json"
+        manifest = json.loads(path.read_text())
+        manifest["config"]["scenario"] = f"{mode}-pilot"
+        path.write_text(json.dumps(manifest))
+        jobs.append(job)
+    data = report_html.display_data(report.collect(jobs))
+    assert [scenario["name"] for scenario in data["scenarios"]] == ["siege-pilot", "survival-pilot"]
+    overview = data["scenarios"][1]["overview"]
+    assert overview["battle_type"] == "survival"
+    assert overview["armies"] == {"friendly": "Dwarfs · 2 units", "enemy": "Waves"}
+    assert overview["coverage"]["units"] == {
+        "available": 0, "unavailable": 1, "not_applicable": 0}
+    assert overview["finished"] == overview["started"] == 1
+    # The declaration is evidence: do not write a synthetic name into it.
+    assert "name" not in data["comparisons"][0]["definition"]["scenario"]
+
+
 def test_compatible_models_and_efforts_display_together_without_pooling_or_new_pairs(tmp_path):
     jobs = [configured_job(tmp_path, "a"), configured_job(tmp_path, "b", model="model-b"),
             configured_job(tmp_path, "c", effort="high")]
@@ -34,6 +57,7 @@ def test_compatible_models_and_efforts_display_together_without_pooling_or_new_p
     ("source", "other"), ("game", {"steam_build_id": "different", "sha256": "different"}),
     ("track", "other-interface"), ("observe_ms", 2000), ("tick_ms", 500),
     ("interval_ms", 1000), ("scenario", {"name": "other"}), ("source", None),
+    ("evaluator_version", 2),
     ("game", {}), ("track", ""),
     ("recorder", {"version": 1, "enabled": True}),
 ])
@@ -243,7 +267,8 @@ def test_scenarios_feature_the_selected_run_and_name_what_each_run_set_changes(t
                                       "challenge": "Cross the pass."}},
              "runs": {"later/episode-0000": {"selected": True, "highlights": [highlight]}}}
     data = embedded(report_html.render(source, notes))
-    assert data["scenarios"] == [{
+    assert [{k: v for k, v in scenario.items() if k != "overview"}
+            for scenario in data["scenarios"]] == [{
         "id": "scenario-1", "name": "frozen", "title": "Frozen pass", "question": "Can it cross?",
         "challenge": "Cross the pass.", "brief": None, "expect": None, "comparisons": [0, 1],
         "featured": "g0-t0", "featured_reason": "selected", "setup_only_jobs": [2]}]

@@ -73,7 +73,8 @@ def test_replay_public_boundary_identity_and_exact_text(tmp_path, rejection, tex
     episode = tmp_path / "episode-0000"
     episode.mkdir()
     prompt = "</script> literal prompt & unicode ☃"
-    a = frame(1000, [unit()], [unit("e1")], evaluation={"hidden": "SECRET"},
+    a = frame(1000, [unit()], [unit("e1")], evaluation={
+        "hidden": "SECRET", "version": 2, "enemy": {"units": {"destroyed": 15}}},
               setup={"private": "SECRET"}, final={"hidden": "SECRET"})
     b = frame(6000, [unit(x=3, z=4)], [], enemy_roster=[{"id": "e1", "type": "demo"}])
     records = [
@@ -94,6 +95,7 @@ def test_replay_public_boundary_identity_and_exact_text(tmp_path, rejection, tex
     (episode / "trace.jsonl").write_text("\n".join(map(json.dumps, records)) + '\n{"kind":')
     data = replay.build(episode, {"config": {}, "scenario": {}})
     assert "SECRET" not in json.dumps(data)
+    assert all("evaluation" not in f and "final" not in f for f in data["frames"])
     assert [f["time_ms"] for f in data["frames"]] == [1000, 6000]
     decision = data["decisions"][0]
     assert decision["prompt"] == prompt == decision["attempts"][0]["text"]

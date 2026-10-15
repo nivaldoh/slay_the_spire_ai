@@ -35,14 +35,15 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v4 (2026-10-15) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | battle types, Luna low: 4 wins in 9 jobs (`commander-luna-v3-*-20261014-*`) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b10 (2026-10-15; b9 2026-10-14), track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | C1 finished: Sol 1 of 6 at ×1.1, Luna and both baselines 0 of 6; retained as development evidence under the revised plan |
+| benchmark harness | b11 (2026-10-15), evaluator v2, track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | C1 finished: Sol 1 of 6 at ×1.1, Luna and both baselines 0 of 6; retained as development evidence under the revised plan |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
-| report | redesign (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | rebuilt from `visual-sol-low-20261015` and the G1 jobs |
+| report | consolidated suite (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | rebuilt from `visual-sol-low-20261015` and the G1 jobs |
 
 ## Index
 
-- 2026-10-15: [Integrate llm v17 and commander v4](#2026-10-15-integrate-llm-v17-and-commander-v4) ·
+- 2026-10-15: [Harness b11: common measures and one report](#2026-10-15-harness-b11-common-measures-and-one-report) ·
+  [Integrate llm v17 and commander v4](#2026-10-15-integrate-llm-v17-and-commander-v4) ·
   [Prioritize scenario variety and shared measures](#2026-10-15-prioritize-scenario-variety-and-shared-measures) ·
   [Plan revision and preparation](#2026-10-15-plan-revision-and-preparation) ·
   [Calibration C1, launches 3 to 6](#2026-10-15-calibration-c1-launches-3-to-6) ·
@@ -96,6 +97,45 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
+
+## 2026-10-15: Harness b11: common measures and one report
+
+The owner authorized the first three plan steps. Alongside v17/commander v4 above,
+evaluator v2 adds whole-unit registered/destroyed/alive/active counts, with routed,
+leaving, absent and unreadable counts. Zero living entities is death; invalid targets
+alone are not. Counts include later registered arrivals and deduplicate returning ids;
+resurrection changes the current counts rather than accumulating kills. Existing soldier
+totals, policy observations and the environment track stay unchanged. The evaluator
+version is recorded in the manifest and evaluation; controller cards now record versions.
+
+The report collector and HTML expose both sides' net headcount losses, survivors and
+whole units, per-point engine-tick ownership duration/share, supplies, tickets, accepted
+builds and purchases, duration, order age, API cost and failures. Failed runs retain
+partial progress; missing historical counts stay unavailable. Historical snapshot-voting
+shares are not presented as objective time. Scoring stays outside policy inputs and public
+replay exports; no aggregate ranking or scenario-specific score was added.
+
+`reports/benchmark.html` (with JSON/text) is built from the explicit
+`configs/twwarhammer3/benchmark_jobs.json` list using `report --jobs-file`. Initially 54
+jobs, 89 started trials (83 engine outcomes), 19 scenarios and 10 battle types: cavalry,
+swarms, specialist screens and historical mode pilots, including failed attempts. Older
+mode pilots lacked declaration names; the selector now uses their saved config names
+instead of putting every unnamed mode together. Source revisions, evaluator versions and
+game builds remain separate evidence groups. A collapsible overview shows armies and
+coverage; each scenario keeps its comparisons, run settings, notes and replays. Existing
+scenario reports are retained. The initial single-file HTML is about 32 MiB.
+
+Runtime prerequisite: Steam updated after C1 to 9.0.4.0, build 25961564 (complete install,
+no staged bytes). The executable reports The Creative Assembly Ltd; SHA256
+`9bd58c63bd7fc5c9909b3d3d9b6b7a6ae4eac784369bf91a9e53c3e9f42be496`. Updated the pins
+and retained the prior build/hash in integration.md. `doctor` is ready. Older 9.0.3
+trials retain their provenance and are not pooled with new-build checks.
+
+Validation so far: full `uv run pytest -q` passed (988 passed, 14 skipped); lint passed.
+Tests cover routing versus death, absence/withdrawal, late/returning units, failed reads,
+resurrection, historical missing measures, point identity/duration, information boundaries,
+explicit input lists and unnamed pilot navigation. The offline browser check and a small
+real-game validation are in progress. No new scenario or calibration campaign is included.
 
 ## 2026-10-15: Integrate llm v17 and commander v4
 

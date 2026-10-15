@@ -36,7 +36,7 @@ it is slow has lost. Delay arms (below) are diagnostics beside that primary resu
 | §7 Records | Manifest (revision, file hashes, resolved scenario, deployment pins, prompts), trace, result, register | [benchmark-run.md](benchmark-run.md) |
 | §8 Path to RL | Episode boundaries, basis observations, orders, battle times, `ended_by`, throughput | [Outcomes](#outcomes-measures-and-comparison) |
 | §9 First milestone | Built and accepted in the game (b1-b9 in the log) | [log.md](log.md) |
-| §9 Initial release | In preparation: shared measures, varied scenario content and a consolidated report remain to be implemented | [Implementation plan](#implementation-plan) |
+| §9 Initial release | Shared measures and the consolidated report are implemented; varied scenario content remains next | [Implementation plan](#implementation-plan) |
 
 ## Terms
 
@@ -338,7 +338,9 @@ Refined on 2026-10-15 at the owner's request: prioritize scenarios that look and
 very differently, use general progress measures first, and play 2-3 exploratory battles
 per new scenario. Scenario-specific scoring and deeper model comparisons can follow
 later. This replaces the earlier three-scenario, ten-battle proposal. Preparation is
-documentation only; no controller, metric, scenario configuration or report has changed.
+documentation only. The owner subsequently authorized the controller integration, shared
+measures and consolidated report: implemented as v17 / commander v4 and harness b11
+(evaluator v2); validation is in progress. Scenario expansion remains future work.
 
 ### 1. Shared progress measures first
 
@@ -350,7 +352,7 @@ battle, for example), show not applicable. Where it was not recorded, show unava
 | General measure | Existing evidence and planned work |
 |---|---|
 | Soldier/entity casualties and survivors, both sides | Final evaluation has `men0`, `men` and `active_men`. Show net headcount losses and survivors, with starting/registered totals for context. Routing is not death; net losses are not cumulative kills when resurrection occurs. These are headcounts, not HP or army value. |
-| Whole units destroyed, alive and active, both sides | A unit means a regiment, character or monster unit. Final totals currently aggregate men by type, so regiment counts cannot reliably be reconstructed. Add simple shared counters in the existing Lua evaluation loop; use authoritative deaths, distinguish routed survivors, and leave old results unavailable. No per-scenario logic or full event recorder is needed for final counts. |
+| Whole units destroyed, alive and active, both sides | A unit means a regiment, character or monster unit. Evaluator v2 now records registered, destroyed, alive and active whole units, with overlapping routed, leaving and absent subsets and unreadable counts. Historical type totals cannot reconstruct these counts and remain unavailable. |
 | Objective time and progress | Use existing engine-tick point ownership time/share and tickets where available. Show point identity and observation duration; do not invent objective time for modes without points. |
 | Battle duration, resources, latency and cost | Duration and natural order age in every result; supplies, builds and reinforcements where relevant; cost and failures alongside outcomes. Duration alone is not success, and unspent supplies are not automatically better. |
 
@@ -379,8 +381,8 @@ range feedback and last-sighting memory. It consumes already-public observations
 `play.TRACK`, the Lua observation and the action/timing contracts are unchanged. Keep
 `obs-v3+terrain/act-v2/live-1x`; earlier notes calling this `obs-v4` were incorrect.
 The commander imports `remember` and `render_state`, so the integration must also be
-logged as its next version (v4), alongside `llm`/`llm_rules` v17. This branch has not
-been merged by the planning work.
+logged as its next version (v4), alongside `llm`/`llm_rules` v17. This branch is now merged; see the
+[version log](log.md#2026-10-15-integrate-llm-v17-and-commander-v4).
 
 Review the branch against current main, run the LLM/commander/prompt tests, change golden
 prompts only where their expected rendering intentionally changes, then the WH3 suite
@@ -471,7 +473,8 @@ only successes. Keep existing reports as historical artifacts until the canonica
 is validated. Start with the current embedded assets. Supporting files are allowed if
 measured size or load time warrants them; any such packaging must still open locally
 without a service and be tested as a copied bundle. A giant JSON `fetch` from `file://`
-is not assumed to work. No consolidated report has been generated during preparation.
+is not assumed to work. The consolidated report now uses the explicit selection in
+`configs/twwarhammer3/benchmark_jobs.json`; see [reports.md](reports.md#suite-report).
 
 ### Delivery order and checks
 

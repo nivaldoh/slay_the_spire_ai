@@ -126,3 +126,23 @@ def test_report_command_collects_once_and_writes_json_text_and_html(tmp_path, mo
     assert stem.with_suffix(".txt").read_text().strip() == text
     assert embedded(stem.with_suffix(".html").read_text())["report"]["groups"][0][
         "controllers"] == source["groups"][0]["controllers"]
+
+
+def test_report_explicit_job_list_includes_failures_and_rejects_an_empty_selection(
+        tmp_path, monkeypatch):
+    jobs = [make_job(tmp_path, "played", [("hold", 0, "lost")]),
+            make_job(tmp_path, "setup-failure", [])]
+    selection = tmp_path / "jobs.json"
+    selection.write_text(json.dumps([str(path) for path in jobs]))
+    stem = tmp_path / "benchmark"
+    monkeypatch.setattr(sys, "argv", ["wh3", "report", "--jobs-file", str(selection),
+                                      "--output", str(stem)])
+    assert main() == 0
+    data = json.loads(stem.with_suffix(".json").read_text())
+    assert [job["instance"] for job in data["jobs"]] == [str(path) for path in jobs]
+    selection.write_text('[]')
+    with pytest.raises(SystemExit):
+        main()
+    selection.write_text('{"jobs": []}')
+    with pytest.raises(SystemExit):
+        main()

@@ -7,6 +7,48 @@ from wh3_fixtures import make_job
 from twwarhammer3.battle import report
 
 
+def test_common_measures_keep_raw_totals_unknown_regiments_and_net_resurrection():
+    result = {"status": "lost", "battle_ms": 50000, "final": {
+        "version": 2, "friendly": {"men0": 120, "men": 60, "active_men": 20,
+                                    "units": {"registered": 3, "alive": 2, "destroyed": 1}},
+        "enemy": {"men0": 100, "men": 110}}, "mode": {"type": "land_normal"}}
+    measures = report.shared_measures(result, {})
+    assert measures["soldiers"]["friendly"] == {
+        "registered": 120, "remaining": 60, "net_losses": 60, "active": 20}
+    assert measures["soldiers"]["enemy"]["net_losses"] == -10  # not cumulative kills
+    assert measures["units"]["friendly"]["destroyed"] == 1
+    assert measures["units"]["enemy"] is None
+    assert measures["objective_time"]["status"] == "not_applicable"
+    assert measures["resources"]["status"] == "not_applicable"
+    assert measures["duration_s"] == 50 and measures["basis"] == "engine_result"
+    missing = report.shared_measures({}, {})
+    assert missing["units"] == {"friendly": None, "enemy": None}
+    assert missing["soldiers"]["friendly"]["net_losses"] is None
+    assert missing["objective_time"]["status"] == "unavailable"
+    assert missing["duration_s"] is None and missing["basis"] == "unavailable"
+
+
+def test_common_objective_time_uses_integrals_and_preserves_point_identity_and_failures():
+    result = {"status": "policy_failure", "final_time_ms": 8700,
+              "final": {"friendly": {"men": 8}},
+              "objectives": {"points": {
+                  "c1": {"key": "same_key", "held_ms": 3000, "observed_ms": 6000},
+                  "c2": {"key": "same_key", "held_ms": 0, "observed_ms": 6000}},
+                  "supplies_left": 0, "tickets": {"us": 5, "enemy": 10}, "reinforce": 2}}
+    measures = report.shared_measures(result, {})
+    assert measures["basis"] == "last_observation"
+    assert measures["duration_s"] == 8.7
+    assert measures["objective_time"]["points"] == [
+        {"id": "c1", "key": "same_key", "held_s": 3, "observed_s": 6, "share": .5},
+        {"id": "c2", "key": "same_key", "held_s": 0, "observed_s": 6, "share": 0}]
+    assert measures["resources"] == {"status": "available", "supplies_left": 0, "build": 0,
+                                     "reinforce": 2, "tickets": {"us": 5, "enemy": 10}}
+    # Old observation-voting shares cannot be called time held.
+    result["objectives"] = {"victory_held": .8, "held_sum": 8, "samples": 10}
+    assert report.shared_measures(result, {"battle_type": "siege"})[
+        "objective_time"]["status"] == "unavailable"
+
+
 def test_report_clusters_repeats_and_exposes_failures_missing_pairs_and_versions(tmp_path):
     a = make_job(tmp_path, "a", [("hold", -.1, "lost"), ("skills", .1, "won"),
                                  ("skills", .3, "won")])

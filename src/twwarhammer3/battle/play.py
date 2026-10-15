@@ -71,6 +71,7 @@ SCORED = {"won", "lost", "draw"}
 SOURCES = ("src/gameai", "src/twwarhammer3", "configs/twwarhammer3", "pyproject.toml",
            "uv.lock", ".python-version")
 TRACK = "obs-v3+terrain/act-v2/live-1x"
+EVALUATOR_VERSION = 2
 CAPTION_LIMIT = 400
 # The mod reads observe_ms, tick_ms, record_replay and stills; speed and pause let
 # ``play --attach`` check that the running game keeps the realtime rule.
@@ -107,6 +108,7 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
         "scenario": scenario,
         "trials": trials,
         "track": TRACK,
+        "evaluator_version": EVALUATOR_VERSION,
         "status": "running",
         "episodes": [],
         "recorder": recording_settings(config),

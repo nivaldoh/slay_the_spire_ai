@@ -275,8 +275,9 @@ def test_delayed_policy_gets_old_public_state_but_results_use_current_evaluation
     states = [bridge_observation(0, 0)] + [bridge_observation(i, i * 1000, ack=True)
                                          for i in range(1, 6)]
     for state in states:
-        state["evaluation"] = {"friendly": {"men0": 100, "active_men": 40},
-                               "enemy": {"men0": 100, "active_men": 20}}
+        state["evaluation"] = {"version": 2, "friendly": {"men0": 100, "active_men": 40},
+                               "enemy": {"men0": 100, "active_men": 20,
+                                         "units": {"registered": 5, "destroyed": 2}}}
         state["setup"] = {"private": True}
     reader = Reader()
     mailbox = FakeMailbox(states)
@@ -287,6 +288,8 @@ def test_delayed_policy_gets_old_public_state_but_results_use_current_evaluation
     assert result["delays_ms"] == [2500, 2500]
     assert result["status"] == "infrastructure_failure"
     assert result["final_time_ms"] == 5000 and result["final"]["enemy"]["active_men"] == 20
+    assert result["final"]["version"] == 2
+    assert result["final"]["enemy"]["units"]["destroyed"] == 2
 
 
 def test_controller_exception_stops_rotation_and_is_recorded(tmp_path, harness):

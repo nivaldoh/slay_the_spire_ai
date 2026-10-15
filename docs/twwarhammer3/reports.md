@@ -10,28 +10,53 @@ replay from `battle/replay.py`, the presentation from `battle/report_html.py` an
 `battle/report_assets/`, curated text from `configs/twwarhammer3/report_notes.json`, and
 frames and stills from `battle/capture.py` during play ([integration.md](integration.md)).
 
-## Planned suite report
+## Suite report
 
-Owner direction, 2026-10-15: one entry point for the entire benchmark,
-`runs/twwarhammer3/reports/benchmark.html`, with supporting files allowed. This artifact
-has not been generated. Existing scenario-specific reports remain historical evidence;
-the [implementation plan](benchmark.md#implementation-plan) defines the remaining work.
+The canonical entry point is `runs/twwarhammer3/reports/benchmark.html`, with `.json`
+and `.txt` companions. Rebuild it from the explicit, versioned selection (run at the
+repository root):
 
-Multi-scenario input and an in-page scenario selector already work. Add an overview of
-battle types and armies plus shared measures (kills, survivors, objective time where
-applicable, duration, latency and cost), then expose each scenario's results and replays
-inside the same page. Whole-unit counts must be distinguished from individual soldiers;
-missing historical counts stay unavailable. Scenario-specific scores can follow later.
-The initial 2-3 battles per new scenario are exploratory examples, not a model ranking.
-Controller versions and environment tracks are labelled run
-conditions, not reasons to require another report. Keep incompatible samples distinct,
-missing measures explicit and the evaluator version recorded; do not aggregate raw counts from
-unlike armies and objectives into a single model score.
+```bash
+uv run python -m twwarhammer3 report --jobs-file configs/twwarhammer3/benchmark_jobs.json \
+  --output runs/twwarhammer3/reports/benchmark
+```
 
-Use an explicit input-job list, retained in report JSON, including failures. Start with
-embedded assets; only split large assets if measured size or loading warrants it, and
-verify offline opening of a copied bundle. No website hosting or new framework is part
-of this plan. The sections below describe the current renderer, not these future additions.
+The selection retains the cavalry/G1/C1 and swarm evidence, specialist screens, battle-type
+pilots and their failed/interrupted setup attempts. It excludes unrelated controller
+tuning and presentation-camera probes. Add new jobs to that list as the suite grows;
+never glob all local runs or select by outcome. The report JSON records every input job.
+Existing scenario reports remain historical artifacts.
+
+Expand **Benchmark overview** to see the battle types, starting armies, completed/failed
+battle counts and measure coverage; select a scenario to open its comparisons and replay.
+Historical pilots use their saved configuration's scenario name when their declaration
+predates names. No current catalogue is substituted for historical setup.
+
+**How much progress did each army make?** shows every battle's net soldier/entity losses,
+survivors and registered headcount, plus whole units alive/destroyed/active. Select a battle
+for per-point ownership time, observation duration and share, tickets, supplies, builds,
+reinforcement purchases, duration, cost, order age and rejection details. Failures retain
+their last observed progress, labelled as partial. Counts include later registered summons,
+purchases and waves; net headcount loss is not cumulative kills when resurrection occurs.
+There is no aggregate score across different armies or objectives.
+
+Evaluator v2 adds whole-unit counters; historical counts remain unavailable. Alive routed
+units remain survivors; active units exclude routing, shattered, leaving and undeployed
+units. The subsidiary states can overlap. Objective time uses engine-tick integrals only;
+old snapshot-voting shares are not relabelled as time. Land objectives read not applicable;
+missing historical measurements read unavailable. Evaluator and controller versions are in
+Run settings alongside the source revision and game build, and incompatible groups remain
+separate. Evaluation data stays in the report, outside policy inputs and replay exports.
+
+The HTML embeds its assets and compressed replays and opens directly from disk without a
+server. Share or copy that file; the JSON/text companions retain the full collector output.
+The browser check also opens a copied file offline, tests all scenarios, shared/missing
+measures and replays, and checks desktop and phone layouts:
+
+```bash
+NODE_PATH=~/.cache/wh3-playwright/node_modules node tests/twwarhammer3/check_wh3_report_browser.cjs \
+  runs/twwarhammer3/report-checks/benchmark --report runs/twwarhammer3/reports/benchmark
+```
 
 ## Making a report
 
@@ -44,13 +69,13 @@ It prints the text report and writes `NAME.html`, `NAME.json` and `NAME.txt` (a 
 `--output x.html` writes `x.html.html`). Pass every launch of a comparison: one job is one
 instance, and paired intervals need several. Embedding stills needs Pillow (`uv sync
 --locked`); without it nothing is written. Rebuild after editing the notes file. Share the
-HTML file, not the evidence directory. Margin, throughput, paired comparisons, failures,
-setup flags, the all-jobs table, definitions and limitations are in the text and JSON only.
+HTML file, not the evidence directory. Margin, throughput, paired intervals, detailed setup flags and statistical limitations
+remain in the text and JSON. Failures and shared progress are also visible in the HTML.
 
 ## The page
 
 One scenario at a time (a select when several have battles; unrun catalogue scenarios
-never appear), in three sections:
+never appear), with a collapsible suite overview and three sections:
 
 - **Watch a battle**: the scenario's question and challenge; the run line (featured-run
   tag, readable controller name such as `gpt-6-sol · low reasoning · rules-only prompt`,
