@@ -214,12 +214,13 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
         view["groups"].append(index)
         for trial in group["trials"]:
             instances[trial["instance"]] = view
-        # Never silently give an already-pooled summary a single controller identity.
+        # Never silently give an already-pooled summary a single controller identity. A trial
+        # whose controller failed to build has no card, so it claims no identity.
         for row in group["controllers"]:
-            cards = {_json({key: (trial.get("card") or {}).get(key) for key in
+            cards = {_json({key: trial["card"].get(key) for key in
                             ("kind", "model", "effort", "source_sha256", "timing")})
                 for trial in group["trials"]
-                if trial["controller"] == row["controller"]}
+                if trial["controller"] == row["controller"] and trial.get("card")}
             if len(cards) > 1:
                 raise ValueError(f"mixed controller identities in {row['controller']}")
 

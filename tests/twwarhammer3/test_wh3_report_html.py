@@ -137,6 +137,17 @@ def test_prepooled_different_controller_cards_are_refused(tmp_path):
         report_html.render(source)
 
 
+def test_a_controller_that_failed_to_build_keeps_the_report(tmp_path):
+    job = make_job(tmp_path, "failed", [("llm", .1, "won"), ("llm", .2, "won")])
+    source = report.collect([job])
+    first, failed = source["groups"][0]["trials"]
+    first["card"] = {"kind": "model", "model": "gpt-6-sol"}
+    failed.update(card=None, valid=False, outcome="policy_failure",
+                  error="controller construction")
+    data = embedded(report_html.render(source))
+    assert data["report"]["groups"][0]["trials"][1]["error"] == "controller construction"
+
+
 def test_recorded_stills_embed_once_per_controller_and_keep_failure_metadata(tmp_path,
                                                                             monkeypatch):
     job = make_job(tmp_path, "pictured", [("hold", .1, "won"), ("hold", .2, "won")])
