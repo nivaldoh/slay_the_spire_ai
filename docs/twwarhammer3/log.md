@@ -34,14 +34,15 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v3 (2026-10-14) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | battle types, Luna low: 4 wins in 9 jobs (`commander-luna-v3-*-20261014-*`) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b10 (2026-10-15; b9 2026-10-14), track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | C1: 2 of 6 launches, Sol 1 of 2 at ×1.1, Luna and both baselines 0 of 2 |
+| benchmark harness | b10 (2026-10-15; b9 2026-10-14), track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | C1 finished: Sol 1 of 6 at ×1.1, Luna and both baselines 0 of 6; not yet analysed |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | redesign (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | rebuilt from `visual-sol-low-20261015` and the G1 jobs |
 
 ## Index
 
-- 2026-10-15: [Calibration C1, launches 1 and 2](#2026-10-15-calibration-c1-launches-1-and-2) ·
+- 2026-10-15: [Calibration C1, launches 3 to 6](#2026-10-15-calibration-c1-launches-3-to-6) ·
+  [Calibration C1, launches 1 and 2](#2026-10-15-calibration-c1-launches-1-and-2) ·
   [Skaven swarm screens](#2026-10-15-skaven-swarm-screens) ·
   [Harness b10, `llm` v16 and the calibration decisions](#2026-10-15-harness-b10-llm-v16-and-the-calibration-decisions) ·
   [Unit costs and attributes from the game database](#2026-10-15-unit-costs-and-attributes-from-the-game-database) ·
@@ -91,6 +92,16 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
+
+## 2026-10-15: Calibration C1, launches 3 to 6
+
+Launches 3-6 of C1 ran from about 11:05 to 13:10 UTC-3 (`bench-c1-cavalry-ai11-03-20261015`
+to `-06-`, queue `runs/twwarhammer3/calibration/c1-plan-rest.json`, completed); their 16
+register rows are committed with this entry. Over all six launches: `llm_rules` on Sol won
+1 of 6, `llm_rules@gpt-6-luna`, run-nearest and walk-nearest 0 of 6 each; every battle
+ended on the engine's result. WH3 ledger: $14.2179 of $25. The report
+`reports/c1-cavalry-ai11.html` covers all six launches. The results have not been analysed
+or read against the C1 rule yet: that waits for the owner.
 
 ## 2026-10-15: Calibration C1, launches 1 and 2
 

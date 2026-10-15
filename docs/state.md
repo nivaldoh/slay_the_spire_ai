@@ -1,19 +1,14 @@
 # Project state
 
-Updated 2026-10-15 13:57 UTC: what is running, where each game stands and what comes
+Updated 2026-10-15 16:20 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-WH3, started 2026-10-15 about 11:05 UTC-3 (14:05 UTC): the queue
-`runs/twwarhammer3/calibration/c1-plan-rest.json` runs C1 launches 3-6
-(`bench-c1-cavalry-ai11-03-20261015` to `-06-`), about 2 hours, ending about 13:10 UTC-3.
-Follow with `uv run python -m twwarhammer3 watch runs/twwarhammer3/battle/<job> --next`. To
-stop it early, `pkill -INT -f wh3_queue.py`: the running battle records an interruption and
-no further job starts. No commits while it runs (the queue refuses its next job if HEAD
-moves). Stale `/tmp` worktrees and merged WH3 branches await the owner's removal (commands
-in the [cleanup entry](twwarhammer3/log.md#2026-10-15-track-cleanup-for-agents-and-reviewers)).
+No game controller is running (C1 finished about 13:10 UTC-3 on 2026-10-15). Stale `/tmp`
+worktrees and merged WH3 branches await the owner's removal (commands in the
+[cleanup entry](twwarhammer3/log.md#2026-10-15-track-cleanup-for-agents-and-reviewers)).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -31,24 +26,21 @@ command; clear it when the job stops.
   rematch starts, and the redesigned HTML report.
 - Calibration block C1 (`brt-cavalry-emp-assault-hard`, AI ×1.1), decided under the owner's
   delegation on 2026-10-15 ([decisions](twwarhammer3/benchmark.md#calibration-decided-2026-10-15)):
-  2 of 6 launches done, Sol 1 of 2, Luna and both baselines 0 of 2. No scenario is
-  admitted yet; G1 (2026-10-14) stays a partial earlier attempt.
+  all 6 launches done: Sol 1 of 6, Luna and both baselines 0 of 6; not yet analysed or read
+  against the rule ([log](twwarhammer3/log.md#2026-10-15-calibration-c1-launches-3-to-6)).
+  No scenario is admitted yet; G1 (2026-10-14) stays a partial earlier attempt.
 - Last finished (2026-10-15 morning): the two Skaven swarm screens (both prototypes work;
   every player army routed) and C1 launches 1-2 ([log](twwarhammer3/log.md)); reports
   `c1-cavalry-ai11`, `swarm-screens` and `cavalry-assault` in `runs/twwarhammer3/reports/`.
-- API spend: $10.0391 of the $25 cap on 2026-10-15 (`uv run python -m twwarhammer3 spend`).
+- API spend: $14.2179 of the $25 cap on 2026-10-15 (`uv run python -m twwarhammer3 spend`).
 
 Next steps:
-1. C1 launches 3-6: `runs/twwarhammer3/calibration/c1-plan-rest.json`, frozen to the HEAD
-   of this update (regenerate `source_revision` if HEAD moves), about 2 hours and $4-6.
-   After launch 2: Sol 1 of 2 at ×1.1, Luna and both baselines 0 of 2
-   ([log](twwarhammer3/log.md#2026-10-15-calibration-c1-launches-1-and-2)).
-2. Then: Sol screens of the two swarm prototypes
-   (`runs/twwarhammer3/calibration/swarm-sol-screens-plan.json`, about 40 minutes and $3), and the next `llm` version with the
-   out-of-range attack fix (and possibly last sightings that keep the unit's state, an
-   `obs-v4` track change suggested by Sol's C1 loss) ([candidates](twwarhammer3/controllers.md#candidate-changes-for-the-next-version))
-   only after C1, which freezes the controllers. The owner's later look at the delegated
-   decisions ([log](twwarhammer3/log.md#2026-10-15-harness-b10-llm-v16-and-the-calibration-decisions)).
+1. The owner's review of C1 (`runs/twwarhammer3/reports/c1-cavalry-ai11.html`) and of the
+   delegated decisions ([log](twwarhammer3/log.md#2026-10-15-harness-b10-llm-v16-and-the-calibration-decisions)),
+   before any analysis or next block.
+2. Ready when wanted: `wh3-llm-v17` (merge now that C1 is over) and the Sol swarm screens
+   (`runs/twwarhammer3/calibration/swarm-sol-screens-plan.json`, regenerate its
+   `source_revision`).
 3. Then the [README's Next](twwarhammer3/README.md#next): specialist scenarios, the next
    `llm`/`commander` version, the random-draw comparison, battle-type variants and the
    deferred Lua cleanups.
