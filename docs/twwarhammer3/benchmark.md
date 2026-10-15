@@ -467,6 +467,9 @@ as block C1:
 - reading: Sol 2-4 of 6 with both baselines at 0 admits ×1.1 for development; 5-6 of 6
   moves the next block to a harder declaration; 0-1 of 6 moves it to ×1.0. No prompt,
   roster or controller change during C1.
+- status after launches 1-2 (2026-10-15): Sol 1 of 2 (lost at 1017 s, won at 487 s), Luna
+  and both baselines 0 of 2; Sol cost $0.67-1.44 a battle here
+  ([log](log.md#2026-10-15-calibration-c1-launches-1-and-2)).
 
 ## Experiments the report should eventually present (definitions only)
 

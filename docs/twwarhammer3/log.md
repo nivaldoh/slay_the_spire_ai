@@ -34,14 +34,15 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v3 (2026-10-14) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | battle types, Luna low: 4 wins in 9 jobs (`commander-luna-v3-*-20261014-*`) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b10 (2026-10-15; b9 2026-10-14), track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | G1 stopped: 1 of 12 launches completed, the next interrupted |
+| benchmark harness | b10 (2026-10-15; b9 2026-10-14), track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | C1: 2 of 6 launches, Sol 1 of 2 at ×1.1, Luna and both baselines 0 of 2 |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | redesign (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | rebuilt from `visual-sol-low-20261015` and the G1 jobs |
 
 ## Index
 
-- 2026-10-15: [Skaven swarm screens](#2026-10-15-skaven-swarm-screens) ·
+- 2026-10-15: [Calibration C1, launches 1 and 2](#2026-10-15-calibration-c1-launches-1-and-2) ·
+  [Skaven swarm screens](#2026-10-15-skaven-swarm-screens) ·
   [Harness b10, `llm` v16 and the calibration decisions](#2026-10-15-harness-b10-llm-v16-and-the-calibration-decisions) ·
   [Unit costs and attributes from the game database](#2026-10-15-unit-costs-and-attributes-from-the-game-database) ·
   [Skaven swarm drafts](#2026-10-15-skaven-swarm-drafts) ·
@@ -90,6 +91,31 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
+
+## 2026-10-15: Calibration C1, launches 1 and 2
+
+The first two of C1's six launches on `brt-cavalry-emp-assault-hard` (AI ×1.1), harness b10
+and `llm` v16 (source `8434cd3`), each rotating the four controllers
+([decisions](benchmark.md#calibration-decided-2026-10-15)); the morning queue ran them after
+the swarm screens, unattended, and completed. Every battle ended on the engine's result;
+none reached the timer.
+
+| Launch | Controller | Outcome | Battle s | Own active | Enemy active | Order delay s | USD |
+|---|---|---|---|---|---|---|---|
+| `bench-c1-cavalry-ai11-01-20261015` | `llm_rules`, Sol | lost | 1017 | 0 | 0.570 | 5.58 | 1.4358 |
+| | `llm_rules@gpt-6-luna` | lost | 298 | 0 | 0.530 | 5.14 | 0.0254 |
+| | run-nearest | lost | 214 | 0 | 0.802 | 0.30 | 0 |
+| | walk-nearest | lost | 325 | 0 | 0.875 | 0.30 | 0 |
+| `bench-c1-cavalry-ai11-02-20261015` | `llm_rules`, Sol | **won** | 487 | 0.203 | 0 | 5.77 | 0.6706 |
+| | `llm_rules@gpt-6-luna` | lost | 803 | 0 | 0.260 | 8.03 | 0.0484 |
+| | run-nearest | lost | 244 | 0 | 0.692 | 0.30 | 0 |
+| | walk-nearest | lost | 350 | 0 | 0.849 | 0.30 | 0 |
+
+So far Sol 1 of 2, Luna 0 of 2, both baselines 0 of 2: within the admission band, far from
+decided. Sol's battles cost $0.67 and $1.44 (the lost one lasted 17 minutes), more than
+the ×1.0 runs; at that rate launches 3-6 cost about $4-6. The per-policy rotation recorded
+each trial's own model end to end (manifest, card, register). The register rows of the
+screens and these launches are committed with this entry. WH3 ledger: $10.0391 of $25.
 
 ## 2026-10-15: Skaven swarm screens
 

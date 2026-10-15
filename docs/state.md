@@ -1,19 +1,14 @@
 # Project state
 
-Updated 2026-10-15 11:55 UTC: what is running, where each game stands and what comes
+Updated 2026-10-15 13:50 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-WH3, started 2026-10-15 about 09:00 UTC-3 (12:00 UTC), planned to end before 11:00 UTC-3:
-the queue `runs/twwarhammer3/calibration/morning-20261015-plan.json` (state file beside it)
-runs `bench-b10-screen-skv-swarm-20261015`, `bench-b10-screen-dwf-line-20261015`, then C1
-launches `bench-c1-cavalry-ai11-01-20261015` and `-02-`. Follow with
-`uv run python -m twwarhammer3 watch runs/twwarhammer3/battle/<job> --next`. No commits
-while it runs: the queue refuses its next job if HEAD moves. Stale `/tmp` worktrees and
-merged WH3 branches await the owner's removal (commands in the
-[cleanup entry](twwarhammer3/log.md#2026-10-15-track-cleanup-for-agents-and-reviewers)).
+No game controller is running (the 2026-10-15 morning queue completed at about 10:45
+UTC-3). Stale `/tmp` worktrees and merged WH3 branches await the owner's removal (commands
+in the [cleanup entry](twwarhammer3/log.md#2026-10-15-track-cleanup-for-agents-and-reviewers)).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -47,10 +42,14 @@ command; clear it when the job stops.
 - API spend: $7.7949 of the $25 cap on 2026-10-15 (`uv run python -m twwarhammer3 spend`).
 
 Next steps:
-1. Review the morning's screens and C1 launches 1-2; run C1 launches 3-6
-   (`runs/twwarhammer3/calibration/c1-plan-rest.json`, regenerated if HEAD moved).
-2. The owner's later look at the delegated decisions (log entry
-   [b10, v16, calibration](twwarhammer3/log.md#2026-10-15-harness-b10-llm-v16-and-the-calibration-decisions)).
+1. C1 launches 3-6: `runs/twwarhammer3/calibration/c1-plan-rest.json`, frozen to the HEAD
+   of this update (regenerate `source_revision` if HEAD moves), about 2 hours and $4-6.
+   After launch 2: Sol 1 of 2 at ×1.1, Luna and both baselines 0 of 2
+   ([log](twwarhammer3/log.md#2026-10-15-calibration-c1-launches-1-and-2)).
+2. Then: Sol screens of the two swarm prototypes, and the next `llm` version with the
+   out-of-range attack fix ([candidates](twwarhammer3/controllers.md#candidate-changes-for-the-next-version))
+   only after C1, which freezes the controllers. The owner's later look at the delegated
+   decisions ([log](twwarhammer3/log.md#2026-10-15-harness-b10-llm-v16-and-the-calibration-decisions)).
 3. Then the [README's Next](twwarhammer3/README.md#next): specialist scenarios, the next
    `llm`/`commander` version, the random-draw comparison, battle-type variants and the
    deferred Lua cleanups.
