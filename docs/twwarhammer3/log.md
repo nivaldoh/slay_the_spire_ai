@@ -163,7 +163,13 @@ The acceptance round moved the battle onto the first desktop screen (the page op
 key maneuver's moment and plays it once in view), kept the decision panel's orders in view
 with a two-line run card, capped route columns at three maps, put the view age on one
 0–25 s scale everywhere, removed data the page never read and a duplicate model test, and
-repaired a browser check that had stopped asserting routes.
+repaired a browser check that had stopped asserting routes. A last independent
+re-verification (measured first screens, a newcomer read-through) led to: the challenge
+text under the timeline and autoplay at a quarter of the map in view, so the moving army
+is on the first screen at 1280×800 to 1536×750 and on phones; the cavalry pair renamed
+"standard stats" and "+10% enemy stats"; the enemy AI's difficulty named; orders before
+their age in the decision panel; and the featured battle's five analyst notes shortened
+to 28–40 words each, with no new claims.
 
 Validation: full `uv run pytest -q` and lint; prettier (width 100); the offline browser
 check passed on the canonical page, a copy, the synthetic demo and the two-model pair page

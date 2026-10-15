@@ -125,7 +125,7 @@ async function main() {
     if (scenario.featured_reason === "selected")
       assert.match(
         runLine,
-        /won \d+ of its \d+ here[\s\S]*featured for its analyst notes, not as typical/,
+        /won \d+ of \d+ here[\s\S]*featured for its analyst notes, not as typical/,
       );
     if (data.scenarios.some((item) => item.controlled)) {
       assert.match(await text("#scoreboard"), /controlled comparison/i);

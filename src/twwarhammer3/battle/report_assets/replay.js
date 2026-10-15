@@ -1255,13 +1255,14 @@ const Viewer = (() => {
         d.invalid
           ? `Reply at ${clock(d.applied_ms)}: orders refused by validation`
           : d.steps.length
-            ? `Orders issued at ${clock(d.applied_ms)}`
+            ? `Orders issued at ${clock(d.applied_ms)}${d.age_s == null ? "" : ` · view ${seconds(d.age_s)} old`}`
             : `Reply at ${clock(d.applied_ms)}: no new orders`,
       ),
     );
-    const parts = [head, ageSection(d, i), explanation(d), ordersSection(d)];
+    // What it ordered and why first; how old its information was after.
+    const parts = [head, explanation(d), ordersSection(d)];
     if (d.next?.length) parts.push(nextSection(d));
-    parts.push(...technical(d));
+    parts.push(ageSection(d, i), ...technical(d));
     return parts;
   }
 

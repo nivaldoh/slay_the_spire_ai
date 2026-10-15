@@ -37,6 +37,7 @@ PRESENTATION = ("src/twwarhammer3/battle/report", "src/twwarhammer3/battle/repla
                 "configs/twwarhammer3/scenarios.json")
 PROMPTS = {"llm": "tactical advice in the prompt", "llm_rules": "no tactical advice",
            "commander": "plans for scripted unit skills"}
+VARIANTS = {"llm": "tactics", "commander": "plans"}
 SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the nearest visible enemy"),
             "rush_nearest": ("Charge nearest", "every unit runs at the nearest visible enemy"),
             "hold": ("Hold position", "never gives an order"),
@@ -132,12 +133,14 @@ def commander(trial: dict, definition: dict) -> dict:
     def detail(*parts):
         return " · ".join(filter(None, [*parts, extra]))
 
-    # `short` tells rows of one name apart in tight spaces: effort and added age only.
+    # `short` tells rows of one name apart in tight spaces: effort, prompt variant (none for
+    # rules only) and added age.
     if base in MODEL_POLICIES or card.get("kind") in ("model", "hybrid", "demo"):
         name = model or definition.get("model") or base
         return {"kind": "model", "family": name, "name": name,
                 "detail": detail(effort and f"{effort} reasoning", PROMPTS.get(base)),
-                "short": detail(effort and f"{effort} reasoning"), "prompt": PROMPTS.get(base)}
+                "short": detail(effort and f"{effort} reasoning", VARIANTS.get(base)),
+                "prompt": PROMPTS.get(base)}
     if base in SCRIPTED:
         name, rule = SCRIPTED[base]
         return {"kind": "scripted", "family": "Scripted", "name": name,

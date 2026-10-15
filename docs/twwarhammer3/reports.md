@@ -91,14 +91,15 @@ A dark stage, then the results on a light page, then the method:
   scenarios, models, scripted baselines, dates) and, beside it, the **headline**: the
   first notes group's largest controlled comparison (the commanders shared by two launches
   of one harness, in the most such launches; C1 today), one mark per battle on the progress
-  axis, its win counts and median order age. The page calls a launch a "round"; the caption
-  says "once in every round" only when that holds and names a development scenario. On a
-  phone it follows the viewer.
-- **The battle**: the scenario's name, question and challenge, then the viewer with the
-  featured battle. Unless the reader prefers less motion, it opens on the key maneuver's
-  moment and plays it once when half the map is in view ("Key maneuver" replays it with its
-  lead-in). The run card: commander and detail on one line, the outcome and its record here,
-  the measures, then the scenario and battle selects side by side. The run card names
+  axis, its win counts and median order age. Its caption says "once per launch" only when
+  that holds, names the enemy AI's difficulty and says when prompts were tuned on the
+  scenario. On a phone it follows the viewer.
+- **The battle**: the scenario's name and enemy AI difficulty, its question, then the viewer
+  with the featured battle and the challenge under the timeline. Unless the reader prefers
+  less motion, it opens on the key maneuver's moment and plays it once when a quarter of the
+  map is in view ("Key maneuver" replays it with its lead-in). The run card: commander and
+  detail on one line, the outcome and its record here († when pooled across harness
+  versions), the measures, then the scenario and battle selects, one per row. It names
   the commander (model, then reasoning effort and prompt, or the scripted rule), the
   engine outcome with its duration, the commander's record here and the battle's measures;
   a curated pick adds that it was selected for its analyst notes, not as a typical result.
@@ -185,10 +186,11 @@ The moment panel shows the latest decision applied by the replay time, never a r
 before it was applied ("Waiting for the model's next reply" until then): the stated
 reason, quoted and attributed; the orders in plain words ("Lord: run 320 m north-west,
 then attack Great Cannons in melee"), "Keeping current orders", or "orders refused by
-validation"; up to six "what happened next" facts from the recorded frames. How old the
-orders were comes first, in one sentence ("These orders were 4.2 s old when the game
-accepted them", with the seen and accepted times and the reply's wall-clock time; for the
-commander, its plan's age or the unit skills following it). Message, reply, timing detail
+validation"; up to six "what happened next" facts from the recorded frames. A heading with
+orders also gives their view's age ("Orders issued at 2:19 · view 8.4 s old"); after the
+orders, one sentence says how old the information was when the game accepted them, with
+the seen and accepted times and the reply's wall-clock time (for the commander, its plan's
+age or the unit skills following it). Message, reply, timing detail
 and cost stay collapsed. "See what moved while it waited" pins the reply: the ordered units,
 their targets and every unit that moved 5 m or more, as outlines in the basis observation
 and solid in the first frame after application, joined by straight lines. On wide screens

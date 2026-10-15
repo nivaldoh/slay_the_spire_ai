@@ -1,13 +1,13 @@
 {
   "scenarios": {
     "brt-cavalry-emp-assault": {
-      "title": "Cavalry assault",
+      "title": "Cavalry assault, standard stats",
       "group": "Challenges",
       "question": "Can an AI get its cavalry past the defenders and reach the guns?",
       "challenge": "Six mounted units face eight enemy units: four halberd units screening two units of handgunners and a cannon. Halberds are built to stop cavalry, so a frontal charge into them risks a losing grind; the gunners behind them are weak in melee. The attacker must defeat the defenders before the 20-minute timer runs out."
     },
     "brt-cavalry-emp-assault-hard": {
-      "title": "Cavalry assault, stronger enemy (+10% stats)",
+      "title": "Cavalry assault, +10% enemy stats",
       "group": "Challenges",
       "question": "Can an AI get its cavalry past the defenders and reach the guns?",
       "challenge": "Six mounted units face eight enemy units: four halberd units screening two units of handgunners and a cannon. Halberds are built to stop cavalry, so a frontal charge into them risks a losing grind; the gunners behind them are weak in melee. Every enemy unit's stats are raised by 10%. The attacker must defeat the defenders before the 20-minute timer runs out."
@@ -177,7 +177,7 @@
           "lead_in_s": 9.3,
           "end_ms": 59900,
           "title": "Opening plan: around the west side",
-          "text": "The first orders sent all six units on a two-leg route to the north-west, with the Lord and three knight regiments then to attack the cannon and handgunners and the Questing Knights and archers Halberdiers 4 (the Questing Knights were switched to the cannon at 0:51); the model's stated reason: “Swing the cavalry west of the central obstruction to strike the cannon and handgunners from the flank.”",
+          "text": "All six units start a two-leg route to the north-west. The model's stated reason: “Swing the cavalry west of the central obstruction to strike the cannon and handgunners from the flank.”",
           "units": [
             "f1",
             "f2",
@@ -201,7 +201,7 @@
           "lead_in_s": 14,
           "end_ms": 193100,
           "title": "The long way round",
-          "text": "Saying the halberdiers were “moving into the direct approach”, the model sent the Lord and knights wider, west at 1:08 and then north around Halberdiers 4 at 2:19, and the Lord reached the Great Cannons from the north at 3:13, with no men lost by the Lord and knights after 1:08.",
+          "text": "Saying the halberdiers were “moving into the direct approach”, the model sent the Lord and knights wider, round Halberdiers 4 at 2:19; the Lord reached the Great Cannons from the north at 3:13, and the Lord and knights lost no men after 1:08.",
           "units": [
             "f1",
             "f2",
@@ -233,7 +233,7 @@
           "lead_in_s": 15,
           "end_ms": 226100,
           "title": "The gun line flees first",
-          "text": "The Great Cannons crew began fleeing at 3:27 after the Lord and Questing Knights reached it, and both Handgunners units at 3:46 with the Lord and all four knight regiments attacking them, while none of the four Halberdiers units had fled yet.",
+          "text": "The Great Cannons crew began fleeing at 3:27 after the Lord and Questing Knights reached it, then both Handgunners units at 3:46; no Halberdiers unit had fled yet.",
           "units": [
             "f1",
             "f2",
@@ -267,7 +267,7 @@
           "lead_in_s": 6,
           "end_ms": 271700,
           "title": "Archer moves rejected, then rerouted",
-          "text": "Two eastward moves for the Mounted Yeomen Archers were rejected as unreachable at 4:11 and 4:26; each time the game listed nearby reachable points and the model's next order used one, costing an extra 4–5 s decision with Halberdiers 3 within 70 m.",
+          "text": "Two archer moves were rejected as unreachable, at 4:11 and 4:26; each time the model's next order used a reachable point the game listed, costing an extra 4–5 s decision.",
           "units": [
             "f6",
             "e4"
@@ -294,7 +294,7 @@
           "lead_in_s": 20,
           "end_ms": 382400,
           "title": "The general flees and the battle ends",
-          "text": "In melee from 4:04 with short breaks and fighting the Lord and all four knight regiments by 6:05 (Knights of the Realm 1 fled at 6:11), the General of the Empire began fleeing at 6:21; the three Halberdiers units not yet fleeing did so within 1.2 s (Halberdiers 3 in the same frame), and the game declared the win at 6:22.",
+          "text": "The General of the Empire, in melee on and off since 4:04, began fleeing at 6:21; the three Halberdiers units still standing fled within 1.2 s, and the game declared the win at 6:22.",
           "units": [
             "f1",
             "f2",

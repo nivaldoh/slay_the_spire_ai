@@ -230,12 +230,13 @@ button.link {
 }
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(340px, 470px);
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 520px);
   gap: 24px 56px;
   align-items: center;
-  padding: 28px 0 0;
+  padding: 18px 0 0;
 }
 .hero h1 {
+  text-wrap: balance;
   font-size: var(--t-xxl);
   font-weight: 700;
   letter-spacing: -0.025em;
@@ -321,7 +322,7 @@ button.link {
   border-width: 1.5px;
 }
 .watch {
-  margin-top: 24px;
+  margin-top: 18px;
   scroll-margin-top: 8px;
 }
 .scenario-head {
@@ -351,6 +352,9 @@ button.link {
   min-width: 0;
 }
 .challenge {
+  margin-top: 10px;
+  max-width: 900px;
+  font-size: var(--t-s);
   color: var(--stage-ink-2);
 }
 
@@ -687,6 +691,10 @@ button.link {
 .strip-key svg {
   margin-left: 4px;
 }
+.map-key .strip-key {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
 .whole input {
   width: 16px;
   height: 16px;
@@ -790,9 +798,15 @@ button.link {
 .run-pick {
   gap: 4px;
 }
+/* One select per row, its label beside it, so neither cuts its text short. */
 .picks {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 6px;
+}
+.picks .scenario-pick,
+.picks .run-pick {
+  grid-template-columns: 4.6em minmax(0, 1fr);
+  align-items: center;
   gap: 8px;
 }
 .run-pick span {
@@ -1280,6 +1294,13 @@ blockquote {
   display: grid;
   gap: 8px;
 }
+/* Headings of one height, so the first maps of every column line up. */
+.route-group .who-cell {
+  min-height: 4em;
+}
+.who-cell sup {
+  line-height: 0;
+}
 .route-list {
   display: grid;
   gap: 10px;
@@ -1314,6 +1335,9 @@ blockquote {
 /* Three maps per commander until "+N more" opens the rest. */
 .route-list:not(.open) .route:nth-child(n + 4) {
   display: none;
+}
+.route-list:not(.open) .route[aria-current="true"] {
+  display: grid;
 }
 .route-list .more {
   justify-self: start;

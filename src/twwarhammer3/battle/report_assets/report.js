@@ -337,7 +337,7 @@
     const box = $("scoreboard"),
       title = button(item.title, pick(data.scenarios.indexOf(item)), "scenario");
     box.replaceChildren(
-      el("p", `Controlled comparison · ${item.controlled.launches} rounds`, "eyebrow"),
+      el("p", `Controlled comparison · ${item.controlled.launches} game launches`, "eyebrow"),
       title,
     );
     const pad = rows.some((r) => r.items.some((e) => e.battle.progress == null)) ? 30 : 0;
@@ -364,7 +364,7 @@
       list,
       el(
         "p",
-        `Enemy army broken at the end (● won ○ lost) and median order age; each commander ${item.controlled.once ? "once " : ""}in every round (a fresh game launch), one harness${level(item) ? `, against the game's AI on ${level(item)}` : ""}${item.split === "development" ? "; a development scenario" : ""}.`,
+        `Enemy army broken at the end (● won ○ lost), median order age · each commander ${item.controlled.once ? "once " : ""}per launch, same code${level(item) ? ` · enemy AI on ${level(item)}` : ""}${item.split === "development" ? " · prompts tuned on this scenario" : ""}.`,
         "note",
       ),
     );
@@ -388,7 +388,7 @@
       ...scenarioEntries().map((entry) => {
         const option = el(
           "option",
-          `${who(entry).name}${who(entry).short ? ` (${who(entry).short})` : ""} · ${outcome(entry).short}${on(entry, false)}`,
+          `${who(entry).name}${who(entry).short ? ` (${who(entry).short.replace(" reasoning", "")})` : ""} · ${outcome(entry).short}${on(entry, false)}`,
         );
         option.value = entry.key;
         return option;
@@ -420,15 +420,15 @@
       const items = row.battles.map((key) => entries.get(key)),
         valid = items.filter((e) => e.trial.valid),
         failed = items.length - valid.length;
-      status.append(
-        el(
-          "span",
-          items.length === 1
-            ? "its only battle here"
-            : `won ${valid.filter(won).length} of its ${valid.length} here${failed ? ` (+${failed} did not finish)` : ""}`,
-          "sample",
-        ),
+      const record = el(
+        "span",
+        items.length === 1
+          ? "its only battle here"
+          : `won ${valid.filter(won).length} of ${valid.length} here${row.harnesses > 1 ? " †" : ""}${failed ? ` (+${failed} did not finish)` : ""}`,
+        "sample",
       );
+      if (row.harnesses > 1) record.title = "† battles from more than one code version";
+      status.append(record);
     }
     line.append(title, status);
     const facts = measures(entry);
@@ -779,7 +779,14 @@
       ),
       header("Typical order age", "replies with new orders"),
     );
-    box.append(head, el("p", `One minute per row · 0–${yMax} s`, "phone-key"));
+    box.append(
+      head,
+      el(
+        "p",
+        `Age of each commander's latest view · one minute per row · 0–${yMax} s`,
+        "phone-key",
+      ),
+    );
     for (const s of stats) {
       const row = el("div", null, "lat-row"),
         chart = svg("svg", {
@@ -1316,8 +1323,8 @@
     renderMatrix();
     await renderScenario(0);
     renderInterface(entries.get(scenario.featured), payload);
-    // Open on the key maneuver itself (the army is mid-map there) and play it once the map is
-    // half in view, unless the reader prefers less motion or has already moved the replay.
+    // Open on the key maneuver itself (the army is mid-map there) and play it once a quarter of
+    // the map is in view, unless the reader prefers less motion or has already moved the replay.
     // "Key maneuver" replays it with its lead-in.
     if (!featured || reduceMotion) return;
     const k = payload.highlights.indexOf(featured);
@@ -1331,7 +1338,7 @@
           if (Viewer.time === start && openKey === scenario.featured)
             Viewer.watch(start, featured.end_ms ?? null, k, false);
         },
-        { threshold: 0.5 },
+        { threshold: 0.25 },
       );
       observer.observe($("map-wrap"));
     }
