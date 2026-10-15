@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-15 09:20 UTC: what is running, where each game stands and what comes
+Updated 2026-10-15 09:50 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -45,7 +45,10 @@ Next steps:
    version) first.
 2. The owner's review of the report's analyst notes (`configs/twwarhammer3/report_notes.json`):
    agents drafted and cross-checked them against the records; the brief asks for human review.
-3. Then the [README's Next](twwarhammer3/README.md#next): specialist scenarios, the next
+3. Whether to screen the two Skaven swarm drafts (`skv-swarm-dwf-line`,
+   `dwf-line-skv-swarm`; one launch each, about 25 minutes and $0.10;
+   [benchmark.md](twwarhammer3/benchmark.md#scenario-design)).
+4. Then the [README's Next](twwarhammer3/README.md#next): specialist scenarios, the next
    `llm`/`commander` version, the random-draw comparison, battle-type variants and the
    deferred Lua cleanups.
 
