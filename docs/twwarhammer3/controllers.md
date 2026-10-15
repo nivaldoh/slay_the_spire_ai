@@ -187,9 +187,9 @@ golden prompts:
 4. **Just-applied moves read as stopped.** The observation taken as a batch applies
    predates its moves, so `llm.render_target` called every freshly ordered unit "stopped
    N m short of your move"; in `bench-g1-cavalry-ai10-01-20261014` episode 2 Sol
-   re-issued all six routes three times in 26 s. Fixed on branch `wh3-llm-fresh-move`
-   (`5959587`, unmerged): such a move reads "your move to (x, z) issued this instant".
-   It changes prompt text only in that state, so the golden prompts are unchanged.
+   re-issued all six routes three times in 26 s. Fixed in `llm` v16 (merged `005a050`,
+   2026-10-15): such a move reads "your move to (x, z) issued this instant". It changes
+   prompt text only in that state, so the golden prompts are unchanged.
 
 ## Designs not built yet
 

@@ -438,6 +438,20 @@ because a resumed calibration starts a new run set anyway.
 detect only a collapse. Proposed: run G2 only on an admitted variant, read it on wins
 and battle length, and size it after the block above shows the reference's win rate.
 
+## Calibration decided (2026-10-15)
+
+The owner delegated the decisions above to the agent on 2026-10-15. Adopted as proposed,
+as block C1:
+- objective: whether `brt-cavalry-emp-assault-hard` (AI ×1.1) discriminates; primary
+  measure the engine outcome before the timer, margin kept in the JSON only;
+- rows, rotated in every launch: `llm_rules` on `gpt-6-sol` low (reference, `llm` v16),
+  `llm_rules@gpt-6-luna` (low), run-nearest, walk-nearest; added age 0; no stills;
+- six launches, rotation seeds 2026101501-06; launches 1-2 ran on the morning of
+  2026-10-15, launches 3-6 wait in `runs/twwarhammer3/calibration/c1-plan-rest.json`;
+- reading: Sol 2-4 of 6 with both baselines at 0 admits ×1.1 for development; 5-6 of 6
+  moves the next block to a harder declaration; 0-1 of 6 moves it to ×1.0. No prompt,
+  roster or controller change during C1.
+
 ## Experiments the report should eventually present (definitions only)
 
 From the report brief's section 10; none is built or scheduled.

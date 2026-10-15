@@ -29,19 +29,20 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 | Piece | Version | Defined in | Latest results |
 |---|---|---|---|
-| `llm` | v15 (2026-10-14) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | battle types, Luna low: 6 wins in 10 jobs (`llm-luna-v15-*-20261014-*`); `bench-b2-acceptance-r2-20261014` lost at 442 s |
-| `llm_rules` | unversioned, added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | Sol low won `visual-sol-low-20261015` (382 s, $0.63) and the G1 trial of `bench-g1-cavalry-ai10-01-20261014` (528 s, $0.79) |
+| `llm` | v16 (2026-10-15; v15 2026-10-14) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | battle types, Luna low: 6 wins in 10 jobs (`llm-luna-v15-*-20261014-*`); `bench-b2-acceptance-r2-20261014` lost at 442 s |
+| `llm_rules` | shares `llm` v16 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | Sol low won `visual-sol-low-20261015` (382 s, $0.63) and the G1 trial of `bench-g1-cavalry-ai10-01-20261014` (528 s, $0.79) |
 | `commander` | v3 (2026-10-14) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | battle types, Luna low: 4 wins in 9 jobs (`commander-luna-v3-*-20261014-*`) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b9, track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | G1 stopped: 1 of 12 launches completed, the next interrupted |
+| benchmark harness | b10 (2026-10-15; b9 2026-10-14), track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | G1 stopped: 1 of 12 launches completed, the next interrupted |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | redesign (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | rebuilt from `visual-sol-low-20261015` and the G1 jobs |
 
 ## Index
 
-- 2026-10-15: [Unit costs and attributes from the game database](#2026-10-15-unit-costs-and-attributes-from-the-game-database) ·
+- 2026-10-15: [Harness b10, `llm` v16 and the calibration decisions](#2026-10-15-harness-b10-llm-v16-and-the-calibration-decisions) ·
+  [Unit costs and attributes from the game database](#2026-10-15-unit-costs-and-attributes-from-the-game-database) ·
   [Skaven swarm drafts](#2026-10-15-skaven-swarm-drafts) ·
   [Several models in one job](#2026-10-15-several-models-in-one-job) ·
   [Queue stops on changed rematch starts](#2026-10-15-queue-stops-on-changed-rematch-starts) ·
@@ -88,6 +89,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
+
+## 2026-10-15: Harness b10, `llm` v16 and the calibration decisions
+
+The owner, away until 11:00 (UTC-3), delegated the open WH3 decisions to the agent's
+judgement and authorized the swarm screens. Decided and recorded:
+- **`llm` v16** (`llm_rules` shares it): the `wh3-llm-fresh-move` fix is merged (`005a050`).
+  A move applied at the observed instant reads "your move to (x, z) issued this instant",
+  not "stopped N m short". Golden prompts are unchanged; prompt text differs only in that
+  state.
+- **Benchmark harness b10**: per-policy models (`NAME@MODEL[/EFFORT]`), the queue's
+  start-change stop rule, v16, and the redesigned report. Track unchanged
+  (`obs-v3+terrain/act-v2/live-1x`).
+- **Calibration**: the options in [benchmark.md](benchmark.md#calibration-decided-2026-10-15)
+  are adopted as block C1 on `brt-cavalry-emp-assault-hard`: `llm_rules` on Sol low
+  (reference) and on Luna low, run-nearest and walk-nearest, rotated in each launch.
+  Primary measure: the engine outcome before the timer. Two of the six launches run
+  this morning (the time until the owner returns); the other four are a frozen plan.
+- **Analyst notes**: accepted under the delegation after one more independent check
+  (below, when it finishes); the owner can still revise them.
 
 ## 2026-10-15: Unit costs and attributes from the game database
 

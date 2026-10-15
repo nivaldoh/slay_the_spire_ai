@@ -1,13 +1,18 @@
 # Project state
 
-Updated 2026-10-15 09:50 UTC: what is running, where each game stands and what comes
+Updated 2026-10-15 11:55 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-No game controller is running. Stale `/tmp` worktrees and merged WH3 branches await the
-owner's removal (commands in the
+WH3, started 2026-10-15 about 09:00 UTC-3 (12:00 UTC), planned to end before 11:00 UTC-3:
+the queue `runs/twwarhammer3/calibration/morning-20261015-plan.json` (state file beside it)
+runs `bench-b10-screen-skv-swarm-20261015`, `bench-b10-screen-dwf-line-20261015`, then C1
+launches `bench-c1-cavalry-ai11-01-20261015` and `-02-`. Follow with
+`uv run python -m twwarhammer3 watch runs/twwarhammer3/battle/<job> --next`. No commits
+while it runs: the queue refuses its next job if HEAD moves. Stale `/tmp` worktrees and
+merged WH3 branches await the owner's removal (commands in the
 [cleanup entry](twwarhammer3/log.md#2026-10-15-track-cleanup-for-agents-and-reviewers)).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
@@ -22,14 +27,16 @@ command; clear it when the job stops.
 - On `main`: `llm` v15 and `llm_rules` (the same controller with a rules-only prompt),
   `commander` v3 over the `skills` executor v1.2, the scripted `attack_nearest`,
   `rush_nearest` and `hold`, benchmark harness b9 with the 1 Hz replay recorder and
-  optional stills, the redesigned HTML report, per-policy models (one launch can pair
+  optional stills (harness b10), `llm` v16, the redesigned HTML report, per-policy models (one launch can pair
   `llm_rules` on Sol with `llm_rules@gpt-6-luna`) and a plan queue that stops on changed
   rematch starts.
-- Stopped: benchmark calibration, at the owner's request on 2026-10-14 at 22:20 UTC, after
+- Calibration resumed as block C1 under the owner's delegation (2026-10-15,
+  [decisions](twwarhammer3/benchmark.md#calibration-decided-2026-10-15)). Before that it was
+  stopped at the owner's request on 2026-10-14 at 22:20 UTC, after
   1 of 12 planned G1 launches completed and the second was interrupted during setup
   ([partial G1](twwarhammer3/log.md#2026-10-14-partial-g1-and-owner-requested-stop)).
-  **Do not resume it**: the owner will first discuss its objective, reference,
-  thresholds, trial count and cost
+  The owner had asked to discuss its objective, reference, thresholds, trial count and
+  cost first
   ([recorded plan](twwarhammer3/benchmark.md#calibration-stopped-2026-10-14); it was
   authorized to test AI stats modifiers 1.0 and 1.1). No scenario is admitted; G2 never
   ran. Options for that discussion, from recorded evidence only:
@@ -40,15 +47,11 @@ command; clear it when the job stops.
 - API spend: $7.7949 of the $25 cap on 2026-10-15 (`uv run python -m twwarhammer3 spend`).
 
 Next steps:
-1. The calibration discussion with the owner, before any benchmark run, including whether
-   to merge `wh3-llm-fresh-move` (a prompt fix that would make a new `llm`/`llm_rules`
-   version) first.
-2. The owner's review of the report's analyst notes (`configs/twwarhammer3/report_notes.json`):
-   agents drafted and cross-checked them against the records; the brief asks for human review.
-3. Whether to screen the two Skaven swarm drafts (`skv-swarm-dwf-line`,
-   `dwf-line-skv-swarm`; one launch each, about 25 minutes and $0.10;
-   [benchmark.md](twwarhammer3/benchmark.md#scenario-design)).
-4. Then the [README's Next](twwarhammer3/README.md#next): specialist scenarios, the next
+1. Review the morning's screens and C1 launches 1-2; run C1 launches 3-6
+   (`runs/twwarhammer3/calibration/c1-plan-rest.json`, regenerated if HEAD moved).
+2. The owner's later look at the delegated decisions (log entry
+   [b10, v16, calibration](twwarhammer3/log.md#2026-10-15-harness-b10-llm-v16-and-the-calibration-decisions)).
+3. Then the [README's Next](twwarhammer3/README.md#next): specialist scenarios, the next
    `llm`/`commander` version, the random-draw comparison, battle-type variants and the
    deferred Lua cleanups.
 
@@ -131,7 +134,5 @@ Slay the Spire:
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-fire-report` (`832b233`): WH3 fire-report candidate, on v9 (`d928965`); untested.
 - `wh3-v4-info` (`aa1ece5`): WH3 orientation and losses candidate, on v3 (`c34c246`).
-- `wh3-llm-fresh-move` (`5959587`): `llm`/`llm_rules` no longer call just-applied moves
-  "stopped short", on `57c5932`; waits for the calibration discussion.
 - `wh3-visual-imagery` (`af8f76e`): patch-identical to `main`'s `ca397ab` (stills); remove
   with `git branch -D`.
