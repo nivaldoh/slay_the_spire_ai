@@ -18,7 +18,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [integration.md](integration.md) | engine facts: packs, menus, lobby settings, unit API, context system, battle types, capture |
 | [controllers.md](controllers.md) | the policies and their versions, comparing them, candidate changes, designs not built |
 | [battle-types.md](battle-types.md) | the battle-type scenarios, the `mode` state, the `build` and `reinforce` orders |
-| [benchmark.md](benchmark.md) | the benchmark contract, scenario progress and the implementation plan |
+| [benchmark.md](benchmark.md) | the benchmark contract, shared measures and the scenario expansion plan |
 | [benchmark-run.md](benchmark-run.md) | running paired benchmark trials, outside controllers |
 | [reports.md](reports.md) | the offline HTML report and replay, its curated notes |
 | [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md) | the owner's benchmark brief |
@@ -168,24 +168,27 @@ is separate from Spire's, with its own $25 cap.
 
 ## Next
 
-The [implementation plan](benchmark.md#implementation-plan) is prepared; the owner has
-requested no implementation or new runs yet. Its next milestone is three difficult
-challenges, interpretable partial progress and one report covering the suite:
+The [implementation plan](benchmark.md#implementation-plan) prioritizes visibly different
+scenarios, general measures and one report. The owner has requested planning only;
+implementation and new runs have not started.
+
 1. Integrate `wh3-llm-v17` (range feedback and last-sighting state), including the
-   commander's shared rendering change. Keep the existing environment track; these
-   changes version the controllers. C1 is complete and no longer freezes the branch.
-2. Define and implement per-scenario progress from existing evidence first. Preserve
-   engine outcomes; replace the 30-70% admission gate with working setup, controls and
-   measurement. Do not automatically lower the cavalry challenge from AI ×1.1.
-3. Consolidate the report at `runs/twwarhammer3/reports/benchmark.html`, with a suite
-   overview and in-page scenarios, comparisons and replays. Multi-scenario input already
-   works; the canonical artifact and progress view have not been built.
-4. Freeze a small matched Sol/Luna/baseline batch across cavalry and both swarm scenarios,
-   budget for repetitions, run it after implementation, and update that same report.
-   Old queue plans are historical; create a fresh plan from the committed implementation.
-5. Keep natural latency and cost in every result. Added-delay experiments wait for a
-   concrete question about progress. A siege needs gate/wall/equipment controls; broader
-   battle-type variants, random draws and commander/model expansion follow later.
+   commander's shared rendering change. Keep the existing environment track.
+2. Use shared measures: casualties, soldiers and whole units remaining/destroyed,
+   objective time where applicable, duration, natural latency, cost and failures.
+   Add minimal common evaluation counters where missing. Scenario-specific scoring is
+   a possible later improvement, not a requirement for adding a scenario.
+3. Consolidate the report at `runs/twwarhammer3/reports/benchmark.html`, with an overview
+   of battle types and armies and in-page comparisons/replays. Multi-scenario input
+   already works; update the same report as scenarios are added.
+4. Expand first into siege defence, survival, conquest and a contrasting caster/monster
+   or other land army. Reuse existing battle-type support with distinctive forces and
+   objectives. Play 2-3 exploratory battles total per newly implemented scenario, then
+   move on; deeper comparisons can follow later. Existing cavalry/swarm evidence remains
+   useful without another repeat block. See [battle-types.md](battle-types.md#next).
+5. Keep added-delay experiments deferred. Siege attack needs gate/wall/equipment controls;
+   siege defence already works. Domination, ambush/chokepoint and further army variants
+   can expand the collection; a full model/baseline matrix is not an initial requirement.
 
 The unfinished random-draw comparison has seeds 264482191, 1355466036 and 238913231 left,
 then Sol and Astra as commander. Other candidates remain in

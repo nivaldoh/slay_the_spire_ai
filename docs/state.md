@@ -1,15 +1,15 @@
 # Project state
 
-Updated 2026-10-15 16:52 UTC: what is running, where each game stands and what comes
+Updated 2026-10-15 17:03 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-No game controller is running (C1 finished about 13:10 UTC-3 on 2026-10-15). The revised
-WH3 plan and documentation/stale-work cleanup are complete
-([log](twwarhammer3/log.md#2026-10-15-plan-revision-and-preparation)); implementation and
-new experiments have not started.
+No game controller is running (C1 finished about 13:10 UTC-3 on 2026-10-15). The plan
+refinement is complete: scenario variety, shared measures and 2-3 exploratory battles per
+new scenario ([log](twwarhammer3/log.md#2026-10-15-prioritize-scenario-variety-and-shared-measures)).
+Implementation and new experiments have not started.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -36,9 +36,10 @@ command; clear it when the job stops.
 
 Next: the [implementation plan](twwarhammer3/benchmark.md#implementation-plan), prepared
 but not implemented. Integrate v17 and version the commander's shared rendering change;
-add progress measures and one report; then run a small matched cavalry/swarm comparison
-with repeats budgeted. Natural latency stays measured; added-delay experiments, siege
-controls and broader comparisons follow later. Old calibration queues are historical.
+use shared measures and one report; prioritize varied armies, siege defence, survival
+and conquest, with 2-3 exploratory battles total per new scenario. Scenario-specific
+scoring, deeper model comparisons and added-delay experiments can follow later. Siege
+attack has control gaps; defence already works. Old calibration queues are historical.
 
 ## Slay the Spire
 
@@ -68,11 +69,14 @@ Next steps:
 ## Owner direction
 
 WH3:
-- 2026-10-15: prepare the revised plan without implementing it: difficult battles with
-  odds against the player, scenario milestones/partial progress alongside engine results,
-  no repeated win-rate admission campaigns, and one HTML report for the whole benchmark
-  (supporting files allowed). Keep interface versions as comparison metadata; added-delay
-  experiments can wait. See the [plan](twwarhammer3/benchmark.md#implementation-plan).
+- 2026-10-15 (refined): planning only. Prioritize scenarios that look and play very
+  differently: varied armies, siege, survival, conquest and other modes. Start with
+  general measures (kills, survivors, objective time, etc.); scenario-specific points
+  are a possible future improvement. Play 2-3 exploratory battles total per new scenario,
+  with deeper testing later. Keep difficult odds, no win-rate admission campaign, and
+  one HTML report for the whole benchmark (supporting files allowed). Interface versions
+  remain metadata; added-delay experiments wait. See the
+  [plan](twwarhammer3/benchmark.md#implementation-plan).
 - 2026-10-14 (benchmark steering): specialist anchor units and faction-specific mechanics
   should drive scenario design. Prioritize extreme tactical problems (cavalry against
   anti-large, caster-led forces, difficult sieges, commanding/fighting Skaven swarms),

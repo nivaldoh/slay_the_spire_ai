@@ -42,7 +42,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 ## Index
 
-- 2026-10-15: [Plan revision and preparation](#2026-10-15-plan-revision-and-preparation) ·
+- 2026-10-15: [Prioritize scenario variety and shared measures](#2026-10-15-prioritize-scenario-variety-and-shared-measures) ·
+  [Plan revision and preparation](#2026-10-15-plan-revision-and-preparation) ·
   [Calibration C1, launches 3 to 6](#2026-10-15-calibration-c1-launches-3-to-6) ·
   [Calibration C1, launches 1 and 2](#2026-10-15-calibration-c1-launches-1-and-2) ·
   [Skaven swarm screens](#2026-10-15-skaven-swarm-screens) ·
@@ -94,6 +95,37 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
+
+## 2026-10-15: Prioritize scenario variety and shared measures
+
+The owner refined the plan again, with implementation still out of scope: general
+milestones (kills, survivors, objective time and similar measures) come first;
+scenario-specific points are a possible later improvement. The immediate goal is more
+battles that look and play very differently, including varied land armies, siege,
+survival and conquest. Start each new scenario with 2-3 exploratory battles total;
+deeper testing can follow later.
+
+Updated the [implementation plan](benchmark.md#implementation-plan), state, root/track
+READMEs, battle-type next steps, runbook and report plan. The previous ten-battle proposal
+across three scenarios is superseded; it was never launched. Keep the old calibration and
+cavalry/swarm evidence, with no repeat campaign required before adding new modes.
+
+The audit distinguishes content work from missing mechanics: siege defence, survival,
+conquest and the other modes already ran end to end, mostly with the same small
+Khorne/Dwarf armies. Distinctive rosters/maps/objectives are the next content work.
+Siege attack's gate/wall/equipment gap does not block defence. Survival/domination hide
+the lobby timer expected by the current strict benchmark declaration checks; adapt those
+checks for the selected mode, without treating a controller wall limit as a game timer.
+
+Common measures use existing headcounts and objective integrals first. Whole-unit
+destruction/survival counts need minimal shared evaluation counters, not scenario-specific
+scoring or a full per-unit event recorder. Historical missing counts stay unavailable.
+Reporting expands incrementally at one canonical HTML entry point; scenario-specific
+scores, complete model matrices and added-delay experiments remain later work.
+
+No gameplay/source/configuration changes, branch merges, report builds, queues or paid
+calls. Validation: `uv run pytest tests/test_doc_links.py -q` (43 passed),
+`uv run ruff check .` and `git diff --check` passed.
 
 ## 2026-10-15: Plan revision and preparation
 

@@ -187,8 +187,10 @@ completed, failed, interrupted), the current job and each exit code. Exit codes:
 completed, 1 failed or refused, 130 interrupted. Follow each job with `watch JOB --next`.
 
 The old G1 plans, completed C1 plans and unstarted `swarm-sol-screens-plan.json` are
-historical. Future suite comparisons need new plans with their declared measures,
-controllers, repeat counts, cost allowance and final committed source revision.
+historical. The next phase uses 2-3 exploratory battles total per newly added scenario,
+not a mandatory model/baseline matrix. Create a small new plan with the scenario,
+controllers, battle count, cost allowance and final committed source revision. Deeper
+matched repeats come later; shared measures do not require a new scoring rule per scenario.
 
 ## Stopping
 
@@ -220,5 +222,5 @@ spell loadout. Everything else is in [reports.md](reports.md).
 For the planned suite, pass the explicit input jobs for all scenarios to this same
 command and use the canonical output stem `runs/twwarhammer3/reports/benchmark`.
 Different scenarios and controller versions can share one HTML file while their
-comparison conditions remain distinct. The overview and progress measures are planned;
+comparison conditions remain distinct. The overview and shared measures are planned;
 no consolidated report was generated during preparation.

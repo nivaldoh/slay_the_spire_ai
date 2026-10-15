@@ -17,12 +17,16 @@ Owner direction, 2026-10-15: one entry point for the entire benchmark,
 has not been generated. Existing scenario-specific reports remain historical evidence;
 the [implementation plan](benchmark.md#implementation-plan) defines the remaining work.
 
-Multi-scenario input and an in-page scenario selector already work. Add a suite overview
-and declared progress measures, then expose each challenge's comparisons and replays
-inside the same page. Controller versions and environment tracks are labelled run
+Multi-scenario input and an in-page scenario selector already work. Add an overview of
+battle types and armies plus shared measures (kills, survivors, objective time where
+applicable, duration, latency and cost), then expose each scenario's results and replays
+inside the same page. Whole-unit counts must be distinguished from individual soldiers;
+missing historical counts stay unavailable. Scenario-specific scores can follow later.
+The initial 2-3 battles per new scenario are exploratory examples, not a model ranking.
+Controller versions and environment tracks are labelled run
 conditions, not reasons to require another report. Keep incompatible samples distinct,
-missing measures explicit and the evaluator version recorded; do not aggregate unlike
-progress measures into a single model score.
+missing measures explicit and the evaluator version recorded; do not aggregate raw counts from
+unlike armies and objectives into a single model score.
 
 Use an explicit input-job list, retained in report JSON, including failures. Start with
 embedded assets; only split large assets if measured size or loading warrants it, and

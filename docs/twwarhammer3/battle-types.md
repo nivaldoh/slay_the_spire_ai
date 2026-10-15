@@ -157,23 +157,36 @@ each set up and ended on an engine result; they are in log.md.
 
 ## Next
 
-Toward battle-type benchmarks:
-1. **Variants.** More maps and armies per type, starting with the `random-<type>` draws,
-   then each type at both roles where it has them. The siege attacker needs siege
-   equipment and gate and wall orders ([above](#the-player-attacking-a-siege)).
-2. **Progress per type**: define useful accomplishments alongside engine outcomes, using
-   existing point-control and resource records where applicable. Check controls and
-   measurement before matched model/baseline runs; no 30-70% win-rate gate. These variants
-   follow the initial cavalry/swarm suite in the [plan](benchmark.md#implementation-plan).
-3. **Interface gaps:**
-   - no deployment phase: ambushes and sieges start at once;
-   - the escape zone that the ambush objective text mentions does not exist in custom
-     battles;
-   - the survival waves' timing is not in the state;
-   - terrain is a coarse 32 m grid of path restrictions: walls, paths and narrow river
-     crossings can fall between samples, and unreachable moves stay the most common
-     rejection;
-   - an ability refused with "does not support this special ability" may only lack the
-     magic by issuance ([integration.md](integration.md#abilities-and-magic)); probe the
-     remaining self-ability refusals before treating them as unsupported.
-4. **A fair survival scenario**: a larger starting army or a richer pool.
+The owner prioritizes variety now: more visibly different armies and objectives, with
+2-3 exploratory battles total per new scenario and deeper testing later. All the modes
+above already have working examples; most reused the same five-unit armies. The
+[implementation plan](benchmark.md#implementation-plan) builds on them.
+
+1. **First expansion.** Siege defence, survival and conquest with distinctive armies,
+   maps and objectives, alongside another contrasting land army. Keep existing cavalry
+   and swarm evidence; no repeat campaign is needed before adding these modes. Use the
+   existing setup and adapt only necessary checks (for example, domination/survival hide
+   the lobby timer that declared land benchmarks currently require).
+2. **Common measures.** Casualties and survivors, whole units destroyed/alive/active,
+   objective time and tickets where applicable, duration, latency, cost and failures.
+   Scenario-specific scores are optional future work. These first runs check mechanics
+   and produce inspectable examples, not a stable model ranking.
+3. **More variety.** Domination, ambush/chokepoint, settlement, subterranean and free-for-all
+   variants as useful. Random draws can provide candidates; preserve the selected army
+   and settings when making a repeatable scenario. Different maps alone are not enough
+   if army composition and tactical choices remain the same.
+4. **Survival content.** The five-unit pilot lost in 198-325 s; try a larger starting
+   force or richer pool to expose more decisions, without requiring wins or calibrating
+   to a win-rate band. Wave timing is not currently in the state.
+5. **Siege roles.** Defence already works and belongs in the first expansion. Attacking
+   needs equipment and gate/wall orders ([above](#the-player-attacking-a-siege)); it does
+   not block defence or other modes.
+
+Other interface gaps, addressed when they obstruct a chosen scenario:
+- no deployment phase: ambushes and sieges start at once;
+- the escape zone mentioned in ambush objective text does not exist in custom battles;
+- terrain is a coarse 32 m grid of path restrictions: walls, paths and narrow river
+  crossings can fall between samples, and unreachable moves are the most common rejection;
+- an ability refused with "does not support this special ability" may only lack the magic
+  by issuance ([integration.md](integration.md#abilities-and-magic)); probe a refusal
+  before treating it as unsupported.
