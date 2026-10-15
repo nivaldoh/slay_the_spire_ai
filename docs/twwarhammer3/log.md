@@ -132,6 +132,15 @@ example with two analyst notes written from its recorded events (`report_notes.j
 second reader confirmed the first and corrected the second, which missed a rally; the owner
 has not reviewed them).
 
+Luna's two battles, by the same kind of review: both opened with a straight charge at the
+line ("Exploit cavalry speed to disrupt the cannon and handgunners while the lord engages
+the enemy general." in the first), with no flanking route, and met the halberds first. In
+the 298 s loss the Lord won its duel with the General but the knights broke against the
+halberds; in the 803 s loss the Lord lost the duel, units were withdrawn from 115 s, the
+Lord stood idle in a corner from 365 to 689 s, and the knights later killed the fleeing
+General and shattered one halberd unit before routing. Supported: the straight approach
+in both, unlike Sol's; that the withdrawals explain the longer battle is plausible only.
+
 ## 2026-10-15: Skaven swarm screens
 
 Both swarm drafts ran one screen each under the owner's authorization, on harness b10
