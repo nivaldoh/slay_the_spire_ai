@@ -482,7 +482,10 @@ From the report brief's section 10; none is built or scheduled.
   larger forces also change density, contact timing and the AI's behaviour on a fixed
   map. Observation tokens, reply time and order age are recorded beside the outcome, and
   a drop is reported as end-to-end degradation, not as a reasoning limit. Needs three new
-  declarations and a lobby check of funds and unit caps.
+  declarations and a lobby check of funds and unit caps. Motivating observation (uncontrolled,
+  across harness versions and battles; Luna low, mean order delay per battle): about 5-7 s
+  with 10 units on the field, 6.5-7.3 s with 24, 8.2 s with 27 and 9.2 s with 29, the last
+  two from the 2026-10-15 swarm screens. Unit costs now come from `scripts/wh3_db.py`.
 - **Context.** One change per comparison on one scenario and model, for example adding
   the report's one-line unit roles to the observation against raw unit names. Reported
   with tokens, reply time and cost beside outcomes; the viewer's role text never reaches
