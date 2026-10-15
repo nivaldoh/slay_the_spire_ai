@@ -138,7 +138,8 @@ uv run pytest tests/twwarhammer3                          # Lua (lupa) and image
 - `report` writes `NAME.html`, `NAME.json` and `NAME.txt` offline ([reports.md](reports.md)).
 - `scripts/wh3_queue.py`: the plan format is in its docstring. It refuses to start unless
   HEAD is the plan's `source_revision` with a clean source scope, and it stops at the
-  first job that fails.
+  first job that fails or whose rematch started with a changed roster, strength, loadout
+  or resources.
 - `launch` and `play` install a startup-video skip that persists for ordinary Steam
   launches: `data/zzz_twwarhammer3_skip_intro.pack` in the game folder and
   `fe_game_intro_video_enabled false` in the game's preferences. To reverse it, stop WH3,

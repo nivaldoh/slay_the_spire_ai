@@ -341,7 +341,8 @@ and `g1-cavalry-plan-state.json`; stop note `g1-owner-stop.json`. Partial report
 `g1-cavalry-admission.json`, HTML `field-report.html`. G1 ran through the untracked
 driver `calibration/run-g1.py`, with `audit-g1.py` checking admission. A resumed plan
 would run through `scripts/wh3_queue.py` ([benchmark-run.md](benchmark-run.md#running-a-plan)),
-which does not apply the start-flag stop rule; that needs a separate audit step.
+which applies the start-change stop rule since 2026-10-15; admission is still audited
+separately.
 
 ## Calibration: options for the owner's discussion (2026-10-15)
 

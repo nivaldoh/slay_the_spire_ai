@@ -74,6 +74,30 @@ def test_stops_at_the_first_failed_job_and_never_reruns(tmp_path, head):
         queue.run(path, FAKE_PLAY)
 
 
+@pytest.mark.parametrize("comparison,stops", [
+    ({"missing_or_changed": [], "resource_or_loadout_changes": {
+        "friendly/f2/men": {"before": 45, "after": 44}}}, True),
+    ({"missing_or_changed": ["enemy/e3"], "resource_or_loadout_changes": {}}, True),
+    ({"missing_or_changed": [], "resource_or_loadout_changes": {},
+      "units": {"friendly/f1": {"distance_m": 3.0, "bearing_deg": 0}}}, False),
+])
+def test_a_changed_rematch_start_stops_the_plan_but_geometry_does_not(tmp_path, head,
+                                                                     comparison, stops):
+    # The G1 rule: geometry flags stay in the result; other start changes stop later jobs.
+    result = json.dumps({"start_comparison": {"flagged": True, **comparison}})
+    fake = [sys.executable, "-c", (
+        "import pathlib, sys; out = pathlib.Path(sys.argv[-1]) / 'episode-0001'; "
+        f"out.mkdir(parents=True); (out / 'result.json').write_text({result!r})")]
+    path = plan(tmp_path, ("a", []), ("b", []))
+
+    assert queue.run(path, fake) == (1 if stops else 0)
+
+    assert (tmp_path / "b").exists() is not stops
+    saved = state(tmp_path)
+    assert saved["status"] == ("failed" if stops else "completed")
+    assert ("started differently" in (saved["error"] or "")) is stops
+
+
 def test_checks_the_source_again_before_each_job(tmp_path, head):
     head[:] = [HEAD, HEAD, "b" * 40]  # a commit lands while the first job runs
     path = plan(tmp_path, ("a", []), ("b", []))

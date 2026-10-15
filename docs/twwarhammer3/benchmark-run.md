@@ -169,8 +169,9 @@ uv run python scripts/wh3_queue.py runs/twwarhammer3/calibration/my-plan.json
 It refuses to start unless HEAD is the plan's full revision with no uncommitted change
 in play's source scope or the runner, no output exists and the plan has no state file.
 It checks the source again before each job, stops at the first job that exits nonzero
-(play does for any manifest status but `completed`) and never retries: continue with a
-new plan. `my-plan-state.json` beside the plan holds the runner's pid, status (running,
+(play does for any manifest status but `completed`) or whose rematch started with a
+missing or changed unit or changed strength, loadout or resources (the G1 rule; position
+and bearing flags alone stay in the result), and never retries: continue with a new plan. `my-plan-state.json` beside the plan holds the runner's pid, status (running,
 completed, failed, interrupted), the current job and each exit code. Exit codes: 0
 completed, 1 failed or refused, 130 interrupted. Follow each job with `watch JOB --next`.
 

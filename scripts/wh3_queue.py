@@ -21,9 +21,12 @@ the play source scope or this script, no job output exists and the plan has no s
 file. It runs ``uv run python -m twwarhammer3 play ARGS --output OUTPUT`` per job,
 checking the source again before each, and keeps PLAN-state.json beside the plan: its
 pid, status (running, completed, failed or interrupted), the current job and each
-finished job's exit code. It stops at the first job that exits nonzero and never
-retries; a later attempt is a new plan. SIGINT or SIGTERM passes one SIGINT to the
-running job, which records its own interruption, and marks the plan interrupted.
+finished job's exit code. It stops at the first job that exits nonzero, or whose rematch
+started with a missing or changed unit or changed strength, loadout or resources
+(``start_comparison`` in an episode's result.json; position and bearing flags alone do
+not stop it), and never retries; a later attempt is a new plan. SIGINT or SIGTERM passes
+one SIGINT to the running job, which records its own interruption, and marks the plan
+interrupted.
 """
 
 import argparse
@@ -49,6 +52,17 @@ def source_error(revision: str) -> str | None:
     except ValueError as exc:
         return str(exc)
     return None if head == revision else f"The plan is frozen to {revision!r}, HEAD is {head}"
+
+
+def start_change(output: Path) -> str | None:
+    """The first rematch whose start differs from the job's first one beyond geometry."""
+    for path in sorted(output.glob("episode-*/result.json")):
+        start = json.loads(path.read_text()).get("start_comparison") or {}
+        changed = [*start.get("missing_or_changed", []),
+                   *start.get("resource_or_loadout_changes", {})]
+        if changed:
+            return f"{path.parent} started differently: {', '.join(changed)}"
+    return None
 
 
 def run(plan_path: Path, play: list[str] = PLAY) -> int:
@@ -92,6 +106,8 @@ def run(plan_path: Path, play: list[str] = PLAY) -> int:
             state["completed"].append({"output": job["output"], "exit_code": code})
             if code:
                 error = f"{job['output']} exited with {code}"
+                break
+            if error := start_change(REPO_ROOT / job["output"]):
                 break
     finally:
         for signum, handler in handlers.items():

@@ -41,7 +41,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 ## Index
 
-- 2026-10-15: [Report redesign](#2026-10-15-report-redesign) ·
+- 2026-10-15: [Queue stops on changed rematch starts](#2026-10-15-queue-stops-on-changed-rematch-starts) ·
+  [Report redesign](#2026-10-15-report-redesign) ·
   [Track cleanup for agents and reviewers](#2026-10-15-track-cleanup-for-agents-and-reviewers) ·
   [Sol visual acceptance and closer action views](#2026-10-15-sol-visual-acceptance-and-closer-action-views) ·
   [Native imagery probe and passive capture](#2026-10-15-native-imagery-probe-and-passive-capture) ·
@@ -84,6 +85,16 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
+
+## 2026-10-15: Queue stops on changed rematch starts
+
+`scripts/wh3_queue.py` now applies the recorded G1 start rule itself: after each job it
+reads every episode's `start_comparison` and stops the plan (status failed) when a
+rematch started with a missing or changed unit, or changed strength, loadout or
+resources. Position and bearing flags alone stay in the result. A resumed calibration
+no longer needs a separate audit for this; admission is still audited separately. No
+game ran. Tests: `tests/twwarhammer3/test_wh3_queue.py` covers both kinds of change and a
+geometry-only flag.
 
 ## 2026-10-15: Report redesign
 
