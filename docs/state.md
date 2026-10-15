@@ -6,8 +6,13 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 
 ## Active work
 
-No game controller is running (the 2026-10-15 morning queue completed at about 10:45
-UTC-3). Stale `/tmp` worktrees and merged WH3 branches await the owner's removal (commands
+WH3, started 2026-10-15 about 11:05 UTC-3 (14:05 UTC): the queue
+`runs/twwarhammer3/calibration/c1-plan-rest.json` runs C1 launches 3-6
+(`bench-c1-cavalry-ai11-03-20261015` to `-06-`), about 2 hours, ending about 13:10 UTC-3.
+Follow with `uv run python -m twwarhammer3 watch runs/twwarhammer3/battle/<job> --next`. To
+stop it early, `pkill -INT -f wh3_queue.py`: the running battle records an interruption and
+no further job starts. No commits while it runs (the queue refuses its next job if HEAD
+moves). Stale `/tmp` worktrees and merged WH3 branches await the owner's removal (commands
 in the [cleanup entry](twwarhammer3/log.md#2026-10-15-track-cleanup-for-agents-and-reviewers)).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
