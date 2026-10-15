@@ -28,8 +28,8 @@ entry, and what reads them:
   profile keeps (``check_menu``); the battle verifies ``unit_scale``, ``realism`` (also
   the game preference, ``check_preferences``) and ``player_defends`` (``check_battle``).
 - ``protected``: unit types whose survival the report and replay measure.
-- ``name``, ``family``, ``brief``, ``split``, ``status``: report labels; ``status`` marks a
-  benchmark the HTML report lists even before it is run.
+- ``name``, ``family``, ``brief``, ``split``, ``status``: report labels (the HTML report
+  shows only scenarios with started trials; its reader text is in report_notes.json).
 - ``content``, ``frozen_from``, ``substitutions``, ``calibration_change``, ``loadouts``:
   provenance that no code reads; it reaches reports through the manifest's scenario.
 """

@@ -572,5 +572,143 @@
   "name": "tze-caster-skv-assault-heldout-wastes",
   "split": "held_out",
   "map": "battle_preset_wh3_nur_wastes_01_04"
+ },
+ "skv-swarm-dwf-line": {
+  "battle_type": "classic",
+  "attacker": "player",
+  "split": "development",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 12000,
+   "time_limit_s": 1200,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.0",
+   "player_defends": false
+  },
+  "status": "draft_not_screened",
+  "name": "skv-swarm-dwf-line",
+  "family": "command a Skaven swarm",
+  "player": {
+   "subculture": "wh2_main_sc_skv_skaven",
+   "faction": "wh2_main_skv_skaven",
+   "units": [
+    "wh2_main_skv_cha_grey_seer_ruin_0",
+    "wh2_main_skv_cha_warlock_engineer",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_skavenslave_slingers_0",
+    "wh2_main_skv_inf_skavenslave_slingers_0",
+    "wh2_main_skv_inf_warpfire_thrower",
+    "wh2_main_skv_inf_warpfire_thrower",
+    "wh2_main_skv_inf_poison_wind_globadiers",
+    "wh2_main_skv_art_warp_lightning_cannon",
+    "wh2_main_skv_veh_doomwheel",
+    "wh2_main_skv_mon_rat_ogres"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh_main_sc_dwf_dwarfs",
+   "faction": "wh_main_dwf_dwarfs",
+   "units": [
+    "wh_main_dwf_cha_lord_0",
+    "wh_main_dwf_inf_hammerers",
+    "wh_main_dwf_inf_ironbreakers",
+    "wh_main_dwf_inf_ironbreakers",
+    "wh_main_dwf_inf_longbeards",
+    "wh_main_dwf_inf_thunderers_0",
+    "wh_main_dwf_inf_thunderers_0",
+    "wh_main_dwf_inf_irondrakes_0",
+    "wh_main_dwf_art_organ_gun"
+   ]
+  },
+  "protected": [
+   "wh2_main_skv_cha_grey_seer_ruin_0",
+   "wh2_main_skv_art_warp_lightning_cannon"
+  ],
+  "content": [
+   "wh_main",
+   "wh2_main"
+  ],
+  "brief": "Twenty Skaven units, most of them cheap and quick to flee, must break nine Dwarf units holding a gun line with an Organ Gun before the 1200-second timer. A Grey Seer, a Warlock Engineer, warpfire, poisoned wind, a Warp Lightning Cannon and a Doomwheel are the scarce damage. Spending slaves to screen and pin, timing the weapon teams, protecting the caster and avoiding a cascade of routs compete; one all-in charge is the naive risk. Hypotheses, not a prescribed solution. Not screened in the game: the funds fit and the AI's defence are unverified."
+ },
+ "dwf-line-skv-swarm": {
+  "battle_type": "classic",
+  "attacker": "enemy",
+  "split": "development",
+  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+  "expect": {
+   "battle_type": "land_normal",
+   "difficulty": "ai_level_very_hard",
+   "funds": "funds_custom",
+   "funds_amount": 12000,
+   "time_limit_s": 1200,
+   "unit_scale": 0.75,
+   "realism": false,
+   "ai_stats_modifier": "1.0",
+   "player_defends": true
+  },
+  "status": "draft_not_screened",
+  "name": "dwf-line-skv-swarm",
+  "family": "survive a Skaven swarm",
+  "player": {
+   "subculture": "wh_main_sc_dwf_dwarfs",
+   "faction": "wh_main_dwf_dwarfs",
+   "units": [
+    "wh_main_dwf_cha_lord_0",
+    "wh_main_dwf_inf_ironbreakers",
+    "wh_main_dwf_inf_ironbreakers",
+    "wh_main_dwf_inf_longbeards",
+    "wh_main_dwf_inf_irondrakes_0",
+    "wh_main_dwf_inf_thunderers_0",
+    "wh_main_dwf_art_organ_gun"
+   ]
+  },
+  "enemy": {
+   "subculture": "wh2_main_sc_skv_skaven",
+   "faction": "wh2_main_skv_skaven",
+   "units": [
+    "wh2_main_skv_cha_warlord_0",
+    "wh2_main_skv_cha_plague_priest_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_skavenslaves_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_clanrats_0",
+    "wh2_main_skv_inf_stormvermin_0",
+    "wh2_main_skv_inf_stormvermin_0",
+    "wh2_main_skv_inf_plague_monks",
+    "wh2_main_skv_inf_plague_monks",
+    "wh2_main_skv_inf_skavenslave_slingers_0",
+    "wh2_main_skv_inf_skavenslave_slingers_0",
+    "wh2_main_skv_art_warp_lightning_cannon",
+    "wh2_main_skv_mon_rat_ogres"
+   ]
+  },
+  "protected": [
+   "wh_main_dwf_inf_irondrakes_0",
+   "wh_main_dwf_art_organ_gun"
+  ],
+  "content": [
+   "wh_main",
+   "wh2_main"
+  ],
+  "brief": "Seven Dwarf units must hold against twenty attacking Skaven units; the defender wins if it survives the 1200-second timer. Irondrakes and an Organ Gun are the only crowd-clearing anchors, with limited ammunition. Shaping the approach, anchoring the flanks, spending ammunition on the right targets and avoiding encirclement compete; spreading out to fight everywhere is the naive risk. Evasion should be harder than in the compact defender pilots, but that and the AI's assault are hypotheses to verify. Not screened in the game: the funds fit is unverified."
  }
 }

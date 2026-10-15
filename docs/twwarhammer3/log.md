@@ -41,7 +41,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 ## Index
 
-- 2026-10-15: [Several models in one job](#2026-10-15-several-models-in-one-job) ·
+- 2026-10-15: [Skaven swarm drafts](#2026-10-15-skaven-swarm-drafts) ·
+  [Several models in one job](#2026-10-15-several-models-in-one-job) ·
   [Queue stops on changed rematch starts](#2026-10-15-queue-stops-on-changed-rematch-starts) ·
   [Report redesign](#2026-10-15-report-redesign) ·
   [Track cleanup for agents and reviewers](#2026-10-15-track-cleanup-for-agents-and-reviewers) ·
@@ -86,6 +87,20 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
+
+## 2026-10-15: Skaven swarm drafts
+
+Two specialist scenarios from the owner's 2026-10-14 steering ("commanding/fighting
+Skaven swarms") are declared as drafts, never run: `skv-swarm-dwf-line` (20 Skaven, led by
+a Grey Seer with a few weapon teams, attack 9 Dwarfs on a gun line) and
+`dwf-line-skv-swarm` (7 Dwarfs hold against 20 Skaven; the defender wins at the timer).
+Status `draft_not_screened`; rosters, protected units and the screens they need are in
+[benchmark.md](benchmark.md#scenario-design). Every unit key exists in the game's English
+localisation, read from `local_en.pack` without extracting anything; both declarations
+pass `validate_declaration` and build their lobby steps offline. Unit costs are not
+recorded anywhere, so whether both rosters fit the 12000 custom funds is the first thing a
+screen checks. The report notes carry each scenario's question for when it runs. The
+`setup.py` field reference no longer says `status` puts a scenario in the HTML report.
 
 ## 2026-10-15: Several models in one job
 

@@ -157,7 +157,9 @@ Declared families: ranged protection (`dwf-sla-taurox`, `dwf-sla-herald`), caval
 against anti-large (`brt-cavalry-emp-pikes`, `-pegasus` and the attacking `-assault`) and
 a caster-led force (`tze-caster-skv-screen` and the attacking `-assault`). All but
 `dwf-sla-taurox` have a `-hard` variant at modifier 1.1 and a `-heldout-wastes` map. None
-is admitted.
+is admitted. Two Skaven swarm drafts (`skv-swarm-dwf-line`, `dwf-line-skv-swarm`, status
+`draft_not_screened`) are declared but have never run; see
+[Scenario design](#scenario-design).
 
 ### Admission
 
@@ -203,6 +205,26 @@ development and held-out variants; its entry's `brief` holds the summary.
 | A siege against severe odds | A small defense with an anchor that shifts between objectives | Allocate supplies, abandon or contest points, time a committed assault |
 | Command a Skaven swarm | Many cheap bodies around a few unusual weapons or casters | Spend expendable units for space and time, preserve the scarce damage |
 | Survive a Skaven swarm | A much smaller force with limited crowd-clearing anchors | Shape the approach, save ammunition and magic, avoid encirclement |
+
+**Skaven swarm drafts (2026-10-15, definitions only, never run).** Both pin the Taurox
+map, very hard AI, modifier 1.0, unit scale 0.75, custom funds 12000 and the 1200 s
+timer, and use base Skaven (`wh2_main`) and Dwarf (`wh_main`) units whose keys exist in
+the game's English localisation; both pass `validate_declaration` and build their lobby
+steps offline.
+
+| | `skv-swarm-dwf-line` (command a swarm) | `dwf-line-skv-swarm` (survive a swarm) |
+|---|---|---|
+| Player | 20 Skaven, attacking: Grey Seer (Ruin), Warlock Engineer, 6 Skavenslaves, 4 Clanrats, 2 Skavenslave Slingers, 2 Warpfire Throwers, Poisoned Wind Globadiers, Warp Lightning Cannon, Doomwheel, Rat Ogres | 7 Dwarfs, defending: Lord, 2 Ironbreakers, Longbeards, Irondrakes, Thunderers, Organ Gun |
+| Enemy | 9 Dwarfs: Lord, Hammerers, 2 Ironbreakers, Longbeards, 2 Thunderers, Irondrakes, Organ Gun | 20 Skaven: Warlord, Plague Priest, 5 Skavenslaves, 5 Clanrats, 2 Stormvermin, 2 Plague Monks, 2 Skavenslave Slingers, Warp Lightning Cannon, Rat Ogres |
+| Protected | Grey Seer, Warp Lightning Cannon | Irondrakes, Organ Gun |
+| Naive risk | one all-in charge into the guns, then a cascade of routs | spreading out and being encircled |
+| A viewer should see | slaves screening and pinning, weapon teams arriving together, the caster kept alive | a refused flank, ammunition saved for clusters, the line holding or folding |
+
+Before any calibration they need one screen each (the owner decides when): that both
+rosters fit 12000 (unit costs are not recorded anywhere yet), that the lobby takes a
+20-unit army, that the AI defends in the first and attacks in the second, and that the
+battle neither ends in seconds nor stalls to the timer. Each screen is one launch of
+three battles (`llm_rules` on Luna, run-nearest, `hold`), about 25 minutes and $0.10.
 
 A siege attacker needs gate, wall and equipment orders before admission. Review traces
 for whether meaningful specialist decisions occurred: a win by an unrelated exploit or a
