@@ -320,6 +320,24 @@ def test_same_controller_needs_matching_controller_code_and_prompts(tmp_path):
     assert report_html.display_data(unknown)["comparisons"][1]["same_controller"] is None
 
 
+def test_matching_class_file_does_not_prove_shared_controller_dependencies_match(tmp_path):
+    jobs = [traced_job(tmp_path, name, date,
+                       source_revision=revision, commander_prompt_sha256="same-prompt")
+            for name, revision, date in (("before", "v3-source", "2026-10-14T00:00:00Z"),
+                                          ("after", "v4-source", "2026-10-15T00:00:00Z"))]
+    for job in jobs:
+        path = job / "episode-0000/result.json"
+        result = json.loads(path.read_text())
+        result["policy"] = "commander"
+        result["card"]["kind"] = "hybrid"
+        path.write_text(json.dumps(result))
+    # Commander v4 inherits changed rendering from llm.py while its own class hash is
+    # unchanged. Do not label the controllers identical based on that one hash.
+    views = report_html.display_data(report.collect(jobs))["comparisons"]
+    assert views[0]["same_controller"] is True
+    assert views[1]["same_controller"] is None
+
+
 def test_run_set_differences_are_plain_words_without_revision_hashes():
     reference = {"source": "a" * 40, "recorder": {"enabled": True, "interval_ms": 1000},
                  "imagery": {"enabled": True, "max_stills": 6}}

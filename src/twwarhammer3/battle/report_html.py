@@ -221,11 +221,16 @@ def _controller(view: dict, report: dict) -> tuple[set, set]:
 
 def _same_controller(view: dict, reference: dict, report: dict) -> bool | None:
     """False when the known code or prompt hashes differ, True when both are known and
-    match, None otherwise."""
+    match at the same source revision, None otherwise. A class-file hash alone misses
+    shared dependencies (commander v4 changed through llm.py)."""
     matches = [ours == theirs for ours, theirs in zip(_controller(view, report),
                                                       _controller(reference, report))
                if ours and theirs and None not in ours | theirs]
-    return False if False in matches else True if len(matches) == 2 else None
+    if False in matches:
+        return False
+    source = view["definition"].get("source")
+    return True if len(matches) == 2 and source and source == reference["definition"].get(
+        "source") else None
 
 
 def display_data(report: dict, notes: dict | None = None) -> dict:
