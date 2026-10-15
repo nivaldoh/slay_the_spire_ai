@@ -103,7 +103,11 @@ cards to `cards_slot<N>.txt`; the Warlord leads instead, the Warlock Engineer is
 Results (table in [benchmark.md](benchmark.md#scenario-design)): every player army was
 routed. Luna lost the swarm attack at 457 s (enemy 0.706 active) and the Dwarf hold at
 444 s (0.640); run-nearest lost the attack at 288 s (0.921) and `hold` the hold at 565 s
-(0.529), outlasting the model. Both prototypes are now `prototype_not_admitted`. Cost
+(0.529; 0.561 over the original force, since a summoned Skaven unit joins the total),
+outlasting the model: the model's repeated attacks on an enemy cannon out of range pulled
+its Organ Gun and shooters out of the line ([benchmark.md](benchmark.md#scenario-design),
+[controllers.md](controllers.md#candidate-changes-for-the-next-version)). Both prototypes
+are now `prototype_not_admitted`. Cost
 $0.064, both Luna battles.
 
 Order delay grows with the units in view, observed across unrelated runs (Luna low,

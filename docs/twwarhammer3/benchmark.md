@@ -232,8 +232,14 @@ Every player army was routed:
 | `dwf-line-skv-swarm` | `hold` | 565 s | 0.529 | 0.30 s | 0 |
 
 Both are hard for these controllers and neither is degenerate. In the second, standing
-still outlasted the model and left the swarm weaker, the brief's "spreading out" risk;
-the trace review is pending. The abilities refused in the first match the known causes
+still outlasted the model and left the swarm weaker (0.561 against 0.640 over the original
+Skaven force; `enemy_active` also counts a unit the Skaven summoned during `hold`'s
+battle). The trace review: between 5 and 168 s the model ordered the Organ Gun 11 times to
+attack the enemy cannon about 670 m away (its range is 300 m); an attack on a target out
+of range moves the unit, so the gun, then the Thunderers and Irondrakes, left the line,
+fought alone and fled first (the gun at 202 s), and at 128 s the reply called the cannon,
+403 m away, "now-in-range". The rejections began after the line broke. Over three
+quarters of every shooter's ammunition went unspent in both battles. The abilities refused in the first match the known causes
 (readiness lag and magic spent by issuance; [integration.md](integration.md)), not
 audited one by one. Next: the same screens with Sol before any calibration.
 
