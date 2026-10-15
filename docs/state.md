@@ -130,6 +130,8 @@ Slay the Spire:
 
 ## Unmerged branches
 
+- `wh3-llm-v17` (`c1cc14b`): both candidates below combined and tested (348 WH3 tests), ready
+  to merge after C1 as `llm` v17 on track `obs-v4`.
 - `wh3-obs-last-state` (`287cfba`): last sightings keep a fleeing enemy's state ("routing when
   last seen"), on `94eef9c`; an `obs-v4` track change, after C1.
 - `wh3-llm-range` (`b58d327`): `llm`/`llm_rules` flag a shooter's target beyond its range
