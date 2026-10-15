@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-15 13:50 UTC: what is running, where each game stands and what comes
+Updated 2026-10-15 13:57 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -19,27 +19,19 @@ command; clear it when the job stops.
 [log](twwarhammer3/log.md) (newest first, with the versions on `main` at the top),
 [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm` v15 and `llm_rules` (the same controller with a rules-only prompt),
-  `commander` v3 over the `skills` executor v1.2, the scripted `attack_nearest`,
-  `rush_nearest` and `hold`, benchmark harness b9 with the 1 Hz replay recorder and
-  optional stills (harness b10), `llm` v16, the redesigned HTML report, per-policy models (one launch can pair
-  `llm_rules` on Sol with `llm_rules@gpt-6-luna`) and a plan queue that stops on changed
-  rematch starts.
-- Calibration resumed as block C1 under the owner's delegation (2026-10-15,
-  [decisions](twwarhammer3/benchmark.md#calibration-decided-2026-10-15)). Before that it was
-  stopped at the owner's request on 2026-10-14 at 22:20 UTC, after
-  1 of 12 planned G1 launches completed and the second was interrupted during setup
-  ([partial G1](twwarhammer3/log.md#2026-10-14-partial-g1-and-owner-requested-stop)).
-  The owner had asked to discuss its objective, reference, thresholds, trial count and
-  cost first
-  ([recorded plan](twwarhammer3/benchmark.md#calibration-stopped-2026-10-14); it was
-  authorized to test AI stats modifiers 1.0 and 1.1). No scenario is admitted; G2 never
-  ran. Options for that discussion, from recorded evidence only:
-  [benchmark.md](twwarhammer3/benchmark.md#calibration-options-for-the-owners-discussion-2026-10-15).
-- Last finished: the report redesign from the owner's brief (2026-10-15,
-  [log](twwarhammer3/log.md#2026-10-15-report-redesign)); reports are in
-  `runs/twwarhammer3/reports/` ([reports.md](twwarhammer3/reports.md)).
-- API spend: $7.7949 of the $25 cap on 2026-10-15 (`uv run python -m twwarhammer3 spend`).
+- On `main`: `llm` v16 (`llm_rules` shares its input), `commander` v3 over the `skills`
+  executor v1.2, the scripted `attack_nearest`, `rush_nearest` and `hold`, and benchmark
+  harness b10: the 1 Hz replay recorder, optional stills, per-policy models (one launch
+  pairs `llm_rules` on Sol with `llm_rules@gpt-6-luna`), a plan queue that stops on changed
+  rematch starts, and the redesigned HTML report.
+- Calibration block C1 (`brt-cavalry-emp-assault-hard`, AI ×1.1), decided under the owner's
+  delegation on 2026-10-15 ([decisions](twwarhammer3/benchmark.md#calibration-decided-2026-10-15)):
+  2 of 6 launches done, Sol 1 of 2, Luna and both baselines 0 of 2. No scenario is
+  admitted yet; G1 (2026-10-14) stays a partial earlier attempt.
+- Last finished (2026-10-15 morning): the two Skaven swarm screens (both prototypes work;
+  every player army routed) and C1 launches 1-2 ([log](twwarhammer3/log.md)); reports
+  `c1-cavalry-ai11`, `swarm-screens` and `cavalry-assault` in `runs/twwarhammer3/reports/`.
+- API spend: $10.0391 of the $25 cap on 2026-10-15 (`uv run python -m twwarhammer3 spend`).
 
 Next steps:
 1. C1 launches 3-6: `runs/twwarhammer3/calibration/c1-plan-rest.json`, frozen to the HEAD
