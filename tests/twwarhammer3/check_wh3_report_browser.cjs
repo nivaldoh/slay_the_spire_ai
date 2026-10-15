@@ -152,7 +152,8 @@ async function main() {
     const panelHeading = () => text("#moment .decision-head h3");
     assert.match(await panelHeading(), new RegExp(`at ${clock(first.applied_ms)}`));
 
-    // The moment panel: the model's explanation, its orders and what followed, without JSON.
+    // The moment panel: the model's explanation, its orders and what followed (folded), without
+    // JSON.
     const panel = await text("#moment");
     if (first.reason) assert.ok(panel.includes(first.reason), "the stated reason is quoted");
     assert.equal(await count("#moment .orders li"), first.summary.length);
@@ -160,7 +161,8 @@ async function main() {
       await count("#moment .facts li"),
       first.next.length + (first.next_truncated ? 1 : 0),
     );
-    for (const fact of first.next) assert.ok(panel.includes(fact.text));
+    const facts = await page.locator("#moment .facts").textContent();
+    for (const fact of first.next) assert.ok(facts.includes(fact.text));
     assert.doesNotMatch(panel, /[{[]\s*"|"\w+"\s*:/, "no JSON in the default panel");
     assert.equal(await count("#moment details[open]"), 0);
     assert.match(panel, /\d+\.\d s old when the game accepted these orders/);

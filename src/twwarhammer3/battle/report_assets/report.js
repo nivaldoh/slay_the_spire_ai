@@ -214,6 +214,13 @@
       node.setAttribute("aria-current", String(node.dataset.key === openKey));
     for (const row of document.querySelectorAll("#matrix tr[data-scenario]"))
       row.setAttribute("aria-current", String(row.dataset.scenario === scenario?.id));
+    // A battle beyond a column's first three route maps opens that column.
+    const route = document.querySelector('#routes .route[aria-current="true"]'),
+      list = route?.parentElement;
+    if (list && [...list.children].indexOf(route) >= 3) {
+      list.classList.add("open");
+      list.querySelector(".more")?.remove();
+    }
   }
 
   async function decode(key) {
@@ -364,7 +371,7 @@
       list,
       el(
         "p",
-        `Enemy army broken at the end (● won ○ lost), median order age · each commander ${item.controlled.once ? "once " : ""}per launch, same code${level(item) ? ` · enemy AI on ${level(item)}` : ""}${item.split === "development" ? " · prompts tuned on this scenario" : ""}.`,
+        `Enemy army broken at the end (● won ○ lost), median order age · each commander ${item.controlled.once ? "once " : ""}per launch, same harness${level(item) ? ` · enemy AI on ${level(item)}` : ""}${item.split === "development" ? " · prompts tuned on this scenario" : ""}.`,
         "note",
       ),
     );
@@ -388,7 +395,7 @@
       ...scenarioEntries().map((entry) => {
         const option = el(
           "option",
-          `${who(entry).name}${who(entry).short ? ` (${who(entry).short.replace(" reasoning", "")})` : ""} · ${outcome(entry).short}${on(entry, false)}`,
+          `${who(entry).name}${who(entry).short ? ` (${who(entry).short.replace(" reasoning", "")})` : ""} · ${outcome(entry).short}`,
         );
         option.value = entry.key;
         return option;
@@ -427,7 +434,7 @@
           : `won ${valid.filter(won).length} of ${valid.length} here${row.harnesses > 1 ? " †" : ""}${failed ? ` (+${failed} did not finish)` : ""}`,
         "sample",
       );
-      if (row.harnesses > 1) record.title = "† battles from more than one code version";
+      if (row.harnesses > 1) record.title = "† battles from more than one harness version";
       status.append(record);
     }
     line.append(title, status);

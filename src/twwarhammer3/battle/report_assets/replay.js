@@ -992,20 +992,17 @@ const Viewer = (() => {
     jump(near ? near.t : start + ((x - STRIP_LEFT) / (strip.w - STRIP_LEFT - 10)) * (end - start));
   }
 
+  const waiting = (now) =>
+    `Waiting for ${run.kind === "model" ? "the model's" : "the controller's"} ${now.current < 0 ? "first" : "next"} reply · ${((time - requested(r.decisions[now.pending])) / 1000).toFixed(1)} s`;
   function statusLine(now) {
     if (now.pending < 0) return null;
     const d = r.decisions[now.pending],
-      who = run.kind === "model" ? "the model's" : "the controller's";
-    const line = el("p", null, "status-line");
+      line = el("p", null, "status-line");
     if (d.applied_ms == null && time >= end)
       line.append(
         `The battle ended before the reply requested at ${clock(requested(d))} was applied.`,
       );
-    else
-      line.append(
-        el("span", null, "pulse"),
-        `Waiting for ${who} ${now.current < 0 ? "first" : "next"} reply · ${((time - requested(d)) / 1000).toFixed(1)} s`,
-      );
+    else line.append(el("span", null, "pulse"), el("span", waiting(now), "waiting"));
     return line;
   }
 
@@ -1072,10 +1069,9 @@ const Viewer = (() => {
       return section;
     }
     if (!d.summary.length) {
-      section.append(
-        el("p", "Keeping current orders.", "keeping"),
-        el("p", "Earlier orders, queued steps included, continue.", "note"),
-      );
+      const keeping = el("p", "Keeping current orders.", "keeping");
+      keeping.title = "Earlier orders, queued steps included, continue.";
+      section.append(keeping);
       return section;
     }
     const list = el("ul", null, "orders");
@@ -1094,10 +1090,9 @@ const Viewer = (() => {
     return section;
   }
 
+  // Folded: facts from the frames after the orders, with the one caveat they need.
   function nextSection(d) {
-    const section = el("section"),
-      list = el("ul", null, "facts");
-    section.append(el("h4", "What happened next"));
+    const list = el("ul", null, "facts");
     for (const fact of d.next) {
       const item = el("li");
       item.append(jumpButton(fact.time_ms), el("span", fact.text));
@@ -1111,7 +1106,8 @@ const Viewer = (() => {
           "muted",
         ),
       );
-    section.append(
+    return details(
+      "What happened next",
       list,
       el(
         "p",
@@ -1119,7 +1115,6 @@ const Viewer = (() => {
         "note",
       ),
     );
-    return section;
   }
 
   function ageSection(d, i) {
@@ -1255,7 +1250,7 @@ const Viewer = (() => {
         d.invalid
           ? `Reply at ${clock(d.applied_ms)}: orders refused by validation`
           : d.steps.length
-            ? `Orders issued at ${clock(d.applied_ms)}${d.age_s == null ? "" : ` · view ${seconds(d.age_s)} old`}`
+            ? `Orders issued at ${clock(d.applied_ms)}`
             : `Reply at ${clock(d.applied_ms)}: no new orders`,
       ),
     );
@@ -1373,18 +1368,14 @@ const Viewer = (() => {
 
   function renderPanel(fi, now) {
     const shown = pinned ?? (now.current >= 0 ? now.current : null);
-    // The pending reply's view age counts up: redraw each tenth of a second while waiting.
-    const ticking = now.pending >= 0 ? Math.floor(time / 100) : "";
-    const key = [
-      shown,
-      now.pending,
-      pinned,
-      selected,
-      selected ? fi : "",
-      time >= end,
-      ticking,
-    ].join("|");
-    if (key === keys.panel) return;
+    const key = [shown, now.pending, pinned, selected, selected ? fi : "", time >= end].join("|");
+    // Between decisions only the waiting counter changes: update it in place, so the panel's
+    // buttons and folds keep working during playback.
+    if (key === keys.panel) {
+      const counter = $("moment").querySelector(".waiting");
+      if (counter && now.pending >= 0) counter.textContent = waiting(now);
+      return;
+    }
     keys.panel = key;
     const box = $("moment");
     box.replaceChildren();

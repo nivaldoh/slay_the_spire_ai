@@ -93,7 +93,7 @@ A dark stage, then the results on a light page, then the method:
   of one harness, in the most such launches; C1 today), one mark per battle on the progress
   axis, its win counts and median order age. Its caption says "once per launch" only when
   that holds, names the enemy AI's difficulty and says when prompts were tuned on the
-  scenario. On a phone it follows the viewer.
+  scenario. In the single-column layout (below 1081 px) it follows the viewer.
 - **The battle**: the scenario's name and enemy AI difficulty, its question, then the viewer
   with the featured battle and the challenge under the timeline. Unless the reader prefers
   less motion, it opens on the key maneuver's moment and plays it once when a quarter of the
@@ -185,12 +185,13 @@ unit's; the roster and hover still name every unit.
 The moment panel shows the latest decision applied by the replay time, never a reply
 before it was applied ("Waiting for the model's next reply" until then): the stated
 reason, quoted and attributed; the orders in plain words ("Lord: run 320 m north-west,
-then attack Great Cannons in melee"), "Keeping current orders", or "orders refused by
-validation"; up to six "what happened next" facts from the recorded frames. A heading with
-orders also gives their view's age ("Orders issued at 2:19 · view 8.4 s old"); after the
-orders, one sentence says how old the information was when the game accepted them, with
-the seen and accepted times and the reply's wall-clock time (for the commander, its plan's
-age or the unit skills following it). Message, reply, timing detail
+then attack Great Cannons in melee"), "Keeping current orders" (its tooltip: queued steps
+continue), or "orders refused by validation"; then, folded, up to six "what happened next"
+facts from the recorded frames with their causation caveat. After the orders, one sentence
+says how old the information was when the game accepted them, with the seen and accepted
+times and the reply's wall-clock time (for the commander, its plan's age or the unit skills
+following it). While playing, only the waiting counter updates between decisions, so the
+panel's buttons and folds stay usable. Message, reply, timing detail
 and cost stay collapsed. "See what moved while it waited" pins the reply: the ordered units,
 their targets and every unit that moved 5 m or more, as outlines in the basis observation
 and solid in the first frame after application, joined by straight lines. On wide screens

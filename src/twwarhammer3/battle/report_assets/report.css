@@ -29,7 +29,7 @@
   --t-m: 15px;
   --t-l: 19px;
   --t-xl: clamp(22px, 2.6vw, 30px);
-  --t-xxl: clamp(30px, 3.4vw, 42px);
+  --t-xxl: clamp(30px, 2.95vw, 42px);
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   --sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
@@ -233,7 +233,7 @@ button.link {
   grid-template-columns: minmax(0, 1fr) minmax(340px, 520px);
   gap: 24px 56px;
   align-items: center;
-  padding: 18px 0 0;
+  padding: 14px 0 0;
 }
 .hero h1 {
   text-wrap: balance;
@@ -300,6 +300,7 @@ button.link {
 }
 .headline .name {
   display: grid;
+  padding: 2px 0;
   line-height: 1.2;
 }
 .headline .name small {
@@ -322,7 +323,7 @@ button.link {
   border-width: 1.5px;
 }
 .watch {
-  margin-top: 18px;
+  margin-top: 16px;
   scroll-margin-top: 8px;
 }
 .scenario-head {
@@ -802,6 +803,10 @@ button.link {
 .picks {
   display: grid;
   gap: 6px;
+}
+.picks select {
+  padding-right: 28px;
+  text-overflow: ellipsis;
 }
 .picks .scenario-pick,
 .picks .run-pick {
@@ -1336,9 +1341,6 @@ blockquote {
 .route-list:not(.open) .route:nth-child(n + 4) {
   display: none;
 }
-.route-list:not(.open) .route[aria-current="true"] {
-  display: grid;
-}
 .route-list .more {
   justify-self: start;
   min-height: 30px;
@@ -1835,23 +1837,7 @@ blockquote {
   .io {
     grid-template-columns: minmax(0, 1fr);
   }
-}
-@media (max-width: 760px) {
-  :root {
-    --gutter: 16px;
-  }
-  body {
-    font-size: 14.5px;
-  }
-  .masthead nav,
-  .hero-facts {
-    display: none;
-  }
-  .brand {
-    font-size: var(--t-s);
-    white-space: nowrap;
-  }
-  /* On a phone the battle comes first: the headline chart follows the viewer. */
+  /* Single column: the battle comes first, the headline chart follows the viewer. */
   .stage-band {
     display: flex;
     flex-direction: column;
@@ -1869,6 +1855,57 @@ blockquote {
   .scoreboard {
     order: 3;
     margin: 28px var(--gutter) 0;
+  }
+}
+/* The results rows stack before their five columns get too narrow. */
+@media (max-width: 900px) {
+  .rows-head {
+    display: none;
+  }
+  .row {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "who won" "track track" "age cost";
+    gap: 10px 12px;
+  }
+  .row .who-cell {
+    grid-area: who;
+  }
+  .row .won-cell {
+    grid-area: won;
+    text-align: right;
+  }
+  .row .track-cell {
+    grid-area: track;
+  }
+  .row .age-cell {
+    grid-area: age;
+  }
+  .row .cost-cell {
+    grid-area: cost;
+    align-self: end;
+  }
+  .row [data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 4px;
+    font: 600 11px/1.2 var(--sans);
+    color: var(--muted);
+  }
+}
+@media (max-width: 760px) {
+  :root {
+    --gutter: 16px;
+  }
+  body {
+    font-size: 14.5px;
+  }
+  .masthead nav,
+  .hero-facts {
+    display: none;
+  }
+  .brand {
+    font-size: var(--t-s);
+    white-space: nowrap;
   }
   /* Each commander's marks get a full-width row under its name and counts. */
   .headline {
@@ -1908,33 +1945,9 @@ blockquote {
   .stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .rows-head,
   .lat-head {
     display: none;
   }
-  .row {
-    grid-template-columns: 1fr auto;
-    grid-template-areas: "who won" "track track" "age cost";
-    gap: 10px 12px;
-  }
-  .row .who-cell {
-    grid-area: who;
-  }
-  .row .won-cell {
-    grid-area: won;
-    text-align: right;
-  }
-  .row .track-cell {
-    grid-area: track;
-  }
-  .row .age-cell {
-    grid-area: age;
-  }
-  .row .cost-cell {
-    grid-area: cost;
-    align-self: end;
-  }
-  .row [data-label]::before,
   .matrix td[data-label]::before {
     content: attr(data-label);
     display: block;

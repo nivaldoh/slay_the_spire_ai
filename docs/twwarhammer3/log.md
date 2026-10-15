@@ -169,7 +169,12 @@ text under the timeline and autoplay at a quarter of the map in view, so the mov
 is on the first screen at 1280×800 to 1536×750 and on phones; the cavalry pair renamed
 "standard stats" and "+10% enemy stats"; the enemy AI's difficulty named; orders before
 their age in the decision panel; and the featured battle's five analyst notes shortened
-to 28–40 words each, with no new claims.
+to 28–44 words each, with no new claims. A second re-verification found the decision panel
+rebuilt every 0.1 s during playback, so normal clicks on its buttons were lost; it now
+updates only the waiting counter between decisions. It also folded "what happened next",
+moved the "queued steps continue" note into a tooltip, put the headline chart after the
+viewer below 1081 px and stacked the results rows below 901 px (no sideways scroll on
+tablets).
 
 Validation: full `uv run pytest -q` and lint; prettier (width 100); the offline browser
 check passed on the canonical page, a copy, the synthetic demo and the two-model pair page
