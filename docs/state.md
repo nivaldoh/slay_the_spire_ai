@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-15 08:00 UTC: what is running, where each game stands and what comes
+Updated 2026-10-15 09:20 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -22,7 +22,9 @@ command; clear it when the job stops.
 - On `main`: `llm` v15 and `llm_rules` (the same controller with a rules-only prompt),
   `commander` v3 over the `skills` executor v1.2, the scripted `attack_nearest`,
   `rush_nearest` and `hold`, benchmark harness b9 with the 1 Hz replay recorder and
-  optional stills, and the redesigned HTML report.
+  optional stills, the redesigned HTML report, per-policy models (one launch can pair
+  `llm_rules` on Sol with `llm_rules@gpt-6-luna`) and a plan queue that stops on changed
+  rematch starts.
 - Stopped: benchmark calibration, at the owner's request on 2026-10-14 at 22:20 UTC, after
   1 of 12 planned G1 launches completed and the second was interrupted during setup
   ([partial G1](twwarhammer3/log.md#2026-10-14-partial-g1-and-owner-requested-stop)).
