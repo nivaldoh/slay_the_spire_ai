@@ -469,7 +469,11 @@ as block C1:
   roster or controller change during C1.
 - status after launches 1-2 (2026-10-15): Sol 1 of 2 (lost at 1017 s, won at 487 s), Luna
   and both baselines 0 of 2; Sol cost $0.67-1.44 a battle here
-  ([log](log.md#2026-10-15-calibration-c1-launches-1-and-2)).
+  ([log](log.md#2026-10-15-calibration-c1-launches-1-and-2)). What the traces show so far:
+  Sol went round the obstruction and took the guns first in both battles and won the one
+  where it kept fighting the halberds afterwards; Luna and both scripted baselines charged
+  the halberd line directly. The scenario rewards the flank-then-commit sequence it was
+  designed around, which supports keeping it as the C1 candidate.
 
 ## Experiments the report should eventually present (definitions only)
 
