@@ -45,6 +45,30 @@ SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the neares
 UNIT_KEEP = ("id", "x", "z", "bearing", "men", "men0", "hp", "state", "target", "ammo", "ammo0")
 MODE_KEEP = ("role", "capture_points", "supplies", "tickets")
 TRACK_STEP_MS = 5000  # an army track keeps one centroid per this much battle time
+# The game's custom battle modes in page order, each with its section title and its name for
+# one battle; sieges split by the player's role, as their objectives differ. A mode without
+# scenarios yet keeps its place on the page.
+MODES = [("land", "Land battles", "land battle"),
+         ("siege_defence", "Siege defence", "siege defence"),
+         ("siege_attack", "Siege attack", "siege attack"),
+         ("settlement", "Minor settlement battles", "minor settlement battle"),
+         ("survival", "Survival battles", "survival battle"),
+         ("conquest", "Conquest", "conquest battle"),
+         ("domination", "Domination", "domination battle"),
+         ("ambush", "Ambush battles", "ambush battle"),
+         ("chokepoint", "Chokepoint battles", "chokepoint battle"),
+         ("subterranean", "Subterranean battles", "subterranean battle"),
+         ("free_for_all", "Free-for-all battles", "free-for-all battle")]
+LOBBY_MODES = {"classic": "land", "unfortified_settlement": "settlement",
+               "river_crossing_battle": "chokepoint", "underground_intercept": "subterranean"}
+
+
+def mode_of(scenario: dict) -> str:
+    """A scenario's game mode: its lobby battle type (classic by default), a siege by role."""
+    kind = scenario.get("battle_type") or "classic"
+    if kind == "siege":
+        return "siege_attack" if scenario.get("attacker") == "player" else "siege_defence"
+    return LOBBY_MODES.get(kind, kind)
 
 
 def scenario_name(definition: dict) -> str | None:
@@ -61,7 +85,7 @@ def armies(scenario: dict) -> dict:
         faction = side.get("faction") or side.get("subculture") or "Unknown faction"
         faction = re.sub(r"^wh\d?_(?:main|dlc\d+|pro\d+)_(?:sc_)?[a-z]+_", "", faction)
         count = len(side["units"]) if isinstance(side.get("units"), list) else None
-        return f"{replay.title(faction)} · {count} units" if count is not None else replay.title(
+        return f"{replay.title(faction)} ({count} units)" if count is not None else replay.title(
             faction)
 
     enemy = army(scenario.get("enemy"))
@@ -130,7 +154,7 @@ def commander(trial: dict, definition: dict) -> dict:
         "delay_ms") else None
 
     def detail(*parts):
-        return " · ".join(filter(None, [*parts, extra]))
+        return ", ".join(filter(None, [*parts, extra]))
 
     # `short` tells rows of one name apart in tight spaces: effort, prompt variant (none for
     # rules only) and added age.
@@ -238,14 +262,21 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
         definition = group_of(key)["definition"]
         soldiers = (trial.get("measures") or {}).get("soldiers") or {}
         enemy, own = soldiers.get("enemy") or {}, soldiers.get("friendly") or {}
+        # Enemy soldiers still fighting at the end; battles that recorded casualties only
+        # count the living ("killed" basis), so their progress counts the dead alone.
+        standing = enemy.get("active")
+        basis = None
+        if standing is None and enemy.get("remaining") is not None:
+            standing, basis = enemy["remaining"], "killed"
         battles[key] = {
             "commander": commander(trial, definition),
             "harness": harness(definition, jobs.get(trial["instance"])),
             "date": (jobs.get(trial["instance"]) or {}).get("created_at"),
             # Progress: the share of the enemy's registered soldiers dead or no longer
             # fighting (fleeing, shattered, leaving or undeployed) when the battle ended.
-            "progress": None if None in (enemy.get("active"), enemy.get("registered")) else
-            _share(enemy["registered"] - enemy["active"], enemy["registered"]),
+            "progress": None if None in (standing, enemy.get("registered")) else
+            _share(enemy["registered"] - standing, enemy["registered"]),
+            "progress_basis": basis,
             "own_left": _share(own.get("remaining"), own.get("registered")),
         }
         by_name.setdefault(scenario_name(definition), []).append(key)
@@ -307,9 +338,7 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             "question": note.get("question"),
             "challenge": note.get("challenge") or scenario.get("brief"),
             "footnote": note.get("footnote"),
-            "group": note.get("group") or ("Other battle types (pilots)"
-                                           if not scenario.get("family")
-                                           else "Specialist scenarios"),
+            "mode": mode_of(scenario),
             "split": scenario.get("split"), "status": scenario.get("status"),
             "difficulty": (scenario.get("expect") or {}).get("difficulty"),
             "battle_type": scenario.get("battle_type") or "unrecorded",
@@ -321,11 +350,11 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             "controlled": controlled(keys),
             "featured": min(pool, key=chronology), "featured_reason": reason,
             "setup_only_jobs": []})
-    # The notes' order, by group; scenarios without notes after them, by name.
-    groups = list(dict.fromkeys(note.get("group") for note in scenario_notes.values()))
+    # By game mode, then in the notes' order; scenarios without notes after them, by name.
+    modes = [key for key, _, _ in MODES]
     listed = list(scenario_notes)
     scenarios.sort(key=lambda entry: (
-        groups.index(entry["group"]) if entry["group"] in groups else len(groups),
+        modes.index(entry["mode"]) if entry["mode"] in modes else len(modes),
         listed.index(entry["name"]) if entry["name"] in listed else len(listed),
         str(entry["name"])))
 
@@ -345,7 +374,8 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
                                "title": _title(scenario_notes.get(name) or {},
                                                {**scenario, "name": name})})
     return {"schema": 2, "evidence_kind": kind, "report": data, "battles": battles,
-            "scenarios": scenarios, "setup_only": setup_only, "diagnostics": hidden}
+            "scenarios": scenarios, "setup_only": setup_only, "diagnostics": hidden,
+            "modes": [{"key": key, "title": title, "name": name} for key, title, name in MODES]}
 
 
 def _round(value, digits=1):

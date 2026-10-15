@@ -6,12 +6,6 @@
   const synthetic = data.evidence_kind === "synthetic";
   const NOTICE =
     "SYNTHETIC DEMO: invented values that exercise the report; not benchmark evidence.";
-  // How each scenario's featured battle was chosen; curated picks show the commander's record.
-  const FEATURED = {
-    selected: "Selected for its analyst notes",
-    first_model_run: "The first finished model battle",
-    first_run: "The first recorded battle",
-  };
   const KINDS = {
     plan: "Plan",
     maneuver: "Maneuver",
@@ -26,17 +20,6 @@
     first_contact: "First melee",
     first_rout: "First rout",
     ending: "Battle ending",
-  };
-  const BATTLE_TYPES = {
-    siege: "Siege",
-    survival: "Survival",
-    conquest: "Conquest",
-    domination: "Domination",
-    ambush: "Ambush",
-    river_crossing_battle: "Chokepoint",
-    unfortified_settlement: "Settlement",
-    underground_intercept: "Subterranean",
-    free_for_all: "Free-for-all",
   };
   const entries = new Map();
   report.groups.forEach((group, g) =>
@@ -55,11 +38,8 @@
 
   const who = (entry) => entry.battle.commander;
   const isModel = (entry) => who(entry).kind === "model";
-  const fullName = (entry) => [who(entry).name, who(entry).detail].filter(Boolean).join(" · ");
+  const fullName = (entry) => [who(entry).name, who(entry).detail].filter(Boolean).join(", ");
   const percent = (share) => `${Math.round(share * 100)}%`;
-  // Never round a loss up to the win line: 99.8% broken reads 99%.
-  const broken = (share) =>
-    share >= 1 ? "100%" : `${Math.min(99, Math.floor(Math.round(share * 1e4) / 100))}%`;
   const median = (values) => quantile(values, 0.5);
   function quantile(values, q) {
     if (!values.length) return null;
@@ -67,14 +47,6 @@
       at = (sorted.length - 1) * q,
       low = Math.floor(at);
     return sorted[low] + (sorted[Math.ceil(at)] - sorted[low]) * (at - low);
-  }
-  function wilson(k, n) {
-    const z = 1.96,
-      p = k / n,
-      d = 1 + (z * z) / n;
-    const centre = (p + (z * z) / (2 * n)) / d,
-      half = (z * Math.sqrt((p * (1 - p)) / n + (z * z) / (4 * n * n))) / d;
-    return [Math.max(0, centre - half), Math.min(1, centre + half)];
   }
   function date(value, year = true) {
     const parsed = new Date(value);
@@ -89,7 +61,7 @@
   }
   const on = (entry, year = true) => {
     const day = date(entry.battle.date, year);
-    return day ? ` · ${day}` : "";
+    return day ? `, ${day}` : "";
   };
   // The prompt file a model trial's job saved; before c916e6c a single-policy job saved its
   // one prompt as system_prompt.md.
@@ -136,6 +108,10 @@
           ? null
           : 100 * entry.battle.progress;
   const mean = (values) => values.reduce((sum, value) => sum + value, 0) / values.length;
+  // A score as printed: never rounded up to a win's 100 (a 99.8% loss reads 99).
+  const points = (value) => (value >= 100 ? "100" : String(Math.min(99, Math.round(value))));
+  // A scenario's game mode, as data.modes names it ("land battle").
+  const modeOf = (item) => data.modes.find((mode) => mode.key === item.mode);
   function context(entry) {
     return { kind: who(entry).kind, rule: who(entry).detail, synthetic };
   }
@@ -148,17 +124,21 @@
     const m = entry.trial.measures || {},
       b = entry.battle,
       out = [];
-    if (b.progress != null) out.push(`enemy army broken ${broken(b.progress)}`);
+    if (won(entry)) out.push("score 100");
+    else if (b.progress != null)
+      out.push(
+        `score ${points(100 * b.progress)}${b.progress_basis === "killed" ? " (enemy killed, fled not recorded)" : ""}`,
+      );
     if (b.own_left != null) out.push(`own soldiers alive ${percent(b.own_left)}`);
     const units = m.units || {};
     if (units.friendly && units.enemy)
       out.push(
         `units still fighting: own ${units.friendly.active} of ${units.friendly.registered}, enemy ${units.enemy.active} of ${units.enemy.registered}`,
       );
-    const points = m.objective_time?.points || [];
-    if (points.length)
+    const held = m.objective_time?.points || [];
+    if (held.length)
       out.push(
-        `objectives held ${points.map((p) => (p.share == null ? "not recorded" : percent(p.share))).join(", ")} of the time observed`,
+        `objectives held ${held.map((p) => (p.share == null ? "not recorded" : percent(p.share))).join(", ")} of the time observed`,
       );
     const r = m.resources || {};
     if (r.status === "available") {
@@ -204,15 +184,14 @@
       .sort();
     // "14–15 Oct 2026" within a month, else both dates in full.
     const [from, to] = [date(dated[0]), date(dated.at(-1))];
-    const span =
+    const days =
       from === to
         ? from
         : from.split(" ").slice(1).join(" ") === to.split(" ").slice(1).join(" ")
           ? `${from.split(" ")[0]}–${to}`
           : `${from} – ${to}`;
-    $("imprint-date").textContent = span ? `Early results, ${span}` : "Early results";
     $("facts").textContent =
-      `${all.length} battles in ${data.scenarios.length} scenarios so far, ${models.join(" and ") || "no models"}${scripted.size ? ` against ${scripted.size} scripted baselines` : ""}.`;
+      `WH3 Commander Bench, early results${days ? ` from ${days}` : ""}: ${all.length} battles in ${data.scenarios.length} scenarios, ${models.join(" and ") || "no models"}${scripted.size ? ` against ${scripted.size} scripted baselines` : ""}.`;
   }
 
   // The score scale, 0 to 100, shared by every score bar.
@@ -243,7 +222,7 @@
       range.style.width = `${Math.max(...s.scores) - low}%`;
       bar.append(range);
     }
-    node.append(el("b", String(Math.round(s.score))), bar);
+    node.append(el("b", points(s.score)), bar);
     return node;
   }
   function whoCell(row, short = false) {
@@ -259,12 +238,12 @@
   }
   const won_of = (s) => `${s.won} of ${s.valid.length}`;
   const ageText = (s) => (s.ages.length ? seconds(s.box[2]) : s.timed ? "no orders" : "–");
+  const costText = (s) => (s.row.kind !== "model" ? "$0" : s.usd == null ? "–" : money(s.usd));
 
   // Figure 1: the first group's largest controlled comparison, one score per commander.
   function renderHeadline() {
-    const group = data.scenarios[0]?.group;
     const item = data.scenarios
-      .filter((s) => s.group === group && s.controlled)
+      .filter((s) => s.controlled)
       .sort((a, b) => b.controlled.launches - a.controlled.launches)[0];
     if (!item) return;
     const keys = new Set(item.controlled.battles);
@@ -278,11 +257,17 @@
     const head = el("div", null, "board-head");
     const axis = el("div", null, "score");
     axis.append(el("span", "Score"), scale());
-    head.append(el("span"), axis, el("span", "Won"), el("span", "Order age"));
+    head.append(el("span"), axis, el("span", "Won"), el("span", "Order age"), el("span", "Cost"));
     table.append(head);
     for (const s of all) {
       const line = el("div", null, `board-row ${s.row.kind}`);
-      line.append(whoCell(s.row, true), scoreBar(s), el("span", won_of(s)), el("span", ageText(s)));
+      line.append(
+        whoCell(s.row, true),
+        scoreBar(s),
+        el("span", won_of(s)),
+        el("span", ageText(s)),
+        el("span", costText(s)),
+      );
       table.append(line);
     }
     const title = button(item.title, pick(data.scenarios.indexOf(item)), "inline");
@@ -292,7 +277,15 @@
       item.footnote ? "*" : "",
       `: ${item.controlled.launches} game launches, each commander ${item.controlled.once ? "once " : ""}per launch with the same harness${level(item) ? `, against the game's AI on ${level(item)}` : ""}${item.split === "development" ? "; prompts were tuned on this scenario" : ""}.`,
     );
-    $("headline-foot").textContent = item.footnote ? `* ${item.footnote}` : "";
+    $("headline-foot").replaceChildren(
+      ...[
+        item.footnote && `* ${item.footnote}`,
+        "Score: for each battle, 100 for a win, else the share of the enemy army dead or fled at the end, in percent; the bar is the mean, the line spans the worst to the best battle.",
+        "Order age: how old the battle state behind a reply's orders was when the game accepted them (median). Cost: API cost per battle.",
+      ]
+        .filter(Boolean)
+        .map((text) => el("span", text)),
+    );
     $("finding").replaceChildren(...finding(item, all));
     $("headline").hidden = false;
   }
@@ -301,20 +294,20 @@
     const models = all.filter((s) => s.row.kind === "model" && s.score != null),
       scripts = all.filter((s) => s.row.kind === "scripted" && s.score != null);
     if (!models.length) return [];
-    const span = (values) =>
+    const spread = (values) =>
       Math.min(...values) === Math.max(...values)
         ? seconds(values[0])
         : `${Math.min(...values).toFixed(1)}–${seconds(Math.max(...values))}`;
     const aged = models.filter((s) => s.ages.length),
       best = Math.max(...scripts.map((s) => s.score));
     return [
-      `${level(item) ? `Against the game's AI on ${level(item)}, ` : ""}${models.map((s) => `${s.row.name} scores ${Math.round(s.score)}`).join(" and ")}${scripts.length ? `; the best scripted rule, ${Math.round(best)}` : ""}. `,
+      `In ${item.title}${level(item) ? `, against the game's AI on ${level(item)}` : ""}, ${models.map((s) => `${s.row.name} scores ${points(s.score)}`).join(" and ")}${scripts.length ? `; the best scripted rule, ${points(best)}` : ""}. `,
       ...(aged.length
         ? [
             "The models' orders act on views of the battle ",
-            el("strong", `${span(aged.map((s) => s.box[2]))} old`),
+            el("strong", `${spread(aged.map((s) => s.box[2]))} old`),
             scripts.some((s) => s.ages.length)
-              ? `; the rules' on ${span(scripts.filter((s) => s.ages.length).map((s) => s.box[2]))}.`
+              ? `; the rules' on ${spread(scripts.filter((s) => s.ages.length).map((s) => s.box[2]))}.`
               : ".",
           ]
         : []),
@@ -325,29 +318,26 @@
     scenario = data.scenarios[index];
     $("scenario").value = String(index);
     $("question").textContent = scenario.question || scenario.title;
-    $("scenario-title").textContent = [
-      scenario.question && scenario.title,
-      level(scenario) && `against the game's AI on ${level(scenario)}`,
+    const mode = modeOf(scenario)?.name || "battle";
+    $("challenge").textContent = [
+      `${/^[aeiou]/.test(mode) ? "An" : "A"} ${mode}${level(scenario) ? ` against the game's AI on ${level(scenario)}` : ""}${scenario.question ? `: ${scenario.title}` : ""}.`,
+      scenario.challenge,
     ]
       .filter(Boolean)
-      .join(", ");
-    $("challenge").textContent = scenario.challenge || "";
-    // Figure 2 pools every battle: it says so when counts or harness versions differ.
-    const counts = new Set(scenario.rows.map((row) => row.battles.length));
-    $("plans-caption").replaceChildren(
-      el("b", "Figure 2. "),
-      `${scenario.title}: where each commander's army went, the centre of its units still fighting, in every battle (thin lines) and on average (thick; □ start). ◆ enemy where first seen. Click a map to watch its battles.${counts.size > 1 || scenario.rows.some((row) => row.harnesses > 1) ? " All battles, not a controlled comparison: battle counts or harness versions differ." : ""}`,
-    );
-    document.title = `${synthetic ? "SYNTHETIC DEMO — " : ""}${scenario.title} · WH3 Commander Bench`;
+      .join(" ");
+    document.title = `${synthetic ? "SYNTHETIC DEMO — " : ""}${scenario.title}, WH3 Commander Bench`;
+    // By commander, as the figures order them; the outcome first, so a narrow select keeps it.
     $("run-select").replaceChildren(
-      ...scenarioEntries().map((entry) => {
-        const option = el(
-          "option",
-          `${outcome(entry).short} · ${who(entry).name}${who(entry).short ? ` (${who(entry).short.replace(" reasoning", "")})` : ""}`,
-        );
-        option.value = entry.key;
-        return option;
-      }),
+      ...scenario.rows
+        .flatMap((row) => row.battles.map((key) => entries.get(key)))
+        .map((entry) => {
+          const option = el(
+            "option",
+            `${outcome(entry).short}, ${who(entry).name}${who(entry).short ? ` (${who(entry).short.replace(" reasoning", "")})` : ""}`,
+          );
+          option.value = entry.key;
+          return option;
+        }),
     );
     renderPlans();
     markCurrent();
@@ -359,11 +349,6 @@
       row = scenario.rows.find((item) => item.battles.includes(entry.key));
     line.replaceChildren();
     if (synthetic) line.append(el("span", "SYNTHETIC DEMO", "tag synthetic"));
-    else if (entry.key === scenario.featured) {
-      const tag = el("span", "Featured battle", "tag");
-      tag.title = FEATURED[scenario.featured_reason];
-      line.append(tag);
-    }
     const title = el("span", null, "title");
     title.append(el("strong", who(entry).name, "name"), el("span", who(entry).detail, "detail"));
     const result = outcome(entry),
@@ -377,17 +362,17 @@
         "span",
         items.length === 1
           ? "its only battle here"
-          : `won ${valid.filter(won).length} of ${valid.length} here${row.harnesses > 1 ? " †" : ""}${failed ? ` (+${failed} did not finish)` : ""}`,
+          : `won ${valid.filter(won).length} of ${valid.length} here${failed ? ` (+${failed} did not finish)` : ""}`,
         "sample",
       );
-      if (row.harnesses > 1) record.title = "† battles from more than one harness version";
+      if (row.harnesses > 1) record.title = "Battles from more than one harness version";
       status.append(record);
     }
     line.append(title, status);
     const facts = measures(entry);
     if (entry.key === scenario.featured && scenario.featured_reason === "selected")
       facts.push("featured for its analyst notes, not as typical");
-    if (facts.length) line.append(el("span", facts.join(" · "), "measures"));
+    if (facts.length) line.append(el("span", facts.join(", "), "measures"));
   }
 
   async function openRun(key, scroll) {
@@ -425,22 +410,55 @@
     if (scroll) Viewer.reveal();
   }
 
-  // Figure 2: one map per commander, every battle's army track thin and their mean thick.
+  // Figure 2: one map per model (its settings pooled) and per scripted rule: every battle's
+  // army track thin, their mean position thick. Commanders that give no orders are left out.
   function renderPlans() {
     const box = $("routes");
     box.replaceChildren();
-    const tracked = scenarioEntries().filter((entry) => entry.battle.route?.track.length);
-    if (!tracked.length) {
+    const items = [];
+    for (const row of scenario.rows) {
+      const same =
+        row.kind === "model" &&
+        items.find((item) => item.kind === "model" && item.family === row.family);
+      if (same) {
+        same.rows.push(row);
+        same.battles = [...same.battles, ...row.battles];
+      } else items.push({ ...row, rows: [row], battles: [...row.battles] });
+    }
+    const silent = items.filter((item) => {
+      const s = rowStats(item);
+      return s.timed && !s.ages.length;
+    });
+    const shown = items.filter(
+      (item) =>
+        !silent.includes(item) &&
+        item.battles.some((key) => entries.get(key).battle.route?.track.length),
+    );
+    const caption = [
+      el("b", "Figure 2. "),
+      `${scenario.title}: where each model's army went (the centre of its units still fighting), in every battle as a thin line, brighter for wins, and as the mean position over time, thick from □ to ●. ◆ enemy units where first seen. Click a map to watch its first battle.`,
+    ];
+    if (shown.some((item) => item.rows.length > 1 || item.harnesses > 1))
+      caption.push(" † pools several settings or harness versions.");
+    if (silent.length)
+      caption.push(
+        ` Left out: ${silent.map((item) => item.name).join(", ")}, which never gives orders.`,
+      );
+    $("plans-caption").replaceChildren(...caption);
+    if (!shown.length) {
       box.append(el("p", "No army positions were recorded in this scenario.", "caption"));
       return;
     }
     // One framing for every map: all tracks and where the enemy was first seen.
-    const points = tracked.flatMap((entry) => [
+    const tracked = shown.flatMap((item) =>
+      item.battles.map((key) => entries.get(key)).filter((e) => e.battle.route?.track.length),
+    );
+    const extent = tracked.flatMap((entry) => [
       ...entry.battle.route.track.map(([, x, z]) => [x, z]),
       ...entry.battle.route.enemy.map((u) => u.at),
     ]);
-    const xs = points.map((p) => p[0]),
-      zs = points.map((p) => p[1]);
+    const xs = extent.map((p) => p[0]),
+      zs = extent.map((p) => p[1]);
     let [x0, z0, x1, z1] = [Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs)];
     const margin = Math.max(40, 0.08 * Math.max(x1 - x0, z1 - z0));
     [x0, z0, x1, z1] = [x0 - margin, z0 - margin, x1 + margin, z1 + margin];
@@ -453,14 +471,13 @@
     const line = (path) =>
       path.map(([x, z]) => `${px(x).toFixed(1)},${py(z).toFixed(1)}`).join(" ");
     const ground = scenario.terrain ? blockedPath(scenario.terrain, px, py, scale) : "";
-    const enemy = tracked[0].battle.route.enemy;
-    for (const row of scenario.rows) {
-      const items = row.battles.map((key) => entries.get(key)),
-        tracks = items.filter((e) => e.battle.route?.track.length),
-        s = rowStats(row);
+    for (const item of shown) {
+      const battles = item.battles.map((key) => entries.get(key)),
+        tracks = battles.filter((e) => e.battle.route?.track.length),
+        s = rowStats(item);
       const map = svg("svg", { viewBox: `0 0 ${w} ${h}`, "aria-hidden": "true" });
       if (ground) map.append(svg("path", { d: ground, class: "blocked" }));
-      for (const u of enemy)
+      for (const u of tracks[0].battle.route.enemy)
         map.append(
           svg("path", {
             d: `M${px(u.at[0])} ${py(u.at[1]) - 3.4}l3.4 3.4-3.4 3.4-3.4-3.4z`,
@@ -474,35 +491,34 @@
             class: `trace ${won(entry) ? "won" : ""}`,
           }),
         );
-      if (tracks.length) {
-        const path = meanTrack(tracks.map((e) => e.battle.route.track)),
-          [sx, sz] = path[0],
-          [ex, ez] = path.at(-1);
-        map.append(
-          svg("polyline", { points: line(path), class: "mean" }),
-          svg("rect", { x: px(sx) - 3.5, y: py(sz) - 3.5, width: 7, height: 7, class: "start" }),
-          svg("circle", { cx: px(ex), cy: py(ez), r: 3.5, class: "end" }),
-        );
-      }
-      const card = el("figure", null, `plan ${row.kind}`),
-        open = button("", () => openRun(items[0].key, true), "plan-map");
-      open.append(map);
-      open.setAttribute(
-        "aria-label",
-        `Watch ${row.name}'s battles here, starting with the first. Its army's route in every battle.`,
+      const path = meanTrack(tracks.map((e) => e.battle.route.track)),
+        [sx, sz] = path[0],
+        [ex, ez] = path.at(-1);
+      map.append(
+        svg("polyline", { points: line(path), class: "mean" }),
+        svg("rect", { x: px(sx) - 3.5, y: py(sz) - 3.5, width: 7, height: 7, class: "start" }),
+        svg("circle", { cx: px(ex), cy: py(ez), r: 3.5, class: "end" }),
       );
-      card.dataset.keys = row.battles.join(" ");
-      const facts = el("dl");
-      for (const [label, value] of [
-        ["Won", won_of(s)],
-        [s.executor != null ? "Plan age" : "Order age", ageText(s)],
-        ["Cost", row.kind !== "model" ? "$0" : s.usd == null ? "–" : money(s.usd)],
-      ])
-        facts.append(el("dt", label), el("dd", value));
-      const failed = items.length - s.valid.length;
+      const card = el("figure", null, `plan ${item.kind}`),
+        open = button("", () => openRun(battles[0].key, true), "plan-map");
+      open.append(map);
+      open.setAttribute("aria-label", `Watch ${item.name}'s first battle here`);
+      card.dataset.keys = item.battles.join(" ");
+      const name = el("strong", item.name);
+      if (item.rows.length > 1 || item.harnesses > 1) {
+        const mark = el("sup", "†", "versions");
+        mark.title = item.rows.map((row) => `${row.detail}: ${row.battles.length}`).join("\n");
+        name.append(mark);
+      }
+      const failed = battles.length - s.valid.length;
       const about = el("figcaption");
-      about.append(whoCell(row), scoreBar(s), facts);
-      if (failed) about.append(el("small", `+${failed} did not finish`, "failed-note"));
+      about.append(
+        name,
+        el(
+          "small",
+          `${s.valid.length} battle${s.valid.length === 1 ? "" : "s"}, ${s.won} won${failed ? `, ${failed} did not finish` : ""}`,
+        ),
+      );
       card.append(open, about);
       box.append(card);
     }
@@ -566,25 +582,20 @@
       best = stats.filter((s) => s.score != null).sort((a, b) => b.score - a.score)[0],
       shown = family === "Scripted" ? best : pooled;
     if (shown?.score == null) {
-      cell.append(el("span", "did not finish", "none"));
+      cell.append(el("span", pooled.valid.length ? "not measured" : "did not finish", "none"));
       return cell;
     }
     cell.style.setProperty("--score", shown.score / 100);
-    cell.append(el("b", String(Math.round(shown.score))));
+    cell.append(el("b", points(shown.score)));
     cell.append(
-      el(
-        "small",
-        family === "Scripted"
-          ? best.row.name
-          : `${shown.scores.length} battle${shown.scores.length > 1 ? "s" : ""}`,
-      ),
+      el("small", family === "Scripted" ? best.row.name : `${shown.scores.length} finished`),
     );
     if (family !== "Scripted" && (rows.length > 1 || rows.some((row) => row.harnesses > 1))) {
       const mark = el("sup", "†", "pooled");
       mark.title = stats
         .map(
           (s) =>
-            `${s.row.name}, ${s.row.detail}: ${s.score == null ? "no finished battle" : Math.round(s.score)}${s.row.harnesses > 1 ? ` (${s.row.harnesses} harness versions)` : ""}`,
+            `${s.row.name}, ${s.row.detail}: ${s.score == null ? "no score" : points(s.score)}${s.row.harnesses > 1 ? ` (${s.row.harnesses} harness versions)` : ""}`,
         )
         .join("\n");
       cell.firstChild.append(mark);
@@ -599,15 +610,35 @@
     const all = families(),
       box = $("matrix");
     box.replaceChildren();
-    const groups = [...new Set(data.scenarios.map((item) => item.group))];
-    for (const group of groups) {
-      const items = data.scenarios.filter((item) => item.group === group);
-      // Pilots predate the benchmark's setup checks: folded away by default.
-      const fold = details(`${group} (${items.length})`);
-      fold.open = groups.length === 1 || !/pilot/i.test(group);
-      // Fixed column widths, so each model's column lines up across the groups.
+    const known = new Set(data.modes.map((mode) => mode.key)),
+      modes = data.scenarios.some((item) => !known.has(item.mode))
+        ? [...data.modes, { key: null, title: "Other battles" }]
+        : data.modes;
+    for (const mode of modes) {
+      const items = data.scenarios.filter((item) =>
+        mode.key === null ? !known.has(item.mode) : item.mode === mode.key,
+      );
+      const fold = el("details"),
+        head = el("summary");
+      head.append(
+        el("span", mode.title),
+        el(
+          "small",
+          items.length
+            ? `${items.length} scenario${items.length > 1 ? "s" : ""}`
+            : "no battles yet",
+        ),
+      );
+      fold.append(head);
+      fold.open = items.includes(data.scenarios[0]);
+      if (!items.length) {
+        fold.append(el("p", "No battles of this type yet.", "placeholder"));
+        box.append(fold);
+        continue;
+      }
+      // Fixed column widths, so each model's column lines up across the modes.
       const table = el("table"),
-        head = el("tr"),
+        row = el("tr"),
         columns = el("colgroup");
       columns.append(el("col"), ...all.map(() => el("col")));
       columns.firstChild.style.width = "40%";
@@ -617,21 +648,18 @@
       ]) {
         const th = el("th", label);
         th.scope = "col";
-        head.append(th);
+        row.append(th);
       }
       const thead = el("thead"),
         body = el("tbody");
-      thead.append(head);
+      thead.append(row);
       for (const item of items) {
         const tr = el("tr"),
           name = el("td");
         tr.dataset.scenario = item.id;
         name.append(button(item.title, pick(data.scenarios.indexOf(item)), "scenario"));
-        const sub = [
-          BATTLE_TYPES[item.battle_type],
-          [item.armies?.friendly, item.armies?.enemy].filter(Boolean).join(" vs "),
-        ].filter(Boolean);
-        if (sub.length) name.append(el("small", sub.join(" · ")));
+        const sides = [item.armies?.friendly, item.armies?.enemy].filter(Boolean).join(" against ");
+        if (sides) name.append(el("small", sides));
         tr.append(name);
         for (const family of all) {
           const td = el("td");
@@ -645,11 +673,13 @@
       fold.append(table);
       box.append(fold);
     }
+    // Older pilots recorded casualties only: their losses score the enemy killed.
+    const killed = [...shown].filter((key) => data.battles[key].progress_basis === "killed");
     box.append(
       el(
         "p",
-        "Figure 3. Every scenario: each model's score over all its battles there, darker for higher. † pools a model's commanders with different settings or harness versions: not a controlled comparison.",
-        "rows-foot",
+        `Figure 3. Each model's mean score over its finished battles in every scenario, darker for higher, beside the best scripted rule's; one section per game mode, open one to see its scenarios. † pools a model's settings or harness versions: not a controlled comparison.${killed.length ? ` ${killed.length} older battles recorded casualties only; their losses count the enemy killed, not those who fled.` : ""}`,
+        "figcap",
       ),
     );
   }
@@ -663,7 +693,7 @@
     $("stills").replaceChildren(
       ...shots.slice(0, 4).map((shot) => {
         const name = STILLS[shot.trigger] || "Game still",
-          caption = `${name} · spectator camera at ${clock(shot.time_ms)} · not what the model saw`;
+          caption = `${name}: spectator camera at ${clock(shot.time_ms)}, not what the model saw`;
         const thumb = button(
           "",
           () => {
@@ -685,16 +715,15 @@
     const highlights = payload?.frames?.length ? payload.highlights || [] : [];
     $("chapters-head").hidden = !highlights.length;
     highlights.forEach((h, k) => {
-      const window = span(h),
+      const range = span(h),
         item = el("li"),
-        card = button("", () => Viewer.watch(window.from, h.end_ms ?? null, k), "chapter"),
+        card = button("", () => Viewer.watch(range.from, h.end_ms ?? null, k), "chapter"),
         label = el("span", null, "label");
       label.append(
         el("span", String(k + 1), "number"),
-        `${KINDS[h.kind] || "Moment"} · ${clock(h.time_ms)}`,
+        `${clock(h.time_ms)} ${KINDS[h.kind] || "Moment"}`,
       );
       card.append(label, el("strong", h.title));
-      if (h.text) card.append(el("span", h.text, "text"));
       card.setAttribute(
         "aria-label",
         `Analyst note ${k + 1}, ${clock(h.time_ms)}: ${h.title}. Watch it.`,
@@ -704,11 +733,13 @@
     });
     markHighlights();
   }
+  // The playing note's sentence, once, under the row of titles.
   function markHighlights() {
     const marked = payload?.highlights?.length ? Viewer.note : -1;
     [...$("highlights").querySelectorAll(".chapter")].forEach((card, k) =>
       card.classList.toggle("active", k === marked),
     );
+    $("chapter-text").textContent = marked >= 0 ? payload.highlights[marked].text || "" : "";
   }
 
   // What the model receives and sends back: verbatim lines of one message, abridged.
@@ -778,22 +809,14 @@
         "Text only, at every decision: its own units, the enemy units its army can see right now, the enemy roster shown on the custom-battle screen, a coarse passability grid where the interface provides one, its last orders, notes it wrote itself and how late its previous orders landed. Prompted models answer with orders per unit (move, attack, halt, change behaviour, use an ability; fly, build or reinforce where the battle allows); the commander answers with plans that scripted unit skills carry out.",
       ],
       [
-        "Order age",
-        "The battle runs at normal speed from start to finish and never waits for a reply. Order age is measured on the battle clock, from the observation behind the orders to the game accepting them (the median over replies with new orders); accepted is not the same as carried out. Planned: the same model with its observations aged by a further 2, 5 and 10 s, to measure what each second costs.",
+        "Real time",
+        "The battle runs at normal speed from start to finish and never waits for a reply; order age is measured on the battle clock, and accepted is not the same as carried out. Planned: the same model with its observations aged by a further 2, 5 and 10 s, to measure what each second costs.",
       ],
       [
         "Opponent and baselines",
         "The game's own battle AI commands the enemy (difficulty in Run settings). Scripted baselines: attack nearest (walk), charge nearest (run), hold position, and per-unit skills with no model.",
       ],
-      [
-        "Score",
-        "Per battle: 100 for a win, else the share of the enemy's soldiers dead, fleeing or otherwise out of the fight when it ended, in percent. A commander's score is the mean over its finished battles; the line under the bar spans its worst to its best battle. The engine decides every outcome.",
-      ],
       ["Status", status()],
-      [
-        "Rows and versions",
-        "A commander's figures hold all its battles in a scenario; one marked † spans several harness versions, and Run settings names each battle's. The report JSON keeps strict per-version groups and paired statistics.",
-      ],
     ];
     const setup =
       data.setup_only.length + data.scenarios.reduce((n, s) => n + s.setup_only_jobs.length, 0);
@@ -845,7 +868,7 @@
         ],
         [
           "Status",
-          [scenario.split, scenario.status?.replaceAll("_", " ")].filter(Boolean).join(" · "),
+          [scenario.split, scenario.status?.replaceAll("_", " ")].filter(Boolean).join(", "),
         ],
         ["Map", declared.map],
         ["Battle timer", expect.time_limit_s == null ? null : clock(expect.time_limit_s * 1000)],
@@ -856,7 +879,7 @@
             expect.ai_stats_modifier && `stats ×${expect.ai_stats_modifier}`,
           ]
             .filter(Boolean)
-            .join(" · "),
+            .join(", "),
         ],
         ["Player role", role],
         [
@@ -869,7 +892,7 @@
               : trial.card?.timing,
           ]
             .filter(Boolean)
-            .join(" · "),
+            .join(", "),
         ],
         ["Added observation age", `${(trial.delay_ms || 0) / 1000} s`],
         ["Failure", trial.error],

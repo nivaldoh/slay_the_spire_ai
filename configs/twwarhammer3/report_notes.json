@@ -1,107 +1,88 @@
 {
   "scenarios": {
+    "brt-cavalry-emp-assault-hard": {
+      "title": "Cavalry assault, stronger enemy",
+      "question": "Can an AI get its cavalry past the defenders and reach the guns?",
+      "challenge": "Six mounted units face eight enemy units: four halberd units screening two units of handgunners and a cannon. Halberds are built to stop cavalry, so a frontal charge into them risks a losing grind; the gunners behind them are weak in melee. The attacker must defeat the defenders before the 20-minute timer runs out.",
+      "footnote": "Stronger enemy: every enemy unit's stats are raised by 10%."
+    },
     "brt-cavalry-emp-assault": {
       "title": "Cavalry assault",
-      "group": "Challenges",
       "question": "Can an AI get its cavalry past the defenders and reach the guns?",
       "challenge": "Six mounted units face eight enemy units: four halberd units screening two units of handgunners and a cannon. Halberds are built to stop cavalry, so a frontal charge into them risks a losing grind; the gunners behind them are weak in melee. The attacker must defeat the defenders before the 20-minute timer runs out."
     },
-    "brt-cavalry-emp-assault-hard": {
-      "title": "Cavalry assault (hard)",
-      "group": "Challenges",
-      "question": "Can an AI get its cavalry past the defenders and reach the guns?",
-      "challenge": "Six mounted units face eight enemy units: four halberd units screening two units of handgunners and a cannon. Halberds are built to stop cavalry, so a frontal charge into them risks a losing grind; the gunners behind them are weak in melee. The attacker must defeat the defenders before the 20-minute timer runs out.",
-      "footnote": "Hard: every enemy unit's stats are raised by 10%."
-    },
     "skv-swarm-dwf-line": {
       "title": "Command a Skaven swarm",
-      "group": "Challenges",
       "question": "Can an AI turn a horde of expendable rats into a win against a Dwarf gun line?",
       "challenge": "Twenty Skaven units, most of them cheap and quick to flee, attack nine Dwarf units holding a gun line. The attacker must break the defenders before the 20-minute timer runs out."
     },
     "dwf-line-skv-swarm": {
       "title": "Survive a Skaven swarm",
-      "group": "Challenges",
       "question": "Can an AI hold a small Dwarf line against a Skaven horde?",
       "challenge": "Seven Dwarf units face twenty attacking Skaven units. The defender wins if it is still holding when the 20-minute timer runs out."
     },
     "dwf-sla-taurox": {
-      "title": "Dwarf guns versus Sigvald",
-      "group": "Specialist scenarios"
+      "title": "Dwarf guns versus Sigvald"
     },
     "dwf-sla-herald": {
-      "title": "Dwarf guns versus a Herald",
-      "group": "Specialist scenarios"
+      "title": "Dwarf guns versus a Herald"
     },
     "dwf-sla-herald-hard": {
-      "title": "Dwarf guns versus a stronger Herald army",
-      "group": "Specialist scenarios"
+      "title": "Dwarf guns versus a stronger Herald army"
     },
     "brt-cavalry-emp-pikes": {
-      "title": "Cavalry versus halberds",
-      "group": "Specialist scenarios"
+      "title": "Cavalry versus halberds"
     },
     "brt-cavalry-emp-pegasus": {
-      "title": "Cavalry versus halberds and a Pegasus",
-      "group": "Specialist scenarios"
+      "title": "Cavalry versus halberds and a Pegasus"
     },
     "tze-caster-skv-screen": {
-      "title": "Kairos and escorts versus Skaven screens",
-      "group": "Specialist scenarios"
+      "title": "Kairos and escorts versus Skaven screens"
     },
     "siege-kho5-dwf5": {
       "title": "Siege defence pilot",
-      "group": "Other battle types (pilots)",
       "question": "Can a small garrison hold a fortified settlement?",
-      "challenge": "Historical battle-type pilot with compact armies. Exploratory mechanics evidence; these runs predate full benchmark setup checks."
+      "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "survival-kho5": {
       "title": "Survival pilot",
-      "group": "Other battle types (pilots)",
       "question": "How long can Khorne survive escalating waves?",
-      "challenge": "Historical battle-type pilot with compact armies. Exploratory mechanics evidence; these runs predate full benchmark setup checks."
+      "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "conquest-kho5-dwf5": {
       "title": "Conquest pilot",
-      "group": "Other battle types (pilots)",
       "question": "Can Khorne contest separated objectives?",
-      "challenge": "Historical battle-type pilot with compact armies. Exploratory mechanics evidence; these runs predate full benchmark setup checks."
+      "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "domination-kho5-dwf5": {
       "title": "Domination pilot",
-      "group": "Other battle types (pilots)",
       "question": "Can Khorne hold points and bring in reinforcements?",
-      "challenge": "Historical battle-type pilot with compact armies. Exploratory mechanics evidence; these runs predate full benchmark setup checks."
+      "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "settlement-kho5-dwf5": {
       "title": "Settlement defence pilot",
-      "group": "Other battle types (pilots)",
       "question": "Can a small force defend the settlement objectives?",
-      "challenge": "Historical battle-type pilot with compact armies. Exploratory mechanics evidence; these runs predate full benchmark setup checks."
+      "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "ambush-kho5-dwf5": {
       "title": "Ambush pilot",
-      "group": "Other battle types (pilots)",
       "question": "Can the ambushed army recover its formation?",
-      "challenge": "Historical battle-type pilot with compact armies. Exploratory mechanics evidence; these runs predate full benchmark setup checks."
+      "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "chokepoint-kho5-dwf5": {
       "title": "Chokepoint pilot",
-      "group": "Other battle types (pilots)",
       "question": "Can Khorne fight through a narrow crossing?",
-      "challenge": "Historical battle-type pilot with compact armies. Exploratory mechanics evidence; these runs predate full benchmark setup checks."
+      "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "underground-kho5-dwf5": {
       "title": "Subterranean pilot",
-      "group": "Other battle types (pilots)",
       "question": "Can Khorne fight in a confined underground battlefield?",
-      "challenge": "Historical battle-type pilot with compact armies. Exploratory mechanics evidence; these runs predate full benchmark setup checks."
+      "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "ffa-kho5-dwf5-emp5-kho5": {
       "title": "Four-army pilot",
-      "group": "Other battle types (pilots)",
       "question": "Can Khorne survive a four-army free-for-all?",
-      "challenge": "Historical battle-type pilot with compact armies. Exploratory mechanics evidence; these runs predate full benchmark setup checks."
+      "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     }
   },
   "units": {

@@ -667,7 +667,7 @@ const Viewer = (() => {
     labels.push({
       x: proj.x(u.x),
       y: proj.y(u.z),
-      text: ghost ? null : `${entry.short || u.id}${seen != null ? ` · seen ${clock(seen)}` : ""}`,
+      text: ghost ? null : `${entry.short || u.id}${seen != null ? `, seen ${clock(seen)}` : ""}`,
       note: [fleeing && !down && "fleeing", note].filter(Boolean).join(" ") || null,
       colour,
       rank: u.id === selected ? 0 : dim || hollow ? 2 : 1,
@@ -683,7 +683,7 @@ const Viewer = (() => {
     }
     if (down)
       g.append(svg("path", { d: "M-8 -8l16 16m0-16l-16 16", stroke: "#fff", "stroke-width": 2 }));
-    g.append(svg("title", {}, `${entry.display || u.id} · ${entry.role || "unit"}`));
+    g.append(svg("title", {}, `${entry.display || u.id}, ${entry.role || "unit"}`));
     layer.append(g);
   }
 
@@ -995,7 +995,7 @@ const Viewer = (() => {
   }
 
   const waiting = (now) =>
-    `Waiting for ${run.kind === "model" ? "the model's" : "the controller's"} ${now.current < 0 ? "first" : "next"} reply · ${((time - requested(r.decisions[now.pending])) / 1000).toFixed(1)} s`;
+    `Waiting ${((time - requested(r.decisions[now.pending])) / 1000).toFixed(1)} s for ${run.kind === "model" ? "the model's" : "the controller's"} ${now.current < 0 ? "first" : "next"} reply`;
   function statusLine(now) {
     // A commander's unit skills reply every fraction of a second; its plans carry the timing.
     if (now.pending < 0 || planned()) return null;
@@ -1035,13 +1035,7 @@ const Viewer = (() => {
   function explanation(d) {
     const section = el("section");
     if (d.reason) {
-      section.append(
-        el(
-          "h4",
-          run.kind === "model" ? "The model's explanation" : "The controller's stated reason",
-        ),
-        el("blockquote", `“${d.reason}”`),
-      );
+      section.append(el("blockquote", `“${d.reason}”`));
       // The model names units by their raw ids; the quotation stays verbatim.
       const named = [...new Set(d.reason.match(/\b[ef]\d+\b/g))]
         .map((id) => roster.get(id))
@@ -1059,10 +1053,7 @@ const Viewer = (() => {
           ),
         );
     } else if (run.kind === "model")
-      section.append(
-        el("h4", "The model's explanation"),
-        el("p", "No reason was recorded with this reply.", "muted"),
-      );
+      section.append(el("p", "No reason was recorded with this reply.", "muted"));
     else
       section.append(
         el("h4", "The controller's rule"),
@@ -1127,13 +1118,11 @@ const Viewer = (() => {
 
   function ageSection(d, i) {
     const section = el("section");
-    section.append(el("h4", "Age of its information"));
     if (d.age_s == null) {
       section.append(el("p", "Not measured: no acknowledgement was recorded for this reply."));
       return section;
     }
-    const sentence = el("p", null, "age-sentence"),
-      seen = `seen ${clockTenths(d.time_ms)} → accepted ${clockTenths(d.applied_ms)}`;
+    const sentence = el("p", null, "age-sentence");
     if (d.plan_age_s != null)
       sentence.append(
         "Plan made from a view ",
@@ -1144,12 +1133,13 @@ const Viewer = (() => {
       sentence.append(
         "Unit skills, from a view ",
         el("strong", `${seconds(d.age_s)} old`),
-        ` (${seen}), follow the model's latest plan.`,
+        ", follow the model's latest plan.",
       );
     else
       sentence.append(
+        "Acted on a view ",
         el("strong", `${seconds(d.age_s)} old`),
-        ` when the game accepted ${d.steps.length ? "these orders" : "this reply"} (${seen}; reply ${seconds(d.reply_s)} on the wall clock).`,
+        ` when the game accepted ${d.steps.length ? "these orders" : "this reply"}.`,
       );
     section.append(sentence);
     // What moved while it waited: for a commander, Model's view shows its plan's view instead.
@@ -1172,7 +1162,7 @@ const Viewer = (() => {
             "note",
           ),
         );
-      } else section.append(button("See what moved while it waited ▸", () => pin(i), "inspect"));
+      } else section.append(button("See what moved while it waited", () => pin(i), "inspect"));
     }
     return section;
   }
@@ -1208,6 +1198,8 @@ const Viewer = (() => {
       fold(
         "Technical timing and cost",
         keyValues([
+          ["View seen (battle clock)", clockTenths(d.time_ms)],
+          ["Accepted (battle clock)", d.applied_ms == null ? null : clockTenths(d.applied_ms)],
           ["Reply (wall clock)", d.reply_s == null ? null : seconds(d.reply_s)],
           ["Provider processing", parts.provider_s == null ? null : seconds(parts.provider_s)],
           [
@@ -1314,10 +1306,7 @@ const Viewer = (() => {
       title = el("div");
     title.append(
       el("h3", entry.display),
-      el(
-        "p",
-        `${entry.role} · ${entry.side === "friendly" ? "friendly" : "enemy"} · ${entry.short}`,
-      ),
+      el("p", `${entry.role}, ${entry.side === "friendly" ? "friendly" : "enemy"}, ${entry.short}`),
     );
     head.append(
       glyph(entry.glyph),
@@ -1330,7 +1319,7 @@ const Viewer = (() => {
       entry.commander && "Army general",
       entry.protected && "Protected unit: the scenario tracks its survival",
     ].filter(Boolean);
-    if (tags.length) card.append(el("p", tags.join(" · "), "note"));
+    if (tags.length) card.append(el("p", tags.join(", "), "note"));
     const now = el("p", null, "now");
     const dead = frame.enemy_roster.some((item) => item.id === id && item.dead);
     if (u) {
@@ -1339,7 +1328,7 @@ const Viewer = (() => {
       if (Number.isFinite(u.hp)) parts.push(`health ${Math.round(u.hp * 100)}%`);
       if (u.ammo0 > 0)
         parts.push(`ammunition left ${Math.round((100 * u.ammo) / u.ammo0)}% of starting supply`);
-      now.append(el("strong", `At ${clock(frame.time_ms)}: `), parts.join(" · "));
+      now.append(el("strong", `At ${clock(frame.time_ms)}: `), parts.join(", "));
     } else {
       const point = targetAt(id, fi);
       now.append(
@@ -1430,7 +1419,7 @@ const Viewer = (() => {
         className,
       );
       node.append(...content);
-      node.title = `${entry.display} · ${entry.role}`;
+      node.title = `${entry.display}, ${entry.role}`;
       node.setAttribute("aria-label", `${entry.display}, ${entry.role}`);
       chips.set(entry.id, node);
       return node;
@@ -1445,7 +1434,7 @@ const Viewer = (() => {
         role && (side === "friendly" ? role : role === "attacker" ? "defender" : "attacker");
       heading.append(
         el("span", null, `swatch ${side}`),
-        `${side === "friendly" ? "Friendly" : "Enemy"}${sideRole ? ` · ${sideRole}` : ""}`,
+        `${side === "friendly" ? "Friendly" : "Enemy"} army${sideRole ? `, ${sideRole}` : ""}`,
       );
       const groups = new Map();
       for (const entry of units) groups.set(entry.name, [...(groups.get(entry.name) || []), entry]);
@@ -1507,16 +1496,16 @@ const Viewer = (() => {
     caption.classList.toggle("pinned", pinned != null);
     if (pinned != null) {
       const d = r.decisions[pinned];
-      caption.textContent = `Inspecting the reply applied at ${clockTenths(d.applied_ms)} · outlines: the view the model saw (${clockTenths(r.frames[d.basis_frame].time_ms)}) · solid: next recorded positions (${clockTenths(r.frames[d.after_frame].time_ms)})`;
+      caption.textContent = `The reply applied at ${clockTenths(d.applied_ms)}: outlines where the model saw units (${clockTenths(r.frames[d.basis_frame].time_ms)}), solid where they were next recorded (${clockTenths(r.frames[d.after_frame].time_ms)})`;
       caption.hidden = false;
     } else {
       const k = activeHighlight();
-      caption.textContent = k >= 0 ? `Analyst note ${k + 1} · ${r.highlights[k].title}` : "";
+      caption.textContent = k >= 0 ? `Note ${k + 1}: ${r.highlights[k].title}` : "";
       caption.hidden = k < 0;
     }
     const gap = pinned == null && time - frame.time_ms > gapMs;
     status.textContent = gap
-      ? `No observation recorded during this interval · showing ${clockTenths(frame.time_ms)}`
+      ? `No observation recorded during this interval; showing ${clockTenths(frame.time_ms)}`
       : "";
     status.hidden = !gap;
     const line = lagLine(now);
@@ -1531,7 +1520,7 @@ const Viewer = (() => {
       const entry = selected && roster.get(selected);
       if (entry) {
         const text = el("span");
-        text.append(el("strong", entry.display), el("span", ` · ${entry.role}`, "role"));
+        text.append(el("strong", entry.display), el("span", `, ${entry.role}`, "role"));
         chip.append(
           glyph(entry.glyph),
           text,
@@ -1736,7 +1725,6 @@ const Viewer = (() => {
     seek,
     reveal,
     watch,
-    pin,
     setLag,
     onTime: (listener) => listeners.push(listener),
     get time() {

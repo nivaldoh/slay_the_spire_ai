@@ -31,9 +31,10 @@ command; clear it when the job stops.
   are `c1-cavalry-ai11`, `swarm-screens` and `cavalry-assault` in
   `runs/twwarhammer3/reports/`. The canonical `benchmark.html` (26 MB, 55 jobs) now
   shows one score per commander after the owner's review: the C1 controlled comparison,
-  one mean-path map per commander and a score matrix, on a paper page around the replay
-  ([log](twwarhammer3/log.md#2026-10-15-report-one-score-per-commander)); offline
-  browser validation passed.
+  one mean-path map per model and scores in one section per game mode (empty modes as
+  placeholders), on a paper page around the replay
+  ([log](twwarhammer3/log.md#2026-10-15-report-sections-by-game-mode)); offline browser
+  validation passed.
 - API spend: $14.3146 of the $25 cap on 2026-10-15.
 
 Next: expand varied armies, siege defence, survival and conquest, with 2-3 exploratory

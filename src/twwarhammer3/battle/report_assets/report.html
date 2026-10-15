@@ -24,17 +24,13 @@
   <p id="demo-banner" class="demo-banner" hidden>SYNTHETIC DEMO · Every value on this page is invented to exercise the layout. No game or model was run.</p>
 
   <header class="wrap masthead">
-    <p class="imprint"><b>WH3 Commander Bench</b><span id="imprint-date">Early results</span></p>
     <h1>Language models commanding armies in real time</h1>
-    <div class="about">
-      <p class="dek">Each model reads a text report of a <cite>Total War: WARHAMMER III</cite> battle and gives its regiments orders through a game mod. The battle keeps running while it thinks.</p>
-      <p id="facts" class="facts-line"></p>
-    </div>
+    <p class="dek">Each model reads a text report of a <cite>Total War: WARHAMMER III</cite> battle and gives its regiments orders through a game mod. The battle keeps running while it thinks.</p>
+    <p id="facts" class="facts-line"></p>
   </header>
 
     <section id="watch" class="wrap watch" aria-labelledby="question">
       <div class="scenario-head">
-        <p id="scenario-title" class="kicker"></p>
         <h2 id="question"></h2>
       </div>
       <div id="viewer" class="viewer">
@@ -101,8 +97,12 @@
       <p id="challenge" class="challenge"></p>
       <p id="chapters-head" class="chapters-head" hidden><b>Analyst notes</b> written after the battle from its recorded frames and orders (drafted with AI assistance and checked against the records); not the model's words.</p>
       <ol id="highlights" class="chapters" aria-label="Analyst notes"></ol>
+      <p id="chapter-text" class="chapter-text" aria-live="polite"></p>
       <div class="below">
-        <div id="roster" class="roster"></div>
+        <details class="armies">
+          <summary>The two armies</summary>
+          <div id="roster" class="roster"></div>
+        </details>
         <figure id="stills-block" class="stills-block" hidden>
           <div id="stills" class="stills"></div>
           <figcaption>In the game: spectator camera, not what the model saw.</figcaption>

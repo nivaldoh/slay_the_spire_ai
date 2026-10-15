@@ -38,11 +38,12 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | benchmark harness | b11 (2026-10-15), evaluator v2, track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Two b11 engine outcomes; whole-unit counters and unchanged rematch checked. C1 remains development evidence |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
-| report | one score per commander, paper redesign (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | `reports/benchmark.html` (26 MB): 55 jobs, 85 battles shown in 19 scenarios (6 diagnostic probes held back), headline C1 |
+| report | scores by game mode, one map per model (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | `reports/benchmark.html` (26 MB): 55 jobs, 85 battles shown in 19 scenarios (6 diagnostic probes held back), headline C1 |
 
 ## Index
 
-- 2026-10-15: [Report: one score per commander](#2026-10-15-report-one-score-per-commander) ·
+- 2026-10-15: [Report: sections by game mode](#2026-10-15-report-sections-by-game-mode) ·
+  [Report: one score per commander](#2026-10-15-report-one-score-per-commander) ·
   [Report redesign for outside readers](#2026-10-15-report-redesign-for-outside-readers) ·
   [Harness b11: common measures and one report](#2026-10-15-harness-b11-common-measures-and-one-report) ·
   [Integrate llm v17 and commander v4](#2026-10-15-integrate-llm-v17-and-commander-v4) ·
@@ -99,6 +100,41 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
+
+## 2026-10-15: Report: sections by game mode
+
+The owner: there is no divide between challenges and specialist scenarios (all are
+challenges); the page needs one expandable section per battle type, with an empty
+placeholder where nothing has run yet, before per-mode measures (objective time,
+resources, reinforcements) come later. Changes:
+
+- **Modes**: `report_html.MODES` lists the game's custom battle types in page order (land
+  battles, siege defence, siege attack, minor settlement, survival, conquest, domination,
+  ambush, chokepoint, subterranean, free-for-all; sieges split by the player's role, the
+  lobby names checked against `probe-battle-types-20261014`). Each scenario gets its mode
+  from its declaration; Figure 3 is one fold per mode, empty ones saying so. The notes'
+  `group` field is gone; the pilots' challenge text is plain ("A pilot with Khorne's five
+  units, run before the benchmark's setup checks...").
+- **Review fixes** (an independent design, reader and data review of `df27399`):
+  - Scores: a 99.8% loss printed as 100 (now capped at 99 unless won); 17 older pilot
+    battles recorded casualties but not active strength, so their losses dropped out while
+    wins scored 100 (they now count the enemy killed, labelled, with a regression test).
+  - Figure 2 shows one map per model (settings pooled, †) and the page opens on Figure 1's
+    scenario, so the replay and both figures show the same battle; Hold position, which
+    never gives orders, is left out by name.
+  - The score, order age and the +10% variant are defined once, as Figure 1's footnotes;
+    the variant is "Cavalry assault, stronger enemy" (no "hard" beside "very hard"); the
+    finding names its scenario; Figure 1 adds API cost per battle.
+  - Template tells removed: the name-over-rule masthead (now one column), the kicker, heading
+    rules, middle-dot strings, the "Featured battle" tag and panel eyebrows; Method is one
+    column; the roster folds; the playing note's sentence sits under the note titles; the
+    sans stack drops DIN Alternate (bold-only on macOS); serif text uses lining figures.
+  - A shadowed `points` in the run card's measures, which the browser check caught, is
+    fixed; unused code (`wilson`, `broken`, the `pin` export, four CSS variables) is gone.
+
+Checks: `uv run pytest` (992) and `uv run ruff check .` pass; the browser check passes on
+`reports/benchmark.html`, now also asserting the mode sections, the placeholders and every
+Figure 3 model score against a recomputation.
 
 ## 2026-10-15: Report: one score per commander
 

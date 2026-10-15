@@ -11,7 +11,7 @@ from make_wh3_report_demo import demo_report, pair_jobs
 from PIL import Image
 from wh3_fixtures import configured_job, embedded, make_job
 
-from twwarhammer3.battle import report, report_html
+from twwarhammer3.battle import report, report_html, setup
 
 
 def test_curated_suite_titles_distinguish_related_challenges():
@@ -37,8 +37,9 @@ def test_unnamed_historical_modes_use_saved_config_and_readable_armies(tmp_path)
     assert [scenario["name"] for scenario in data["scenarios"]] == ["siege-pilot", "survival-pilot"]
     survival = data["scenarios"][1]
     assert survival["battle_type"] == "survival"
-    assert survival["armies"] == {"friendly": "Dwarfs · 2 units", "enemy": "Waves"}
-    assert survival["group"] == "Other battle types (pilots)"  # no notes and no family
+    assert survival["armies"] == {"friendly": "Dwarfs (2 units)", "enemy": "Waves"}
+    # Game modes order the page; a siege without a declared attacker is the player defending.
+    assert [scenario["mode"] for scenario in data["scenarios"]] == ["siege_defence", "survival"]
     # The declaration is evidence: do not write a synthetic name into it.
     assert "name" not in data["report"]["groups"][0]["definition"]["scenario"]
 
@@ -53,9 +54,9 @@ def test_one_row_per_commander_and_the_collector_groups_stay_intact(tmp_path):
     (scenario,) = data["scenarios"]
     assert [(row["name"], row["detail"], row["battles"], row["harnesses"])
             for row in scenario["rows"]] == [
-        ("model-a", "high reasoning · no tactical advice", ["g2-t0"], 1),
-        ("model-a", "low reasoning · no tactical advice", ["g0-t0"], 1),
-        ("model-b", "low reasoning · no tactical advice", ["g1-t0"], 1)]
+        ("model-a", "high reasoning, no tactical advice", ["g2-t0"], 1),
+        ("model-a", "low reasoning, no tactical advice", ["g0-t0"], 1),
+        ("model-b", "low reasoning, no tactical advice", ["g1-t0"], 1)]
     assert len(data["report"]["groups"]) == 3
     assert all(not group["paired"] for group in data["report"]["groups"])
     assert [group["controllers"] for group in data["report"]["groups"]] == [
@@ -106,16 +107,23 @@ def test_a_row_keeps_battles_from_several_harnesses_and_counts_them(tmp_path):
 
 
 def test_progress_is_the_enemy_share_dead_or_out_of_the_fight(tmp_path):
-    job = make_job(tmp_path, "progress", [("hold", 0, "lost"), ("hold", 0, "won")])
+    job = make_job(tmp_path, "progress", [("hold", 0, "lost"), ("hold", 0, "won"),
+                                          ("hold", 0, "lost")])
     for name, final in (("episode-0000", {"friendly": {"men0": 200, "men": 50},
                                           "enemy": {"men0": 500, "men": 300, "active_men": 125}}),
-                        ("episode-0001", {"friendly": {"men0": 200}, "enemy": {"men0": 500}})):
+                        ("episode-0001", {"friendly": {"men0": 200}, "enemy": {"men0": 500}}),
+                        ("episode-0002", {"friendly": {"men0": 200, "men": 50},
+                                          "enemy": {"men0": 500, "men": 300}})):
         path = job / name / "result.json"
         path.write_text(json.dumps({**json.loads(path.read_text()), "final": final}))
     battles = report_html.display_data(report.collect([job]))["battles"]
     assert (battles["g0-t0"]["progress"], battles["g0-t0"]["own_left"]) == (.75, .25)
+    assert battles["g0-t0"]["progress_basis"] is None
     # Unknown is not zero: nothing recorded leaves both unknown.
     assert (battles["g0-t1"]["progress"], battles["g0-t1"]["own_left"]) == (None, None)
+    # Casualties without the count still fighting (older pilots): the dead alone, labelled so
+    # (a lost battle would otherwise drop out while every win scores 100).
+    assert (battles["g0-t2"]["progress"], battles["g0-t2"]["progress_basis"]) == (.4, "killed")
 
 
 def test_commanders_get_readable_names_kinds_and_families():
@@ -124,14 +132,14 @@ def test_commanders_get_readable_names_kinds_and_families():
                                      {"model": "gpt-6-sol", "effort": "low"})
 
     assert name("llm_rules") == {"kind": "model", "family": "gpt-6-sol", "name": "gpt-6-sol",
-                                 "detail": "low reasoning · no tactical advice",
+                                 "detail": "low reasoning, no tactical advice",
                                  "short": "low reasoning", "prompt": "no tactical advice"}
-    assert name("llm_rules@gpt-6-luna/medium")["detail"] == "medium reasoning · no tactical advice"
+    assert name("llm_rules@gpt-6-luna/medium")["detail"] == "medium reasoning, no tactical advice"
     assert name("commander", card={"kind": "hybrid", "model": "gpt-6-luna"})["family"] == (
         "gpt-6-luna")
     assert name("rush_nearest", delay_ms=6000) == {
         "kind": "scripted", "family": "Scripted", "name": "Charge nearest",
-        "detail": "scripted: every unit runs at the nearest visible enemy · "
+        "detail": "scripted: every unit runs at the nearest visible enemy, "
                   "+6 s added observation age",
         "short": "+6 s added observation age"}
     assert name("terrain_probe:TerrainProbe") == {
@@ -404,17 +412,18 @@ def test_scenarios_feature_the_selected_run_and_follow_the_notes_order(tmp_path)
     stopped = make_job(tmp_path, "stopped", [])
     source = report.collect([later, earlier, elsewhere, stopped])
     highlight = {"time_ms": 0, "title": "Opening", "units": ["f1"]}
-    notes = {"scenarios": {"elsewhere": {"title": "Elsewhere", "group": "Challenges"},
-                           "frozen": {"title": "Frozen pass", "group": "Pilots",
+    notes = {"scenarios": {"elsewhere": {"title": "Elsewhere"},
+                           "frozen": {"title": "Frozen pass", "footnote": "Frozen ground.",
                                       "question": "Can it cross?", "challenge": "Cross."}},
              "runs": {"later/episode-0000": {"selected": True, "highlights": [highlight]}}}
     data = embedded(report_html.render(source, notes))
     assert [scenario["name"] for scenario in data["scenarios"]] == ["elsewhere", "frozen"]
     frozen = data["scenarios"][1]
-    assert {key: frozen[key] for key in ("title", "question", "challenge", "group", "featured",
-                                         "featured_reason", "setup_only_jobs")} == {
+    assert {key: frozen[key] for key in ("title", "question", "challenge", "footnote", "mode",
+                                         "featured", "featured_reason", "setup_only_jobs")} == {
         "title": "Frozen pass", "question": "Can it cross?", "challenge": "Cross.",
-        "group": "Pilots", "featured": "g0-t0", "featured_reason": "selected",
+        "footnote": "Frozen ground.", "mode": "land", "featured": "g0-t0",
+        "featured_reason": "selected",
         "setup_only_jobs": [3]}
     # The two launches share one collector group; battles go by job start, never by outcome.
     assert frozen["battles"] == ["g0-t1", "g0-t0"]
@@ -458,3 +467,14 @@ def test_two_models_of_one_policy_are_two_controllers_paired_within_each_launch(
     # The page finds the prompt and the readable name by the base policy name.
     assert data["prompts"]["pair-a"] == {"llm_rules_prompt.md": "Invented rules-only prompt."}
     assert {battle["commander"]["kind"] for battle in data["battles"].values()} == {"model"}
+
+
+def test_modes_follow_the_lobby_type_and_a_siege_splits_by_role():
+    assert report_html.mode_of({}) == "land"  # classic is the lobby default
+    assert report_html.mode_of({"battle_type": "river_crossing_battle"}) == "chokepoint"
+    assert report_html.mode_of({"battle_type": "siege", "attacker": "player"}) == "siege_attack"
+    assert report_html.mode_of({"battle_type": "siege", "attacker": "enemy"}) == "siege_defence"
+    keys = [key for key, _, _ in report_html.MODES]
+    # Every lobby type the setup supports has a section, even before any battle of it ran.
+    assert {report_html.mode_of({"battle_type": kind}) for kind in setup.ENGINE_TYPES} <= set(keys)
+    assert len(keys) == len(set(keys))
