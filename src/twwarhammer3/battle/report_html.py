@@ -18,7 +18,7 @@ from pathlib import Path
 
 from gameai.provenance import REPO_ROOT
 from twwarhammer3.battle import replay
-from twwarhammer3.battle.controllers import MODEL_POLICIES
+from twwarhammer3.battle.controllers import MODEL_POLICIES, policy_parts
 
 ASSETS = Path(__file__).with_name("report_assets")
 NOTES_PATH = REPO_ROOT / "configs/twwarhammer3/report_notes.json"
@@ -118,7 +118,8 @@ def _group(key: str) -> int:
 
 
 def _model_trial(trial: dict) -> bool:
-    return (trial.get("card") or {}).get("kind") == "model" or trial["policy"] in MODEL_POLICIES
+    return ((trial.get("card") or {}).get("kind") == "model"
+            or policy_parts(trial["policy"], {})[0] in MODEL_POLICIES)
 
 
 def _title(note: dict, scenario: dict) -> str:
@@ -295,7 +296,7 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
                                "title": _title(scenario_notes.get(name) or {}, scenario)})
     return {"schema": 1, "evidence_kind": kind, "report": data, "comparisons": comparisons,
             "scenarios": scenarios, "setup_only": setup_only,
-            "model_policies": sorted(MODEL_POLICIES)}
+            "model_policies": sorted(MODEL_POLICIES)}  # base names: a trial's may add @MODEL
 
 
 def render(report: dict, notes: dict | None = None) -> str:

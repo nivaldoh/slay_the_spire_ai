@@ -8,10 +8,11 @@ Run from the repository root, with recorded job directories that have episode tr
   NODE_PATH=~/.cache/wh3-playwright/node_modules node tests/twwarhammer3/check_wh3_report_browser.cjs \
     OUTPUT_DIR runs/twwarhammer3/battle/JOB [JOB ...]
 
-It writes OUTPUT_DIR/recorded.{html,json,txt} with `twwarhammer3 report` and the synthetic demo
-OUTPUT_DIR/demo.html with make_wh3_report_demo.py, then checks both pages in headless Chromium
-from file:// URLs and leaves screenshots and downloads in OUTPUT_DIR. Recorded checks compare
-the page with the collector's JSON; the demo checks use the generator's invented values. */
+It writes OUTPUT_DIR/recorded.{html,json,txt} with `twwarhammer3 report`, and the synthetic demo
+OUTPUT_DIR/demo.html and the invented two-model launches OUTPUT_DIR/pair.html with
+make_wh3_report_demo.py, then checks the pages in headless Chromium from file:// URLs and leaves
+screenshots and downloads in OUTPUT_DIR. Recorded checks compare the page with the collector's
+JSON; the demo and pair checks use the generator's invented values. */
 const assert = require("node:assert/strict");
 const { execFileSync } = require("node:child_process");
 const fs = require("node:fs/promises");
@@ -40,10 +41,11 @@ async function main() {
   );
   await fs.mkdir(output, { recursive: true });
   const stem = path.join(output, "recorded"),
-    demo = path.join(output, "demo.html");
+    demo = path.join(output, "demo.html"),
+    pair = path.join(output, "pair.html");
   const uv = (...args) => execFileSync("uv", ["run", ...args], { cwd: ROOT, stdio: "inherit" });
   uv("python", "-m", "twwarhammer3", "report", ...jobs, "--output", stem);
-  uv("python", "tests/twwarhammer3/make_wh3_report_demo.py", demo);
+  uv("python", "tests/twwarhammer3/make_wh3_report_demo.py", demo, pair);
   const browser = await chromium.launch({ headless: true });
   try {
     const context = await browser.newContext({
@@ -330,8 +332,34 @@ async function main() {
     assert.ok(map.y < 844, "the map starts on the first phone screen");
     await page.screenshot({ path: path.join(output, "phone.png"), fullPage: true });
 
-    // Synthetic demo: SYNTHETIC DEMO in the page, the viewer and every download.
+    // Two models of llm_rules paired in each launch: every row names the model and effort its
+    // runs played with, a run whose controller failed to build (pair-c, --effort high) takes
+    // them from its policy name, and the suffixed run finds its base policy's prompt.
     await page.setViewportSize({ width: 1440, height: 900 });
+    await go(pair);
+    const pairData = JSON.parse(await page.locator("#report-data").textContent());
+    const sol = (effort) => `gpt-6-sol · ${effort} reasoning · rules-only prompt`,
+      luna = "gpt-6-luna · medium reasoning · rules-only prompt";
+    assert.deepEqual(await page.locator("#run-sets td.name").allInnerTexts(), [
+      luna,
+      luna,
+      sol("high"),
+      sol("low"),
+    ]);
+    const lunaRow = (g) =>
+      page.locator(`#run-sets tr[data-group="${g}"][data-controller^="llm_rules@"] td`);
+    assert.equal(await lunaRow(1).first().innerText(), luna);
+    assert.match(await lunaRow(1).nth(1).innerText(), /failed: controller construction/);
+    const lunaKey = `g0-t${pairData.report.groups[0].trials.findIndex((t) => t.policy.includes("@"))}`;
+    await page.locator(`#run-sets .replays button[data-key="${lunaKey}"]`).click();
+    await page.waitForSelector("#map-layer .unit");
+    await page.locator("#open-settings").click();
+    const settings = await text("#settings-body");
+    assert.ok(settings.includes(`${luna} · policy llm_rules@gpt-6-luna/medium`));
+    assert.match(settings, /Prompt the model received \(rules-only prompt\)/);
+    await page.locator("#close-settings").click();
+
+    // Synthetic demo: SYNTHETIC DEMO in the page, the viewer and every download.
     await go(demo);
     assert.match(await page.title(), /SYNTHETIC DEMO/);
     assert.match(await text("#demo-banner"), /SYNTHETIC DEMO/);

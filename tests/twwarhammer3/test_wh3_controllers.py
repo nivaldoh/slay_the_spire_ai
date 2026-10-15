@@ -57,3 +57,77 @@ def test_each_model_controller_gets_its_own_prompt_and_the_shared_budget(tmp_pat
         "model", "gpt-6-luna", "WH3 ledger")
     with pytest.raises(ValueError, match="require --budget-usd"):
         controllers.factories({**config, "policy": "llm_rules", "budget_usd": None})
+
+
+JOB = {"model": "gpt-6-sol", "effort": "low"}  # the job's --model and --effort
+
+
+@pytest.mark.parametrize("name,parts", [
+    ("llm_rules", ("llm_rules", "gpt-6-sol", "low")),
+    ("llm_rules@gpt-6-luna", ("llm_rules", "gpt-6-luna", "low")),
+    ("commander@gpt-6-luna/medium", ("commander", "gpt-6-luna", "medium")),
+    ("rush_nearest", ("rush_nearest", None, None)),
+    ("twwarhammer3.battle.scripted:AttackNearest",
+     ("twwarhammer3.battle.scripted:AttackNearest", None, None)),
+])
+def test_a_model_policy_name_can_carry_its_own_model_and_effort(name, parts):
+    assert controllers.policy_parts(name, JOB) == parts
+
+
+@pytest.mark.parametrize("policy,error", [
+    ("hold@gpt-6-luna", "only commander, llm, llm_rules take @MODEL"),
+    ("twwarhammer3.battle.scripted:AttackNearest@gpt-6-luna", "only commander"),
+    ("llm_rules@gpt-6-lunar", "with a model in"), ("llm_rules@", "with a model in"),
+    ("llm_rules@gpt-6-luna/max", "an effort in none, low"),
+    ("llm_rules@gpt-6-luna/", "an effort in"),
+    ("llm_rules,llm_rules@gpt-6-sol", "duplicate"),
+    ("llm_rules@gpt-6-sol/low,llm_rules", "duplicate"),
+    ("llm_rules@gpt-6-luna,llm_rules@gpt-6-luna/low", "duplicate"),
+])
+def test_bad_suffixes_and_controllers_with_the_same_effective_model_are_refused(policy, error):
+    with pytest.raises(ValueError, match=error):
+        controllers.rotation({**JOB, "policy": policy})
+
+
+def test_one_rotation_pairs_models_and_efforts_of_the_same_policy():
+    names = ["llm_rules", "llm_rules@gpt-6-luna", "llm_rules@gpt-6-luna/medium",
+             "llm_rules@gpt-6-sol/high", "rush_nearest"]
+    config = {**JOB, "policy": ",".join(names), "rotation_seed": 5}
+    trials = controllers.rotation(config)
+    assert config["episodes"] == 5 and sorted(t["policy"] for t in trials) == sorted(names)
+
+
+def test_cards_and_makers_use_each_controllers_model_and_effort(tmp_path, monkeypatch):
+    built = []
+
+    class Fake:
+        def __init__(self, model, effort, ledger, *, send, system_prompt):
+            built.append(self)
+            self.model, self.effort, self.ledger = model, effort, ledger
+            self.send, self.system_prompt = send, system_prompt
+
+    class FakeCommander(Fake):
+        pass
+
+    monkeypatch.setattr(controllers, "api_key", lambda: "test-only")
+    monkeypatch.setattr(llm, "LLMPolicy", Fake)
+    monkeypatch.setattr(commander, "CommanderPolicy", FakeCommander)
+    config = {**JOB, "policy": "llm_rules,llm_rules@gpt-6-luna/medium,commander@gpt-6-luna,hold",
+              "ledger": str(tmp_path / "spend.jsonl"), "budget_usd": 1}
+    makers = controllers.factories(config)
+    assert set(makers) == set(config["policy"].split(","))
+    sol, luna, planner = (makers[name]() for name in config["policy"].split(",")[:3])
+    assert (sol.model, sol.effort, type(sol)) == ("gpt-6-sol", "low", Fake)
+    assert (luna.model, luna.effort) == ("gpt-6-luna", "medium")
+    assert (planner.model, planner.effort, type(planner)) == ("gpt-6-luna", "low", FakeCommander)
+    assert sol.system_prompt == luna.system_prompt == llm.RULES_PROMPT_PATH.read_text()
+    assert planner.system_prompt == commander.PROMPT_PATH.read_text()
+    assert sol.ledger is luna.ledger is planner.ledger and sol.send is luna.send is planner.send
+    card = controllers.card("llm_rules@gpt-6-luna/medium", luna, config)
+    assert (card["name"], card["kind"], card["model"], card["effort"], card["cost_source"]) == (
+        "llm_rules@gpt-6-luna/medium", "model", "gpt-6-luna", "medium", "WH3 ledger")
+    card = controllers.card("commander@gpt-6-luna", planner, config)
+    assert (card["kind"], card["model"], card["effort"], card["timing"]) == (
+        "hybrid", "gpt-6-luna", "low", "asynchronous")
+    card = controllers.card("hold", makers["hold"](), config)
+    assert (card["kind"], card["model"], card["effort"]) == ("scripted", None, None)

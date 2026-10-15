@@ -1,5 +1,9 @@
 """The policies a job can name, fresh controllers per trial, controller cards and the
-recorded trial rotation."""
+recorded trial rotation.
+
+A model policy name may carry its own model and effort: ``llm_rules@gpt-6-luna`` or
+``llm_rules@gpt-6-luna/medium``; the bare name uses the job's --model and --effort.
+"""
 
 import importlib
 import inspect
@@ -11,7 +15,7 @@ from functools import partial
 from pathlib import Path
 
 from gameai.ledger import Ledger
-from gameai.llm import api_key, post
+from gameai.llm import EFFORTS, PRICES, api_key, post
 from gameai.provenance import sha256
 from twwarhammer3.battle import commander, llm
 from twwarhammer3.battle.scripted import POLICIES
@@ -24,17 +28,36 @@ MODEL_PROMPTS = {"llm": llm.SYSTEM_PROMPT_PATH, "llm_rules": llm.RULES_PROMPT_PA
 MODEL_POLICIES = frozenset(MODEL_PROMPTS)
 
 
+def policy_parts(name: str, config: dict) -> tuple[str, str | None, str | None]:
+    """A policy name's base name and the model and effort it plays with: a model policy's
+    ``@MODEL[/EFFORT]`` suffix, else the job's; None for other policies. Readers of recorded
+    jobs use it too, so only rotation checks the suffix against today's prices."""
+    base, separator, suffix = name.partition("@")
+    if base not in MODEL_POLICIES:
+        if separator:
+            raise ValueError(f"{name}: only {', '.join(sorted(MODEL_POLICIES))} take @MODEL")
+        return name, None, None
+    model, _, effort = suffix.partition("/")
+    return base, model or config.get("model"), effort or config.get("effort")
+
+
 def rotation(config: dict) -> list[dict]:
     names = config["policy"].split(",")
     delays = [float(value) for value in str(config.get("delay_seconds", "0")).split(",")]
     if any(not math.isfinite(value) or value < 0 for value in delays):
         raise ValueError("delay seconds must be finite and nonnegative")
-    for name in names:
-        if name not in BUILTINS and name not in MODEL_POLICIES:
+    # Two names are one controller when their base, model and effort match.
+    identity = {name: policy_parts(name, config) for name in names}
+    for name, (base, _, _) in identity.items():
+        model, slash, effort = name.partition("@")[2].partition("/")
+        if "@" in name and (model not in PRICES or slash and effort not in EFFORTS):
+            raise ValueError(f"{name}: use {base}@MODEL or {base}@MODEL/EFFORT with a model in "
+                             f"{', '.join(sorted(PRICES))} and an effort in {', '.join(EFFORTS)}")
+        if base not in BUILTINS and base not in MODEL_POLICIES:
             controller_class(name)  # fail before launching on an invalid import
     trials = [{"policy": name, "delay_ms": round(delay * 1000)}
               for name in names for delay in delays]
-    if len({(t["policy"], t["delay_ms"]) for t in trials}) != len(trials):
+    if len({(identity[t["policy"]], t["delay_ms"]) for t in trials}) != len(trials):
         raise ValueError("duplicate controller/delay entry; use --episodes for repeats")
     count = config["episodes"] if config.get("episodes") is not None else len(trials)
     if count < len(trials):
@@ -66,17 +89,17 @@ def controller_class(name: str):
 
 def card(name: str, policy, config: dict) -> dict:
     path = inspect.getsourcefile(type(policy))
+    base, model, effort = policy_parts(name, config)
     result = {
-        "name": name, "kind": "hybrid" if name == "commander" else
-        "model" if name in MODEL_POLICIES else "scripted" if name in BUILTINS else "external",
+        "name": name, "kind": "hybrid" if base == "commander" else
+        "model" if base in MODEL_POLICIES else "scripted" if base in BUILTINS else "external",
         "class": f"{type(policy).__module__}:{type(policy).__qualname__}",
         "source_file": path, "source_sha256": sha256(Path(path)) if path else None,
-        "model": config.get("model") if name in MODEL_POLICIES else None,
-        "effort": config.get("effort") if name in MODEL_POLICIES else None,
-        "timing": "asynchronous" if name == "commander" else "blocking",
+        "model": model, "effort": effort,
+        "timing": "asynchronous" if base == "commander" else "blocking",
         "disclosure": getattr(policy, "card", None),
         "description": inspect.getdoc(type(policy)),
-        "cost_source": "WH3 ledger" if name in MODEL_POLICIES else "self-reported",
+        "cost_source": "WH3 ledger" if base in MODEL_POLICIES else "self-reported",
     }
     if path:
         revision = subprocess.run(["git", "-C", str(Path(path).parent), "rev-parse", "HEAD"],
@@ -87,17 +110,19 @@ def card(name: str, policy, config: dict) -> dict:
 
 def factories(config: dict) -> dict:
     """Prepare constructors once; each trial calls one to get fresh episode state."""
-    names = set(config["policy"].split(","))
+    parts = {name: policy_parts(name, config) for name in config["policy"].split(",")}
+    models = {name for name, (base, _, _) in parts.items() if base in MODEL_POLICIES}
     makers = {}
-    if names & MODEL_POLICIES:
+    if models:
         if config.get("budget_usd") is None:
             raise ValueError("model controllers require --budget-usd")
         ledger = Ledger(Path(config["ledger"]), config["budget_usd"])
         send = partial(post, api_key(), record_transport=True)
-        for name in names & MODEL_POLICIES:
-            kind = commander.CommanderPolicy if name == "commander" else llm.LLMPolicy
-            makers[name] = partial(kind, config["model"], config["effort"], ledger, send=send,
-                                   system_prompt=MODEL_PROMPTS[name].read_text())
-    for name in names - MODEL_POLICIES:
+        for name in models:
+            base, model, effort = parts[name]
+            kind = commander.CommanderPolicy if base == "commander" else llm.LLMPolicy
+            makers[name] = partial(kind, model, effort, ledger, send=send,
+                                   system_prompt=MODEL_PROMPTS[base].read_text())
+    for name in parts.keys() - models:
         makers[name] = controller_class(name)
     return makers

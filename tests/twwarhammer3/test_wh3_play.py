@@ -612,3 +612,30 @@ def test_captions_show_what_a_model_saw_and_decided():
     assert play.caption(state, direct, [order]) == (
         "36 s: gpt-6-luna saw us 2/2u 111m  seen 1/2u 90m\nGo.\nf2 attack e1 melee")
     assert play.caption(state, {"type": "commander"}, []) is None
+
+
+def test_a_job_rotating_two_models_of_one_policy_snapshots_its_prompt_once(tmp_path, harness):
+    harness.append(FakeMailbox([
+        bridge_observation(0, 0), bridge_observation(1, 1000, result="won"),
+        bridge_observation(0, 0, battle="b2"), bridge_observation(1, 1000, battle="b2",
+                                                                  result="lost"),
+    ]))
+    results = tmp_path / "r.csv"
+    names = ["llm_rules", "llm_rules@gpt-6-luna/medium"]
+    config = {**CONFIG, "policy": ",".join(names), "episodes": None, "rotation_seed": 1,
+              "model": "gpt-6-sol", "effort": "low", "results": str(results)}
+    job = tmp_path / "pair-v1-20261015"
+    manifest = play.play(job, config, makers={name: Hold for name in names})
+    assert manifest["status"] == "completed"
+    assert sorted(path.name for path in job.glob("*_prompt.md")) == ["llm_rules_prompt.md"]
+    assert "llm_rules_prompt_sha256" in manifest
+    cards = {e["policy"]: (e["card"]["model"], e["card"]["effort"]) for e in manifest["episodes"]}
+    assert cards == {"llm_rules": ("gpt-6-sol", "low"),
+                     "llm_rules@gpt-6-luna/medium": ("gpt-6-luna", "medium")}
+    rows = {(r["policy"], r["model"], r["effort"]) for r in csv.DictReader(results.open())}
+    assert rows == {("llm_rules", "gpt-6-sol", "low"), ("llm_rules", "gpt-6-luna", "medium")}
+    lines = digest.digest(job).splitlines()
+    order = [trial["policy"] for trial in manifest["trials"]]
+    assert lines[0].startswith("pair-v1-20261015: completed, policy llm_rules gpt-6-sol/low,"
+                               "llm_rules@gpt-6-luna/medium gpt-6-luna/medium, scenario")
+    assert [line.split(" | ")[1] for line in lines[3:]] == order

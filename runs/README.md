@@ -46,8 +46,8 @@ runs/
 New tracks get their own folder: `runs/<track>/<job>` for Slay the Spire,
 `runs/<game>/<track>/<job>` for other games. A job directory holds what its runner wrote:
 `manifest.json` with the source revision, file fingerprints and configuration;
-`environment.json`; the prompt of each API-model policy (WH3: `<policy>_prompt.md`, where
-single-policy jobs recorded before the 2026-10-15 cleanup, `visual-sol-low-20261015`
+`environment.json`; the prompt of each API-model policy (WH3: `<base policy>_prompt.md`,
+where single-policy jobs recorded before the 2026-10-15 cleanup, `visual-sol-low-20261015`
 included, wrote `system_prompt.md`); and one subdirectory per
 run or episode with the raw trace and result. A Spire `run-NNNN/` is one game launch and
 holds its game logs. A WH3 `episode-NNNN/` is one battle (its `mod.log` beside the trace);

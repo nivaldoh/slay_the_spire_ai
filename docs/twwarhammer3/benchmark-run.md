@@ -81,6 +81,14 @@ uv run python -m twwarhammer3 play --scenario brt-cavalry-emp-assault \
   N` repeats the list in shuffled blocks; repeats on one instance are correlated.
   `--delay-seconds 0,6,10` crosses every controller with each added age. Duplicate
   entries are refused, and `--episodes` must cover every controller/delay combination.
+- **Several models in one job.** A model policy may carry its own model and effort,
+  `NAME@MODEL` or `NAME@MODEL/EFFORT`; bare names use `--model` and `--effort`. For
+  example `--policy llm_rules,llm_rules@gpt-6-luna,rush_nearest --model gpt-6-sol` pairs
+  Sol and Luna within each launch. A name that resolves to another's model and effort
+  (`llm_rules@gpt-6-sol` beside `llm_rules` on `--model gpt-6-sol`) is a duplicate. The
+  report keeps the full names as controllers; the register records the base policy with
+  the model and effort it played with. Launches pool in one report group only when their
+  `--model` and `--effort` also match, even when every model policy carries a suffix.
 - **More instances** are more launches, each with a new `--output` directory.
 - **Timeouts** follow the declared timer: `--episode-timeout` defaults to the timer plus
   120 s, and `--run-timeout` to 8 hours or setup plus every episode if that is longer.
@@ -88,8 +96,9 @@ uv run python -m twwarhammer3 play --scenario brt-cavalry-emp-assault \
 - **Models**: `llm`, `llm_rules` and `commander` need `--budget-usd`, which caps the
   cumulative WH3 ledger (`runs/twwarhammer3/llm-spend.jsonl`), earlier jobs included.
   Never reset or move it. `uv run python -m twwarhammer3 spend` prints its total. Each
-  job saves the prompt of every model policy it rotates as `<policy>_prompt.md` with its
-  hash; a prompt difference is a controller difference.
+  job saves the prompt of every model policy it rotates as `<base policy>_prompt.md` with
+  its hash (`llm_rules@gpt-6-luna` uses `llm_rules_prompt.md`); a prompt difference is a
+  controller difference.
 - **Session settings**: keep `--observe-ms`, `--tick-ms` and `--interval-ms` at their
   defaults; different values make a separate comparison group. `--record-replay` is on
   by default and `--stills` adds presentation images ([reports.md](reports.md)).

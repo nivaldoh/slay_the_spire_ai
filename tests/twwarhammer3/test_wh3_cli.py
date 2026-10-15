@@ -44,6 +44,22 @@ def test_cli_rejects_an_unknown_model_or_effort_before_launch(tmp_path, monkeypa
     assert not output.exists()
 
 
+@pytest.mark.parametrize("policy,error", [
+    ("hold@gpt-6-luna", "only commander, llm, llm_rules take @MODEL"),
+    ("llm_rules@gpt-6-luna/max", "an effort in none, low, medium, high"),
+    ("llm_rules,llm_rules@gpt-6-luna", "duplicate controller"),
+])
+def test_cli_rejects_a_bad_model_suffix_before_launch(tmp_path, monkeypatch, capsys, policy,
+                                                      error):
+    output = tmp_path / "job"
+    monkeypatch.setattr(sys, "argv", ["twwarhammer3", "play", "--scenario", "kho5-dwf5",
+                                      "--policy", policy, "--output", str(output)])
+    with pytest.raises(SystemExit):
+        main()
+    assert error in capsys.readouterr().err
+    assert not output.exists()
+
+
 @pytest.mark.parametrize("path", [[], ["runs/twwarhammer3/battle/job/episode-0000"]])
 def test_watch_next_needs_the_job_directory(monkeypatch, capsys, path):
     monkeypatch.setattr(sys, "argv", ["twwarhammer3", "watch", *path, "--next"])

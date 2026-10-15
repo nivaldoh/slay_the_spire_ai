@@ -31,7 +31,13 @@ from twwarhammer3.battle.capture import (
     recording_settings,
 )
 from twwarhammer3.battle.commander import describe_plan
-from twwarhammer3.battle.controllers import MODEL_POLICIES, MODEL_PROMPTS, card, rotation
+from twwarhammer3.battle.controllers import (
+    MODEL_POLICIES,
+    MODEL_PROMPTS,
+    card,
+    policy_parts,
+    rotation,
+)
 from twwarhammer3.battle.digest import strength
 from twwarhammer3.battle.llm import describe_orders
 from twwarhammer3.battle.setup import (
@@ -106,7 +112,8 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
         "recorder": recording_settings(config),
         "imagery": imagery_settings(config),
     }
-    for name in sorted(set(config["policy"].split(",")) & MODEL_POLICIES):
+    bases = {policy_parts(name, config)[0] for name in config["policy"].split(",")}
+    for name in sorted(bases & MODEL_POLICIES):  # one prompt per base, whatever its models
         prompt = MODEL_PROMPTS[name]
         (output / f"{name}_prompt.md").write_bytes(prompt.read_bytes())
         manifest[f"{name}_prompt_sha256"] = sha256(prompt)

@@ -7,7 +7,7 @@ import sys
 from copy import deepcopy
 
 import pytest
-from make_wh3_report_demo import demo_report
+from make_wh3_report_demo import demo_report, pair_jobs
 from PIL import Image
 from wh3_fixtures import configured_job, embedded, make_job
 
@@ -298,3 +298,27 @@ def test_a_job_without_a_recorded_scenario_still_gets_a_readable_title(tmp_path)
     assert data["scenarios"][0]["title"] == "No scenario recorded"
     data = report_html.display_data(report.collect([stopped]))
     assert data["setup_only"] == [{"job": 0, "scenario": None, "title": "No scenario recorded"}]
+
+
+def test_two_models_of_one_policy_are_two_controllers_paired_within_each_launch(tmp_path):
+    # check_wh3_report_browser.cjs reads the page's names of these controllers.
+    jobs = pair_jobs(tmp_path)
+    source = report.collect(jobs)
+    pooled, high = source["groups"]  # pair-c ran on --effort high
+    assert [row["controller"] for row in pooled["controllers"]] == [
+        "llm_rules / +0s", "llm_rules@gpt-6-luna/medium / +0s"]
+    (paired,) = pooled["paired"]
+    assert paired["n"] == 2 and paired["mean"] == pytest.approx(.1)
+    assert paired["unpaired_instances"] == []
+    assert {trial["instance"] for trial in high["trials"]} == {str(jobs[2])}
+    data = embedded(report_html.render(source))
+    assert data["scenarios"][0]["featured_reason"] == "first_model_run"
+    assert [(trial["policy"], *[(trial["card"] or {}).get(key) for key in ("model", "effort")])
+            for group in data["report"]["groups"] for trial in group["trials"]] == [
+        ("llm_rules", "gpt-6-sol", "low"), ("llm_rules@gpt-6-luna/medium", "gpt-6-luna", "medium"),
+    ] * 2 + [("llm_rules", "gpt-6-sol", "high"), ("llm_rules@gpt-6-luna/medium", None, None)]
+    # The page finds the prompt and the readable name by the base policy name.
+    assert data["prompts"]["pair-a"] == {"llm_rules_prompt.md": "Invented rules-only prompt."}
+    assert "llm_rules" in data["model_policies"]
+    assert report_html._model_trial({"policy": "commander@gpt-6-luna", "card": {"kind": "hybrid"}})
+    assert not report_html._model_trial({"policy": "hold", "card": {"kind": "scripted"}})

@@ -18,7 +18,7 @@ from itertools import groupby
 from pathlib import Path
 
 from twwarhammer3.battle.commander import describe_plan
-from twwarhammer3.battle.controllers import MODEL_POLICIES
+from twwarhammer3.battle.controllers import policy_parts
 from twwarhammer3.battle.llm import describe_orders, short_type
 from twwarhammer3.battle.stats import row
 
@@ -229,14 +229,17 @@ def _draw(manifest: dict) -> str:
 def job_digest(job: Path) -> str:
     manifest = json.loads((job / "manifest.json").read_text())
     config = manifest["config"]
-    model = MODEL_POLICIES & set(config["policy"].split(","))
-    lines = [f"{job.name}: {manifest['status']}, policy {config['policy']}"
-             + (f" {config['model']}/{config['effort']}" if model else "")
+    controllers = []  # a model controller with the model and effort it played with
+    for name in config["policy"].split(","):
+        _, model, effort = policy_parts(name, config)
+        controllers.append(name + (f" {model}/{effort}" if model else ""))
+    lines = [f"{job.name}: {manifest['status']}, policy {','.join(controllers)}"
              + f", scenario {config['scenario']}" + _draw(manifest)
              + f", source {manifest['source_revision'][:7]}",
              "| " + " | ".join(DIGEST_COLUMNS) + " |", "|" + "---|" * len(DIGEST_COLUMNS)]
     for result in sorted(job.glob("episode-*/result.json")):
-        item = row(job, result.parent)
+        item = row(job, result.parent)  # the register's base name; the table names the trial's
+        item["policy"] = json.loads(result.read_text()).get("policy", item["policy"])
         lines.append("| " + " | ".join(str(item[column]) for column in DIGEST_COLUMNS) + " |")
     return "\n".join(lines)
 

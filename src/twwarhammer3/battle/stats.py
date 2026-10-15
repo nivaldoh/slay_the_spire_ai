@@ -12,7 +12,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle.controllers import MODEL_POLICIES
+from twwarhammer3.battle.controllers import policy_parts
 
 RESULTS_PATH = REPO_ROOT / "docs/twwarhammer3/results.csv"
 JOBS_ROOT = REPO_ROOT / "runs/twwarhammer3/battle"
@@ -41,8 +41,8 @@ def row(job: Path, episode: Path) -> dict:
     manifest = json.loads((job / "manifest.json").read_text())
     result = json.loads((episode / "result.json").read_text())
     config = manifest["config"]
-    policy = result.get("policy", config.get("policy", ""))
-    llm = policy in MODEL_POLICIES
+    # A rotation's llm_rules@gpt-6-luna is policy llm_rules with its own model and effort.
+    policy, model, effort = policy_parts(result.get("policy", config.get("policy", "")), config)
     delays = result.get("delays_ms") or []
     own, enemy = active_left(result, "friendly"), active_left(result, "enemy")
     return {
@@ -51,8 +51,8 @@ def row(job: Path, episode: Path) -> dict:
         "episode": episode.name,
         "scenario": config.get("scenario", ""),
         "policy": policy,
-        "model": config.get("model", "") if llm else "",
-        "effort": config.get("effort", "") if llm else "",
+        "model": model or "",
+        "effort": effort or "",
         "harness": harness_version(job.name),
         "source": manifest["source_revision"][:7],
         "mode": "paused" if config.get("pause") else "realtime",

@@ -124,8 +124,10 @@ uv run pytest tests/twwarhammer3                          # Lua (lupa) and image
 ```
 
 - `--model` (default `gpt-6-luna`) and `--effort` (default `low`) pick the API model of
-  `llm`, `llm_rules` and `commander`. The key comes from `OPENAI_API_KEY` or the file
-  named by `SPIRE_OPENAI_KEY_FILE` (the shared `gameai.llm` keeps Spire's name).
+  `llm`, `llm_rules` and `commander`. A model policy can name its own instead, so one job
+  rotates several models: `llm_rules@gpt-6-luna` or `llm_rules@gpt-6-luna/medium`. The key
+  comes from `OPENAI_API_KEY` or the file named by `SPIRE_OPENAI_KEY_FILE` (the shared
+  `gameai.llm` keeps Spire's name).
 - Comma-separated `--policy` names rotate in an order drawn from `--rotation-seed`;
   `--delay-seconds 0,6,10` crosses them with observation-age arms; `--episodes` defaults
   to one per combination. `--policy package.module:Class` loads an outside controller

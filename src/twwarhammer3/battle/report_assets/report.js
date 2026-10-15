@@ -66,18 +66,23 @@
     featured = null,
     cardSpans = [];
 
+  // A rotation can name a model policy with its own model: llm_rules@gpt-6-luna/medium.
+  // The card records the model and effort it played with; a trial without one (its
+  // controller failed to build) takes them from that name, then from the job.
+  const basePolicy = (trial) => trial.policy.split("@")[0];
   const isModel = (entry) =>
-    entry.trial.card?.kind === "model" || data.model_policies.includes(entry.trial.policy);
+    entry.trial.card?.kind === "model" || data.model_policies.includes(basePolicy(entry.trial));
   function controllerName(entry) {
     const { trial, group } = entry,
-      card = trial.card || {};
+      card = trial.card || {},
+      [model, level] = (trial.policy.split("@")[1] || "").split("/");
     let name;
     if (isModel(entry)) {
-      const effort = card.effort || group.definition.effort;
+      const effort = card.effort || level || group.definition.effort;
       name = [
-        card.model || group.definition.model,
+        card.model || model || group.definition.model,
         effort && `${effort} reasoning`,
-        PROMPTS[trial.policy] || trial.policy,
+        PROMPTS[basePolicy(trial)] || trial.policy,
       ]
         .filter(Boolean)
         .join(" · ");
@@ -775,11 +780,11 @@
       body.append(details("Scenario brief, as declared", el("p", declared.brief)));
     // Before c916e6c a single-policy job saved its one prompt as system_prompt.md.
     const files = data.prompts?.[trial.instance] || {},
-      prompt = files[`${trial.policy}_prompt.md`] ?? files["system_prompt.md"];
+      prompt = files[`${basePolicy(trial)}_prompt.md`] ?? files["system_prompt.md"];
     if (isModel(entry) && prompt != null)
       body.append(
         details(
-          `Prompt the model received (${PROMPTS[trial.policy] || trial.policy})`,
+          `Prompt the model received (${PROMPTS[basePolicy(trial)] || trial.policy})`,
           el("pre", prompt, "raw"),
         ),
       );

@@ -3,8 +3,10 @@
 Writes job directories for Demo controllers A, B and C (two launches each, 0/6/10 s added
 age), with a timer loss, a repeated rematch, a missing metric, a policy failure and a
 setup-only interruption, collects them with report.collect and adds one invented replay.
+With PAIR.html it also writes a page of invented launches that pair two models of llm_rules,
+rendered as recorded jobs so the page reads their prompt file (for the browser check).
 
-    uv run python tests/twwarhammer3/make_wh3_report_demo.py OUTPUT.html
+    uv run python tests/twwarhammer3/make_wh3_report_demo.py OUTPUT.html [PAIR.html]
 """
 
 import json
@@ -13,6 +15,7 @@ import tempfile
 from pathlib import Path
 
 from twwarhammer3.battle import replay, report, report_html
+from twwarhammer3.battle.controllers import policy_parts
 
 SCENARIO = {
     "name": "synthetic-citadel-assault", "family": "Demo: citadel assault", "map": "demo-map",
@@ -39,6 +42,11 @@ LAUNCHES = {
 }
 # A valid trial without final strength, a launch with a flagged start, a rejected condition.
 MISSING_FINAL, FLAGGED_START, REJECTED = ("C", 2, 0), ("B", 2), ("B", 10)
+# Launches on --model gpt-6-sol rotating PAIR, by --effort and each controller's margin, or
+# None where it failed to build and left no card (pair-c's own effort keeps it unpooled).
+PAIR = ["llm_rules", "llm_rules@gpt-6-luna/medium"]
+PAIR_LAUNCHES = {"pair-a": ("low", .3, .1), "pair-b": ("low", .2, .2),
+                 "pair-c": ("high", .25, None)}
 
 
 def write(path: Path, value) -> None:
@@ -185,7 +193,35 @@ def demo_report(root: Path) -> dict:
     return data
 
 
+def pair_jobs(root: Path) -> list[Path]:
+    """Write the PAIR_LAUNCHES jobs under root, with the rules-only prompt they snapshot."""
+    jobs = []
+    for name, (effort, *margins) in PAIR_LAUNCHES.items():
+        jobs.append(job(root, name, "gpt-6-sol"))
+        manifest = json.loads((jobs[-1] / "manifest.json").read_text())
+        manifest["config"].update(policy=",".join(PAIR), effort=effort)
+        write(jobs[-1] / "manifest.json", manifest)
+        (jobs[-1] / "llm_rules_prompt.md").write_text("Invented rules-only prompt.")
+        for index, (policy, margin) in enumerate(zip(PAIR, margins)):
+            _, model, level = policy_parts(policy, manifest["config"])
+            directory = jobs[-1] / f"episode-{index:04d}"
+            directory.mkdir()
+            value = {"status": "policy_failure", "policy": policy,
+                     "error": "controller construction: invented"}
+            if margin is not None:
+                value = {"status": "won", "policy": policy, "battle_s": 300,
+                         "final": {"friendly": {"men0": 100, "active_men": 50 + margin * 100},
+                                   "enemy": {"men0": 100, "active_men": 50}},
+                         "card": {"kind": "model", "model": model, "effort": level,
+                                  "source_sha256": "synthetic", "timing": "blocking"}}
+                write(directory / "trace.jsonl", battle_trace())
+            write(directory / "result.json", value)
+    return jobs
+
+
 if __name__ == "__main__":
     with tempfile.TemporaryDirectory() as temp:
         report_html.write(Path(sys.argv[1]), demo_report(Path(temp)))
-    print(sys.argv[1])
+        if len(sys.argv) > 2:
+            report_html.write(Path(sys.argv[2]), report.collect(pair_jobs(Path(temp, "pair"))))
+    print(*sys.argv[1:])

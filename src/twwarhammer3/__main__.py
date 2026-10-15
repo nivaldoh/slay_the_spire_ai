@@ -60,9 +60,12 @@ def main() -> int:
     play = commands.add_parser("play", help="Play custom battles with a policy; one job directory")
     play.add_argument("--policy", default="llm",
                       help=f"{', '.join(sorted(BUILTINS.keys() | MODEL_POLICIES))} or"
-                      " package.module:Class; comma-separated names rotate")
-    play.add_argument("--model", default="gpt-6-luna", choices=sorted(PRICES))
-    play.add_argument("--effort", default="low", choices=EFFORTS)
+                      " package.module:Class; comma-separated names rotate; a model policy"
+                      " takes its own model and effort as NAME@MODEL or NAME@MODEL/EFFORT")
+    play.add_argument("--model", default="gpt-6-luna", choices=sorted(PRICES),
+                      help="the model of a model policy named without @MODEL")
+    play.add_argument("--effort", default="low", choices=EFFORTS,
+                      help="the reasoning effort of a model policy named without /EFFORT")
     play.add_argument("--budget-usd", type=float, default=None,
                       help=f"required with a model policy: {', '.join(sorted(MODEL_POLICIES))}")
     play.add_argument("--episodes", type=int, default=None,

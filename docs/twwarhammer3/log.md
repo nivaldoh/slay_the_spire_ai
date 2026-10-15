@@ -41,7 +41,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 ## Index
 
-- 2026-10-15: [Queue stops on changed rematch starts](#2026-10-15-queue-stops-on-changed-rematch-starts) ·
+- 2026-10-15: [Several models in one job](#2026-10-15-several-models-in-one-job) ·
+  [Queue stops on changed rematch starts](#2026-10-15-queue-stops-on-changed-rematch-starts) ·
   [Report redesign](#2026-10-15-report-redesign) ·
   [Track cleanup for agents and reviewers](#2026-10-15-track-cleanup-for-agents-and-reviewers) ·
   [Sol visual acceptance and closer action views](#2026-10-15-sol-visual-acceptance-and-closer-action-views) ·
@@ -85,6 +86,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
+
+## 2026-10-15: Several models in one job
+
+A model policy can name its own model and effort, `NAME@MODEL` or `NAME@MODEL/EFFORT`
+(`controllers.policy_parts`), so one launch can rotate, say, `llm_rules` on Sol and
+`llm_rules@gpt-6-luna` on the same battle instance; launches are the benchmark's sampling
+unit, so model comparisons can now be paired within them. Bare names keep `--model` and
+`--effort`; a name resolving to another's model and effort is refused as a duplicate.
+Cards, results and the report keep the full name; the register records the base policy
+with the model and effort played; the job saves one prompt per base policy. Reports of
+existing jobs are byte-identical. No game ran and no model was called: an adversarial
+review with fake jobs found six issues (a card-less trial named with the job's model, the
+review workflow's stale prompt-file guidance, readers checking old suffixes against
+today's prices, no browser test of suffixed names), all fixed with tests; the synthetic
+pair report in `make_wh3_report_demo.py` now exercises suffixed names in the browser check.
+`uv run pytest -q`: 974 passed, 14 skipped.
 
 ## 2026-10-15: Queue stops on changed rematch starts
 
