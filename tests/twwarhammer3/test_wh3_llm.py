@@ -221,6 +221,17 @@ def test_a_move_applied_at_the_observed_instant_is_not_reported_stopped(tmp_path
     assert "stopped 100 m short of your move (30 s)" in agent.metadata()["prompt"]
 
 
+def test_a_shooter_targeting_beyond_its_range_is_told_it_advances():
+    # bench-b10-screen-dwf-line-20261015 episode 0: the Organ Gun (range 300 m), ordered at
+    # a cannon about 670 m away, walked out of the defensive line.
+    gun = {"id": "f7", "x": 0.0, "z": 0.0, "range": 300, "target": "e20"}
+    cannon = {"id": "e20", "x": 0.0, "z": 670.0}
+    text = llm.render_target(gun, {"e20": cannon}, None)
+    assert text.startswith("target e20 670 m, 370 m beyond range: it advances to shoot")
+    assert "beyond range" not in llm.render_target({**gun, "range": 700}, {"e20": cannon}, None)
+    assert "beyond range" not in llm.render_target({**gun, "range": 0}, {"e20": cannon}, None)
+
+
 def test_units_without_a_target_show_no_order_and_their_nearest_enemy():
     observation_ = observation()
     observation_["friendly"][0]["state"] = []
