@@ -225,6 +225,8 @@ Under `runs/twwarhammer3/reports/` (local, not in Git), read from each JSON's `j
 | `field-report.{html,json,txt}`, `g1-cavalry.{json,txt}`, `g1-cavalry-admission.json` | `battle/bench-g1-cavalry-ai10-01-20261014`, `battle/bench-g1-cavalry-ai11-01-20261014` |
 | `g1-cavalry-ai10-01.{json,txt}` | `battle/bench-g1-cavalry-ai10-01-20261014` |
 | `cavalry-assault.{html,json,txt}` | the redesigned page: `battle/visual-sol-low-20261015` and the two G1 jobs |
+| `c1-cavalry-ai11.{html,json,txt}` | C1 launches 1-2: `battle/bench-c1-cavalry-ai11-0{1,2}-20261015` |
+| `swarm-screens.{html,json,txt}` | `battle/bench-b10-screen-skv-swarm-r2-20261015`, `battle/bench-b10-screen-dwf-line-20261015`, and the setup-only first attempt |
 | `visual-report.{html,json,txt}` | `battle/visual-sol-low-20261015` and the two G1 jobs |
 | `visual-report-g1.{html,json}` | the two G1 jobs |
 | `close-camera.{html,json,txt}`, `close-camera.png` | `visual-probes/close-imagery-r2-20261015` |
@@ -233,7 +235,7 @@ Under `runs/twwarhammer3/reports/` (local, not in Git), read from each JSON's `j
 | `bench-b*.{json,txt,md}` | the b1-b9 screens and audits named in [log.md](log.md) |
 | `visual-browser/` | browser check screenshots and exports |
 
-All but `cavalry-assault` predate the 2026-10-15 redesign: their HTML is the old page (verdict, margin chart,
+All but `cavalry-assault`, `c1-cavalry-ai11` and `swarm-screens` predate the 2026-10-15 redesign: their HTML is the old page (verdict, margin chart,
 evidence and definitions, unrun placeholders), and their JSON lacks `order_age_median_s`,
 `battle_ms` and the jobs' `created_at`. Rebuilding one from the jobs listed overwrites it
 unless given another stem.
