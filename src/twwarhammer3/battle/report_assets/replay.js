@@ -60,7 +60,7 @@ const glyphKey = (key) => (GLYPHS.includes(key) ? key : "unknown");
 // The two armies' colours: they mean the armies everywhere and nothing else.
 const TEAM = { friendly: "#56b4e9", enemy: "#e69f00" };
 // One scale wherever a view's age is drawn (the replay strip, the real-time rows).
-const AGE_SCALE_S = 25;
+const AGE_SCALE_S = 15;
 // The impassable terrain cells as one SVG path, through a projection's x and y.
 function blockedPath(terrain, x, y, scale) {
   const cell = terrain.cell_m,
@@ -132,10 +132,10 @@ const Viewer = (() => {
   const ROUTE_MS = 20000; // how long a newly issued route stays drawn for unselected units
   const ARRIVED_M = 30; // a waypoint this close to a recorded position counts as reached
   const ACCEPTED = ["acknowledged", "queued"];
-  const STRIP_H = 92;
+  const STRIP_H = 104;
   const STRIP_LEFT = 70; // a gutter for the rows' labels
   const AGE_TOP = 56,
-    AGE_H = 20;
+    AGE_H = 32;
   // Bands kept clear of units: the caption on top, the scale bar and north arrow below.
   const TOP_BAND = 40,
     BOTTOM_BAND = 44;
@@ -895,12 +895,12 @@ const Viewer = (() => {
     g.replaceChildren();
     for (let m = Math.ceil(start / 60000); m * 60000 <= end; m++) {
       const x = stripX(m * 60000);
-      g.append(svg("line", { x1: x, x2: x, y1: 78, y2: 82, stroke: "#5f7380" }));
+      g.append(svg("line", { x1: x, x2: x, y1: 90, y2: 94, stroke: "#5f7380" }));
       if (w > 420 || m % 2 === 0)
         g.append(
           svg(
             "text",
-            { x, y: 91, fill: "#8fa3ad", "font-size": 10, "text-anchor": "middle" },
+            { x, y: 103, fill: "#8fa3ad", "font-size": 10, "text-anchor": "middle" },
             `${m}:00`,
           ),
         );
@@ -918,14 +918,15 @@ const Viewer = (() => {
       label(36, "Replies"),
       label(50, "Events"),
       label(AGE_TOP + 10, "View age"),
-      label(AGE_TOP + 22, `0–${top} s`),
+      label(AGE_TOP + 22, `0–${top} s, line 5 s`),
       svg("line", {
         x1: STRIP_LEFT,
         x2: w - 10,
         y1: ageY(5),
         y2: ageY(5),
         stroke: "#ffffff",
-        "stroke-opacity": 0.08,
+        "stroke-opacity": 0.25,
+        "stroke-dasharray": "2 3",
       }),
     );
     if (series.length)
@@ -933,7 +934,7 @@ const Viewer = (() => {
         svg("path", {
           d: `M${stripX(series[0][0])} ${AGE_TOP + AGE_H}${series.map(([t, a]) => `L${stripX(t).toFixed(1)} ${ageY(a).toFixed(1)}`).join("")}L${stripX(series.at(-1)[0])} ${AGE_TOP + AGE_H}Z`,
           fill: "#8fa3ad",
-          "fill-opacity": 0.35,
+          "fill-opacity": 0.65,
         }),
       );
     r.highlights.forEach((h, k) => {
@@ -994,8 +995,11 @@ const Viewer = (() => {
     jump(near ? near.t : start + ((x - STRIP_LEFT) / (strip.w - STRIP_LEFT - 10)) * (end - start));
   }
 
-  const waiting = (now) =>
-    `Waiting ${((time - requested(r.decisions[now.pending])) / 1000).toFixed(1)} s for ${run.kind === "model" ? "the model's" : "the controller's"} ${now.current < 0 ? "first" : "next"} reply`;
+  const waiting = (now) => {
+    const s = (time - requested(r.decisions[now.pending])) / 1000,
+      reply = `${run.kind === "model" ? "the model's" : "the controller's"} ${now.current < 0 ? "first" : "next"} reply`;
+    return s < 0.1 ? `Asking for ${reply}` : `Waiting ${s.toFixed(1)} s for ${reply}`;
+  };
   function statusLine(now) {
     // A commander's unit skills reply every fraction of a second; its plans carry the timing.
     if (now.pending < 0 || planned()) return null;

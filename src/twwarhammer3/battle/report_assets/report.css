@@ -175,7 +175,7 @@ button.inline {
 
 /* The masthead: the title, one paragraph and the benchmark's size, in one column. */
 .masthead {
-  padding: 30px 0 34px;
+  padding: 22px 0 26px;
 }
 .masthead h1 {
   max-width: 30ch;
@@ -185,8 +185,8 @@ button.inline {
   line-height: 1.05;
 }
 .dek {
-  max-width: 62ch;
-  margin-top: 14px;
+  max-width: 84ch;
+  margin-top: 12px;
   font: 19px / 1.55 var(--serif);
   color: var(--ink-2);
 }
@@ -471,7 +471,7 @@ button.inline {
 .strip {
   display: block;
   width: 100%;
-  height: 92px;
+  height: 104px;
   background: var(--map);
   border: 1px solid var(--stage-line);
   border-radius: 6px;
@@ -1119,8 +1119,12 @@ blockquote {
   font-size: var(--t-xl);
 }
 .finding {
-  max-width: 62ch;
-  font: 20px / 1.5 var(--serif);
+  max-width: 84ch;
+  margin-top: 8px;
+  font: 19px / 1.55 var(--serif);
+}
+.finding:empty {
+  display: none;
 }
 .figcap,
 .figure figcaption {
@@ -1248,7 +1252,7 @@ sup {
 /* Figure 2: one map per commander, its battles thin and their mean thick, then its numbers. */
 .plans {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 300px));
   gap: 28px 22px;
   align-items: start;
 }
@@ -1377,6 +1381,8 @@ sup {
   background: none;
   font-weight: 600;
   text-align: left;
+  text-decoration: underline dotted var(--faint);
+  text-underline-offset: 3px;
 }
 .matrix .scenario:hover,
 .matrix tr[aria-current="true"] .scenario {
@@ -1548,9 +1554,6 @@ sup {
   }
   .dek {
     font-size: 16.5px;
-  }
-  .facts-line {
-    display: none;
   }
   .viewer {
     margin-inline: calc(-1 * var(--gutter));

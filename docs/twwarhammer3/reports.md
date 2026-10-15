@@ -94,9 +94,10 @@ lettering (Bahnschrift on Windows, the system sans elsewhere), prose a book seri
 lining figures; there are no all-caps labels, badges, cards, heading rules or middle-dot
 strings.
 
-- **Masthead**: the title, one paragraph on what it is and one line naming the benchmark,
-  its dates and size (battles shown, scenarios, models, scripted baselines; hidden on
-  phones).
+- **Masthead**: the title, one paragraph on what it is, the finding (Figure 1's numbers in
+  two sentences: scores out of 100 and how old the models' views were against the
+  scripted rules') and one line naming the benchmark, its dates and size (battles shown,
+  scenarios, models, scripted baselines).
 - **The battle**: the scenario's question, then (wide) a paragraph naming its game mode,
   the enemy AI's difficulty and the scenario, with its challenge, and the replay below,
   or (narrow) the replay first. The page opens on Figure 1's scenario, so the replay,
@@ -111,13 +112,12 @@ strings.
   playing one's sentence under them, labelled as written after the battle with AI
   assistance and checked against the records. Then up to four game stills ("spectator
   camera, not what the model saw") and the two armies, folded.
-- **Results**, a finding sentence from Figure 1's numbers naming its scenario, then
-  **Figure 1**: the largest controlled comparison (the commanders shared by two launches
+- **Results**, **Figure 1**: the largest controlled comparison (the commanders shared by two launches
   of one harness, in the most such launches; C1 today), one row per commander: its score
   as a bar on the shared 0–100 scale with a line from its worst to its best battle,
   battles won, median order age and API cost per battle. The caption names the mode, says
   "once per launch" only when that holds, names the enemy AI's difficulty, says when
-  prompts were tuned on the scenario and that Figures 2 and 3 pool all its battles. Its footnotes are the only place the page defines the scenario's
+  prompts were tuned on the scenario and that Figure 3 pools all its battles. Its footnotes are the only place the page defines the scenario's
   variant (the stronger enemy's +10% stats), the score and order age.
 - **Same battle, different plans** (**Figure 2**), for the scenario in the replay: one
   map per model (its settings pooled, † with the breakdown in a tooltip) and per scripted
@@ -186,10 +186,11 @@ The map's lower left names the two armies ("gpt-6-sol's army", "Game AI"). **Mod
 beside it outlines every unit where it stood in the observation behind the latest reply
 that reached the game (for the asynchronous commander, the latest adopted plan's older
 view), joined by a line to where the unit is now, with "Outlines: where units stood N s
-ago" in a caption; live markers recede meanwhile. It is off in ordinary playback. The
+ago" in a caption; live markers recede meanwhile. It is on while the key maneuver autoplays, off otherwise until turned on. The
 timeline labels its rows (notes, replies, events) and its lowest band is the same view
-age, second by second, on a fixed 0–25 s scale. The waiting line counts how long ago the
-model was asked. Map labels that would overlap another are dropped, except the selected
+age, second by second, on a fixed 0–15 s scale with a dashed 5 s line. The waiting line
+("Waiting 6.5 s for the model's next reply"; "Asking for..." at the moment of asking) counts
+how long ago the model was asked. Map labels that would overlap another are dropped, except the selected
 unit's; the roster and hover still name every unit.
 
 The moment panel shows the latest decision applied by the replay time, never a reply

@@ -147,6 +147,18 @@ counting every battle and opening the earliest finished one, the casualty-only n
 counting the 7 affected losses, and small type fixes (a two-line title, no hyphen break in
 model names, aligned captions, no double rule, no pulsing dot).
 
+Then six scenarios that had no question or challenge text got one (the Sigvald and Herald
+Dwarf-gun defences, cavalry against halberds with and without the Pegasus general, Kairos
+against Skaven screens): drafted from their declarations, recorded rosters and the game
+database, each claim checked by an independent adversarial fact checker that corrected
+every draft; they await the owner's review with the analyst notes. A final whole-page
+review at `71d9988` found every requirement met but the one-minute view; so the finding now
+opens the page under the title (with the army still on the first desktop screen), Figure
+1's caption no longer claims Figure 2 shows its scenario, the run card names the setting
+its record covers ("won 0 of 7 here with low reasoning"), the timeline's view-age band is
+taller on a 0–15 s scale, Method explains the battle menu's "tactics" and "plans", and
+Figure 3's scenario names look clickable.
+
 ## 2026-10-15: Report: one score per commander
 
 The owner's review of the outside-reader redesign: it still looked generated (the header

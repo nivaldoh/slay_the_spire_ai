@@ -22,22 +22,34 @@
       "challenge": "Seven Dwarf units face twenty attacking Skaven units. The defender wins if it is still holding when the 20-minute timer runs out."
     },
     "dwf-sla-taurox": {
-      "title": "Dwarf guns versus Sigvald"
+      "title": "Dwarf guns versus Sigvald",
+      "question": "Can an AI protect its slow Dwarf shooters from a faster attacking army?",
+      "challenge": "Twelve Dwarf units defend against twelve Slaanesh units: Prince Sigvald the Magnificent, a single character who leads them, plus five infantry regiments, a cavalry unit, two chariots and three monstrous units. Five Dwarf units are slow shooters, weaker in melee than the five Dwarf melee regiments. Every attacker is faster than the shooters, and the cavalry, the chariots and the Fiends of Slaanesh (a monstrous unit) move more than three times as fast, so the melee regiments have to keep the enemy off the shooters while they fire. The Dwarfs win if they break the attack or are still holding when the 60-minute timer runs out."
     },
     "dwf-sla-herald": {
-      "title": "Dwarf guns versus a Herald"
+      "title": "Dwarf guns versus a Herald",
+      "question": "Can an AI protect its slow Dwarf shooters from a faster attacking army for 20 minutes?",
+      "challenge": "Twelve Dwarf units defend against twelve Slaanesh units: a Herald of Slaanesh, a single character who leads them, plus five infantry regiments, a cavalry unit, two chariots and three monstrous units. These are the units of the Sigvald battle, except that the Herald replaces Sigvald: faster than Sigvald, but lightly armoured and without a shield. Five Dwarf units are slow shooters that cannot outrun any attacker, so the five Dwarf melee regiments have to keep the enemy off them. The Dwarfs win if they break the attack or are still holding when the 20-minute timer runs out."
     },
     "dwf-sla-herald-hard": {
-      "title": "Dwarf guns versus a stronger Herald army"
+      "title": "Dwarf guns versus a stronger Herald army",
+      "question": "Can an AI protect its slow Dwarf shooters from a faster attacking army for 20 minutes?",
+      "challenge": "Twelve Dwarf units defend against twelve Slaanesh units: a Herald of Slaanesh, a single character who leads them, plus five infantry regiments, a cavalry unit, two chariots and three monstrous units. These are the units of the Sigvald battle, except that the Herald replaces Sigvald: faster than Sigvald, but lightly armoured and without a shield. Five Dwarf units are slow shooters that cannot outrun any attacker, so the five Dwarf melee regiments have to keep the enemy off them. The Dwarfs win if they break the attack or are still holding when the 20-minute timer runs out."
     },
     "brt-cavalry-emp-pikes": {
-      "title": "Cavalry versus halberds"
+      "title": "Cavalry versus halberds",
+      "question": "Can an AI defend with cavalry alone against an attacking army of halberds and guns?",
+      "challenge": "A lord, four regiments of knights and a unit of horse archers, all mounted, defend against eight attacking Empire units: four halberd units, two units of handgunners, a cannon and a general on foot. Charging the halberds head-on risks a losing grind, and standing still leaves it a target for the handgunners and the long-range cannon; but every rider is more than twice as fast as any enemy unit, so the cavalry can pick where and when to fight. As the defender, it wins by breaking the attackers or simply by not being beaten before the 20-minute timer runs out."
     },
     "brt-cavalry-emp-pegasus": {
-      "title": "Cavalry versus halberds and a Pegasus"
+      "title": "Cavalry versus halberds and a Pegasus",
+      "question": "Can an AI's cavalry still defend when the enemy general flies faster than any of its riders?",
+      "challenge": "Six mounted units (a lord, four regiments of knights and a unit of horse archers) defend against eight attacking Empire units: four halberd units, two units of handgunners, a cannon and a general riding an Imperial Pegasus. In the air the general is faster than any of the riders, so the cavalry can no longer outrun every enemy, but a general that chases the riders arrives far ahead of its own slow halberds and guns. The defender wins by breaking the attackers or by not being beaten before the 20-minute timer runs out."
     },
     "tze-caster-skv-screen": {
-      "title": "Kairos and escorts versus Skaven screens"
+      "title": "Kairos and escorts versus Skaven screens",
+      "question": "Can an AI use one spellcaster's scarce magic to hold off a much larger army?",
+      "challenge": "Kairos, a flying character and the army's only spellcaster, defends with four escorts: two ranged infantry units, one heavily armoured melee unit and a small unit of fast flyers. Ten Skaven units with three times as many troops attack: a leader, seven infantry units, short-range warpfire throwers and a catapult unit that reaches 400 m, twice as far as any of Kairos's spells. Each spell costs 5 to 20 points of magic from a pool that starts at 12 and refills slowly, and Kairos is one character, not a regiment: flying him out to the catapult risks losing him, while holding back leaves it free to fire. The defender wins by breaking every attacker, or by still holding the field when the 20-minute timer runs out."
     },
     "siege-kho5-dwf5": {
       "title": "Siege defence pilot",

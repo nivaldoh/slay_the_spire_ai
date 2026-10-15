@@ -277,7 +277,7 @@
       el("b", "Figure 1. "),
       title,
       item.footnote ? "*" : "",
-      `, a ${modeOf(item)?.name || "battle"}: ${item.controlled.launches} game launches, each commander ${item.controlled.once ? "once " : ""}per launch with the same harness${level(item) ? `, against the game's AI on ${level(item)}` : ""}${item.split === "development" ? "; prompts were tuned on this scenario" : ""}. Figures 2 and 3 pool all ${item.battles.length} of its battles.`,
+      `, a ${modeOf(item)?.name || "battle"}: ${item.controlled.launches} game launches, each commander ${item.controlled.once ? "once " : ""}per launch with the same harness${level(item) ? `, against the game's AI on ${level(item)}` : ""}${item.split === "development" ? "; prompts were tuned on this scenario" : ""}. Figure 3 pools all ${item.battles.length} of its battles.`,
     );
     $("headline-foot").replaceChildren(
       ...[
@@ -307,16 +307,23 @@
       ...models.flatMap((s, i) => [
         i ? " and " : "",
         el("span", s.row.name, "nowrap"),
-        ` scores ${points(s.score)}`,
+        `${i ? "" : " scores"} ${points(s.score)}`,
       ]),
-      `${scripts.length ? `; the best scripted rule, ${points(best)}` : ""}. `,
+      ` out of 100${scripts.length ? `; the best scripted rule, ${points(best)}` : ""}. `,
       ...(aged.length
         ? [
             "The models' orders act on views of the battle ",
-            el("strong", `${spread(aged.map((s) => s.box[2]))} old`),
-            scripts.some((s) => s.ages.length)
-              ? `; the rules' on ${spread(scripts.filter((s) => s.ages.length).map((s) => s.box[2]))}.`
-              : ".",
+            el("strong", `${spread(aged.map((s) => s.box[2]))} old`, "nowrap"),
+            ...(scripts.some((s) => s.ages.length)
+              ? [
+                  "; the rules' on ",
+                  el(
+                    "span",
+                    `${spread(scripts.filter((s) => s.ages.length).map((s) => s.box[2]))}.`,
+                    "nowrap",
+                  ),
+                ]
+              : ["."]),
           ]
         : []),
     ];
@@ -373,8 +380,8 @@
       const record = el(
         "span",
         items.length === 1
-          ? "its only battle here"
-          : `won ${valid.filter(won).length} of ${valid.length} here${failed ? ` (+${failed} did not finish)` : ""}`,
+          ? `its only battle here${row.short ? ` with ${row.short}` : ""}`
+          : `won ${valid.filter(won).length} of ${valid.length} here${row.short ? ` with ${row.short}` : ""}${failed ? ` (+${failed} did not finish)` : ""}`,
         "sample",
       );
       if (row.harnesses > 1) record.title = "Battles from more than one harness version";
@@ -448,7 +455,7 @@
     );
     const caption = [
       el("b", "Figure 2. "),
-      `${scenario.title}: where each model's army went (the centre of its units still fighting), in every battle as a thin line, brighter for wins, and as the mean position over time, thick from □ to ●. ◆ enemy units where first seen in its first battle. Click a map to watch its first finished battle.`,
+      `${scenario.title}: where each commander's army went (the centre of its units still fighting), in every battle as a thin line, brighter for wins, and as the mean position over time, thick from □ to ●. ◆ enemy units where first seen in its first battle. Click a map to watch its first finished battle.`,
     ];
     if (shown.some((item) => item.rows.length > 1 || item.harnesses > 1))
       caption.push(" † pools several settings or harness versions.");
@@ -698,13 +705,12 @@
     const killed = [...shown].filter(
       (key) => data.battles[key].progress_basis === "killed" && !won(entries.get(key)),
     );
-    box.append(
-      el(
-        "p",
-        `Figure 3. Each model's mean score over its finished battles in every scenario, darker for higher, beside the best scripted rule's; one section per game mode. † pools settings or harness versions: not a controlled comparison.${killed.length ? ` ${killed.length} lost pilot battles recorded casualties only; their scores count the enemy killed, not those who fled (lower bounds).` : ""}`,
-        "figcap",
-      ),
+    const caption = el("p", null, "figcap");
+    caption.append(
+      el("b", "Figure 3. "),
+      `Each model's mean score over its finished battles in every scenario, darker for higher, beside the best scripted rule's; one section per game mode. Click a scenario to watch it above. † pools settings or harness versions: not a controlled comparison.${killed.length ? ` ${killed.length} lost pilot battles recorded casualties only; their scores count the enemy killed, not those who fled (lower bounds).` : ""}`,
     );
+    box.append(caption);
   }
 
   // Analyst notes: chapters that play their moment; the playing one shows its sentence.
@@ -829,7 +835,7 @@
     const items = [
       [
         "What a model sees",
-        "Text only, at every decision: its own units, the enemy units its army can see right now, the enemy roster shown on the custom-battle screen, a coarse passability grid where the interface provides one, its last orders, notes it wrote itself and how late its previous orders landed. Prompted models answer with orders per unit (move, attack, halt, change behaviour, use an ability; fly, build or reinforce where the battle allows); the commander answers with plans that scripted unit skills carry out.",
+        "Text only, at every decision: its own units, the enemy units its army can see right now, the enemy roster shown on the custom-battle screen, a coarse passability grid where the interface provides one, its last orders, notes it wrote itself and how late its previous orders landed. Prompted models answer with orders per unit (move, attack, halt, change behaviour, use an ability; fly, build or reinforce where the battle allows), with tactical advice in the prompt (“tactics” in the battle menu) or without it; the plan harness (“plans”) answers instead with plans that scripted unit skills carry out.",
       ],
       [
         "Real time",
