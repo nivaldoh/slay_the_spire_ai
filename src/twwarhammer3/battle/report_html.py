@@ -308,6 +308,7 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
                                            if not scenario.get("family")
                                            else "Specialist scenarios"),
             "split": scenario.get("split"), "status": scenario.get("status"),
+            "difficulty": (scenario.get("expect") or {}).get("difficulty"),
             "battle_type": scenario.get("battle_type") or "unrecorded",
             "armies": armies(scenario), "battles": keys,
             "rows": sorted(rows.values(), key=lambda item: (

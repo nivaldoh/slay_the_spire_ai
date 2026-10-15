@@ -122,6 +122,8 @@
     const short = `${word}${duration ? ` ${duration}` : ""}${timeLimit ? " (time limit)" : ""}`;
     return { text, short, tone: engine };
   }
+  // "ai_level_very_hard" -> "very hard": the game's battle AI difficulty, where recorded.
+  const level = (item) => item.difficulty?.replace(/^ai_level_/, "").replaceAll("_", " ");
   const won = (entry) =>
     entry.trial.valid && (entry.trial.engine_outcome || entry.trial.outcome) === "won";
   function context(entry) {
@@ -362,7 +364,7 @@
       list,
       el(
         "p",
-        `Enemy army broken at the end (● won ○ lost) and median order age; each commander ${item.controlled.once ? "once " : ""}in every round (a fresh game launch), one harness${item.split === "development" ? "; a development scenario" : ""}.`,
+        `Enemy army broken at the end (● won ○ lost) and median order age; each commander ${item.controlled.once ? "once " : ""}in every round (a fresh game launch), one harness${level(item) ? `, against the game's AI on ${level(item)}` : ""}${item.split === "development" ? "; a development scenario" : ""}.`,
         "note",
       ),
     );
@@ -373,7 +375,12 @@
     scenario = data.scenarios[index];
     $("scenario").value = String(index);
     $("question").textContent = scenario.question || scenario.title;
-    $("scenario-title").textContent = scenario.question ? scenario.title : "";
+    $("scenario-title").textContent = [
+      scenario.question && scenario.title,
+      level(scenario) && `enemy: the game's AI on ${level(scenario)}`,
+    ]
+      .filter(Boolean)
+      .join(" · ");
     $("challenge").textContent = scenario.challenge || "";
     $("results-scenario").textContent = scenario.title;
     document.title = `${synthetic ? "SYNTHETIC DEMO — " : ""}${scenario.title} · WH3 Commander Bench`;
