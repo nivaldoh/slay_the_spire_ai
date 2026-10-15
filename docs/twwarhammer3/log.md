@@ -1,5 +1,35 @@
 # WH3 battle versions
 
+## Recorder acceptance and imagery candidate (2026-10-15 UTC)
+
+Owner-requested visual acceptance, not calibration. Source `581119e` ran sequential
+`rush_nearest` cavalry probes at unpaused 1×. Recorder off
+(`visual-probes/recorder-off-20261015-r3`) lost at 391.7 s, with no refusals;
+recorder on (`visual-probes/recorder-on-20261015`) lost at 263.7 s, with one
+`unit_routing` refusal after the lord routed before application. These outcomes are
+not a controller comparison. Both result rows are retained.
+
+The recorder saved 260 frames (1,564,778 bytes), including the terminal result.
+Intervals were 0.9/1.2 s around the 1 Hz target; maximum 1.2 s. All 104 timestamps
+shared with the trace had matching public unit ids/types. No evaluation, setup or
+hidden final state entered the recorder. Total sample CPU time averaged 2.851 ms,
+median 2.991 ms, p90 3.998 ms, maximum 7.019 ms. Battle/wall-clock ratios over the
+Deployed trace span were 0.998213 off and 0.997703 on. One pair cannot establish a
+precise overhead effect, but the measured cost supports recording by default, with
+`--no-record-replay` available. Audit and script: `visual-probes/recorder-acceptance.json`
+and `visual-probes/analyze_recording.py`.
+
+The first off attempt was rejected before launch by timeout validation. The r2 attempt
+stalled before the frontend timer; bringing the game forward unblocked it, but the
+900 s startup deadline expired after Start Battle. Retain it as infrastructure failure
+with zero episodes, not a loss. The r3 and on launches then started normally.
+
+The imagery candidate adds `--stills`, public-position camera triggers, separate
+readable names, capture failure metadata and WebP embedding within the report size
+budget. Earliest completed trials are chosen by chronology, independent of outcome.
+Native capture, names and camera behavior still await the short scripted probe, then
+the separately authorized Sol low acceptance. No new API spend yet.
+
 ## Visual replay v1 and recorder candidate (2026-10-15 UTC)
 
 Implemented phase 1 of [the visual report plan](visual-report-plan.md) and the opt-in

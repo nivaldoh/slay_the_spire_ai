@@ -193,3 +193,5 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-14,bench-g1-cavalry-ai10-01-20261014,episode-0000,brt-cavalry-emp-assault,attack_nearest,,,,6763d0e,realtime,1.0,0.0,lost,411,0.21,0.8,1336,0,0.3,0,classic,,,,,0.0,0.7962264150943397,0.0,engine_result
 2026-10-14,bench-g1-cavalry-ai10-01-20261014,episode-0001,brt-cavalry-emp-assault,rush_nearest,,,,6763d0e,realtime,1.0,0.0,lost,248,0.31,0.63,797,1,0.3,0,classic,,,,,0.0,0.6283018867924528,0.0,engine_result
 2026-10-14,bench-g1-cavalry-ai10-01-20261014,episode-0002,brt-cavalry-emp-assault,llm_rules,gpt-6-sol,low,,6763d0e,realtime,1.0,0.0,won,528,0.54,0.38,96,29,5.47,0.7934,classic,,,,,0.543778801843318,0.0,0.0,engine_result
+2026-10-15,recorder-off-20261015-r3,episode-0000,brt-cavalry-emp-assault,rush_nearest,,,,581119e,realtime,1.0,0.0,lost,392,0.19,0.19,1280,0,0.3,0,classic,,,,,0.0,0.18867924528301888,0.0,engine_result
+2026-10-15,recorder-on-20261015,episode-0000,brt-cavalry-emp-assault,rush_nearest,,,,581119e,realtime,1.0,0.0,lost,264,0.37,0.69,849,1,0.3,0,classic,,,,,0.0,0.6943396226415094,0.0,engine_result

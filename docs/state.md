@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-15 00:53 UTC: what is running, where each game
+Updated 2026-10-15 01:27 UTC: what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -9,9 +9,16 @@ stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 WH3 [visual report redesign plan](twwarhammer3/visual-report-plan.md) implementation
 is active. The offline replay and opt-in recorder are implemented; 1102 repository
 tests pass (one skip), including Lua 5.1, and the offline browser checks pass.
-The owner has now requested the scripted recorder off/on and imagery probes, followed
-by the Sol low check (about $0.80). Preparing their frozen source; calibration remains
-stopped. Artifacts: `runs/twwarhammer3/reports/visual-report.html` and the synthetic
+The owner requested the scripted recorder off/on and imagery probes, followed
+by the Sol low check (about $0.80). The recorder off/on probes are complete; no game is
+currently running. Off lost at 391.7 s with no refusals; on lost at 263.7 s with one
+`unit_routing` refusal. The recorder audit passed: 260 public frames including the
+terminal result, 2.851 ms mean CPU/sample, clock ratios 0.998213 off / 0.997703 on.
+Evidence: `runs/twwarhammer3/visual-probes/recorder-acceptance.json`.
+The earlier r2 startup failure is retained with zero episodes and no API spend.
+Next: merge the imagery candidate, run its short scripted native camera/name/capture
+probe, then the authorized Sol low check. The candidate is in `/tmp/wh3-visual-imagery`.
+Calibration remains stopped. Artifacts: `runs/twwarhammer3/reports/visual-report.html` and the synthetic
 `visual-report-demo.html`.
 Owner decisions: no unit art, exact prompts included but collapsed, and camera moves
 during jobs accepted.
@@ -24,8 +31,8 @@ No new battles or model calls; calibration remains stopped.
 
 WH3 benchmark work stopped at the owner's request on 2026-10-14 at 22:19:59 UTC.
 The owner cleared the goal and wants to discuss difficulty calibration separately.
-**No game or experiment queue is running. Do not resume calibration automatically.**
-The controller and runner exited; the read-only doctor reports ready with no blockers.
+**Do not resume calibration automatically.** Its controller and runner exited. Only the
+separately requested visual-report acceptance probes above may run.
 
 The engineering and live acceptance work is preserved on `main`: paired rotations,
 external controllers, setup checks, uncertainty/failure reports, terrain, specialist
