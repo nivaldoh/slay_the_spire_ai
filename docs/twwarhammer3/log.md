@@ -38,11 +38,12 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | benchmark harness | b11 (2026-10-15), evaluator v2, track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Two b11 engine outcomes; whole-unit counters and unchanged rematch checked. C1 remains development evidence |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
-| report | consolidated suite (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | `reports/benchmark.html`: 55 jobs, 91 trials, 19 scenarios, 10 battle types |
+| report | redesigned for outside readers (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | `reports/benchmark.html` (27 MB): 55 jobs, 85 battles shown in 19 scenarios (6 diagnostic probes held back), headline C1 |
 
 ## Index
 
-- 2026-10-15: [Harness b11: common measures and one report](#2026-10-15-harness-b11-common-measures-and-one-report) ·
+- 2026-10-15: [Report redesign for outside readers](#2026-10-15-report-redesign-for-outside-readers) ·
+  [Harness b11: common measures and one report](#2026-10-15-harness-b11-common-measures-and-one-report) ·
   [Integrate llm v17 and commander v4](#2026-10-15-integrate-llm-v17-and-commander-v4) ·
   [Prioritize scenario variety and shared measures](#2026-10-15-prioritize-scenario-variety-and-shared-measures) ·
   [Plan revision and preparation](#2026-10-15-plan-revision-and-preparation) ·
@@ -97,6 +98,70 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
+
+## 2026-10-15: Report redesign for outside readers
+
+The owner asked for a benchmark report that an AI researcher who knows nothing about the
+game would stop to read: comparisons that read at a glance instead of "117 / 217 · 323 /
+530", no run-set sections about code revisions, the real-time aspect easy to see and
+compare, a less generic style, and lean code. [reports.md](reports.md#the-page) describes
+the page. No game ran and no model was called; `reports/benchmark.html` is rebuilt from
+the same 55 jobs.
+
+What changed on the page:
+- **Commanders, not run sets.** One row per commander (model, effort, prompt or scripted
+  rule) per scenario. A row can span several harness versions; its name then carries a †
+  and Run settings names each battle's. The collector's JSON and text keep the strict
+  groups. A harness fingerprint hashes the job's source files except presentation, the
+  scenario declaration without its prose, game build, track, timing and recorder/stills
+  switches, so C1's two revisions (docs and report files only) count as one.
+- **Enemy army broken**, one mark per battle on a shared 0–100% axis (filled won, hollow
+  lost, a cross for did not finish), replaces the soldier-count tables: `1 −
+  active/registered` of the enemy at the end, floored below 100%, "n/a" when the evaluator
+  did not record it.
+- **The headline** beside the title is the largest controlled comparison in the first
+  notes group: the commanders shared by two or more launches of one harness. Today that is
+  C1: 6 launches, gpt-6-sol 1/6, gpt-6-luna 0/6, both baselines 0/6, median order age
+  5.7, 6.3, 0.3 and 0.3 s.
+- **Same battle, different plans**: route maps of every battle, one column per commander
+  over one framing. On the cavalry assault every gpt-6-sol battle loops around the halberd
+  screen; every other commander's paths run straight at it.
+- **Real time**: per commander, one minute of its first finished battle as a sawtooth of
+  the age of its latest view (on the cavalry assault between about 3 and 14 s for gpt-6-sol
+  and gpt-6-luna at low effort, up to 22 s for gpt-6-luna at medium effort, 0.3 to 1.8 s
+  for the scripted baselines), the median and 90th-percentile order age, and the measured
+  battle/wall clock ratio (0.98–1.00 there). The same view age is the replay timeline's
+  lowest band and, behind "Model's view", outlines of the view behind the latest reply.
+  "See what moved during one reply" pins the median-age reply, showing every unit that
+  moved 5 m or more. The asynchronous commander is charted by its plans' age (only plan
+  adoptions carry `plan_age_s`), not its executor's 0.3 s. A labelled placeholder names
+  the deferred added-delay experiment.
+- **Honesty**: the curated C1 battle (gpt-6-sol's one win in 6) states the commander's
+  record and that it is not a typical result; Method says every scenario is in-sample
+  development; pooled cells in All scenarios carry †; the 6 diagnostic-probe battles and 6
+  setup-only launches are counted under "Not shown"; analyst notes are labelled as written
+  with AI assistance; one note's causal wording ("broke the guns") became the observed
+  sequence after checking the frames; battles that reached the 20:00 timer read "at the
+  time limit" although b8 recorded them as `engine_result`; Method lists what a model
+  actually receives, beside abridged verbatim lines of one message and its reply.
+- **Style**: a dark stage and a light results page, one type scale, a neutral UI accent so
+  blue and orange mean only the armies, the decision panel's repeated caveats said once,
+  and on a phone the results keyed and the hero chart moved after the battle.
+- **Size**: the embedded replays keep only the fields the page draws, coordinates to
+  0.1 m: the suite page went from 35 MB to 27 MB.
+
+Notes: `brt-cavalry-emp-assault-hard` is titled "Cavalry assault, stronger enemy (+10%
+stats)"; both cavalry challenges explain why a frontal charge is risky (the halberd and
+gun claims already checked in the game database); scenarios carry a `group`.
+
+Reviews: three independent critiques (target reader, information design, rigor) and a
+synthesis, then a second reader and rigor round on the rebuilt page. Both rounds' findings
+were applied except a latency-against-outcome scatter, rejected because speed is
+confounded with the model here; the added-delay experiment is the controlled test.
+
+Validation: full `uv run pytest -q` and lint; prettier (width 100); the offline browser
+check passed on the canonical page, a copy, the synthetic demo and the two-model pair page
+at 1440 and 390 px, with no external requests or browser errors.
 
 ## 2026-10-15: Harness b11: common measures and one report
 

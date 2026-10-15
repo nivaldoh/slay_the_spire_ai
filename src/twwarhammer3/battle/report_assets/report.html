@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-@@SCRIPT_HASH@@'; style-src 'unsafe-inline'; img-src data: blob:; base-uri 'none'; form-action 'none'">
-  <title>WH3 AI commander benchmark</title>
+  <title>WH3 Commander Bench</title>
   <style>@@STYLE@@</style>
 </head>
 <body>
@@ -21,43 +21,40 @@
     <symbol id="glyph-melee" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M4 4l13 13M20 4L7 17M14.5 20.5l6-6M3.5 14.5l6 6"/></symbol>
   </svg>
   <a class="skip" href="#viewer">Skip to the replay</a>
-  <header class="topbar">
-    <div class="wrap topbar-row">
-      <p class="kicker">Total War: WARHAMMER III · AI commander benchmark · development results</p>
-      <nav aria-label="Sections"><a href="#suite">Suite</a><a href="#watch">Watch</a><a href="#happened">What happened</a><a href="#compare">Compare</a></nav>
+  <p id="demo-banner" class="demo-banner" hidden>SYNTHETIC DEMO · Every value on this page is invented to exercise the layout. No game or model was run.</p>
+
+  <div class="stage-band">
+    <header class="wrap masthead">
+      <p class="brand"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 1.5l8 4.6v7.8l-8 4.6-8-4.6V6.1z"/><path d="M6 10.5l2.6 2.6L14.5 7"/></svg>WH3 Commander Bench <span class="badge">early results</span></p>
+      <nav aria-label="Sections"><a href="#watch">Battle</a><a href="#results">Results</a><a href="#realtime">Real time</a><a href="#all">All scenarios</a><a href="#method">Method</a></nav>
+    </header>
+    <div class="wrap hero">
+      <div>
+        <h1>Language models commanding armies in real time</h1>
+        <p class="pitch">Each model reads a text report of a <cite>Total War: WARHAMMER III</cite> battle and commands its regiments through a game mod, and the battle never pauses while it thinks.</p>
+        <p id="facts" class="hero-facts"></p>
+      </div>
+      <div id="scoreboard" class="scoreboard" hidden></div>
     </div>
-    <p id="demo-banner" class="demo-banner" hidden>SYNTHETIC DEMO · Every value on this page is invented to exercise the layout. No game or model was run.</p>
-  </header>
-  <main>
-    <details id="suite" class="wrap suite">
-      <summary id="suite-summary">Benchmark overview</summary>
-      <p class="lede">Different armies and objectives, compared within their recorded conditions. These development battles are exploratory; there is no combined score across scenarios.</p>
-      <div id="suite-table"></div>
-      <p id="suite-failures" class="footnotes"></p>
-    </details>
-    <section id="watch" class="watch" aria-labelledby="question">
-      <div class="wrap intro">
-        <p id="scenario-pick" class="scenario-pick" hidden><label for="scenario">Scenario</label> <select id="scenario"></select></p>
-        <h1 id="question"></h1>
+
+    <section id="watch" class="wrap watch" aria-labelledby="question">
+      <div class="scenario-head">
+        <h2 id="question"></h2>
         <p id="challenge" class="challenge"></p>
       </div>
-      <div id="viewer" class="wrap viewer">
-        <div class="run-card">
-          <p id="run-line" class="run-line"></p>
-          <p id="conditions" class="conditions"></p>
-          <div class="watch-actions">
-            <button id="watch-featured" class="primary" type="button">▶ Watch the featured maneuver</button>
-            <button id="watch-full" type="button">Watch the full battle</button>
-          </div>
-          <label class="run-pick"><span>Choose another run</span> <select id="run-select"></select></label>
-        </div>
+      <div id="viewer" class="viewer">
         <div class="stage">
           <div id="map-wrap" class="map-wrap">
-            <svg id="map" class="map" role="img" aria-label="Battle map of recorded unit positions; north is up" tabindex="0"><g id="map-ground"></g><g id="map-layer"></g><g id="map-furniture"></g></svg>
+            <svg id="map" class="map" role="img" aria-label="Battle map of recorded unit positions; north is up" tabindex="0"><g id="map-ground"></g><g id="map-lag-layer"></g><g id="map-layer"></g><g id="map-furniture"></g></svg>
             <div class="map-top">
               <p id="map-caption" class="map-caption" hidden></p>
               <p id="map-status" class="map-status" hidden></p>
               <p id="map-synthetic" class="map-synthetic" hidden>SYNTHETIC DEMO · invented frames</p>
+            </div>
+            <p id="map-lag" class="map-lag" hidden></p>
+            <div class="map-bottom">
+              <p class="map-legend"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-friendly"/></svg><span id="map-army">The model's army</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-enemy"/></svg><span>Game AI</span></p>
+              <button id="lag-toggle" class="lag-toggle" type="button" aria-pressed="false" title="Outline every unit where it stood in the view behind the latest reply">Model's view</button>
             </div>
             <div id="map-selection" class="map-selection" hidden></div>
             <p id="map-empty" class="map-empty" hidden></p>
@@ -71,58 +68,107 @@
             <span class="step-group" role="group" aria-label="Step through events">
               <button id="prev-event" type="button" aria-label="Previous event" title="Previous event ([)">◀</button><span class="step-label">Event</span><button id="next-event" type="button" aria-label="Next event" title="Next event (])">▶</button>
             </span>
-            <label class="speed">Playback <select id="speed"><option value="1">1×</option><option value="4" selected>4×</option><option value="16">16×</option></select> <small>(the battle ran at 1×)</small></label>
+            <label class="speed">Replay <select id="speed"><option value="1">1×</option><option value="4" selected>4×</option><option value="16">16×</option></select></label>
           </div>
           <input id="scrubber" class="scrubber" type="range" min="0" max="1" step="0.1" value="0" aria-label="Battle time in seconds">
           <svg id="strip" class="strip" role="img" aria-label="Timeline: decisions, rejections, highlights and key events"><g id="strip-static"></g><line id="strip-cursor" class="strip-cursor" x1="0" x2="0" y1="0" y2="0"/></svg>
-          <p class="map-key">
-            <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-friendly"/></svg>Friendly</span>
-            <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-enemy"/></svg>Enemy</span>
-            <span><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M2 12C8 12 12 4 22 4" class="key-path"/></svg>Observed path</span>
-            <span><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M2 8H22" class="key-route"/></svg>Issued route</span>
-            <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-ring"/></svg>Attack target</span>
-            <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-seen"/></svg>Last seen</span>
-            <span><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="2" width="14" height="12" class="key-blocked"/></svg>Impassable</span>
-            <label class="whole"><input id="whole" type="checkbox"> Whole map</label>
-            <span class="strip-key">Timeline: <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="7" y="2" width="2.5" height="12" class="key-orders"/></svg>new orders <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2" class="key-keep"/></svg>no new orders <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="7" y="1" width="3" height="14" class="key-rejected"/></svg>rejected order <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" class="key-note"/></svg>analyst note <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3l5 5-5 5-5-5z" class="key-event"/></svg>key event</span>
-            <span id="map-note" class="map-note"></span>
-          </p>
-          <div id="roster" class="roster"></div>
+          <details class="map-key">
+            <summary>Map key</summary>
+            <p>
+              <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-friendly"/></svg>Model's army</span>
+              <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-enemy"/></svg>Enemy (game AI)</span>
+              <span><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M2 12C8 12 12 4 22 4" class="key-path"/></svg>Observed path</span>
+              <span><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M2 8H22" class="key-route"/></svg>Ordered route</span>
+              <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-ring"/></svg>Attack target</span>
+              <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-seen"/></svg>Enemy last seen</span>
+              <span><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="2" width="14" height="12" class="key-blocked"/></svg>Impassable</span>
+              <span class="strip-key">Timeline: <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="7" y="2" width="2.5" height="12" class="key-orders"/></svg>new orders <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2" class="key-keep"/></svg>no new orders <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="7" y="1" width="3" height="14" class="key-rejected"/></svg>rejected order <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" class="key-note"/></svg>analyst note <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3l5 5-5 5-5-5z" class="key-event"/></svg>key event</span>
+              <label class="whole"><input id="whole" type="checkbox"> Show the whole map</label>
+            </p>
+          </details>
+          <p id="map-note" class="map-note"></p>
         </div>
-        <aside id="moment" class="moment" aria-label="This moment in the battle"></aside>
+        <aside class="side" aria-label="The battle in the viewer">
+          <div class="run-card">
+            <p id="run-line" class="run-line"></p>
+            <div class="watch-actions">
+              <button id="watch-featured" class="primary" type="button">▶ Key maneuver</button>
+              <button id="watch-full" type="button">▶ Full battle</button>
+            </div>
+            <p id="scenario-pick" class="scenario-pick" hidden><label for="scenario">Scenario</label><select id="scenario"></select></p>
+            <label class="run-pick"><span>Battle</span><select id="run-select"></select></label>
+          </div>
+          <div id="moment" class="moment" aria-label="This moment in the battle"></div>
+        </aside>
+      </div>
+      <p id="chapters-head" class="chapters-head" hidden><b>Analyst notes</b> written after the battle from its recorded frames and orders (drafted with AI assistance and checked against the records); not the model's words.</p>
+      <ol id="highlights" class="chapters" aria-label="Analyst notes"></ol>
+      <div class="below">
+        <div id="roster" class="roster"></div>
+        <figure id="stills-block" class="stills-block" hidden>
+          <div id="stills" class="stills"></div>
+          <figcaption>In the game: spectator camera, not what the model saw.</figcaption>
+        </figure>
       </div>
     </section>
+  </div>
 
-    <section id="happened" class="wrap section" aria-labelledby="happened-heading">
-      <h2 id="happened-heading">What happened</h2>
-      <p id="happened-intro" class="lede"></p>
-      <ol id="highlights" class="highlights"></ol>
-      <div id="stills-block" class="stills-block" hidden>
-        <h3>In the game</h3>
-        <div id="stills" class="stills"></div>
-      </div>
-      <details id="events-box" class="more"><summary id="events-summary">All recorded events</summary><ol id="events" class="events"></ol></details>
-      <details id="lanes-box" class="more"><summary>Unit timelines</summary><div id="lanes" class="lanes"></div></details>
+  <main>
+    <section id="results" class="wrap section" aria-labelledby="results-heading">
+      <header class="section-head">
+        <p class="eyebrow" id="results-scenario"></p>
+        <h2 id="results-heading">Same battle, different plans</h2>
+        <p class="caption">Every recorded path of each commander's army, one map per battle, same framing (□ start, ● end, × destroyed, ◆ enemy where first seen). Click one to watch it.</p>
+      </header>
+      <div id="routes" class="routes"></div>
+      <h3 class="subhead">How far each commander got</h3>
+      <div id="rows" class="rows"></div>
     </section>
 
-    <section id="compare" class="wrap section" aria-labelledby="compare-heading">
-      <h2 id="compare-heading">How much progress did each army make?</h2>
-      <p class="lede">Raw counts retain each army's size. Soldiers/entities include later registered summons, purchases and waves. Net losses are registered headcount minus survivors, not cumulative kills or army value. Routing is not death.</p>
-      <div id="progress-runs"></div>
-      <div id="common-measures" class="common-measures" aria-live="polite"></div>
-      <p class="footnotes">Whole units are regiments, characters or monster units. Active units are alive and deployed, excluding deploying, routing, shattered or leaving units. Duration alone is not success; unspent supplies are not automatically better. Historical measures that were not recorded remain unavailable.</p>
-      <h3 class="outcomes-heading">Outcomes, order delay and cost</h3>
-      <div id="run-sets"></div>
-      <ul id="footnotes" class="footnotes"></ul>
-      <p id="setup-only" class="setup-only" hidden></p>
+    <section id="realtime" class="wrap section" aria-labelledby="realtime-heading">
+      <header class="section-head">
+        <p class="eyebrow">Real time</p>
+        <h2 id="realtime-heading">The battle doesn't wait for the model</h2>
+      </header>
+      <p id="realtime-lede" class="lede"></p>
+      <div id="latency" class="latency"></div>
+      <p class="actions"><button id="show-lag" class="primary" type="button">▶ See what moved during one reply</button> <span class="hint">or turn on <b>Model's view</b> on the map while it plays</span></p>
+      <aside class="next">
+        <p class="eyebrow">Planned</p>
+        <p>An added-delay experiment: the same model with its observations aged by a further 2, 5 and 10 s, to measure how much progress each second costs. Natural latency differences between models are observed here, not controlled.</p>
+      </aside>
+    </section>
+
+    <section id="all" class="wrap section" aria-labelledby="all-heading">
+      <header class="section-head">
+        <p class="eyebrow">Every battle so far</p>
+        <h2 id="all-heading">All scenarios</h2>
+      </header>
+      <div id="matrix" class="matrix"></div>
     </section>
   </main>
-  <footer class="wrap footer">
-    <button id="open-settings" class="link" type="button">Run settings</button>
-    <span>Data: <button id="download-report" class="link" type="button">report JSON</button> · <button id="download-replay" class="link" type="button">this replay JSON</button></span>
-    <a href="https://github.com/nivaldoh/slay_the_spire_ai/blob/main/docs/twwarhammer3/reports.md" rel="noopener">Code / methodology</a>
-    <p id="export-status" class="sr-only" aria-live="polite"></p>
+
+  <footer id="method" class="footer">
+    <div class="wrap">
+      <h2>Method</h2>
+      <figure id="interface" class="interface" hidden>
+        <div class="io">
+          <div><h3>What the model receives at each decision</h3><pre id="interface-prompt" class="raw" tabindex="0"></pre></div>
+          <div><h3>What it sends back</h3><pre id="interface-reply" class="raw" tabindex="0"></pre></div>
+        </div>
+        <figcaption id="interface-caption"></figcaption>
+      </figure>
+      <ul id="method-notes" class="method-notes"></ul>
+      <p class="links">
+        <button id="open-settings" class="link" type="button">Run settings for this battle</button>
+        <button id="download-report" class="link" type="button">Report JSON</button>
+        <button id="download-replay" class="link" type="button">This replay's JSON</button>
+        <a href="https://github.com/nivaldoh/slay_the_spire_ai/blob/main/docs/twwarhammer3/reports.md" rel="noopener">Code and methodology</a>
+      </p>
+      <p id="export-status" class="sr-only" aria-live="polite"></p>
+    </div>
   </footer>
+  <div id="tip" class="tip" role="tooltip" hidden></div>
   <dialog id="settings-dialog" class="dialog" aria-labelledby="settings-title">
     <div class="dialog-head"><h2 id="settings-title">Run settings</h2><button id="close-settings" type="button">Close</button></div>
     <div id="settings-body"></div>

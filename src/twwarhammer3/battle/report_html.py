@@ -1,11 +1,16 @@
 """Offline presentation of report.collect output; no statistical recomputation.
 
-Evidence groups remain intact. A comparison view may place groups beside one another
-when only their requested model/effort differs, never pool their samples. Views are
-grouped by scenario, each with a featured trial chosen by the curated notes or by
-chronology, never by outcome. Reader-facing scenario and unit text comes from
-configs/twwarhammer3/report_notes.json. Recorded game stills are embedded as WebP,
-which needs Pillow.
+The page shows one row per commander (model, reasoning effort, prompt or scripted rule)
+within each scenario. A row can hold battles from several harness versions; it counts
+them instead of splitting the row, and every battle keeps its own version. A harness is
+the code and settings that shape play: presentation-only files are left out of it. The
+collector's JSON and text keep the strict, never-pooled groups and paired statistics.
+
+Each scenario has a featured trial: a curated selection, whose record the page states
+beside it, else the first by chronology. Diagnostic probes stay in the data, off the page.
+Reader-facing scenario and unit text comes from
+configs/twwarhammer3/report_notes.json. Recorded game stills are embedded as WebP, which
+needs Pillow.
 """
 
 import base64
@@ -13,7 +18,9 @@ import gzip
 import hashlib
 import io
 import json
+import math
 import re
+from collections import defaultdict
 from pathlib import Path
 
 from gameai.provenance import REPO_ROOT
@@ -23,53 +30,44 @@ from twwarhammer3.battle.controllers import MODEL_POLICIES, policy_parts
 ASSETS = Path(__file__).with_name("report_assets")
 NOTES_PATH = REPO_ROOT / "configs/twwarhammer3/report_notes.json"
 MAX_STILL_BYTES = 256 * 1024
-# Definition fields a comparison view can differ in, in reading order; plain settings
-# are written with their label.
-DIFFERENCES = ("source", "game", "track", "evaluator_version", "recorder", "imagery",
-               "observe_ms", "tick_ms", "interval_ms", "scenario")
-SETTINGS = {"track": "track {}", "observe_ms": "observation interval {} ms",
-            "tick_ms": "mod tick {} ms", "interval_ms": "wait after orders {} ms",
-            "evaluator_version": "evaluator {}"}
+# Files that only describe or present battles; the scenario declaration is compared itself.
+PRESENTATION = ("src/twwarhammer3/battle/report", "src/twwarhammer3/battle/replay.py",
+                "src/twwarhammer3/battle/digest.py", "src/twwarhammer3/battle/watch.py",
+                "src/twwarhammer3/battle/stats.py", "configs/twwarhammer3/report_notes.json",
+                "configs/twwarhammer3/scenarios.json")
+PROMPTS = {"llm": "tactical advice in the prompt", "llm_rules": "no tactical advice",
+           "commander": "plans for scripted unit skills"}
+SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the nearest visible enemy"),
+            "rush_nearest": ("Charge nearest", "every unit runs at the nearest visible enemy"),
+            "hold": ("Hold position", "never gives an order"),
+            "skills": ("Unit skills", "each unit follows its class's default skill")}
+# Unit fields and frame fields the page draws; the job directory keeps the rest.
+UNIT_KEEP = ("id", "x", "z", "bearing", "men", "men0", "hp", "state", "target", "ammo", "ammo0")
+MODE_KEEP = ("role", "capture_points", "supplies", "tickets")
+ROUTE_STEP_M = 6  # a route outline keeps a point once a unit has moved this far
 
 
 def scenario_name(definition: dict) -> str | None:
     return (definition.get("scenario") or {}).get("name") or definition.get("scenario_name")
 
 
-def suite_summary(scenario: dict, trials: list[dict]) -> dict:
-    """Coverage and declared armies, not a score across unlike battles."""
+def armies(scenario: dict) -> dict:
+    """The declared starting armies in a few words."""
     def army(side):
         if not side:
-            return "Starting army unavailable"
+            return None
         if isinstance(side, list):
-            return "; ".join(army(item) for item in side)
+            return "; ".join(filter(None, map(army, side)))
         faction = side.get("faction") or side.get("subculture") or "Unknown faction"
         faction = re.sub(r"^wh\d?_(?:main|dlc\d+|pro\d+)_(?:sc_)?[a-z]+_", "", faction)
         count = len(side["units"]) if isinstance(side.get("units"), list) else None
-        return (f"{replay.title(faction)} · {count} units" if count is not None
-                else replay.title(faction))
+        return f"{replay.title(faction)} · {count} units" if count is not None else replay.title(
+            faction)
 
-    coverage = {}
-    for key in ("soldiers", "units", "objective_time"):
-        counts = {"available": 0, "unavailable": 0, "not_applicable": 0}
-        for trial in trials:
-            measure = (trial.get("measures") or {}).get(key) or {}
-            if key == "objective_time":
-                status = measure.get("status", "unavailable")
-            elif key == "units":
-                status = ("available" if all(measure.get(side) for side in ("friendly", "enemy"))
-                          else "unavailable")
-            else:
-                status = "available" if all((measure.get(side) or {}).get("remaining") is not None
-                                             for side in ("friendly", "enemy")) else "unavailable"
-            counts[status] += 1
-        coverage[key] = counts
-    return {"battle_type": scenario.get("battle_type") or "unrecorded",
-            "armies": {"friendly": army(scenario.get("player")),
-                       "enemy": "Waves" if scenario.get("battle_type") == "survival"
-                       and scenario.get("enemy") is None else army(scenario.get("enemy"))},
-            "started": len(trials), "finished": sum(trial["valid"] for trial in trials),
-            "coverage": coverage}
+    enemy = army(scenario.get("enemy"))
+    if enemy is None and scenario.get("battle_type") == "survival":
+        enemy = "Waves"
+    return {"friendly": army(scenario.get("player")), "enemy": enemy}
 
 
 def _json(value: object) -> str:
@@ -103,16 +101,54 @@ def _portable(report: dict) -> dict:
     return visit(report)
 
 
-def _compatibility(definition: dict, fallback: str) -> str:
-    shared = {key: value for key, value in definition.items() if key not in {"model", "effort"}}
-    # Missing provenance is not proof of compatibility with a different group.
-    required = ("scenario", "source", "game", "track", "observe_ms", "tick_ms", "interval_ms")
-    game = shared.get("game") or {}
-    if (any(shared.get(key) is None for key in required)
-            or not all(shared.get(key) for key in ("scenario", "source", "track"))
-            or not game.get("sha256") or not game.get("steam_build_id")):
-        shared["unknown_provenance_group"] = fallback
-    return _json(shared)
+def harness(definition: dict, job: dict | None) -> str:
+    """A short fingerprint of what shapes play: code outside PRESENTATION, the scenario
+    declaration without its prose, game build, interface track and timing, and whether the
+    recorder or stills ran. A job without file hashes falls back to its source revision."""
+    files = ((job or {}).get("provenance") or {}).get("source_files")
+    code = ({path: digest for path, digest in files.items() if not path.startswith(PRESENTATION)}
+            if files else definition.get("source"))
+    scenario = {key: value for key, value in (definition.get("scenario") or {}).items()
+                if key not in ("brief", "status")}
+    settings = {key: definition.get(key) for key in ("game", "track", "observe_ms", "tick_ms",
+                                                      "interval_ms", "scenario_name")}
+    switches = {key: bool((definition.get(key) or {}).get("enabled"))
+                for key in ("recorder", "imagery")}
+    return hashlib.sha256(_json({"code": code, "scenario": scenario, **settings,
+                                 **switches}).encode()).hexdigest()[:8]
+
+
+def commander(trial: dict, definition: dict) -> dict:
+    """The readable identity of a trial's controller: a row of the comparison."""
+    card = trial.get("card") or {}
+    try:
+        base, model, effort = policy_parts(trial["policy"], definition)
+    except ValueError:
+        base, model, effort = trial["policy"], None, None
+    model, effort = card.get("model") or model, card.get("effort") or effort
+    extra = f"+{trial['delay_ms'] / 1000:g} s added observation age" if trial.get(
+        "delay_ms") else None
+
+    def detail(*parts):
+        return " · ".join(filter(None, [*parts, extra]))
+
+    if base in MODEL_POLICIES or card.get("kind") in ("model", "hybrid", "demo"):
+        name = model or definition.get("model") or base
+        return {"kind": "model", "family": name, "name": name,
+                "detail": detail(effort and f"{effort} reasoning", PROMPTS.get(base)),
+                "prompt": PROMPTS.get(base)}
+    if base in SCRIPTED:
+        name, rule = SCRIPTED[base]
+        return {"kind": "scripted", "family": "Scripted", "name": name,
+                "detail": detail(f"scripted: {rule}")}
+    return {"kind": "diagnostic", "family": None, "name": "Diagnostic probe",
+            "detail": detail(trial["policy"].split(":")[-1])}
+
+
+def _share(numerator, denominator) -> float | None:
+    if numerator is None or not denominator:
+        return None
+    return round(min(1, max(0, numerator / denominator)), 4)
 
 
 def webp(path: Path) -> dict:
@@ -154,10 +190,6 @@ def stills(episode: Path, entries: list[dict], *, embed: bool) -> list[dict]:
     return output
 
 
-def _group(key: str) -> int:
-    return int(key[1:].split("-")[0])  # "g2-t5" -> 2
-
-
 def _model_trial(trial: dict) -> bool:
     return ((trial.get("card") or {}).get("kind") == "model"
             or policy_parts(trial["policy"], {})[0] in MODEL_POLICIES)
@@ -177,62 +209,6 @@ def _chronology(report: dict):
                                 trials[key]["episode"], trials[key]["instance"])
 
 
-def _differences(definition: dict, reference: dict) -> list[str]:
-    """What a comparison view changes relative to its scenario's reference view."""
-    changes = []
-    for key in DIFFERENCES:
-        value, base = definition.get(key), reference.get(key)
-        if value == base:
-            continue
-        if key in ("recorder", "imagery"):
-            on = bool((value or {}).get("enabled"))
-            if on == bool((base or {}).get("enabled")):
-                continue  # a setting change that does not turn it on or off
-        if key == "source":
-            changes.append("a different code revision")  # the full revision is in Run settings
-        elif key == "game":
-            changes.append(f"game build {(value or {}).get('steam_build_id')}")
-        elif key == "recorder":
-            changes.append((f"{1000 / value['interval_ms']:g} Hz replay recorder on"
-                            if value.get("interval_ms") else "replay recorder on") if on
-                           else "no replay recorder (positions only at the controller's "
-                                "observations)")
-        elif key == "imagery":
-            changes.append("game stills on (scripted camera moves during the battle)" if on
-                           else "no game stills (the first set also moved the game camera "
-                                "during the battle to take them)")
-        elif key == "scenario":
-            changes.append("scenario definition differs")
-        else:
-            changes.append(SETTINGS[key].format(value))
-    return changes
-
-
-def _controller(view: dict, report: dict) -> tuple[set, set]:
-    """Model controller source hashes and prompt hashes of the jobs a view's trials ran in."""
-    trials = [trial for index in view["groups"] for trial in report["groups"][index]["trials"]]
-    instances = {trial["instance"] for trial in trials}
-    cards = {(trial.get("card") or {}).get("source_sha256") for trial in trials
-             if _model_trial(trial)}
-    prompts = {value for job in report.get("jobs", []) if job["instance"] in instances
-               for value in ((job.get("provenance") or {}).get("prompt_sha256") or {}).values()}
-    return cards, prompts
-
-
-def _same_controller(view: dict, reference: dict, report: dict) -> bool | None:
-    """False when the known code or prompt hashes differ, True when both are known and
-    match at the same source revision, None otherwise. A class-file hash alone misses
-    shared dependencies (commander v4 changed through llm.py)."""
-    matches = [ours == theirs for ours, theirs in zip(_controller(view, report),
-                                                      _controller(reference, report))
-               if ours and theirs and None not in ours | theirs]
-    if False in matches:
-        return False
-    source = view["definition"].get("source")
-    return True if len(matches) == 2 and source and source == reference["definition"].get(
-        "source") else None
-
-
 def display_data(report: dict, notes: dict | None = None) -> dict:
     kind = report.get("evidence_kind", "recorded")
     if kind not in {"recorded", "synthetic"}:
@@ -242,96 +218,118 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             raise ValueError("synthetic and recorded evidence must use separate reports")
     data = _portable(report)
     notes = notes or {}
-    comparisons, keys, instances = [], {}, {}
-
-    def comparison(definition, fallback):
-        key = _compatibility(definition, fallback)
-        if key not in keys:
-            keys[key] = len(comparisons)
-            comparisons.append({"id": f"comparison-{len(comparisons) + 1}",
-                                "definition": {key: value for key, value in definition.items()
-                                               if key not in {"model", "effort"}},
-                                "groups": [], "jobs": [],
-                                "metadata_origin": "Recorded job manifest"})
-        return comparisons[keys[key]]
-
-    for index, group in enumerate(data["groups"]):
-        view = comparison(group["definition"], f"group-{index}")
-        view["groups"].append(index)
-        for trial in group["trials"]:
-            instances[trial["instance"]] = view
+    jobs = {job["instance"]: job for job in data.get("jobs", [])}
+    for group in data["groups"]:
         # Never silently give an already-pooled summary a single controller identity. A trial
         # whose controller failed to build has no card, so it claims no identity.
         for row in group["controllers"]:
             cards = {_json({key: trial["card"].get(key) for key in
                             ("kind", "model", "effort", "source_sha256", "timing")})
-                for trial in group["trials"]
-                if trial["controller"] == row["controller"] and trial.get("card")}
+                     for trial in group["trials"]
+                     if trial["controller"] == row["controller"] and trial.get("card")}
             if len(cards) > 1:
                 raise ValueError(f"mixed controller identities in {row['controller']}")
 
-    jobs = data.get("jobs", [])
-    for index, job in enumerate(jobs):
-        view = instances.get(job["instance"])
-        if view is None:
-            definition = job.get("definition")
-            if definition is None:
-                # Older JSON may lack metadata for setup-only jobs. Keep them in the
-                # all-jobs evidence table, without borrowing a current scenario.
-                continue
-            view = comparison(definition, f"job-{index}")
-        view["jobs"].append(index)
-
-    for view in comparisons:
-        dates = [jobs[index].get("created_at") for index in view["jobs"]]
-        source = view["definition"].get("source")
-        view.update(created_at=min((date for date in dates if date), default=None),
-                    source_short=(str(source)[:7]
-                                  if re.fullmatch(r"[0-9a-f]{7,40}", str(source)) else None),
-                    differences=[], same_controller=None, reference=False)
-
-    # Scenarios with at least one started trial, each with its featured trial.
     trials, chronology = _chronology(data)
+    battles, by_name = {}, {}
+    for key in sorted(trials, key=chronology):
+        trial = trials[key]
+        definition = data["groups"][int(key[1:].split("-")[0])]["definition"]
+        soldiers = (trial.get("measures") or {}).get("soldiers") or {}
+        enemy, own = soldiers.get("enemy") or {}, soldiers.get("friendly") or {}
+        battles[key] = {
+            "commander": commander(trial, definition),
+            "harness": harness(definition, jobs.get(trial["instance"])),
+            "date": (jobs.get(trial["instance"]) or {}).get("created_at"),
+            # Progress: the share of the enemy's registered soldiers dead or no longer
+            # fighting (fleeing, shattered, leaving or undeployed) when the battle ended.
+            "progress": None if None in (enemy.get("active"), enemy.get("registered")) else
+            _share(enemy["registered"] - enemy["active"], enemy["registered"]),
+            "own_left": _share(own.get("remaining"), own.get("registered")),
+        }
+        by_name.setdefault(scenario_name(definition), []).append(key)
+
+    def row(key):
+        return battles[key]["commander"]["name"], battles[key]["commander"]["detail"]
+
+    def controlled(keys):
+        """The scenario's closest thing to a controlled comparison: the same two or more
+        commanders, each playing in every one of two or more launches of one harness. Of
+        the candidates (commanders shared by two launches), the most launches, then the most
+        commanders; None without any. `once`: each played exactly once per launch."""
+        launches = defaultdict(lambda: defaultdict(list))
+        for key in keys:
+            launches[battles[key]["harness"]][trials[key]["instance"]].append(key)
+        best = (1, 0, [], [])
+        for by_launch in launches.values():
+            sets = [set(map(row, keys)) for keys in by_launch.values()]
+            for commanders in {frozenset(a & b) for i, a in enumerate(sets) for b in sets[i + 1:]}:
+                if len(commanders) < 2:
+                    continue
+                shared = [keys for keys in by_launch.values() if commanders <= set(map(row, keys))]
+                score = (len(shared), len(commanders))
+                if score > best[:2]:
+                    best = (*score, shared, commanders)
+        if not best[2]:
+            return None
+        chosen = [[key for key in keys if row(key) in best[3]] for keys in best[2]]
+        return {"launches": best[0], "once": all(len(keys) == best[1] for keys in chosen),
+                "battles": sorted((key for keys in chosen for key in keys), key=chronology)}
+
     runs, scenario_notes = notes.get("runs") or {}, notes.get("scenarios") or {}
-    by_name = {}
-    for index, view in enumerate(comparisons):
-        if view["groups"]:
-            by_name.setdefault(scenario_name(view["definition"]), []).append(index)
-    scenarios = []
-    for name, indexes in by_name.items():
-        scenario = comparisons[indexes[0]]["definition"].get("scenario") or {}
+    scenarios, hidden = [], []
+    for name, every in by_name.items():
+        # Diagnostic probes test tooling, not commanding: kept in the data, not on the page.
+        keys = [key for key in every if battles[key]["commander"]["kind"] != "diagnostic"]
+        hidden += [key for key in every if key not in keys]
+        if not keys:
+            continue
+        definition = data["groups"][int(keys[0][1:].split("-")[0])]["definition"]
+        scenario = definition.get("scenario") or {}
         note = scenario_notes.get(name) or {}
-        group_view = {group: index for index in indexes for group in comparisons[index]["groups"]}
-        options = [key for key in trials if _group(key) in group_view]
-        selected = [key for key in options if (runs.get(
+        selected = [key for key in keys if (runs.get(
             f"{trials[key]['instance']}/{trials[key]['episode']}") or {}).get("selected") is True]
-        models = [key for key in options if trials[key]["valid"] and _model_trial(trials[key])]
+        models = [key for key in keys if trials[key]["valid"] and _model_trial(trials[key])]
         reason, pool = next((reason, pool) for reason, pool in (
-            ("selected", selected), ("first_model_run", models), ("first_run", options)) if pool)
-        featured = min(pool, key=chronology)
-        reference = comparisons[group_view[_group(featured)]]
-        reference["reference"] = True  # the run set holding the featured run
-        for index in indexes:
-            if comparisons[index] is not reference:
-                comparisons[index]["differences"] = _differences(
-                    comparisons[index]["definition"], reference["definition"])
-            comparisons[index]["same_controller"] = _same_controller(
-                comparisons[index], reference, data)
+            ("selected", selected), ("first_model_run", models), ("first_run", keys)) if pool)
+        rows = {}
+        for key in keys:
+            rows.setdefault(row(key), {**battles[key]["commander"], "battles": []})[
+                "battles"].append(key)
+        order = {"model": 0, "scripted": 1}
+        for item in rows.values():
+            item["harnesses"] = len({battles[key]["harness"] for key in item["battles"]})
         scenarios.append({
             "id": f"scenario-{len(scenarios) + 1}", "name": name,
             "title": _title(note, {**scenario, "name": name}),
             "question": note.get("question"),
             "challenge": note.get("challenge") or scenario.get("brief"),
+            "group": note.get("group") or ("Other battle types (pilots)"
+                                           if not scenario.get("family")
+                                           else "Specialist scenarios"),
             "brief": scenario.get("brief"), "expect": scenario.get("expect"),
-            "comparisons": indexes, "featured": featured, "featured_reason": reason,
-            "overview": suite_summary(scenario, [trials[key] for key in options]),
+            "split": scenario.get("split"), "status": scenario.get("status"),
+            "battle_type": scenario.get("battle_type") or "unrecorded",
+            "armies": armies(scenario), "battles": keys,
+            "rows": sorted(rows.values(), key=lambda item: (
+                order[item["kind"]], item["name"],  # numbers in natural order: +6 s before +10 s
+                [int(part) if part.isdigit() else part
+                 for part in re.split(r"(\d+)", item["detail"])])),
+            "controlled": controlled(keys),
+            "featured": min(pool, key=chronology), "featured_reason": reason,
             "setup_only_jobs": []})
-    scenarios.sort(key=lambda entry: (entry["featured_reason"] != "selected", str(entry["name"])))
+    # The notes' order, by group; scenarios without notes after them, by name.
+    groups = list(dict.fromkeys(note.get("group") for note in scenario_notes.values()))
+    listed = list(scenario_notes)
+    scenarios.sort(key=lambda entry: (
+        groups.index(entry["group"]) if entry["group"] in groups else len(groups),
+        listed.index(entry["name"]) if entry["name"] in listed else len(listed),
+        str(entry["name"])))
 
     # Jobs that stopped before any battle: beside their scenario, or on their own.
     started = {trial["instance"] for trial in trials.values()}
     setup_only = []
-    for index, job in enumerate(jobs):
+    for index, job in enumerate(data.get("jobs", [])):
         if job["instance"] in started:
             continue
         scenario = (job.get("definition") or {}).get("scenario") or {}
@@ -343,9 +341,95 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             setup_only.append({"job": index, "scenario": name,
                                "title": _title(scenario_notes.get(name) or {},
                                                {**scenario, "name": name})})
-    return {"schema": 1, "evidence_kind": kind, "report": data, "comparisons": comparisons,
-            "scenarios": scenarios, "setup_only": setup_only,
+    return {"schema": 2, "evidence_kind": kind, "report": data, "battles": battles,
+            "scenarios": scenarios, "setup_only": setup_only, "diagnostics": hidden,
             "model_policies": sorted(MODEL_POLICIES)}  # base names: a trial's may add @MODEL
+
+
+def _round(value, digits=1):
+    return round(value, digits) if isinstance(value, float) else value
+
+
+def compact(payload: dict) -> dict:
+    """The replay fields the page draws, with coordinates to 0.1 m."""
+    def unit(u):
+        kept = {key: u[key] for key in UNIT_KEEP if key in u}
+        for key in ("x", "z"):
+            kept[key] = _round(kept.get(key))
+        if "hp" in kept:
+            kept["hp"] = _round(kept["hp"], 3)
+        return kept
+
+    frames = []
+    for frame in payload["frames"]:
+        kept = {key: frame[key] for key in ("time_ms", "seq", "enemy_roster", "source")
+                if key in frame}
+        kept.update(friendly=[unit(u) for u in frame["friendly"]],
+                    enemy=[unit(u) for u in frame["enemy"]])
+        if frame.get("mode"):
+            kept["mode"] = {key: frame["mode"][key] for key in MODE_KEEP if key in frame["mode"]}
+        frames.append(kept)
+    decisions = [{**decision, "displacements": [
+        {**move, "metres": _round(move["metres"]), "from": [_round(v) for v in move["from"]],
+         "to": [_round(v) for v in move["to"]]} for move in decision.get("displacements", [])]}
+        for decision in payload["decisions"]]
+    return {**payload, "frames": frames, "decisions": decisions}
+
+
+def timing(payload: dict) -> dict:
+    """Per batch of new orders: how old its battlefield view was when the game took it, and,
+    with the 1 Hz recorder only, the farthest any unit moved between that view and the first
+    frame after (sparser frames would overstate it). Commander plans keep their own age.
+    `replies` pairs each applied reply's view time with its application time (battle clock,
+    0.1 s); for the commander, only its plan adoptions, each view plan age before them."""
+    applied = [d for d in payload["decisions"] if d.get("applied_ms") is not None]
+    # The asynchronous commander's model speaks only when a plan is adopted (plan_age_s);
+    # its executor's other ticks act on fresh views but follow that older plan.
+    plans = [d for d in applied if d.get("plan_age_s") is not None]
+    replies = [[round(d["time_ms"] - 1000 * (d.get("plan_age_s") or 0), -2), d["applied_ms"]]
+               for d in plans or applied]
+    batches = [d for d in payload["decisions"] if d["orders"] and d.get("age_s") is not None]
+    moved = [max((m["metres"] for m in d["displacements"]), default=0) for d in batches
+             if d.get("after_frame") is not None] if payload.get("recorder_version") else []
+    return {"ages": [_round(d["age_s"]) for d in batches],
+            "plans": [_round(d["plan_age_s"]) for d in plans],
+            "moved": [round(value) for value in moved], "replies": replies,
+            "decisions": len(payload["decisions"]), "batches": len(batches),
+            "rejected": payload["summary"]["rejections"]}
+
+
+def route(payload: dict) -> dict:
+    """Each friendly unit's observed path, thinned to a point every few metres, how it ended,
+    and where each enemy unit was first seen: the outline of a whole battle."""
+    paths, first_seen, last = {}, {}, {}
+    for frame in payload["frames"]:
+        for side in ("friendly", "enemy"):
+            for u in frame[side]:
+                if not (isinstance(u.get("x"), (int, float)) and isinstance(u.get("z"), (int,
+                                                                                         float))):
+                    continue
+                last[u["id"]] = u
+                if side == "enemy":
+                    first_seen.setdefault(u["id"], [round(u["x"]), round(u["z"])])
+                    continue
+                path = paths.setdefault(u["id"], [])
+                if not path or math.dist(path[-1], (u["x"], u["z"])) >= ROUTE_STEP_M:
+                    path.append([round(u["x"]), round(u["z"])])
+    glyphs = {entry["id"]: entry.get("glyph") for entry in payload["roster"]}
+
+    def end(uid):
+        u = last[uid]
+        return ("down" if u.get("men") == 0 else
+                "fled" if {"routing", "shattered"} & set(u.get("state") or []) else "up")
+
+    for uid, path in paths.items():
+        point = [round(last[uid]["x"]), round(last[uid]["z"])]
+        if path[-1] != point:
+            path.append(point)
+    return {"friendly": [{"id": uid, "glyph": glyphs.get(uid), "end": end(uid), "path": path}
+                         for uid, path in paths.items()],
+            "enemy": [{"id": uid, "glyph": glyphs.get(uid), "at": point}
+                      for uid, point in first_seen.items()]}
 
 
 def render(report: dict, notes: dict | None = None) -> str:
@@ -371,16 +455,25 @@ def render(report: dict, notes: dict | None = None) -> str:
                                                         sorted(job.glob("*prompt.md"))}
             if payload is not None:
                 run = runs.get(f"{trials[key]['instance']}/{trial['episode']}") or {}
-                payloads[key] = {**payload, "highlights": run.get("highlights") or [],
+                payloads[key] = {**compact(payload), "highlights": run.get("highlights") or [],
                                  "selected": run.get("selected") is True}
+                if payload["frames"]:
+                    data["battles"][key].update(timing=timing(payloads[key]),
+                                                route=route(payloads[key]))
 
-    pictured = set()
-    for view in data["comparisons"]:
-        keys = [key for key in trials if _group(key) in view["groups"]]
-        for controller in {trials[key]["controller"] for key in keys}:
-            same = [key for key in keys if trials[key]["controller"] == controller]
-            complete = [key for key in same if trials[key]["valid"]]
-            pictured.add(min(complete or same, key=chronology))
+    # One map outline per scenario for the route thumbnails: the featured battle's, else any.
+    for scenario in data["scenarios"]:
+        terrains = [payloads[key].get("terrain") for key in [scenario["featured"],
+                                                             *scenario["battles"]]
+                    if key in payloads]
+        scenario["terrain"] = next(filter(None, terrains), None)
+    # Stills: each featured battle, and the earliest completed battle of each commander in
+    # each scenario.
+    pictured = {scenario["featured"] for scenario in data["scenarios"]}
+    for scenario in data["scenarios"]:
+        for row in scenario["rows"]:
+            complete = [key for key in row["battles"] if trials[key]["valid"]]
+            pictured.add(min(complete or row["battles"], key=chronology))
     for key, payload in payloads.items():
         still_path = directories[key] / "stills.json"
         if data["evidence_kind"] == "recorded" and still_path.exists():

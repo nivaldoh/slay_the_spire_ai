@@ -4,7 +4,10 @@
 JSON and an HTML page that opens offline and holds its own CSS, scripts, evidence and
 images. It runs no game and makes no API call. The page follows the owner's redesign brief
 ([WH3_report_redesign_guide_for_Codex.md](WH3_report_redesign_guide_for_Codex.md)): watch
-the battle, understand the decisions, compare the results. Statistics come from
+the battle, understand the decisions, compare the results; the 2026-10-15 redesign aims it
+at an AI researcher who knows nothing about the game and has a minute to spare: every
+comparison is a small chart on a shared axis, latency is shown on the map and measured,
+and bookkeeping stays in Run settings and the JSON. Statistics come from
 `battle/report.py` ([definitions](benchmark.md#outcomes-measures-and-comparison)), the
 replay from `battle/replay.py`, the presentation from `battle/report_html.py` and
 `battle/report_assets/`, curated text from `configs/twwarhammer3/report_notes.json`, and
@@ -27,18 +30,19 @@ tuning and presentation-camera probes. Add new jobs to that list as the suite gr
 never glob all local runs or select by outcome. The report JSON records every input job.
 Existing scenario reports remain historical artifacts.
 
-Expand **Benchmark overview** to see the battle types, starting armies, completed/failed
-battle counts and measure coverage; select a scenario to open its comparisons and replay.
-Historical pilots use their saved configuration's scenario name when their declaration
-predates names. No current catalogue is substituted for historical setup.
+**All scenarios** lists every scenario by its notes `group` (challenges, specialist
+screens, battle-type pilots) with its battle type, starting armies and one mark per battle
+for each model and for the scripted baselines; select one to open it. Historical pilots use
+their saved configuration's scenario name when their declaration predates names. No
+current catalogue is substituted for historical setup. There is no aggregate score across
+different armies or objectives.
 
-**How much progress did each army make?** shows every battle's net soldier/entity losses,
-survivors and registered headcount, plus whole units alive/destroyed/active. Select a battle
-for per-point ownership time, observation duration and share, tickets, supplies, builds,
-reinforcement purchases, duration, cost, order age and rejection details. Failures retain
-their last observed progress, labelled as partial. Counts include later registered summons,
-purchases and waves; net headcount loss is not cumulative kills when resurrection occurs.
-There is no aggregate score across different armies or objectives.
+Progress is the share of the enemy's registered soldiers dead or out of the fight (fleeing,
+shattered, leaving or undeployed) when the battle ended: `1 - active/registered` from the
+evaluation, unknown when either is missing. A win breaks the whole army in attack
+scenarios; a defence can win with less. Failures keep their last observed progress. The
+run card adds own soldiers left and, where recorded, units still fighting, objective time
+and supplies, builds and purchases; absent measures are left out, never shown as zero.
 
 Each challenge's question and notes should explain its potential plays: the army's useful
 advantages, its disadvantages and consequential choices available to the controller.
@@ -50,10 +54,9 @@ results and explain the decision. Difficulty and spectacle alone do not establis
 Evaluator v2 adds whole-unit counters; historical counts remain unavailable. Alive routed
 units remain survivors; active units exclude routing, shattered, leaving and undeployed
 units. The subsidiary states can overlap. Objective time uses engine-tick integrals only;
-old snapshot-voting shares are not relabelled as time. Land objectives read not applicable;
-missing historical measurements read unavailable. Evaluator and controller versions are in
-Run settings alongside the source revision and game build, and incompatible groups remain
-separate. Evaluation data stays in the report, outside policy inputs and replay exports.
+old snapshot-voting shares are not relabelled as time. Evaluator and controller versions
+are in Run settings alongside the source revision, harness version and game build.
+Evaluation data stays in the report, outside policy inputs and replay exports.
 
 The HTML embeds its assets and compressed replays and opens directly from disk without a
 server. Share or copy that file; the JSON/text companions retain the full collector output.
@@ -76,45 +79,89 @@ It prints the text report and writes `NAME.html`, `NAME.json` and `NAME.txt` (a 
 `--output x.html` writes `x.html.html`). Pass every launch of a comparison: one job is one
 instance, and paired intervals need several. Embedding stills needs Pillow (`uv sync
 --locked`); without it nothing is written. Rebuild after editing the notes file. Share the
-HTML file, not the evidence directory. Margin, throughput, paired intervals, detailed setup flags and statistical limitations
-remain in the text and JSON. Failures and shared progress are also visible in the HTML.
+HTML file, not the evidence directory. Margin, throughput, the strict per-version groups,
+paired intervals, detailed setup flags and statistical limitations remain in the text and
+JSON. Failures and progress are also visible in the HTML.
 
 ## The page
 
-One scenario at a time (a select when several have battles; unrun catalogue scenarios
-never appear), with a collapsible suite overview and three sections:
+A dark stage, then the results on a light page, then the method:
 
-- **Watch a battle**: the scenario's question and challenge; the run line (featured-run
-  tag, readable controller name such as `gpt-6-sol · low reasoning · rules-only prompt`,
-  engine outcome with duration, "Won in 6:22" or "Lost at the time limit (20:00)", sample
-  size); its conditions in one sentence (text observations, the battle running at 1×
-  while the model thinks, enemies only while seen; a scripted rule); "Watch the featured
-  maneuver" and "Watch the full battle" at 4×; a list of the scenario's battles; the viewer.
-- **What happened**: the run's analyst notes as cards that play their moment, else its
-  key events; embedded stills only, captioned "spectator camera at m:ss · not what the
-  model saw"; collapsed, all recorded events and per-unit state timelines.
-- **Compare results**: a table per run set, the featured run's set first: Model / setup;
-  Battles won (engine wins over valid battles, time-limit and failed counts, a 95%
-  interval only from five valid battles without a time-limit outcome); Typical order
-  delay ([Timing](#timing)); Inference cost / battle (API cost over battles started,
-  failed ones included); Replays. Footnotes define delay and cost, state the time-limit
-  rule and call rows of one or two battles examples; a line counts setup-only launches.
+- **Masthead and pitch**: what the benchmark is in one sentence, its size (battles shown,
+  scenarios, models, scripted baselines, dates) and, beside it, the **headline**: the
+  first notes group's largest controlled comparison (the commanders shared by two launches
+  of one harness, in the most such launches; C1 today), one mark per battle on the progress
+  axis, its win counts and median order age. Its caption says "once in each launch" only
+  when that holds and that prompts were tuned on it only for a development scenario. On a
+  phone it follows the viewer.
+- **The battle**: the scenario's question and challenge, then the viewer with the featured
+  battle, which plays its key maneuver once when 30% of the map is in view (not under
+  reduced motion, nor after the replay was moved). The scenario and battle selects sit in
+  the run card. The run card names
+  the commander (model, then reasoning effort and prompt, or the scripted rule), the
+  engine outcome with its duration, the commander's record here and the battle's measures;
+  a curated pick adds that it was selected for its analyst notes, not as a typical result.
+  The analyst notes follow as numbered chapters, labelled as written after the battle with
+  AI assistance and checked against the records; the playing one shows its sentence. Then
+  the order of battle and up to four game stills ("spectator camera, not what the model
+  saw").
+- **Same battle, different plans**: per commander, a column of route maps, one per
+  battle: every friendly path over the whole battle (thinned to a point every 6 m, □ start,
+  ● end, × destroyed) and each enemy unit where first seen, over one framing per scenario;
+  wins are outlined. Commanders whose armies never moved are left out.
+- **How far each commander got**: one row per commander. Columns: enemy army broken (one
+  mark per battle on a shared 0–100% axis; filled won, hollow lost, a cross for did not
+  finish; battles without the measure in an "n/a" slot), battles won out of finished
+  battles (a 95% Wilson interval only from five finished battles of separate launches of
+  one harness), order age as a box plot (10th–90th percentile whiskers, middle half boxed,
+  median marked; for the asynchronous commander, its model plans' age, with the executor's
+  in small type) and cost per started battle. Marks show their battle on hover and open it
+  on click.
+- **The battle doesn't wait for the model**: a sentence quoting one model's median order
+  age and the median movement meanwhile, both from the same 1 Hz recorder battles; then per
+  commander, one minute of its first finished battle as a sawtooth of the age of its latest
+  view on one shared scale up to 30 s (each drop is a reply, kept orders included; a red
+  caret marks a taller tooth), its median order age and 90th percentile for replies with
+  new orders, and the battle/wall clock ratio range. "See what moved during one
+  reply" pins the median-age reply of the battle in the viewer. A labelled placeholder
+  names the planned added-delay experiment.
+- **All scenarios**: groups from the notes (pilots folded), aligned columns, one mark per
+  battle for each model and for the scripted baselines ("no baseline yet" where none ran);
+  † marks a cell pooling different settings or harness versions, listed in its tooltip.
+  On a phone each scenario is a block.
+- **Method**: verbatim lines of one message (the first reply with orders that reports its
+  previous delay, in the first scenario's featured battle), abridged by section, and its
+  reply one order per line, with the size of the fixed system prompt; then
+  what a model sees, real time, opponent and baselines, the progress measure, the
+  development status of every scenario, rows and versions, and what is not shown
+  (setup-only launches and diagnostic probe battles); Run settings, the report and replay
+  JSON, and a link here.
 
-A run set is a comparison view: groups sit side by side only when they differ in model or
-effort alone, samples never pool, and a group with missing provenance gets its own set. A
-later set's caption lists its differences from the first in plain words, without hashes
-(code revision, game build, track, recorder or stills on or off, observation timing,
-scenario definition), and whether controller code and prompts are identical, differ or
-could not be compared; with no listed difference it is described as a separate launch.
+A row holds every battle of one commander (model, effort, prompt or scripted rule, added
+age) in a scenario. When battles ran under different harnesses its name carries a † (the
+tooltip says how many versions, a footnote explains it once), and Run settings names each
+battle's. A harness fingerprint covers the source
+files in the job's scope except presentation (`report*`, `replay.py`, `digest.py`,
+`watch.py`, `stats.py`, the notes and the scenario catalogue), the scenario declaration
+without its prose, the game build, interface track and timing, and whether the recorder or
+stills ran; jobs without file hashes use their source revision. The collector's JSON and
+text keep the strict groups that never pool across any of these. Diagnostic probes
+(`terrain_probe`, `flight_probe`, `probe_abilities`, external test controllers) test
+tooling, not commanding: they stay in the data and the JSON, not on the page.
 
-The footer opens **Run settings** for the run in the viewer (scenario, controller and its
-timing in plain words, interface, recording and provenance; collapsed, the declared brief
-and, for model runs only, the prompt the model received, named by policy) and offers the
-report JSON and this replay JSON.
+Outcomes are always the engine's; a battle that reached the scenario's timer reads "at the
+time limit", whatever its job recorded as `ended_by` (b8 recorded those as
+`engine_result`). Enemy army broken is printed rounded down
+below 100%, so a loss never reads as a win.
+
+The footer opens **Run settings** for the battle in the viewer (scenario and its status,
+commander and its timing in plain words, harness, interface, recording and provenance;
+collapsed, the declared brief and, for model runs only, the prompt the model received,
+named by policy) and offers the report JSON and this replay JSON.
 
 ### The replay viewer
 
-Map and moment panel stack below 960 px; at 390 px the map starts on the first screen and
+Map and moment panel stack below 1080 px; at 390 px the map starts on the first screen and
 nothing scrolls sideways. The map draws the passability grid (north up, fixed framing per
 replay) and each unit's side, role glyph, facing, label ("KR1"), strength and state, with
 hollow last sightings of unseen enemies, 20 s trails and, faintly, the waypoints a unit
@@ -123,14 +170,27 @@ adds its observed path, standing orders (numbered waypoints, attack rings, rejec
 red) and a card with role, state, orders and base stats. Controls: 1×, 4× or 16× playback
 (the battle ran at 1×), decision (←/→) and event ([ ]) steps, scrubber, timeline strip.
 
+The map's lower left names the two armies ("gpt-6-sol's army", "Game AI"). **Model's view**
+beside it outlines every unit where it stood in the observation behind the latest reply
+that reached the game (for the asynchronous commander, the latest adopted plan's older
+view), joined by a line to where the unit is now, with "Outlines: where units stood N s
+ago" in a caption; live markers recede meanwhile. It is off in ordinary playback. The
+timeline labels its rows (notes, replies, events) and its lowest band is the same view
+age, second by second, scaled to the battle. The waiting line says how long ago the
+model was asked.
+
 The moment panel shows the latest decision applied by the replay time, never a reply
 before it was applied ("Waiting for the model's next reply" until then): the stated
 reason, quoted and attributed; the orders in plain words ("Lord: run 320 m north-west,
 then attack Great Cannons in melee"), "Keeping current orders", or "orders refused by
-validation"; up to six "what happened next" facts from the recorded frames; and how old
-its battlefield view was. Prompt, reply, timing detail and cost stay collapsed. "Inspect:
-what moved while waiting" draws the basis observation as outlines and the first frame
-after application as solid markers, joined by straight lines.
+validation"; up to six "what happened next" facts from the recorded frames. How old the
+orders were comes first, in one sentence ("These orders were 4.2 s old when the game
+accepted them", with the seen and accepted times and the reply's wall-clock time; for the
+commander, its plan's age or the unit skills following it). Message, reply, timing detail
+and cost stay collapsed. "See what moved while it waited" pins the reply: the ordered units,
+their targets and every unit that moved 5 m or more, as outlines in the basis observation
+and solid in the first frame after application, joined by straight lines. On wide screens the panel is as
+tall as the map column and scrolls.
 
 More than 1.5 × the sample interval past the last frame, the map says "No observation
 recorded during this interval". A run without the 1 Hz recorder shows one notice instead:
@@ -144,9 +204,11 @@ Reader-facing text that is neither policy input nor recorded evidence. It is com
 inside `twwarhammer3 play`'s source scope: editing it stops a running job, so draft it in
 a worktree while one runs. Three maps:
 
-- **`scenarios`**, by scenario name: `title` names it, `question` heads the page,
+- **`scenarios`**, by scenario name, in page order: `title` names it, `group` places it
+  in All scenarios (the first group is the masthead's), `question` heads the page,
   `challenge` states the task and its real objective. Without an entry: its `family` or
-  name and the declared `brief`.
+  name, the declared `brief`, and "Specialist screens" (with a family) or "Battle-type
+  pilots".
 - **`units`**, by unit type key: `name` is the game's onscreen name (checked against its
   English localisation), `short` the map label (numbered for duplicates), `role` a few
   words, `about` one sentence on how the unit differs, `glyph` one of `general`,
@@ -178,20 +240,32 @@ the outcome), with no manufactured balance. Check every time, name, distance and
 quotation against the lines in `refs` (`digest JOB/episode-NNNN --at SECONDS` helps);
 state no cause that timing alone suggests; quote the model only as its stated reason.
 
-**Featured run**, per scenario: a battle with `selected: true` ("Selected example"); else
-the earliest completed model battle by job start, then episode; else the first battle.
-It is never chosen by outcome. Its run set comes first in Compare, and the other sets
-are described by how they differ from it.
+**Featured run**, per scenario: a battle with `selected: true`; else the earliest completed
+model battle by job start, then episode; else the first battle. The chronological rules
+never look at outcomes. A curated selection may be chosen for its moments, so the run card
+states the commander's record in the scenario beside it and that it is not a typical
+result.
 
 ## Timing
 
 - **Durations** come from each battle's `battle_ms`, the engine's battle clock
   (`battle_s` only where it is missing).
-- **Typical order delay** (Compare): per battle, the median battle-clock age of the
-  observation behind each batch of orders when the game acknowledged it, batches with
-  orders only (`order_age_s`); across battles, the median of those medians
-  (`order_age_median_s`). `visual-sol-low-20261015`: 4.2 s over 45 batches; 3.9 s over
-  all 91 applied replies, empty ones included.
+- **Order age** (results and Real time): the battle-clock age of the observation behind
+  each acknowledged batch of new orders when the game accepted it (`age_s` of replay
+  decisions with orders), pooled over a row's battles; median, middle half and 10th–90th
+  percentiles are shown. For the asynchronous commander the row shows its plans' age at
+  adoption (`plan_age_s`), since its executor's 0.3 s says nothing about the model.
+- **View age** (Real time sawtooth, the timeline's lowest band, Model's view): at each
+  moment, how old the observation behind the latest applied reply is (empty replies
+  included; a commander's plan view for the commander). It drops when a reply lands and
+  grows by one second per second until the next, from `timing.replies` (view and
+  application times, battle clock). The collector's `order_age_median_s` (the median of per-battle medians) stays in
+  the JSON. `visual-sol-low-20261015`: 4.2 s over 45 batches; 3.9 s over all 91 applied
+  replies, empty ones included.
+- **Movement meanwhile** (Real time): per batch, the largest displacement of any unit
+  seen in both its basis observation and the first frame at or after acknowledgement, from
+  1 Hz recorder battles only (sparser frames would overstate it). It describes how much
+  the battle changed, not a cause.
 - **Per decision** (moment panel): that reply's observation age when applied (battle
   clock) and the model's reply time (`think_s`, wall clock; median 3.41 s in that battle).
 - **Technical detail only**: provider processing, call minus provider and round trip
@@ -228,7 +302,8 @@ ending (an early action inside that spacing is deferred, keeping its trigger tim
 battle script moves only the camera; a controller thread grabs the screen through Windows
 Python with Pillow, outside the order loop, in about 40-75 ms, and records a failure when
 the game is not in the foreground. The report embeds them as WebP of at most 256 KiB for
-one battle per controller in each run set (the earliest completed); the rest stay as
+each featured battle and the earliest completed battle of each commander in each
+scenario; the rest stay as
 metadata. A G1 replay payload is about 140-165 KB compressed, nine fit well under 20 MiB
 (a test checks it), and the visual report is about 1.7 MB.
 

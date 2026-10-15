@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-15 18:04 UTC: what is running, where each game stands and what comes
+Updated 2026-10-15 19:58 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -29,8 +29,11 @@ command; clear it when the job stops.
   C1 remains development evidence, with no automatic easier calibration block.
 - Both swarm prototypes have working screens; every player army routed. Existing reports
   are `c1-cavalry-ai11`, `swarm-screens` and `cavalry-assault` in
-  `runs/twwarhammer3/reports/`. The canonical `benchmark.html` now consolidates the
-  explicit job selection, including the b11 smoke results; offline browser validation passed.
+  `runs/twwarhammer3/reports/`. The canonical `benchmark.html` (27 MB, 55 jobs) was
+  redesigned for outside readers: commander rows instead of run sets, per-battle progress
+  marks, route maps, a view-age sawtooth for real time and C1 as the headline
+  ([log](twwarhammer3/log.md#2026-10-15-report-redesign-for-outside-readers)); offline
+  browser validation passed.
 - API spend: $14.3146 of the $25 cap on 2026-10-15.
 
 Next: expand varied armies, siege defence, survival and conquest, with 2-3 exploratory

@@ -58,6 +58,23 @@ const GLYPHS = [
   "monster",
 ];
 const glyphKey = (key) => (GLYPHS.includes(key) ? key : "unknown");
+// The two armies' colours: they mean the armies everywhere and nothing else.
+const TEAM = { friendly: "#56b4e9", enemy: "#e69f00" };
+// Age of the newest view a controller has answered, over [t0, t1] on the battle clock:
+// [view_ms, applied_ms] replies make a sawtooth that drops whenever a reply lands.
+function ageSeries(replies, [t0, t1]) {
+  const landed = [...replies].sort((a, b) => a[1] - b[1]),
+    points = [];
+  let basis = null;
+  for (const [view, applied] of landed) {
+    if (applied > t1) break;
+    if (applied > t0 && basis != null) points.push([applied, applied - basis]);
+    basis = basis == null || applied <= t0 ? view : Math.max(basis, view);
+    if (applied >= t0) points.push([applied, applied - basis]);
+  }
+  if (basis != null) points.push([t1, t1 - basis]);
+  return points.map(([t, age]) => [t, age / 1000]);
+}
 function button(text, action, className) {
   const node = el("button", text, className);
   node.type = "button";
@@ -95,14 +112,16 @@ function saveJSON(value, name) {
 // Positions come only from recorded frames; gaps stay gaps and nothing is interpolated.
 const Viewer = (() => {
   const $ = (id) => document.getElementById(id);
-  const TEAM = { friendly: "#56b4e9", enemy: "#e69f00" };
   const MAP = "#13212a";
   const REJECTED = "#ff7b72";
   const TRAIL_MS = 20000; // observed movement shown behind each unit
   const ROUTE_MS = 20000; // how long a newly issued route stays drawn for unselected units
   const ARRIVED_M = 30; // a waypoint this close to a recorded position counts as reached
   const ACCEPTED = ["acknowledged", "queued"];
-  const STRIP_H = 66;
+  const STRIP_H = 92;
+  const STRIP_LEFT = 70; // a gutter for the rows' labels
+  const AGE_TOP = 56,
+    AGE_H = 20;
   // Bands kept clear of units: the caption on top, the scale bar and north arrow below.
   const TOP_BAND = 40,
     BOTTOM_BAND = 44;
@@ -124,6 +143,7 @@ const Viewer = (() => {
     loop = null;
   let selected = null,
     pinned = null,
+    lag = false,
     proj = null,
     strip = { w: 0, marks: [] },
     keys = {},
@@ -209,6 +229,7 @@ const Viewer = (() => {
     $("whole").checked = false;
     $("whole").disabled = !r.terrain;
     $("map-synthetic").hidden = !run.synthetic;
+    $("lag-toggle").disabled = !r.decisions.some((d) => d.basis_frame != null);
     $("map-empty").hidden = true;
     $("map-note").textContent = r.recorder_version
       ? ""
@@ -225,13 +246,20 @@ const Viewer = (() => {
     watching = null;
     selected = null;
     pinned = null;
-    for (const id of ["map-ground", "map-layer", "map-furniture", "strip-static", "roster"])
+    for (const id of [
+      "map-ground",
+      "map-lag-layer",
+      "map-layer",
+      "map-furniture",
+      "strip-static",
+      "roster",
+    ])
       $(id).replaceChildren();
     $("map").setAttribute("viewBox", "0 0 640 280");
     $("map").style.height = "280px";
     $("map-empty").textContent = message;
     $("map-empty").hidden = false;
-    for (const id of ["map-caption", "map-status", "map-selection", "map-synthetic"])
+    for (const id of ["map-caption", "map-status", "map-selection", "map-synthetic", "map-lag"])
       $(id).hidden = true;
     $("map-note").textContent = "";
     $("strip-cursor").setAttribute("y2", 0);
@@ -242,7 +270,9 @@ const Viewer = (() => {
   }
 
   function setControls(enabled) {
-    for (const node of document.querySelectorAll(".controls button, #speed, #scrubber, #whole"))
+    for (const node of document.querySelectorAll(
+      ".controls button, #speed, #scrubber, #whole, #lag-toggle",
+    ))
       node.disabled = !enabled;
   }
 
@@ -661,7 +691,7 @@ const Viewer = (() => {
       Math.max(0, Math.min(a[3], b[3]) - Math.max(a[1], b[1]));
     for (const l of labels.sort((a, b) => a.rank - b.rank)) {
       if (!l.text) continue;
-      const w = (l.text.length + (l.note ? l.note.length + 1 : 0)) * 6.6,
+      const w = (l.text.length + (l.note ? l.note.length + 1 : 0)) * 7.2,
         h = 12,
         d = radius + 3;
       const options = [
@@ -732,7 +762,7 @@ const Viewer = (() => {
       if (step.unit !== "army") ids.add(step.unit);
       if (step.target) ids.add(step.target);
     }
-    if (!ids.size) for (const m of d.displacements) if (m.metres >= 1) ids.add(m.unit);
+    for (const m of d.displacements) if (m.metres >= (ids.size ? 5 : 1)) ids.add(m.unit);
     return ids;
   }
 
@@ -758,13 +788,48 @@ const Viewer = (() => {
     placeLabels(layer);
   }
 
+  // The model's view: the observation behind the latest reply that reached the game (for the
+  // asynchronous commander, its plan's older one), drawn as outlines joined to where each
+  // unit is now.
+  // Replies whose view the overlay and strip follow: every applied decision, or for the
+  // asynchronous commander only its plan adoptions (its executor follows the latest plan).
+  const planned = () => r.decisions.some((d) => d.plan_age_s != null);
+  const answers = (d) => d.applied_ms != null && (!planned() || d.plan_age_s != null);
+  function viewOf(now) {
+    if (now.current < 0) return null;
+    let i = now.current;
+    while (i >= 0 && !(answers(r.decisions[i]) && r.decisions[i].applied_ms <= time)) i--;
+    if (i < 0) return null;
+    const d = r.decisions[i];
+    if (d.plan_age_s != null) {
+      const at = d.time_ms - d.plan_age_s * 1000;
+      return { d, at, frame: Math.max(0, lastAtOrBefore(times, at)) };
+    }
+    return d.basis_frame == null ? null : { d, at: d.time_ms, frame: d.basis_frame };
+  }
+  function drawLag(layer, fi, now) {
+    const view = viewOf(now);
+    if (!lag || pinned != null || !view) return;
+    const frame = r.frames[fi];
+    for (const side of ["friendly", "enemy"])
+      for (const u of r.frames[view.frame][side]) {
+        const current = frame[side].find((item) => item.id === u.id);
+        if (placed(u) && placed(current) && Math.hypot(u.x - current.x, u.z - current.z) >= 3)
+          layer.append(polyline([u, current], TEAM[side], { "stroke-width": 1.5, opacity: 0.8 }));
+        drawUnit(layer, u, side, { ghost: true });
+      }
+  }
+
   function renderMap(fi, now) {
-    const key = [fi, now.current, selected, pinned, proj.w, proj.h, watched()].join("|");
+    const lagKey = lag && pinned == null ? now.current : "";
+    const key = [fi, now.current, selected, pinned, proj.w, proj.h, watched(), lagKey].join("|");
     if (key === keys.map) return;
     keys.map = key;
     const layer = $("map-layer");
     layer.replaceChildren();
+    $("map-lag-layer").replaceChildren();
     if (pinned != null) return drawInspect(layer, r.decisions[pinned]);
+    drawLag($("map-lag-layer"), fi, now);
     const frame = r.frames[fi],
       focus = focusSet(fi);
     drawTrails(layer, frame.time_ms, focus);
@@ -812,7 +877,8 @@ const Viewer = (() => {
 
   // Timeline strip: decisions with orders, decisions keeping orders, rejections, analyst
   // notes and key events. Its marks are click targets; the scrubber and buttons do the same.
-  const stripX = (t) => 10 + ((strip.w - 20) * (t - start)) / Math.max(1, end - start);
+  const stripX = (t) =>
+    STRIP_LEFT + ((strip.w - STRIP_LEFT - 10) * (t - start)) / Math.max(1, end - start);
   function drawStrip() {
     const node = $("strip"),
       w = Math.max(200, Math.round(node.clientWidth));
@@ -822,16 +888,47 @@ const Viewer = (() => {
     g.replaceChildren();
     for (let m = Math.ceil(start / 60000); m * 60000 <= end; m++) {
       const x = stripX(m * 60000);
-      g.append(svg("line", { x1: x, x2: x, y1: 52, y2: 56, stroke: "#5f7380" }));
+      g.append(svg("line", { x1: x, x2: x, y1: 78, y2: 82, stroke: "#5f7380" }));
       if (w > 420 || m % 2 === 0)
         g.append(
           svg(
             "text",
-            { x, y: 64, fill: "#8fa3ad", "font-size": 9, "text-anchor": "middle" },
+            { x, y: 91, fill: "#8fa3ad", "font-size": 10, "text-anchor": "middle" },
             `${m}:00`,
           ),
         );
     }
+    // How old the view behind the latest reply is, second by second: drops when replies land.
+    const replies = r.decisions
+      .filter(answers)
+      .map((d) => [d.time_ms - (d.plan_age_s || 0) * 1000, d.applied_ms]);
+    const series = ageSeries(replies, [start, end]);
+    const top = Math.max(5, Math.ceil(Math.max(0, ...series.map((p) => p[1])) / 5) * 5);
+    const ageY = (age) => AGE_TOP + AGE_H - (age / top) * AGE_H;
+    const label = (y, text) => svg("text", { x: 8, y, fill: "#8fa3ad", "font-size": 11 }, text);
+    g.append(
+      label(15, "Notes"),
+      label(36, "Replies"),
+      label(50, "Events"),
+      label(AGE_TOP + 10, "View age"),
+      label(AGE_TOP + 22, `0–${top} s`),
+      svg("line", {
+        x1: STRIP_LEFT,
+        x2: w - 10,
+        y1: ageY(5),
+        y2: ageY(5),
+        stroke: "#ffffff",
+        "stroke-opacity": 0.08,
+      }),
+    );
+    if (series.length)
+      g.append(
+        svg("path", {
+          d: `M${stripX(series[0][0])} ${AGE_TOP + AGE_H}${series.map(([t, a]) => `L${stripX(t).toFixed(1)} ${ageY(a).toFixed(1)}`).join("")}L${stripX(series.at(-1)[0])} ${AGE_TOP + AGE_H}Z`,
+          fill: "#8fa3ad",
+          "fill-opacity": 0.35,
+        }),
+      );
     r.highlights.forEach((h, k) => {
       const { from, to } = span(h);
       g.append(
@@ -880,14 +977,14 @@ const Viewer = (() => {
     const box = $("strip").getBoundingClientRect();
     const x = ((event.clientX - box.left) * strip.w) / box.width,
       y = ((event.clientY - box.top) * STRIP_H) / box.height;
-    const row = y < 21 ? 0 : y < 41 ? 1 : 2;
+    const row = y < 21 ? 0 : y < 41 ? 1 : y < 53 ? 2 : 3;
     const near = snap
       ? strip.marks
           .filter((m) => m.row === row && Math.abs(m.x - x) <= 7)
           .sort((a, b) => Math.abs(a.x - x) - Math.abs(b.x - x))[0]
       : null;
     if (near?.i != null) return goDecision(near.i);
-    jump(near ? near.t : start + ((x - 10) / (strip.w - 20)) * (end - start));
+    jump(near ? near.t : start + ((x - STRIP_LEFT) / (strip.w - STRIP_LEFT - 10)) * (end - start));
   }
 
   function statusLine(now) {
@@ -901,8 +998,8 @@ const Viewer = (() => {
       );
     else
       line.append(
-        el("span", null, "dot"),
-        `Waiting for ${who} ${now.current < 0 ? "first" : "next"} reply (requested at ${clock(requested(d))})`,
+        el("span", null, "pulse"),
+        `Waiting for ${who} ${now.current < 0 ? "first" : "next"} reply · asked ${((time - requested(d)) / 1000).toFixed(1)} s ago`,
       );
     return line;
   }
@@ -928,7 +1025,6 @@ const Viewer = (() => {
           run.kind === "model" ? "The model's explanation" : "The controller's stated reason",
         ),
         el("blockquote", `“${d.reason}”`),
-        el("p", "Stated reason, recorded with the orders.", "note"),
       );
       // The model names units by their raw ids; the quotation stays verbatim.
       const named = [...new Set(d.reason.match(/\b[ef]\d+\b/g))]
@@ -973,11 +1069,7 @@ const Viewer = (() => {
     if (!d.summary.length) {
       section.append(
         el("p", "Keeping current orders.", "keeping"),
-        el(
-          "p",
-          "No new orders in this reply. Earlier orders, queued steps included, and the game's own unit behaviour continue.",
-          "note",
-        ),
+        el("p", "Earlier orders, queued steps included, continue.", "note"),
       );
       return section;
     }
@@ -1027,44 +1119,32 @@ const Viewer = (() => {
 
   function ageSection(d, i) {
     const section = el("section");
-    section.append(el("h4", "How old was the battlefield information?"));
+    section.append(el("h4", "How old was its information?"));
     if (d.age_s == null) {
       section.append(el("p", "Not measured: no acknowledgement was recorded for this reply."));
       return section;
     }
-    const sentence = el("p", null, "age-sentence");
-    sentence.append(
-      `${d.steps.length ? "These orders" : "This reply"} used a view of the battlefield from `,
-      el("strong", seconds(d.age_s)),
-      " earlier.",
-    );
-    const sequence = el("ol", null, "sequence");
-    const step = (label, value, note) => {
-      const item = el("li", label);
-      item.append(el("b", value));
-      if (note) item.append(note);
-      return item;
-    };
-    sequence.append(
-      step("Observed", clockTenths(d.time_ms)),
-      el("li", "→", "arrow"),
-      step(
-        run.kind === "model" ? "Model reply took" : "Reply took",
-        seconds(d.reply_s),
-        "wall clock",
-      ),
-      el("li", "→", "arrow"),
-      step("Issued / acknowledged", clockTenths(d.applied_ms)),
-    );
-    section.append(
-      sentence,
-      sequence,
-      el(
-        "p",
-        "Observed and issued times are on the battle clock. Acknowledged means the game accepted the order, not that it was carried out.",
-        "note",
-      ),
-    );
+    const sentence = el("p", null, "age-sentence"),
+      seen = `seen ${clockTenths(d.time_ms)}, accepted ${clockTenths(d.applied_ms)}`;
+    if (d.plan_age_s != null)
+      sentence.append(
+        "The model's plan adopted here came from a view of the battle ",
+        el("strong", `${seconds(d.plan_age_s)} old`),
+        `; the unit skills acting on it read the battle ${seconds(d.age_s)} before the game accepted their orders.`,
+      );
+    else if (planned())
+      sentence.append(
+        `Scripted unit skills issued these orders from a view `,
+        el("strong", `${seconds(d.age_s)} old`),
+        ` (${seen}), following the model's latest plan.`,
+      );
+    else
+      sentence.append(
+        `${d.steps.length ? "These orders were" : "This reply was"} `,
+        el("strong", `${seconds(d.age_s)} old`),
+        ` when the game accepted ${d.steps.length ? "them" : "it"} (${seen}; ${run.kind === "model" ? "model" : "controller"} reply ${seconds(d.reply_s)} on the wall clock).`,
+      );
+    section.append(sentence);
     if (d.basis_frame != null && d.after_frame != null) {
       if (pinned === i) {
         const moved = d.displacements
@@ -1078,7 +1158,7 @@ const Viewer = (() => {
         section.append(
           el(
             "p",
-            `While the response was being generated… (${clockTenths(r.frames[d.basis_frame].time_ms)} → ${clockTenths(r.frames[d.after_frame].time_ms)} battle clock):`,
+            `While the reply was being generated (${clockTenths(r.frames[d.basis_frame].time_ms)} → ${clockTenths(r.frames[d.after_frame].time_ms)} battle clock):`,
             "note",
           ),
           list,
@@ -1088,7 +1168,7 @@ const Viewer = (() => {
             "note",
           ),
         );
-      } else section.append(button("Inspect: what moved while waiting", () => pin(i), "inspect"));
+      } else section.append(button("See what moved while it waited ▸", () => pin(i), "inspect"));
     }
     return section;
   }
@@ -1103,7 +1183,7 @@ const Viewer = (() => {
       ]);
       out.push(
         details(
-          "Exact prompt and reply",
+          "Exact message and reply",
           el("p", "Prompt", "note"),
           pre(d.prompt ?? "Not recorded"),
           ...replies,
@@ -1175,9 +1255,9 @@ const Viewer = (() => {
             : `Reply at ${clock(d.applied_ms)}: no new orders`,
       ),
     );
-    const parts = [head, explanation(d), ordersSection(d)];
+    const parts = [head, ageSection(d, i), explanation(d), ordersSection(d)];
     if (d.next?.length) parts.push(nextSection(d));
-    parts.push(ageSection(d, i), ...technical(d));
+    parts.push(...technical(d));
     return parts;
   }
 
@@ -1288,7 +1368,17 @@ const Viewer = (() => {
 
   function renderPanel(fi, now) {
     const shown = pinned ?? (now.current >= 0 ? now.current : null);
-    const key = [shown, now.pending, pinned, selected, selected ? fi : "", time >= end].join("|");
+    // The pending reply's view age counts up: redraw each tenth of a second while waiting.
+    const ticking = now.pending >= 0 ? Math.floor(time / 100) : "";
+    const key = [
+      shown,
+      now.pending,
+      pinned,
+      selected,
+      selected ? fi : "",
+      time >= end,
+      ticking,
+    ].join("|");
     if (key === keys.panel) return;
     keys.panel = key;
     const box = $("moment");
@@ -1393,7 +1483,18 @@ const Viewer = (() => {
           time,
         );
 
-  function renderOverlays(fi) {
+  // How old the view behind the latest reply is now, on the battle clock.
+  function lagLine(now) {
+    if (!lag || pinned != null) return null;
+    const view = viewOf(now);
+    if (!view) return "No reply has reached the game yet.";
+    const age = ((time - view.at) / 1000).toFixed(1);
+    return view.d.plan_age_s != null
+      ? `Outlines: where units stood ${age} s ago, in the view behind the model's current plan.`
+      : `Outlines: where units stood ${age} s ago, in the view behind the latest reply.`;
+  }
+
+  function renderOverlays(fi, now) {
     const caption = $("map-caption"),
       status = $("map-status"),
       frame = r.frames[fi];
@@ -1412,6 +1513,11 @@ const Viewer = (() => {
       ? `No observation recorded during this interval · showing ${clockTenths(frame.time_ms)}`
       : "";
     status.hidden = !gap;
+    const line = lagLine(now);
+    $("map-lag").textContent = line || "";
+    $("map-lag").hidden = !line;
+    $("lag-toggle").setAttribute("aria-pressed", String(lag));
+    $("map").classList.toggle("lagging", lag && pinned == null);
     const chip = $("map-selection");
     if (keys.selection !== selected) {
       keys.selection = selected;
@@ -1435,7 +1541,7 @@ const Viewer = (() => {
     if (!r || !proj) return;
     const fi = frameIndex(),
       now = momentAt(time);
-    renderOverlays(fi); // first: the inspect framing depends on its caption's height
+    renderOverlays(fi, now); // first: the inspect framing depends on its caption's height
     if (framed !== pinned) reframe();
     renderMap(fi, now);
     renderPanel(fi, now);
@@ -1528,7 +1634,12 @@ const Viewer = (() => {
   }
   // Play from `from` at 4× and stop at `to` when given: the battle itself ran at 1×. Watching
   // analyst note k keeps its units bright and its caption shown; a key event dims nothing.
-  function watch(from, to = null, k = null) {
+  function setLag(on) {
+    lag = Boolean(on) && !$("lag-toggle").disabled;
+    keys.map = null;
+    render();
+  }
+  function watch(from, to = null, k = null, intoView = true) {
     if (!r) return;
     pinned = null;
     speed = 4;
@@ -1539,7 +1650,7 @@ const Viewer = (() => {
     keys.map = null;
     play();
     until = to;
-    reveal();
+    if (intoView) reveal();
   }
   function tick(now) {
     loop = null;
@@ -1567,6 +1678,7 @@ const Viewer = (() => {
       speed = Number(e.target.value);
     });
     $("whole").addEventListener("change", layout);
+    $("lag-toggle").addEventListener("click", () => setLag(!lag));
     $("scrubber").addEventListener("input", (e) => seek(Number(e.target.value) * 1000));
     $("map").addEventListener("click", (e) => {
       const node = e.target.closest?.("[data-unit]");
@@ -1621,6 +1733,8 @@ const Viewer = (() => {
     watch,
     select,
     pause,
+    pin,
+    setLag,
     onTime: (listener) => listeners.push(listener),
     get time() {
       return time;

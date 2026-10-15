@@ -25,12 +25,16 @@ const clock = (ms) => {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 };
-// The run line's outcome: always the engine's result, with the battle clock duration.
-const outcome = (trial) => {
+// The run line's outcome: always the engine's result, with the battle clock duration. A battle
+// that reached the scenario's timer ended there, whatever older jobs recorded as `ended_by`.
+const outcome = (trial, group) => {
   if (!trial.valid) return `Did not finish${trial.error ? `: ${trial.error}` : ""}`;
   const word = { won: "Won", lost: "Lost", draw: "Draw" }[trial.engine_outcome];
-  const duration = clock(trial.battle_ms ?? trial.battle_s * 1000);
-  if (trial.ended_by === "time_limit") return `${word} at the time limit (${duration})`;
+  const ms = trial.battle_ms ?? trial.battle_s * 1000,
+    duration = clock(ms),
+    limit = group?.definition?.scenario?.expect?.time_limit_s;
+  if (trial.ended_by === "time_limit" || (limit && ms >= limit * 1000))
+    return `${word} at the time limit (${duration})`;
   return `${word} ${trial.engine_outcome === "draw" ? "after" : "in"} ${duration}`;
 };
 
@@ -52,9 +56,11 @@ async function main() {
   uv("python", "tests/twwarhammer3/make_wh3_report_demo.py", demo, pair);
   const browser = await chromium.launch({ headless: true });
   try {
+    // Reduced motion: the page then does not play the key maneuver on load.
     const context = await browser.newContext({
       offline: true,
       viewport: { width: 1440, height: 900 },
+      reducedMotion: "reduce",
     });
     const page = await context.newPage(),
       errors = [],
@@ -110,11 +116,28 @@ async function main() {
     assert.equal(await text("#question"), scenario.question || scenario.title);
     const [, g, t] = scenario.featured.match(/^g(\d+)-t(\d+)$/);
     const featured = saved.groups[g].trials[t];
-    const row = saved.groups[g].controllers.find((item) => item.controller === featured.controller);
-    const runLine = await text("#run-line");
-    assert.ok(runLine.includes(outcome(featured)), `run line shows ${outcome(featured)}`);
-    if (row.valid === 1) assert.match(runLine, /Single recorded battle/);
-    if (scenario.featured_reason === "selected") assert.match(runLine, /Selected example/i);
+    const runLine = await text("#run-line"),
+      featuredOutcome = outcome(featured, saved.groups[g]);
+    assert.ok(runLine.includes(featuredOutcome), `run line shows ${featuredOutcome}`);
+    assert.ok(runLine.includes(data.battles[scenario.featured].commander.name));
+    assert.match(runLine, /Featured battle/i);
+    // A curated pick states the commander's record and that it is not a typical result.
+    if (scenario.featured_reason === "selected")
+      assert.match(
+        runLine,
+        /won \d+ of its \d+ finished battles here[\s\S]*not as a typical result/,
+      );
+    if (data.scenarios.some((item) => item.controlled)) {
+      assert.match(await text("#scoreboard"), /controlled comparison/i);
+      // A win reads as a filled mark on the dark card, never as the card's own colour.
+      const fills = await page
+        .locator("#scoreboard .dot.won")
+        .evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).backgroundColor));
+      const card = await page
+        .locator("#scoreboard")
+        .evaluate((node) => getComputedStyle(node).backgroundColor);
+      assert.ok(fills.every((fill) => fill !== card && fill !== "rgba(0, 0, 0, 0)"));
+    }
     await page.screenshot({ path: path.join(output, "desktop.png") });
 
     const { value: replayFile } = await downloaded("#download-replay", "recorded-replay.json");
@@ -140,8 +163,8 @@ async function main() {
     for (const fact of first.next) assert.ok(panel.includes(fact.text));
     assert.doesNotMatch(panel, /[{[]\s*"|"\w+"\s*:/, "no JSON in the default panel");
     assert.equal(await count("#moment details[open]"), 0);
-    assert.match(panel, /These orders used a view of the battlefield from \d+\.\d s earlier/);
-    assert.match(panel, /not that it was carried out/);
+    assert.match(panel, /These orders were \d+\.\d s old when the game accepted them/);
+    assert.match(await text("#method"), /accepted is not the same as carried out/);
 
     // Keyboard: ←/→ step through decisions, [ ] through events, Space plays and pauses.
     await page.locator("#map").focus();
@@ -170,7 +193,7 @@ async function main() {
       if (d.applied_ms - requested < 200) continue;
       await seek(d.applied_ms - 1);
       const before = await text("#moment");
-      const waiting = `Waiting for the (model|controller)'s next reply \\(requested at ${clock(requested)}\\)`;
+      const waiting = `Waiting for the (model|controller)'s next reply · asked \\d+\\.\\d s ago`;
       assert.match(before, new RegExp(waiting));
       const heading = await panelHeading();
       const previous = applied[applied.indexOf(d) - 1];
@@ -186,7 +209,7 @@ async function main() {
     await page.locator("#moment button.inspect").click();
     assert.match(await text("#moment .pinned-line"), /Pinned: decision issued at/);
     assert.match(await text("#map-caption"), /Inspecting the reply applied at/);
-    assert.match(await text("#moment"), /While the response was being generated/);
+    assert.match(await text("#moment"), /While the reply was being generated/);
     await page.locator("#viewer").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(output, "inspect.png") });
     await page.locator("#moment .pinned-line button").click();
@@ -249,14 +272,22 @@ async function main() {
       for (const h of replay.highlights) {
         await seek(h.time_ms);
         const marked = await page
-          .locator("#highlights .highlight")
+          .locator("#highlights .chapter")
           .evaluateAll((cards) => cards.findIndex((card) => card.classList.contains("active")));
-        assert.equal(await count("#highlights .highlight.active"), 1);
+        assert.equal(await count("#highlights .chapter.active"), 1);
         assert.match(await text("#map-caption"), new RegExp(`^Analyst note ${marked + 1} `));
       }
-      assert.equal(await count("#highlights .highlight"), replay.highlights.length);
-      assert.match(await text("#highlights"), /analyst note/i);
+      assert.equal(await count("#highlights .chapter"), replay.highlights.length);
     }
+    // The model's view: outlines of the observation behind the model's current work.
+    await seek(second.applied_ms + 500);
+    await page.locator("#lag-toggle").click();
+    assert.equal(await page.locator("#lag-toggle").getAttribute("aria-pressed"), "true");
+    assert.match(await text("#map-lag"), /Outlines: where units stood \d+\.\d s ago/);
+    assert.ok((await count("#map-lag-layer .unit")) > 0, "the model's view draws outlines");
+    await page.locator("#lag-toggle").click();
+    assert.equal(await count("#map-lag-layer .unit"), 0);
+    assert.ok(await page.locator("#map-lag").isHidden());
     // Only embedded stills appear; failed or throttled captures never do.
     const embedded = (replay.stills || []).filter(
       (shot) => shot.image && shot.status === "embedded",
@@ -264,67 +295,77 @@ async function main() {
     assert.equal(await count("#stills img"), embedded.length);
     const page_text = await page.locator("body").innerText();
     assert.doesNotMatch(page_text, /capture_failed|throttled|Capture missing|Not measured yet/i);
-    if (embedded.length) assert.match(await text("#stills"), /not what the model saw/);
+    if (embedded.length) assert.match(await text("#stills-block"), /not what the model saw/);
 
-    // Compare: one row per controller with the collector's battles won and order delay.
-    const views = scenario.comparisons.map((index) => data.comparisons[index]);
-    const summaries = views.flatMap((view) =>
-      view.groups.flatMap((group) =>
-        saved.groups[group].controllers.map((summary) => ({ group, summary })),
-      ),
-    );
-    assert.equal(await count("#run-sets tbody tr"), summaries.length);
-    for (const { group, summary } of summaries) {
-      const tr = page.locator(
-        `#run-sets tr[data-group="${group}"][data-controller="${summary.controller}"]`,
-      );
-      const cells = await tr.locator("td").allInnerTexts();
-      const won = (summary.outcomes.won || 0) + (summary.time_limit_engine_outcomes?.won || 0);
-      assert.ok(
-        cells[1].startsWith(`${won} of ${summary.valid}`),
-        `${summary.controller} battles won`,
-      );
-      const delay = summary.order_age_median_s;
-      assert.equal(cells[2], delay == null ? "not recorded" : `${delay.toFixed(1)} s`);
-    }
-    // Every replay button opens its run in the viewer.
-    const keys = await page
-      .locator("#run-sets .replays button")
-      .evaluateAll((nodes) => nodes.map((node) => node.dataset.key));
-    assert.ok(keys.length);
-    for (const key of keys) {
+    // How each commander did: one row per commander, one mark per battle, opening it.
+    const trialOf = (key) => {
       const [, gi, ti] = key.match(/^g(\d+)-t(\d+)$/);
-      const trial = saved.groups[gi].trials[ti];
-      await page.locator(`#run-sets .replays button[data-key="${key}"]`).click();
+      return saved.groups[gi].trials[ti];
+    };
+    const outcomeOf = (key) => outcome(trialOf(key), saved.groups[key.match(/^g(\d+)/)[1]]);
+    assert.equal(await count("#rows .row"), scenario.rows.length);
+    for (const [index, item] of scenario.rows.entries()) {
+      const rowNode = page.locator("#rows .row").nth(index);
+      assert.equal(
+        (await rowNode.locator(".who-cell strong").innerText()).replace("†", ""),
+        item.name,
+      );
+      assert.equal(await rowNode.locator(".dot").count(), item.battles.length);
+      const finished = item.battles.map(trialOf).filter((trial) => trial.valid);
+      const wins = finished.filter((trial) => trial.engine_outcome === "won");
+      assert.equal(
+        (await rowNode.locator(".won-cell b").innerText()).replace(/\s/g, ""),
+        `${wins.length}/${finished.length}`,
+      );
+    }
+    for (const key of scenario.battles) {
+      await page.locator(`#rows .dot[data-key="${key}"]`).click();
       await page.waitForFunction(
         (k) =>
-          document
-            .querySelector(`.replays button[data-key="${k}"]`)
-            .getAttribute("aria-current") === "true",
+          document.querySelector(`#rows .dot[data-key="${k}"]`).getAttribute("aria-current") ===
+          "true",
         key,
       );
       await page.waitForSelector("#map-layer .unit");
-      assert.ok((await text("#run-line")).includes(outcome(trial)), `${key} opens its run`);
+      assert.ok((await text("#run-line")).includes(outcomeOf(key)), `${key} opens its run`);
       assert.equal(await page.locator("#run-select").inputValue(), key);
     }
-    await page.locator("#compare").scrollIntoViewIfNeeded();
-    await page.locator("#compare").screenshot({ path: path.join(output, "compare.png") });
-    // Unrun or setup-only scenarios never become a scenario or run option.
-    const options = await page.locator("#run-select option").count();
-    assert.equal(
-      options,
-      views.reduce(
-        (n, view) => n + view.groups.reduce((m, gi) => m + saved.groups[gi].trials.length, 0),
-        0,
-      ),
+    await page.locator("#results").scrollIntoViewIfNeeded();
+    await page.locator("#results").screenshot({ path: path.join(output, "compare.png") });
+    // Routes, the real-time rows and the matrix open battles and scenarios too.
+    if (await count("#routes .route")) {
+      const route = page.locator("#routes .route").first();
+      const routeKey = await route.getAttribute("data-key");
+      await route.click();
+      await page.waitForFunction(
+        (k) => document.getElementById("run-select").value === k,
+        routeKey,
+      );
+    }
+    // A commander charts when one of its finished battles recorded replies and order ages.
+    const timed = scenario.rows.filter(
+      (item) =>
+        item.battles.some(
+          (key) => trialOf(key).valid && data.battles[key].timing?.replies.length,
+        ) && item.battles.some((key) => data.battles[key].timing?.ages.length),
     );
-    if (data.setup_only.length) assert.match(await text("#setup-only"), /stopped during setup/);
+    assert.equal(await count("#latency .lat-row"), timed.length);
+    if (timed.length) assert.match(await text("#realtime-lede"), /\d\.\d s/);
+    await page.locator("#realtime").screenshot({ path: path.join(output, "realtime.png") });
+    assert.equal(await count("#matrix tr[data-scenario]"), data.scenarios.length);
+    // Unrun or setup-only scenarios never become a scenario or run option.
+    assert.equal(await page.locator("#run-select option").count(), scenario.battles.length);
+    const setupOnly =
+      data.setup_only.length + data.scenarios.reduce((n, s) => n + s.setup_only_jobs.length, 0);
+    if (setupOnly) assert.match(await text("#method"), /stopped during setup/);
     for (const item of data.setup_only)
       assert.ok(!data.scenarios.some((entry) => entry.name === item.scenario));
 
     // Run settings and downloads.
     await page.locator("#open-settings").click();
     assert.match(await text("#settings-body"), /Source revision/);
+    const open = await page.locator("#run-select").inputValue();
+    assert.ok((await text("#settings-body")).includes(data.battles[open].harness));
     await page.screenshot({ path: path.join(output, "settings.png") });
     await page.locator("#close-settings").click();
     const { value: reportFile } = await downloaded("#download-report", "recorded-report.json");
@@ -344,41 +385,21 @@ async function main() {
     await fs.copyFile(`${stem}.html`, copied);
     await page.setViewportSize({ width: 1440, height: 900 });
     await go(copied);
-    await page.locator("#suite > summary").click();
-    assert.equal(await count("#suite-table tbody tr"), data.scenarios.length);
-    assert.match(await text("#suite"), /Whole units/);
-    await page.screenshot({ path: path.join(output, "suite.png") });
+    await page.locator("#all").scrollIntoViewIfNeeded();
+    await page.locator("#all").screenshot({ path: path.join(output, "suite.png") });
     for (const [index, item] of data.scenarios.entries()) {
-      if (data.scenarios.length > 1) await page.selectOption("#scenario", String(index));
+      const link = page.locator(`#matrix tr[data-scenario="${item.id}"] .scenario`);
+      await link.evaluate((node) => (node.closest("details").open = true)); // pilots fold
+      await link.click();
       await page.waitForFunction(
         (key) => document.getElementById("run-select").value === key,
         item.featured,
       );
-      const [, gi, ti] = item.featured.match(/^g(\d+)-t(\d+)$/);
-      const trial = saved.groups[gi].trials[ti];
-      assert.equal(await count("#progress-runs tbody tr"), item.overview.started);
-      assert.ok((await text("#common-measures")).includes(outcome(trial)));
-      const progressRow = page
-        .locator(`#progress-runs button[data-key="${item.featured}"]`)
-        .locator("xpath=ancestor::tr");
-      for (const side of ["friendly", "enemy"]) {
-        const counts = trial.measures.soldiers[side];
-        assert.ok(
-          (await progressRow.innerText()).includes(
-            `${counts.remaining ?? "unavailable"} / ${counts.registered ?? "unavailable"}`,
-          ),
-        );
-      }
-      const objective = trial.measures.objective_time;
-      if (objective.status === "available") {
-        assert.equal(
-          await count("#common-measures .objective-results tbody tr"),
-          objective.points.length,
-        );
-        for (const point of objective.points) {
-          assert.ok((await text("#common-measures")).includes(`${point.id} · ${point.key}`));
-        }
-      } else assert.match(await text("#common-measures"), /not applicable|unavailable/);
+      if (data.scenarios.length > 1)
+        assert.equal(await page.locator("#scenario").inputValue(), String(index));
+      assert.ok((await text("#run-line")).includes(outcomeOf(item.featured)));
+      assert.equal(await count("#rows .row"), item.rows.length);
+      assert.equal(await count("#rows .dot"), item.battles.length);
       if (data.replays[item.featured]) {
         await page.waitForFunction(() => !document.getElementById("download-replay").disabled);
         await page.waitForSelector("#map-layer .unit");
@@ -386,50 +407,30 @@ async function main() {
       await page.locator("#open-settings").click();
       assert.match(await text("#settings-body"), /Evaluator version/);
       await page.locator("#close-settings").click();
-
-      // New evaluations can share a scenario with featured historical evidence.
-      // Open every run with whole-unit counts, including non-featured smoke checks.
-      const measured = item.comparisons.flatMap((ci) =>
-        data.comparisons[ci].groups.flatMap((gi) =>
-          saved.groups[gi].trials.flatMap((trial, ti) =>
-            trial.measures.units.friendly ? [{ key: `g${gi}-t${ti}`, trial }] : [],
-          ),
-        ),
-      );
-      for (const { key, trial } of measured) {
-        await page.locator(`#progress-runs button[data-key="${key}"]`).click();
-        assert.equal(await page.locator("#run-select").inputValue(), key);
-        assert.ok((await text("#common-measures")).includes(outcome(trial)));
-        const row = page
-          .locator(`#progress-runs button[data-key="${key}"]`)
-          .locator("xpath=ancestor::tr");
-        for (const side of ["friendly", "enemy"]) {
-          const u = trial.measures.units[side];
-          if (!u) continue;
+      // A battle with whole-unit counts or objective time shows them in its run card.
+      for (const key of item.battles) {
+        const { units, objective_time } = trialOf(key).measures;
+        const both = units.friendly && units.enemy;
+        if (!both && !objective_time.points.length) continue;
+        await page.locator(`#rows .dot[data-key="${key}"]`).click();
+        await page.waitForFunction((k) => document.getElementById("run-select").value === k, key);
+        const card = await text("#run-line");
+        if (both)
           assert.ok(
-            (await row.innerText()).includes(
-              `${u.alive} alive, ${u.destroyed} destroyed, ${u.active} active / ${u.registered} registered`,
+            card.includes(
+              `units still fighting: own ${units.friendly.active} of ${units.friendly.registered}`,
             ),
           );
-          assert.ok(
-            (await text("#common-measures")).includes(
-              `Routing/shattered ${u.routed}; leaving ${u.leaving}; absent/deploying ${u.absent}`,
-            ),
-          );
-        }
-        await page.locator("#open-settings").click();
-        if (trial.card?.version)
-          assert.ok((await text("#settings-body")).includes(trial.card.version));
-        await page.locator("#close-settings").click();
+        if (objective_time.points.length) assert.match(card, /objectives held/);
       }
     }
-    // Expanded overview and progress tables remain usable on a phone.
+    // The results and the matrix remain usable on a phone.
     await page.setViewportSize({ width: 390, height: 844 });
     await noHorizontalScroll();
-    await page.locator("#suite").scrollIntoViewIfNeeded();
-    await page.screenshot({ path: path.join(output, "suite-phone.png") });
-    await page.locator("#compare").scrollIntoViewIfNeeded();
+    await page.locator("#results").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(output, "progress-phone.png") });
+    await page.locator("#all").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(output, "suite-phone.png") });
 
     // Two models of llm_rules paired in each launch: every row names the model and effort its
     // runs played with, a run whose controller failed to build (pair-c, --effort high) takes
@@ -437,25 +438,22 @@ async function main() {
     await page.setViewportSize({ width: 1440, height: 900 });
     await go(pair);
     const pairData = JSON.parse(await page.locator("#report-data").textContent());
-    const sol = (effort) => `gpt-6-sol · ${effort} reasoning · rules-only prompt`,
-      luna = "gpt-6-luna · medium reasoning · rules-only prompt";
-    assert.deepEqual(await page.locator("#run-sets td.name").allInnerTexts(), [
-      luna,
-      luna,
-      sol("high"),
-      sol("low"),
-    ]);
-    const lunaRow = (g) =>
-      page.locator(`#run-sets tr[data-group="${g}"][data-controller^="llm_rules@"] td`);
-    assert.equal(await lunaRow(1).first().innerText(), luna);
-    assert.match(await lunaRow(1).nth(1).innerText(), /failed: controller construction/);
+    const sol = (effort) => ["gpt-6-sol", `${effort} reasoning · no tactical advice`],
+      luna = ["gpt-6-luna", "medium reasoning · no tactical advice"];
+    const names = await page
+      .locator("#rows .who-cell")
+      .evaluateAll((cells) =>
+        cells.map((cell) => [...cell.children].map((child) => child.textContent)),
+      );
+    assert.deepEqual(names, [luna, sol("high"), sol("low")]);
+    assert.match(await page.locator("#rows .row").first().innerText(), /\+1 did not finish/);
     const lunaKey = `g0-t${pairData.report.groups[0].trials.findIndex((t) => t.policy.includes("@"))}`;
-    await page.locator(`#run-sets .replays button[data-key="${lunaKey}"]`).click();
+    await page.locator(`#rows .dot[data-key="${lunaKey}"]`).click();
     await page.waitForSelector("#map-layer .unit");
     await page.locator("#open-settings").click();
     const settings = await text("#settings-body");
-    assert.ok(settings.includes(`${luna} · policy llm_rules@gpt-6-luna/medium`));
-    assert.match(settings, /Prompt the model received \(rules-only prompt\)/);
+    assert.ok(settings.includes(`${luna.join(" · ")} · policy llm_rules@gpt-6-luna/medium`));
+    assert.match(settings, /Prompt the model received \(no tactical advice\)/);
     await page.locator("#close-settings").click();
 
     // Synthetic demo: SYNTHETIC DEMO in the page, the viewer and every download.
@@ -478,20 +476,16 @@ async function main() {
     const refusedPanel = await text("#moment");
     assert.match(refusedPanel, /refused by validation/);
     assert.doesNotMatch(refusedPanel, /Keeping current orders/);
-    assert.equal(await count("#run-sets tbody tr"), 9);
-    assert.match(await text("#run-sets"), /1 at the time limit/);
-    assert.match(await text("#run-sets"), /failed: Synthetic policy failure/);
-    assert.match(await text("#setup-only"), /stopped during setup/);
-    assert.match(await text("#progress-runs"), /2 alive, 1 destroyed, 1 active \/ 3 registered/);
-    assert.match(await text("#common-measures"), /c1 · demo_gate/);
-    assert.match(await text("#common-measures"), /60.0%/);
-    // A key event's watch (no analyst notes) dims nothing.
-    if (await count("#highlights .highlight .watch")) {
-      await page.locator("#highlights .highlight .watch").first().click();
-      await page.waitForTimeout(300);
-      assert.equal(await dimmed(), 0, "a key event's watch dims no unit");
-      await page.locator("#play").click();
-    }
+    assert.equal(await count("#rows .row"), 9);
+    const labels = await page
+      .locator("#rows .dot")
+      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute("aria-label")).join("\n"));
+    assert.match(labels, /at the time limit/);
+    assert.match(labels, /Did not finish: Synthetic policy failure/);
+    assert.match(await text("#rows"), /\+1 did not finish/);
+    assert.match(await text("#method"), /stopped during setup/);
+    assert.match(await text("#run-line"), /objectives held 60% of the time observed/);
+    assert.match(await text("#run-line"), /500 supplies left/);
     // The demo tag sits clear of the scale bar and north arrow.
     const tag = await page.locator("#map-synthetic").boundingBox(),
       furniture = await page.locator("#map-furniture").boundingBox();
