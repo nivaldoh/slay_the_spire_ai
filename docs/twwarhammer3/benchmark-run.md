@@ -36,6 +36,9 @@ uv run python -m twwarhammer3 stats \
   --report-json runs/twwarhammer3/my-cavalry-calibration-report.json
 ```
 
+Add `--report-html runs/twwarhammer3/reports/field-report.html` for the self-contained
+[graphical field report](field-report.md), with offline charts, exports and printing.
+
 Repeat independent launches using the declared schedule in
 [calibration-plan.md](calibration-plan.md); a single launch cannot establish admission.
 After a modifier is admitted, the same reference's G2 launch uses

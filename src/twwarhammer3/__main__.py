@@ -22,6 +22,8 @@ def add_session_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--tick-ms", type=int, default=250, help="in-game model tick for the mod")
     parser.add_argument("--no-autostart", action="store_true", help="leave deployment to a human")
     parser.add_argument("--no-menu", action="store_true", help="do not drive the frontend menus")
+    parser.add_argument("--record-replay", action="store_true",
+                        help="record public replay frames at 1 Hz (cost probe pending)")
 
 
 def session_from(args: argparse.Namespace) -> dict:
@@ -29,6 +31,7 @@ def session_from(args: argparse.Namespace) -> dict:
         "enabled": True, "speed": args.speed, "pause": args.pause,
         "interval_ms": args.interval_ms, "observe_ms": args.observe_ms, "tick_ms": args.tick_ms,
         "autostart": not args.no_autostart, "menu": not args.no_menu,
+        "record_replay": args.record_replay,
     }
 
 
@@ -106,6 +109,8 @@ def main() -> int:
                        help="paired benchmark report from these job directories")
     stats.add_argument("--report-json", type=Path,
                        help="save full benchmark metrics and trial list")
+    stats.add_argument("--report-html", type=Path,
+                       help="save a self-contained offline benchmark field report")
 
     spend = commands.add_parser("spend", help="Print the API ledger total")
     spend.add_argument("--ledger", type=Path, default=LEDGER_PATH)
@@ -248,10 +253,16 @@ def main() -> int:
             report = collect(args.report)
             if args.report_json:
                 write_json(args.report_json, report)
+            if args.report_html:
+                from twwarhammer3.battle.report_html import write
+
+                write(args.report_html, report)
             print(render(report))
             return 0
         if args.report_json:
             parser.error("--report-json requires --report JOB...")
+        if args.report_html:
+            parser.error("--report-html requires --report JOB...")
         if args.rebuild:
             print(f"{rebuild(JOBS_ROOT, args.results)} rows")
         print(summary(args.results))

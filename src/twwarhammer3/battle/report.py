@@ -128,11 +128,20 @@ def collect(jobs: list[Path]) -> dict:
         signature = json.dumps({"scenario": scenario, "source": manifest.get("source_revision"),
                                 "game": environment.get("game"),
                                 "track": manifest.get("track"),
+                                "recorder": manifest.get("recorder"),
                                 "observe_ms": config.get("observe_ms"),
                                 "tick_ms": config.get("tick_ms"),
                                 "interval_ms": config.get("interval_ms"),
                                 "model": config.get("model"), "effort": config.get("effort")},
                                sort_keys=True)
+        # Retain setup-only jobs in graphical reports, including their historical
+        # scenario. These fields are additive; the statistics below are unchanged.
+        job_records[-1]["definition"] = json.loads(signature)
+        job_records[-1]["provenance"] = {
+            "prompt_sha256": {key: value for key, value in manifest.items()
+                              if key.endswith("prompt_sha256")},
+            "source_files": manifest.get("source_files"),
+        }
         for directory in sorted(job.glob("episode-*")):
             if not directory.is_dir():
                 continue

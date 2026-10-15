@@ -1,10 +1,26 @@
 # Project state
 
-Updated 2026-10-14 22:20 UTC: what is running, where each game
+Updated 2026-10-15 00:53 UTC: what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
+
+WH3 [visual report redesign plan](twwarhammer3/visual-report-plan.md) implementation
+is active. The offline replay and opt-in recorder are implemented; 1102 repository
+tests pass (one skip), including Lua 5.1, and the offline browser checks pass.
+The owner has now requested the scripted recorder off/on and imagery probes, followed
+by the Sol low check (about $0.80). Preparing their frozen source; calibration remains
+stopped. Artifacts: `runs/twwarhammer3/reports/visual-report.html` and the synthetic
+`visual-report-demo.html`.
+Owner decisions: no unit art, exact prompts included but collapsed, and camera moves
+during jobs accepted.
+
+WH3 [offline field report](twwarhammer3/field-report.md) implementation is complete.
+Generated `runs/twwarhammer3/reports/field-report.html` from the saved cavalry jobs;
+`field-report-demo.html` is a separate, explicitly synthetic demonstration. The exporter
+preserves statistical groups and adds local charts, data/image downloads and printing.
+No new battles or model calls; calibration remains stopped.
 
 WH3 benchmark work stopped at the owner's request on 2026-10-14 at 22:19:59 UTC.
 The owner cleared the goal and wants to discuss difficulty calibration separately.

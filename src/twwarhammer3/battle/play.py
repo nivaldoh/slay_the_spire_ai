@@ -25,6 +25,7 @@ from pathlib import Path
 from gameai.ledger import BudgetExhausted
 from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
 from twwarhammer3.battle.controllers import MODEL_POLICIES, card, rotation
+from twwarhammer3.battle.recording import copy_recording, recording_settings
 from twwarhammer3.battle.setup import (
     check_battle,
     check_menu,
@@ -53,7 +54,8 @@ SOURCES = ("src/gameai", "src/twwarhammer3", "configs/twwarhammer3", "pyproject.
 SCENARIOS_PATH = Path(__file__).resolve().parents[3] / "configs/twwarhammer3/scenarios.json"
 CATALOGUE_PATH = SCENARIOS_PATH.with_name("custom_battle.json")
 CAPTION_LIMIT = 400
-SESSION_KEYS = ("speed", "pause", "interval_ms", "observe_ms", "tick_ms", "autostart", "menu")
+SESSION_KEYS = ("speed", "pause", "interval_ms", "observe_ms", "tick_ms", "autostart", "menu",
+                "record_replay")
 # Lobby expressions that guard menu steps ("when").
 LOBBY = "CustomBattleLobbyContext."
 PLAYER_ATTACKS = LOBBY + "LocalPlayerSlotContext.TeamContext.IsAttacker"
@@ -92,6 +94,7 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
         "track": "obs-v3+terrain/act-v2/live-1x",
         "status": "running",
         "episodes": [],
+        "recorder": recording_settings(config),
     }
     for name in sorted(set(config["policy"].split(",")) & MODEL_POLICIES):
         from twwarhammer3.battle import commander, llm
@@ -103,7 +106,7 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
         (output / filename).write_bytes(prompt.read_bytes())
         manifest[filename.removesuffix(".md") + "_sha256"] = sha256(prompt)
     write_json(output / "manifest.json", manifest)
-    session = {key: config[key] for key in SESSION_KEYS}
+    session = {key: config[key] for key in SESSION_KEYS if key in config}
 
     def episodes(mailbox: Mailbox) -> str:
         previous = None
@@ -144,6 +147,8 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
             live = json.loads((BRIDGE_DIR / "session.json").read_text())
             require_realtime(live)
             config.update({key: live[key] for key in SESSION_KEYS if key in live})
+            config["record_replay"] = live.get("record_replay", False)
+            manifest["recorder"] = recording_settings(config)
             write_json(output / "manifest.json", manifest)
             manifest["status"] = episodes(Mailbox(BRIDGE_DIR, job=live["job"]))
         else:
@@ -403,6 +408,7 @@ def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
     started = wall_started = time.time()
     monotonic_started = time.monotonic()
     result = {"episode": directory.name, "status": "interrupted", "decisions": 0, "invalid": 0,
+              "started_at": datetime.now(UTC).isoformat(),
               "delays_ms": [], "think_s": [], "policy": config["policy"],
               "slot": config.get("slot"), "delay_ms": config.get("delay_ms", 0),
               "track": "obs-v3+terrain/act-v2/live-1x" +
@@ -444,6 +450,10 @@ def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
         result["elapsed_seconds"] = round(time.time() - wall_started, 3)
         result["monotonic_seconds"] = round(time.monotonic() - monotonic_started, 3)
         result["llm"] = dict(getattr(policy, "totals", {}))
+        result["finished_at"] = datetime.now(UTC).isoformat()
+        if config.get("record_replay"):
+            result["recording"] = copy_recording(mailbox.directory, directory,
+                                                  job=mailbox.job, battle=result.get("battle"))
         if result.get("start") and config.get("start_reference"):
             result["start_comparison"] = compare_starts(config["start_reference"], result["start"])
         delays = result["delays_ms"]

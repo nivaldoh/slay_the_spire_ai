@@ -122,6 +122,16 @@ Results by version: `python -m twwarhammer3 stats`. With outcomes this noisy (a 
 battles swing between a clear win and a clear loss), three episodes rank versions only
 roughly; `own_left` and `enemy_left` (true strength at the end) add a finer measure.
 
+The [offline benchmark field report](field-report.md) adds scenario briefs, selectable
+controller comparisons, timing/cost charts and expandable evidence. Regenerate it from
+saved jobs with `stats --report JOB... --report-html FILE`; no game or API call is needed.
+
+The [visual report](visual-report-plan.md) now includes tactical replay from saved
+public observations, decision timing, exact prompts/replies, factual bookmarks and
+shared-scale trial tracks. The optional `--record-replay` recorder is implemented;
+its live cost comparison and game imagery probes are in progress. Event captions are
+rule-based; quoted model reasons remain labelled as stated rationale.
+
 ## What the first night showed (2026-10-13)
 
 - The model can command a real-time battle through the mod: about one decision per 10 s

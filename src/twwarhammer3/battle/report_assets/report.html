@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-@@SCRIPT_HASH@@'; style-src 'unsafe-inline'; img-src data: blob:; base-uri 'none'; form-action 'none'">
+  <title>WH3 Benchmark — Field Report</title>
+  <style>@@STYLE@@</style>
+</head>
+<body>
+  <a class="skip" href="#comparison">Skip to controller comparison</a>
+  <header class="masthead">
+    <div class="edition"><span class="insignia" aria-hidden="true">◇</span> ORIGINAL ENGINE / REAL-TIME TACTICS <span>RESEARCH SERIES · WH3</span></div>
+    <div class="hero">
+      <div><p class="eyebrow">TOTAL WAR: WARHAMMER III</p><h1>Benchmark <em>Field Report</em></h1>
+      <p class="intro">Tactical challenges in the original game. Controllers command through a Lua interface while battle continues at 1× speed. Every order arrives with a measured information age.</p></div>
+      <svg class="map-mark" viewBox="0 0 240 170" aria-hidden="true"><g fill="none" stroke="currentColor"><path d="M8 125Q30 20 120 35T235 18M8 145Q47 35 130 55T238 40M30 170Q55 55 143 75T238 65M64 170Q75 85 155 98T238 90M112 170Q100 110 170 120T238 115" opacity=".35"/><path d="M110 10v145M35 90h150" stroke-dasharray="3 7"/><path d="m110 40 12 34-12-6-12 6Z"/><path d="m73 114 8-8 8 8-8 8Zm61 7 8-8 8 8-8 8Z"/><circle cx="110" cy="90" r="37"/></g></svg>
+    </div>
+    <p id="dataset-banner" class="banner"></p>
+    <div id="totals" class="totals"></div>
+  </header>
+  <main>
+    <section id="replay-verdict" aria-label="Featured trial verdict"></section>
+    <section aria-labelledby="brief-heading">
+      <div class="section-heading"><p class="eyebrow">01 / THE TACTICAL PROBLEM</p><div class="actions"><button id="export-data">Download displayed JSON</button><button id="print">Print / PDF</button></div></div>
+      <div class="selector"><label for="scenario">Scenario &amp; compatible settings</label><select id="scenario"></select></div>
+      <article class="brief">
+        <div class="brief-copy"><p id="status" class="status"></p><h2 id="brief-heading"></h2><p id="scenario-name" class="mono"></p><p id="brief-text"></p><p id="metadata-origin" class="note"></p></div>
+        <div><dl id="settings" class="settings"></dl><details><summary>Opposing forces &amp; scenario declaration</summary><div id="forces"></div><pre id="scenario-detail"></pre></details></div>
+      </article>
+      <p id="comparison-settings" class="settings-line"></p>
+    </section>
+    <section id="replay-section" aria-labelledby="replay-heading">
+      <p class="eyebrow">BATTLE REPLAY / RECORDED PUBLIC STATE</p>
+      <h2 id="replay-heading">The battle does not wait.</h2>
+      <div class="actions"><label for="replay-trial">Open trial</label><select id="replay-trial"></select><button id="replay-download">Download replay evidence</button></div>
+      <p id="replay-availability" class="note" role="status"></p>
+      <div id="replay-content" hidden>
+        <div id="replay-forces" class="replay-forces"></div>
+        <div class="replay-layout">
+          <div class="replay-stage">
+            <div class="actions"><label><input id="replay-whole" type="checkbox"> Whole map</label><label for="replay-background">Background</label><select id="replay-background"><option value="model">Model's view · passability grid</option><option value="game" disabled>Game imagery · not recorded</option></select></div>
+            <svg id="replay-map" viewBox="0 0 700 560" role="img" aria-label="Recorded unit positions and submitted orders"></svg>
+            <p id="replay-frame" class="note"></p>
+            <p class="note">Blue ● friendly · Orange ◆ enemy. ↑ facing · ♔ lord · ♞ cavalry · ▰ infantry · ↗ missile · ⊕ artillery. M melee · F under fire · W wavering · R routing. Hollow glyphs are timestamped last sightings. Dashed order arrows await application; solid arrows are acknowledged, red arrows rejected. Arrows show submissions, not execution.</p>
+            <div class="replay-controls"><button id="replay-play">Play</button><label for="replay-speed">Speed</label><select id="replay-speed"><option>1</option><option selected>4</option><option>16</option></select><button id="replay-prev">Previous decision</button><button id="replay-next">Next decision</button><button id="replay-prev-event">Previous event</button><button id="replay-next-event">Next event</button></div>
+            <label for="replay-time">Battle time · seconds</label><input id="replay-time" type="range" min="0" max="1" value="0" step="0.1">
+            <p class="note">Keyboard in replay: Space play/pause, ←/→ decisions, [/ ] events. Positions jump between recorded frames; missing intervals are never interpolated.</p>
+            <p class="note">Terrain is the prompt's deployment snapshot: each 32 m cell samples a 16 m square; grey means restricted. It does not guarantee a path for any unit. Rows increase world z; columns increase x.</p>
+            <svg id="replay-timeline" viewBox="0 0 700 90" role="img" aria-label="Decision information age bars"></svg>
+            <svg id="replay-resources" viewBox="0 0 700 100" role="img" aria-label="Recorded army resources and ability acknowledgements"></svg>
+            <div id="replay-lanes"></div>
+            <details><summary>Enemy unit lanes · visible observations only</summary><div id="replay-enemy-lanes"></div></details>
+          </div>
+          <aside class="replay-inspection"><h3>Decision inspector</h3><div id="replay-inspector"></div><h3>Recorded events</h3><div id="replay-events" class="replay-events"></div></aside>
+        </div>
+      </div>
+    </section>
+    <section id="replay-comparison" aria-labelledby="replay-comparison-heading"><h2 id="replay-comparison-heading">Same battle, other commanders.</h2><p class="note">Shared map extent. Dots are recorded positions; gaps are not reconstructed. Each trial keeps its own evidence and outcome.</p><div id="replay-multiples" class="replay-multiples"></div></section>
+    <section id="comparison" aria-labelledby="controllers-heading">
+      <div class="section-heading"><p class="eyebrow">02 / CONTROLLERS</p><button id="select-all">Select all controllers</button></div>
+      <h2 id="controllers-heading">Performance, with the evidence attached.</h2>
+      <p class="note">Alphabetical by default. Select rows for the charts and exports; select a column heading to sort. Evidence groups (E01, E02…) retain their own samples.</p>
+      <div id="controller-table" class="table-scroll" role="region" aria-label="Controller comparison" tabindex="0"></div>
+      <p class="note">W / L / D / T = non-timer wins / losses / draws / time limits. Non-timer win rate = non-timer wins ÷ all valid outcomes, including time limits. 95% Wilson intervals are withheld for correlated repeats. A single launch is exploratory.</p>
+    </section>
+    <section aria-labelledby="timing-heading">
+      <div class="section-heading"><p class="eyebrow">03 / TIMING &amp; TACTICAL RESULTS</p><div class="actions"><button id="export-svg">Chart SVG</button><button id="export-png">Chart PNG</button></div></div>
+      <h2 id="timing-heading">What did the controller know, and when?</h2>
+      <div class="chart-controls"><label for="axis">Chart view</label><select id="axis"><option value="age">Measured information age</option><option value="cost">Inference cost</option><option value="added">Controlled added age</option></select></div>
+      <p id="chart-note" class="note"></p><div id="chart" class="chart"></div>
+      <p id="selection" class="selection" aria-live="polite">Select a trial point or a row below for exact values.</p>
+      <details open id="trial-details"><summary>Individual trials · exact values</summary><div id="trial-table" class="table-scroll" role="region" aria-label="Individual trial values" tabindex="0"></div></details>
+      <details open id="tactical-details"><summary>Objectives, protected units &amp; resources</summary><p class="note">Per-trial values. Resource quantities have neutral labels; more unspent supplies need not imply better play.</p><div id="tactical-table" class="table-scroll" role="region" aria-label="Tactical metrics" tabindex="0"></div></details>
+    </section>
+    <section aria-labelledby="evidence-heading">
+      <p class="eyebrow">04 / THE RECORD</p><h2 id="evidence-heading">Evidence &amp; definitions</h2>
+      <details><summary>Paired comparisons &amp; uncertainty</summary><p class="note">Only the collector’s within-group, within-launch pairs appear here. Independent model launches create no new pairs. Intervals use launch means; repeated rematches are correlated.</p><div id="pairs"></div></details>
+      <details><summary>Failures, interruptions &amp; setup flags</summary><p id="failure-summary"></p><div id="failures"></div></details>
+      <details><summary>All supplied jobs · including setup-only interruptions</summary><div id="jobs" class="table-scroll" role="region" aria-label="Supplied jobs" tabindex="0"></div></details>
+      <details><summary>Metric definitions &amp; limitations</summary><dl class="definitions">
+        <dt>Active-strength margin</dt><dd>Friendly active men ÷ starting men, minus the same enemy fraction. Routing and shattered men count as lost. Units are not weighted by value. Means use valid trials with available metrics.</dd>
+        <dt>Measured information age</dt><dd>Battle time from the observed state to order issuance or queuing, averaged over non-empty batches per trial. This includes model, network and retry delay; issuance does not confirm execution.</dd>
+        <dt>Controlled added age</dt><dd>The minimum requested age of the buffered snapshot, separate from the actual age at decision and order issuance. Conditions are compared within recorded evidence groups; missing conditions are not interpolated.</dd>
+        <dt>Cost per attempted trial</dt><dd>Total recorded inference USD divided by started trial records, including failed trials. Setup-only jobs have no trial denominator. Provider costs may be self-reported; incomplete cost records are unavailable in the chart and displayed mean. Scripted controllers have zero inference cost.</dd>
+        <dt>Independent launches</dt><dd>Distinct job instances in a controller’s trial records. Rematches within a launch do not add independent evidence. The scenario status counts launches with started trials; all supplied jobs are listed separately.</dd>
+        <dt>Protected-unit survival</dt><dd>Active men left in the scenario’s declared protected unit types, divided by their starting men.</dd>
+        <dt>Objective-control shares</dt><dd>Victory/key-point control from recorded objective summaries. Current records integrate engine time; legacy records use sampled observations. The table identifies the method. Supplies are the recorded amount left; reinforcements count accepted purchases by unit type, not confirmed arrivals.</dd>
+      </dl><p id="limitations"></p></details>
+      <details><summary>Recorded system and rules prompts · once per job</summary><div id="replay-prompts"></div></details>
+      <details><summary>Source provenance &amp; comparison settings</summary><p class="note">Historical briefs come from recorded manifests. Catalogue entries are unrun placeholders within this report. Exact recorded decision prompts and raw replies are collapsed in the replay inspector. Job identifiers are portable directory names.</p><pre id="provenance"></pre></details>
+    </section>
+  </main>
+  <footer><span>WH3 BENCHMARK / FIELD REPORT</span><span>Original game. Recorded evidence. Open questions.</span></footer>
+  <p id="export-status" class="sr-only" aria-live="polite"></p>
+  <noscript><p class="banner">JavaScript is required for this interactive report. The accompanying CLI text / JSON reports remain available without it.</p></noscript>
+  <script id="report-data" type="application/json">@@DATA@@</script>
+  <script>@@SCRIPT@@</script>
+</body>
+</html>

@@ -592,6 +592,62 @@ local function publish_observation(now)
     return publish("observation.json", message)
 end
 
+-- Presentation-only samples, independently of the synchronous controller's reads.
+-- Enemy knowledge belongs to this recorder: sampling must not update the policy's
+-- seen/dead flags. Unit ids still come from the single battle registry.
+local function record_replay(now, terminal)
+    if not session.record_replay then return end
+    local second = math.floor(now / 1000)
+    if state.recorded_second == second and not terminal then return end
+    state.recorded_second = second
+    local began = os.clock()
+    local ok, err = pcall(function()
+        state.recorder_enemies = state.recorder_enemies or {}
+        local frame = {recorder = 1, job = session.job, battle = state.battle, time_ms = now,
+            friendly = {}, enemy = {}, enemy_roster = {}, result = state.result,
+            phase = bm:get_current_phase_name(), remaining_ms = get(bm.battle, "remaining_conflict_time", -1) * 1000,
+            mode = mode_section(), terminal = terminal or nil}
+        local fields = {"id", "type", "class", "commander", "x", "z", "bearing", "men", "men0",
+            "hp", "morale", "state", "target", "dest", "abilities", "ammo", "ammo0", "error"}
+        local function compact(record)
+            local out = {}
+            for _, key in ipairs(fields) do out[key] = record[key] end
+            return out
+        end
+        for _, id in ipairs(state.friendly_ids) do
+            local entry = state.friendly[id]
+            local good, record = pcall(unit_record, id, entry.unit, true, entry.class)
+            frame.friendly[#frame.friendly + 1] = good and compact(record) or {id = id, error = clean_error(record)}
+        end
+        for _, id in ipairs(state.enemy_ids) do
+            local entry = state.recorder_enemies[id]
+            if not entry then
+                entry = {}
+                for key, value in pairs(state.enemy[id]) do entry[key] = value end
+                state.recorder_enemies[id] = entry
+            end
+            local roster, record = enemy_observation(id, entry)
+            if roster then frame.enemy_roster[#frame.enemy_roster + 1] = roster end
+            if record then frame.enemy[#frame.enemy + 1] = compact(record) end
+        end
+        local player = bm:get_player_army()
+        frame.magic = {current = get(player, "winds_of_magic_current", nil),
+                       reserve = get(player, "winds_of_magic_reserve", nil)}
+        if #state.army_abilities > 0 then frame.army = army_abilities() end
+        frame.sample_cpu_ms = (os.clock() - began) * 1000
+        frame.previous_total_cpu_ms = state.recorder_cpu_ms
+        local file, reason = io.open(BRIDGE .. "replay-" .. state.battle .. ".jsonl", "a")
+        if not file then error(reason or "cannot open recorder file") end
+        local encoded, text = pcall(json.encode, frame)
+        if not encoded then file:close(); error(text) end
+        local wrote, failure = file:write(text .. "\n")
+        file:close()
+        if not wrote then error(failure or "cannot append recorder frame") end
+    end)
+    state.recorder_cpu_ms = (os.clock() - began) * 1000
+    if not ok then log("recorder failed: " .. clean_error(err)) end
+end
+
 local function apply_army_ability(order)
     local known = false
     for _, setup in ipairs(state.army_abilities) do
@@ -878,6 +934,8 @@ local function finish()
     for _, entry in pairs(state.friendly) do
         pcall(function() entry.controller:release_control() end)
     end
+    -- Flush the terminal presentation frame before the result releases the harness.
+    record_replay(battle_time(), true)
     publish_observation(battle_time())
     bm:remove_process("twwarhammer3_tick")
     log("result " .. state.result)
@@ -1031,6 +1089,7 @@ local function tick()
         state.next_observe_ms = now + (session.observe_ms or 1000)
         publish_observation(now)
     end
+    record_replay(now, false)
 end
 
 -- UI steps for probing the battle UI (menu --battle): the frontend script is unloaded

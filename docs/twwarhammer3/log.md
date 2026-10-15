@@ -1,5 +1,55 @@
 # WH3 battle versions
 
+## Visual replay v1 and recorder candidate (2026-10-15 UTC)
+
+Implemented phase 1 of [the visual report plan](visual-report-plan.md) and the opt-in
+1 Hz public recorder. The report preserves collector summaries, embeds gzip/base64
+replay evidence, and adds an SVG map, timing/resource strips, unit lanes, exact prompts,
+stated reasons/notes, factual events and shared-scale trial tracks. The recorder has
+independent visibility memory and per-battle files, copied after each episode, including
+interruption evidence. Recorder version/settings enter comparison compatibility.
+
+The original Sol trace contains 441 submitted orders, 436 acknowledged, 29 rejected and
+five without an acknowledgement before battle end. It confirms the enemy general's
+rout, not his death. The report retains those distinctions. All three G1 payloads are
+under 160 KB compressed, and the nine-trial budget check is below 20 MiB.
+
+Validation before live probes: 1102 repository tests passed, one skipped, with the
+optional report dependency and Lua 5.1 runtime; Ruff passed. Offline Chromium checked
+replay selection, playback, keyboard, exact counts, synthetic exports, 390 px layout,
+and the existing statistics/download/print behavior. Artifacts:
+`runs/twwarhammer3/reports/visual-report.html`, `visual-report-demo.html`, and
+`visual-browser/`. No new result rows or spend yet. Owner subsequently requested
+scripted recorder off/on and imagery probes, plus the later Sol low check (~$0.80).
+These are visual-report acceptance, separate from the stopped calibration.
+
+## Offline benchmark field report v1 (2026-10-14)
+
+Added `stats --report JOB... --report-html FILE`, calling the existing collector once
+alongside the text and JSON outputs. A Python exporter embeds separate HTML/CSS/JS
+assets and compact evidence in one file, with scenario briefs, selectable/sortable
+controller comparisons, native SVG timing/cost/added-age charts, tactical metrics,
+expandable uncertainty/failure/provenance records, image/JSON downloads and printing.
+Different model/effort groups can display together only under matching known scenario,
+source, game, interface and timing settings. Their summaries and pairs stay separate.
+
+Initial artifact: `runs/twwarhammer3/reports/field-report.html`, from the existing G1
+cavalry 1.0 launch and interrupted 1.1 setup. It labels the result **Development pilot:
+one independent launch** and retains the interruption with zero started trials.
+All prior JSON values are unchanged; job definitions and provenance are additive.
+Current catalogue entries supply labelled unrun placeholders, never historical briefs.
+The separate `field-report-demo.html` and committed synthetic fixture use invented
+Demo controller A/B/C results, 0/6/10-second arms and missing/failure/timer/repeat cases.
+Synthetic evidence cannot mix with recorded evidence in the exporter.
+
+Validation: reporting regressions and the WH3 suite; Ruff; offline Chromium checks of
+exact collector summaries, filters, sorting, keyboard controls, a 390 px layout,
+SVG/PNG/JSON downloads, timer/missing metrics, setup interruptions and evidence
+separation. Desktop/narrow/demo screenshots, chart PNG and a three-page selected
+comparison PDF were inspected. Browser verification artifacts are outside game runs
+under `/tmp/wh3-report-browser/`. Commands and semantics: [field-report.md](field-report.md).
+No games or API calls were made; the results register and ledger have no new entries.
+
 ## Partial G1 and owner-requested stop (2026-10-14)
 
 G1 started at 21:56:01 UTC on committed/pushed `6763d0e`, with the declared Sol low
