@@ -1,5 +1,28 @@
 # WH3 battle versions
 
+## Sol visual acceptance and closer action views (2026-10-15 UTC)
+
+The separately authorized `battle/visual-sol-low-20261015` on `7136d6a` ran
+`llm_rules`, gpt-6-sol low, on `brt-cavalry-emp-assault`, unpaused at 1× with default
+recording and `--stills`. It won at 382.4 s: 92 decisions, four engine refusals,
+4.11 s mean information delay, $0.6292834. Ledger total: $7.7949 of $25. This is
+visual acceptance, not a resumed calibration or a comparable extra G1 trial.
+
+The replay has 473 frames, 168 submitted orders, 167 acknowledged and one unacknowledged
+at ending. It embeds all prompts/replies, 14 readable names and two captured stills
+(first melee at 179.9 s and ending at 382.4 s). The opening foreground check failed;
+first rout at 208.1 s was throttled. Both are retained explicitly. Passive grabs took
+62.6 / 32.5 ms in the independent capture process. Recorder terminal and public-id
+checks passed (`visual-probes/sol-recorder-acceptance.json`). The new model trial,
+old G1 triple and interrupted launch remain in separate compatibility views.
+
+Owner follow-up: closer, oblique action views, preferably before contact. Imagery v3
+uses an observed closing gap within 100 m before melee, with incoming fire / first
+melee as fallbacks for the same one action slot. Camera height is about 28 m above
+the focus terrain, with a side offset; opening stays overhead. Four-image maximum
+and 30 s throttle remain. Captions do not infer charge intent. Scripted live framing
+validation follows; no further paid model run is needed.
+
 ## Native imagery probe and passive capture (2026-10-15 UTC)
 
 `visual-probes/imagery-20261015` on `f395275` ran the scripted Khorne–Dwarf probe at

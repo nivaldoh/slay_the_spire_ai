@@ -197,3 +197,4 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-15,recorder-on-20261015,episode-0000,brt-cavalry-emp-assault,rush_nearest,,,,581119e,realtime,1.0,0.0,lost,264,0.37,0.69,849,1,0.3,0,classic,,,,,0.0,0.6943396226415094,0.0,engine_result
 2026-10-15,imagery-20261015,episode-0000,kho5-dwf5,rush_nearest,,,,f395275,realtime,1.0,0.0,truncated,90,0.96,0.9,276,0,0.31,0,classic,,,,,0.9593908629441624,0.902127659574468,0.0,
 2026-10-15,passive-imagery-20261015,episode-0000,kho5-dwf5,rush_nearest,,,,081f30f,realtime,1.0,0.0,truncated,92,0.83,0.96,285,0,0.31,0,classic,,,,,0.8324873096446701,0.9617021276595744,0.0,
+2026-10-15,visual-sol-low-20261015,episode-0000,brt-cavalry-emp-assault,llm_rules,gpt-6-sol,low,,7136d6a,realtime,1.0,0.0,won,382,0.46,0.39,92,4,4.11,0.6293,classic,,,,,0.43317972350230416,0.0,0.0,engine_result

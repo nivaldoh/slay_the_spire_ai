@@ -156,7 +156,8 @@ def test_imagery_probe_is_valid_lua51():
     assert compile_lua(visual_probe.LUA)
 
 
-def test_lua_capture_triggers_use_public_cluster_and_keep_camera_failures():
+@pytest.fixture
+def imagery_lua():
     lua = pytest.importorskip("lupa.lua51").LuaRuntime()
     lua.execute('''
         clock_ms, captures, callbacks = 1000, 0, {}
@@ -177,14 +178,19 @@ def test_lua_capture_triggers_use_public_cluster_and_keep_camera_failures():
         io = {open = function() return {write = function() end, close = function() end} end}
         os.remove = function() end
         os.rename = function() return true end
-        function sample(time, units, terminal)
+        function sample(time, units, terminal, enemies)
             clock_ms = time
             twwarhammer3_imagery({job = 'j', battle = 'b', time_ms = time,
-                friendly = units, enemy = {}, terminal = terminal}, {f1 = 'Lord'})
+                friendly = units, enemy = enemies or {}, terminal = terminal}, {f1 = 'Lord'})
         end
     ''')
     source = Path("src/twwarhammer3/mod/script/_lib/mod/twwarhammer3_imagery.lua")
     lua.execute(source.read_text())
+    return lua
+
+
+def test_lua_capture_triggers_use_public_cluster_and_keep_camera_failures(imagery_lua):
+    lua = imagery_lua
     lua.execute("sample(1000, {{id='f1', x=0, z=0, men=1, state={}}})")
     g = lua.globals()
     assert g.saved.stills[1].status == "pending" and g.captures == 0
@@ -210,13 +216,66 @@ def test_lua_capture_triggers_use_public_cluster_and_keep_camera_failures():
     assert "camera unavailable" in g.saved.stills[4].error
 
 
+def test_approach_still_precedes_contact_and_shares_its_slot(imagery_lua):
+    lua = imagery_lua
+    lua.execute('''
+        sample(1000, {{id='f1',x=0,z=0,men=10}}, false, {{id='e1',x=150,z=0,men=10}})
+        sample(35000, {{id='f1',x=0,z=0,men=10}}, false, {{id='e1',x=90,z=0,men=10}})
+        callbacks.wh3_still_approach()
+    ''')
+    shot = lua.globals().saved.stills[2]
+    assert shot.trigger == "approach" and shot.distance_m == 90
+    assert list(shot.focus_units.values()) == ["f1", "e1"]
+    assert shot.requested_camera.position[2] == 48  # 28 m above the target terrain
+    assert shot.requested_camera.target[2] == 23
+    assert shot.requested_camera.position[1] < 0  # behind the friendly formation
+    lua.execute('''
+        sample(70000, {{id='f1',x=0,z=0,men=10,state={'melee','under_fire'}}})
+        sample(100000, {{id='f1',x=0,z=0,men=10,state={'routing'}}})
+        sample(101000, {{id='f1',x=0,z=0,men=10}}, true)
+    ''')
+    assert len(lua.globals().saved.stills) == 4
+
+
+@pytest.mark.parametrize("change", ["hidden", "retreat", "routing", "melee"])
+def test_approach_requires_recent_visible_closing_units(imagery_lua, change):
+    lua = imagery_lua
+    lua.execute('''
+        friends = {{id='f1',x=0,z=0,men=10}}
+        enemies = {{id='e1',x=90,z=0,men=10}}
+        sample(1000, friends, false, enemies)
+    ''')
+    if change == "hidden":
+        lua.execute("sample(34000, friends); enemies[1].x = 80")
+    elif change == "retreat":
+        lua.execute("enemies[1].x = 95")
+    elif change == "routing":
+        lua.execute("enemies[1].x = 80; enemies[1].state = {'routing'}")
+    else:
+        lua.execute("enemies[1].x = 80; friends[1].state = {'melee'}")
+    lua.execute("sample(35000, friends, false, enemies)")
+    assert all(shot.trigger != "approach" for shot in lua.globals().saved.stills.values())
+
+
+def test_incoming_fire_uses_action_slot_without_inventing_approach(imagery_lua):
+    lua = imagery_lua
+    lua.execute('''
+        sample(1000, {{id='f1',x=0,z=0,men=10}})
+        sample(35000, {{id='f1',x=0,z=0,men=10,state={'under_fire'}}})
+        sample(70000, {{id='f1',x=0,z=0,men=10,state={'melee'}}})
+    ''')
+    assert len(lua.globals().saved.stills) == 2
+    assert lua.globals().saved.stills[2].trigger == "incoming_fire"
+
+
 def test_lua_presentation_never_queries_hidden_enemy_positions_or_policy_memory():
     lua = pytest.importorskip("lupa.lua51").LuaRuntime()
     lua.execute('''
         session = {job='j', stills=true}
         queried = {}
         function unit(id, visible)
-            return {id=id, visible=visible, position=function()
+            return {id=id, visible=visible, is_under_missile_attack=function() return true end,
+                position=function()
                 queried[id] = true
                 return {get_x=function() return 1 end, get_z=function() return 2 end}
             end}
@@ -252,4 +311,5 @@ def test_lua_presentation_never_queries_hidden_enemy_positions_or_policy_memory(
     assert g.queried.f1 and g.queried.e2
     assert g.queried.e1 is None and g.queried.e3 is None
     assert len(g.saved.enemy) == 1 and g.saved.enemy[1].id == "e2"
+    assert g.saved.friendly[1].state[1] == "under_fire"
     assert g.saved_names.f1 == "f1 readable" and g.saved_names.e1 is None

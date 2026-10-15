@@ -258,6 +258,8 @@ window.wh3Replay = (() => {
         const title =
           {
             opening: "Opening view",
+            approach: "Closing formations",
+            incoming_fire: "First observed incoming fire",
             first_contact: "First observed melee",
             first_rout: "First observed rout",
             ending: "Battle ending",
@@ -271,7 +273,7 @@ window.wh3Replay = (() => {
         figure.append(
           node(
             "figcaption",
-            `${title} · ${shot.time_ms != null ? seconds(shot.time_ms) : "time unavailable"} · ${shot.image ? "Presentation only; never policy input." : shot.status?.replaceAll("_", " ") || "Capture missing"} ${shot.visibility || "Visibility not audited: the image may include information hidden from the controller."} ${shot.error || ""}`,
+            `${title} · ${shot.time_ms != null ? seconds(shot.time_ms) : "time unavailable"} · ${shot.image ? "Presentation only; never policy input." : shot.status?.replaceAll("_", " ") || "Capture missing"} ${shot.caption || ""} ${shot.visibility || "Visibility not audited: the image may include information hidden from the controller."} ${shot.error || ""}`,
           ),
         );
         figure.append(

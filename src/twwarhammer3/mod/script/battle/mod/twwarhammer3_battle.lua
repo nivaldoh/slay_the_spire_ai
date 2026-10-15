@@ -676,6 +676,7 @@ local function record_imagery(now, terminal)
                         local flags = {}
                         if get(entry.unit, "is_in_melee", false) then flags[#flags + 1] = "melee" end
                         if get(entry.unit, "is_routing", false) then flags[#flags + 1] = "routing" end
+                        if get(entry.unit, "is_under_missile_attack", false) then flags[#flags + 1] = "under_fire" end
                         frame[side][#frame[side] + 1] = {id = id, x = position:get_x(), z = position:get_z(),
                             men = get(entry.unit, "number_of_men_alive", 0), state = flags}
                     end

@@ -17,7 +17,7 @@ MAX_STILL_BYTES = 256 * 1024
 
 
 def imagery_settings(config: dict) -> dict:
-    return {"version": 2, "enabled": bool(config.get("stills")), "policy_input": False,
+    return {"version": 3, "enabled": bool(config.get("stills")), "policy_input": False,
             "backend": "passive_windows_pillow",
             "max_stills": 4, "projection": "unregistered_grid_and_stills"}
 
@@ -53,7 +53,8 @@ class PassiveCapture:
                     continue
                 for shot in record.get("stills", []):
                     trigger = shot.get("trigger")
-                    if trigger not in {"opening", "first_contact", "first_rout", "ending"}:
+                    if trigger not in {"opening", "approach", "incoming_fire",
+                                       "first_contact", "first_rout", "ending"}:
                         continue
                     key = (battle, trigger)
                     if key in seen or shot.get("status") != "capture_ready":

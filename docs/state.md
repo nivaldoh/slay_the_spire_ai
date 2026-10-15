@@ -1,31 +1,33 @@
 # Project state
 
-Updated 2026-10-15 01:40 UTC: what is running, where each game
+Updated 2026-10-15 02:00 UTC: what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
 WH3 [visual report redesign plan](twwarhammer3/visual-report-plan.md) implementation
-is active. The offline replay and opt-in recorder are implemented; 1102 repository
-tests pass (one skip), including Lua 5.1, and the offline browser checks pass.
-The owner requested the scripted recorder off/on and imagery probes, followed
-by the Sol low check (about $0.80). Both short imagery probes have stopped at their
-planned 90 s cutoffs. Passive capture passed: two stills, one explicit throttle,
-ten readable names, no invalid decisions. The cinematic-camera diagnostic reached
-the requested overhead position exactly. The camera fix is ready for Sol acceptance.
-No game is currently running. Latest WH3 tests: 266 passed; Ruff passed.
-The recorder off/on probes are complete. Off lost at 391.7 s with no refusals; on lost at 263.7 s with one
-`unit_routing` refusal. The recorder audit passed: 260 public frames including the
-terminal result, 2.851 ms mean CPU/sample, clock ratios 0.998213 off / 0.997703 on.
-Evidence: `runs/twwarhammer3/visual-probes/recorder-acceptance.json`.
-The earlier r2 startup failure is retained with zero episodes and no API spend.
-The imagery candidate is merged. Next: inspect the native camera/name/capture probe,
-then run the authorized Sol low check. Calibration stays stopped.
-Calibration remains stopped. Artifacts: `runs/twwarhammer3/reports/visual-report.html` and the synthetic
-`visual-report-demo.html`.
-Owner decisions: no unit art, exact prompts included but collapsed, and camera moves
-during jobs accepted.
+is active. No game controller is running. Recorder off/on, native/passive imagery and
+the owner-authorized Sol low acceptance are complete. The Sol job
+`runs/twwarhammer3/battle/visual-sol-low-20261015` on `7136d6a` won at 382.4 s,
+with 92 decisions and $0.6292834 spend; the recorder retained its terminal frame.
+Two stills and 14 readable names are present. The opening capture failed the foreground
+check and first rout was throttled; both remain explicit in the report.
+
+The owner's latest request adds closer, oblique action views and an early capture
+when visible opposing formations close within 100 m before observed melee, with
+incoming fire / first melee as fallbacks. One action slot preserves the four-still cap
+and 30 s throttle. Next: commit this small camera change and validate it in one
+90 s scripted `kho5-dwf5` probe (`--stills`, unpaused 1×, no paid model calls).
+Calibration stays stopped. Artifacts: `runs/twwarhammer3/reports/visual-report.html`
+and the explicitly synthetic `visual-report-demo.html`.
+
+The recorder off/on audit passed: 260 public frames including the terminal result,
+2.851 ms mean CPU/sample, clock ratios 0.998213 off / 0.997703 on. Recording now
+defaults on with `--no-record-replay` available. Native capture measured 43 ms;
+production uses passive capture outside the order loop. Camera placement and name
+lookup passed the live probes. Prior full suite: 1112 passed, one skipped, followed
+by the foreground-process regression and camera-only checks.
 
 WH3 [offline field report](twwarhammer3/field-report.md) implementation is complete.
 Generated `runs/twwarhammer3/reports/field-report.html` from the saved cavalry jobs;
@@ -69,7 +71,7 @@ At 1.1 Luna killed the general and routed the ranged line but lost to the halber
 The idle-attacker timer check correctly recorded an engine loss at 1205.2 s as
 `time_limit`, with retained countdown expiry evidence. Running movement was verified
 after accepted attacks. Full evidence and earlier failed/retired candidates remain in
-[the log](twwarhammer3/log.md); sources are not pooled. WH3 API spend is **$7.1656
+[the log](twwarhammer3/log.md); sources are not pooled. WH3 API spend is **$7.7949
 of the cumulative $25 cap**. Never reset the ledger.
 
 Before further experiments, discuss the calibration objective, reference, thresholds,
@@ -87,8 +89,8 @@ command; clear it when the job stops.
 [battle types](twwarhammer3/battle-types.md), [controllers](twwarhammer3/controllers.md),
 [integration](twwarhammer3/integration.md), [log](twwarhammer3/log.md). `main` runs
 `llm` v15 and `commander` v3 (every battle type's objectives, `build` and `reinforce`
-orders) and the `skills` executor v1.2. API spend: $7.1656 of the $25 cap
-(after the first G1 Sol trial).
+orders) and the `skills` executor v1.2. API spend: $7.7949 of the $25 cap
+(after visual-report Sol acceptance).
 The stopped calibration was authorized to test AI modifiers 1.0 and 1.1.
 Both lobby and battle read-backs passed. Fresh 5.2 s startup snapshots show all 12 AI
 unit entries changing at 1.1 (roughly +10% attack/defence/damage/charge, +8 leadership),
