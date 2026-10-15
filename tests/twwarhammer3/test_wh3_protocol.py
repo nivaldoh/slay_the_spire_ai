@@ -135,33 +135,6 @@ def test_abilities_must_be_ready_and_army_abilities_unlocked():
         protocol.validate_orders([dict(horn, type="halt")], ABILITIES)
 
 
-def test_the_ability_probe_casts_ready_abilities_once_per_five_seconds():
-    from twwarhammer3.battle.skills import ProbeAbilities
-
-    probe = ProbeAbilities()
-    state = {"time_ms": 10000, "friendly": [
-        {"id": "f1", "x": 0.0, "z": 0.0, "men": 1, "state": ["melee"], "target": "e2",
-         "abilities": [{"key": "roar", "can_use": True, "ready": True, "target": "Self"},
-                       {"key": "bolt", "can_use": True, "ready": True, "target": "Enemy"}]},
-        {"id": "f2", "x": 5.0, "z": 9.0, "men": 80, "state": ["melee"], "target": "e2"}],
-        "enemy": [{"id": "e2", "x": 3.0, "z": 3.0}], "enemy_roster": [{"id": "e2"}],
-        "army": {"abilities": [{"key": "horn", "target": "Ground, Ally", "ready": True},
-                               {"key": "rage", "target": "Ally", "ready": True},
-                               {"key": "blade", "target": "Ground", "ready": False}]}}
-    orders = probe.decide(state)
-    protocol.validate_orders(orders, state)
-    assert [order for order in orders if order["type"] == "ability"] == [
-        {"unit": "f1", "type": "ability", "ability": "roar", "target": None, "x": None,
-         "z": None},
-        {"unit": "army", "type": "ability", "ability": "horn", "target": None, "x": 5.0,
-         "z": 9.0},
-        {"unit": "army", "type": "ability", "ability": "rage", "target": "f2", "x": None,
-         "z": None}]
-    assert not [o for o in probe.decide(dict(state, time_ms=14000)) if o["type"] == "ability"]
-    assert len([o for o in probe.decide(dict(state, time_ms=15000))
-                if o["type"] == "ability"]) == 3
-
-
 SIEGE = {**OBSERVATION, "mode": {"supplies": 1000, "slots": [
     {"id": "s1", "type": "tower", "x": 55, "z": 192, "usable": True,
      "options": [{"name": "tower_piercing_1", "cost": 500}, {"name": "tower_cannon_4",

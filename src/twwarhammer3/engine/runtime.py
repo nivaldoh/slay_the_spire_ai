@@ -57,15 +57,25 @@ def user_dir() -> Path:
     return Path(local) / "The Creative Assembly/Warhammer3"
 
 
+def preferences_path() -> Path:
+    return user_dir() / "scripts/preferences.script.txt"
+
+
 def preferences(path: Path | None = None) -> dict:
     """The gameplay-relevant lines of ``preferences.script.txt`` (``key value; # comment``)."""
-    path = path or user_dir() / "scripts/preferences.script.txt"
+    path = path or preferences_path()
     values = {}
     for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
         match = re.match(r"\s*(\w+)\s+(.*?);", line)
         if match and match.group(1) in PREFERENCE_KEYS:
             values[match.group(1)] = match.group(2).strip().strip('"')
     return values
+
+
+def running_pids() -> str:
+    """The process ids of a running game, comma-separated; empty when it is stopped."""
+    games = conflicting_games(Path(WINDOWS_GAME_DIR), CONFLICTS)
+    return ", ".join(str(process["ProcessId"]) for process in games)
 
 
 def mod_files() -> dict[str, bytes]:
@@ -81,11 +91,10 @@ def prepare_runtime() -> dict:
     build = steam_build_id()
     if build != PINS["steam_build_id"]:
         raise RuntimeError(f"Steam build {build} is not the pinned {PINS['steam_build_id']}")
-    conflicts = conflicting_games(Path(WINDOWS_GAME_DIR), CONFLICTS)
-    if conflicts:
-        pids = ", ".join(str(process["ProcessId"]) for process in conflicts)
+    pids = running_pids()
+    if pids:
         raise RuntimeError(f"The game is already running (PIDs {pids}); cannot prepare runtime")
-    startup_record = startup.install(GAME_DIR, user_dir() / "scripts/preferences.script.txt")
+    startup_record = startup.install(GAME_DIR, preferences_path())
     mods = RUNTIME_DIR / "mods"
     mods.mkdir(parents=True, exist_ok=True)
     BRIDGE_DIR.mkdir(exist_ok=True)

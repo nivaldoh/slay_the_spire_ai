@@ -39,7 +39,7 @@ class AttackNearest:
             states = set(unit.get("state", []))
             if not enemies or unit.get("men") == 0 or {"routing", "shattered"} & states:
                 continue
-            nearest = min(enemies.values(), key=lambda enemy: _distance(unit, enemy))
+            nearest = min(enemies.values(), key=lambda enemy: distance(unit, enemy))
             lapsed = not unit.get("target") or "idle" in states
             if lapsed or self.targets.get(unit_id) != nearest["id"]:
                 self.targets[unit_id] = nearest["id"]
@@ -69,38 +69,11 @@ class RushNearest(AttackNearest):
         return {"type": "rush_nearest"}
 
 
-class ProbeMove:
-    """Milestone 3: move the first unit east, then north, then halt, to pin the axes."""
-
-    STEPS = (("x", 60.0), ("z", 60.0), None)
-
-    def __init__(self):
-        self.step = 0
-
-    def decide(self, observation: dict) -> list[dict]:
-        units = friendly_units(observation)
-        if self.step >= len(self.STEPS) or not units:
-            return []
-        unit_id, unit = next(iter(units.items()))
-        move = self.STEPS[self.step]
-        if move is None:
-            return [{"unit": unit_id, "type": "halt"}]
-        axis, distance = move
-        target = {"x": unit["x"], "z": unit["z"], axis: unit[axis] + distance}
-        return [{"unit": unit_id, "type": "move", "x": target["x"], "z": target["z"], "run": True}]
-
-    def acknowledge(self, ack: dict, latency: dict) -> None:
-        self.step += 1
-
-    def metadata(self) -> dict:
-        return {"type": "probe_move", "step": self.step}
-
-
-def _distance(a: dict, b: dict) -> float:
+def distance(a: dict, b: dict) -> float:
+    """Metres between two things with x and z (units, points, orders); inf if one is unplaced."""
     if None in (a.get("x"), a.get("z"), b.get("x"), b.get("z")):
         return math.inf
     return math.hypot(a["x"] - b["x"], a["z"] - b["z"])
 
 
-POLICIES = {"hold": Hold, "attack_nearest": AttackNearest, "rush_nearest": RushNearest,
-            "probe_move": ProbeMove}
+POLICIES = {"hold": Hold, "attack_nearest": AttackNearest, "rush_nearest": RushNearest}

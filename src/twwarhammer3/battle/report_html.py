@@ -2,21 +2,22 @@
 
 Evidence groups remain intact. The comparison selector may place groups beside one
 another when only their requested model/effort differs, never pool their samples.
+Recorded game stills are embedded as WebP, which needs Pillow.
 """
 
-import argparse
 import base64
 import gzip
 import hashlib
+import io
 import json
 import re
 from pathlib import Path
 
-from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import imagery, replay
+from twwarhammer3.battle import replay, setup
+from twwarhammer3.battle.controllers import MODEL_POLICIES
 
 ASSETS = Path(__file__).with_name("report_assets")
-SCENARIOS = REPO_ROOT / "configs/twwarhammer3/scenarios.json"
+MAX_STILL_BYTES = 256 * 1024
 
 
 def _json(value: object) -> str:
@@ -60,6 +61,45 @@ def _compatibility(definition: dict, fallback: str) -> str:
             or not game.get("sha256") or not game.get("steam_build_id")):
         shared["unknown_provenance_group"] = fallback
     return _json(shared)
+
+
+def webp(path: Path) -> dict:
+    try:
+        from PIL import Image
+    except ImportError as exc:
+        raise RuntimeError("Embedding game stills needs Pillow: uv sync --locked installs it "
+                           "(dev group), or install the report extra") from exc
+    with Image.open(path) as source:
+        original_size = source.size
+        image = source.convert("RGB")
+        image.thumbnail((1600, 1000))
+        while True:
+            buffer = io.BytesIO()
+            image.save(buffer, format="WEBP", quality=78, method=6)
+            if buffer.tell() <= MAX_STILL_BYTES:
+                break
+            image.thumbnail((max(1, image.width * 4 // 5), max(1, image.height * 4 // 5)))
+    return {"image": "data:image/webp;base64," + base64.b64encode(buffer.getvalue()).decode(),
+            "original_size": list(original_size), "size": list(image.size),
+            "bytes": len(buffer.getvalue())}
+
+
+def stills(episode: Path, entries: list[dict], *, embed: bool) -> list[dict]:
+    """Retain failed captures and metadata, even when only featured images are embedded."""
+    output = []
+    for entry in entries:
+        item = {**entry, "policy_input": False}
+        filename = entry.get("file")
+        if filename and embed:
+            try:
+                item.update(webp(episode / filename), status="embedded")
+            except (OSError, ValueError) as exc:
+                item.update(status="error",
+                            error=f"{type(exc).__name__}: cannot convert {filename}")
+        elif filename:
+            item["status"] = "metadata_only_nonfeatured_trial"
+        output.append(item)
+    return output
 
 
 def display_data(report: dict, scenarios: dict | None = None) -> dict:
@@ -116,7 +156,8 @@ def display_data(report: dict, scenarios: dict | None = None) -> dict:
                                     "definition": {"scenario": {**scenario, "name": name}},
                                     "groups": [], "jobs": [],
                                     "metadata_origin": "Current catalogue · unrun placeholder"})
-    return {"schema": 1, "evidence_kind": kind, "report": data, "comparisons": comparisons}
+    return {"schema": 1, "evidence_kind": kind, "report": data, "comparisons": comparisons,
+            "model_policies": sorted(MODEL_POLICIES)}
 
 
 def render(report: dict, scenarios: dict | None = None) -> str:
@@ -142,7 +183,7 @@ def render(report: dict, scenarios: dict | None = None) -> str:
                     prompts[portable_job] = {path.name: path.read_text() for path in
                                              sorted(job.glob("*prompt.md"))}
             if payload is not None:
-                payloads[key] = dict(payload)
+                payloads[key] = payload
 
     def chronology(key):
         return (payloads.get(key, {}).get("created_at") or "~",
@@ -154,7 +195,7 @@ def render(report: dict, scenarios: dict | None = None) -> str:
         keys = [key for key in trials if int(key.split("-", 1)[0][1:]) in view["groups"]]
         completed_models = [key for key in keys if trials[key]["valid"] and (
             (trials[key].get("card") or {}).get("kind") == "model" or
-            trials[key]["policy"] in {"llm", "llm_rules", "commander"})]
+            trials[key]["policy"] in MODEL_POLICIES)]
         featured[view["id"]] = min(completed_models, key=chronology) if completed_models else (
             keys[0] if keys else None)
         for controller in {trials[key]["controller"] for key in keys}:
@@ -165,8 +206,8 @@ def render(report: dict, scenarios: dict | None = None) -> str:
     for key, payload in payloads.items():
         still_path = directories[key] / "stills.json"
         if data["evidence_kind"] == "recorded" and still_path.exists():
-            payload["stills"] = imagery.stills(directories[key], json.loads(still_path.read_text()),
-                                               embed=key in pictured)
+            payload["stills"] = stills(directories[key], json.loads(still_path.read_text()),
+                                       embed=key in pictured)
     payloads = {key: base64.b64encode(gzip.compress(_json(payload).encode(), mtime=0)).decode()
                 for key, payload in payloads.items()}
     # Replay evidence has its own compressed envelope; collector statistics stay intact.
@@ -178,32 +219,14 @@ def render(report: dict, scenarios: dict | None = None) -> str:
         encoded = encoded.replace(character, escaped)
     script = (ASSETS / "replay.js").read_text() + "\n" + (ASSETS / "report.js").read_text()
     digest = base64.b64encode(hashlib.sha256(script.encode()).digest()).decode()
-    replacements = {"@@STYLE@@": (ASSETS / "report.css").read_text() + "\n" +
-                    (ASSETS / "replay.css").read_text(),
-                    "@@DATA@@": encoded, "@@SCRIPT@@": script, "@@SCRIPT_HASH@@": digest}
+    replacements = {"@@STYLE@@": (ASSETS / "report.css").read_text(), "@@DATA@@": encoded,
+                    "@@SCRIPT@@": script, "@@SCRIPT_HASH@@": digest}
     # Replace only template tokens, never tokens that might occur in evidence text.
     template = (ASSETS / "report.html").read_text()
     return re.sub(r"@@[A-Z_]+@@", lambda match: replacements[match[0]], template)
 
 
-def write(path: Path, report: dict, *, scenarios: dict | None = None) -> None:
-    if scenarios is None and report.get("evidence_kind", "recorded") == "recorded":
-        scenarios = json.loads(SCENARIOS.read_text()) if SCENARIOS.exists() else {}
-    html = render(report, scenarios)
+def write(path: Path, report: dict) -> None:
+    html = render(report, setup.scenarios())
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(html, encoding="utf-8")
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Render the synthetic field report fixture")
-    parser.add_argument("--demo", type=Path, required=True)
-    parser.add_argument("--output", type=Path, required=True)
-    args = parser.parse_args()
-    report = json.loads(args.demo.read_text())
-    if report.get("evidence_kind") != "synthetic":
-        parser.error("--demo requires an explicitly synthetic report fixture")
-    write(args.output, report, scenarios={})
-
-
-if __name__ == "__main__":
-    main()

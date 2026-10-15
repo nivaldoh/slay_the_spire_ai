@@ -8,13 +8,13 @@ engine's verdict on them, and where enemies were last seen. No transcript accumu
 
 import hashlib
 import json
-import math
 import re
 from collections import deque
 
 from gameai.ledger import Ledger
 from gameai.llm import InvalidReply, Model
 from gameai.provenance import REPO_ROOT
+from twwarhammer3.battle.scripted import distance
 from twwarhammer3.protocol import (
     ATTACK_MODES,
     BEHAVIOURS,
@@ -96,14 +96,10 @@ def _change(now: int, before: int | None) -> str:
     return f" ({now - before:+d})" if before is not None and now != before else ""
 
 
-def _distance(unit: dict, other: dict | None) -> str:
+def _distance_text(unit: dict, other: dict | None) -> str:
     if not other or None in (unit.get("x"), unit.get("z"), other.get("x"), other.get("z")):
         return ""
-    return f" {math.hypot(other['x'] - unit['x'], other['z'] - unit['z']):.0f} m"
-
-
-def _short_of(unit: dict, order: dict) -> float:
-    return math.hypot(order["x"] - unit["x"], order["z"] - unit["z"])
+    return f" {distance(unit, other):.0f} m"
 
 
 def holds(unit: dict, order: dict) -> bool:
@@ -117,13 +113,13 @@ def holds(unit: dict, order: dict) -> bool:
         return bool(unit.get("target"))
     if "melee" in states or unit.get("x") is None:
         return False
-    return bool(unit.get("dest")) or _short_of(unit, order) > ARRIVED_M
+    return bool(unit.get("dest")) or distance(unit, order) > ARRIVED_M
 
 
 def render_target(unit: dict, enemies: dict, order: dict | None) -> str:
     """The enemy the unit is fighting now, against the order it holds."""
     shown = unit.get("target")
-    here = f"target {shown}{_distance(unit, enemies.get(shown))}" if shown else ""
+    here = f"target {shown}{_distance_text(unit, enemies.get(shown))}" if shown else ""
     if unit.get("command_queue"):
         return here
     order = order or {}
@@ -131,9 +127,9 @@ def render_target(unit: dict, enemies: dict, order: dict | None) -> str:
         if shown == order["target"]:
             return f"{here} (your order, {order['time_s']:.0f} s)"
         return (f"{here}, game's choice; your order at {order['time_s']:.0f} s was"
-                f" {order['target']}{_distance(unit, enemies.get(order['target']))}")
+                f" {order['target']}{_distance_text(unit, enemies.get(order['target']))}")
     if order.get("type") == "move" and not unit.get("dest"):
-        stopped = (f"stopped {_short_of(unit, order):.0f} m short of your move"
+        stopped = (f"stopped {distance(unit, order):.0f} m short of your move"
                    f" ({order['time_s']:.0f} s)")
         return f"{here}, game's choice; {stopped}" if shown else stopped
     return f"{here}, game's choice" if shown else ""
@@ -142,7 +138,7 @@ def render_target(unit: dict, enemies: dict, order: dict | None) -> str:
 def render_unit(unit: dict, mine: bool, before: tuple | None = None,
                 enemies: dict | None = None, ordered: dict | None = None) -> str:
     """``before`` is (men, hp %) at the previous decision; ``enemies`` and ``ordered`` (the
-    attack order the unit holds) annotate a friendly unit's target."""
+    move or attack order it still holds, see ``holds``) annotate a friendly unit's target."""
     if "error" in unit:
         return f"{unit['id']}: unreadable ({unit['error']})"
     if mine and not unit.get("men"):
@@ -214,7 +210,7 @@ def render_unit(unit: dict, mine: bool, before: tuple | None = None,
         if not (target or unit.get("dest")):
             parts.append("no order")
         if nearest := _nearest(unit, enemies or {}):
-            parts.append(f"nearest enemy {nearest['id']}{_distance(unit, nearest)}")
+            parts.append(f"nearest enemy {nearest['id']}{_distance_text(unit, nearest)}")
     return ", ".join(parts)
 
 
@@ -340,34 +336,35 @@ def _nearest(unit: dict, enemies: dict) -> dict | None:
     placed = [enemy for enemy in enemies.values() if enemy.get("x") is not None]
     if unit.get("x") is None or not placed:
         return None
-    return min(placed, key=lambda e: math.hypot(e["x"] - unit["x"], e["z"] - unit["z"]))
+    return min(placed, key=lambda enemy: distance(unit, enemy))
 
 
 def render_state(observation: dict, last_seen: dict, before: dict | None = None,
                  ordered: dict | None = None) -> str:
     """``before`` maps unit ids to (men, hp %) at the previous decision, ``ordered`` our
-    units to the attack order they hold."""
+    units to the move or attack order they still hold (see ``holds``)."""
     visible = visible_enemies(observation)
     before, ordered = before or {}, ordered or {}
-    lines = ["Your units:"]
-    magic = observation.get("magic") or {}
-    if magic:
-        lines.insert(0, f"Winds of Magic: {magic.get('current', 'unknown')} available, "
-                     f"{magic.get('reserve', 'unknown')} reserve.")
-    if (observation.get("army") or {}).get("abilities"):
-        lines.insert(0, render_army(observation["army"]))
-    mode = render_mode(observation.get("mode"))
-    if mode:
-        lines.insert(0, mode)
+    lines = []
     if observation.get("terrain"):
         terrain = observation["terrain"]
-        lines.insert(0, f"Terrain samples: first cell centre ({terrain['x0']},{terrain['z0']}), "
+        lines.append(f"Terrain samples: first cell centre ({terrain['x0']},{terrain['z0']}), "
                      f"columns increase x and rows increase z by {terrain['cell_m']} m. "
                      f"'.' = {terrain['sample_width_m']} m square clear of path restrictions; "
                      "'#' = restricted. Coarse deployment snapshot, not a path or a guarantee "
                      "for this unit. Narrow crossings can lie between samples. "
                      "Do not repeat an unreachable move: select a reported reachable "
                      "alternative or another goal.\n" + "\n".join(terrain["rows"]))
+    mode = render_mode(observation.get("mode"))
+    if mode:
+        lines.append(mode)
+    if (observation.get("army") or {}).get("abilities"):
+        lines.append(render_army(observation["army"]))
+    magic = observation.get("magic") or {}
+    if magic:
+        lines.append(f"Winds of Magic: {magic.get('current', 'unknown')} available, "
+                     f"{magic.get('reserve', 'unknown')} reserve.")
+    lines.append("Your units:")
     lines += ["- " + render_unit(unit, True, before.get(unit["id"]), visible,
                                  ordered.get(unit["id"]))
               for unit in observation.get("friendly", [])]
@@ -395,21 +392,21 @@ def _describe_last_seen(seen: dict, observation: dict) -> str:
     return f"at ({seen['x']:.0f}, {seen['z']:.0f}) {age:.0f} s ago, {seen['men']} men"
 
 
-def render_timing(observation: dict, latency: dict | None) -> str:
-    seconds = observation.get("time_ms", 0) / 1000
+def render_clock(observation: dict) -> str:
+    """``Timing: battle time 45 s, 855 s left``, the start of both controllers' timing line."""
     remaining = observation.get("remaining_ms", -1)
     limit = f", {remaining / 1000:.0f} s left" if remaining and remaining >= 0 else ""
-    text = f"Timing: battle time {seconds:.0f} s{limit}, speed {observation.get('speed', 1)}."
-    if observation.get("awaiting_orders"):
-        text += " The battle is paused until you reply; it resumes to issue your orders."
-    elif latency:
-        text += (" Your last batch was issued to the engine"
-                 f" {latency['delay_ms'] / 1000:.1f} s after the"
-                 f" state you saw (you took {latency['think_s']:.1f} s to reply). Expect a"
-                 " similar delay now.")
-    else:
-        text += " Your batch will reach the engine a few seconds after this state."
-    return text
+    return f"Timing: battle time {observation.get('time_ms', 0) / 1000:.0f} s{limit}"
+
+
+def render_timing(observation: dict, latency: dict | None) -> str:
+    text = f"{render_clock(observation)}, speed {observation.get('speed', 1)}."
+    if latency:
+        return text + (" Your last batch was issued to the engine"
+                       f" {latency['delay_ms'] / 1000:.1f} s after the"
+                       f" state you saw (you took {latency['think_s']:.1f} s to reply). Expect a"
+                       " similar delay now.")
+    return text + " Your batch will reach the engine a few seconds after this state."
 
 
 def render_ack(ack: dict | None) -> str:
@@ -462,24 +459,38 @@ def parse_reply(text: str, observation: dict) -> dict:
     return reply
 
 
+def split_valid(orders: list[dict], observation: dict) -> tuple[list[dict], list[str]]:
+    """The orders that stay valid in turn, and each other one with why it was dropped."""
+    kept, dropped = [], []
+    for order in orders:
+        try:
+            validate_orders(kept + [order], observation)
+            kept.append(order)
+        except IllegalActionError as error:
+            dropped.append(f"{describe_orders([order])}: {error}")
+    return kept, dropped
+
+
 def salvage(attempts: list[dict], observation: dict) -> tuple[dict, list[str]] | None:
     """The last attempt's reply without the orders that are still invalid, so one order
     the model keeps repeating (a cast on cooldown, say) does not end the battle; None if
     that reply is not even JSON."""
     try:
         reply = json.loads(attempts[-1]["text"])
-        orders = reply["orders"]
-    except (IndexError, KeyError, TypeError, ValueError):
+    except ValueError:
         return None
-    kept, dropped = [], []
-    for order in orders:
-        try:
-            validate_orders(kept + [order], observation)
-            kept.append(order)
-        except (IllegalActionError, KeyError, TypeError) as error:
-            dropped.append(f"{describe_orders([order]) if isinstance(order, dict) else order}:"
-                           f" {error}")
+    kept, dropped = split_valid(reply["orders"], observation)
     return dict(reply, orders=kept), dropped
+
+
+def strengths(observation: dict) -> dict[str, tuple]:
+    """(men, hp %) of every unit, to show the change at the next decision."""
+    return {unit["id"]: (unit.get("men", 0), _hp(unit))
+            for unit in observation.get("friendly", []) + observation.get("enemy", [])}
+
+
+def invalid_reply(error: InvalidReply) -> PolicyFailure:
+    return PolicyFailure(str(error), failure={"kind": "invalid_reply", "attempts": error.attempts})
 
 
 def describe_orders(orders: list[dict]) -> str:
@@ -544,8 +555,7 @@ class LLMPolicy:
                         if unit_id in friendly and holds(friendly[unit_id], order)}
         prompt = render_prompt(observation, self.notes, list(self.history), self.last_seen,
                                self.latency, self.ack, self.before, self.ordered)
-        self.before = {unit["id"]: (unit.get("men", 0), _hp(unit))
-                       for unit in observation.get("friendly", []) + observation.get("enemy", [])}
+        self.before = strengths(observation)
         self._metadata = metadata = {
             "type": "llm", "model": self.api.name, "effort": self.api.effort,
             "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(), "prompt": prompt,
@@ -557,9 +567,7 @@ class LLMPolicy:
         except InvalidReply as error:
             salvaged = salvage(error.attempts, observation)
             if salvaged is None:
-                raise PolicyFailure(str(error), failure={
-                    "kind": "invalid_reply", "attempts": error.attempts,
-                }) from None
+                raise invalid_reply(error) from None
             reply, metadata["dropped"] = salvaged
             metadata["attempts"] = error.attempts
         if reply["notes"] is not None:
@@ -586,14 +594,13 @@ class LLMPolicy:
             if not order or order["type"] not in ("move", "attack", "halt"):
                 continue
             accepted.append(order)
+        # A submitted queue is not evidence that its final attack has started.
+        queued = {order["unit"] for order in accepted if order.get("queue")}
         for order in accepted:
-            unit = order["unit"]
-            # A submitted queue is not evidence that its final attack has started.
-            sequence = [o for o in accepted if o["unit"] == unit and o.get("queue")]
-            if sequence:
-                self.ordered.pop(unit, None)
+            if order["unit"] in queued:
+                self.ordered.pop(order["unit"], None)
             else:
-                self.ordered[unit] = order
+                self.ordered[order["unit"]] = order
 
     def metadata(self) -> dict:
         return self._metadata

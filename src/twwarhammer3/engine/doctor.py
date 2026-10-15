@@ -9,11 +9,9 @@ import platform
 import shutil
 import subprocess
 from datetime import UTC, datetime
-from pathlib import Path
 
 from gameai.provenance import sha256
 from gameai.windows import WINDOWS_PYTHON, probe
-from gameai.windows_game import conflicting_games
 from twwarhammer3.engine import runtime, startup
 
 
@@ -37,16 +35,13 @@ def collect_diagnostics() -> dict:
         preferences = None
         blockers.append(f"Cannot read the game preferences: {exc}")
     try:
-        startup_status = startup.status(
-            runtime.GAME_DIR, runtime.user_dir() / "scripts/preferences.script.txt"
-        )
+        startup_status = startup.status(runtime.GAME_DIR, runtime.preferences_path())
     except (OSError, subprocess.SubprocessError) as exc:
         startup_status = {"enabled": False, "error": str(exc)}
         blockers.append(f"Cannot inspect the startup skip: {exc}")
     try:
-        conflicts = conflicting_games(Path(runtime.WINDOWS_GAME_DIR), runtime.CONFLICTS)
-        if conflicts:
-            pids = ", ".join(str(process["ProcessId"]) for process in conflicts)
+        pids = runtime.running_pids()
+        if pids:
             blockers.append(f"The game is already running (PIDs {pids})")
     except (OSError, subprocess.SubprocessError, ValueError) as exc:
         blockers.append(f"Cannot list Windows processes: {exc}")

@@ -25,23 +25,23 @@ from twwarhammer3.battle.llm import (
     NUMBER_OR_NULL,
     REINFORCE_SCHEMA,
     STRING_OR_NULL,
-    _hp,
     describe_orders,
     holds,
+    invalid_reply,
     remember,
+    render_clock,
     render_state,
+    split_valid,
+    strengths,
 )
 from twwarhammer3.battle.skills import SKILLS, Skills
-from twwarhammer3.protocol import (
-    IllegalActionError,
-    PolicyFailure,
-    friendly_units,
-    validate_orders,
-)
+from twwarhammer3.protocol import friendly_units
 
 PROMPT_PATH = REPO_ROOT / "configs/twwarhammer3/commander_prompt.md"
+INVALID_RETRIES = 1  # only a reply that is not JSON is invalid; the plan is checked on arrival
 PLAN_HISTORY = 6
 REPORT_LENGTH = 8
+REPORT_HEADER = "Dropped or rejected since your last plan:\n"
 ASSIGNMENT_SCHEMA = {
     "type": "object",
     "properties": {"unit": {"type": "string"}, "skill": {"type": "string", "enum": list(SKILLS)},
@@ -88,9 +88,7 @@ def render_assignments(skills: Skills, observation: dict) -> str:
 
 
 def render_timing(observation: dict, age_ms: int | None) -> str:
-    remaining = observation.get("remaining_ms", -1)
-    limit = f", {remaining / 1000:.0f} s left" if remaining and remaining >= 0 else ""
-    text = f"Timing: battle time {observation.get('time_ms', 0) / 1000:.0f} s{limit}."
+    text = render_clock(observation) + "."
     if age_ms is None:
         return text + " Units follow their default skills until your first plan arrives."
     return (text + f" Your last plan reached the units {age_ms / 1000:.1f} s after the state"
@@ -142,11 +140,9 @@ class CommanderPolicy:
     def _ask(self, prompt: str, seen_ms: int) -> tuple[dict, list[dict], int]:
         """On the worker thread: only the call, so all state changes stay on the caller's."""
         try:
-            reply, attempts = self.api.ask(prompt, REPLY_SCHEMA, json.loads, 1)
+            reply, attempts = self.api.ask(prompt, REPLY_SCHEMA, json.loads, INVALID_RETRIES)
         except InvalidReply as error:
-            raise PolicyFailure(str(error), failure={
-                "kind": "invalid_reply", "attempts": error.attempts,
-            }) from None
+            raise invalid_reply(error) from None
         return reply, attempts, seen_ms
 
     def _adopt(self, reply: dict, observation: dict, seen_ms: int) -> list[dict]:
@@ -171,14 +167,8 @@ class CommanderPolicy:
                                " enemy, so it was cleared")
                 item = dict(item, target=None)
             self.skills.assign(unit, item, now_ms / 1000)
-        abilities = []
-        for order in reply["abilities"]:
-            try:
-                validate_orders(abilities + [order], observation)
-            except IllegalActionError as error:
-                dropped.append(f"{describe_orders([order])}: {error}")
-                continue
-            abilities.append(order)
+        abilities, rejected = split_valid(reply["abilities"], observation)
+        dropped += rejected
         if reply["notes"] is not None:
             self.notes = reply["notes"][:NOTES_LIMIT]
         self.age_ms = now_ms - seen_ms
@@ -206,12 +196,11 @@ class CommanderPolicy:
             "Battle notes:\n" + (self.notes or "(none)"),
             "Recent plans, oldest first:\n" + ("\n".join(self.history) or "(none)"),
             render_timing(observation, self.age_ms),
-            "Dropped or rejected since your last plan:\n" + report,
+            REPORT_HEADER + report,
             render_state(observation, self.last_seen, self.before, ordered),
             render_assignments(self.skills, observation),
         ])
-        self.before = {unit["id"]: (unit.get("men", 0), _hp(unit))
-                       for unit in observation.get("friendly", []) + observation.get("enemy", [])}
+        self.before = strengths(observation)
         return prompt
 
     def acknowledge(self, ack: dict, latency: dict) -> None:

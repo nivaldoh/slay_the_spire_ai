@@ -1,22 +1,34 @@
 "use strict";
+// The exporter concatenates replay.js and report.js into one script; both use these helpers.
+const el = (tag, text, className) => {
+  const node = document.createElement(tag);
+  if (text != null) node.textContent = text;
+  if (className) node.className = className;
+  return node;
+};
+const svg = (tag, attrs = {}, text) => {
+  const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+  if (text != null) node.textContent = text;
+  return node;
+};
+const json = (value) => JSON.stringify(value, null, 2);
+const fmt = (value, digits = 1) => (value == null ? "Unavailable" : Number(value).toFixed(digits));
+// An incomplete cost record is not evidence of free inference; scripted controllers cost zero.
+const trialCost = (trial) => trial.llm?.usd ?? (trial.card?.kind === "scripted" ? 0 : null);
+function download(blob, name) {
+  const a = el("a"),
+    url = URL.createObjectURL(blob);
+  a.href = url;
+  a.download = name;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 window.wh3Replay = (() => {
   const $ = (id) => document.getElementById(`replay-${id}`);
-  const node = (tag, text, cls) => {
-    const n = document.createElement(tag);
-    if (text != null) n.textContent = text;
-    if (cls) n.className = cls;
-    return n;
-  };
-  const svg = (tag, attrs = {}, text) => {
-    const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
-    for (const [key, value] of Object.entries(attrs))
-      n.setAttribute(key, value);
-    if (text != null) n.textContent = text;
-    return n;
-  };
-  const json = (value) => JSON.stringify(value, null, 2);
-  const fmt = (value, digits = 1) =>
-    value == null ? "Unavailable" : Number(value).toFixed(digits);
   const seconds = (ms) => `${fmt(ms / 1000)} s`;
   const colours = { friendly: "#56b4e9", enemy: "#e69f00" };
   const symbols = {
@@ -39,6 +51,8 @@ window.wh3Replay = (() => {
     idle: "#999",
   };
   let dataset,
+    banner,
+    names = {},
     trials = [],
     current,
     replay,
@@ -50,18 +64,11 @@ window.wh3Replay = (() => {
     selectionGeneration = 0,
     compareFrames = true;
   const cache = new Map();
-  const label = (t) =>
-    [t.card?.model, t.card?.effort, t.policy, t.instance, t.episode]
-      .filter(Boolean)
-      .join(" · ");
+  const label = (t) => [names[t.key], t.instance, t.episode].join(" · ");
   const evidence = (source) =>
-    source
-      ? `${source.file}${source.line ? `:${source.line}` : ""}`
-      : "Source unavailable";
+    source ? `${source.file}${source.line ? `:${source.line}` : ""}` : "Source unavailable";
   const states = (u) =>
-    u.men === 0
-      ? "dead"
-      : Object.keys(laneColours).find((s) => u.state?.includes(s)) || "unknown";
+    u.men === 0 ? "dead" : Object.keys(laneColours).find((s) => u.state?.includes(s)) || "unknown";
   const allUnits = (frame) => [
     ...frame.friendly.map((u) => ({ ...u, side: "friendly" })),
     ...frame.enemy.map((u) => ({ ...u, side: "enemy" })),
@@ -69,12 +76,12 @@ window.wh3Replay = (() => {
   const unitsAt = (frame) => new Map(allUnits(frame).map((u) => [u.id, u]));
   const position = (u) => u && Number.isFinite(u.x) && Number.isFinite(u.z);
   function disclosure(title, value) {
-    const d = node("details");
-    d.append(node("summary", title), node("pre", value, "replay-raw"));
+    const d = el("details");
+    d.append(el("summary", title), el("pre", value, "replay-raw"));
     return d;
   }
   function button(text, action) {
-    const b = node("button", text);
+    const b = el("button", text);
     b.addEventListener("click", action);
     return b;
   }
@@ -86,16 +93,16 @@ window.wh3Replay = (() => {
         encoded,
         (async () => {
           const bytes = Uint8Array.from(atob(encoded), (c) => c.charCodeAt(0));
-          const stream = new Blob([bytes])
-            .stream()
-            .pipeThrough(new DecompressionStream("gzip"));
+          const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
           return JSON.parse(await new Response(stream).text());
         })(),
       );
     return cache.get(encoded);
   }
-  async function load(data, view, status) {
+  async function load(data, view, status, controllers) {
     const ownGeneration = ++generation;
+    banner = status;
+    names = controllers;
     ++selectionGeneration;
     playing = false;
     replay = null;
@@ -108,7 +115,7 @@ window.wh3Replay = (() => {
     );
     $("trial").replaceChildren(
       ...trials.map((t, i) => {
-        const option = node("option", label(t));
+        const option = el("option", label(t));
         option.value = i;
         return option;
       }),
@@ -117,14 +124,14 @@ window.wh3Replay = (() => {
     $("availability").textContent = trials.length
       ? "Loading embedded replay evidence…"
       : "No started trial in this comparison.";
-    $("verdict").replaceChildren(node("p", status, "banner"));
+    $("verdict").replaceChildren(el("p", status, "banner"));
     $("multiples").replaceChildren();
     $("forces").replaceChildren();
     $("stills").replaceChildren();
     $("prompts").replaceChildren(
       ...Object.entries(data.prompts).map(([job, prompts]) => {
-        const section = node("div");
-        section.append(node("h3", job));
+        const section = el("div");
+        section.append(el("h3", job));
         for (const [name, prompt] of Object.entries(prompts))
           section.append(disclosure(name, prompt));
         return section;
@@ -140,9 +147,8 @@ window.wh3Replay = (() => {
       trials.forEach((t, i) => {
         t.replay = payloads[i];
       });
-      const featured =
-        trials.find((t) => t.key === data.featured[view.id]) || trials[0];
-      await open(trials.indexOf(featured), status);
+      const featured = trials.find((t) => t.key === data.featured[view.id]) || trials[0];
+      await open(trials.indexOf(featured));
       if (ownGeneration !== generation) return;
       multiples();
     } catch (error) {
@@ -151,7 +157,7 @@ window.wh3Replay = (() => {
           `Replay unavailable: ${error.message}. Statistical evidence remains available below.`;
     }
   }
-  async function open(index, status) {
+  async function open(index) {
     const ownSelection = ++selectionGeneration;
     playing = false;
     $("play").textContent = "Play";
@@ -165,16 +171,14 @@ window.wh3Replay = (() => {
     $("content").hidden = !replay?.frames.length;
     $("download").disabled = !replay;
     const summary = replay?.summary;
-    const verdict = $("verdict");
-    if (status) verdict.dataset.status = status;
-    verdict.replaceChildren(
-      node("p", verdict.dataset.status || dataset.evidence_kind, "banner"),
-      node("h2", label(current)),
-      node(
+    $("verdict").replaceChildren(
+      el("p", banner, "banner"),
+      el("h2", label(current)),
+      el(
         "p",
-        `${current.outcome}${current.ended_by === "time_limit" ? ` (engine ${current.engine_outcome})` : ""} · ${fmt(current.battle_s)} s · active-strength margin ${fmt(current.metrics?.margin, 3)} · ${summary?.decisions ?? "Unavailable"} logged decisions · ${summary?.orders ?? "Unavailable"} submitted / ${summary?.acknowledged_orders ?? "Unavailable"} acknowledged orders · median information age ${fmt(summary?.age_s?.p50)} s · $${fmt(current.llm?.usd ?? (current.card?.kind === "scripted" ? 0 : null), 5)}`,
+        `${current.outcome}${current.ended_by === "time_limit" ? ` (engine ${current.engine_outcome})` : ""} · ${fmt(current.battle_s)} s · active-strength margin ${fmt(current.metrics.margin, 3)} · ${summary?.decisions ?? "Unavailable"} logged decisions · ${summary?.orders ?? "Unavailable"} submitted / ${summary?.acknowledged_orders ?? "Unavailable"} acknowledged orders · median information age ${fmt(current.metrics.order_age_s.p50)} s · $${fmt(trialCost(current), 5)}`,
       ),
-      node(
+      el(
         "p",
         "Featured-trial rule: earliest completed model trial in recorded job-start / episode order, irrespective of outcome. If none completed, first supplied trial. The selector opens every trial.",
         "note",
@@ -203,40 +207,37 @@ window.wh3Replay = (() => {
     draw();
   }
   function forces() {
-    const first =
-      replay.frames.find((f) => f.friendly.length) || replay.frames[0];
+    const first = replay.frames.find((f) => f.friendly.length) || replay.frames[0];
     const section = $("forces");
     section.replaceChildren();
-    const description = node("div");
+    const description = el("div");
     description.append(
-      node("h3", "Recorded briefing"),
-      node(
+      el("h3", "Recorded briefing"),
+      el(
         "p",
         [
           first.mode?.type,
           first.mode?.role,
-          first.remaining_ms != null
-            ? `Timer ${seconds(first.remaining_ms)}`
-            : "Timer unrecorded",
+          first.remaining_ms != null ? `Timer ${seconds(first.remaining_ms)}` : "Timer unrecorded",
         ]
           .filter(Boolean)
           .join(" · "),
       ),
-      node("p", first.mode?.objectives || "Objectives not recorded"),
+      el("p", first.mode?.objectives || "Objectives not recorded"),
     );
     section.append(description);
     for (const side of ["friendly", "enemy"]) {
-      const box = node("div");
+      const box = el("div");
       box.append(
-        node(
+        el(
           "h3",
           `${side === "friendly" ? "Friendly" : "Enemy roster"} · ${replay.armies?.[side === "friendly" ? "player" : "enemy"]?.faction || "Faction unrecorded"}`,
         ),
       );
-      const list = node("ul");
+      const list = el("ul");
       for (const u of replay.roster.filter((u) => u.side === side))
         list.append(
-          node(
+          el(
             "li",
             `${symbols[u.class] || "◇"} ${u.id} ${u.name}${u.men0 != null ? ` · ${u.men0} men` : ""}${u.protected ? " · protected" : ""}${u.commander ? " · general" : ""}`,
           ),
@@ -247,13 +248,9 @@ window.wh3Replay = (() => {
   }
   function stills() {
     const firstImage = (replay.stills || []).findIndex((shot) => shot.image);
-    $("background").querySelector('[value="game"]').textContent =
-      replay.stills?.some((shot) => shot.image)
-        ? "Game stills above · no registered map background"
-        : "Game imagery · not recorded";
     $("stills").replaceChildren(
       ...(replay.stills || []).map((shot, index) => {
-        const figure = node("figure");
+        const figure = el("figure");
         if (index === firstImage) figure.className = "featured-still";
         const title =
           {
@@ -265,20 +262,18 @@ window.wh3Replay = (() => {
             ending: "Battle ending",
           }[shot.trigger] || "Game still";
         if (shot.image) {
-          const img = node("img");
+          const img = el("img");
           img.src = shot.image;
           img.alt = `${title} at ${seconds(shot.time_ms)}`;
           figure.append(img);
         }
         figure.append(
-          node(
+          el(
             "figcaption",
             `${title} · ${shot.time_ms != null ? seconds(shot.time_ms) : "time unavailable"} · ${shot.image ? "Presentation only; never policy input." : shot.status?.replaceAll("_", " ") || "Capture missing"} ${shot.caption || ""} ${shot.visibility || "Visibility not audited: the image may include information hidden from the controller."} ${shot.error || ""}`,
           ),
         );
-        figure.append(
-          disclosure("Capture evidence", json({ ...shot, image: undefined })),
-        );
+        figure.append(disclosure("Capture evidence", json({ ...shot, image: undefined })));
         return figure;
       }),
     );
@@ -296,10 +291,7 @@ window.wh3Replay = (() => {
     ];
   }
   function projection(b, width = 700, height = 560) {
-    const scale = Math.min(
-      (width - 30) / (b[2] - b[0]),
-      (height - 30) / (b[3] - b[1]),
-    );
+    const scale = Math.min((width - 30) / (b[2] - b[0]), (height - 30) / (b[3] - b[1]));
     return {
       scale,
       x: (x) => width / 2 + (x - (b[0] + b[2]) / 2) * scale,
@@ -307,14 +299,10 @@ window.wh3Replay = (() => {
     };
   }
   function ground(target, p) {
-    target.append(
-      svg("rect", { width: "100%", height: "100%", fill: "#15232b" }),
-    );
+    target.append(svg("rect", { width: "100%", height: "100%", fill: "#15232b" }));
     const terrain = replay.terrain;
     if (!terrain) {
-      target.append(
-        svg("text", { x: 15, y: 25, fill: "#ddd" }, "Terrain was not recorded"),
-      );
+      target.append(svg("text", { x: 15, y: 25, fill: "#ddd" }, "Terrain was not recorded"));
       return;
     }
     const step = terrain.cell_m;
@@ -398,17 +386,10 @@ window.wh3Replay = (() => {
       );
     const badges = (unit.state || [])
       .filter((s) => ["melee", "under_fire", "wavering", "routing"].includes(s))
-      .map(
-        (s) =>
-          ({ melee: "M", under_fire: "F", wavering: "W", routing: "R" })[s],
-      )
+      .map((s) => ({ melee: "M", under_fire: "F", wavering: "W", routing: "R" })[s])
       .join("");
     g.append(
-      svg(
-        "text",
-        { x, y: y + 28, fill: "#fff", "font-size": 9, "text-anchor": "middle" },
-        badges,
-      ),
+      svg("text", { x, y: y + 28, fill: "#fff", "font-size": 9, "text-anchor": "middle" }, badges),
     );
     g.append(
       svg(
@@ -431,21 +412,12 @@ window.wh3Replay = (() => {
     const index = frameIndex(),
       frame = replay.frames[index],
       decision = replay.decisions[selected];
-    const after =
-      decision?.after_frame != null
-        ? replay.frames[decision.after_frame]
-        : null;
-    const basis =
-      decision?.basis_frame != null
-        ? replay.frames[decision.basis_frame]
-        : null;
+    const after = decision?.after_frame != null ? replay.frames[decision.after_frame] : null;
+    const basis = decision?.basis_frame != null ? replay.frames[decision.basis_frame] : null;
     const inspecting = compareFrames && decision && time === decision.time_ms;
     const displayed = inspecting && after ? after : frame;
     const p = projection(
-      bounds($("whole").checked, [
-        displayed,
-        ...(inspecting && basis ? [basis] : []),
-      ]),
+      bounds($("whole").checked, [displayed, ...(inspecting && basis ? [basis] : [])]),
     );
     const map = $("map");
     map.replaceChildren();
@@ -460,15 +432,11 @@ window.wh3Replay = (() => {
         markerHeight: 5,
         orient: "auto-start-reverse",
       });
-    marker.append(
-      svg("path", { d: "M0 0L10 5L0 10Z", fill: "context-stroke" }),
-    );
+    marker.append(svg("path", { d: "M0 0L10 5L0 10Z", fill: "context-stroke" }));
     defs.append(marker);
     map.append(defs);
     // Trail dots are samples, not interpolated movement or a reconstructed route.
-    for (const f of replay.frames.filter(
-      (f) => f.time_ms <= time && f.time_ms >= time - 20000,
-    ))
+    for (const f of replay.frames.filter((f) => f.time_ms <= time && f.time_ms >= time - 20000))
       for (const u of allUnits(f).filter(position))
         map.append(
           svg("circle", {
@@ -498,11 +466,8 @@ window.wh3Replay = (() => {
       lastSeen = new Map();
     const displayedIndex = replay.frames.indexOf(displayed);
     for (const f of replay.frames.slice(0, displayedIndex + 1))
-      for (const u of f.enemy)
-        lastSeen.set(u.id, { ...u, seen: f.time_ms, side: "enemy" });
-    const dead = new Set(
-      displayed.enemy_roster.filter((u) => u.dead).map((u) => u.id),
-    );
+      for (const u of f.enemy) lastSeen.set(u.id, { ...u, seen: f.time_ms, side: "enemy" });
+    const dead = new Set(displayed.enemy_roster.filter((u) => u.dead).map((u) => u.id));
     for (const [id, u] of lastSeen)
       if (!visible.has(id) && !dead.has(id)) glyph(map, u, p, { seen: u.seen });
     for (const u of allUnits(displayed)) glyph(map, u, p);
@@ -538,10 +503,8 @@ window.wh3Replay = (() => {
           start = origins.get(o.unit),
           end = o.x != null ? o : origins.get(o.target);
         if (!position(start) || !position(end)) continue;
-        const applied =
-          decision.applied_ms != null && time >= decision.applied_ms;
-        const colour =
-          item.status === "rejected" && applied ? "#ff7777" : colours.friendly;
+        const applied = decision.applied_ms != null && time >= decision.applied_ms;
+        const colour = item.status === "rejected" && applied ? "#ff7777" : colours.friendly;
         const line = svg("line", {
           x1: p.x(start.x),
           y1: p.y(start.z),
@@ -577,7 +540,7 @@ window.wh3Replay = (() => {
     }
     const gap = time - frame.time_ms > replay.sample_interval_ms * 1.5;
     $("frame").textContent = inspecting
-      ? `Basis ${seconds(basis?.time_ms ?? time)} (ghost) → ${decision.after_label}: ${after ? seconds(after.time_ms) : "unavailable"} (solid). Displacement joins two recorded samples. ${evidence(displayed.source)}`
+      ? `Basis ${seconds(basis?.time_ms ?? time)} (ghost) → First recorded observation at/after application: ${after ? seconds(after.time_ms) : "unavailable"} (solid). Displacement joins two recorded samples. ${evidence(displayed.source)}`
       : `Cursor ${seconds(time)} · showing recorded frame ${seconds(frame.time_ms)} · ${evidence(frame.source)}${gap ? " · GAP: no recorded frame at the cursor; positions are stale" : ""}`;
     $("frame").classList.toggle("gap", gap);
     $("time").value = time / 1000;
@@ -592,9 +555,7 @@ window.wh3Replay = (() => {
     return 125 + (560 * (ms - a)) / Math.max(1, b - a);
   }
   function baseTimeline(target, height) {
-    target.replaceChildren(
-      svg("rect", { width: 700, height, fill: "#15232b" }),
-    );
+    target.replaceChildren(svg("rect", { width: 700, height, fill: "#15232b" }));
     target.append(
       svg("line", {
         x1: tx(time),
@@ -617,11 +578,7 @@ window.wh3Replay = (() => {
   function timeline() {
     baseTimeline($("timeline"), 90);
     $("timeline").append(
-      svg(
-        "text",
-        { x: 8, y: 20, fill: "#eee", "font-size": 12 },
-        "Decision age",
-      ),
+      svg("text", { x: 8, y: 20, fill: "#eee", "font-size": 12 }, "Decision age"),
     );
     replay.decisions.forEach((d, i) => {
       const bar = svg("rect", {
@@ -685,9 +642,7 @@ window.wh3Replay = (() => {
             r: 1.8,
             fill: colour,
           });
-          dot.append(
-            svg("title", {}, `${seconds(f.time_ms)} ${name}: ${value(f)}`),
-          );
+          dot.append(svg("title", {}, `${seconds(f.time_ms)} ${name}: ${value(f)}`));
           $("resources").append(dot);
         }
     });
@@ -778,7 +733,7 @@ window.wh3Replay = (() => {
     });
     target.append(
       canvas,
-      node(
+      el(
         "p",
         "State: grey idle · blue moving · vermilion melee · orange under fire · yellow wavering · purple routing · dark grey dead. Blank intervals are unsampled. │ order · ✦ ability · red rejection. Hover for all flags and last accepted order.",
         "note",
@@ -790,47 +745,35 @@ window.wh3Replay = (() => {
       d = replay.decisions[selected];
     box.replaceChildren();
     if (!d) {
-      box.append(node("p", "No logged decisions"));
+      box.append(el("p", "No logged decisions"));
       return;
     }
     box.append(
-      node("h4", `Decision ${selected + 1} · ${d.request}`),
-      node(
+      el("h4", `Decision ${selected + 1} · ${d.request}`),
+      el(
         "p",
         `Basis ${seconds(d.time_ms)} → applied ${d.applied_ms == null ? "unavailable" : seconds(d.applied_ms)} · information age ${d.applied_ms == null ? "unavailable" : seconds(d.applied_ms - d.time_ms)}`,
       ),
-      node("p", evidence(d.source), "mono"),
+      el("p", evidence(d.source), "mono"),
     );
-    box.append(
-      node("h4", "Stated rationale"),
-      node("blockquote", d.reason || "No reason recorded"),
-    );
+    box.append(el("h4", "Stated rationale"), el("blockquote", d.reason || "No reason recorded"));
     box.append(
       disclosure(
-        d.notes_changed
-          ? "Battle notes changed · before / after"
-          : "Battle notes unchanged",
+        d.notes_changed ? "Battle notes changed · before / after" : "Battle notes unchanged",
         `BEFORE\n${d.notes_before ?? "(none)"}\n\nAFTER\n${d.notes ?? "(none)"}`,
       ),
     );
     if (d.plan) box.append(disclosure("Recorded commander plan", json(d.plan)));
-    const orders = node("ol");
+    const orders = el("ol");
     for (const o of d.orders)
       orders.append(
-        node(
-          "li",
-          `${json(o.order)} — ${o.status}${o.ack?.error ? `: ${o.ack.error}` : ""}`,
-        ),
+        el("li", `${json(o.order)} — ${o.status}${o.ack?.error ? `: ${o.ack.error}` : ""}`),
       );
-    box.append(node("h4", "Orders and engine acknowledgements"), orders);
-    if (!d.orders.length)
-      box.append(node("p", "No new orders in this decision."));
-    if (d.invalid)
-      box.append(
-        disclosure("Validation refused these orders", json(d.invalid)),
-      );
+    box.append(el("h4", "Orders and engine acknowledgements"), orders);
+    if (!d.orders.length) box.append(el("p", "No new orders in this decision."));
+    if (d.invalid) box.append(disclosure("Validation refused these orders", json(d.invalid)));
     box.append(
-      node(
+      el(
         "p",
         `Acknowledgement: ${evidence(d.ack_source)}. Queued and acknowledged orders do not prove execution.`,
         "note",
@@ -838,16 +781,20 @@ window.wh3Replay = (() => {
     );
     const p = d.latency_parts;
     box.append(
-      node("h4", "Latency and cost"),
-      node(
+      el("h4", "Latency and cost"),
+      el(
         "p",
         `Provider ${fmt(p.provider_s, 3)} s · call minus provider ${fmt(p.transport_residual_s, 3)} s · roundtrip minus think ${fmt(p.harness_roundtrip_residual_s, 3)} s`,
       ),
-      node("p", p.note, "note"),
+      el(
+        "p",
+        "Call minus provider time includes transport/overhead, not measured network time. Roundtrip minus think includes tick, mailbox and polling; not an exact tick. Wall-clock components do not sum to battle-clock information age.",
+        "note",
+      ),
     );
     for (const [i, a] of d.attempts.entries())
       box.append(
-        node(
+        el(
           "p",
           `Attempt ${i + 1}: $${fmt(a.usd, 5)} · input ${a.usage?.input_tokens ?? "?"} · output ${a.usage?.output_tokens ?? "?"} · reasoning ${a.usage?.output_tokens_details?.reasoning_tokens ?? "?"} · ${a.actual_model || "model unrecorded"}`,
         ),
@@ -870,9 +817,8 @@ window.wh3Replay = (() => {
     box.append(
       disclosure(
         "Observed displacement · metres",
-        d.displacements
-          .map((m) => `${m.unit}: ${fmt(m.metres)} m`)
-          .join("\n") || "No comparable positions recorded",
+        d.displacements.map((m) => `${m.unit}: ${fmt(m.metres)} m`).join("\n") ||
+          "No comparable positions recorded",
       ),
     );
     const f = replay.frames[d.after_frame ?? d.basis_frame];
@@ -906,9 +852,7 @@ window.wh3Replay = (() => {
   function events() {
     $("events").replaceChildren(
       ...replay.events.map((event) => {
-        const b = button(`${seconds(event.time_ms)} · ${event.caption}`, () =>
-          eventAt(event),
-        );
+        const b = button(`${seconds(event.time_ms)} · ${event.caption}`, () => eventAt(event));
         b.title = evidence(event.source);
         b.dataset.kind = event.kind;
         return b;
@@ -917,9 +861,7 @@ window.wh3Replay = (() => {
   }
   function multiples() {
     const payloads = trials.filter((t) => t.replay?.frames.length);
-    const shared = payloads
-      .flatMap((t) => t.replay.frames.flatMap(allUnits))
-      .filter(position);
+    const shared = payloads.flatMap((t) => t.replay.frames.flatMap(allUnits)).filter(position);
     const b = shared.length
       ? [
           Math.min(...shared.map((p) => p.x)) - 30,
@@ -930,13 +872,10 @@ window.wh3Replay = (() => {
       : [-512, -512, 512, 512];
     $("multiples").replaceChildren(
       ...trials.map((t, i) => {
-        const card = node("article");
+        const card = el("article");
         card.append(
           button(label(t), () => open(i)),
-          node(
-            "p",
-            `${t.outcome} · ${fmt(t.battle_s)} s · margin ${fmt(t.metrics?.margin, 3)}`,
-          ),
+          el("p", `${t.outcome} · ${fmt(t.battle_s)} s · margin ${fmt(t.metrics.margin, 3)}`),
         );
         if (t.replay?.frames.length) {
           const map = svg("svg", {
@@ -958,7 +897,7 @@ window.wh3Replay = (() => {
                 }),
               );
           card.append(map);
-        } else card.append(node("p", "Replay not recorded"));
+        } else card.append(el("p", "Replay not recorded"));
         return card;
       }),
     );
@@ -966,9 +905,7 @@ window.wh3Replay = (() => {
   function stepEvent(direction) {
     const items = replay?.events || [];
     const event =
-      direction > 0
-        ? items.find((e) => e.time_ms > time)
-        : items.findLast((e) => e.time_ms < time);
+      direction > 0 ? items.find((e) => e.time_ms > time) : items.findLast((e) => e.time_ms < time);
     if (event) eventAt(event);
   }
   function stepDecision(direction) {
@@ -1022,12 +959,7 @@ window.wh3Replay = (() => {
       draw();
     });
     $("section").addEventListener("keydown", (e) => {
-      if (
-        ["INPUT", "SELECT", "TEXTAREA", "BUTTON", "SUMMARY"].includes(
-          e.target.tagName,
-        )
-      )
-        return;
+      if (["INPUT", "SELECT", "TEXTAREA", "BUTTON", "SUMMARY"].includes(e.target.tagName)) return;
       const action = {
         " ": toggle,
         ArrowLeft: () => stepDecision(-1),
@@ -1043,22 +975,15 @@ window.wh3Replay = (() => {
     $("map").setAttribute("tabindex", "0");
     $("download").addEventListener("click", () => {
       if (!replay) return;
-      const blob = new Blob(
-        [
-          json({
-            evidence_kind: dataset.evidence_kind,
-            trial: { ...current, replay: undefined },
-            replay,
-          }),
-        ],
-        { type: "application/json" },
+      const payload = {
+        evidence_kind: dataset.evidence_kind,
+        trial: { ...current, replay: undefined },
+        replay,
+      };
+      download(
+        new Blob([json(payload)], { type: "application/json" }),
+        `wh3-${dataset.evidence_kind}-${current.episode}-replay.json`,
       );
-      const url = URL.createObjectURL(blob),
-        a = node("a");
-      a.href = url;
-      a.download = `wh3-${dataset.evidence_kind}-${current.episode}-replay.json`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
     });
     requestAnimationFrame(tick);
   }

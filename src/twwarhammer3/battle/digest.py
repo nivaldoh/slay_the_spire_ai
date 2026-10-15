@@ -2,23 +2,28 @@
 
     python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>                 episode table
     python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>/episode-0000    decision lines
+    python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>/episode-0000 --at 95
 
 An episode prints one line per decision that sent orders or carries a model's reason:
 battle time, both sides' strength in the state the policy saw (units still fighting / men;
 enemies as seen of the roster), the measured delay, the orders, the engine's rejections,
-a commander's adopted plan with its age and the model's reason; then the final state and
-the model's last notes. It only reads evidence.
+a commander's adopted plan with its age and the model's reason. A run of decisions that
+sent no new orders becomes one line with the last reason. Then the final state and the
+model's last notes. ``--at`` prints the one decision nearest a battle time in full: the
+prompt, the raw reply, the orders and the engine's verdicts. It only reads evidence.
 """
 
 import json
+from itertools import groupby
 from pathlib import Path
 
 from twwarhammer3.battle.commander import describe_plan
+from twwarhammer3.battle.controllers import MODEL_POLICIES
 from twwarhammer3.battle.llm import describe_orders, short_type
-from twwarhammer3.battle.stats import MODEL_POLICIES, row
+from twwarhammer3.battle.stats import row
 
 
-def _strength(observation: dict) -> str:
+def strength(observation: dict) -> str:
     friendly = [u for u in observation.get("friendly", []) if u.get("men")]
     fighting = [u for u in friendly if not {"routing", "shattered"} & set(u.get("state", []))]
     enemy = observation.get("enemy", [])
@@ -27,13 +32,13 @@ def _strength(observation: dict) -> str:
             f"  seen {len(enemy)}/{roster}u {sum(u.get('men', 0) for u in enemy)}m")
 
 
-def _objectives(observation: dict) -> str:
+def objectives(observation: dict) -> str:
     """Tickets and the holders of capture points, for battle types that have them."""
     mode = observation.get("mode") or {}
     parts = []
     if mode.get("tickets"):
-        parts.append("tickets " + " ".join(f"{row['side']} {row['tickets']}"
-                                           for row in mode["tickets"])
+        parts.append("tickets " + " ".join(f"{entry['side']} {entry['tickets']}"
+                                           for entry in mode["tickets"])
                      + (f" of {mode['tickets_goal']}" if mode.get("tickets_goal") else ""))
     if mode.get("capture_points"):
         holders = [point.get("holder") or "-" for point in mode["capture_points"]]
@@ -41,6 +46,18 @@ def _objectives(observation: dict) -> str:
     if mode.get("supplies") is not None:
         parts.append(f"supplies {mode['supplies']}")
     return ("  " + "; ".join(parts)) if parts else ""
+
+
+def _measures(result: dict) -> str:
+    """The battle type's objective measures of an episode: shares held, then counts."""
+    measures = result.get("objectives") or {}
+    parts = [f"{label} {measures[key]:.0%}" for key, label in (
+        ("victory_held", "victory points held"), ("key_held", "key building"))
+        if measures.get(key) is not None]
+    parts += [f"{label} {measures[key]}" for key, label in (
+        ("supplies_left", "supplies left"), ("build", "built"), ("reinforce", "reinforced"),
+        ("tickets", "tickets")) if key in measures]
+    return "; " + ", ".join(parts) if parts else ""
 
 
 def _units(observation: dict) -> list[str]:
@@ -53,29 +70,36 @@ def _units(observation: dict) -> list[str]:
     return lines
 
 
-def episode_digest(episode: Path) -> str:
+def _decision_lines(items: list) -> list[str]:
+    """One line per decision, except that a run of decisions with no new orders is one."""
+    lines = []
+    for quiet, group in groupby(items, key=lambda item: isinstance(item, dict) and item["quiet"]):
+        group = list(group)
+        if quiet and len(group) > 1:
+            first, last = group[0], group[-1]
+            lines.append(f"{first['s']:6.0f}s  {first['state']}  no new orders x{len(group)}"
+                         f" until {last['s']:.0f}s | {last['reason']}")
+        else:
+            lines += [item if isinstance(item, str) else item["line"] + item.get("ack", "")
+                      for item in group]
+    return lines
+
+
+def episode_digest(episode: Path, decisions: bool = True) -> str:
     path = episode / "result.json"
     result = json.loads(path.read_text()) if path.exists() else {"status": "running"}
     delays = result.get("delays_ms") or []
     llm = result.get("llm") or {}
+    policy = f"; policy {result['policy']}" if result.get("policy") else ""
     error = f"; error: {result['error']}" if result.get("error") else ""
-    measures = result.get("objectives") or {}
-    if measures:
-        held = measures.get("victory_held")
-        key = measures.get("key_held")
-        error = (f"; victory points held {held:.0%}" if held is not None else "") + (
-            f", key building {key:.0%}" if key is not None else "") + "".join(
-            f", {label} {measures[key]}" for key, label in (
-                ("supplies_left", "supplies left"), ("build", "built"),
-                ("reinforce", "reinforced"), ("tickets", "tickets")) if key in measures) + error
     lines = [
         f"{episode.name}: {result['status']} at {result.get('battle_s', '?')} s battle time;"
         f" {result.get('decisions', 0)} decisions, {result.get('invalid', 0)} invalid;"
         f" delay mean {result.get('delay_s')} s max {max(delays, default=0) / 1000:.1f} s;"
-        f" ${llm.get('usd', 0):.4f}{error}",
+        f" ${llm.get('usd', 0):.4f}{policy}{_measures(result)}{error}",
     ]
-    observation, last, notes = None, None, None
-    pending = {}
+    observation, last, notes, refused = None, None, None, False
+    items, pending = [], {}
     for raw in (episode / "trace.jsonl").open():
         record = json.loads(raw)
         kind = record["kind"]
@@ -86,52 +110,128 @@ def episode_digest(episode: Path) -> str:
         elif kind == "decision":
             behavior = record.get("behavior") or {}
             notes = behavior.get("notes", notes)
+            quiet = not record["orders"] and "plan" not in behavior and not refused
+            refused = False
             if not record["orders"] and not behavior.get("reason"):
                 continue
-            pending[record["request"]] = len(lines)
             reason = f" | {behavior['reason']}" if behavior.get("reason") else ""
             plan = (f"  plan ({behavior['plan_age_s']:.1f} s old): "
                     f"{describe_plan(behavior['plan'])}" if "plan" in behavior else "")
-            lines.append(f"{record['time_ms'] / 1000:6.0f}s  {_strength(observation)}"
-                         f"{_objectives(observation)}"
-                         f"  {describe_orders(record['orders'])}{plan}{reason}")
+            state = strength(observation) + objectives(observation)
+            item = {"s": record["time_ms"] / 1000, "state": state,
+                    "reason": behavior.get("reason"),
+                    "quiet": quiet,
+                    "line": f"{record['time_ms'] / 1000:6.0f}s  {state}"
+                            f"  {describe_orders(record['orders'])}{plan}{reason}"}
+            pending[record["request"]] = item
+            items.append(item)
         elif kind == "ack" and record["request"] in pending:
-            index = pending.pop(record["request"])
+            item = pending.pop(record["request"])
             rejected = [f"{r['unit']} {r.get('error')}" for r in record["ack"].get("results", [])
                         if not r.get("ok")]
             delay = record["latency"]["delay_ms"] / 1000
-            lines[index] += f"  [delay {delay:.1f}s" + (
+            item["ack"] = f"  [delay {delay:.1f}s" + (
                 f"; rejected {', '.join(rejected)}]" if rejected else "]")
         elif kind == "invalid":
-            lines.append(f"        invalid: {record['error']}")
+            items.append(f"        invalid: {record['error']}")
+            refused = True  # its decision sent no orders, but not by choice
+    if decisions:
+        lines += _decision_lines(items)
     if last:
-        lines.append(f"final at {last.get('time_ms', 0) / 1000:.0f} s: {_strength(last)}"
-                     f"{_objectives(last)}")
+        lines.append(f"final at {last.get('time_ms', 0) / 1000:.0f} s: {strength(last)}"
+                     f"{objectives(last)}")
         lines += _units(last)
     if notes:
         lines.append("notes: " + notes.replace("\n", " / "))
     return "\n".join(lines)
 
 
-DIGEST_COLUMNS = ("episode", "outcome", "battle_s", "own_left", "enemy_left", "decisions",
-                  "invalid", "delay_s", "usd")
+def decision_at(episode: Path, seconds: float) -> str:
+    """The logged decision nearest a battle time, whole: the prompt its reply answers, the
+    raw reply, the orders, a validation error and the engine's verdict on each order.
+
+    Of a model controller's decisions only those that carry a reply count. A commander's
+    reply answers the prompt of its previous request; the direct controller's, the prompt
+    logged beside it.
+    """
+    decisions, acks = [], {}
+    asked, refused = None, None
+    for raw in (episode / "trace.jsonl").open():
+        record = json.loads(raw)
+        if record["kind"] == "invalid":
+            refused = record
+        elif record["kind"] == "ack":
+            acks[record["request"]] = record
+        elif record["kind"] == "decision":
+            behavior = record.get("behavior") or {}
+            prompt = (behavior["prompt"], record["time_ms"]) if "prompt" in behavior else None
+            commander = behavior.get("type") == "commander"
+            if prompt and not commander:
+                asked = prompt
+            record.update(asked=asked if behavior.get("attempts") else None, refused=refused)
+            if prompt and commander:
+                asked = prompt
+            decisions.append(record)
+            refused = None
+    if not decisions:
+        return f"{episode.name}: no logged decisions"
+    replies = [record for record in decisions if record["asked"]]
+    record = min(replies or decisions, key=lambda item: abs(item["time_ms"] / 1000 - seconds))
+    behavior = record.get("behavior") or {}
+    model = f", {behavior['model']}/{behavior.get('effort')}" if behavior.get("model") else ""
+    lines = [f"{episode.name} {record['request']}: state at {record['time_ms'] / 1000:.1f} s,"
+             f" decided at {record.get('decision_time_ms', record['time_ms']) / 1000:.1f} s"
+             f"{model}"]
+    if record["asked"]:
+        prompt, sent_ms = record["asked"]
+        lines += [f"-- prompt (state at {sent_ms / 1000:.1f} s):", prompt]
+    for attempt in behavior.get("attempts") or []:
+        lines += [f"-- reply ({attempt.get('status')}, {attempt.get('seconds', 0):.1f} s,"
+                  f" ${attempt.get('usd', 0):.4f}):", attempt.get("text") or ""]
+    if "plan" in behavior:
+        lines.append(f"-- plan ({behavior['plan_age_s']:.1f} s old):"
+                     f" {describe_plan(behavior['plan'])}")
+    lines += [f"   dropped {item}" for item in behavior.get("dropped", [])]
+    lines.append(f"-- orders: {describe_orders(record['orders'])}")
+    if record["refused"]:
+        lines.append(f"-- invalid, so none were sent: {record['refused']['error']}")
+    ack = acks.get(record["request"])
+    if not ack:
+        lines.append("-- engine: no acknowledgement in the trace")
+        return "\n".join(lines)
+    lines.append(f"-- engine applied at {ack['ack']['applied_ms'] / 1000:.1f} s"
+                 f" (delay {ack['latency']['delay_ms'] / 1000:.1f} s):")
+    for result in ack["ack"].get("results", []):
+        index = result.get("index") or 0
+        order = (describe_orders([record["orders"][index - 1]])
+                 if 0 < index <= len(record["orders"]) else result.get("unit"))
+        verdict = ("queued" if result.get("queued") else "ok") if result.get("ok") else (
+            f"REJECTED {result.get('error')}")
+        lines.append(f"   {index}. {order}: {verdict}")
+    return "\n".join(lines)
+
+
+DIGEST_COLUMNS = ("episode", "policy", "outcome", "battle_s", "own_left", "enemy_left",
+                  "decisions", "invalid", "delay_s", "usd")
 
 
 def _draw(manifest: dict) -> str:
-    """A random job's draw: seed, map and both races."""
-    scenario = manifest.get("scenario") or {}
-    if "seed" not in manifest["config"] or not scenario.get("map"):
+    """A random job's draw: seed, every side's race and the map."""
+    config, scenario = manifest["config"], manifest.get("scenario") or {}
+    if config.get("seed") is None or not scenario.get("map"):
         return ""
-    return (f" (seed {manifest['config']['seed']}: {scenario['player']['subculture']} vs"
-            f" {scenario['enemy']['subculture']} on {scenario['map']})")
+    enemy = scenario.get("enemy")  # one army, a list (free-for-all) or none (survival)
+    armies = [scenario["player"], *(enemy if isinstance(enemy, list) else [enemy] if enemy else [])]
+    return (f" (seed {config['seed']}: {' vs '.join(army['subculture'] for army in armies)}"
+            f" on {scenario['map']})")
 
 
 def job_digest(job: Path) -> str:
     manifest = json.loads((job / "manifest.json").read_text())
     config = manifest["config"]
+    model = MODEL_POLICIES & set(config["policy"].split(","))
     lines = [f"{job.name}: {manifest['status']}, policy {config['policy']}"
-             + (f" {config['model']}/{config['effort']}"
-                if config["policy"] in MODEL_POLICIES else "")
+             + (f" {config['model']}/{config['effort']}" if model else "")
              + f", scenario {config['scenario']}" + _draw(manifest)
              + f", source {manifest['source_revision'][:7]}",
              "| " + " | ".join(DIGEST_COLUMNS) + " |", "|" + "---|" * len(DIGEST_COLUMNS)]

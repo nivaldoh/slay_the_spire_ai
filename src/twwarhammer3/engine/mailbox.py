@@ -1,58 +1,90 @@
 """The file mailbox between the controller (WSL) and the in-game Lua scripts (Windows).
 
-The directory is ``C:/wh3-agent/bridge``, reached from WSL through ``/mnt/c``. The
-controller owns ``session.json`` (read once per battle load), ``orders.json`` (one
-outstanding request; the game deletes it after reading) and ``menu.json`` (frontend
-steps). The game owns ``observation.json``, rewritten every observation interval,
-plus the append-only ``mod.log`` and ``menu.log``. Every message carries the job
-name; the game adds a ``battle`` id at each script load and a ``seq`` per
-observation, which is how the controller tells restarts and new data apart.
+The directory is ``C:/wh3-agent/bridge``, reached from WSL through ``/mnt/c``. Writers
+publish whole files (a temporary file, then a rename); readers treat a missing, locked or
+half-parsed file as "not yet". In messages from the game, a key marked ``?`` below is absent
+when unset (Lua nil), and an empty Lua table arrives as ``[]``, even where a filled one is an
+object (``evaluation.objectives`` in a battle without capture points, an empty ``magic``).
 
-Observation shape::
+Files, by writer:
+- controller: ``session.json``, read at each script load (``job``, ``enabled``, ``menu``,
+  ``autostart``, ``observe_ms``, ``tick_ms``, ``record_replay``, ``stills``; the mod
+  ignores ``speed`` and ``pause``, which ``require_realtime`` checks); ``orders.json``, one
+  outstanding request that the battle script deletes when read, ``{"schema", "job", "battle",
+  "request", "based_on", "orders", "say"?}`` or ``{..., "control": "restart"}`` (replay the
+  battle through the results popup's rematch); ``menu.json``, UI steps run by the frontend
+  script, or by the battle script during a battle, and deleted when read.
+- game: ``observation.json`` (below), rewritten every ``observe_ms`` of battle time and
+  after each applied request; the append-only ``mod.log`` (``[battle ms] text``) and
+  ``menu.log`` (step results, then ``done``); UI dumps named by ``dump`` steps; per battle,
+  ``replay-<battle>.jsonl`` (a presentation frame per second, with ``record_replay``) and
+  ``imagery-<battle>.json`` (still requests and unit names, with ``stills``).
+- ``battle/capture.py`` (PassiveCapture): ``still-<battle>-<trigger>.png`` and
+  ``capture-<battle>-<trigger>.json``.
+An episode copies its battle's files when it ends. ``reset`` (``play`` without ``--attach``,
+and ``launch``) removes the messages, logs and per-battle files before the game runs. UI
+dumps stay; ``play`` copies a dump only when this job's ``menu.log`` reports writing it.
 
-    {"schema": 1, "job", "battle", "seq", "phase", "time_ms", "speed", "awaiting_orders",
-     "remaining_ms", "armies": {"player": {"faction"}, "enemy": {"faction"}},
-     "friendly": [unit...], "enemy_roster": [{"id", "type"}...], "enemy": [visible unit...],
+Every message carries the job name. The battle script makes a ``battle`` id at each load
+and numbers observations by ``seq``, which is how the controller tells restarts and new
+data apart; it drops a request for another job or battle, or repeating its last id.
+
+Observation (``observation``, ``unit_record`` and ``mode_section`` in the battle Lua)::
+
+    {"schema": 1, "job", "battle", "seq", "phase", "time_ms", "speed": 1,
+     "awaiting_orders": false, "remaining_ms" (-1 without a countdown),
+     "timer"?: {"observed_ms", "remaining_ms", "deadline_ms", "expired", "source"},
+     "armies": {"player": {"faction"}, "enemy": {"faction"}},
+     "friendly": [unit...], "enemy": [visible unit...],
+     "enemy_roster": [{"id", "type", "dead"?, "alliance"?}...],
      "magic": {"current"?, "reserve"?},
-     "army": {"currency"?, "next_unlock"?, "abilities": [{"key", "target", "radius",
-              "cooldown_s", "cost"?, "unlocked"?, "button"?, "timer"?, "ready"?,
-              "last_issued_ms"?}...]} | null,
-     "orders": {"request", "based_on", "applied_ms",
-                "results": [{"index", "unit", "ok", "queued", "error"?}]} | null,
-     "result": "won" | "lost" | "draw" | null,
-     "timer": {"observed_ms", "remaining_ms", "deadline_ms", "expired", "source"} | null,
-     "final": {"friendly": {"men", "men0"}, "enemy": {...}} | null}
+     "army"?: {"currency"?, "next_unlock"?, "abilities": [{"key", "target", "radius",
+               "cooldown_s", "cost"?, "unlocked"?, "button"?, "timer"?, "ready"?,
+               "last_issued_ms"?}...]},
+     "mode": {"type", "role"?, "timeout_winner"?, "objectives"? (the battle type's rules
+              as text), "capture_points"?, "tickets"?, "tickets_goal"?, "gates"?,
+              "reinforcements"?, "spawn_zones"?, "slots"?, "supplies"?},
+     "terrain"?: {"x0", "z0", "cell_m", "rows" ("." clear, "#" blocked), "sample_width_m",
+                  "sampled_ms", "bounds"},
+     "orders"?: {"request", "based_on", "applied_ms",
+                 "results": [{"index", "unit", "ok", "queued"?, "error"?}...]},
+     "result"?: "won" | "lost" | "draw",
+     "setup"?: {...}, "evaluation": {...}, "final"?: {...}}
 
-``evaluation`` carries both armies' true strength (men, men0, active_men excluding
-routing/shattered units, and totals by unit type) and tick-integrated objective ownership.
-The Python harness strips it and ``final`` before any controller receives a snapshot.
-``final`` freezes these evaluation records at the engine result; on other endings the
-harness retains the last evaluation snapshot with its battle timestamp.
+A battle's first observation is a ``Loading`` placeholder with ``seq`` 0 and no units; then
+``phase`` is the engine's (``Deployment``, ``Deployed``, ``VictoryCountdown``, ``Complete``).
 
-Terminal ``timer`` retains the last finite countdown sampled on engine ticks. The raw
-``remaining_ms`` can reset to -1 when the result arrives. ``expired`` compares result
-time with that sample's deadline; it is a countdown inference, not an authoritative
-end-cause getter. The engine's won/lost/draw outcome is preserved independently.
+A unit has ``id`` (f1..., e1...), ``type``, ``class``, ``commander``, ``can_fly``,
+``flying``, ``x``, ``z``, ``bearing``, ``men``, ``men0``, ``hp`` (0-1), ``barrier``?,
+``state`` (flags such as routing, shattered, wavering, melee, under_fire, moving, running),
+``range``, ``speed`` ([walk, run]), and ``alliance`` for a free-for-all enemy. Friendlies
+add ``morale``? (``fraction`` of best leadership, possibly negative, and the UI's largest
+``effect``), ``flight``? (flyers: ``can_toggle``, ``cooldown_s``), ``ammo``, ``ammo0``,
+``fatigue``, ``width``, ``attack_mode`` and ``command_queue`` (as last requested),
+``navigation``? (an unreachable move's reachable alternatives), ``behaviours`` (toggle key
+to state), ``abilities`` ({``key``, ``can_use`` (the engine's permission), ``ready``,
+``active``, ``recharge_s``?, ``uses``?, ``target``, ``mana``, ``cooldown_s``,
+``cast_range``, ``radius``, ``duration_s``, ``last_issued_ms``?}), ``target``? and
+``dest``?. A unit that failed to read is ``{"id", "error"}``.
 
-A request may carry ``say``, text the battle script shows in the advisor window. An
-ability order whose unit is ``"army"`` casts an army ability. Order indexes are
-one-based positions in the request, so a unit can receive a behavior
-change and a move/attack sequence in one batch. ``queued`` acknowledges submission to
-the engine queue, not execution. Friendly records include ``behaviours`` (supported
-toggle keys mapped to current booleans), ``abilities`` (owned active keys with can_use,
-the engine's permission, and from the UI context system ready, active, recharge_s left,
-uses left, target type, mana cost and cooldown_s; plus last_issued_ms),
-formation ``width``, last requested ``attack_mode`` and last submitted ``command_queue``.
-Friendlies also expose ``morale`` (``fraction`` of best leadership, potentially negative,
-and the UI's largest current ``effect``). Flyers have ``flight`` availability
-(``can_toggle`` and ``cooldown_s``), alongside ``can_fly`` and actual ``flying`` state.
-A ``flight`` order requests ``flying: true`` to take off or ``false`` to land; an
-already completed state change is not toggled again. The engine re-checks availability,
-and subsequent observations confirm the transition. These additions use the benchmark
-track ``obs-v3+terrain/act-v2/live-1x``; earlier tracks lack this feedback/control.
+``evaluation``, ``final`` and ``setup`` hold hidden information, and the harness strips all
+three before a controller sees a snapshot. ``evaluation`` has both armies' true strength
+(``men``, ``men0``, ``active_men`` excluding routing and shattered units, and ``by_type``)
+and tick-integrated capture point ownership (``objectives``). ``final`` freezes it at the
+engine result; on other endings the harness keeps the last ``evaluation``. ``setup``, sent
+until the first request is applied, has the unit scale, realism mode and the armies' AI
+stat modifiers and unit stats.
 
-Writers publish whole files (temporary file, then rename); readers treat a missing,
-locked or half-parsed file as "not yet".
+``timer`` appears with the result and keeps the last finite countdown sampled on engine
+ticks, since ``remaining_ms`` can reset to -1 when the result arrives. ``expired`` compares
+the result time with that sample's deadline: an inference, not an engine end cause.
+
+``results`` indexes are one-based positions in the request, so a unit can get a behaviour
+change and a move/attack sequence in one batch; ``queued`` acknowledges submission to the
+engine queue, not execution. ``twwarhammer3.protocol`` validates the order types. An
+``ability`` order whose unit is ``"army"`` casts an army ability; a ``flight`` order asks
+for ``flying: true`` (take off) or ``false`` (land), the engine re-checks availability,
+and later observations confirm the change.
 """
 
 import json
@@ -64,6 +96,7 @@ from twwarhammer3.protocol import BattleRestarted, MailboxTimeout
 
 SCHEMA = 1
 FILES = ("session.json", "observation.json", "orders.json", "menu.json", "mod.log", "menu.log")
+BATTLE_FILES = ("replay-*", "imagery-*", "still-*", "capture-*")
 
 
 def require_realtime(session: dict) -> None:
@@ -82,10 +115,14 @@ class Mailbox:
     # -- publishing -------------------------------------------------------------------
 
     def reset(self) -> None:
-        """Start a job with no leftovers from an earlier one."""
+        """Start a job with no leftovers from an earlier one. Only while the game is stopped:
+        an earlier job's episodes copied their battle files when they ended."""
         self.directory.mkdir(parents=True, exist_ok=True)
         for name in FILES:
             for path in (self.directory / name, self.directory / (name + ".tmp")):
+                path.unlink(missing_ok=True)
+        for pattern in BATTLE_FILES:
+            for path in self.directory.glob(pattern):
                 path.unlink(missing_ok=True)
 
     def write_session(self, session: dict) -> None:
@@ -101,9 +138,9 @@ class Mailbox:
             body["say"] = say
         return self._request(battle, body, timeout)
 
-    def write_control(self, battle: str, control: str, *, timeout: float = 15, **fields) -> str:
-        """``restart`` or ``start`` (end deployment)."""
-        return self._request(battle, {"control": control, **fields}, timeout)
+    def write_control(self, battle: str, control: str, *, timeout: float = 15) -> str:
+        """``restart``: replay the battle through the results popup's rematch."""
+        return self._request(battle, {"control": control}, timeout)
 
     def write_menu(self, steps: list[dict]) -> None:
         self._publish("menu.json", {"schema": SCHEMA, "job": self.job, "steps": steps})

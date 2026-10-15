@@ -1,52 +1,36 @@
+"""Pinned install checks, pack and mod-list deployment in twwarhammer3/engine/runtime.py."""
 import pytest
+from wh3_fixtures import fake_install
 
-from twwarhammer3.engine import doctor, runtime, startup
+from twwarhammer3.engine import runtime, startup
 
 
 @pytest.fixture
-def setup(tmp_path, monkeypatch):
-    game = tmp_path / "steamapps/common/game"
-    game.mkdir(parents=True)
-    (game / "Warhammer3.exe").write_bytes(b"not the game")
-    (tmp_path / "steamapps/appmanifest_1142710.acf").write_text('"buildid"\t\t"25823491"\n')
-    source = tmp_path / "mod/script/battle/mod"
-    source.mkdir(parents=True)
-    (source / "twwarhammer3_battle.lua").write_text("out('loaded')")
-    preferences = tmp_path / "profile/scripts/preferences.script.txt"
-    preferences.parent.mkdir(parents=True)
-    preferences.write_bytes(b"fe_game_intro_video_enabled true; # intro #\r\ngfx_unit_size 2;\r\n")
-    monkeypatch.setattr(runtime, "user_dir", lambda: tmp_path / "profile")
-    monkeypatch.setattr(runtime, "conflicting_games", lambda game_dir, rules: [])
-    monkeypatch.setattr(runtime, "GAME_DIR", game)
-    monkeypatch.setattr(runtime, "STEAM_MANIFEST", tmp_path / "steamapps/appmanifest_1142710.acf")
-    monkeypatch.setattr(runtime, "RUNTIME_DIR", tmp_path / "mnt/c/wh3-agent")
-    monkeypatch.setattr(runtime, "BRIDGE_DIR", tmp_path / "mnt/c/wh3-agent/bridge")
-    monkeypatch.setattr(runtime, "MOD_SOURCE", tmp_path / "mod")
-    monkeypatch.setattr(runtime.windows, "windows_path", lambda path: "C:/wh3-agent/mods")
-    return tmp_path
+def install(tmp_path, monkeypatch):
+    return fake_install(tmp_path, monkeypatch)
 
 
-def test_prepare_runtime_builds_the_pack_and_mod_list(setup):
+def test_prepare_runtime_builds_the_pack_and_mod_list(install):
     record = runtime.prepare_runtime()
-    pack = setup / "mnt/c/wh3-agent/mods/twwarhammer3.pack"
+    pack = install / "mnt/c/wh3-agent/mods/twwarhammer3.pack"
     assert pack.read_bytes().startswith(b"PFH5")
     assert record["pack"]["files"] == ["script\\battle\\mod\\twwarhammer3_battle.lua"]
     assert record["steam_build_id"] == "25823491"
     assert record["startup"]["enabled"]
     assert record["startup"][startup.PREFERENCE] == "false"
     assert record["startup"]["pack"]["sha256"] == record["startup"]["pack"]["expected_sha256"]
-    assert (setup / "steamapps/common/game/twwarhammer3_mods.txt").read_text() == (
+    assert (install / "steamapps/common/game/twwarhammer3_mods.txt").read_text() == (
         'add_working_directory "C:/wh3-agent/mods";\nmod "twwarhammer3.pack";\n'
     )
-    assert (setup / "mnt/c/wh3-agent/windows_game.py").is_file()
-    assert (setup / "mnt/c/wh3-agent/bridge").is_dir()
+    assert (install / "mnt/c/wh3-agent/windows_game.py").is_file()
+    assert (install / "mnt/c/wh3-agent/bridge").is_dir()
 
 
-def test_prepare_runtime_refuses_an_unpinned_build(setup):
+def test_prepare_runtime_refuses_an_unpinned_build(install):
     runtime.STEAM_MANIFEST.write_text('"buildid"\t\t"99"\n')
     with pytest.raises(RuntimeError, match="not the pinned"):
         runtime.prepare_runtime()
-    assert not (setup / "steamapps/common/game/twwarhammer3_mods.txt").exists()
+    assert not (install / "steamapps/common/game/twwarhammer3_mods.txt").exists()
 
 
 def test_preferences_keep_only_gameplay_relevant_keys(tmp_path):
@@ -68,21 +52,7 @@ def test_owned_game_runs_the_executable_with_the_mod_list(tmp_path):
     assert game.rules == {"names": ["Warhammer3.exe"]}
 
 
-def test_doctor_reports_blockers_without_launching(setup, monkeypatch):
-    monkeypatch.setattr(doctor, "probe", lambda command: {"status": "ok", "output": "3.13"})
-    monkeypatch.setattr(doctor, "conflicting_games", lambda game_dir, rules: [{"ProcessId": 9}])
-    monkeypatch.setattr(runtime, "preferences", lambda: {"gfx_unit_size": "2"})
-    report = doctor.collect_diagnostics()
-    text = "\n".join(report["blockers"])
-    assert "pinned hash" in text and "PIDs 9" in text
-    assert report["mod"]["files"] == ["script\\battle\\mod\\twwarhammer3_battle.lua"]
-    assert "gfx_unit_size=2" in doctor.render_diagnostics(report)
-    monkeypatch.setattr(doctor, "conflicting_games", lambda game_dir, rules: [])
-    monkeypatch.setitem(runtime.PINS, "Warhammer3.exe", report["game"]["sha256"])
-    assert doctor.collect_diagnostics()["status"] == "ready"
-
-
-def test_prepare_runtime_is_idempotent(setup):
+def test_prepare_runtime_is_idempotent(install):
     first = runtime.prepare_runtime()
     path = runtime.GAME_DIR / "data" / startup.PACK_NAME
     preferences = runtime.user_dir() / "scripts/preferences.script.txt"
@@ -92,7 +62,7 @@ def test_prepare_runtime_is_idempotent(setup):
 
 
 @pytest.mark.parametrize("probe_fails", [False, True])
-def test_prepare_runtime_checks_game_is_stopped_before_writing(setup, monkeypatch, probe_fails):
+def test_prepare_runtime_checks_game_is_stopped_before_writing(install, monkeypatch, probe_fails):
     def conflicts(*args):
         if probe_fails:
             raise OSError("cannot list processes")
@@ -107,28 +77,3 @@ def test_prepare_runtime_checks_game_is_stopped_before_writing(setup, monkeypatc
     assert not (runtime.GAME_DIR / "data" / startup.PACK_NAME).exists()
     assert not runtime.RUNTIME_DIR.exists()
     assert not (runtime.GAME_DIR / runtime.MOD_LIST).exists()
-
-
-def test_doctor_reports_missing_installed_and_changed_startup_without_writing(setup, monkeypatch):
-    monkeypatch.setattr(doctor, "probe", lambda command: {"status": "ok", "output": "3.13"})
-    monkeypatch.setattr(doctor, "conflicting_games", lambda game_dir, rules: [])
-    preferences = runtime.user_dir() / "scripts/preferences.script.txt"
-    before = preferences.read_bytes()
-    missing = doctor.collect_diagnostics()
-    assert not missing["startup"]["enabled"]
-    assert missing["startup"]["pack"]["sha256"] is None
-    assert preferences.read_bytes() == before
-    assert not runtime.RUNTIME_DIR.exists()
-    runtime.prepare_runtime()
-    installed = doctor.collect_diagnostics()
-    assert installed["startup"]["enabled"]
-    assert "installed (all launches)" in doctor.render_diagnostics(installed)
-    path = runtime.GAME_DIR / "data" / startup.PACK_NAME
-    path.write_bytes(b"broken")
-    assert not doctor.collect_diagnostics()["startup"]["enabled"]
-    assert path.read_bytes() == b"broken"
-    runtime.prepare_runtime()
-    assert doctor.collect_diagnostics()["startup"]["enabled"]
-    preferences.write_bytes(before)
-    assert not doctor.collect_diagnostics()["startup"]["enabled"]
-    assert preferences.read_bytes() == before

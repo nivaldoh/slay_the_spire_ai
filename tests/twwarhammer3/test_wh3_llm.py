@@ -1,60 +1,20 @@
 import json
 
 import pytest
+from wh3_fixtures import FakeSend, observation
 
 from gameai.ledger import BudgetExhausted, Ledger
 from twwarhammer3.battle import llm
 from twwarhammer3.protocol import PolicyFailure
 
-USAGE = {"input_tokens": 100, "output_tokens": 20,
-         "input_tokens_details": {"cached_tokens": 0},
-         "output_tokens_details": {"reasoning_tokens": 5}}
-
-
-class FakeSend:
-    def __init__(self, *replies):
-        self.replies = list(replies)
-        self.bodies = []
-
-    def __call__(self, body):
-        self.bodies.append(body)
-        text = self.replies.pop(0)
-        return {"id": "resp", "status": "completed", "usage": USAGE,
-                "output": [{"type": "message", "content": [{"type": "output_text",
-                                                             "text": text}]}]}
+SHAPES = {branch["properties"]["type"]["enum"][0]: set(branch["properties"])
+          for branch in llm.REPLY_SCHEMA["properties"]["orders"]["items"]["anyOf"]}
 
 
 def reply(orders, reason="go", notes=None):
+    # Every order has exactly its type's fields, as the strict reply schema requires.
+    assert all(set(order) == SHAPES[order["type"]] for order in orders)
     return json.dumps({"orders": orders, "reason": reason, "notes": notes})
-
-
-def observation(time_ms=30000, visible=("e1",)):
-    enemy = [{"id": "e1", "type": "wh_main_dwf_inf_dwarf_warriors_0", "class": "infantry",
-              "x": 100.0, "z": 200.0, "bearing": 180, "men": 90, "men0": 100, "hp": 0.9,
-              "state": ["moving"]},
-             {"id": "e2", "type": "wh_main_dwf_art_grudge_thrower", "class": "artillery",
-              "x": 150.0, "z": 260.0, "bearing": 180, "men": 4, "men0": 4, "hp": 1.0,
-              "state": []}]
-    return {
-        "schema": 1, "job": "j", "battle": "b", "seq": 3, "phase": "Deployed",
-        "time_ms": time_ms, "speed": 1, "remaining_ms": 3000000, "awaiting_orders": False,
-        "armies": {"player": {"faction": "wh3_main_kho_khorne"},
-                   "enemy": {"faction": "wh_main_dwf_dwarfs"}},
-        "friendly": [
-            {"id": "f1", "type": "wh3_main_kho_cha_herald_of_khorne_0", "class": "lord",
-             "commander": True, "x": 10.0, "z": -40.0, "bearing": 0, "men": 1, "men0": 1,
-             "hp": 1.0, "ammo": 0, "ammo0": 0, "range": 0, "speed": [2.0, 4.0],
-             "fatigue": "fresh", "state": ["idle"]},
-            {"id": "f2", "type": "wh3_main_kho_inf_chaos_warriors_0", "class": "infantry",
-             "commander": False, "x": 0.0, "z": -40.0, "bearing": 0, "men": 110, "men0": 120,
-             "hp": 0.93, "ammo": 0, "ammo0": 0, "range": 0, "speed": [1.8, 3.6],
-             "fatigue": "active", "state": ["moving"], "dest": [0.0, 20.0]},
-        ],
-        "enemy_roster": [{"id": "e1", "type": "wh_main_dwf_inf_dwarf_warriors_0"},
-                         {"id": "e2", "type": "wh_main_dwf_art_grudge_thrower"}],
-        "enemy": [unit for unit in enemy if unit["id"] in visible],
-        "orders": None, "result": None,
-    }
 
 
 def policy(tmp_path, *replies, budget=1.0):
@@ -66,7 +26,8 @@ def policy(tmp_path, *replies, budget=1.0):
 
 
 def test_prompt_shows_units_timing_delay_and_last_seen(tmp_path):
-    orders = [{"unit": "f2", "type": "attack", "x": None, "z": None, "target": "e1", "run": False}]
+    orders = [{"unit": "f2", "type": "attack", "target": "e1", "mode": "auto", "run": False,
+               "queue": False}]
     agent = policy(tmp_path, reply(orders, notes="hold the line"), reply([]))
     assert agent.decide(observation()) == orders
     prompt = agent.metadata()["prompt"]
@@ -108,8 +69,10 @@ def test_a_reply_that_is_not_json_after_the_retries_is_a_policy_failure(tmp_path
 
 
 def test_attack_on_an_unseen_enemy_is_invalid(tmp_path):
-    bad = [{"unit": "f1", "type": "attack", "x": None, "z": None, "target": "e2", "run": False}]
-    good = [{"unit": "f1", "type": "move", "x": 5.0, "z": 5.0, "target": None, "run": True}]
+    bad = [{"unit": "f1", "type": "attack", "target": "e2", "mode": "auto", "run": False,
+            "queue": False}]
+    good = [{"unit": "f1", "type": "move", "x": 5.0, "z": 5.0, "facing": None, "width": None,
+             "run": True, "queue": False}]
     agent = policy(tmp_path, reply(bad), reply(good))
     assert agent.decide(observation()) == good
     assert agent.metadata()["attempts"][0]["error"].startswith("f1: target 'e2' is not visible")
@@ -142,24 +105,22 @@ def test_short_type_strips_the_game_prefix(key, short):
 
 
 def test_dead_enemies_leave_last_seen_and_moves_can_face(tmp_path):
-    move = [{"unit": "f2", "type": "move", "x": 0.0, "z": 30.0, "facing": 180.0, "target": None,
-             "run": False}]
+    move = [{"unit": "f2", "type": "move", "x": 0.0, "z": 30.0, "facing": 180.0, "width": None,
+             "run": False, "queue": False}]
     agent = policy(tmp_path, reply(move), reply([]))
     agent.decide(observation())
     later = observation(time_ms=45000, visible=())
     later["enemy_roster"][0]["dead"] = True
-    later["awaiting_orders"] = True
     agent.decide(later)
     prompt = agent.metadata()["prompt"]
     assert "e1 dwarf_warriors_0 (destroyed)" in prompt and "Last seen" not in prompt
     assert "30 s: f2 move (0, 30) facing 180 (go)" in prompt
-    assert "The battle is paused until you reply" in prompt
     assert "f1 herald_of_khorne_0 (lord) at (10, -40) facing 0, 1/1 men, hp 100%" in prompt
 
 
 def test_a_bad_facing_is_invalid(tmp_path):
-    bad = [{"unit": "f2", "type": "move", "x": 0.0, "z": 30.0, "facing": "north", "target": None,
-            "run": False}]
+    bad = [{"unit": "f2", "type": "move", "x": 0.0, "z": 30.0, "facing": "north", "width": None,
+            "run": False, "queue": False}]
     agent = policy(tmp_path, reply(bad), reply([]))
     agent.decide(observation())
     assert "facing must be a number" in agent.metadata()["attempts"][0]["error"]
@@ -207,8 +168,8 @@ def test_visible_enemy_speed_is_reported_with_its_flight_capability():
 
 
 def test_prompt_shows_changes_and_the_order_behind_each_target(tmp_path):
-    orders = [{"unit": "f2", "type": "attack", "x": None, "z": None, "facing": None,
-               "target": "e1", "run": False}]
+    orders = [{"unit": "f2", "type": "attack", "target": "e1", "mode": "auto", "run": False,
+               "queue": False}]
     agent = policy(tmp_path, reply(orders), reply([]))
     agent.decide(observation())
     agent.acknowledge({"request": "r1", "results": [{"unit": "f2", "ok": True}],
@@ -227,9 +188,9 @@ def test_prompt_shows_changes_and_the_order_behind_each_target(tmp_path):
 
 def test_lapsed_orders_are_forgotten_and_dropped_moves_reported(tmp_path):
     orders = [{"unit": "f1", "type": "move", "x": 10.0, "z": 60.0, "facing": None,
-               "target": None, "run": False},
-              {"unit": "f2", "type": "attack", "x": None, "z": None, "facing": None,
-               "target": "e1", "run": False}]
+               "width": None, "run": False, "queue": False},
+              {"unit": "f2", "type": "attack", "target": "e1", "mode": "auto", "run": False,
+               "queue": False}]
     agent = policy(tmp_path, reply(orders), reply([]))
     agent.decide(observation())
     agent.acknowledge({"request": "r1", "results": [{"unit": "f1", "ok": True},
@@ -263,8 +224,10 @@ def test_capabilities_are_visible_and_queued_attack_is_not_mistaken_for_active(t
                 attack_mode="melee")
     orders = [
         {"unit": "f1", "type": "behaviour", "behaviour": "fire_at_will", "enabled": True},
-        {"unit": "f1", "type": "move", "x": 50, "z": 20, "width": 30},
-        {"unit": "f1", "type": "attack", "target": "e1", "mode": "melee", "queue": True},
+        {"unit": "f1", "type": "move", "x": 50, "z": 20, "facing": None, "width": 30,
+         "run": False, "queue": False},
+        {"unit": "f1", "type": "attack", "target": "e1", "mode": "melee", "run": False,
+         "queue": True},
     ]
     agent = policy(tmp_path, reply(orders), reply([]))
     agent.decide(obs)
@@ -287,7 +250,8 @@ def test_capabilities_are_visible_and_queued_attack_is_not_mistaken_for_active(t
 def test_a_toggle_ack_does_not_replace_the_previous_movement_order(tmp_path):
     obs = observation()
     obs["friendly"][0]["behaviours"] = {"fire_at_will": True}
-    move = {"unit": "f1", "type": "move", "x": 50, "z": 20}
+    move = {"unit": "f1", "type": "move", "x": 50, "z": 20, "facing": None, "width": None,
+            "run": False, "queue": False}
     toggle = {"unit": "f1", "type": "behaviour", "behaviour": "fire_at_will", "enabled": False}
     agent = policy(tmp_path, reply([move, toggle]))
     agent.decide(obs)
@@ -297,8 +261,10 @@ def test_a_toggle_ack_does_not_replace_the_previous_movement_order(tmp_path):
 
 
 def test_a_rejected_queued_attack_keeps_the_successful_move_in_memory(tmp_path):
-    move = {"unit": "f1", "type": "move", "x": 50, "z": 20}
-    attack = {"unit": "f1", "type": "attack", "target": "e1", "queue": True}
+    move = {"unit": "f1", "type": "move", "x": 50, "z": 20, "facing": None, "width": None,
+            "run": False, "queue": False}
+    attack = {"unit": "f1", "type": "attack", "target": "e1", "mode": "auto", "run": False,
+              "queue": True}
     agent = policy(tmp_path, reply([move, attack]))
     agent.decide(observation())
     agent.acknowledge({"results": [{"unit": "f1", "index": 1, "ok": True},
@@ -434,3 +400,16 @@ def test_public_morale_warning_and_flight_control_are_rendered():
     assert "leadership 30%; largest effect: You must attack by land!" in text
     assert "airborne" in text and "flight change available; cooldown 0 s" in text
     assert llm.describe_orders([{"unit": "f1", "type": "flight", "flying": False}]) == "f1 land"
+
+
+def test_terrain_and_rejected_move_alternatives_reach_both_model_renderers():
+    state = {"terrain": {"x0": -16, "z0": -16, "cell_m": 32, "sample_width_m": 16,
+                         "rows": [".#", ".."]},
+             "friendly": [{"id": "f1", "type": "inf", "men": 10, "men0": 10,
+                           "hp": 1, "x": 0, "z": 0, "state": [], "navigation": {
+                               "rejected": {"x": 100, "z": 100}, "sampled_ms": 5000,
+                               "alternatives": [{"x": 84, "z": 100}]}}]}
+    text = llm.render_state(state, {})
+    assert "columns increase x and rows increase z by 32 m" in text
+    assert "Narrow crossings can lie between samples" in text
+    assert "unreachable move (100,100)" in text and "(84,100)" in text

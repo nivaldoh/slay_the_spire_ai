@@ -1,7 +1,9 @@
-"""Presentation image conversion, after gameplay. Pillow is an optional report extra."""
+"""Optional presentation evidence captured beside a battle: replay frames and game stills.
 
-import base64
-import io
+Never on the order path: stills are taken by a thread independent of the policy loop, and
+both copies run after an episode's order loop has ended. Nothing here is policy input.
+"""
+
 import json
 import re
 import shutil
@@ -13,13 +15,40 @@ from pathlib import Path
 from gameai.provenance import write_json
 from gameai.windows import WINDOWS_PYTHON, windows_path
 
-MAX_STILL_BYTES = 256 * 1024
+RECORDER_VERSION = 1
+# Battle ids and still triggers become bridge file names.
+NAME = re.compile(r"[\w.-]+", re.ASCII)
+
+
+def recording_settings(config: dict) -> dict:
+    return {"version": RECORDER_VERSION, "enabled": bool(config.get("record_replay")),
+            "interval_ms": 1000, "cost_validation": "scripted_off_on_20261015"}
 
 
 def imagery_settings(config: dict) -> dict:
     return {"version": 3, "enabled": bool(config.get("stills")), "policy_input": False,
             "backend": "passive_windows_pillow",
             "max_stills": 4, "projection": "unregistered_grid_and_stills"}
+
+
+def copy_recording(bridge: Path, episode: Path, *, job: str, battle: str | None) -> dict:
+    if not battle or not NAME.fullmatch(battle):
+        return {"status": "missing_battle_id"}
+    source = bridge / f"replay-{battle}.jsonl"
+    if not source.exists():
+        return {"status": "missing", "file": source.name}
+    try:
+        # Keep a byte-for-byte copy, including a partial final line on interruption.
+        # A battle-specific name prevents a rematch from overwriting these bytes.
+        with source.open("rb") as handle:
+            header = json.loads(handle.readline())
+        if header.get("job") != job or header.get("battle") != battle:
+            return {"status": "identity_mismatch", "file": source.name}
+        shutil.copyfile(source, episode / "replay.jsonl")
+        return {"status": "copied", "file": "replay.jsonl", "version": header.get("recorder"),
+                "bytes": (episode / "replay.jsonl").stat().st_size}
+    except (OSError, ValueError) as exc:
+        return {"status": "error", "error": str(exc)}
 
 
 class PassiveCapture:
@@ -46,18 +75,16 @@ class PassiveCapture:
             try:
                 observation = json.loads((self.bridge / "observation.json").read_text())
                 battle = observation.get("battle", "")
-                if observation.get("job") != self.job or not re.fullmatch(r"[\w.-]+", battle):
+                if observation.get("job") != self.job or not NAME.fullmatch(battle):
                     continue
                 record = json.loads((self.bridge / f"imagery-{battle}.json").read_text())
                 if record.get("job") != self.job or record.get("battle") != battle:
                     continue
                 for shot in record.get("stills", []):
-                    trigger = shot.get("trigger")
-                    if trigger not in {"opening", "approach", "incoming_fire",
-                                       "first_contact", "first_rout", "ending"}:
-                        continue
+                    trigger = shot.get("trigger") or ""
                     key = (battle, trigger)
-                    if key in seen or shot.get("status") != "capture_ready":
+                    if (not NAME.fullmatch(trigger) or key in seen
+                            or shot.get("status") != "capture_ready"):
                         continue
                     seen.add(key)
                     output = self.bridge / f"still-{battle}-{trigger}.png"
@@ -80,7 +107,7 @@ class PassiveCapture:
 
 def copy_presentation(bridge: Path, episode: Path, *, job: str, battle: str | None) -> dict:
     """Copy this battle's presentation sidecar after its order loop has ended."""
-    if not battle or not re.fullmatch(r"[\w.-]+", battle, flags=re.ASCII):
+    if not battle or not NAME.fullmatch(battle):
         return {"status": "missing_battle_id"}
     path = bridge / f"imagery-{battle}.json"
     try:
@@ -118,6 +145,7 @@ def copy_presentation(bridge: Path, episode: Path, *, job: str, battle: str | No
                 shot.update(status="capture_failed", error="Capture callback did not finish")
             filename = shot.get("file")
             if filename:
+                # The one check of still names: the report later reads them from the episode.
                 if Path(filename).name != filename or not filename.startswith(f"still-{battle}-"):
                     shot.update(status="capture_failed", error="Invalid capture filename")
                     shot.pop("file", None)
@@ -133,43 +161,3 @@ def copy_presentation(bridge: Path, episode: Path, *, job: str, battle: str | No
         return {"status": "copied", "stills": len(shots), "names": len(record.get("names", {}))}
     except (OSError, ValueError) as exc:
         return {"status": "error", "error": str(exc)}
-
-
-def webp(path: Path, *, max_size: tuple[int, int] = (1600, 1000)) -> dict:
-    from PIL import Image
-
-    with Image.open(path) as source:
-        original_size = source.size
-        image = source.convert("RGB")
-        image.thumbnail(max_size)
-        while True:
-            buffer = io.BytesIO()
-            image.save(buffer, format="WEBP", quality=78, method=6)
-            if buffer.tell() <= MAX_STILL_BYTES:
-                break
-            image.thumbnail((max(1, image.width * 4 // 5), max(1, image.height * 4 // 5)))
-    return {"image": "data:image/webp;base64," + base64.b64encode(buffer.getvalue()).decode(),
-            "original_size": list(original_size), "size": list(image.size),
-            "bytes": len(buffer.getvalue())}
-
-
-def stills(episode: Path, entries: list[dict], *, embed: bool) -> list[dict]:
-    """Retain failed captures and metadata, even when only featured images are embedded."""
-    output = []
-    for entry in entries:
-        item = {**entry, "policy_input": False}
-        filename = entry.get("file")
-        if filename and embed:
-            # Capture manifests name local files, never arbitrary report-host paths.
-            if Path(filename).name != filename:
-                item.update(status="error", error="Invalid still filename")
-            else:
-                try:
-                    item.update(webp(episode / filename), status="embedded")
-                except (OSError, ValueError, ImportError) as exc:
-                    item.update(status="error", error=f"{type(exc).__name__}: cannot convert "
-                                f"{filename}; Pillow is available in the report extra")
-        elif filename:
-            item["status"] = "metadata_only_nonfeatured_trial"
-        output.append(item)
-    return output

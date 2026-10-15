@@ -40,7 +40,9 @@ torch = [
 ]
 
 [dependency-groups]
-dev = ["pytest>=8.4,<10", "ruff>=0.14,<1"]
+# lupa runs the WH3 Lua tests under Lua 5.1, as the game does; Pillow (also the report
+# extra) runs the image tests.
+dev = ["pytest>=8.4,<10", "ruff>=0.14,<1", "lupa>=2.8,<3", "Pillow>=11,<13"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/gameai", "src/spire", "src/twwarhammer3"]

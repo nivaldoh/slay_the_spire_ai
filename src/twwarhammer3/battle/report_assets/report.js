@@ -1,19 +1,11 @@
-"use strict";
+// Runs after replay.js in the same script and uses its shared helpers (el, svg, fmt, ...).
 (() => {
   const data = JSON.parse(document.getElementById("report-data").textContent);
   const report = data.report;
   const $ = (id) => document.getElementById(id);
-  const el = (tag, text, className) => {
-    const node = document.createElement(tag);
-    if (text !== undefined) node.textContent = text;
-    if (className) node.className = className;
-    return node;
-  };
-  const number = (value, digits = 3) =>
-    value == null ? "Unavailable" : Number(value).toFixed(digits);
-  const percent = (value) => (value == null ? "Unavailable" : `${number(value * 100, 1)}%`);
-  const money = (value) => (value == null ? "Unavailable" : `$${number(value, 5)}`);
-  const json = (value) => JSON.stringify(value, null, 2);
+  const percent = (value) => (value == null ? "Unavailable" : `${fmt(value * 100, 1)}%`);
+  const money = (value) => (value == null ? "Unavailable" : `$${fmt(value, 5)}`);
+  const code = (prefix, index) => `${prefix}${String(index + 1).padStart(2, "0")}`;
   const distinct = (values) => [...new Set(values)];
   const synthetic = data.evidence_kind === "synthetic";
   const palette = ["#325e4f", "#3c5f81", "#8e493c", "#795b89", "#876824", "#336c70"];
@@ -78,7 +70,7 @@
     const items = group.trials.filter((trial) => trial.controller === summary.controller);
     const first = items[0] || {},
       card = first.card || {};
-    const modelPolicy = ["llm", "llm_rules", "commander"].includes(first.policy);
+    const modelPolicy = data.model_policies.includes(first.policy);
     const model = card.model || (modelPolicy ? group.definition.model : null);
     const effort = card.effort || (modelPolicy ? group.definition.effort : null);
     const aliases = { attack_nearest: "Walk-nearest", rush_nearest: "Run-nearest" };
@@ -100,7 +92,7 @@
           ...identity(group, summary),
           id: `g${groupIndex}-r${index}`,
           groupIndex,
-          evidence: `E${String(groupIndex + 1).padStart(2, "0")}`,
+          evidence: code("E", groupIndex),
         }));
       })
       .sort(
@@ -108,7 +100,7 @@
       );
     rows.forEach((row, index) => {
       row.symbol = index;
-      row.code = `C${String(index + 1).padStart(2, "0")}`;
+      row.code = code("C", index);
     });
     selected = new Set(rows.map((row) => row.id));
     sort = { key: "label", direction: 1 };
@@ -116,7 +108,13 @@
     renderControllers();
     renderSelection();
     renderJobs();
-    window.wh3Replay.load(data, view, status());
+    // The replay names each trial's controller exactly as its table row does.
+    const names = {};
+    for (const row of rows)
+      for (const trial of row.items)
+        names[`g${row.groupIndex}-t${report.groups[row.groupIndex].trials.indexOf(trial)}`] =
+          row.label;
+    window.wh3Replay.load(data, view, status(), names);
   }
   function renderBrief() {
     const definition = view.definition,
@@ -272,7 +270,7 @@
       const values = [
         ["won", "lost", "draw", "time_limit"].map((key) => row.outcomes[key] || 0).join(" / "),
         `${percent(row.win_rate)} · ${interval}`,
-        number(row.means.margin),
+        fmt(row.means.margin, 3),
         row.instances,
         `${row.valid} / ${row.trials}`,
         money(meanCost(row)),
@@ -287,15 +285,12 @@
   }
   function trialText(trial, row) {
     const metrics = trial.metrics;
-    return `${row.label} · ${row.evidence} · ${trial.instance}/${trial.episode} · ${trial.outcome}${trial.outcome === "time_limit" ? ` (engine ${trial.engine_outcome})` : ""} · margin ${metrics.margin ?? "unavailable"} · order age ${metrics.order_age_s?.mean ?? "unavailable"} s · snapshot age at decision ${metrics.snapshot_age_at_decision_s?.mean ?? "unavailable"} s · requested added age ${(trial.delay_ms || 0) / 1000} s · inference USD ${trialCost(trial, row) ?? "unavailable"}`;
-  }
-  function trialCost(trial, row) {
-    return trial.llm?.usd ?? (row.card.kind === "scripted" ? 0 : null);
+    return `${row.label} · ${row.evidence} · ${trial.instance}/${trial.episode} · ${trial.outcome}${trial.outcome === "time_limit" ? ` (engine ${trial.engine_outcome})` : ""} · margin ${metrics.margin ?? "unavailable"} · order age ${metrics.order_age_s?.mean ?? "unavailable"} s · snapshot age at decision ${metrics.snapshot_age_at_decision_s?.mean ?? "unavailable"} s · requested added age ${(trial.delay_ms || 0) / 1000} s · inference USD ${trialCost(trial) ?? "unavailable"}`;
   }
   function meanCost(row) {
     // The collector's recorded USD sum is retained in JSON. An incomplete cost
     // record is not evidence of free inference, so withhold its displayed mean.
-    return row.trials && row.items.every((trial) => trialCost(trial, row) != null)
+    return row.trials && row.items.every((trial) => trialCost(trial) != null)
       ? row.usd / row.trials
       : null;
   }
@@ -328,11 +323,11 @@
             button,
             `${row.label} / ${row.evidence}`,
             `${trial.outcome}${trial.outcome === "time_limit" ? ` (engine ${trial.engine_outcome})` : ""}`,
-            number(trial.metrics.margin),
-            number(trial.metrics.order_age_s?.mean),
-            number(trial.metrics.snapshot_age_at_decision_s?.mean),
+            fmt(trial.metrics.margin, 3),
+            fmt(trial.metrics.order_age_s?.mean, 3),
+            fmt(trial.metrics.snapshot_age_at_decision_s?.mean, 3),
             (trial.delay_ms || 0) / 1000,
-            money(trialCost(trial, row)),
+            money(trialCost(trial)),
           ];
         }),
       ),
@@ -379,18 +374,18 @@
       const labels = active.filter((row) => row.groupIndex === index).map((row) => row.controller);
       for (const pair of report.groups[index].paired)
         if (labels.includes(pair.a) && labels.includes(pair.b)) {
-          pairs.push({ evidence_group: `E${String(index + 1).padStart(2, "0")}`, ...pair });
+          pairs.push({ evidence_group: code("E", index), ...pair });
         }
     }
     $("pairs").replaceChildren();
     if (!pairs.length) empty($("pairs"), "No paired comparisons for the selection");
     for (const pair of pairs) {
       const item = el("details"),
-        ci = pair.ci95 ? pair.ci95.map((value) => number(value)).join(", ") : "unavailable";
+        ci = pair.ci95 ? pair.ci95.map((value) => fmt(value, 3)).join(", ") : "unavailable";
       item.append(
         el(
           "summary",
-          `${pair.evidence_group} · ${pair.a} − ${pair.b} · ${pair.n} paired launches · mean ${number(pair.mean)} · 95% CI ${ci}`,
+          `${pair.evidence_group} · ${pair.a} − ${pair.b} · ${pair.n} paired launches · mean ${fmt(pair.mean, 3)} · 95% CI ${ci}`,
         ),
         el("pre", json(pair)),
       );
@@ -431,7 +426,7 @@
       evidence_kind: data.evidence_kind,
       comparison: view.definition,
       evidence_groups: view.groups.map((index) => ({
-        id: `E${String(index + 1).padStart(2, "0")}`,
+        id: code("E", index),
         definition: report.groups[index].definition,
       })),
       controllers: active.map((row) => ({
@@ -460,7 +455,7 @@
             job.instance,
             job.recorded_status || "Unrecorded",
             `${items.filter((trial) => trial.valid).length} / ${items.length}`,
-            number(job.wall_seconds, 2),
+            fmt(job.wall_seconds, 2),
             job.error || "None recorded",
             job.setup_checks ? json(job.setup_checks) : "Unavailable",
           ];
@@ -468,20 +463,14 @@
       ),
     );
   }
-  function svgNode(tag, attrs = {}, text) {
-    const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
-    for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
-    if (text !== undefined) node.textContent = text;
-    return node;
-  }
-  function wrapSVG(svg, value, x, y, maxChars = 110, size = 12, color = "#60665d") {
+  function wrapSVG(target, value, x, y, maxChars = 110, size = 12, color = "#60665d") {
     // Wrap exported labels too: no dependence on CSS or browser-only foreignObject.
     const lines = String(value).match(
       new RegExp(`.{1,${maxChars}}(?:\\s|$)|.{1,${maxChars}}`, "g"),
     ) || [""];
     lines.forEach((line, index) =>
-      svg.append(
-        svgNode("text", { x, y: y + index * 17, fill: color, "font-size": size }, line.trim()),
+      target.append(
+        svg("text", { x, y: y + index * 17, fill: color, "font-size": size }, line.trim()),
       ),
     );
     return y + lines.length * 17;
@@ -490,16 +479,16 @@
     const attrs = { fill: color, stroke: "#fbf9f2", "stroke-width": 2 };
     switch (symbol % 4) {
       case 0:
-        return svgNode("circle", { ...attrs, cx: x, cy: y, r: 7 });
+        return svg("circle", { ...attrs, cx: x, cy: y, r: 7 });
       case 1:
-        return svgNode("rect", { ...attrs, x: x - 7, y: y - 7, width: 14, height: 14 });
+        return svg("rect", { ...attrs, x: x - 7, y: y - 7, width: 14, height: 14 });
       case 2:
-        return svgNode("path", {
+        return svg("path", {
           ...attrs,
           d: `M${x},${y - 9}L${x + 9},${y}L${x},${y + 9}L${x - 9},${y}Z`,
         });
       default:
-        return svgNode("path", {
+        return svg("path", {
           ...attrs,
           d: `M${x},${y - 9}L${x + 9},${y + 7}L${x - 9},${y + 7}Z`,
         });
@@ -522,11 +511,11 @@
         ? "Controlled added-age conditions. Exact measured ages appear in the trial table and point selection. Horizontal offsets separate overlapping points; no unmeasured condition is interpolated."
         : "One point per valid trial with both metrics recorded. Shapes and controller codes identify evidence rows. Select a point with a click, Enter or Space; the trial table provides the same values.";
     const points = trials.filter(
-      ({ trial, row }) =>
+      ({ trial }) =>
         trial.valid &&
         trial.metrics.margin != null &&
         (axis === "cost"
-          ? trialCost(trial, row) != null
+          ? trialCost(trial) != null
           : axis === "added" || trial.metrics.order_age_s?.mean != null),
     );
     if (!points.length || (axis === "added" && !hasAdded)) {
@@ -545,24 +534,24 @@
       $("export-png").disabled = true;
       return;
     }
-    const svg = svgNode("svg", {
+    const chart = svg("svg", {
       xmlns: "http://www.w3.org/2000/svg",
       role: "img",
       "aria-label": `${axisTitle} versus active-strength margin`,
       "font-family": "system-ui, sans-serif",
     });
-    svg.append(svgNode("title", {}, `${status()} — ${axisTitle} versus active-strength margin`));
-    svg.append(
-      svgNode(
+    chart.append(svg("title", {}, `${status()} — ${axisTitle} versus active-strength margin`));
+    chart.append(
+      svg(
         "desc",
         {},
         "Individual trial points. Exact values are also available in the trial table.",
       ),
     );
-    const background = svgNode("rect", { width: 1040, height: "100%", fill: "#fbf9f2" });
-    svg.append(background);
+    const background = svg("rect", { width: 1040, height: "100%", fill: "#fbf9f2" });
+    chart.append(background);
     let top = wrapSVG(
-      svg,
+      chart,
       `WH3 FIELD REPORT · ${view.definition.scenario?.name || "Unlabelled scenario"}`,
       30,
       30,
@@ -570,9 +559,9 @@
       15,
       "#252d29",
     );
-    top = wrapSVG(svg, status(), 30, top + 6, 120, 12, "#876824");
+    top = wrapSVG(chart, status(), 30, top + 6, 120, 12, "#876824");
     top = wrapSVG(
-      svg,
+      chart,
       `${selectedRows.reduce((n, row) => n + row.valid, 0)} valid / ${trials.length} started · ${distinct(trials.map(({ trial }) => trial.instance)).length} launches with selected trials · ${points.length} plotted / ${trials.length - points.length} excluded (invalid or missing metrics)`,
       30,
       top + 6,
@@ -587,9 +576,9 @@
       10,
       ...trials.map(({ trial }) => (trial.delay_ms || 0) / 1000),
     ]).sort((a, b) => a - b);
-    const xValue = ({ trial, row }) =>
+    const xValue = ({ trial }) =>
       axis === "cost"
-        ? trialCost(trial, row)
+        ? trialCost(trial)
         : axis === "added"
           ? (trial.delay_ms || 0) / 1000
           : trial.metrics.order_age_s.mean;
@@ -601,8 +590,8 @@
           ((index % 7) - 3) * 5
         : x0 + (xValue(point) / maxX) * plotW;
     const py = (margin) => y0 + ((1 - margin) / 2) * plotH;
-    svg.append(
-      svgNode(
+    chart.append(
+      svg(
         "text",
         { x: x0, y: y0 - 10, fill: "#60665d", "font-size": 11 },
         "ACTIVE-STRENGTH MARGIN",
@@ -610,8 +599,8 @@
     );
     for (const value of [-1, -0.5, 0, 0.5, 1]) {
       const y = py(value);
-      svg.append(
-        svgNode("line", {
+      chart.append(
+        svg("line", {
           x1: x0,
           x2: x0 + plotW,
           y1: y,
@@ -619,7 +608,7 @@
           stroke: value === 0 ? "#9b9e90" : "#dddace",
           "stroke-dasharray": value === 0 ? "4 4" : "none",
         }),
-        svgNode(
+        svg(
           "text",
           { x: x0 - 12, y: y + 4, "text-anchor": "end", fill: "#60665d", "font-size": 12 },
           value.toFixed(1),
@@ -633,18 +622,18 @@
         axis === "added"
           ? x0 + ((index + 0.5) / conditions.length) * plotW
           : x0 + (value / maxX) * plotW;
-      svg.append(
-        svgNode(
+      chart.append(
+        svg(
           "text",
           { x, y: y0 + plotH + 24, "text-anchor": "middle", "font-size": 12, fill: "#60665d" },
           axis === "added"
             ? `${value} s${points.some((point) => xValue(point) === value) ? "" : " · not measured"}`
-            : number(value, axis === "cost" ? 3 : 1),
+            : fmt(value, axis === "cost" ? 3 : 1),
         ),
       );
     });
-    svg.append(
-      svgNode(
+    chart.append(
+      svg(
         "text",
         {
           x: x0 + plotW / 2,
@@ -666,7 +655,7 @@
       dot.setAttribute("role", "button");
       dot.setAttribute("class", "point");
       dot.setAttribute("aria-label", trialText(trial, row));
-      dot.append(svgNode("title", {}, trialText(trial, row)));
+      dot.append(svg("title", {}, trialText(trial, row)));
       dot.addEventListener("click", () => chooseTrial(trial, row));
       dot.addEventListener("keydown", (event) => {
         if (["Enter", " "].includes(event.key)) {
@@ -674,17 +663,15 @@
           chooseTrial(trial, row);
         }
       });
-      svg.append(dot);
+      chart.append(dot);
       if (points.length <= 12)
-        svg.append(
-          svgNode("text", { x: x + 11, y: y - 10, fill: color, "font-size": 11 }, row.code),
-        );
+        chart.append(svg("text", { x: x + 11, y: y - 10, fill: color, "font-size": 11 }, row.code));
     });
     let bottom = y0 + plotH + 83;
     for (const row of selectedRows) {
-      svg.append(marker(row.symbol, 37, bottom - 4, palette[row.symbol % palette.length]));
+      chart.append(marker(row.symbol, 37, bottom - 4, palette[row.symbol % palette.length]));
       bottom = wrapSVG(
-        svg,
+        chart,
         `${row.code} · ${row.label} · ${row.evidence} · +${(row.delay || 0) / 1000}s · ${row.valid}/${row.trials} valid/started · ${row.instances} launches`,
         55,
         bottom,
@@ -696,7 +683,7 @@
     const def = view.definition,
       expect = def.scenario?.expect || {};
     bottom = wrapSVG(
-      svg,
+      chart,
       `Source ${def.source || "unrecorded"} · build ${def.game?.steam_build_id || "unrecorded"} · ${def.track || "interface unrecorded"}`,
       30,
       bottom + 8,
@@ -704,7 +691,7 @@
       10,
     );
     bottom = wrapSVG(
-      svg,
+      chart,
       `Observe/tick/pacing: ${def.observe_ms ?? "?"}/${def.tick_ms ?? "?"}/${def.interval_ms ?? "?"} ms · AI ${expect.difficulty || "?"} ×${expect.ai_stats_modifier || "?"} · timer ${expect.time_limit_s ?? "?"} s · split ${def.scenario?.split || "?"}`,
       30,
       bottom + 3,
@@ -712,18 +699,18 @@
       10,
     );
     bottom = wrapSVG(
-      svg,
+      chart,
       "Descriptive trial points, not a causal estimate. Rematches are correlated; evidence groups are not pooled. Missing values are excluded.",
       30,
       bottom + 3,
       130,
       10,
     );
-    svg.setAttribute("viewBox", `0 0 1040 ${bottom + 20}`);
-    svg.setAttribute("width", "1040");
-    svg.setAttribute("height", String(bottom + 20));
-    chartSVG = svg;
-    $("chart").replaceChildren(svg);
+    chart.setAttribute("viewBox", `0 0 1040 ${bottom + 20}`);
+    chart.setAttribute("width", "1040");
+    chart.setAttribute("height", String(bottom + 20));
+    chartSVG = chart;
+    $("chart").replaceChildren(chart);
     $("export-svg").disabled = false;
     $("export-png").disabled = false;
   }
@@ -733,15 +720,11 @@
     renderChart();
     renderEvidence();
   }
-  function download(blob, extension) {
-    const a = el("a"),
-      url = URL.createObjectURL(blob);
-    a.href = url;
-    a.download = `wh3-${synthetic ? "synthetic-demo-" : ""}${view.id}-${$("axis").value}.${extension}`;
-    document.body.append(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  function exportFile(blob, extension) {
+    download(
+      blob,
+      `wh3-${synthetic ? "synthetic-demo-" : ""}${view.id}-${$("axis").value}.${extension}`,
+    );
     $("export-status").textContent = `${extension.toUpperCase()} download ready.`;
   }
   function svgBlob() {
@@ -750,7 +733,7 @@
     });
   }
   $("export-svg").addEventListener("click", () => {
-    if (chartSVG) download(svgBlob(), "svg");
+    if (chartSVG) exportFile(svgBlob(), "svg");
   });
   $("export-png").addEventListener("click", async () => {
     if (!chartSVG) return;
@@ -764,7 +747,7 @@
       canvas.height = img.height * 2;
       canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
       canvas.toBlob((blob) => {
-        if (blob) download(blob, "png");
+        if (blob) exportFile(blob, "png");
         else $("export-status").textContent = "PNG export failed; SVG remains available.";
       }, "image/png");
     } catch {
@@ -801,7 +784,7 @@
       all_supplied_jobs: report.jobs,
       all_supplied_jobs_throughput: report.throughput,
     };
-    download(new Blob([json(output)], { type: "application/json" }), "json");
+    exportFile(new Blob([json(output)], { type: "application/json" }), "json");
   });
   let closedForPrint = [];
   window.addEventListener("beforeprint", () => {
@@ -841,8 +824,8 @@
       `${throughput.valid_trials ?? "?"} / ${throughput.started_trials ?? "?"}`,
     ],
     ["Launched jobs / interruptions", `${report.jobs?.length ?? 0} / ${interrupted}`],
-    ["Job wall time · includes setup", `${number(throughput.job_wall_s, 2)} s`],
-    ["Valid battles / wall hour", number(throughput.valid_trials_per_wall_hour, 2)],
+    ["Job wall time · includes setup", `${fmt(throughput.job_wall_s, 2)} s`],
+    ["Valid battles / wall hour", fmt(throughput.valid_trials_per_wall_hour, 2)],
   ];
   $("totals").append(
     ...totals.map(([label, value]) => {

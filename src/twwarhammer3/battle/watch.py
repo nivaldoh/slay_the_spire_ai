@@ -1,28 +1,35 @@
-"""Follow a battle job live, beside the game: what the models see and decide, summarized.
+"""Follow a battle job live, beside the game, or wait for its next event.
 
     python -m twwarhammer3 watch [runs/twwarhammer3/battle/<job>[/episode-NNNN]] [--prompts]
+    python -m twwarhammer3 watch runs/twwarhammer3/battle/<job> --next [--stall-minutes M]
 
-Without a path it follows the job named in the bridge's ``session.json``. It tails each
-episode's ``trace.jsonl`` as the job writes it and prints:
+Without a path the live feed follows the job named in the bridge's ``session.json``. It tails
+each episode's ``trace.jsonl`` as the job writes it and prints:
 - each model request (``->``): the battle time and both sides' strength in the state it was
   built from, and what it reports as dropped or rejected (``--prompts`` prints it whole);
 - each reply (``<-``): a commander's plan with its age, think time, cost and reason, or the
   direct controller's orders and reason, and the notes whenever they change;
 - engine rejections, a strength line every 30 s of battle time, and each result.
+A finished job or a single episode is printed once.
 
-A finished job or a single episode is printed once. It only reads evidence.
+``--next`` (only with a job directory) is for an agent running it in the background: it
+prints once and exits, when an episode finishes (its digest's first line, final state and
+notes), when the job is not running, when nothing in the job has changed for the stall time
+(STALL_S, ``--stall-minutes``) while it runs, or when no manifest appears within START_S
+(the job refused to start; its log says why). It only reads evidence.
 """
 
 import json
 import time
 from pathlib import Path
 
-from twwarhammer3.battle.commander import describe_plan
-from twwarhammer3.battle.digest import _strength
+from twwarhammer3.battle.commander import REPORT_HEADER, describe_plan
+from twwarhammer3.battle.digest import episode_digest, strength
 from twwarhammer3.battle.llm import describe_orders, short_type
 
 STATUS_S = 30
-REPORT = "Dropped or rejected since your last plan:\n"
+STALL_S = 120
+START_S = 60
 
 
 class Feed:
@@ -48,7 +55,7 @@ class Feed:
             seconds = self.observation.get("time_ms", 0) / 1000
             if seconds - self.status_s >= STATUS_S:
                 self.status_s = seconds
-                return [f"{seconds:5.0f}s   {_strength(self.observation)}  ${self.usd:.4f}"]
+                return [f"{seconds:5.0f}s   {strength(self.observation)}  ${self.usd:.4f}"]
         if kind == "decision":
             return self._decision(record)
         if kind == "ack":
@@ -61,8 +68,9 @@ class Feed:
             return [f"        invalid orders: {record['error']}"]
         if kind == "result":
             final = record["observation"].get("final") or {}
-            left = ", ".join(f"{side} {value['men'] / value['men0']:.0%} left"
-                             for side, value in final.items() if value.get("men0"))
+            left = ", ".join(f"{side} {final[side]['men'] / final[side]['men0']:.0%} left"
+                             for side in ("friendly", "enemy")
+                             if (final.get(side) or {}).get("men0"))
             return [f"== {self.name}: {record['observation'].get('result')} at"
                     f" {record['observation'].get('time_ms', 0) / 1000:.0f} s; {left};"
                     f" ${self.usd:.4f}"]
@@ -109,11 +117,11 @@ class Feed:
     def _request(self, seconds: float, behavior: dict) -> list[str]:
         prompt = behavior["prompt"]
         lines = [f"{seconds:5.0f}s -> {behavior.get('model', 'model')}:"
-                 f" {_strength(self.observation)}; {len(prompt)} chars"]
+                 f" {strength(self.observation)}; {len(prompt)} chars"]
         if self.prompts:
             return lines + ["         " + line for line in prompt.splitlines()]
-        if REPORT in prompt:
-            report = prompt.split(REPORT, 1)[1].split("\n\n", 1)[0]
+        if REPORT_HEADER in prompt:
+            report = prompt.split(REPORT_HEADER, 1)[1].split("\n\n", 1)[0]
             lines += [f"         reported: {item}" for item in report.splitlines()
                       if item != "(none)"]
         return lines
@@ -165,3 +173,39 @@ def follow(path: Path, prompts: bool = False, out=_print, poll: float = 1.0) -> 
         if not _running(path):
             return
         time.sleep(poll)
+
+
+def check(job: Path, seen: int, stall_s: float = STALL_S) -> str | None:
+    """The event since ``seen`` episodes had finished, or None if there is none yet."""
+    path = job / "manifest.json"
+    if not path.exists():
+        return None
+    manifest = json.loads(path.read_text())
+    ended = "" if manifest["status"] == "running" else f"job {manifest['status']}" + (
+        f": {manifest['error']}" if manifest.get("error") else "")
+    if len(manifest["episodes"]) > seen:
+        episode = job / manifest["episodes"][seen]["episode"]
+        return episode_digest(episode, decisions=False) + (f"\n{ended}" if ended else "")
+    if ended:
+        return ended
+    # The game's log while it starts, the menu log during setup, then the traces.
+    files = [path, job / "game.log", job / "menu.log", *job.glob("episode-*/trace.jsonl")]
+    newest = max((file for file in files if file.exists()), key=lambda file: file.stat().st_mtime)
+    age = time.time() - newest.stat().st_mtime
+    if age > stall_s:
+        return f"STALL: {newest.relative_to(job)} unchanged for {age:.0f} s"
+    return None
+
+
+def next_event(job: Path, stall_s: float = STALL_S, poll: float = 5) -> str:
+    """Wait for the job's next event (see ``check``) and return it."""
+    path = job / "manifest.json"
+    seen = len(json.loads(path.read_text())["episodes"]) if path.exists() else 0
+    started = time.monotonic()
+    while (event := check(job, seen, stall_s)) is None:
+        if not path.exists() and time.monotonic() - started > START_S:
+            log = job.with_name(f"{job.name}.log")
+            tail = log.read_text().splitlines()[-3:] if log.exists() else ["no log"]
+            return "NOT STARTED: " + " | ".join(tail)
+        time.sleep(poll)
+    return event

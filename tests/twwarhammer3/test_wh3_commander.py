@@ -3,7 +3,7 @@ import threading
 from concurrent.futures import wait
 
 import pytest
-from test_wh3_llm import USAGE, observation
+from wh3_fixtures import USAGE, observation
 
 from gameai.ledger import BudgetExhausted, Ledger
 from twwarhammer3.battle.commander import CommanderPolicy

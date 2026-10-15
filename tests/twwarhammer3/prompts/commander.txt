@@ -1,0 +1,47 @@
+Battle notes:
+e3 shells the walls
+
+Recent plans, oldest first:
+state 30 s, adopted 45 s: f1 charge e1 (0, 0); f2 hold (-20, 0); f3 shoot e3; f9 engage; army ability horn_of_khorne at (10, -35) (hold the gate)
+
+Timing: battle time 45 s, 855 s left. Your last plan reached the units 15.0 s after the state it was based on; expect a similar delay now.
+
+Dropped or rejected since your last plan:
+engine rejected f2 attack e1 melee: unit_in_melee
+dropped f9 engage: no such unit alive
+dropped f1 ability roar at self: f1: ability 'roar' is not ready
+
+Terrain samples: first cell centre (-48,-48), columns increase x and rows increase z by 32 m. '.' = 8 m square clear of path restrictions; '#' = restricted. Coarse deployment snapshot, not a path or a guarantee for this unit. Narrow crossings can lie between samples. Do not repeat an unreachable move: select a reported reachable alternative or another goal.
+..##
+...#
+....
+Battle: settlement_standard; you are the defender; if time runs out, you win.
+The game's description: Hold the victory point until the timer runs out.
+Tickets (1000 wins): you 600 (+2/s), enemy 150 (+0/s).
+Capture points (units standing on a point capture it):
+- c1 Victory Point at (0, 64): held by you, counts for victory
+- c2 Key Building at (96, 0): held by nobody, 70% captured, contested
+Gatehouse at (0, -64): 80% health.
+Supplies: 900.
+Reinforcement pool (order with unit "army", type "reinforce", the unit type as written here and one of your spawn zones; each costs supplies): wh3_main_kho_inf_chaos_warriors_0 600.
+Your spawn zones: 3 at (0, 96).
+Building slots (order with unit "army", type "build", slot and option):
+- s1 tower at (-32, 0): empty, options tower_arrow_1 300
+Army abilities (order with unit "army"; points 120, next unlock at 200): horn_of_khorne (Ground; radius 35 m; ready; cooldown 90 s)
+Winds of Magic: 15 available, 40 reserve.
+Your units:
+- f1 bloodthirster_0 (lord) at (0, 10) facing 180, 1/1 men, hp 90%, barrier 300/600, can fly, on the ground, walk 3.0 run 5.5, fresh, leadership 85%; largest effect: Winning combat, flight change available; cooldown 0 s, abilities roar (Self; active now; cooldown 60 s; last issued 33 s); blood_rage (Self; recharging, 22 s left; last issued 20 s), last submitted sequence (completion unconfirmed): f1 move (0, -20) run, f1 attack e1 melee run [queued], moving running, heading to (0, -20), nearest enemy e1 46 m
+- f2 chaos_warriors_0 (infantry) at (-20, -30) facing 180, 104/120 men (-6), hp 85% (-7), walk 1.9 run 3.6, active, formation width 30 m, last requested attack mode melee, toggles defend=off, melee, target e1 30 m (your order, 30 s)
+- f3 skullcannon_0 (missile_chariot) at (20, 50) facing 180, 7/7 men, hp 100%, ammo 18/20 range 200, walk 4.0 run 6.0, fresh, unreachable move (200,300); nearby reachable destinations at 33.4s: (180,260), (150,240), no order, nearest enemy e1 86 m
+- f4 khornataurs_0: destroyed
+Enemy roster: e1 dwarf_warriors_0, e2 orc_boyz of alliance 3, e3 grudge_thrower, e4 quarrellers_0 (destroyed)
+Visible enemies:
+- e1 dwarf_warriors_0 (infantry) at (10, -35) facing 0, 82/100 men (-8), hp 80% (-10), walk 1.5 run 3.0, melee, target f2
+- e2 orc_boyz of alliance 3 (infantry) at (150, 0) facing 270, 120/120 men, hp 100%, idle, target e1
+Last seen, not visible now:
+- e3 at (0, -200) 15 s ago, 4 men
+
+Assignments (skill, target, point; since; what the executor is doing):
+- f1 charge e1 (0, 0) (since 45 s): charging e1
+- f2 hold (-20, 0) (since 45 s): in melee with e1
+- f3 shoot e3 (since 45 s): holding fire; skipping e2 (no shot fired)

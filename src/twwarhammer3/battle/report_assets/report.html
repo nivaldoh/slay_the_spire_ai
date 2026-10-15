@@ -40,14 +40,14 @@
       <div id="replay-content" hidden>
         <div class="replay-layout">
           <div class="replay-stage">
-            <div class="actions"><label><input id="replay-whole" type="checkbox"> Whole map</label><label for="replay-background">Background</label><select id="replay-background"><option value="model">Model's view · passability grid</option><option value="game" disabled>Game imagery · not recorded</option></select></div>
+            <div class="actions"><label><input id="replay-whole" type="checkbox"> Whole map</label></div>
             <svg id="replay-map" viewBox="0 0 700 560" role="img" aria-label="Recorded unit positions and submitted orders"></svg>
             <p id="replay-frame" class="note"></p>
             <p class="note">Blue ● friendly · Orange ◆ enemy. ↑ facing · ♔ lord · ♞ cavalry · ▰ infantry · ↗ missile · ⊕ artillery. Strength bars: men above, HP below. M melee · F under fire · W wavering · R routing. Hollow glyphs are timestamped last sightings. Dashed order arrows await application; solid arrows are acknowledged, red arrows rejected. Arrows show submissions, not execution.</p>
             <div class="replay-controls"><button id="replay-play">Play</button><label for="replay-speed">Speed</label><select id="replay-speed"><option value="1">1×</option><option value="4" selected>4×</option><option value="16">16×</option></select><button id="replay-prev">Previous decision</button><button id="replay-next">Next decision</button><button id="replay-prev-event">Previous event</button><button id="replay-next-event">Next event</button></div>
             <label for="replay-time">Battle time · seconds</label><input id="replay-time" type="range" min="0" max="1" value="0" step="0.1">
             <p class="note">Keyboard in replay: Space play/pause, ←/→ decisions, [/ ] events. Positions jump between recorded frames; missing intervals are never interpolated.</p>
-            <p class="note">Terrain is the prompt's deployment snapshot: each 32 m cell samples a 16 m square; grey means restricted. It does not guarantee a path for any unit. Rows increase world z; columns increase x.</p>
+            <p class="note">The background is the model's view: the prompt's deployment terrain snapshot, where each 32 m cell samples a 16 m square and grey means restricted. It does not guarantee a path for any unit. Rows increase world z; columns increase x. Game stills, when captured, appear above and are not registered to this map.</p>
             <svg id="replay-timeline" viewBox="0 0 700 90" role="img" aria-label="Decision information age bars"></svg>
             <svg id="replay-resources" viewBox="0 0 700 100" role="img" aria-label="Recorded army resources and ability acknowledgements"></svg>
             <div id="replay-lanes"></div>

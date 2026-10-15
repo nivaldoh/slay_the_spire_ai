@@ -9,33 +9,22 @@ from pathlib import Path
 
 from gameai.llm import EFFORTS, PRICES
 from gameai.provenance import write_json
+from twwarhammer3.battle.controllers import BUILTINS, MODEL_POLICIES
 from twwarhammer3.battle.llm import LEDGER_PATH
 from twwarhammer3.battle.stats import JOBS_ROOT, RESULTS_PATH
+from twwarhammer3.battle.watch import STALL_S
 
 
 def add_session_arguments(parser: argparse.ArgumentParser) -> None:
+    """Settings the mod reads from session.json; battles always run unpaused at 1x."""
     parser.set_defaults(speed=1.0, pause=False)
-    parser.add_argument("--interval-ms", type=int, default=0,
-                        help="optional battle-time wait after orders apply (default: none)")
     parser.add_argument("--observe-ms", type=int, default=1000,
                         help="battle time between observations")
     parser.add_argument("--tick-ms", type=int, default=250, help="in-game model tick for the mod")
-    parser.add_argument("--no-autostart", action="store_true", help="leave deployment to a human")
-    parser.add_argument("--no-menu", action="store_true", help="do not drive the frontend menus")
     parser.add_argument("--record-replay", action=argparse.BooleanOptionalAction, default=True,
                         help="record public replay frames at 1 Hz (default: on)")
     parser.add_argument("--stills", action="store_true",
                         help="capture up to four presentation stills and readable unit names")
-
-
-def session_from(args: argparse.Namespace) -> dict:
-    return {
-        "enabled": True, "speed": args.speed, "pause": args.pause,
-        "interval_ms": args.interval_ms, "observe_ms": args.observe_ms, "tick_ms": args.tick_ms,
-        "autostart": not args.no_autostart, "menu": not args.no_menu,
-        "record_replay": args.record_replay,
-        "stills": args.stills,
-    }
 
 
 def main() -> int:
@@ -70,28 +59,32 @@ def main() -> int:
 
     play = commands.add_parser("play", help="Play custom battles with a policy; one job directory")
     play.add_argument("--policy", default="llm",
-                      help="built-in name or package.module:Class; comma-separated names rotate")
+                      help=f"{', '.join(sorted(BUILTINS.keys() | MODEL_POLICIES))} or"
+                      " package.module:Class; comma-separated names rotate")
     play.add_argument("--model", default="gpt-6-luna", choices=sorted(PRICES))
     play.add_argument("--effort", default="low", choices=EFFORTS)
     play.add_argument("--budget-usd", type=float, default=None,
-                      help="required with a model policy: llm, llm_rules or commander")
-    play.add_argument("--ledger", type=Path, default=LEDGER_PATH)
-    play.add_argument("--results", type=Path, default=RESULTS_PATH)
+                      help=f"required with a model policy: {', '.join(sorted(MODEL_POLICIES))}")
     play.add_argument("--episodes", type=int, default=None,
                       help="default: one trial per controller/delay combination")
     play.add_argument("--rotation-seed", type=int, default=None, help="recorded trial order seed")
     play.add_argument("--delay-seconds", default="0",
                       help="minimum buffered snapshot ages in seconds, e.g. 0,6,10")
     play.add_argument("--scenario", required=True,
-                      help="a battle in configs/twwarhammer3/scenarios.json; random draws a map"
-                      " and both races, and autogenerates both armies")
-    play.add_argument("--seed", type=int, default=None, help="the draw of --scenario random")
+                      help="a battle in configs/twwarhammer3/scenarios.json; random entries"
+                      " draw a map and every race, and autogenerate the armies")
+    play.add_argument("--seed", type=int, default=None, help="the draw of a random scenario")
     add_session_arguments(play)
+    play.add_argument("--interval-ms", type=int, default=0,
+                      help="optional battle-time wait after orders apply (default: none)")
     play.add_argument("--start-timeout", type=float, default=900)
     play.add_argument("--observation-timeout", type=float, default=60)
-    play.add_argument("--episode-timeout", type=float, default=3900,
-                      help="wall limit; benchmark runs require at least game timer + 120 s")
-    play.add_argument("--run-timeout", type=float, default=8 * 3600, help="game process limit")
+    play.add_argument("--episode-timeout", type=float, default=None,
+                      help="wall limit per episode (default: a benchmark's game timer + 120 s,"
+                      " else 3900)")
+    play.add_argument("--run-timeout", type=float, default=None,
+                      help="game process limit (default: 8 h, or setup plus every episode"
+                      " timeout + 60 s if longer)")
     play.add_argument("--attach", action="store_true", help="use the game a launch started")
     play.add_argument("--show", action="store_true",
                       help="show each model reply in the game's advisor window")
@@ -99,21 +92,27 @@ def main() -> int:
 
     digest = commands.add_parser("digest", help="Summarise a job or one episode's trace")
     digest.add_argument("path", type=Path, help="job directory or job/episode-NNNN")
+    digest.add_argument("--at", type=float, metavar="SECONDS",
+                        help="with an episode: the decision nearest this battle time in full")
 
     watch = commands.add_parser("watch", help="Follow a job live: model inputs and outputs")
     watch.add_argument("path", type=Path, nargs="?",
-                       help="job or episode directory (default: the job in session.json)")
+                       help="job or episode directory (default: the job in session.json); "
+                            "--next needs the job directory")
     watch.add_argument("--prompts", action="store_true", help="print every prompt in full")
+    watch.add_argument("--next", action="store_true",
+                       help="wait for the next episode result, stall or job end; print it and exit")
+    watch.add_argument("--stall-minutes", type=float, default=STALL_S / 60,
+                       help="with --next: report a stall after this long without new evidence")
 
     stats = commands.add_parser("stats", help="Summarise the results register")
     stats.add_argument("--results", type=Path, default=RESULTS_PATH)
-    stats.add_argument("--rebuild", action="store_true", help="rewrite it from runs/")
-    stats.add_argument("--report", nargs="+", type=Path, metavar="JOB",
-                       help="paired benchmark report from these job directories")
-    stats.add_argument("--report-json", type=Path,
-                       help="save full benchmark metrics and trial list")
-    stats.add_argument("--report-html", type=Path,
-                       help="save a self-contained offline benchmark field report")
+
+    report = commands.add_parser(
+        "report", help="Paired benchmark report of jobs: print it, save text, JSON and HTML")
+    report.add_argument("jobs", nargs="+", type=Path, metavar="JOB", help="job directory")
+    report.add_argument("--output", type=Path, required=True, metavar="STEM",
+                        help="writes STEM.txt, STEM.json and the offline field report STEM.html")
 
     spend = commands.add_parser("spend", help="Print the API ledger total")
     spend.add_argument("--ledger", type=Path, default=LEDGER_PATH)
@@ -147,7 +146,8 @@ def main() -> int:
         return 0
 
     if args.command == "launch":
-        from twwarhammer3.battle.imagery import PassiveCapture
+        from twwarhammer3.battle.capture import PassiveCapture
+        from twwarhammer3.battle.play import session
         from twwarhammer3.engine.mailbox import Mailbox
         from twwarhammer3.engine.runtime import BRIDGE_DIR, OwnedGame, RuntimeLock, prepare_runtime
 
@@ -160,7 +160,7 @@ def main() -> int:
             print(json.dumps(record, sort_keys=True))
             mailbox = Mailbox(BRIDGE_DIR, job=job)
             mailbox.reset()
-            mailbox.write_session(session_from(args))
+            mailbox.write_session(session(vars(args)))
             try:
                 with (OwnedGame(output / "game.log", timeout=args.timeout) as game,
                       PassiveCapture(BRIDGE_DIR, job=job, pid=game.info.get("pid", 0),
@@ -183,8 +183,8 @@ def main() -> int:
         from twwarhammer3.engine.mailbox import Mailbox
         from twwarhammer3.engine.runtime import BRIDGE_DIR
 
-        session = json.loads((BRIDGE_DIR / "session.json").read_text())
-        mailbox = Mailbox(BRIDGE_DIR, job=session["job"])
+        live = json.loads((BRIDGE_DIR / "session.json").read_text())
+        mailbox = Mailbox(BRIDGE_DIR, job=live["job"])
         if args.steps:
             steps = json.loads(args.steps.read_text())
         elif args.dump is not None:
@@ -211,34 +211,40 @@ def main() -> int:
         return 0
 
     if args.command == "play":
+        from twwarhammer3.battle.controllers import factories, rotation
         from twwarhammer3.battle.play import play as run_play
 
-        skipped = ("command", "output")
-        config = {key: value for key, value in vars(args).items() if key not in skipped}
-        config.update(session_from(args))
-        for key, value in config.items():
-            if isinstance(value, Path):
-                config[key] = str(value)
-        from twwarhammer3.battle.controllers import factories, rotation
-
+        config = {key: value for key, value in vars(args).items()
+                  if key not in ("command", "output")}
+        config.update(ledger=str(LEDGER_PATH), results=str(RESULTS_PATH))
         try:
             rotation(config)
             makers = factories(config)
         except (ValueError, ImportError, AttributeError) as exc:
             parser.error(str(exc))
-        manifest = run_play(args.output, config, policy_factory=makers)
+        manifest = run_play(args.output, config, makers=makers)
         return 0 if manifest["status"] == "completed" else 1
 
     if args.command == "digest":
-        from twwarhammer3.battle.digest import digest as render
+        from twwarhammer3.battle.digest import decision_at, digest
 
-        print(render(args.path))
+        if args.at is None:
+            print(digest(args.path))
+        elif (args.path / "trace.jsonl").exists():
+            print(decision_at(args.path, args.at))
+        else:
+            parser.error("--at needs an episode directory")
         return 0
 
     if args.command == "watch":
-        from twwarhammer3.battle.watch import follow
+        from twwarhammer3.battle.watch import follow, next_event
         from twwarhammer3.engine.runtime import BRIDGE_DIR
 
+        if args.next:  # the job directory may not exist yet beside a starting play
+            if args.path is None or args.path.name.startswith("episode-"):
+                parser.error("--next needs the job directory")
+            print(next_event(args.path, args.stall_minutes * 60))
+            return 0
         path = args.path or JOBS_ROOT / json.loads(
             (BRIDGE_DIR / "session.json").read_text())["job"]
         if not path.is_dir():
@@ -251,28 +257,23 @@ def main() -> int:
         return 0
 
     if args.command == "stats":
-        from twwarhammer3.battle.stats import rebuild, summary
+        from twwarhammer3.battle.stats import summary
 
-        if args.report:
-            from twwarhammer3.battle.report import collect, render
-
-            report = collect(args.report)
-            if args.report_json:
-                args.report_json.parent.mkdir(parents=True, exist_ok=True)
-                write_json(args.report_json, report)
-            if args.report_html:
-                from twwarhammer3.battle.report_html import write
-
-                write(args.report_html, report)
-            print(render(report))
-            return 0
-        if args.report_json:
-            parser.error("--report-json requires --report JOB...")
-        if args.report_html:
-            parser.error("--report-html requires --report JOB...")
-        if args.rebuild:
-            print(f"{rebuild(JOBS_ROOT, args.results)} rows")
         print(summary(args.results))
+        return 0
+
+    if args.command == "report":
+        from twwarhammer3.battle.report import collect, render
+        from twwarhammer3.battle.report_html import write
+
+        data = collect(args.jobs)
+        text = render(data)
+        stem = args.output
+        stem.parent.mkdir(parents=True, exist_ok=True)
+        write(stem.with_name(stem.name + ".html"), data)  # first: it may need Pillow
+        write_json(stem.with_name(stem.name + ".json"), data)
+        stem.with_name(stem.name + ".txt").write_text(text + "\n")
+        print(text)
         return 0
 
     if args.command == "spend":

@@ -18,10 +18,9 @@ Without a commander, units keep the default skill of their class.
 import math
 
 from twwarhammer3.battle.llm import ARRIVED_M
-from twwarhammer3.battle.scripted import _distance
+from twwarhammer3.battle.scripted import distance
 from twwarhammer3.protocol import friendly_units, visible_enemies
 
-SKILLS = ("engage", "shoot", "hold", "charge", "move")
 RUN_M = 30  # run only for the last stretch of a charge
 ENGAGE_M = 40  # how near an enemy must come to a hold post, or the enemy lord to a free unit
 REPEAT_S = 2.0  # a lapsed or rejected order is sent again after this many battle seconds
@@ -49,7 +48,7 @@ def _live(enemy: dict) -> bool:
 
 
 def _nearest(unit: dict, enemies) -> dict | None:
-    return min(enemies, key=lambda enemy: _distance(unit, enemy), default=None)
+    return min(enemies, key=lambda enemy: distance(unit, enemy), default=None)
 
 
 def _point(assignment: dict) -> dict | None:
@@ -60,7 +59,7 @@ def _point(assignment: dict) -> dict | None:
 
 def _facing(unit: dict, enemy: dict | None) -> float | None:
     """The bearing from a unit to an enemy: 0 north (+z), 90 east (+x)."""
-    if not enemy or _distance(unit, enemy) == math.inf:
+    if not enemy or distance(unit, enemy) == math.inf:
         return None
     return round(math.degrees(math.atan2(enemy["x"] - unit["x"], enemy["z"] - unit["z"])) % 360)
 
@@ -74,7 +73,7 @@ def _attack(unit: dict, enemy: dict, mode: str, sent: dict | None, *,
             run: bool | None = None) -> dict:
     if run is None:  # walk until the last stretch, and keep running once started
         before = sent or {}
-        run = _distance(unit, enemy) <= RUN_M or (
+        run = distance(unit, enemy) <= RUN_M or (
             before.get("type") == "attack" and before.get("target") == enemy["id"]
             and before.get("run", False))
     return {"unit": unit["id"], "type": "attack", "target": enemy["id"], "mode": mode,
@@ -99,7 +98,7 @@ def engage(unit, assignment, enemies, sent):
         return None, f"in melee with {unit.get('target') or '?'}"
     live = [enemy for enemy in enemies.values() if _live(enemy)]
     lords = [enemy for enemy in live if (enemy.get("commander") or enemy.get("class") == "lord")
-             and "melee" in _states(enemy) and _distance(unit, enemy) <= ENGAGE_M]
+             and "melee" in _states(enemy) and distance(unit, enemy) <= ENGAGE_M]
     target = (_nearest(unit, lords)
               or _first(enemies, assignment.get("target"), _last(sent), unit.get("target"))
               or _nearest(unit, live)
@@ -118,13 +117,13 @@ def shoot(unit, assignment, enemies, sent):
     if "melee" in _states(unit):
         return None, f"in melee with {unit.get('target') or '?'}"
     spot = _point(assignment)
-    if spot and _distance(unit, spot) > ARRIVED_M:
+    if spot and distance(unit, spot) > ARRIVED_M:
         return _move(unit, spot, face=_nearest(spot, enemies.values())), "walking to firing spot"
     # Only a target the commander named is shot at in melee (from a spot beside the fight).
     named = assignment.get("target")
     clear = [enemy for enemy in enemies.values()
              if _live(enemy) and ("melee" not in _states(enemy) or enemy["id"] == named)]
-    in_range = [enemy for enemy in clear if _distance(unit, enemy) <= (unit.get("range") or 0)]
+    in_range = [enemy for enemy in clear if distance(unit, enemy) <= (unit.get("range") or 0)]
     ids = [enemy["id"] for enemy in in_range]
     target = _first({e["id"]: e for e in in_range}, named, _last(sent), unit.get("target"))
     if not target and in_range:
@@ -148,12 +147,12 @@ def hold(unit, assignment, enemies, sent):
         return None, f"in melee with {unit.get('target') or '?'}"
     post = _point(assignment) or unit
     near = [enemy for enemy in enemies.values()
-            if _live(enemy) and _distance(post, enemy) <= ENGAGE_M]
+            if _live(enemy) and distance(post, enemy) <= ENGAGE_M]
     if near:
         target = (_first({e["id"]: e for e in near}, _last(sent), unit.get("target"))
                   or _nearest(post, near))
         return _attack(unit, target, "auto", sent), f"fighting {target['id']} at the post"
-    if _distance(unit, post) > ARRIVED_M:
+    if distance(unit, post) > ARRIVED_M:
         return _move(unit, post, face=_nearest(post, enemies.values())), "returning to post"
     return None, "holding"
 
@@ -175,7 +174,7 @@ def charge(unit, assignment, enemies, sent):
     waiting = (f"waiting: {wanted} not in melee" if wanted else "waiting for melee"
                + (f" ({named} out of sight)" if named else ""))
     post = _point(assignment)
-    if post and _distance(unit, post) > ARRIVED_M:
+    if post and distance(unit, post) > ARRIVED_M:
         order = _move(unit, post, face=_nearest(post, enemies.values()))
         return order, waiting + ", moving to post"
     if not post and sent and sent["type"] != "halt" and sent["time_s"] < assignment.get(
@@ -186,21 +185,22 @@ def charge(unit, assignment, enemies, sent):
 
 def move(unit, assignment, enemies, sent):
     point = _point(assignment)
-    if not point or _distance(unit, point) <= ARRIVED_M:
+    if not point or distance(unit, point) <= ARRIVED_M:
         return None, "arrived"
-    threatened = any(_live(e) and _distance(unit, e) <= ENGAGE_M for e in enemies.values())
+    threatened = any(_live(e) and distance(unit, e) <= ENGAGE_M for e in enemies.values())
     run = threatened or ((sent or {}).get("type") == "move" and sent.get("run", False))
     return _move(unit, point, run=run), "moving"
 
 
 RULES = {"engage": engage, "shoot": shoot, "hold": hold, "charge": charge, "move": move}
+SKILLS = tuple(RULES)
 
 
 def same(order: dict, sent: dict | None) -> bool:
     if not sent or order["type"] != sent["type"]:
         return False
     if order["type"] == "move":
-        return _distance(order, sent) <= ARRIVED_M and order["run"] == sent["run"]
+        return distance(order, sent) <= ARRIVED_M and order["run"] == sent["run"]
     if order["type"] == "attack":
         return all(order[key] == sent[key] for key in ("target", "mode", "run"))
     return True
@@ -285,7 +285,7 @@ class Skills:
         """
         ranged = order and order["type"] == "attack" and order["mode"] == "ranged"
         target = enemies.get(order["target"]) if ranged else None
-        if not target or _distance(unit, target) > (unit.get("range") or 0):
+        if not target or distance(unit, target) > (unit.get("range") or 0):
             self.aim.pop(unit["id"], None)
             return False
         aim, ammo = self.aim.get(unit["id"]), unit.get("ammo", 0)
@@ -346,11 +346,11 @@ class ProbeAbilities(Skills):
             casts += [("army", ability, largest)
                       for ability in (observation.get("army") or {}).get("abilities", [])]
         for caster, ability, at in casts:
-            if not ability.get("ready") or ability.get("can_use") is False or now - self.cast.get(
-                    (caster, ability["key"]),
-                                                               -math.inf) < self.RECAST_S:
+            key = (caster, ability["key"])
+            if (not ability.get("ready") or ability.get("can_use") is False
+                    or now - self.cast.get(key, -math.inf) < self.RECAST_S):
                 continue
-            self.cast[(caster, ability["key"])] = now
+            self.cast[key] = now
             order = {"unit": caster, "type": "ability", "ability": ability["key"],
                      "target": None, "x": None, "z": None}
             if at and "Ground" in (ability.get("target") or ""):

@@ -2,11 +2,11 @@
 
 Observations are the dicts the Lua side publishes (``engine/mailbox.py`` has the
 shape). Orders have a unit, type and command-specific fields for movement, attacks,
-toggles or abilities; move/attack sequences use ``queue``. An army ability (Khorne's kill
-unlocks) is an ``ability`` order whose unit is ``"army"``, and so is a ``build`` order (a
-tower or barricade on a slot, paid with supplies). Only an engine-reported
-battle result is a gameplay outcome; everything below is an
-infrastructure, protocol or policy failure.
+toggles or abilities; move/attack sequences use ``queue``. The unit ``"army"`` gives the
+army's own orders: an ``ability`` (Khorne's kill unlocks), and, paid with supplies, a
+``build`` (a tower or barricade on a slot) or a ``reinforce`` (a unit from the
+reinforcement pool, entering at a spawn zone). Only an engine-reported battle result is a
+gameplay outcome; everything below is an infrastructure, protocol or policy failure.
 """
 
 import math

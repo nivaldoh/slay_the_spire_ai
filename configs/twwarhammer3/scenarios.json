@@ -99,74 +99,26 @@
   "random": true
  },
  "conquest-kho5-dwf5": {
+  "base": "kho5-dwf5",
   "battle_type": "conquest",
   "map": "battle_preset_wh_mp_alpine_ridge_conquest",
-  "attacker": "enemy",
-  "player": {
-   "subculture": "wh3_main_sc_kho_khorne",
-   "faction": "wh3_main_kho_khorne",
-   "units": [
-    "wh3_main_kho_cha_herald_of_khorne_0",
-    "wh3_main_kho_inf_chaos_warriors_0",
-    "wh3_main_kho_inf_bloodletters_0",
-    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
-    "wh3_main_kho_veh_skullcannon_0"
-   ]
-  },
-  "enemy": {
-   "subculture": "wh_main_sc_dwf_dwarfs",
-   "faction": "wh_main_dwf_dwarfs",
-   "units": [
-    "wh_main_dwf_cha_lord_0",
-    "wh_main_dwf_inf_dwarf_warrior_0",
-    "wh_main_dwf_inf_longbeards",
-    "wh_main_dwf_inf_quarrellers_0",
-    "wh_main_dwf_art_grudge_thrower"
-   ]
-  }
+  "attacker": "enemy"
  },
  "domination-kho5-dwf5": {
+  "base": "kho5-dwf5",
   "battle_type": "domination",
   "map": "battle_preset_wh3_main_domination_arnheim",
   "player": {
-   "subculture": "wh3_main_sc_kho_khorne",
-   "faction": "wh3_main_kho_khorne",
-   "units": [
-    "wh3_main_kho_cha_herald_of_khorne_0",
-    "wh3_main_kho_inf_chaos_warriors_0",
-    "wh3_main_kho_inf_bloodletters_0",
-    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
-    "wh3_main_kho_veh_skullcannon_0"
-   ],
    "reinforcements": null
   },
   "enemy": {
-   "subculture": "wh_main_sc_dwf_dwarfs",
-   "faction": "wh_main_dwf_dwarfs",
-   "units": [
-    "wh_main_dwf_cha_lord_0",
-    "wh_main_dwf_inf_dwarf_warrior_0",
-    "wh_main_dwf_inf_longbeards",
-    "wh_main_dwf_inf_quarrellers_0",
-    "wh_main_dwf_art_grudge_thrower"
-   ],
    "reinforcements": null
   }
  },
  "ffa-kho5-dwf5-emp5-kho5": {
+  "base": "kho5-dwf5",
   "battle_type": "free_for_all",
   "map": "battle_preset_wh2_mp_ffa_04",
-  "player": {
-   "subculture": "wh3_main_sc_kho_khorne",
-   "faction": "wh3_main_kho_khorne",
-   "units": [
-    "wh3_main_kho_cha_herald_of_khorne_0",
-    "wh3_main_kho_inf_chaos_warriors_0",
-    "wh3_main_kho_inf_bloodletters_0",
-    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
-    "wh3_main_kho_veh_skullcannon_0"
-   ]
-  },
   "enemy": [
    {
     "subculture": "wh_main_sc_dwf_dwarfs",
@@ -204,153 +156,40 @@
   ]
  },
  "ambush-kho5-dwf5": {
+  "base": "kho5-dwf5",
   "battle_type": "ambush",
   "map": "battle_preset_wh3_main_brt_forest_01_09",
-  "attacker": "enemy",
-  "player": {
-   "subculture": "wh3_main_sc_kho_khorne",
-   "faction": "wh3_main_kho_khorne",
-   "units": [
-    "wh3_main_kho_cha_herald_of_khorne_0",
-    "wh3_main_kho_inf_chaos_warriors_0",
-    "wh3_main_kho_inf_bloodletters_0",
-    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
-    "wh3_main_kho_veh_skullcannon_0"
-   ]
-  },
-  "enemy": {
-   "subculture": "wh_main_sc_dwf_dwarfs",
-   "faction": "wh_main_dwf_dwarfs",
-   "units": [
-    "wh_main_dwf_cha_lord_0",
-    "wh_main_dwf_inf_dwarf_warrior_0",
-    "wh_main_dwf_inf_longbeards",
-    "wh_main_dwf_inf_quarrellers_0",
-    "wh_main_dwf_art_grudge_thrower"
-   ]
-  }
+  "attacker": "enemy"
  },
  "chokepoint-kho5-dwf5": {
+  "base": "kho5-dwf5",
   "battle_type": "river_crossing_battle",
   "map": "battle_preset_wh2_main_chokepoint_lzd_lustria_river_b",
-  "attacker": "enemy",
-  "player": {
-   "subculture": "wh3_main_sc_kho_khorne",
-   "faction": "wh3_main_kho_khorne",
-   "units": [
-    "wh3_main_kho_cha_herald_of_khorne_0",
-    "wh3_main_kho_inf_chaos_warriors_0",
-    "wh3_main_kho_inf_bloodletters_0",
-    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
-    "wh3_main_kho_veh_skullcannon_0"
-   ]
-  },
-  "enemy": {
-   "subculture": "wh_main_sc_dwf_dwarfs",
-   "faction": "wh_main_dwf_dwarfs",
-   "units": [
-    "wh_main_dwf_cha_lord_0",
-    "wh_main_dwf_inf_dwarf_warrior_0",
-    "wh_main_dwf_inf_longbeards",
-    "wh_main_dwf_inf_quarrellers_0",
-    "wh_main_dwf_art_grudge_thrower"
-   ]
-  }
+  "attacker": "enemy"
  },
  "underground-kho5-dwf5": {
+  "base": "kho5-dwf5",
   "battle_type": "underground_intercept",
   "map": "battle_preset_wh_main_subterranean_b",
-  "attacker": "enemy",
-  "player": {
-   "subculture": "wh3_main_sc_kho_khorne",
-   "faction": "wh3_main_kho_khorne",
-   "units": [
-    "wh3_main_kho_cha_herald_of_khorne_0",
-    "wh3_main_kho_inf_chaos_warriors_0",
-    "wh3_main_kho_inf_bloodletters_0",
-    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
-    "wh3_main_kho_veh_skullcannon_0"
-   ]
-  },
-  "enemy": {
-   "subculture": "wh_main_sc_dwf_dwarfs",
-   "faction": "wh_main_dwf_dwarfs",
-   "units": [
-    "wh_main_dwf_cha_lord_0",
-    "wh_main_dwf_inf_dwarf_warrior_0",
-    "wh_main_dwf_inf_longbeards",
-    "wh_main_dwf_inf_quarrellers_0",
-    "wh_main_dwf_art_grudge_thrower"
-   ]
-  }
+  "attacker": "enemy"
  },
  "settlement-kho5-dwf5": {
+  "base": "kho5-dwf5",
   "battle_type": "unfortified_settlement",
   "map": "battle_preset_minor_a_emp",
-  "attacker": "enemy",
-  "player": {
-   "subculture": "wh3_main_sc_kho_khorne",
-   "faction": "wh3_main_kho_khorne",
-   "units": [
-    "wh3_main_kho_cha_herald_of_khorne_0",
-    "wh3_main_kho_inf_chaos_warriors_0",
-    "wh3_main_kho_inf_bloodletters_0",
-    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
-    "wh3_main_kho_veh_skullcannon_0"
-   ]
-  },
-  "enemy": {
-   "subculture": "wh_main_sc_dwf_dwarfs",
-   "faction": "wh_main_dwf_dwarfs",
-   "units": [
-    "wh_main_dwf_cha_lord_0",
-    "wh_main_dwf_inf_dwarf_warrior_0",
-    "wh_main_dwf_inf_longbeards",
-    "wh_main_dwf_inf_quarrellers_0",
-    "wh_main_dwf_art_grudge_thrower"
-   ]
-  }
+  "attacker": "enemy"
  },
  "siege-kho5-dwf5": {
+  "base": "kho5-dwf5",
   "battle_type": "siege",
   "map": "battle_preset_wh2_dlc13_minor_settlement_empire_fort",
-  "attacker": "enemy",
-  "player": {
-   "subculture": "wh3_main_sc_kho_khorne",
-   "faction": "wh3_main_kho_khorne",
-   "units": [
-    "wh3_main_kho_cha_herald_of_khorne_0",
-    "wh3_main_kho_inf_chaos_warriors_0",
-    "wh3_main_kho_inf_bloodletters_0",
-    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
-    "wh3_main_kho_veh_skullcannon_0"
-   ]
-  },
-  "enemy": {
-   "subculture": "wh_main_sc_dwf_dwarfs",
-   "faction": "wh_main_dwf_dwarfs",
-   "units": [
-    "wh_main_dwf_cha_lord_0",
-    "wh_main_dwf_inf_dwarf_warrior_0",
-    "wh_main_dwf_inf_longbeards",
-    "wh_main_dwf_inf_quarrellers_0",
-    "wh_main_dwf_art_grudge_thrower"
-   ]
-  }
+  "attacker": "enemy"
  },
  "survival-kho5": {
+  "base": "kho5-dwf5",
   "battle_type": "survival",
   "map": "battle_preset_wh3_endless_survival_kho",
   "player": {
-   "subculture": "wh3_main_sc_kho_khorne",
-   "faction": "wh3_main_kho_khorne",
-   "units": [
-    "wh3_main_kho_cha_herald_of_khorne_0",
-    "wh3_main_kho_inf_chaos_warriors_0",
-    "wh3_main_kho_inf_bloodletters_0",
-    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
-    "wh3_main_kho_veh_skullcannon_0"
-   ],
    "reinforcements": null
   },
   "enemy": null
@@ -402,31 +241,10 @@
   "reinforcements": true
  },
  "siege-attack-kho5-dwf5": {
+  "base": "kho5-dwf5",
   "battle_type": "siege",
   "map": "battle_preset_wh2_dlc13_minor_settlement_empire_fort",
-  "attacker": "player",
-  "player": {
-   "subculture": "wh3_main_sc_kho_khorne",
-   "faction": "wh3_main_kho_khorne",
-   "units": [
-    "wh3_main_kho_cha_herald_of_khorne_0",
-    "wh3_main_kho_inf_chaos_warriors_0",
-    "wh3_main_kho_inf_bloodletters_0",
-    "wh3_dlc20_chs_cav_marauder_horsemen_mkho_throwing_axes",
-    "wh3_main_kho_veh_skullcannon_0"
-   ]
-  },
-  "enemy": {
-   "subculture": "wh_main_sc_dwf_dwarfs",
-   "faction": "wh_main_dwf_dwarfs",
-   "units": [
-    "wh_main_dwf_cha_lord_0",
-    "wh_main_dwf_inf_dwarf_warrior_0",
-    "wh_main_dwf_inf_longbeards",
-    "wh_main_dwf_inf_quarrellers_0",
-    "wh_main_dwf_art_grudge_thrower"
-   ]
-  }
+  "attacker": "player"
  },
  "dwf-sla-taurox": {
   "name": "dwf-sla-taurox",
@@ -505,38 +323,9 @@
   ]
  },
  "dwf-sla-herald": {
+  "base": "dwf-sla-taurox",
   "name": "dwf-sla-herald",
-  "family": "ranged protection",
-  "frozen_from": "--scenario random --seed 322117462 (2026-10-13): Autogenerate army gave these rosters in all three launches (skills, commander, llm jobs); factions were left to the game then and are pinned here",
-  "substitutions": [
-   {
-    "from": "wh_dlc06_dwf_cha_runelord_1",
-    "to": "wh_dlc06_dwf_cha_runelord_0",
-    "why": "the custom battle screen lists only the _0 Runelord card; _1 is a variant picked inside the card"
-   }
-  ],
-  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
-  "player": {
-   "subculture": "wh_main_sc_dwf_dwarfs",
-   "faction": "wh_main_dwf_dwarfs",
-   "units": [
-    "wh_dlc06_dwf_cha_runelord_0",
-    "wh_main_dwf_inf_longbeards",
-    "wh_main_dwf_inf_longbeards_1",
-    "wh_main_dwf_inf_hammerers",
-    "wh_main_dwf_inf_ironbreakers",
-    "wh3_dlc25_dwf_inf_doomseekers_ror",
-    "wh_main_dwf_inf_quarrellers_0",
-    "wh_main_dwf_inf_quarrellers_1",
-    "wh_main_dwf_inf_irondrakes_0",
-    "wh3_dlc25_dwf_inf_thunderers_ror",
-    "wh_main_dwf_veh_gyrocopter_1",
-    "wh_main_dwf_art_grudge_thrower"
-   ]
-  },
   "enemy": {
-   "subculture": "wh3_main_sc_sla_slaanesh",
-   "faction": "wh3_main_sla_slaanesh",
    "units": [
     "wh3_main_sla_cha_herald_of_slaanesh_shadow_0",
     "wh3_main_sla_inf_marauders_1",
@@ -552,191 +341,26 @@
     "wh3_main_sla_mon_soul_grinder_0"
    ]
   },
-  "battle_type": "classic",
-  "attacker": "enemy",
-  "split": "development",
   "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
    "funds": "funds_custom",
    "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
    "ai_stats_modifier": "1.0",
-   "player_defends": true,
    "funds_amount": 30000
   },
-  "protected": [
-   "wh_main_dwf_inf_quarrellers_0",
-   "wh_main_dwf_inf_quarrellers_1",
-   "wh_main_dwf_inf_irondrakes_0",
-   "wh3_dlc25_dwf_inf_thunderers_ror",
-   "wh_main_dwf_art_grudge_thrower"
-  ],
-  "content": [
-   "wh_dlc01",
-   "wh_dlc06",
-   "wh2_dlc17",
-   "wh3_dlc20",
-   "wh3_dlc25"
-  ],
   "calibration_change": "Replace Sigvald with the selectable Shadow Herald; both observed b1 controllers lost, including Luna after leaving Sigvald as the sole active enemy. Other units unchanged. Custom funds 30000 admits the explicit roster; the default funds rejected the Herald loadout before battle."
  },
  "dwf-sla-herald-hard": {
+  "base": "dwf-sla-herald",
   "name": "dwf-sla-herald-hard",
-  "family": "ranged protection",
-  "frozen_from": "--scenario random --seed 322117462 (2026-10-13): Autogenerate army gave these rosters in all three launches (skills, commander, llm jobs); factions were left to the game then and are pinned here",
-  "substitutions": [
-   {
-    "from": "wh_dlc06_dwf_cha_runelord_1",
-    "to": "wh_dlc06_dwf_cha_runelord_0",
-    "why": "the custom battle screen lists only the _0 Runelord card; _1 is a variant picked inside the card"
-   }
-  ],
-  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
-  "player": {
-   "subculture": "wh_main_sc_dwf_dwarfs",
-   "faction": "wh_main_dwf_dwarfs",
-   "units": [
-    "wh_dlc06_dwf_cha_runelord_0",
-    "wh_main_dwf_inf_longbeards",
-    "wh_main_dwf_inf_longbeards_1",
-    "wh_main_dwf_inf_hammerers",
-    "wh_main_dwf_inf_ironbreakers",
-    "wh3_dlc25_dwf_inf_doomseekers_ror",
-    "wh_main_dwf_inf_quarrellers_0",
-    "wh_main_dwf_inf_quarrellers_1",
-    "wh_main_dwf_inf_irondrakes_0",
-    "wh3_dlc25_dwf_inf_thunderers_ror",
-    "wh_main_dwf_veh_gyrocopter_1",
-    "wh_main_dwf_art_grudge_thrower"
-   ]
-  },
-  "enemy": {
-   "subculture": "wh3_main_sc_sla_slaanesh",
-   "faction": "wh3_main_sla_slaanesh",
-   "units": [
-    "wh3_main_sla_cha_herald_of_slaanesh_shadow_0",
-    "wh3_main_sla_inf_marauders_1",
-    "wh3_main_sla_inf_daemonette_0",
-    "wh3_dlc20_chs_inf_chaos_warriors_msla",
-    "wh3_dlc20_chs_inf_chaos_warriors_msla",
-    "wh3_dlc20_chs_inf_forsaken_msla",
-    "wh3_main_sla_cav_hellstriders_1",
-    "wh3_main_sla_veh_seeker_chariot_0",
-    "wh3_dlc20_chs_cav_chaos_chariot_msla_ror",
-    "wh3_main_sla_mon_spawn_of_slaanesh_0",
-    "wh3_main_sla_mon_fiends_of_slaanesh_0",
-    "wh3_main_sla_mon_soul_grinder_0"
-   ]
-  },
-  "battle_type": "classic",
-  "attacker": "enemy",
-  "split": "development",
   "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.1",
-   "player_defends": true,
-   "funds_amount": 30000
-  },
-  "protected": [
-   "wh_main_dwf_inf_quarrellers_0",
-   "wh_main_dwf_inf_quarrellers_1",
-   "wh_main_dwf_inf_irondrakes_0",
-   "wh3_dlc25_dwf_inf_thunderers_ror",
-   "wh_main_dwf_art_grudge_thrower"
-  ],
-  "content": [
-   "wh_dlc01",
-   "wh_dlc06",
-   "wh2_dlc17",
-   "wh3_dlc20",
-   "wh3_dlc25"
-  ],
-  "calibration_change": "Replace Sigvald with the selectable Shadow Herald; both observed b1 controllers lost, including Luna after leaving Sigvald as the sole active enemy. Other units unchanged. Custom funds 30000 admits the explicit roster; the default funds rejected the Herald loadout before battle."
+   "ai_stats_modifier": "1.1"
+  }
  },
  "dwf-sla-herald-heldout-wastes": {
+  "base": "dwf-sla-herald",
   "name": "dwf-sla-herald-heldout-wastes",
-  "family": "ranged protection",
-  "frozen_from": "--scenario random --seed 322117462 (2026-10-13): Autogenerate army gave these rosters in all three launches (skills, commander, llm jobs); factions were left to the game then and are pinned here",
-  "substitutions": [
-   {
-    "from": "wh_dlc06_dwf_cha_runelord_1",
-    "to": "wh_dlc06_dwf_cha_runelord_0",
-    "why": "the custom battle screen lists only the _0 Runelord card; _1 is a variant picked inside the card"
-   }
-  ],
   "map": "battle_preset_wh3_nur_wastes_01_04",
-  "player": {
-   "subculture": "wh_main_sc_dwf_dwarfs",
-   "faction": "wh_main_dwf_dwarfs",
-   "units": [
-    "wh_dlc06_dwf_cha_runelord_0",
-    "wh_main_dwf_inf_longbeards",
-    "wh_main_dwf_inf_longbeards_1",
-    "wh_main_dwf_inf_hammerers",
-    "wh_main_dwf_inf_ironbreakers",
-    "wh3_dlc25_dwf_inf_doomseekers_ror",
-    "wh_main_dwf_inf_quarrellers_0",
-    "wh_main_dwf_inf_quarrellers_1",
-    "wh_main_dwf_inf_irondrakes_0",
-    "wh3_dlc25_dwf_inf_thunderers_ror",
-    "wh_main_dwf_veh_gyrocopter_1",
-    "wh_main_dwf_art_grudge_thrower"
-   ]
-  },
-  "enemy": {
-   "subculture": "wh3_main_sc_sla_slaanesh",
-   "faction": "wh3_main_sla_slaanesh",
-   "units": [
-    "wh3_main_sla_cha_herald_of_slaanesh_shadow_0",
-    "wh3_main_sla_inf_marauders_1",
-    "wh3_main_sla_inf_daemonette_0",
-    "wh3_dlc20_chs_inf_chaos_warriors_msla",
-    "wh3_dlc20_chs_inf_chaos_warriors_msla",
-    "wh3_dlc20_chs_inf_forsaken_msla",
-    "wh3_main_sla_cav_hellstriders_1",
-    "wh3_main_sla_veh_seeker_chariot_0",
-    "wh3_dlc20_chs_cav_chaos_chariot_msla_ror",
-    "wh3_main_sla_mon_spawn_of_slaanesh_0",
-    "wh3_main_sla_mon_fiends_of_slaanesh_0",
-    "wh3_main_sla_mon_soul_grinder_0"
-   ]
-  },
-  "battle_type": "classic",
-  "attacker": "enemy",
-  "split": "held_out",
-  "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.0",
-   "player_defends": true,
-   "funds_amount": 30000
-  },
-  "protected": [
-   "wh_main_dwf_inf_quarrellers_0",
-   "wh_main_dwf_inf_quarrellers_1",
-   "wh_main_dwf_inf_irondrakes_0",
-   "wh3_dlc25_dwf_inf_thunderers_ror",
-   "wh_main_dwf_art_grudge_thrower"
-  ],
-  "content": [
-   "wh_dlc01",
-   "wh_dlc06",
-   "wh2_dlc17",
-   "wh3_dlc20",
-   "wh3_dlc25"
-  ],
-  "calibration_change": "Replace Sigvald with the selectable Shadow Herald; both observed b1 controllers lost, including Luna after leaving Sigvald as the sole active enemy. Other units unchanged. Custom funds 30000 admits the explicit roster; the default funds rejected the Herald loadout before battle."
+  "split": "held_out"
  },
  "brt-cavalry-emp-pikes": {
   "battle_type": "classic",
@@ -797,120 +421,17 @@
   "brief": "Six fully mounted units; Grail Knights anchor the shock force. Four halberds cover two handguns and a cannon. Maneuver, engagement angle, target priority and disengagement compete; frontal grinding is the naive risk. Hypotheses, not a prescribed solution."
  },
  "brt-cavalry-emp-pikes-hard": {
-  "battle_type": "classic",
-  "attacker": "enemy",
-  "split": "development",
-  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
-  "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "funds_amount": 8000,
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.1",
-   "player_defends": true
-  },
-  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
-  "status": "prototype_not_admitted",
+  "base": "brt-cavalry-emp-pikes",
   "name": "brt-cavalry-emp-pikes-hard",
-  "family": "cavalry against anti-large",
-  "player": {
-   "subculture": "wh_main_sc_brt_bretonnia",
-   "faction": "wh_main_brt_bretonnia",
-   "units": [
-    "wh_main_brt_cha_lord_0",
-    "wh_main_brt_cav_grail_knights",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_dlc07_brt_cav_questing_knights_0",
-    "wh_main_brt_cav_mounted_yeomen_1"
-   ],
-   "mounts": {
-    "0": "wh_main_brt_cha_lord_4"
-   }
-  },
-  "enemy": {
-   "subculture": "wh_main_sc_emp_empire",
-   "faction": "wh_main_emp_empire",
-   "units": [
-    "wh_main_emp_cha_general_0",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_art_great_cannon"
-   ]
-  },
-  "protected": [
-   "wh_main_brt_cav_grail_knights"
-  ],
-  "content": [
-   "wh_main",
-   "wh_dlc07"
-  ],
-  "brief": "Six fully mounted units; Grail Knights anchor the shock force. Four halberds cover two handguns and a cannon. Maneuver, engagement angle, target priority and disengagement compete; frontal grinding is the naive risk. Hypotheses, not a prescribed solution."
+  "expect": {
+   "ai_stats_modifier": "1.1"
+  }
  },
  "brt-cavalry-emp-pikes-heldout-wastes": {
-  "battle_type": "classic",
-  "attacker": "enemy",
-  "split": "held_out",
-  "map": "battle_preset_wh3_nur_wastes_01_04",
-  "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "funds_amount": 8000,
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.0",
-   "player_defends": true
-  },
-  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
-  "status": "prototype_not_admitted",
+  "base": "brt-cavalry-emp-pikes",
   "name": "brt-cavalry-emp-pikes-heldout-wastes",
-  "family": "cavalry against anti-large",
-  "player": {
-   "subculture": "wh_main_sc_brt_bretonnia",
-   "faction": "wh_main_brt_bretonnia",
-   "units": [
-    "wh_main_brt_cha_lord_0",
-    "wh_main_brt_cav_grail_knights",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_dlc07_brt_cav_questing_knights_0",
-    "wh_main_brt_cav_mounted_yeomen_1"
-   ],
-   "mounts": {
-    "0": "wh_main_brt_cha_lord_4"
-   }
-  },
-  "enemy": {
-   "subculture": "wh_main_sc_emp_empire",
-   "faction": "wh_main_emp_empire",
-   "units": [
-    "wh_main_emp_cha_general_0",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_art_great_cannon"
-   ]
-  },
-  "protected": [
-   "wh_main_brt_cav_grail_knights"
-  ],
-  "content": [
-   "wh_main",
-   "wh_dlc07"
-  ],
-  "brief": "Six fully mounted units; Grail Knights anchor the shock force. Four halberds cover two handguns and a cannon. Maneuver, engagement angle, target priority and disengagement compete; frontal grinding is the naive risk. Hypotheses, not a prescribed solution."
+  "split": "held_out",
+  "map": "battle_preset_wh3_nur_wastes_01_04"
  },
  "tze-caster-skv-screen": {
   "battle_type": "classic",
@@ -970,654 +491,86 @@
   "brief": "Kairos and four escorts face ten Skaven units. Spell value, shared magic, screening, barrier recovery and flying-unit risk compete with artillery pressure. This is a compact caster test, not the later massive-swarm scenario. Hypotheses, not a prescribed solution."
  },
  "tze-caster-skv-screen-hard": {
-  "battle_type": "classic",
-  "attacker": "enemy",
-  "split": "development",
-  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
-  "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "funds_amount": 8000,
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.1",
-   "player_defends": true
-  },
-  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
-  "status": "prototype_not_admitted",
+  "base": "tze-caster-skv-screen",
   "name": "tze-caster-skv-screen-hard",
-  "family": "caster-led force against rat screens",
-  "player": {
-   "subculture": "wh3_main_sc_tze_tzeentch",
-   "faction": "wh3_main_tze_tzeentch",
-   "units": [
-    "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0",
-    "wh3_main_tze_inf_blue_horrors_0",
-    "wh3_main_tze_inf_blue_horrors_0",
-    "wh3_main_tze_inf_forsaken_0",
-    "wh3_main_tze_mon_screamers_0"
-   ]
-  },
-  "enemy": {
-   "subculture": "wh2_main_sc_skv_skaven",
-   "faction": "wh2_main_skv_skaven",
-   "units": [
-    "wh2_main_skv_cha_warlord_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrat_spearmen_0",
-    "wh2_main_skv_inf_clanrat_spearmen_0",
-    "wh2_main_skv_inf_skavenslaves_0",
-    "wh2_main_skv_inf_skavenslaves_0",
-    "wh2_main_skv_inf_warpfire_thrower",
-    "wh2_main_skv_art_plagueclaw_catapult"
-   ]
-  },
-  "protected": [
-   "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0"
-  ],
-  "content": [
-   "wh3_main",
-   "wh2_main",
-   "wh2_dlc17"
-  ],
-  "brief": "Kairos and four escorts face ten Skaven units. Spell value, shared magic, screening, barrier recovery and flying-unit risk compete with artillery pressure. This is a compact caster test, not the later massive-swarm scenario. Hypotheses, not a prescribed solution."
+  "expect": {
+   "ai_stats_modifier": "1.1"
+  }
  },
  "tze-caster-skv-screen-heldout-wastes": {
-  "battle_type": "classic",
-  "attacker": "enemy",
-  "split": "held_out",
-  "map": "battle_preset_wh3_nur_wastes_01_04",
-  "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "funds_amount": 8000,
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.0",
-   "player_defends": true
-  },
-  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
-  "status": "prototype_not_admitted",
+  "base": "tze-caster-skv-screen",
   "name": "tze-caster-skv-screen-heldout-wastes",
-  "family": "caster-led force against rat screens",
-  "player": {
-   "subculture": "wh3_main_sc_tze_tzeentch",
-   "faction": "wh3_main_tze_tzeentch",
-   "units": [
-    "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0",
-    "wh3_main_tze_inf_blue_horrors_0",
-    "wh3_main_tze_inf_blue_horrors_0",
-    "wh3_main_tze_inf_forsaken_0",
-    "wh3_main_tze_mon_screamers_0"
-   ]
-  },
-  "enemy": {
-   "subculture": "wh2_main_sc_skv_skaven",
-   "faction": "wh2_main_skv_skaven",
-   "units": [
-    "wh2_main_skv_cha_warlord_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrat_spearmen_0",
-    "wh2_main_skv_inf_clanrat_spearmen_0",
-    "wh2_main_skv_inf_skavenslaves_0",
-    "wh2_main_skv_inf_skavenslaves_0",
-    "wh2_main_skv_inf_warpfire_thrower",
-    "wh2_main_skv_art_plagueclaw_catapult"
-   ]
-  },
-  "protected": [
-   "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0"
-  ],
-  "content": [
-   "wh3_main",
-   "wh2_main",
-   "wh2_dlc17"
-  ],
-  "brief": "Kairos and four escorts face ten Skaven units. Spell value, shared magic, screening, barrier recovery and flying-unit risk compete with artillery pressure. This is a compact caster test, not the later massive-swarm scenario. Hypotheses, not a prescribed solution."
+  "split": "held_out",
+  "map": "battle_preset_wh3_nur_wastes_01_04"
  },
  "brt-cavalry-emp-pegasus": {
-  "battle_type": "classic",
-  "attacker": "enemy",
-  "split": "development",
-  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
-  "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "funds_amount": 8000,
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.0",
-   "player_defends": true
-  },
-  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
-  "status": "prototype_not_admitted",
+  "base": "brt-cavalry-emp-pikes",
   "name": "brt-cavalry-emp-pegasus",
-  "family": "cavalry against anti-large",
-  "player": {
-   "subculture": "wh_main_sc_brt_bretonnia",
-   "faction": "wh_main_brt_bretonnia",
-   "units": [
-    "wh_main_brt_cha_lord_0",
-    "wh_main_brt_cav_grail_knights",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_dlc07_brt_cav_questing_knights_0",
-    "wh_main_brt_cav_mounted_yeomen_1"
-   ],
-   "mounts": {
-    "0": "wh_main_brt_cha_lord_4"
-   }
-  },
   "enemy": {
-   "subculture": "wh_main_sc_emp_empire",
-   "faction": "wh_main_emp_empire",
-   "units": [
-    "wh_main_emp_cha_general_0",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_art_great_cannon"
-   ],
    "mounts": {
     "0": "wh_main_emp_cha_general_2"
    }
   },
-  "protected": [
-   "wh_main_brt_cav_grail_knights"
-  ],
-  "content": [
-   "wh_main",
-   "wh_dlc07"
-  ],
   "brief": "Six fully mounted units, with Grail Knights as the player anchor, face four halberds, two handguns, a cannon and a general on an Imperial Pegasus. The faster flying lord is an enemy anchor intended to pressure simple evasion. Interception, engagement angle, target priority and disengagement compete. AI pursuit is a hypothesis to verify, not a guaranteed script.",
   "calibration_change": "The pikes-only development screen lost with both trivial controls; Luna chose untouched evasion for a timeout win and was deliberately interrupted, with no gameplay outcome. Replace the enemy foot general with the verified speed 105 Pegasus mount (versus friendly 84/92) while retaining all other units and the 8000 cap. Original screen remains recorded."
  },
  "brt-cavalry-emp-pegasus-hard": {
-  "battle_type": "classic",
-  "attacker": "enemy",
-  "split": "development",
-  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
-  "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "funds_amount": 8000,
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.1",
-   "player_defends": true
-  },
-  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
-  "status": "prototype_not_admitted",
+  "base": "brt-cavalry-emp-pegasus",
   "name": "brt-cavalry-emp-pegasus-hard",
-  "family": "cavalry against anti-large",
-  "player": {
-   "subculture": "wh_main_sc_brt_bretonnia",
-   "faction": "wh_main_brt_bretonnia",
-   "units": [
-    "wh_main_brt_cha_lord_0",
-    "wh_main_brt_cav_grail_knights",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_dlc07_brt_cav_questing_knights_0",
-    "wh_main_brt_cav_mounted_yeomen_1"
-   ],
-   "mounts": {
-    "0": "wh_main_brt_cha_lord_4"
-   }
-  },
-  "enemy": {
-   "subculture": "wh_main_sc_emp_empire",
-   "faction": "wh_main_emp_empire",
-   "units": [
-    "wh_main_emp_cha_general_0",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_art_great_cannon"
-   ],
-   "mounts": {
-    "0": "wh_main_emp_cha_general_2"
-   }
-  },
-  "protected": [
-   "wh_main_brt_cav_grail_knights"
-  ],
-  "content": [
-   "wh_main",
-   "wh_dlc07"
-  ],
-  "brief": "Six fully mounted units, with Grail Knights as the player anchor, face four halberds, two handguns, a cannon and a general on an Imperial Pegasus. The faster flying lord is an enemy anchor intended to pressure simple evasion. Interception, engagement angle, target priority and disengagement compete. AI pursuit is a hypothesis to verify, not a guaranteed script.",
-  "calibration_change": "The pikes-only development screen lost with both trivial controls; Luna chose untouched evasion for a timeout win and was deliberately interrupted, with no gameplay outcome. Replace the enemy foot general with the verified speed 105 Pegasus mount (versus friendly 84/92) while retaining all other units and the 8000 cap. Original screen remains recorded."
+  "expect": {
+   "ai_stats_modifier": "1.1"
+  }
  },
  "brt-cavalry-emp-pegasus-heldout-wastes": {
-  "battle_type": "classic",
-  "attacker": "enemy",
-  "split": "held_out",
-  "map": "battle_preset_wh3_nur_wastes_01_04",
-  "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "funds_amount": 8000,
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.0",
-   "player_defends": true
-  },
-  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
-  "status": "prototype_not_admitted",
+  "base": "brt-cavalry-emp-pegasus",
   "name": "brt-cavalry-emp-pegasus-heldout-wastes",
-  "family": "cavalry against anti-large",
-  "player": {
-   "subculture": "wh_main_sc_brt_bretonnia",
-   "faction": "wh_main_brt_bretonnia",
-   "units": [
-    "wh_main_brt_cha_lord_0",
-    "wh_main_brt_cav_grail_knights",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_dlc07_brt_cav_questing_knights_0",
-    "wh_main_brt_cav_mounted_yeomen_1"
-   ],
-   "mounts": {
-    "0": "wh_main_brt_cha_lord_4"
-   }
-  },
-  "enemy": {
-   "subculture": "wh_main_sc_emp_empire",
-   "faction": "wh_main_emp_empire",
-   "units": [
-    "wh_main_emp_cha_general_0",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_art_great_cannon"
-   ],
-   "mounts": {
-    "0": "wh_main_emp_cha_general_2"
-   }
-  },
-  "protected": [
-   "wh_main_brt_cav_grail_knights"
-  ],
-  "content": [
-   "wh_main",
-   "wh_dlc07"
-  ],
-  "brief": "Six fully mounted units, with Grail Knights as the player anchor, face four halberds, two handguns, a cannon and a general on an Imperial Pegasus. The faster flying lord is an enemy anchor intended to pressure simple evasion. Interception, engagement angle, target priority and disengagement compete. AI pursuit is a hypothesis to verify, not a guaranteed script.",
-  "calibration_change": "The pikes-only development screen lost with both trivial controls; Luna chose untouched evasion for a timeout win and was deliberately interrupted, with no gameplay outcome. Replace the enemy foot general with the verified speed 105 Pegasus mount (versus friendly 84/92) while retaining all other units and the 8000 cap. Original screen remains recorded."
+  "split": "held_out",
+  "map": "battle_preset_wh3_nur_wastes_01_04"
  },
  "brt-cavalry-emp-assault": {
-  "battle_type": "classic",
+  "base": "brt-cavalry-emp-pikes",
+  "name": "brt-cavalry-emp-assault",
   "attacker": "player",
-  "split": "development",
-  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
   "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "funds_amount": 8000,
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.0",
    "player_defends": false
   },
-  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
-  "status": "prototype_not_admitted",
-  "name": "brt-cavalry-emp-assault",
-  "family": "cavalry against anti-large",
-  "player": {
-   "subculture": "wh_main_sc_brt_bretonnia",
-   "faction": "wh_main_brt_bretonnia",
-   "units": [
-    "wh_main_brt_cha_lord_0",
-    "wh_main_brt_cav_grail_knights",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_dlc07_brt_cav_questing_knights_0",
-    "wh_main_brt_cav_mounted_yeomen_1"
-   ],
-   "mounts": {
-    "0": "wh_main_brt_cha_lord_4"
-   }
-  },
-  "enemy": {
-   "subculture": "wh_main_sc_emp_empire",
-   "faction": "wh_main_emp_empire",
-   "units": [
-    "wh_main_emp_cha_general_0",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_art_great_cannon"
-   ]
-  },
-  "protected": [
-   "wh_main_brt_cav_grail_knights"
-  ],
-  "content": [
-   "wh_main",
-   "wh_dlc07"
-  ],
   "brief": "Six fully mounted units, anchored by Grail Knights, must assault an Empire defense of four halberds, two handguns, a cannon and a foot general. The attacker loses at the finite timer. Choice of approach, splitting the defense, engagement angles, target priority and disengagement compete; no tactic is prescribed to the controller.",
   "calibration_change": "Reverse the player role of the original six-versus-eight foot-general prototype. Defender evasion was legitimate but offered weak tactical pressure; this new task requires defeating the enemy within 1200 seconds. Roster, map, funds and stat modifier retain their corresponding original values. This is a separate development hypothesis, not a continuation of earlier performance results."
  },
  "brt-cavalry-emp-assault-hard": {
-  "battle_type": "classic",
-  "attacker": "player",
-  "split": "development",
-  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
-  "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "funds_amount": 8000,
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.1",
-   "player_defends": false
-  },
-  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
-  "status": "prototype_not_admitted",
+  "base": "brt-cavalry-emp-assault",
   "name": "brt-cavalry-emp-assault-hard",
-  "family": "cavalry against anti-large",
-  "player": {
-   "subculture": "wh_main_sc_brt_bretonnia",
-   "faction": "wh_main_brt_bretonnia",
-   "units": [
-    "wh_main_brt_cha_lord_0",
-    "wh_main_brt_cav_grail_knights",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_dlc07_brt_cav_questing_knights_0",
-    "wh_main_brt_cav_mounted_yeomen_1"
-   ],
-   "mounts": {
-    "0": "wh_main_brt_cha_lord_4"
-   }
-  },
-  "enemy": {
-   "subculture": "wh_main_sc_emp_empire",
-   "faction": "wh_main_emp_empire",
-   "units": [
-    "wh_main_emp_cha_general_0",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_art_great_cannon"
-   ]
-  },
-  "protected": [
-   "wh_main_brt_cav_grail_knights"
-  ],
-  "content": [
-   "wh_main",
-   "wh_dlc07"
-  ],
-  "brief": "Six fully mounted units, anchored by Grail Knights, must assault an Empire defense of four halberds, two handguns, a cannon and a foot general. The attacker loses at the finite timer. Choice of approach, splitting the defense, engagement angles, target priority and disengagement compete; no tactic is prescribed to the controller.",
-  "calibration_change": "Reverse the player role of the original six-versus-eight foot-general prototype. Defender evasion was legitimate but offered weak tactical pressure; this new task requires defeating the enemy within 1200 seconds. Roster, map, funds and stat modifier retain their corresponding original values. This is a separate development hypothesis, not a continuation of earlier performance results."
+  "expect": {
+   "ai_stats_modifier": "1.1"
+  }
  },
  "brt-cavalry-emp-assault-heldout-wastes": {
-  "battle_type": "classic",
-  "attacker": "player",
-  "split": "held_out",
-  "map": "battle_preset_wh3_nur_wastes_01_04",
-  "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "funds_amount": 8000,
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.0",
-   "player_defends": false
-  },
-  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
-  "status": "prototype_not_admitted",
+  "base": "brt-cavalry-emp-assault",
   "name": "brt-cavalry-emp-assault-heldout-wastes",
-  "family": "cavalry against anti-large",
-  "player": {
-   "subculture": "wh_main_sc_brt_bretonnia",
-   "faction": "wh_main_brt_bretonnia",
-   "units": [
-    "wh_main_brt_cha_lord_0",
-    "wh_main_brt_cav_grail_knights",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_main_brt_cav_knights_of_the_realm",
-    "wh_dlc07_brt_cav_questing_knights_0",
-    "wh_main_brt_cav_mounted_yeomen_1"
-   ],
-   "mounts": {
-    "0": "wh_main_brt_cha_lord_4"
-   }
-  },
-  "enemy": {
-   "subculture": "wh_main_sc_emp_empire",
-   "faction": "wh_main_emp_empire",
-   "units": [
-    "wh_main_emp_cha_general_0",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_halberdiers",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_inf_handgunners",
-    "wh_main_emp_art_great_cannon"
-   ]
-  },
-  "protected": [
-   "wh_main_brt_cav_grail_knights"
-  ],
-  "content": [
-   "wh_main",
-   "wh_dlc07"
-  ],
-  "brief": "Six fully mounted units, anchored by Grail Knights, must assault an Empire defense of four halberds, two handguns, a cannon and a foot general. The attacker loses at the finite timer. Choice of approach, splitting the defense, engagement angles, target priority and disengagement compete; no tactic is prescribed to the controller.",
-  "calibration_change": "Reverse the player role of the original six-versus-eight foot-general prototype. Defender evasion was legitimate but offered weak tactical pressure; this new task requires defeating the enemy within 1200 seconds. Roster, map, funds and stat modifier retain their corresponding original values. This is a separate development hypothesis, not a continuation of earlier performance results."
+  "split": "held_out",
+  "map": "battle_preset_wh3_nur_wastes_01_04"
  },
  "tze-caster-skv-assault": {
-  "battle_type": "classic",
+  "base": "tze-caster-skv-screen",
+  "name": "tze-caster-skv-assault",
   "attacker": "player",
-  "split": "development",
-  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
   "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "funds_amount": 8000,
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.0",
    "player_defends": false
   },
-  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
-  "status": "prototype_not_admitted",
-  "name": "tze-caster-skv-assault",
-  "family": "caster-led force against rat screens",
-  "player": {
-   "subculture": "wh3_main_sc_tze_tzeentch",
-   "faction": "wh3_main_tze_tzeentch",
-   "units": [
-    "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0",
-    "wh3_main_tze_inf_blue_horrors_0",
-    "wh3_main_tze_inf_blue_horrors_0",
-    "wh3_main_tze_inf_forsaken_0",
-    "wh3_main_tze_mon_screamers_0"
-   ]
-  },
-  "enemy": {
-   "subculture": "wh2_main_sc_skv_skaven",
-   "faction": "wh2_main_skv_skaven",
-   "units": [
-    "wh2_main_skv_cha_warlord_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrat_spearmen_0",
-    "wh2_main_skv_inf_clanrat_spearmen_0",
-    "wh2_main_skv_inf_skavenslaves_0",
-    "wh2_main_skv_inf_skavenslaves_0",
-    "wh2_main_skv_inf_warpfire_thrower",
-    "wh2_main_skv_art_plagueclaw_catapult"
-   ]
-  },
-  "protected": [
-   "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0"
-  ],
-  "content": [
-   "wh3_main",
-   "wh2_main",
-   "wh2_dlc17"
-  ],
   "brief": "Kairos and four escorts must assault a ten-unit Skaven army with expendable bodies, a warpfire team and a plagueclaw catapult. Spell selection, finite Winds of Magic, barrier recovery, flight and escort survival compete. The player loses at the 1200-second timer, so indefinite passive survival cannot meet the objective. These are design hypotheses, not prescribed tactics.",
   "calibration_change": "Separate attacker-role candidate preserving the five-versus-ten defender roster, default spellbook, funds and corresponding maps/modifiers. Sol demonstrated a ground cast, then chose defender timeout preservation in the development pilot. No gameplay result or performance ranking is inferred from that observation; this variant requires separate live setup and viability checks."
  },
  "tze-caster-skv-assault-hard": {
-  "battle_type": "classic",
-  "attacker": "player",
-  "split": "development",
-  "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
-  "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "funds_amount": 8000,
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.1",
-   "player_defends": false
-  },
-  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
-  "status": "prototype_not_admitted",
+  "base": "tze-caster-skv-assault",
   "name": "tze-caster-skv-assault-hard",
-  "family": "caster-led force against rat screens",
-  "player": {
-   "subculture": "wh3_main_sc_tze_tzeentch",
-   "faction": "wh3_main_tze_tzeentch",
-   "units": [
-    "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0",
-    "wh3_main_tze_inf_blue_horrors_0",
-    "wh3_main_tze_inf_blue_horrors_0",
-    "wh3_main_tze_inf_forsaken_0",
-    "wh3_main_tze_mon_screamers_0"
-   ]
-  },
-  "enemy": {
-   "subculture": "wh2_main_sc_skv_skaven",
-   "faction": "wh2_main_skv_skaven",
-   "units": [
-    "wh2_main_skv_cha_warlord_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrat_spearmen_0",
-    "wh2_main_skv_inf_clanrat_spearmen_0",
-    "wh2_main_skv_inf_skavenslaves_0",
-    "wh2_main_skv_inf_skavenslaves_0",
-    "wh2_main_skv_inf_warpfire_thrower",
-    "wh2_main_skv_art_plagueclaw_catapult"
-   ]
-  },
-  "protected": [
-   "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0"
-  ],
-  "content": [
-   "wh3_main",
-   "wh2_main",
-   "wh2_dlc17"
-  ],
-  "brief": "Kairos and four escorts must assault a ten-unit Skaven army with expendable bodies, a warpfire team and a plagueclaw catapult. Spell selection, finite Winds of Magic, barrier recovery, flight and escort survival compete. The player loses at the 1200-second timer, so indefinite passive survival cannot meet the objective. These are design hypotheses, not prescribed tactics.",
-  "calibration_change": "Separate attacker-role candidate preserving the five-versus-ten defender roster, default spellbook, funds and corresponding maps/modifiers. Sol demonstrated a ground cast, then chose defender timeout preservation in the development pilot. No gameplay result or performance ranking is inferred from that observation; this variant requires separate live setup and viability checks."
+  "expect": {
+   "ai_stats_modifier": "1.1"
+  }
  },
  "tze-caster-skv-assault-heldout-wastes": {
-  "battle_type": "classic",
-  "attacker": "player",
-  "split": "held_out",
-  "map": "battle_preset_wh3_nur_wastes_01_04",
-  "expect": {
-   "battle_type": "land_normal",
-   "difficulty": "ai_level_very_hard",
-   "funds": "funds_custom",
-   "funds_amount": 8000,
-   "time_limit_s": 1200,
-   "unit_scale": 0.75,
-   "realism": false,
-   "ai_stats_modifier": "1.0",
-   "player_defends": false
-  },
-  "loadouts": "Default recruitment upgrades, all equipped; recorded in starting ability fingerprint. Explicit mount where declared.",
-  "status": "prototype_not_admitted",
+  "base": "tze-caster-skv-assault",
   "name": "tze-caster-skv-assault-heldout-wastes",
-  "family": "caster-led force against rat screens",
-  "player": {
-   "subculture": "wh3_main_sc_tze_tzeentch",
-   "faction": "wh3_main_tze_tzeentch",
-   "units": [
-    "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0",
-    "wh3_main_tze_inf_blue_horrors_0",
-    "wh3_main_tze_inf_blue_horrors_0",
-    "wh3_main_tze_inf_forsaken_0",
-    "wh3_main_tze_mon_screamers_0"
-   ]
-  },
-  "enemy": {
-   "subculture": "wh2_main_sc_skv_skaven",
-   "faction": "wh2_main_skv_skaven",
-   "units": [
-    "wh2_main_skv_cha_warlord_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrats_0",
-    "wh2_main_skv_inf_clanrat_spearmen_0",
-    "wh2_main_skv_inf_clanrat_spearmen_0",
-    "wh2_main_skv_inf_skavenslaves_0",
-    "wh2_main_skv_inf_skavenslaves_0",
-    "wh2_main_skv_inf_warpfire_thrower",
-    "wh2_main_skv_art_plagueclaw_catapult"
-   ]
-  },
-  "protected": [
-   "wh3_main_tze_cha_kairos_fateweaver_custom_battle_0"
-  ],
-  "content": [
-   "wh3_main",
-   "wh2_main",
-   "wh2_dlc17"
-  ],
-  "brief": "Kairos and four escorts must assault a ten-unit Skaven army with expendable bodies, a warpfire team and a plagueclaw catapult. Spell selection, finite Winds of Magic, barrier recovery, flight and escort survival compete. The player loses at the 1200-second timer, so indefinite passive survival cannot meet the objective. These are design hypotheses, not prescribed tactics.",
-  "calibration_change": "Separate attacker-role candidate preserving the five-versus-ten defender roster, default spellbook, funds and corresponding maps/modifiers. Sol demonstrated a ground cast, then chose defender timeout preservation in the development pilot. No gameplay result or performance ranking is inferred from that observation; this variant requires separate live setup and viability checks."
+  "split": "held_out",
+  "map": "battle_preset_wh3_nur_wastes_01_04"
  }
 }

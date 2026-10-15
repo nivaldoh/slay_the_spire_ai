@@ -1,8 +1,7 @@
 """The committed results register, docs/twwarhammer3/results.csv, and its summary.
 
-One row per episode, appended by ``play`` as each episode ends. Rows come only from the
-job's manifest and the episode's result.json, so the register can be rebuilt from
-runs/twwarhammer3/battle.
+One row per episode, appended by ``play`` as each episode ends, from the job's manifest
+and the episode's result.json. The register is committed history: rows are only appended.
 """
 
 import csv
@@ -13,6 +12,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from gameai.provenance import REPO_ROOT
+from twwarhammer3.battle.controllers import MODEL_POLICIES
 
 RESULTS_PATH = REPO_ROOT / "docs/twwarhammer3/results.csv"
 JOBS_ROOT = REPO_ROOT / "runs/twwarhammer3/battle"
@@ -23,10 +23,10 @@ FIELDS = [
     "key_held", "reinforcements_by_type", "own_active", "enemy_active", "added_age_s",
     "ended_by",
 ]
-MODEL_POLICIES = ("llm", "llm_rules", "commander")
 
 
 def harness_version(job: str) -> str:
+    """The version in a job name like ``llm-luna-v15-kho-...``; other names record none."""
     match = re.search(r"-v(\d+(?:\.\d+)*)-", job)
     return match.group(1) if match else ""
 
@@ -44,6 +44,7 @@ def row(job: Path, episode: Path) -> dict:
     policy = result.get("policy", config.get("policy", ""))
     llm = policy in MODEL_POLICIES
     delays = result.get("delays_ms") or []
+    own, enemy = active_left(result, "friendly"), active_left(result, "enemy")
     return {
         "date": manifest["created_at"][:10],
         "job": job.name,
@@ -72,14 +73,15 @@ def row(job: Path, episode: Path) -> dict:
         "reinforcements_by_type": json.dumps(result["objectives"]["reinforcements_by_type"],
                                             sort_keys=True)
         if (result.get("objectives") or {}).get("reinforcements_by_type") else "",
-        "own_active": active_left(result, "friendly"),
-        "enemy_active": active_left(result, "enemy"),
+        "own_active": own if own == "" else round(own, 3),
+        "enemy_active": enemy if enemy == "" else round(enemy, 3),
         "added_age_s": result.get("delay_ms", 0) / 1000,
         "ended_by": result.get("ended_by", ""),
     }
 
 
 def active_left(result: dict, side: str):
+    """The unrounded share of a side's men neither routing nor shattered at the end, or ''."""
     final = (result.get("final") or {}).get(side) or {}
     if final.get("men0") and "active_men" in final:
         return final["active_men"] / final["men0"]
@@ -103,22 +105,6 @@ def record(path: Path, job: Path, episode: Path) -> None:
         if new:
             writer.writeheader()
         writer.writerow(row(job, episode))
-
-
-def rebuild(root: Path, path: Path) -> int:
-    rows = []
-    for manifest in sorted(root.glob("*/manifest.json")):
-        job = manifest.parent
-        created = json.loads(manifest.read_text())["created_at"]
-        for result in sorted(job.glob("episode-*/result.json")):
-            rows.append((created, row(job, result.parent)))
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, FIELDS, lineterminator="\n")
-        writer.writeheader()
-        for _, item in sorted(rows, key=lambda pair: pair[0]):
-            writer.writerow(item)
-    return len(rows)
 
 
 def summary(path: Path) -> str:

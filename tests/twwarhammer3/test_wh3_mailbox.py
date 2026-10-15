@@ -22,7 +22,9 @@ def mailbox(tmp_path):
 def test_reset_removes_every_leftover_message_and_log(tmp_path):
     bridge = tmp_path / "bridge"
     bridge.mkdir()
-    for name in ("observation.json", "orders.json", "orders.json.tmp", "mod.log", "session.json"):
+    for name in ("observation.json", "orders.json", "orders.json.tmp", "mod.log", "session.json",
+                 "replay-1-2.5.jsonl", "imagery-1-2.5.json", "imagery-1-2.5.json.tmp",
+                 "still-1-2.5-opening.png", "capture-1-2.5-opening.json"):
         (bridge / name).write_text("old")
     Mailbox(bridge, job="job-b").reset()
     assert list(bridge.iterdir()) == []

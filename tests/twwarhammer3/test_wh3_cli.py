@@ -1,0 +1,113 @@
+"""The command line in twwarhammer3/__main__.py: argument checks and what each command passes
+on. The commands' work is tested beside its module."""
+import argparse
+import json
+import sys
+
+import pytest
+from wh3_fixtures import configured_job, embedded, make_job
+
+from twwarhammer3.__main__ import add_session_arguments, main
+from twwarhammer3.battle import play, report, setup
+from twwarhammer3.battle.llm import LEDGER_PATH
+from twwarhammer3.battle.scripted import Hold
+from twwarhammer3.battle.stats import RESULTS_PATH
+
+
+@pytest.mark.parametrize("arguments", [["--pause"], ["--speed", "0.5"], ["--speed", "2"]])
+def test_cli_cannot_request_paused_or_changed_speed_battles(arguments):
+    parser = argparse.ArgumentParser()
+    add_session_arguments(parser)
+    default = parser.parse_args([])
+    assert default.speed == 1 and not default.pause
+    with pytest.raises(SystemExit):
+        parser.parse_args(arguments)
+
+
+def test_recorder_defaults_on_and_can_be_disabled_independently_of_stills():
+    parser = argparse.ArgumentParser()
+    add_session_arguments(parser)
+    assert parser.parse_args([]).record_replay is True
+    args = parser.parse_args(["--no-record-replay", "--stills"])
+    assert args.record_replay is False and args.stills is True
+
+
+@pytest.mark.parametrize("option", [["--model", "gpt-6-lunar"], ["--effort", "max"]])
+def test_cli_rejects_an_unknown_model_or_effort_before_launch(tmp_path, monkeypatch, capsys,
+                                                               option):
+    output = tmp_path / "job"
+    monkeypatch.setattr(sys, "argv", [
+        "twwarhammer3", "play", "--scenario", "random", "--output", str(output), *option])
+    with pytest.raises(SystemExit):
+        main()
+    assert "invalid choice" in capsys.readouterr().err
+    assert not output.exists()
+
+
+@pytest.mark.parametrize("path", [[], ["runs/twwarhammer3/battle/job/episode-0000"]])
+def test_watch_next_needs_the_job_directory(monkeypatch, capsys, path):
+    monkeypatch.setattr(sys, "argv", ["twwarhammer3", "watch", *path, "--next"])
+    with pytest.raises(SystemExit):
+        main()
+    assert "--next needs the job directory" in capsys.readouterr().err
+
+
+def test_cli_play_config_has_no_wait_and_the_fixed_ledger_and_register(tmp_path, monkeypatch):
+    seen = {}
+
+    def fake_play(output, config, *, makers):
+        seen.update(output=output, config=config, makers=makers)
+        return {"status": "completed"}
+
+    monkeypatch.setattr(play, "play", fake_play)
+    monkeypatch.setattr(sys, "argv", ["twwarhammer3", "play", "--scenario", "kho5-dwf5",
+                                      "--policy", "hold", "--output", str(tmp_path / "job")])
+    assert main() == 0
+    config = seen["config"]
+    assert config["interval_ms"] == 0 and config["episodes"] == 1
+    assert (config["ledger"], config["results"]) == (str(LEDGER_PATH), str(RESULTS_PATH))
+    assert config["episode_timeout"] is None and config["run_timeout"] is None  # derived later
+    assert not {"menu", "autostart", "no_menu", "no_autostart", "enabled"} & set(config)
+    assert seen["makers"] == {"hold": Hold} and seen["output"] == tmp_path / "job"
+
+
+def test_report_command_prints_the_text_and_saves_text_json_and_html(tmp_path, monkeypatch,
+                                                                    capsys):
+    a = make_job(tmp_path, "a", [("hold", -.1, "lost"), ("skills", .1, "won")])
+    b = make_job(tmp_path, "b", [("hold", -.2, "lost"), ("skills", .1, "won")])
+    stem = tmp_path / "reports/nested/pair"
+    monkeypatch.setattr(sys, "argv", ["twwarhammer3", "report", str(a), str(b),
+                                      "--output", str(stem)])
+    assert main() == 0
+    text = report.render(report.collect([a, b]))
+    assert capsys.readouterr().out == text + "\n"
+    assert (tmp_path / "reports/nested/pair.txt").read_text() == text + "\n"
+    assert json.loads((tmp_path / "reports/nested/pair.json").read_text()) == json.loads(
+        json.dumps(report.collect([a, b])))
+    assert "<html" in (tmp_path / "reports/nested/pair.html").read_text()
+    monkeypatch.setattr(sys, "argv", ["twwarhammer3", "stats", "--report", str(a)])
+    with pytest.raises(SystemExit):
+        main()
+
+
+def test_report_command_collects_once_and_writes_json_text_and_html(tmp_path, monkeypatch,
+                                                                    capsys):
+    source = report.collect([configured_job(tmp_path, "a")])
+    calls = []
+
+    def collect(jobs):
+        calls.append(jobs)
+        return source
+
+    monkeypatch.setattr(report, "collect", collect)
+    monkeypatch.setattr(setup, "scenarios", dict)
+    stem = tmp_path / "nested/report"
+    monkeypatch.setattr("sys.argv", ["wh3", "report", "a", "--output", str(stem)])
+    assert main() == 0
+    assert len(calls) == 1
+    assert json.loads(stem.with_suffix(".json").read_text()) == source
+    text = report.render(source)
+    assert capsys.readouterr().out == text + "\n"
+    assert stem.with_suffix(".txt").read_text().strip() == text
+    assert embedded(stem.with_suffix(".html").read_text())["report"]["groups"][0][
+        "controllers"] == source["groups"][0]["controllers"]

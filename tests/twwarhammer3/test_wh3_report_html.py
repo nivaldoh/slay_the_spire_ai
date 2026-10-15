@@ -1,33 +1,17 @@
+import base64
+import gzip
+import io
 import json
 import re
+import sys
 from copy import deepcopy
-from pathlib import Path
 
 import pytest
-from test_wh3_benchmark import make_job
+from make_wh3_report_demo import demo_report
+from PIL import Image
+from wh3_fixtures import configured_job, embedded, make_job
 
 from twwarhammer3.battle import report, report_html
-
-DEMO = Path(__file__).parents[1] / "fixtures/wh3_field_report_demo.json"
-
-
-def embedded(html):
-    return json.loads(re.search(
-        r'<script id="report-data" type="application/json">(.*?)</script>', html, re.S)[1])
-
-
-def configured_job(tmp_path, name, model="model-a", effort="low", **changes):
-    job = make_job(tmp_path, name, [("llm_rules", .3, "won")])
-    path = job / "manifest.json"
-    manifest = json.loads(path.read_text())
-    manifest.update(track="obs-v3/act-v2/live-1x")
-    manifest["config"].update(model=model, effort=effort, observe_ms=1000, tick_ms=250,
-                              interval_ms=0)
-    manifest.update(changes)
-    path.write_text(json.dumps(manifest))
-    (job / "environment.json").write_text(json.dumps({
-        "game": {"steam_build_id": "123", "sha256": "game-hash"}}))
-    return job
 
 
 def test_compatible_models_and_efforts_display_together_without_pooling_or_new_pairs(tmp_path):
@@ -124,7 +108,7 @@ def test_duplicate_job_basenames_keep_pair_identifiers_distinct(tmp_path):
 
 
 def test_demo_is_explicit_and_cannot_mix_with_recorded_evidence(tmp_path):
-    demo = json.loads(DEMO.read_text())
+    demo = demo_report(tmp_path / "demo")
     data = embedded(report_html.render(demo))
     assert data["evidence_kind"] == "synthetic"
     assert len(data["comparisons"]) == 1
@@ -132,6 +116,9 @@ def test_demo_is_explicit_and_cannot_mix_with_recorded_evidence(tmp_path):
         "Demo controller A", "Demo controller B", "Demo controller C"}
     assert {trial["delay_ms"] for group in demo["groups"] for trial in group["trials"]} == {
         0, 6000, 10000}
+    assert len(data["report"]["jobs"]) == 7 and data["report"]["throughput"]["valid_trials"] == 18
+    assert json.loads(gzip.decompress(base64.b64decode(data["replays"]["g0-t0"])))[
+        "evidence_kind"] == "synthetic"
     recorded = report.collect([configured_job(tmp_path, "real")])
     recorded["groups"].append(demo["groups"][0])
     with pytest.raises(ValueError, match="separate reports"):
@@ -150,78 +137,69 @@ def test_prepooled_different_controller_cards_are_refused(tmp_path):
         report_html.render(source)
 
 
-def test_cli_collects_once_and_preserves_text_and_json(tmp_path, monkeypatch, capsys):
-    from twwarhammer3.__main__ import main
-
-    source = report.collect([configured_job(tmp_path, "a")])
-    calls = []
-
-    def collect(jobs):
-        calls.append(jobs)
-        return source
-
-    monkeypatch.setattr(report, "collect", collect)
-    monkeypatch.setattr(report_html, "SCENARIOS", tmp_path / "absent.json")
-    output = tmp_path / "nested/report.html"
-    json_output = tmp_path / "new-json-directory/report.json"
-    monkeypatch.setattr("sys.argv", ["wh3", "stats", "--report", "a", "--report-html",
-                                    str(output), "--report-json", str(json_output)])
-    assert main() == 0
-    assert len(calls) == 1
-    assert json.loads(json_output.read_text()) == source
-    assert capsys.readouterr().out == report.render(source) + "\n"
-    assert embedded(output.read_text())["report"]["groups"][0]["controllers"] == source[
-        "groups"][0]["controllers"]
-
-
-def test_html_cli_requires_report(monkeypatch, capsys):
-    from twwarhammer3.__main__ import main
-
-    monkeypatch.setattr("sys.argv", ["wh3", "stats", "--report-html", "report.html"])
-    with pytest.raises(SystemExit, match="2"):
-        main()
-    assert "--report-html requires --report JOB..." in capsys.readouterr().err
-
-
-def test_recorded_stills_embed_once_per_controller_and_keep_failure_metadata(tmp_path):
-    import base64
-    import gzip
-
-    image = pytest.importorskip('PIL.Image')
-    job = make_job(tmp_path, 'pictured', [('hold', .1, 'won'), ('hold', .2, 'won')])
-    for name in ('episode-0000', 'episode-0001'):
+def test_recorded_stills_embed_once_per_controller_and_keep_failure_metadata(tmp_path,
+                                                                            monkeypatch):
+    job = make_job(tmp_path, "pictured", [("hold", .1, "won"), ("hold", .2, "won")])
+    for name in ("episode-0000", "episode-0001"):
         episode = job / name
-        (episode / 'trace.jsonl').write_text(json.dumps({'kind': 'observation', 'observation': {
-            'seq': 0, 'time_ms': 0, 'friendly': [{'id': 'f1', 'type': 'demo'}], 'enemy': []}}))
-        image.new('RGB', (20, 10), 'blue').save(episode / 'opening.png')
-        (episode / 'stills.json').write_text(json.dumps([
-            {'file': 'opening.png', 'time_ms': 0, 'trigger': 'opening', 'visibility': 'unverified'},
-            {'status': 'capture_failed', 'error': 'unsupported API'}]))
-        (episode / 'unit_names.json').write_text(json.dumps({'f1': 'Localised name'}))
+        (episode / "trace.jsonl").write_text(json.dumps({"kind": "observation", "observation": {
+            "seq": 0, "time_ms": 0, "friendly": [{"id": "f1", "type": "demo"}], "enemy": []}}))
+        Image.new("RGB", (20, 10), "blue").save(episode / "opening.png")
+        (episode / "stills.json").write_text(json.dumps([
+            {"file": "opening.png", "time_ms": 0, "trigger": "opening", "visibility": "unverified"},
+            {"status": "capture_failed", "error": "unsupported API"}]))
+        (episode / "unit_names.json").write_text(json.dumps({"f1": "Localised name"}))
     data = embedded(report_html.render(report.collect([job])))
-    payloads = [json.loads(gzip.decompress(base64.b64decode(data['replays'][f'g0-t{i}'])))
+    payloads = [json.loads(gzip.decompress(base64.b64decode(data["replays"][f"g0-t{i}"])))
                 for i in range(2)]
-    assert payloads[0]['stills'][0]['image'].startswith('data:image/webp;base64,')
-    assert payloads[0]['stills'][0]['policy_input'] is False
-    assert payloads[0]['stills'][1]['status'] == 'capture_failed'
-    assert payloads[1]['stills'][0]['status'] == 'metadata_only_nonfeatured_trial'
-    assert 'image' not in payloads[1]['stills'][0]
-    assert payloads[0]['roster'][0]['name'] == 'Localised name'
+    assert payloads[0]["stills"][0]["image"].startswith("data:image/webp;base64,")
+    assert payloads[0]["stills"][0]["policy_input"] is False
+    assert payloads[0]["stills"][1]["status"] == "capture_failed"
+    assert payloads[1]["stills"][0]["status"] == "metadata_only_nonfeatured_trial"
+    assert "image" not in payloads[1]["stills"][0]
+    assert payloads[0]["roster"][0]["name"] == "Localised name"
+    # Without Pillow the report refuses to drop the images silently.
+    monkeypatch.setitem(sys.modules, "PIL", None)
+    with pytest.raises(RuntimeError, match="needs Pillow"):
+        report_html.render(report.collect([job]))
+
+
+def test_stills_resize_preserve_provenance_and_report_failures(tmp_path):
+    Image.new("RGB", (2000, 1500), "blue").save(tmp_path / "opening.tga")
+    entries = [{"file": "opening.tga", "time_ms": 1000, "visibility": "unverified"},
+               {"file": "missing.tga", "time_ms": 2000},
+               {"status": "capture_failed", "error": "unsupported API"}]
+    output = report_html.stills(tmp_path, entries, embed=True)
+    assert output[0]["original_size"] == [2000, 1500]
+    assert max(output[0]["size"]) <= 1600 and output[0]["size"][1] <= 1000
+    assert output[0]["time_ms"] == 1000 and output[0]["policy_input"] is False
+    assert output[0]["visibility"] == "unverified"
+    data = base64.b64decode(output[0]["image"].split(",")[1])
+    with Image.open(io.BytesIO(data)) as decoded:
+        assert decoded.format == "WEBP"
+    assert output[1]["status"] == "error"
+    assert output[2]["status"] == "capture_failed"
+    assert "image" not in report_html.stills(tmp_path, entries, embed=False)[0]
+
+
+def test_detailed_still_fits_the_image_budget(tmp_path):
+    Image.effect_noise((2000, 1500), 100).convert("RGB").save(tmp_path / "detail.png")
+    assert report_html.webp(tmp_path / "detail.png")["bytes"] <= report_html.MAX_STILL_BYTES
 
 
 def test_featured_trial_is_earliest_completed_model_even_when_it_loses(tmp_path):
-    jobs = [configured_job(tmp_path, 'later-win'), configured_job(tmp_path, 'earlier-loss')]
+    jobs = [configured_job(tmp_path, "later-win"), configured_job(tmp_path, "earlier-loss")]
     for index, job in enumerate(jobs):
-        path = job / 'manifest.json'
+        path = job / "manifest.json"
         manifest = json.loads(path.read_text())
-        manifest['created_at'] = '2026-10-15T12:00:00Z' if index == 0 else '2026-10-14T12:00:00Z'
+        manifest["created_at"] = "2026-10-15T12:00:00Z" if index == 0 else "2026-10-14T12:00:00Z"
         path.write_text(json.dumps(manifest))
-        episode = job / 'episode-0000'
-        (episode / 'trace.jsonl').write_text(json.dumps({'kind': 'observation', 'observation': {
-            'seq': 0, 'time_ms': 0, 'friendly': [], 'enemy': []}}))
-        path = episode / 'result.json'
+        episode = job / "episode-0000"
+        (episode / "trace.jsonl").write_text(json.dumps({"kind": "observation", "observation": {
+            "seq": 0, "time_ms": 0, "friendly": [], "enemy": []}}))
+        path = episode / "result.json"
         result = json.loads(path.read_text())
-        result['status'] = 'won' if index == 0 else 'lost'
+        result["status"] = "won" if index == 0 else "lost"
         path.write_text(json.dumps(result))
     data = embedded(report_html.render(report.collect(jobs)))
-    assert data['featured']['comparison-1'] == 'g0-t1'
+    assert data["featured"]["comparison-1"] == "g0-t1"

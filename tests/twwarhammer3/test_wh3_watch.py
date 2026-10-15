@@ -1,9 +1,12 @@
+"""The live job follower in twwarhammer3/battle/watch.py."""
 import json
+import os
+import time
 
-from test_wh3_llm import observation
+from wh3_fixtures import observation
 
-from twwarhammer3.battle.play import caption
-from twwarhammer3.battle.watch import Feed, follow
+from twwarhammer3.battle import watch
+from twwarhammer3.battle.watch import Feed, check, follow, next_event
 
 PROMPT = ("Battle notes:\n(none)\n\nDropped or rejected since your last plan:\n"
           "engine rejected f1 ability roar at self: unavailable_ability\n\nState: ...")
@@ -22,11 +25,14 @@ def records():
                       "abilities": [ability], "reason": "Hold the line.", "notes": "e2 hides",
                       "dropped": [], "plan_age_s": 6.0, "attempts": [attempt],
                       "prompt": PROMPT}},
-        {"kind": "ack", "request": "r7", "ack": {"applied_ms": 30300, "results": [
-            {"index": 1, "unit": "f1", "ok": False, "error": "unavailable_ability"}]}},
+        {"kind": "ack", "request": "r7", "latency": {"delay_ms": 300}, "ack": {
+            "applied_ms": 30300,
+            "results": [{"index": 1, "unit": "f1", "ok": False, "error": "unavailable_ability"}]}},
         {"kind": "observation", "observation": observation(61000)},
+        # Lua sends an empty table as []: here, a battle without capture points.
         {"kind": "result", "observation": dict(observation(90000), result="won", final={
-            "friendly": {"men": 60, "men0": 120}, "enemy": {"men": 10, "men0": 100}})},
+            "friendly": {"men": 60, "men0": 120}, "enemy": {"men": 10, "men0": 100},
+            "objectives": []})},
     ]
 
 
@@ -67,19 +73,6 @@ def test_follow_prints_a_finished_job_and_returns(tmp_path):
     assert "         Dropped or rejected since your last plan:" in prompts
 
 
-def test_captions_show_what_a_model_saw_and_decided():
-    state = observation(36000)
-    plan = {"type": "commander", "model": "gpt-6-luna", "reason": "Wait.", "plan_age_s": 6.0,
-            "plan": [{"unit": "f1", "skill": "charge", "target": None, "x": None, "z": None}]}
-    assert caption(state, plan, []) == (
-        "36 s: gpt-6-luna plan from the state at 30 s\nWait.\nf1 charge")
-    direct = {"type": "llm", "model": "gpt-6-luna", "reason": "Go."}
-    order = {"unit": "f2", "type": "attack", "target": "e1", "mode": "melee", "run": False}
-    assert caption(state, direct, [order]) == (
-        "36 s: gpt-6-luna saw us 2/2u 111m  seen 1/2u 90m\nGo.\nf2 attack e1 melee")
-    assert caption(state, {"type": "commander"}, []) is None
-
-
 def test_a_killed_job_without_a_result_ends_the_watch(tmp_path):
     episode = tmp_path / "job" / "episode-0000"
     episode.mkdir(parents=True)
@@ -88,3 +81,31 @@ def test_a_killed_job_without_a_result_ends_the_watch(tmp_path):
     lines = []
     follow(tmp_path / "job", out=lines.append)
     assert lines[0] == "== episode-0000"
+
+
+def test_next_returns_once_per_episode_stall_or_job_end(tmp_path, monkeypatch):
+    job = tmp_path / "job"
+    episode = job / "episode-0000"
+    episode.mkdir(parents=True)
+    (episode / "trace.jsonl").write_text("".join(json.dumps(r) + "\n" for r in records()))
+    manifest = {"status": "running", "episodes": []}
+    (job / "manifest.json").write_text(json.dumps(manifest))
+    assert check(job, 0) is None
+    for path, age in ((job / "manifest.json", 400), (episode / "trace.jsonl", 300)):
+        os.utime(path, (time.time() - age, time.time() - age))
+    assert check(job, 0).startswith("STALL: episode-0000/trace.jsonl unchanged for 30")
+    assert check(job, 0, stall_s=600) is None
+    (episode / "result.json").write_text(json.dumps({"status": "won", "battle_s": 90,
+                                                     "policy": "commander"}))
+    manifest = {"status": "completed", "episodes": [{"episode": "episode-0000"}]}
+    (job / "manifest.json").write_text(json.dumps(manifest))
+    lines = check(job, 0).splitlines()
+    assert lines[0].startswith("episode-0000: won at 90 s battle time;")
+    assert lines[0].endswith("; policy commander")
+    assert lines[1] == "final at 90 s: us 2/2u 111m  seen 1/2u 90m"
+    assert lines[-2:] == ["notes: e2 hides", "job completed"]
+    assert next_event(job) == check(job, 1) == "job completed"
+    monkeypatch.setattr(watch, "START_S", 0)
+    (tmp_path / "refused.log").write_text("starting\nRuntimeError: uncommitted changes\n")
+    assert next_event(tmp_path / "refused", poll=0) == (
+        "NOT STARTED: starting | RuntimeError: uncommitted changes")

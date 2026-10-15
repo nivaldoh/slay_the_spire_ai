@@ -291,3 +291,28 @@ def test_the_ability_probe_calls_in_the_cheapest_affordable_reinforcement_every_
     state["time_ms"] = 20000
     assert [o["reinforcement"] for o in probe.decide(state)
             if o["type"] == "reinforce"] == ["marauders"]
+
+
+def test_the_ability_probe_casts_ready_abilities_once_per_five_seconds():
+    probe = skills.ProbeAbilities()
+    state = {"time_ms": 10000, "friendly": [
+        {"id": "f1", "x": 0.0, "z": 0.0, "men": 1, "state": ["melee"], "target": "e2",
+         "abilities": [{"key": "roar", "can_use": True, "ready": True, "target": "Self"},
+                       {"key": "bolt", "can_use": True, "ready": True, "target": "Enemy"}]},
+        {"id": "f2", "x": 5.0, "z": 9.0, "men": 80, "state": ["melee"], "target": "e2"}],
+        "enemy": [{"id": "e2", "x": 3.0, "z": 3.0}], "enemy_roster": [{"id": "e2"}],
+        "army": {"abilities": [{"key": "horn", "target": "Ground, Ally", "ready": True},
+                               {"key": "rage", "target": "Ally", "ready": True},
+                               {"key": "blade", "target": "Ground", "ready": False}]}}
+    orders = probe.decide(state)
+    validate_orders(orders, state)
+    assert [order for order in orders if order["type"] == "ability"] == [
+        {"unit": "f1", "type": "ability", "ability": "roar", "target": None, "x": None,
+         "z": None},
+        {"unit": "army", "type": "ability", "ability": "horn", "target": None, "x": 5.0,
+         "z": 9.0},
+        {"unit": "army", "type": "ability", "ability": "rage", "target": "f2", "x": None,
+         "z": None}]
+    assert not [o for o in probe.decide(dict(state, time_ms=14000)) if o["type"] == "ability"]
+    assert len([o for o in probe.decide(dict(state, time_ms=15000))
+                if o["type"] == "ability"]) == 3
