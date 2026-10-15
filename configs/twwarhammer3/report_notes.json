@@ -336,6 +336,67 @@
           ]
         }
       ]
+    },
+    "bench-c1-cavalry-ai11-02-20261015/episode-0000": {
+      "selected": true,
+      "highlights": [
+        {
+          "time_ms": 186200,
+          "lead_in_s": 20,
+          "end_ms": 236000,
+          "title": "The guns break first",
+          "text": "Following its stated plan to go “around the south side of the central obstruction to approach the enemy flank”, the cavalry broke the guns first: Handgunners 2 began fleeing at 3:06, the Great Cannons at 3:20 and Handgunners 1 at 3:56.",
+          "units": [
+            "f1",
+            "f2",
+            "f3",
+            "f4",
+            "f5",
+            "e6",
+            "e7",
+            "e8"
+          ],
+          "kind": "maneuver",
+          "feature": true,
+          "refs": [
+            "trace.jsonl:4",
+            "replay.jsonl:182",
+            "replay.jsonl:196",
+            "replay.jsonl:232"
+          ]
+        },
+        {
+          "time_ms": 312200,
+          "lead_in_s": 15,
+          "end_ms": 487100,
+          "title": "Pressing the halberd line to the end",
+          "text": "After the guns broke, the halberd line gave way one unit at a time, Halberdiers 4 at 5:12, the General at 5:40, Halberdiers 2 at 5:50, Halberdiers 1 at 7:17 and the last, Halberdiers 3, at 8:07, when the game declared the win, while three of the four knight regiments had begun fleeing by 7:59.",
+          "units": [
+            "f1",
+            "f2",
+            "f3",
+            "f4",
+            "f5",
+            "e1",
+            "e2",
+            "e3",
+            "e4",
+            "e5"
+          ],
+          "kind": "outcome",
+          "feature": false,
+          "refs": [
+            "replay.jsonl:308",
+            "replay.jsonl:336",
+            "replay.jsonl:346",
+            "replay.jsonl:401",
+            "replay.jsonl:433",
+            "replay.jsonl:461",
+            "replay.jsonl:475",
+            "replay.jsonl:484"
+          ]
+        }
+      ]
     }
   }
 }

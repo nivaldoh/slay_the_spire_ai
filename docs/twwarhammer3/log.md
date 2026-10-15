@@ -127,7 +127,9 @@ prompt's last-sighting memory listed at the map edges without saying they were f
 the halberdiers lost 58 men and the army routed at 1005 s. Supported: continuing against
 the halberdiers separated the two. Plausible, not shown: the last-sighting entries led the
 search. Unsupported: the route or losses on the way in decided it (124 and 120 knights at
-about 257 s).
+about 257 s). The report `reports/c1-cavalry-ai11.html` features Sol's win as the selected
+example with two analyst notes written from its recorded events (`report_notes.json`; not
+yet reviewed by a second reader or the owner).
 
 ## 2026-10-15: Skaven swarm screens
 
