@@ -94,6 +94,7 @@ def prepare_runtime() -> dict:
     (GAME_DIR / MOD_LIST).write_text(mod_list_text(windows.windows_path(mods)), encoding="ascii")
     supervisor = Path(windows.__file__).with_name("windows_game.py")
     shutil.copy2(supervisor, RUNTIME_DIR / "windows_game.py")
+    shutil.copy2(Path(__file__).with_name("windows_capture.py"), RUNTIME_DIR / "windows_capture.py")
     return {
         "steam_build_id": build,
         "startup": startup_record,

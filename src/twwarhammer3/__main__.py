@@ -147,6 +147,7 @@ def main() -> int:
         return 0
 
     if args.command == "launch":
+        from twwarhammer3.battle.imagery import PassiveCapture
         from twwarhammer3.engine.mailbox import Mailbox
         from twwarhammer3.engine.runtime import BRIDGE_DIR, OwnedGame, RuntimeLock, prepare_runtime
 
@@ -161,7 +162,9 @@ def main() -> int:
             mailbox.reset()
             mailbox.write_session(session_from(args))
             try:
-                with OwnedGame(output / "game.log", timeout=args.timeout) as game:
+                with (OwnedGame(output / "game.log", timeout=args.timeout) as game,
+                      PassiveCapture(BRIDGE_DIR, job=job, pid=game.info.get("pid", 0),
+                                     enabled=args.stills)):
                     print(json.dumps(game.info), flush=True)
                     offsets = {"mod.log": 0, "menu.log": 0}
                     while game.process.poll() is None:

@@ -15,10 +15,11 @@ way. There is no external game API; the mod is the API.
 
 - `src/twwarhammer3/mod/` is packed into `C:/wh3-agent/mods/twwarhammer3.pack` by
   `engine/pack.py` and loaded through a mod list the executable takes as its argument
-  (`engine/runtime.py`). Four scripts: `script/_lib/mod/twwarhammer3_json.lua` (vendored
+  (`engine/runtime.py`). Five scripts: `script/_lib/mod/twwarhammer3_json.lua` (vendored
   rxi json.lua), `script/_lib/mod/twwarhammer3_ui.lua` (UI steps shared by the frontend
   and battle scripts), `script/frontend/mod/twwarhammer3_frontend.lua` (drives the menus)
-  and `script/battle/mod/twwarhammer3_battle.lua` (observations, orders, result).
+  `script/_lib/mod/twwarhammer3_imagery.lua` (optional presentation capture), and
+  `script/battle/mod/twwarhammer3_battle.lua` (observations, orders, result).
 - The controller in WSL talks to the scripts through files in `C:/wh3-agent/bridge/`
   (`engine/mailbox.py` documents the messages): `session.json` enables the scripts and
   sets observation and decision intervals; `menu.json` carries frontend steps (find a UI component by
@@ -128,8 +129,9 @@ saved jobs with `stats --report JOB... --report-html FILE`; no game or API call 
 
 The [visual report](visual-report-plan.md) now includes tactical replay from saved
 public observations, decision timing, exact prompts/replies, factual bookmarks and
-shared-scale trial tracks. The optional `--record-replay` recorder is implemented;
-its live cost comparison and game imagery probes are in progress. Event captions are
+shared-scale trial tracks. The public 1 Hz recorder defaults on after its live cost check
+(`--no-record-replay` disables it). Game imagery acceptance is in progress behind
+`--stills`. Event captions are
 rule-based; quoted model reasons remain labelled as stated rationale.
 
 ## What the first night showed (2026-10-13)

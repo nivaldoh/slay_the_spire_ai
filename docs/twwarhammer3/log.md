@@ -1,5 +1,27 @@
 # WH3 battle versions
 
+## Native imagery probe and passive capture (2026-10-15 UTC)
+
+`visual-probes/imagery-20261015` on `f395275` ran the scripted Khorne–Dwarf probe at
+unpaused 1× until its planned 90 s wall cutoff (truncated, no engine result). Native
+`common.take_screenshot` wrote a 1920×1080 TGA (8,294,418 bytes) at 6.1 battle seconds;
+the Lua call measured 43.007 ms. `UnitRecordContext.Name` and `UnitDetailsContext.Name`
+both returned “Herald of Khorne”; the other two candidate fields returned nil.
+
+The requested camera position was about 500 m above the terrain, but the engine kept
+it about 100 m above ground and clamped its pitch. Actual camera position/target are
+retained in `visual-probe-metadata.json`. No world/pixel registration is established;
+the report uses the grid and separate game stills. A follow-up raises the permitted
+camera height and requests a 60-degree downward view aimed at public units.
+
+Production capture now uses passive Windows Pillow capture in a background thread,
+with job/battle and foreground-process checks. Capture errors are presentation metadata;
+there is no wait between decision and order submission. The native call is retained
+only in the diagnostic probe. Pillow is already installed for Windows Python here;
+on another installation its absence is recorded as a failed capture. Image conversion
+for the offline report uses the optional WSL `report` extra. The short passive check
+and Sol acceptance are still pending. No API spend in either imagery probe.
+
 ## Recorder acceptance and imagery candidate (2026-10-15 UTC)
 
 Owner-requested visual acceptance, not calibration. Source `581119e` ran sequential

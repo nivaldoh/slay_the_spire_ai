@@ -2,7 +2,10 @@ import argparse
 import base64
 import io
 import json
+import threading
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
 
@@ -44,6 +47,52 @@ def test_capture_copy_keeps_failures_and_checks_battle_identity(tmp_path):
     assert all(shot["status"] == "capture_failed" for shot in shots[1:])
     assert all("file" not in shot for shot in shots[1:])
     assert json.loads((episode / "unit_names.json").read_text()) == {"f1": "Lord"}
+
+
+def test_passive_capture_runs_outside_caller_and_joins_evidence(tmp_path, monkeypatch):
+    bridge, episode = tmp_path / "bridge", tmp_path / "episode"
+    bridge.mkdir()
+    episode.mkdir()
+    (bridge / "observation.json").write_text(json.dumps({"job": "j", "battle": "b"}))
+    (bridge / "imagery-b.json").write_text(json.dumps({"job": "j", "battle": "b", "stills": [
+        {"trigger": "opening", "status": "capture_ready", "time_ms": 1000}], "names": {}}))
+    entered, release = threading.Event(), threading.Event()
+
+    def capture(*args, **kwargs):
+        entered.set()
+        assert release.wait(2)
+        (bridge / "still-b-opening.png").write_bytes(b"image")
+        return SimpleNamespace(stdout=json.dumps({"status": "captured",
+            "file": "still-b-opening.png", "time_ms": 1100, "grab_wall_s": .04}))
+
+    monkeypatch.setattr(imagery, "windows_path", str)
+    monkeypatch.setattr(imagery.subprocess, "run", capture)
+    with imagery.PassiveCapture(bridge, job="j", pid=123, enabled=True):
+        assert entered.wait(2)
+        # The caller remains free to submit orders while the screenshot is blocked.
+        assert not release.is_set()
+        release.set()
+        result = imagery.copy_presentation(bridge, episode, job="j", battle="b")
+    assert result["status"] == "copied"
+    shot = json.loads((episode / "stills.json").read_text())[0]
+    assert shot["time_ms"] == 1100 and shot["grab_wall_s"] == .04
+    assert shot["status"] == "captured" and shot["policy_input"] is False
+
+
+def test_passive_capture_refuses_another_foreground_process(tmp_path, monkeypatch):
+    grab = pytest.importorskip("PIL.ImageGrab")
+    from twwarhammer3.engine import windows_capture
+
+    user = Mock()
+    user.GetForegroundWindow.return_value = 42
+    user.GetWindowThreadProcessId.side_effect = lambda _, owner: setattr(owner._obj, "value", 999)
+    monkeypatch.setattr(windows_capture.ctypes, "WinDLL", lambda *a, **k: user, raising=False)
+    screenshot = Mock()
+    monkeypatch.setattr(grab, "grab", screenshot)
+    with pytest.raises(RuntimeError, match="not foreground"):
+        windows_capture.capture(123, tmp_path / "shot.png", tmp_path / "observation.json", "j", "b")
+    screenshot.assert_not_called()
+    assert not (tmp_path / "shot.png").exists()
 
 
 def test_stills_resize_preserve_provenance_and_report_failures(tmp_path):
@@ -107,7 +156,7 @@ def test_imagery_probe_is_valid_lua51():
     assert compile_lua(visual_probe.LUA)
 
 
-def test_lua_capture_triggers_use_public_cluster_and_keep_capture_failures():
+def test_lua_capture_triggers_use_public_cluster_and_keep_camera_failures():
     lua = pytest.importorskip("lupa.lua51").LuaRuntime()
     lua.execute('''
         clock_ms, captures, callbacks = 1000, 0, {}
@@ -116,13 +165,14 @@ def test_lua_capture_triggers_use_public_cluster_and_keep_capture_failures():
                     get_z = function() return z end}
         end
         camera = {position = function() return position end, target = function() return target end,
+            change_height_range = function() end,
             move_to = function(_, p, t) position, target = p, t end}
         bm = {battle = {get_terrain_height = function() return 20 end,
                        time_elapsed_ms = function() return clock_ms end},
               camera = function() return camera end,
               repeat_real_callback = function(_, fn, interval, name) callbacks[name] = fn end,
               remove_real_callback = function(_, name) callbacks[name] = nil end}
-        common = {take_screenshot = function() captures = captures + 1 end}
+        common = {take_screenshot = function() error('Native capture must not run') end}
         twwarhammer3_json = {encode = function(record) saved = record; return 'json' end}
         io = {open = function() return {write = function() end, close = function() end} end}
         os.remove = function() end
@@ -139,7 +189,8 @@ def test_lua_capture_triggers_use_public_cluster_and_keep_capture_failures():
     g = lua.globals()
     assert g.saved.stills[1].status == "pending" and g.captures == 0
     lua.execute("clock_ms = 1500; callbacks.wh3_still_opening()")
-    assert g.saved.stills[1].time_ms == 1500 and g.captures == 1
+    assert g.saved.stills[1].time_ms == 1500 and g.captures == 0
+    assert g.saved.stills[1].status == "capture_ready"
     lua.execute('''sample(35000, {
         {x=0,z=0,men=1,state={'melee'}}, {x=10,z=10,men=1,state={'melee'}},
         {x=20,z=20,men=1,state={'melee'}}, {x=1000,z=1000,men=1,state={'melee'}}})''')
@@ -147,16 +198,15 @@ def test_lua_capture_triggers_use_public_cluster_and_keep_capture_failures():
     assert g.target.get_x() == g.target.get_z() == 10
     lua.execute("callbacks.wh3_still_first_contact()")
     lua.execute("sample(36000, {{x=0,z=0,men=1,state={'routing'}}})")
-    assert g.saved.stills[3].status == "throttled" and g.captures == 2
+    assert g.saved.stills[3].status == "throttled" and g.captures == 0
     lua.execute('''
-        common.take_screenshot = function() error('capture unavailable') end
+        camera.move_to = function() error('camera unavailable') end
         sample(37000, {{x=0,z=0,men=1,state={}}}, true)
-        callbacks.wh3_still_ending()
         sample(38000, {{x=0,z=0,men=1,state={}}}, true)
     ''')
     assert len(g.saved.stills) == 4
     assert g.saved.stills[4].status == "capture_failed"
-    assert "capture unavailable" in g.saved.stills[4].error
+    assert "camera unavailable" in g.saved.stills[4].error
 
 
 def test_lua_presentation_never_queries_hidden_enemy_positions_or_policy_memory():

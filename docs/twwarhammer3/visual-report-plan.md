@@ -1,11 +1,12 @@
 # WH3 Visual Battle Report
 
-Status: implementation in progress, 2026-10-14. Phase 1 is implemented and validated
-offline; phase 2 code and fake-bridge/Lua tests pass, with live cost validation pending.
-Phase 3 has a prepared scripted probe and optional WebP conversion, but capture,
-localised names and model-trial acceptance still await the probe. It extends the
-[offline field report](field-report.md) and its exporter. Phase 1 needs no game run; the
-in-game steps of phases 2 and 3 run only when the owner asks. Calibration stays stopped.
+Status: implementation in progress, 2026-10-15. Phases 1 and 2 are implemented;
+offline validation and the live recorder off/on audit passed. Recording now defaults
+on, with `--no-record-replay` available. The phase 3 capture/name/report candidate is
+implemented; its native probe confirmed capture and names, but measured a 43 ms
+capture call and clamped camera placement. A passive capture follow-up and the
+authorized Sol low acceptance still follow. It extends the [offline field report](field-report.md); calibration
+stays stopped. The owner requested these live checks separately.
 
 ## Goal
 
@@ -252,8 +253,12 @@ are not separately measured. The inspector therefore labels call-minus-provider 
 roundtrip-minus-think as residuals and explains what they contain. It does not claim
 that these wall-clock components sum to battle-clock information age.
 
-The 1 Hz recorder is explicitly opt-in with `play --record-replay` until its live cost
-is measured. Recorder settings/version enter compatibility groups. The Lua recorder
+The 1 Hz recorder now defaults on; `play --no-record-replay` disables it. The
+owner-requested off/on checks averaged 2.851 ms total CPU per sample, with battle/wall
+clock ratios 0.998213 off and 0.997703 on. This single pair supports low measured
+cost, not a precise causal overhead estimate. The 260 frames included the terminal
+result and matched public ids/types at all 104 timestamps shared with the trace.
+Full audit: `runs/twwarhammer3/visual-probes/recorder-acceptance.json`. Recorder settings/version enter compatibility groups. The Lua recorder
 has separate enemy sighting memory, so it cannot change policy knowledge, and flushes
 its terminal frame before publishing the result. The harness copies a battle-specific
 file after the episode; malformed final lines and gaps remain visible in the replay.
@@ -273,4 +278,5 @@ These run sequentially with `rush_nearest`, unpaused at 1×, without paid model 
 The short imagery probe measures an actual native screenshot and records camera
 position/target and candidate UI name lookups. No world-to-pixel registration is claimed
 before examining that evidence. If native capture blocks gameplay, use the passive
-capture fallback. Production triggers and the optional Sol low page check remain to do.
+capture fallback. Production triggers are implemented behind `--stills`; the probe must establish
+the native capture behavior before the authorized Sol low page check.

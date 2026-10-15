@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-15 01:27 UTC: what is running, where each game
+Updated 2026-10-15 01:34 UTC: what is running, where each game
 stands and what comes next. History: [WH3 log](twwarhammer3/log.md),
 [Spire full-run log](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -10,14 +10,18 @@ WH3 [visual report redesign plan](twwarhammer3/visual-report-plan.md) implementa
 is active. The offline replay and opt-in recorder are implemented; 1102 repository
 tests pass (one skip), including Lua 5.1, and the offline browser checks pass.
 The owner requested the scripted recorder off/on and imagery probes, followed
-by the Sol low check (about $0.80). The recorder off/on probes are complete; no game is
-currently running. Off lost at 391.7 s with no refusals; on lost at 263.7 s with one
+by the Sol low check (about $0.80). The native imagery probe is stopped after its
+planned 90 s scripted cutoff; no game is running. `imagery-20261015` captured a
+1920×1080 TGA and readable names. The native call cost 43 ms and the requested
+camera was clamped. A passive capture worker and corrected camera placement are
+being validated before the next short scripted check and Sol low acceptance.
+The recorder off/on probes are complete. Off lost at 391.7 s with no refusals; on lost at 263.7 s with one
 `unit_routing` refusal. The recorder audit passed: 260 public frames including the
 terminal result, 2.851 ms mean CPU/sample, clock ratios 0.998213 off / 0.997703 on.
 Evidence: `runs/twwarhammer3/visual-probes/recorder-acceptance.json`.
 The earlier r2 startup failure is retained with zero episodes and no API spend.
-Next: merge the imagery candidate, run its short scripted native camera/name/capture
-probe, then the authorized Sol low check. The candidate is in `/tmp/wh3-visual-imagery`.
+The imagery candidate is merged. Next: inspect the native camera/name/capture probe,
+then run the authorized Sol low check. Calibration stays stopped.
 Calibration remains stopped. Artifacts: `runs/twwarhammer3/reports/visual-report.html` and the synthetic
 `visual-report-demo.html`.
 Owner decisions: no unit art, exact prompts included but collapsed, and camera moves

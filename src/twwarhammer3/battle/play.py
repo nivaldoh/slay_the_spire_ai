@@ -25,7 +25,7 @@ from pathlib import Path
 from gameai.ledger import BudgetExhausted
 from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
 from twwarhammer3.battle.controllers import MODEL_POLICIES, card, rotation
-from twwarhammer3.battle.imagery import copy_presentation, imagery_settings
+from twwarhammer3.battle.imagery import PassiveCapture, copy_presentation, imagery_settings
 from twwarhammer3.battle.recording import copy_recording, recording_settings
 from twwarhammer3.battle.setup import (
     check_battle,
@@ -164,11 +164,13 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
                 mailbox.write_session(session)
                 with OwnedGame(output / "game.log", timeout=config["run_timeout"]) as game:
                     manifest["game"] = game.info
-                    start_frontend(mailbox, config, output, steps)
-                    if scenario.get("expect"):
-                        manifest["setup_checks"] = check_menu(scenario, output)
-                        write_json(output / "manifest.json", manifest)
-                    manifest["status"] = episodes(mailbox)
+                    with PassiveCapture(BRIDGE_DIR, job=mailbox.job, pid=game.info.get("pid", 0),
+                                        enabled=config.get("stills", False)):
+                        start_frontend(mailbox, config, output, steps)
+                        if scenario.get("expect"):
+                            manifest["setup_checks"] = check_menu(scenario, output)
+                            write_json(output / "manifest.json", manifest)
+                        manifest["status"] = episodes(mailbox)
     except ProtocolError as exc:
         manifest.update(status="setup_failure", error=str(exc))
         raise

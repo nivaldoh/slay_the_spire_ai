@@ -61,9 +61,12 @@ local function capture(trigger, frame, units)
     local ok, err = pcall(function()
         local ground = bm.battle:get_terrain_height(target.x, target.z)
         local opening = trigger == "opening"
-        local position = v(target.x, ground + (opening and 500 or 180), target.z - (opening and 0.1 or 80))
+        local height = opening and 500 or 160
+        -- Respect the observed 60-degree pitch limit, and extend the altitude range.
+        local position = v(target.x, ground + height, target.z - height / math.tan(math.rad(60)))
         local look = v(target.x, ground, target.z)
         shot.requested_camera = {position = xyz(position), target = xyz(look), fov = 45}
+        bm:camera():change_height_range(5, 800)
         bm:camera():move_to(position, look, 0, true, 45)
     end)
     shot.camera_cpu_ms = (os.clock() - began) * 1000
@@ -76,12 +79,8 @@ local function capture(trigger, frame, units)
         local good, problem = pcall(function()
             shot.time_ms = bm.battle:time_elapsed_ms()
             shot.camera = {position = xyz(bm:camera():position()), target = xyz(bm:camera():target())}
-            shot.file = "still-" .. evidence.battle .. "-" .. trigger .. ".tga"
-            local start = os.clock()
-            common.take_screenshot(BRIDGE .. shot.file)
-            shot.capture_cpu_ms = (os.clock() - start) * 1000
-            shot.after_capture_ms = bm.battle:time_elapsed_ms()
-            shot.status = "capture_requested"
+            shot.status = "capture_ready"
+            shot.backend = "passive_windows_pillow"
         end)
         if not good then shot.status, shot.error = "capture_failed", tostring(problem) end
         pcall(save)
