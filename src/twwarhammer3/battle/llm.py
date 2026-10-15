@@ -116,10 +116,20 @@ def holds(unit: dict, order: dict) -> bool:
     return bool(unit.get("dest")) or distance(unit, order) > ARRIVED_M
 
 
+def _beyond_range(unit: dict, other: dict | None) -> str:
+    """A shooter told to attack a target beyond its range walks towards it."""
+    if (not unit.get("range") or not other
+            or None in (unit.get("x"), unit.get("z"), other.get("x"), other.get("z"))):
+        return ""
+    gap = distance(unit, other) - unit["range"]
+    return f", {gap:.0f} m beyond range: it advances to shoot" if gap > 0 else ""
+
+
 def render_target(unit: dict, enemies: dict, order: dict | None) -> str:
     """The enemy the unit is fighting now, against the order it holds."""
     shown = unit.get("target")
-    here = f"target {shown}{_distance_text(unit, enemies.get(shown))}" if shown else ""
+    here = (f"target {shown}{_distance_text(unit, enemies.get(shown))}"
+            f"{_beyond_range(unit, enemies.get(shown))}" if shown else "")
     if unit.get("command_queue"):
         return here
     order = order or {}
