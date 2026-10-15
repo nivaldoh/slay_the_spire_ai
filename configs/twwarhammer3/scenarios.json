@@ -596,7 +596,7 @@
    "subculture": "wh2_main_sc_skv_skaven",
    "faction": "wh2_main_skv_skaven",
    "units": [
-    "wh2_main_skv_cha_grey_seer_ruin_0",
+    "wh2_main_skv_cha_warlord_0",
     "wh2_main_skv_cha_warlock_engineer",
     "wh2_main_skv_inf_skavenslaves_0",
     "wh2_main_skv_inf_skavenslaves_0",
@@ -634,14 +634,15 @@
    ]
   },
   "protected": [
-   "wh2_main_skv_cha_grey_seer_ruin_0",
+   "wh2_main_skv_cha_warlock_engineer",
    "wh2_main_skv_art_warp_lightning_cannon"
   ],
   "content": [
    "wh_main",
    "wh2_main"
   ],
-  "brief": "Twenty Skaven units, most of them cheap and quick to flee, must break nine Dwarf units holding a gun line with an Organ Gun before the 1200-second timer. A Grey Seer, a Warlock Engineer, warpfire, poisoned wind, a Warp Lightning Cannon and a Doomwheel are the scarce damage. Spending slaves to screen and pin, timing the weapon teams, protecting the caster and avoiding a cascade of routs compete; one all-in charge is the naive risk. Hypotheses, not a prescribed solution. Not screened in the game: the AI's defence is unverified (decoded unit costs: 7850 and 8200 of 12000)."
+  "brief": "Twenty Skaven units, most of them cheap and quick to flee, must break nine Dwarf units holding a gun line with an Organ Gun before the 1200-second timer. A Warlord, a Warlock Engineer (the only caster), warpfire, poisoned wind, a Warp Lightning Cannon and a Doomwheel are the scarce damage. Spending slaves to screen and pin, timing the weapon teams, protecting the engineer and avoiding a cascade of routs compete; one all-in charge is the naive risk. Hypotheses, not a prescribed solution. Not screened in the game: the AI's defence is unverified (decoded unit costs: 8025 and 8200 of 12000).",
+  "calibration_change": "The first screen (bench-b10-screen-skv-swarm-20261015) stopped in the lobby: it offered no wh2_main_skv_cha_grey_seer_ruin_0 card. The Warlord, whose card worked in tze-caster-skv-screen, leads instead; the Warlock Engineer is the caster."
  },
  "dwf-line-skv-swarm": {
   "battle_type": "classic",

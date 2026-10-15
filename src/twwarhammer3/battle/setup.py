@@ -210,6 +210,10 @@ def scenario_steps(scenario: dict) -> list[dict]:
             {"find": ["button_bar_parent", "button_clear"], "click": True, "timeout_ms": 15000},
             {"wait_ms": 800},
         ]
+        if side["units"]:
+            # The cards this race offers, so a card that is missing names the ones that exist.
+            steps += [{"dump": f"cards_slot{slot}.txt", "depth": 3,
+                       "find": ["recruitment_options_list"]}]
         if side["units"] is None:
             steps += [{"find": ["clear_autogen_parent", "button_autogen"], "click": True,
                        "timeout_ms": 15000},
