@@ -157,9 +157,8 @@ Declared families: ranged protection (`dwf-sla-taurox`, `dwf-sla-herald`), caval
 against anti-large (`brt-cavalry-emp-pikes`, `-pegasus` and the attacking `-assault`) and
 a caster-led force (`tze-caster-skv-screen` and the attacking `-assault`). All but
 `dwf-sla-taurox` have a `-hard` variant at modifier 1.1 and a `-heldout-wastes` map. None
-is admitted. Two Skaven swarm drafts (`skv-swarm-dwf-line`, `dwf-line-skv-swarm`, status
-`draft_not_screened`) are declared but have never run; see
-[Scenario design](#scenario-design).
+is admitted. Two Skaven swarm prototypes (`skv-swarm-dwf-line`, `dwf-line-skv-swarm`) were
+screened on 2026-10-15; see [Scenario design](#scenario-design).
 
 ### Admission
 
@@ -220,12 +219,23 @@ steps offline.
 | Naive risk | one all-in charge into the guns, then a cascade of routs | spreading out and being encircled |
 | A viewer should see | slaves screening and pinning, weapon teams arriving together, the caster kept alive | a refused flank, ammunition saved for clusters, the line holding or folding |
 
-Before any calibration they need one screen each (the owner decides when): that both
-rosters fit 12000 in the lobby (their decoded multiplayer costs are 7850 and 8200, and 6300
-and 8350, from `scripts/wh3_db.py`; character equipment may add a little), that the lobby takes a
-20-unit army, that the AI defends in the first and attacks in the second, and that the
-battle neither ends in seconds nor stalls to the timer. Each screen is one launch of
-three battles (`llm_rules` on Luna, run-nearest, `hold`), about 25 minutes and $0.10.
+Screened on 2026-10-15 (`llm` v16, harness b10, Luna low), one launch each. The lobby took
+both 20-unit armies at 12000 (decoded costs 8025 and 8200, 6300 and 8350); the AI held its
+line in the first and attacked in the second; no battle ended in seconds or at the timer.
+Every player army was routed:
+
+| Scenario | Controller | Lost at | Enemy active at the end | Order delay (mean) | Engine rejections |
+|---|---|---|---|---|---|
+| `skv-swarm-dwf-line` | `llm_rules`, Luna | 457 s | 0.706 | 9.22 s | 56 (30 to fleeing units, 15 unreachable, 11 abilities) |
+| `skv-swarm-dwf-line` | run-nearest | 288 s | 0.921 | 0.31 s | 3 |
+| `dwf-line-skv-swarm` | `llm_rules`, Luna | 444 s | 0.640 | 8.18 s | 17 |
+| `dwf-line-skv-swarm` | `hold` | 565 s | 0.529 | 0.30 s | 0 |
+
+Both are hard for these controllers and neither is degenerate. In the second, standing
+still outlasted the model and left the swarm weaker, the brief's "spreading out" risk;
+the trace review is pending. The abilities refused in the first match the known causes
+(readiness lag and magic spent by issuance; [integration.md](integration.md)), not
+audited one by one. Next: the same screens with Sol before any calibration.
 
 A siege attacker needs gate, wall and equipment orders before admission. Review traces
 for whether meaningful specialist decisions occurred: a win by an unrelated exploit or a

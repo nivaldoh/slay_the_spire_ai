@@ -41,7 +41,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 ## Index
 
-- 2026-10-15: [Harness b10, `llm` v16 and the calibration decisions](#2026-10-15-harness-b10-llm-v16-and-the-calibration-decisions) ·
+- 2026-10-15: [Skaven swarm screens](#2026-10-15-skaven-swarm-screens) ·
+  [Harness b10, `llm` v16 and the calibration decisions](#2026-10-15-harness-b10-llm-v16-and-the-calibration-decisions) ·
   [Unit costs and attributes from the game database](#2026-10-15-unit-costs-and-attributes-from-the-game-database) ·
   [Skaven swarm drafts](#2026-10-15-skaven-swarm-drafts) ·
   [Several models in one job](#2026-10-15-several-models-in-one-job) ·
@@ -90,6 +91,33 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
 
+## 2026-10-15: Skaven swarm screens
+
+Both swarm drafts ran one screen each under the owner's authorization, on harness b10
+with `llm` v16 (source `8434cd3`): `bench-b10-screen-skv-swarm-r2-20261015` and
+`bench-b10-screen-dwf-line-20261015`. The first attempt (`bench-b10-screen-skv-swarm-20261015`)
+stopped in the lobby before any battle: the declared `wh2_main_skv_cha_grey_seer_ruin_0` has
+no card (a caster with several lores has one, `_plague_0`). Setup now dumps every army's
+cards to `cards_slot<N>.txt`; the Warlord leads instead, the Warlock Engineer is the caster.
+
+Results (table in [benchmark.md](benchmark.md#scenario-design)): every player army was
+routed. Luna lost the swarm attack at 457 s (enemy 0.706 active) and the Dwarf hold at
+444 s (0.640); run-nearest lost the attack at 288 s (0.921) and `hold` the hold at 565 s
+(0.529), outlasting the model. Both prototypes are now `prototype_not_admitted`. Cost
+$0.064, both Luna battles.
+
+Order delay grows with the units in view, observed across unrelated runs (Luna low,
+mean per battle, from results.csv; versions and battles differ, so this is a motivation
+for the army-size experiment, not a measurement): about 5-7 s with 10 units on the field,
+6.5-7.3 s with 24, 8.2 s with 27 and 9.2 s with 29.
+
+The independent check of the analyst notes, under the owner's delegation, dropped none
+and corrected six (a melee start at 4:04 not 4:05, all five units attacking the
+handgunners, the opening plan's other targets, "no men lost" limited to the Lord and
+knights, "new moves" not "re-issued routes", "about" on a sparse-frame time). It also
+found that "in melee with X" trusted the target field alone; a melee fact now needs the
+target recorded within 50 m.
+
 ## 2026-10-15: Harness b10, `llm` v16 and the calibration decisions
 
 The owner, away until 11:00 (UTC-3), delegated the open WH3 decisions to the agent's
@@ -106,8 +134,9 @@ judgement and authorized the swarm screens. Decided and recorded:
   (reference) and on Luna low, run-nearest and walk-nearest, rotated in each launch.
   Primary measure: the engine outcome before the timer. Two of the six launches run
   this morning (the time until the owner returns); the other four are a frozen plan.
-- **Analyst notes**: accepted under the delegation after one more independent check
-  (below, when it finishes); the owner can still revise them.
+- **Analyst notes**: accepted under the delegation after one more independent check,
+  which corrected six of eight ([swarm screens entry](#2026-10-15-skaven-swarm-screens));
+  the owner can still revise them.
 
 ## 2026-10-15: Unit costs and attributes from the game database
 
