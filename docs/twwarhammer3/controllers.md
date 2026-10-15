@@ -190,6 +190,12 @@ golden prompts:
    re-issued all six routes three times in 26 s. Fixed in `llm` v16 (merged `005a050`,
    2026-10-15): such a move reads "your move to (x, z) issued this instant". It changes
    prompt text only in that state, so the golden prompts are unchanged.
+5. **An attack on a target out of range is a move.** In `bench-b10-screen-dwf-line-20261015`
+   episode 0 Luna ordered the Organ Gun (range 300 m) to attack the enemy cannon about
+   670 m away eleven times, called it "now-in-range" at 403 m, and the advancing gun and
+   shooters left the defensive line and fled first. The state gives each unit's `range`
+   but neither prompt says that attacking beyond it walks the unit forward; the unit line
+   could print the target's distance against the range, or the rules could say it.
 
 ## Designs not built yet
 
