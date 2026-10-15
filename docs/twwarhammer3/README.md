@@ -169,21 +169,22 @@ is separate from Spire's, with its own $25 cap.
 
 Status and the owner's current direction are in [../state.md](../state.md). Candidate
 work:
-1. Specialist scenarios ([benchmark.md](benchmark.md)): anchor units, faction mechanics,
-   hard tactical choices and watchable battles, starting compact. Screen the cavalry
-   against anti-large and caster-led prototypes before repeated calibration at AI
-   modifiers 1.0 and 1.1; keep held-out variants out of tuning.
-2. Freeze a viable candidate and a competent reference, review starting-formation
-   variation, then run repeated paired calibration (G1).
-3. Paired added-observation-age arms (`--delay-seconds 0,6,10`), unpaused at 1x, reported
-   with uncertainty (G2).
+1. Calibration C1 on `brt-cavalry-emp-assault-hard` (launches 3-6 of 6, frozen plan in
+   `runs/twwarhammer3/calibration/c1-plan-rest.json`), then its reading
+   ([benchmark.md](benchmark.md#calibration-decided-2026-10-15)); keep held-out variants
+   out of tuning.
+2. Specialist scenarios ([benchmark.md](benchmark.md#scenario-design)): Sol screens of the
+   two Skaven swarm prototypes, then a siege, which first needs gate and wall orders.
+3. Paired added-observation-age arms (`--delay-seconds 0,6,10`) on an admitted setting,
+   unpaused at 1x, reported with uncertainty (G2).
 4. The random-draw comparison on its three remaining seeds (264482191, 1355466036,
    238913231), then Sol and Astra as commander on the same draws.
 5. Battle types: variants, both roles and the interface gaps in
    [battle-types.md](battle-types.md#next).
-6. The next `llm`/`commander` version:
-   [candidate changes](controllers.md#candidate-changes-for-the-next-version). The older
-   branches `wh3-fire-report` and `wh3-v4-info` predate the v13 interface and would need
+6. The next `llm`/`commander` version after C1:
+   [candidate changes](controllers.md#candidate-changes-for-the-next-version), with
+   `wh3-llm-v17` (out-of-range attacks, last sightings that keep a fleeing state) ready to
+   merge. The older branches `wh3-fire-report` and `wh3-v4-info` predate the v13 interface and would need
    rebasing.
 
 Deferred cleanups:
