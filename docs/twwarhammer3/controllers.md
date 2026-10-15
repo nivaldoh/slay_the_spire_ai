@@ -38,9 +38,9 @@ records a card per trial (kind, class, source file and hash, model, effort, timi
 | `rush_nearest` (run-nearest) | scripted | `attack_nearest`, running | | `scripted.py` |
 | `skills` | scripted | the executor, every unit on its class default | executor v1.2 (`55ab6b3`) | `skills.py` |
 | `probe_abilities` | scripted diagnostic | `skills`, plus every ability as soon as it is ready, the cheapest build on each usable slot and the cheapest affordable unit every 10 s | | `skills.py` |
-| `llm` | model, blocking | the model, raw orders every decision | v15 | `llm.py`, `configs/twwarhammer3/system_prompt.md` |
+| `llm` | model, blocking | the model, raw orders every decision | v17 | `llm.py`, `configs/twwarhammer3/system_prompt.md` |
 | `llm_rules` | model, blocking | as `llm`, with a prompt that states objectives and interface without tactics (`51c1796`, b3) | | `llm.py`, `configs/twwarhammer3/rules_prompt.md` |
-| `commander` | hybrid, asynchronous | the model sets standing skills; the executor acts on every observation | v3 | `commander.py` over `skills.py`, `configs/twwarhammer3/commander_prompt.md` |
+| `commander` | hybrid, asynchronous | the model sets standing skills; the executor acts on every observation | v4 | `commander.py` over `skills.py`, `configs/twwarhammer3/commander_prompt.md` |
 | `package.module:Class` | outside | any class with `decide`, `acknowledge` and `metadata` | | [benchmark-run.md](benchmark-run.md) |
 
 `llm` v15 and `commander` v3 are the log's
@@ -196,21 +196,18 @@ golden prompts:
    shooters left the defensive line and fled first. The state gives each unit's `range`
    but neither prompt says that attacking beyond it walks the unit forward; the unit line
    could print the target's distance against the range, or the rules could say it.
-   Drafted on branch `wh3-llm-range`, included in `wh3-llm-v17`. C1 is complete;
-   integration is planned, not performed yet.
+   Integrated in `llm` v17 and commander v4 from `wh3-llm-range`: target lines now
+   report the distance beyond range and that the shooter advances.
 6. **Last sightings do not say a unit was fleeing.** In `bench-c1-cavalry-ai11-01-20261015`
    episode 3 Sol spent 600 s of a lost battle looking for guns that had routed off the
    map, listed in the last-sighting memory at the map edges with no state. Carrying the
    last observed state (routing, shattered) with each sighting changes controller memory
-   and rendered text, using already-public information. Drafted on `wh3-obs-last-state`,
-   included in `wh3-llm-v17`; no change to the environment observation track is needed.
+   and rendered text, using already-public information. Integrated from
+   `wh3-obs-last-state` in `llm` v17 and commander v4; the environment track is unchanged.
 
-Integration note (2026-10-15): the v17 branch changes only `llm.py` and its tests. The
-commander imports the same `remember` and `render_state`, so both fixes also affect it.
-Log `llm`/`llm_rules` v17 and commander v4 together when integrating, and validate both;
-keep unrelated prompt/executor changes out of that comparison. The branch's earlier
-348-test result is historical, not validation against current main. See the
-[implementation plan](benchmark.md#implementation-plan).
+Integration (2026-10-15): `llm`/`llm_rules` v17 and commander v4 share the two fixes
+above. All 349 WH3 tests and lint passed on current main; golden prompts are unchanged.
+See the [version log](log.md#2026-10-15-integrate-llm-v17-and-commander-v4).
 
 ## Designs not built yet
 

@@ -30,9 +30,9 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 | Piece | Version | Defined in | Latest results |
 |---|---|---|---|
-| `llm` | v16 (2026-10-15; v15 2026-10-14) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | battle types, Luna low: 6 wins in 10 jobs (`llm-luna-v15-*-20261014-*`); `bench-b2-acceptance-r2-20261014` lost at 442 s |
-| `llm_rules` | shares `llm` v16 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | Sol low won `visual-sol-low-20261015` (382 s, $0.63) and the G1 trial of `bench-g1-cavalry-ai10-01-20261014` (528 s, $0.79) |
-| `commander` | v3 (2026-10-14) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | battle types, Luna low: 4 wins in 9 jobs (`commander-luna-v3-*-20261014-*`) |
+| `llm` | v17 (2026-10-15) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | battle types, Luna low: 6 wins in 10 jobs (`llm-luna-v15-*-20261014-*`); `bench-b2-acceptance-r2-20261014` lost at 442 s |
+| `llm_rules` | shares `llm` v17 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | Sol low won `visual-sol-low-20261015` (382 s, $0.63) and the G1 trial of `bench-g1-cavalry-ai10-01-20261014` (528 s, $0.79) |
+| `commander` | v4 (2026-10-15) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | battle types, Luna low: 4 wins in 9 jobs (`commander-luna-v3-*-20261014-*`) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
 | benchmark harness | b10 (2026-10-15; b9 2026-10-14), track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | C1 finished: Sol 1 of 6 at ×1.1, Luna and both baselines 0 of 6; retained as development evidence under the revised plan |
@@ -42,7 +42,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 ## Index
 
-- 2026-10-15: [Prioritize scenario variety and shared measures](#2026-10-15-prioritize-scenario-variety-and-shared-measures) ·
+- 2026-10-15: [Integrate llm v17 and commander v4](#2026-10-15-integrate-llm-v17-and-commander-v4) ·
+  [Prioritize scenario variety and shared measures](#2026-10-15-prioritize-scenario-variety-and-shared-measures) ·
   [Plan revision and preparation](#2026-10-15-plan-revision-and-preparation) ·
   [Calibration C1, launches 3 to 6](#2026-10-15-calibration-c1-launches-3-to-6) ·
   [Calibration C1, launches 1 and 2](#2026-10-15-calibration-c1-launches-1-and-2) ·
@@ -95,6 +96,20 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
+
+## 2026-10-15: Integrate llm v17 and commander v4
+
+Merged `wh3-llm-v17` (`c1cc14b`) into current main. Shooter target lines now say how far
+beyond range a target is and that the unit advances to shoot. Last-sighting memory keeps
+wavering, routing and shattered state, explicitly labelled as the state when last seen.
+The commander shares both rendering and memory, so this is `llm`/`llm_rules` v17 and
+commander v4. No system prompt, executor or environment contract changed; the track stays
+`obs-v3+terrain/act-v2/live-1x`.
+
+Validation: 44 LLM/commander/prompt tests and all 349 WH3 tests passed; `uv run ruff check .`
+passed. Golden prompts did not change (their cases do not trigger the new feedback).
+Real-game validation will accompany the shared evaluator check. Existing results and
+register rows retain their original revisions; no battles run for this integration yet.
 
 ## 2026-10-15: Prioritize scenario variety and shared measures
 

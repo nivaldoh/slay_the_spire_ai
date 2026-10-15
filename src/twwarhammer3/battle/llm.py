@@ -116,10 +116,20 @@ def holds(unit: dict, order: dict) -> bool:
     return bool(unit.get("dest")) or distance(unit, order) > ARRIVED_M
 
 
+def _beyond_range(unit: dict, other: dict | None) -> str:
+    """A shooter told to attack a target beyond its range walks towards it."""
+    if (not unit.get("range") or not other
+            or None in (unit.get("x"), unit.get("z"), other.get("x"), other.get("z"))):
+        return ""
+    gap = distance(unit, other) - unit["range"]
+    return f", {gap:.0f} m beyond range: it advances to shoot" if gap > 0 else ""
+
+
 def render_target(unit: dict, enemies: dict, order: dict | None) -> str:
     """The enemy the unit is fighting now, against the order it holds."""
     shown = unit.get("target")
-    here = f"target {shown}{_distance_text(unit, enemies.get(shown))}" if shown else ""
+    here = (f"target {shown}{_distance_text(unit, enemies.get(shown))}"
+            f"{_beyond_range(unit, enemies.get(shown))}" if shown else "")
     if unit.get("command_queue"):
         return here
     order = order or {}
@@ -392,7 +402,8 @@ def render_state(observation: dict, last_seen: dict, before: dict | None = None,
 
 def _describe_last_seen(seen: dict, observation: dict) -> str:
     age = max(0, observation.get("time_ms", 0) - seen["time_ms"]) / 1000
-    return f"at ({seen['x']:.0f}, {seen['z']:.0f}) {age:.0f} s ago, {seen['men']} men"
+    state = f", {' '.join(seen['state'])} when last seen" if seen.get("state") else ""
+    return f"at ({seen['x']:.0f}, {seen['z']:.0f}) {age:.0f} s ago, {seen['men']} men{state}"
 
 
 def render_clock(observation: dict) -> str:
@@ -428,6 +439,9 @@ def render_ack(ack: dict | None) -> str:
     return "Last orders: " + "; ".join(verdicts) + "."
 
 
+LEAVING_STATES = ("wavering", "routing", "shattered")
+
+
 def remember(last_seen: dict, observation: dict) -> None:
     """Where each enemy was last seen, until it is reported destroyed."""
     for unit in observation.get("enemy", []):
@@ -435,6 +449,8 @@ def remember(last_seen: dict, observation: dict) -> None:
             last_seen[unit["id"]] = {
                 "x": unit["x"], "z": unit["z"], "men": unit.get("men", 0),
                 "time_ms": observation.get("time_ms", 0),
+                # A unit last seen fleeing may be gone: say so, not just where it was.
+                "state": [s for s in unit.get("state") or [] if s in LEAVING_STATES],
             }
     for unit in observation.get("enemy_roster", []):
         if unit.get("dead"):

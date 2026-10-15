@@ -1,15 +1,15 @@
 # Project state
 
-Updated 2026-10-15 17:03 UTC: what is running, where each game stands and what comes
+Updated 2026-10-15 17:19 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-No game controller is running (C1 finished about 13:10 UTC-3 on 2026-10-15). The plan
-refinement is complete: scenario variety, shared measures and 2-3 exploratory battles per
-new scenario ([log](twwarhammer3/log.md#2026-10-15-prioritize-scenario-variety-and-shared-measures)).
-Implementation and new experiments have not started.
+No game controller is running. Implementing the authorized first three steps: integrate
+`llm` v17 / commander v4, add shared evaluation measures, and consolidate the offline
+benchmark report. Validate with tests, browser checks and a small real-game check;
+scenario expansion remains next ([plan](twwarhammer3/benchmark.md#implementation-plan)).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -20,7 +20,7 @@ command; clear it when the job stops.
 [log](twwarhammer3/log.md) (newest first, with the versions on `main` at the top),
 [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm` v16 (`llm_rules` shares its input), `commander` v3 over the `skills`
+- On `main`: `llm` v17 (`llm_rules` shares its input), `commander` v4 over the `skills`
   executor v1.2, the scripted `attack_nearest`, `rush_nearest` and `hold`, and benchmark
   harness b10: the 1 Hz replay recorder, optional stills, per-policy models (one launch
   pairs `llm_rules` on Sol with `llm_rules@gpt-6-luna`), a plan queue that stops on changed
@@ -124,13 +124,6 @@ Slay the Spire:
 
 ## Unmerged branches
 
-- `wh3-llm-v17` (`c1cc14b`): combines both candidates below (348 WH3 tests recorded).
-  Pending integration and current-main validation as `llm` v17 plus commander v4 because
-  they share rendering/memory. The environment track stays unchanged; no `obs-v4` is needed.
-- `wh3-obs-last-state` (`287cfba`): last sightings keep a fleeing enemy's state ("routing when
-  last seen"), on `94eef9c`; included in v17, no change to the public observation contract.
-- `wh3-llm-range` (`b58d327`): flag a shooter's target beyond range ("it advances to shoot"),
-  on `da6f3bb`; included in v17, also affects the commander's shared state rendering.
 - `integration/heldout-clip-continuation` (`940d698`): first-combat work, on `01f2984`.
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-fire-report` (`832b233`): WH3 fire-report candidate, on v9 (`d928965`); untested.
