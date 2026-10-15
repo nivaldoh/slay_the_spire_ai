@@ -13,7 +13,7 @@ import re
 from pathlib import Path
 
 from gameai.provenance import REPO_ROOT
-from twwarhammer3.battle import replay
+from twwarhammer3.battle import imagery, replay
 
 ASSETS = Path(__file__).with_name("report_assets")
 SCENARIOS = REPO_ROOT / "configs/twwarhammer3/scenarios.json"
@@ -121,12 +121,14 @@ def display_data(report: dict, scenarios: dict | None = None) -> dict:
 
 def render(report: dict, scenarios: dict | None = None) -> str:
     data = display_data(report, scenarios)
-    payloads, prompts = {}, {}
+    payloads, prompts, trials, directories = {}, {}, {}, {}
     for group_index, group in enumerate(report["groups"]):
         for trial_index, trial in enumerate(group["trials"]):
             key = f"g{group_index}-t{trial_index}"
             job = Path(trial["instance"])
             directory = job / trial["episode"]
+            trials[key] = trial
+            directories[key] = directory
             payload = None
             if data["evidence_kind"] == "synthetic":
                 payload = report.get("replays", {}).get(key)
@@ -140,11 +142,36 @@ def render(report: dict, scenarios: dict | None = None) -> str:
                     prompts[portable_job] = {path.name: path.read_text() for path in
                                              sorted(job.glob("*prompt.md"))}
             if payload is not None:
-                payloads[key] = base64.b64encode(gzip.compress(
-                    _json(payload).encode(), mtime=0)).decode()
+                payloads[key] = dict(payload)
+
+    def chronology(key):
+        return (payloads.get(key, {}).get("created_at") or "~",
+                trials[key]["episode"], trials[key]["instance"])
+
+    featured = {}
+    pictured = set()
+    for view in data["comparisons"]:
+        keys = [key for key in trials if int(key.split("-", 1)[0][1:]) in view["groups"]]
+        completed_models = [key for key in keys if trials[key]["valid"] and (
+            (trials[key].get("card") or {}).get("kind") == "model" or
+            trials[key]["policy"] in {"llm", "llm_rules", "commander"})]
+        featured[view["id"]] = min(completed_models, key=chronology) if completed_models else (
+            keys[0] if keys else None)
+        for controller in {trials[key]["controller"] for key in keys}:
+            same = [key for key in keys if trials[key]["controller"] == controller]
+            complete = [key for key in same if trials[key]["valid"]]
+            if same:
+                pictured.add(min(complete or same, key=chronology))
+    for key, payload in payloads.items():
+        still_path = directories[key] / "stills.json"
+        if data["evidence_kind"] == "recorded" and still_path.exists():
+            payload["stills"] = imagery.stills(directories[key], json.loads(still_path.read_text()),
+                                               embed=key in pictured)
+    payloads = {key: base64.b64encode(gzip.compress(_json(payload).encode(), mtime=0)).decode()
+                for key, payload in payloads.items()}
     # Replay evidence has its own compressed envelope; collector statistics stay intact.
     data["report"].pop("replays", None)
-    data.update(replays=payloads, prompts=prompts)
+    data.update(replays=payloads, prompts=prompts, featured=featured)
     encoded = _json(data)
     for character, escaped in (("&", "\\u0026"), ("<", "\\u003c"), (">", "\\u003e"),
                                ("\u2028", "\\u2028"), ("\u2029", "\\u2029")):

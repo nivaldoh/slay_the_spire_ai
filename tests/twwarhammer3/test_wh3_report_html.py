@@ -163,7 +163,7 @@ def test_cli_collects_once_and_preserves_text_and_json(tmp_path, monkeypatch, ca
     monkeypatch.setattr(report, "collect", collect)
     monkeypatch.setattr(report_html, "SCENARIOS", tmp_path / "absent.json")
     output = tmp_path / "nested/report.html"
-    json_output = tmp_path / "report.json"
+    json_output = tmp_path / "new-json-directory/report.json"
     monkeypatch.setattr("sys.argv", ["wh3", "stats", "--report", "a", "--report-html",
                                     str(output), "--report-json", str(json_output)])
     assert main() == 0
@@ -181,3 +181,47 @@ def test_html_cli_requires_report(monkeypatch, capsys):
     with pytest.raises(SystemExit, match="2"):
         main()
     assert "--report-html requires --report JOB..." in capsys.readouterr().err
+
+
+def test_recorded_stills_embed_once_per_controller_and_keep_failure_metadata(tmp_path):
+    import base64
+    import gzip
+
+    image = pytest.importorskip('PIL.Image')
+    job = make_job(tmp_path, 'pictured', [('hold', .1, 'won'), ('hold', .2, 'won')])
+    for name in ('episode-0000', 'episode-0001'):
+        episode = job / name
+        (episode / 'trace.jsonl').write_text(json.dumps({'kind': 'observation', 'observation': {
+            'seq': 0, 'time_ms': 0, 'friendly': [{'id': 'f1', 'type': 'demo'}], 'enemy': []}}))
+        image.new('RGB', (20, 10), 'blue').save(episode / 'opening.png')
+        (episode / 'stills.json').write_text(json.dumps([
+            {'file': 'opening.png', 'time_ms': 0, 'trigger': 'opening', 'visibility': 'unverified'},
+            {'status': 'capture_failed', 'error': 'unsupported API'}]))
+        (episode / 'unit_names.json').write_text(json.dumps({'f1': 'Localised name'}))
+    data = embedded(report_html.render(report.collect([job])))
+    payloads = [json.loads(gzip.decompress(base64.b64decode(data['replays'][f'g0-t{i}'])))
+                for i in range(2)]
+    assert payloads[0]['stills'][0]['image'].startswith('data:image/webp;base64,')
+    assert payloads[0]['stills'][0]['policy_input'] is False
+    assert payloads[0]['stills'][1]['status'] == 'capture_failed'
+    assert payloads[1]['stills'][0]['status'] == 'metadata_only_nonfeatured_trial'
+    assert 'image' not in payloads[1]['stills'][0]
+    assert payloads[0]['roster'][0]['name'] == 'Localised name'
+
+
+def test_featured_trial_is_earliest_completed_model_even_when_it_loses(tmp_path):
+    jobs = [configured_job(tmp_path, 'later-win'), configured_job(tmp_path, 'earlier-loss')]
+    for index, job in enumerate(jobs):
+        path = job / 'manifest.json'
+        manifest = json.loads(path.read_text())
+        manifest['created_at'] = '2026-10-15T12:00:00Z' if index == 0 else '2026-10-14T12:00:00Z'
+        path.write_text(json.dumps(manifest))
+        episode = job / 'episode-0000'
+        (episode / 'trace.jsonl').write_text(json.dumps({'kind': 'observation', 'observation': {
+            'seq': 0, 'time_ms': 0, 'friendly': [], 'enemy': []}}))
+        path = episode / 'result.json'
+        result = json.loads(path.read_text())
+        result['status'] = 'won' if index == 0 else 'lost'
+        path.write_text(json.dumps(result))
+    data = embedded(report_html.render(report.collect(jobs)))
+    assert data['featured']['comparison-1'] == 'g0-t1'

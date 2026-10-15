@@ -1,6 +1,21 @@
 #replay-verdict {
   padding-bottom: 0;
 }
+.replay-stills {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.replay-stills figure {
+  margin: 20px 0;
+}
+.replay-stills img {
+  width: 100%;
+  height: auto;
+}
+.replay-stills figcaption {
+  font-size: 0.8rem;
+}
 #replay-verdict h2 {
   font-size: clamp(1.2rem, 2.5vw, 2rem);
   overflow-wrap: anywhere;

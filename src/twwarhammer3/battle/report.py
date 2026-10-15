@@ -129,6 +129,7 @@ def collect(jobs: list[Path]) -> dict:
                                 "game": environment.get("game"),
                                 "track": manifest.get("track"),
                                 "recorder": manifest.get("recorder"),
+                                "imagery": manifest.get("imagery"),
                                 "observe_ms": config.get("observe_ms"),
                                 "tick_ms": config.get("tick_ms"),
                                 "interval_ms": config.get("interval_ms"),

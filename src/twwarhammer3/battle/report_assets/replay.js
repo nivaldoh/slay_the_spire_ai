@@ -120,6 +120,7 @@ window.wh3Replay = (() => {
     $("verdict").replaceChildren(node("p", status, "banner"));
     $("multiples").replaceChildren();
     $("forces").replaceChildren();
+    $("stills").replaceChildren();
     $("prompts").replaceChildren(
       ...Object.entries(data.prompts).map(([job, prompts]) => {
         const section = node("div");
@@ -139,22 +140,8 @@ window.wh3Replay = (() => {
       trials.forEach((t, i) => {
         t.replay = payloads[i];
       });
-      const completedModels = trials.filter(
-        (t) =>
-          t.valid &&
-          (t.card?.kind === "model" ||
-            ["llm", "llm_rules", "commander"].includes(t.policy)),
-      );
-      // Recorded job start order, then episode order. Outcome never breaks a tie.
-      completedModels.sort(
-        (a, b) =>
-          (a.replay?.created_at || "~").localeCompare(
-            b.replay?.created_at || "~",
-          ) ||
-          a.episode.localeCompare(b.episode) ||
-          a.instance.localeCompare(b.instance),
-      );
-      const featured = completedModels[0] || trials[0];
+      const featured =
+        trials.find((t) => t.key === data.featured[view.id]) || trials[0];
       await open(trials.indexOf(featured), status);
       if (ownGeneration !== generation) return;
       multiples();
@@ -194,6 +181,8 @@ window.wh3Replay = (() => {
       ),
     );
     if (!replay?.frames.length) {
+      $("forces").replaceChildren();
+      $("stills").replaceChildren();
       $("availability").textContent =
         "No recorded replay frames for this trial. Summary evidence is retained below.";
       return;
@@ -205,6 +194,7 @@ window.wh3Replay = (() => {
     $("time").min = replay.frames[0].time_ms / 1000;
     $("time").max = replay.frames.at(-1).time_ms / 1000;
     forces();
+    stills();
     events();
     timeline();
     lanes("friendly");
@@ -254,6 +244,33 @@ window.wh3Replay = (() => {
       box.append(list);
       section.append(box);
     }
+  }
+  function stills() {
+    $("background").querySelector('[value="game"]').textContent =
+      replay.stills?.some((shot) => shot.image)
+        ? "Game stills above · no registered map background"
+        : "Game imagery · not recorded";
+    $("stills").replaceChildren(
+      ...(replay.stills || []).map((shot) => {
+        const figure = node("figure");
+        if (shot.image) {
+          const img = node("img");
+          img.src = shot.image;
+          img.alt = `Recorded game still: ${shot.trigger || "capture"} at ${seconds(shot.time_ms)}`;
+          figure.append(img);
+        }
+        figure.append(
+          node(
+            "figcaption",
+            `${shot.trigger || "Game still"} · ${shot.time_ms != null ? seconds(shot.time_ms) : "time unavailable"} · ${shot.image ? "Presentation only; never policy input." : shot.status || "Capture missing"} ${shot.visibility || "Visibility not audited: the image may include information hidden from the controller."} ${shot.error || ""}`,
+          ),
+        );
+        figure.append(
+          disclosure("Capture evidence", json({ ...shot, image: undefined })),
+        );
+        return figure;
+      }),
+    );
   }
   function bounds(whole, frames = replay.frames) {
     const b = replay.terrain?.bounds;
@@ -357,6 +374,17 @@ window.wh3Replay = (() => {
           fill: colour,
         }),
       );
+    if (Number.isFinite(unit.hp))
+      g.append(
+        svg("rect", {
+          x: x - 10,
+          y: y + 19,
+          width: 20 * Math.max(0, Math.min(1, unit.hp)),
+          height: 2,
+          fill: colour,
+          opacity: 0.65,
+        }),
+      );
     const badges = (unit.state || [])
       .filter((s) => ["melee", "under_fire", "wavering", "routing"].includes(s))
       .map(
@@ -375,7 +403,7 @@ window.wh3Replay = (() => {
       svg(
         "title",
         {},
-        `${unit.id} · ${unit.type} · ${unit.men}/${unit.men0} men · HP ${fmt(unit.hp * 100)}% · ${unit.state?.join(", ")} · ${unit.morale?.effect || "morale effect unrecorded"} · target ${unit.target || "none"}`,
+        `${unit.id} · ${unit.name || unit.type} · ${unit.men}/${unit.men0} men · HP ${fmt(unit.hp * 100)}% · ${unit.state?.join(", ")} · ${unit.morale?.effect || "morale effect unrecorded"} · target ${unit.target || "none"}`,
       ),
     );
     target.append(g);
@@ -609,12 +637,25 @@ window.wh3Replay = (() => {
         `${seconds(replay.frames[0].time_ms)} — ${seconds(replay.frames.at(-1).time_ms)} · bar: basis → application`,
       ),
     );
-    baseTimeline($("resources"), 100);
     const series = [
       ["Winds", (f) => f.magic?.current, "#56b4e9"],
       ["Reserve", (f) => f.magic?.reserve, "#009e73"],
       ["Supplies", (f) => f.mode?.supplies, "#e69f00"],
     ];
+    if (replay.frames.some((f) => f.army?.currency != null))
+      series.push(["Army currency", (f) => f.army?.currency, colours.friendly]);
+    for (const side of new Set(
+      replay.frames.flatMap((f) => (f.mode?.tickets || []).map((t) => t.side)),
+    )) {
+      series.push([
+        `${side} tickets`,
+        (f) => f.mode?.tickets?.find((t) => t.side === side)?.tickets,
+        side === "us" ? colours.friendly : colours.enemy,
+      ]);
+    }
+    const height = series.length * 28 + 16;
+    $("resources").setAttribute("viewBox", `0 0 700 ${height}`);
+    baseTimeline($("resources"), height);
     series.forEach(([name, value, colour], i) => {
       const values = replay.frames.map(value).filter((v) => v != null),
         max = Math.max(1, ...values);
@@ -642,7 +683,7 @@ window.wh3Replay = (() => {
     for (const e of replay.events.filter((e) => e.kind === "ability")) {
       const mark = svg(
         "text",
-        { x: tx(e.time_ms), y: 96, fill: "#fff", "font-size": 10 },
+        { x: tx(e.time_ms), y: height - 4, fill: "#fff", "font-size": 10 },
         "✦",
       );
       mark.append(svg("title", {}, e.caption));

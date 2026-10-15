@@ -77,6 +77,7 @@ def public_frame(observation: dict, source: dict) -> dict:
 
 def state_events(frames: list[dict], protected: list[str]) -> list[dict]:
     events, seen_dead, contact = [], set(), False
+    known = {}
 
     def add(kind, frame, caption, unit=None):
         events.append(
@@ -92,6 +93,8 @@ def state_events(frames: list[dict], protected: list[str]) -> list[dict]:
     previous = None
     for frame in frames:
         units = {u["id"]: u for side in ("friendly", "enemy") for u in frame[side]}
+        for uid, unit in units.items():
+            known[uid] = {**known.get(uid, {}), **unit}
         old = (
             {u["id"]: u for side in ("friendly", "enemy") for u in previous[side]}
             if (previous)
@@ -134,10 +137,14 @@ def state_events(frames: list[dict], protected: list[str]) -> list[dict]:
                 seen_dead.add(uid)
         for unit in frame["enemy_roster"]:
             if unit.get("dead") is True and unit["id"] not in seen_dead:
+                prior = known.get(unit["id"], {})
+                qualifiers = (" · general" if prior.get("commander") else "") + (
+                    " · protected unit" if unit.get("type") in protected else ""
+                )
                 add(
                     "death",
                     frame,
-                    f"{unit['id']} {unit_name(unit)}: observed dead in roster",
+                    f"{unit['id']} {unit_name(unit)}: observed dead in roster{qualifiers}",
                     unit["id"],
                 )
                 seen_dead.add(unit["id"])
@@ -413,6 +420,15 @@ def build(episode: Path, manifest: dict | None = None) -> dict:
                         )
         decision["displacements"] = movement
     scenario = manifest.get("scenario") or {}
+    names_path = episode / "unit_names.json"
+    if names_path.exists():
+        names = json.loads(names_path.read_text())
+        for frame in ordered:
+            for side in ("friendly", "enemy", "enemy_roster"):
+                for unit in frame[side]:
+                    name = names.get(unit["id"])
+                    if isinstance(name, str) and name:
+                        unit.update(name=name, name_source="unit_names.json")
     events = state_events(ordered, scenario.get("protected", [])) + order_events(decisions, ordered)
     if ordered and result.get("status"):
         events.append(
@@ -439,7 +455,7 @@ def build(episode: Path, manifest: dict | None = None) -> dict:
                     **previous,
                     **{
                         k: unit[k]
-                        for k in ("id", "type", "class", "commander", "men0")
+                        for k in ("id", "type", "class", "commander", "men0", "name_source")
                         if k in unit
                     },
                     "side": "enemy" if side.startswith("enemy") else side,

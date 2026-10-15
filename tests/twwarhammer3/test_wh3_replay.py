@@ -51,7 +51,7 @@ def test_visible_transitions_objectives_timer_and_confirmed_roster_death():
     a = frame(
         0,
         [unit(commander=True)],
-        [unit("e1")],
+        [unit("e1", commander=True)],
         remaining_ms=65000,
         mode={"capture_points": [{"id": "p1", "holder": "enemy"}]},
     )
@@ -82,6 +82,7 @@ def test_visible_transitions_objectives_timer_and_confirmed_roster_death():
     assert "general" in rout["caption"] and "protected" in rout["caption"]
     assert "Attacked in the rear" in rout["caption"]
     assert sum(e["kind"] == "death" for e in events) == 2
+    assert "general" in next(e["caption"] for e in events if e["unit"] == "e1")
     assert all(e["source"] for e in events)
 
 
@@ -110,7 +111,8 @@ def test_order_lapsed_requires_a_live_visible_target_and_no_superseding_order():
     assert replay.order_events([decision, superseded], [snapshot]) == []
 
 
-def test_replay_public_boundary_identity_and_exact_text(tmp_path):
+@pytest.mark.parametrize("rejection", ["unreachable", "unit_routing"])
+def test_replay_public_boundary_identity_and_exact_text(tmp_path, rejection):
     episode = tmp_path / "episode-0000"
     episode.mkdir()
     prompt = "</script> literal prompt & unicode ☃"
@@ -150,7 +152,7 @@ def test_replay_public_boundary_identity_and_exact_text(tmp_path):
             "ack": {
                 "applied_ms": 4500,
                 "results": [
-                    {"index": 2, "unit": "f1", "ok": False, "error": "unreachable"},
+                    {"index": 2, "unit": "f1", "ok": False, "error": rejection},
                     {"index": 1, "unit": "f1", "ok": True, "queued": True},
                 ],
             },
@@ -172,6 +174,7 @@ def test_replay_public_boundary_identity_and_exact_text(tmp_path):
     assert decision["prompt"] == prompt == decision["attempts"][0]["text"]
     assert decision["after_frame"] == 1 and decision["displacements"][0]["metres"] == 5
     assert [o["status"] for o in decision["orders"]] == ["queued", "rejected"]
+    assert rejection in next(e["caption"] for e in data["events"] if e["kind"] == "rejected")
     assert data["summary"]["unacknowledged_orders"] == 1
     assert len(data["warnings"]) == 1
     assert not any(e["kind"] == "death" for e in data["events"])

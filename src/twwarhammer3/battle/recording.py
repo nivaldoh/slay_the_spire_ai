@@ -13,7 +13,7 @@ def recording_settings(config: dict) -> dict:
         "version": RECORDER_VERSION,
         "enabled": bool(config.get("record_replay")),
         "interval_ms": 1000,
-        "cost_validation": "pending_live_probe",
+        "cost_validation": "scripted_off_on_20261015",
     }
 
 

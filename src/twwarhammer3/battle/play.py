@@ -25,6 +25,7 @@ from pathlib import Path
 from gameai.ledger import BudgetExhausted
 from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
 from twwarhammer3.battle.controllers import MODEL_POLICIES, card, rotation
+from twwarhammer3.battle.imagery import copy_presentation, imagery_settings
 from twwarhammer3.battle.recording import copy_recording, recording_settings
 from twwarhammer3.battle.setup import (
     check_battle,
@@ -55,7 +56,7 @@ SCENARIOS_PATH = Path(__file__).resolve().parents[3] / "configs/twwarhammer3/sce
 CATALOGUE_PATH = SCENARIOS_PATH.with_name("custom_battle.json")
 CAPTION_LIMIT = 400
 SESSION_KEYS = ("speed", "pause", "interval_ms", "observe_ms", "tick_ms", "autostart", "menu",
-                "record_replay")
+                "record_replay", "stills")
 # Lobby expressions that guard menu steps ("when").
 LOBBY = "CustomBattleLobbyContext."
 PLAYER_ATTACKS = LOBBY + "LocalPlayerSlotContext.TeamContext.IsAttacker"
@@ -95,6 +96,7 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
         "status": "running",
         "episodes": [],
         "recorder": recording_settings(config),
+        "imagery": imagery_settings(config),
     }
     for name in sorted(set(config["policy"].split(",")) & MODEL_POLICIES):
         from twwarhammer3.battle import commander, llm
@@ -148,7 +150,9 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
             require_realtime(live)
             config.update({key: live[key] for key in SESSION_KEYS if key in live})
             config["record_replay"] = live.get("record_replay", False)
+            config["stills"] = live.get("stills", False)
             manifest["recorder"] = recording_settings(config)
+            manifest["imagery"] = imagery_settings(config)
             write_json(output / "manifest.json", manifest)
             manifest["status"] = episodes(Mailbox(BRIDGE_DIR, job=live["job"]))
         else:
@@ -454,6 +458,9 @@ def play_episode(directory: Path, config: dict, policy, mailbox: Mailbox, *,
         if config.get("record_replay"):
             result["recording"] = copy_recording(mailbox.directory, directory,
                                                   job=mailbox.job, battle=result.get("battle"))
+        if config.get("stills"):
+            result["imagery"] = copy_presentation(mailbox.directory, directory,
+                                                 job=mailbox.job, battle=result.get("battle"))
         if result.get("start") and config.get("start_reference"):
             result["start_comparison"] = compare_starts(config["start_reference"], result["start"])
         delays = result["delays_ms"]

@@ -22,8 +22,10 @@ def add_session_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--tick-ms", type=int, default=250, help="in-game model tick for the mod")
     parser.add_argument("--no-autostart", action="store_true", help="leave deployment to a human")
     parser.add_argument("--no-menu", action="store_true", help="do not drive the frontend menus")
-    parser.add_argument("--record-replay", action="store_true",
-                        help="record public replay frames at 1 Hz (cost probe pending)")
+    parser.add_argument("--record-replay", action=argparse.BooleanOptionalAction, default=True,
+                        help="record public replay frames at 1 Hz (default: on)")
+    parser.add_argument("--stills", action="store_true",
+                        help="capture up to four presentation stills and readable unit names")
 
 
 def session_from(args: argparse.Namespace) -> dict:
@@ -32,6 +34,7 @@ def session_from(args: argparse.Namespace) -> dict:
         "interval_ms": args.interval_ms, "observe_ms": args.observe_ms, "tick_ms": args.tick_ms,
         "autostart": not args.no_autostart, "menu": not args.no_menu,
         "record_replay": args.record_replay,
+        "stills": args.stills,
     }
 
 
@@ -252,6 +255,7 @@ def main() -> int:
 
             report = collect(args.report)
             if args.report_json:
+                args.report_json.parent.mkdir(parents=True, exist_ok=True)
                 write_json(args.report_json, report)
             if args.report_html:
                 from twwarhammer3.battle.report_html import write

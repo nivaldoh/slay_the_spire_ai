@@ -648,6 +648,45 @@ local function record_replay(now, terminal)
     if not ok then log("recorder failed: " .. clean_error(err)) end
 end
 
+local function record_imagery(now, terminal)
+    if not session.stills then return end
+    local second = math.floor(now / 1000)
+    if state.imagery_second == second and not terminal then return end
+    state.imagery_second = second
+    local ok, err = pcall(function()
+        local frame = {job = session.job, battle = state.battle, time_ms = now,
+            terminal = terminal, friendly = {}, enemy = {}}
+        state.presentation_names = state.presentation_names or {}
+        state.presentation_name_seen = state.presentation_name_seen or {}
+        for _, side in ipairs({"friendly", "enemy"}) do
+            for _, id in ipairs(state[side .. "_ids"]) do
+                local entry = state[side][id]
+                local public = side == "friendly" or visible_to_player(entry.unit)
+                if (public or entry.initial) and not state.presentation_name_seen[id] then
+                    state.presentation_name_seen[id] = true
+                    local good, name = pcall(common.get_context_value, "CcoBattleUnit",
+                        tostring(get(entry.unit, "unique_ui_id", "")), "UnitRecordContext.Name")
+                    if good and type(name) == "string" and name ~= "" then
+                        state.presentation_names[id] = plain(name)
+                    end
+                end
+                if public then
+                    local position = get(entry.unit, "position", nil)
+                    if position then
+                        local flags = {}
+                        if get(entry.unit, "is_in_melee", false) then flags[#flags + 1] = "melee" end
+                        if get(entry.unit, "is_routing", false) then flags[#flags + 1] = "routing" end
+                        frame[side][#frame[side] + 1] = {id = id, x = position:get_x(), z = position:get_z(),
+                            men = get(entry.unit, "number_of_men_alive", 0), state = flags}
+                    end
+                end
+            end
+        end
+        twwarhammer3_imagery(frame, state.presentation_names)
+    end)
+    if not ok then log("imagery failed: " .. clean_error(err)) end
+end
+
 local function apply_army_ability(order)
     local known = false
     for _, setup in ipairs(state.army_abilities) do
@@ -936,6 +975,7 @@ local function finish()
     end
     -- Flush the terminal presentation frame before the result releases the harness.
     record_replay(battle_time(), true)
+    record_imagery(battle_time(), true)
     publish_observation(battle_time())
     bm:remove_process("twwarhammer3_tick")
     log("result " .. state.result)
@@ -1090,6 +1130,7 @@ local function tick()
         publish_observation(now)
     end
     record_replay(now, false)
+    record_imagery(now, false)
 end
 
 -- UI steps for probing the battle UI (menu --battle): the frontend script is unloaded

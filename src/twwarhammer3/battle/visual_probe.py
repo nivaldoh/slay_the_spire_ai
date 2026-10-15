@@ -7,6 +7,7 @@ capture cost are questions for the resulting evidence, not assumptions in the re
 """
 
 import argparse
+import json
 import secrets
 import shutil
 import subprocess
@@ -37,7 +38,7 @@ end
 attempt("screenshots_path", function() return common.get_appdata_screenshots_path() end)
 local target = cam:target()
 local x, z = target:get_x(), target:get_z()
-local height = bm.battle:height_at_position(x, z)
+local height = bm.battle:get_terrain_height(x, z)
 output.requested = {position = {x, height + 500, z - 0.1}, target = {x, height, z}, fov = 45}
 attempt("camera", function()
     cam:move_to(v(x, height + 500, z - 0.1), v(x, height, z), 0, true, 45)
@@ -70,6 +71,8 @@ def command(output: Path, case: str) -> list[str]:
             "--run-timeout", "1200" if case == "imagery" else "2800"]
     if case != "off":
         args.append("--record-replay")
+    else:
+        args.append("--no-record-replay")
     return args
 
 
@@ -77,6 +80,8 @@ def run(output: Path, case: str) -> int:
     if output.exists():
         raise ValueError("probe output must be a new directory")
     sent = False
+    samples, previous_seq = [], None
+    started = time.monotonic()
     # A native screenshot can block a frame; this probe measures that possibility.
     # The eventual capture path must be chosen from evidence before it is enabled.
     prefix = f"visual-probe-{secrets.token_hex(6)}-"
@@ -84,9 +89,13 @@ def run(output: Path, case: str) -> int:
     mailbox = Mailbox(BRIDGE_DIR, job=output.name)
     try:
         while process.poll() is None:
-            if case == "imagery" and not sent:
+            if case == "imagery":
                 observation = mailbox.read_observation()
-                if observation and observation.get("phase") == "Deployed":
+                if observation and observation.get("seq") != previous_seq:
+                    previous_seq = observation.get("seq")
+                    samples.append({"wall_s": time.monotonic() - started,
+                                    "time_ms": observation.get("time_ms"), "seq": previous_seq})
+                if observation and observation.get("phase") == "Deployed" and not sent:
                     mailbox.write_menu([{"lua": LUA.replace("visual-probe-", prefix)}])
                     sent = True
             time.sleep(.2)
@@ -102,6 +111,8 @@ def run(output: Path, case: str) -> int:
                 "calibration": False, "speed": 1, "pause": False}
     if output.exists():
         if case == "imagery":
+            (output / "visual-probe-observations.jsonl").write_text(
+                "".join(json.dumps(sample) + "\n" for sample in samples))
             for suffix in ("opening.tga", "metadata.json"):
                 source = BRIDGE_DIR / (prefix + suffix)
                 if source.exists():
