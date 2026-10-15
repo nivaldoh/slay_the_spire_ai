@@ -95,7 +95,7 @@
           "lead_in_s": 9.3,
           "end_ms": 59900,
           "title": "Opening plan: around the west side",
-          "text": "The first orders sent all six units on a two-leg route to the north-west, with the Lord and three knight regiments then to attack the cannon and handgunners; the model's stated reason: “Swing the cavalry west of the central obstruction to strike the cannon and handgunners from the flank.”",
+          "text": "The first orders sent all six units on a two-leg route to the north-west, with the Lord and three knight regiments then to attack the cannon and handgunners and the Questing Knights and archers Halberdiers 4 (the Questing Knights were switched to the cannon at 0:51); the model's stated reason: “Swing the cavalry west of the central obstruction to strike the cannon and handgunners from the flank.”",
           "units": [
             "f1",
             "f2",
@@ -109,14 +109,8 @@
           "refs": [
             "trace.jsonl:4",
             "trace.jsonl:5",
-            "trace.jsonl:7",
-            "trace.jsonl:31",
             "trace.jsonl:34",
             "trace.jsonl:35",
-            "trace.jsonl:46",
-            "trace.jsonl:47",
-            "trace.jsonl:97",
-            "trace.jsonl:98",
             "replay.jsonl:1"
           ]
         },
@@ -125,7 +119,7 @@
           "lead_in_s": 14,
           "end_ms": 193100,
           "title": "The long way round",
-          "text": "Saying the halberdiers were “moving into the direct approach”, the model sent the Lord and knights wider, west at 1:08 and then north around Halberdiers 4 at 2:19, and the Lord reached the Great Cannons from the north at 3:13 with no men lost after 1:08.",
+          "text": "Saying the halberdiers were “moving into the direct approach”, the model sent the Lord and knights wider, west at 1:08 and then north around Halberdiers 4 at 2:19, and the Lord reached the Great Cannons from the north at 3:13, with no men lost by the Lord and knights after 1:08.",
           "units": [
             "f1",
             "f2",
@@ -157,12 +151,13 @@
           "lead_in_s": 15,
           "end_ms": 226100,
           "title": "The gun line flees first",
-          "text": "The Great Cannons crew began fleeing at 3:27 after the Lord and Questing Knights reached it, and both Handgunners units at 3:46 with four mounted units fighting them, while none of the four Halberdiers units had fled yet.",
+          "text": "The Great Cannons crew began fleeing at 3:27 after the Lord and Questing Knights reached it, and both Handgunners units at 3:46 with the Lord and all four knight regiments attacking them, while none of the four Halberdiers units had fled yet.",
           "units": [
             "f1",
+            "f2",
+            "f3",
             "f4",
             "f5",
-            "f3",
             "e8",
             "e6",
             "e7"
@@ -180,6 +175,7 @@
             "replay.jsonl:216",
             "trace.jsonl:162",
             "replay.jsonl:220",
+            "replay.jsonl:221",
             "replay.jsonl:222",
             "replay.jsonl:293"
           ]
@@ -216,7 +212,7 @@
           "lead_in_s": 20,
           "end_ms": 382400,
           "title": "The general flees and the battle ends",
-          "text": "In melee from 4:05 and fighting the Lord and all four knight regiments by 6:05, the General of the Empire began fleeing at 6:21; the three Halberdiers units still fighting followed within 1.2 s, and the game declared the win at 6:22.",
+          "text": "In melee from 4:04 with short breaks and fighting the Lord and all four knight regiments by 6:05 (Knights of the Realm 1 fled at 6:11), the General of the Empire began fleeing at 6:21; the three Halberdiers units not yet fleeing did so within 1.2 s (Halberdiers 3 in the same frame), and the game declared the win at 6:22.",
           "units": [
             "f1",
             "f2",
@@ -231,8 +227,11 @@
           "kind": "outcome",
           "feature": false,
           "refs": [
+            "replay.jsonl:240",
+            "replay.jsonl:360",
             "trace.jsonl:264",
             "replay.jsonl:364",
+            "replay.jsonl:367",
             "replay.jsonl:374",
             "replay.jsonl:375",
             "replay.jsonl:376",
@@ -252,7 +251,7 @@
           "lead_in_s": 7.2,
           "end_ms": 38900,
           "title": "Just-issued orders shown as “stopped”",
-          "text": "The first update after the opening orders, taken the instant they took effect, described all six units as “stopped” 300–350 m short of their moves; the model replied “The first moves stopped short” and re-issued every route at 0:20, 0:30 and 0:38.",
+          "text": "The first update after the opening orders, taken the instant they took effect, described all six units as “stopped” 300–350 m short of their moves; the model's stated reason began “The first moves stopped short”, and it gave all six units new moves at 0:20, 0:30 and 0:38.",
           "units": [
             "f1",
             "f2",
@@ -272,6 +271,7 @@
             "trace.jsonl:8",
             "trace.jsonl:9",
             "trace.jsonl:10",
+            "trace.jsonl:11",
             "trace.jsonl:13",
             "trace.jsonl:14"
           ]
@@ -281,7 +281,7 @@
           "lead_in_s": 20,
           "end_ms": 262700,
           "title": "Same route, slower collapse",
-          "text": "As in the selected example, the Lord circled north and reached the Great Cannons (at 3:15 here), but the gun line fled later: the cannon at about 3:44 and the last Handgunners unit (Handgunners 1) at about 4:22.",
+          "text": "As in the selected example, the Lord circled north and reached the Great Cannons (at about 3:15 here), but the gun line fled later: the cannon at about 3:44 and the last Handgunners unit (Handgunners 1) at about 4:22.",
           "units": [
             "f1",
             "f2",

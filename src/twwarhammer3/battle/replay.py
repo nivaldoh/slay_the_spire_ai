@@ -380,10 +380,22 @@ def summary_lines(steps: list[dict], labels: dict) -> list[dict]:
     return lines
 
 
-def engaged(unit: dict | None, attack: dict) -> bool:
-    """The unit is recorded attacking the step's target (in melee, for a melee order)."""
-    return bool(unit and unit.get("target") == attack["target"] and (
-        attack["mode"] != "melee" or "melee" in (unit.get("state") or [])))
+MELEE_M = 50  # unit centres at most this far apart can be fighting each other
+
+
+def engaged(unit: dict | None, attack: dict, frame: dict) -> bool:
+    """The unit is recorded attacking the step's target; for a melee order, in melee with
+    the target recorded close by, since a unit in melee may be fighting another one."""
+    if not unit or unit.get("target") != attack["target"]:
+        return False
+    return attack["mode"] != "melee" or fighting(unit, attack["target"], frame)
+
+
+def fighting(unit: dict, target_id: str, frame: dict) -> bool:
+    target = find(frame, target_id)
+    return ("melee" in (unit.get("state") or []) and target is not None
+            and None not in (unit.get("x"), unit.get("z"), target.get("x"), target.get("z"))
+            and math.dist((unit["x"], unit["z"]), (target["x"], target["z"])) <= MELEE_M)
 
 
 def onset(frames: list[dict], uid: str, applied: int, end: int, test,
@@ -394,10 +406,10 @@ def onset(frames: list[dict], uid: str, applied: int, end: int, test,
     took effect, so it never shows their effect."""
     before = next((frame for frame in reversed(frames)
                    if frame["time_ms"] <= applied and find(frame, uid)), None)
-    if already and before and test(find(before, uid)):
+    if already and before and test(find(before, uid), before):
         return before, True
     return next((frame for frame in frames if applied < frame["time_ms"] <= end
-                 and test(find(frame, uid))), None), False
+                 and test(find(frame, uid), frame)), None), False
 
 
 def next_facts(index: int, decisions: list[dict], frames: list[dict], labels: dict,
@@ -451,11 +463,11 @@ def next_facts(index: int, decisions: list[dict], frames: list[dict], labels: di
         if attack:
             target = labels.get(attack["target"], attack["target"])
             # A queued attack starts after its route: what the unit did before is no answer.
-            hit, already = onset(frames, unit, applied, end, lambda u: engaged(u, attack),
+            hit, already = onset(frames, unit, applied, end, lambda u, f: engaged(u, attack, f),
                                  not attack["queued"])
             if hit:
                 doing = (f"in melee with {target}" if attack["mode"] != "ranged"
-                         and "melee" in (find(hit, unit).get("state") or [])
+                         and fighting(find(hit, unit), attack["target"], hit)
                          else f"targeting {target}")
                 # A jump point never precedes the orders.
                 facts.append({"unit": unit, "time_ms": max(hit["time_ms"], applied), "text": (
@@ -471,7 +483,7 @@ def next_facts(index: int, decisions: list[dict], frames: list[dict], labels: di
         for step in accepted:
             if step["kind"] == "ability":
                 ability = ability_name(step["ability"])
-                hit, already = onset(frames, unit, applied, end, lambda u: any(
+                hit, already = onset(frames, unit, applied, end, lambda u, _: any(
                     item.get("key") == step["ability"] and item.get("active")
                     for item in (u or {}).get("abilities") or []))
                 text = (f"{name}: {ability} {'already active at' if already else 'active from'} "

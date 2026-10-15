@@ -86,7 +86,10 @@ declared scenario sets its own AI stats modifier in the lobby
   CcoUnitsCustomBattlePermissionRecord<unit key>:<faction key>:<n>/unit_card`; groups
   seen: commander, heroes_agents, infantry, cavalry_chariots, missile_cavalry_chariots,
   monster_beasts, artillery_war_machines. The last field is 1 for lords and 0 for other
-  units. A simulated left click pins the unit's info panel; `SimulateDblLClick()`
+  units. A caster with several lores has one card: the lobby offers
+  `wh2_main_skv_cha_grey_seer_plague_0`, not `_ruin_0` (the first swarm screen stopped on
+  it, 2026-10-15). Setup dumps each army's cards to `cards_slot<N>.txt` in the job before
+  recruiting. A simulated left click pins the unit's info panel; `SimulateDblLClick()`
   recruits it into the selected slot (select the slot, `button_bar_parent/button_clear`,
   then double-click each card). Cards are found without waiting for them to read as
   visible; legendary lords use the race's main faction key

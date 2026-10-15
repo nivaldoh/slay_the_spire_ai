@@ -301,6 +301,20 @@ def test_next_facts_report_recorded_outcomes_within_each_units_window():
     assert facts[-1]["unit"] == "e1" and facts[-1]["time_ms"] == 3000
 
 
+def test_melee_with_a_target_needs_it_close_by():
+    """visual-sol 3:24: Knights of the Realm 2 targeted Handgunners 1 while in melee with the
+    general 16 m away, 89 m from the handgunners; that is no melee with the handgunners."""
+    first = {"applied_ms": 1000, "orders": [
+        item({"unit": "f1", "type": "attack", "target": "e1", "mode": "melee"})]}
+    fighting = {"target": "e1", "states": ["melee"]}
+    frames = [frame(0, [unit("f1")], [unit("e1", x=89), unit("e2", x=16)]),
+              frame(2000, [unit("f1", **fighting)], [unit("e1", x=89), unit("e2", x=16)]),
+              frame(3000, [unit("f1", x=50, **fighting)], [unit("e1", x=89), unit("e2", x=16)])]
+    first["steps"] = replay.order_steps(first, frames[0], LABELS)
+    facts = replay.next_facts(0, [first], frames, LABELS, replay.state_events(frames, []))
+    assert [fact["text"] for fact in facts] == ["Knights 1 in melee with Cannon from 0:03"]
+
+
 def test_next_facts_need_frames_after_the_orders_and_observed_target_transitions():
     """Regressions from real traces: the frame taken at applied_ms shows the battle before
     the orders (bench-g1 episode 0, 0:05); a target is watched while any of the batch's units
