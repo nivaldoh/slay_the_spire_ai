@@ -90,14 +90,34 @@ def test_rollout_throughput_includes_setup_failures_and_unknown_job_duration(tmp
 def test_timer_win_retains_engine_outcome_and_labels_non_timer_win_rate(tmp_path):
     job = make_job(tmp_path, "timer", [("hold", -.7, "won")])
     path = job / "episode-0000/result.json"
-    path.write_text(json.dumps({**json.loads(path.read_text()), "ended_by": "time_limit"}))
+    path.write_text(json.dumps({**json.loads(path.read_text()), "ended_by": "time_limit",
+                                "battle_ms": 247700}))
     result = report.collect([job])
     group = result["groups"][0]
     trial = group["trials"][0]
     assert trial["outcome"] == "time_limit" and trial["engine_outcome"] == "won"
+    assert trial["battle_ms"] == 247700  # the report's durations use the battle clock in ms
     assert trial["valid"]
     controller = group["controllers"][0]
     assert controller["win_rate"] == 0
     assert controller["time_limit_engine_outcomes"] == {"won": 1}
     text = report.render(result)
     assert "Non-timer win rate" in text and "time_limit (engine won)" in text
+
+
+def test_typical_order_delay_is_the_median_of_per_trial_medians_and_jobs_keep_their_start(
+        tmp_path):
+    job = make_job(tmp_path, "ages", [("hold", 0, "won")] * 3)
+    manifest = json.loads((job / "manifest.json").read_text())
+    manifest["created_at"] = "2026-10-15T01:00:00Z"
+    (job / "manifest.json").write_text(json.dumps(manifest))
+    for episode, delays in (("episode-0000", [1000, 3000, 9000]), ("episode-0001", [5000])):
+        acks = [{"kind": "ack", "ack": {"results": [{"ok": True}]}, "latency": {"delay_ms": delay}}
+                for delay in delays] + [{"kind": "ack", "ack": {"results": []},
+                                         "latency": {"delay_ms": 60000}}]  # empty: no age
+        (job / episode / "trace.jsonl").write_text("".join(json.dumps(a) + "\n" for a in acks))
+    result = report.collect([job])
+    assert result["groups"][0]["controllers"][0]["order_age_median_s"] == 4  # median of 3 and 5
+    assert result["jobs"][0]["created_at"] == "2026-10-15T01:00:00Z"
+    assert report.collect([make_job(tmp_path, "none", [("hold", 0, "won")])])["groups"][0][
+        "controllers"][0]["order_age_median_s"] is None

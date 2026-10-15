@@ -119,6 +119,7 @@ def collect(jobs: list[Path]) -> dict:
         config = manifest["config"]
         scenario = manifest.get("scenario") or {}
         job_records.append({"instance": str(job), "recorded_status": manifest.get("status"),
+                            "created_at": manifest.get("created_at"),
                             "planned_trials": manifest.get("trials"),
                             "wall_seconds": manifest.get("wall_seconds"),
                             "setup_checks": manifest.get("setup_checks"),
@@ -175,6 +176,7 @@ def collect(jobs: list[Path]) -> dict:
                 "card": result.get("card"), "metrics": metrics, "protected_left": protected_left,
                 "objectives": result.get("objectives"), "llm": result.get("llm") or {},
                 "wall_s": result.get("elapsed_seconds"), "battle_s": result.get("battle_s"),
+                "battle_ms": result.get("battle_ms"),
                 "clock_ratio": result.get("clock_ratio"),
                 "error": result.get("error"),
             })
@@ -203,6 +205,9 @@ def collect(jobs: list[Path]) -> dict:
                           if trial["valid"]]
                 values = [value for value in values if value is not None]
                 means[field] = statistics.mean(values) if values else None
+            # Typical order delay: the median of each battle's median order age.
+            medians = [trial["metrics"]["order_age_s"]["p50"] for trial in items
+                       if trial["metrics"]["order_age_s"]["p50"] is not None]
             summaries.append({
                 "controller": controller, "trials": len(items), "valid": valid,
                 "instances": len({trial["instance"] for trial in items}),
@@ -219,6 +224,7 @@ def collect(jobs: list[Path]) -> dict:
                 "unchecked_trials": sum(not trial["setup_checked"] for trial in items),
                 "start_flagged_trials": sum(bool(trial["start_flagged"]) for trial in items),
                 "means": means,
+                "order_age_median_s": statistics.median(medians) if medians else None,
                 "input_tokens": sum(trial["llm"].get("input_tokens", 0) for trial in items),
                 "output_tokens": sum(trial["llm"].get("output_tokens", 0) for trial in items),
             })
@@ -302,16 +308,18 @@ def render(report: dict) -> str:
                 f"{row['usd']:.4f}", f"{row['wall_s'] / 3600:.2f}", str(row["unchecked_trials"]),
             ]) + " |")
         lines += ["", "Means: gameplay over valid trials; timing over all recorded trials. "
+                  "Median order age: the median of each trial's median. "
                   "Unavailable values excluded.", "",
                   "| Controller | Margin | Decisions/s | Snapshot age at decision s | "
-                  "Order age s | Plan age s | Call s | Victory held | Key held | Supplies left | "
-                  "Tokens in/out |",
-                  "|" + "---|" * 11]
+                  "Order age s | Median order age s | Plan age s | Call s | Victory held | "
+                  "Key held | Supplies left | Tokens in/out |",
+                  "|" + "---|" * 12]
         for row in group["controllers"]:
-            values = [row["means"][key] for key in
+            means = {**row["means"], "median": row["order_age_median_s"]}
+            values = [means[key] for key in
                       ("margin", "decisions_per_battle_s", "snapshot_age_at_decision_s",
-                       "order_age_s", "plan_age_s",
-                       "call_seconds", "victory_held", "key_held", "supplies_left")]
+                       "order_age_s", "median", "plan_age_s", "call_seconds", "victory_held",
+                       "key_held", "supplies_left")]
             lines.append("| " + " | ".join([
                 row["controller"],
                 *(f"{value:.3f}" if value is not None else "—" for value in values),

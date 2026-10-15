@@ -1,5 +1,5 @@
 "use strict";
-// The exporter concatenates replay.js and report.js into one script; both use these helpers.
+// The exporter concatenates replay.js and report.js into one script; report.js uses these helpers.
 const el = (tag, text, className) => {
   const node = document.createElement(tag);
   if (text != null) node.textContent = text;
@@ -13,12 +13,76 @@ const svg = (tag, attrs = {}, text) => {
   return node;
 };
 const json = (value) => JSON.stringify(value, null, 2);
-const fmt = (value, digits = 1) => (value == null ? "Unavailable" : Number(value).toFixed(digits));
-// An incomplete cost record is not evidence of free inference; scripted controllers cost zero.
-const trialCost = (trial) => trial.llm?.usd ?? (trial.card?.kind === "scripted" ? 0 : null);
-function download(blob, name) {
+const pad = (number) => String(number).padStart(2, "0");
+// Battle clock as the engine counts it (6:22); tenths only where a sequence needs them.
+const clock = (ms) => {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return `${Math.floor(s / 60)}:${pad(s % 60)}`;
+};
+const clockTenths = (ms) => {
+  const tenths = Math.max(0, Math.floor(ms / 100));
+  return `${clock(tenths * 100)}.${tenths % 10}`;
+};
+const seconds = (value) =>
+  value == null ? "not recorded" : value < 0.05 ? "<0.1 s" : `${value.toFixed(1)} s`;
+const money = (usd) =>
+  usd == null ? "not recorded" : usd === 0 ? "$0" : usd < 0.01 ? "<$0.01" : `$${usd.toFixed(2)}`;
+const capital = (text) => text.charAt(0).toUpperCase() + text.slice(1);
+// The stretch of battle an analyst note covers: its lead-in, then at least 5 s after it.
+const span = (h) => ({
+  from: Math.max(0, h.time_ms - (h.lead_in_s || 0) * 1000),
+  to: Math.max(h.end_ms ?? h.time_ms + 20000, h.time_ms + 5000),
+});
+// Of the moments ({from, to, at}) whose window holds t, the one to mark: the latest at or
+// before t, else the next one after it; -1 when no window holds t.
+function markedAt(moments, t) {
+  let found = -1,
+    best = -Infinity;
+  moments.forEach((m, k) => {
+    const score = m.at <= t ? m.at : t - m.at;
+    if (m.from <= t && t <= m.to && score >= best) {
+      found = k;
+      best = score;
+    }
+  });
+  return found;
+}
+const GLYPHS = [
+  "general",
+  "cavalry",
+  "missile_cavalry",
+  "infantry",
+  "polearm_infantry",
+  "missile_infantry",
+  "artillery",
+  "monster",
+];
+const glyphKey = (key) => (GLYPHS.includes(key) ? key : "unknown");
+function button(text, action, className) {
+  const node = el("button", text, className);
+  node.type = "button";
+  node.addEventListener("click", action);
+  return node;
+}
+function details(summary, ...content) {
+  const node = el("details");
+  node.append(el("summary", summary), ...content);
+  return node;
+}
+function keyValues(rows) {
+  const list = el("dl", null, "kv");
+  for (const [key, value] of rows)
+    if (value != null && value !== "") list.append(el("dt", key), el("dd", String(value)));
+  return list;
+}
+function glyph(key, className = "glyph") {
+  const node = svg("svg", { viewBox: "0 0 24 24", class: className, "aria-hidden": "true" });
+  node.append(svg("use", { href: `#glyph-${glyphKey(key)}` }));
+  return node;
+}
+function saveJSON(value, name) {
   const a = el("a"),
-    url = URL.createObjectURL(blob);
+    url = URL.createObjectURL(new Blob([json(value)], { type: "application/json" }));
   a.href = url;
   a.download = name;
   document.body.append(a);
@@ -27,939 +91,1509 @@ function download(blob, name) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-window.wh3Replay = (() => {
-  const $ = (id) => document.getElementById(`replay-${id}`);
-  const seconds = (ms) => `${fmt(ms / 1000)} s`;
-  const colours = { friendly: "#56b4e9", enemy: "#e69f00" };
-  const symbols = {
-    lord: "♔",
-    hero: "♔",
-    cavalry: "♞",
-    missile_cavalry: "♞",
-    infantry: "▰",
-    missile: "↗",
-    artillery: "⊕",
-    monster: "◆",
-  };
-  const laneColours = {
-    dead: "#555",
-    routing: "#cc79a7",
-    wavering: "#f0e442",
-    under_fire: "#e69f00",
-    melee: "#d55e00",
-    moving: "#56b4e9",
-    idle: "#999",
-  };
-  let dataset,
-    banner,
-    names = {},
-    trials = [],
-    current,
-    replay,
-    time = 0,
-    selected = 0,
+// The battle viewer: map, controls, timeline strip, roster and the moment panel.
+// Positions come only from recorded frames; gaps stay gaps and nothing is interpolated.
+const Viewer = (() => {
+  const $ = (id) => document.getElementById(id);
+  const TEAM = { friendly: "#56b4e9", enemy: "#e69f00" };
+  const MAP = "#13212a";
+  const REJECTED = "#ff7b72";
+  const TRAIL_MS = 20000; // observed movement shown behind each unit
+  const ROUTE_MS = 20000; // how long a newly issued route stays drawn for unselected units
+  const ARRIVED_M = 30; // a waypoint this close to a recorded position counts as reached
+  const ACCEPTED = ["acknowledged", "queued"];
+  const STRIP_H = 66;
+  // Bands kept clear of units: the caption on top, the scale bar and north arrow below.
+  const TOP_BAND = 40,
+    BOTTOM_BAND = 44;
+  let r = null,
+    run = {},
+    roster = new Map(),
+    tracks = new Map(),
+    orderLog = new Map(),
+    chips = new Map(),
+    times = [];
+  let time = 0,
+    start = 0,
+    end = 0,
+    gapMs = 1500,
     playing = false,
-    lastTick;
-  let generation = 0,
-    selectionGeneration = 0,
-    compareFrames = true;
-  const cache = new Map();
-  const label = (t) => [names[t.key], t.instance, t.episode].join(" · ");
-  const evidence = (source) =>
-    source ? `${source.file}${source.line ? `:${source.line}` : ""}` : "Source unavailable";
-  const states = (u) =>
-    u.men === 0 ? "dead" : Object.keys(laneColours).find((s) => u.state?.includes(s)) || "unknown";
-  const allUnits = (frame) => [
-    ...frame.friendly.map((u) => ({ ...u, side: "friendly" })),
-    ...frame.enemy.map((u) => ({ ...u, side: "enemy" })),
-  ];
-  const unitsAt = (frame) => new Map(allUnits(frame).map((u) => [u.id, u]));
-  const position = (u) => u && Number.isFinite(u.x) && Number.isFinite(u.z);
-  function disclosure(title, value) {
-    const d = el("details");
-    d.append(el("summary", title), el("pre", value, "replay-raw"));
-    return d;
+    speed = 4,
+    until = null,
+    lastTick = null,
+    loop = null;
+  let selected = null,
+    pinned = null,
+    proj = null,
+    strip = { w: 0, marks: [] },
+    keys = {},
+    framed = null,
+    extent = null,
+    watching = null,
+    mapWidth = 0;
+  const listeners = [];
+
+  const placed = (u) => u && Number.isFinite(u.x) && Number.isFinite(u.z);
+  const requested = (d) => d.decision_time_ms ?? d.time_ms;
+  const unitIn = (frame, id) =>
+    frame?.friendly.find((u) => u.id === id) || frame?.enemy.find((u) => u.id === id);
+  const sideOf = (id) =>
+    roster.get(id)?.side || (String(id).startsWith("e") ? "enemy" : "friendly");
+  const has = (u, state) => (u?.state || []).includes(state);
+  // Index of the last item whose key is at or before t, or -1.
+  function lastAtOrBefore(list, t, key = (item) => item) {
+    let lo = 0,
+      hi = list.length - 1,
+      found = -1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (key(list[mid]) <= t) {
+        found = mid;
+        lo = mid + 1;
+      } else hi = mid - 1;
+    }
+    return found;
   }
-  function button(text, action) {
-    const b = el("button", text);
-    b.addEventListener("click", action);
-    return b;
+  const frameIndex = () => Math.max(0, lastAtOrBefore(times, time));
+
+  // The latest decision applied by t, and a later one still waiting for its reply.
+  function momentAt(t) {
+    let current = -1,
+      pending = -1;
+    r.decisions.forEach((d, i) => {
+      if (d.applied_ms != null && d.applied_ms <= t) {
+        if (current < 0 || d.applied_ms >= r.decisions[current].applied_ms) current = i;
+      } else if (requested(d) <= t) pending = i;
+    });
+    return { current, pending: pending > current ? pending : -1 };
   }
-  async function decode(key) {
-    if (!dataset.replays[key]) return null;
-    const encoded = dataset.replays[key];
-    if (!cache.has(encoded))
-      cache.set(
-        encoded,
-        (async () => {
-          const bytes = Uint8Array.from(atob(encoded), (c) => c.charCodeAt(0));
-          const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
-          return JSON.parse(await new Response(stream).text());
-        })(),
-      );
-    return cache.get(encoded);
-  }
-  async function load(data, view, status, controllers) {
-    const ownGeneration = ++generation;
-    banner = status;
-    names = controllers;
-    ++selectionGeneration;
+
+  function show(payload, context) {
+    r = payload;
+    r.highlights ||= [];
+    run = context;
     playing = false;
-    replay = null;
-    dataset = data;
-    trials = view.groups.flatMap((g) =>
-      data.report.groups[g].trials.map((trial, t) => ({
-        ...trial,
-        key: `g${g}-t${t}`,
-      })),
-    );
-    $("trial").replaceChildren(
-      ...trials.map((t, i) => {
-        const option = el("option", label(t));
-        option.value = i;
-        return option;
-      }),
-    );
-    $("content").hidden = true;
-    $("availability").textContent = trials.length
-      ? "Loading embedded replay evidence…"
-      : "No started trial in this comparison.";
-    $("verdict").replaceChildren(el("p", status, "banner"));
-    $("multiples").replaceChildren();
-    $("forces").replaceChildren();
-    $("stills").replaceChildren();
-    $("prompts").replaceChildren(
-      ...Object.entries(data.prompts).map(([job, prompts]) => {
-        const section = el("div");
-        section.append(el("h3", job));
-        for (const [name, prompt] of Object.entries(prompts))
-          section.append(disclosure(name, prompt));
-        return section;
-      }),
-    );
-    if (!trials.length) {
-      $("download").disabled = true;
-      return;
-    }
-    try {
-      const payloads = await Promise.all(trials.map((t) => decode(t.key)));
-      if (ownGeneration !== generation) return;
-      trials.forEach((t, i) => {
-        t.replay = payloads[i];
-      });
-      const featured = trials.find((t) => t.key === data.featured[view.id]) || trials[0];
-      await open(trials.indexOf(featured));
-      if (ownGeneration !== generation) return;
-      multiples();
-    } catch (error) {
-      if (ownGeneration === generation)
-        $("availability").textContent =
-          `Replay unavailable: ${error.message}. Statistical evidence remains available below.`;
-    }
-  }
-  async function open(index) {
-    const ownSelection = ++selectionGeneration;
-    playing = false;
-    $("play").textContent = "Play";
-    const next = trials[index];
-    const loaded = next?.replay || (await decode(next?.key));
-    if (ownSelection !== selectionGeneration) return;
-    current = next;
-    replay = loaded;
-    compareFrames = true;
-    $("trial").value = index;
-    $("content").hidden = !replay?.frames.length;
-    $("download").disabled = !replay;
-    const summary = replay?.summary;
-    $("verdict").replaceChildren(
-      el("p", banner, "banner"),
-      el("h2", label(current)),
-      el(
-        "p",
-        `${current.outcome}${current.ended_by === "time_limit" ? ` (engine ${current.engine_outcome})` : ""} · ${fmt(current.battle_s)} s · active-strength margin ${fmt(current.metrics.margin, 3)} · ${summary?.decisions ?? "Unavailable"} logged decisions · ${summary?.orders ?? "Unavailable"} submitted / ${summary?.acknowledged_orders ?? "Unavailable"} acknowledged orders · median information age ${fmt(current.metrics.order_age_s.p50)} s · $${fmt(trialCost(current), 5)}`,
-      ),
-      el(
-        "p",
-        "Featured-trial rule: earliest completed model trial in recorded job-start / episode order, irrespective of outcome. If none completed, first supplied trial. The selector opens every trial.",
-        "note",
-      ),
-    );
-    if (!replay?.frames.length) {
-      $("forces").replaceChildren();
-      $("stills").replaceChildren();
-      $("availability").textContent =
-        "No recorded replay frames for this trial. Summary evidence is retained below.";
-      return;
-    }
-    $("availability").textContent =
-      `${replay.evidence_kind === "synthetic" ? "SYNTHETIC DEMO · invented frames · " : ""}${replay.frame_source}. ${replay.warnings.length} incomplete evidence records. Exact historical frame timing is retained.`;
-    selected = 0;
-    time = replay.decisions[0]?.time_ms ?? replay.frames[0].time_ms;
-    $("time").min = replay.frames[0].time_ms / 1000;
-    $("time").max = replay.frames.at(-1).time_ms / 1000;
-    forces();
-    stills();
-    events();
-    timeline();
-    lanes("friendly");
-    lanes("enemy");
-    inspector();
-    draw();
-  }
-  function forces() {
-    const first = replay.frames.find((f) => f.friendly.length) || replay.frames[0];
-    const section = $("forces");
-    section.replaceChildren();
-    const description = el("div");
-    description.append(
-      el("h3", "Recorded briefing"),
-      el(
-        "p",
-        [
-          first.mode?.type,
-          first.mode?.role,
-          first.remaining_ms != null ? `Timer ${seconds(first.remaining_ms)}` : "Timer unrecorded",
-        ]
-          .filter(Boolean)
-          .join(" · "),
-      ),
-      el("p", first.mode?.objectives || "Objectives not recorded"),
-    );
-    section.append(description);
-    for (const side of ["friendly", "enemy"]) {
-      const box = el("div");
-      box.append(
-        el(
-          "h3",
-          `${side === "friendly" ? "Friendly" : "Enemy roster"} · ${replay.armies?.[side === "friendly" ? "player" : "enemy"]?.faction || "Faction unrecorded"}`,
-        ),
-      );
-      const list = el("ul");
-      for (const u of replay.roster.filter((u) => u.side === side))
-        list.append(
-          el(
-            "li",
-            `${symbols[u.class] || "◇"} ${u.id} ${u.name}${u.men0 != null ? ` · ${u.men0} men` : ""}${u.protected ? " · protected" : ""}${u.commander ? " · general" : ""}`,
-          ),
-        );
-      box.append(list);
-      section.append(box);
-    }
-  }
-  function stills() {
-    const firstImage = (replay.stills || []).findIndex((shot) => shot.image);
-    $("stills").replaceChildren(
-      ...(replay.stills || []).map((shot, index) => {
-        const figure = el("figure");
-        if (index === firstImage) figure.className = "featured-still";
-        const title =
-          {
-            opening: "Opening view",
-            approach: "Closing formations",
-            incoming_fire: "Incoming fire",
-            first_contact: "First observed melee",
-            first_rout: "First observed rout",
-            ending: "Battle ending",
-          }[shot.trigger] || "Game still";
-        if (shot.image) {
-          const img = el("img");
-          img.src = shot.image;
-          img.alt = `${title} at ${seconds(shot.time_ms)}`;
-          figure.append(img);
+    until = null;
+    watching = null;
+    selected = null;
+    pinned = null;
+    keys = {};
+    extent = null;
+    roster = new Map(r.roster.map((entry) => [entry.id, entry]));
+    times = r.frames.map((frame) => frame.time_ms);
+    gapMs = 1.5 * (r.sample_interval_ms || 1000);
+    tracks = new Map();
+    for (const frame of r.frames)
+      for (const side of ["friendly", "enemy"])
+        for (const u of frame[side]) {
+          if (!placed(u)) continue;
+          if (!tracks.has(u.id)) tracks.set(u.id, []);
+          const track = tracks.get(u.id);
+          if (track.at(-1)?.t !== frame.time_ms) track.push({ t: frame.time_ms, x: u.x, z: u.z });
         }
-        figure.append(
-          el(
-            "figcaption",
-            `${title} · ${shot.time_ms != null ? seconds(shot.time_ms) : "time unavailable"} · ${shot.image ? "Presentation only; never policy input." : shot.status?.replaceAll("_", " ") || "Capture missing"} ${shot.caption || ""} ${shot.visibility || "Visibility not audited: the image may include information hidden from the controller."} ${shot.error || ""}`,
-          ),
-        );
-        figure.append(disclosure("Capture evidence", json({ ...shot, image: undefined })));
-        return figure;
-      }),
-    );
-  }
-  function bounds(whole, frames = replay.frames) {
-    const b = replay.terrain?.bounds;
-    if (whole && b) return [b.min_x, b.min_z, b.max_x, b.max_z];
-    const points = frames.flatMap(allUnits).filter(position);
-    if (!points.length) return [-512, -512, 512, 512];
-    return [
-      Math.min(...points.map((p) => p.x)) - 45,
-      Math.min(...points.map((p) => p.z)) - 45,
-      Math.max(...points.map((p) => p.x)) + 45,
-      Math.max(...points.map((p) => p.z)) + 45,
-    ];
-  }
-  function projection(b, width = 700, height = 560) {
-    const scale = Math.min((width - 30) / (b[2] - b[0]), (height - 30) / (b[3] - b[1]));
-    return {
-      scale,
-      x: (x) => width / 2 + (x - (b[0] + b[2]) / 2) * scale,
-      y: (z) => height / 2 - (z - (b[1] + b[3]) / 2) * scale,
-    };
-  }
-  function ground(target, p) {
-    target.append(svg("rect", { width: "100%", height: "100%", fill: "#15232b" }));
-    const terrain = replay.terrain;
-    if (!terrain) {
-      target.append(svg("text", { x: 15, y: 25, fill: "#ddd" }, "Terrain was not recorded"));
-      return;
-    }
-    const step = terrain.cell_m;
-    terrain.rows.forEach((row, j) =>
-      [...row].forEach((value, i) => {
-        target.append(
-          svg("rect", {
-            x: p.x(terrain.x0 + i * step - step / 2),
-            y: p.y(terrain.z0 + j * step + step / 2),
-            width: step * p.scale,
-            height: step * p.scale,
-            fill: value === "#" ? "#52616a" : "#1c3039",
-            stroke: "#31414a",
-            "stroke-width": 0.35,
-          }),
-        );
-      }),
-    );
-  }
-  function glyph(target, unit, p, { ghost = false, seen } = {}) {
-    if (!position(unit)) return;
-    const colour = colours[unit.side],
-      x = p.x(unit.x),
-      y = p.y(unit.z);
-    const g = svg("g", {
-      opacity: ghost ? 0.28 : seen != null ? 0.55 : 1,
-      class: seen != null ? "last-seen" : "unit-glyph",
-    });
-    const marker =
-      unit.side === "friendly"
-        ? svg("circle", { cx: x, cy: y, r: 10 })
-        : svg("path", {
-            d: `M${x} ${y - 11}L${x + 11} ${y}L${x} ${y + 11}L${x - 11} ${y}Z`,
-          });
-    marker.setAttribute("fill", seen != null || ghost ? "none" : "#15232b");
-    marker.setAttribute("stroke", colour);
-    marker.setAttribute("stroke-width", 2);
-    g.append(marker);
-    if (unit.bearing != null)
-      g.append(
-        svg("path", {
-          d: `M${x} ${y - 13}l-3 5h6Z`,
-          fill: colour,
-          transform: `rotate(${unit.bearing} ${x} ${y})`,
-        }),
-      );
-    g.append(
-      svg(
-        "text",
-        { x, y: y + 4, "text-anchor": "middle", fill: colour, "font-size": 12 },
-        symbols[unit.class] || "◇",
-      ),
-    );
-    g.append(
-      svg(
-        "text",
-        { x: x + 13, y: y - 6, fill: colour, "font-size": 10 },
-        `${unit.id}${seen != null ? ` seen ${seconds(seen)}` : ""}`,
-      ),
-    );
-    if (unit.men0)
-      g.append(
-        svg("rect", {
-          x: x - 10,
-          y: y + 14,
-          width: 20 * Math.max(0, Math.min(1, unit.men / unit.men0)),
-          height: 3,
-          fill: colour,
-        }),
-      );
-    if (Number.isFinite(unit.hp))
-      g.append(
-        svg("rect", {
-          x: x - 10,
-          y: y + 19,
-          width: 20 * Math.max(0, Math.min(1, unit.hp)),
-          height: 2,
-          fill: colour,
-          opacity: 0.65,
-        }),
-      );
-    const badges = (unit.state || [])
-      .filter((s) => ["melee", "under_fire", "wavering", "routing"].includes(s))
-      .map((s) => ({ melee: "M", under_fire: "F", wavering: "W", routing: "R" })[s])
-      .join("");
-    g.append(
-      svg("text", { x, y: y + 28, fill: "#fff", "font-size": 9, "text-anchor": "middle" }, badges),
-    );
-    g.append(
-      svg(
-        "title",
-        {},
-        `${unit.id} · ${unit.name || unit.type} · ${unit.men}/${unit.men0} men · HP ${fmt(unit.hp * 100)}% · ${unit.state?.join(", ")} · ${unit.morale?.effect || "morale effect unrecorded"} · target ${unit.target || "none"}`,
-      ),
-    );
-    target.append(g);
-  }
-  function frameIndex() {
-    let index = 0;
-    replay.frames.forEach((f, i) => {
-      if (f.time_ms <= time) index = i;
-    });
-    return index;
-  }
-  function draw() {
-    if (!replay?.frames.length) return;
-    const index = frameIndex(),
-      frame = replay.frames[index],
-      decision = replay.decisions[selected];
-    const after = decision?.after_frame != null ? replay.frames[decision.after_frame] : null;
-    const basis = decision?.basis_frame != null ? replay.frames[decision.basis_frame] : null;
-    const inspecting = compareFrames && decision && time === decision.time_ms;
-    const displayed = inspecting && after ? after : frame;
-    const p = projection(
-      bounds($("whole").checked, [displayed, ...(inspecting && basis ? [basis] : [])]),
-    );
-    const map = $("map");
-    map.replaceChildren();
-    ground(map, p);
-    const defs = svg("defs"),
-      marker = svg("marker", {
-        id: "replay-arrow",
-        viewBox: "0 0 10 10",
-        refX: 9,
-        refY: 5,
-        markerWidth: 5,
-        markerHeight: 5,
-        orient: "auto-start-reverse",
-      });
-    marker.append(svg("path", { d: "M0 0L10 5L0 10Z", fill: "context-stroke" }));
-    defs.append(marker);
-    map.append(defs);
-    // Trail dots are samples, not interpolated movement or a reconstructed route.
-    for (const f of replay.frames.filter((f) => f.time_ms <= time && f.time_ms >= time - 20000))
-      for (const u of allUnits(f).filter(position))
-        map.append(
-          svg("circle", {
-            cx: p.x(u.x),
-            cy: p.y(u.z),
-            r: 1.8,
-            fill: colours[u.side],
-            opacity: 0.35,
-          }),
-        );
-    if (inspecting && basis) {
-      for (const u of allUnits(basis)) glyph(map, u, p, { ghost: true });
-      for (const d of decision.displacements)
-        map.append(
-          svg("line", {
-            x1: p.x(d.from[0]),
-            y1: p.y(d.from[1]),
-            x2: p.x(d.to[0]),
-            y2: p.y(d.to[1]),
-            stroke: colours[d.side],
-            "stroke-width": 1,
-            opacity: 0.5,
-          }),
-        );
-    }
-    const visible = unitsAt(displayed),
-      lastSeen = new Map();
-    const displayedIndex = replay.frames.indexOf(displayed);
-    for (const f of replay.frames.slice(0, displayedIndex + 1))
-      for (const u of f.enemy) lastSeen.set(u.id, { ...u, seen: f.time_ms, side: "enemy" });
-    const dead = new Set(displayed.enemy_roster.filter((u) => u.dead).map((u) => u.id));
-    for (const [id, u] of lastSeen)
-      if (!visible.has(id) && !dead.has(id)) glyph(map, u, p, { seen: u.seen });
-    for (const u of allUnits(displayed)) glyph(map, u, p);
-    for (const point of displayed.mode?.capture_points || [])
-      if (position(point)) {
-        map.append(
-          svg("rect", {
-            x: p.x(point.x) - 8,
-            y: p.y(point.z) - 8,
-            width: 16,
-            height: 16,
-            fill: "none",
-            stroke: "#fff",
-          }),
-        );
-        map.append(
-          svg(
-            "text",
-            {
-              x: p.x(point.x) + 10,
-              y: p.y(point.z),
-              fill: "#fff",
-              "font-size": 10,
-            },
-            `${point.id} ${point.holder || "unheld"}`,
-          ),
-        );
+    orderLog = new Map();
+    r.decisions.forEach((d, i) => {
+      if (d.applied_ms == null) return;
+      for (const id of new Set(d.steps.map((step) => step.unit))) {
+        if (!orderLog.has(id)) orderLog.set(id, []);
+        orderLog.get(id).push(i);
       }
-    if (decision && basis) {
-      const origins = unitsAt(basis);
-      for (const item of decision.orders) {
-        const o = item.order,
-          start = origins.get(o.unit),
-          end = o.x != null ? o : origins.get(o.target);
-        if (!position(start) || !position(end)) continue;
-        const applied = decision.applied_ms != null && time >= decision.applied_ms;
-        const colour = item.status === "rejected" && applied ? "#ff7777" : colours.friendly;
-        const line = svg("line", {
-          x1: p.x(start.x),
-          y1: p.y(start.z),
-          x2: p.x(end.x),
-          y2: p.y(end.z),
-          stroke: colour,
-          "stroke-width": 2,
-          "stroke-dasharray": applied ? "none" : "6 5",
-          "marker-end": "url(#replay-arrow)",
-        });
-        line.append(
-          svg(
-            "title",
-            {},
-            `${o.unit} ${o.type}: ${applied ? item.status : "issued; awaiting application"} · ${item.ack?.error || ""}`,
-          ),
-        );
-        map.append(line);
-        if (applied)
-          map.append(
-            svg(
-              "text",
-              {
-                x: p.x(end.x) + 4,
-                y: p.y(end.z) - 4,
-                fill: colour,
-                "font-size": 10,
-              },
-              item.ack?.error || (item.status === "queued" ? "queued" : ""),
-            ),
+    });
+    const first = r.frames.find((frame) => frame.friendly.length || frame.enemy.length);
+    start = (first || r.frames[0]).time_ms;
+    end = r.frames.at(-1).time_ms;
+    time = r.decisions.find((d) => d.applied_ms != null)?.applied_ms ?? start;
+    $("scrubber").min = start / 1000;
+    $("scrubber").max = end / 1000;
+    setControls(true);
+    $("whole").checked = false;
+    $("whole").disabled = !r.terrain;
+    $("map-synthetic").hidden = !run.synthetic;
+    $("map-empty").hidden = true;
+    $("map-note").textContent = r.recorder_version
+      ? ""
+      : `No 1 Hz recorder in this run: positions and states update only when the controller observed the battle, about every ${Math.round(r.sample_interval_ms / 1000)} s; event times are when a change was first observed.`;
+    renderRoster();
+    updatePlay();
+    mapWidth = 0;
+    layout();
+  }
+
+  function clear(message) {
+    r = null;
+    playing = false;
+    watching = null;
+    selected = null;
+    pinned = null;
+    for (const id of ["map-ground", "map-layer", "map-furniture", "strip-static", "roster"])
+      $(id).replaceChildren();
+    $("map").setAttribute("viewBox", "0 0 640 280");
+    $("map").style.height = "280px";
+    $("map-empty").textContent = message;
+    $("map-empty").hidden = false;
+    for (const id of ["map-caption", "map-status", "map-selection", "map-synthetic"])
+      $(id).hidden = true;
+    $("map-note").textContent = "";
+    $("strip-cursor").setAttribute("y2", 0);
+    $("moment").replaceChildren(el("p", message, "muted"));
+    $("clock").textContent = "–";
+    setControls(false);
+    updatePlay();
+  }
+
+  function setControls(enabled) {
+    for (const node of document.querySelectorAll(".controls button, #speed, #scrubber, #whole"))
+      node.disabled = !enabled;
+  }
+
+  // A box around points, at least `least` metres wide and tall, with a `margin`.
+  function around(points, margin, least) {
+    const xs = points.map((p) => p.x),
+      zs = points.map((p) => p.z);
+    const box = [Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs)];
+    for (const [a, b] of [
+      [0, 2],
+      [1, 3],
+    ]) {
+      const grow = Math.max(margin, (least - (box[b] - box[a])) / 2);
+      box[a] -= grow;
+      box[b] += grow;
+    }
+    return box;
+  }
+  // Fixed framing per replay: every recorded position over the battle, plus a margin.
+  function bounds() {
+    const terrain = r.terrain?.bounds;
+    if ($("whole").checked && terrain)
+      return [terrain.min_x, terrain.min_z, terrain.max_x, terrain.max_z];
+    const points = [...tracks.values()].flat();
+    extent ??= points.length ? around(points, 40, 160) : [-256, -256, 256, 256];
+    return extent;
+  }
+
+  function layout() {
+    if (!r) return;
+    const map = $("map"),
+      w = Math.max(260, Math.round($("map-wrap").clientWidth));
+    mapWidth = w;
+    const b = bounds(),
+      aspect = (b[3] - b[1]) / (b[2] - b[0]);
+    const tallest = Math.max(320, Math.min(innerHeight - 260, 820));
+    const h = Math.round(Math.max(260, Math.min(w * aspect + TOP_BAND + BOTTOM_BAND, tallest)));
+    map.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    map.style.height = `${h}px`;
+    proj = { w, h };
+    reframe();
+    drawStrip();
+    keys = {};
+    render();
+  }
+
+  // The projection: the battle's fixed framing, or, while a decision is pinned for
+  // inspection, a closer frame around the units it involves.
+  function reframe() {
+    const { w, h } = proj,
+      b = pinned == null ? bounds() : inspectBounds(r.decisions[pinned]);
+    // The inspect caption wraps on narrow maps: its band grows to fit it.
+    const top = pinned == null ? TOP_BAND : Math.max(TOP_BAND, $("map-caption").offsetHeight + 10);
+    const scale = Math.min((w - 28) / (b[2] - b[0]), (h - 28 - top - BOTTOM_BAND) / (b[3] - b[1]));
+    const cx = (b[0] + b[2]) / 2,
+      cz = (b[1] + b[3]) / 2,
+      middle = top + (h - top - BOTTOM_BAND) / 2;
+    // Markers shrink a little on narrow maps; labels keep their size.
+    const k = Math.max(0.72, Math.min(1, w / 760));
+    proj = {
+      w,
+      h,
+      scale,
+      k,
+      cx,
+      cz,
+      x: (x) => w / 2 + (x - cx) * scale,
+      y: (z) => middle - (z - cz) * scale,
+    };
+    framed = pinned;
+    drawGround();
+    drawFurniture();
+    keys.map = null;
+  }
+  // Frames the units drawn in inspect mode, as placed in either of its two frames.
+  function inspectBounds(d) {
+    const ids = [...inspectUnits(d)];
+    const points = [d.basis_frame, d.after_frame].flatMap((i) =>
+      ids.map((id) => unitIn(r.frames[i], id)).filter(placed),
+    );
+    return points.length ? around(points, 50, 240) : bounds();
+  }
+
+  function drawGround() {
+    const ground = $("map-ground"),
+      terrain = r.terrain;
+    ground.replaceChildren(svg("rect", { width: proj.w, height: proj.h, fill: "#0d171d" }));
+    if (terrain) {
+      const t = terrain.bounds,
+        x = proj.x(t.min_x),
+        y = proj.y(t.max_z);
+      ground.append(
+        svg("rect", {
+          x,
+          y,
+          width: proj.x(t.max_x) - x,
+          height: proj.y(t.min_z) - y,
+          fill: MAP,
+        }),
+      );
+      let path = "";
+      const cell = terrain.cell_m,
+        size = (cell * proj.scale).toFixed(2);
+      terrain.rows.forEach((row, j) =>
+        [...row].forEach((value, i) => {
+          if (value !== "#") return;
+          const left = proj.x(terrain.x0 + i * cell - cell / 2),
+            top = proj.y(terrain.z0 + j * cell + cell / 2);
+          path += `M${left.toFixed(1)} ${top.toFixed(1)}h${size}v${size}h-${size}z`;
+        }),
+      );
+      ground.append(svg("path", { d: path, fill: "#33454f" }));
+    } else ground.append(svg("rect", { width: proj.w, height: proj.h, fill: MAP }));
+    // A faint 100 m grid helps judge distances without competing with the units.
+    const grid = svg("g", { stroke: "#ffffff", "stroke-opacity": 0.045 });
+    const halfW = proj.w / 2 / proj.scale,
+      halfH = proj.h / 2 / proj.scale;
+    for (let x = Math.ceil((proj.cx - halfW) / 100) * 100; x <= proj.cx + halfW; x += 100)
+      grid.append(svg("line", { x1: proj.x(x), x2: proj.x(x), y1: 0, y2: proj.h }));
+    for (let z = Math.ceil((proj.cz - halfH) / 100) * 100; z <= proj.cz + halfH; z += 100)
+      grid.append(svg("line", { x1: 0, x2: proj.w, y1: proj.y(z), y2: proj.y(z) }));
+    ground.append(grid);
+  }
+
+  function drawFurniture() {
+    const g = $("map-furniture");
+    g.replaceChildren();
+    const metres = [50, 100, 200, 500].find((m) => m * proj.scale >= 60) || 500;
+    const length = metres * proj.scale,
+      x = proj.w - 40 - length,
+      y = proj.h - 14;
+    g.append(
+      svg("path", {
+        d: `M${x} ${y - 4}v4h${length}v-4`,
+        fill: "none",
+        stroke: "#cfdbe1",
+        "stroke-width": 1.5,
+      }),
+      svg(
+        "text",
+        { x: x + length / 2, y: y - 7, class: "tiny", fill: "#cfdbe1", "text-anchor": "middle" },
+        `${metres} m`,
+      ),
+      svg("path", { d: `M${proj.w - 20} ${y - 26}l6 14h-12z`, fill: "#cfdbe1" }),
+      svg(
+        "text",
+        { x: proj.w - 20, y: y + 1, class: "tiny", fill: "#cfdbe1", "text-anchor": "middle" },
+        "N",
+      ),
+    );
+  }
+
+  // Observed movement, split wherever two samples are further apart than the recording interval.
+  function pieces(track, from, to) {
+    const out = [];
+    let piece = [];
+    for (const p of track.slice(
+      Math.max(
+        0,
+        lastAtOrBefore(track, from, (q) => q.t),
+      ),
+    )) {
+      if (p.t > to) break;
+      if (p.t < from) continue;
+      if (piece.length && p.t - piece.at(-1).t > gapMs) {
+        out.push(piece);
+        piece = [];
+      }
+      piece.push(p);
+    }
+    if (piece.length) out.push(piece);
+    return out;
+  }
+  const points = (list) =>
+    list.map((p) => `${proj.x(p.x).toFixed(1)},${proj.y(p.z).toFixed(1)}`).join(" ");
+  const polyline = (list, stroke, attrs = {}) =>
+    svg("polyline", {
+      points: points(list),
+      fill: "none",
+      stroke,
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      ...attrs,
+    });
+
+  function drawTrails(layer, frameTime, focus) {
+    for (const [id, track] of tracks) {
+      const mine = id === selected,
+        colour = TEAM[sideOf(id)];
+      const opacity = mine ? 0.95 : focus && !focus.has(id) ? 0.1 : 0.45;
+      for (const piece of pieces(track, mine ? -Infinity : frameTime - TRAIL_MS, frameTime)) {
+        if (piece.length > 1)
+          layer.append(polyline(piece, colour, { "stroke-width": mine ? 2.5 : 1.5, opacity }));
+        else
+          layer.append(
+            svg("circle", {
+              cx: proj.x(piece[0].x),
+              cy: proj.y(piece[0].z),
+              r: mine ? 2.2 : 1.6,
+              fill: colour,
+              opacity,
+            }),
           );
       }
     }
-    const gap = time - frame.time_ms > replay.sample_interval_ms * 1.5;
-    $("frame").textContent = inspecting
-      ? `Basis ${seconds(basis?.time_ms ?? time)} (ghost) → First recorded observation at/after application: ${after ? seconds(after.time_ms) : "unavailable"} (solid). Displacement joins two recorded samples. ${evidence(displayed.source)}`
-      : `Cursor ${seconds(time)} · showing recorded frame ${seconds(frame.time_ms)} · ${evidence(frame.source)}${gap ? " · GAP: no recorded frame at the cursor; positions are stale" : ""}`;
-    $("frame").classList.toggle("gap", gap);
-    $("time").value = time / 1000;
-    for (const cursor of document.querySelectorAll(".replay-cursor")) {
-      cursor.setAttribute("x1", tx(time));
-      cursor.setAttribute("x2", tx(time));
-    }
   }
-  function tx(ms) {
-    const a = replay.frames[0].time_ms,
-      b = replay.frames.at(-1).time_ms;
-    return 125 + (560 * (ms - a)) / Math.max(1, b - a);
+
+  // Where an attack target is drawn: its current position, else where it was last seen.
+  function targetAt(id, fi) {
+    const visible = unitIn(r.frames[fi], id);
+    if (placed(visible)) return visible;
+    const track = tracks.get(id) || [];
+    return track[lastAtOrBefore(track, r.frames[fi].time_ms, (p) => p.t)] || null;
   }
-  function baseTimeline(target, height) {
-    target.replaceChildren(svg("rect", { width: 700, height, fill: "#15232b" }));
-    target.append(
-      svg("line", {
-        x1: tx(time),
-        x2: tx(time),
-        y1: 0,
-        y2: height,
-        stroke: "#fff",
-        opacity: 0.7,
-        class: "replay-cursor",
-      }),
-    );
-  }
-  function choose(index) {
-    compareFrames = true;
-    selected = Math.max(0, Math.min(replay.decisions.length - 1, index));
-    if (replay.decisions[selected]) time = replay.decisions[selected].time_ms;
-    inspector();
-    draw();
-  }
-  function timeline() {
-    baseTimeline($("timeline"), 90);
-    $("timeline").append(
-      svg("text", { x: 8, y: 20, fill: "#eee", "font-size": 12 }, "Decision age"),
-    );
-    replay.decisions.forEach((d, i) => {
-      const bar = svg("rect", {
-        x: tx(d.time_ms),
-        y: 28 + (i % 2) * 18,
-        width: Math.max(2, tx(d.applied_ms ?? d.time_ms) - tx(d.time_ms)),
-        height: 14,
-        fill: d.applied_ms == null ? "#aaa" : colours.friendly,
-        tabindex: 0,
-        role: "button",
-        "aria-label": `Decision ${i + 1}, basis ${seconds(d.time_ms)}, application ${d.applied_ms == null ? "missing" : seconds(d.applied_ms)}`,
-      });
-      bar.append(svg("title", {}, bar.getAttribute("aria-label")));
-      bar.addEventListener("click", () => choose(i));
-      bar.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") choose(i);
-      });
-      $("timeline").append(bar);
-    });
-    $("timeline").append(
-      svg(
-        "text",
-        { x: 125, y: 80, fill: "#ccc", "font-size": 10 },
-        `${seconds(replay.frames[0].time_ms)} — ${seconds(replay.frames.at(-1).time_ms)} · bar: basis → application`,
-      ),
-    );
-    const series = [
-      ["Winds", (f) => f.magic?.current, "#56b4e9"],
-      ["Reserve", (f) => f.magic?.reserve, "#009e73"],
-      ["Supplies", (f) => f.mode?.supplies, "#e69f00"],
-    ];
-    if (replay.frames.some((f) => f.army?.currency != null))
-      series.push(["Army currency", (f) => f.army?.currency, colours.friendly]);
-    for (const side of new Set(
-      replay.frames.flatMap((f) => (f.mode?.tickets || []).map((t) => t.side)),
-    )) {
-      series.push([
-        `${side} tickets`,
-        (f) => f.mode?.tickets?.find((t) => t.side === side)?.tickets,
-        side === "us" ? colours.friendly : colours.enemy,
-      ]);
-    }
-    const height = series.length * 28 + 16;
-    $("resources").setAttribute("viewBox", `0 0 700 ${height}`);
-    baseTimeline($("resources"), height);
-    series.forEach(([name, value, colour], i) => {
-      const values = replay.frames.map(value).filter((v) => v != null),
-        max = Math.max(1, ...values);
-      $("resources").append(
-        svg(
-          "text",
-          { x: 8, y: 15 + i * 28, fill: colour, "font-size": 11 },
-          `${name} · ${values.length ? `0–${max}` : "unrecorded"}`,
-        ),
+
+  // The unit's newest decision with route steps applied by t; optionally accepted ones only.
+  function latestOrders(id, t, accepted = false) {
+    const log = orderLog.get(id) || [];
+    for (let k = log.length - 1; k >= 0; k--) {
+      const d = r.decisions[log[k]];
+      if (d.applied_ms > t) continue;
+      const own = d.steps.filter(
+        (s) => s.unit === id && ["move", "attack", "halt"].includes(s.kind),
       );
-      for (const f of replay.frames)
-        if (value(f) != null) {
-          const dot = svg("circle", {
-            cx: tx(f.time_ms),
-            cy: 24 + i * 28 - (value(f) / max) * 15,
-            r: 1.8,
-            fill: colour,
-          });
-          dot.append(svg("title", {}, `${seconds(f.time_ms)} ${name}: ${value(f)}`));
-          $("resources").append(dot);
-        }
-    });
-    for (const e of replay.events.filter((e) => e.kind === "ability")) {
-      const mark = svg(
-        "text",
-        { x: tx(e.time_ms), y: height - 4, fill: "#fff", "font-size": 10 },
-        "✦",
-      );
-      mark.append(svg("title", {}, e.caption));
-      $("resources").append(mark);
+      if (own.length && (!accepted || own.some((s) => ACCEPTED.includes(s.status)))) return log[k];
     }
+    return null;
   }
-  function lanes(side) {
-    const target = side === "friendly" ? $("lanes") : $("enemy-lanes");
-    target.replaceChildren();
-    const roster = replay.roster.filter((u) => u.side === side),
-      height = roster.length * 30 + 30;
-    const canvas = svg("svg", {
-      viewBox: `0 0 700 ${height}`,
-      role: "img",
-      "aria-label": `${side} unit states and order attention`,
-    });
-    baseTimeline(canvas, height);
-    roster.forEach((u, row) => {
-      const y = row * 30 + 16;
-      canvas.append(
-        svg(
-          "text",
-          { x: 8, y, fill: colours[side], "font-size": 11 },
-          `${u.id} ${u.name.slice(0, 14)}`,
-        ),
-      );
-      replay.frames.forEach((f, index) => {
-        const unit = f[side].find((unit) => unit.id === u.id);
-        if (!unit) return;
-        const end = Math.min(
-          replay.frames[index + 1]?.time_ms ?? f.time_ms + 1000,
-          f.time_ms + replay.sample_interval_ms,
+
+  // One dashed route through the issued waypoints; attack targets as rings, never as arrows.
+  // A rejected move rejects the steps queued after it, so a route turns red at most once.
+  // A strong route starts where the model saw the unit. A faint route starts where the unit
+  // is now and runs through the waypoint nearest the engine's move destination (`dest`) and
+  // the later ones; a unit with no destination recorded gets none.
+  function drawRoute(layer, d, id, fi, strong) {
+    const steps = d.steps.filter((s) => s.unit === id && ["move", "attack"].includes(s.kind));
+    if (!steps.length) return;
+    const moves = steps.filter((s) => s.kind === "move"),
+      ok = moves.filter((s) => s.status !== "rejected"),
+      bad = moves.filter((s) => s.status === "rejected");
+    let lead = [],
+      ahead = ok;
+    if (strong) {
+      const basis = d.basis_frame != null ? unitIn(r.frames[d.basis_frame], id) : null;
+      if (placed(basis)) lead = [basis];
+    } else {
+      // Only the waypoints the unit has not yet come within ARRIVED_M of, from where it is.
+      const u = unitIn(r.frames[fi], id);
+      let reached = 0;
+      for (let i = d.after_frame ?? fi; i <= fi && reached < ok.length; i++) {
+        const p = unitIn(r.frames[i], id);
+        if (placed(p) && Math.hypot(p.x - ok[reached].x, p.z - ok[reached].z) < ARRIVED_M)
+          reached++;
+      }
+      lead = placed(u) ? [u] : [];
+      ahead = placed(u) ? ok.slice(reached) : [];
+    }
+    const g = svg("g", { opacity: strong ? 1 : 0.3, "pointer-events": "none" }),
+      dashed = { "stroke-width": strong ? 2.2 : 1, "stroke-dasharray": "7 5" };
+    if (lead.length + ahead.length > 1)
+      g.append(polyline([...lead, ...ahead], TEAM.friendly, dashed));
+    const turn = ahead.length ? [ahead.at(-1)] : lead;
+    if (bad.length && turn.length + bad.length > 1)
+      g.append(polyline([...turn, ...bad], REJECTED, dashed));
+    moves.forEach((step, k) => {
+      const x = proj.x(step.x),
+        y = proj.y(step.z);
+      if (step.status === "rejected")
+        g.append(
+          svg("path", {
+            d: `M${x - 6} ${y - 6}l12 12m0-12l-12 12`,
+            stroke: REJECTED,
+            "stroke-width": 2.5,
+          }),
         );
-        const block = svg("rect", {
-          x: tx(f.time_ms),
-          y: y - 10,
-          width: Math.max(1, tx(end) - tx(f.time_ms)),
-          height: 10,
-          fill: laneColours[states(unit)] || "#ddd",
-        });
-        const last = replay.decisions
-          .filter((d) => d.applied_ms <= f.time_ms)
-          .flatMap((d) =>
-            d.orders
-              .filter((o) => o.order.unit === u.id && o.ack?.ok)
-              .map((o) => ({ ...o, time: d.applied_ms })),
-          )
-          .at(-1);
-        block.append(
+      else if (!strong) {
+        if (ahead.includes(step))
+          g.append(svg("circle", { cx: x, cy: y, r: 2.6, fill: TEAM.friendly }));
+      } else
+        g.append(
+          svg("circle", {
+            cx: x,
+            cy: y,
+            r: 8,
+            fill: MAP,
+            stroke: TEAM.friendly,
+            "stroke-width": 1.5,
+          }),
           svg(
-            "title",
-            {},
-            `${seconds(f.time_ms)} ${u.id}: ${unit.state?.join(", ") || "unknown"}; ${unit.morale?.effect || ""}; last accepted order ${last ? `${last.order.type} at ${seconds(last.time)}` : "none recorded"}`,
+            "text",
+            { x, y: y + 3.5, class: "tiny", fill: "#fff", "text-anchor": "middle" },
+            k + 1,
           ),
         );
-        block.addEventListener("click", () => {
-          time = f.time_ms;
-          draw();
-        });
-        canvas.append(block);
-      });
-      replay.decisions.forEach((d, index) =>
-        d.orders
-          .filter((o) => o.order.unit === u.id)
-          .forEach((o) => {
-            const mark = svg(
-              "text",
-              {
-                x: tx(d.applied_ms ?? d.time_ms),
-                y: y + 10,
-                fill: o.status === "rejected" ? "#ff7777" : "#fff",
-                "font-size": 10,
-              },
-              o.order.type === "ability" ? "✦" : "│",
-            );
-            mark.append(svg("title", {}, `${o.order.type}: ${o.status}`));
-            mark.addEventListener("click", () => choose(index));
-            canvas.append(mark);
-          }),
-      );
     });
-    target.append(
-      canvas,
-      el(
-        "p",
-        "State: grey idle · blue moving · vermilion melee · orange under fire · yellow wavering · purple routing · dark grey dead. Blank intervals are unsampled. │ order · ✦ ability · red rejection. Hover for all flags and last accepted order.",
-        "note",
-      ),
-    );
-  }
-  function inspector() {
-    const box = $("inspector"),
-      d = replay.decisions[selected];
-    box.replaceChildren();
-    if (!d) {
-      box.append(el("p", "No logged decisions"));
-      return;
-    }
-    box.append(
-      el("h4", `Decision ${selected + 1} · ${d.request}`),
-      el(
-        "p",
-        `Basis ${seconds(d.time_ms)} → applied ${d.applied_ms == null ? "unavailable" : seconds(d.applied_ms)} · information age ${d.applied_ms == null ? "unavailable" : seconds(d.applied_ms - d.time_ms)}`,
-      ),
-      el("p", evidence(d.source), "mono"),
-    );
-    box.append(el("h4", "Stated rationale"), el("blockquote", d.reason || "No reason recorded"));
-    box.append(
-      disclosure(
-        d.notes_changed ? "Battle notes changed · before / after" : "Battle notes unchanged",
-        `BEFORE\n${d.notes_before ?? "(none)"}\n\nAFTER\n${d.notes ?? "(none)"}`,
-      ),
-    );
-    if (d.plan) box.append(disclosure("Recorded commander plan", json(d.plan)));
-    const orders = el("ol");
-    for (const o of d.orders)
-      orders.append(
-        el("li", `${json(o.order)} — ${o.status}${o.ack?.error ? `: ${o.ack.error}` : ""}`),
+    for (const step of steps.filter((s) => s.kind === "attack" && s.target)) {
+      const target = targetAt(step.target, fi),
+        colour = step.status === "rejected" ? REJECTED : TEAM.friendly;
+      if (!target) continue;
+      // The dotted connector says "this target", not "this path": the route is the dashes.
+      const origin = moves.length ? moves.at(-1) : unitIn(r.frames[fi], id);
+      if (strong && placed(origin))
+        g.append(
+          polyline([origin, target], colour, {
+            "stroke-width": 1.2,
+            "stroke-dasharray": "1.5 4",
+            opacity: 0.8,
+          }),
+        );
+      g.append(
+        svg("circle", {
+          cx: proj.x(target.x),
+          cy: proj.y(target.z),
+          r: 19,
+          fill: "none",
+          stroke: colour,
+          "stroke-width": strong ? 2 : 1,
+        }),
       );
-    box.append(el("h4", "Orders and engine acknowledgements"), orders);
-    if (!d.orders.length) box.append(el("p", "No new orders in this decision."));
-    if (d.invalid) box.append(disclosure("Validation refused these orders", json(d.invalid)));
-    box.append(
+    }
+    layer.append(g);
+  }
+
+  function drawUnit(layer, u, side, { dim = false, ghost = false, seen = null, note = null } = {}) {
+    if (!placed(u)) return;
+    const entry = roster.get(u.id) || {},
+      colour = TEAM[side];
+    const down = u.men === 0,
+      fleeing = has(u, "routing") || has(u, "shattered"),
+      hollow = ghost || seen != null;
+    const g = svg("g", {
+      class: "unit",
+      "data-unit": u.id,
+      transform: `translate(${proj.x(u.x).toFixed(1)} ${proj.y(u.z).toFixed(1)}) scale(${proj.k})`,
+      opacity: dim ? 0.25 : seen != null ? 0.6 : ghost ? 0.75 : down ? 0.45 : 1,
+    });
+    g.append(svg("circle", { r: 18, class: "hit" }));
+    if (u.id === selected && !ghost)
+      g.append(svg("circle", { r: 20, fill: "none", stroke: "#fff", "stroke-width": 2 }));
+    if (u.bearing != null && !down && !hollow)
+      g.append(
+        svg("path", {
+          d: "M0 -19L-4.5 -12.5H4.5Z",
+          fill: colour,
+          transform: `rotate(${u.bearing})`,
+        }),
+      );
+    const body =
+      side === "friendly"
+        ? svg("circle", { r: 11.5 })
+        : svg("path", { d: "M0 -13.5L13.5 0 0 13.5-13.5 0Z" });
+    body.setAttribute("fill", hollow ? "none" : MAP);
+    body.setAttribute("stroke", colour);
+    body.setAttribute("stroke-width", 2);
+    if (hollow || fleeing) body.setAttribute("stroke-dasharray", "3 2.5");
+    g.append(body);
+    g.append(
+      svg("use", {
+        href: `#glyph-${glyphKey(entry.glyph)}`,
+        x: -8,
+        y: -8,
+        width: 16,
+        height: 16,
+        color: colour,
+      }),
+    );
+    if (!hollow) {
+      const share = u.men0 > 1 ? u.men / u.men0 : u.hp;
+      if (Number.isFinite(share)) {
+        g.append(
+          svg("rect", { x: -11, y: 16, width: 22, height: 3, fill: "#ffffff", opacity: 0.18 }),
+        );
+        g.append(
+          svg("rect", {
+            x: -11,
+            y: 16,
+            width: 22 * Math.max(0, Math.min(1, share)),
+            height: 3,
+            fill: colour,
+          }),
+        );
+      }
+    }
+    // An outline takes no label but keeps other labels off its marker.
+    labels.push({
+      x: proj.x(u.x),
+      y: proj.y(u.z),
+      text: ghost ? null : `${entry.short || u.id}${seen != null ? ` · seen ${clock(seen)}` : ""}`,
+      note: [fleeing && !down && "fleeing", note].filter(Boolean).join(" ") || null,
+      colour,
+      rank: u.id === selected ? 0 : dim || hollow ? 2 : 1,
+      opacity: g.getAttribute("opacity"),
+    });
+    if (has(u, "melee") && !down && !hollow) {
+      g.append(
+        svg("circle", { cx: -14, cy: -12, r: 7.5, fill: MAP, stroke: "#fff", "stroke-width": 1 }),
+      );
+      g.append(
+        svg("use", { href: "#glyph-melee", x: -19, y: -17, width: 10, height: 10, color: "#fff" }),
+      );
+    }
+    if (down)
+      g.append(svg("path", { d: "M-8 -8l16 16m0-16l-16 16", stroke: "#fff", "stroke-width": 2 }));
+    g.append(svg("title", {}, `${entry.display || u.id} · ${entry.role || "unit"}`));
+    layer.append(g);
+  }
+
+  // Short labels go beside their marker where they overlap no other marker or label;
+  // faded units lose theirs when nothing fits.
+  let labels = [];
+  function placeLabels(layer) {
+    const radius = 14 * proj.k,
+      taken = labels.map((l) => [l.x - radius, l.y - radius, l.x + radius, l.y + radius]);
+    const overlap = (a, b) =>
+      Math.max(0, Math.min(a[2], b[2]) - Math.max(a[0], b[0])) *
+      Math.max(0, Math.min(a[3], b[3]) - Math.max(a[1], b[1]));
+    for (const l of labels.sort((a, b) => a.rank - b.rank)) {
+      if (!l.text) continue;
+      const w = (l.text.length + (l.note ? l.note.length + 1 : 0)) * 6.6,
+        h = 12,
+        d = radius + 3;
+      const options = [
+        [l.x + d, l.y - h - 1],
+        [l.x + d, l.y + 1],
+        [l.x - d - w, l.y - h - 1],
+        [l.x - d - w, l.y + 1],
+        [l.x - w / 2, l.y - d - h - 5],
+        [l.x - w / 2, l.y + d + 7],
+      ].map(([x, y]) => [x, y, x + w, y + h]);
+      const cost = (box) => taken.reduce((sum, other) => sum + overlap(box, other), 0);
+      const box =
+        options.find((option) => !cost(option)) ||
+        (l.rank < 2 && options.sort((a, b) => cost(a) - cost(b))[0]);
+      if (!box) continue;
+      taken.push(box);
+      const text = svg(
+        "text",
+        {
+          x: box[0],
+          y: box[3] - 2,
+          class: "label",
+          fill: l.colour,
+          "font-size": 11,
+          opacity: l.opacity,
+        },
+        l.text,
+      );
+      if (l.note) text.append(svg("tspan", { fill: "#ffd27a" }, ` ${l.note}`));
+      layer.append(text);
+    }
+    labels = [];
+  }
+
+  function drawLastSeen(layer, fi, focus) {
+    const frame = r.frames[fi],
+      visible = new Set(frame.enemy.map((u) => u.id));
+    const dead = new Set(frame.enemy_roster.filter((u) => u.dead).map((u) => u.id));
+    for (const entry of r.roster) {
+      if (entry.side !== "enemy" || visible.has(entry.id) || dead.has(entry.id)) continue;
+      const point = targetAt(entry.id, fi);
+      if (point)
+        drawUnit(layer, { id: entry.id, x: point.x, z: point.z }, "enemy", {
+          seen: point.t,
+          dim: focus && !focus.has(entry.id),
+        });
+    }
+  }
+
+  // A watched note stays emphasised over its own window until the time is moved by hand.
+  const watched = () => watching != null && watching.from <= time && time <= watching.to;
+  // Bright: the selected unit and its standing and current targets, else a watched note's units.
+  function focusSet(fi) {
+    if (!selected) return watched() && watching.ids.size ? watching.ids : null;
+    const ids = new Set([selected]);
+    const u = unitIn(r.frames[fi], selected);
+    if (u?.target) ids.add(u.target);
+    const standing = latestOrders(selected, time, true);
+    if (standing != null)
+      for (const step of r.decisions[standing].steps)
+        if (step.unit === selected && step.target) ids.add(step.target);
+    return ids;
+  }
+
+  function inspectUnits(d) {
+    const ids = new Set();
+    for (const step of d.steps) {
+      if (step.unit !== "army") ids.add(step.unit);
+      if (step.target) ids.add(step.target);
+    }
+    if (!ids.size) for (const m of d.displacements) if (m.metres >= 1) ids.add(m.unit);
+    return ids;
+  }
+
+  // Inspect mode: the observation the model saw (outlines) and the first recorded state at or
+  // after its orders were applied (solid), joined by straight lines between the two samples.
+  function drawInspect(layer, d) {
+    const basis = r.frames[d.basis_frame],
+      after = r.frames[d.after_frame],
+      ids = inspectUnits(d);
+    const moved = new Map();
+    for (const m of d.displacements) {
+      if (!ids.has(m.unit)) continue;
+      const a = { x: m.from[0], z: m.from[1] },
+        b = { x: m.to[0], z: m.to[1] };
+      layer.append(polyline([a, b], TEAM[m.side], { "stroke-width": 1.5 }));
+      if (m.metres >= 1) moved.set(m.unit, `${Math.round(m.metres)} m`);
+    }
+    for (const side of ["friendly", "enemy"]) {
+      for (const u of basis[side]) if (ids.has(u.id)) drawUnit(layer, u, side, { ghost: true });
+      for (const u of after[side])
+        if (ids.has(u.id)) drawUnit(layer, u, side, { note: moved.get(u.id) });
+    }
+    placeLabels(layer);
+  }
+
+  function renderMap(fi, now) {
+    const key = [fi, now.current, selected, pinned, proj.w, proj.h, watched()].join("|");
+    if (key === keys.map) return;
+    keys.map = key;
+    const layer = $("map-layer");
+    layer.replaceChildren();
+    if (pinned != null) return drawInspect(layer, r.decisions[pinned]);
+    const frame = r.frames[fi],
+      focus = focusSet(fi);
+    drawTrails(layer, frame.time_ms, focus);
+    // Routes issued in the last 20 s, faint; the selected unit's standing orders, strong.
+    if (!selected)
+      for (const entry of r.roster.filter((item) => item.side === "friendly")) {
+        if (focus && !focus.has(entry.id)) continue;
+        const i = latestOrders(entry.id, time);
+        if (i != null && r.decisions[i].applied_ms >= time - ROUTE_MS)
+          drawRoute(layer, r.decisions[i], entry.id, fi, false);
+      }
+    if (selected) {
+      const standing = latestOrders(selected, time, true),
+        newest = latestOrders(selected, time);
+      if (standing != null) drawRoute(layer, r.decisions[standing], selected, fi, true);
+      if (newest != null && newest !== standing)
+        drawRoute(layer, r.decisions[newest], selected, fi, true);
+    }
+    for (const point of frame.mode?.capture_points || [])
+      if (placed(point)) {
+        const x = proj.x(point.x),
+          y = proj.y(point.z);
+        layer.append(
+          svg("rect", {
+            x: x - 9,
+            y: y - 9,
+            width: 18,
+            height: 18,
+            fill: "none",
+            stroke: "#fff",
+            "stroke-width": 1.5,
+          }),
+          svg(
+            "text",
+            { x: x + 13, y: y + 4, class: "tiny", fill: "#fff" },
+            `${point.name || point.id}: ${point.holder || "unheld"}`,
+          ),
+        );
+      }
+    drawLastSeen(layer, fi, focus);
+    for (const side of ["friendly", "enemy"])
+      for (const u of frame[side]) drawUnit(layer, u, side, { dim: focus && !focus.has(u.id) });
+    placeLabels(layer);
+  }
+
+  // Timeline strip: decisions with orders, decisions keeping orders, rejections, analyst
+  // notes and key events. Its marks are click targets; the scrubber and buttons do the same.
+  const stripX = (t) => 10 + ((strip.w - 20) * (t - start)) / Math.max(1, end - start);
+  function drawStrip() {
+    const node = $("strip"),
+      w = Math.max(200, Math.round(node.clientWidth));
+    node.setAttribute("viewBox", `0 0 ${w} ${STRIP_H}`);
+    strip = { w, marks: [] };
+    const g = $("strip-static");
+    g.replaceChildren();
+    for (let m = Math.ceil(start / 60000); m * 60000 <= end; m++) {
+      const x = stripX(m * 60000);
+      g.append(svg("line", { x1: x, x2: x, y1: 52, y2: 56, stroke: "#5f7380" }));
+      if (w > 420 || m % 2 === 0)
+        g.append(
+          svg(
+            "text",
+            { x, y: 64, fill: "#8fa3ad", "font-size": 9, "text-anchor": "middle" },
+            `${m}:00`,
+          ),
+        );
+    }
+    r.highlights.forEach((h, k) => {
+      const { from, to } = span(h);
+      g.append(
+        svg("rect", {
+          x: stripX(from),
+          y: 3,
+          width: Math.max(2, stripX(to) - stripX(from)),
+          height: 16,
+          fill: "#ffffff",
+          opacity: 0.08,
+          rx: 3,
+        }),
+      );
+      const x = stripX(h.time_ms);
+      g.append(
+        svg("circle", { cx: x, cy: 11, r: 7, fill: "#f3efe4" }),
+        svg(
+          "text",
+          { x, y: 14.5, "font-size": 10, "font-weight": 700, fill: MAP, "text-anchor": "middle" },
+          k + 1,
+        ),
+      );
+      strip.marks.push({ row: 0, x, t: from });
+    });
+    r.decisions.forEach((d, i) => {
+      if (d.applied_ms == null) return;
+      const x = stripX(d.applied_ms),
+        rejected = d.invalid || d.steps.some((s) => s.status === "rejected");
+      if (rejected)
+        g.append(svg("rect", { x: x - 1.25, y: 22, width: 2.5, height: 20, fill: REJECTED }));
+      else if (d.steps.length)
+        g.append(svg("rect", { x: x - 1, y: 25, width: 2, height: 14, fill: TEAM.friendly }));
+      else g.append(svg("circle", { cx: x, cy: 32, r: 1.6, fill: "#7f929c" }));
+      strip.marks.push({ row: 1, x, i });
+    });
+    for (const e of r.events.filter((e) => e.key)) {
+      const x = stripX(e.time_ms),
+        colour = e.unit ? TEAM[sideOf(e.unit)] : "#ffffff";
+      g.append(svg("path", { d: `M${x} 41.5l4.5 4.5-4.5 4.5-4.5-4.5z`, fill: colour }));
+      strip.marks.push({ row: 2, x, t: e.time_ms });
+    }
+    $("strip-cursor").setAttribute("y2", STRIP_H);
+  }
+  let dragging = false;
+  function stripPointer(event, snap) {
+    const box = $("strip").getBoundingClientRect();
+    const x = ((event.clientX - box.left) * strip.w) / box.width,
+      y = ((event.clientY - box.top) * STRIP_H) / box.height;
+    const row = y < 21 ? 0 : y < 41 ? 1 : 2;
+    const near = snap
+      ? strip.marks
+          .filter((m) => m.row === row && Math.abs(m.x - x) <= 7)
+          .sort((a, b) => Math.abs(a.x - x) - Math.abs(b.x - x))[0]
+      : null;
+    if (near?.i != null) return goDecision(near.i);
+    jump(near ? near.t : start + ((x - 10) / (strip.w - 20)) * (end - start));
+  }
+
+  function statusLine(now) {
+    if (now.pending < 0) return null;
+    const d = r.decisions[now.pending],
+      who = run.kind === "model" ? "the model's" : "the controller's";
+    const line = el("p", null, "status-line");
+    if (d.applied_ms == null && time >= end)
+      line.append(
+        `The battle ended before the reply requested at ${clock(requested(d))} was applied.`,
+      );
+    else
+      line.append(
+        el("span", null, "dot"),
+        `Waiting for ${who} ${now.current < 0 ? "first" : "next"} reply (requested at ${clock(requested(d))})`,
+      );
+    return line;
+  }
+
+  function unitButton(entry) {
+    const node = button(entry.display, () => select(entry.id), "who");
+    node.title = `Select ${entry.display} on the map`;
+    return node;
+  }
+  function jumpButton(t) {
+    const node = button(`▶ ${clock(t)}`, () => jump(t), "jump");
+    node.setAttribute("aria-label", `Jump to ${clock(t)}`);
+    return node;
+  }
+  const pre = (text) => el("pre", text, "raw");
+
+  function explanation(d) {
+    const section = el("section");
+    if (d.reason) {
+      section.append(
+        el(
+          "h4",
+          run.kind === "model" ? "The model's explanation" : "The controller's stated reason",
+        ),
+        el("blockquote", `“${d.reason}”`),
+        el("p", "Stated reason, recorded with the orders.", "note"),
+      );
+      // The model names units by their raw ids; the quotation stays verbatim.
+      const named = [...new Set(d.reason.match(/\b[ef]\d+\b/g))]
+        .map((id) => roster.get(id))
+        .filter(Boolean)
+        .map((u) => `${u.id} = ${u.display}${u.short !== u.display ? ` (${u.short})` : ""}`);
+      if (named.length) section.append(el("p", `In this quotation: ${named.join(", ")}`, "note"));
+      if (d.notes_changed)
+        section.append(
+          details(
+            "Its battle notes changed",
+            el("p", "Before", "note"),
+            pre(d.notes_before ?? "(none)"),
+            el("p", "After", "note"),
+            pre(d.notes ?? "(none)"),
+          ),
+        );
+    } else if (run.kind === "model")
+      section.append(
+        el("h4", "The model's explanation"),
+        el("p", "No reason was recorded with this reply.", "muted"),
+      );
+    else
+      section.append(
+        el("h4", "The controller's rule"),
+        el("p", run.rule || "A scripted rule; it states no reasons."),
+      );
+    return section;
+  }
+
+  function ordersSection(d) {
+    const section = el("section");
+    section.append(el("h4", "Orders given"));
+    if (d.invalid) {
+      const list = el("ul", null, "orders");
+      list.append(
+        el("li", `Refused by validation before reaching the game: ${d.invalid.error}`, "rejected"),
+      );
+      section.append(list, el("p", "No orders reached the game; earlier orders continue.", "note"));
+      return section;
+    }
+    if (!d.summary.length) {
+      section.append(
+        el("p", "Keeping current orders.", "keeping"),
+        el(
+          "p",
+          "No new orders in this reply. Earlier orders, queued steps included, and the game's own unit behaviour continue.",
+          "note",
+        ),
+      );
+      return section;
+    }
+    const list = el("ul", null, "orders");
+    for (const line of d.summary) {
+      const item = el("li", null, line.status),
+        entry = roster.get(line.unit);
+      const prefix = entry ? `${entry.display}: ` : null;
+      if (prefix && line.text.startsWith(prefix))
+        item.append(unitButton(entry), `: ${line.text.slice(prefix.length)}`);
+      else item.append(line.text);
+      if (line.status === "unacknowledged")
+        item.append(el("span", "No acknowledgement recorded.", "status"));
+      list.append(item);
+    }
+    section.append(list);
+    return section;
+  }
+
+  function nextSection(d) {
+    const section = el("section"),
+      list = el("ul", null, "facts");
+    section.append(el("h4", "What happened next"));
+    for (const fact of d.next) {
+      const item = el("li");
+      item.append(jumpButton(fact.time_ms), el("span", fact.text));
+      list.append(item);
+    }
+    if (d.next_truncated)
+      list.append(
+        el(
+          "li",
+          `${d.next_truncated} more observation${d.next_truncated > 1 ? "s" : ""} not listed.`,
+          "muted",
+        ),
+      );
+    section.append(
+      list,
       el(
         "p",
-        `Acknowledgement: ${evidence(d.ack_source)}. Queued and acknowledged orders do not prove execution.`,
+        "Observed in the recorded frames; timing alone does not show the order caused it.",
         "note",
       ),
     );
-    const p = d.latency_parts;
-    box.append(
-      el("h4", "Latency and cost"),
-      el(
-        "p",
-        `Provider ${fmt(p.provider_s, 3)} s · call minus provider ${fmt(p.transport_residual_s, 3)} s · roundtrip minus think ${fmt(p.harness_roundtrip_residual_s, 3)} s`,
+    return section;
+  }
+
+  function ageSection(d, i) {
+    const section = el("section");
+    section.append(el("h4", "How old was the battlefield information?"));
+    if (d.age_s == null) {
+      section.append(el("p", "Not measured: no acknowledgement was recorded for this reply."));
+      return section;
+    }
+    const sentence = el("p", null, "age-sentence");
+    sentence.append(
+      `${d.steps.length ? "These orders" : "This reply"} used a view of the battlefield from `,
+      el("strong", seconds(d.age_s)),
+      " earlier.",
+    );
+    const sequence = el("ol", null, "sequence");
+    const step = (label, value, note) => {
+      const item = el("li", label);
+      item.append(el("b", value));
+      if (note) item.append(note);
+      return item;
+    };
+    sequence.append(
+      step("Observed", clockTenths(d.time_ms)),
+      el("li", "→", "arrow"),
+      step(
+        run.kind === "model" ? "Model reply took" : "Reply took",
+        seconds(d.reply_s),
+        "wall clock",
       ),
+      el("li", "→", "arrow"),
+      step("Issued / acknowledged", clockTenths(d.applied_ms)),
+    );
+    section.append(
+      sentence,
+      sequence,
       el(
         "p",
-        "Call minus provider time includes transport/overhead, not measured network time. Roundtrip minus think includes tick, mailbox and polling; not an exact tick. Wall-clock components do not sum to battle-clock information age.",
+        "Observed and issued times are on the battle clock. Acknowledged means the game accepted the order, not that it was carried out.",
         "note",
       ),
     );
-    for (const [i, a] of d.attempts.entries())
+    if (d.basis_frame != null && d.after_frame != null) {
+      if (pinned === i) {
+        const moved = d.displacements
+          .filter((m) => inspectUnits(d).has(m.unit))
+          .sort((a, b) => b.metres - a.metres);
+        const list = el("ul", null, "displacements");
+        for (const m of moved)
+          list.append(
+            el("li", `${roster.get(m.unit)?.display || m.unit} moved ${Math.round(m.metres)} m`),
+          );
+        section.append(
+          el(
+            "p",
+            `While the response was being generated… (${clockTenths(r.frames[d.basis_frame].time_ms)} → ${clockTenths(r.frames[d.after_frame].time_ms)} battle clock):`,
+            "note",
+          ),
+          list,
+          el(
+            "p",
+            "Lines join two recorded positions; the path between them is not recorded.",
+            "note",
+          ),
+        );
+      } else section.append(button("Inspect: what moved while waiting", () => pin(i), "inspect"));
+    }
+    return section;
+  }
+
+  const signed = (value) => `${value < 0 ? "−" : ""}${Math.abs(value).toFixed(2)} s`;
+  function technical(d) {
+    const out = [];
+    if (d.prompt || d.attempts.some((a) => a.text)) {
+      const replies = d.attempts.flatMap((a, k) => [
+        el("p", d.attempts.length > 1 ? `Reply, attempt ${k + 1}` : "Reply", "note"),
+        pre(a.text ?? "Not recorded"),
+      ]);
+      out.push(
+        details(
+          "Exact prompt and reply",
+          el("p", "Prompt", "note"),
+          pre(d.prompt ?? "Not recorded"),
+          ...replies,
+        ),
+      );
+    }
+    const parts = d.latency_parts || {},
+      usage = d.attempts.map((a) => a.usage || {});
+    const sum = (pick) =>
+      usage.length && usage.every((u) => pick(u) != null)
+        ? usage.reduce((n, u) => n + pick(u), 0).toLocaleString("en")
+        : null;
+    const usd =
+      d.attempts.length && d.attempts.every((a) => a.usd != null)
+        ? d.attempts.reduce((n, a) => n + a.usd, 0)
+        : null;
+    out.push(
+      details(
+        "Technical timing and cost",
+        keyValues([
+          ["Reply (wall clock)", d.reply_s == null ? null : seconds(d.reply_s)],
+          ["Provider processing", parts.provider_s == null ? null : seconds(parts.provider_s)],
+          [
+            "Call minus provider",
+            parts.transport_residual_s == null
+              ? null
+              : `${signed(parts.transport_residual_s)} (${parts.transport_residual_s < 0 ? "provider-reported time exceeds the measured call" : "residual: transport and client overhead, not measured network time"})`,
+          ],
+          [
+            "Round trip minus reply",
+            parts.harness_roundtrip_residual_s == null
+              ? null
+              : `${signed(parts.harness_roundtrip_residual_s)} (residual: game tick, mailbox and polling)`,
+          ],
+          ["Attempts", d.attempts.length || null],
+          ["Input tokens", sum((u) => u.input_tokens)],
+          ["Cached input tokens", sum((u) => u.input_tokens_details?.cached_tokens)],
+          ["Output tokens", sum((u) => u.output_tokens)],
+          ["Reasoning tokens", sum((u) => u.output_tokens_details?.reasoning_tokens)],
+          ["Cost", usd == null ? null : money(usd)],
+          [
+            "Model reported",
+            [...new Set(d.attempts.map((a) => a.actual_model).filter(Boolean))].join(", "),
+          ],
+        ]),
+      ),
+    );
+    if (d.invalid)
+      out.push(
+        details(
+          "Validation refused these orders",
+          el("p", "The harness refused this reply's orders before they reached the game.", "note"),
+          pre(json(d.invalid)),
+        ),
+      );
+    return out;
+  }
+
+  function decisionView(i) {
+    const d = r.decisions[i],
+      head = el("div", null, "decision-head");
+    head.append(
+      el(
+        "h3",
+        d.invalid
+          ? `Reply at ${clock(d.applied_ms)}: orders refused by validation`
+          : d.steps.length
+            ? `Orders issued at ${clock(d.applied_ms)}`
+            : `Reply at ${clock(d.applied_ms)}: no new orders`,
+      ),
+    );
+    const parts = [head, explanation(d), ordersSection(d)];
+    if (d.next?.length) parts.push(nextSection(d));
+    parts.push(ageSection(d, i), ...technical(d));
+    return parts;
+  }
+
+  function stateWords(u) {
+    if (u.men === 0) return "destroyed";
+    const words = [];
+    if (has(u, "shattered")) words.push("shattered (will not rally)");
+    else if (has(u, "routing")) words.push("fleeing");
+    else if (has(u, "wavering")) words.push("wavering");
+    if (has(u, "melee")) words.push("fighting in melee");
+    if (has(u, "under_fire")) words.push("under fire");
+    if (!words.length)
+      words.push(
+        has(u, "running")
+          ? "running"
+          : has(u, "moving")
+            ? "moving"
+            : has(u, "idle")
+              ? "idle"
+              : !u.state
+                ? "no state recorded"
+                : u.state.join(", ") || "no state flag reported",
+      );
+    return words.join(", ");
+  }
+  const STATS = [
+    ["speed", "Speed"],
+    ["armour", "Armour"],
+    ["charge_bonus", "Charge bonus"],
+    ["melee_attack", "Melee attack"],
+    ["melee_defence", "Melee defence"],
+    ["weapon_damage", "Weapon damage"],
+    ["morale", "Leadership"],
+    ["ammo", "Ammunition per soldier"],
+    ["range_m", "Range (m)"],
+  ];
+
+  function unitCard(id, fi) {
+    const entry = roster.get(id),
+      frame = r.frames[fi],
+      u = unitIn(frame, id);
+    const card = el("section", null, `unit-card ${entry.side}`),
+      head = el("header"),
+      title = el("div");
+    title.append(
+      el("h3", entry.display),
+      el(
+        "p",
+        `${entry.role} · ${entry.side === "friendly" ? "friendly" : "enemy"} · ${entry.short}`,
+      ),
+    );
+    head.append(
+      glyph(entry.glyph),
+      title,
+      button("Clear selection", () => select(null)),
+    );
+    card.append(head);
+    if (entry.about) card.append(el("p", entry.about, "about"));
+    const tags = [
+      entry.commander && "Army general",
+      entry.protected && "Protected unit: the scenario tracks its survival",
+    ].filter(Boolean);
+    if (tags.length) card.append(el("p", tags.join(" · "), "note"));
+    const now = el("p", null, "now");
+    const dead = frame.enemy_roster.some((item) => item.id === id && item.dead);
+    if (u) {
+      const parts = [capital(stateWords(u))];
+      if (u.men0 > 1) parts.push(`${u.men} of ${u.men0} soldiers`);
+      if (Number.isFinite(u.hp)) parts.push(`health ${Math.round(u.hp * 100)}%`);
+      if (u.ammo0 > 0)
+        parts.push(`ammunition left ${Math.round((100 * u.ammo) / u.ammo0)}% of starting supply`);
+      now.append(el("strong", `At ${clock(frame.time_ms)}: `), parts.join(" · "));
+    } else {
+      const point = targetAt(id, fi);
+      now.append(
+        el("strong", `At ${clock(frame.time_ms)}: `),
+        dead
+          ? "destroyed"
+          : point
+            ? `not visible to the army; last seen at ${clock(point.t)}`
+            : "not observed yet",
+      );
+    }
+    card.append(now);
+    if (entry.side === "friendly") {
+      const i = latestOrders(id, time, true),
+        line = i != null && r.decisions[i].summary.find((item) => item.unit === id);
+      const text = line ? line.text.replace(`${entry.display}: `, "") : null;
+      const orders = el("p", null, "now");
+      orders.append(
+        el("strong", "Standing orders: "),
+        text ? `${text} (issued ${clock(r.decisions[i].applied_ms)})` : "none issued yet",
+      );
+      card.append(orders);
+    } else card.append(el("p", "Commanded by the game's AI.", "note"));
+    if (entry.stats) {
+      const stats = el("dl", null, "stats");
+      for (const [key, label] of STATS)
+        if (entry.stats[key] != null) {
+          const item = el("div");
+          item.append(el("dt", label), el("dd", String(entry.stats[key])));
+          stats.append(item);
+        }
+      card.append(stats, el("p", "Base values recorded from the game at battle setup.", "note"));
+    }
+    return card;
+  }
+
+  function renderPanel(fi, now) {
+    const shown = pinned ?? (now.current >= 0 ? now.current : null);
+    const key = [shown, now.pending, pinned, selected, selected ? fi : "", time >= end].join("|");
+    if (key === keys.panel) return;
+    keys.panel = key;
+    const box = $("moment");
+    box.replaceChildren();
+    if (selected) box.append(unitCard(selected, fi));
+    if (pinned != null) {
+      const line = el("div", null, "pinned-line");
+      line.append(
+        el("span", `Pinned: decision issued at ${clock(r.decisions[pinned].applied_ms)}`),
+        button("Back to playback", () => unpin()),
+      );
+      box.append(line);
+    } else {
+      const line = statusLine(now);
+      if (line) box.append(line);
+    }
+    if (shown == null) {
       box.append(
         el(
           "p",
-          `Attempt ${i + 1}: $${fmt(a.usd, 5)} · input ${a.usage?.input_tokens ?? "?"} · output ${a.usage?.output_tokens ?? "?"} · reasoning ${a.usage?.output_tokens_details?.reasoning_tokens ?? "?"} · ${a.actual_model || "model unrecorded"}`,
+          now.pending >= 0
+            ? "No orders have reached the game yet. The battle keeps running while the first reply is generated."
+            : "The armies are deploying; no decision has been requested yet.",
+          "muted",
         ),
       );
-    box.append(
-      disclosure(
-        "Exact recorded prompt and raw replies",
-        `PROMPT\n${d.prompt ?? "Not recorded"}\n\n${d.attempts.map((a, i) => `RAW REPLY ${i + 1}\n${a.text ?? "Not recorded"}`).join("\n\n")}`,
-      ),
-    );
-    box.append(
-      disclosure(
-        "Recorded basis and first state after application",
-        json({
-          basis: replay.frames[d.basis_frame] ?? null,
-          after: replay.frames[d.after_frame] ?? null,
-        }),
-      ),
-    );
-    box.append(
-      disclosure(
-        "Observed displacement · metres",
-        d.displacements.map((m) => `${m.unit}: ${fmt(m.metres)} m`).join("\n") ||
-          "No comparable positions recorded",
-      ),
-    );
-    const f = replay.frames[d.after_frame ?? d.basis_frame];
-    if (f)
-      box.append(
-        disclosure(
-          "Resources and abilities left ready · first recorded state after application",
-          json({
-            magic: f.magic,
-            supplies: f.mode?.supplies,
-            army: f.army,
-            ready: f.friendly
-              .map((u) => ({
-                unit: u.id,
-                abilities: u.abilities?.filter((a) => a.ready),
-              }))
-              .filter((u) => u.abilities?.length),
-          }),
-        ),
-      );
-  }
-  function eventAt(event) {
-    if (event.decision != null) {
-      selected = event.decision;
-      inspector();
+      return;
     }
-    compareFrames = false;
-    time = event.time_ms;
-    draw();
+    box.append(...decisionView(shown));
   }
-  function events() {
-    $("events").replaceChildren(
-      ...replay.events.map((event) => {
-        const b = button(`${seconds(event.time_ms)} · ${event.caption}`, () => eventAt(event));
-        b.title = evidence(event.source);
-        b.dataset.kind = event.kind;
-        return b;
-      }),
-    );
+
+  // Order of battle under the map: one line per unit type with its role; duplicates are
+  // grouped, and each regiment stays selectable by its map label.
+  function renderRoster() {
+    const box = $("roster");
+    box.replaceChildren();
+    chips = new Map();
+    const role = r.frames.find((f) => f.mode?.role)?.mode.role;
+    const chip = (entry, className, ...content) => {
+      const node = button(
+        "",
+        () => select(entry.id === selected ? null : entry.id, true),
+        className,
+      );
+      node.append(...content);
+      node.title = `${entry.display} · ${entry.role}`;
+      node.setAttribute("aria-label", `${entry.display}, ${entry.role}`);
+      chips.set(entry.id, node);
+      return node;
+    };
+    for (const side of ["friendly", "enemy"]) {
+      const units = r.roster.filter((entry) => entry.side === side);
+      if (!units.length) continue;
+      const column = el("section", null, `roster-side ${side}`),
+        heading = el("h3"),
+        list = el("ul");
+      const sideRole =
+        role && (side === "friendly" ? role : role === "attacker" ? "defender" : "attacker");
+      heading.append(
+        el("span", null, `swatch ${side}`),
+        `${side === "friendly" ? "Friendly" : "Enemy"}${sideRole ? ` · ${sideRole}` : ""}`,
+      );
+      const groups = new Map();
+      for (const entry of units) groups.set(entry.name, [...(groups.get(entry.name) || []), entry]);
+      for (const [name, group] of groups) {
+        const [first] = group,
+          item = el("li"),
+          names = el("span", null, "names"),
+          title = el("span", group.length > 1 ? `${name} ×${group.length}` : first.display);
+        if (group.length === 1 && first.short !== first.display)
+          title.append(" ", el("span", first.short, "code"));
+        names.append(title, el("small", first.role));
+        if (group.length > 1) {
+          const label = el("span", null, "group");
+          label.append(glyph(first.glyph), names);
+          item.append(label, ...group.map((entry) => chip(entry, "code-chip", entry.short)));
+        } else item.append(chip(first, "unit-chip", glyph(first.glyph), names));
+        list.append(item);
+      }
+      column.append(heading, list);
+      box.append(column);
+    }
   }
-  function multiples() {
-    const payloads = trials.filter((t) => t.replay?.frames.length);
-    const shared = payloads.flatMap((t) => t.replay.frames.flatMap(allUnits)).filter(position);
-    const b = shared.length
-      ? [
-          Math.min(...shared.map((p) => p.x)) - 30,
-          Math.min(...shared.map((p) => p.z)) - 30,
-          Math.max(...shared.map((p) => p.x)) + 30,
-          Math.max(...shared.map((p) => p.z)) + 30,
-        ]
-      : [-512, -512, 512, 512];
-    $("multiples").replaceChildren(
-      ...trials.map((t, i) => {
-        const card = el("article");
-        card.append(
-          button(label(t), () => open(i)),
-          el("p", `${t.outcome} · ${fmt(t.battle_s)} s · margin ${fmt(t.metrics.margin, 3)}`),
+
+  function updateRoster(fi) {
+    const frame = r.frames[fi];
+    for (const [id, chip] of chips) {
+      const u = unitIn(frame, id),
+        dead = u?.men === 0 || frame.enemy_roster.some((item) => item.id === id && item.dead);
+      chip.classList.toggle("down", Boolean(dead));
+      chip.classList.toggle("fleeing", !dead && (has(u, "routing") || has(u, "shattered")));
+      chip.setAttribute("aria-pressed", String(id === selected));
+    }
+  }
+
+  // The note marked now: the watched one, else the latest begun one whose window holds the time.
+  const activeHighlight = () =>
+    watched()
+      ? watching.k
+      : markedAt(
+          r.highlights.map((h) => ({ ...span(h), at: h.time_ms })),
+          time,
         );
-        if (t.replay?.frames.length) {
-          const map = svg("svg", {
-              viewBox: "0 0 320 240",
-              role: "img",
-              "aria-label": `Recorded tracks for ${label(t)}`,
-            }),
-            p = projection(b, 320, 240);
-          map.append(svg("rect", { width: 320, height: 240, fill: "#15232b" }));
-          for (const f of t.replay.frames)
-            for (const u of allUnits(f).filter(position))
-              map.append(
-                svg("circle", {
-                  cx: p.x(u.x),
-                  cy: p.y(u.z),
-                  r: 1,
-                  fill: colours[u.side],
-                  opacity: 0.35,
-                }),
-              );
-          card.append(map);
-        } else card.append(el("p", "Replay not recorded"));
-        return card;
-      }),
-    );
+
+  function renderOverlays(fi) {
+    const caption = $("map-caption"),
+      status = $("map-status"),
+      frame = r.frames[fi];
+    caption.classList.toggle("pinned", pinned != null);
+    if (pinned != null) {
+      const d = r.decisions[pinned];
+      caption.textContent = `Inspecting the reply applied at ${clockTenths(d.applied_ms)} · outlines: the view the model saw (${clockTenths(r.frames[d.basis_frame].time_ms)}) · solid: next recorded positions (${clockTenths(r.frames[d.after_frame].time_ms)})`;
+      caption.hidden = false;
+    } else {
+      const k = activeHighlight();
+      caption.textContent = k >= 0 ? `Analyst note ${k + 1} · ${r.highlights[k].title}` : "";
+      caption.hidden = k < 0;
+    }
+    const gap = pinned == null && time - frame.time_ms > gapMs;
+    status.textContent = gap
+      ? `No observation recorded during this interval · showing ${clockTenths(frame.time_ms)}`
+      : "";
+    status.hidden = !gap;
+    const chip = $("map-selection");
+    if (keys.selection !== selected) {
+      keys.selection = selected;
+      chip.replaceChildren();
+      const entry = selected && roster.get(selected);
+      if (entry) {
+        const text = el("span");
+        text.append(el("strong", entry.display), el("span", ` · ${entry.role}`, "role"));
+        chip.append(
+          glyph(entry.glyph),
+          text,
+          button("Clear", () => select(null)),
+        );
+        chip.querySelector("svg").style.color = TEAM[entry.side];
+      }
+      chip.hidden = !entry;
+    }
   }
-  function stepEvent(direction) {
-    const items = replay?.events || [];
-    const event =
-      direction > 0 ? items.find((e) => e.time_ms > time) : items.findLast((e) => e.time_ms < time);
-    if (event) eventAt(event);
+
+  function render() {
+    if (!r || !proj) return;
+    const fi = frameIndex(),
+      now = momentAt(time);
+    renderOverlays(fi); // first: the inspect framing depends on its caption's height
+    if (framed !== pinned) reframe();
+    renderMap(fi, now);
+    renderPanel(fi, now);
+    updateRoster(fi);
+    $("scrubber").value = time / 1000;
+    $("clock").textContent = `${clock(time)} / ${clock(end)}`;
+    const x = stripX(time);
+    $("strip-cursor").setAttribute("x1", x);
+    $("strip-cursor").setAttribute("x2", x);
+    for (const listener of listeners) listener(time);
   }
-  function stepDecision(direction) {
-    if (!replay) return;
-    const index =
-      direction > 0
-        ? replay.decisions.findIndex((d) => d.time_ms > time)
-        : replay.decisions.findLastIndex((d) => d.time_ms < time);
-    if (index >= 0) choose(index);
+
+  function updatePlay() {
+    $("play").textContent = playing ? "❚❚ Pause" : "▶ Play";
+    $("play").setAttribute("aria-label", playing ? "Pause" : "Play");
+  }
+  function play() {
+    if (!r) return;
+    if (time >= end) {
+      time = start;
+      watching = null;
+    }
+    pinned = null;
+    if (!playing) lastTick = null;
+    playing = true;
+    loop ??= requestAnimationFrame(tick); // animation frames run only while playing
+    updatePlay();
+    render();
+  }
+  function pause() {
+    playing = false;
+    until = null;
+    updatePlay();
   }
   function toggle() {
-    if (!replay) return;
-    compareFrames = false;
-    playing = !playing;
-    lastTick = null;
-    $("play").textContent = playing ? "Pause" : "Play";
+    if (playing) pause();
+    else play();
+  }
+  // Every move of the time by hand (scrubber, timeline strip, buttons, keys, lists) ends a watch.
+  function seek(t) {
+    if (!r) return;
+    time = Math.max(start, Math.min(end, t));
+    until = null;
+    pinned = null;
+    watching = null;
+    render();
+  }
+  const reveal = () => $("map-wrap").scrollIntoView({ block: "start" }); // the panel follows
+  function jump(t, intoView = false) {
+    pause();
+    seek(t);
+    if (intoView) reveal();
+  }
+  const goDecision = (i) => jump(r.decisions[i].applied_ms);
+  function stepDecision(direction) {
+    if (!r) return;
+    const applied = r.decisions.map((d, i) => [d.applied_ms, i]).filter(([t]) => t != null);
+    const target =
+      direction > 0 ? applied.find(([t]) => t > time + 1) : applied.findLast(([t]) => t < time - 1);
+    if (target) goDecision(target[1]);
+  }
+  function stepEvent(direction) {
+    if (!r) return;
+    const e =
+      direction > 0
+        ? r.events.find((item) => item.time_ms > time + 1)
+        : r.events.findLast((item) => item.time_ms < time - 1);
+    if (e) jump(e.time_ms);
+  }
+  function pin(i) {
+    pause();
+    time = r.decisions[i].applied_ms;
+    pinned = i;
+    watching = null;
+    render();
+    $("moment").scrollTop = 0;
+    $("map-wrap").scrollIntoView({ block: "nearest" });
+  }
+  function unpin() {
+    pinned = null;
+    render();
+  }
+  // Roster and note chips bring the selection into view; map clicks do not.
+  function select(id, intoView = false) {
+    selected = id && roster.has(id) ? id : null;
+    keys.map = keys.panel = null;
+    render();
+    if (selected) $("moment").scrollTop = 0;
+    if (selected && intoView) reveal();
+  }
+  // Play from `from` at 4× and stop at `to` when given: the battle itself ran at 1×. Watching
+  // analyst note k keeps its units bright and its caption shown; a key event dims nothing.
+  function watch(from, to = null, k = null) {
+    if (!r) return;
+    pinned = null;
+    speed = 4;
+    $("speed").value = "4";
+    time = Math.max(start, Math.min(end, from));
+    const note = k != null ? r.highlights[k] : null;
+    watching = note && { k, ids: new Set(note.units || []), from: time, to: span(note).to };
+    keys.map = null;
+    play();
+    until = to;
+    reveal();
   }
   function tick(now) {
-    if (playing && replay) {
-      if (lastTick != null) {
-        time = Math.min(
-          time + (now - lastTick) * Number($("speed").value),
-          replay.frames.at(-1).time_ms,
-        );
-        const index = replay.decisions.findLastIndex((d) => d.time_ms <= time);
-        if (index >= 0 && selected !== index) {
-          selected = index;
-          inspector();
-        }
-        draw();
-        if (time === replay.frames.at(-1).time_ms) toggle();
+    loop = null;
+    if (!playing || !r) return;
+    if (lastTick != null) {
+      time += (now - lastTick) * speed;
+      const stop = Math.min(end, until ?? Infinity);
+      if (time >= stop) {
+        time = stop;
+        pause();
       }
-      lastTick = now;
+      render();
     }
-    requestAnimationFrame(tick);
+    lastTick = now;
+    if (playing) loop = requestAnimationFrame(tick);
   }
+
   function setup() {
-    $("trial").addEventListener("change", (e) => open(Number(e.target.value)));
-    $("whole").addEventListener("change", draw);
     $("play").addEventListener("click", toggle);
-    $("prev").addEventListener("click", () => stepDecision(-1));
-    $("next").addEventListener("click", () => stepDecision(1));
+    $("prev-decision").addEventListener("click", () => stepDecision(-1));
+    $("next-decision").addEventListener("click", () => stepDecision(1));
     $("prev-event").addEventListener("click", () => stepEvent(-1));
     $("next-event").addEventListener("click", () => stepEvent(1));
-    $("time").addEventListener("input", (e) => {
-      compareFrames = false;
-      time = Number(e.target.value) * 1000;
-      const index = replay.decisions.findLastIndex((d) => d.time_ms <= time);
-      if (index >= 0) selected = index;
-      inspector();
-      draw();
+    $("speed").addEventListener("change", (e) => {
+      speed = Number(e.target.value);
     });
-    $("section").addEventListener("keydown", (e) => {
-      if (["INPUT", "SELECT", "TEXTAREA", "BUTTON", "SUMMARY"].includes(e.target.tagName)) return;
+    $("whole").addEventListener("change", layout);
+    $("scrubber").addEventListener("input", (e) => seek(Number(e.target.value) * 1000));
+    $("map").addEventListener("click", (e) => {
+      const node = e.target.closest?.("[data-unit]");
+      if (node && pinned == null) select(node.dataset.unit === selected ? null : node.dataset.unit);
+    });
+    const node = $("strip");
+    node.addEventListener("pointerdown", (e) => {
+      if (!r) return;
+      dragging = true;
+      node.setPointerCapture(e.pointerId);
+      stripPointer(e, true);
+    });
+    node.addEventListener("pointermove", (e) => {
+      if (dragging) stripPointer(e, false);
+    });
+    for (const type of ["pointerup", "pointercancel"])
+      node.addEventListener(type, () => {
+        dragging = false;
+      });
+    document.addEventListener("keydown", (e) => {
+      if (!r || e.altKey || e.ctrlKey || e.metaKey || document.querySelector("dialog[open]"))
+        return;
+      const target = e.target,
+        tag = target.tagName;
+      if (["INPUT", "SELECT", "TEXTAREA"].includes(tag)) return;
+      if (target !== document.body && !$("watch").contains(target)) return;
+      if (e.key === " " && ["BUTTON", "SUMMARY", "A"].includes(tag)) return;
       const action = {
         " ": toggle,
         ArrowLeft: () => stepDecision(-1),
@@ -972,21 +1606,28 @@ window.wh3Replay = (() => {
         action();
       }
     });
-    $("map").setAttribute("tabindex", "0");
-    $("download").addEventListener("click", () => {
-      if (!replay) return;
-      const payload = {
-        evidence_kind: dataset.evidence_kind,
-        trial: { ...current, replay: undefined },
-        replay,
-      };
-      download(
-        new Blob([json(payload)], { type: "application/json" }),
-        `wh3-${dataset.evidence_kind}-${current.episode}-replay.json`,
-      );
-    });
-    requestAnimationFrame(tick);
+    new ResizeObserver(() => {
+      if (r && Math.round($("map-wrap").clientWidth) !== mapWidth) layout();
+    }).observe($("map-wrap"));
+    addEventListener("resize", () => r && layout());
   }
   setup();
-  return { load };
+  return {
+    show,
+    clear,
+    seek,
+    jump,
+    reveal,
+    watch,
+    select,
+    pause,
+    onTime: (listener) => listeners.push(listener),
+    get time() {
+      return time;
+    },
+    // The analyst note the map caption shows, or -1.
+    get note() {
+      return r ? activeHighlight() : -1;
+    },
+  };
 })();

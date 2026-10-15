@@ -1,853 +1,873 @@
-// Runs after replay.js in the same script and uses its shared helpers (el, svg, fmt, ...).
+// Runs after replay.js in the same script and uses its helpers (el, svg, clock, Viewer, ...).
 (() => {
-  const data = JSON.parse(document.getElementById("report-data").textContent);
-  const report = data.report;
   const $ = (id) => document.getElementById(id);
-  const percent = (value) => (value == null ? "Unavailable" : `${fmt(value * 100, 1)}%`);
-  const money = (value) => (value == null ? "Unavailable" : `$${fmt(value, 5)}`);
-  const code = (prefix, index) => `${prefix}${String(index + 1).padStart(2, "0")}`;
-  const distinct = (values) => [...new Set(values)];
+  const data = JSON.parse($("report-data").textContent);
+  const report = data.report;
   const synthetic = data.evidence_kind === "synthetic";
-  const palette = ["#325e4f", "#3c5f81", "#8e493c", "#795b89", "#876824", "#336c70"];
-  let view,
-    rows = [],
-    selected = new Set(),
-    sort = { key: "label", direction: 1 };
-  let chartSVG = null;
-
-  function table(headers, contents) {
-    const node = el("table"),
-      head = el("thead"),
-      tr = el("tr"),
-      body = el("tbody");
-    for (const name of headers) {
-      const th = el("th", name);
-      th.scope = "col";
-      tr.append(th);
-    }
-    head.append(tr);
-    for (const cells of contents) {
-      const row = el("tr");
-      for (const cell of cells) {
-        const td = el("td");
-        if (cell instanceof Node) td.append(cell);
-        else td.textContent = cell ?? "Unavailable";
-        row.append(td);
-      }
-      body.append(row);
-    }
-    node.append(head, body);
-    return node;
-  }
-  function empty(target, text, note) {
-    const node = el("p", text, "empty");
-    if (note) node.append(el("small", note));
-    target.replaceChildren(node);
-  }
-  function groups() {
-    return view.groups.map((index) => report.groups[index]);
-  }
-  function allTrials() {
-    return groups().flatMap((group) => group.trials);
-  }
-  function currentRows() {
-    return rows.filter((row) => selected.has(row.id));
-  }
-  function currentTrials() {
-    return currentRows().flatMap((row) => row.items.map((trial) => ({ trial, row })));
-  }
-  function status() {
-    if (synthetic) return "SYNTHETIC DEMO · invented values · not benchmark evidence";
-    const scenario = view.definition.scenario || {};
-    if (!allTrials().length) return "Not measured yet";
-    if (scenario.split === "held_out")
-      return `Held-out evaluation · ${scenario.status === "admitted" ? "admitted scenario" : "admission not established"}`;
-    if (scenario.status === "admitted") return "Admitted scenario";
-    const n = distinct(allTrials().map((trial) => trial.instance)).length;
-    return `Development pilot: ${n === 1 ? "one independent launch" : `${n} independent launches`}`;
-  }
-  function identity(group, summary) {
-    const items = group.trials.filter((trial) => trial.controller === summary.controller);
-    const first = items[0] || {},
-      card = first.card || {};
-    const modelPolicy = data.model_policies.includes(first.policy);
-    const model = card.model || (modelPolicy ? group.definition.model : null);
-    const effort = card.effort || (modelPolicy ? group.definition.effort : null);
-    const aliases = { attack_nearest: "Walk-nearest", rush_nearest: "Run-nearest" };
-    const policy = first.policy || summary.controller;
-    let label = model
-      ? `${model} · ${effort || "effort unrecorded"} · ${policy}`
-      : `${aliases[policy] || policy}${card.kind === "scripted" || policy in aliases ? " · scripted" : ""}`;
-    if (card.kind === "external")
-      label += ` · ${(card.source_sha256 || "source unknown").slice(0, 12)}`;
-    return { label, items, delay: first.delay_ms, card };
-  }
-  function loadView(index) {
-    view = data.comparisons[index];
-    rows = view.groups
-      .flatMap((groupIndex) => {
-        const group = report.groups[groupIndex];
-        return group.controllers.map((summary, index) => ({
-          ...summary,
-          ...identity(group, summary),
-          id: `g${groupIndex}-r${index}`,
-          groupIndex,
-          evidence: code("E", groupIndex),
-        }));
-      })
-      .sort(
-        (a, b) => a.label.localeCompare(b.label) || a.delay - b.delay || a.id.localeCompare(b.id),
-      );
-    rows.forEach((row, index) => {
-      row.symbol = index;
-      row.code = code("C", index);
-    });
-    selected = new Set(rows.map((row) => row.id));
-    sort = { key: "label", direction: 1 };
-    renderBrief();
-    renderControllers();
-    renderSelection();
-    renderJobs();
-    // The replay names each trial's controller exactly as its table row does.
-    const names = {};
-    for (const row of rows)
-      for (const trial of row.items)
-        names[`g${row.groupIndex}-t${report.groups[row.groupIndex].trials.indexOf(trial)}`] =
-          row.label;
-    window.wh3Replay.load(data, view, status(), names);
-  }
-  function renderBrief() {
-    const definition = view.definition,
-      scenario = definition.scenario || {},
-      expect = scenario.expect || {};
-    $("status").textContent = status();
-    $("brief-heading").textContent = scenario.family || scenario.name || "Unlabelled scenario";
-    $("scenario-name").textContent = scenario.name || "Scenario identifier unavailable";
-    $("brief-text").textContent =
-      scenario.brief || "No tactical brief was recorded for this scenario.";
-    $("metadata-origin").textContent =
-      `${synthetic ? "Synthetic fixture" : view.metadata_origin}. ${allTrials().length ? "Scenario admission is not inferred from wins." : "No started trials in the supplied evidence. This is not a gameplay loss."}`;
-    const role =
-      scenario.attacker === "player"
-        ? "Attacker"
-        : scenario.attacker === "enemy"
-          ? "Defender"
-          : expect.player_defends == null
-            ? "Unrecorded"
-            : expect.player_defends
-              ? "Defender"
-              : "Attacker";
-    const settings = [
-      ["Player role", role],
-      [
-        "Battle timer",
-        expect.time_limit_s == null
-          ? "Unrecorded"
-          : `${expect.time_limit_s / 60} min · ${expect.time_limit_s} s`,
-      ],
-      [
-        "AI difficulty",
-        (expect.difficulty || "Unrecorded").replace(/^ai_level_/, "").replaceAll("_", " "),
-      ],
-      ["AI stat modifier", expect.ai_stats_modifier ?? "Unrecorded"],
-      [
-        "Forces · player / enemy",
-        `${scenario.player?.units?.length ?? "?"} / ${scenario.enemy?.units?.length ?? "?"} units`,
-      ],
-      [
-        "Split / admission",
-        `${scenario.split || "Unrecorded"} / ${scenario.status || "Unrecorded"}`,
-      ],
-    ];
-    $("settings").replaceChildren(
-      ...settings.map(([name, value]) => {
-        const node = el("div");
-        node.append(el("dt", name), el("dd", value));
-        return node;
-      }),
-    );
-    $("forces").replaceChildren();
-    for (const side of ["player", "enemy"]) {
-      const force = scenario[side] || {},
-        ul = el("ul");
-      $("forces").append(el("p", `${side}: ${force.faction || "faction unrecorded"}`, "mono"));
-      const units = (force.units || []).map((unit, index) => force.mounts?.[String(index)] || unit);
-      for (const unit of distinct(units))
-        ul.append(el("li", `${units.filter((value) => value === unit).length} × ${unit}`));
-      $("forces").append(ul);
-    }
-    $("scenario-detail").textContent = json(scenario);
-    $("comparison-settings").textContent =
-      `Source ${definition.source || "unrecorded"} · Build ${definition.game?.steam_build_id || "unrecorded"} · ${definition.track || "interface unrecorded"} · Observation ${definition.observe_ms ?? "?"} ms / tick ${definition.tick_ms ?? "?"} ms / pacing ${definition.interval_ms ?? "?"} ms`;
-    $("limitations").textContent = report.limitations || "";
-  }
-  const columns = [
-    ["label", "Controller / added age"],
-    ["outcomes", "W / L / D / T"],
-    ["win_rate", "Non-timer win rate · 95% CI"],
-    ["margin", "Active margin"],
-    ["instances", "Independent launches"],
-    ["valid", "Valid / started"],
-    ["cost", "USD / attempted trial"],
-    ["failures", "Failures"],
-  ];
-  function sortValue(row, key) {
-    if (key === "cost") return meanCost(row);
-    if (key === "margin") return row.means.margin;
-    if (key === "failures") return row.trials - row.valid;
-    if (key === "outcomes") return row.outcomes.won || 0;
-    return row[key];
-  }
-  function renderControllers() {
-    if (!rows.length) {
-      empty(
-        $("controller-table"),
-        "Not measured yet",
-        "No controller trial records in this comparison.",
-      );
-      return;
-    }
-    const node = el("table"),
-      head = el("thead"),
-      heading = el("tr"),
-      body = el("tbody");
-    for (const [key, title] of columns) {
-      const th = el("th"),
-        button = el(
-          "button",
-          title + (sort.key === key ? (sort.direction === 1 ? " ↑" : " ↓") : ""),
-        );
-      th.scope = "col";
-      th.setAttribute(
-        "aria-sort",
-        sort.key === key ? (sort.direction === 1 ? "ascending" : "descending") : "none",
-      );
-      button.addEventListener("click", () => {
-        sort = { key, direction: sort.key === key ? -sort.direction : 1 };
-        renderControllers();
-      });
-      th.append(button);
-      heading.append(th);
-    }
-    const sorted = [...rows].sort((a, b) => {
-      const x = sortValue(a, sort.key),
-        y = sortValue(b, sort.key);
-      if (x == null || y == null)
-        return x == null ? (y == null ? a.id.localeCompare(b.id) : 1) : -1;
-      return (
-        (typeof x === "string" ? x.localeCompare(y) : x - y) * sort.direction ||
-        a.label.localeCompare(b.label) ||
-        a.id.localeCompare(b.id)
-      );
-    });
-    for (const row of sorted) {
-      const tr = el("tr"),
-        td = el("td", undefined, "identity"),
-        label = el("label"),
-        checkbox = el("input");
-      checkbox.type = "checkbox";
-      checkbox.checked = selected.has(row.id);
-      tr.dataset.selected = String(checkbox.checked);
-      checkbox.setAttribute(
-        "aria-label",
-        `${row.label}, +${(row.delay || 0) / 1000}s, ${row.evidence}`,
-      );
-      checkbox.addEventListener("change", () => {
-        tr.dataset.selected = String(checkbox.checked);
-        if (checkbox.checked) selected.add(row.id);
-        else selected.delete(row.id);
-        renderSelection();
-      });
-      label.append(checkbox, el("span", row.label));
-      td.append(
-        label,
-        el("small", `${row.code} / ${row.evidence} / +${(row.delay || 0) / 1000}s added age`),
-      );
-      tr.append(td);
-      const interval = row.win_ci95
-        ? `[${percent(row.win_ci95[0])}, ${percent(row.win_ci95[1])}]`
-        : "CI unavailable";
-      const values = [
-        ["won", "lost", "draw", "time_limit"].map((key) => row.outcomes[key] || 0).join(" / "),
-        `${percent(row.win_rate)} · ${interval}`,
-        fmt(row.means.margin, 3),
-        row.instances,
-        `${row.valid} / ${row.trials}`,
-        money(meanCost(row)),
-        row.trials - row.valid,
-      ];
-      for (const value of values) tr.append(el("td", String(value), "number"));
-      body.append(tr);
-    }
-    head.append(heading);
-    node.append(head, body);
-    $("controller-table").replaceChildren(node);
-  }
-  function trialText(trial, row) {
-    const metrics = trial.metrics;
-    return `${row.label} · ${row.evidence} · ${trial.instance}/${trial.episode} · ${trial.outcome}${trial.outcome === "time_limit" ? ` (engine ${trial.engine_outcome})` : ""} · margin ${metrics.margin ?? "unavailable"} · order age ${metrics.order_age_s?.mean ?? "unavailable"} s · snapshot age at decision ${metrics.snapshot_age_at_decision_s?.mean ?? "unavailable"} s · requested added age ${(trial.delay_ms || 0) / 1000} s · inference USD ${trialCost(trial) ?? "unavailable"}`;
-  }
-  function meanCost(row) {
-    // The collector's recorded USD sum is retained in JSON. An incomplete cost
-    // record is not evidence of free inference, so withhold its displayed mean.
-    return row.trials && row.items.every((trial) => trialCost(trial) != null)
-      ? row.usd / row.trials
-      : null;
-  }
-  function chooseTrial(trial, row) {
-    $("selection").textContent = trialText(trial, row);
-  }
-  function renderTrials() {
-    const trials = currentTrials();
-    if (!trials.length) {
-      empty($("trial-table"), rows.length ? "No controllers selected" : "Not measured yet");
-      empty($("tactical-table"), "No selected trial values");
-      return;
-    }
-    $("trial-table").replaceChildren(
-      table(
-        [
-          "Trial · select for exact values",
-          "Controller / group",
-          "Outcome",
-          "Margin",
-          "Order age (s)",
-          "Snapshot age at decision (s)",
-          "Added age (s)",
-          "Inference USD",
-        ],
-        trials.map(({ trial, row }) => {
-          const button = el("button", `${trial.instance}/${trial.episode}`, "trial-pick");
-          button.addEventListener("click", () => chooseTrial(trial, row));
-          return [
-            button,
-            `${row.label} / ${row.evidence}`,
-            `${trial.outcome}${trial.outcome === "time_limit" ? ` (engine ${trial.engine_outcome})` : ""}`,
-            fmt(trial.metrics.margin, 3),
-            fmt(trial.metrics.order_age_s?.mean, 3),
-            fmt(trial.metrics.snapshot_age_at_decision_s?.mean, 3),
-            (trial.delay_ms || 0) / 1000,
-            money(trialCost(trial)),
-          ];
-        }),
-      ),
-    );
-    const tactical = trials.filter(
-      ({ trial }) => trial.protected_left != null || trial.objectives != null,
-    );
-    if (!tactical.length) {
-      empty($("tactical-table"), "No tactical metrics recorded for these trials");
-      return;
-    }
-    $("tactical-table").replaceChildren(
-      table(
-        [
-          "Trial / controller",
-          "Protected units · active share",
-          "Victory-point control share",
-          "Key-point control share",
-          "Control-share method",
-          "Supplies left",
-          "Reinforcement purchases by type",
-        ],
-        tactical.map(({ trial, row }) => [
-          `${trial.instance}/${trial.episode} · ${row.code}`,
-          percent(trial.protected_left),
-          percent(trial.objectives?.victory_held),
-          percent(trial.objectives?.key_held),
-          trial.objectives
-            ? trial.objectives.method || "legacy observation samples"
-            : "Unavailable",
-          trial.objectives?.supplies_left ?? "Unavailable",
-          trial.objectives?.reinforcements_by_type == null
-            ? "Unavailable"
-            : json(trial.objectives.reinforcements_by_type),
-        ]),
-      ),
-    );
-  }
-  function renderEvidence() {
-    const active = currentRows(),
-      trials = currentTrials(),
-      pairs = [];
-    for (const index of view.groups) {
-      const labels = active.filter((row) => row.groupIndex === index).map((row) => row.controller);
-      for (const pair of report.groups[index].paired)
-        if (labels.includes(pair.a) && labels.includes(pair.b)) {
-          pairs.push({ evidence_group: code("E", index), ...pair });
-        }
-    }
-    $("pairs").replaceChildren();
-    if (!pairs.length) empty($("pairs"), "No paired comparisons for the selection");
-    for (const pair of pairs) {
-      const item = el("details"),
-        ci = pair.ci95 ? pair.ci95.map((value) => fmt(value, 3)).join(", ") : "unavailable";
-      item.append(
-        el(
-          "summary",
-          `${pair.evidence_group} · ${pair.a} − ${pair.b} · ${pair.n} paired launches · mean ${fmt(pair.mean, 3)} · 95% CI ${ci}`,
-        ),
-        el("pre", json(pair)),
-      );
-      $("pairs").append(item);
-    }
-    const failed = trials.filter(({ trial }) => !trial.valid).length;
-    const unchecked = trials.filter(({ trial }) => !trial.setup_checked).length;
-    const flagged = trials.filter(({ trial }) => trial.start_flagged).length;
-    const rejections = trials.reduce(
-      (sum, { trial }) =>
-        sum + Object.values(trial.metrics.rejections || {}).reduce((a, b) => a + b, 0),
-      0,
-    );
-    $("failure-summary").textContent =
-      `Selected trials: ${failed} failures / incomplete results · ${unchecked} unchecked setups · ${flagged} flagged starts · ${rejections} order rejections. Job interruptions, including those with zero started battles, are listed below.`;
-    $("failures").replaceChildren(
-      el(
-        "pre",
-        json(
-          trials.map(({ trial, row }) => ({
-            controller: row.label,
-            evidence_group: row.evidence,
-            instance: trial.instance,
-            episode: trial.episode,
-            outcome: trial.outcome,
-            engine_outcome: trial.engine_outcome,
-            error: trial.error,
-            setup_checked: trial.setup_checked,
-            start_flagged: trial.start_flagged,
-            start_comparison: trial.start_comparison,
-            rejections: trial.metrics.rejections,
-          })),
-        ),
-      ),
-    );
-    $("provenance").textContent = json({
-      metadata_origin: view.metadata_origin,
-      evidence_kind: data.evidence_kind,
-      comparison: view.definition,
-      evidence_groups: view.groups.map((index) => ({
-        id: code("E", index),
-        definition: report.groups[index].definition,
-      })),
-      controllers: active.map((row) => ({
-        label: row.label,
-        evidence_group: row.evidence,
-        card: row.card,
-      })),
-      jobs: view.jobs.map((index) => report.jobs[index]),
-    });
-  }
-  function renderJobs() {
-    const trials = report.groups.flatMap((group) => group.trials);
-    $("jobs").replaceChildren(
-      table(
-        [
-          "Job identifier",
-          "Recorded status",
-          "Valid / started",
-          "Wall seconds",
-          "Error",
-          "Setup checks",
-        ],
-        (report.jobs || []).map((job) => {
-          const items = trials.filter((trial) => trial.instance === job.instance);
-          return [
-            job.instance,
-            job.recorded_status || "Unrecorded",
-            `${items.filter((trial) => trial.valid).length} / ${items.length}`,
-            fmt(job.wall_seconds, 2),
-            job.error || "None recorded",
-            job.setup_checks ? json(job.setup_checks) : "Unavailable",
-          ];
-        }),
-      ),
-    );
-  }
-  function wrapSVG(target, value, x, y, maxChars = 110, size = 12, color = "#60665d") {
-    // Wrap exported labels too: no dependence on CSS or browser-only foreignObject.
-    const lines = String(value).match(
-      new RegExp(`.{1,${maxChars}}(?:\\s|$)|.{1,${maxChars}}`, "g"),
-    ) || [""];
-    lines.forEach((line, index) =>
-      target.append(
-        svg("text", { x, y: y + index * 17, fill: color, "font-size": size }, line.trim()),
-      ),
-    );
-    return y + lines.length * 17;
-  }
-  function marker(symbol, x, y, color) {
-    const attrs = { fill: color, stroke: "#fbf9f2", "stroke-width": 2 };
-    switch (symbol % 4) {
-      case 0:
-        return svg("circle", { ...attrs, cx: x, cy: y, r: 7 });
-      case 1:
-        return svg("rect", { ...attrs, x: x - 7, y: y - 7, width: 14, height: 14 });
-      case 2:
-        return svg("path", {
-          ...attrs,
-          d: `M${x},${y - 9}L${x + 9},${y}L${x},${y + 9}L${x - 9},${y}Z`,
-        });
-      default:
-        return svg("path", {
-          ...attrs,
-          d: `M${x},${y - 9}L${x + 9},${y + 7}L${x - 9},${y + 7}Z`,
-        });
-    }
-  }
-  function renderChart() {
-    chartSVG = null;
-    const axis = $("axis").value,
-      trials = currentTrials(),
-      selectedRows = currentRows();
-    const hasAdded = trials.some(({ trial }) => trial.delay_ms > 0);
-    const axisTitle =
-      axis === "cost"
-        ? "Inference cost per attempted trial (USD)"
-        : axis === "added"
-          ? "Requested added snapshot age (seconds)"
-          : "Mean measured information age at order issuance (seconds)";
-    $("chart-note").textContent =
-      axis === "added"
-        ? "Controlled added-age conditions. Exact measured ages appear in the trial table and point selection. Horizontal offsets separate overlapping points; no unmeasured condition is interpolated."
-        : "One point per valid trial with both metrics recorded. Shapes and controller codes identify evidence rows. Select a point with a click, Enter or Space; the trial table provides the same values.";
-    const points = trials.filter(
-      ({ trial }) =>
-        trial.valid &&
-        trial.metrics.margin != null &&
-        (axis === "cost"
-          ? trialCost(trial) != null
-          : axis === "added" || trial.metrics.order_age_s?.mean != null),
-    );
-    if (!points.length || (axis === "added" && !hasAdded)) {
-      empty(
-        $("chart"),
-        axis === "added"
-          ? "Not measured yet"
-          : rows.length
-            ? "No plottable trials selected"
-            : "Not measured yet",
-        axis === "added"
-          ? "The 0 / 6 / 10-second experiment has no added-age results in this selection."
-          : "Missing metrics are not plotted as zero.",
-      );
-      $("export-svg").disabled = true;
-      $("export-png").disabled = true;
-      return;
-    }
-    const chart = svg("svg", {
-      xmlns: "http://www.w3.org/2000/svg",
-      role: "img",
-      "aria-label": `${axisTitle} versus active-strength margin`,
-      "font-family": "system-ui, sans-serif",
-    });
-    chart.append(svg("title", {}, `${status()} — ${axisTitle} versus active-strength margin`));
-    chart.append(
-      svg(
-        "desc",
-        {},
-        "Individual trial points. Exact values are also available in the trial table.",
-      ),
-    );
-    const background = svg("rect", { width: 1040, height: "100%", fill: "#fbf9f2" });
-    chart.append(background);
-    let top = wrapSVG(
-      chart,
-      `WH3 FIELD REPORT · ${view.definition.scenario?.name || "Unlabelled scenario"}`,
-      30,
-      30,
-      105,
-      15,
-      "#252d29",
-    );
-    top = wrapSVG(chart, status(), 30, top + 6, 120, 12, "#876824");
-    top = wrapSVG(
-      chart,
-      `${selectedRows.reduce((n, row) => n + row.valid, 0)} valid / ${trials.length} started · ${distinct(trials.map(({ trial }) => trial.instance)).length} launches with selected trials · ${points.length} plotted / ${trials.length - points.length} excluded (invalid or missing metrics)`,
-      30,
-      top + 6,
-    );
-    const y0 = top + 22,
-      plotH = 285,
-      x0 = 90,
-      plotW = 870;
-    const conditions = distinct([
-      0,
-      6,
-      10,
-      ...trials.map(({ trial }) => (trial.delay_ms || 0) / 1000),
-    ]).sort((a, b) => a - b);
-    const xValue = ({ trial }) =>
-      axis === "cost"
-        ? trialCost(trial)
-        : axis === "added"
-          ? (trial.delay_ms || 0) / 1000
-          : trial.metrics.order_age_s.mean;
-    const maxX = Math.max(...points.map(xValue), 0.01) * 1.1;
-    const px = (point, index) =>
-      axis === "added"
-        ? x0 +
-          ((conditions.indexOf(xValue(point)) + 0.5) / conditions.length) * plotW +
-          ((index % 7) - 3) * 5
-        : x0 + (xValue(point) / maxX) * plotW;
-    const py = (margin) => y0 + ((1 - margin) / 2) * plotH;
-    chart.append(
-      svg(
-        "text",
-        { x: x0, y: y0 - 10, fill: "#60665d", "font-size": 11 },
-        "ACTIVE-STRENGTH MARGIN",
-      ),
-    );
-    for (const value of [-1, -0.5, 0, 0.5, 1]) {
-      const y = py(value);
-      chart.append(
-        svg("line", {
-          x1: x0,
-          x2: x0 + plotW,
-          y1: y,
-          y2: y,
-          stroke: value === 0 ? "#9b9e90" : "#dddace",
-          "stroke-dasharray": value === 0 ? "4 4" : "none",
-        }),
-        svg(
-          "text",
-          { x: x0 - 12, y: y + 4, "text-anchor": "end", fill: "#60665d", "font-size": 12 },
-          value.toFixed(1),
-        ),
-      );
-    }
-    const ticks =
-      axis === "added" ? conditions : Array.from({ length: 6 }, (_, i) => (maxX * i) / 5);
-    ticks.forEach((value, index) => {
-      const x =
-        axis === "added"
-          ? x0 + ((index + 0.5) / conditions.length) * plotW
-          : x0 + (value / maxX) * plotW;
-      chart.append(
-        svg(
-          "text",
-          { x, y: y0 + plotH + 24, "text-anchor": "middle", "font-size": 12, fill: "#60665d" },
-          axis === "added"
-            ? `${value} s${points.some((point) => xValue(point) === value) ? "" : " · not measured"}`
-            : fmt(value, axis === "cost" ? 3 : 1),
-        ),
-      );
-    });
-    chart.append(
-      svg(
-        "text",
-        {
-          x: x0 + plotW / 2,
-          y: y0 + plotH + 52,
-          "text-anchor": "middle",
-          "font-size": 12,
-          fill: "#252d29",
-        },
-        axisTitle,
-      ),
-    );
-    points.forEach((point, index) => {
-      const { trial, row } = point,
-        x = px(point, index),
-        y = py(trial.metrics.margin),
-        color = palette[row.symbol % palette.length];
-      const dot = marker(row.symbol, x, y, color);
-      dot.setAttribute("tabindex", "0");
-      dot.setAttribute("role", "button");
-      dot.setAttribute("class", "point");
-      dot.setAttribute("aria-label", trialText(trial, row));
-      dot.append(svg("title", {}, trialText(trial, row)));
-      dot.addEventListener("click", () => chooseTrial(trial, row));
-      dot.addEventListener("keydown", (event) => {
-        if (["Enter", " "].includes(event.key)) {
-          event.preventDefault();
-          chooseTrial(trial, row);
-        }
-      });
-      chart.append(dot);
-      if (points.length <= 12)
-        chart.append(svg("text", { x: x + 11, y: y - 10, fill: color, "font-size": 11 }, row.code));
-    });
-    let bottom = y0 + plotH + 83;
-    for (const row of selectedRows) {
-      chart.append(marker(row.symbol, 37, bottom - 4, palette[row.symbol % palette.length]));
-      bottom = wrapSVG(
-        chart,
-        `${row.code} · ${row.label} · ${row.evidence} · +${(row.delay || 0) / 1000}s · ${row.valid}/${row.trials} valid/started · ${row.instances} launches`,
-        55,
-        bottom,
-        120,
-        11,
-      );
-      bottom += 7;
-    }
-    const def = view.definition,
-      expect = def.scenario?.expect || {};
-    bottom = wrapSVG(
-      chart,
-      `Source ${def.source || "unrecorded"} · build ${def.game?.steam_build_id || "unrecorded"} · ${def.track || "interface unrecorded"}`,
-      30,
-      bottom + 8,
-      130,
-      10,
-    );
-    bottom = wrapSVG(
-      chart,
-      `Observe/tick/pacing: ${def.observe_ms ?? "?"}/${def.tick_ms ?? "?"}/${def.interval_ms ?? "?"} ms · AI ${expect.difficulty || "?"} ×${expect.ai_stats_modifier || "?"} · timer ${expect.time_limit_s ?? "?"} s · split ${def.scenario?.split || "?"}`,
-      30,
-      bottom + 3,
-      130,
-      10,
-    );
-    bottom = wrapSVG(
-      chart,
-      "Descriptive trial points, not a causal estimate. Rematches are correlated; evidence groups are not pooled. Missing values are excluded.",
-      30,
-      bottom + 3,
-      130,
-      10,
-    );
-    chart.setAttribute("viewBox", `0 0 1040 ${bottom + 20}`);
-    chart.setAttribute("width", "1040");
-    chart.setAttribute("height", String(bottom + 20));
-    chartSVG = chart;
-    $("chart").replaceChildren(chart);
-    $("export-svg").disabled = false;
-    $("export-png").disabled = false;
-  }
-  function renderSelection() {
-    $("selection").textContent = "Select a trial point or a row below for exact values.";
-    renderTrials();
-    renderChart();
-    renderEvidence();
-  }
-  function exportFile(blob, extension) {
-    download(
-      blob,
-      `wh3-${synthetic ? "synthetic-demo-" : ""}${view.id}-${$("axis").value}.${extension}`,
-    );
-    $("export-status").textContent = `${extension.toUpperCase()} download ready.`;
-  }
-  function svgBlob() {
-    return new Blob([new XMLSerializer().serializeToString(chartSVG)], {
-      type: "image/svg+xml;charset=utf-8",
-    });
-  }
-  $("export-svg").addEventListener("click", () => {
-    if (chartSVG) exportFile(svgBlob(), "svg");
-  });
-  $("export-png").addEventListener("click", async () => {
-    if (!chartSVG) return;
-    const url = URL.createObjectURL(svgBlob());
-    try {
-      const img = new Image();
-      img.src = url;
-      await img.decode();
-      const canvas = el("canvas");
-      canvas.width = img.width * 2;
-      canvas.height = img.height * 2;
-      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob((blob) => {
-        if (blob) exportFile(blob, "png");
-        else $("export-status").textContent = "PNG export failed; SVG remains available.";
-      }, "image/png");
-    } catch {
-      $("export-status").textContent = "PNG export failed; SVG remains available.";
-    } finally {
-      URL.revokeObjectURL(url);
-    }
-  });
-  $("export-data").addEventListener("click", () => {
-    const active = currentRows();
-    const output = {
-      schema: 1,
-      evidence_kind: data.evidence_kind,
-      status: status(),
-      metadata_origin: view.metadata_origin,
-      chart_view: $("axis").value,
-      comparison: view.definition,
-      limitations: report.limitations,
-      groups: view.groups
-        .map((index) => {
-          const group = report.groups[index],
-            labels = active.filter((row) => row.groupIndex === index).map((row) => row.controller);
-          return {
-            ...group,
-            controllers: group.controllers.filter((row) => labels.includes(row.controller)),
-            trials: group.trials.filter((trial) => labels.includes(trial.controller)),
-            paired: group.paired.filter(
-              (pair) => labels.includes(pair.a) && labels.includes(pair.b),
-            ),
-          };
-        })
-        .filter((group) => group.controllers.length),
-      comparison_jobs: view.jobs.map((index) => report.jobs[index]),
-      all_supplied_jobs: report.jobs,
-      all_supplied_jobs_throughput: report.throughput,
-    };
-    exportFile(new Blob([json(output)], { type: "application/json" }), "json");
-  });
-  let closedForPrint = [];
-  window.addEventListener("beforeprint", () => {
-    closedForPrint = [$("trial-details"), $("tactical-details")].filter((node) => !node.open);
-    closedForPrint.forEach((node) => {
-      node.open = true;
-    });
-  });
-  window.addEventListener("afterprint", () => {
-    closedForPrint.forEach((node) => {
-      node.open = false;
-    });
-    closedForPrint = [];
-  });
-  $("print").addEventListener("click", () => window.print());
-  $("axis").addEventListener("change", renderChart);
-  $("scenario").addEventListener("change", (event) => loadView(Number(event.target.value)));
-  $("select-all").addEventListener("click", () => {
-    selected = new Set(rows.map((row) => row.id));
-    renderControllers();
-    renderSelection();
-  });
-  const banner = $("dataset-banner");
-  banner.textContent = synthetic
-    ? "SYNTHETIC DEMO — All values are invented to demonstrate the report. These are not recorded game results."
-    : "RECORDED EVIDENCE · Read status and sample size before comparing controllers. No composite score or overall ranking.";
-  if (synthetic) {
-    banner.classList.add("demo");
-    document.title = "SYNTHETIC DEMO — WH3 Benchmark Field Report";
-  }
-  const throughput = report.throughput || {},
-    interrupted = (report.jobs || []).filter((job) => job.recorded_status === "interrupted").length;
-  const totals = [
-    ["Scope", "All supplied jobs"],
-    [
-      "Valid / started battles",
-      `${throughput.valid_trials ?? "?"} / ${throughput.started_trials ?? "?"}`,
+  const NOTICE =
+    "SYNTHETIC DEMO: invented values that exercise the report; not benchmark evidence.";
+  const PROMPTS = {
+    llm: "tactics prompt",
+    llm_rules: "rules-only prompt",
+    commander: "commander with unit skills",
+  };
+  const SCRIPTED = {
+    attack_nearest: [
+      "Scripted: attack nearest, walking",
+      "every able unit attacks the nearest visible enemy, walking.",
     ],
-    ["Launched jobs / interruptions", `${report.jobs?.length ?? 0} / ${interrupted}`],
-    ["Job wall time · includes setup", `${fmt(throughput.job_wall_s, 2)} s`],
-    ["Valid battles / wall hour", fmt(throughput.valid_trials_per_wall_hour, 2)],
+    rush_nearest: [
+      "Scripted: attack nearest, running",
+      "every able unit attacks the nearest visible enemy, running.",
+    ],
+    hold: ["Scripted: hold position", "no unit ever receives an order."],
+  };
+  const FEATURED = {
+    selected: "Selected example",
+    first_model_run: "First completed model run",
+    first_run: "First recorded run",
+  };
+  const KINDS = {
+    plan: "Plan",
+    maneuver: "Maneuver",
+    turning_point: "Turning point",
+    trouble: "Trouble",
+    outcome: "Outcome",
+  };
+  const STILLS = {
+    opening: "Opening view",
+    approach: "Closing in",
+    incoming_fire: "Incoming fire",
+    first_contact: "First melee",
+    first_rout: "First rout",
+    ending: "Battle ending",
+  };
+  const STATES = [
+    ["destroyed", "#2b2b2b", "destroyed"],
+    ["routing", "#7a4f9a", "fleeing"],
+    ["wavering", "#cc79a7", "wavering"],
+    ["melee", "#d55e00", "fighting"],
+    ["under_fire", "#e8c547", "under fire"],
+    ["moving", "#8fb3c9", "moving"],
+    ["none", "#8a8f86", "no state flag"],
+    ["idle", "#c9c4b5", "idle"],
   ];
-  $("totals").append(
-    ...totals.map(([label, value]) => {
-      const node = el("div", undefined, "total-label");
-      node.append(el("strong", value), el("span", label));
-      return node;
+  const entries = new Map();
+  report.groups.forEach((group, g) =>
+    group.trials.forEach((trial, t) => {
+      const key = `g${g}-t${t}`;
+      entries.set(key, { key, trial, group, g });
     }),
   );
-  data.comparisons.forEach((comparison, index) => {
-    const d = comparison.definition,
-      s = d.scenario || {};
-    const option = el(
-      "option",
-      `${s.name || "Unlabelled"} · AI ×${s.expect?.ai_stats_modifier || "?"} · ${d.source ? `source ${String(d.source).slice(0, 7)}` : "catalogue"}${comparison.groups.length ? "" : " · Not measured yet"}`,
-    );
-    option.value = String(index);
-    $("scenario").append(option);
-  });
-  if (data.comparisons.length) loadView(0);
-  else {
-    $("status").textContent = "Not measured yet";
-    for (const id of ["scenario", "axis", "select-all", "export-data", "export-svg", "export-png"])
-      $(id).disabled = true;
+  const cache = new Map();
+  let scenario = null,
+    openKey = null,
+    payload = null,
+    featured = null,
+    cardSpans = [];
+
+  const isModel = (entry) =>
+    entry.trial.card?.kind === "model" || data.model_policies.includes(entry.trial.policy);
+  function controllerName(entry) {
+    const { trial, group } = entry,
+      card = trial.card || {};
+    let name;
+    if (isModel(entry)) {
+      const effort = card.effort || group.definition.effort;
+      name = [
+        card.model || group.definition.model,
+        effort && `${effort} reasoning`,
+        PROMPTS[trial.policy] || trial.policy,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+    } else name = SCRIPTED[trial.policy]?.[0] || trial.policy;
+    return trial.delay_ms ? `${name} · +${trial.delay_ms / 1000} s added delay` : name;
   }
+  function outcome(trial) {
+    if (!trial.valid)
+      return {
+        text: `Did not finish${trial.error ? `: ${trial.error}` : ""}`,
+        short: "Failed",
+        tone: "failed",
+      };
+    const engine = trial.engine_outcome || trial.outcome,
+      word = { won: "Won", lost: "Lost", draw: "Draw" }[engine] || capital(String(engine));
+    // One clock for every duration: the battle's own milliseconds where recorded.
+    const ms = trial.battle_ms ?? (trial.battle_s == null ? null : trial.battle_s * 1000),
+      duration = ms == null ? null : clock(ms);
+    const timeLimit = trial.ended_by === "time_limit";
+    const text = timeLimit
+      ? `${word} at the time limit${duration ? ` (${duration})` : ""}`
+      : duration
+        ? `${word} ${engine === "draw" ? "after" : "in"} ${duration}`
+        : word;
+    const short = `${duration ? `${word} ${duration}` : word}${timeLimit ? " (time limit)" : ""}`;
+    return { text, short, tone: engine };
+  }
+  function context(entry) {
+    const card = entry.trial.card || {},
+      kind = isModel(entry) ? "model" : card.kind === "scripted" ? "scripted" : "other";
+    const rule = SCRIPTED[entry.trial.policy]?.[1] || card.description?.split("\n")[0];
+    const label = kind === "scripted" && rule ? `Scripted rule: ${rule}` : rule;
+    return { kind, rule: label, synthetic };
+  }
+  function conditions(entry) {
+    const track = entry.group.definition.track || "",
+      kind = context(entry).kind;
+    const text = /obs-v3/.test(track) && /live-1x/.test(track);
+    let line;
+    if (kind === "scripted")
+      line = `${context(entry).rule}${text ? " It reads the same text observations as the model: enemy units are visible only while its army can see them" : ""}`;
+    else if (text)
+      line =
+        "Reads a text description of the battlefield, not images · the battle keeps running at 1× while the model thinks · enemy units are visible only while its army can see them";
+    else
+      line = `${entry.trial.card?.description || "Controller"} · interface ${track || "not recorded"}`;
+    if (entry.trial.delay_ms)
+      line += ` · observations delayed by +${entry.trial.delay_ms / 1000} s`;
+    return line;
+  }
+  function date(value) {
+    if (!value) return null;
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime())
+      ? value && String(value).toLowerCase()
+      : parsed.toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          timeZone: "UTC",
+        });
+  }
+  function rosterEntry(id) {
+    return payload?.roster.find((entry) => entry.id === id);
+  }
+  function unitChip(entry) {
+    const chip = button("", () => Viewer.select(entry.id, true), `unit-chip ${entry.side}`);
+    chip.append(glyph(entry.glyph), entry.display);
+    chip.title = `${entry.display} · ${entry.role}: select on the map`;
+    chip.setAttribute("aria-label", `Select ${entry.display} on the map`);
+    return chip;
+  }
+
+  async function decode(key) {
+    const encoded = data.replays[key];
+    if (!encoded) return null;
+    if (!cache.has(key))
+      cache.set(
+        key,
+        (async () => {
+          const bytes = Uint8Array.from(atob(encoded), (c) => c.charCodeAt(0));
+          const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+          return JSON.parse(await new Response(stream).text());
+        })(),
+      );
+    return cache.get(key);
+  }
+
+  function scenarioKeys() {
+    const groups = new Set(scenario.comparisons.flatMap((index) => data.comparisons[index].groups));
+    return [...entries.values()].filter((entry) => groups.has(entry.g));
+  }
+
+  function renderScenario(index) {
+    scenario = data.scenarios[index];
+    $("question").textContent = scenario.question || scenario.title;
+    $("challenge").textContent = scenario.challenge || "";
+    document.title = `${synthetic ? "SYNTHETIC DEMO — " : ""}${scenario.title} · WH3 AI commander benchmark`;
+    $("run-select").replaceChildren(
+      ...scenarioKeys().map((entry) => {
+        const view = data.comparisons.find((item) => item.groups.includes(entry.g));
+        const option = el(
+          "option",
+          `${controllerName(entry)} — ${outcome(entry.trial).text} · ${date(view?.created_at) || "undated"}`,
+        );
+        option.value = entry.key;
+        return option;
+      }),
+    );
+    renderCompare();
+    return openRun(scenario.featured, false);
+  }
+
+  function renderRunLine(entry) {
+    const line = $("run-line");
+    line.replaceChildren();
+    if (synthetic) line.append(el("span", "SYNTHETIC DEMO", "tag synthetic"));
+    if (entry.key === scenario.featured)
+      line.append(el("span", FEATURED[scenario.featured_reason], "tag"));
+    const result = outcome(entry.trial);
+    const row = entry.group.controllers.find((item) => item.controller === entry.trial.controller);
+    line.append(
+      el("strong", controllerName(entry), "name"),
+      el("span", result.text, `result ${result.tone}`),
+    );
+    if (row)
+      line.append(
+        el(
+          "span",
+          !entry.trial.valid
+            ? "Not counted in battles won: it did not finish"
+            : row.valid === 1
+              ? "Single recorded battle"
+              : `One of ${row.valid} recorded battles with this setup`,
+          "sample",
+        ),
+      );
+    const conditionsLine = $("conditions");
+    conditionsLine.replaceChildren(
+      `${conditions(entry).replace(/\.?$/, ".")} `,
+      el(
+        "span",
+        `The animated map is a rendering of recorded state, not the ${isModel(entry) ? "model" : "controller"}'s input.`,
+      ),
+    );
+  }
+
+  async function openRun(key, scroll) {
+    openKey = key;
+    const entry = entries.get(key);
+    $("run-select").value = key;
+    renderRunLine(entry);
+    markReplays();
+    $("download-replay").disabled = true;
+    $("watch-featured").hidden = true;
+    let decoded = null,
+      problem = null;
+    try {
+      decoded = await decode(key);
+    } catch (error) {
+      problem = `Replay unavailable: ${error.message}`;
+    }
+    if (openKey !== key) return;
+    payload = decoded;
+    if (payload?.frames?.length) Viewer.show(payload, context(entry));
+    else
+      Viewer.clear(
+        problem || "No replay was recorded for this battle; its result is in the table below.",
+      );
+    const highlights = payload?.highlights || [];
+    featured = highlights.find((h) => h.feature) || highlights[0] || null;
+    $("watch-featured").hidden = !featured;
+    $("watch-featured").textContent = featured?.feature
+      ? "▶ Watch the featured maneuver"
+      : "▶ Watch analyst note 1";
+    $("watch-full").disabled = !payload?.frames?.length;
+    $("download-replay").disabled = !payload;
+    renderHappened();
+    if (scroll) Viewer.reveal();
+  }
+
+  // Compare: one table per run set, one row per controller, one replay button per battle.
+  function runSet(index, several) {
+    const view = data.comparisons[index],
+      figure = el("figure", null, "run-set"),
+      caption = el("figcaption");
+    caption.append(el("strong", ["Run set", date(view.created_at)].filter(Boolean).join(" · ")));
+    const same =
+      {
+        true: "Controller code and prompts identical.",
+        false: "Controller code or prompts differ.",
+      }[view.same_controller] ?? "Controller code and prompts could not be compared.";
+    if (view.reference) {
+      if (several)
+        caption.append(
+          `The first set; it holds the ${FEATURED[scenario.featured_reason].toLowerCase()}.`,
+        );
+    } else if (view.differences.length)
+      caption.append(`Differs from the first set: ${view.differences.join(", ")}. ${same}`);
+    else caption.append(`Same recorded settings as the first set; a separate launch. ${same}`);
+    const table = el("table", null, "results"),
+      head = el("tr"),
+      body = el("tbody");
+    const columns = [
+      "Model / setup",
+      "Battles won",
+      "Typical order delay",
+      "Inference cost / battle",
+      "Replays",
+    ];
+    for (const name of columns) {
+      const th = el("th", name);
+      th.scope = "col";
+      head.append(th);
+    }
+    const rows = view.groups.flatMap((g) =>
+      report.groups[g].controllers.map((summary) => {
+        const items = [...entries.values()].filter(
+          (entry) => entry.g === g && entry.trial.controller === summary.controller,
+        );
+        return { g, summary, items, name: controllerName(items[0]), model: isModel(items[0]) };
+      }),
+    );
+    rows.sort((a, b) => b.model - a.model || a.name.localeCompare(b.name, "en", { numeric: true }));
+    for (const row of rows) {
+      const { summary, items } = row,
+        tr = el("tr");
+      tr.dataset.controller = summary.controller;
+      tr.dataset.group = row.g;
+      const cell = (label, ...content) => {
+        const td = el("td");
+        td.dataset.label = label;
+        td.append(...content);
+        tr.append(td);
+        return td;
+      };
+      cell(columns[0], row.name).className = "name";
+      const won = (summary.outcomes.won || 0) + (summary.time_limit_engine_outcomes?.won || 0);
+      const extras = [];
+      if (summary.outcomes.time_limit)
+        extras.push(`(${summary.outcomes.time_limit} at the time limit)`);
+      if (summary.trials > summary.valid) {
+        const reasons = [
+          ...new Set(
+            items.filter((e) => !e.trial.valid).map((e) => e.trial.error || e.trial.outcome),
+          ),
+        ];
+        extras.push(`+${summary.trials - summary.valid} failed: ${reasons.join("; ")}`);
+      }
+      // The interval leaves out time-limit wins, which Battles won counts.
+      if (summary.win_ci95 && summary.valid >= 5 && !summary.outcomes.time_limit)
+        extras.push(
+          `95% interval ${Math.round(summary.win_ci95[0] * 100)}–${Math.round(summary.win_ci95[1] * 100)}%`,
+        );
+      cell(
+        columns[1],
+        el("span", `${won} of ${summary.valid}`, "won-count"),
+        ...extras.map((text) => el("small", text, "extra")),
+      );
+      cell(
+        columns[2],
+        summary.order_age_median_s == null ? "not recorded" : seconds(summary.order_age_median_s),
+      );
+      const scripted = items.every((e) => e.trial.card?.kind === "scripted");
+      const known = items.every((e) => e.trial.llm?.usd != null);
+      cell(
+        columns[3],
+        scripted
+          ? "$0 (scripted)"
+          : known && summary.trials
+            ? money(summary.usd / summary.trials)
+            : "not recorded",
+      );
+      const replays = el("div", null, "replays");
+      for (const entry of items) {
+        const result = outcome(entry.trial);
+        if (data.replays[entry.key]) {
+          const watch = button(`${result.short} ▶`, () => openRun(entry.key, true));
+          watch.dataset.key = entry.key;
+          watch.setAttribute("aria-label", `Watch ${controllerName(entry)}: ${result.text}`);
+          replays.append(watch);
+        } else replays.append(el("span", `${result.short} · no replay`, "missing"));
+      }
+      cell(columns[4], replays);
+      body.append(tr);
+    }
+    const thead = el("thead");
+    thead.append(head);
+    table.append(thead, body);
+    figure.append(caption, table);
+    return { figure, rows };
+  }
+
+  function renderCompare() {
+    const box = $("run-sets");
+    box.replaceChildren();
+    // The set holding the featured run comes first; the others state how they differ from it.
+    const order = [...scenario.comparisons].sort(
+      (a, b) => data.comparisons[b].reference - data.comparisons[a].reference,
+    );
+    const all = [];
+    for (const index of order) {
+      const { figure, rows } = runSet(index, order.length > 1);
+      box.append(figure);
+      all.push(...rows);
+    }
+    const notes = [
+      "Typical order delay: for each battle, the median age of the battlefield view behind each batch of new orders when the game acknowledged it (battle clock); across battles, the median of those medians. The model's reply time is one part of it.",
+      "Inference cost / battle: recorded model API cost divided by battles started, failed ones included. Scripted controllers make no model calls.",
+    ];
+    const expect = scenario.expect || {};
+    if (expect.time_limit_s)
+      notes.push(
+        `Battles won counts the engine's result; the ${expect.player_defends ? "defender wins" : "attacker loses"} at the time limit (${clock(expect.time_limit_s * 1000)}) in this scenario.`,
+      );
+    const largest = Math.max(0, ...all.map((row) => row.summary.valid));
+    if (largest <= 1)
+      notes.push("Each row is one recorded battle: an example, not a success rate.");
+    else if (largest === 2)
+      notes.push("Each row holds at most two recorded battles: examples, not success rates.");
+    $("footnotes").replaceChildren(...notes.map((text) => el("li", text)));
+    const lines = [];
+    const own = scenario.setup_only_jobs.length;
+    if (own)
+      lines.push(
+        `${own} launch${own > 1 ? "es" : ""} of this scenario stopped during setup before any battle`,
+      );
+    const others = new Map();
+    for (const item of data.setup_only) others.set(item.title, (others.get(item.title) || 0) + 1);
+    for (const [title, n] of others)
+      lines.push(
+        `${n} launch${n > 1 ? "es" : ""} of ${title} stopped during setup before any battle`,
+      );
+    $("setup-only").textContent = lines.length ? `Not shown: ${lines.join("; ")}.` : "";
+    $("setup-only").hidden = !lines.length;
+  }
+  function markReplays() {
+    for (const node of document.querySelectorAll(".replays button"))
+      node.setAttribute("aria-current", String(node.dataset.key === openKey));
+  }
+
+  // What happened: analyst notes (or key events), game stills, all events, unit timelines.
+  // A card plays from `from` and stops at `stop` (null: the end); `moment` is its window and
+  // time. Watching note k emphasises its units; watching a key event emphasises none.
+  function momentCard(index, label, title, text, units, from, stop, moment, k) {
+    const item = el("li", null, "highlight"),
+      head = el("p", null, "label");
+    cardSpans[index] = moment;
+    head.append(el("span", String(index + 1), "number"), label);
+    item.append(head, el("h3", title));
+    if (text) item.append(el("p", text));
+    const chips = units.map(rosterEntry).filter(Boolean);
+    if (chips.length) {
+      const list = el("div", null, "chips");
+      list.append(...chips.map(unitChip));
+      item.append(list);
+    }
+    item.append(button(`▶ Watch from ${clock(from)}`, () => Viewer.watch(from, stop, k), "watch"));
+    return item;
+  }
+  function renderHappened() {
+    const list = $("highlights"),
+      intro = $("happened-intro");
+    list.replaceChildren();
+    cardSpans = [];
+    $("events").replaceChildren();
+    $("lanes").replaceChildren();
+    const ready = Boolean(payload?.frames?.length);
+    for (const id of ["events-box", "lanes-box"]) $(id).hidden = !ready;
+    $("stills-block").hidden = true;
+    if (!ready) {
+      intro.textContent = "No replay was recorded for this battle.";
+      return;
+    }
+    const highlights = payload.highlights || [];
+    if (highlights.length) {
+      intro.textContent =
+        "Analyst notes, written after reviewing this recording. Each opens the replay a little before the moment. The model's own words appear only inside quotation marks, attributed to it.";
+      highlights.forEach((h, k) =>
+        list.append(
+          momentCard(
+            k,
+            `Analyst note · ${KINDS[h.kind] || "Moment"} · ${clock(h.time_ms)}`,
+            h.title,
+            h.text,
+            h.units || [],
+            span(h).from,
+            h.end_ms ?? null,
+            { ...span(h), at: h.time_ms },
+            k,
+          ),
+        ),
+      );
+    } else {
+      const key = payload.events.filter((e) => e.key);
+      intro.textContent = key.length
+        ? "Key moments recorded in this battle. No analyst notes have been written for this run."
+        : "No analyst notes or key moments were recorded for this run.";
+      key.forEach((e, k) => {
+        const from = Math.max(0, e.time_ms - 10000),
+          to = e.time_ms + 5000;
+        list.append(
+          momentCard(
+            k,
+            `Recorded event · ${clock(e.time_ms)}`,
+            e.caption,
+            null,
+            e.unit ? [e.unit] : [],
+            from,
+            to,
+            { from, to, at: e.time_ms },
+          ),
+        );
+      });
+    }
+    const shots = (payload.stills || []).filter((shot) => shot.image && shot.status === "embedded");
+    $("stills-block").hidden = !shots.length;
+    $("stills").replaceChildren(
+      ...shots.map((shot) => {
+        const figure = el("figure"),
+          image = el("img"),
+          name = STILLS[shot.trigger] || "Game still";
+        const caption = `${name} · spectator camera at ${clock(shot.time_ms)} · not what the model saw`;
+        image.src = shot.image;
+        image.alt = `${name}: game still at ${clock(shot.time_ms)}`;
+        const thumb = button(
+          "",
+          () => {
+            $("still-image").src = shot.image;
+            $("still-image").alt = image.alt;
+            $("still-caption").textContent = caption;
+            $("still-dialog").showModal();
+          },
+          "thumb",
+        );
+        thumb.append(image);
+        thumb.setAttribute("aria-label", `Enlarge: ${caption}`);
+        const text = el("figcaption", caption);
+        text.append(
+          button(
+            `Show ${clock(shot.time_ms)} on the map`,
+            () => Viewer.jump(shot.time_ms, true),
+            "link",
+          ),
+        );
+        figure.append(thumb, text);
+        return figure;
+      }),
+    );
+    $("events-summary").textContent = `All recorded events (${payload.events.length})`;
+    $("events").replaceChildren(
+      ...payload.events.map((e) => {
+        const item = el("li", null, e.key ? "key" : null),
+          jump = button("", () => Viewer.jump(e.time_ms, true));
+        jump.append(el("b", clock(e.time_ms)), el("span", e.caption));
+        item.append(jump);
+        return item;
+      }),
+    );
+    renderLanes();
+    markHighlights(Viewer.time);
+  }
+  // One card at most is marked: the note the map caption shows, else the latest key event
+  // begun whose window holds the time.
+  function markHighlights(time) {
+    const marked = payload?.highlights?.length ? Viewer.note : markedAt(cardSpans, time);
+    [...$("highlights").children].forEach((card, k) =>
+      card.classList.toggle("active", k === marked),
+    );
+  }
+
+  function unitState(u) {
+    if (u.men === 0) return STATES[0];
+    if (!u.state?.length) return STATES.find(([key]) => key === "none");
+    return (
+      STATES.find(
+        ([key]) =>
+          (u.state || []).includes(key) ||
+          (key === "routing" && (u.state || []).includes("shattered")),
+      ) || STATES.at(-1)
+    );
+  }
+  // Unit timelines: one lane per unit, coloured by recorded state; blank where unobserved.
+  function renderLanes() {
+    const box = $("lanes");
+    box.replaceChildren();
+    if (!payload?.frames?.length || !$("lanes-box").open) return;
+    const frames = payload.frames.filter((f) => f.friendly.length || f.enemy.length);
+    if (!frames.length) return;
+    const width = Math.max(300, Math.round(box.clientWidth)),
+      label = Math.min(180, Math.round(width * 0.3)),
+      row = 18;
+    const t0 = frames[0].time_ms,
+      t1 = frames.at(-1).time_ms,
+      gap = 1.5 * (payload.sample_interval_ms || 1000);
+    const x = (t) => label + ((width - label - 8) * (t - t0)) / Math.max(1, t1 - t0);
+    const sides = [...new Set(frames.flatMap((f) => (f.mode?.tickets || []).map((t) => t.side)))];
+    const resources = [
+      ["Supplies", (f) => f.mode?.supplies],
+      ["Army currency", (f) => f.army?.currency],
+      ...sides.map((side) => [
+        `Tickets (${side})`,
+        (f) => f.mode?.tickets?.find((t) => t.side === side)?.tickets,
+      ]),
+    ].filter(([, pick]) => frames.some((f) => pick(f) != null));
+    const lanes = payload.roster.length + resources.length,
+      height = lanes * row + 24;
+    const chart = svg("svg", {
+      viewBox: `0 0 ${width} ${height}`,
+      role: "img",
+      "aria-label": "Recorded state of each unit over the battle",
+    });
+    chart.style.height = `${height}px`;
+    payload.roster.forEach((entry, k) => {
+      const y = k * row;
+      chart.append(
+        svg(
+          "text",
+          {
+            x: 0,
+            y: y + 12,
+            "font-size": 12,
+            fill: entry.side === "friendly" ? "#1c6a96" : "#8f5d00",
+          },
+          (entry.short === entry.display ? entry.display : `${entry.short} · ${entry.name}`).slice(
+            0,
+            Math.floor(label / 6.5),
+          ),
+        ),
+      );
+      frames.forEach((f, i) => {
+        const u = (entry.side === "friendly" ? f.friendly : f.enemy).find(
+          (item) => item.id === entry.id,
+        );
+        if (!u) return;
+        const next = frames[i + 1]?.time_ms ?? f.time_ms + 1000,
+          until = Math.min(next, f.time_ms + gap);
+        chart.append(
+          svg("rect", {
+            x: x(f.time_ms),
+            y: y + 3,
+            width: Math.max(1, x(until) - x(f.time_ms)),
+            height: row - 6,
+            fill: unitState(u)[1],
+          }),
+        );
+      });
+      for (const d of payload.decisions)
+        if (d.applied_ms != null && d.steps.some((s) => s.unit === entry.id))
+          chart.append(
+            svg("rect", {
+              x: x(d.applied_ms) - 0.5,
+              y: y + 1,
+              width: 1,
+              height: 3,
+              fill: d.steps.some((s) => s.unit === entry.id && s.status === "rejected")
+                ? "#ad3a2c"
+                : "#1d2521",
+            }),
+          );
+    });
+    resources.forEach(([name, pick], k) => {
+      const y = (payload.roster.length + k) * row,
+        values = frames.map((f) => [f.time_ms, pick(f)]).filter(([, v]) => v != null);
+      const top = Math.max(1, ...values.map(([, v]) => v));
+      chart.append(
+        svg("text", { x: 0, y: y + 12, "font-size": 12, fill: "#39423d" }, `${name} (0–${top})`),
+        svg("polyline", {
+          points: values
+            .map(([t, v]) => `${x(t)},${y + row - 3 - ((row - 6) * v) / top}`)
+            .join(" "),
+          fill: "none",
+          stroke: "#39423d",
+          "stroke-width": 1.2,
+        }),
+      );
+    });
+    for (let m = Math.ceil(t0 / 60000); m * 60000 <= t1; m++)
+      chart.append(
+        svg(
+          "text",
+          {
+            x: x(m * 60000),
+            y: height - 6,
+            "font-size": 10,
+            fill: "#61675f",
+            "text-anchor": "middle",
+          },
+          `${m}:00`,
+        ),
+      );
+    chart.addEventListener("click", (event) => {
+      const rect = chart.getBoundingClientRect(),
+        at = ((event.clientX - rect.left) * width) / rect.width;
+      if (at < label) return;
+      Viewer.jump(t0 + ((at - label) / (width - label - 8)) * (t1 - t0), true);
+    });
+    const legend = el("p", null, "note");
+    for (const [, colour, name] of STATES) {
+      const swatch = svg("svg", {
+        viewBox: "0 0 10 10",
+        width: 10,
+        height: 10,
+        "aria-hidden": "true",
+      });
+      swatch.append(svg("rect", { width: 10, height: 10, fill: colour }));
+      legend.append(swatch, ` ${name}  `);
+    }
+    legend.append(
+      "· Blank: not observed. Ticks mark new orders (red: rejected). Click a lane to jump there.",
+    );
+    box.append(chart, legend);
+  }
+
+  // Run settings: everything about the run in the viewer that the main reading path omits.
+  function openSettings() {
+    const entry = entries.get(openKey);
+    if (!entry) return;
+    const { trial, group } = entry,
+      definition = group.definition,
+      declared = definition.scenario || {},
+      expect = declared.expect || {};
+    const role =
+      declared.attacker === "player"
+        ? "attacker"
+        : declared.attacker === "enemy"
+          ? "defender"
+          : expect.player_defends == null
+            ? null
+            : expect.player_defends
+              ? "defender"
+              : "attacker";
+    const recorder = definition.recorder,
+      imagery = definition.imagery;
+    const body = $("settings-body");
+    body.replaceChildren(
+      keyValues([
+        ["Scenario", `${scenario.title} (${declared.name || scenario.name})`],
+        ["Map", declared.map],
+        ["Battle timer", expect.time_limit_s == null ? null : clock(expect.time_limit_s * 1000)],
+        [
+          "Enemy AI",
+          [
+            expect.difficulty && expect.difficulty.replace(/^ai_level_/, "").replaceAll("_", " "),
+            expect.ai_stats_modifier && `stats ×${expect.ai_stats_modifier}`,
+          ]
+            .filter(Boolean)
+            .join(" · "),
+        ],
+        ["Player role", role],
+        [
+          "Controller",
+          [
+            controllerName(entry),
+            `policy ${trial.policy}`,
+            trial.card?.timing === "blocking"
+              ? "waits for each reply before reading the battle again; the battle keeps running at 1×"
+              : trial.card?.timing,
+          ]
+            .filter(Boolean)
+            .join(" · "),
+        ],
+        ["Added observation age", `${(trial.delay_ms || 0) / 1000} s`],
+        ["Interface track", definition.track],
+        [
+          "Observation interval",
+          definition.observe_ms == null
+            ? null
+            : `${definition.observe_ms} ms (mod tick ${definition.tick_ms ?? "?"} ms, wait after orders ${definition.interval_ms ?? "?"} ms)`,
+        ],
+        [
+          "Replay recorder",
+          recorder == null
+            ? "not recorded"
+            : recorder.enabled
+              ? `on, every ${recorder.interval_ms} ms`
+              : "off",
+        ],
+        [
+          "Game stills",
+          imagery == null
+            ? "not recorded"
+            : imagery.enabled
+              ? `on (up to ${imagery.max_stills ?? "?"}; never shown to the controller)`
+              : "off",
+        ],
+        ["Source revision", definition.source],
+        ["Game build", definition.game?.steam_build_id],
+        ["Job and episode", `${trial.instance} / ${trial.episode}`],
+        ["Setup checked", trial.setup_checked == null ? null : trial.setup_checked ? "yes" : "no"],
+        ["Recording warnings", payload ? payload.warnings.length : "no replay"],
+      ]),
+    );
+    if (declared.brief)
+      body.append(details("Scenario brief, as declared", el("p", declared.brief)));
+    // Before c916e6c a single-policy job saved its one prompt as system_prompt.md.
+    const files = data.prompts?.[trial.instance] || {},
+      prompt = files[`${trial.policy}_prompt.md`] ?? files["system_prompt.md"];
+    if (isModel(entry) && prompt != null)
+      body.append(
+        details(
+          `Prompt the model received (${PROMPTS[trial.policy] || trial.policy})`,
+          el("pre", prompt, "raw"),
+        ),
+      );
+    $("settings-dialog").showModal();
+  }
+
+  function downloads() {
+    $("download-report").addEventListener("click", () => {
+      saveJSON(
+        {
+          ...(synthetic ? { notice: NOTICE } : {}),
+          evidence_kind: data.evidence_kind,
+          report,
+          comparisons: data.comparisons,
+          scenarios: data.scenarios,
+          setup_only: data.setup_only,
+        },
+        `wh3-${synthetic ? "SYNTHETIC-DEMO-" : ""}report.json`,
+      );
+      $("export-status").textContent = "Report JSON download ready.";
+    });
+    $("download-replay").addEventListener("click", () => {
+      const entry = entries.get(openKey);
+      if (!payload || !entry) return;
+      saveJSON(
+        {
+          ...(synthetic ? { notice: NOTICE } : {}),
+          evidence_kind: data.evidence_kind,
+          trial: entry.trial,
+          replay: payload,
+        },
+        `wh3-${synthetic ? "SYNTHETIC-DEMO-" : ""}replay-${entry.trial.instance}-${entry.trial.episode}.json`,
+      );
+      $("export-status").textContent = "Replay JSON download ready.";
+    });
+  }
+
+  function setup() {
+    if (synthetic) $("demo-banner").hidden = false;
+    $("watch-featured").addEventListener("click", () => {
+      if (featured)
+        Viewer.watch(
+          span(featured).from,
+          featured.end_ms ?? null,
+          payload.highlights.indexOf(featured),
+        );
+    });
+    $("watch-full").addEventListener("click", () => Viewer.watch(0));
+    $("run-select").addEventListener("change", (e) => openRun(e.target.value, false));
+    $("open-settings").addEventListener("click", openSettings);
+    $("close-settings").addEventListener("click", () => $("settings-dialog").close());
+    $("close-still").addEventListener("click", () => $("still-dialog").close());
+    $("lanes-box").addEventListener("toggle", renderLanes);
+    let laneWidth = 0;
+    new ResizeObserver(() => {
+      const width = Math.round($("lanes").clientWidth);
+      if (width !== laneWidth) {
+        laneWidth = width;
+        renderLanes();
+      }
+    }).observe($("lanes"));
+    Viewer.onTime(markHighlights);
+    downloads();
+    if (!data.scenarios.length) {
+      $("question").textContent = "No recorded battles in this report";
+      for (const id of ["viewer", "happened", "compare"]) $(id).hidden = true;
+      for (const id of [
+        "watch-featured",
+        "watch-full",
+        "run-select",
+        "open-settings",
+        "download-replay",
+      ])
+        $(id).disabled = true;
+      return;
+    }
+    if (data.scenarios.length > 1) {
+      $("scenario").replaceChildren(
+        ...data.scenarios.map((item, index) => {
+          const option = el("option", item.title);
+          option.value = String(index);
+          return option;
+        }),
+      );
+      $("scenario").addEventListener("change", (e) => renderScenario(Number(e.target.value)));
+      $("scenario-pick").hidden = false;
+    }
+    renderScenario(0);
+  }
+  setup();
 })();

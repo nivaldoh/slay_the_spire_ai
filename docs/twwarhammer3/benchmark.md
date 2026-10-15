@@ -116,8 +116,9 @@ controlled; rotating controllers within a launch spreads their variance.
 controller decides on the newest buffered public snapshot at least D battle seconds old,
 which stays its basis, so `delay_ms` remains the true age. The first D seconds fill the
 buffer without decisions. D is a minimum: a blocking call leaves gaps in the buffer, so
-the report gives the actual snapshot age at decision beside the order age. D = 0 is the
-natural latency, not zero latency. Arms are never pooled with each other.
+the text and JSON reports give the actual snapshot age at decision beside the order
+age. D = 0 is the natural latency, not zero latency. Arms are never pooled with each
+other.
 
 ## Scenarios
 
@@ -243,9 +244,13 @@ effort; never pooled):
   per battle second, rejections by validation or engine code, protected-unit survival,
   objective shares held (integrated on engine ticks), supplies left, accepted builds and
   reinforcements by type, tokens, USD, wall seconds and clock ratio;
+- per controller, the median of its trials' median order ages (the HTML page's typical
+  order delay);
 - throughput: valid trials per job wall hour, counting setup, resets and failed jobs.
 
-Every report ends with the limitations stated in `report.collect`.
+The text and JSON reports end with the limitations stated in `report.collect`. The HTML
+page shows outcomes, the typical order delay and cost per battle, and leaves the margin,
+paired differences and limitations to those files ([reports.md](reports.md)).
 
 Reproducibility promises the same declared scenario checked in every job, the same start
 for every controller within a launch (fingerprint reported), and records that recompute
@@ -337,6 +342,94 @@ and `g1-cavalry-plan-state.json`; stop note `g1-owner-stop.json`. Partial report
 driver `calibration/run-g1.py`, with `audit-g1.py` checking admission. A resumed plan
 would run through `scripts/wh3_queue.py` ([benchmark-run.md](benchmark-run.md#running-a-plan)),
 which does not apply the start-flag stop rule; that needs a separate audit step.
+
+## Calibration: options for the owner's discussion (2026-10-15)
+
+A proposal, not a plan: nothing below runs until the owner decides. It answers the five
+questions the owner asked before any further calibration (objective, reference,
+thresholds, trial count, cost) from the evidence already recorded. No game ran and no
+model was called to write it.
+
+**What the register already shows** on the cavalry assault (development screens and G1,
+three source revisions, so descriptive only and never pooled into a result):
+
+| Controller | `brt-cavalry-emp-assault` (AI ×1.0) | `-hard` (AI ×1.1) |
+|---|---|---|
+| `llm_rules`, Sol low | won 3 of 3: 432, 528 and 382 s; $0.62-0.79 a battle | not played |
+| `llm_rules`, Luna low | lost 1 of 1 (247 s); $0.02 | lost 1 of 1 (271 s) |
+| `llm_rules`, Luna medium | lost 1 of 1 (214 s) | lost 1 of 1 (342 s) |
+| run-nearest | lost 4 of 4 | lost 1 of 1 |
+| walk-nearest | lost 2 of 2 (one more ended in an infrastructure failure) | lost 1 of 1 |
+| `hold` | lost 2 of 2 at the timer | lost 1 of 1 at the timer |
+
+At ×1.0 the scenario already separates Sol from Luna and from the scripted baselines on
+the outcome alone. Sol's 3 of 3 is compatible with any win rate from 44% to 100% (95%
+Wilson), so ×1.0 may sit at Sol's ceiling, which the admission rule's 30-70% band was
+meant to avoid; ×1.1 has never been played by Sol.
+
+**1. Objective.** Proposed: decide whether one variant *discriminates*: the reference
+wins sometimes but not always, while the cheaper model and the scripted baselines
+rarely win. The recorded G1/G2 plan remains the alternative.
+
+**2. Primary measure and thresholds.** The report redesign retired the active-strength
+margin as a headline: it counts routing men as lost and weighs a cannon crew like a
+lord. Proposed: the engine outcome before the timer is primary (wins out of battles,
+with the time-limit rule stated), battle length and protected-unit survival are
+descriptive, and the margin stays in the JSON. Admission rule 2 (paired margin interval
+above zero) would become: every scripted baseline wins none of its battles and the
+reference's wins exceed the best baseline's. Rule 1 (reference between 30 and 70%)
+stays.
+
+**3. Reference and rows.** `llm_rules` on `gpt-6-sol`, low effort, unchanged prompt;
+`gpt-6-luna` low on the same prompt as a cheap second model row; run-nearest and
+walk-nearest as baselines. `hold` is dropped: it can only lose at the timer, which is
+already shown.
+
+**4. Variant and trial count.** Proposed: ×1.1 first, six launches, each rotating the
+four controllers (24 battles: 6 per row). Reading it: Sol 2-4 of 6 with the baselines at
+0 admits ×1.1; Sol 5-6 of 6 means both settings are likely too easy for Sol, and the
+next step is a harder declaration (for example the Pegasus general variant) rather than
+more trials; Sol 0-1 of 6 means ×1.0 is the setting to repeat. Six battles a row detect
+only large gaps (2 of 6 against 0 of 6 is not significant on its own), so a second
+block of six would follow before any claim beyond "admitted for development".
+
+**5. Cost and time.** Sol: 6 × about $0.70 = about $4.20 (the 1077 s caster battle cost
+$1.78, so a long battle can double it); Luna: 6 × about $0.02. The WH3 ledger held
+$7.7949 of $25 on 2026-10-15, so the block fits with about $12.8 to spare. Machine time:
+a G1 launch of three battles took 23 minutes; four battles about 30 minutes, so about 3
+hours for six launches, unattended.
+
+**6. A controller fix to decide first.** In the G1 Sol battle the first observation
+after the opening orders (taken the instant they applied, before any unit moved) told
+the model all six units had "stopped 300-350 m short", and it re-issued every route at
+0:12, 0:20 and 0:30. The fix is on branch `wh3-llm-fresh-move`, unmerged: it changes
+prompt text, so `llm` and `llm_rules` would get a new version and Sol results before
+it would not pool with results after it. Proposed: merge it before the block above,
+because a resumed calibration starts a new run set anyway.
+
+**7. Delay (G2) afterwards.** With a win/loss outcome, three arms of six launches can
+detect only a collapse. Proposed: run G2 only on an admitted variant, read it on wins
+and battle length, and size it after the block above shows the reference's win rate.
+
+## Experiments the report should eventually present (definitions only)
+
+From the report brief's section 10; none is built or scheduled.
+
+- **Army size.** The cavalry assault at about ×0.5 (3 against 4 units), ×1 (6 against
+  8) and ×2 (12 against 16), same composition ratios, map and timer, funds scaled. The
+  axis is the number of units the controller commands, the lord counted as one. Each
+  size is screened with the same reference and the two scripted baselines, because
+  larger forces also change density, contact timing and the AI's behaviour on a fixed
+  map. Observation tokens, reply time and order age are recorded beside the outcome, and
+  a drop is reported as end-to-end degradation, not as a reasoning limit. Needs three new
+  declarations and a lobby check of funds and unit caps.
+- **Context.** One change per comparison on one scenario and model, for example adding
+  the report's one-line unit roles to the observation against raw unit names. Reported
+  with tokens, reply time and cost beside outcomes; the viewer's role text never reaches
+  a controller unless it is the treatment.
+- **Delay.** G2 above: added observation age (`--delay-seconds`), which is not the same
+  intervention as a slower model; natural latency differences between models stay
+  observations, not a dose-response curve.
 
 ## Later
 

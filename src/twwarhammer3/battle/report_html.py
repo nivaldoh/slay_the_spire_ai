@@ -1,8 +1,11 @@
 """Offline presentation of report.collect output; no statistical recomputation.
 
-Evidence groups remain intact. The comparison selector may place groups beside one
-another when only their requested model/effort differs, never pool their samples.
-Recorded game stills are embedded as WebP, which needs Pillow.
+Evidence groups remain intact. A comparison view may place groups beside one another
+when only their requested model/effort differs, never pool their samples. Views are
+grouped by scenario, each with a featured trial chosen by the curated notes or by
+chronology, never by outcome. Reader-facing scenario and unit text comes from
+configs/twwarhammer3/report_notes.json. Recorded game stills are embedded as WebP,
+which needs Pillow.
 """
 
 import base64
@@ -13,11 +16,19 @@ import json
 import re
 from pathlib import Path
 
-from twwarhammer3.battle import replay, setup
+from gameai.provenance import REPO_ROOT
+from twwarhammer3.battle import replay
 from twwarhammer3.battle.controllers import MODEL_POLICIES
 
 ASSETS = Path(__file__).with_name("report_assets")
+NOTES_PATH = REPO_ROOT / "configs/twwarhammer3/report_notes.json"
 MAX_STILL_BYTES = 256 * 1024
+# Definition fields a comparison view can differ in, in reading order; plain settings
+# are written with their label.
+DIFFERENCES = ("source", "game", "track", "recorder", "imagery", "observe_ms", "tick_ms",
+               "interval_ms", "scenario")
+SETTINGS = {"track": "track {}", "observe_ms": "observation interval {} ms",
+            "tick_ms": "mod tick {} ms", "interval_ms": "wait after orders {} ms"}
 
 
 def _json(value: object) -> str:
@@ -102,7 +113,80 @@ def stills(episode: Path, entries: list[dict], *, embed: bool) -> list[dict]:
     return output
 
 
-def display_data(report: dict, scenarios: dict | None = None) -> dict:
+def _group(key: str) -> int:
+    return int(key[1:].split("-")[0])  # "g2-t5" -> 2
+
+
+def _model_trial(trial: dict) -> bool:
+    return (trial.get("card") or {}).get("kind") == "model" or trial["policy"] in MODEL_POLICIES
+
+
+def _title(note: dict, scenario: dict) -> str:
+    return (note.get("title") or scenario.get("family") or scenario.get("name")
+            or "No scenario recorded")
+
+
+def _chronology(report: dict):
+    """Trials by key, and their order by job start, then episode: never by outcome."""
+    created = {job["instance"]: job.get("created_at") for job in report.get("jobs", [])}
+    trials = {f"g{g}-t{t}": trial for g, group in enumerate(report["groups"])
+              for t, trial in enumerate(group["trials"])}
+    return trials, lambda key: (created.get(trials[key]["instance"]) or "~",
+                                trials[key]["episode"], trials[key]["instance"])
+
+
+def _differences(definition: dict, reference: dict) -> list[str]:
+    """What a comparison view changes relative to its scenario's reference view."""
+    changes = []
+    for key in DIFFERENCES:
+        value, base = definition.get(key), reference.get(key)
+        if value == base:
+            continue
+        if key in ("recorder", "imagery"):
+            on = bool((value or {}).get("enabled"))
+            if on == bool((base or {}).get("enabled")):
+                continue  # a setting change that does not turn it on or off
+        if key == "source":
+            changes.append("a different code revision")  # the full revision is in Run settings
+        elif key == "game":
+            changes.append(f"game build {(value or {}).get('steam_build_id')}")
+        elif key == "recorder":
+            changes.append((f"{1000 / value['interval_ms']:g} Hz replay recorder on"
+                            if value.get("interval_ms") else "replay recorder on") if on
+                           else "no replay recorder (positions only at the controller's "
+                                "observations)")
+        elif key == "imagery":
+            changes.append("game stills on (scripted camera moves during the battle)" if on
+                           else "no game stills (the first set also moved the game camera "
+                                "during the battle to take them)")
+        elif key == "scenario":
+            changes.append("scenario definition differs")
+        else:
+            changes.append(SETTINGS[key].format(value))
+    return changes
+
+
+def _controller(view: dict, report: dict) -> tuple[set, set]:
+    """Model controller source hashes and prompt hashes of the jobs a view's trials ran in."""
+    trials = [trial for index in view["groups"] for trial in report["groups"][index]["trials"]]
+    instances = {trial["instance"] for trial in trials}
+    cards = {(trial.get("card") or {}).get("source_sha256") for trial in trials
+             if _model_trial(trial)}
+    prompts = {value for job in report.get("jobs", []) if job["instance"] in instances
+               for value in ((job.get("provenance") or {}).get("prompt_sha256") or {}).values()}
+    return cards, prompts
+
+
+def _same_controller(view: dict, reference: dict, report: dict) -> bool | None:
+    """False when the known code or prompt hashes differ, True when both are known and
+    match, None otherwise."""
+    matches = [ours == theirs for ours, theirs in zip(_controller(view, report),
+                                                      _controller(reference, report))
+               if ours and theirs and None not in ours | theirs]
+    return False if False in matches else True if len(matches) == 2 else None
+
+
+def display_data(report: dict, notes: dict | None = None) -> dict:
     kind = report.get("evidence_kind", "recorded")
     if kind not in {"recorded", "synthetic"}:
         raise ValueError("unknown evidence kind")
@@ -110,6 +194,7 @@ def display_data(report: dict, scenarios: dict | None = None) -> dict:
         if item.get("evidence_kind", "recorded") != kind:
             raise ValueError("synthetic and recorded evidence must use separate reports")
     data = _portable(report)
+    notes = notes or {}
     comparisons, keys, instances = [], {}, {}
 
     def comparison(definition, fallback):
@@ -137,7 +222,8 @@ def display_data(report: dict, scenarios: dict | None = None) -> dict:
             if len(cards) > 1:
                 raise ValueError(f"mixed controller identities in {row['controller']}")
 
-    for index, job in enumerate(data.get("jobs", [])):
+    jobs = data.get("jobs", [])
+    for index, job in enumerate(jobs):
         view = instances.get(job["instance"])
         if view is None:
             definition = job.get("definition")
@@ -148,27 +234,80 @@ def display_data(report: dict, scenarios: dict | None = None) -> dict:
             view = comparison(definition, f"job-{index}")
         view["jobs"].append(index)
 
-    recorded_names = {view["definition"].get("scenario", {}).get("name") for view in comparisons}
-    if kind == "recorded":
-        for name, scenario in sorted((scenarios or {}).items()):
-            if scenario.get("status") and name not in recorded_names:
-                comparisons.append({"id": f"comparison-{len(comparisons) + 1}",
-                                    "definition": {"scenario": {**scenario, "name": name}},
-                                    "groups": [], "jobs": [],
-                                    "metadata_origin": "Current catalogue · unrun placeholder"})
+    for view in comparisons:
+        dates = [jobs[index].get("created_at") for index in view["jobs"]]
+        source = view["definition"].get("source")
+        view.update(created_at=min((date for date in dates if date), default=None),
+                    source_short=(str(source)[:7]
+                                  if re.fullmatch(r"[0-9a-f]{7,40}", str(source)) else None),
+                    differences=[], same_controller=None, reference=False)
+
+    # Scenarios with at least one started trial, each with its featured trial.
+    trials, chronology = _chronology(data)
+    runs, scenario_notes = notes.get("runs") or {}, notes.get("scenarios") or {}
+    by_name = {}
+    for index, view in enumerate(comparisons):
+        if view["groups"]:
+            by_name.setdefault(view["definition"].get("scenario", {}).get("name"), []).append(index)
+    scenarios = []
+    for name, indexes in by_name.items():
+        scenario = comparisons[indexes[0]]["definition"].get("scenario") or {}
+        note = scenario_notes.get(name) or {}
+        group_view = {group: index for index in indexes for group in comparisons[index]["groups"]}
+        options = [key for key in trials if _group(key) in group_view]
+        selected = [key for key in options if (runs.get(
+            f"{trials[key]['instance']}/{trials[key]['episode']}") or {}).get("selected") is True]
+        models = [key for key in options if trials[key]["valid"] and _model_trial(trials[key])]
+        reason, pool = next((reason, pool) for reason, pool in (
+            ("selected", selected), ("first_model_run", models), ("first_run", options)) if pool)
+        featured = min(pool, key=chronology)
+        reference = comparisons[group_view[_group(featured)]]
+        reference["reference"] = True  # the run set holding the featured run
+        for index in indexes:
+            if comparisons[index] is not reference:
+                comparisons[index]["differences"] = _differences(
+                    comparisons[index]["definition"], reference["definition"])
+            comparisons[index]["same_controller"] = _same_controller(
+                comparisons[index], reference, data)
+        scenarios.append({
+            "id": f"scenario-{len(scenarios) + 1}", "name": name,
+            "title": _title(note, scenario),
+            "question": note.get("question"),
+            "challenge": note.get("challenge") or scenario.get("brief"),
+            "brief": scenario.get("brief"), "expect": scenario.get("expect"),
+            "comparisons": indexes, "featured": featured, "featured_reason": reason,
+            "setup_only_jobs": []})
+    scenarios.sort(key=lambda entry: (entry["featured_reason"] != "selected", str(entry["name"])))
+
+    # Jobs that stopped before any battle: beside their scenario, or on their own.
+    started = {trial["instance"] for trial in trials.values()}
+    setup_only = []
+    for index, job in enumerate(jobs):
+        if job["instance"] in started:
+            continue
+        scenario = (job.get("definition") or {}).get("scenario") or {}
+        name = scenario.get("name")
+        entry = next((entry for entry in scenarios if entry["name"] == name), None)
+        if entry:
+            entry["setup_only_jobs"].append(index)
+        else:
+            setup_only.append({"job": index, "scenario": name,
+                               "title": _title(scenario_notes.get(name) or {}, scenario)})
     return {"schema": 1, "evidence_kind": kind, "report": data, "comparisons": comparisons,
+            "scenarios": scenarios, "setup_only": setup_only,
             "model_policies": sorted(MODEL_POLICIES)}
 
 
-def render(report: dict, scenarios: dict | None = None) -> str:
-    data = display_data(report, scenarios)
-    payloads, prompts, trials, directories = {}, {}, {}, {}
+def render(report: dict, notes: dict | None = None) -> str:
+    data = display_data(report, notes)
+    runs = (notes or {}).get("runs") or {}
+    trials, chronology = _chronology(data["report"])
+    payloads, prompts, directories = {}, {}, {}
     for group_index, group in enumerate(report["groups"]):
         for trial_index, trial in enumerate(group["trials"]):
             key = f"g{group_index}-t{trial_index}"
             job = Path(trial["instance"])
             directory = job / trial["episode"]
-            trials[key] = trial
             directories[key] = directory
             payload = None
             if data["evidence_kind"] == "synthetic":
@@ -176,33 +315,22 @@ def render(report: dict, scenarios: dict | None = None) -> str:
                 if payload and payload.get("evidence_kind") != "synthetic":
                     raise ValueError("synthetic replay must carry its evidence label")
             elif (directory / "trace.jsonl").exists() and (job / "manifest.json").exists():
-                payload = replay.build(directory)
-                portable_job = data["report"]["groups"][group_index]["trials"][trial_index][
-                    "instance"]
-                if portable_job not in prompts:
-                    prompts[portable_job] = {path.name: path.read_text() for path in
-                                             sorted(job.glob("*prompt.md"))}
+                payload = replay.build(directory, notes=notes)
+                if trials[key]["instance"] not in prompts:
+                    prompts[trials[key]["instance"]] = {path.name: path.read_text() for path in
+                                                        sorted(job.glob("*prompt.md"))}
             if payload is not None:
-                payloads[key] = payload
+                run = runs.get(f"{trials[key]['instance']}/{trial['episode']}") or {}
+                payloads[key] = {**payload, "highlights": run.get("highlights") or [],
+                                 "selected": run.get("selected") is True}
 
-    def chronology(key):
-        return (payloads.get(key, {}).get("created_at") or "~",
-                trials[key]["episode"], trials[key]["instance"])
-
-    featured = {}
     pictured = set()
     for view in data["comparisons"]:
-        keys = [key for key in trials if int(key.split("-", 1)[0][1:]) in view["groups"]]
-        completed_models = [key for key in keys if trials[key]["valid"] and (
-            (trials[key].get("card") or {}).get("kind") == "model" or
-            trials[key]["policy"] in MODEL_POLICIES)]
-        featured[view["id"]] = min(completed_models, key=chronology) if completed_models else (
-            keys[0] if keys else None)
+        keys = [key for key in trials if _group(key) in view["groups"]]
         for controller in {trials[key]["controller"] for key in keys}:
             same = [key for key in keys if trials[key]["controller"] == controller]
             complete = [key for key in same if trials[key]["valid"]]
-            if same:
-                pictured.add(min(complete or same, key=chronology))
+            pictured.add(min(complete or same, key=chronology))
     for key, payload in payloads.items():
         still_path = directories[key] / "stills.json"
         if data["evidence_kind"] == "recorded" and still_path.exists():
@@ -212,7 +340,7 @@ def render(report: dict, scenarios: dict | None = None) -> str:
                 for key, payload in payloads.items()}
     # Replay evidence has its own compressed envelope; collector statistics stay intact.
     data["report"].pop("replays", None)
-    data.update(replays=payloads, prompts=prompts, featured=featured)
+    data.update(replays=payloads, prompts=prompts)
     encoded = _json(data)
     for character, escaped in (("&", "\\u0026"), ("<", "\\u003c"), (">", "\\u003e"),
                                ("\u2028", "\\u2028"), ("\u2029", "\\u2029")):
@@ -227,6 +355,6 @@ def render(report: dict, scenarios: dict | None = None) -> str:
 
 
 def write(path: Path, report: dict) -> None:
-    html = render(report, setup.scenarios())
+    html = render(report, json.loads(NOTES_PATH.read_text()))
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(html, encoding="utf-8")

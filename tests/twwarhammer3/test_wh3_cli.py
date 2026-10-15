@@ -8,7 +8,7 @@ import pytest
 from wh3_fixtures import configured_job, embedded, make_job
 
 from twwarhammer3.__main__ import add_session_arguments, main
-from twwarhammer3.battle import play, report, setup
+from twwarhammer3.battle import play, report
 from twwarhammer3.battle.llm import LEDGER_PATH
 from twwarhammer3.battle.scripted import Hold
 from twwarhammer3.battle.stats import RESULTS_PATH
@@ -100,7 +100,6 @@ def test_report_command_collects_once_and_writes_json_text_and_html(tmp_path, mo
         return source
 
     monkeypatch.setattr(report, "collect", collect)
-    monkeypatch.setattr(setup, "scenarios", dict)
     stem = tmp_path / "nested/report"
     monkeypatch.setattr("sys.argv", ["wh3", "report", "a", "--output", str(stem)])
     assert main() == 0

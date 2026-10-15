@@ -62,7 +62,8 @@ configs/
   llm/             Spire: full-run system prompt and enemy rules notes (its tuning surface)
   suites/          Spire: first-combat suite and catalog declarations
   twwarhammer3/    WH3: system_prompt.md (llm), rules_prompt.md (llm_rules),
-                   commander_prompt.md, scenarios.json, custom_battle.json (random draws)
+                   commander_prompt.md, scenarios.json, custom_battle.json (random draws),
+                   report_notes.json (the report's scenario, unit and highlight text)
 scripts/           Spire first-combat tools (inventory, audits, dataset export, training
                    drivers, plots); wh3_queue.py runs a frozen plan of WH3 play jobs
 tests/             One directory per package; tests/fixtures holds Spire engine transitions;

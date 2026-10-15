@@ -4,97 +4,123 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-@@SCRIPT_HASH@@'; style-src 'unsafe-inline'; img-src data: blob:; base-uri 'none'; form-action 'none'">
-  <title>WH3 Benchmark — Field Report</title>
+  <title>WH3 AI commander benchmark</title>
   <style>@@STYLE@@</style>
 </head>
 <body>
-  <a class="skip" href="#comparison">Skip to controller comparison</a>
-  <header class="masthead">
-    <div class="edition"><span class="insignia" aria-hidden="true">◇</span> ORIGINAL ENGINE / REAL-TIME TACTICS <span>RESEARCH SERIES · WH3</span></div>
-    <div class="hero">
-      <div><p class="eyebrow">TOTAL WAR: WARHAMMER III</p><h1>Benchmark <em>Field Report</em></h1>
-      <p class="intro">Tactical challenges in the original game. Controllers command through a Lua interface while battle continues at 1× speed. Every order arrives with a measured information age.</p></div>
-      <svg class="map-mark" viewBox="0 0 240 170" aria-hidden="true"><g fill="none" stroke="currentColor"><path d="M8 125Q30 20 120 35T235 18M8 145Q47 35 130 55T238 40M30 170Q55 55 143 75T238 65M64 170Q75 85 155 98T238 90M112 170Q100 110 170 120T238 115" opacity=".35"/><path d="M110 10v145M35 90h150" stroke-dasharray="3 7"/><path d="m110 40 12 34-12-6-12 6Z"/><path d="m73 114 8-8 8 8-8 8Zm61 7 8-8 8 8-8 8Z"/><circle cx="110" cy="90" r="37"/></g></svg>
+  <svg class="glyph-defs" aria-hidden="true" focusable="false">
+    <symbol id="glyph-general" viewBox="0 0 24 24"><path fill="currentColor" d="M3 19.5h18l1.6-12-5.8 4.6L12 4.2l-4.8 7.9-5.8-4.6z"/></symbol>
+    <symbol id="glyph-cavalry" viewBox="0 0 24 24"><path fill="currentColor" d="M7 22h12.5c.6-6.8-.4-12.6-5.2-16.4L13.8 2l-2.4 2.6C7.6 5.8 4.8 9 3.4 12.6l2 2.4 4.1-1.7c.4 3-.9 5.8-2.5 8.7z"/></symbol>
+    <symbol id="glyph-missile_cavalry" viewBox="0 0 24 24"><path fill="currentColor" d="M2.5 22h9.6c.5-5.3-.3-9.9-4-12.8L7.7 6.4l-1.9 2C2.9 9.4 1.2 11.8.4 14.5l1.6 1.9 3-1.3c.3 2.4-.8 4.6-2.5 6.9z"/><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M14.5 2.5c7.2 2.6 8.7 12.4 4 17"/><path fill="none" stroke="currentColor" stroke-width="1.1" d="M14.5 2.5l4 17"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M12.4 13.4l9.6-3.2"/></symbol>
+    <symbol id="glyph-infantry" viewBox="0 0 24 24"><path fill="currentColor" d="M12 1.5l2.2 3.4v10.3h3.6v2.3h-4.5v4.9h-2.6v-4.9H6.2v-2.3h3.6V4.9z"/></symbol>
+    <symbol id="glyph-polearm_infantry" viewBox="0 0 24 24"><path fill="currentColor" d="M11.1 4.5h1.8v18h-1.8zM12 .8l1.6 4h-3.2zM11.1 5.6C6.4 5.4 4.3 8 4.3 10.3s2.1 4.6 6.8 4.4zM12.9 7.4l4.6 2.4-4.6 2.4z"/></symbol>
+    <symbol id="glyph-missile_infantry" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M4.5 19.5l14-14"/><path fill="currentColor" d="M21.6 2.4l-1.6 7.2-5.6-5.6z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M3 15.5l3 3m-.5-6l3.5 3.5M8.5 21l-3-3m6-.5L8 14"/></symbol>
+    <symbol id="glyph-artillery" viewBox="0 0 24 24"><circle cx="8.5" cy="16" r="5" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="8.5" cy="16" r="1.4" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="4.4" stroke-linecap="round" d="M9.5 13.5L21 6.5"/></symbol>
+    <symbol id="glyph-monster" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M5 20C6 13 9 7 13 3M10 21c1-6 4-11 8-15M15 21.5c1-4 3-7.5 6-10"/></symbol>
+    <symbol id="glyph-unknown" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="currentColor"/></symbol>
+    <symbol id="glyph-melee" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M4 4l13 13M20 4L7 17M14.5 20.5l6-6M3.5 14.5l6 6"/></symbol>
+  </svg>
+  <a class="skip" href="#viewer">Skip to the replay</a>
+  <header class="topbar">
+    <div class="wrap topbar-row">
+      <p class="kicker">Total War: WARHAMMER III · AI commander benchmark · development results</p>
+      <nav aria-label="Sections"><a href="#watch">Watch</a><a href="#happened">What happened</a><a href="#compare">Compare</a></nav>
     </div>
-    <p id="dataset-banner" class="banner"></p>
-    <div id="totals" class="totals"></div>
+    <p id="demo-banner" class="demo-banner" hidden>SYNTHETIC DEMO · Every value on this page is invented to exercise the layout. No game or model was run.</p>
   </header>
   <main>
-    <section id="replay-verdict" aria-label="Featured trial verdict"></section>
-    <section aria-labelledby="brief-heading">
-      <div class="section-heading"><p class="eyebrow">01 / THE TACTICAL PROBLEM</p><div class="actions"><button id="export-data">Download displayed JSON</button><button id="print">Print / PDF</button></div></div>
-      <div class="selector"><label for="scenario">Scenario &amp; compatible settings</label><select id="scenario"></select></div>
-      <article class="brief">
-        <div class="brief-copy"><p id="status" class="status"></p><h2 id="brief-heading"></h2><p id="scenario-name" class="mono"></p><p id="brief-text"></p><p id="metadata-origin" class="note"></p></div>
-        <div><dl id="settings" class="settings"></dl><details><summary>Opposing forces &amp; scenario declaration</summary><div id="forces"></div><pre id="scenario-detail"></pre></details></div>
-      </article>
-      <p id="comparison-settings" class="settings-line"></p>
-      <div id="replay-stills" class="replay-stills"></div>
-      <div id="replay-forces" class="replay-forces"></div>
-    </section>
-    <section id="replay-section" aria-labelledby="replay-heading">
-      <p class="eyebrow">BATTLE REPLAY / RECORDED PUBLIC STATE</p>
-      <h2 id="replay-heading">The battle does not wait.</h2>
-      <div class="actions"><label for="replay-trial">Open trial</label><select id="replay-trial"></select><button id="replay-download">Download replay evidence</button></div>
-      <p id="replay-availability" class="note" role="status"></p>
-      <div id="replay-content" hidden>
-        <div class="replay-layout">
-          <div class="replay-stage">
-            <div class="actions"><label><input id="replay-whole" type="checkbox"> Whole map</label></div>
-            <svg id="replay-map" viewBox="0 0 700 560" role="img" aria-label="Recorded unit positions and submitted orders"></svg>
-            <p id="replay-frame" class="note"></p>
-            <p class="note">Blue ● friendly · Orange ◆ enemy. ↑ facing · ♔ lord · ♞ cavalry · ▰ infantry · ↗ missile · ⊕ artillery. Strength bars: men above, HP below. M melee · F under fire · W wavering · R routing. Hollow glyphs are timestamped last sightings. Dashed order arrows await application; solid arrows are acknowledged, red arrows rejected. Arrows show submissions, not execution.</p>
-            <div class="replay-controls"><button id="replay-play">Play</button><label for="replay-speed">Speed</label><select id="replay-speed"><option value="1">1×</option><option value="4" selected>4×</option><option value="16">16×</option></select><button id="replay-prev">Previous decision</button><button id="replay-next">Next decision</button><button id="replay-prev-event">Previous event</button><button id="replay-next-event">Next event</button></div>
-            <label for="replay-time">Battle time · seconds</label><input id="replay-time" type="range" min="0" max="1" value="0" step="0.1">
-            <p class="note">Keyboard in replay: Space play/pause, ←/→ decisions, [/ ] events. Positions jump between recorded frames; missing intervals are never interpolated.</p>
-            <p class="note">The background is the model's view: the prompt's deployment terrain snapshot, where each 32 m cell samples a 16 m square and grey means restricted. It does not guarantee a path for any unit. Rows increase world z; columns increase x. Game stills, when captured, appear above and are not registered to this map.</p>
-            <svg id="replay-timeline" viewBox="0 0 700 90" role="img" aria-label="Decision information age bars"></svg>
-            <svg id="replay-resources" viewBox="0 0 700 100" role="img" aria-label="Recorded army resources and ability acknowledgements"></svg>
-            <div id="replay-lanes"></div>
-            <details><summary>Enemy unit lanes · visible observations only</summary><div id="replay-enemy-lanes"></div></details>
+    <section id="watch" class="watch" aria-labelledby="question">
+      <div class="wrap intro">
+        <p id="scenario-pick" class="scenario-pick" hidden><label for="scenario">Scenario</label> <select id="scenario"></select></p>
+        <h1 id="question"></h1>
+        <p id="challenge" class="challenge"></p>
+      </div>
+      <div id="viewer" class="wrap viewer">
+        <div class="run-card">
+          <p id="run-line" class="run-line"></p>
+          <p id="conditions" class="conditions"></p>
+          <div class="watch-actions">
+            <button id="watch-featured" class="primary" type="button">▶ Watch the featured maneuver</button>
+            <button id="watch-full" type="button">Watch the full battle</button>
           </div>
-          <aside class="replay-inspection"><h3>Decision inspector</h3><div id="replay-inspector"></div><h3>Recorded events</h3><div id="replay-events" class="replay-events"></div></aside>
+          <label class="run-pick"><span>Choose another run</span> <select id="run-select"></select></label>
         </div>
+        <div class="stage">
+          <div id="map-wrap" class="map-wrap">
+            <svg id="map" class="map" role="img" aria-label="Battle map of recorded unit positions; north is up" tabindex="0"><g id="map-ground"></g><g id="map-layer"></g><g id="map-furniture"></g></svg>
+            <div class="map-top">
+              <p id="map-caption" class="map-caption" hidden></p>
+              <p id="map-status" class="map-status" hidden></p>
+              <p id="map-synthetic" class="map-synthetic" hidden>SYNTHETIC DEMO · invented frames</p>
+            </div>
+            <div id="map-selection" class="map-selection" hidden></div>
+            <p id="map-empty" class="map-empty" hidden></p>
+          </div>
+          <div class="controls">
+            <button id="play" class="play" type="button">▶ Play</button>
+            <span id="clock" class="clock" aria-label="Battle clock">0:00 / 0:00</span>
+            <span class="step-group" role="group" aria-label="Step through decisions">
+              <button id="prev-decision" type="button" aria-label="Previous decision" title="Previous decision (←)">◀</button><span class="step-label">Decision</span><button id="next-decision" type="button" aria-label="Next decision" title="Next decision (→)">▶</button>
+            </span>
+            <span class="step-group" role="group" aria-label="Step through events">
+              <button id="prev-event" type="button" aria-label="Previous event" title="Previous event ([)">◀</button><span class="step-label">Event</span><button id="next-event" type="button" aria-label="Next event" title="Next event (])">▶</button>
+            </span>
+            <label class="speed">Playback <select id="speed"><option value="1">1×</option><option value="4" selected>4×</option><option value="16">16×</option></select> <small>(the battle ran at 1×)</small></label>
+          </div>
+          <input id="scrubber" class="scrubber" type="range" min="0" max="1" step="0.1" value="0" aria-label="Battle time in seconds">
+          <svg id="strip" class="strip" role="img" aria-label="Timeline: decisions, rejections, highlights and key events"><g id="strip-static"></g><line id="strip-cursor" class="strip-cursor" x1="0" x2="0" y1="0" y2="0"/></svg>
+          <p class="map-key">
+            <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-friendly"/></svg>Friendly</span>
+            <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-enemy"/></svg>Enemy</span>
+            <span><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M2 12C8 12 12 4 22 4" class="key-path"/></svg>Observed path</span>
+            <span><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M2 8H22" class="key-route"/></svg>Issued route</span>
+            <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-ring"/></svg>Attack target</span>
+            <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-seen"/></svg>Last seen</span>
+            <span><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="2" width="14" height="12" class="key-blocked"/></svg>Impassable</span>
+            <label class="whole"><input id="whole" type="checkbox"> Whole map</label>
+            <span class="strip-key">Timeline: <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="7" y="2" width="2.5" height="12" class="key-orders"/></svg>new orders <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2" class="key-keep"/></svg>no new orders <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="7" y="1" width="3" height="14" class="key-rejected"/></svg>rejected order <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" class="key-note"/></svg>analyst note <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3l5 5-5 5-5-5z" class="key-event"/></svg>key event</span>
+            <span id="map-note" class="map-note"></span>
+          </p>
+          <div id="roster" class="roster"></div>
+        </div>
+        <aside id="moment" class="moment" aria-label="This moment in the battle"></aside>
       </div>
     </section>
-    <section id="replay-comparison" aria-labelledby="replay-comparison-heading"><h2 id="replay-comparison-heading">Same battle, other commanders.</h2><p class="note">Shared map extent. Dots are recorded positions; gaps are not reconstructed. Each trial keeps its own evidence and outcome.</p><div id="replay-multiples" class="replay-multiples"></div></section>
-    <section id="comparison" aria-labelledby="controllers-heading">
-      <div class="section-heading"><p class="eyebrow">02 / CONTROLLERS</p><button id="select-all">Select all controllers</button></div>
-      <h2 id="controllers-heading">Performance, with the evidence attached.</h2>
-      <p class="note">Alphabetical by default. Select rows for the charts and exports; select a column heading to sort. Evidence groups (E01, E02…) retain their own samples.</p>
-      <div id="controller-table" class="table-scroll" role="region" aria-label="Controller comparison" tabindex="0"></div>
-      <p class="note">W / L / D / T = non-timer wins / losses / draws / time limits. Non-timer win rate = non-timer wins ÷ all valid outcomes, including time limits. 95% Wilson intervals are withheld for correlated repeats. A single launch is exploratory.</p>
+
+    <section id="happened" class="wrap section" aria-labelledby="happened-heading">
+      <h2 id="happened-heading">What happened</h2>
+      <p id="happened-intro" class="lede"></p>
+      <ol id="highlights" class="highlights"></ol>
+      <div id="stills-block" class="stills-block" hidden>
+        <h3>In the game</h3>
+        <div id="stills" class="stills"></div>
+      </div>
+      <details id="events-box" class="more"><summary id="events-summary">All recorded events</summary><ol id="events" class="events"></ol></details>
+      <details id="lanes-box" class="more"><summary>Unit timelines</summary><div id="lanes" class="lanes"></div></details>
     </section>
-    <section aria-labelledby="timing-heading">
-      <div class="section-heading"><p class="eyebrow">03 / TIMING &amp; TACTICAL RESULTS</p><div class="actions"><button id="export-svg">Chart SVG</button><button id="export-png">Chart PNG</button></div></div>
-      <h2 id="timing-heading">What did the controller know, and when?</h2>
-      <div class="chart-controls"><label for="axis">Chart view</label><select id="axis"><option value="age">Measured information age</option><option value="cost">Inference cost</option><option value="added">Controlled added age</option></select></div>
-      <p id="chart-note" class="note"></p><div id="chart" class="chart"></div>
-      <p id="selection" class="selection" aria-live="polite">Select a trial point or a row below for exact values.</p>
-      <details open id="trial-details"><summary>Individual trials · exact values</summary><div id="trial-table" class="table-scroll" role="region" aria-label="Individual trial values" tabindex="0"></div></details>
-      <details open id="tactical-details"><summary>Objectives, protected units &amp; resources</summary><p class="note">Per-trial values. Resource quantities have neutral labels; more unspent supplies need not imply better play.</p><div id="tactical-table" class="table-scroll" role="region" aria-label="Tactical metrics" tabindex="0"></div></details>
-    </section>
-    <section aria-labelledby="evidence-heading">
-      <p class="eyebrow">04 / THE RECORD</p><h2 id="evidence-heading">Evidence &amp; definitions</h2>
-      <details><summary>Paired comparisons &amp; uncertainty</summary><p class="note">Only the collector’s within-group, within-launch pairs appear here. Independent model launches create no new pairs. Intervals use launch means; repeated rematches are correlated.</p><div id="pairs"></div></details>
-      <details><summary>Failures, interruptions &amp; setup flags</summary><p id="failure-summary"></p><div id="failures"></div></details>
-      <details><summary>All supplied jobs · including setup-only interruptions</summary><div id="jobs" class="table-scroll" role="region" aria-label="Supplied jobs" tabindex="0"></div></details>
-      <details><summary>Metric definitions &amp; limitations</summary><dl class="definitions">
-        <dt>Active-strength margin</dt><dd>Friendly active men ÷ starting men, minus the same enemy fraction. Routing and shattered men count as lost. Units are not weighted by value. Means use valid trials with available metrics.</dd>
-        <dt>Measured information age</dt><dd>Battle time from the observed state to order issuance or queuing, averaged over non-empty batches per trial. This includes model, network and retry delay; issuance does not confirm execution.</dd>
-        <dt>Controlled added age</dt><dd>The minimum requested age of the buffered snapshot, separate from the actual age at decision and order issuance. Conditions are compared within recorded evidence groups; missing conditions are not interpolated.</dd>
-        <dt>Cost per attempted trial</dt><dd>Total recorded inference USD divided by started trial records, including failed trials. Setup-only jobs have no trial denominator. Provider costs may be self-reported; incomplete cost records are unavailable in the chart and displayed mean. Scripted controllers have zero inference cost.</dd>
-        <dt>Independent launches</dt><dd>Distinct job instances in a controller’s trial records. Rematches within a launch do not add independent evidence. The scenario status counts launches with started trials; all supplied jobs are listed separately.</dd>
-        <dt>Protected-unit survival</dt><dd>Active men left in the scenario’s declared protected unit types, divided by their starting men.</dd>
-        <dt>Objective-control shares</dt><dd>Victory/key-point control from recorded objective summaries. Current records integrate engine time; legacy records use sampled observations. The table identifies the method. Supplies are the recorded amount left; reinforcements count accepted purchases by unit type, not confirmed arrivals.</dd>
-      </dl><p id="limitations"></p></details>
-      <details><summary>Recorded system and rules prompts · once per job</summary><div id="replay-prompts"></div></details>
-      <details><summary>Source provenance &amp; comparison settings</summary><p class="note">Historical briefs come from recorded manifests. Catalogue entries are unrun placeholders within this report. Exact recorded decision prompts and raw replies are collapsed in the replay inspector. Job identifiers are portable directory names.</p><pre id="provenance"></pre></details>
+
+    <section id="compare" class="wrap section" aria-labelledby="compare-heading">
+      <h2 id="compare-heading">Under the same conditions, who wins, how delayed are their orders, and what does it cost?</h2>
+      <div id="run-sets"></div>
+      <ul id="footnotes" class="footnotes"></ul>
+      <p id="setup-only" class="setup-only" hidden></p>
     </section>
   </main>
-  <footer><span>WH3 BENCHMARK / FIELD REPORT</span><span>Original game. Recorded evidence. Open questions.</span></footer>
-  <p id="export-status" class="sr-only" aria-live="polite"></p>
-  <noscript><p class="banner">JavaScript is required for this interactive report. The accompanying CLI text / JSON reports remain available without it.</p></noscript>
+  <footer class="wrap footer">
+    <button id="open-settings" class="link" type="button">Run settings</button>
+    <span>Data: <button id="download-report" class="link" type="button">report JSON</button> · <button id="download-replay" class="link" type="button">this replay JSON</button></span>
+    <a href="https://github.com/nivaldoh/slay_the_spire_ai/blob/main/docs/twwarhammer3/reports.md" rel="noopener">Code / methodology</a>
+    <p id="export-status" class="sr-only" aria-live="polite"></p>
+  </footer>
+  <dialog id="settings-dialog" class="dialog" aria-labelledby="settings-title">
+    <div class="dialog-head"><h2 id="settings-title">Run settings</h2><button id="close-settings" type="button">Close</button></div>
+    <div id="settings-body"></div>
+  </dialog>
+  <dialog id="still-dialog" class="dialog still-dialog" aria-label="Game still">
+    <div class="dialog-head"><p id="still-caption"></p><button id="close-still" type="button">Close</button></div>
+    <img id="still-image" alt="">
+  </dialog>
+  <noscript><p class="demo-banner">This interactive report needs JavaScript. The text and JSON reports written beside it hold the same results.</p></noscript>
   <script id="report-data" type="application/json">@@DATA@@</script>
   <script>@@SCRIPT@@</script>
 </body>

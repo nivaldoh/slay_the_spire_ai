@@ -60,9 +60,7 @@ def test_timer_missing_metrics_repeats_and_setup_only_interruption_are_preserved
     manifest["scenario"] = {"name": "historical", "brief": "Historical brief"}
     path.write_text(json.dumps(manifest))
     source = report.collect([job, interrupted])
-    data = embedded(report_html.render(source, {
-        "historical": {"brief": "NEW", "status": "admitted"},
-        "unrun": {"brief": "Current only", "status": "prototype_not_admitted"}}))
+    data = embedded(report_html.render(source))
     group = data["report"]["groups"][0]
     summary = group["controllers"][0]
     assert summary == source["groups"][0]["controllers"][0]
@@ -74,7 +72,9 @@ def test_timer_missing_metrics_repeats_and_setup_only_interruption_are_preserved
     historical = data["comparisons"][1]
     assert historical["definition"]["scenario"]["brief"] == "Historical brief"
     assert historical["jobs"] == [1] and historical["groups"] == []
-    assert data["comparisons"][2]["metadata_origin"].startswith("Current catalogue")
+    assert len(data["comparisons"]) == 2  # no placeholders for unrun catalogue scenarios
+    assert [scenario["name"] for scenario in data["scenarios"]] == ["frozen"]
+    assert data["setup_only"] == [{"job": 1, "scenario": "historical", "title": "historical"}]
 
 
 def test_safe_embedding_portable_ids_and_no_remote_dependencies(tmp_path):
@@ -202,4 +202,99 @@ def test_featured_trial_is_earliest_completed_model_even_when_it_loses(tmp_path)
         result["status"] = "won" if index == 0 else "lost"
         path.write_text(json.dumps(result))
     data = embedded(report_html.render(report.collect(jobs)))
-    assert data["featured"]["comparison-1"] == "g0-t1"
+    assert data["scenarios"][0]["featured"] == "g0-t1"
+    assert data["scenarios"][0]["featured_reason"] == "first_model_run"
+
+
+def traced_job(tmp_path, name, created_at, **changes):
+    """A configured job whose one battle has a trace and a model controller card."""
+    job = configured_job(tmp_path, name, created_at=created_at, **changes)
+    episode = job / "episode-0000"
+    (episode / "trace.jsonl").write_text(json.dumps({"kind": "observation", "observation": {
+        "seq": 0, "time_ms": 0, "friendly": [], "enemy": []}}))
+    path = episode / "result.json"
+    path.write_text(json.dumps({**json.loads(path.read_text()),
+                                "card": {"kind": "model", "source_sha256": "code"}}))
+    return job
+
+
+def test_scenarios_feature_the_selected_run_and_name_what_each_run_set_changes(tmp_path):
+    later = traced_job(tmp_path, "later", "2026-10-15T00:00:00Z", llm_rules_prompt_sha256="p")
+    earlier = traced_job(tmp_path, "earlier", "2026-10-14T00:00:00Z", system_prompt_sha256="p",
+                         recorder={"version": 1, "enabled": True, "interval_ms": 1000})
+    stopped, elsewhere = make_job(tmp_path, "stopped", []), make_job(tmp_path, "elsewhere", [])
+    manifest = json.loads((elsewhere / "manifest.json").read_text())
+    (elsewhere / "manifest.json").write_text(json.dumps({**manifest,
+                                                         "scenario": {"name": "elsewhere"}}))
+    source = report.collect([later, earlier, stopped, elsewhere])
+    highlight = {"time_ms": 0, "title": "Opening", "units": ["f1"]}
+    notes = {"scenarios": {"frozen": {"title": "Frozen pass", "question": "Can it cross?",
+                                      "challenge": "Cross the pass."}},
+             "runs": {"later/episode-0000": {"selected": True, "highlights": [highlight]}}}
+    data = embedded(report_html.render(source, notes))
+    assert data["scenarios"] == [{
+        "id": "scenario-1", "name": "frozen", "title": "Frozen pass", "question": "Can it cross?",
+        "challenge": "Cross the pass.", "brief": None, "expect": None, "comparisons": [0, 1],
+        "featured": "g0-t0", "featured_reason": "selected", "setup_only_jobs": [2]}]
+    assert data["setup_only"] == [{"job": 3, "scenario": "elsewhere", "title": "elsewhere"}]
+    reference, recorded = data["comparisons"][:2]
+    assert reference["differences"] == [] and recorded["differences"] == [
+        "1 Hz replay recorder on"]
+    assert reference["same_controller"] is recorded["same_controller"] is True
+    assert (reference["reference"], recorded["reference"]) == (True, False)
+    # Only a hex revision is shortened; the fixtures' "r1" is not one.
+    assert (reference["created_at"], reference["source_short"]) == ("2026-10-15T00:00:00Z", None)
+    payloads = [json.loads(gzip.decompress(base64.b64decode(data["replays"][key])))
+                for key in ("g0-t0", "g1-t0")]
+    assert payloads[0]["highlights"] == [highlight] and payloads[0]["selected"] is True
+    assert payloads[1]["highlights"] == [] and payloads[1]["selected"] is False
+    scenario = report_html.display_data(source)["scenarios"][0]  # without notes
+    assert (scenario["featured"], scenario["featured_reason"]) == ("g1-t0", "first_model_run")
+    assert (scenario["title"], scenario["question"]) == ("frozen", None)
+
+
+def test_only_the_featured_run_set_is_the_reference_even_with_no_listed_difference(tmp_path):
+    # A recorder version change separates the run sets but is not a listed difference.
+    recorder = {"enabled": True, "interval_ms": 1000}
+    first = traced_job(tmp_path, "first", "2026-10-14T00:00:00Z", recorder={**recorder,
+                                                                             "version": 1})
+    second = traced_job(tmp_path, "second", "2026-10-15T00:00:00Z", recorder={**recorder,
+                                                                              "version": 2})
+    views = report_html.display_data(report.collect([first, second]))["comparisons"]
+    assert [(view["reference"], view["differences"]) for view in views] == [(True, []),
+                                                                             (False, [])]
+
+
+def test_same_controller_needs_matching_controller_code_and_prompts(tmp_path):
+    a = traced_job(tmp_path, "a", "2026-10-14T00:00:00Z", llm_rules_prompt_sha256="p")
+    b = traced_job(tmp_path, "b", "2026-10-15T00:00:00Z", llm_rules_prompt_sha256="q",
+                   source_revision="r2")
+    views = report_html.display_data(report.collect([a, b]))["comparisons"]
+    assert [view["same_controller"] for view in views] == [True, False]
+    assert views[1]["differences"] == ["a different code revision"]
+    unknown = report.collect([a, configured_job(tmp_path, "c", source_revision="r3")])
+    assert report_html.display_data(unknown)["comparisons"][1]["same_controller"] is None
+
+
+def test_run_set_differences_are_plain_words_without_revision_hashes():
+    reference = {"source": "a" * 40, "recorder": {"enabled": True, "interval_ms": 1000},
+                 "imagery": {"enabled": True, "max_stills": 6}}
+    changed = {"source": "b" * 40, "recorder": None, "imagery": {"enabled": False}}
+    assert report_html._differences(changed, reference) == [
+        "a different code revision",
+        "no replay recorder (positions only at the controller's observations)",
+        "no game stills (the first set also moved the game camera during the battle to take them)"]
+    assert report_html._differences(reference, changed)[1:] == [
+        "1 Hz replay recorder on", "game stills on (scripted camera moves during the battle)"]
+
+
+def test_a_job_without_a_recorded_scenario_still_gets_a_readable_title(tmp_path):
+    # Older random-battle jobs (runs/twwarhammer3/battle/attack-*) record no scenario.
+    random_battle = configured_job(tmp_path, "random", scenario=None)
+    stopped = make_job(tmp_path, "stopped", [])
+    path = stopped / "manifest.json"
+    path.write_text(json.dumps({**json.loads(path.read_text()), "scenario": None}))
+    data = report_html.display_data(report.collect([random_battle]))
+    assert data["scenarios"][0]["title"] == "No scenario recorded"
+    data = report_html.display_data(report.collect([stopped]))
+    assert data["setup_only"] == [{"job": 0, "scenario": None, "title": "No scenario recorded"}]

@@ -37,10 +37,12 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | benchmark harness | b9, track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | G1 stopped: 1 of 12 launches completed, the next interrupted |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
+| report | redesign (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | rebuilt from `visual-sol-low-20261015` and the G1 jobs |
 
 ## Index
 
-- 2026-10-15: [Track cleanup for agents and reviewers](#2026-10-15-track-cleanup-for-agents-and-reviewers) ·
+- 2026-10-15: [Report redesign](#2026-10-15-report-redesign) ·
+  [Track cleanup for agents and reviewers](#2026-10-15-track-cleanup-for-agents-and-reviewers) ·
   [Sol visual acceptance and closer action views](#2026-10-15-sol-visual-acceptance-and-closer-action-views) ·
   [Native imagery probe and passive capture](#2026-10-15-native-imagery-probe-and-passive-capture) ·
   [Recorder acceptance and imagery candidate](#2026-10-15-recorder-acceptance-and-imagery-candidate) ·
@@ -82,6 +84,70 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
+
+## 2026-10-15: Report redesign
+
+The owner's brief ([WH3_report_redesign_guide_for_Codex.md](WH3_report_redesign_guide_for_Codex.md))
+asked for a report that lets a newcomer watch an AI command an army, understand its
+consequential decisions and compare results, with the bookkeeping moved out of the
+reading path. The HTML page was rebuilt around that order (watch, what happened,
+compare); [reports.md](reports.md) describes it. No game ran and no model was called.
+
+The brief asked for its items to be mapped to the repository first:
+- **From existing records**: readable names and roles (the game's onscreen names,
+  checked against the English localisation, and comparisons checked against each
+  episode's recorded `unit_base_stats`), orders in plain words with queued steps and
+  rejections, what the recorded frames show after each batch, the information age per
+  decision on the battle clock beside the model's wall-clock reply time, stable map
+  framing, issued routes apart from observed trails, the engine outcome with the timer
+  rule, and run sets compared in plain words (the two Sol runs share controller code and
+  prompts; the later one added the recorder and stills).
+- **Small additions**: `configs/twwarhammer3/report_notes.json` (scenario question and
+  challenge, unit roles, the selected run and its analyst notes); the collector's
+  `order_age_median_s` and `battle_ms`; replay payload fields (unit identities, `steps`,
+  `summary`, `next`, key events).
+- **Needs new instrumentation, runs or an owner decision, so not built**: a real-game
+  clip (no video capture exists), unit artwork (the owner ruled out pack art on
+  2026-10-14), unit attributes that are not recorded (anti-large and armour-piercing live
+  in the game's database tables), response-to-visible-effect timing, and the army-size,
+  context and delay experiments, now defined in
+  [benchmark.md](benchmark.md#experiments-the-report-should-eventually-present-definitions-only).
+
+What changed:
+- The page leads with the scenario's question, the selected run (outcome, duration,
+  "Single recorded battle"), one sentence of input conditions and the replay. Removed
+  from it: the masthead, throughput and wall time, the scenario declaration, the stills
+  wall, failed-capture placeholders, the margin chart, the trial and tactical tables and
+  the evidence section. They stay in the JSON and text reports, Run settings and the
+  downloads. The 15 unrun catalogue placeholders are gone, which settles the deferred
+  item.
+- The moment panel follows the replay clock and never shows a reply before it applied;
+  it gives the model's stated reason as a quotation (with a key for the unit ids it
+  uses), the orders, what happened next and how old the information was. Before/after
+  inspection is an explicit, pinned mode that includes the orders' targets.
+- Five analyst notes on `visual-sol-low-20261015` (one is the featured maneuver) and three
+  on the G1 Sol trial, each checked against the records by two independent reviewers. The
+  brief asks for human review: the owner has not reviewed them yet.
+- The active-strength margin no longer appears on the page (the brief: it counts routing
+  men as lost and weighs units equally); the collector still computes it.
+
+Findings:
+- **The state taken as a batch applies predates it.** Units that were just ordered still
+  show idle there. The replay's "what happened next" now ignores that frame. The `llm`
+  prompt called such units "stopped N m short of your move": in the G1 Sol battle the
+  model re-issued all six routes three times in 26 s. The fix is on branch
+  `wh3-llm-fresh-move` (`5959587`), unmerged: it changes prompt text, so it is a new
+  controller version and part of the calibration discussion.
+- The cavalry assault already separates controllers at ×1.0 on outcomes alone (Sol low
+  3 of 3, Luna 0 of 2, scripted 0 of 7, across revisions); options for the owner are in
+  [benchmark.md](benchmark.md#calibration-options-for-the-owners-discussion-2026-10-15).
+
+Validation: `uv run pytest -q` 949 passed, 14 skipped (the `train`/`llm` extras and the opt-in
+Windows test); `uv run ruff check .` and prettier (width 100) clean; the offline browser
+check (`tests/twwarhammer3/check_wh3_report_browser.cjs`) passes on the three jobs and
+the demo at 1440 and 390 px. Reviewers read screenshots against the brief's six reader
+tasks; a data review rebuilt all 200 recorded episodes without a crash. The rebuilt page
+is `reports/cavalry-assault.html` (1.7 MB).
 
 ## 2026-10-15: Track cleanup for agents and reviewers
 

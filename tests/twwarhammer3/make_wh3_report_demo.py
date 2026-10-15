@@ -1,7 +1,7 @@
 """Invented WH3 jobs for the synthetic field-report demo; no game is run.
 
 Writes job directories for Demo controllers A, B and C (two launches each, 0/6/10 s added
-age), with a timer win, a repeated rematch, a missing metric, a policy failure and a
+age), with a timer loss, a repeated rematch, a missing metric, a policy failure and a
 setup-only interruption, collects them with report.collect and adds one invented replay.
 
     uv run python tests/twwarhammer3/make_wh3_report_demo.py OUTPUT.html
@@ -27,7 +27,8 @@ SCENARIO = {
 }
 # Controller: (margin at +0 s, order age at +0 s, USD, supplies left at episode 0).
 CONTROLLERS = {"A": (.58, 2.2, .08, 500), "B": (.42, 3.0, .19, 600), "C": (.26, 3.8, .3, 700)}
-# (controller, launch): (added seconds, outcome) per episode; time_limit is an engine win.
+# (controller, launch): (added seconds, outcome) per episode; time_limit is an engine loss:
+# the player attacks, and the attacker loses when the 20:00 timer runs out.
 LAUNCHES = {
     ("A", 1): [(0, "won"), (6, "won"), (10, "won")],
     ("A", 2): [(0, "won"), (6, "won"), (10, "won")],
@@ -61,11 +62,13 @@ def job(root: Path, name: str, model: str, *, status="completed", wall=1200, err
 def result(model: str, launch: int, episode: int, delay: int, outcome: str) -> dict:
     margin, _, usd, supplies = CONTROLLERS[model[-1]]
     margin += .04 * (launch - 1) - .05 * delay
-    won = outcome in {"won", "time_limit"}
+    timer = outcome == "time_limit"
+    survived = outcome in {"won", "time_limit"}  # the protected caster
     value = {
-        "status": "won" if outcome == "time_limit" else outcome, "policy": model,
-        "ended_by": "time_limit" if outcome == "time_limit" else "engine_result",
-        "delay_ms": delay * 1000, "battle_ms": 300_000, "start_time_ms": 0, "battle_s": 300,
+        "status": "lost" if timer else outcome, "policy": model,
+        "ended_by": "time_limit" if timer else "engine_result",
+        "delay_ms": delay * 1000, "battle_ms": 1_200_000 if timer else 300_000,
+        "start_time_ms": 0, "battle_s": 1200 if timer else 300,
         "elapsed_seconds": 300, "decisions": 20, "setup_checks": {"demo": True},
         "start_comparison": {"flagged": (model[-1], launch) == FLAGGED_START},
         "card": {"kind": "demo", "name": model, "source_sha256": "synthetic", "timing": "blocking",
@@ -73,7 +76,7 @@ def result(model: str, launch: int, episode: int, delay: int, outcome: str) -> d
         "llm": {"usd": usd + .01 * (launch - 1), "input_tokens": 1000, "output_tokens": 300},
         "final": {"friendly": {"men0": 100, "active_men": round(100 * (margin + .3)),
                                "by_type": {"demo-caster": {"men0": 10,
-                                                           "active_men": 10 if won else 0}}},
+                                                           "active_men": 10 if survived else 0}}},
                   "enemy": {"men0": 100, "active_men": 30}},
         "objectives": {"method": "engine_tick_time_weighted", "victory_held": .6 - .02 * delay,
                        "key_held": .5 - .02 * delay, "supplies_left": supplies + 50 * episode,
@@ -136,18 +139,23 @@ def battle_trace() -> list[dict]:
             attempt = {"text": '{"synthetic":true}', "usd": .004, "seconds": 1.8,
                        "provider_processing_ms": 1500,
                        "usage": {"input_tokens": 50, "output_tokens": 15}}
+            refused = second == 45  # recorded as play.py records a batch validation refuses
+            if refused:
+                rows.append({"kind": "invalid", "error": "Synthetic validation refusal: unknown "
+                                                         "unit f9",
+                             "orders": [{"unit": "f9", "type": "halt"}]})
             rows.append({"kind": "decision", "request": f"r{second}", "seq": second,
                          "time_ms": second * 1000, "decision_time_ms": second * 1000 + 200,
-                         "orders": [order], "behavior": {
+                         "orders": [] if refused else [order], "behavior": {
                              "reason": "Synthetic stated rationale.",
                              "notes": f"Synthetic notes {second}.",
                              "prompt": f"Synthetic exact prompt {second}.", "attempts": [attempt]}})
             rejected = second == 15
             rows.append({"kind": "ack", "request": f"r{second}",
                          "latency": {"think_s": 1.8, "roundtrip_s": 2, "delay_ms": 2200},
-                         "ack": {"applied_ms": second * 1000 + 2200, "results": [
-                             {"index": 1, "ok": not rejected,
-                              "error": "unreachable" if rejected else None}]}})
+                         "ack": {"applied_ms": second * 1000 + 2200, "results": [] if refused
+                                 else [{"index": 1, "ok": not rejected,
+                                        "error": "unreachable" if rejected else None}]}})
     return rows
 
 

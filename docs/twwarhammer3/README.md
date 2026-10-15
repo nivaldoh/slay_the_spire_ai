@@ -20,8 +20,9 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [battle-types.md](battle-types.md) | the battle-type scenarios, the `mode` state, the `build` and `reinforce` orders |
 | [benchmark.md](benchmark.md) | the latency-aware benchmark: definition, scenarios, the stopped calibration |
 | [benchmark-run.md](benchmark-run.md) | running paired benchmark trials, outside controllers |
-| [reports.md](reports.md) | the offline HTML report and replay |
+| [reports.md](reports.md) | the offline HTML report and replay, its curated notes |
 | [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md) | the owner's benchmark brief |
+| [WH3_report_redesign_guide_for_Codex.md](WH3_report_redesign_guide_for_Codex.md) | the owner's report redesign brief |
 | [log.md](log.md) | dated history: versions, harness revisions, jobs, costs |
 | [results.csv](results.csv) | the results register, one row per episode, appended by `play` |
 
@@ -197,5 +198,3 @@ Deferred cleanups:
   until its episode timeout. A per-mailbox id prefix fixes it.
 - `LLMPolicy.acknowledge` keeps its fallback for acknowledgements without `index`
   (traces before `863d10b`); dropping it is the owner's call.
-- Single-job reports still list the 15 unrun catalogue scenarios as placeholders;
-  removing them is the owner's call ([reports.md](reports.md)).
