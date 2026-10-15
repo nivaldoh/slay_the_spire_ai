@@ -221,7 +221,8 @@ steps offline.
 | A viewer should see | slaves screening and pinning, weapon teams arriving together, the caster kept alive | a refused flank, ammunition saved for clusters, the line holding or folding |
 
 Before any calibration they need one screen each (the owner decides when): that both
-rosters fit 12000 (unit costs are not recorded anywhere yet), that the lobby takes a
+rosters fit 12000 in the lobby (their decoded multiplayer costs are 7850 and 8200, and 6300
+and 8350, from `scripts/wh3_db.py`; character equipment may add a little), that the lobby takes a
 20-unit army, that the AI defends in the first and attacks in the second, and that the
 battle neither ends in seconds nor stalls to the timer. Each screen is one launch of
 three battles (`llm_rules` on Luna, run-nearest, `hold`), about 25 minutes and $0.10.

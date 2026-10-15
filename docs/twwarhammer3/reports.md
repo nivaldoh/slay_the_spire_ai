@@ -97,7 +97,9 @@ a worktree while one runs. Three maps:
   words, `about` one sentence on how the unit differs, `glyph` one of `general`,
   `cavalry`, `missile_cavalry`, `infantry`, `polearm_infantry`, `missile_infantry`,
   `artillery`, `monster`, `unknown`. Every comparison in `about` must hold in the recorded
-  base stats (`setup.unit_base_stats` in `result.json`); claim nothing the records lack.
+  base stats (`setup.unit_base_stats` in `result.json`), and every attribute (bonus
+  against large, armour-piercing damage, fear immunity, firing on the move) in the game's
+  database (`scripts/wh3_db.py`, [integration.md](integration.md#packs-and-loading)).
   Without an entry: the recorded name, initials as the label, role and glyph by class.
 - **`runs`**, by `<job directory name>/<episode>`: `selected: true` features the run;
   `highlights` are its analyst notes:
@@ -208,8 +210,9 @@ against the collector's JSON and the demo's values, and leaves screenshots there
 - Without the recorder (the G1 jobs) positions update only at the controller's
   observations (about every 5 s in the G1 Sol battle), so "what happened next" rests on
   sparse samples; its distances add straight lines between them.
-- Role and about text can be checked only against base stats and onscreen names; the
-  records hold no anti-large, armour-piercing or other attributes.
+- The records hold no unit attributes. The cavalry-assault roster's attribute claims were
+  checked in the game's database on 2026-10-15; other rosters need the same check before
+  their notes describe attributes.
 - Analyst notes exist only for runs in the notes file; the owner has not reviewed them yet.
 - A capture fails when another window is in the foreground or Windows Python lacks Pillow.
 

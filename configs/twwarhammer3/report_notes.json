@@ -26,49 +26,49 @@
       "name": "Lord",
       "short": "Lord",
       "role": "Mounted lord",
-      "about": "The army's leader: one character on horseback with combat abilities, not a regiment.",
+      "about": "The army's leader: one character on horseback with combat abilities who steadies nearby units, not a regiment.",
       "glyph": "general"
     },
     "wh_main_brt_cav_knights_of_the_realm": {
       "name": "Knights of the Realm",
       "short": "KR",
       "role": "Lance cavalry",
-      "about": "Charge cavalry: built for the impact of the charge; weaker than the Questing Knights in a long melee.",
+      "about": "Lance cavalry built for the charge, with a bonus against large units and shields; weaker than the Questing Knights in a long melee.",
       "glyph": "cavalry"
     },
     "wh_dlc07_brt_cav_questing_knights_0": {
       "name": "Questing Knights",
       "short": "QK",
       "role": "Melee cavalry",
-      "about": "Built for sustained melee rather than the charge: higher melee attack and weapon damage, but a smaller charge bonus than the Knights of the Realm.",
+      "about": "Great-sword cavalry for sustained melee: most of their damage is armour-piercing and fear does not affect them, but their charge is weaker than the other knights'.",
       "glyph": "cavalry"
     },
     "wh_main_brt_cav_grail_knights": {
       "name": "Grail Knights",
       "short": "GK",
       "role": "Elite lance cavalry",
-      "about": "The best knights here: the heaviest armour and steadiest morale in the army, and the strongest charge of any regiment.",
+      "about": "The best knights here: magical attacks, the heaviest armour and steadiest morale in the army, the strongest charge of any regiment, and they never tire.",
       "glyph": "cavalry"
     },
     "wh_main_brt_cav_mounted_yeomen_1": {
       "name": "Mounted Yeomen Archers",
       "short": "MYA",
       "role": "Mounted archers",
-      "about": "The fastest unit here: horse archers that shoot from up to 125 m with limited arrows, and are fragile in melee.",
+      "about": "The fastest unit here: horse archers that can shoot on the move from up to 125 m, with limited arrows, and are fragile in melee.",
       "glyph": "missile_cavalry"
     },
     "wh_main_emp_cha_general_0": {
       "name": "General of the Empire",
       "short": "Gen",
       "role": "General on foot",
-      "about": "The enemy's leader: one character on foot, as slow as its infantry.",
+      "about": "The enemy's leader: one character on foot who steadies nearby units, as slow as its infantry.",
       "glyph": "general"
     },
     "wh_main_emp_inf_halberdiers": {
       "name": "Halberdiers",
       "short": "HB",
-      "role": "Halberd infantry",
-      "about": "Slow, steady polearm infantry screening the guns; the scenario sets them as the anti-cavalry line, where a frontal fight risks a losing grind.",
+      "role": "Anti-cavalry infantry",
+      "about": "Slow halberd infantry screening the guns, with a bonus against large units and a braced defence against charging cavalry: a frontal charge into them risks a losing grind.",
       "glyph": "polearm_infantry"
     },
     "wh_main_emp_inf_handgunners": {
@@ -82,7 +82,7 @@
       "name": "Great Cannons",
       "short": "GC",
       "role": "Artillery",
-      "about": "Long-range cannon (450 m) firing armour-piercing shot; its crew is very weak in melee.",
+      "about": "Long-range cannon (450 m) firing armour-piercing shot; it cannot run, and its crew is very weak in melee.",
       "glyph": "artillery"
     }
   },

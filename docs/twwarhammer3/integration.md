@@ -20,6 +20,14 @@ declared scenario sets its own AI stats modifier in the lobby
 
 ## Packs and loading
 
+- Database tables in `db.pack` are versioned binary tables; `scripts/wh3_db.py` decodes one
+  with RPFM's schema (`schema_wh3.ron` from rpfm-schemas, downloaded outside the
+  repository) and prints rows: unit costs and caps (`main_units_tables`), weapons
+  (`melee_weapons_tables`: `damage`, `ap_damage`, `bonus_v_large`) and attributes
+  (`land_units_tables.attribute_group` through `unit_attributes_to_groups_junctions_tables`).
+  Checked 2026-10-15: each table decodes to its last byte, and `damage` plus `ap_damage`
+  equals the battle's recorded `weapon_damage` (Knights of the Realm 40, Questing Knights
+  52, Grail Knights 46, Halberdiers 28). Nothing decoded is committed.
 - Vanilla packs are PFH5 (layout in the `engine/pack.py` docstring). Patch 9 vanilla
   entries are zstd frames, read through the `zstd` CLI. The mod pack is written
   uncompressed with a fixed timestamp, so its hash depends only on the sources.

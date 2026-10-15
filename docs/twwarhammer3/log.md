@@ -41,7 +41,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 ## Index
 
-- 2026-10-15: [Skaven swarm drafts](#2026-10-15-skaven-swarm-drafts) ·
+- 2026-10-15: [Unit costs and attributes from the game database](#2026-10-15-unit-costs-and-attributes-from-the-game-database) ·
+  [Skaven swarm drafts](#2026-10-15-skaven-swarm-drafts) ·
   [Several models in one job](#2026-10-15-several-models-in-one-job) ·
   [Queue stops on changed rematch starts](#2026-10-15-queue-stops-on-changed-rematch-starts) ·
   [Report redesign](#2026-10-15-report-redesign) ·
@@ -87,6 +88,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
   [Baseline after the lapse fix](#2026-10-13-baseline-after-the-lapse-fix) ·
   [v1, first LLM battles](#2026-10-13-v1-first-llm-battles) ·
   [First baseline](#2026-10-13-first-baseline)
+
+## 2026-10-15: Unit costs and attributes from the game database
+
+`scripts/wh3_db.py` decodes a table of the game's `db.pack` with RPFM's schema, read-only
+([integration.md](integration.md#packs-and-loading)); a synthetic table tests it. Two uses
+so far, no game run:
+- **The swarm drafts fit their funds**: decoded `multiplayer_cost` totals are 7850
+  (Skaven) and 8200 (Dwarfs) for `skv-swarm-dwf-line`, 6300 and 8350 for
+  `dwf-line-skv-swarm`, under 12000; no unit exceeds its multiplayer cap. As a check, the
+  taurox rosters that played under large funds decode to 10675 and 11525.
+- **The report's unit text now rests on game data**, not only recorded base stats:
+  Halberdiers have a +16 bonus against large units with charge defence and charge
+  reflection against large, so their role reads "Anti-cavalry infantry"; 38 of the
+  Questing Knights' 52 damage is armour-piercing and they are immune to psychology; Grail
+  Knights have magical attacks and never tire; Mounted Yeomen Archers fire on the move;
+  Great Cannons cannot run; both generals encourage nearby units. Weapon damage plus
+  armour-piercing damage matches each unit's recorded `weapon_damage`, which cross-checks
+  the decoding. Nothing decoded is committed.
 
 ## 2026-10-15: Skaven swarm drafts
 

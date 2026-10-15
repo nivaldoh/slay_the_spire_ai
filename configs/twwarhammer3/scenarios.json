@@ -641,7 +641,7 @@
    "wh_main",
    "wh2_main"
   ],
-  "brief": "Twenty Skaven units, most of them cheap and quick to flee, must break nine Dwarf units holding a gun line with an Organ Gun before the 1200-second timer. A Grey Seer, a Warlock Engineer, warpfire, poisoned wind, a Warp Lightning Cannon and a Doomwheel are the scarce damage. Spending slaves to screen and pin, timing the weapon teams, protecting the caster and avoiding a cascade of routs compete; one all-in charge is the naive risk. Hypotheses, not a prescribed solution. Not screened in the game: the funds fit and the AI's defence are unverified."
+  "brief": "Twenty Skaven units, most of them cheap and quick to flee, must break nine Dwarf units holding a gun line with an Organ Gun before the 1200-second timer. A Grey Seer, a Warlock Engineer, warpfire, poisoned wind, a Warp Lightning Cannon and a Doomwheel are the scarce damage. Spending slaves to screen and pin, timing the weapon teams, protecting the caster and avoiding a cascade of routs compete; one all-in charge is the naive risk. Hypotheses, not a prescribed solution. Not screened in the game: the AI's defence is unverified (decoded unit costs: 7850 and 8200 of 12000)."
  },
  "dwf-line-skv-swarm": {
   "battle_type": "classic",
@@ -709,6 +709,6 @@
    "wh_main",
    "wh2_main"
   ],
-  "brief": "Seven Dwarf units must hold against twenty attacking Skaven units; the defender wins if it survives the 1200-second timer. Irondrakes and an Organ Gun are the only crowd-clearing anchors, with limited ammunition. Shaping the approach, anchoring the flanks, spending ammunition on the right targets and avoiding encirclement compete; spreading out to fight everywhere is the naive risk. Evasion should be harder than in the compact defender pilots, but that and the AI's assault are hypotheses to verify. Not screened in the game: the funds fit is unverified."
+  "brief": "Seven Dwarf units must hold against twenty attacking Skaven units; the defender wins if it survives the 1200-second timer. Irondrakes and an Organ Gun are the only crowd-clearing anchors, with limited ammunition. Shaping the approach, anchoring the flanks, spending ammunition on the right targets and avoiding encirclement compete; spreading out to fight everywhere is the naive risk. Evasion should be harder than in the compact defender pilots, but that and the AI's assault are hypotheses to verify. Not screened in the game (decoded unit costs: 6300 and 8350 of 12000)."
  }
 }
