@@ -65,7 +65,8 @@ configs/
                    commander_prompt.md, scenarios.json, custom_battle.json (random draws),
                    report_notes.json (the report's scenario, unit and highlight text)
 scripts/           Spire first-combat tools (inventory, audits, dataset export, training
-                   drivers, plots); wh3_queue.py runs a frozen plan of WH3 play jobs
+                   drivers, plots); wh3_queue.py runs a frozen plan of WH3 play jobs;
+                   wh3_db.py reads WH3 unit costs and attributes from the game database
 tests/             One directory per package; tests/fixtures holds Spire engine transitions;
                    test_doc_links.py checks every Markdown link and anchor
 docs/
