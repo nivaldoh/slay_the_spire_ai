@@ -129,6 +129,8 @@ Slay the Spire:
 
 ## Unmerged branches
 
+- `wh3-llm-range` (`b58d327`): `llm`/`llm_rules` flag a shooter's target beyond its range
+  ("it advances to shoot"), on `da6f3bb`; merge after C1, as the next `llm` version.
 - `integration/heldout-clip-continuation` (`940d698`): first-combat work, on `01f2984`.
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-fire-report` (`832b233`): WH3 fire-report candidate, on v9 (`d928965`); untested.

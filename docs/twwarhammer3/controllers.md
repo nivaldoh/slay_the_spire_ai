@@ -196,6 +196,7 @@ golden prompts:
    shooters left the defensive line and fled first. The state gives each unit's `range`
    but neither prompt says that attacking beyond it walks the unit forward; the unit line
    could print the target's distance against the range, or the rules could say it.
+   Drafted on branch `wh3-llm-range`, unmerged while C1 freezes the controllers.
 
 ## Designs not built yet
 
