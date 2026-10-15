@@ -370,7 +370,7 @@
           "lead_in_s": 15,
           "end_ms": 487100,
           "title": "Pressing the halberd line to the end",
-          "text": "After the guns broke, the halberd line gave way one unit at a time, Halberdiers 4 at 5:12, the General at 5:40, Halberdiers 2 at 5:50, Halberdiers 1 at 7:17 and the last, Halberdiers 3, at 8:07, when the game declared the win, while three of the four knight regiments had begun fleeing by 7:59.",
+          "text": "After the guns broke, the halberd line gave way one unit at a time, Halberdiers 4 at 5:12, the General at 5:40, Halberdiers 2 at 5:50 (it rallied at 6:11), Halberdiers 1 at 7:17 and Halberdiers 3 at 8:07, when Halberdiers 2 was also seen fleeing and the game declared the win, while three of the four knight regiments had begun fleeing by 7:59.",
           "units": [
             "f1",
             "f2",
@@ -389,6 +389,7 @@
             "replay.jsonl:308",
             "replay.jsonl:336",
             "replay.jsonl:346",
+            "replay.jsonl:367",
             "replay.jsonl:401",
             "replay.jsonl:433",
             "replay.jsonl:461",

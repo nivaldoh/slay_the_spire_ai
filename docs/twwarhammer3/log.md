@@ -128,8 +128,9 @@ the halberdiers lost 58 men and the army routed at 1005 s. Supported: continuing
 the halberdiers separated the two. Plausible, not shown: the last-sighting entries led the
 search. Unsupported: the route or losses on the way in decided it (124 and 120 knights at
 about 257 s). The report `reports/c1-cavalry-ai11.html` features Sol's win as the selected
-example with two analyst notes written from its recorded events (`report_notes.json`; not
-yet reviewed by a second reader or the owner).
+example with two analyst notes written from its recorded events (`report_notes.json`; a
+second reader confirmed the first and corrected the second, which missed a rally; the owner
+has not reviewed them).
 
 ## 2026-10-15: Skaven swarm screens
 
