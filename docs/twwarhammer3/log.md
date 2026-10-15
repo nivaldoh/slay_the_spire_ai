@@ -174,7 +174,10 @@ rebuilt every 0.1 s during playback, so normal clicks on its buttons were lost; 
 updates only the waiting counter between decisions. It also folded "what happened next",
 moved the "queued steps continue" note into a tooltip, put the headline chart after the
 viewer below 1081 px and stacked the results rows below 901 px (no sideways scroll on
-tablets).
+tablets). A final check rated the lean-text item a pass (decision panels median 87 words
+without orders, 104 with) and found commander-battle defects, now fixed: the pinned view
+showed the unit skills' 0.3 s window as the model's view, and executor ticks repeated
+"No reason was recorded" and a waiting line. Folds also stay open across decisions.
 
 Validation: full `uv run pytest -q` and lint; prettier (width 100); the offline browser
 check passed on the canonical page, a copy, the synthetic demo and the two-model pair page

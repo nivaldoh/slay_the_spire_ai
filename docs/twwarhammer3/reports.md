@@ -185,13 +185,16 @@ unit's; the roster and hover still name every unit.
 The moment panel shows the latest decision applied by the replay time, never a reply
 before it was applied ("Waiting for the model's next reply" until then): the stated
 reason, quoted and attributed; the orders in plain words ("Lord: run 320 m north-west,
-then attack Great Cannons in melee"), "Keeping current orders" (its tooltip: queued steps
-continue), or "orders refused by validation"; then, folded, up to six "what happened next"
-facts from the recorded frames with their causation caveat. After the orders, one sentence
-says how old the information was when the game accepted them, with the seen and accepted
-times and the reply's wall-clock time (for the commander, its plan's age or the unit skills
-following it). While playing, only the waiting counter updates between decisions, so the
-panel's buttons and folds stay usable. Message, reply, timing detail
+then attack Great Cannons in melee") or "orders refused by validation" (a reply with no
+orders says so in its heading, whose tooltip adds that queued steps continue); then,
+folded, up to six "what happened next" facts from the recorded frames with their causation
+caveat. After the orders, one sentence says how old the information was when the game
+accepted them, with the seen and accepted times and the reply's wall-clock time (for the
+commander, its plan's age or the unit skills following it). Folds stay as the reader left
+them from one decision to the next, and while playing only the waiting counter updates
+between decisions, so the panel stays usable. In commander battles, the unit skills' ticks
+show no explanation section and no waiting line, and neither "See what moved" control is
+offered (Model's view shows the plan's view). Message, reply, timing detail
 and cost stay collapsed. "See what moved while it waited" pins the reply: the ordered units,
 their targets and every unit that moved 5 m or more, as outlines in the basis observation
 and solid in the first frame after application, joined by straight lines. On wide screens

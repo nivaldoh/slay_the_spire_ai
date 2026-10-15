@@ -466,6 +466,8 @@
     }
     if (openKey !== key) return;
     payload = decoded;
+    // A commander's plan has no single reply to pin; Model's view shows the plan's view.
+    $("show-lag").disabled = Boolean(payload?.decisions?.some((d) => d.plan_age_s != null));
     if (payload?.frames?.length) Viewer.show(payload, context(entry));
     else Viewer.clear(problem || "No replay was recorded for this battle.");
     $("map-army").textContent = `${who(entry).name}'s army`;

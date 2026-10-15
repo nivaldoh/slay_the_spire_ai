@@ -934,10 +934,6 @@ blockquote {
   font-size: var(--t-xs);
   color: var(--note);
 }
-.keeping {
-  color: var(--stage-ink);
-  font-weight: 600;
-}
 .facts li {
   display: flex;
   gap: 8px;

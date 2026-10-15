@@ -340,10 +340,12 @@ const Viewer = (() => {
       b = pinned == null ? bounds() : inspectBounds(r.decisions[pinned]);
     // The inspect caption wraps on narrow maps: its band grows to fit it.
     const top = pinned == null ? TOP_BAND : Math.max(TOP_BAND, $("map-caption").offsetHeight + 10);
-    const scale = Math.min((w - 28) / (b[2] - b[0]), (h - 28 - top - BOTTOM_BAND) / (b[3] - b[1]));
+    // So does the legend row, on narrow maps.
+    const bottom = Math.max(BOTTOM_BAND, document.querySelector(".map-bottom").offsetHeight + 14);
+    const scale = Math.min((w - 28) / (b[2] - b[0]), (h - 28 - top - bottom) / (b[3] - b[1]));
     const cx = (b[0] + b[2]) / 2,
       cz = (b[1] + b[3]) / 2,
-      middle = top + (h - top - BOTTOM_BAND) / 2;
+      middle = top + (h - top - bottom) / 2;
     // Markers shrink a little on narrow maps; labels keep their size.
     const k = Math.max(0.72, Math.min(1, w / 760));
     proj = {
@@ -995,7 +997,8 @@ const Viewer = (() => {
   const waiting = (now) =>
     `Waiting for ${run.kind === "model" ? "the model's" : "the controller's"} ${now.current < 0 ? "first" : "next"} reply · ${((time - requested(r.decisions[now.pending])) / 1000).toFixed(1)} s`;
   function statusLine(now) {
-    if (now.pending < 0) return null;
+    // A commander's unit skills reply every fraction of a second; its plans carry the timing.
+    if (now.pending < 0 || planned()) return null;
     const d = r.decisions[now.pending],
       line = el("p", null, "status-line");
     if (d.applied_ms == null && time >= end)
@@ -1018,6 +1021,17 @@ const Viewer = (() => {
   }
   const pre = (text) => el("pre", text, "raw");
 
+  // Panel folds stay as the reader left them when the next decision is shown.
+  const openFolds = new Set();
+  function fold(summary, ...content) {
+    const node = details(summary, ...content);
+    node.open = openFolds.has(summary);
+    node.addEventListener("toggle", () =>
+      node.open ? openFolds.add(summary) : openFolds.delete(summary),
+    );
+    return node;
+  }
+
   function explanation(d) {
     const section = el("section");
     if (d.reason) {
@@ -1036,7 +1050,7 @@ const Viewer = (() => {
       if (named.length) section.append(el("p", `In this quotation: ${named.join(", ")}`, "note"));
       if (d.notes_changed)
         section.append(
-          details(
+          fold(
             "Its battle notes changed",
             el("p", "Before", "note"),
             pre(d.notes_before ?? "(none)"),
@@ -1066,12 +1080,6 @@ const Viewer = (() => {
         el("li", `Refused by validation before reaching the game: ${d.invalid.error}`, "rejected"),
       );
       section.append(list, el("p", "No orders reached the game; earlier orders continue.", "note"));
-      return section;
-    }
-    if (!d.summary.length) {
-      const keeping = el("p", "Keeping current orders.", "keeping");
-      keeping.title = "Earlier orders, queued steps included, continue.";
-      section.append(keeping);
       return section;
     }
     const list = el("ul", null, "orders");
@@ -1106,7 +1114,7 @@ const Viewer = (() => {
           "muted",
         ),
       );
-    return details(
+    return fold(
       "What happened next",
       list,
       el(
@@ -1144,7 +1152,8 @@ const Viewer = (() => {
         ` when the game accepted ${d.steps.length ? "these orders" : "this reply"} (${seen}; reply ${seconds(d.reply_s)} on the wall clock).`,
       );
     section.append(sentence);
-    if (d.basis_frame != null && d.after_frame != null) {
+    // What moved while it waited: for a commander, Model's view shows its plan's view instead.
+    if (!planned() && d.basis_frame != null && d.after_frame != null) {
       if (pinned === i) {
         const moved = d.displacements
           .filter((m) => inspectUnits(d).has(m.unit))
@@ -1155,11 +1164,7 @@ const Viewer = (() => {
             el("li", `${roster.get(m.unit)?.display || m.unit} moved ${Math.round(m.metres)} m`),
           );
         section.append(
-          el(
-            "p",
-            `While the reply was being generated (${clockTenths(r.frames[d.basis_frame].time_ms)} → ${clockTenths(r.frames[d.after_frame].time_ms)} battle clock):`,
-            "note",
-          ),
+          el("p", "While the reply was being generated:", "note"),
           list,
           el(
             "p",
@@ -1181,7 +1186,7 @@ const Viewer = (() => {
         pre(a.text ?? "Not recorded"),
       ]);
       out.push(
-        details(
+        fold(
           "Exact message and reply",
           el("p", "Prompt", "note"),
           pre(d.prompt ?? "Not recorded"),
@@ -1200,7 +1205,7 @@ const Viewer = (() => {
         ? d.attempts.reduce((n, a) => n + a.usd, 0)
         : null;
     out.push(
-      details(
+      fold(
         "Technical timing and cost",
         keyValues([
           ["Reply (wall clock)", d.reply_s == null ? null : seconds(d.reply_s)],
@@ -1232,7 +1237,7 @@ const Viewer = (() => {
     );
     if (d.invalid)
       out.push(
-        details(
+        fold(
           "Validation refused these orders",
           el("p", "The harness refused this reply's orders before they reached the game.", "note"),
           pre(json(d.invalid)),
@@ -1254,8 +1259,13 @@ const Viewer = (() => {
             : `Reply at ${clock(d.applied_ms)}: no new orders`,
       ),
     );
-    // What it ordered and why first; how old its information was after.
-    const parts = [head, explanation(d), ordersSection(d)];
+    if (!d.invalid && !d.summary.length)
+      head.title = "Earlier orders, queued steps included, continue.";
+    // What it ordered and why first; how old its information was after. A commander's unit
+    // skill ticks carry no reasons of their own.
+    const parts = [head];
+    if (!(planned() && d.plan_age_s == null && !d.reason)) parts.push(explanation(d));
+    if (d.invalid || d.summary.length) parts.push(ordersSection(d));
     if (d.next?.length) parts.push(nextSection(d));
     parts.push(ageSection(d, i), ...technical(d));
     return parts;
