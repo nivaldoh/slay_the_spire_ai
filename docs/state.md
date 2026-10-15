@@ -47,7 +47,8 @@ Next steps:
    After launch 2: Sol 1 of 2 at ×1.1, Luna and both baselines 0 of 2
    ([log](twwarhammer3/log.md#2026-10-15-calibration-c1-launches-1-and-2)).
 2. Then: Sol screens of the two swarm prototypes, and the next `llm` version with the
-   out-of-range attack fix ([candidates](twwarhammer3/controllers.md#candidate-changes-for-the-next-version))
+   out-of-range attack fix (and possibly last sightings that keep the unit's state, an
+   `obs-v4` track change suggested by Sol's C1 loss) ([candidates](twwarhammer3/controllers.md#candidate-changes-for-the-next-version))
    only after C1, which freezes the controllers. The owner's later look at the delegated
    decisions ([log](twwarhammer3/log.md#2026-10-15-harness-b10-llm-v16-and-the-calibration-decisions)).
 3. Then the [README's Next](twwarhammer3/README.md#next): specialist scenarios, the next
