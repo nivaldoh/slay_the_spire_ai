@@ -340,7 +340,9 @@ per new scenario. Scenario-specific scoring and deeper model comparisons can fol
 later. This replaces the earlier three-scenario, ten-battle proposal. Preparation is
 documentation only. The owner subsequently authorized the controller integration, shared
 measures and consolidated report: implemented as v17 / commander v4 and harness b11
-(evaluator v2); validation is in progress. Scenario expansion remains future work.
+(evaluator v2), with tests, engine smoke battles and offline browser validation complete
+([b11 log](log.md#2026-10-15-harness-b11-common-measures-and-one-report)). Scenario expansion
+remains future work and must meet the playmaking requirement below.
 
 ### 1. Shared progress measures first
 
@@ -396,10 +398,30 @@ measures need their own version, not a new observation track.
 ### 3. Expand scenario variety with short exploratory runs
 
 The next work is a broader set of distinctive battles, not another cavalry/swarm repeat
-block. Keep those existing challenges and their evidence in the report; they do not
-need to be rerun before new scenarios are added. Change army composition, scale, faction
-mechanics, terrain, roles and objectives deliberately. Reusing the same Khorne/Dwarf
+block. Keep existing cavalry/swarm evidence in the report, and review those challenges
+under the playmaking requirement below; no repeat campaign is needed before new scenarios
+are added. Change army composition, scale, faction mechanics, terrain, roles and objectives
+deliberately. Reusing the same Khorne/Dwarf
 rosters on several maps would provide less variety than the owner wants.
+
+**Playmaking is a requirement.** Difficult odds earn a place when the controller has
+credible ways to exploit its advantages and mitigate its disadvantages. For each proposed
+battle, identify the useful strengths, the threats and a few meaningful choices: for
+example, creating a firing lane, separating an enemy force, timing a spell or charge,
+preserving a mobile reserve, or trading a position for objective time. The controller
+must be able to observe and execute these plays through the available interface while
+the battle runs at its normal speed. A dramatic massacre with few consequential choices
+does not make a useful challenge.
+
+Use the 2-3 exploratory battles to inspect whether these opportunities exist, whether
+the controller recognizes them, and how far its choices change progress. Record observed
+plays and missed opportunities in the report, distinguishing evidence from tactical
+hypotheses. A few losses do not establish that every controller must lose; likewise,
+interesting-looking armies alone do not establish useful options. If there is no credible
+room to influence the battle, redesign the armies, terrain, resources or objectives, or
+drop the scenario from the active collection while retaining its evidence. Adjusting
+difficulty to create meaningful choices is allowed; a target win rate is still not the
+selection rule. Apply this requirement to existing and new scenarios.
 
 The runtime already supports nine battle types beyond land, with real-game results
 ([battle types](battle-types.md#results)). The gap is useful varied scenario content and
@@ -427,9 +449,9 @@ After implementing each new scenario, play **2-3 battles total for that scenario
 use a third for a contrasting controller, a repeat, or a specific behavior check. Pick
 the controllers and small cost allowance before running, based on the question and
 remaining budget. Neither a scripted baseline nor every model is mandatory in every
-initial screen. The goals are working mechanics, visible tactical choices and readable
-results/replays. Count the initial in-game check toward these battles; repair broken
-setup/controls as needed, without repeatedly changing difficulty until a model wins.
+initial screen. The goals are working mechanics, demonstrated room for playmaking and
+readable results/replays. Count the initial in-game check toward these battles; repair
+broken setup/controls as needed, without repeatedly changing difficulty until a model wins.
 
 Label these runs exploratory; 2-3 battles do not establish a stable ranking. Add them to
 the common report and move to the next distinct scenario. Further repeats and matched
@@ -454,7 +476,7 @@ latency differences between models alone do not establish a causal latency effec
 
 ### 5. One benchmark report
 
-Use `runs/twwarhammer3/reports/benchmark.html` as the planned canonical entry point for
+Use `runs/twwarhammer3/reports/benchmark.html` as the canonical entry point for
 the entire suite, with `.json` and `.txt` companions. Existing `report JOB [JOB ...]`
 already accepts all scenarios and `report_html.display_data` provides navigation between
 them. Extend that path; no separate site, server or new report framework is needed.

@@ -162,6 +162,11 @@ The owner prioritizes variety now: more visibly different armies and objectives,
 above already have working examples; most reused the same five-unit armies. The
 [implementation plan](benchmark.md#implementation-plan) builds on them.
 
+Every scenario must offer credible playmaking: useful strengths to exploit, disadvantages
+to mitigate and choices that can materially change progress through the available
+controls. Inspect these in the exploratory runs. Redesign or drop a scenario with no
+credible options; preserve its evidence. Severe odds alone do not justify keeping it.
+
 1. **First expansion.** Siege defence, survival and conquest with distinctive armies,
    maps and objectives, alongside another contrasting land army. Keep existing cavalry
    and swarm evidence; no repeat campaign is needed before adding these modes. Use the

@@ -1,15 +1,13 @@
 # Project state
 
-Updated 2026-10-15 17:35 UTC: what is running, where each game stands and what comes
+Updated 2026-10-15 18:04 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-No game controller is running. Implementing the authorized first three steps: integrate
-`llm` v17 / commander v4, add shared evaluation measures, and consolidate the offline
-benchmark report. Validate with tests, browser checks and a small real-game check;
-scenario expansion remains next ([plan](twwarhammer3/benchmark.md#implementation-plan)).
+No game controller is running. WH3 smoke job `bench-b11-measures-20261015` finished at
+18:00 UTC; v17/commander v4, shared measures and the consolidated report are validated.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -32,14 +30,16 @@ command; clear it when the job stops.
 - Both swarm prototypes have working screens; every player army routed. Existing reports
   are `c1-cavalry-ai11`, `swarm-screens` and `cavalry-assault` in
   `runs/twwarhammer3/reports/`. The canonical `benchmark.html` now consolidates the
-  explicit job selection; browser and in-game validation are in progress.
-- API spend: $14.2179 of the $25 cap on 2026-10-15; no calls during preparation.
+  explicit job selection, including the b11 smoke results; offline browser validation passed.
+- API spend: $14.3146 of the $25 cap on 2026-10-15.
 
-Next: finish validation of v17/commander v4, common measures and the consolidated report
+Next: expand varied armies, siege defence, survival and conquest, with 2-3 exploratory
+battles total per new scenario. Each must offer credible plays that exploit strengths
+and mitigate disadvantages; redesign or drop scenarios without meaningful choices.
+The first three implementation steps are complete
 ([b11 log](twwarhammer3/log.md#2026-10-15-harness-b11-common-measures-and-one-report)).
-Then expand varied armies, siege defence, survival and conquest, with 2-3 exploratory
-battles total per new scenario. Scenario-specific scoring, deeper comparisons and added
-delay remain later. Steam is now pinned to 9.0.4; old evidence keeps its original build.
+Scenario-specific scoring, deeper comparisons and added delay remain later. Steam is
+now pinned to 9.0.4; old evidence keeps its original build.
 
 ## Slay the Spire
 
@@ -69,6 +69,10 @@ Next steps:
 ## Owner direction
 
 WH3:
+- 2026-10-15 (playmaking): retain difficult battles only when they give a controller
+  meaningful options to exploit advantages and mitigate disadvantages. Exploratory runs
+  should inspect those opportunities; redesign or drop scenarios with no credible plays,
+  preserving their evidence. This applies to existing challenges too.
 - 2026-10-15 (implementation): authorized the first three steps: controller integration,
   common measures and one report. Scenario expansion remains next.
 - 2026-10-15 (refined): planning only at that stage. Prioritize scenarios that look and play very

@@ -30,15 +30,15 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 | Piece | Version | Defined in | Latest results |
 |---|---|---|---|
-| `llm` | v17 (2026-10-15) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | battle types, Luna low: 6 wins in 10 jobs (`llm-luna-v15-*-20261014-*`); `bench-b2-acceptance-r2-20261014` lost at 442 s |
-| `llm_rules` | shares `llm` v17 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | Sol low won `visual-sol-low-20261015` (382 s, $0.63) and the G1 trial of `bench-g1-cavalry-ai10-01-20261014` (528 s, $0.79) |
-| `commander` | v4 (2026-10-15) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | battle types, Luna low: 4 wins in 9 jobs (`commander-luna-v3-*-20261014-*`) |
+| `llm` | v17 (2026-10-15) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | Shared input validated through `llm_rules` in b11; tactical prompt's last mode campaign was v15 (Luna low: 6 wins in 10 jobs) |
+| `llm_rules` | shares `llm` v17 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | b11 smoke, Luna low: lost `dwf-line-skv-swarm` at 460 s ($0.043) |
+| `commander` | v4 (2026-10-15) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | b11 smoke, Luna low: lost `dwf-line-skv-swarm` at 593 s ($0.054) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b11 (2026-10-15), evaluator v2, track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | C1 finished: Sol 1 of 6 at ×1.1, Luna and both baselines 0 of 6; retained as development evidence under the revised plan |
+| benchmark harness | b11 (2026-10-15), evaluator v2, track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Two b11 engine outcomes; whole-unit counters and unchanged rematch checked. C1 remains development evidence |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
-| report | consolidated suite (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | rebuilt from `visual-sol-low-20261015` and the G1 jobs |
+| report | consolidated suite (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | `reports/benchmark.html`: 55 jobs, 91 trials, 19 scenarios, 10 battle types |
 
 ## Index
 
@@ -116,14 +116,16 @@ shares are not presented as objective time. Scoring stays outside policy inputs 
 replay exports; no aggregate ranking or scenario-specific score was added.
 
 `reports/benchmark.html` (with JSON/text) is built from the explicit
-`configs/twwarhammer3/benchmark_jobs.json` list using `report --jobs-file`. Initially 54
-jobs, 89 started trials (83 engine outcomes), 19 scenarios and 10 battle types: cavalry,
+`configs/twwarhammer3/benchmark_jobs.json` list using `report --jobs-file`: 55
+jobs, 91 started trials (85 engine outcomes), 19 scenarios and 10 battle types: cavalry,
 swarms, specialist screens and historical mode pilots, including failed attempts. Older
 mode pilots lacked declaration names; the selector now uses their saved config names
 instead of putting every unnamed mode together. Source revisions, evaluator versions and
 game builds remain separate evidence groups. A collapsible overview shows armies and
 coverage; each scenario keeps its comparisons, run settings, notes and replays. Existing
-scenario reports are retained. The initial single-file HTML is about 32 MiB.
+scenario reports are retained. The single-file HTML is about 33 MiB. Related scenarios
+have distinct readable titles. Matching controller class/prompt hashes across source
+revisions no longer claim identical controllers: shared dependencies can change too.
 
 Runtime prerequisite: Steam updated after C1 to 9.0.4.0, build 25961564 (complete install,
 no staged bytes). The executable reports The Creative Assembly Ltd; SHA256
@@ -131,11 +133,45 @@ no staged bytes). The executable reports The Creative Assembly Ltd; SHA256
 and retained the prior build/hash in integration.md. `doctor` is ready. Older 9.0.3
 trials retain their provenance and are not pooled with new-build checks.
 
-Validation so far: full `uv run pytest -q` passed (988 passed, 14 skipped); lint passed.
+Live validation: `bench-b11-measures-20261015`, source `c251401`, ran 17:39-18:00 UTC.
+Luna low controlled both episodes of `dwf-line-skv-swarm`, unpaused 1x, added age zero,
+Steam build 25961564. The rematch preserved roster, strength, loadout, resources and
+positions; both episodes ended on engine losses. Total cost $0.09664; ledger $14.3146
+of the $25 cap.
+
+| Controller | Loss at | Friendly units destroyed / alive | Enemy units destroyed / alive | Soldiers remaining, friendly / enemy | USD |
+|---|---:|---:|---:|---:|---:|
+| commander v4 | 592.7 s | 2 / 5 | 0 / 20 | 71 / 1416 | 0.05376 |
+| llm_rules v17 | 460.0 s | 1 / 6 | 0 / 20 | 155 / 1702 | 0.04289 |
+
+Both started with 7 friendly units / 331 soldiers and 20 enemy units / 1961 soldiers.
+At both losses every surviving friendly unit was routed, none active; the commander
+episode also retained one living leaving unit. Initial/final evaluator v2 counters
+reconciled. All 753 decision observations and 1046 replay frames exclude evaluation,
+final and setup data. Clock ratios were 1.000 and 0.988. Range feedback appeared in both
+live controllers. Neither battle triggered the last-sighting annotation; that case was
+checked by rendering actual historical routed-enemy observations through v17.
+Audits: `validation/b11-engine-check.json` and `validation/b11-v17-historical-rendering.json`.
+Arrivals, returns, resurrection and unreadable counts have Lua regressions; those new
+counters still need mode-specific engine evidence as the scenarios expand. These smoke
+trials validate integration, not controller improvement or a model ranking.
+
+Validation: full `uv run pytest -q` passed (990 passed, 14 skipped); lint passed.
 Tests cover routing versus death, absence/withdrawal, late/returning units, failed reads,
 resurrection, historical missing measures, point identity/duration, information boundaries,
-explicit input lists and unnamed pilot navigation. The offline browser check and a small
-real-game validation are in progress. No new scenario or calibration campaign is included.
+explicit input lists and unnamed pilot navigation. Offline Chromium checks passed on the
+canonical HTML and a copy: all 19 scenarios, replay navigation/downloads, historical
+missing measures, both new whole-unit results, objective point/time fields, controller
+versions, desktop and phone layouts. No external requests or browser errors.
+Screenshots/downloads are in `report-checks/benchmark/`; test and audit artifacts are in
+`validation/`. No new scenario or calibration campaign is included.
+
+During validation the owner clarified scenario selection: difficulty is useful only
+when there are meaningful plays. The plan and report guidance now require exploitable
+advantages, manageable choices about disadvantages and room for those decisions to
+change progress. Use the exploratory runs to inspect recognition and execution; redesign
+or drop scenarios with no credible options, retaining their evidence. This applies to
+existing cavalry/swarm challenges too, without reinstating a win-rate admission rule.
 
 ## 2026-10-15: Integrate llm v17 and commander v4
 
@@ -148,8 +184,9 @@ commander v4. No system prompt, executor or environment contract changed; the tr
 
 Validation: 44 LLM/commander/prompt tests and all 349 WH3 tests passed; `uv run ruff check .`
 passed. Golden prompts did not change (their cases do not trigger the new feedback).
-Real-game validation will accompany the shared evaluator check. Existing results and
-register rows retain their original revisions; no battles run for this integration yet.
+The [b11 smoke check](#2026-10-15-harness-b11-common-measures-and-one-report) validates
+the shared renderer and both controller versions in the game. Existing results and
+register rows retain their original revisions.
 
 ## 2026-10-15: Prioritize scenario variety and shared measures
 

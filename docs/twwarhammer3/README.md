@@ -169,8 +169,9 @@ is separate from Spire's, with its own $25 cap.
 ## Next
 
 The [implementation plan](benchmark.md#implementation-plan) prioritizes visibly different
-scenarios, general measures and one report. The first three steps are implemented;
-validation is in progress. Scenario expansion remains next.
+scenarios, general measures and one report. The first three steps are implemented and
+validated ([b11](log.md#2026-10-15-harness-b11-common-measures-and-one-report)). Scenario
+expansion remains next, with meaningful playmaking required in every challenge.
 
 1. Integrated `llm`/`llm_rules` v17 and commander v4 (range feedback and last-sighting
    state). The environment track remains unchanged.
@@ -184,7 +185,9 @@ validation is in progress. Scenario expansion remains next.
 4. Expand first into siege defence, survival, conquest and a contrasting caster/monster
    or other land army. Reuse existing battle-type support with distinctive forces and
    objectives. Play 2-3 exploratory battles total per newly implemented scenario, then
-   move on; deeper comparisons can follow later. Existing cavalry/swarm evidence remains
+   review whether its advantages and choices give a controller meaningful room to affect
+   the battle; redesign or drop scenarios without credible plays. Deeper comparisons can
+   follow later. Existing cavalry/swarm evidence remains
    useful without another repeat block. See [battle-types.md](battle-types.md#next).
 5. Keep added-delay experiments deferred. Siege attack needs gate/wall/equipment controls;
    siege defence already works. Domination, ambush/chokepoint and further army variants

@@ -40,6 +40,13 @@ their last observed progress, labelled as partial. Counts include later register
 purchases and waves; net headcount loss is not cumulative kills when resurrection occurs.
 There is no aggregate score across different armies or objectives.
 
+Each challenge's question and notes should explain its potential plays: the army's useful
+advantages, its disadvantages and consequential choices available to the controller.
+Use the replay to distinguish opportunities it recognized, exploited or missed, and label
+untested tactical ideas as hypotheses. Scenarios with no credible room for playmaking
+should be redesigned or dropped from the active collection; retain their historical
+results and explain the decision. Difficulty and spectacle alone do not establish value.
+
 Evaluator v2 adds whole-unit counters; historical counts remain unavailable. Alive routed
 units remain survivors; active units exclude routing, shattered, leaving and undeployed
 units. The subsidiary states can overlap. Objective time uses engine-tick integrals only;
