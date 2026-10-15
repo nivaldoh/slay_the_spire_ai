@@ -201,7 +201,8 @@ golden prompts:
    episode 3 Sol spent 600 s of a lost battle looking for guns that had routed off the
    map, listed in the last-sighting memory at the map edges with no state. Carrying the
    last observed state (routing, shattered) with each sighting changes the observation,
-   so it is a track change as well as a version (`obs-v4`).
+   so it is a track change as well as a version (`obs-v4`). Drafted on branch
+   `wh3-obs-last-state`, unmerged while C1 freezes the controllers.
 
 ## Designs not built yet
 
