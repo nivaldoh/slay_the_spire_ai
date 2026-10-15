@@ -221,6 +221,19 @@ def test_a_move_applied_at_the_observed_instant_is_not_reported_stopped(tmp_path
     assert "stopped 100 m short of your move (30 s)" in agent.metadata()["prompt"]
 
 
+def test_a_unit_last_seen_fleeing_says_so():
+    # bench-c1-cavalry-ai11-01-20261015 episode 3: Sol hunted routed guns for 600 s that
+    # the last-sighting memory listed with a position only.
+    seen = {}
+    first = observation(time_ms=200000)
+    first["enemy"][0].update(state=["routing", "moving"], x=-500.0, z=300.0)
+    llm.remember(seen, first)
+    later = observation(time_ms=260000)
+    later["enemy"] = []
+    text = llm.render_state(later, seen)
+    assert "at (-500, 300) 60 s ago" in text and "routing when last seen" in text
+
+
 def test_units_without_a_target_show_no_order_and_their_nearest_enemy():
     observation_ = observation()
     observation_["friendly"][0]["state"] = []
