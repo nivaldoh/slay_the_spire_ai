@@ -168,30 +168,23 @@ is separate from Spire's, with its own $25 cap.
 
 ## Next
 
-The [implementation plan](benchmark.md#implementation-plan) prioritizes visibly different
-scenarios, general measures and one report. The first three steps are implemented and
-validated ([b11](log.md#2026-10-15-harness-b11-common-measures-and-one-report)). Scenario
-expansion remains next, with meaningful playmaking required in every challenge.
+The [implementation plan](benchmark.md#implementation-plan) requires 6–8 distinct decision
+families, shared measures and one report. b12 is implemented at `be6c614`; the live screens
+are in progress ([log](log.md#2026-10-16-harness-b12-and-distinct-scenario-families)).
 
-1. Integrated `llm`/`llm_rules` v17 and commander v4 (range feedback and last-sighting
-   state). The environment track remains unchanged.
-2. Added shared measures: casualties, soldiers and whole units remaining/destroyed,
-   objective time where applicable, duration, natural latency, cost and failures.
-   Evaluator v2 supplies whole-unit counters; old results retain missing values. Scenario-specific scoring is
-   a possible later improvement, not a requirement for adding a scenario.
-3. Consolidated the report at `runs/twwarhammer3/reports/benchmark.html`, with an overview
-   of battle types and armies and in-page comparisons/replays. Multi-scenario input
-   uses the explicit `configs/twwarhammer3/benchmark_jobs.json` list; update it as scenarios grow.
-4. Expand first into siege defence, survival, conquest and a contrasting caster/monster
-   or other land army. Reuse existing battle-type support with distinctive forces and
-   objectives. Play 2-3 exploratory battles total per newly implemented scenario, then
-   review whether its advantages and choices give a controller meaningful room to affect
-   the battle; redesign or drop scenarios without credible plays. Deeper comparisons can
-   follow later. Existing cavalry/swarm evidence remains
-   useful without another repeat block. See [battle-types.md](battle-types.md#next).
-5. Keep added-delay experiments deferred. Siege attack needs gate/wall/equipment controls;
-   siege defence already works. Domination, ambush/chokepoint and further army variants
-   can expand the collection; a full model/baseline matrix is not an initial requirement.
+1. Inspect siege defence, survival, conquest and one battery-evacuation pilot, with 2–3
+   exploratory battles total per candidate. Default to Sol-low and Luna-low with the
+   rules-only prompt. Inspect credible plays and missed opportunities; redesign or drop
+   a candidate without meaningful choices. A difficult loss alone is not grounds to drop it.
+2. Keep each attempt in `runs/`, the results register and the same
+   `runs/twwarhammer3/reports/benchmark.html`. Use tickets, ownership time, survival
+   duration or asset extraction where appropriate, alongside casualties and reliability.
+3. Count cavalry and caster revisions once per family. Retain swarm assault/defence as
+   provisional distinct questions and keep older mode pilots as historical evidence.
+   The [design audit](benchmark.md#scenario-design) is the admission checklist for novelty.
+4. Keep self-comparisons deferred: army/control workload, neutral prompt length, useful
+   history, factual representation and observation age are separate interventions.
+   More units do not isolate a context-length effect. Siege-attack controls remain later.
 
 The unfinished random-draw comparison has seeds 264482191, 1355466036 and 238913231 left,
 then Sol and Astra as commander. Other candidates remain in

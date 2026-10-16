@@ -77,6 +77,13 @@ The shared report uses tickets, ownership time and extraction counts for their r
 modes, and duration for endless survival. It keeps casualty measures but no longer presents
 them as objective progress. The replay marks the public extraction circle.
 
+The first live-screen job, `bench-b12-siege-reserve-20261016`, stopped before a battle
+or model call: Helmgart's map metadata also says `land_normal`. The repaired setup reads
+`BattleTypeRecordContext.Key` for every lobby mode and separately validates the declared
+engine mode. The report retains this setup failure. The existing Empire inventory also
+caught `great_cannon` as the exact evacuation card key before that scenario ran.
+Offline browser checks passed at `report-checks/b12`.
+
 ## Index
 
 - 2026-10-15: [Report: sections by game mode](#2026-10-15-report-sections-by-game-mode) ·

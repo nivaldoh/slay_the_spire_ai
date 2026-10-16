@@ -68,7 +68,7 @@ ENGINE_TYPES = {
 }
 TIMERS = {1200: "time_limit_short", 2400: "time_limit_medium", 3600: "time_limit_long"}
 LOBBY_FIELDS = {
-    "battle_type": "MapContext.BattleTypeString",
+    "battle_type": "BattleTypeRecordContext.Key",
     "difficulty": "DifficultyLevelSettingContext.Key",
     "funds": "FundTypeSettingContext.Key",
     "time_limit_s": "TimeLimitSeconds",
@@ -297,15 +297,19 @@ def battle_units(army: dict) -> list[str]:
 
 def lobby_fields(scenario: dict) -> dict:
     fields = dict(LOBBY_FIELDS)
-    # These modes reuse land maps: the map's BattleTypeString stays land_normal.
-    if scenario.get("battle_type") in {"survival", "conquest", "domination"}:
-        fields["battle_type"] = "BattleTypeRecordContext.Key"
     if scenario["expect"].get("time_limit_s") is None:
         fields.pop("time_limit_s")
         fields["timer_enabled"] = "IsTimeLimitUsed"
     if scenario["expect"].get("funds") == "funds_custom":
         fields["funds_amount"] = "CustomBudgetAmount"
     return fields
+
+
+def lobby_value(scenario: dict, key: str):
+    # A fort and a survival map both report land_normal as their map type. Verify the
+    # selected lobby mode here; expected_mode separately checks the engine mode in battle.
+    return (scenario.get("battle_type", "classic") if key == "battle_type"
+            else scenario["expect"][key])
 
 
 def fill_timeouts(scenario: dict, config: dict) -> None:
@@ -338,6 +342,8 @@ def validate_declaration(scenario: dict, config: dict) -> None:
     if config.get("attach"):
         raise ValueError("benchmark setup requires its own launch and menu checks")
     expect = scenario["expect"]
+    if expect.get("battle_type") != ENGINE_TYPES[scenario.get("battle_type", "classic")]:
+        raise ValueError("declared engine battle type does not match the selected lobby mode")
     for key in (*lobby_fields(scenario), "time_limit_s", "unit_scale", "realism", "player_defends"):
         if key not in expect:
             raise ValueError(f"benchmark scenario is missing expect.{key}")
@@ -424,7 +430,7 @@ def menu_checks(scenario: dict) -> list[dict]:
                        f'SetCustomFundsAmount("{scenario["expect"]["funds_amount"]}")',
                        "required": True})
     return checks + [{"context": "CcoFrontendRoot", "expression": SETTINGS + field,
-             "expect": modifier if key == "ai_stats_modifier" else scenario["expect"][key],
+             "expect": modifier if key == "ai_stats_modifier" else lobby_value(scenario, key),
              "required": True}
             for key, field in lobby_fields(scenario).items()]
 
@@ -439,14 +445,14 @@ def check_menu(scenario: dict, directory) -> dict:
         raise ProtocolError(f"setup map is {selected!r}, expected {scenario['map']!r}")
     checks = {"map": selected[0]}
     for key, field in lobby_fields(scenario).items():
-        wanted = str(scenario["expect"][key]).lower()
+        wanted = str(lobby_value(scenario, key)).lower()
         matches = re.findall(re.escape(SETTINGS + field) + r" = ([^\r\n]+)", log)
         actual = matches[-1].lower() if matches else None
         equal = (actual == wanted if key != "ai_stats_modifier" else
                  actual is not None and math.isclose(float(actual), float(wanted), abs_tol=1e-6))
         if not equal:
             raise ProtocolError(f"setup {key}: {matches!r}, expected {wanted!r}")
-        checks[key] = scenario["expect"][key]
+        checks[key] = lobby_value(scenario, key)
     for slot, army in enumerate(sides(scenario)):
         pool = army.get("reinforcements")
         if isinstance(pool, list):

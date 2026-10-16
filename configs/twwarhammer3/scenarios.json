@@ -909,8 +909,8 @@
         "wh_main_emp_inf_halberdiers",
         "wh_main_emp_cav_pistoliers_1",
         "wh_main_emp_cav_pistoliers_1",
-        "wh_main_emp_art_cannon",
-        "wh_main_emp_art_cannon"
+        "wh_main_emp_art_great_cannon",
+        "wh_main_emp_art_great_cannon"
       ]
     },
     "enemy": {
@@ -929,7 +929,7 @@
       ]
     },
     "protected": [
-      "wh_main_emp_art_cannon"
+      "wh_main_emp_art_great_cannon"
     ],
     "custom": {
       "kind": "battery_evacuation",

@@ -342,3 +342,13 @@ def test_lobby_pool_readback_accepts_reordering_but_rejects_missing_copies(tmp_p
     (tmp_path / 'menu.log').write_text('\n'.join(lines + [expr + ' = ' + ';'.join(pool[:-1])]))
     with pytest.raises(ProtocolError, match='reinforcement pool'):
         setup.check_menu(scenario, tmp_path)
+
+
+def test_fort_and_survival_verify_selected_mode_instead_of_generic_map_type():
+    for name, mode in [('chd-reserve-grn-siege', 'siege'),
+                       ('ksl-reserves-survival', 'survival'),
+                       ('emp-battery-wef-evacuation', 'ambush')]:
+        checks = setup.menu_checks(setup.scenarios()[name])
+        selected = [s for s in checks if s.get('expression', '').endswith('BattleTypeRecordContext.Key')]
+        assert selected[0]['expect'] == mode
+        assert not any('MapContext.BattleTypeString' in str(s) for s in checks)
