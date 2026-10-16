@@ -82,7 +82,7 @@
       "challenge": "Kairos, a flying character and the army's only spellcaster, attacks with four escorts: two ranged infantry units, one heavily armoured melee unit and a small unit of fast flyers. Ten Skaven units with three times as many troops hold the field: a leader, five clanrat units, two units of expendable slaves, a short-range warpfire team and a catapult unit that reaches 400 m, twice as far as any of Kairos's spells. Each spell costs 5 to 20 points of magic from a pool that starts at 12 and refills slowly, and Kairos is one character, not a regiment: flying him at the catapult risks losing him, while waiting cannot win. The attacker must break every defender before the 20-minute timer runs out; at the timer it loses.",
       "family": "caster-led force against rat screens",
       "core_candidate": true,
-      "footnote": "In M1, Sol and gpt-6.1-sol each won three of three attacker battles; Luna won one of three. Both nearest-enemy scripts lost. Spell use, escort survival and caster withdrawal were executable, but accepted casts are not a measure of spell value. Controller v19 now flags same-timestamp ability issues; its effect on model behavior is untested. A repeatable cast-and-retreat strategy may make this an easy anchor."
+      "footnote": "In M1, Sol and gpt-6.1-sol each won three of three attacker battles; Luna won one of three. Both nearest-enemy scripts lost. A free airborne cast-and-return script also lost, at 581 s: all 12 spell commands had subsequent cooldown feedback, but its stationary escorts collapsed and the fixed retreat point became exposed. This leaves adaptive withdrawal and escort protection open; it does not justify increasing enemy strength. Controller v19's feedback change still needs live model validation."
     },
     "siege-kho5-dwf5": {
       "title": "Siege defence pilot",
@@ -651,6 +651,44 @@
           "refs": [
             "trace.jsonl:48",
             "trace.jsonl:251"
+          ]
+        }
+      ]
+    },
+    "bench-b13-airborne-caster-20261016/episode-0000": {
+      "highlights": [
+        {
+          "time_ms": 62600,
+          "end_ms": 268100,
+          "lead_in_s": 8,
+          "title": "Casting works; the catapult breaks",
+          "text": "The script issued one Firestorm and five Blue Fires before the catapult shattered at 268 s. Each command had subsequent cooldown feedback. Kairos remained at full health and barrier throughout this opening; this does not measure individual spell damage.",
+          "kind": "maneuver",
+          "units": [
+            "f1",
+            "e10"
+          ],
+          "refs": [
+            "trace.jsonl:148",
+            "trace.jsonl:684"
+          ]
+        },
+        {
+          "time_ms": 448100,
+          "end_ms": 581000,
+          "lead_in_s": 8,
+          "title": "The fixed retreat point stops being safe",
+          "text": "The last ground escort routed at 448 s. Kairos stayed airborne at his original retreat point; barrier damage began at 473 s and health loss at 491 s. He was destroyed before the engine loss at 581 s, with 23 magic and 3.7 reserves left. A fixed return point did not provide sustained recovery.",
+          "kind": "outcome",
+          "units": [
+            "f1",
+            "f4"
+          ],
+          "refs": [
+            "trace.jsonl:1170",
+            "trace.jsonl:1236",
+            "trace.jsonl:1281",
+            "trace.jsonl:1506"
           ]
         }
       ]

@@ -1,22 +1,26 @@
 # Project state
 
-Updated 2026-10-16 18:08 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 18:36 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-No game controller is running. The read-only caster audit is complete and its single
-free airborne-casting diagnostic is tested, ready to launch
-([plan](twwarhammer3/log.md#2026-10-16-caster-audit-and-one-airborne-casting-diagnostic)).
+WH3 is stopped after the single free airborne-casting diagnostic: lost at 581 s, with
+no invalid orders. The [review and next-run plan](twwarhammer3/log.md#2026-10-16-caster-audit-and-one-airborne-casting-diagnostic)
+records its execution and the failed fixed retreat point. Next is one GLM-5.3 / low
+OpenRouter battle on the unchanged caster anchor, with a $3 cumulative ledger ceiling,
+to validate full prompts and live timing. Review before any further paid allocation.
+
 OpenRouter support and all three WH3 reply-schema checks
 passed; the [free calibration tranche](twwarhammer3/log.md#2026-10-16-free-siegeswarm-calibration-checks)
 is complete. Controller feedback v19 / commander v6 is integrated and tested against
 recorded M1 traces; its effect on model behavior remains untested. The canonical report
-includes the three disclosed diagnostic replays and passes offline desktop/mobile checks. All six candidates remain
+includes three disclosed diagnostic replays and passes offline desktop/mobile checks;
+the fourth is selected for its next rebuild. All six candidates remain
 provisional until a small strongest-model screen.
 
-API ledgers: OpenAI $45.96 of $52; OpenRouter $0.00523146 of $50. No paid battle is queued.
+API ledgers: OpenAI $45.96 of $52; OpenRouter $0.00523146 of $50. The single planned check uses a lower $3 ceiling.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.

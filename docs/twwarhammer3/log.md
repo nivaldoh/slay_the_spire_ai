@@ -42,6 +42,30 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 ## 2026-10-16: Caster audit and one airborne-casting diagnostic
 
+Completed `bench-b13-airborne-caster-20261016` on source `b1ab502`: engine loss at
+581 s, clock ratio 1.0005, 55 accepted orders, no refusals, $0 API spend. All twelve
+spell commands (one Firestorm, eleven Blue Fires) had later active/recharge feedback.
+The catapult shattered at 268 s. The stationary escorts then collapsed; the last ground
+unit routed at 448 s. Kairos's barrier first fell at 473 s and HP at 491 s while he
+remained airborne at the fixed home position. The script could not recover there and
+Kairos died before the ending, with 23 magic and 3.7 reserves remaining. The review is
+`calibration/airborne-caster-review-20261016.py` and JSON. No harder variant is justified
+by this loss: adaptive retreat and protecting the escorts remain unresolved. The
+report selection and two replay highlights now retain this diagnostic.
+
+Next paid check: **one** GLM-5.3 / low `llm_rules` v19 battle on the unchanged caster
+anchor, through OpenRouter. Its question is whether the new route completes a real
+battle with full prompts, valid replies, recorded routing/cost and normal live timing;
+it is not a model ranking or a strongest-model ceiling estimate. Historical M1 caster
+token workloads reprice to $0.46–$1.30 at GLM's routing ceilings, with caching charged
+at full input price. This is a planning range, not a bound: tokenization, reasoning,
+retries, speed and battle duration can change. Set the cumulative OpenRouter ledger
+ceiling to **$3** (currently $0.00523146), one episode, at most the scenario's 20-minute
+timer plus setup. An exhausted budget remains an incomplete trial. Inspect its trace
+and provider metadata before any further paid allocation; no matrix is queued.
+The repricing audit covers all 48 model episodes in M1's plans:
+`calibration/provider-cost-envelope-20261016.py` and JSON. OpenAI's remainder is untouched.
+
 Read the nine M1 caster episodes without new API calls. In the six Sol/gpt-6.1-sol wins,
 Kairos lost no HP between consecutive samples whose endpoints both showed him airborne;
 barrier losses still occurred. Other episodes show airborne-endpoint HP drops. Samples
@@ -65,9 +89,9 @@ The controller card discloses spell choices, thresholds and range margins. No sc
 model prompt, budget or game-speed change. Its completed trial will appear as the
 scripted "Airborne casting" diagnostic in the report.
 
-Next live check: one episode on `tze-caster-skv-assault`, at most its 20-minute timer plus
-setup, $0 API spend. Inspect actual casts/readbacks, flight, barrier recovery and escort
-survival before interpreting the engine outcome. A script loss does not establish
+The declared allowance was one episode on `tze-caster-skv-assault`, at most its 20-minute
+timer plus setup, $0 API spend, with casts/readbacks, flight, barrier recovery and escort
+survival reviewed before interpreting the outcome. A script loss does not establish
 frontier difficulty. Validation before launching: 96 focused tests, Ruff and diff checks
 passed; 507 orders validated on 938 recorded public snapshots from all nine episodes
 (`calibration/caster-offline-20261016.json`). That offline check does not predict outcomes.
