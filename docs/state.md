@@ -6,10 +6,10 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 
 ## Active work
 
-WH3 is stopped after a survival lobby-budget rejection, before any model call. Siege
-screens are complete. The Kislev roster costs 14750 including reserves; the declared
-lobby budget is corrected to 20000 for a retry, followed by conquest and evacuation.
-Ledger: $15.3120 of $25. See the [b12 log](twwarhammer3/log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
+WH3 is stopped after completed siege and survival screens. Next: conquest, then the
+battery-evacuation pilot. All screens remain exploratory; see the
+[b12 log](twwarhammer3/log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
+Ledger: $16.3458 of $25.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.

@@ -224,6 +224,14 @@ research: the [Chaos Dwarfs roster](https://store.steampowered.com/app/2059190/T
 [Creative Assembly's Cathay update](https://community.creative-assembly.com/total-war/total-war-warhammer/blogs/98).
 Local documentation from the installed build governs the script API.
 
+**New native screens, 2026-10-16.** Siege defence produced a Sol loss at 508 s and a
+Luna win at 688 s from matching starts. Construction, reserve commitment, firing and
+fallback were executable. Survival produced losses at 322/406 s (Luna/Sol): four late
+purchases versus all seven initial reserves purchased earlier, followed by lost spawn
+access with supplies unspent. Keep both as exploratory families. Initial survival pools
+are fixed; later native pool changes are observed, not artificially frozen. These pairs
+establish usable choices, not rankings. See the [b12 log](log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
+
 **Retained caster evidence, reviewed 2026-10-16.** The existing base caster scenario has
 three b4 outcomes (Luna 963 s, hold 613 s, walk-nearest 301 s, all losses) and a b7 Sol
 loss at 1077 s. Both model runs began with 12 available mana and 68 in reserve. Their

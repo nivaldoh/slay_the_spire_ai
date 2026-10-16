@@ -128,6 +128,28 @@ and reinforcement prices are checked separately in battle. Conquest costs 6900 v
 7700, and evacuation 4450 versus 5200, within their declared budgets. The failed job is
 retained in the canonical report list.
 
+
+Completed survival retry (`bench-b12-kislev-reserves-r2-20261016`, `0746138`): Luna-low
+lost at 322 s ($0.0315; 49 decisions, 35 rejected orders, mean age 6.52 s); Sol-low lost
+at 406 s ($1.0023; 82 decisions, 38 rejected orders, mean age 4.91 s). Both verified the
+same ten starting units, seven initial reserves and 1020 supplies at 6.8 s. Rematch
+positions, bearings, resources and loadouts matched exactly. Native income continues
+while the bridge waits; this is why the first balance is above 1000.
+
+Luna first purchased at 130.8 s and brought in four cheap units; it lost spawn access
+at 176.8 s and ended with 5875 supplies. Sol bought both 500-cost Kossars at 12.4/18 s;
+observed balances fell 1020 -> 620 -> 240 despite income. It deployed all seven initial
+reserves, including artillery at 131.6 s and bears at 186.4 s, then lost access at 254 s
+and ended with 5165 supplies. The native pool subsequently changes, including returned
+unit types and different costs; only the starting pool is pinned. New units registered
+and accepted ordinary orders. Keep the family: reinforcement timing and keeping an
+entry point open are available choices. Neither loss proves the roster unsolvable.
+There is no wave forecast, healing or restock API in this version. Rejects were mainly
+orders to routing units; Luna also tried unavailable lord abilities. They remain policy
+errors in the evidence, not omitted trials. Job cost $1.0338; ledger $16.3458.
+
+The full suite after the setup fixes passed: 1024 tests, 14 optional-dependency skips.
+
 ## Index
 
 - 2026-10-15: [Report: sections by game mode](#2026-10-15-report-sections-by-game-mode) ·

@@ -124,7 +124,7 @@
       "challenge": "Buy immediate relief or preserve supplies for a more expensive reinforcement; sustain ammunition and fresh troops against native waves.",
       "family": "reinforcement budgeting",
       "core_candidate": true,
-      "footnote": "Exploratory candidate. Distinctiveness and credible plays require live evidence; no stable model ranking is claimed."
+      "footnote": "Two exploratory losses: Luna survived 322 s and Sol 406 s from exactly matching starts. Luna first bought reserves at 131 s; Sol bought immediately and used all seven initial reserves. Both lost their spawn zones with supplies unspent. The pool can change later under native survival rules. This demonstrates spending and deployment choices, not a model ranking."
     },
     "sla-detachments-dwf-conquest": {
       "title": "Fast feet, slow fortresses",
@@ -562,6 +562,43 @@
           ],
           "refs": [
             "trace.jsonl:296"
+          ]
+        }
+      ]
+    },
+    "bench-b12-kislev-reserves-r2-20261016/episode-0000": {
+      "highlights": [
+        {
+          "time_ms": 130800,
+          "end_ms": 176800,
+          "lead_in_s": 8,
+          "title": "Late reserves lose their entry point",
+          "text": "Luna began reinforcing at 131 s and bought four units. By 177 s the spawn zones were unavailable, and the requested bear riders could not enter. The battle ended with 5875 supplies unspent.",
+          "kind": "maneuver",
+          "units": [],
+          "refs": [
+            "trace.jsonl:56",
+            "trace.jsonl:76",
+            "trace.jsonl:150"
+          ]
+        }
+      ]
+    },
+    "bench-b12-kislev-reserves-r2-20261016/episode-0001": {
+      "highlights": [
+        {
+          "time_ms": 12400,
+          "end_ms": 18000,
+          "lead_in_s": 6,
+          "title": "Early supplies become two fresh units",
+          "text": "Sol bought both reserve Kossar units immediately. The observed supply balance fell from 1020 to 620, then 240 despite ongoing income. It later deployed all seven initial reserves before losing its spawn zones.",
+          "kind": "plan",
+          "units": [],
+          "refs": [
+            "trace.jsonl:5",
+            "trace.jsonl:7",
+            "trace.jsonl:10",
+            "trace.jsonl:145"
           ]
         }
       ]
