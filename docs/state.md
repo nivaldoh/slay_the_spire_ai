@@ -91,6 +91,9 @@ Next steps:
 ## Owner direction
 
 WH3:
+- 2026-10-16 (evening, latest): benchmark every reasoning mode of every model in each
+  scenario; verify each model's real modes first (some open-weight models are only
+  on/off) ([model coverage](twwarhammer3/benchmark.md#current-proposal-calibrate-before-a-broad-model-comparison)).
 - 2026-10-16 (evening, later): mostly many small battles that each test one or two
   specific things (e.g. two cheap cavalry units against one braced pikeman unit, if
   winnable: feint and flank), plus a few larger battles for context length and

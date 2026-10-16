@@ -206,6 +206,15 @@ gpt-6.1-sol / low (OpenAI cap $52; about $1.2), then `tze-caster-skv-assault-can
 the two-cannon step is winnable, a loss would not show the opposite. After V1d the OpenAI
 remainder is about $1; further Sol battles need the owner's decision on that cap.
 
+**V1d siege, paid** (`bench-b13-v1d-siege-flankers2-sol61-20261016`, `9f2ea74`, gpt-6.1-sol /
+low): **won** at 422 s with 66% of its strength left (enemy 35%), the key building held in
+every sample; 64 decisions, 4 invalid orders, mean delay 6.6 s, $0.61290000; OpenAI ledger
+$50.37 of $52. Siege ladder so far: anchor won 3/3, two added flankers won (faster than
+the anchor wins), four added flankers lost 2/2 (Sol, Kimi). The hardest step with a
+demonstrated win is the two-flanker step; the difficulty rises steeply between two and
+four units, or single battles vary that much. A three-unit step or a second Sol battle on
+four would locate it, at about $1 each.
+
 ## 2026-10-16: Live check of the v20 shared-magic warning
 
 **Result.** `bench-b13-glm-v20-caster-20261016` (`ae55309`, 19:28-19:40 UTC) **won** at

@@ -449,6 +449,28 @@ per scenario and room for interesting, unexpected model behaviour. This sits wit
 difficulty target above: each small test should be as hard as it can be while still
 winnable, and two tests of the same skill count once.
 
+**Model coverage (owner, 2026-10-16 evening).** The comparison should cover every
+reasoning mode of every model, in every retained scenario, so modes can be compared
+within and across models. Each model's real modes must be verified before the matrix is
+frozen. `gameai/providers.py` declares `none`, `low`, `medium` and `high` for every
+OpenAI model, and `low` and `high` for each OpenRouter model. Some open-weight models
+only switch reasoning on or off (the owner recalls one Chinese model like that). For
+those, two declared efforts may map to the same setting, and "off" may need its own
+mode. So a per-model capability check (catalogue metadata plus a small schema call per
+mode) comes before the evaluation round. Calibration can keep using one reference
+configuration. The full matrix (models × modes × scenarios × repeats) is the frozen
+evaluation round, sized and budgeted by the owner. At about $0.05-1.30 per battle for
+low effort, and more for high effort and Astra, it is likely hundreds of battles.
+OpenRouter's catalogue snapshot of 2026-10-16
+(`capability-probes/openrouter-20261016/models.json`) already lists more modes than we
+declare: GLM-5.3 always reasons, with `low`/`high`/`max` (default `max`); Kimi K3 can
+turn reasoning off, with `none`/`low`/`high`/`max` (default `max`); Step 5 Preview always
+reasons, with `low`/`medium`/`high` (default `medium`). Catalogue entries do not prove
+that every serving backend treats the levels differently. Efforts are declared per
+provider in `gameai/providers.py` today, so per-model mode lists are a needed change
+before the matrix. OpenAI's per-model modes (`none` through `high`, possibly others) need
+the same small per-mode check.
+
 Revised after M1 at the owner's request, then authorized for implementation on resume.
 This sequence supersedes the earlier implementation sequence and the proposal to settle
 the core from M1.
