@@ -8,7 +8,9 @@ the battle, understand the decisions, compare the results. The 2026-10-15 redesi
 at an AI researcher who knows nothing about the game and has a minute to spare: a paper
 report around one live replay, one score per commander rather than every attempt, three
 numbered figures, latency on the map and beside each score, and bookkeeping in Run settings
-and the JSON. Statistics come from
+and the JSON. The 2026-10-16 revision (the owner's report notes) shows only the core
+scenarios and their completed battles, opens on a visual index of them, gives each model
+one hue and replaces the plans maps with battle development. Statistics come from
 `battle/report.py` ([definitions](benchmark.md#outcomes-measures-and-comparison)), the
 replay from `battle/replay.py`, the presentation from `battle/report_html.py` and
 `battle/report_assets/`, curated text from `configs/twwarhammer3/report_notes.json`, and
@@ -16,42 +18,20 @@ frames and stills from `battle/capture.py` during play ([integration.md](integra
 
 ## Pending report notes
 
-Owner feedback, recorded for later implementation. These are requests only; the report
-and its current behavior described below have not changed.
+Owner feedback still to implement (the other notes of 2026-10-16 are in the page below):
 
-1. Remove the **variants / historical** clutter from the report UI.
-2. Make scores easy to compare quickly across models and scenarios. The current gray
-   scale makes differences difficult to see; improve the visual encoding and contrast.
-3. Clarify **Cost** in Results and show cumulative cost separately. The current field is
-   mean API cost per battle entry in that row, including incomplete entries if present;
-   it is not a cumulative total. Make the averaging population explicit when implementing
-   the completed-battles-only presentation below. Keep cumulative actual spend separate
-   from that average; the WH3 spend ledger already records cumulative API charges.
-4. Make the playback map larger and easier to read. Reduce clutter from units, labels
-   and map objectives, especially in sieges where objective overlays add congestion.
-5. Count only completed battles in the report's benchmark results and ignore incomplete
-   attempts there. Remove finished-versus-unfinished bookkeeping from the presentation.
-6. Expand **Two Armies** by default.
-7. Make **less is more** clear in the benchmark's framing. Battles are slow to run;
-   prioritize a small set of high-quality scenarios, where quality means helping us
-   learn something new about the models. Each scenario must justify its distinct
-   benchmark value; breadth and scenario count are not goals in themselves. See the
-   [scenario-design principle](benchmark.md#scenario-design).
-8. Make the scenario and battle selection dropdowns at the top more prominent. Give
-   each game mode its own icon so the modes are easier to recognize.
-9. Explore how to show spell and Lord ability usage on the playback map. Possible
-   indicators include temporary unit color changes or blinking borders; these are
-   ideas to explore, not a settled design.
-10. Rework the introduction above the map to be more visual and eye-catching, with
-    less text. Introduce the benchmark as a whole instead of opening with the Cavalry
-    scenario specifically.
 11. Eventually add OpenRouter support for a broader selection of models alongside the
-    existing OpenAI API support. This is future benchmark work, not an implemented
-    report feature.
-12. Keep **Same battle, different plans**, but make its comparison informative across
-    scenarios without adding clutter. In sieges, the white line looks nearly identical
-    across models and communicates little; explore ways to reveal meaningful
-    differences in decisions and battle development for each scenario.
+    existing OpenAI API support. This is future benchmark work, not a report feature.
+
+Not done with the rest, and why:
+
+- The paper page has no dark colour scheme; the model hues have a light and a dark step
+  (paper figures, dark map and run card), each pair checked for colour-vision separation.
+- The evacuation scenario (`emp-battery-skv-evacuation`, an ambush battle) has no
+  completed battle yet, so it is absent; its mode would show the generic flag icon until
+  ambush battles get their own.
+- Ability rings follow accepted ability orders; the recorder's `abilities[].active` flags
+  are not drawn (they stay in the job's `replay.jsonl` and feed "what happened next").
 
 ## Suite report
 
@@ -70,15 +50,18 @@ tuning and presentation-camera probes. Add new jobs to that list as the suite gr
 never glob all local runs or select by outcome. The report JSON records every input job.
 Existing scenario reports remain historical artifacts.
 
-**Every scenario** lists every scenario under its game mode (`report_html.MODES`: land
-battles, siege defence, siege attack, minor settlement, survival, conquest, domination,
-ambush, chokepoint, subterranean and free-for-all battles, the game's custom battle types
-with sieges split by the player's role), with its starting armies and each model's score
-there beside the best scripted rule's; a mode without battles yet keeps its place as an
-empty section. Select a scenario to open it. Historical pilots use their
-saved configuration's scenario name when their declaration predates names. No current
-catalogue is substituted for historical setup. There is no aggregate score across
-different armies or objectives.
+**The page shows the core scenarios** (`core_candidate: true` in the notes, one per
+decision family, [scenario design](benchmark.md#scenario-design)) and only their
+completed battles (an engine-reported win, loss or draw). Variants, historical pilots,
+demoted scenarios (Conquest), diagnostic probes, setup failures and incomplete attempts
+stay in the JSON and text and in the page's report download, not on the page, and their
+replays are not embedded; the Method counts them in one line. A core scenario without a
+completed battle is absent. A report whose notes mark no scenario as core (an ad hoc
+report of other jobs, the synthetic demo) shows every scenario. Game modes come from
+`report_html.MODES` (the game's custom battle types, sieges split by the player's role).
+Historical pilots use their saved configuration's scenario name when their declaration
+predates names. No current catalogue is substituted for historical setup. There is no
+aggregate score across different armies or objectives.
 
 Progress is the share of the enemy's registered soldiers dead or out of the fight (fleeing,
 shattered, leaving or undeployed) when the battle ended: `1 - active/registered` from the
@@ -103,13 +86,17 @@ Evaluation data stays in the report, outside policy inputs and replay exports.
 
 The HTML embeds its assets and compressed replays and opens directly from disk without a
 server. Share or copy that file; the JSON/text companions retain the full collector output.
-The browser check also opens a copied file offline, tests all scenarios, shared/missing
-measures and replays, and checks desktop and phone layouts:
+The browser check also opens a copied file offline, switches every scenario from the
+index, checks the page's battle selection, figures, measures, replays and ability rings,
+and checks desktop and phone layouts:
 
 ```bash
 NODE_PATH=~/.cache/wh3-playwright/node_modules node tests/twwarhammer3/check_wh3_report_browser.cjs \
   runs/twwarhammer3/report-checks/benchmark --report runs/twwarhammer3/reports/benchmark
 ```
+
+Its screenshots include `desktop.png`, `phone.png`, `index.png`, `siege.png`,
+`plans-siege.png`, `compare.png`, `suite.png` and `suite-phone.png`.
 
 ## Making a report
 
@@ -128,65 +115,85 @@ JSON. Failures and progress are also visible in the HTML.
 
 ## The page
 
-A paper page around one dark replay panel. Headings, labels and numbers use DIN-style
-lettering (Bahnschrift on Windows, the system sans elsewhere), prose a book serif with
-lining figures; there are no all-caps labels, badges, cards, heading rules or middle-dot
-strings.
+A paper page around one dark replay panel. Titles and prose use a book serif with lining
+figures, labels and numbers DIN-style lettering (Bahnschrift on Windows, the system sans
+elsewhere); there are no all-caps labels, badges, cards or middle-dot strings. Each model
+keeps one hue everywhere (violet, green, then magenta and ochre, by model name; light and
+dark steps), scripted rules are grey, the armies keep their sky blue and orange, and a
+magenta ring marks an ordered ability on the map.
 
-- **Masthead**: the title, one paragraph on what it is, the finding (Figure 1's numbers in
-  two sentences: scores out of 100 and how old the models' views were against the
-  scripted rules') and one line naming the benchmark, its dates and size (battles shown,
-  scenarios, models, scripted baselines).
-- **The battle**: the scenario's question, then (wide) a paragraph naming its game mode,
-  the enemy AI's difficulty and the scenario, with its challenge, and the replay below,
-  or (narrow) the replay first. The page opens on Figure 1's scenario, so the replay,
-  Figure 1 and Figure 2 show the same battle. Unless the reader prefers less motion, the
-  replay opens on the key maneuver's moment and plays it once, with Model's view on, when
-  a quarter of the map is in view ("Key maneuver" replays it with its lead-in). The run
-  card names the commander (model, then reasoning effort and prompt, or the scripted
-  rule), the engine outcome with its duration, the commander's record here and the
-  battle's score and measures; a curated pick adds that it was selected for its analyst
-  notes, not as a typical result; then the scenario select (grouped by game mode) and the
-  battle select (battles by commander, outcome first). The analyst notes follow as a row of numbered titles, the
-  playing one's sentence under them, labelled as written after the battle with AI
-  assistance and checked against the records. Then up to four game stills ("spectator
-  camera, not what the model saw") and the two armies, folded.
-- **Results**, **Figure 1**: the largest controlled comparison (the commanders shared by two launches
-  of one harness, in the most such launches; C1 today), one row per commander: its score
-  as a bar on the shared 0–100 scale with a line from its worst to its best battle,
-  battles won, median order age and API cost per battle. The caption names the mode, says
-  "once per launch" only when that holds, names the enemy AI's difficulty, says when
-  prompts were tuned on the scenario and that Figure 3 pools all its battles. Its footnotes are the only place the page defines the scenario's
-  variant (the stronger enemy's +10% stats), the score and order age.
+- **Masthead**: the title, one short paragraph on what the benchmark is and why it is
+  small (battles take minutes of real time, so every scenario asks a different question),
+  then the **scenario index**: one small dark map per scenario, drawn from its featured
+  battle's passability grid with both armies where they began (friendly units in the first
+  frame, enemy units where first seen), its game-mode icon (land battle, siege defence,
+  survival; a flag for other modes) and short name (`short` in the notes). Clicking one
+  opens it in the replay; the selected one is underlined. On a phone the index scrolls
+  sideways in its own row. Then the finding, for the benchmark as a whole: in how many of
+  the scenarios with a scripted baseline each model beats the best rule (and how many have
+  none), and how old the models' and the rules' views were when their orders landed; and
+  one line naming the benchmark, its dates and size (battles shown, scenarios, models,
+  scripted baselines).
+- **The battle**: the scenario's question and (wide) a paragraph naming its game mode,
+  the enemy AI's difficulty and the scenario, with its challenge, above the replay, or
+  (narrow) the replay first. The replay panel opens with large scenario and battle selects
+  (battles by commander, outcome first; on a phone only the battle select, as the index
+  picks scenarios) and "Key maneuver" and "Full battle". The page opens on Figure 1's
+  scenario, so the replay and Figure 1 show the same battle. Unless the reader prefers less
+  motion, the replay opens on the key maneuver's moment and plays it once, with Model's view
+  on, when a quarter of the map is in view. The run card names the commander (its hue,
+  model, then reasoning effort and prompt, or the scripted rule), the engine outcome with
+  its duration, the commander's record here and the battle's score and measures; a curated
+  pick adds that it was selected for its analyst notes, not as a typical result. The analyst
+  notes follow as a row of numbered titles, the playing one's sentence under them, labelled
+  as written after the battle with AI assistance and checked against the records. Then the
+  two armies (open) and up to four game stills ("spectator camera, not what the model saw").
+- **Results**, **Figure 1**: the largest controlled comparison (the commanders shared by
+  two launches of one harness, in the most such launches; C1 today), one row per commander:
+  its score as a bar in its hue on the shared 0–100 scale with a line from its worst to its
+  best battle and, on model rows, a tick at the best scripted rule's score; battles won,
+  median order age and the mean API cost per completed battle. The caption names the mode,
+  says "once per launch" only when that holds, names the enemy AI's difficulty, says when
+  prompts were tuned on the scenario and that Figure 3 pools all its battles. Its footnotes
+  are the only place the page defines the scenario's variant (the stronger enemy's +10%
+  stats), the score, order age and cost. Under it, one line gives each model's total API
+  spend over every attempt in the report's input, incomplete ones included.
 - **Same battle, different plans** (**Figure 2**), for the scenario in the replay: one
-  map per model (its settings pooled, † with the breakdown in a tooltip) and per scripted
-  rule, its army's track in every battle (thin; brighter for wins) and their mean
-  position over time (thick, □ start, ● end) with the enemy where first seen in its first
-  battle; under it the battles, wins and battles that did not finish. A map opens the
-  earliest finished battle. Commanders that never give orders (Hold position) or recorded
-  no positions are left out by name, and a scenario with one commander says so.
-- **Every scenario** (**Figure 3**): one fold per game mode in page order, each with a
-  disclosure marker and its scenario count (Figure 1's mode and the current scenario's
-  open, the rest closed; empty ones say "No battles of this type yet");
-  per scenario, each model's mean score over its finished battles there (tinted darker for
-  higher, † when it pools settings or harness versions, listed in its tooltip; "not
-  measured" or "did not finish" when it has none) and the best scripted rule's (with † when
-  its battles span harness versions; "no baseline yet" where none ran). On a phone each scenario is a block.
+  panel per model (its settings pooled, † with the breakdown in a tooltip) and per scripted
+  rule, on axes shared across the panels: the soldiers its army lost and the soldiers the
+  enemy lost (only units its army saw, last count; a seen unit the roster marks dead loses
+  all) over battle time, thin per battle and thick for the mean (`development` in the
+  battle data, from the recorded frames), and strips of the orders the game accepted per
+  5 s by kind (move, attack, ability, build, reinforce, other), darker for more, with the
+  mean count per battle. Where the commanders' routes part (some pair's mean positions at
+  least 50 m apart at the median shared moment), each panel adds a map of its army's track
+  in every battle and the mean in its hue (□ start, ● end) with the enemy where first seen;
+  in the siege the routes overlap and the maps are left out. A panel opens the commander's
+  earliest battle here.
+- **Every scenario** (**Figure 3**): a section per game mode with scenarios on the page,
+  headed by its icon; per scenario, a bar per model (its mean score over its completed
+  battles there, † when it pools settings or harness versions, listed in its tooltip; "no
+  battles yet" when it has none) and a grey bar for the best scripted rule ("no scripted
+  baseline yet" where none ran), each with its number of battles, on one 0–100 scale per
+  section, or a seconds axis for survival. On a phone the name sits above narrower bars.
 - **Method**, one column: verbatim lines of one message (the first reply with orders that
   reports its previous delay, in the first scenario's featured battle), abridged by
   section, and its reply one order per line, with the size of the fixed system prompt;
   then what a model sees, real time (with the planned added-delay experiment), opponent
-  and baselines, the development status of every scenario and what is not shown
-  (setup-only launches and diagnostic probe battles); Run settings, the report and replay
-  JSON, and a link here.
+  and baselines, what counts as a scenario, the development status of every scenario and
+  one line on what is not shown (further battles and setup-only launches, kept in the JSON
+  and text); Run settings, the report and replay JSON, and a link here.
 
-**Score**: per finished battle, 100 for a win, else the share of the enemy's soldiers
-dead, fleeing or otherwise out of the fight when it ended, in percent; a commander's score
-is the mean over its finished battles (battles without the enemy measure are left out). A
+**Score**: per completed battle, 100 for a win, else the share of the enemy's soldiers
+dead, fleeing or otherwise out of the fight when it ended, in percent (sieges and
+settlements score objective ownership time, conquest and domination ticket progress,
+survival seconds survived); a commander's score is the mean over its completed battles
+(battles without the measure are left out). A
 win is 100 even when a defender wins at the timer with the enemy largely intact. Printed
 scores never round a loss up to 100 (a 99.8% loss reads 99). Battles that recorded
-casualties only (17 older pilot battles) count the enemy killed, not those who fled, a
-lower bound for the 7 that were lost; Figure 3's caption says how many losses.
+casualties only (older pilots, none of them on the page today) count the enemy killed,
+not those who fled, a lower bound for those lost; Figure 3's caption says how many losses
+when there are any.
 
 A commander's figures hold all its battles (model, effort, prompt or scripted rule, added
 age) in a scenario. When battles ran under different harnesses its name carries a † (the
@@ -214,14 +221,19 @@ named by policy) and offers the report JSON and this replay JSON.
 
 Map and moment panel stack below 1080 px; at 390 px the map starts on the first screen and
 nothing scrolls sideways. The map draws the passability grid (north up, fixed framing per
-replay) and each unit's side, role glyph, facing, label ("KR1"), strength and state, with
+replay) and each unit's side, role glyph, facing, strength and state, with
 hollow last sightings of unseen enemies, 20 s trails and, faintly, the waypoints a unit
-was ordered to and has not yet come within 30 m of, drawn from where it is; a selected unit
+was ordered to and has not yet come within 30 m of, drawn from where it is. Objectives are
+small diamonds filled by their holder's colour (larger for victory points; name and holder
+in the tooltip). A unit that a reply ordered to use an ability or spell, accepted by the
+game, gets a magenta ring that fades over 5 s of battle time (static when paused), and its
+line in the moment panel carries the same mark with the ability's name; a selected unit
 adds its observed path, standing orders (numbered waypoints, attack rings, rejected steps
 red) and a card with role, state, orders and base stats. Controls: 1×, 4× or 16× playback
 (the battle ran at 1×), decision (←/→) and event ([ ]) steps, scrubber, timeline strip.
 
-The map's lower left names the two armies ("gpt-6-sol's army", "Game AI"). **Model's view**
+On desktop the replay panel is wider than the text column (up to 1640 px) and the map up to
+the window's height less 150 px (at most 980 px). The map's lower left names the two armies ("gpt-6-sol's army", "Game AI"). **Model's view**
 beside it outlines every unit where it stood in the observation behind the latest reply
 that reached the game (for the asynchronous commander, the latest adopted plan's older
 view), joined by a line to where the unit is now, with "Outlines: where units stood N s
@@ -229,8 +241,10 @@ ago" in a caption; live markers recede meanwhile. It is on while the key maneuve
 timeline labels its rows (notes, replies, events) and its lowest band is the same view
 age, second by second, on a fixed 0–15 s scale with a dashed 5 s line. The waiting line
 ("Waiting 6.5 s for the model's next reply"; "Asking for..." at the moment of asking) counts
-how long ago the model was asked. Map labels that would overlap another are dropped, except the selected
-unit's; the roster and hover still name every unit.
+how long ago the model was asked. Unit labels ("KR1") appear for every unit only when at
+most 12 markers are on the map; otherwise only for the selected and hovered units and a
+watched note's units. Labels that would overlap another are dropped, except the selected
+unit's; the roster and tooltips name every unit.
 
 The moment panel shows the latest decision applied by the replay time, never a reply
 before it was applied ("Waiting for the model's next reply" until then): the stated
@@ -264,7 +278,8 @@ a worktree while one runs. Three maps:
 
 - **`scenarios`**, by scenario name, in page order within each game mode (the first one
   opens the page): `title` names it, `question` heads the page, `challenge` states the
-  task and its real objective, `footnote` defines a variant once (under Figure 1). The
+  task and its real objective, `footnote` defines a variant once (under Figure 1), `short`
+  names it in the masthead index, and `core_candidate: true` puts it on the page. The
   game mode comes from the declaration (`battle_type` and `attacker`). Without an entry:
   its `family` or name and the declared `brief`.
 - **`units`**, by unit type key: `name` is the game's onscreen name (checked against its
@@ -308,7 +323,7 @@ result.
 
 - **Durations** come from each battle's `battle_ms`, the engine's battle clock
   (`battle_s` only where it is missing).
-- **Order age** (Figures 1 and 2): the battle-clock age of the observation behind
+- **Order age** (Figure 1 and the finding): the battle-clock age of the observation behind
   each acknowledged batch of new orders when the game accepted it (`age_s` of replay
   decisions with orders), pooled over a commander's battles; the median is shown. For the
   asynchronous commander it is its plans' age at adoption (`plan_age_s`), since its
