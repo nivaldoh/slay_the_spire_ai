@@ -132,3 +132,110 @@ class CoordinatedRush(RushNearest):
     def metadata(self) -> dict:
         return {"type": "coordinated_rush", "waiting": sorted(self.waiting),
                 "released_s": dict(self.released), "gate": "observed_screen_contact"}
+
+
+class CasterSkirmish(Skills):
+    """Keep escorts at their opening posts while Kairos flies out to cast and returns.
+
+    Use ordinary Blue Fire (artillery first), or ordinary Firestorm on a group of at
+    least three visible units within 30 m. Return during cooldowns or to recover a low
+    barrier. This is a fixed spell-selection diagnostic, without melee orders for Kairos.
+    """
+
+    BLUE_FIRE = "wh3_main_spell_tzeentch_blue_fire_of_tzeentch"
+    FIRESTORM = "wh3_main_spell_tzeentch_tzeentchs_firestorm"
+    card = {"purpose": "Can simple airborne cast-and-retreat solve the caster anchor?",
+            "knowledge": "Kairos uses Blue Fire (artillery first) and Firestorm on 3+ units "
+                         "within 30 m. Escorts hold their starting posts. Return home during "
+                         "cooldowns or below 25% barrier, resuming at 80%. Allow 5 s after "
+                         "each cast command before moving; an issue does not prove a hit. "
+                         "Approach to 80% of spell range; cast within 95%."}
+
+    def __init__(self):
+        super().__init__()
+        self.home = None
+        self.recovering = False
+        self.last_cast_s = -math.inf
+        self.last_move = None
+        self.stage = "opening"
+
+    def decide(self, observation: dict) -> list[dict]:
+        units = friendly_units(observation)
+        lord = next((u for u in units.values() if "kairos" in u.get("type", "")), None)
+        now = observation.get("time_ms", 0) / 1000
+        if self.home is None and lord and lord.get("x") is not None:
+            self.home = {axis: lord[axis] for axis in ("x", "z")}
+            for unit in units.values():
+                if unit["id"] != lord["id"] and unit.get("x") is not None:
+                    self.assign(unit, {"skill": "shoot" if unit.get("ammo") else "hold",
+                                       "x": unit["x"], "z": unit["z"]}, now)
+        escorts = {**observation, "friendly": [u for u in units.values() if u is not lord]}
+        orders = super().decide(escorts)
+        if (not lord or not lord.get("men") or self.home is None
+                or OUT.intersection(lord.get("state", []))):
+            self.stage = "caster unavailable"
+            return orders
+        if not lord.get("flying"):
+            self.stage = "take off"
+            if (lord.get("flight") or {}).get("can_toggle"):
+                orders.append({"unit": lord["id"], "type": "flight", "flying": True})
+            return orders
+        barrier = lord["barrier"]
+        fraction = barrier["hp"] / barrier["max_hp"]
+        if fraction <= .25:
+            self.recovering = True
+        elif fraction >= .8:
+            self.recovering = False
+        if now - self.last_cast_s < 5 and not self.recovering:
+            self.stage = "allow cast to execute"
+            return orders
+        enemies = [u for u in visible_enemies(observation).values()
+                   if u.get("men") and u.get("x") is not None and u.get("z") is not None
+                   and not OUT.intersection(u.get("state", []))]
+        magic = (observation.get("magic") or {}).get("current", 0)
+        ready = {a["key"]: a for a in lord.get("abilities", [])
+                 if a.get("ready") and a.get("can_use") is not False
+                 and a.get("mana", 0) <= magic}
+        spell, target = None, None
+        if enemies and not self.recovering:
+            cluster = max(enemies, key=lambda u: sum(distance(u, e) <= 30 for e in enemies))
+            if self.FIRESTORM in ready and sum(distance(cluster, e) <= 30 for e in enemies) >= 3:
+                spell, target = ready[self.FIRESTORM], cluster
+            elif self.BLUE_FIRE in ready:
+                spell = ready[self.BLUE_FIRE]
+                target = min(enemies, key=lambda u: (u.get("class") != "artillery",
+                                                     distance(lord, u)))
+        goal = self.home
+        self.stage = "recover barrier" if self.recovering else "return during cooldown"
+        if spell:
+            if distance(lord, target) <= spell["cast_range"] * .95:
+                order = {"unit": lord["id"], "type": "ability", "ability": spell["key"]}
+                if spell["key"] == self.FIRESTORM:
+                    order.update(x=target["x"], z=target["z"])
+                else:
+                    order["target"] = target["id"]
+                orders += [{"unit": lord["id"], "type": "halt"}, order]
+                self.last_cast_s, self.last_move, self.stage = now, None, "cast " + spell["key"]
+                return orders
+            dx, dz = self.home["x"] - target["x"], self.home["z"] - target["z"]
+            length = math.hypot(dx, dz)
+            dx, dz = (dx / length, dz / length) if length else (0, -1)
+            radius = spell["cast_range"] * .8
+            goal = {"x": target["x"] + dx * radius, "z": target["z"] + dz * radius}
+            self.stage = "approach for " + spell["key"]
+        if goal and distance(lord, goal) <= 10:
+            if lord.get("dest") and math.dist(lord["dest"], (goal["x"], goal["z"])) > 10:
+                orders.append({"unit": lord["id"], "type": "halt"})
+                self.last_move = None
+        elif goal and (
+                distance(goal, self.last_move or {}) >= 20
+                or ("idle" in lord.get("state", [])
+                    and now - (self.last_move or {}).get("time_s", -math.inf) >= 2)):
+            orders.append({"unit": lord["id"], "type": "move", "run": True, **goal})
+            self.last_move = {**goal, "time_s": now}
+        return orders
+
+    def metadata(self) -> dict:
+        return {"type": "caster_skirmish", "stage": self.stage,
+                "recovering": self.recovering,
+                "last_cast_s": self.last_cast_s if math.isfinite(self.last_cast_s) else None}

@@ -61,7 +61,9 @@ SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the neares
             "twwarhammer3.battle.calibration:CentralDefence": (
                 "Central fallback", "scenario diagnostic: gather at one owned victory point"),
             "twwarhammer3.battle.calibration:CoordinatedRush": (
-                "Synchronized rush", "scenario diagnostic: delay mobiles to meet the screen")}
+                "Synchronized rush", "scenario diagnostic: delay mobiles to meet the screen"),
+            "twwarhammer3.battle.calibration:CasterSkirmish": (
+                "Airborne casting", "scenario diagnostic: cast and return to stationary escorts")}
 # Unit fields and frame fields the page draws; the job directory keeps the rest.
 UNIT_KEEP = ("id", "x", "z", "bearing", "men", "men0", "hp", "state", "target", "ammo", "ammo0")
 MODE_KEEP = ("role", "capture_points", "supplies", "tickets", "tickets_goal", "custom")

@@ -2,7 +2,7 @@
 
 from copy import deepcopy
 
-from twwarhammer3.battle.calibration import CentralDefence, CoordinatedRush
+from twwarhammer3.battle.calibration import CasterSkirmish, CentralDefence, CoordinatedRush
 from twwarhammer3.protocol import validate_orders
 
 
@@ -67,3 +67,53 @@ def test_no_visible_target_does_not_release_mobile_units_using_roster_or_hidden_
     policy = CoordinatedRush()
     assert policy.decide(obs) == [{"unit": "f2", "type": "halt"}]
     assert policy.metadata()["released_s"] == {}
+
+
+def caster_state():
+    return {"time_ms": 1000, "magic": {"current": 20}, "friendly": [
+        unit("f1", "kairos_fateweaver", 0, 0, flying=True, can_fly=True,
+             barrier={"hp": 900, "max_hp": 900}, flight={"can_toggle": True},
+             abilities=[{"key": CasterSkirmish.BLUE_FIRE, "target": "Enemy", "mana": 6,
+                         "cast_range": 175, "ready": True, "can_use": True},
+                        {"key": CasterSkirmish.FIRESTORM, "target": "Ground", "mana": 15,
+                         "cast_range": 150, "ready": True, "can_use": True}]),
+        unit("f2", "chosen", 0, -50)],
+        "enemy": [unit("e1", "catapult", 0, 500, **{"class": "artillery"})]}
+
+
+def test_caster_approaches_casts_once_then_returns_and_recovers():
+    obs, policy = caster_state(), CasterSkirmish()
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert orders == [{"unit": "f1", "type": "move", "run": True, "x": 0, "z": 360}]
+    assert policy.assignments["f2"]["z"] == -50
+    obs["friendly"][0].update(z=350)  # stop short of the goal, still safely in cast range
+    obs["time_ms"] = 2000
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert orders[-1] == {"unit": "f1", "type": "ability",
+                           "ability": policy.BLUE_FIRE, "target": "e1"}
+    obs["time_ms"] = 3000
+    assert policy.decide(obs) == []  # stale ready flag does not cause an immediate recast
+    obs["time_ms"] = 8000
+    obs["friendly"][0]["abilities"][0]["ready"] = False
+    assert policy.decide(obs)[-1]["z"] == 0
+    obs["friendly"][0]["barrier"]["hp"] = 100
+    obs["friendly"][0]["abilities"][0]["ready"] = True
+    policy.decide(obs)
+    assert policy.metadata()["recovering"]
+    obs["time_ms"] = 12000
+    obs["friendly"][0]["barrier"]["hp"] = 800
+    assert policy.decide(obs)[-1]["type"] == "ability"
+
+
+def test_caster_uses_visible_clusters_and_waits_for_takeoff():
+    obs, policy = caster_state(), CasterSkirmish()
+    obs["friendly"][0].update(z=400, flying=False)
+    assert policy.decide(obs) == [{"unit": "f1", "type": "flight", "flying": True}]
+    obs["friendly"][0]["flying"] = True
+    obs["enemy"] += [unit("e2", "screen", 10, 500), unit("e3", "screen", -10, 500)]
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert orders[-1] == {"unit": "f1", "type": "ability",
+                           "ability": policy.FIRESTORM, "x": 0, "z": 500}

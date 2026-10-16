@@ -40,6 +40,38 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build: 79 input jobs, 96 completed battles shown across six candidate scenarios; setup failures and variants retained in JSON/text |
 
+## 2026-10-16: Caster audit and one airborne-casting diagnostic
+
+Read the nine M1 caster episodes without new API calls. In the six Sol/gpt-6.1-sol wins,
+Kairos lost no HP between consecutive samples whose endpoints both showed him airborne;
+barrier losses still occurred. Other episodes show airborne-endpoint HP drops. Samples
+cannot exclude intervening flight changes or attribute damage. The declared Warpfire
+Thrower and Plagueclaw projectile records both permit airborne targets (ranges 80 m and
+400 m). This rules out assuming flight immunity, while leaving safe airborne casting
+as a useful hypothesis. Table hashes and limited attributes are in
+`calibration/caster-projectiles-20261016.json`; no extracted game files are committed.
+
+The trace audit (`calibration/caster-review-20261016.py` and JSON) found 250 issued spell
+commands, of which 100 were followed by a sampled active/recharge state within 15 s.
+Seven had no follow-up observation in that window. These are readback counts, not cast
+success or damage; aliases, interruption, delayed execution and sparse sampling can
+confound them. Accepted orders alone remain unsuitable as a spell-value score.
+
+Added `CasterSkirmish` in `battle/calibration.py`: escorts hold their starting posts;
+Kairos stays airborne, casts ordinary Blue Fire (artillery first) or Firestorm on a
+visible cluster of at least three units, and returns during cooldown or to recover a
+barrier below 25% (resumes at 80%). It allows five seconds for a cast command to execute.
+The controller card discloses spell choices, thresholds and range margins. No scenario,
+model prompt, budget or game-speed change. Its completed trial will appear as the
+scripted "Airborne casting" diagnostic in the report.
+
+Next live check: one episode on `tze-caster-skv-assault`, at most its 20-minute timer plus
+setup, $0 API spend. Inspect actual casts/readbacks, flight, barrier recovery and escort
+survival before interpreting the engine outcome. A script loss does not establish
+frontier difficulty. Validation before launching: 96 focused tests, Ruff and diff checks
+passed; 507 orders validated on 938 recorded public snapshots from all nine episodes
+(`calibration/caster-offline-20261016.json`). That offline check does not predict outcomes.
+
 ## 2026-10-16: Free siege/swarm calibration checks
 
 The first tranche uses unchanged anchors and disclosed scripts, unpaused at 1x with

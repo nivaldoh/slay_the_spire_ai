@@ -402,10 +402,10 @@ def test_diagnostic_probes_stay_in_the_data_but_off_the_page(tmp_path):
 
 def test_named_calibration_policies_are_disclosed_scripted_comparisons(tmp_path):
     policies = [f"twwarhammer3.battle.calibration:{name}"
-                for name in ("CentralDefence", "CoordinatedRush")]
+                for name in ("CentralDefence", "CoordinatedRush", "CasterSkirmish")]
     job = make_job(tmp_path, "calibration", [(name, 0, "lost") for name in policies])
     data = report_html.display_data(report.collect([job]))
-    assert len(data["scenarios"][0]["battles"]) == 2
+    assert len(data["scenarios"][0]["battles"]) == len(policies)
     for battle in data["battles"].values():
         assert battle["commander"]["kind"] == "scripted"
         assert "scenario diagnostic" in battle["commander"]["detail"]

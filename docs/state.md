@@ -6,7 +6,10 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 
 ## Active work
 
-No game controller is running. OpenRouter support and all three WH3 reply-schema checks
+No game controller is running. The read-only caster audit is complete and its single
+free airborne-casting diagnostic is tested, ready to launch
+([plan](twwarhammer3/log.md#2026-10-16-caster-audit-and-one-airborne-casting-diagnostic)).
+OpenRouter support and all three WH3 reply-schema checks
 passed; the [free calibration tranche](twwarhammer3/log.md#2026-10-16-free-siegeswarm-calibration-checks)
 is complete. Controller feedback v19 / commander v6 is integrated and tested against
 recorded M1 traces; its effect on model behavior remains untested. The canonical report
