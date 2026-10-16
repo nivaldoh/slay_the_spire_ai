@@ -436,6 +436,19 @@ win or is stepped back down. This replaces the open-ended "harder variant" stopp
 point below; the other rules (one justified factor per step, decision pressure over stat
 inflation, separate infrastructure failures) still apply.
 
+**Scenario mix (owner, 2026-10-16 evening; the intent, not literal rules).** Most of the
+benchmark should be many small battles, each built to test one or two specific things.
+They read easily on the report's map, are easy to explain, and show clearly what a model
+can or cannot do. The owner's example: can two units of cheap cavalry beat one braced
+pikeman unit? If it is possible at all, it may need something more advanced than a
+frontal charge, such as one unit feinting while the other hits a flank. Every such
+idea first needs a check that it is winnable. A few larger battles stay, for context
+length and for problems that appear only at scale (many units, long histories, order
+volume). Across both, the aims are battle diversity, high quality, distinct capabilities
+per scenario and room for interesting, unexpected model behaviour. This sits with the
+difficulty target above: each small test should be as hard as it can be while still
+winnable, and two tests of the same skill count once.
+
 Revised after M1 at the owner's request, then authorized for implementation on resume.
 This sequence supersedes the earlier implementation sequence and the proposal to settle
 the core from M1.

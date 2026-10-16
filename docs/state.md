@@ -91,6 +91,11 @@ Next steps:
 ## Owner direction
 
 WH3:
+- 2026-10-16 (evening, later): mostly many small battles that each test one or two
+  specific things (e.g. two cheap cavalry units against one braced pikeman unit, if
+  winnable: feint and flank), plus a few larger battles for context length and
+  scale-only problems; diversity, quality and room for unexpected behaviour
+  ([scenario mix](twwarhammer3/benchmark.md#current-proposal-calibrate-before-a-broad-model-comparison)).
 - 2026-10-16 (evening): make each scenario maximally difficult while still demonstrably
   winnable; fewer high-quality scenarios beat redundant ones that waste compute. Armies,
   map settings etc. may be modified to calibrate

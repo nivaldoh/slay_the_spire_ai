@@ -173,6 +173,24 @@ OpenAI jobs run with the owner's hard cap, **$52.00**, as the ceiling; expected 
 $2.0-2.5. A battle cut off by that cap would be an incomplete trial, so the swarm runs
 last. After V1c the OpenAI budget is effectively spent.
 
+**V1c caster, paid** (`bench-b13-v1c-caster-cannon-sol61-20261016`, `4ec5772`, gpt-6.1-sol /
+low): **won** at 577 s with 25% of its strength left (enemy 27%, nothing active); 117
+decisions, 5 invalid orders, mean delay 4.9 s, $0.84370000. The model named the cannon at
+96 s and sent every unit at it (nine orders over the battle, 44 ability orders in all);
+Kairos's barrier was down by 206 s, he kept about 76% HP, and the cannon crew routed by
+458 s. The step binds and is demonstrated winnable, so the family climbs.
+
+**V1c siege, Kimi K3** (`bench-b13-v1c-siege-flankers-kimi-20261016`, OpenRouter, low):
+**lost** at 659 s by army rout with 51% of its strength left (enemy 49%); the key building
+was still held (98%) and tickets were untouched. 45 decisions, 51 calls, median call 7.0 s,
+one of 81.5 s, mean order delay 14.52 s (Sol: 4-5 s); six rejected replies (two orders to
+one unit, one unavailable `skirmish` behaviour); 5,010 supplies unspent; $0.99245377.
+OpenRouter ledger $1.83109 of this tranche's $5. Kimi's first battle: it completes, but at
+about three times Sol's latency, which itself costs a real-time battle. The four-unit
+flanker step is now 0 of 2 and not admissible; the next siege test steps back to half the
+dose (`chd-reserve-grn-siege-flankers-2`: one Boar Boyz and one Wolf Riders unit, 9725 to
+10675, 18 units).
+
 ## 2026-10-16: Live check of the v20 shared-magic warning
 
 **Result.** `bench-b13-glm-v20-caster-20261016` (`ae55309`, 19:28-19:40 UTC) **won** at
