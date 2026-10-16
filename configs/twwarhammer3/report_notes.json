@@ -2,7 +2,8 @@
   "scenarios": {
     "brt-cavalry-emp-assault-hard": {
       "title": "Cavalry assault, stronger enemy",
-      "question": "Can an AI get its cavalry past the defenders and reach the guns?",
+      "short": "Cavalry assault",
+      "heading": "Cavalry against a halberd screen guarding the guns",
       "challenge": "Six mounted units face eight enemy units: four halberd units screening two units of handgunners and a cannon. Halberds are built to stop cavalry, so a frontal charge into them risks a losing grind; the gunners behind them are weak in melee. The attacker must defeat the defenders before the 20-minute timer runs out.",
       "footnote": "Stronger enemy: every enemy unit's stats are raised by 10%.",
       "family": "cavalry against anti-large",
@@ -10,109 +11,113 @@
     },
     "brt-cavalry-emp-assault": {
       "title": "Cavalry assault",
-      "question": "Can an AI get its cavalry past the defenders and reach the guns?",
+      "heading": "Can an AI get its cavalry past the defenders and reach the guns?",
       "challenge": "Six mounted units face eight enemy units: four halberd units screening two units of handgunners and a cannon. Halberds are built to stop cavalry, so a frontal charge into them risks a losing grind; the gunners behind them are weak in melee. The attacker must defeat the defenders before the 20-minute timer runs out.",
       "family": "cavalry against anti-large",
       "core_candidate": false
     },
     "skv-swarm-dwf-line": {
       "title": "Command a Skaven swarm",
-      "question": "Can an AI turn a horde of expendable rats into a win against a Dwarf gun line?",
+      "short": "Command a swarm",
+      "heading": "A horde of expendable rats against a Dwarf gun line",
       "challenge": "Twenty Skaven units, most of them cheap and quick to flee, attack nine Dwarf units holding a gun line. The attacker must break the defenders before the 20-minute timer runs out.",
       "family": "command a Skaven swarm",
       "core_candidate": true
     },
     "dwf-line-skv-swarm": {
       "title": "Survive a Skaven swarm",
-      "question": "Can an AI hold a small Dwarf line against a Skaven horde?",
+      "short": "Survive a swarm",
+      "heading": "A small Dwarf line against a Skaven horde",
       "challenge": "Seven Dwarf units face twenty attacking Skaven units. The defender wins if it is still holding when the 20-minute timer runs out.",
       "family": "survive a Skaven swarm",
       "core_candidate": true
     },
     "dwf-sla-taurox": {
       "title": "Dwarf guns versus Sigvald",
-      "question": "Can an AI protect its slow Dwarf shooters from a faster attacking army?",
+      "heading": "Can an AI protect its slow Dwarf shooters from a faster attacking army?",
       "challenge": "Twelve Dwarf units defend against twelve Slaanesh units: Prince Sigvald the Magnificent, a single character who leads them, plus five infantry regiments, a cavalry unit, two chariots and three monstrous units. Five Dwarf units are slow shooters, weaker in melee than the five Dwarf melee regiments. Every attacker is faster than the shooters, and the cavalry, the chariots and the Fiends of Slaanesh (a monstrous unit) move more than three times as fast, so the melee regiments have to keep the enemy off the shooters while they fire. The Dwarfs win if they break the attack or are still holding when the 60-minute timer runs out."
     },
     "dwf-sla-herald": {
       "title": "Dwarf guns versus a Herald",
-      "question": "Can an AI protect its slow Dwarf shooters from a faster attacking army for 20 minutes?",
+      "heading": "Can an AI protect its slow Dwarf shooters from a faster attacking army for 20 minutes?",
       "challenge": "Twelve Dwarf units defend against twelve Slaanesh units: a Herald of Slaanesh, a single character who leads them, plus five infantry regiments, a cavalry unit, two chariots and three monstrous units. These are the units of the Sigvald battle, except that the Herald replaces Sigvald: faster than Sigvald, but lightly armoured and without a shield. Five Dwarf units are slow shooters that cannot outrun any attacker, so the five Dwarf melee regiments have to keep the enemy off them. The Dwarfs win if they break the attack or are still holding when the 20-minute timer runs out."
     },
     "dwf-sla-herald-hard": {
       "title": "Dwarf guns versus a stronger Herald army",
-      "question": "Can an AI protect its slow Dwarf shooters from a faster attacking army for 20 minutes?",
+      "heading": "Can an AI protect its slow Dwarf shooters from a faster attacking army for 20 minutes?",
       "challenge": "Twelve Dwarf units defend against twelve Slaanesh units: a Herald of Slaanesh, a single character who leads them, plus five infantry regiments, a cavalry unit, two chariots and three monstrous units. These are the units of the Sigvald battle, except that the Herald replaces Sigvald: faster than Sigvald, but lightly armoured and without a shield. Five Dwarf units are slow shooters that cannot outrun any attacker, so the five Dwarf melee regiments have to keep the enemy off them. The Dwarfs win if they break the attack or are still holding when the 20-minute timer runs out."
     },
     "brt-cavalry-emp-pikes": {
       "title": "Cavalry versus halberds",
-      "question": "Can an AI defend with cavalry alone against an attacking army of halberds and guns?",
+      "heading": "Can an AI defend with cavalry alone against an attacking army of halberds and guns?",
       "challenge": "A lord, four regiments of knights and a unit of horse archers, all mounted, defend against eight attacking Empire units: four halberd units, two units of handgunners, a cannon and a general on foot. Charging the halberds head-on risks a losing grind, and standing still leaves it a target for the handgunners and the long-range cannon; but every rider is more than twice as fast as any enemy unit, so the cavalry can pick where and when to fight. As the defender, it wins by breaking the attackers or simply by not being beaten before the 20-minute timer runs out.",
       "family": "cavalry against anti-large",
       "core_candidate": false
     },
     "brt-cavalry-emp-pegasus": {
       "title": "Cavalry versus halberds and a Pegasus",
-      "question": "Can an AI's cavalry still defend when the enemy general flies faster than any of its riders?",
+      "heading": "Can an AI's cavalry still defend when the enemy general flies faster than any of its riders?",
       "challenge": "Six mounted units (a lord, four regiments of knights and a unit of horse archers) defend against eight attacking Empire units: four halberd units, two units of handgunners, a cannon and a general riding an Imperial Pegasus. In the air the general is faster than any of the riders, so the cavalry can no longer outrun every enemy, but a general that chases the riders arrives far ahead of its own slow halberds and guns. The defender wins by breaking the attackers or by not being beaten before the 20-minute timer runs out.",
       "family": "cavalry against anti-large",
       "core_candidate": false
     },
     "tze-caster-skv-screen": {
       "title": "Kairos and escorts versus Skaven screens",
-      "question": "Can an AI use one spellcaster's scarce magic to hold off a much larger army?",
+      "short": "Caster and screens",
+      "heading": "One spellcaster's scarce magic against a much larger army",
       "challenge": "Kairos, a flying character and the army's only spellcaster, defends with four escorts: two ranged infantry units, one heavily armoured melee unit and a small unit of fast flyers. Ten Skaven units with three times as many troops attack: a leader, seven infantry units, short-range warpfire throwers and a catapult unit that reaches 400 m, twice as far as any of Kairos's spells. Each spell costs 5 to 20 points of magic from a pool that starts at 12 and refills slowly, and Kairos is one character, not a regiment: flying him out to the catapult risks losing him, while holding back leaves it free to fire. The defender wins by breaking every attacker, or by still holding the field when the 20-minute timer runs out.",
       "family": "caster-led force against rat screens",
       "core_candidate": true
     },
     "siege-kho5-dwf5": {
       "title": "Siege defence pilot",
-      "question": "Can a small garrison hold a fortified settlement?",
+      "heading": "Can a small garrison hold a fortified settlement?",
       "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "survival-kho5": {
       "title": "Survival pilot",
-      "question": "How long can Khorne survive escalating waves?",
+      "heading": "How long can Khorne survive escalating waves?",
       "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "conquest-kho5-dwf5": {
       "title": "Conquest pilot",
-      "question": "Can Khorne contest separated objectives?",
+      "heading": "Can Khorne contest separated objectives?",
       "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "domination-kho5-dwf5": {
       "title": "Domination pilot",
-      "question": "Can Khorne hold points and bring in reinforcements?",
+      "heading": "Can Khorne hold points and bring in reinforcements?",
       "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "settlement-kho5-dwf5": {
       "title": "Settlement defence pilot",
-      "question": "Can a small force defend the settlement objectives?",
+      "heading": "Can a small force defend the settlement objectives?",
       "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "ambush-kho5-dwf5": {
       "title": "Ambush pilot",
-      "question": "Can the ambushed army recover its formation?",
+      "heading": "Can the ambushed army recover its formation?",
       "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "chokepoint-kho5-dwf5": {
       "title": "Chokepoint pilot",
-      "question": "Can Khorne fight through a narrow crossing?",
+      "heading": "Can Khorne fight through a narrow crossing?",
       "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "underground-kho5-dwf5": {
       "title": "Subterranean pilot",
-      "question": "Can Khorne fight in a confined underground battlefield?",
+      "heading": "Can Khorne fight in a confined underground battlefield?",
       "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "ffa-kho5-dwf5-emp5-kho5": {
       "title": "Four-army pilot",
-      "question": "Can Khorne survive a four-army free-for-all?",
+      "heading": "Can Khorne survive a four-army free-for-all?",
       "challenge": "A pilot with Khorne's five units, run before the benchmark's setup checks: it shows the mode works, not how well a model plays it."
     },
     "chd-reserve-grn-siege": {
       "title": "The last reserve",
-      "question": "When should a defended point be conceded, and where should the only mobile reserve commit?",
+      "short": "The last reserve",
+      "heading": "Four points to hold and one mobile reserve",
       "challenge": "Nine Chaos Dwarf units defend fortified Helmgart against sixteen Greenskin units. Blunderbusses, Fireglaives and a Magma Cannon provide firepower; one Bull Centaur unit is the mobile reserve. Four victory locations and a starting construction budget of 6000 supplies create competing commitments across the fort.",
       "family": "territorial defence",
       "core_candidate": true,
@@ -120,7 +125,8 @@
     },
     "ksl-reserves-survival": {
       "title": "Spend now or survive later",
-      "question": "Buy cheap relief now, or save supplies for a more capable reinforcement?",
+      "short": "Spend or survive",
+      "heading": "Supplies for reinforcements: spend now or save for later",
       "challenge": "Ten Kislev units face native Khorne waves in the Hunting Fields. Seven initial reserves cost 500–1600 supplies each. Supplies accumulate during the battle, but reserves can enter only through an available spawn zone. The report measures survival time alongside purchases, point ownership and losses; later pool changes follow the game's native rules.",
       "family": "reinforcement budgeting",
       "core_candidate": true,
@@ -128,7 +134,7 @@
     },
     "sla-detachments-dwf-conquest": {
       "title": "Contest the centre — reference",
-      "question": "When should units contest the central point rather than attack supporting shooters?",
+      "heading": "When should units contest the central point rather than attack supporting shooters?",
       "challenge": "Ten Slaanesh units face ten Dwarfs with armoured infantry, Thunderers and a cannon at Alpine Ridge. One central capture point generates victory tickets. This screen does not test distributed objective control and is retained as reference evidence, outside the distinct core.",
       "family": "central objective contest",
       "core_candidate": false,
@@ -136,7 +142,7 @@
     },
     "emp-battery-wef-evacuation": {
       "title": "Bring the batteries home",
-      "question": "How much scouting and route clearing can the escort afford before its deadline?",
+      "heading": "How much scouting and route clearing can the escort afford before its deadline?",
       "challenge": "Eight Empire units, including two Great Cannon batteries and two Pistolier scouts, face eight Wood Elf units on Backwoods Path. Both batteries must reach the public extraction circle together before 15 minutes, with living crews and neither routing nor shattered. A native victory before the deadline also succeeds if both survive. Enemy positions are revealed to the controller only when visible.",
       "family": "asset evacuation",
       "core_candidate": false,
@@ -144,7 +150,8 @@
     },
     "emp-battery-skv-evacuation": {
       "title": "Bring the batteries home",
-      "question": "How much scouting and route clearing can the escort afford before its deadline?",
+      "short": "Evacuate the guns",
+      "heading": "Escort two batteries out before the deadline",
       "challenge": "Eight Empire units, including two Great Cannon batteries and two Pistolier scouts, face eight Skaven units: a Warlord, two Stormvermin, two stalking Gutter Runners, two Night Runner slingers and Rat Ogres on Backwoods Path. Both batteries must reach the public extraction circle together before 15 minutes, with living crews and neither routing nor shattered. A native victory before the deadline also succeeds if both survive. Enemy positions are revealed to the controller only when visible.",
       "family": "asset evacuation",
       "core_candidate": true,

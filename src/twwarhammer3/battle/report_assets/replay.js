@@ -128,6 +128,9 @@ const Viewer = (() => {
   const $ = (id) => document.getElementById(id);
   const MAP = "#13212a";
   const REJECTED = "#ff7b72";
+  const ABILITY = "#ff6fd8"; // an ability or spell ordered: no army or model uses this hue
+  const ABILITY_MS = 5000; // how long its ring stays, fading
+  const FEW_UNITS = 12; // up to this many markers every unit keeps its label
   const TRAIL_MS = 20000; // observed movement shown behind each unit
   const ROUTE_MS = 20000; // how long a newly issued route stays drawn for unselected units
   const ARRIVED_M = 30; // a waypoint this close to a recorded position counts as reached
@@ -138,7 +141,7 @@ const Viewer = (() => {
     AGE_H = 32;
   // Bands kept clear of units: the caption on top, the scale bar and north arrow below.
   const TOP_BAND = 40,
-    BOTTOM_BAND = 44;
+    BOTTOM_BAND = 36;
   let r = null,
     run = {},
     roster = new Map(),
@@ -156,6 +159,7 @@ const Viewer = (() => {
     lastTick = null,
     loop = null;
   let selected = null,
+    hovered = null,
     pinned = null,
     lag = false,
     proj = null,
@@ -210,6 +214,7 @@ const Viewer = (() => {
     until = null;
     watching = null;
     selected = null;
+    hovered = null;
     pinned = null;
     keys = {};
     extent = null;
@@ -305,12 +310,25 @@ const Viewer = (() => {
     }
     return box;
   }
-  // Fixed framing per replay: every recorded position over the battle, plus a margin.
+  // Fixed framing per replay, where the fighting happened: the 5th to 95th percentile of every
+  // recorded position over the battle (a unit that strays far off does not shrink the rest),
+  // and where the units seen in the first 30 s started, with a margin. No camera moves; "Show the whole map" frames
+  // the terrain instead.
   function bounds() {
     const terrain = r.terrain?.bounds;
     if ($("whole").checked && terrain)
       return [terrain.min_x, terrain.min_z, terrain.max_x, terrain.max_z];
-    const points = [...tracks.values()].flat();
+    const all = [...tracks.values()].flat(),
+      xs = all.map((p) => p.x).sort((a, b) => a - b),
+      zs = all.map((p) => p.z).sort((a, b) => a - b),
+      at = (list, q) => list[Math.round((list.length - 1) * q)];
+    const points = all.length
+      ? [
+          { x: at(xs, 0.05), z: at(zs, 0.05) },
+          { x: at(xs, 0.95), z: at(zs, 0.95) },
+          ...[...tracks.values()].map((track) => track[0]).filter((p) => p.t <= start + 30000),
+        ]
+      : [];
     for (const frame of r.frames) {
       const zone = frame.mode?.custom?.zone;
       if (zone) {
@@ -321,7 +339,7 @@ const Viewer = (() => {
         break;
       }
     }
-    extent ??= points.length ? around(points, 40, 160) : [-256, -256, 256, 256];
+    extent ??= points.length ? around(points, 50, 220) : [-256, -256, 256, 256];
     return extent;
   }
 
@@ -332,7 +350,7 @@ const Viewer = (() => {
     mapWidth = w;
     const b = bounds(),
       aspect = (b[3] - b[1]) / (b[2] - b[0]);
-    const tallest = Math.max(320, Math.min(innerHeight - 260, 820));
+    const tallest = Math.max(320, Math.min(innerHeight - 150, 980));
     const h = Math.round(Math.max(260, Math.min(w * aspect + TOP_BAND + BOTTOM_BAND, tallest)));
     map.setAttribute("viewBox", `0 0 ${w} ${h}`);
     map.style.height = `${h}px`;
@@ -350,8 +368,7 @@ const Viewer = (() => {
       b = pinned == null ? bounds() : inspectBounds(r.decisions[pinned]);
     // The inspect caption wraps on narrow maps: its band grows to fit it.
     const top = pinned == null ? TOP_BAND : Math.max(TOP_BAND, $("map-caption").offsetHeight + 10);
-    // So does the legend row, on narrow maps.
-    const bottom = Math.max(BOTTOM_BAND, document.querySelector(".map-bottom").offsetHeight + 14);
+    const bottom = BOTTOM_BAND;
     const scale = Math.min((w - 28) / (b[2] - b[0]), (h - 28 - top - bottom) / (b[3] - b[1]));
     const cx = (b[0] + b[2]) / 2,
       cz = (b[1] + b[3]) / 2,
@@ -673,11 +690,16 @@ const Viewer = (() => {
         );
       }
     }
-    // An outline takes no label but keeps other labels off its marker.
+    // An outline takes no label but keeps other labels off its marker; on a crowded map only the
+    // selected, hovered or emphasised units are named.
+    const named = !quiet || u.id === selected || u.id === hovered || focus?.has(u.id);
     labels.push({
       x: proj.x(u.x),
       y: proj.y(u.z),
-      text: ghost ? null : `${entry.short || u.id}${seen != null ? `, seen ${clock(seen)}` : ""}`,
+      text:
+        ghost || !named
+          ? null
+          : `${entry.short || u.id}${seen != null ? `, seen ${clock(seen)}` : ""}`,
       note: [fleeing && !down && "fleeing", note].filter(Boolean).join(" ") || null,
       colour,
       rank: u.id === selected ? 0 : dim || hollow ? 2 : 1,
@@ -699,7 +721,9 @@ const Viewer = (() => {
 
   // Short labels go beside their marker where they overlap no other marker or label;
   // faded units lose theirs when nothing fits.
-  let labels = [];
+  let labels = [],
+    quiet = false,
+    focus = null;
   function placeLabels(layer) {
     const radius = 14 * proj.k,
       taken = labels.map((l) => [l.x - radius, l.y - radius, l.x + radius, l.y + radius]);
@@ -837,18 +861,49 @@ const Viewer = (() => {
       }
   }
 
+  // Units given an ability or spell in the last ABILITY_MS, with the whole seconds since.
+  function abilityRings() {
+    const rings = [];
+    for (const d of r.decisions) {
+      if (d.applied_ms == null || d.applied_ms > time || d.applied_ms <= time - ABILITY_MS)
+        continue;
+      for (const step of d.steps)
+        if (step.kind === "ability" && ACCEPTED.includes(step.status) && step.unit !== "army")
+          rings.push({ id: step.unit, age: Math.floor((time - d.applied_ms) / 1000) });
+    }
+    return rings;
+  }
+
   function renderMap(fi, now) {
     const lagKey = lag && pinned == null ? now.current : "";
-    const key = [fi, now.current, selected, pinned, proj.w, proj.h, watched(), lagKey].join("|");
+    const rings = pinned == null ? abilityRings() : [];
+    const key = [
+      fi,
+      now.current,
+      selected,
+      hovered,
+      pinned,
+      proj.w,
+      proj.h,
+      watched(),
+      lagKey,
+      rings.map((ring) => `${ring.id}:${ring.age}`).join(","),
+    ].join("|");
     if (key === keys.map) return;
     keys.map = key;
     const layer = $("map-layer");
     layer.replaceChildren();
     $("map-lag-layer").replaceChildren();
+    quiet = false;
+    focus = null;
     if (pinned != null) return drawInspect(layer, r.decisions[pinned]);
     drawLag($("map-lag-layer"), fi, now);
-    const frame = r.frames[fi],
-      focus = focusSet(fi);
+    const frame = r.frames[fi];
+    focus = focusSet(fi);
+    const unseen = r.roster.filter(
+      (entry) => entry.side === "enemy" && !frame.enemy.some((u) => u.id === entry.id),
+    ).length;
+    quiet = frame.friendly.length + frame.enemy.length + unseen > FEW_UNITS;
     drawTrails(layer, frame.time_ms, focus);
     // Routes issued in the last 20 s, faint; the selected unit's standing orders, strong.
     if (!selected)
@@ -865,26 +920,29 @@ const Viewer = (() => {
       if (newest != null && newest !== standing)
         drawRoute(layer, r.decisions[newest], selected, fi, true);
     }
+    // Objectives as small diamonds filled by their holder's colour, larger for victory points;
+    // their names and holders are in the tooltip.
     for (const point of frame.mode?.capture_points || [])
       if (placed(point)) {
-        const x = proj.x(point.x),
-          y = proj.y(point.z);
-        layer.append(
-          svg("rect", {
-            x: x - 9,
-            y: y - 9,
-            width: 18,
-            height: 18,
-            fill: "none",
-            stroke: "#fff",
-            "stroke-width": 1.5,
-          }),
+        const colour = { us: TEAM.friendly, enemy: TEAM.enemy }[point.holder],
+          s = point.victory ? 8 : 5.5;
+        const mark = svg("path", {
+          d: `M${proj.x(point.x).toFixed(1)} ${(proj.y(point.z) - s).toFixed(1)}l${s} ${s}-${s} ${s}-${s}-${s}z`,
+          class: "objective",
+          fill: colour || "none",
+          "fill-opacity": 0.6,
+          stroke: colour || "#cfdbe1",
+          "stroke-width": point.victory ? 2 : 1.4,
+        });
+        const holder = { us: "held by the model's army", enemy: "held by the enemy" }[point.holder];
+        mark.append(
           svg(
-            "text",
-            { x: x + 13, y: y + 4, class: "tiny", fill: "#fff" },
-            `${point.name || point.id}: ${point.holder || "unheld"}`,
+            "title",
+            {},
+            `${point.name || point.id}${point.victory ? " (victory point)" : ""}: ${holder || "not held"}`,
           ),
         );
+        layer.append(mark);
       }
     const extraction = frame.mode?.custom?.zone;
     if (extraction && placed(extraction)) {
@@ -908,6 +966,25 @@ const Viewer = (() => {
     drawLastSeen(layer, fi, focus);
     for (const side of ["friendly", "enemy"])
       for (const u of frame[side]) drawUnit(layer, u, side, { dim: focus && !focus.has(u.id) });
+    // A ring around a unit just ordered to use an ability or spell, fading over ABILITY_MS.
+    for (const ring of rings) {
+      const u = unitIn(frame, ring.id);
+      if (!placed(u)) continue;
+      const circle = svg("circle", {
+        cx: proj.x(u.x),
+        cy: proj.y(u.z),
+        r: 23 * proj.k,
+        class: "ability-ring",
+        fill: "none",
+        stroke: ABILITY,
+        "stroke-width": 2.5,
+        opacity: (1 - ring.age / (ABILITY_MS / 1000 + 1)).toFixed(2),
+      });
+      circle.append(
+        svg("title", {}, `${roster.get(ring.id)?.display || ring.id}: ability ordered`),
+      );
+      layer.append(circle);
+    }
     placeLabels(layer);
   }
 
@@ -1038,7 +1115,7 @@ const Viewer = (() => {
       line.append(
         `The battle ended before the reply requested at ${clock(requested(d))} was applied.`,
       );
-    else line.append(el("span", null, "pulse"), el("span", waiting(now), "waiting"));
+    else line.append(el("span", waiting(now), "waiting"));
     return line;
   }
 
@@ -1048,7 +1125,7 @@ const Viewer = (() => {
     return node;
   }
   function jumpButton(t) {
-    const node = button(`▶ ${clock(t)}`, () => jump(t), "jump");
+    const node = button(clock(t), () => jump(t), "jump");
     node.setAttribute("aria-label", `Jump to ${clock(t)}`);
     return node;
   }
@@ -1108,7 +1185,10 @@ const Viewer = (() => {
     }
     const list = el("ul", null, "orders");
     for (const line of d.summary) {
-      const item = el("li", null, line.status),
+      const ability = d.steps.some(
+        (s) => s.unit === line.unit && s.kind === "ability" && ACCEPTED.includes(s.status),
+      );
+      const item = el("li", null, `${line.status}${ability ? " ability" : ""}`),
         entry = roster.get(line.unit);
       const prefix = entry ? `${entry.display}: ` : null;
       if (prefix && line.text.startsWith(prefix))
@@ -1582,8 +1662,13 @@ const Viewer = (() => {
     for (const listener of listeners) listener(time);
   }
 
+  // The one button with an icon.
   function updatePlay() {
-    $("play").textContent = playing ? "❚❚ Pause" : "▶ Play";
+    const icon = svg("svg", { viewBox: "0 0 16 16", class: "play-icon", "aria-hidden": "true" });
+    icon.append(
+      svg("path", { d: playing ? "M3 2h3.6v12H3zM9.4 2H13v12H9.4z" : "M4 2l10 6-10 6z" }),
+    );
+    $("play").replaceChildren(icon, playing ? "Pause" : "Play");
     $("play").setAttribute("aria-label", playing ? "Pause" : "Play");
   }
   function play() {
@@ -1712,6 +1797,17 @@ const Viewer = (() => {
       const node = e.target.closest?.("[data-unit]");
       if (node && pinned == null) select(node.dataset.unit === selected ? null : node.dataset.unit);
     });
+    // Hovering a marker names it on a crowded map.
+    const hover = (id) => {
+      if (id === hovered) return;
+      hovered = id;
+      keys.map = null;
+      if (r) render();
+    };
+    $("map").addEventListener("pointerover", (e) =>
+      hover(e.target.closest?.("[data-unit]")?.dataset.unit ?? null),
+    );
+    $("map").addEventListener("pointerleave", () => hover(null));
     const node = $("strip");
     node.addEventListener("pointerdown", (e) => {
       if (!r) return;

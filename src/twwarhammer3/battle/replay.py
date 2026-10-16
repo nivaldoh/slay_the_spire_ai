@@ -66,10 +66,11 @@ def unit_name(unit: dict) -> str:
 
 
 def ability_name(key) -> str:
-    """``wh_main_character_abilities_foe_seeker`` -> ``Foe Seeker``."""
+    """``wh_main_character_abilities_foe_seeker`` -> ``Foe Seeker``; a spell loses its lore:
+    ``wh3_main_spell_tzeentch_blue_fire_of_tzeentch`` -> ``Blue Fire of Tzeentch``."""
     key = str(key or "?")
     return title(key.rsplit("abilities_", 1)[1] if "abilities_" in key
-                 else re.sub(r"^wh\d?_[a-z0-9]+_", "", key))
+                 else re.sub(r"^wh\d?_[a-z0-9]+_(?:spell_[a-z]+_)?", "", key))
 
 
 def error_text(code) -> str:
@@ -326,7 +327,11 @@ def step_text(order: dict, origin, labels: dict) -> str:
     if kind == "flight":
         return "take off" if order.get("flying") else "land"
     if kind == "build":
-        return f"build {order.get('option')} on slot {order.get('slot')}"
+        # tower_magic_3 on s1 -> magic tower 3 on slot 1
+        option = re.fullmatch(r"([a-z]+)_([a-z_]+?)(?:_(\d+))?", str(order.get("option")))
+        name = (f"{option[2].replace('_', ' ')} {option[1]}{' ' + option[3] if option[3] else ''}"
+                if option else str(order.get("option")))
+        return f"build {name} on slot {str(order.get('slot')).lstrip('s')}"
     if kind == "reinforce":
         return (f"bring in {unit_name({'type': order.get('reinforcement')})} "
                 f"at zone {order.get('zone')}")

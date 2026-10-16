@@ -6,11 +6,15 @@ them instead of splitting the row, and every battle keeps its own version. A har
 the code and settings that shape play: presentation-only files are left out of it. The
 collector's JSON and text keep the strict, never-pooled groups and paired statistics.
 
+The page shows the core scenarios (`core_candidate` in the notes, one per decision family)
+and only their completed battles; a report without a core scenario shows every scenario.
+Variants, pilots, incomplete attempts, setup-only launches and diagnostic probes stay in the
+data and the collector's JSON, off the page, and their replays are not embedded.
+
 Each scenario has a featured trial: a curated selection, whose record the page states
-beside it, else the first finished model battle, else the first battle, by chronology.
-Diagnostic probes stay in the data, off the page. Reader-facing scenario and unit text
-comes from configs/twwarhammer3/report_notes.json. Recorded game stills are embedded as
-WebP, which needs Pillow.
+beside it, else the first model battle, else the first battle, by chronology. Reader-facing
+scenario and unit text comes from configs/twwarhammer3/report_notes.json. Recorded game
+stills are embedded as WebP, which needs Pillow.
 """
 
 import base64
@@ -34,9 +38,22 @@ PRESENTATION = ("src/twwarhammer3/battle/report", "src/twwarhammer3/battle/repla
                 "src/twwarhammer3/battle/digest.py", "src/twwarhammer3/battle/watch.py",
                 "src/twwarhammer3/battle/stats.py", "configs/twwarhammer3/report_notes.json",
                 "configs/twwarhammer3/scenarios.json")
-PROMPTS = {"llm": "tactical advice in the prompt", "llm_rules": "no tactical advice",
-           "commander": "plans for scripted unit skills"}
-VARIANTS = {"llm": "tactics", "commander": "plans"}
+PROMPTS = {"llm": "prompt with tactical tips", "llm_rules": "rules-only prompt",
+           "commander": "writes plans that scripted unit skills carry out"}
+VARIANTS = {"llm": "tactical tips", "commander": "plans"}
+# Races by the code in a faction key (wh3_dlc23_chd_astragoth -> chd): name, adjective.
+RACES = {"brt": ("Bretonnia", "Bretonnian"), "emp": ("Empire", "Empire"),
+         "dwf": ("Dwarfs", "Dwarf"), "skv": ("Skaven", "Skaven"),
+         "chd": ("Chaos Dwarfs", "Chaos Dwarf"), "grn": ("Greenskins", "Greenskin"),
+         "ksl": ("Kislev", "Kislev"), "cth": ("Cathay", "Cathayan"),
+         "tze": ("Tzeentch", "Tzeentch"), "kho": ("Khorne", "Khorne"),
+         "sla": ("Slaanesh", "Slaanesh"), "nur": ("Nurgle", "Nurgle"),
+         "dae": ("Daemons of Chaos", "Daemon"), "chs": ("Warriors of Chaos", "Chaos"),
+         "ogr": ("Ogre Kingdoms", "Ogre"), "vmp": ("Vampire Counts", "Vampire Counts"),
+         "wef": ("Wood Elves", "Wood Elf"), "hef": ("High Elves", "High Elf"),
+         "def": ("Dark Elves", "Dark Elf"), "lzd": ("Lizardmen", "Lizardmen"),
+         "tmb": ("Tomb Kings", "Tomb Kings"), "cst": ("Vampire Coast", "Vampire Coast"),
+         "bst": ("Beastmen", "Beastmen"), "nor": ("Norsca", "Norscan")}
 SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the nearest visible enemy"),
             "rush_nearest": ("Charge nearest", "every unit runs at the nearest visible enemy"),
             "hold": ("Hold position", "never gives an order"),
@@ -45,6 +62,8 @@ SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the neares
 UNIT_KEEP = ("id", "x", "z", "bearing", "men", "men0", "hp", "state", "target", "ammo", "ammo0")
 MODE_KEEP = ("role", "capture_points", "supplies", "tickets", "tickets_goal", "custom")
 TRACK_STEP_MS = 5000  # an army track keeps one centroid per this much battle time
+STEP_MS = 5000  # the battle development series samples losses and counts orders this often
+ORDER_KINDS = ("move", "attack", "ability", "build", "reinforce")  # the rest count as "other"
 # The game's custom battle modes in page order (land battles first, then the objective modes,
 # sieges and settlements before survival and the points modes, the rarer layouts last), each
 # with its section title and its name for one battle. Sieges split by the player's role, as
@@ -77,22 +96,32 @@ def scenario_name(definition: dict) -> str | None:
 
 
 def armies(scenario: dict) -> dict:
-    """The declared starting armies in a few words."""
+    """The declared starting armies in a few words, by race: "9 Chaos Dwarf units defending
+    against 16 Greenskin units"."""
     def army(side):
         if not side:
             return None
         if isinstance(side, list):
-            return "; ".join(filter(None, map(army, side)))
-        faction = side.get("faction") or side.get("subculture") or "Unknown faction"
-        faction = re.sub(r"^wh\d?_(?:main|dlc\d+|pro\d+)_(?:sc_)?[a-z]+_", "", faction)
+            return " and ".join(filter(None, map(army, side)))
+        key = side.get("faction") or side.get("subculture") or ""
+        code = re.match(r"wh\d?_(?:main|dlc\d+|pro\d+)_(?:sc_)?([a-z]{3})_", key)
+        name = (RACES[code[1]][1] if code and code[1] in RACES else
+                replay.title(re.sub(r"^wh\d?_(?:main|dlc\d+|pro\d+)_(?:sc_)?[a-z]+_", "", key))
+                or "Unknown")
         count = len(side["units"]) if isinstance(side.get("units"), list) else None
-        return f"{replay.title(faction)} ({count} units)" if count is not None else replay.title(
-            faction)
+        return f"{count} {name} unit{'s' * (count != 1)}" if count is not None else f"{name} army"
 
-    enemy = army(scenario.get("enemy"))
+    friendly, enemy = army(scenario.get("player")), army(scenario.get("enemy"))
     if enemy is None and scenario.get("battle_type") == "survival":
-        enemy = "Waves"
-    return {"friendly": army(scenario.get("player")), "enemy": enemy}
+        enemy = "endless waves"
+    attacker = scenario.get("attacker")
+    defends = (scenario.get("expect") or {}).get("player_defends")
+    if defends is None and scenario.get("battle_type") == "survival":
+        defends = True  # the waves come to the player
+    verb = ("defending against" if attacker == "enemy" or (attacker is None and defends)
+            else "attacking" if attacker == "player" or defends is False else "against")
+    return {"friendly": friendly, "enemy": enemy,
+            "line": f"{friendly} {verb} {enemy}" if friendly and enemy else friendly or enemy}
 
 
 def _json(value: object) -> str:
@@ -332,20 +361,21 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
                 "battles": sorted((key for keys in chosen for key in keys), key=chronology)}
 
     runs, scenario_notes = notes.get("runs") or {}, notes.get("scenarios") or {}
-    scenarios, hidden = [], []
+    # The core scenarios, when the report has any; else every scenario (an ad hoc report).
+    core = {name for name in by_name if (scenario_notes.get(name) or {}).get("core_candidate")}
+    scenarios = []
     for name, every in by_name.items():
-        # Diagnostic probes test tooling, not commanding: kept in the data, not on the page.
-        keys = [key for key in every if battles[key]["commander"]["kind"] != "diagnostic"]
-        hidden += [key for key in every if key not in keys]
-        if not keys:
+        # Completed battles only. Diagnostic probes test tooling, not commanding.
+        keys = [key for key in every if trials[key]["valid"]
+                and battles[key]["commander"]["kind"] != "diagnostic"]
+        if not keys or (core and name not in core):
             continue
         definition = group_of(keys[0])["definition"]
         scenario = definition.get("scenario") or {}
         note = scenario_notes.get(name) or {}
         selected = [key for key in keys if (runs.get(
             f"{trials[key]['instance']}/{trials[key]['episode']}") or {}).get("selected") is True]
-        models = [key for key in keys
-                  if trials[key]["valid"] and battles[key]["commander"]["kind"] == "model"]
+        models = [key for key in keys if battles[key]["commander"]["kind"] == "model"]
         reason, pool = next((reason, pool) for reason, pool in (
             ("selected", selected), ("first_model_run", models), ("first_run", keys)) if pool)
         rows = {}
@@ -358,8 +388,9 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
         scenarios.append({
             "id": f"scenario-{len(scenarios) + 1}", "name": name,
             "title": _title(note, {**scenario, "name": name}),
-            "question": note.get("question"),
+            "heading": note.get("heading"),
             "family": note.get("family") or scenario.get("family"),
+            "short": note.get("short") or _title(note, {**scenario, "name": name}),
             "core_candidate": note.get("core_candidate", False),
             "challenge": note.get("challenge") or scenario.get("brief"),
             "footnote": note.get("footnote"),
@@ -373,8 +404,7 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
                 [int(part) if part.isdigit() else part
                  for part in re.split(r"(\d+)", item["detail"])])),
             "controlled": controlled(keys),
-            "featured": min(pool, key=chronology), "featured_reason": reason,
-            "setup_only_jobs": []})
+            "featured": min(pool, key=chronology), "featured_reason": reason})
     # By game mode, then in the notes' order; scenarios without notes after them, by name.
     modes = [key for key, _, _ in MODES]
     listed = list(scenario_notes)
@@ -383,23 +413,14 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
         listed.index(entry["name"]) if entry["name"] in listed else len(listed),
         str(entry["name"])))
 
-    # Jobs that stopped before any battle: beside their scenario, or on their own.
+    # What the page leaves out: every other battle, and the launches that stopped before one.
+    shown = {key for entry in scenarios for key in entry["battles"]}
     started = {trial["instance"] for trial in trials.values()}
-    setup_only = []
-    for index, job in enumerate(data.get("jobs", [])):
-        if job["instance"] in started:
-            continue
-        scenario = (job.get("definition") or {}).get("scenario") or {}
-        name = scenario_name(job.get("definition") or {})
-        entry = next((entry for entry in scenarios if entry["name"] == name), None)
-        if entry:
-            entry["setup_only_jobs"].append(index)
-        else:
-            setup_only.append({"job": index, "scenario": name,
-                               "title": _title(scenario_notes.get(name) or {},
-                                               {**scenario, "name": name})})
-    return {"schema": 2, "evidence_kind": kind, "report": data, "battles": battles,
-            "scenarios": scenarios, "setup_only": setup_only, "diagnostics": hidden,
+    omitted = {"battles": sorted((key for key in trials if key not in shown), key=chronology),
+               "setup_only": [index for index, job in enumerate(data.get("jobs", []))
+                              if job["instance"] not in started]}
+    return {"schema": 3, "evidence_kind": kind, "report": data, "battles": battles,
+            "scenarios": scenarios, "omitted": omitted,
             "modes": [{"key": key, "title": title, "name": name} for key, title, name in MODES]}
 
 
@@ -465,14 +486,63 @@ def route(payload: dict) -> dict:
     return {"track": track, "enemy": [{"at": point} for point in first_seen.values()]}
 
 
+def development(payload: dict) -> dict:
+    """How the battle went, every 5 s of battle time and at its end, from the recorded frames
+    alone: the soldiers each side had lost (friendly units in full; enemy units as last seen,
+    a seen unit the enemy roster marks dead losing all its soldiers; unseen ones not counted),
+    and the commander's orders the game accepted in each 5 s, by kind."""
+    frames = payload["frames"]
+    end = frames[-1]["time_ms"]
+    times = [*range(0, end, STEP_MS), end]
+    units, lost, index = {}, {"own": [], "enemy": []}, 0
+    for t in times:
+        while index < len(frames) and frames[index]["time_ms"] <= t:
+            frame = frames[index]
+            for side in ("friendly", "enemy"):
+                for u in frame[side]:
+                    if isinstance(u.get("men"), int) and isinstance(u.get("men0"), int):
+                        units[u["id"]] = [side, u["men0"], u["men"]]
+            for u in frame.get("enemy_roster") or []:
+                if u.get("dead") is True and u.get("id") in units:
+                    units[u["id"]][2] = 0
+            index += 1
+        for name, side in (("own", "friendly"), ("enemy", "enemy")):
+            lost[name].append(sum(max(0, men0 - men) for owner, men0, men in units.values()
+                                  if owner == side))
+    orders = {}
+    for decision in payload["decisions"]:
+        if decision.get("applied_ms") is None:
+            continue
+        step = min(len(times) - 1, int(decision["applied_ms"] // STEP_MS))
+        for item, accepted in zip(decision["orders"], decision["steps"]):
+            if accepted["status"] in replay.ACCEPTED:
+                kind = item["order"].get("type")
+                kind = kind if kind in ORDER_KINDS else "other"
+                orders.setdefault(kind, [0] * len(times))[step] += 1
+    return {"step_s": STEP_MS // 1000, "end_s": round(end / 1000, 1), **lost, "orders": orders}
+
+
+def start(payload: dict) -> dict:
+    """Where the armies began, for the scenario index: the units of the first frame that places
+    friendly units (enemy units only as far as visible then)."""
+    first = next((frame for frame in payload["frames"] if frame["friendly"]),
+                 {"friendly": [], "enemy": []})
+    return {side: [[round(u["x"]), round(u["z"])] for u in first[side]
+                   if isinstance(u.get("x"), (int, float)) and isinstance(u.get("z"), (int, float))]
+            for side in ("friendly", "enemy")}
+
+
 def render(report: dict, notes: dict | None = None) -> str:
     data = display_data(report, notes)
     runs = (notes or {}).get("runs") or {}
     trials, chronology = _chronology(data["report"])
+    shown = {key for scenario in data["scenarios"] for key in scenario["battles"]}
     payloads, prompts, directories = {}, {}, {}
     for group_index, group in enumerate(report["groups"]):
         for trial_index, trial in enumerate(group["trials"]):
             key = f"g{group_index}-t{trial_index}"
+            if key not in shown:  # its replay would never open
+                continue
             job = Path(trial["instance"])
             directory = job / trial["episode"]
             directories[key] = directory
@@ -491,21 +561,23 @@ def render(report: dict, notes: dict | None = None) -> str:
                 payloads[key] = {**compact(payload), "highlights": run.get("highlights") or []}
                 if payload["frames"]:
                     data["battles"][key].update(timing=timing(payloads[key]),
-                                                route=route(payloads[key]))
+                                                route=route(payloads[key]),
+                                                development=development(payloads[key]))
 
-    # One map outline per scenario for the route thumbnails: the featured battle's, else any.
+    # One map outline per scenario for the index and the route maps: the featured battle's,
+    # else any; the armies' starting positions from the featured battle.
     for scenario in data["scenarios"]:
         terrains = [payloads[key].get("terrain") for key in [scenario["featured"],
                                                              *scenario["battles"]]
                     if key in payloads]
         scenario["terrain"] = next(filter(None, terrains), None)
-    # Stills: each featured battle, and the earliest completed battle of each commander in
-    # each scenario.
+        featured = payloads.get(scenario["featured"])
+        scenario["start"] = start(featured) if featured and featured["frames"] else None
+    # Stills: each featured battle, and the earliest battle of each commander in each scenario.
     pictured = {scenario["featured"] for scenario in data["scenarios"]}
     for scenario in data["scenarios"]:
         for row in scenario["rows"]:
-            complete = [key for key in row["battles"] if trials[key]["valid"]]
-            pictured.add(min(complete or row["battles"], key=chronology))
+            pictured.add(min(row["battles"], key=chronology))
     for key, payload in payloads.items():
         still_path = directories[key] / "stills.json"
         if data["evidence_kind"] == "recorded" and still_path.exists():
