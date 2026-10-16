@@ -40,6 +40,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | scores by game mode, one map per model (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | `reports/benchmark.html` (34 MB): 61 jobs, 91 battles shown in 22 scenarios (6 diagnostic probes held back), six core families with evidence; headline C1 |
 
+## 2026-10-16: Matched round M1 on the retained core (plan)
+
+The owner raised the WH3 API cap to $52 and asked that overnight work favor game runs.
+The plan's next game-side step is a matched model comparison over the core families that
+have only exploratory evidence. M1 holds the conditions fixed: harness b12 at one frozen
+revision, `llm_rules` v18, low effort, gpt-6-sol against gpt-6-luna, three battles each per
+scenario in one job (rotation interleaves them; rematches replay the recorded start),
+very hard AI, unpaused 1x, natural latency. Earlier exploratory battles stay in the
+report but in their own harness groups.
+
+| Plan | Scenarios, in order | Battles | Expected spend |
+|---|---|---|---|
+| M1a | `chd-reserve-grn-siege`, `ksl-reserves-survival`, `skv-swarm-dwf-line` | 18 | about $10 |
+| M1b (decided after the family audit) | `dwf-line-skv-swarm`, `tze-caster-skv-screen`; `brt-cavalry-emp-assault-hard` under b12 if time remains | up to 18 | about $10 |
+
+Cavalry already has six Sol and six Luna battles from C1 (b10/b11), so it runs last. All
+battles end before the owner returns (13:00 UTC). Three battles per model are a first
+matched sample, not a stable ranking. Results follow in this entry.
+
 ## 2026-10-16: Evacuation deferred; controller version labels fixed
 
 `bench-b12-skv-evacuation-20261016` (`a9ba045`; Luna then Sol, `llm_rules` low) stopped at

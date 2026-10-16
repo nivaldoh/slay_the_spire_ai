@@ -164,7 +164,7 @@ with the version history and the baseline in view, and three judges score them. 
 runs, play more seeds with the same version and draft the next change in a git worktree:
 a job stops if its source scope changes. Note each job's start and stop in
 [Active work](../state.md#active-work). The WH3 ledger (`runs/twwarhammer3/llm-spend.jsonl`)
-is separate from Spire's, with its own $25 cap.
+is separate from Spire's, with its own cap: $25, raised to $52 on 2026-10-16.
 
 ## Next
 

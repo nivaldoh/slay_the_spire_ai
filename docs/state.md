@@ -11,7 +11,7 @@ stopped at setup (03:20 UTC, no model call: the authored-placement check runs in
 teleport's own tick), and the owner then deferred the custom evacuation scenario to a
 low-priority item. Overnight (owner away until 13:00 UTC; goal: continue the benchmark
 plan): the owner's pending report notes are being implemented on branch
-`wh3-report-notes` (worktree `../wh3-report-notes`), not yet merged. Ledger: $16.9058 of $25.
+`wh3-report-notes` (worktree `../wh3-report-notes`), not yet merged. Ledger: $16.9058 of $52.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -34,7 +34,7 @@ command; clear it when the job stops.
 - Siege and survival each have two new completed exploratory screens with exact rematch
   starts. The canonical report retains setup failures and historical variants. Results,
   costs and evidence reviews are in the [b12 log](twwarhammer3/log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
-- API spend: $16.9058 of the $25 cap; no paid job is running.
+- API spend: $16.9058 of the $52 cap (raised from $25 on 2026-10-16); no paid job is running.
 
 Next: the owner's [pending report notes](twwarhammer3/reports.md#pending-report-notes),
 then the retained families' playmaking review. The custom evacuation pilot is deferred
@@ -71,6 +71,9 @@ Next steps:
 ## Owner direction
 
 WH3:
+- 2026-10-16 (03:35 UTC): the WH3 API cap rises to $52 (Spire keeps its own $25). Overnight,
+  prioritize work that needs the game running, since a fullscreen battle makes the
+  computer awkward to use during the day.
 - 2026-10-16 (03:20 UTC): delay the custom battles (the evacuation pilot) for much later in
   the plan as a low-priority item, and proceed with other things.
 - 2026-10-16 (planning note): less is more; a smaller set of high-quality scenarios, each
@@ -110,7 +113,7 @@ WH3:
   required to win these battles. Eventually these challenge scenarios could even be
   AI-generated themselves."
 - 2026-10-13: an API model plays real-time battles, with the order delay measured; control
-  through an in-game mod, never screenshots or desktop input; a hard $25 cap on its own
+  through an in-game mod, never screenshots or desktop input; a hard $25 cap (now $52) on its own
   ledger, `runs/twwarhammer3/llm-spend.jsonl`. Battles always run unpaused at 1x.
 - 2026-10-13 (evening): an asynchronous `commander` over scripted `skills`, beside the
   direct `llm`; the other designs wait in [controllers.md](twwarhammer3/controllers.md).
