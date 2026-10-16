@@ -1138,11 +1138,11 @@
       ]
     }
   },
-  "tze-caster-skv-assault-jezzails": {
+  "tze-caster-skv-assault-cannon": {
     "base": "tze-caster-skv-assault",
-    "name": "tze-caster-skv-assault-jezzails",
-    "brief": "The caster assault with one unit of Warplock Jezzails added: long-range marksmen whose shots can reach a flying caster. Where Kairos casts from, when he flies and whether the escorts go after the marksmen now compete with the spell windows. Hypotheses, not a prescribed solution.",
-    "calibration_change": "Difficulty ladder, first step (2026-10-16): gpt-6-sol and gpt-6.1-sol won all three anchor battles each, and GLM-5.3 won one of two. One factor changes, pressure on the caster: wh2_dlc12_skv_inf_warplock_jezzails_0 (projectile range 275 m, may target airborne units), 1000 of cost (3775 to 4775), 11 units. Funds, map, timer, modifier and Kairos's army are unchanged.",
+    "name": "tze-caster-skv-assault-cannon",
+    "brief": "The caster assault with a Warp Lightning Cannon added: a long-range gun whose heavy, armour-piercing shots can reach a flying caster. Where Kairos casts from, when he flies and whether the escorts go after the gun now compete with the spell windows. Hypotheses, not a prescribed solution.",
+    "calibration_change": "Difficulty ladder, first step (2026-10-16): gpt-6-sol and gpt-6.1-sol won all three anchor battles each, and GLM-5.3 won one of two. One factor changes, pressure on the caster: wh2_main_skv_art_warp_lightning_cannon (projectile range 430 m, may target airborne units, 260 armour-piercing damage), 950 of cost (3775 to 4725), 11 units. Funds, map, timer, modifier and Kairos's army are unchanged. The first choice, Warplock Jezzails, stopped in the lobby: its DLC card did not recruit (bench-b13-v1b-caster-jezzails-skirmish-20261016).",
     "enemy": {
       "units": [
         "wh2_main_skv_cha_warlord_0",
@@ -1155,7 +1155,7 @@
         "wh2_main_skv_inf_skavenslaves_0",
         "wh2_main_skv_inf_warpfire_thrower",
         "wh2_main_skv_art_plagueclaw_catapult",
-        "wh2_dlc12_skv_inf_warplock_jezzails_0"
+        "wh2_main_skv_art_warp_lightning_cannon"
       ]
     }
   }

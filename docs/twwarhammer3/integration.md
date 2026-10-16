@@ -99,6 +99,9 @@ declared scenario sets its own AI stats modifier in the lobby
   then double-click each card). Cards are found without waiting for them to read as
   visible; legendary lords use the race's main faction key
   (`wh_dlc01_chs_cha_prince_sigvald_the_magnificent:wh3_main_sla_slaanesh:1`).
+  A listed card does not prove the unit is available: the Warplock Jezzails card
+  (`wh2_dlc12_...`, The Prophet & the Warlock, presumably not owned) was found and
+  double-clicked without recruiting; setup's unit-count check stopped the job (2026-10-16).
 - Race: `faction_pic_mask_parent/button_select_race` opens a popup of
   `CcoSubcultureRecord<subculture>` entries (25, e.g. `wh_main_sc_emp_empire`); clicking
   one switches the selected slot's race and unit cards. The popup never reads as visible

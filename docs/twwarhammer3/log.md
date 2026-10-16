@@ -54,7 +54,7 @@ rather than inflating stats. The anchors stay unchanged.
 |---|---|---|---|
 | `chd-reserve-grn-siege-flankers` | Enemy mobility: adds 2 Orc Boar Boyz and 2 Goblin Wolf Riders, the attacker's first cavalry | 9725 → 11625 (+20%), 20 units | Does one mobile reserve still cover the gun positions when fast units arrive early or by another route? |
 | `skv-swarm-dwf-line-gyrocopters` | A threat the screen cannot block: adds 2 Gyrocopters | 8200 → 9800 (+20%), 11 units | Can the weapon teams, cannon and Warlock Engineer keep their protected time against flyers? |
-| `tze-caster-skv-assault-jezzails` | Pressure on the caster: adds 1 Warplock Jezzails (projectile range 275 m, may target airborne units) | 3775 → 4775 (+26%), 11 units | Do casting position, flight and escort use still allow spell windows when the caster can be shot from beyond most spell ranges? |
+| `tze-caster-skv-assault-cannon` | Pressure on the caster: adds a second Warp Lightning Cannon (projectile range 430 m, may target airborne units, 260 armour-piercing damage) | 3775 → 4725 (+25%), 11 units | Do casting position, flight and escort use still allow spell windows when the caster can be shot from long range? |
 
 Funds caps, maps, timers, AI modifiers and the player rosters are unchanged; the lobby
 lists every added card for those factions (`cards_slot1.txt` of the M1c jobs).
@@ -96,6 +96,13 @@ Warlord from about 90 s on. They were under fire in 479 samples yet ended with 1
 men, so the Skaven ranged units barely hurt them. A win may then depend on breaking the
 Dwarf army so the flyers rout with it, a risk to read in V1b rather than a reason to stop.
 Passes to V1b.
+
+**V1b, first attempt** (`672fc0e`, 20:06 UTC): stopped in the lobby before any battle or
+API call. The caster variant's added `wh2_dlc12_skv_inf_warplock_jezzails_0` card was
+found and double-clicked but did not recruit (10 enemy units, 11 expected). No scenario
+had used `dlc12` content; The Prophet & the Warlock is presumably not owned on this
+account. The variant now adds a second Warp Lightning Cannon, a `wh2_main` unit the
+swarm anchor recruits, as `tze-caster-skv-assault-cannon`; V1b reruns as a new plan.
 
 ## 2026-10-16: Live check of the v20 shared-magic warning
 
