@@ -174,57 +174,41 @@ is separate from Spire's, with its own cap: $25, raised to $52 on 2026-10-16.
 ## Next
 
 The [offline trace exporter and exchange capture](traces.md) are implemented and checked
-against saved battles (b14). Next in the current tranche: the small focused scenarios
-starting with S1, and the difficulty ladder with GLM-5.3 as a cheap reference
-([plan](benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night),
-[ladder V1](log.md#2026-10-16-difficulty-ladder-first-step-v1)). The items below are
-earlier context.
+against saved battles (b14). [Matched round M1](log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan)
+and [difficulty ladder V1](log.md#2026-10-16-difficulty-ladder-first-step-v1) are complete.
+The six core scenarios remain provisional; the [design audit](benchmark.md#scenario-design)
+counts distinct decision problems, with cavalry/caster variants counted once per family
+and Conquest demoted because it has only one point.
 
-The [implementation plan](benchmark.md#implementation-plan) targets 6–8 distinct decision
-families. b12 is implemented; work stopped at the owner's request on 2026-10-16 after six
-exploratory battles ([log](log.md#2026-10-16-harness-b12-and-distinct-scenario-families)).
-Siege defence and survival have two screens each. Conquest has two reference trials but
-was demoted from the core: its single point cannot test distributed control. Six core
-candidates with live evidence remain; the custom evacuation pilot is deferred. The
-overnight matched round M1 (50 battles including two scripted baselines, three models)
-is complete; M1d added four scripted battles.
+Next game work follows the [owner's latest order](benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night):
 
-OpenRouter implementation is described in [controllers.md](controllers.md#openrouter).
-The owner resumed implementation and benchmark/report work after the cleanup review.
-All three models passed small WH3 schema checks, costing $0.00523146 including one
-failed Step attempt. The separate $50 cap stays in place; no OpenRouter battle has run.
+1. **Small focused scenarios.** Start with the $0 S1 lobby probe (lordless rosters,
+   1,100 funds, one-unit AI), then scripted floors and disclosed diagnostics for S1,
+   S2 and S4. Candidates and remaining setup work are in the
+   [small-scenario draft](benchmark.md#small-focused-candidates-draft-2026-10-16-evening).
+2. **A cheaper ladder reference.** GLM-5.3 / low needs reference battles on the unchanged
+   siege and swarm anchors before trying three added flankers, a new swarm factor and
+   three cannons. Expensive models return later. A cheap model's loss does not establish
+   that a scenario is unwinnable.
+3. **Later model coverage.** All 26 declared model-mode configurations passed schema
+   checks. GLM and Kimi have played through [OpenRouter](controllers.md#openrouter);
+   Step and modes beyond `low` remain unplayed in battle. The broad comparison's size
+   and budget remain open. Current caps and activity are in [state.md](../state.md).
 
-1. **Calibration underway; keep the core provisional.**
-   Strongest-model evidence is still missing; the audit's recommendations are development
-   priorities, not final selection. The [revised proposal](benchmark.md#implementation-plan)
-   now has six [calibration cards](benchmark.md#calibration-cards-2026-10-16) from the
-   saved M1 evidence. Three free siege/swarm diagnostics are complete: central fallback lost,
-   and corrected swarm coordination still lost. Their execution limits are recorded in
-   the [live review](log.md#2026-10-16-free-siegeswarm-calibration-checks). Controller
-   feedback v19 / commander v6 is implemented; purposeful cheap probes precede a small frontier
-   screen and any broader matched comparison. No budget has been raised.
-2. Continue to count cavalry and caster revisions once each. The two swarm roles remain
-   provisional distinct questions; the [design audit](benchmark.md#scenario-design)
-   records their scarce resources and alternative plays. A future three-point Domination
-   candidate must earn its place rather than automatically replace Conquest.
-3. The two delegated report decisions remain reviewable (caster assault as the family's
-   displayed scenario; siege defence scored like land battles). Displayed core labels
-   do not settle the benchmark collection. Interface candidates found in M1 are in
-   [controllers.md](controllers.md#candidate-changes-for-the-next-version).
-4. Self-comparisons stay deferred: army/control workload, neutral prompt length, useful
-   history, factual representation and observation age are separate interventions.
-   More units do not isolate a context-length effect. Siege-attack controls remain later.
-5. Low priority, deferred by the owner on 2026-10-16: the custom `emp-battery-skv-evacuation`
-   scenario. Its first live attempt failed the authored-placement check (measured in the
-   teleport's own tick; [diagnosis](log.md#2026-10-16-evacuation-deferred-controller-version-labels-fixed)).
-   Resuming means that fix, then authored placement, battery movement, partial progress
-   and an engine-confirmed scripted ending in 2-3 battles.
+Controller inputs are v20 / commander v7. The direct v20 warning has a
+[GLM live check](log.md#2026-10-16-live-check-of-the-v20-shared-magic-warning); commander v7
+and b14's new summary-capture request setting are checked offline and await paid use.
+Backing up local `runs/` off this machine remains open.
 
-The unfinished random-draw comparison has seeds 264482191, 1355466036 and 238913231 left,
-then Sol and Astra as commander. Other candidates remain in
-[controllers.md](controllers.md#candidate-changes-for-the-next-version) and
-[battle-types.md](battle-types.md#next). The unique older branches `wh3-fire-report` and
-`wh3-v4-info` are retained; both predate the v13 interface and need review before reuse.
+Deferred: the custom `emp-battery-skv-evacuation` pilot (its
+[placement diagnosis](log.md#2026-10-16-evacuation-deferred-controller-version-labels-fixed)),
+siege-attack controls, and separate workload, prompt-length, useful-history,
+representation and observation-age experiments. More units do not isolate a context-length
+effect. The older random-draw comparison still has seeds 264482191, 1355466036 and
+238913231 left, then Sol and Astra as commander; it is not the current priority.
+Other candidates remain in [controllers.md](controllers.md#candidate-changes-for-the-next-version)
+and [battle-types.md](battle-types.md#next). The unique `wh3-fire-report` and `wh3-v4-info`
+branches are retained; both predate the v13 interface and need review before reuse.
 
 Deferred cleanups:
 - Lua changes that each need one engine smoke battle: drop the pause-mode leftovers

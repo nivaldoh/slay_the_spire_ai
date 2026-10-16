@@ -1,41 +1,19 @@
 # Project state
 
-Updated 2026-10-16 23:16 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 23:32 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-[Main README](../README.md) refresh complete, with saved WH3
-[report previews](twwarhammer3/reports.md#readme-visuals). No game or API job started.
+[Main README](../README.md) refresh and repository cleanup are complete
+([record](twwarhammer3/log.md#2026-10-16-readme-refresh-and-repository-cleanup)).
 
-WH3 [offline trace export and model-exchange capture](twwarhammer3/traces.md) are complete
-(b14), checked on saved battles and offline tests. No game or paid API job is running.
-The new summary-capture request setting awaits its first paid call. Small-scenario probes
-and further ladder battles remain next; neither started during this implementation.
-
-No game or paid API job is running. Difficulty ladder V1 (13 battles, 2026-10-16
-evening) found a hardest won step for each of siege (two added flankers; four lost 2/2),
-swarm (four Gyrocopters; that factor does not bind) and caster (two cannons; GLM lost it)
-([summary](twwarhammer3/log.md#2026-10-16-difficulty-ladder-first-step-v1)). Reasoning
-modes are declared per model and each passed a schema call: 26 model-mode configurations
-(modes beyond `low` unplayed in battle). Small focused scenario candidates are drafted for the owner's review
-([draft](twwarhammer3/benchmark.md#small-focused-candidates-draft-2026-10-16-evening)).
-
-The [v20 live check](twwarhammer3/log.md#2026-10-16-live-check-of-the-v20-shared-magic-warning)
-won the caster anchor with GLM-5.3 / low at 575 s ($0.41); spell refusals after a pending
-spell fell from 7 to 3, short of the pre-set bar, and v20 stays. The caster anchor now
-also needs a harder step. Earlier today: OpenRouter support and three schema checks passed;
-the first GLM-5.3 / low battle completed, losing the caster anchor at 566 s for $0.4248.
-The [review](twwarhammer3/log.md#2026-10-16-first-openrouter-battle-and-shared-magic-feedback)
-records model reply errors, routing and a stale shared-magic reading after casts.
-Four free tactical diagnostics are also complete. Feedback v20 / commander v7 now
-labels pending spell costs; it is checked on recorded states but untested with a model.
-The canonical report now includes the fourth script and GLM replay, backend snapshots
-and reply-validation counts; offline browser checks pass. All six candidates remain provisional.
-
-API ledgers: OpenAI $50.90 of $52 (no further OpenAI battle fits); OpenRouter $1.93 of
-$50. More Sol battles need the owner's decision on the OpenAI cap.
+No game or paid API job is running. WH3 [trace export and model-exchange capture](twwarhammer3/traces.md)
+are complete offline (b14); the new summary-capture request setting awaits its first paid
+call. The small-scenario probes and cheap-reference ladder remain next in the
+[owner's order](twwarhammer3/benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night).
+Neither has started since the b14 implementation.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -60,7 +38,11 @@ command; clear it when the job stops.
   models; survive-a-swarm and Kislev did not. The report page shows core scenarios and
   completed battles only; its JSON keeps setup failures and variants. Results, costs and
   reviews: [M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
-- OpenAI spend: $50.90 of $52; OpenRouter $1.93 of $50.
+- OpenAI spend: $50.90 of $52; OpenRouter $1.93 of $50. No further OpenAI battle fits
+  the current cap; more Sol battles need the owner's budget decision.
+- [Difficulty ladder V1](twwarhammer3/log.md#2026-10-16-difficulty-ladder-first-step-v1)
+  is complete. All 26 declared model-mode configurations passed schema checks; modes
+  beyond `low` remain unplayed in battle. The six core candidates remain provisional.
 
 The exporter is implemented ([b14](twwarhammer3/log.md#2026-10-16-harness-b14-offline-trace-export-and-model-exchange-capture)).
 Next game work, in the owner's order, awaits the go-ahead
@@ -107,7 +89,7 @@ WH3:
   Complete as [b14](twwarhammer3/traces.md); no new game/API jobs or training.
 - 2026-10-16 (night): small scenarios approved to try; ladder continues with a cheaper
   reference model for now (expensive models later); write a trace exporter and store
-  reasoning text. Plan only, nothing implemented
+  reasoning text. Exporter/capture are complete as b14; the new game tranche has not started
   ([decisions](twwarhammer3/benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night)).
 - 2026-10-16 (evening, latest): benchmark every reasoning mode of every model in each
   scenario; verify each model's real modes first (some open-weight models are only

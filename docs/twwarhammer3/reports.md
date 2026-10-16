@@ -49,18 +49,14 @@ are committed.
 
 ## Pending report notes
 
-Status of the remaining owner feedback (the other notes of 2026-10-16 are in the page below):
+The provider-support request (owner note 11) is complete:
+[OpenRouter transport and model selection](controllers.md#openrouter), gateway/routing
+metadata, readable model names, backend snapshots and limits in Run settings. GLM's
+caster battles appear on the core page; Kimi's harder-siege trial remains in JSON/text
+as a scenario variant. Step has schema checks only. The other implemented notes of
+2026-10-16 are described below.
 
-11. OpenRouter support for more models is specified in the
-    [provider design](controllers.md#openrouter). On 2026-10-16
-    the owner set a $50 budget and later resumed implementation. Shared transport and
-    WH3 selection are implemented and all three models passed WH3 schema checks.
-    The collector records gateway/routing settings; the page labels OpenRouter rows,
-    uses readable model names and exposes serving backends and limits in Run settings.
-    The first GLM caster battle is included after its completed integration check; Kimi
-    and Step have only API schema checks so far.
-
-Not done with the rest, and why:
+Remaining presentation notes:
 
 - The paper page has no dark colour scheme; the model hues have a light and a dark step
   (paper figures, dark map and run card), each pair checked for colour-vision separation.

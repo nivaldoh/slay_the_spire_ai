@@ -40,7 +40,7 @@ src/spire/         Slay the Spire 1
                    sampling, REINFORCE
 src/twwarhammer3/  Total War: WARHAMMER III custom battles
   __main__.py      CLI: doctor, pack, launch, menu (runtime and UI probes); play, digest,
-                   watch, stats, report, spend (battle jobs)
+                   watch, stats, report, export, spend (battle jobs and offline evidence)
   protocol.py      Order types and validation, the error taxonomy; observations stay dicts
   engine/          runtime (pins, pack build, mod list, launch), startup (video skip), pack
                    (PFH5), mailbox (bridge files; its docstring is the observation
@@ -56,7 +56,8 @@ src/twwarhammer3/  Total War: WARHAMMER III custom battles
                    (asynchronous API model over skills), skills.py (per-unit skill
                    executor, probe_abilities), scripted.py (hold, attack_nearest,
                    rush_nearest), calibration.py (disclosed scenario diagnostics),
-                   capture.py (1 Hz replay recorder and stills), digest.py
+                   capture.py (1 Hz replay recorder and stills), export.py (offline model
+                   decisions, exchanges and provenance), digest.py
                    (trace summaries), watch.py (follow a job), stats.py (results
                    register), report.py (paired statistics), report_html.py, replay.py
                    and report_assets/ (the offline HTML report and its replay)
@@ -114,6 +115,7 @@ uv run python -m twwarhammer3 watch    # follow the running job beside the game;
 uv run python -m twwarhammer3 watch runs/twwarhammer3/battle/<job> --next   # next episode, stall or end
 uv run python -m twwarhammer3 stats    # results by scenario, policy, model, harness and mode
 uv run python -m twwarhammer3 report <job> [<job> ...] --output runs/twwarhammer3/reports/<name>
+uv run python -m twwarhammer3 export <job> [<job> ...] --output runs/twwarhammer3/exports/<name>
 uv run python -m twwarhammer3 spend    # WH3 API ledger total
 ```
 
@@ -210,7 +212,8 @@ engine-reported won, lost or draw is a gameplay outcome.
 Run evidence stays out of Git (layout in `runs/README.md`): Spire jobs in
 `runs/<track>/<job>/`, WH3 jobs in `runs/twwarhammer3/battle/<job>/`. Each game has its own
 API spend ledger, `runs/llm-spend.jsonl` for Spire and `runs/twwarhammer3/llm-spend.jsonl`
-for WH3, and a job's `--budget-usd` caps its ledger's total, earlier jobs included. Never
+for WH3 OpenAI; WH3 OpenRouter uses `runs/twwarhammer3/openrouter-spend.jsonl`. A job's
+`--budget-usd` caps its selected ledger's total, earlier jobs included. Never
 move or reset a ledger. Compact first-combat results are committed in
 `docs/spire/first-combat/results/`. Each `play` appends one row per run or episode to its
 game's results register (`docs/spire/fullrun/results.csv`,

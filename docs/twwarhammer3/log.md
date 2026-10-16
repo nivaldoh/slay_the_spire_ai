@@ -40,6 +40,30 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build (2026-10-16 evening): 94 input jobs; adds the GLM v20 caster win to the page, ladder V1 variants and the Jezzail setup failure to JSON/text; footnotes summarise the ladder |
 
+## 2026-10-16: README refresh and repository cleanup
+
+Pushed the main README refresh (`ea590eb`): recorded replay animation, scenario index,
+model-comparison figure and introductions to both games. The previews' date, source
+report hash and battle are recorded in [reports.md](reports.md#readme-visuals).
+
+The repository audit found no tracked build artifacts, empty files, exact duplicate
+files or broken symlinks. Removed about 13 MB of temporary README captures and two
+Windows `Zone.Identifier` sidecars. Deleted the fully merged local branches
+`wh3-llm-range`, `wh3-llm-v17` and `wh3-obs-last-state`; the four branches with unmerged
+work remain. The existing local plugin selection is preserved and excluded through
+this checkout's `.git/info/exclude`, without changing shared ignore rules.
+
+Shortened duplicate status/next-step text and corrected obsolete claims about OpenRouter
+battles, the v20 live check and reasoning capture. Added the exporter and separate
+OpenRouter ledger to the repository/evidence references. Saved runs (about 21 GB,
+including about 16 GB of intermediate training checkpoints), historical reports and
+unique branches remain; the three spend ledgers were checked byte-for-byte unchanged.
+Engine cleanup that needs live validation remains deferred in [README.md](README.md#next).
+No source, prompt, scenario or result-register changes; no game or paid API calls.
+
+Validation: 44 documentation checks, Ruff and `git diff --check` passed. README assets
+also passed the earlier desktop/phone layout and offline browser checks.
+
 ## 2026-10-16: Harness b14, offline trace export and model-exchange capture
 
 Implemented the owner's trace-export goal. `twwarhammer3 export JOB [JOB ...] --output DIR`

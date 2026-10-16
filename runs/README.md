@@ -17,7 +17,8 @@ runs/
                       scripts that produced them.
   research-notes/     Source notes for docs/spire/approaches.md, kept out of Git.
   twwarhammer3/       Total War: WARHAMMER III
-    llm-spend.jsonl   Its own spend ledger, shared by every `twwarhammer3 play` job
+    llm-spend.jsonl   WH3 OpenAI spend ledger
+    openrouter-spend.jsonl  WH3 OpenRouter spend ledger; independent of the OpenAI cap
     battle/           One directory per `twwarhammer3 play` job, with <job>.log beside it.
                       Version jobs are <policy>[-<model>]-v<version>-<scenario>-<date>
                       (e.g. commander-luna-v2-rand-322117462-20261013); the version after
@@ -34,8 +35,9 @@ runs/
     capability-probes/ Engine and UI probes with their scripts and outputs;
                       external-controllers/ keeps the outside controllers recorded trials
                       imported (ExternalHold, the flight probe)
-    reports/          `twwarhammer3 report` outputs (HTML, JSON, text), browser checks, and
-                      the old replay-demo generator; they predate the 2026-10-15 cleanup
+    reports/          `twwarhammer3 report` outputs (HTML, JSON, text), including the
+                      canonical benchmark report and historical reports/demo generator
+    report-checks/    Offline browser validation screenshots, downloads and copied reports
     exports/          Offline model-decision datasets: decisions.jsonl, sources.json and
                       a data card, plus selection lists and verification scripts/reports
     launch-*/         `twwarhammer3 launch` logs, deployment records and UI tree dumps

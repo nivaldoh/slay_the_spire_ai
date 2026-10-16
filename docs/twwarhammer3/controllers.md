@@ -117,7 +117,10 @@ spell was issued in that same snapshot. The prompt lists those spells and their 
 costs, explaining that the pool may precede the spend. No guessed balance is deducted
 and no orders are filtered. Seven GLM refusals showed an apparently affordable spell
 after another spell's issue, followed by an insufficient pool reading. The new warning
-is verified on these recorded states; changed model behavior remains untested.
+is verified on these recorded states. A subsequent GLM / low caster check won, with
+refusals after a pending spell falling from seven to three, short of the pre-set bar
+of at most two ([live check](log.md#2026-10-16-live-check-of-the-v20-shared-magic-warning)).
+Commander v7 remains tested offline only.
 
 ## Following a battle
 
@@ -133,7 +136,10 @@ is verified on these recorded states; changed model behavior remains untested.
   the Assignments section: each unit's skill and current phase) and, per adopted plan,
   the assignments, abilities, `reason`, `notes`, `dropped`, `plan_age_s` and `attempts`
   (raw reply text, token usage, seconds); per direct decision, the prompt, reason, notes
-  and attempts. The API returns reasoning only as a token count.
+  and attempts. Historical traces retain reasoning-token counts only. Since b14,
+  [model-exchange capture](traces.md#capture-for-future-battles) also stores exact request
+  bodies and returned output items, including reasoning text when supplied. The new
+  summary-capture request setting awaits its first paid call.
 
 Commands: [README](README.md#commands).
 
@@ -219,10 +225,12 @@ without `none`. `minimal` is not accepted by any of them.
 
 These are leading open-weight candidates selected during the design review, not a
 ranking inferred from our tests. Catalogue metadata was checked on 2026-10-16. All three
-passed live WH3 schema/parser checks at low effort. GLM subsequently completed one
-v19 caster battle (lost at 566 s, $0.42477343); Kimi/Step battle behavior and all high-effort
-settings remain untested. Step first returned an empty, token-limited response
-on DeepInfra, then passed with the normal 4,000-token allowance on InferenceNet; both
+passed live WH3 schema/parser checks at low effort. GLM subsequently completed caster
+battles under v19 and v20, including a v20 anchor win; Kimi completed one harder-siege
+battle in [ladder V1](log.md#2026-10-16-difficulty-ladder-first-step-v1), losing at 659 s.
+Step and modes beyond `low` remain unplayed in battle. Step first returned an empty,
+token-limited response on DeepInfra, then passed with the normal 4,000-token allowance
+on InferenceNet; both
 the backend and allowance changed, so the cause is unresolved.
 The job default is GLM-5.3 at low effort. Rotations preserve the full vendor/model ID:
 `llm_rules@z-ai/glm-5.3, llm_rules@moonshotai/kimi-k3/high` (omit the space in the CLI).
