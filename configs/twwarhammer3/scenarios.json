@@ -1138,6 +1138,29 @@
       ]
     }
   },
+  "skv-swarm-dwf-line-gyrocopters-4": {
+    "base": "skv-swarm-dwf-line-gyrocopters",
+    "name": "skv-swarm-dwf-line-gyrocopters-4",
+    "brief": "Swarm command with four Dwarf Gyrocopters added. Flying units can reach the weapon teams, the Warp Lightning Cannon and the Warlock Engineer behind the slave screen, and two slinger units are the main answer to them. Hypotheses, not a prescribed solution.",
+    "calibration_change": "Difficulty ladder, second step (2026-10-16): gpt-6.1-sol won the two-Gyrocopter step at 535 s with 42% of its strength left (anchor wins: 449-497 s, 50-52%). The same factor doubles: four wh_main_dwf_veh_gyrocopter_0, 3200 of cost over the anchor (8200 to 11400, within the 12000 cap), 13 units. Everything else is unchanged.",
+    "enemy": {
+      "units": [
+        "wh_main_dwf_cha_lord_0",
+        "wh_main_dwf_inf_hammerers",
+        "wh_main_dwf_inf_ironbreakers",
+        "wh_main_dwf_inf_ironbreakers",
+        "wh_main_dwf_inf_longbeards",
+        "wh_main_dwf_inf_thunderers_0",
+        "wh_main_dwf_inf_thunderers_0",
+        "wh_main_dwf_inf_irondrakes_0",
+        "wh_main_dwf_art_organ_gun",
+        "wh_main_dwf_veh_gyrocopter_0",
+        "wh_main_dwf_veh_gyrocopter_0",
+        "wh_main_dwf_veh_gyrocopter_0",
+        "wh_main_dwf_veh_gyrocopter_0"
+      ]
+    }
+  },
   "tze-caster-skv-assault-cannon": {
     "base": "tze-caster-skv-assault",
     "name": "tze-caster-skv-assault-cannon",

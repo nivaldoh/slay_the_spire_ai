@@ -202,6 +202,9 @@ First verified in `runs/twwarhammer3/battle/attack-m3-20261013` (Khorne against 
   Skullcannon; the class comes from `unit_class()` (the land_units class, e.g. `art_fld`).
   Screamers have class `inf_mel` while `can_fly()` and `is_currently_flying()` are true,
   so the mod classes every flying unit except a lord as `flying`.
+- A unit's `x`/`z` is `unit:position()`, documented as the centre of the unit's main squad.
+  A unit split between two fights can switch main squad, so its position jumps between them
+  (f4 moved about 200 m back and forth nine times in `bench-b13-v1b2-siege-flankers-sol61-20261016`).
 - Axes: x east, z north; a bearing is 0 at +z, clockwise (a unit at (-174, 34) facing 213
   was attacking an enemy at (-192, 13), bearing 221 from it).
 - Walk/run speeds read the same way for visible enemies as for friendlies. They are

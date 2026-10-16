@@ -6,10 +6,11 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 
 ## Active work
 
-Running since 20:11 UTC: WH3 queue `runs/twwarhammer3/calibration/v1b2-plan-20261016.json`:
-a $0 `CasterSkirmish` check on the new caster variant, then one gpt-6.1-sol / low battle
-on each of the siege and swarm variants (OpenAI cumulative cap $50.00). V1a's two free
-checks passed ([ladder V1](twwarhammer3/log.md#2026-10-16-difficulty-ladder-first-step-v1));
+Running since 20:50 UTC: WH3 queue `runs/twwarhammer3/calibration/v1c-plan-20261016.json`:
+gpt-6.1-sol on the caster cannon step, Kimi K3 (OpenRouter, cap $5) on the siege flanker
+step, gpt-6.1-sol on the four-Gyrocopter swarm step (OpenAI cap $52). V1b2: siege
+flankers lost, swarm Gyrocopters won, caster cannon check passed
+([ladder V1](twwarhammer3/log.md#2026-10-16-difficulty-ladder-first-step-v1));
 follow with `uv run python -m twwarhammer3 watch`.
 
 The [v20 live check](twwarhammer3/log.md#2026-10-16-live-check-of-the-v20-shared-magic-warning)
@@ -24,7 +25,7 @@ labels pending spell costs; it is checked on recorded states but untested with a
 The canonical report now includes the fourth script and GLM replay, backend snapshots
 and reply-validation counts; offline browser checks pass. All six candidates remain provisional.
 
-API ledgers: OpenAI $45.96 of $52; OpenRouter $0.83868719 of $50. V1b is the only paid
+API ledgers: OpenAI $48.25 of $52; OpenRouter $0.83868719 of $50. V1c is the only paid
 run planned.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
@@ -50,7 +51,7 @@ command; clear it when the job stops.
   models; survive-a-swarm and Kislev did not. The report page shows core scenarios and
   completed battles only; its JSON keeps setup failures and variants. Results, costs and
   reviews: [M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
-- OpenAI spend: $45.96 of $52; OpenRouter $0.8387 of $50.
+- OpenAI spend: $48.25 of $52; OpenRouter $0.8387 of $50.
 
 Next: use the [cards](twwarhammer3/benchmark.md#calibration-cards-2026-10-16) to select
 a specific remaining play to test (siege withdrawal/firing positions, swarm flank or

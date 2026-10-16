@@ -116,6 +116,63 @@ was airborne throughout and died at 633 s with 20 magic left. Nothing attacked t
 cannon (42 of 42 crew at the end), a play this script does not have. Review:
 `calibration/cannon-caster-review-20261016.py` and JSON. Passes to V1c.
 
+**V1b2 siege, paid** (`bench-b13-v1b2-siege-flankers-sol61-20261016`, `82a2364`, gpt-6.1-sol
+/ low, `llm_rules` v20): **lost** at 629 s by army rout, 19% of its strength left against the
+enemy's 54%; the key building was held throughout (victory point 81% of samples) and no
+tickets were lost. 144 decisions, 8 invalid orders, mean delay 4.34 s, $1.20630000; the
+OpenAI ledger is $47.17. The same model won all three anchor battles (v18).
+
+Independent review (subagent, trace evidence; one battle, so causes are hypotheses).
+All four cavalry units were visible from 5 s. They did not flank: they waited outside the
+wall until the gate fell (about 230 s) and entered behind the trolls and Big 'Uns, striking
+the centre at 270-305 s (Wolf Riders on f2, f3 and the lord; a Boar Boyz unit on the Bull
+Centaur reserve f8 and f3). Enemy men within 60 m of the centre: 413 at 270 s and 532 at
+330 s, against 0-137 and 284-405 in the anchor wins. The guns were reached only at 485-530 s,
+after the line broke. The anchor wins also committed the lord and reserve to the central
+melee (271-298 s), so the reserve choice did not separate them here. Candidate errors: the
+Infernal Guard f4 sent west at 263 s (75 to 17 men, routed at 395 s), the lord fighting the
+warboss (0.44 HP by 360 s), and Blunderbusses that received 26 attack orders each but fired
+about 0.2 and 1.8 volleys. None is shown to decide the battle, so winnability with better
+play is unclear. The model first named the cavalry at 484 s.
+
+Interface: five `unit_routing` refusals went to units that were wavering when observed and
+routed during the 3-7 s order delay; three `unreachable` moves were each followed by an
+accepted move about 5 s later. f4's reported position jumped about 200 m between the centre
+and (-200, -40) 19 times (the model saw 10), with enemies in melee at both sites; the unit
+was split: the engine's `unit:position()` is "the centre position of the main squad of the
+unit" (vanilla script docs), and the main squad switched between the two fights (9 jumps
+over 100 m between consecutive samples, 131-515 s). The observation reports that faithfully
+but does not say a unit is split; a candidate interface note, not a model error. Mean delay rose to 5.9 s (max 9.3 s) in the 250-530 s fight.
+
+Reading against the difficulty target: the added cavalry binds through mass at the breach
+rather than through reserve allocation, so the factor is partly stat pressure. The step is
+not admissible until something wins it; the next choice is between a repeat on this step
+and a smaller step (for example the two Wolf Riders only).
+
+**V1b2 swarm, paid** (`bench-b13-v1b2-swarm-gyros-sol61-20261016`, `82a2364`, gpt-6.1-sol /
+low, `llm_rules` v20): **won** at 535 s with 42% of its strength left (enemy 30%, nothing
+active); 115 decisions, 9 invalid orders, mean delay 4.62 s, $1.08160000; OpenAI ledger
+$48.25. The anchor wins took 449-497 s and kept 50-52%. The Gyrocopters ended with 6 of 18
+men, out of the fight, so flyers did not block the ending. The model first named them at
+296 s and aimed 19 orders at them, mostly from f13 and f14. The Warlock Engineer survived;
+the Warp Lightning Cannon kept 15 of 42 crew. The step is demonstrated winnable and costs
+margin, so the family climbs.
+
+**V1c (plan, 20:55 UTC).** With $3.75 left under the OpenAI cap, one paid battle per family:
+1. `tze-caster-skv-assault-cannon`, gpt-6.1-sol / low, first model battle on that step.
+2. `chd-reserve-grn-siege-flankers` again, with Kimi K3 / low through OpenRouter: any
+   engine-confirmed win shows the step is winnable, and it is Kimi's first battle (its
+   schema check passed). A loss is not evidence against winnability. OpenRouter cumulative
+   ceiling **$5.00** (now $0.84); Kimi's routing ceilings ($3/$15 per million) are about 1.5
+   times Sol's prices, so roughly $1.5-2.5.
+3. `skv-swarm-dwf-line-gyrocopters-4` (second step: four Gyrocopters, 8200 to 11400 of
+   enemy cost, 13 units), gpt-6.1-sol / low. No separate scripted check: the unit already
+   recruited and a lobby failure costs nothing, so it runs last.
+
+OpenAI jobs run with the owner's hard cap, **$52.00**, as the ceiling; expected spend
+$2.0-2.5. A battle cut off by that cap would be an incomplete trial, so the swarm runs
+last. After V1c the OpenAI budget is effectively spent.
+
 ## 2026-10-16: Live check of the v20 shared-magic warning
 
 **Result.** `bench-b13-glm-v20-caster-20261016` (`ae55309`, 19:28-19:40 UTC) **won** at
