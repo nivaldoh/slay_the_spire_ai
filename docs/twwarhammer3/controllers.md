@@ -211,8 +211,11 @@ other modes passed one WH3 reply-schema call each on 2026-10-16 ($0.0061 in tota
 trivial prompt: GLM `high` 47, `max` 83; Kimi `none` 0, `high` 67, `max` 66; Step
 `medium` and `high` 0 (the backend may not report them). That shows the modes are
 accepted, not how they differ in a battle; `max` may need more than the 4,000-token
-reply allowance there. OpenAI models keep `none`, `low`, `medium` and `high`, not yet
-checked per mode.
+reply allowance there. OpenAI's lists come from the API's own unsupported-value errors,
+and every listed mode passed one schema call ($0.037 in total;
+`capability-probes/openai-modes*-20261016/`): gpt-6-luna and gpt-6-sol take `none`,
+`low`, `medium`, `high`, `xhigh` and `max`; gpt-6.1-sol and gpt-6-astra take the same
+without `none`. `minimal` is not accepted by any of them.
 
 These are leading open-weight candidates selected during the design review, not a
 ranking inferred from our tests. Catalogue metadata was checked on 2026-10-16. All three

@@ -32,7 +32,7 @@ def test_recorder_defaults_on_and_can_be_disabled_independently_of_stills():
     assert args.record_replay is False and args.stills is True
 
 
-@pytest.mark.parametrize("option", [["--model", "gpt-6-lunar"], ["--effort", "max"]])
+@pytest.mark.parametrize("option", [["--model", "gpt-6-lunar"], ["--effort", "minimal"]])
 def test_cli_rejects_an_unknown_model_or_effort_before_launch(tmp_path, monkeypatch, capsys,
                                                                option):
     output = tmp_path / "job"
@@ -46,7 +46,7 @@ def test_cli_rejects_an_unknown_model_or_effort_before_launch(tmp_path, monkeypa
 
 @pytest.mark.parametrize("policy,error", [
     ("hold@gpt-6-luna", "only commander, llm, llm_rules take @MODEL"),
-    ("llm_rules@gpt-6-luna/max", "an effort in none, low, medium, high"),
+    ("llm_rules@gpt-6-luna/minimal", "an effort in none, low, medium, high"),
     ("llm_rules,llm_rules@gpt-6-luna", "duplicate controller"),
 ])
 def test_cli_rejects_a_bad_model_suffix_before_launch(tmp_path, monkeypatch, capsys, policy,

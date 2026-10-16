@@ -80,7 +80,7 @@ def test_a_model_policy_name_can_carry_its_own_model_and_effort(name, parts):
     ("hold@gpt-6-luna", "only commander, llm, llm_rules take @MODEL"),
     ("twwarhammer3.battle.scripted:AttackNearest@gpt-6-luna", "only commander"),
     ("llm_rules@gpt-6-lunar", "with a model in"), ("llm_rules@", "with a model in"),
-    ("llm_rules@gpt-6-luna/max", "an effort in none, low"),
+    ("llm_rules@gpt-6-luna/minimal", "an effort in none, low"),
     ("llm_rules@gpt-6-luna/", "an effort in"),
     ("llm_rules,llm_rules@gpt-6-sol", "duplicate"),
     ("llm_rules@gpt-6-sol/low,llm_rules", "duplicate"),

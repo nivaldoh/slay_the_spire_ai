@@ -61,7 +61,10 @@ def test_reasoning_efforts_are_declared_per_model():
     validate("openrouter", "moonshotai/kimi-k3", "none")
     validate("openrouter", "z-ai/glm-5.3", "max")
     validate("openrouter", "stepfun/step-5-preview", "medium")
-    validate("openai", "gpt-6-luna", "medium")
+    validate("openai", "gpt-6-luna", "none")
+    validate("openai", "gpt-6.1-sol", "max")
+    with pytest.raises(ValueError, match="gpt-6.1-sol: use an effort in low"):
+        validate("openai", "gpt-6.1-sol", "none")
     for model, effort in [("z-ai/glm-5.3", "none"), ("z-ai/glm-5.3", "medium"),
                           ("stepfun/step-5-preview", "max")]:
         with pytest.raises(ValueError, match=f"{model}: use an effort in"):

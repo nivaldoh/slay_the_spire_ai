@@ -258,6 +258,13 @@ the siege, swarm and caster footnotes in `report_notes.json` now summarise the l
 GLM's v20 win. The canonical `reports/benchmark.html` was rebuilt (1m45s); the browser
 checks were not rerun for this data-and-notes change.
 
+**OpenAI reasoning modes.** One schema call per mode and model: gpt-6.1-sol and gpt-6-astra
+reject `none` and the API lists their modes as `low`, `medium`, `high`, `xhigh`, `max`;
+gpt-6-luna and gpt-6-sol add `none`; no model takes `minimal`. Every listed mode passed.
+`providers.py` declares these per model (26 model-mode configurations with OpenRouter's).
+$0.037; OpenAI ledger $50.90 of $52. Tests that used `max` as an invalid effort now use
+`minimal`.
+
 ## 2026-10-16: Live check of the v20 shared-magic warning
 
 **Result.** `bench-b13-glm-v20-caster-20261016` (`ae55309`, 19:28-19:40 UTC) **won** at

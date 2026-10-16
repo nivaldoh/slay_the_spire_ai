@@ -3,8 +3,9 @@
 Prices are USD per million input, cached input and output tokens. OpenRouter prices
 are enforced routing ceilings, not the catalogue's cheapest advertised endpoint.
 Checked 2026-10-16; actual OpenRouter charges come from the response's usage.cost.
-Reasoning efforts are per model: OpenAI's four for every OpenAI model, and for OpenRouter
-the catalogue's supported_efforts (2026-10-16 snapshot), not yet each verified live.
+Reasoning efforts are per model, each accepted by one live schema call on 2026-10-16:
+OpenAI's lists come from the API's own unsupported-value errors, OpenRouter's from the
+catalogue's supported_efforts.
 """
 
 from dataclasses import dataclass
@@ -23,8 +24,9 @@ OPENAI = Provider(
     "https://api.openai.com/v1/responses", "OPENAI_API_KEY", "SPIRE_OPENAI_KEY_FILE",
     {"gpt-6-luna": (0.10, 0.01, 0.50), "gpt-6-sol": (2.00, 0.20, 10.00),
      "gpt-6.1-sol": (2.00, 0.10, 10.00), "gpt-6-astra": (10.00, 1.00, 50.00)},
-    dict.fromkeys(("gpt-6-luna", "gpt-6-sol", "gpt-6.1-sol", "gpt-6-astra"),
-                  ("none", "low", "medium", "high")),
+    {**dict.fromkeys(("gpt-6-luna", "gpt-6-sol"),
+                     ("none", "low", "medium", "high", "xhigh", "max")),
+     **dict.fromkeys(("gpt-6.1-sol", "gpt-6-astra"), ("low", "medium", "high", "xhigh", "max"))},
 )
 OPENROUTER = Provider(
     "https://openrouter.ai/api/v1/responses", "OPENROUTER_API_KEY", "OPENROUTER_API_KEY_FILE",
