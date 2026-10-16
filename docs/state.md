@@ -1,10 +1,13 @@
 # Project state
 
-Updated 2026-10-16 22:52 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 23:16 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
+
+[Main README](../README.md) refresh complete, with saved WH3
+[report previews](twwarhammer3/reports.md#readme-visuals). No game or API job started.
 
 WH3 [offline trace export and model-exchange capture](twwarhammer3/traces.md) are complete
 (b14), checked on saved battles and offline tests. No game or paid API job is running.

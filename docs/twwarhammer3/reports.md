@@ -16,6 +16,37 @@ replay from `battle/replay.py`, the presentation from `battle/report_html.py` an
 `battle/report_assets/`, curated text from `configs/twwarhammer3/report_notes.json`, and
 frames and stills from `battle/capture.py` during play ([integration.md](integration.md)).
 
+## README visuals
+
+The [main README](../../README.md) embeds a compact snapshot of the local suite report,
+captured on 2026-10-16 with offline Chromium. The source was
+`runs/twwarhammer3/reports/benchmark.html` (SHA-256
+`7bc06d4820dc5ece11ba3b4f56978a66b1e1bed7e3a3c59f42dd8f9a75be6e6b`),
+showing 99 completed battles across six provisional core scenarios. These images are
+historical illustrations, not a live leaderboard. No game or paid model call was run to
+produce them.
+
+- [Replay animation](../images/wh3-replay.gif) and [still](../images/wh3-replay.png):
+  `bench-c1-cavalry-ai11-02-20261015/episode-0000`, gpt-6-sol / low, rules-only prompt.
+  The clip samples the recorded battle from 166.2 to 229.2 s at one frame per battle
+  second, displayed at four frames per second (4× replay). The still is its opening
+  frame. The “Model's view” overlay is enabled. This winning battle was selected for
+  its annotated flank; it is not a typical-result claim.
+- [Scenario index](../images/wh3-scenarios.png): the report's six core cards, including
+  their starting positions, terrain and miniature comparison bars.
+- [Model comparison](../images/wh3-comparison.png): the cavalry scenario's Figure 2,
+  with the three original panels arranged in one row for the README. Values and labels
+  are unchanged. Loss curves and order strips use shared axes; route maps trace the
+  centre of each army's units still fighting (thin per battle, thick for the mean).
+  † marks pooled settings; these in-sample development results do not isolate model
+  quality from prompt, harness and setting differences.
+
+The captures use a 1200 × 620 browser viewport. To refresh them, rebuild the
+[suite report](#suite-report) from its saved jobs, capture `#index`, `#plans` and
+`#viewer`, and update the date and provenance here. The full report, raw traces and
+intermediate capture frames stay under ignored `runs/`; only the small README previews
+are committed.
+
 ## Pending report notes
 
 Status of the remaining owner feedback (the other notes of 2026-10-16 are in the page below):
