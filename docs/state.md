@@ -54,16 +54,14 @@ command; clear it when the job stops.
   reviews: [M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
 - OpenAI spend: $50.90 of $52; OpenRouter $1.93 of $50.
 
-Next, under the owner's evening directions (difficulty target, scenario mix, all-modes
-coverage; [plan](twwarhammer3/benchmark.md#current-proposal-calibrate-before-a-broad-model-comparison)):
-1. Owner review of the [small focused candidates](twwarhammer3/benchmark.md#small-focused-candidates-draft-2026-10-16-evening);
-   then their $0 prerequisites (lordless armies, small funds, few-unit AI) and scripted
-   winnability checks, S1/S2/S4 first.
-2. Ladder: siege between two and four flankers, a new swarm factor, caster beyond two
-   cannons. Each needs a reference-model battle; the OpenAI cap ($1.10 left) blocks Sol,
-   so it waits for the owner's call on that cap or on a cheaper reference.
-3. Owner's pending answers: training-data steps (back up `runs/`, a trace exporter,
-   storing OpenRouter reasoning text), and the size and budget of the all-modes matrix.
+Next, in the owner's order ([decisions](twwarhammer3/benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night)),
+awaiting the go-ahead to implement:
+1. Reasoning-text capture and the offline trace exporter, before more paid battles.
+2. Small scenarios: the $0 S1 lobby probe (lordless, 1,100 funds, one-unit AI), then
+   scripted floors and disclosed diagnostics for S1, S2 and S4.
+3. Ladder with GLM-5.3 / low as the cheap reference: anchor battles for siege and swarm,
+   then three flankers, a new swarm factor, three cannons. Expensive models later.
+Open: backing up `runs/` off this machine; the all-modes matrix size and budget.
 Kimi completed one battle at about three times Sol's latency; Step and all modes above
 `low` are unplayed in battle. Custom evacuation and the workload, prompt, history,
 representation and added-age experiments remain deferred.
@@ -97,6 +95,10 @@ Next steps:
 ## Owner direction
 
 WH3:
+- 2026-10-16 (night): small scenarios approved to try; ladder continues with a cheaper
+  reference model for now (expensive models later); write a trace exporter and store
+  reasoning text. Plan only, nothing implemented
+  ([decisions](twwarhammer3/benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night)).
 - 2026-10-16 (evening, latest): benchmark every reasoning mode of every model in each
   scenario; verify each model's real modes first (some open-weight models are only
   on/off) ([model coverage](twwarhammer3/benchmark.md#current-proposal-calibrate-before-a-broad-model-comparison)).

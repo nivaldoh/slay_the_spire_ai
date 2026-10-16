@@ -40,6 +40,15 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build (2026-10-16 evening): 94 input jobs; adds the GLM v20 caster win to the page, ladder V1 variants and the Jezzail setup failure to JSON/text; footnotes summarise the ladder |
 
+## 2026-10-16: Owner decisions after ladder V1 (plan only)
+
+The owner answered the open questions late on 2026-10-16 and asked for the plan to be
+updated without implementation: try the small scenarios (S1 probe, then scripted
+checks for S1, S2 and S4); continue the ladder with a cheaper reference model for now,
+returning to expensive models later (GLM-5.3 / low proposed); write a trace exporter
+and store reasoning text. Details and order:
+[benchmark.md](benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night).
+
 ## 2026-10-16: Difficulty ladder, first step (V1)
 
 gpt-6.1-sol / low won all three battles on both anchors, with margin: siege defence at

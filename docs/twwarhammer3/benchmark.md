@@ -647,6 +647,45 @@ disclosed diagnostic encoding the hypothesised play at `delay_seconds` 0 and 5. 
 5 s shows the play survives model latency; a floor win means the scenario is too easy and
 climbs. Suggested order: the lord/funds probe, S1, S2 and S4, then S3, S5 and S6; S7 last.
 
+### Owner decisions and next tranche (2026-10-16 night)
+
+The owner answered the three open questions; the plan is updated and nothing is
+implemented yet.
+
+1. **Small scenarios: approved to try.** In order: a $0 lobby probe on S1 (both slots
+   lordless, 1,100 custom funds, how the AI uses one unit); then for S1, S2 and S4 a naive
+   scripted floor and one disclosed diagnostic of the hypothesised play at 0 and 5 s
+   delay; then S3, S5 and S6; S7 last or dropped. A candidate that survives gets
+   cheap-reference model battles and report notes. Needed code: the diagnostics in
+   `battle/calibration.py` and the S2-S6 scenario entries (S1 and lordless setup exist).
+2. **Ladder reference: a cheaper model for now.** Expensive models (gpt-6.1-sol, Astra,
+   higher modes) return later. The cheap reference is GLM-5.3 / low through OpenRouter:
+   $0.10-0.42 per battle, the only cheap model with a caster-anchor win, $48 left on its
+   ledger. Step 5 Preview (lowest prices, unplayed) and Luna at higher modes ($0.04 per
+   battle at low) are the alternatives, each worth one first battle. A cheap model's win
+   shows a step is winnable. Its loss does not show the opposite, and its ladder will
+   stop below the strongest models' limit. The expensive models later resume from the
+   hardest step it won and climb further. Next steps on the ladder: siege with three added
+   flankers, a new swarm factor (for example anti-large Slayers against the Doomwheel and
+   Rat Ogres), caster with three cannons. GLM first needs a reference battle on each
+   unchanged anchor, which it has only for the caster.
+3. **Training data: write a trace exporter and store reasoning text.** The exporter is
+   offline: one JSONL record per model decision with the system prompt, the exact user
+   prompt, every raw reply attempt, the reasoning text when the provider returns it, the
+   validated orders and the engine's per-order acknowledgements. Each record also carries
+   the model, provider, effort, prompt version, source revision and scenario, plus the
+   episode's outcome and measures, and the export comes with a data card. Reasoning text
+   needs a small transport change before the next paid battles, so they carry it:
+   OpenRouter can return the model's reasoning, and OpenAI returns at most a summary when
+   asked. It is billed as reasoning tokens either way and never re-enters prompts.
+   Prompt formats changed from v1 to v20, so exports are labelled and filterable by
+   version. Provider terms (OpenAI's on training competing models) are checked before
+   any use. Backing up `runs/` off this machine, recommended alongside, is still open.
+
+Order once implementation resumes: reasoning capture and the exporter (offline, before more
+paid battles); the S1 probe and the S1/S2/S4 scripted checks ($0); GLM reference battles
+on the anchors, then its ladder steps; expensive models and the all-modes matrix later.
+
 ## Earlier implementation sequence (2026-10-15)
 
 The completed work and earlier decisions are recorded in the log:

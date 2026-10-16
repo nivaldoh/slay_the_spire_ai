@@ -171,6 +171,12 @@ is separate from Spire's, with its own cap: $25, raised to $52 on 2026-10-16.
 
 ## Next
 
+Current tranche (owner decisions, 2026-10-16 night): reasoning capture and a trace exporter,
+the small focused scenarios starting with S1, and the difficulty ladder with GLM-5.3 as a
+cheap reference ([plan](benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night),
+[ladder V1](log.md#2026-10-16-difficulty-ladder-first-step-v1)). The items below are
+earlier context.
+
 The [implementation plan](benchmark.md#implementation-plan) targets 6–8 distinct decision
 families. b12 is implemented; work stopped at the owner's request on 2026-10-16 after six
 exploratory battles ([log](log.md#2026-10-16-harness-b12-and-distinct-scenario-families)).
