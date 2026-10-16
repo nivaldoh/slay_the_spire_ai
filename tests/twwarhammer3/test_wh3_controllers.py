@@ -167,7 +167,7 @@ def test_openrouter_rotation_keeps_vendor_model_ids_and_final_effort_suffix(tmp_
         controllers.factories({**config, "budget_usd": 51})
 
 
-@pytest.mark.parametrize("policy", ["llm_rules@z-ai/glm-5.3/", "llm_rules@z-ai/glm-5.3/max",
+@pytest.mark.parametrize("policy", ["llm_rules@z-ai/glm-5.3/", "llm_rules@z-ai/glm-5.3/medium",
                                    "llm_rules@", "llm_rules@gpt-6-luna"])
 def test_openrouter_rejects_unsupported_settings_before_launch(policy):
     with pytest.raises(ValueError, match="invalid choice"):

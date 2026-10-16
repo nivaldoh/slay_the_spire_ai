@@ -24,7 +24,7 @@ from gameai.providers import OPENAI, get_provider, routing, validate
 
 API_URL = OPENAI.url
 PRICES = OPENAI.prices  # existing Spire imports keep their OpenAI defaults
-EFFORTS = OPENAI.efforts
+EFFORTS = OPENAI.efforts["gpt-6-luna"]
 TRANSPORT_ATTEMPTS = 3
 TRANSIENT_HTTP = {408, 409, 429, 500, 502, 503, 504}
 
