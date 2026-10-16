@@ -189,6 +189,13 @@ problems**. A different faction, map, army size, role or difficulty is a variant
 it introduces a different consequential choice. Keep historical evidence, but do not
 count variants or native-mode smoke tests as extra benchmark coverage.
 
+Follow-up owner note, 2026-10-16: **less is more**. This benchmark is slow to execute,
+so prioritize a smaller set of high-quality scenarios. Quality means benchmark usefulness:
+does this scenario help us learn something new about the models? The 6–8 range is a
+planning guide, not a quota. Redundant scenarios do not justify their execution time;
+each retained scenario should answer a distinct question. This is planning guidance;
+no scenario selection changes are made by recording it.
+
 Before adding a core candidate, record its question, scarce resource or commitment,
 at least two credible plays, nearest existing family, reason it adds coverage, public
 information/actions needed and observable evidence. These are analyst hypotheses, never

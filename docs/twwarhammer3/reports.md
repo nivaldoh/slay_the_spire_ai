@@ -14,6 +14,45 @@ replay from `battle/replay.py`, the presentation from `battle/report_html.py` an
 `battle/report_assets/`, curated text from `configs/twwarhammer3/report_notes.json`, and
 frames and stills from `battle/capture.py` during play ([integration.md](integration.md)).
 
+## Pending report notes
+
+Owner feedback, recorded for later implementation. These are requests only; the report
+and its current behavior described below have not changed.
+
+1. Remove the **variants / historical** clutter from the report UI.
+2. Make scores easy to compare quickly across models and scenarios. The current gray
+   scale makes differences difficult to see; improve the visual encoding and contrast.
+3. Clarify **Cost** in Results and show cumulative cost separately. The current field is
+   mean API cost per battle entry in that row, including incomplete entries if present;
+   it is not a cumulative total. Make the averaging population explicit when implementing
+   the completed-battles-only presentation below. Keep cumulative actual spend separate
+   from that average; the WH3 spend ledger already records cumulative API charges.
+4. Make the playback map larger and easier to read. Reduce clutter from units, labels
+   and map objectives, especially in sieges where objective overlays add congestion.
+5. Count only completed battles in the report's benchmark results and ignore incomplete
+   attempts there. Remove finished-versus-unfinished bookkeeping from the presentation.
+6. Expand **Two Armies** by default.
+7. Make **less is more** clear in the benchmark's framing. Battles are slow to run;
+   prioritize a small set of high-quality scenarios, where quality means helping us
+   learn something new about the models. Each scenario must justify its distinct
+   benchmark value; breadth and scenario count are not goals in themselves. See the
+   [scenario-design principle](benchmark.md#scenario-design).
+8. Make the scenario and battle selection dropdowns at the top more prominent. Give
+   each game mode its own icon so the modes are easier to recognize.
+9. Explore how to show spell and Lord ability usage on the playback map. Possible
+   indicators include temporary unit color changes or blinking borders; these are
+   ideas to explore, not a settled design.
+10. Rework the introduction above the map to be more visual and eye-catching, with
+    less text. Introduce the benchmark as a whole instead of opening with the Cavalry
+    scenario specifically.
+11. Eventually add OpenRouter support for a broader selection of models alongside the
+    existing OpenAI API support. This is future benchmark work, not an implemented
+    report feature.
+12. Keep **Same battle, different plans**, but make its comparison informative across
+    scenarios without adding clutter. In sieges, the white line looks nearly identical
+    across models and communicates little; explore ways to reveal meaningful
+    differences in decisions and battle development for each scenario.
+
 ## Suite report
 
 The canonical entry point is `runs/twwarhammer3/reports/benchmark.html`, with `.json`
