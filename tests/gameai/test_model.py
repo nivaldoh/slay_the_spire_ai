@@ -6,7 +6,7 @@ import urllib.error
 import pytest
 
 from gameai import llm as api
-from gameai.ledger import Ledger
+from gameai.ledger import BudgetExhausted, Ledger
 
 USAGE = {"input_tokens": 1000, "input_tokens_details": {"cached_tokens": 400},
          "output_tokens": 200, "output_tokens_details": {"reasoning_tokens": 150}}
@@ -86,3 +86,94 @@ def test_wh3_transport_opt_in_records_wall_time_header_and_actual_model(tmp_path
     attempt = model.call("test", {})
     assert attempt["seconds"] == 2 and attempt["actual_model"] == "actual-snapshot"
     assert attempt["provider_processing_ms"] == 1234.5
+
+
+def test_exchange_capture_keeps_exact_retry_requests_and_returned_output(tmp_path):
+    bodies = []
+    output = [{"type": "reasoning", "summary": [{"type": "summary_text", "text": "summary"}],
+               "content": [{"type": "reasoning_text", "text": "returned reasoning"}]}]
+
+    def send(body):
+        bodies.append(body)
+        return {"usage": USAGE, "output": output + [{"type": "message", "content": [
+            {"type": "output_text", "text": "bad" if len(bodies) == 1 else "good"}]}]}
+
+    def parse(text):
+        if text == "bad":
+            raise ValueError("bad first reply")
+        return text
+
+    model = api.Model("gpt-6-luna", "low", Ledger(tmp_path / "ledger", 1), instructions="system\n",
+                      max_output_tokens=200, send=send, record_exchanges=True)
+    value, attempts = model.ask("exact user\n", {"type": "object"}, parse, 1)
+    assert value == "good"
+    assert attempts[0]["request"] == bodies[0] and attempts[1]["request"] == bodies[1]
+    assert bodies[1]["input"][0]["content"] == (
+        "exact user\n\n\nYour previous reply was invalid: bad first reply. Reply again.")
+    assert bodies[0]["reasoning"] == {"effort": "low", "summary": "auto"}
+    assert attempts[0]["output"][0] == output[0]
+    assert attempts[1]["exchange_id"] == attempts[0]["exchange_id"] == "m1"
+    exchange, = list(model.drain_exchanges())
+    assert exchange == {"id": "m1", "prompt": "exact user\n", "attempts": attempts}
+    assert list(model.drain_exchanges()) == []
+    assert all("returned reasoning" not in str(body) for body in bodies)
+
+
+@pytest.mark.parametrize("provider,model_name,effort", [
+    ("openai", "gpt-6-luna", "none"), ("openrouter", "z-ai/glm-5.3", "low")])
+def test_capture_does_not_add_summary_setting_to_no_reasoning_or_router_calls(
+        tmp_path, provider, model_name, effort):
+    bodies = []
+
+    def send(body):
+        bodies.append(body)
+        return {"usage": dict(USAGE, cost=.0001), "output": []}
+
+    model = api.Model(model_name, effort, Ledger(tmp_path / "ledger", 1), instructions="system",
+                      max_output_tokens=200, send=send, provider=provider, record_exchanges=True)
+    model.ask("user", {}, lambda text: text, 0)
+    assert bodies[0]["reasoning"] == {"effort": effort}
+
+
+def test_spire_default_does_not_capture_or_change_request_settings(tmp_path):
+    bodies = []
+
+    def send(body):
+        bodies.append(body)
+        return {"usage": USAGE, "output": []}
+
+    model = api.Model("gpt-6-luna", "low", Ledger(tmp_path / "ledger", 1), instructions="system",
+                      max_output_tokens=200, send=send)
+    _, attempts = model.ask("user", {}, lambda text: text, 0)
+    assert set(attempts[0]) == {"response_id", "status", "seconds", "usage", "usd", "text"}
+    assert bodies[0]["reasoning"] == {"effort": "low"}
+    assert list(model.drain_exchanges()) == []
+
+
+@pytest.mark.parametrize("failure", ["transport", "response", "parse", "budget"])
+def test_failed_exchanges_keep_all_available_attempts_and_errors(tmp_path, failure):
+    def send(body):
+        if failure == "transport":
+            raise api.APIError("service failed", uncertain_attempts=1)
+        return {"usage": USAGE, "output": [],
+                **({"error": {"code": "failed"}} if failure == "response" else {})}
+
+    def parse(text):
+        raise ValueError("invalid")
+
+    model = api.Model("gpt-6-luna", "low", Ledger(tmp_path / "ledger", 0 if failure == "budget"
+                                                 else 1), instructions="system",
+                      max_output_tokens=200, send=send, record_exchanges=True)
+    with pytest.raises({"transport": api.APIError, "response": api.APIError,
+                        "parse": api.InvalidReply, "budget": BudgetExhausted}[failure]):
+        model.ask("user", {}, parse, 1)
+    exchange, = list(model.drain_exchanges())
+    assert exchange["prompt"] == "user" and exchange["error"]["type"]
+    assert len(exchange["attempts"]) == (0 if failure == "budget" else 2 if failure == "parse"
+                                        else 1)
+    if failure == "transport":
+        attempt, = exchange["attempts"]
+        assert attempt["transport_error"] == "service failed" and "text" not in attempt
+        assert attempt["request"]["input"][0]["content"] == "user"
+    if failure == "response":
+        assert exchange["attempts"][0]["response_error"] == {"code": "failed"}

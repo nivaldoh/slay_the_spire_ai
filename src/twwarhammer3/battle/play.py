@@ -101,6 +101,7 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
     write_json(output / "environment.json", environment)
     manifest = {
         "schema_version": 1,
+        "model_exchange_version": 1,
         "created_at": datetime.now(UTC).isoformat(),
         "source_revision": revision,
         "source_files": files,
@@ -286,6 +287,7 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
                 policy_call(policy, "close")  # in-flight calls are waited for and charged
             except Exception as exc:
                 result.update(status="policy_failure", error=f"controller close: {exc}")
+        record_exchanges(policy, event)
         result["elapsed_seconds"] = round(time.time() - wall_started, 3)
         result["monotonic_seconds"] = round(time.monotonic() - monotonic_started, 3)
         result["llm"] = dict(getattr(policy, "totals", {}))
@@ -381,6 +383,13 @@ def _start(result: dict, observation: dict, scenario: dict, event) -> None:
         if mode.get(key) != wanted:
             raise ProtocolError(f"setup: the battle's {key} is {mode.get(key)!r},"
                                 f" the scenario wants {wanted!r}")
+
+
+def record_exchanges(policy, event) -> None:
+    api = getattr(policy, "api", None)
+    if hasattr(api, "drain_exchanges"):
+        for exchange in api.drain_exchanges():
+            event("model_exchange", **exchange)
 
 
 def _acknowledge(result: dict, outstanding: dict, ack: dict, policy, event) -> int:
@@ -503,6 +512,8 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
         except BaseException:
             event("observation", observation=basis, since_previous_applied_ms=since)
             raise
+        finally:
+            record_exchanges(policy, event)
         invalid = refusal = None
         try:
             validate_orders(orders, basis)

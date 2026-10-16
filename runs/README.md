@@ -36,6 +36,8 @@ runs/
                       imported (ExternalHold, the flight probe)
     reports/          `twwarhammer3 report` outputs (HTML, JSON, text), browser checks, and
                       the old replay-demo generator; they predate the 2026-10-15 cleanup
+    exports/          Offline model-decision datasets: decisions.jsonl, sources.json and
+                      a data card, plus selection lists and verification scripts/reports
     launch-*/         `twwarhammer3 launch` logs, deployment records and UI tree dumps
     probe-*/, ...     Frontend probes, the startup-skip evidence, the benchmark setup probe
                       and the first battle jobs from before battle/ existed
@@ -59,6 +61,11 @@ and later episodes are rematches of the same battle. WH3 episodes can also conta
 and `still-<battle>-<trigger>.png` presentation captures. Replay exports embed derived
 public data and exact prompts; images never become policy inputs. Missing/throttled
 captures and malformed recorder lines remain evidence rather than being reconstructed.
+
+Since WH3 harness b14, traces also contain `model_exchange` events with exact API request
+bodies and returned output items, including failed calls and late commander replies.
+The [offline exporter](../docs/twwarhammer3/traces.md) joins them to orders, acknowledgements
+and outcomes. Historical gaps are labelled; source jobs and spend ledgers stay unchanged.
 
 Records in `first-combat/` name their original `runs/<name>` paths; see
 [docs/spire/first-combat/README.md](../docs/spire/first-combat/README.md#evidence-and-tools)

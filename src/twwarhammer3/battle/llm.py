@@ -584,7 +584,7 @@ class LLMPolicy:
                  system_prompt: str | None = None, provider: str = "openai"):
         self.api = Model(model, effort, ledger, send=send, provider=provider,
                          instructions=system_prompt or SYSTEM_PROMPT_PATH.read_text(),
-                         max_output_tokens=MAX_OUTPUT_TOKENS)
+                         max_output_tokens=MAX_OUTPUT_TOKENS, record_exchanges=True)
         self.totals = self.api.totals
         self.notes = ""
         self.history: deque[str] = deque(maxlen=HISTORY_LENGTH)

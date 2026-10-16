@@ -18,6 +18,7 @@ import urllib.request
 from collections import Counter
 from functools import partial
 from pathlib import Path
+from queue import Empty, SimpleQueue
 
 from gameai.ledger import Ledger
 from gameai.providers import OPENAI, get_provider, routing, validate
@@ -138,7 +139,8 @@ class Model:
     """One model at one reasoning effort with fixed instructions; ``totals`` sums its calls."""
 
     def __init__(self, name: str, effort: str, ledger: Ledger, *, instructions: str,
-                 max_output_tokens: int, send=None, provider: str = "openai"):
+                 max_output_tokens: int, send=None, provider: str = "openai",
+                 record_exchanges: bool = False):
         validate(provider, name, effort)
         if max_output_tokens <= 0:
             raise ValueError("max_output_tokens must be positive")
@@ -148,6 +150,9 @@ class Model:
         self.send = send or partial(post, api_key(provider), provider=provider,
                                    record_transport=provider == "openrouter")
         self.totals = Counter()
+        self.record_exchanges = record_exchanges
+        self.exchanges = SimpleQueue()
+        self.exchange_count = 0
 
     def call(self, prompt: str, schema: dict) -> dict:
         """Send one prompt and return the attempt record: id, status, usage, cost, text."""
@@ -162,6 +167,8 @@ class Model:
             "store": False,
             **routing(self.provider, self.name),
         }
+        if self.record_exchanges and self.provider == "openai" and self.effort != "none":
+            body["reasoning"]["summary"] = "auto"
         # Include the schema and an allowance for provider framing at one token/byte.
         tokens = len(json.dumps(body).encode()) + 1024
         price_in, _, price_out = get_provider(self.provider).prices[self.name]
@@ -172,6 +179,9 @@ class Model:
             response = self.send(body)
         except APIError as error:
             self._charge_uncertain(reservation, error.uncertain_attempts)
+            if self.record_exchanges:
+                error.attempt = {"request": body, "transport_error": str(error),
+                                 "uncertain_attempts": error.uncertain_attempts}
             raise
         self._charge_uncertain(reservation, response.get("_uncertain_attempts", 0))
         # Without reported usage, charge the reserved worst case.
@@ -195,6 +205,10 @@ class Model:
             "usd": usd,
             "text": _output_text(response),
         }
+        if self.record_exchanges:
+            attempt.update(request=body, output=response.get("output", []),
+                           response_error=response.get("error"),
+                           incomplete_details=response.get("incomplete_details"))
         # Opt-in for WH3; the existing Spire trace schema and timing stay unchanged.
         if "_transport" in response:
             transport = response["_transport"]
@@ -212,12 +226,18 @@ class Model:
                 "reasoning_tokens", 0),
             cached_tokens=(usage.get("input_tokens_details") or {}).get("cached_tokens", 0),
         )
+        failure = None
         if cost_error:
-            raise APIError(f"{cost_error}; charged reservation and stopped")
-        if usd > reservation:
-            raise APIError("Reported cost exceeded reservation; charged actual cost and stopped")
-        if response.get("error"):
-            raise APIError(f"{self.provider} returned a failed response {response.get('id')}")
+            failure = f"{cost_error}; charged reservation and stopped"
+        elif usd > reservation:
+            failure = "Reported cost exceeded reservation; charged actual cost and stopped"
+        elif response.get("error"):
+            failure = f"{self.provider} returned a failed response {response.get('id')}"
+        if failure:
+            error = APIError(failure)
+            if self.record_exchanges:
+                error.attempt = attempt
+            raise error
         return attempt
 
     def _charge_uncertain(self, reservation: float, attempts: int) -> None:
@@ -231,12 +251,37 @@ class Model:
         """The parsed reply and every attempt. A reply that ``parse`` rejects with
         ValueError is retried with the error appended to the prompt."""
         attempts, feedback = [], ""
-        for _ in range(1 + retries):
-            attempt = self.call(prompt + feedback, schema)
-            attempts.append(attempt)
+        self.exchange_count += 1
+        exchange = {"id": f"m{self.exchange_count}", "prompt": prompt, "attempts": attempts}
+        try:
+            for _ in range(1 + retries):
+                attempt = self.call(prompt + feedback, schema)
+                if self.record_exchanges:
+                    attempt["exchange_id"] = exchange["id"]
+                attempts.append(attempt)
+                try:
+                    return parse(attempt["text"]), attempts
+                except ValueError as error:
+                    attempt["error"] = str(error)
+                    feedback = f"\n\nYour previous reply was invalid: {error}. Reply again."
+            raise InvalidReply(attempts)
+        except Exception as error:
+            if self.record_exchanges:
+                if hasattr(error, "attempt"):
+                    attempts.append(dict(error.attempt, exchange_id=exchange["id"]))
+                exchange["error"] = {"type": type(error).__name__, "message": str(error)}
+            raise
+        finally:
+            if self.record_exchanges:
+                self.exchanges.put(exchange)
+
+    def drain_exchanges(self):
+        """Completed calls, including failures and unadopted asynchronous replies.
+
+        The caller writes them on its own thread. Opt-in keeps Spire evidence unchanged.
+        """
+        while True:
             try:
-                return parse(attempt["text"]), attempts
-            except ValueError as error:
-                attempt["error"] = str(error)
-                feedback = f"\n\nYour previous reply was invalid: {error}. Reply again."
-        raise InvalidReply(attempts)
+                yield self.exchanges.get_nowait()
+            except Empty:
+                return

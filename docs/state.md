@@ -1,10 +1,15 @@
 # Project state
 
-Updated 2026-10-16 19:22 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 22:52 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
+
+WH3 [offline trace export and model-exchange capture](twwarhammer3/traces.md) are complete
+(b14), checked on saved battles and offline tests. No game or paid API job is running.
+The new summary-capture request setting awaits its first paid call. Small-scenario probes
+and further ladder battles remain next; neither started during this implementation.
 
 No game or paid API job is running. Difficulty ladder V1 (13 battles, 2026-10-16
 evening) found a hardest won step for each of siege (two added flankers; four lost 2/2),
@@ -38,7 +43,7 @@ command; clear it when the job stops.
 [log](twwarhammer3/log.md) (newest first, with the versions on `main` at the top),
 [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, benchmark b13,
+- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, benchmark b14,
   evaluator v2 and track `obs-v4+terrain/act-v2/live-1x`. The interface supports native
   objectives/reinforcements and the optional public battery-evacuation objective.
 - Six candidate decision families with live evidence remain after the live novelty audit
@@ -54,12 +59,12 @@ command; clear it when the job stops.
   reviews: [M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
 - OpenAI spend: $50.90 of $52; OpenRouter $1.93 of $50.
 
-Next, in the owner's order ([decisions](twwarhammer3/benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night)),
-awaiting the go-ahead to implement:
-1. Reasoning-text capture and the offline trace exporter, before more paid battles.
-2. Small scenarios: the $0 S1 lobby probe (lordless, 1,100 funds, one-unit AI), then
+The exporter is implemented ([b14](twwarhammer3/log.md#2026-10-16-harness-b14-offline-trace-export-and-model-exchange-capture)).
+Next game work, in the owner's order, awaits the go-ahead
+([decisions](twwarhammer3/benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night)):
+1. Small scenarios: the $0 S1 lobby probe (lordless, 1,100 funds, one-unit AI), then
    scripted floors and disclosed diagnostics for S1, S2 and S4.
-3. Ladder with GLM-5.3 / low as the cheap reference: anchor battles for siege and swarm,
+2. Ladder with GLM-5.3 / low as the cheap reference: anchor battles for siege and swarm,
    then three flankers, a new swarm factor, three cannons. Expensive models later.
 Open: backing up `runs/` off this machine; the all-modes matrix size and budget.
 Kimi completed one battle at about three times Sol's latency; Step and all modes above
@@ -95,6 +100,8 @@ Next steps:
 ## Owner direction
 
 WH3:
+- 2026-10-16 (trace-export goal): implement the offline exporter for future post-training.
+  Complete as [b14](twwarhammer3/traces.md); no new game/API jobs or training.
 - 2026-10-16 (night): small scenarios approved to try; ladder continues with a cheaper
   reference model for now (expensive models later); write a trace exporter and store
   reasoning text. Plan only, nothing implemented

@@ -649,8 +649,8 @@ climbs. Suggested order: the lord/funds probe, S1, S2 and S4, then S3, S5 and S6
 
 ### Owner decisions and next tranche (2026-10-16 night)
 
-The owner answered the three open questions; the plan is updated and nothing is
-implemented yet.
+The owner answered the three open questions. Item 3's exporter and exchange capture are
+now implemented as [harness b14](traces.md); the game work in items 1 and 2 has not started.
 
 1. **Small scenarios: approved to try.** In order: a $0 lobby probe on S1 (both slots
    lordless, 1,100 custom funds, how the AI uses one unit); then for S1, S2 and S4 a naive
@@ -682,9 +682,10 @@ implemented yet.
    version. Provider terms (OpenAI's on training competing models) are checked before
    any use. Backing up `runs/` off this machine, recommended alongside, is still open.
 
-Order once implementation resumes: reasoning capture and the exporter (offline, before more
-paid battles); the S1 probe and the S1/S2/S4 scripted checks ($0); GLM reference battles
-on the anchors, then its ladder steps; expensive models and the all-modes matrix later.
+Reasoning capture and the exporter are complete offline; the new capture request setting
+has not had a paid API check. Next: the S1 probe and the S1/S2/S4 scripted checks ($0);
+GLM reference battles on the anchors, then its ladder steps; expensive models and the
+all-modes matrix later.
 
 ## Earlier implementation sequence (2026-10-15)
 

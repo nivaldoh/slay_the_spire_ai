@@ -35,10 +35,53 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b13 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Exploratory screens and M1 completed; recorded rematch starts matched. Custom evacuation deferred: authored placement check fails in the engine |
+| benchmark harness | b14 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | Offline trace exporter and exact model-exchange capture checked; M1 and ladder evidence stay on their original revisions |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build (2026-10-16 evening): 94 input jobs; adds the GLM v20 caster win to the page, ladder V1 variants and the Jezzail setup failure to JSON/text; footnotes summarise the ladder |
+
+## 2026-10-16: Harness b14, offline trace export and model-exchange capture
+
+Implemented the owner's trace-export goal. `twwarhammer3 export JOB [JOB ...] --output DIR`
+writes one JSONL row per model request, all raw reply attempts, exact prompts including
+retry feedback, validated order batches, engine acknowledgements, episode outcomes and
+shared measures. Source manifests, environments, results and hashes are retained in
+`sources.json`; `datacard.md` describes coverage and limitations. Filters select model,
+controller/prompt version or exact system-prompt hash. The destination must be new and
+outside source jobs. Hash mismatches, malformed traces and unfinished evidence fail
+without publishing a partial export. [Usage and schema](traces.md).
+
+Asynchronous commander replies are paired with their earlier prompts. Executor batches
+belong to the adopted plan until the next adoption; initial default-skill ticks are not
+model actions. Historical final replies and failed-call prompts that were never recorded
+remain missing, not inferred from neighbouring turns. Old retry prompts are reconstructed
+only with the recorded transport-source hash and revision available. Prompt versions from
+old job names are labelled as such; exact prompt hashes and source revisions remain primary.
+
+Future WH3 calls opt into exact request/output capture, including returned reasoning
+items, transport failures and replies completed during commander shutdown. OpenAI
+reasoning modes request `summary: auto`; OpenRouter retains returned output items without
+a new routing parameter. Capture is off for Spire. Model input prompts remain v20 / v7,
+and new manifests identify `model_exchange_version: 1`. Summary capture can affect API
+cost/latency; the request setting is offline-tested and awaits its first paid call.
+No game or paid API call ran, so the results register and ledgers are unchanged.
+
+Artifact: `exports/trace-v1-20261016/`, selected by `exports/jobs-20261016.json`: 165 stopped
+jobs, 304 episodes, 206 with model rows; **14,644 requests, 15,032 reply attempts and
+25,504 executor/order batches**. Three unfinished source jobs were excluded explicitly in
+`exports/excluded-20261016.json`. Missing-data counts: 24 historical unrecorded replies;
+one failed direct call without its prompt (and therefore its retry prompt); 145 requests
+with an unacknowledged execution step. Old traces do not contain reasoning output items.
+An independent read of every row against the source JSONL verified prompt/reply identity,
+commander ownership, orders, acknowledgements, outcomes and all 948 unchanged input files:
+`exports/verify-20261016.py` and `exports/verification-20261016.json`.
+
+Validation: `uv run ruff check .`; full suite 1,102 passed, 14 skipped, followed by 78
+focused exporter/model/doc checks after the final filters and documentation. Regressions cover exact retry
+inputs, late commander replies, failed calls, Spire's unchanged capture defaults, source
+integrity, version/model/hash filters and export CLI behavior. No engine mechanic changed.
+Small-scenario probes, further ladder battles, training and off-machine backups remain
+outside this implementation.
 
 ## 2026-10-16: Owner decisions after ladder V1 (plan only)
 

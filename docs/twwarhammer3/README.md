@@ -21,6 +21,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [benchmark.md](benchmark.md) | the benchmark contract, shared measures and the scenario expansion plan |
 | [benchmark-run.md](benchmark-run.md) | running paired benchmark trials, outside controllers |
 | [reports.md](reports.md) | the offline HTML report and replay, its curated notes |
+| [traces.md](traces.md) | offline model-decision exports, reasoning capture and data provenance |
 | [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md) | the owner's benchmark brief |
 | [WH3_report_redesign_guide_for_Codex.md](WH3_report_redesign_guide_for_Codex.md) | the owner's report redesign brief |
 | [log.md](log.md) | dated history: versions, harness revisions, jobs, costs |
@@ -37,7 +38,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 - **vN**: a version of the `llm` or `commander` prompt and harness; `v1.N` the `skills`
   executor. Each has a log.md entry. The register's `harness` column is the `-vN-` segment
   of the job name (`stats.harness_version`), blank for `bench-*` jobs.
-- **b1-b13**: benchmark harness revisions, each logged in log.md.
+- **b1-b14**: benchmark harness revisions, each logged in log.md.
 - **G1, G2, C1**: historical calibration designs in [benchmark.md](benchmark.md).
   G1 is incomplete, C1 finished and G2 never ran. The 2026-10-15 plan retires win-rate
   admission; added observation-age experiments (0, 6 and 10 s) remain deferred.
@@ -114,6 +115,7 @@ uv run python -m twwarhammer3 digest JOB[/episode-NNNN]   # per-episode table, o
 uv run python -m twwarhammer3 digest JOB/episode-NNNN --at SECONDS  # one decision in full
 uv run python -m twwarhammer3 stats                       # results.csv by scenario and controller
 uv run python -m twwarhammer3 report JOB [JOB ...] --output runs/twwarhammer3/reports/NAME
+uv run python -m twwarhammer3 export JOB [JOB ...] --output runs/twwarhammer3/exports/NAME
 uv run python -m twwarhammer3 spend                       # runs/twwarhammer3/llm-spend.jsonl
 # Runtime and probes
 uv run python -m twwarhammer3 doctor                      # read-only: pins, preferences, game
@@ -171,9 +173,10 @@ is separate from Spire's, with its own cap: $25, raised to $52 on 2026-10-16.
 
 ## Next
 
-Current tranche (owner decisions, 2026-10-16 night): reasoning capture and a trace exporter,
-the small focused scenarios starting with S1, and the difficulty ladder with GLM-5.3 as a
-cheap reference ([plan](benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night),
+The [offline trace exporter and exchange capture](traces.md) are implemented and checked
+against saved battles (b14). Next in the current tranche: the small focused scenarios
+starting with S1, and the difficulty ladder with GLM-5.3 as a cheap reference
+([plan](benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night),
 [ladder V1](log.md#2026-10-16-difficulty-ladder-first-step-v1)). The items below are
 earlier context.
 

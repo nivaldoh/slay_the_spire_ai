@@ -102,7 +102,7 @@ class CommanderPolicy:
                  system_prompt: str | None = None, provider: str = "openai"):
         self.api = Model(model, effort, ledger, send=send, provider=provider,
                          instructions=system_prompt or PROMPT_PATH.read_text(),
-                         max_output_tokens=MAX_OUTPUT_TOKENS)
+                         max_output_tokens=MAX_OUTPUT_TOKENS, record_exchanges=True)
         self.skills = Skills()
         self.pool = ThreadPoolExecutor(max_workers=1)
         self.pending = None

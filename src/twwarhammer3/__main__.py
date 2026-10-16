@@ -122,11 +122,41 @@ def main() -> int:
     report.add_argument("--output", type=Path, required=True, metavar="STEM",
                         help="writes STEM.txt, STEM.json and the offline field report STEM.html")
 
+    export = commands.add_parser("export", help="Export saved model decisions for post-training")
+    export.add_argument("paths", nargs="*", type=Path, metavar="JOB_OR_EPISODE")
+    export.add_argument("--jobs-file", type=Path, help="JSON list of job or episode paths")
+    export.add_argument("--output", type=Path, required=True, help="new directory outside the jobs")
+    export.add_argument("--prompt-version", action="append", default=[],
+                        help="keep this version (e.g. v20 or unknown); repeatable")
+    export.add_argument("--model", action="append", default=[], help="keep this model; repeatable")
+    export.add_argument("--prompt-sha256", action="append", default=[],
+                        help="keep this exact system prompt hash; repeatable")
+
     spend = commands.add_parser("spend", help="Print the API ledger total")
     spend.add_argument("--provider", default="openai", choices=PROVIDERS)
     spend.add_argument("--ledger", type=Path, default=None, help="override the provider's ledger")
 
     args = parser.parse_args()
+
+    if args.command == "export":
+        from twwarhammer3.battle.export import export_traces
+
+        try:
+            paths = list(args.paths)
+            if args.jobs_file:
+                names = json.loads(args.jobs_file.read_text())
+                if not isinstance(names, list) or any(not isinstance(p, str) for p in names):
+                    raise ValueError("--jobs-file must contain a JSON list of paths")
+                paths += [Path(name) for name in names]
+            summary = export_traces(paths, args.output,
+                                    prompt_versions=tuple(args.prompt_version),
+                                    models=tuple(args.model),
+                                    prompt_hashes=tuple(args.prompt_sha256))
+        except (OSError, ValueError) as error:
+            parser.error(str(error))
+        print(json.dumps({"output": str(args.output), "counts": summary["counts"],
+                          "issues": summary["issues"]}, sort_keys=True))
+        return 0
 
     if args.command == "doctor":
         from twwarhammer3.engine.doctor import collect_diagnostics, render_diagnostics
