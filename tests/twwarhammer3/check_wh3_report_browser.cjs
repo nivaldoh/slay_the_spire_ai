@@ -144,7 +144,9 @@ async function main() {
     const data = JSON.parse(await page.locator("#report-data").textContent());
     const saved = JSON.parse(await fs.readFile(`${stem}.json`, "utf8"));
     // At 1440 × 900 the map's top is on the first screen.
-    assert.ok((await page.locator("#map").boundingBox()).y < 900, "the map starts on screen");
+    const mapTop = (await page.locator("#map").boundingBox()).y;
+    if (mapTop >= 900) await page.screenshot({ path: path.join(output, "opening-failure.png") });
+    assert.ok(mapTop < 900, `the map starts on screen (top: ${mapTop}px)`);
     assert.deepEqual(
       data.report.groups.map((group) => group.controllers),
       saved.groups.map((group) => group.controllers),

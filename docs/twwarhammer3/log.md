@@ -40,6 +40,37 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build: 76 input jobs, 93 completed battles shown across six candidate scenarios; setup failures and variants retained in JSON/text |
 
+## 2026-10-16: Calibration cards and report interpretation
+
+Reviewed all 54 episodes in M1a–d with a read-only extraction, saved as
+`calibration/calibration-audit-20261016.py` and its JSON. Added six
+[calibration cards](benchmark.md#calibration-cards-2026-10-16) with competing plays,
+observed evidence, confounds and the smallest useful next check. The first tranche is
+one free scripted siege diagnostic and one free swarm diagnostic on unchanged anchors;
+a repeat is conditional on an unresolved mechanism, not a quota. No frontier matrix
+or harder scenario is queued before that review.
+
+Kislev is now labelled reinforcement defence in the report: Sol bought all seven initial
+reserves in each M1 battle and still ended with 4,004–5,654 supplies. Its available
+spawn-zone list first emptied at 229–240 s with 1,065–1,602 supplies. This supports an
+access/deployment question, not established budget scarcity. The audit distinguishes
+empty zone lists from temporary purchase refusal and unknown affordability. All six
+candidate families and every earlier outcome remain retained.
+
+Updated the report's stale two-screen notes to M1 findings and explicit untested
+hypotheses. The introduction makes the collection provisional. OpenRouter model labels,
+additional model colours and gateway/backend/routing details are ready for later battle
+evidence; API schema checks are not inserted as battles. The canonical report was rebuilt
+from its explicit 76-job selection, still showing 93 completed battles in six scenarios.
+
+Validation: 158 targeted tests passed (one Windows-only test skipped), Ruff, Prettier
+and `git diff --check` passed. Offline Chromium checks passed on recorded, synthetic and
+copied reports, desktop and mobile (`report-checks/openrouter-calibration/`). The first
+layout check caught an extra sentence pushing the map below the initial screen; moving
+that information into the introduction restored the layout. The browser check now saves
+a screenshot when that regression occurs. The read-only game doctor is ready; no game
+has launched during this work.
+
 ## 2026-10-16: Harness b13, shared OpenRouter transport
 
 Resumed after the owner requested proceeding with the goal. Added OpenRouter to the
@@ -57,8 +88,26 @@ ledger is not crash-atomic; the provider key's $50 cap remains the account-wide 
 
 Validation before paid checks: all 1,053 tests passed (14 optional tests skipped), Ruff
 and `git diff --check` passed. The first full-suite invocation had 26 socket permission
-failures under the sandbox; the unrestricted rerun passed. No game launched. The three
-schema checks are next, capped at $0.25 combined on the OpenRouter ledger.
+failures under the sandbox; the unrestricted rerun passed. No game launched.
+
+Live schema checks (`d0187eb`, `capability-probes/openrouter-20261016/schema-01` and
+`schema-step-02`) used WH3's full reply schema and parser, low effort, and a combined
+$0.25 cap on the real OpenRouter ledger:
+
+| Model | Result | Backend | Wall time | USD |
+|---|---|---|---:|---:|
+| GLM-5.3 | passed, 1,024-token allowance | Fireworks | 1.75 s | 0.00017748 |
+| Kimi K3 | passed, 1,024-token allowance | Makora | 5.04 s | 0.00219147 |
+| Step 5 Preview | incomplete, empty output at 1,024 tokens | DeepInfra | 27.61 s | 0.00267311 |
+| Step 5 Preview | passed, normal 4,000-token allowance | InferenceNet | 10.28 s | 0.00018940 |
+
+Total $0.00523146, including the failed attempt. Step's successful request used two
+router attempts; both backend and allowance changed, so this does not isolate the cause
+of the first failure. Backend snapshots in router metadata are retained in raw smoke
+evidence and now in normal attempt records. The key-budget endpoint still reported zero
+usage immediately after calls; local accounting uses each response's reported cost,
+not this lagging endpoint. These tests establish API/schema compatibility, not tactical
+ability or reliable battle latency. No game ran and the OpenAI ledger is unchanged.
 
 ## 2026-10-16: Cleanup and OpenRouter design only
 

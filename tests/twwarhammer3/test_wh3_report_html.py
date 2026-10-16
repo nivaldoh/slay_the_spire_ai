@@ -14,6 +14,14 @@ from wh3_fixtures import configured_job, embedded, make_job
 from twwarhammer3.battle import report, report_html, setup
 
 
+@pytest.mark.parametrize("model,label", [("z-ai/glm-5.3", "GLM-5.3"),
+    ("moonshotai/kimi-k3", "Kimi K3"), ("stepfun/step-5-preview", "Step 5 Preview")])
+def test_openrouter_display_names_preserve_model_identity(model, label):
+    who = report_html.commander({"policy": f"llm_rules@{model}/low"}, {"provider": "openrouter"})
+    assert who["name"] == label and who["family"] == model
+    assert "via OpenRouter" in who["detail"]
+
+
 def test_gateway_and_routing_settings_are_preserved_without_pooling(tmp_path):
     jobs = [configured_job(tmp_path, name) for name in ("direct", "router", "router-other-route")]
     for index, job in enumerate(jobs[1:]):

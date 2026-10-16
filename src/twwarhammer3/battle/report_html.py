@@ -192,7 +192,9 @@ def commander(trial: dict, definition: dict) -> dict:
     # rules only) and added age.
     if base in MODEL_POLICIES or card.get("kind") in ("model", "hybrid", "demo"):
         name = model or definition.get("model") or base
-        return {"kind": "model", "family": name, "name": name,
+        display = {"z-ai/glm-5.3": "GLM-5.3", "moonshotai/kimi-k3": "Kimi K3",
+                   "stepfun/step-5-preview": "Step 5 Preview"}.get(name, name)
+        return {"kind": "model", "family": name, "name": display,
                 "detail": detail(effort and f"{effort} reasoning", PROMPTS.get(base), gateway),
                 "short": detail(effort and f"{effort} reasoning", VARIANTS.get(base), gateway),
                 "prompt": PROMPTS.get(base)}

@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-16 16:17 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 16:57 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -11,13 +11,12 @@ No game controller is running. The overnight matched round M1 finished at 11:30 
 free scripted baselines (M1d) at 11:59 UTC
 ([M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan)).
 The reworked canonical report (`runs/twwarhammer3/reports/benchmark.html`) includes them.
-OpenAI ledger: $45.96 of $52. Repository cleanup and OpenRouter design are complete;
-the owner has resumed implementation and benchmark/report improvement. OpenRouter's
-read-only key/budget check reported $50 remaining, separate from OpenAI. Work starts with
-the shared provider boundary, offline regressions and three tiny model checks capped at
-$0.25 combined ([design](twwarhammer3/controllers.md#openrouter)).
-Scenario calibration follows the [plan](twwarhammer3/benchmark.md#implementation-plan);
-the candidate core remains provisional.
+OpenAI ledger: $45.96 of $52. OpenRouter support and the three schema checks passed;
+its ledger is $0.00523146 of $50, including one failed Step request. No paid battle is
+running. The six [calibration cards](twwarhammer3/benchmark.md#calibration-cards-2026-10-16)
+review M1 evidence and define two free scripted checks on existing siege/swarm anchors.
+The report now makes the provisional collection explicit and updates its scenario notes.
+Offline desktop/mobile browser validation passed; the read-only game doctor is ready.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -44,15 +43,14 @@ command; clear it when the job stops.
   reviews: [M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
 - API spend: $45.96 of the $52 cap (raised from $25 on 2026-10-16); no paid job is running.
 
-Next: refine calibration before another expensive comparison; do not settle the core
-from M1. The [planning proposal](twwarhammer3/benchmark.md#implementation-plan) starts
-with saved-evidence reviews and six calibration cards, then specifies a small first
-tranche. Later implementation would address interface defects, test purposeful scenario
-variants cheaply, and use a small frontier screen before freezing an evaluation collection.
-OpenRouter is implemented and offline-tested; three small API checks are next
-([provider support](twwarhammer3/controllers.md#openrouter)). No game runs are scheduled; $6.04 of the OpenAI cap remains
-unallocated. Custom evacuation and separate
-workload, prompt, history, representation and observation-age experiments stay deferred.
+Next: run the small scripted calibration tranche
+specified by the [cards](twwarhammer3/benchmark.md#calibration-cards-2026-10-16). Correct
+stale post-cast readiness and state the routing-unit rule in a logged controller revision
+before new paid comparisons. OpenRouter's three models passed the real WH3 reply schema
+and parser ([support](twwarhammer3/controllers.md#openrouter)); high effort and live
+battle behavior remain untested. Keep the core provisional until a small strongest-model
+screen. The OpenAI remainder ($6.04) is unallocated; custom evacuation and separate
+workload, prompt, history, representation and added-age experiments remain deferred.
 Steam is pinned to 9.0.4; old evidence keeps its original build.
 
 ## Slay the Spire

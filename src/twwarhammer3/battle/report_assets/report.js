@@ -30,6 +30,9 @@
     ["#0e8a5f", "#199e70"],
     ["#b64a86", "#d55181"],
     ["#8a6a12", "#c09a3a"],
+    ["#176aa6", "#64b5ed"],
+    ["#986044", "#d9a27a"],
+    ["#157f87", "#52c6ca"],
   ];
   const NEUTRAL = ["#7f898f", "#a3afb5"];
   const ENEMY_INK = "#b86f00"; // the enemy's orange, a step darker for the paper
@@ -1302,7 +1305,7 @@
       ],
       [
         "Scenarios",
-        "One per decision problem. A different faction, map, army size or difficulty is a variant of a scenario, not a new one, and each new scenario needs a hard choice of its own with at least two credible plays.",
+        "Provisional candidates, one per intended decision problem. A different faction, map, army size or difficulty is a variant, not a new family. Each candidate needs executable alternatives and evidence that its choices matter; wins and losses alone do not establish benchmark quality. The strongest-model screen and held-out evaluation are still ahead.",
       ],
     ];
     const battles = data.omitted.battles.length,
@@ -1389,6 +1392,16 @@
         ["Test-setup version", entry.battle.harness],
         ["Interface track", definition.track],
         ["Controller version", trial.card?.version || "unrecorded; see source revision"],
+        ["API gateway", isModel(entry) ? definition.provider || "openai" : null],
+        ["Requested model", trial.card?.model || (isModel(entry) ? definition.model : null)],
+        ["Served models", trial.metrics?.actual_models?.join(", ")],
+        ["Serving backends", trial.metrics?.actual_backends?.join(", ")],
+        [
+          "Routing limits",
+          definition.provider === "openrouter"
+            ? JSON.stringify(trial.card?.routing || definition.model_routing)
+            : null,
+        ],
         [
           "Evaluator version",
           trial.measures?.evaluator_version ?? definition.evaluator_version ?? "unversioned",

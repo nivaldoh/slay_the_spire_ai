@@ -6,7 +6,7 @@
       "noun": "cavalry assault",
       "heading": "Cavalry against a halberd screen guarding the guns",
       "challenge": "Six mounted units face eight enemy units: four halberd units screening two units of handgunners and a cannon. Halberds are built to stop cavalry, so a frontal charge into them risks a losing grind; the gunners behind them are weak in melee. The attacker must defeat the defenders before the 20-minute timer runs out.",
-      "footnote": "Stronger enemy: every enemy unit's stats are raised by 10%.",
+      "footnote": "Every enemy unit's stats are raised by 10%. In M1, Sol and gpt-6.1-sol each won one of three battles; Luna lost all three. Earlier wins reached the guns around the halberd screen, but repeatability at model latency remains unresolved. Preserve this difficulty as an anchor until the successful route is better understood.",
       "family": "cavalry against anti-large",
       "core_candidate": true
     },
@@ -24,7 +24,8 @@
       "heading": "A horde of expendable rats against a Dwarf gun line",
       "challenge": "Twenty Skaven units, most of them cheap and quick to flee, attack nine Dwarf units holding a gun line. The attacker must break the defenders before the 20-minute timer runs out.",
       "family": "command a Skaven swarm",
-      "core_candidate": true
+      "core_candidate": true,
+      "footnote": "In M1, gpt-6.1-sol won three of three, Sol two of three and Luna none. Trace review found the mobile damage units arriving with the slave screen in Sol's wins and arriving ahead of it in losses. This is a coordination hypothesis, not a causal result; a simple coordinated-advance diagnostic should precede a harder roster or another broad model comparison."
     },
     "dwf-line-skv-swarm": {
       "title": "Survive a Skaven swarm",
@@ -33,7 +34,8 @@
       "heading": "A small Dwarf line against a Skaven horde",
       "challenge": "Seven Dwarf units face twenty attacking Skaven units. The defender wins if it is still holding when the 20-minute timer runs out.",
       "family": "survive a Skaven swarm",
-      "core_candidate": true
+      "core_candidate": true,
+      "footnote": "Both M1 models lost all three battles: Sol survived 489–578 s and Luna 494–672 s. Earlier hold-position evidence matched or beat some model results. A focused-fire or fallback diagnostic must establish useful controllable alternatives before making this harder or treating it as a distinct benchmark family. Equal loss records do not prove impossibility."
     },
     "dwf-sla-taurox": {
       "title": "Dwarf guns versus Sigvald",
@@ -79,7 +81,8 @@
       "heading": "One spellcaster's scarce magic must break a much larger army",
       "challenge": "Kairos, a flying character and the army's only spellcaster, attacks with four escorts: two ranged infantry units, one heavily armoured melee unit and a small unit of fast flyers. Ten Skaven units with three times as many troops hold the field: a leader, five clanrat units, two units of expendable slaves, a short-range warpfire team and a catapult unit that reaches 400 m, twice as far as any of Kairos's spells. Each spell costs 5 to 20 points of magic from a pool that starts at 12 and refills slowly, and Kairos is one character, not a regiment: flying him at the catapult risks losing him, while waiting cannot win. The attacker must break every defender before the 20-minute timer runs out; at the timer it loses.",
       "family": "caster-led force against rat screens",
-      "core_candidate": true
+      "core_candidate": true,
+      "footnote": "In M1, Sol and gpt-6.1-sol each won three of three attacker battles; Luna won one of three. Both nearest-enemy scripts lost. Spell use, escort survival and caster withdrawal were executable, but accepted casts are not a measure of spell value. Stale readiness after casting needs correction before new model comparisons; a repeatable cast-and-retreat strategy may make this an easy anchor."
     },
     "siege-kho5-dwf5": {
       "title": "Siege defence pilot",
@@ -134,17 +137,17 @@
       "challenge": "Nine Chaos Dwarf units defend fortified Helmgart against sixteen Greenskin units. Blunderbusses, Fireglaives and a Magma Cannon provide firepower; one Bull Centaur unit is the mobile reserve. Four victory locations and a starting construction budget of 6000 supplies create competing commitments across the fort.",
       "family": "territorial defence",
       "core_candidate": true,
-      "footnote": "Two exploratory screens: Sol lost at 508 s; Luna won at 688 s from a matching rematch start. Construction, reserve commitment, firing positions and fallback were executable. Both held victory locations for about 92% of the observed time, showing why ownership time must be read beside the engine outcome. This is not a model ranking."
+      "footnote": "In M1, Sol and gpt-6.1-sol each won three of three battles; Luna lost all three. Holding position and walking to the nearest enemy also lost. Earlier trace review linked outcomes to reserve timing, lord exposure and firing positions. This establishes usable choices, but not difficulty for the strongest models; whether a simple central defence suffices remains untested. Point ownership alone did not distinguish wins from losses."
     },
     "ksl-reserves-survival": {
-      "title": "Spend now or survive later",
-      "short": "Spend or survive",
+      "title": "Hold the reinforcement zone",
+      "short": "Reinforcement defence",
       "noun": "Kislev survival battle",
-      "heading": "Supplies for reinforcements: spend now or save for later",
+      "heading": "Keep a reinforcement route open against Khorne waves",
       "challenge": "Ten Kislev units face native Khorne waves in the Hunting Fields. Seven initial reserves cost 500–1600 supplies each. Supplies accumulate during the battle, but reserves can enter only through an available spawn zone. The report measures survival time alongside purchases, point ownership and losses; later pool changes follow the game's native rules.",
-      "family": "reinforcement budgeting",
+      "family": "reinforcement deployment under pressure",
       "core_candidate": true,
-      "footnote": "Two exploratory losses: Luna survived 322 s and Sol 406 s from exactly matching starts. Luna first bought reserves at 131 s; Sol bought immediately and used all seven initial reserves. Both lost their spawn zones with supplies unspent. The pool can change later under native survival rules. This demonstrates spending and deployment choices, not a model ranking."
+      "footnote": "In M1, Sol bought all seven initial reserves in each battle and survived 366–413 s, ending with 4,004–5,654 supplies. Luna bought three to six reserves and survived 293–365 s; holding position and walking to the nearest enemy lasted 223 and 222 s. Resource scarcity has not been established: treat this as reinforcement defence while its distinct decision problem is calibrated, not as a proven budgeting test."
     },
     "sla-detachments-dwf-conquest": {
       "title": "Contest the centre — reference",

@@ -182,15 +182,16 @@ is complete; M1d added four scripted battles.
 
 OpenRouter implementation is described in [controllers.md](controllers.md#openrouter).
 The owner resumed implementation and benchmark/report work after the cleanup review.
-The separate $50 cap stays in place; three small schema checks precede any battles.
+All three models passed small WH3 schema checks, costing $0.00523146 including one
+failed Step attempt. The separate $50 cap stays in place; no OpenRouter battle has run.
 
-1. **Planning only, owner direction after M1 (2026-10-16): keep the core provisional.**
+1. **Calibration underway; keep the core provisional.**
    Strongest-model evidence is still missing; the audit's recommendations are development
    priorities, not final selection. The [revised proposal](benchmark.md#implementation-plan)
-   puts saved-evidence reviews and six calibration cards first, then a small proposed
-   tranche for at most two families. Later implementation would address interface
-   defects, screen purposeful variants with cheap probes, and buy a small frontier
-   screen before broader matched comparisons. No new runs are scheduled or budget raised.
+   now has six [calibration cards](benchmark.md#calibration-cards-2026-10-16) from the
+   saved M1 evidence. Two free scripted checks on the unchanged siege/swarm anchors come
+   first. Controller feedback fixes and purposeful cheap probes precede a small frontier
+   screen and any broader matched comparison. No budget has been raised.
 2. Continue to count cavalry and caster revisions once each. The two swarm roles remain
    provisional distinct questions; the [design audit](benchmark.md#scenario-design)
    records their scarce resources and alternative plays. A future three-point Domination

@@ -108,10 +108,12 @@ def post(key: str, body: dict, attempts: int = TRANSPORT_ATTEMPTS, *,
                             "available", []) if item.get("selected")), {})
                         value["_transport"].update(
                             provider=provider, backend=value.get("provider") or
-                            selected.get("provider"), router_attempts=metadata.get("attempt"))
+                            selected.get("provider"), backend_model=selected.get("model"),
+                            router_attempts=metadata.get("attempt"))
                 return value
         except urllib.error.HTTPError as error:
-            detail = error.read(500).decode(errors="replace").replace(key, "<key>")
+            # Read past the display boundary so truncation cannot leave a key prefix behind.
+            detail = error.read(500 + len(key)).decode(errors="replace").replace(key, "<key>")[:500]
             uncertain += error.code >= 500 or error.code == 408
             if error.code not in TRANSIENT_HTTP or attempt == attempts:
                 raise APIError(f"HTTP {error.code}: {detail}", uncertain) from None
@@ -201,6 +203,7 @@ class Model:
             attempt["seconds"] = transport["wall_seconds"]
             if self.provider != "openai":
                 attempt.update(provider=self.provider, backend=transport.get("backend"),
+                               backend_model=transport.get("backend_model"),
                                router_attempts=transport.get("router_attempts"))
         self.totals.update(
             calls=1, usd=usd, seconds=attempt["seconds"], input_tokens=usage["input_tokens"],

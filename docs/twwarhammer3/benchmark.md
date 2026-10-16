@@ -418,6 +418,11 @@ this page before its rewrite (`git show d606d39:docs/twwarhammer3/benchmark.md`)
 
 ### Current proposal: calibrate before a broad model comparison
 
+Implementation resumed on 2026-10-16 after the cleanup review. OpenRouter support and
+its small schema checks are complete ([log](log.md#2026-10-16-harness-b13-shared-openrouter-transport));
+the saved-evidence calibration cards below are the next checkpoint. The planning-only
+wording in the original revision describes its authorization at that time.
+
 Revised after M1 on 2026-10-16 at the owner's request. **Planning only:** no code,
 scenario declarations, report selection or scoring changes, game launches or API calls
 are part of this revision. The sequence below supersedes the earlier implementation
@@ -521,6 +526,41 @@ rule. That makes implementation reviewable before any new experiments. OpenRoute
 has a separate [cleanup and integration proposal](controllers.md#openrouter);
 added-age studies, broader controller comparisons, report polish and custom evacuation
 remain later work unless a specific calibration question needs them.
+
+### Calibration cards, 2026-10-16
+
+These cards use the 54 battles in the saved M1a–d plans, not a new experiment. The
+read-only extraction is `runs/twwarhammer3/calibration/calibration-audit-20261016.py`
+with its JSON alongside it; each row retains its episode path and source revision.
+The [M1 trace review](log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan)
+provides the earlier turning-point analysis. Observed associations are hypotheses
+about causes; no single tactic is established as necessary or sufficient.
+
+| Candidate | Question and scarce resource | Competing plays | Evidence and remaining uncertainty | Next useful test |
+|---|---|---|---|---|
+| Siege defence | Can a controller allocate its one mobile reserve while keeping firing positions useful? Time and exposure of the reserve/lord matter more clearly than construction currency. | Defend several approaches with local support; concentrate around a central point and trade outer territory. | Sol and gpt-6.1-sol each won 3/3, Luna 0/3; hold and walk-nearest lost. Earlier review links reserve/lord isolation and weak blunderbuss fire to losses. The newer model won even with only 54 observed blunderbuss rounds in one battle, so that weapon's use is not a demonstrated necessity. | One disclosed, simple central-defence diagnostic on the existing anchor. If it wins comfortably, test whether a specific second threat creates an actual allocation problem before a frontier comparison. |
+| Swarm command | Can the screen and expensive damage units arrive together? The scarce resource is protected time for the weapons and mobile units, not raw body count. | Commit screen and damage units together; pin the line while a mobile group flanks. | Sol 2/3, gpt-6.1-sol 3/3, Luna 0/3. Sol's loss reversed its successful commitment order. M1c won once despite its Doomwheel routing at 208 s, so preserving every specialist is not required. A simple synchronized advance may suffice. | One coordinated-advance diagnostic using public positions and speeds, preserving the current roster. If timing materially improves execution, compare one screen-depth variant; do not enlarge both armies. |
+| Caster assault | Choose spell windows and preserve the caster/escorts under a deadline. Mana, barrier recovery and escort lifetime are the candidate constraints. | Spend early to break a dense group; preserve magic and withdraw the caster between windows. | Sol and gpt-6.1-sol each 3/3, Luna 1/3; two nearest-enemy scripts lost. Accepted ability orders vary substantially and include non-spells; order counts alone do not measure spell impact. Stale post-cast readiness confounds failed orders. | Correct/read back readiness first. Then test a narrowly specified cast-and-retreat diagnostic before reducing magic or escorts. Starting magic is not a current scenario field, so a mana ladder requires an engine feasibility check. |
+| Cavalry assault | Reach vulnerable guns without becoming trapped by halberds. The scarce resource is safe approach/disengagement space and time. | Commit to a flank; bait part of the screen and exploit the opening. | Both stronger tested models won 1/3, Luna 0/3. Earlier wins reached the guns; losses often entered the screen. This is already difficult, with unresolved route repeatability and model-latency sensitivity. | Keep the current difficulty. Review the successful route against the other starting geometries before buying a repeat or changing the roster; do not make an inconsistent manoeuvre test harder yet. |
+| Defensive swarm | Can limited firing space be preserved against encirclement? Ammunition and formation exposure are possible constraints. | Hold a compact line with focused targets; trade ground with a controlled fallback. | Both M1 models lost 3/3; earlier hold evidence matched or beat some model runs. No evidence yet that a general controller can execute a materially better defence at its natural latency. | Test one focused-fire or fallback hypothesis only after the first two families. Retain negative evidence; redesign rather than add enemy strength if executable alternatives remain absent. |
+| Kislev survival | Keep reinforcement access useful while the initial force is pressured. Budget scarcity is not established. | Purchase relief early; preserve a route and bring a specialist later. | Sol bought all seven initial reserves in each M1 run, surviving 366–413 s with 4,004–5,654 supplies left. Its public spawn-zone list first emptied at 229–240 s, with 1,065–1,602 supplies. Luna's list emptied at 210–232 s. This supports a deployment/access problem, not yet a budgeting benchmark. | Reframe the report as reinforcement defence. Check whether starting supplies/income can be controlled before proposing a resource ladder; those are not current scenario fields. Keep it provisional because it may duplicate siege territory control. |
+
+The audit distinguishes an empty spawn-zone list (no zone available to the alliance)
+from `usable: false` (no affordable unit can currently be purchased there) and a missing
+`usable` value (not judged because nothing is affordable). Treating all three as lost
+territory would invent a failure cause. Ammo differences are observed expenditure,
+not hits or damage; evaluation-only final counts never enter diagnostic policies.
+
+**First calibration tranche:** siege and swarm command, one purposeful scripted battle
+on each unchanged anchor, $0 API spend, up to 20 battle minutes each plus setup. Build
+only the small public-state diagnostic needed for the named question, disclose its
+scenario knowledge in its controller card, and record execution alongside the outcome.
+Review each trace before a second battle; repeat only for a specific ambiguous mechanism
+or changed start. A second run per family is a ceiling, not a quota (at most 80 battle
+minutes plus setup for the tranche). A scripted win may identify an easy strategy;
+a scripted loss does not establish difficulty for a strong model. No roster variants
+or frontier runs are queued before this review. Correct the two observed controller
+feedback issues in a separate logged version before the next paid comparison.
 
 ## Earlier implementation sequence (2026-10-15)
 

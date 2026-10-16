@@ -2,6 +2,7 @@
 
 import io
 import json
+import urllib.error
 from functools import partial
 
 import pytest
@@ -41,6 +42,19 @@ def test_credentials_are_selected_per_gateway_and_empty_files_are_rejected(tmp_p
     path.write_text("\n")
     with pytest.raises(llm.APIError, match="Empty credential file"):
         llm.api_key("openrouter")
+
+
+def test_http_error_redacts_a_key_crossing_the_display_limit(monkeypatch):
+    key = "secret-key-that-crosses-the-boundary"
+
+    def urlopen(*args, **kwargs):
+        raise urllib.error.HTTPError("url", 401, "unauthorized", {},
+                                     io.BytesIO(("x" * 490 + key).encode()))
+
+    monkeypatch.setattr(llm.urllib.request, "urlopen", urlopen)
+    with pytest.raises(llm.APIError) as failure:
+        llm.post(key, {}, provider="openrouter")
+    assert "secret" not in str(failure.value) and "<key>" in str(failure.value)
 
 
 @pytest.mark.parametrize("name", OPENROUTER.prices)
@@ -113,13 +127,26 @@ def test_router_metadata_records_the_selected_backend(tmp_path, monkeypatch):
         headers = {}
 
     payload = reply(openrouter_metadata={"attempt": 2, "endpoints": {"available": [
-        {"provider": "unused", "selected": False}, {"provider": "Z.AI", "selected": True}]}})
+        {"provider": "unused", "selected": False},
+        {"provider": "Z.AI", "model": "z-ai/glm-5.3-snapshot", "selected": True}]}})
     monkeypatch.setattr(llm.urllib.request, "urlopen",
                         lambda *a, **kw: Response(json.dumps(payload).encode()))
     agent = model(tmp_path, partial(llm.post, "key", provider="openrouter", record_transport=True))
     attempt = agent.call("test", SCHEMA)
     assert attempt["backend"] == "Z.AI" and attempt["router_attempts"] == 2
     assert attempt["provider"] == "openrouter" and attempt["actual_model"] == "z-ai/glm-5.3"
+    assert attempt["backend_model"] == "z-ai/glm-5.3-snapshot"
+
+
+def test_incomplete_empty_response_keeps_its_charge_and_failure_evidence(tmp_path):
+    # Step's first live schema check spent its token allowance and returned no output.
+    agent = model(tmp_path, lambda body: reply(status="incomplete", output=[],
+        incomplete_details={"reason": "max_output_tokens"}))
+    with pytest.raises(llm.InvalidReply) as failure:
+        agent.ask("test", SCHEMA, json.loads, retries=0)
+    attempt = failure.value.attempts[0]
+    assert attempt["status"] == "incomplete" and attempt["text"] == ""
+    assert attempt["usd"] == agent.ledger.spent == .0002
 
 
 @pytest.mark.parametrize("budget", [float("nan"), float("inf"), -1])

@@ -188,8 +188,10 @@ Initial models, with enforced routing ceilings in USD per million tokens:
 | `stepfun/step-5-preview` | $1.00 | $2.70 | low, high |
 
 These are leading open-weight candidates selected during the design review, not a
-ranking inferred from our tests. Catalogue metadata was checked on 2026-10-16. Live
-structured-output validation is pending; the declared settings are not yet battle-tested.
+ranking inferred from our tests. Catalogue metadata was checked on 2026-10-16. All three passed live WH3 schema/parser checks at low effort; high effort and live
+battle behavior remain untested. Step first returned an empty, token-limited response
+on DeepInfra, then passed with the normal 4,000-token allowance on InferenceNet; both
+the backend and allowance changed, so the cause is unresolved.
 The job default is GLM-5.3 at low effort. Rotations preserve the full vendor/model ID:
 `llm_rules@z-ai/glm-5.3, llm_rules@moonshotai/kimi-k3/high` (omit the space in the CLI).
 Unsupported models/efforts fail before game launch; historical readers do not consult
@@ -218,8 +220,9 @@ unavailable. The report collector separates gateways/routing settings and expose
 in its saved definitions. The CSV register also records the gateway; old rows remain
 readable. OpenAI defaults, successful Spire trace fields and all prompt text are unchanged.
 
-Validation proceeds through offline regressions, then one tiny request per model using
-WH3's real reply schema and parser, capped at $0.25 combined including retries. These
+Offline regressions passed, followed by live requests using WH3's actual reply schema
+and parser. Four calls including Step's failed first attempt cost $0.00523146 of a
+$0.25 test cap; all three models eventually returned valid replies. These
 are API checks, not battles or evidence about tactical ability. Review each failure
 before spending again. Subsequent calibration follows the
 [benchmark plan](benchmark.md#implementation-plan).

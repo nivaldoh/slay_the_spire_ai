@@ -18,13 +18,15 @@ frames and stills from `battle/capture.py` during play ([integration.md](integra
 
 ## Pending report notes
 
-Owner feedback still to implement (the other notes of 2026-10-16 are in the page below):
+Status of the remaining owner feedback (the other notes of 2026-10-16 are in the page below):
 
 11. OpenRouter support for more models is specified in the
     [provider design](controllers.md#openrouter). On 2026-10-16
     the owner set a $50 budget and later resumed implementation. Shared transport and
-    WH3 selection are implemented; three tiny schema checks precede battle use.
-    The collector records gateway/routing settings; the page labels OpenRouter rows.
+    WH3 selection are implemented and all three models passed WH3 schema checks.
+    The collector records gateway/routing settings; the page labels OpenRouter rows,
+    uses readable model names and exposes serving backends and limits in Run settings.
+    No OpenRouter battles are shown until they have actually run.
 
 Not done with the rest, and why:
 
@@ -37,6 +39,10 @@ Not done with the rest, and why:
   are not drawn (they stay in the job's `replay.jsonl` and feed "what happened next").
 
 ## Suite report
+
+The introduction labels the collection provisional. Scenario notes distinguish M1
+findings from hypotheses; Kislev is described as reinforcement defence because the
+evidence has not established a budgeting tradeoff. The six candidates remain displayed.
 
 The canonical entry point is `runs/twwarhammer3/reports/benchmark.html`, with `.json`
 and `.txt` companions. Rebuild it from the explicit, versioned selection (run at the
