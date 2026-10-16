@@ -487,13 +487,19 @@ def test_modes_follow_the_lobby_type_and_a_siege_splits_by_role():
     ('conquest', {'objectives': {'tickets': {'us': 250, 'enemy': 900}}}, None, 'tickets'),
     ('siege', {'objectives': {'points': {'c1': {'held_ms': 3000, 'observed_ms': 10000}}}},
      .3, 'objective_time'),
+    # A siege defence scores the enemy broken, like a land battle; ownership stays a measure.
+    ('siege_defence', {'objectives': {'points': {'c1': {'held_ms': 9900, 'observed_ms': 10000}}}},
+     1.0, None),
     ('survival', {}, None, 'duration'),
     ('ambush', {'custom_objective': {'status': 'failed', 'extracted': 1,
                                    'assets': [{'id': 'f7'}, {'id': 'f8'}]}}, .5, 'evacuation'),
 ])
 def test_mode_progress_never_substitutes_casualties_for_an_objective(
         tmp_path, kind, result, expected, basis):
-    scenario = {'name': 'objective', 'battle_type': kind}
+    scenario = {'name': 'objective', 'battle_type': kind,
+                'attacker': {'siege': 'player', 'siege_defence': 'enemy'}.get(kind)}
+    if kind == 'siege_defence':
+        scenario['battle_type'] = 'siege'
     if kind == 'ambush':
         scenario['custom'] = {'kind': 'battery_evacuation'}
     job = configured_job(tmp_path, 'objective', scenario=scenario)

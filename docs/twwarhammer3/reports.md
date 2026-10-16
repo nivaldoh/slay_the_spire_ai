@@ -136,11 +136,15 @@ effort is defined once, under Figure 1.
   scenario's scale, so the row itself compares. A thumbnail underlines its name on hover and
   focus; clicking opens the scenario and scrolls smoothly to the replay; the selected one
   is underlined. On a phone the index wraps to three columns. Then the finding: dates,
-  battles and scenarios; the scenarios where every model played at least three battles in
-  one controlled comparison, with each model's score and record there and the best rule's
-  (today only the cavalry assault); how many battles per model the other scenarios have;
-  how old the models' and the rules' views were when their orders landed; and that prompts
-  were developed on these scenarios (in-sample), said only here.
+  battles and scenarios; the wins of each model, from its largest group of battles under
+  one test setup, in every scenario where each model that played has at least three such
+  battles ("gpt-6-sol won 1 of 6 cavalry assaults, 2 of 3 swarm assaults, …; gpt-6-luna won
+  0, 0, 1 and 0", a later model's wins alone when its scenarios and battle counts match the
+  first's, else named; scenarios nobody won close it: "Neither won any swarm defence or
+  Kislev survival battle", with `noun` in the notes naming one battle); how many battles
+  per model the other scenarios have; how old the models' and the rules' views were when
+  their orders landed; and that prompts were developed on these scenarios (in-sample),
+  said only here.
 - **The battle**: a short declarative heading (`heading` in the notes), then the replay
   panel with large scenario and battle selects (battles by commander, outcome first; on a
   phone only the battle select, as the index picks scenarios), "Play key moment (3:06)" and
@@ -194,10 +198,13 @@ effort is defined once, under Figure 1.
   and text); Run settings, the report and replay JSON, and a link here.
 
 **Score**: per completed battle, 100 for a win, else the share of the enemy's soldiers
-dead, fleeing or otherwise out of the fight when it ended, in percent (sieges and
-settlements score objective ownership time, conquest and domination ticket progress,
-survival seconds survived); a commander's score is the mean over its completed battles
-(battles without the measure are left out). A
+dead, fleeing or otherwise out of the fight when it ended, in percent, in land battles and
+siege defences (siege attacks and settlements score objective ownership time, conquest
+and domination ticket progress, survival seconds survived); a commander's score is the
+mean over its completed battles (battles without the measure are left out). Siege
+defences scored ownership time until 2026-10-16, when lost defences scored 92–99 and the
+score did not tell the commanders apart; the run card still shows the time each point
+was held (key building and supply points by name), supplies left and builds. A
 win is 100 even when a defender wins at the timer with the enemy largely intact. Printed
 scores never round a loss up to 100 (a 99.8% loss reads 99). Battles that recorded
 casualties only (older pilots, none of them on the page today) count the enemy killed,
@@ -294,7 +301,9 @@ a worktree while one runs. Three maps:
   opens the page): `title` names it, `heading` heads the page (short and declarative),
   `challenge` states the
   task and its real objective, `footnote` defines a variant once (under Figure 1), `short`
-  names it in the masthead index, and `core_candidate: true` puts it on the page. The
+  names it in the masthead index, `noun` names one of its battles in the finding ("siege
+  defence"), and `core_candidate: true` puts it on the page (the caster family's is
+  `tze-caster-skv-assault` since 2026-10-16). The
   game mode comes from the declaration (`battle_type` and `attacker`). Without an entry:
   its `family` or name and the declared `brief`.
 - **`units`**, by unit type key: `name` is the game's onscreen name (checked against its

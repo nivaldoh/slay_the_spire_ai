@@ -323,7 +323,9 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             battles[key].update(progress=_share((resources.get("tickets") or {}).get("us"),
                                                 resources.get("tickets_goal")),
                                 progress_basis="tickets")
-        elif mode_of(scenario) in {"siege_defence", "siege_attack", "settlement"}:
+        # A siege defence scores like a land battle: holding every point scored 92-99 in
+        # lost battles too, so ownership time stays a measure, not the score.
+        elif mode_of(scenario) in {"siege_attack", "settlement"}:
             points = (measures.get("objective_time") or {}).get("points") or []
             held = sum(p["held_s"] for p in points)
             observed = sum(p["observed_s"] for p in points)
@@ -391,6 +393,7 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             "heading": note.get("heading"),
             "family": note.get("family") or scenario.get("family"),
             "short": note.get("short") or _title(note, {**scenario, "name": name}),
+            "noun": note.get("noun"),
             "core_candidate": note.get("core_candidate", False),
             "challenge": note.get("challenge") or scenario.get("brief"),
             "footnote": note.get("footnote"),

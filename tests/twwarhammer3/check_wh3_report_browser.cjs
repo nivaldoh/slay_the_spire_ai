@@ -260,7 +260,7 @@ async function main() {
         if (age != null)
           assert.equal(cells[i][1], `${age.toFixed(1)} s`, `Figure 1 order age, row ${i}`);
       });
-      assert.match(await text("#finding"), /over \d+ launches with one test setup/);
+      assert.match(await text("#finding"), /or more battles per model under one test setup/);
     }
     assert.match(await text("#finding"), /Early results .*: \d+ battles in/);
     // Cumulative API spend per model, every attempt included.

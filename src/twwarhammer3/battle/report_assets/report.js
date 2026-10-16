@@ -194,10 +194,21 @@
       out.push(
         `units still fighting: own ${units.friendly.active} of ${units.friendly.registered}, enemy ${units.enemy.active} of ${units.enemy.registered}`,
       );
-    const held = m.objective_time?.points || [];
-    if (held.length)
+    const held = new Map();
+    for (const p of m.objective_time?.points || []) {
+      const name = /key_building/.test(p.key)
+        ? "key building"
+        : /suppl/.test(p.key)
+          ? "supply points"
+          : "";
+      held.set(name, [
+        ...(held.get(name) || []),
+        p.share == null ? "not recorded" : percent(p.share),
+      ]);
+    }
+    if (held.size)
       out.push(
-        `objectives held ${held.map((p) => (p.share == null ? "not recorded" : percent(p.share))).join(", ")} of the time observed`,
+        `objectives held ${[...held].map(([name, shares]) => `${name ? `${name} ` : ""}${shares.join(", ")}`).join("; ")} of the time observed`,
       );
     const r = m.resources || {};
     if (r.status === "available") {
@@ -364,12 +375,26 @@
     });
   }
 
-  // The benchmark in a few sentences: its size and dates; the scenarios where every model played
-  // at least three battles in one controlled comparison, with their scores and records; how
-  // many battles the others have; how old the models' information was; that it is in-sample.
+  // The benchmark in a few sentences: its size and dates; the wins of every model in the
+  // scenarios where each model that played has at least three battles under one test setup;
+  // how many battles the others have; how old the models' information was; that it is in-sample.
   const WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
   const number = (n) => WORDS[n] || String(n);
   const MATCHED = 3;
+  const list = (items, word = "and") =>
+    items.length > 1 ? `${items.slice(0, -1).join(", ")} ${word} ${items.at(-1)}` : items[0];
+  // A model's battles in a scenario from its largest group under one test setup.
+  function groupOf(keys) {
+    const groups = new Map();
+    for (const key of keys)
+      groups.set(data.battles[key].harness, [
+        ...(groups.get(data.battles[key].harness) || []),
+        key,
+      ]);
+    return [...groups.values()].sort((a, b) => b.length - a.length)[0] || [];
+  }
+  const noun = (item, plural = false) =>
+    `${item.noun || `${item.short} battle`}${plural ? "s" : ""}`;
   function finding() {
     const all = [...shown].map((key) => entries.get(key));
     const dated = all
@@ -389,37 +414,68 @@
     const out = [
       `Early results${days ? ` from ${days}` : ""}: ${all.length} battles in ${number(n)} scenario${n === 1 ? "" : "s"}. `,
     ];
-    const matched = data.scenarios.filter((item) => {
-      if (!item.controlled) return false;
-      const keys = new Set(item.controlled.battles);
-      const counts = item.rows
-        .filter((row) => row.kind === "model")
-        .map((row) => row.battles.filter((key) => keys.has(key)).length)
+    // The scenarios where every model that played has a group of at least MATCHED battles.
+    const matched = data.scenarios
+      .map((item) => ({
+        item,
+        groups: models
+          .filter((family) => item.rows.some((row) => row.family === family))
+          .map((family) => {
+            const keys = groupOf(
+              item.rows.filter((row) => row.family === family).flatMap((row) => row.battles),
+            );
+            return { family, n: keys.length, won: keys.filter((k) => won(entries.get(k))).length };
+          }),
+      }))
+      .filter((m) => m.groups.length && m.groups.every((g) => g.n >= MATCHED));
+    if (matched.length) {
+      const winning = matched.filter((m) => m.groups.some((g) => g.won)),
+        losing = matched.filter((m) => !m.groups.some((g) => g.won));
+      const total = (family) =>
+        matched.reduce((k, m) => k + (m.groups.find((g) => g.family === family)?.won || 0), 0);
+      const names = [...new Set(matched.flatMap((m) => m.groups.map((g) => g.family)))].sort(
+        (a, b) => total(b) - total(a) || a.localeCompare(b),
+      );
+      // The first model's wins name their scenarios; a later model with the same scenarios and
+      // battle counts gives its wins only ("won 0, 0 and 1").
+      const lines = names
+        .map((family) =>
+          winning
+            .map((m) => ({ m, g: m.groups.find((g) => g.family === family) }))
+            .filter((x) => x.g),
+        )
+        .map((own, i, every) => {
+          if (!own.length) return null;
+          const first = every.find((x) => x.length);
+          const same =
+            own !== first &&
+            own.length === first.length &&
+            own.every((x, k) => x.m === first[k].m && x.g.n === first[k].g.n);
+          return [
+            el("span", names[i], "nowrap"),
+            ` won ${same ? list(own.map((x) => String(x.g.won))) : list(own.map((x) => `${x.g.won} of ${x.g.n} ${noun(x.m.item, x.g.n !== 1)}`))}`,
+          ];
+        })
         .filter(Boolean);
-      return counts.length && counts.every((count) => count >= MATCHED);
-    });
-    for (const item of matched) {
-      const keys = new Set(item.controlled.battles),
-        metric = item.mode === "survival" ? "duration" : "score";
-      const stats = item.rows
-        .map((row) => ({ row, ...rowStats({ battles: row.battles.filter((k) => keys.has(k)) }) }))
-        .filter((s) => s.items.length && s[metric] != null)
-        .sort((a, b) => b[metric] - a[metric]);
-      const said = (s) =>
-        metric === "duration"
-          ? `survives ${Math.round(s.duration)} s and ${record(s)}`
-          : `scores ${points(s.score)} and ${record(s)}`;
-      const ranked = stats.filter((s) => s.row.kind === "model"),
-        rule = stats.find((s) => s.row.kind === "scripted");
-      out.push(`In ${item.title}, over ${item.controlled.launches} launches with one test setup, `);
-      ranked.forEach((s, i) => {
-        out.push(i ? (i === ranked.length - 1 ? " and " : ", ") : "");
-        out.push(el("span", s.row.name, "nowrap"), ` ${said(s)}`);
-      });
-      out.push(rule ? `; the best scripted rule, ${rule.row.name}, ${said(rule)}. ` : ". ");
+      out.push(`With ${number(MATCHED)} or more battles per model under one test setup, `);
+      lines.forEach((line, i) => out.push(i ? "; " : "", ...line));
+      if (losing.length) {
+        const nobody = names.length === 1 ? null : names.length === 2 ? "Neither" : "No model";
+        const scenarios = list(
+          losing.map((m) => noun(m.item)),
+          "or",
+        );
+        out.push(
+          lines.length ? ". " : "",
+          nobody
+            ? `${lines.length ? nobody : nobody.toLowerCase()} won any ${scenarios}`
+            : `${lines.length ? "" : `${names[0]} `}won no ${scenarios}`,
+        );
+      }
+      out.push(". ");
     }
     const counts = data.scenarios
-      .filter((item) => !matched.includes(item))
+      .filter((item) => !matched.some((m) => m.item === item))
       .flatMap((item) =>
         models.map((family) =>
           item.rows.filter((r) => r.family === family).reduce((k, r) => k + r.battles.length, 0),
@@ -594,11 +650,23 @@
   function scoreNote() {
     const bases = new Set([...shown].map((key) => data.battles[key].progress_basis ?? "strength"));
     const modes = new Set(data.scenarios.map((s) => s.mode));
+    // The modes scored by the enemy broken: land battles and siege defences.
+    const broken = data.modes
+      .filter((mode) =>
+        data.scenarios.some(
+          (s) =>
+            s.mode === mode.key &&
+            s.battles.some((k) =>
+              [null, undefined, "killed"].includes(data.battles[k].progress_basis),
+            ),
+        ),
+      )
+      .map((mode) => (mode.key === "land" ? "land battles" : `${mode.name}s`));
     const parts = [
       (bases.has("strength") || bases.has("killed")) &&
-        "of the enemy's soldiers dead, fleeing or out of the fight (land battles)",
+        `of the enemy's soldiers dead, fleeing or out of the fight (${list(broken) || "land battles"})`,
       bases.has("objective_time") &&
-        `of the time the objectives were held (${modes.has("settlement") ? "sieges and settlements" : "sieges"})`,
+        `of the time the objectives were held (${list([modes.has("siege_attack") && "siege attacks", modes.has("settlement") && "settlements"].filter(Boolean)) || "sieges"})`,
       bases.has("tickets") && "of the ticket goal reached (conquest and domination)",
       bases.has("evacuation") && "of the batteries in the extraction zone (evacuation)",
     ].filter(Boolean);
