@@ -6,12 +6,12 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 
 ## Active work
 
-Running since 21:28 UTC: WH3 queue `runs/twwarhammer3/calibration/v1d-plan-20261016.json`:
-gpt-6.1-sol on the siege step-back (one Boar Boyz, one Wolf Riders; OpenAI cap $52), then
-GLM-5.3 on the two-cannon caster step (OpenRouter, cap $5). Ladder so far: siege anchor
-won, four flankers lost twice; swarm two and four Gyrocopters both won; caster one cannon
-won ([ladder V1](twwarhammer3/log.md#2026-10-16-difficulty-ladder-first-step-v1)). Follow
-with `uv run python -m twwarhammer3 watch`.
+Running since 21:45 UTC: WH3 `runs/twwarhammer3/battle/bench-b13-v1e-caster-cannon2-sol61-20261016`,
+gpt-6.1-sol on the two-cannon caster step, the last battle under the OpenAI $52 cap.
+Ladder so far: siege won at two added flankers, lost 2/2 at four; swarm won with two and
+four Gyrocopters (no harder); caster won with one cannon, GLM lost with two
+([ladder V1](twwarhammer3/log.md#2026-10-16-difficulty-ladder-first-step-v1)). Follow with
+`uv run python -m twwarhammer3 watch`.
 
 The [v20 live check](twwarhammer3/log.md#2026-10-16-live-check-of-the-v20-shared-magic-warning)
 won the caster anchor with GLM-5.3 / low at 575 s ($0.41); spell refusals after a pending
@@ -25,8 +25,8 @@ labels pending spell costs; it is checked on recorded states but untested with a
 The canonical report now includes the fourth script and GLM replay, backend snapshots
 and reply-validation counts; offline browser checks pass. All six candidates remain provisional.
 
-API ledgers: OpenAI $49.76 of $52; OpenRouter $1.83 of $50. V1d is the only paid run
-planned; more Sol battles need a decision on the OpenAI cap.
+API ledgers: OpenAI $50.37 of $52; OpenRouter $1.93 of $50. V1e is the last OpenAI
+battle the cap allows; more Sol battles need a decision on that cap.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -51,7 +51,7 @@ command; clear it when the job stops.
   models; survive-a-swarm and Kislev did not. The report page shows core scenarios and
   completed battles only; its JSON keeps setup failures and variants. Results, costs and
   reviews: [M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
-- OpenAI spend: $49.76 of $52; OpenRouter $1.83 of $50.
+- OpenAI spend: $50.37 of $52; OpenRouter $1.93 of $50.
 
 Next: use the [cards](twwarhammer3/benchmark.md#calibration-cards-2026-10-16) to select
 a specific remaining play to test (siege withdrawal/firing positions, swarm flank or

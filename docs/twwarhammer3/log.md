@@ -215,6 +215,17 @@ demonstrated win is the two-flanker step; the difficulty rises steeply between t
 four units, or single battles vary that much. A three-unit step or a second Sol battle on
 four would locate it, at about $1 each.
 
+**V1d caster, GLM** (`bench-b13-v1d-caster-cannon2-glm-20261016`, OpenRouter, GLM-5.3 / low):
+**lost** at 204 s, 13% of its strength left against the enemy's 87%; 26 decisions,
+$0.09600000 (OpenRouter $1.93). GLM sent Kairos at a cannon from 5 s; his barrier was
+full at 67 s and he was dead by about 201 s, and the army collapsed. A GLM loss does not
+show the step is unwinnable.
+
+**V1e (plan, 21:47 UTC).** The last OpenAI battle under the $52 cap: gpt-6.1-sol / low on
+`tze-caster-skv-assault-cannon-2` ($0.45-1.24 per caster battle so far; $1.63 left). A win
+makes two cannons the caster family's hardest demonstrated step; a loss leaves one cannon
+as the hardest, with two cannons unadmitted. No other paid run follows without the owner.
+
 ## 2026-10-16: Live check of the v20 shared-magic warning
 
 **Result.** `bench-b13-glm-v20-caster-20261016` (`ae55309`, 19:28-19:40 UTC) **won** at
