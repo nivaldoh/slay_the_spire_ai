@@ -38,7 +38,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | benchmark harness | b13 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Exploratory screens and M1 completed; recorded rematch starts matched. Custom evacuation deferred: authored placement check fails in the engine |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
-| report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build: 81 input jobs, 98 completed battles shown across six candidate scenarios; setup failures and variants retained in JSON/text |
+| report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build (2026-10-16 evening): 94 input jobs; adds the GLM v20 caster win to the page, ladder V1 variants and the Jezzail setup failure to JSON/text; footnotes summarise the ladder |
 
 ## 2026-10-16: Difficulty ladder, first step (V1)
 
@@ -252,6 +252,11 @@ declared per model, with OpenRouter's catalogue lists (GLM `low`/`high`/`max`, K
 `none`/`low`/`high`/`max`, Step `low`/`medium`/`high`); an empty `/EFFORT` suffix now names
 the effort in its error. Each new mode passed one reply-schema call ($0.0061; OpenRouter
 ledger $1.9333); details in [controllers.md](controllers.md#openrouter). 491 tests pass.
+
+**Report.** `configs/twwarhammer3/benchmark_jobs.json` gains tonight's 13 jobs (94 in all);
+the siege, swarm and caster footnotes in `report_notes.json` now summarise the ladder and
+GLM's v20 win. The canonical `reports/benchmark.html` was rebuilt (1m45s); the browser
+checks were not rerun for this data-and-notes change.
 
 ## 2026-10-16: Live check of the v20 shared-magic warning
 
