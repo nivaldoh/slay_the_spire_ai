@@ -12,12 +12,12 @@ free scripted baselines (M1d) at 11:59 UTC
 ([M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan)).
 The reworked canonical report (`runs/twwarhammer3/reports/benchmark.html`) includes them.
 OpenAI ledger: $45.96 of $52. Repository cleanup and OpenRouter design are complete;
-the owner requested stopping after cleanup/design. No implementation changes remain.
-An OpenRouter read-only key/budget check reported $50 remaining, separate from OpenAI;
-no paid model calls or game runs followed
-([design](twwarhammer3/controllers.md#openrouter-design-not-implemented)). Scenario
-calibration remains planning only, with the candidate core provisional
-([plan](twwarhammer3/benchmark.md#implementation-plan)).
+the owner has resumed implementation and benchmark/report improvement. OpenRouter's
+read-only key/budget check reported $50 remaining, separate from OpenAI. Work starts with
+the shared provider boundary, offline regressions and three tiny model checks capped at
+$0.25 combined ([design](twwarhammer3/controllers.md#openrouter)).
+Scenario calibration follows the [plan](twwarhammer3/benchmark.md#implementation-plan);
+the candidate core remains provisional.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -28,7 +28,7 @@ command; clear it when the job stops.
 [log](twwarhammer3/log.md) (newest first, with the versions on `main` at the top),
 [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v18, `commander` v5, skills v1.2, benchmark b12,
+- On `main`: `llm`/`llm_rules` v18, `commander` v5, skills v1.2, benchmark b13,
   evaluator v2 and track `obs-v4+terrain/act-v2/live-1x`. The interface supports native
   objectives/reinforcements and the optional public battery-evacuation objective.
 - Six candidate decision families with live evidence remain after the live novelty audit
@@ -49,9 +49,8 @@ from M1. The [planning proposal](twwarhammer3/benchmark.md#implementation-plan) 
 with saved-evidence reviews and six calibration cards, then specifies a small first
 tranche. Later implementation would address interface defects, test purposeful scenario
 variants cheaply, and use a small frontier screen before freezing an evaluation collection.
-OpenRouter implementation and three small API checks are specified in the
-[provider design](twwarhammer3/controllers.md#openrouter-design-not-implemented), awaiting
-the owner's next instruction. No new runs are scheduled; $6.04 of the OpenAI cap remains
+OpenRouter is implemented and offline-tested; three small API checks are next
+([provider support](twwarhammer3/controllers.md#openrouter)). No game runs are scheduled; $6.04 of the OpenAI cap remains
 unallocated. Custom evacuation and separate
 workload, prompt, history, representation and observation-age experiments stay deferred.
 Steam is pinned to 9.0.4; old evidence keeps its original build.
@@ -84,6 +83,8 @@ Next steps:
 ## Owner direction
 
 WH3:
+- 2026-10-16 (resume): implement OpenRouter and the three chosen models, then continue
+  improving benchmark calibration and the report within the existing budgets.
 - 2026-10-16 (OpenRouter): the owner stored an OpenRouter key and set a separate $50
   budget. Requested support and three leading open-weight model API checks, then
   clarified: stop after cleanup and design this turn; no implementation or paid calls.

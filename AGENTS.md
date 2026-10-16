@@ -9,8 +9,9 @@ game's current track and next step. Then read the page of the track you are work
 
 ```
 src/gameai/        Game-neutral code both games import; it never imports a game package
-  llm.py           OpenAI Responses transport, prices, Model (spend reservation, the
+  llm.py           Responses transport, Model (spend reservation, the
                    reply-retry loop)
+  providers.py     OpenAI/OpenRouter endpoints, credentials, model settings and price ceilings
   ledger.py        Append-only spend ledger with a hard budget, for any paid model
   provenance.py    Repository root, scoped source fingerprints, committed-source check,
                    atomic JSON writes

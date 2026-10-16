@@ -45,7 +45,7 @@ def wilson(wins: int, count: int) -> list[float] | None:
 
 def trial_metrics(directory: Path, result: dict) -> dict:
     kinds, rejections, ages, plan_ages, calls, snapshot_ages = Counter(), Counter(), [], [], [], []
-    processing, models, seen_calls = [], set(), set()
+    processing, models, backends, seen_calls = [], set(), set(), set()
     trace = directory / "trace.jsonl"
     if trace.exists():
         with trace.open() as handle:
@@ -77,6 +77,8 @@ def trial_metrics(directory: Path, result: dict) -> dict:
                             processing.append(attempt["provider_processing_ms"] / 1000)
                         if attempt.get("actual_model"):
                             models.add(attempt["actual_model"])
+                        if attempt.get("backend"):
+                            backends.add(attempt["backend"])
                 elif kind == "ack":
                     # Empty batches do not count as action latency.
                     if (event.get("ack") or {}).get("results"):
@@ -94,6 +96,7 @@ def trial_metrics(directory: Path, result: dict) -> dict:
         "snapshot_age_at_decision_s": distribution(snapshot_ages),
         "call_seconds": distribution(calls), "rejections": dict(rejections),
         "provider_processing_seconds": distribution(processing), "actual_models": sorted(models),
+        "actual_backends": sorted(backends),
         "decisions_per_battle_s": result.get("decisions", 0) / duration if duration > 0 else None,
         "trace": dict(kinds),
     }
@@ -191,6 +194,8 @@ def collect(jobs: list[Path]) -> dict:
                                 "observe_ms": config.get("observe_ms"),
                                 "tick_ms": config.get("tick_ms"),
                                 "interval_ms": config.get("interval_ms"),
+                                "provider": config.get("provider", "openai"),
+                                "model_routing": config.get("model_routing", {}),
                                 "model": config.get("model"), "effort": config.get("effort")},
                                sort_keys=True)
         # Retain setup-only jobs in graphical reports, including their historical

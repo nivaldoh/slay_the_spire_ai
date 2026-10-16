@@ -15,8 +15,9 @@ from functools import partial
 from pathlib import Path
 
 from gameai.ledger import Ledger
-from gameai.llm import EFFORTS, PRICES, api_key, post
+from gameai.llm import api_key, post
 from gameai.provenance import sha256
+from gameai.providers import get_provider, routing, validate
 from twwarhammer3.battle import commander, llm
 from twwarhammer3.battle.scripted import POLICIES
 from twwarhammer3.battle.skills import ProbeAbilities, Skills
@@ -38,7 +39,10 @@ def policy_parts(name: str, config: dict) -> tuple[str, str | None, str | None]:
         if separator:
             raise ValueError(f"{name}: only {', '.join(sorted(MODEL_POLICIES))} take @MODEL")
         return name, None, None
-    model, _, effort = suffix.partition("/")
+    # OpenRouter IDs already contain a slash (vendor/model); effort is the final suffix.
+    model, effort = suffix, ""
+    if suffix.count("/") > (1 if config.get("provider") == "openrouter" else 0):
+        model, _, effort = suffix.rpartition("/")
     return base, model or config.get("model"), effort or config.get("effort")
 
 
@@ -49,11 +53,13 @@ def rotation(config: dict) -> list[dict]:
         raise ValueError("delay seconds must be finite and nonnegative")
     # Two names are one controller when their base, model and effort match.
     identity = {name: policy_parts(name, config) for name in names}
-    for name, (base, _, _) in identity.items():
-        model, slash, effort = name.partition("@")[2].partition("/")
-        if "@" in name and (model not in PRICES or slash and effort not in EFFORTS):
-            raise ValueError(f"{name}: use {base}@MODEL or {base}@MODEL/EFFORT with a model in "
-                             f"{', '.join(sorted(PRICES))} and an effort in {', '.join(EFFORTS)}")
+    provider = config.get("provider", "openai")
+    get_provider(provider)
+    for name, (base, model, effort) in identity.items():
+        if base in MODEL_POLICIES:
+            if name.endswith("@") or name.endswith("/"):
+                model = None  # an explicit empty suffix must not fall back to job defaults
+            validate(provider, model, effort)
         if base not in BUILTINS and base not in MODEL_POLICIES:
             controller_class(name)  # fail before launching on an invalid import
     trials = [{"policy": name, "delay_ms": round(delay * 1000)}
@@ -103,6 +109,9 @@ def card(name: str, policy, config: dict) -> dict:
         "description": inspect.getdoc(type(policy)),
         "cost_source": "WH3 ledger" if base in MODEL_POLICIES else "self-reported",
     }
+    if model:
+        provider = config.get("provider", "openai")
+        result.update(provider=provider, routing=routing(provider, model))
     if path:
         revision = subprocess.run(["git", "-C", str(Path(path).parent), "rev-parse", "HEAD"],
                                   capture_output=True, text=True)
@@ -118,12 +127,20 @@ def factories(config: dict) -> dict:
     if models:
         if config.get("budget_usd") is None:
             raise ValueError("model controllers require --budget-usd")
+        provider = config.get("provider", "openai")
+        for name in models:
+            _, model, effort = parts[name]
+            validate(provider, model, effort)
+        config["model_routing"] = {parts[name][1]: routing(provider, parts[name][1])
+                                   for name in sorted(models)}
+        if provider == "openrouter" and config["budget_usd"] > 50:
+            raise ValueError("OpenRouter's cumulative budget cannot exceed $50")
         ledger = Ledger(Path(config["ledger"]), config["budget_usd"])
-        send = partial(post, api_key(), record_transport=True)
+        send = partial(post, api_key(provider), provider=provider, record_transport=True)
         for name in models:
             base, model, effort = parts[name]
             kind = commander.CommanderPolicy if base == "commander" else llm.LLMPolicy
-            makers[name] = partial(kind, model, effort, ledger, send=send,
+            makers[name] = partial(kind, model, effort, ledger, send=send, provider=provider,
                                    system_prompt=MODEL_PROMPTS[base].read_text())
     for name in parts.keys() - models:
         makers[name] = controller_class(name)

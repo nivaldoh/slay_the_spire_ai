@@ -180,6 +180,8 @@ def commander(trial: dict, definition: dict) -> dict:
     except ValueError:
         base, model, effort = trial["policy"], None, None
     model, effort = card.get("model") or model, card.get("effort") or effort
+    provider = card.get("provider") or definition.get("provider", "openai")
+    gateway = "via OpenRouter" if provider == "openrouter" else None
     extra = f"+{trial['delay_ms'] / 1000:g} s added observation age" if trial.get(
         "delay_ms") else None
 
@@ -191,8 +193,8 @@ def commander(trial: dict, definition: dict) -> dict:
     if base in MODEL_POLICIES or card.get("kind") in ("model", "hybrid", "demo"):
         name = model or definition.get("model") or base
         return {"kind": "model", "family": name, "name": name,
-                "detail": detail(effort and f"{effort} reasoning", PROMPTS.get(base)),
-                "short": detail(effort and f"{effort} reasoning", VARIANTS.get(base)),
+                "detail": detail(effort and f"{effort} reasoning", PROMPTS.get(base), gateway),
+                "short": detail(effort and f"{effort} reasoning", VARIANTS.get(base), gateway),
                 "prompt": PROMPTS.get(base)}
     if base in SCRIPTED:
         name, rule = SCRIPTED[base]
@@ -276,7 +278,8 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
         # whose controller failed to build has no card, so it claims no identity.
         for row in group["controllers"]:
             cards = {_json({key: trial["card"].get(key) for key in
-                            ("kind", "model", "effort", "source_sha256", "timing")})
+                            ("kind", "model", "effort", "provider", "routing",
+                             "source_sha256", "timing")})
                      for trial in group["trials"]
                      if trial["controller"] == row["controller"] and trial.get("card")}
             if len(cards) > 1:

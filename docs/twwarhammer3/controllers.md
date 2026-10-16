@@ -163,82 +163,66 @@ low effort (log.md, "Skills and commander v1") measured mean think time 6.4 s fo
 very little at low effort), and $0.02, $0.18 and $1.17 per battle. One battle per model
 measures latency and cost, not strength.
 
-## OpenRouter design (not implemented)
+## OpenRouter
 
-2026-10-16: the owner prepared an OpenRouter key file and set a $50 budget, then asked
-to stop after repository cleanup and design. No provider implementation changes remain.
-The file at `~/.config/openrouter/api_key` has mode `0600`; a read-only authentication
-and budget check reported $50 remaining and zero usage. The request process read the
-key without printing it. Selected catalogue metadata and budget fields are saved under
-`runs/twwarhammer3/capability-probes/openrouter-20261016/`. No paid model calls ran.
+The shared `gameai.llm.Model` supports direct OpenAI (the default) and OpenRouter's
+[stateless Responses endpoint](https://openrouter.ai/docs/api_reference/responses/overview).
+The WH3 CLI selects one gateway per job with `--provider openai|openrouter`; separate
+jobs can appear in the same report. Prompts, history, schemas and action validation
+stay in the game policies. No SDK dependency or provider inheritance hierarchy is needed.
+`gameai/providers.py` holds endpoints, credential variable names, prices and settings;
+`llm.py` retains transport, accounting and the reply loop.
 
-**Keep the existing shared model boundary.** `gameai.llm.Model` already owns the
-call/reply loop used by both games. OpenRouter documents an
-[OpenAI-compatible Responses endpoint](https://openrouter.ai/docs/api_reference/responses/overview),
-which matches our stateless `store: false` usage. Start with that protocol; live
-structured-output checks must establish compatibility before claiming game support.
-There is no reason yet to add an SDK dependency or a general provider framework.
+OpenRouter credentials come from `OPENROUTER_API_KEY` or the file named by
+`OPENROUTER_API_KEY_FILE`. The request process reads the file; keys never enter prompts,
+traces or command arguments. The owner's `~/.config/openrouter/api_key` has mode `0600`.
+A read-only preflight reported $50 remaining and zero usage on 2026-10-16. Sanitized
+metadata is in `runs/twwarhammer3/capability-probes/openrouter-20261016/`.
 
-| Responsibility | Proposed home |
-|---|---|
-| Budget reservation, reply parsing/retries, usage totals | Existing `gameai/llm.py` and `ledger.py` |
-| Endpoint, credential source, supported model settings, prices and provider-specific request/usage fields | One small `gameai/providers.py`; plain data/functions, no plugin registry or inheritance tree |
-| Prompt, history, decision schema and action validation | Existing game policies; provider knowledge stays out of them |
-| Provider selection, model-name parsing and ledger choice | WH3 CLI/controller factory; recorded in configuration and controller cards |
-| Accounting/provenance in comparisons | Existing report collector and readers; distinguish gateway and routed backend |
+Initial models, with enforced routing ceilings in USD per million tokens:
 
-Proposed first scope: shared API support plus WH3 entry points, preserving direct
-OpenAI defaults and Spire's existing serialized traces. Add `--provider openai|openrouter`
-at job level. A job uses one gateway initially; comparisons can combine separate jobs
-without introducing another provider syntax inside every policy name. OpenRouter reads
-`OPENROUTER_API_KEY` or `OPENROUTER_API_KEY_FILE`; only the application reads the secret.
+| Model ID | Input ceiling | Output ceiling | Declared efforts |
+|---|---:|---:|---|
+| `z-ai/glm-5.3` | $1.40 | $4.80 | low, high |
+| `moonshotai/kimi-k3` | $3.00 | $15.00 | low, high |
+| `stepfun/step-5-preview` | $1.00 | $2.70 | low, high |
 
-**Concrete issues to handle when implementation resumes:**
-- Both CLIs and WH3 rotation validation import the OpenAI `PRICES` list. Keep model and
-  effort validation with the selected provider, before game launch; unsupported options
-  must not be silently dropped. Do not fetch a remote catalogue for `--help` or tests.
-- `policy_parts` currently splits at the first `/`, which would corrupt `z-ai/glm-5.3`.
-  Recognize an optional final effort suffix, validate the remaining complete model ID,
-  and preserve existing OpenAI policy names and historical report parsing.
-- The current reservation counts instruction/prompt bytes but omits schema overhead;
-  transport retries are not individually represented in spend records. Include the
-  complete request in the estimate and conservatively account for attempts whose
-  billing is uncertain before enabling another paid route. Missing usage is never zero.
-- OpenRouter routes across backends with different prices and settings. Freeze routing
-  choices and a pricing snapshot before a job; enforce matching price ceilings or a
-  pinned backend so reservations cannot use a cheaper route's rate. Record requested and
-  returned model, gateway, routed backend when available, settings, actual usage/cost,
-  retries and latency. An unavailable field stays unavailable.
-- OpenRouter's [usage accounting](https://openrouter.ai/docs/cookbook/administration/usage-accounting)
-  supplies billed cost. Use it for charges and conservative prices for reservations;
-  verify the Responses endpoint's exact fields in a live smoke. The proposed WH3 ledger
-  is `runs/twwarhammer3/openrouter-spend.jsonl`, shared by smoke calls and later WH3 jobs,
-  capped cumulatively at $50. Existing OpenAI ledgers and caps stay intact. Extending
-  OpenRouter to another game must preserve the shared $50 allowance, not grant another.
+These are leading open-weight candidates selected during the design review, not a
+ranking inferred from our tests. Catalogue metadata was checked on 2026-10-16. Live
+structured-output validation is pending; the declared settings are not yet battle-tested.
+The job default is GLM-5.3 at low effort. Rotations preserve the full vendor/model ID:
+`llm_rules@z-ai/glm-5.3, llm_rules@moonshotai/kimi-k3/high` (omit the space in the CLI).
+Unsupported models/efforts fail before game launch; historical readers do not consult
+today's catalogue.
 
-**Deferred validation, after implementation is requested:** offline regressions for key
-redaction, route/model parsing, capability rejection, schema requests, billed and missing
-usage, retry accounting and unchanged OpenAI behavior. Refresh the key's remaining
-budget using the documented [key metadata endpoint](https://openrouter.ai/docs/api/api-reference/api-keys/get-current-api-key),
-printing only budget fields. Make one tiny structured-output request per model, with
-a combined $0.25 incremental ceiling including retries. Confirm the shared model/parser
-path, response format, model identity, latency and ledger charges; stop and inspect on
-failure. These are API smokes, not WH3 battles or model rankings.
+Requests require backend parameter support and enforce the declared
+[price ceilings](https://openrouter.ai/docs/guides/routing/provider-selection), including
+zero per-request fees. Reservations count serialized schema/prompt bytes plus framing
+allowance, assume no cache discount and cover all three transport attempts. Reported
+[usage.cost](https://openrouter.ai/docs/cookbook/administration/usage-accounting) is charged;
+missing/invalid cost charges the reservation and stops. Attempts with uncertain billing
+(timeouts or server failures) are conservatively charged at their reserved rate, even
+when a later retry succeeds. Actual provider billing may be lower than these estimates.
+An abrupt process death can still interrupt local accounting; the provider's key cap
+is the final account-wide limit.
 
-Candidate smoke models, checked against the
-[Artificial Analysis leaderboard](https://artificialanalysis.ai/leaderboards/models)
-and OpenRouter listings on 2026-10-16: [GLM-5.3](https://openrouter.ai/z-ai/glm-5.3),
-[Kimi K3](https://openrouter.ai/moonshotai/kimi-k3), and
-[Step 5 Preview](https://openrouter.ai/stepfun/step-5-preview). They are leading open-weight
-models (AA index rounded to 45, 44 and 44 at the listed configurations), not a claim
-that every leaderboard ranks them as the top three. Recheck routes, prices and supported
-efforts before calling; a tiny smoke does not reproduce the leaderboard's effort budget.
+OpenRouter's WH3 ledger is `runs/twwarhammer3/openrouter-spend.jsonl`. The job's
+`--budget-usd` is cumulative, not an additional allowance, and cannot exceed $50. API
+smokes and battle jobs use the same file. `spend --provider openrouter` reads it. Keep
+existing OpenAI ledgers and caps intact; never reset a ledger. A future second game
+must share this OpenRouter allowance, not create another $50 allocation.
 
-**Cleanup boundary:** remove stale instructions and reduce duplicated documentation
-now. Keep run evidence, ledgers, paused Spire work, unique old branches and the owner's
-untracked `.claude/settings.json`. Lua cleanup requires engine validation and the large
-report scripts are outside this integration. Move only the provider responsibilities
-listed above when needed; do not split working modules just to reduce their line counts.
+Controller cards/configurations record gateway and routing limits. Responses record
+actual model, backend and gateway retry count when supplied; absent metadata remains
+unavailable. The report collector separates gateways/routing settings and exposes them
+in its saved definitions. The CSV register also records the gateway; old rows remain
+readable. OpenAI defaults, successful Spire trace fields and all prompt text are unchanged.
+
+Validation proceeds through offline regressions, then one tiny request per model using
+WH3's real reply schema and parser, capped at $0.25 combined including retries. These
+are API checks, not battles or evidence about tactical ability. Review each failure
+before spending again. Subsequent calibration follows the
+[benchmark plan](benchmark.md#implementation-plan).
 
 ## Candidate changes for the next version
 

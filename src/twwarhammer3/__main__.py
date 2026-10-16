@@ -7,10 +7,10 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from gameai.llm import EFFORTS, PRICES
 from gameai.provenance import write_json
+from gameai.providers import PROVIDERS, get_provider
 from twwarhammer3.battle.controllers import BUILTINS, MODEL_POLICIES
-from twwarhammer3.battle.llm import LEDGER_PATH
+from twwarhammer3.battle.llm import LEDGER_PATH, OPENROUTER_LEDGER_PATH
 from twwarhammer3.battle.stats import JOBS_ROOT, RESULTS_PATH
 from twwarhammer3.battle.watch import STALL_S
 
@@ -62,9 +62,12 @@ def main() -> int:
                       help=f"{', '.join(sorted(BUILTINS.keys() | MODEL_POLICIES))} or"
                       " package.module:Class; comma-separated names rotate; a model policy"
                       " takes its own model and effort as NAME@MODEL or NAME@MODEL/EFFORT")
-    play.add_argument("--model", default="gpt-6-luna", choices=sorted(PRICES),
-                      help="the model of a model policy named without @MODEL")
-    play.add_argument("--effort", default="low", choices=EFFORTS,
+    play.add_argument("--provider", default="openai", choices=PROVIDERS,
+                      help="API gateway for every model controller in this job")
+    play.add_argument("--model", default=None,
+                      help="model for policies without @MODEL; default: gpt-6-luna (OpenAI),"
+                      " z-ai/glm-5.3 (OpenRouter)")
+    play.add_argument("--effort", default="low",
                       help="the reasoning effort of a model policy named without /EFFORT")
     play.add_argument("--budget-usd", type=float, default=None,
                       help=f"required with a model policy: {', '.join(sorted(MODEL_POLICIES))}")
@@ -120,7 +123,8 @@ def main() -> int:
                         help="writes STEM.txt, STEM.json and the offline field report STEM.html")
 
     spend = commands.add_parser("spend", help="Print the API ledger total")
-    spend.add_argument("--ledger", type=Path, default=LEDGER_PATH)
+    spend.add_argument("--provider", default="openai", choices=PROVIDERS)
+    spend.add_argument("--ledger", type=Path, default=None, help="override the provider's ledger")
 
     args = parser.parse_args()
 
@@ -221,7 +225,9 @@ def main() -> int:
 
         config = {key: value for key, value in vars(args).items()
                   if key not in ("command", "output")}
-        config.update(ledger=str(LEDGER_PATH), results=str(RESULTS_PATH))
+        config["model"] = args.model or next(iter(get_provider(args.provider).prices))
+        ledger = OPENROUTER_LEDGER_PATH if args.provider == "openrouter" else LEDGER_PATH
+        config.update(ledger=str(ledger), results=str(RESULTS_PATH))
         try:
             rotation(config)
             makers = factories(config)
@@ -295,7 +301,9 @@ def main() -> int:
     if args.command == "spend":
         from gameai.ledger import Ledger
 
-        print(f"${Ledger(args.ledger, budget_usd=0).spent:.4f} spent ({args.ledger})")
+        path = args.ledger or (OPENROUTER_LEDGER_PATH if args.provider == "openrouter"
+                               else LEDGER_PATH)
+        print(f"${Ledger(path, budget_usd=0).spent:.4f} spent ({path})")
         return 0
     return 1
 

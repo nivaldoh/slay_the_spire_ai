@@ -38,7 +38,7 @@ def test_api_key_file_and_transient_retry_without_leaking_the_key(tmp_path, monk
 
     monkeypatch.setattr(api.urllib.request, "urlopen", urlopen)
     monkeypatch.setattr(api.time, "sleep", lambda seconds: None)
-    assert api.post(api.api_key(), {}) == {"id": "ok"}
+    assert api.post(api.api_key(), {}) == {"id": "ok", "_uncertain_attempts": 1}
     with pytest.raises(api.APIError) as error:
         api.post(api.api_key(), {})
     assert "sk-test-secret" not in str(error.value) and "<key>" in str(error.value)
@@ -58,7 +58,7 @@ def test_ask_retries_rejected_replies_with_feedback_then_gives_up(tmp_path):
         return text
 
     model = api.Model("gpt-6-luna", "none", Ledger(tmp_path / "spend.jsonl", 1.0), send=send,
-                      instructions="Press a key.", max_output_tokens=50)
+                      instructions="Press a key.", max_output_tokens=200)
     value, attempts = model.ask("Wall ahead.", {}, parse, retries=2)
     assert value == "up" and [a.get("error") for a in attempts] == [
         "unknown key left", "unknown key jump", None]

@@ -518,7 +518,7 @@ after M1, with $6.04 unallocated; this proposal neither spends it nor raises the
 first tranche for at most two families: the exact hypothesis, one-factor variants,
 controller/probe, observable evidence, battle count, runtime/cost allowance and decision
 rule. That makes implementation reviewable before any new experiments. OpenRouter now
-has a separate [cleanup and integration proposal](controllers.md#openrouter-design-not-implemented);
+has a separate [cleanup and integration proposal](controllers.md#openrouter);
 added-age studies, broader controller comparisons, report polish and custom evacuation
 remain later work unless a specific calibration question needs them.
 

@@ -40,7 +40,7 @@ def test_importable_controller_and_fresh_instances():
 
 
 def test_each_model_controller_gets_its_own_prompt_and_the_shared_budget(tmp_path, monkeypatch):
-    monkeypatch.setattr(controllers, "api_key", lambda: "test-only")
+    monkeypatch.setattr(controllers, "api_key", lambda provider="openai": "test-only")
     assert controllers.MODEL_POLICIES == frozenset({"llm", "llm_rules", "commander"})
     config = {"policy": "llm,llm_rules,commander", "model": "gpt-6-luna", "effort": "low",
               "ledger": str(tmp_path / "spend.jsonl"), "budget_usd": 1}
@@ -103,7 +103,7 @@ def test_cards_and_makers_use_each_controllers_model_and_effort(tmp_path, monkey
     built = []
 
     class Fake:
-        def __init__(self, model, effort, ledger, *, send, system_prompt):
+        def __init__(self, model, effort, ledger, *, send, system_prompt, provider="openai"):
             built.append(self)
             self.model, self.effort, self.ledger = model, effort, ledger
             self.send, self.system_prompt = send, system_prompt
@@ -111,7 +111,7 @@ def test_cards_and_makers_use_each_controllers_model_and_effort(tmp_path, monkey
     class FakeCommander(Fake):
         pass
 
-    monkeypatch.setattr(controllers, "api_key", lambda: "test-only")
+    monkeypatch.setattr(controllers, "api_key", lambda provider="openai": "test-only")
     monkeypatch.setattr(llm, "LLMPolicy", Fake)
     monkeypatch.setattr(commander, "CommanderPolicy", FakeCommander)
     config = {**JOB, "policy": "llm_rules,llm_rules@gpt-6-luna/medium,commander@gpt-6-luna,hold",
@@ -143,3 +143,32 @@ def test_recorded_versions_match_the_logs_on_main_table():
         row = next(line for line in table.splitlines() if line.startswith(f"| `{name}` |"))
         assert row.split("|")[2].split()[0] == controllers.VERSIONS[name]
     assert controllers.VERSIONS["llm_rules"] == controllers.VERSIONS["llm"]
+
+
+def test_openrouter_rotation_keeps_vendor_model_ids_and_final_effort_suffix(tmp_path, monkeypatch):
+    names = ["llm_rules@z-ai/glm-5.3", "llm_rules@moonshotai/kimi-k3/high",
+             "commander@stepfun/step-5-preview"]
+    config = {"provider": "openrouter", "policy": ",".join(names), "effort": "low",
+              "ledger": str(tmp_path / "router.jsonl"), "budget_usd": .25}
+    assert controllers.policy_parts(names[0], config) == ("llm_rules", "z-ai/glm-5.3", "low")
+    assert controllers.policy_parts(names[1], config) == ("llm_rules", "moonshotai/kimi-k3", "high")
+    assert len(controllers.rotation(config)) == 3
+    selected = []
+    monkeypatch.setattr(controllers, "api_key", lambda provider: selected.append(provider) or "key")
+    makers = controllers.factories(config)
+    policy = makers[names[0]]()
+    assert selected == ["openrouter"] and policy.api.provider == "openrouter"
+    card = controllers.card(names[0], policy, config)
+    assert card["provider"] == "openrouter" and card["routing"]["provider"]["require_parameters"]
+    assert config["model_routing"]["z-ai/glm-5.3"] == card["routing"]
+    with pytest.raises(ValueError, match="invalid choice"):
+        controllers.rotation({**config, "provider": "openai"})
+    with pytest.raises(ValueError, match="cannot exceed"):
+        controllers.factories({**config, "budget_usd": 51})
+
+
+@pytest.mark.parametrize("policy", ["llm_rules@z-ai/glm-5.3/", "llm_rules@z-ai/glm-5.3/max",
+                                   "llm_rules@", "llm_rules@gpt-6-luna"])
+def test_openrouter_rejects_unsupported_settings_before_launch(policy):
+    with pytest.raises(ValueError, match="invalid choice"):
+        controllers.rotation({"policy": policy, "provider": "openrouter", "effort": "low"})

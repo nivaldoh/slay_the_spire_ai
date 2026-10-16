@@ -37,7 +37,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 - **vN**: a version of the `llm` or `commander` prompt and harness; `v1.N` the `skills`
   executor. Each has a log.md entry. The register's `harness` column is the `-vN-` segment
   of the job name (`stats.harness_version`), blank for `bench-*` jobs.
-- **b1-b12**: benchmark harness revisions, each logged in log.md.
+- **b1-b13**: benchmark harness revisions, each logged in log.md.
 - **G1, G2, C1**: historical calibration designs in [benchmark.md](benchmark.md).
   G1 is incomplete, C1 finished and G2 never ran. The 2026-10-15 plan retires win-rate
   admission; added observation-age experiments (0, 6 and 10 s) remain deferred.
@@ -129,6 +129,9 @@ uv run pytest tests/twwarhammer3                          # Lua (lupa) and image
   rotates several models: `llm_rules@gpt-6-luna` or `llm_rules@gpt-6-luna/medium`. The key
   comes from `OPENAI_API_KEY` or the file named by `SPIRE_OPENAI_KEY_FILE` (the shared
   `gameai.llm` keeps Spire's name).
+- `--provider openrouter` selects GLM-5.3 by default and the separate OpenRouter ledger.
+  Models/efforts and key-file setup: [OpenRouter](controllers.md#openrouter).
+  `spend --provider openrouter` prints that ledger.
 - Comma-separated `--policy` names rotate in an order drawn from `--rotation-seed`;
   `--delay-seconds 0,6,10` crosses them with observation-age arms; `--episodes` defaults
   to one per combination. `--policy package.module:Class` loads an outside controller
@@ -177,10 +180,9 @@ candidates with live evidence remain; the custom evacuation pilot is deferred. T
 overnight matched round M1 (50 battles including two scripted baselines, three models)
 is complete; M1d added four scripted battles.
 
-OpenRouter cleanup/design is now recorded in
-[controllers.md](controllers.md#openrouter-design-not-implemented). The owner prepared
-a key and a separate $50 budget, then requested stopping before implementation and
-the three API checks. No game launch or paid call is scheduled by that proposal.
+OpenRouter implementation is described in [controllers.md](controllers.md#openrouter).
+The owner resumed implementation and benchmark/report work after the cleanup review.
+The separate $50 cap stays in place; three small schema checks precede any battles.
 
 1. **Planning only, owner direction after M1 (2026-10-16): keep the core provisional.**
    Strongest-model evidence is still missing; the audit's recommendations are development

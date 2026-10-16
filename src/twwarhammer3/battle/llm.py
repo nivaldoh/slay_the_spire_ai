@@ -29,6 +29,7 @@ SYSTEM_PROMPT_PATH = REPO_ROOT / "configs/twwarhammer3/system_prompt.md"
 RULES_PROMPT_PATH = SYSTEM_PROMPT_PATH.with_name("rules_prompt.md")
 # Every WH3 job shares this spend file, and so one budget; Spire keeps its own.
 LEDGER_PATH = REPO_ROOT / "runs/twwarhammer3/llm-spend.jsonl"
+OPENROUTER_LEDGER_PATH = LEDGER_PATH.with_name("openrouter-spend.jsonl")
 MAX_OUTPUT_TOKENS = 4000
 NOTES_LIMIT = 2000
 HISTORY_LENGTH = 8
@@ -563,8 +564,8 @@ class LLMPolicy:
     """One instance per episode: its notes, history and last-seen map are the memory."""
 
     def __init__(self, model: str, effort: str, ledger: Ledger, *, send=None,
-                 system_prompt: str | None = None):
-        self.api = Model(model, effort, ledger, send=send,
+                 system_prompt: str | None = None, provider: str = "openai"):
+        self.api = Model(model, effort, ledger, send=send, provider=provider,
                          instructions=system_prompt or SYSTEM_PROMPT_PATH.read_text(),
                          max_output_tokens=MAX_OUTPUT_TOKENS)
         self.totals = self.api.totals

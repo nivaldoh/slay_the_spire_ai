@@ -14,6 +14,24 @@ from wh3_fixtures import configured_job, embedded, make_job
 from twwarhammer3.battle import report, report_html, setup
 
 
+def test_gateway_and_routing_settings_are_preserved_without_pooling(tmp_path):
+    jobs = [configured_job(tmp_path, name) for name in ("direct", "router", "router-other-route")]
+    for index, job in enumerate(jobs[1:]):
+        path = job / "manifest.json"
+        manifest = json.loads(path.read_text())
+        manifest["config"].update(provider="openrouter", model_routing={"model-a": {
+            "provider": {"max_price": {"prompt": index + 1}}}})
+        path.write_text(json.dumps(manifest))
+    source = report.collect(jobs)
+    assert len(source["groups"]) == 3
+    assert {g["definition"]["provider"] for g in source["groups"]} == {"openai", "openrouter"}
+    data = report_html.display_data(source)
+    rows = data["scenarios"][0]["rows"]
+    assert len(rows) == 2 and sum("via OpenRouter" in row["detail"] for row in rows) == 1
+    assert source["groups"][1]["definition"]["model_routing"] != source[
+        "groups"][2]["definition"]["model_routing"]
+
+
 def test_curated_suite_titles_distinguish_related_challenges():
     notes = json.loads(report_html.NOTES_PATH.read_text())["scenarios"]
     names = ("dwf-sla-taurox", "dwf-sla-herald", "dwf-sla-herald-hard",

@@ -35,16 +35,36 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v5 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | b11 smoke, Luna low: lost `dwf-line-skv-swarm` at 593 s ($0.054) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b12 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Exploratory screens and M1 completed; recorded rematch starts matched. Custom evacuation deferred: authored placement check fails in the engine |
+| benchmark harness | b13 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Exploratory screens and M1 completed; recorded rematch starts matched. Custom evacuation deferred: authored placement check fails in the engine |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build: 76 input jobs, 93 completed battles shown across six candidate scenarios; setup failures and variants retained in JSON/text |
+
+## 2026-10-16: Harness b13, shared OpenRouter transport
+
+Resumed after the owner requested proceeding with the goal. Added OpenRouter to the
+existing Responses model loop, with three declared models (GLM-5.3, Kimi K3, Step 5
+Preview), per-provider key loading, WH3 selection and separate cumulative spend ledger.
+Vendor/model IDs survive rotation parsing. Controller cards, collector groups and the
+register retain gateway/routing provenance. Prompt versions and the environment track
+are unchanged; direct OpenAI remains the default.
+
+Reservations now include schema/framing overhead and all transport retries. Uncertain
+attempts receive conservative estimated charges; OpenRouter's reported cost supplies
+normal charges, with missing costs stopping further calls. Enforced routing ceilings
+prevent a different backend price from silently invalidating the estimate. The local
+ledger is not crash-atomic; the provider key's $50 cap remains the account-wide backstop.
+
+Validation before paid checks: all 1,053 tests passed (14 optional tests skipped), Ruff
+and `git diff --check` passed. The first full-suite invocation had 26 socket permission
+failures under the sandbox; the unrestricted rerun passed. No game launched. The three
+schema checks are next, capped at $0.25 combined on the OpenRouter ledger.
 
 ## 2026-10-16: Cleanup and OpenRouter design only
 
 The owner prepared an OpenRouter key and set a separate $50 budget, requested support
 and three leading open-weight model checks, then clarified that this turn should stop
-after cleanup/design. The [proposal](controllers.md#openrouter-design-not-implemented)
+after cleanup/design. The [proposal](controllers.md#openrouter)
 reuses the shared model loop with a small provider boundary; it records the model-ID
 parser conflict, provider validation, routing provenance and spend-accounting work.
 Unfinished provider code was removed when stopping at cleanup/design; no implementation

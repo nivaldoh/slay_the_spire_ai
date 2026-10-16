@@ -9,7 +9,7 @@ from wh3_fixtures import configured_job, embedded, make_job
 
 from twwarhammer3.__main__ import add_session_arguments, main
 from twwarhammer3.battle import play, report
-from twwarhammer3.battle.llm import LEDGER_PATH
+from twwarhammer3.battle.llm import LEDGER_PATH, OPENROUTER_LEDGER_PATH
 from twwarhammer3.battle.scripted import Hold
 from twwarhammer3.battle.stats import RESULTS_PATH
 
@@ -85,6 +85,25 @@ def test_cli_play_config_has_no_wait_and_the_fixed_ledger_and_register(tmp_path,
     assert config["episode_timeout"] is None and config["run_timeout"] is None  # derived later
     assert not {"menu", "autostart", "no_menu", "no_autostart", "enabled"} & set(config)
     assert seen["makers"] == {"hold": Hold} and seen["output"] == tmp_path / "job"
+
+
+def test_cli_openrouter_selects_its_own_ledger_and_default_model(tmp_path, monkeypatch):
+    from twwarhammer3.battle import controllers
+
+    seen = {}
+    monkeypatch.setattr(controllers, "api_key", lambda provider: "test-only")
+
+    def fake_play(output, config, *, makers):
+        seen.update(config)
+        assert makers["llm"]().api.provider == "openrouter"
+        return {"status": "completed"}
+
+    monkeypatch.setattr(play, "play", fake_play)
+    monkeypatch.setattr(sys, "argv", ["wh3", "play", "--provider", "openrouter",
+        "--scenario", "kho5-dwf5", "--budget-usd", "50", "--output", str(tmp_path / "job")])
+    assert main() == 0
+    assert seen["ledger"] == str(OPENROUTER_LEDGER_PATH)
+    assert seen["model"] == "z-ai/glm-5.3" and seen["provider"] == "openrouter"
 
 
 def test_report_command_prints_the_text_and_saves_text_json_and_html(tmp_path, monkeypatch,

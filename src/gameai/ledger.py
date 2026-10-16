@@ -8,6 +8,7 @@ it and charges the reported cost after.
 from __future__ import annotations
 
 import json
+import math
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -20,12 +21,16 @@ class Ledger:
     """Append-only spend record; every job naming the same file shares one budget."""
 
     def __init__(self, path: Path, budget_usd: float):
+        if not math.isfinite(budget_usd) or budget_usd < 0:
+            raise ValueError("Budget must be finite and nonnegative")
         self.path = Path(path)
         self.budget = budget_usd
         lines = self.path.read_text().splitlines() if self.path.exists() else []
         self.spent = sum(json.loads(line)["usd"] for line in lines)
 
     def reserve(self, usd: float) -> None:
+        if not math.isfinite(usd) or usd < 0:
+            raise ValueError("Reservation must be finite and nonnegative")
         if self.spent + usd > self.budget:
             raise BudgetExhausted(
                 f"Spent ${self.spent:.4f} of ${self.budget:.2f}; next call may cost ${usd:.4f}"

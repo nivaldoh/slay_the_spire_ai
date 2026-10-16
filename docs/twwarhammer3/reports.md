@@ -21,10 +21,10 @@ frames and stills from `battle/capture.py` during play ([integration.md](integra
 Owner feedback still to implement (the other notes of 2026-10-16 are in the page below):
 
 11. OpenRouter support for more models is specified in the
-    [provider design](controllers.md#openrouter-design-not-implemented). On 2026-10-16
-    the owner set a $50 budget and requested stopping after cleanup/design. No
-    implementation changes remain; a read-only key/budget check passed, while the
-    three model API checks remain deferred. This is shared API work, not a report feature.
+    [provider design](controllers.md#openrouter). On 2026-10-16
+    the owner set a $50 budget and later resumed implementation. Shared transport and
+    WH3 selection are implemented; three tiny schema checks precede battle use.
+    The collector records gateway/routing settings; the page labels OpenRouter rows.
 
 Not done with the rest, and why:
 

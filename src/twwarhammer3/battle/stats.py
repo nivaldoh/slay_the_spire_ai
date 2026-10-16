@@ -21,7 +21,7 @@ FIELDS = [
     "mode", "speed", "interval_s", "outcome", "battle_s", "own_left", "enemy_left",
     "decisions", "invalid", "delay_s", "usd", "battle_type", "victory_held", "supplies_left",
     "key_held", "reinforcements_by_type", "own_active", "enemy_active", "added_age_s",
-    "ended_by",
+    "ended_by", "provider",
 ]
 
 
@@ -53,6 +53,7 @@ def row(job: Path, episode: Path) -> dict:
         "policy": policy,
         "model": model or "",
         "effort": effort or "",
+        "provider": config.get("provider", "openai") if model else "",
         "harness": harness_version(job.name),
         "source": manifest["source_revision"][:7],
         "mode": "paused" if config.get("pause") else "realtime",
@@ -111,8 +112,11 @@ def summary(path: Path) -> str:
     groups = defaultdict(list)
     with path.open(newline="") as handle:
         for item in csv.DictReader(handle):
+            model = item["model"]
+            if item.get("provider") == "openrouter":
+                model += " (OpenRouter)"
             # Scripted policies have no harness version: their source tells revisions apart.
-            groups[(item["scenario"], item["policy"], item["model"], item["effort"],
+            groups[(item["scenario"], item["policy"], model, item["effort"],
                     item["harness"] or item["source"], item["mode"])].append(item)
     lines = ["| Scenario | Policy | Model | Effort | Harness | Mode | Episodes | Won | Lost | "
              "Draw | Other | Mean battle s | Own left | Enemy left | Mean delay s | USD |",
