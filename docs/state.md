@@ -1,15 +1,14 @@
 # Project state
 
-Updated 2026-10-16 01:48 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 02:14 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-WH3 is stopped after completed siege and survival screens. Next: conquest, then the
-battery-evacuation pilot. All screens remain exploratory; see the
-[b12 log](twwarhammer3/log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
-Ledger: $16.3458 of $25.
+WH3 is stopped after the siege, survival and Conquest screens. Conquest is demoted to
+reference evidence because its single point does not meet the planned novelty criterion.
+Next: the battery-evacuation pilot. Ledger: $16.9058 of $25.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -20,32 +19,23 @@ command; clear it when the job stops.
 [log](twwarhammer3/log.md) (newest first, with the versions on `main` at the top),
 [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm` v17 (`llm_rules` shares its input), `commander` v4 over the `skills`
-  executor v1.2, the scripted `attack_nearest`, `rush_nearest` and `hold`, and benchmark
-  harness b11 / evaluator v2: the 1 Hz replay recorder, optional stills, per-policy models (one launch
-  pairs `llm_rules` on Sol with `llm_rules@gpt-6-luna`), a plan queue that stops on changed
-  rematch starts, and the redesigned HTML report.
-- C1 is complete: on `brt-cavalry-emp-assault-hard` (AI ×1.1), Sol won 1 of 6;
-  Luna and both baselines 0 of 6 ([log](twwarhammer3/log.md#2026-10-15-calibration-c1-launches-3-to-6)).
-  The owner has replaced win-rate admission with hard challenges and partial progress;
-  C1 remains development evidence, with no automatic easier calibration block.
-- Both swarm prototypes have working screens; every player army routed. Existing reports
-  are `c1-cavalry-ai11`, `swarm-screens` and `cavalry-assault` in
-  `runs/twwarhammer3/reports/`. The canonical `benchmark.html` (26 MB, 55 jobs) now
-  shows one score per commander after the owner's review: the C1 controlled comparison,
-  one mean-path map per model and scores in one section per game mode (empty modes as
-  placeholders), on a paper page around the replay
-  ([log](twwarhammer3/log.md#2026-10-15-report-sections-by-game-mode)); offline browser
-  validation passed.
-- API spend: $14.3146 of the $25 cap on 2026-10-15.
+- On `main`: `llm`/`llm_rules` v18, `commander` v5, skills v1.2, benchmark b12,
+  evaluator v2 and track `obs-v4+terrain/act-v2/live-1x`. The interface supports native
+  objectives/reinforcements and the optional public battery-evacuation objective.
+- Seven candidate decision families remain after the live novelty audit in the
+  [design audit](twwarhammer3/benchmark.md#scenario-design). Cavalry/caster variants
+  count once each; the two swarm roles remain provisionally distinct. Conquest was
+  demoted because it has one point, not the planned separated objectives. Win-rate admission
+  is retired; difficult battles need meaningful, executable choices.
+- Siege and survival each have two new completed exploratory screens with exact rematch
+  starts. The canonical report retains setup failures and historical variants. Results,
+  costs and evidence reviews are in the [b12 log](twwarhammer3/log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
+- API spend before the active conquest job: $16.3458 of the $25 cap.
 
-Next: expand varied armies, siege defence, survival and conquest, with 2-3 exploratory
-battles total per new scenario. Each must offer credible plays that exploit strengths
-and mitigate disadvantages; redesign or drop scenarios without meaningful choices.
-The first three implementation steps are complete
-([b11 log](twwarhammer3/log.md#2026-10-15-harness-b11-common-measures-and-one-report)).
-Scenario-specific scoring, deeper comparisons and added delay remain later. Steam is
-now pinned to 9.0.4; old evidence keeps its original build.
+Next: finish conquest and battery evacuation, inspect credible plays, rebuild the one
+benchmark report and verify it offline. Later self-comparisons separate army/control
+workload from neutral prompt length, useful history, representation and observation age.
+Steam is pinned to 9.0.4; old evidence keeps its original build.
 
 ## Slay the Spire
 

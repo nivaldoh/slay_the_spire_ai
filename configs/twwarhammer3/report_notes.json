@@ -113,7 +113,7 @@
     "chd-reserve-grn-siege": {
       "title": "The last reserve",
       "question": "When should a defended point be conceded, and where should the only mobile reserve commit?",
-      "challenge": "Trade outer territory for time while committing one mobile reserve and limited construction supplies.",
+      "challenge": "Nine Chaos Dwarf units defend fortified Helmgart against sixteen Greenskin units. Blunderbusses, Fireglaives and a Magma Cannon provide firepower; one Bull Centaur unit is the mobile reserve. Four victory locations and a starting construction budget of 6000 supplies create competing commitments across the fort.",
       "family": "territorial defence",
       "core_candidate": true,
       "footnote": "Two exploratory screens: Sol lost at 508 s; Luna won at 688 s from a matching rematch start. Construction, reserve commitment, firing positions and fallback were executable. Both held victory locations for about 92% of the observed time, showing why ownership time must be read beside the engine outcome. This is not a model ranking."
@@ -121,23 +121,23 @@
     "ksl-reserves-survival": {
       "title": "Spend now or survive later",
       "question": "Buy cheap relief now, or save supplies for a more capable reinforcement?",
-      "challenge": "Buy immediate relief or preserve supplies for a more expensive reinforcement; sustain ammunition and fresh troops against native waves.",
+      "challenge": "Ten Kislev units face native Khorne waves in the Hunting Fields. Seven initial reserves cost 500–1600 supplies each. Supplies accumulate during the battle, but reserves can enter only through an available spawn zone. The report measures survival time alongside purchases, point ownership and losses; later pool changes follow the game's native rules.",
       "family": "reinforcement budgeting",
       "core_candidate": true,
       "footnote": "Two exploratory losses: Luna survived 322 s and Sol 406 s from exactly matching starts. Luna first bought reserves at 131 s; Sol bought immediately and used all seven initial reserves. Both lost their spawn zones with supplies unspent. The pool can change later under native survival rules. This demonstrates spending and deployment choices, not a model ranking."
     },
     "sla-detachments-dwf-conquest": {
-      "title": "Fast feet, slow fortresses",
-      "question": "Can mobile detachments win objective time against stronger, slower holders?",
-      "challenge": "Split fast detachments across separated objectives or concentrate to dislodge stronger, slower holders; pursuing kills can concede tickets.",
-      "family": "dispersed objective control",
-      "core_candidate": true,
-      "footnote": "Exploratory candidate. Distinctiveness and credible plays require live evidence; no stable model ranking is claimed."
+      "title": "Contest the centre — reference",
+      "question": "When should units contest the central point rather than attack supporting shooters?",
+      "challenge": "Ten Slaanesh units face ten Dwarfs with armoured infantry, Thunderers and a cannon at Alpine Ridge. One central capture point generates victory tickets. This screen does not test distributed objective control and is retained as reference evidence, outside the distinct core.",
+      "family": "central objective contest",
+      "core_candidate": false,
+      "footnote": "Demoted from the distinct core: Conquest has one central point, not the planned separated objectives. Sol lost at 353 s with 238 tickets; Luna lost at 250 s with 72. Native control and scoring worked, but this does not establish the intended new decision family."
     },
     "emp-battery-wef-evacuation": {
       "title": "Bring the batteries home",
       "question": "How much scouting and route clearing can the escort afford before its deadline?",
-      "challenge": "Escort two batteries to a public extraction zone before a deadline while scouting concealed Wood Elf threats.",
+      "challenge": "Eight Empire units, including two Great Cannon batteries and two Pistolier scouts, face eight Wood Elf units on Backwoods Path. Both batteries must reach the public extraction circle together before 15 minutes, with living crews and neither routing nor shattered. A native victory before the deadline also succeeds if both survive. Enemy positions are revealed to the controller only when visible.",
       "family": "asset evacuation",
       "core_candidate": true,
       "footnote": "Exploratory candidate. Distinctiveness and credible plays require live evidence; no stable model ranking is claimed."
@@ -599,6 +599,25 @@
             "trace.jsonl:7",
             "trace.jsonl:10",
             "trace.jsonl:145"
+          ]
+        }
+      ]
+    },
+    "bench-b12-slaanesh-conquest-20261016/episode-0000": {
+      "highlights": [
+        {
+          "time_ms": 76400,
+          "end_ms": 352800,
+          "lead_in_s": 8,
+          "title": "A ticket lead does not save the army",
+          "text": "Sol held the single point and earned 238 tickets toward the 600-ticket target. The Dwarfs retook it, then routed the remaining Slaanesh army. The engine loss is retained alongside ticket progress.",
+          "kind": "outcome",
+          "units": [
+            "f7"
+          ],
+          "refs": [
+            "trace.jsonl:48",
+            "trace.jsonl:251"
           ]
         }
       ]

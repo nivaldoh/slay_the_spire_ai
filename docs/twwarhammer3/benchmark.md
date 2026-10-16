@@ -132,8 +132,10 @@ docstring lists every field and the code that reads it. Manifests record the res
 entry (after `base` inheritance), and the job's source fingerprint versions the file.
 
 An entry with `expect` is a benchmark. `validate_declaration` requires a pinned map,
-pinned factions and explicit rosters, every `expect` key, a finite timer (1200, 2400 or
-3600 s) and an episode cap at least 120 s above it, and refuses `--attach`. A declaration
+pinned factions and explicit rosters and every required `expect` key. Timed modes need a
+finite timer (1200, 2400 or 3600 s) and an episode cap at least 120 s above it; native
+timerless survival/domination require `time_limit_s: null` and `timer_enabled: false`.
+Declared reinforcement pools must be explicit. All declarations refuse `--attach`. A declaration
 error or a realism preference that differs from `expect.realism` stops play before the
 job directory exists. Setup then checks, and any mismatch stops the job before a trial is
 scored:
@@ -178,7 +180,7 @@ scenario can remain useful when every controller loses but makes different progr
 scenario or measurement; do not assume an easier opponent is the remedy. Repetitions
 measure variability, not eligibility. A claim of latency sensitivity still needs an
 added-age experiment. Existing configuration labels such as `prototype_not_admitted`
-are legacy metadata, pending the implementation below.
+are legacy metadata, not a current eligibility gate.
 
 ## Scenario design
 
@@ -201,8 +203,17 @@ A candidate stays exploratory until the game shows that its choices are feasible
 | Survive a Skaven swarm | How should a compact gunline preserve firing space under encirclement? | Refuse one flank and concentrate fire; fall back with an intact screen | Swarm assault; the player allocates finite fire lanes/ammunition, rather than expendable screens | Gun movement, ammunition, encirclement and time alive. Standing still beat the model in the existing screen; keep the distinction provisional |
 | `chd-reserve-grn-siege` — territorial defence | When should a point be conceded, and where should the only mobile reserve commit? | Contest outer points with construction support; fall back and concentrate around the decisive point | Defensive swarm; geographically separate victory points and construction supplies make territory itself a resource | Point ownership time, supplies/builds, reserve movement, surviving garrison |
 | `ksl-reserves-survival` — reinforcement budgeting | Buy relief now or preserve supplies for a more expensive reinforcement? | Buy cheap fresh screens; save for a specialist while conserving the starting force | Defensive swarm; purchases change the available army over an unknown future sequence | Supplies, purchases by type/time, fresh units, ammunition, duration and native objectives |
-| `sla-detachments-dwf-conquest` — dispersed objective control | Split mobile detachments or concentrate to dislodge stronger holders? | Rotate around slow defenders to take an open point; mass temporarily on a defended point | Cavalry; ticket income can make an unfavourable fight or refusal to pursue rational | Tickets, ownership time, movement between points and losses |
 | `emp-battery-wef-evacuation` — asset evacuation | How much scouting and route-clearing effort can the escort afford before its deadline? | Guard the batteries on a direct route; scout and detour around revealed threats | Ranged protection; moving a designated asset to a public destination under incomplete information is the objective | Batteries in zone, survivors, deadline, sightings, escort separation and engine-confirmed ending |
+
+**Conquest was demoted during the live check.** `sla-detachments-dwf-conquest` has one
+central point, not the separated objectives its original brief assumed. It therefore
+fails its stated novelty criterion and remains reference evidence, outside this seven-family
+candidate core. [Creative Assembly's Conquest description](https://community.creative-assembly.com/total-war/total-war-warhammer/blogs/23-total-war-warhammer-iii-patch-5-1-0)
+confirms a central point. The installed build reports a 600-ticket target, despite its
+older help text saying 500; use the numeric engine state. Distributed control belongs in
+a future Domination candidate (the existing Arnheim pilot exposes three separated points),
+with its reinforcement mechanic explicitly separated from the survival question. Do not
+count it as new coverage before it is designed and screened.
 
 Cavalry pikes/Pegasus/assault, their difficulty revisions and held-out maps are **one
 family**. The caster variants likewise form one family. Older Dwarf/Slaanesh ranged
@@ -455,7 +466,8 @@ difficulty to create meaningful choices is allowed; a target win rate is still n
 selection rule. Apply this requirement to existing and new scenarios.
 
 The approved tranche is siege defence, survival, conquest and **one custom battery
-pilot**, retaining the existing caster family. The native scenarios freeze maps, rosters,
+pilot**, retaining the existing caster family. Conquest remains in the evidence but was
+demoted from the distinct core when its one-point layout failed the design question. The native scenarios freeze maps, rosters,
 mounts, settings and (for survival) a selected reinforcement pool in `scenarios.json`.
 The evacuation pilot adds only a versioned objective and authored placement hook. Its
 public rules require both batteries, with living crews and neither routing, inside the

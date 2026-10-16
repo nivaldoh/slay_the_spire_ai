@@ -150,6 +150,27 @@ errors in the evidence, not omitted trials. Job cost $1.0338; ledger $16.3458.
 
 The full suite after the setup fixes passed: 1024 tests, 14 optional-dependency skips.
 
+
+Completed Conquest screens (`bench-b12-slaanesh-conquest-20261016`, `21e45ee`): Sol-low
+lost at 353 s ($0.5410; 83 decisions, one rejected order, mean age 4.24 s), Luna-low at
+250 s ($0.0190; 39 decisions, 11 rejected orders, mean age 6.16 s). Rematch starts matched.
+Both captured the central point; Sol finished with 238/600 tickets against 40, Luna with
+72/600 against 106. Their armies routed before the ticket target. Job cost $0.5600;
+ledger total $16.9058.
+
+**Demotion from the core.** The original Conquest brief assumed separated points. The
+live state exposes only one at (256,0), as did the old Alpine Ridge pilot. The
+[official Conquest description](https://community.creative-assembly.com/total-war/total-war-warhammer/blogs/23-total-war-warhammer-iii-patch-5-1-0)
+also describes one central point. Native capture, raiding and retaking were executable,
+but these trials do not meet their stated distributed-control question. Preserve them
+as reference evidence and mark `core_candidate: false`; do not count a different mode
+as unique by itself. Seven candidate families remain. A future Domination design can
+use the three-point geometry already observed on Arnheim, but must pass its own novelty
+and reinforcement-confound review. No extra scenario is added merely to fill the slot.
+The report descriptions now specify the armies, objective and resource constraints of
+all four new scenarios. The local numeric ticket goal is 600; the native help text's
+older 500-ticket wording is not used for scoring.
+
 ## Index
 
 - 2026-10-15: [Report: sections by game mode](#2026-10-15-report-sections-by-game-mode) ·

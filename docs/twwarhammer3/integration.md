@@ -405,6 +405,8 @@ Battle (context system on `CcoBattleRoot` unless noted):
 - `CapturePointList`: `Key`, `DisplayName`, `Position.x/z`, `CurrentHolderAlliance` (-1
   for none), `IsContested`, `IsLocked`, `CapturePercent` (0-1), `ContributesToVictory`.
   `Radius` read 0. Keys repeat: a siege had four `capture_point_tower_only`.
+  Alpine Ridge Conquest has one central point; Arnheim Domination has three separated
+  points. A mode name alone does not establish a distributed-control challenge.
 - Tickets: `AllianceList.TicketsRemaining` counts up in conquest and domination (+1/s
   for holding one point, +2/s for two) towards `CaptureLocationManagerContext
   .TicketsGoal` (600, 1500). A siege defender starts with 1000 (`StartingTickets`, goal

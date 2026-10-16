@@ -200,14 +200,15 @@ Other interface gaps, addressed when they obstruct a chosen scenario:
 ## Distinct scenario tranche (2026-10-16)
 
 b12 replaces repeated Khorne/Dwarf rosters as the source of new coverage with
-Chaos Dwarf territorial defence, Kislev reinforcement budgeting, Slaanesh objective
-rotation and an Empire battery evacuation under Wood Elf ambush. The exact declarations
+Chaos Dwarf territorial defence, Kislev reinforcement budgeting and an Empire battery
+evacuation under Wood Elf ambush. The Slaanesh Conquest screen is reference evidence: its
+single central point cannot test the planned distributed-control question. The exact declarations
 are in `configs/twwarhammer3/scenarios.json`; the
 [design audit](benchmark.md#scenario-design) separates questions from map/faction variants.
 Live evidence and remaining limitations are in the
 [b12 log](log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
 
-Declared survival pools are explicit and checked by multiplicity, because the lobby sorts
+Declared initial survival pools are explicit and checked by multiplicity, because the lobby sorts
 them by unit class. The hidden lobby timer is ignored only when the selected mode disables
 it; the battle must report no countdown. Native waves do not have a fixed lobby enemy
 roster. The wall limit still ends an unfinished run as a truncation. The custom objective
