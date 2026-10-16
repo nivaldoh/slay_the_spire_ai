@@ -20,8 +20,11 @@ frames and stills from `battle/capture.py` during play ([integration.md](integra
 
 Owner feedback still to implement (the other notes of 2026-10-16 are in the page below):
 
-11. Eventually add OpenRouter support for a broader selection of models alongside the
-    existing OpenAI API support. This is future benchmark work, not a report feature.
+11. OpenRouter support for more models is specified in the
+    [provider design](controllers.md#openrouter-design-not-implemented). On 2026-10-16
+    the owner set a $50 budget and requested stopping after cleanup/design. No
+    implementation changes remain; a read-only key/budget check passed, while the
+    three model API checks remain deferred. This is shared API work, not a report feature.
 
 Not done with the rest, and why:
 

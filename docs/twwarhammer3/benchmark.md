@@ -1,8 +1,8 @@
 # WH3 latency-aware battle benchmark
 
-The benchmark as built, with the [implementation plan](#implementation-plan) for the
-owner's 2026-10-15 revision: diverse scenarios, shared progress measures and one report for the
-suite. Planned measures are distinguished from recorded ones. The owner's brief is
+The benchmark as built, with the [implementation plan](#implementation-plan) revised on
+2026-10-16: keep the scenario collection provisional and calibrate its challenges before
+another expensive model comparison. Planned measures are distinguished from recorded ones. The owner's brief is
 [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md).
 How to run it: [benchmark-run.md](benchmark-run.md). The report: [reports.md](reports.md).
 What is running now: [docs/state.md](../state.md). Dated history: [log.md](log.md).
@@ -36,7 +36,7 @@ it is slow has lost. Delay arms (below) are diagnostics beside that primary resu
 | §7 Records | Manifest (revision, file hashes, resolved scenario, deployment pins, prompts), trace, result, register | [benchmark-run.md](benchmark-run.md) |
 | §8 Path to RL | Episode boundaries, basis observations, orders, battle times, `ended_by`, throughput | [Outcomes](#outcomes-measures-and-comparison) |
 | §9 First milestone | Built and accepted in the game (b1-b9 in the log) | [log.md](log.md) |
-| §9 Initial release | Shared measures and the consolidated report are implemented; varied scenario content remains next | [Implementation plan](#implementation-plan) |
+| §9 Initial release | Shared measures, the consolidated report and six candidate families have live evidence; calibration and final selection remain open | [Implementation plan](#implementation-plan) |
 
 ## Terms
 
@@ -51,14 +51,15 @@ it is slow has lost. Delay arms (below) are diagnostics beside that primary resu
 
 ## Observation and action contract
 
-The track is `obs-v3+terrain/act-v2/live-1x` (`play.TRACK`); a trial with added age D
+The track is `obs-v4+terrain/act-v2/live-1x` (`play.TRACK`); a trial with added age D
 appends `+age-<D ms>ms`. A track versions the information and actions supplied by the
 environment and its timing rules. Controller memory or prompt changes are controller
 versions; scoring changes are evaluator versions. They need not create new tracks.
 Results from different conditions can appear in the same report, labelled separately;
 they are never pooled across tracks. History: `obs-v1/act-v1`
 (b1), `obs-v1+terrain` (b2, terrain grid), `obs-v2+terrain` (b3, enemy roster boundary
-fix), `obs-v3+terrain/act-v2` (b8, morale and flight). The code is the reference:
+fix), `obs-v3+terrain/act-v2` (b8, morale and flight), `obs-v4+terrain/act-v2`
+(b12, optional public custom objectives). The code is the reference:
 - `engine/mailbox.py` module docstring: the observation, the acknowledgement and every
   bridge file;
 - `protocol.py`: the order types and `validate_orders`;
@@ -195,6 +196,12 @@ does this scenario help us learn something new about the models? The 6–8 range
 planning guide, not a quota. Redundant scenarios do not justify their execution time;
 each retained scenario should answer a distinct question. This is planning guidance;
 no scenario selection changes are made by recording it.
+
+**Owner direction after M1, 2026-10-16:** keep the collection provisional until the
+strongest models have been tested. The audit's retain/demote recommendations below are
+development priorities, not a settled core. First improve challenge quality and the
+expected information from expensive runs; the [revised plan](#implementation-plan) is
+planning only, with no implementation or new runs authorized by this revision.
 
 Before adding a core candidate, record its question, scarce resource or commitment,
 at least two credible plays, nearest existing family, reason it adds coverage, public
@@ -366,8 +373,8 @@ effort; never pooled):
   per battle second, rejections by validation or engine code, protected-unit survival,
   objective shares held (integrated on engine ticks), supplies left, accepted builds and
   reinforcements by type, tokens, USD, wall seconds and clock ratio;
-- per controller, the median of its trials' median order ages (the HTML page's typical
-  order delay);
+- per controller, the median of its trials' median order ages in the collector; the HTML
+  pools order batches (adopted plans for commander) to show its typical delay;
 - throughput: valid trials per job wall hour, counting setup, resets and failed jobs.
 
 The text and JSON reports end with the limitations stated in `report.collect`. The HTML
@@ -409,188 +416,122 @@ this page before its rewrite (`git show d606d39:docs/twwarhammer3/benchmark.md`)
 
 ## Implementation plan
 
-Refined on 2026-10-15 at the owner's request: prioritize scenarios that look and play
-very differently, use general progress measures first, and play 2-3 exploratory battles
-per new scenario. Scenario-specific scoring and deeper model comparisons can follow
-later. This replaces the earlier three-scenario, ten-battle proposal. Preparation is
-documentation only. The owner subsequently authorized the controller integration, shared
-measures and consolidated report: implemented as v17 / commander v4 and harness b11
-(evaluator v2), with tests, engine smoke battles and offline browser validation complete
-([b11 log](log.md#2026-10-15-harness-b11-common-measures-and-one-report)). Scenario expansion
-remains future work and must meet the playmaking requirement below.
+### Current proposal: calibrate before a broad model comparison
 
-### 1. Shared progress measures first
+Revised after M1 on 2026-10-16 at the owner's request. **Planning only:** no code,
+scenario declarations, report selection or scoring changes, game launches or API calls
+are part of this revision. The sequence below supersedes the earlier implementation
+sequence and the proposal to settle the core from M1.
 
-Use one common summary across battle types, alongside the engine outcome and failure
-status. No scenario-specific target groups, scores or milestone definitions are required
-to add a scenario. Where a general measure does not apply (objective time on a land
-battle, for example), show not applicable. Where it was not recorded, show unavailable.
+M1 is development evidence about the tested model/controller configurations. Three
+wins can flag a possible ceiling; three losses do not prove a scenario is impossible
+or uninformative. Neither establishes how the strongest models will perform. Preserve
+all six candidate families for review, the earlier audit and all outcomes. Conquest's
+one-point novelty failure still stands, and custom evacuation remains deferred. The
+report's current core labels are a presentation selection, not a final benchmark.
 
-| General measure | Existing evidence and planned work |
-|---|---|
-| Soldier/entity casualties and survivors, both sides | Final evaluation has `men0`, `men` and `active_men`. Show net headcount losses and survivors, with starting/registered totals for context. Routing is not death; net losses are not cumulative kills when resurrection occurs. These are headcounts, not HP or army value. |
-| Whole units destroyed, alive and active, both sides | A unit means a regiment, character or monster unit. Evaluator v2 now records registered, destroyed, alive and active whole units, with overlapping routed, leaving and absent subsets and unreadable counts. Historical type totals cannot reconstruct these counts and remain unavailable. |
-| Objective time and progress | Use existing engine-tick point ownership time/share and tickets where available. Show point identity and observation duration; do not invent objective time for modes without points. |
-| Battle duration, resources, latency and cost | Duration and natural order age in every result; supplies, builds and reinforcements where relevant; cost and failures alongside outcomes. Duration alone is not success, and unspent supplies are not automatically better. |
+**1. Extract more information from saved battles before buying more.** For each family,
+write a short calibration card: the capability under test; the actual scarce resource;
+two feasible competing plays; observed turning points and failure causes; a suspected
+easy strategy or exploit; and the smallest unanswered question worth a new battle.
+Separate interface defects, tactical mistakes, natural latency, overwhelming forces
+and inconclusive evidence. Check whether winning models solved the intended problem or
+bypassed it. Reuse traces, replays, start checks, recorded resources and existing unit
+data; no model calls are needed for this pass. Keep analyst tactics out of model prompts.
 
-Keep definitions short and shared. Existing totals include units registered after the
-start (summons, purchases and survival waves); label this rather than claiming an
-original-army denominator. For new whole-unit counters, distinguish dead from routed,
-withdrawn or temporarily absent units, and avoid double-counting a returning unit id.
-Show raw counts with their army totals; do not sum them into a cross-scenario ranking.
+**2. Make the challenge fair and its result interpretable.** Before new model
+calibration, address the observed stale ability-readiness feedback and missing rule
+that routing units ignore orders in a logged controller/interface revision, with
+targeted engine checks. Verify any mechanic essential to a proposed challenge through
+the actual public interface. No general rewrite or unrelated cleanup is required.
+Retain engine outcomes and common measures; identify the recorded evidence that would
+distinguish good choices within wins or losses. Examples are reserve survival and
+commitment, weapon firing behind a screen, and spell timing alongside mana and target
+state. Accepted orders and mana expenditure alone do not establish effective execution
+or spell value. Avoid a new composite score or speculative creativity score.
 
-Implementation belongs in the existing `strength()`/`evaluation()` Lua functions,
-`engine/mailbox.py`'s field reference and `battle/report.py`/HTML presentation. The
-Python loop already saves evaluation totals in results. Record the evaluator version;
-keep scoring data outside policy inputs and the public replay. Verify new counts in
-unit tests and the first exploratory battles, without adding a separate calibration
-campaign. Existing observations/results and `results.csv` stay unchanged.
+**3. Draft a small difficulty ladder for promising families.** Preserve each current
+scenario as an anchor; propose at most two variants initially, each changing one
+justified factor. Prefer pressure on an actual decision (reserve allocation, exposure,
+mana or ammunition scarcity, competing threats) to generic stat inflation. A numerical
+odds adjustment can still be useful when it preserves feasible counterplay. Larger
+armies also change workload, prompt size and latency, so do not call that a pure
+difficulty or reasoning intervention. There is no target win-rate admission rule.
 
-Use available measures immediately; a missing historical unit count must not delay
-scenario variety. Exact achievement timestamps, original-force-only attribution,
-HP/value weighting and scenario-specific accomplishments are possible future improvements,
-chosen only when shared measures fail to answer a useful question.
+The following are hypotheses to investigate, not selected settings or promised engine
+capabilities. Check feasibility before implementing a variant:
 
-### 2. Integrate v17 and use the right version labels
+| Family | First calibration question | Candidate adjustment or diagnostic |
+|---|---|---|
+| Siege defence | Do reserve placement and territory trades remain necessary once the obvious mistakes disappear? | Test whether a simple central defence solves it; vary pressure on a second approach or reserve availability while retaining workable fallback choices. |
+| Caster assault | Does winning require choosing spell windows and preserving the caster, or does one repeatable cast/retreat pattern suffice? | Contrast simple casting approaches; vary one of starting magic, escort strength or enemy anti-air pressure, after checking supported controls. |
+| Swarm command | How much does synchronizing the screen and damage units matter beyond a simple coordinated advance? | Contrast staggered and coordinated commitments; vary screen depth or one enemy threat without merely inflating unit count. |
+| Cavalry assault | Are the charge/disengagement opportunities reproducible and visible through the interface? | Establish that the successful flank is repeatable before making it harder; examine one coverage or terrain variant only where it preserves a credible route. |
+| Defensive swarm | Is there an executable defence that improves on holding position? | Check one focused-fire or fallback hypothesis; redesign only if it creates a distinct, controllable firing-space problem. Equal loss records alone do not settle its value. |
+| Kislev survival | Can reinforcement spending become a consequential tradeoff? | Supplies were abundant in the audit; check whether initial resources, income or available purchases can be controlled. If not, describe it as spawn defence or defer it rather than claim budgeting. |
 
-`wh3-llm-v17` (`c1cc14b`) changes only `battle/llm.py` and its regression tests: shooter
-range feedback and last-sighting memory. It consumes already-public observations;
-`play.TRACK`, the Lua observation and the action/timing contracts are unchanged. Keep
-`obs-v3+terrain/act-v2/live-1x`; earlier notes calling this `obs-v4` were incorrect.
-The commander imports `remember` and `render_state`, so the integration must also be
-logged as its next version (v4), alongside `llm`/`llm_rules` v17. This branch is now merged; see the
-[version log](log.md#2026-10-15-integrate-llm-v17-and-commander-v4).
+**4. Use cheap tests to eliminate bad designs.** After implementation is authorized,
+start with the existing scripted baselines and a narrowly scoped public-state controller
+for a particular tactical hypothesis where needed. Such a diagnostic may encode a
+strategy; disclose that knowledge and keep it separate from general model results.
+Do not build an expert bot or sweep a large parameter grid. Choose at most two families
+for the first calibration tranche, with roughly 2-3 purposeful battles total per
+candidate variant, reusing existing anchor evidence when conditions are comparable.
+Each battle must resolve a named uncertainty; add a repeat only when variability
+prevents the next decision. A cheap model is useful for interface/usability checks,
+but its losses cannot certify difficulty for a stronger model. Scripted controllers'
+faster reactions likewise do not establish feasibility at model latency.
 
-Review the branch against current main, run the LLM/commander/prompt tests, change golden
-prompts only where their expected rendering intentionally changes, then the WH3 suite
-and lint. Check the two feedback cases in a real battle during the first evaluation
-launch. Historical results retain their original revisions. Compare models on the same
-controller version and conditions; show older controller versions in the same report
-without attributing their differences solely to model quality. An actual future change
-to environment information, actions or timing would change the track. New evaluator
-measures need their own version, not a new observation track.
+**5. Buy a small frontier screen once cheaper work stops answering the question.**
+Offline analysis and scripted probes cannot establish the ceiling of the strongest
+models. Select two or three well-supported candidate scenarios, freeze the conditions,
+and initially run one battle each with one strong model/configuration, chosen when
+the screen is planned. Do not automatically cross every scenario, model and effort.
+Specify each run's question, expected cost range, hard spend ceiling and next action
+before starting; review its trace before allocating another paid battle. A repeat is
+for an ambiguous result, a suspected failure or variability that changes a decision.
+One win is not a ceiling estimate and one loss is not evidence of benchmark quality.
+Clear easy wins motivate testing a harder variant, useful varied decisions justify
+later comparison, and interface failures send the candidate back to repair. These
+runs remain development data if they influence scenario or controller design.
 
-### 3. Expand scenario variety with short exploratory runs
+**6. Freeze an evaluation collection only after that screen.** Select for distinct
+capabilities, executable alternatives, interpretable progress, difficulty headroom
+and reasonable runtime/cost. Keep an easier anchor when it provides a useful control;
+not every scenario needs to defeat the strongest model. Freeze scenarios, controller
+rules, settings, metrics and stopping rules for a comparison round; later revisions
+are new versions. Reserve unseen variants before tuning and never use them to select
+the design. If held-out evidence prompts redesign, retire it as development evidence
+and reserve fresh variants. Allocate matched repeats only to questions that survived
+calibration, accounting for variation across launches and correlated rematches.
 
-The next work is a broader set of distinctive battles, not another cavalry/swarm repeat
-block. Keep existing cavalry/swarm evidence in the report, and review those challenges
-under the playmaking requirement below; no repeat campaign is needed before new scenarios
-are added. Change army composition, scale, faction mechanics, terrain, roles and objectives
-deliberately. Reusing the same Khorne/Dwarf
-rosters on several maps would provide less variety than the owner wants.
+**Spend and stopping discipline.** No broad unattended paid matrix is the default.
+Choose small tranches by how likely a run is to change a design decision, relative to
+its expected API cost and wall time. Keep infrastructure failures separate, retain
+negative evidence and stop a tranche when its question is answered or its cap reached.
+Do not shorten losing battles and report them as engine losses; an interrupted battle
+remains incomplete. Use observed duration, calls, token use and retries for estimates;
+long losing battles need allowance too. The ledger remains $45.96 of $52 as recorded
+after M1, with $6.04 unallocated; this proposal neither spends it nor raises the cap.
 
-**Playmaking is a requirement.** Difficult odds earn a place when the controller has
-credible ways to exploit its advantages and mitigate its disadvantages. For each proposed
-battle, identify the useful strengths, the threats and a few meaningful choices: for
-example, creating a firing lane, separating an enemy force, timing a spell or charge,
-preserving a mobile reserve, or trading a position for objective time. The controller
-must be able to observe and execute these plays through the available interface while
-the battle runs at its normal speed. A dramatic massacre with few consequential choices
-does not make a useful challenge.
+**Immediate planning deliverable:** six short calibration cards, followed by a proposed
+first tranche for at most two families: the exact hypothesis, one-factor variants,
+controller/probe, observable evidence, battle count, runtime/cost allowance and decision
+rule. That makes implementation reviewable before any new experiments. OpenRouter now
+has a separate [cleanup and integration proposal](controllers.md#openrouter-design-not-implemented);
+added-age studies, broader controller comparisons, report polish and custom evacuation
+remain later work unless a specific calibration question needs them.
 
-Use the 2-3 exploratory battles to inspect whether these opportunities exist, whether
-the controller recognizes them, and how far its choices change progress. Record observed
-plays and missed opportunities in the report, distinguishing evidence from tactical
-hypotheses. A few losses do not establish that every controller must lose; likewise,
-interesting-looking armies alone do not establish useful options. If there is no credible
-room to influence the battle, redesign the armies, terrain, resources or objectives, or
-drop the scenario from the active collection while retaining its evidence. Adjusting
-difficulty to create meaningful choices is allowed; a target win rate is still not the
-selection rule. Apply this requirement to existing and new scenarios.
+## Earlier implementation sequence (2026-10-15)
 
-The approved tranche is siege defence, survival, conquest and **one custom battery
-pilot**, retaining the existing caster family. Conquest remains in the evidence but was
-demoted from the distinct core when its one-point layout failed the design question. The native scenarios freeze maps, rosters,
-mounts, settings and (for survival) a selected reinforcement pool in `scenarios.json`.
-The evacuation pilot adds only a versioned objective and authored placement hook. Its
-public rules require both batteries, with living crews and neither routing, inside the
-extraction zone by the deadline, or a native victory with both batteries surviving.
-Partial progress is the number currently in the zone; reaching it alone does not make a
-battery invulnerable or remove it from the battle. Asset loss and deadline request a
-scripted defeat. Native early endings retain their actual engine outcome and a separate
-objective success/failure. Private placement data never enters controller observations.
-
-Survival has no engine countdown; a controller wall timeout is a truncation, not a loss.
-Its hidden lobby timer must not be mistaken for an active deadline. Explicit reinforcement
-pools replace autogeneration for declared benchmarks. The setup verifies the purchased
-pool and mode, while native wave rosters are allowed to arrive dynamically. No wave
-forecasts, healing or restocking controls are promised by this tranche.
-
-After implementing each new scenario, play **2-3 battles total for that scenario**, not
-2-3 per model or a fixed multi-model/baseline matrix. Default to one Sol-low and one Luna-low `llm_rules` battle;
-use a third for a contrasting controller, a repeat, or a specific behavior check. Pick
-the controllers and small cost allowance before running, based on the question and
-remaining budget. Neither a scripted baseline nor every model is mandatory in every
-initial screen. The goals are working mechanics, demonstrated room for playmaking and
-readable results/replays. Count the initial in-game check toward these battles; repair
-broken setup/controls as needed, without repeatedly changing difficulty until a model wins.
-
-Label these runs exploratory; 2-3 battles do not establish a stable ranking. Add them to
-the common report and move to the next distinct scenario. Further repeats and matched
-model comparisons come later where useful, with fixed conditions and all earlier runs
-retained. Keep held-out variants out of tuning. General-purpose armies can complement
-specialist forces when they create a different battle.
-
-The ledger had $10.6854 left of its $25 cap at implementation start. Broader coverage takes
-priority over repeated expensive reference runs; use cost-conscious model choices and
-do not schedule the full expansion as one unbounded queue. Create a fresh small plan
-from committed implementation for each scenario; old G1/C1 and swarm-only plans remain
-historical. The owner authorized implementation and the short exploratory screens on 2026-10-16.
-
-### 4. Keep natural latency; defer added delay
-
-Every comparison retains measured order age, outcome/progress, cost and reliability at
-unpaused 1x. The existing `--delay-seconds 0,6,10` capability remains available, but no
-G2 block is scheduled. Use it later on a scenario with interpretable progress measures
-and a concrete latency question, without requiring a particular win rate. Compare the
-same frozen controller across added ages and report actual information age; natural
-latency differences between models alone do not establish a causal latency effect.
-
-### 5. One benchmark report
-
-Use `runs/twwarhammer3/reports/benchmark.html` as the canonical entry point for
-the entire suite, with `.json` and `.txt` companions. Existing `report JOB [JOB ...]`
-already accepts all scenarios and `report_html.display_data` provides navigation between
-them. Extend that path; no separate site, server or new report framework is needed.
-
-Add a compact suite overview (battle type, armies, coverage and shared measures), then
-in-page access to each challenge's comparison, run settings, notes and replays. Preserve
-the current watch/understand/compare experience. Missing runs or measures stay explicit;
-there is no aggregate ranking from unlike armies or objectives. Historical runs and
-interface/controller versions remain accessible with labelled conditions, not pooled
-into current results. Existing grouping is conservative about source revisions; retain
-it initially rather than inventing new compatibility inference.
-
-Select an explicit list of input jobs, including failures and older evidence; the report
-JSON already records this list. Do not glob all local runs into the benchmark or choose
-only successes. Keep existing reports as historical artifacts until the canonical one
-is validated. Start with the current embedded assets. Supporting files are allowed if
-measured size or load time warrants them; any such packaging must still open locally
-without a service and be tested as a copied bundle. A giant JSON `fetch` from `file://`
-is not assumed to work. The consolidated report now uses the explicit selection in
-`configs/twwarhammer3/benchmark_jobs.json`; see [reports.md](reports.md#suite-report).
-
-### Delivery order and checks
-
-1. Integrate and log v17 plus the commander's shared rendering change. Keep unrelated
-   prompt/executor work out of that change.
-2. Add the shared summary and a simple overview to the single report using saved evidence.
-   Add minimal evaluation counters for whole units where needed; test deaths versus
-   routing, reinforcements, missing historical data and the policy information boundary.
-   Report polish or advanced scoring must not become a prerequisite for new scenarios.
-3. Implement one distinctive scenario at a time, starting with siege defence, survival,
-   conquest and a contrasting land army. Include each mode's necessary setup checks,
-   record the declaration, and verify it in 2-3 exploratory battles after implementation
-   is authorized. Preserve outcomes and failures; no win-rate admission gate.
-4. Update the same report after each scenario. Extend the browser check for multiple
-   battle types, shared/absent measures, mixed controller versions, scenario navigation
-   and replays; verify desktop/mobile and offline opening. Build on the existing renderer.
-
-The next milestone is a growing collection of visibly different battles in one report,
-including siege defence, survival, conquest and contrasting land armies, with the common
-summary and inspectable replays. Each newly added scenario gets 2-3 initial battles;
-complete model coverage, scenario-specific scores and statistical ranking are not
-completion requirements. Deeper evaluation and added-delay experiments follow later.
+The completed work and earlier decisions are recorded in the log:
+[v17 / commander v4](log.md#2026-10-15-integrate-llm-v17-and-commander-v4),
+[b11 shared measures and report](log.md#2026-10-15-harness-b11-common-measures-and-one-report),
+[b12 scenario expansion](log.md#2026-10-16-harness-b12-and-distinct-scenario-families),
+and [M1](log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
+The superseded implementation instructions remain in Git history; the active sequence
+is the [calibration proposal](#implementation-plan). Measurement definitions are above;
+report behavior is in [reports.md](reports.md).
 
 ## Calibration (stopped 2026-10-14)
 

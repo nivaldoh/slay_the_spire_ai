@@ -31,14 +31,42 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | Piece | Version | Defined in | Latest results |
 |---|---|---|---|
 | `llm` | v18 (2026-10-16) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | Shared input validated through `llm_rules` in b12; tactical prompt's last mode campaign was v15 (Luna low: 6 wins in 10 jobs) |
-| `llm_rules` | shares `llm` v18 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | b12: siege Sol loss/Luna win; survival and Conquest two losses each. Evacuation deferred (setup failure) |
+| `llm_rules` | shares `llm` v18 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | M1 compared three models; siege, swarm command and caster assault distinguished results. See the M1 tables below |
 | `commander` | v5 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | b11 smoke, Luna low: lost `dwf-line-skv-swarm` at 593 s ($0.054) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b12 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Six b12 engine outcomes; recorded rematch starts matched. Custom evacuation deferred: authored placement check fails in the engine |
+| benchmark harness | b12 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Exploratory screens and M1 completed; recorded rematch starts matched. Custom evacuation deferred: authored placement check fails in the engine |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
-| report | scores by game mode, one map per model (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | `reports/benchmark.html` (34 MB): 61 jobs, 91 battles shown in 22 scenarios (6 diagnostic probes held back), six core families with evidence; headline C1 |
+| report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build: 76 input jobs, 93 completed battles shown across six candidate scenarios; setup failures and variants retained in JSON/text |
+
+## 2026-10-16: Cleanup and OpenRouter design only
+
+The owner prepared an OpenRouter key and set a separate $50 budget, requested support
+and three leading open-weight model checks, then clarified that this turn should stop
+after cleanup/design. The [proposal](controllers.md#openrouter-design-not-implemented)
+reuses the shared model loop with a small provider boundary; it records the model-ID
+parser conflict, provider validation, routing provenance and spend-accounting work.
+Unfinished provider code was removed when stopping at cleanup/design; no implementation
+changes remain. A read-only authentication/budget check and catalogue lookup completed;
+the key reported zero usage and $50 remaining. The request process read the `0600` key
+file without printing its contents. Sanitized metadata is retained under
+`runs/twwarhammer3/capability-probes/openrouter-20261016/`. No paid model calls, game runs
+or changes to prompts/scenarios followed.
+
+Documentation cleanup removed the long superseded implementation sequence in favor of
+links to its log entries, corrected the current observation version and HTML order-age
+definition, and removed the stale requirement for six battles in every comparison.
+The latest-results table above now reflects M1. Recounting `episode-*/result.json` under
+the saved M1a/b/c queue jobs gives 50 battles (48 model, two scripted), then M1d adds
+four scripted battles; the old status/README total of 58 was incorrect. The M1c summary
+also incorrectly said Sol won every swarm battle; its actual record is 2/3.
+
+The tracked inventory contained no obvious build artifacts to remove. Run evidence,
+ledgers, paused tracks, unique branches and untracked owner settings were preserved.
+Validation: 100 focused model/controller/CLI/documentation tests and Ruff passed before
+editing; all 43 documentation checks and `git diff --check` passed after cleanup. Scenario calibration
+remains the separate planning proposal; the core is provisional.
 
 ## 2026-10-16: Matched round M1 on the retained core (plan)
 
@@ -137,8 +165,9 @@ cavalry, same conditions, about $12 and 2.4 hours, ending before the owner retur
 ended on an engine result): siege defence won 3 of 3 (538, 538, 587 s; $3.00), swarm
 command won 3 of 3 (497, 449, 455 s; $2.65), caster assault won 3 of 3 (726, 396, 297 s;
 $2.32), cavalry won 690 s and lost 786 and 1102 s ($2.84). M1c cost $10.81; ledger $45.96 of
-$52. Across the four scenarios that separate models, gpt-6.1-sol and gpt-6-sol both won
-everything except cavalry, where each won one of three; gpt-6-luna won one caster assault.
+$52. Across the four scenarios, gpt-6.1-sol won every siege, swarm and caster battle;
+gpt-6-sol won every siege and caster battle and two of three swarm battles. Each won
+one of three cavalry battles; gpt-6-luna won one caster assault.
 Three battles per model are a first matched sample, in-sample for prompts developed on
 these scenarios.
 

@@ -57,8 +57,8 @@ uv run pytest tests/twwarhammer3/test_wh3_setup.py
 Commit the entry before playing it. Declare held-out variants (`split: held_out`) before
 any tuning, and never use them to choose rosters, settings or controllers. The scenario
 rules and readiness checks are in [benchmark.md](benchmark.md#scenarios). The old
-win-rate admission rule is retired; the current [implementation plan](benchmark.md#implementation-plan)
-has not been executed.
+win-rate admission rule is retired; the current [calibration proposal](benchmark.md#implementation-plan)
+is planning only. Earlier integration, expansion and M1 runs are recorded in the log.
 
 ## One launch
 
@@ -186,11 +186,13 @@ and bearing flags alone stay in the result), and never retries: continue with a 
 completed, failed, interrupted), the current job and each exit code. Exit codes: 0
 completed, 1 failed or refused, 130 interrupted. Follow each job with `watch JOB --next`.
 
-The old G1 plans, completed C1 plans and unstarted `swarm-sol-screens-plan.json` are
-historical. The next phase uses 2-3 exploratory battles total per newly added scenario,
-not a mandatory model/baseline matrix. Create a small new plan with the scenario,
-controllers, battle count, cost allowance and final committed source revision. Deeper
-matched repeats come later; shared measures do not require a new scoring rule per scenario.
+The old G1 plans, completed C1/M1 plans and unstarted `swarm-sol-screens-plan.json` are
+historical. The [current proposal](benchmark.md#implementation-plan) schedules no new
+runs. After implementation is authorized, each small calibration plan should identify
+the question, scenario/variant, controller, observable evidence, battle count, runtime
+and spend allowance, decision rule and final committed revision. Start with targeted
+cheap probes; a small frontier screen precedes any broad matched matrix. Shared measures
+do not require a new scoring rule per scenario.
 
 ## Stopping
 

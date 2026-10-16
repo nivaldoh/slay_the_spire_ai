@@ -174,23 +174,33 @@ exploratory battles ([log](log.md#2026-10-16-harness-b12-and-distinct-scenario-f
 Siege defence and survival have two screens each. Conquest has two reference trials but
 was demoted from the core: its single point cannot test distributed control. Six core
 candidates with live evidence remain; the custom evacuation pilot is deferred. The
-overnight matched round M1 (58 battles, three models) is complete.
+overnight matched round M1 (50 battles including two scripted baselines, three models)
+is complete; M1d added four scripted battles.
 
-1. Owner decisions from the overnight round M1 ([log](log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan)):
-   the core selection (the [family audit](benchmark.md#scenario-design) recommends
-   cavalry, siege defence, swarm command and the caster assault, and demoting the swarm
-   survival and Kislev scenarios, which separated no models in M1), and the two delegated
-   report decisions (caster assault as the family's scenario; siege defence scored like
-   land battles). Interface candidates found in M1 are in
-   [controllers.md](controllers.md#candidate-changes-for-the-next-version).
+OpenRouter cleanup/design is now recorded in
+[controllers.md](controllers.md#openrouter-design-not-implemented). The owner prepared
+a key and a separate $50 budget, then requested stopping before implementation and
+the three API checks. No game launch or paid call is scheduled by that proposal.
+
+1. **Planning only, owner direction after M1 (2026-10-16): keep the core provisional.**
+   Strongest-model evidence is still missing; the audit's recommendations are development
+   priorities, not final selection. The [revised proposal](benchmark.md#implementation-plan)
+   puts saved-evidence reviews and six calibration cards first, then a small proposed
+   tranche for at most two families. Later implementation would address interface
+   defects, screen purposeful variants with cheap probes, and buy a small frontier
+   screen before broader matched comparisons. No new runs are scheduled or budget raised.
 2. Continue to count cavalry and caster revisions once each. The two swarm roles remain
    provisional distinct questions; the [design audit](benchmark.md#scenario-design)
    records their scarce resources and alternative plays. A future three-point Domination
    candidate must earn its place rather than automatically replace Conquest.
-3. Self-comparisons stay deferred: army/control workload, neutral prompt length, useful
+3. The two delegated report decisions remain reviewable (caster assault as the family's
+   displayed scenario; siege defence scored like land battles). Displayed core labels
+   do not settle the benchmark collection. Interface candidates found in M1 are in
+   [controllers.md](controllers.md#candidate-changes-for-the-next-version).
+4. Self-comparisons stay deferred: army/control workload, neutral prompt length, useful
    history, factual representation and observation age are separate interventions.
    More units do not isolate a context-length effect. Siege-attack controls remain later.
-4. Low priority, deferred by the owner on 2026-10-16: the custom `emp-battery-skv-evacuation`
+5. Low priority, deferred by the owner on 2026-10-16: the custom `emp-battery-skv-evacuation`
    scenario. Its first live attempt failed the authored-placement check (measured in the
    teleport's own tick; [diagnosis](log.md#2026-10-16-evacuation-deferred-controller-version-labels-fixed)).
    Resuming means that fix, then authored placement, battery movement, partial progress
