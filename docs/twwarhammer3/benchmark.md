@@ -614,6 +614,37 @@ mechanism and the limits of comparing independent starts. Keep all six candidate
 provisional; next checks should target a named unresolved play, then a small strongest-model
 screen, before any broad comparison or final core selection.
 
+### Small focused candidates (draft, 2026-10-16 evening)
+
+A first draft of the owner's [scenario mix](#current-proposal-calibrate-before-a-broad-model-comparison),
+from the game database and earlier lobby card lists. These are definitions for the owner to
+review, not admitted scenarios. Nothing has run. The full draft, with rosters, database facts
+kept apart from hypotheses and the ladders, is `calibration/micro-scenarios-draft-20261016.md`.
+Shared settings: classic battle, very hard AI, modifier 1.0, unit scale 0.75, 1200 s
+timer, funds equal to the larger army's cost. Only base-game cards seen in earlier lobbies
+are used (no DLC assumed).
+
+| Id | Skill tested | Player | Enemy | Plausibility (database) and main risk |
+|---|---|---|---|---|
+| S1 | Feint and flank against braced anti-large (owner's example) | 2 Kislev Horse Raiders | 1 Empire Halberdiers | Riders 9.2 m/s, charge 40; halberds have charge defence and charge reflection vs large. Risk: the AI unit turns faster than any flank. Same skill as the cavalry family, so one of the two counts. |
+| S2 | Ammunition as the clock (kiting) | 2 Kislev Horse Archers | 1 Dwarf Slayers | 140 m, 18 arrows a man; Slayers unbreakable, armour 0, 4.0 m/s. Arrows alone need about 21% to hit, so finishing charges matter. Risk: trivial or impossible by a small margin. |
+| S3 | Crossfire, lines of fire | Spearmen with shields + 2 Handgunners | 2 Dwarf Warriors | Low-trajectory guns cannot fire over friends; dwarf shields 55%. Risk: shield arcs are game knowledge, not database facts. |
+| S4 | Protect a fragile unit (player defends) | Helblaster + Halberdiers | 2 Mounted Yeomen + Men-at-arms | Helblaster 290 m, fires low, cannot run; riders cross its range in about 32 s. Risk: too much or too little firepower. |
+| S5 | Spell window with scarce magic | Bright Wizard + Spearmen | 2 Swordsmen | Both damage spells also hit allies; about 12 magic at start. Overlaps the caster family. |
+| S6 | Hammer and anvil, rout cascade | Swordsmen + Empire Knights | 3 Swordsmen | The `skills` executor's charge skill can serve as the check. Partly overlaps S1. |
+| S7 | Terrain defence | 2 Longbeards (defending) | 4 Swordsmen | Weakest: the observation has blocked cells but no elevation; a hill test needs heights. Last or drop. |
+| L1 | Small skills at scale, context length | Empire, 20 units | Greenskins, 20 units, 2400 s | Overlaps swarm command on order volume. |
+| L2 | Three-way battle, two AI opponents | Kislev, 12 units | AI Greenskins and AI Dwarfs | Earlier five-unit free-for-alls show the AIs fight each other. Fallback: a three-point Domination. |
+
+Prerequisites, each a $0 lobby or scripted check: armies without lords (the profile's
+"Start without Lord(s)" box; `scenario_steps` currently recruits the first card as a lord
+card, so lordless rosters need a small setup change and a read-back), custom funds of
+800-1,600 (all scenarios so far use at least 8,000), and how the AI behaves with one to
+three units. Winnability per candidate: a naive scripted floor that should lose, then one
+disclosed diagnostic encoding the hypothesised play at `delay_seconds` 0 and 5. A win at
+5 s shows the play survives model latency; a floor win means the scenario is too easy and
+climbs. Suggested order: the lord/funds probe, S1, S2 and S4, then S3, S5 and S6; S7 last.
+
 ## Earlier implementation sequence (2026-10-15)
 
 The completed work and earlier decisions are recorded in the log:
