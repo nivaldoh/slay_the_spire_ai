@@ -37,7 +37,8 @@ def test_unnamed_historical_modes_use_saved_config_and_readable_armies(tmp_path)
     assert [scenario["name"] for scenario in data["scenarios"]] == ["siege-pilot", "survival-pilot"]
     survival = data["scenarios"][1]
     assert survival["battle_type"] == "survival"
-    assert survival["armies"] == {"friendly": "Dwarfs (2 units)", "enemy": "Waves"}
+    assert survival["armies"] == {"friendly": "2 Dwarf units", "enemy": "endless waves",
+                                  "line": "2 Dwarf units defending against endless waves"}
     # Game modes order the page; a siege without a declared attacker is the player defending.
     assert [scenario["mode"] for scenario in data["scenarios"]] == ["siege_defence", "survival"]
     # The declaration is evidence: do not write a synthetic name into it.
@@ -54,9 +55,9 @@ def test_one_row_per_commander_and_the_collector_groups_stay_intact(tmp_path):
     (scenario,) = data["scenarios"]
     assert [(row["name"], row["detail"], row["battles"], row["harnesses"])
             for row in scenario["rows"]] == [
-        ("model-a", "high reasoning, no tactical advice", ["g2-t0"], 1),
-        ("model-a", "low reasoning, no tactical advice", ["g0-t0"], 1),
-        ("model-b", "low reasoning, no tactical advice", ["g1-t0"], 1)]
+        ("model-a", "high reasoning, rules-only prompt", ["g2-t0"], 1),
+        ("model-a", "low reasoning, rules-only prompt", ["g0-t0"], 1),
+        ("model-b", "low reasoning, rules-only prompt", ["g1-t0"], 1)]
     assert len(data["report"]["groups"]) == 3
     assert all(not group["paired"] for group in data["report"]["groups"])
     assert [group["controllers"] for group in data["report"]["groups"]] == [
@@ -132,9 +133,9 @@ def test_commanders_get_readable_names_kinds_and_families():
                                      {"model": "gpt-6-sol", "effort": "low"})
 
     assert name("llm_rules") == {"kind": "model", "family": "gpt-6-sol", "name": "gpt-6-sol",
-                                 "detail": "low reasoning, no tactical advice",
-                                 "short": "low reasoning", "prompt": "no tactical advice"}
-    assert name("llm_rules@gpt-6-luna/medium")["detail"] == "medium reasoning, no tactical advice"
+                                 "detail": "low reasoning, rules-only prompt",
+                                 "short": "low reasoning", "prompt": "rules-only prompt"}
+    assert name("llm_rules@gpt-6-luna/medium")["detail"] == "medium reasoning, rules-only prompt"
     assert name("commander", card={"kind": "hybrid", "model": "gpt-6-luna"})["family"] == (
         "gpt-6-luna")
     assert name("rush_nearest", delay_ms=6000) == {
@@ -414,14 +415,14 @@ def test_scenarios_feature_the_selected_run_and_follow_the_notes_order(tmp_path)
     highlight = {"time_ms": 0, "title": "Opening", "units": ["f1"]}
     notes = {"scenarios": {"elsewhere": {"title": "Elsewhere"},
                            "frozen": {"title": "Frozen pass", "footnote": "Frozen ground.",
-                                      "question": "Can it cross?", "challenge": "Cross."}},
+                                      "heading": "A frozen pass", "challenge": "Cross."}},
              "runs": {"later/episode-0000": {"selected": True, "highlights": [highlight]}}}
     data = embedded(report_html.render(source, notes))
     assert [scenario["name"] for scenario in data["scenarios"]] == ["elsewhere", "frozen"]
     frozen = data["scenarios"][1]
-    assert {key: frozen[key] for key in ("title", "short", "question", "challenge", "footnote",
+    assert {key: frozen[key] for key in ("title", "short", "heading", "challenge", "footnote",
                                          "mode", "featured", "featured_reason")} == {
-        "title": "Frozen pass", "short": "Frozen pass", "question": "Can it cross?",
+        "title": "Frozen pass", "short": "Frozen pass", "heading": "A frozen pass",
         "challenge": "Cross.", "footnote": "Frozen ground.", "mode": "land", "featured": "g0-t0",
         "featured_reason": "selected"}
     assert data["omitted"]["setup_only"] == [3]
@@ -432,7 +433,7 @@ def test_scenarios_feature_the_selected_run_and_follow_the_notes_order(tmp_path)
     assert payloads[0]["highlights"] == [highlight] and payloads[1]["highlights"] == []
     scenario = report_html.display_data(source)["scenarios"][1]  # without notes
     assert (scenario["featured"], scenario["featured_reason"]) == ("g0-t1", "first_model_run")
-    assert (scenario["title"], scenario["question"]) == ("frozen", None)
+    assert (scenario["title"], scenario["heading"]) == ("frozen", None)
 
 
 def test_a_job_without_a_recorded_scenario_still_gets_a_readable_title(tmp_path):
@@ -563,3 +564,18 @@ def test_development_counts_losses_as_seen_and_accepted_orders_by_kind():
         "step_s": 5, "end_s": 12.0, "own": [0, 10, 30, 40], "enemy": [0, 20, 20, 100],
         "orders": {"move": [1, 1, 0, 0], "ability": [1, 0, 0, 0], "other": [0, 1, 0, 0],
                    "reinforce": [0, 0, 1, 0]}}
+
+
+def test_armies_read_as_races_and_roles():
+    siege = {"battle_type": "siege", "attacker": "enemy",
+             "player": {"faction": "wh3_dlc23_chd_astragoth", "units": ["a"] * 9},
+             "enemy": {"faction": "wh_main_grn_greenskins", "units": ["b"] * 16}}
+    assert report_html.armies(siege)["line"] == (
+        "9 Chaos Dwarf units defending against 16 Greenskin units")
+    attack = {"attacker": "player", "player": {"faction": "wh_main_brt_bretonnia", "units": ["a"]},
+              "enemy": {"faction": "wh_main_emp_empire", "units": ["b", "c"]}}
+    assert report_html.armies(attack)["line"] == "1 Bretonnian unit attacking 2 Empire units"
+    # An unknown race keeps its readable faction name; no role reads "against".
+    other = {"player": {"faction": "wh9_main_xyz_new_people", "units": ["a", "b"]},
+             "enemy": {"faction": "wh_main_dwf_dwarfs"}}
+    assert report_html.armies(other)["line"] == "2 New People units against Dwarf army"

@@ -32,19 +32,17 @@
     <p class="dek">Each model reads a text report of a <cite>Total War: WARHAMMER III</cite> battle and orders its regiments through a game mod while the battle keeps running. Battles take minutes of real time, so the set is kept small and every scenario asks a different question.</p>
     <nav id="index" class="index" aria-label="Scenarios"></nav>
     <p id="finding" class="finding"></p>
-    <p id="facts" class="facts-line"></p>
   </header>
 
-  <section id="watch" class="watch" aria-labelledby="question">
-    <div class="wrap scenario-head"><h2 id="question"></h2></div>
-    <div class="wrap challenge-box"><p id="challenge" class="challenge"></p></div>
+  <section id="watch" class="watch" aria-labelledby="heading">
+    <div class="wrap scenario-head"><h2 id="heading"></h2></div>
     <div id="viewer" class="viewer">
       <div class="picks">
         <label id="scenario-pick" class="pick" hidden><span>Scenario</span><select id="scenario"></select></label>
         <label class="pick run-pick"><span>Battle</span><select id="run-select"></select></label>
         <span class="watch-actions">
-          <button id="watch-featured" class="primary" type="button">▶ Key maneuver</button>
-          <button id="watch-full" type="button">▶ Full battle</button>
+          <button id="watch-featured" class="primary" type="button">Play key moment</button>
+          <button id="watch-full" type="button">Play full battle</button>
         </span>
       </div>
       <div class="stage">
@@ -55,24 +53,24 @@
             <p id="map-status" class="map-status" hidden></p>
             <p id="map-synthetic" class="map-synthetic" hidden>SYNTHETIC DEMO · invented frames</p>
           </div>
-          <div class="map-bottom">
-            <p id="map-lag" class="map-lag" hidden></p>
-            <p class="map-legend"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-friendly"/></svg><span id="map-army">The model's army</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-enemy"/></svg><span>Game AI</span></p>
-            <button id="lag-toggle" class="lag-toggle" type="button" aria-pressed="false" title="Outline every unit where it stood in the view behind the latest reply">Model's view</button>
-          </div>
           <div id="map-selection" class="map-selection" hidden></div>
           <p id="map-empty" class="map-empty" hidden></p>
         </div>
         <div class="controls">
-          <button id="play" class="play" type="button">▶ Play</button>
+          <button id="play" class="play" type="button">Play</button>
           <span id="clock" class="clock" aria-label="Battle clock">0:00 / 0:00</span>
           <span class="step-group" role="group" aria-label="Step through decisions">
-            <button id="prev-decision" type="button" aria-label="Previous decision" title="Previous decision (←)">◀</button><span class="step-label">Decision</span><button id="next-decision" type="button" aria-label="Next decision" title="Next decision (→)">▶</button>
+            <button id="prev-decision" type="button" aria-label="Previous decision" title="Previous decision (←)">Back</button><span class="step-label">Decision</span><button id="next-decision" type="button" aria-label="Next decision" title="Next decision (→)">Next</button>
           </span>
           <span class="step-group" role="group" aria-label="Step through events">
-            <button id="prev-event" type="button" aria-label="Previous event" title="Previous event ([)">◀</button><span class="step-label">Event</span><button id="next-event" type="button" aria-label="Next event" title="Next event (])">▶</button>
+            <button id="prev-event" type="button" aria-label="Previous event" title="Previous event ([)">Back</button><span class="step-label">Event</span><button id="next-event" type="button" aria-label="Next event" title="Next event (])">Next</button>
           </span>
           <label class="speed">Replay <select id="speed"><option value="1">1×</option><option value="4" selected>4×</option><option value="16">16×</option></select></label>
+          <span class="view-group">
+            <span class="map-legend"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-friendly"/></svg><span id="map-army">The model's army</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-enemy"/></svg><span>Game AI</span></span>
+            <button id="lag-toggle" class="lag-toggle" type="button" aria-pressed="false" title="Outline every unit where it stood in the view behind the latest reply">Model's view</button>
+          </span>
+          <p id="map-lag" class="map-lag" hidden></p>
         </div>
         <input id="scrubber" class="scrubber" type="range" min="0" max="1" step="0.1" value="0" aria-label="Battle time in seconds">
         <svg id="strip" class="strip" role="img" aria-label="Timeline: decisions, rejections, highlights and key events"><g id="strip-static"></g><line id="strip-cursor" class="strip-cursor" x1="0" x2="0" y1="0" y2="0"/></svg>
@@ -102,6 +100,7 @@
         <div id="moment" class="moment" aria-label="This moment in the battle"></div>
       </aside>
     </div>
+    <div class="wrap challenge-box"><p id="challenge" class="challenge"></p></div>
     <div class="wrap after">
       <p id="chapters-head" class="chapters-head" hidden><b>Analyst notes</b> written after the battle from its recorded frames and orders (drafted with AI assistance and checked against the records); not the model's words.</p>
       <ol id="highlights" class="chapters" aria-label="Analyst notes"></ol>

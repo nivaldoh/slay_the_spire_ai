@@ -141,7 +141,7 @@ const Viewer = (() => {
     AGE_H = 32;
   // Bands kept clear of units: the caption on top, the scale bar and north arrow below.
   const TOP_BAND = 40,
-    BOTTOM_BAND = 44;
+    BOTTOM_BAND = 36;
   let r = null,
     run = {},
     roster = new Map(),
@@ -310,12 +310,25 @@ const Viewer = (() => {
     }
     return box;
   }
-  // Fixed framing per replay: every recorded position over the battle, plus a margin.
+  // Fixed framing per replay, where the fighting happened: the 5th to 95th percentile of every
+  // recorded position over the battle (a unit that strays far off does not shrink the rest),
+  // and where the units seen in the first 30 s started, with a margin. No camera moves; "Show the whole map" frames
+  // the terrain instead.
   function bounds() {
     const terrain = r.terrain?.bounds;
     if ($("whole").checked && terrain)
       return [terrain.min_x, terrain.min_z, terrain.max_x, terrain.max_z];
-    const points = [...tracks.values()].flat();
+    const all = [...tracks.values()].flat(),
+      xs = all.map((p) => p.x).sort((a, b) => a - b),
+      zs = all.map((p) => p.z).sort((a, b) => a - b),
+      at = (list, q) => list[Math.round((list.length - 1) * q)];
+    const points = all.length
+      ? [
+          { x: at(xs, 0.05), z: at(zs, 0.05) },
+          { x: at(xs, 0.95), z: at(zs, 0.95) },
+          ...[...tracks.values()].map((track) => track[0]).filter((p) => p.t <= start + 30000),
+        ]
+      : [];
     for (const frame of r.frames) {
       const zone = frame.mode?.custom?.zone;
       if (zone) {
@@ -326,7 +339,7 @@ const Viewer = (() => {
         break;
       }
     }
-    extent ??= points.length ? around(points, 40, 160) : [-256, -256, 256, 256];
+    extent ??= points.length ? around(points, 50, 220) : [-256, -256, 256, 256];
     return extent;
   }
 
@@ -355,8 +368,7 @@ const Viewer = (() => {
       b = pinned == null ? bounds() : inspectBounds(r.decisions[pinned]);
     // The inspect caption wraps on narrow maps: its band grows to fit it.
     const top = pinned == null ? TOP_BAND : Math.max(TOP_BAND, $("map-caption").offsetHeight + 10);
-    // So does the legend row, on narrow maps.
-    const bottom = Math.max(BOTTOM_BAND, document.querySelector(".map-bottom").offsetHeight + 14);
+    const bottom = BOTTOM_BAND;
     const scale = Math.min((w - 28) / (b[2] - b[0]), (h - 28 - top - bottom) / (b[3] - b[1]));
     const cx = (b[0] + b[2]) / 2,
       cz = (b[1] + b[3]) / 2,
@@ -1103,7 +1115,7 @@ const Viewer = (() => {
       line.append(
         `The battle ended before the reply requested at ${clock(requested(d))} was applied.`,
       );
-    else line.append(el("span", null, "pulse"), el("span", waiting(now), "waiting"));
+    else line.append(el("span", waiting(now), "waiting"));
     return line;
   }
 
@@ -1113,7 +1125,7 @@ const Viewer = (() => {
     return node;
   }
   function jumpButton(t) {
-    const node = button(`▶ ${clock(t)}`, () => jump(t), "jump");
+    const node = button(clock(t), () => jump(t), "jump");
     node.setAttribute("aria-label", `Jump to ${clock(t)}`);
     return node;
   }
@@ -1650,8 +1662,13 @@ const Viewer = (() => {
     for (const listener of listeners) listener(time);
   }
 
+  // The one button with an icon.
   function updatePlay() {
-    $("play").textContent = playing ? "❚❚ Pause" : "▶ Play";
+    const icon = svg("svg", { viewBox: "0 0 16 16", class: "play-icon", "aria-hidden": "true" });
+    icon.append(
+      svg("path", { d: playing ? "M3 2h3.6v12H3zM9.4 2H13v12H9.4z" : "M4 2l10 6-10 6z" }),
+    );
+    $("play").replaceChildren(icon, playing ? "Pause" : "Play");
     $("play").setAttribute("aria-label", playing ? "Pause" : "Play");
   }
   function play() {

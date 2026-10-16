@@ -38,9 +38,22 @@ PRESENTATION = ("src/twwarhammer3/battle/report", "src/twwarhammer3/battle/repla
                 "src/twwarhammer3/battle/digest.py", "src/twwarhammer3/battle/watch.py",
                 "src/twwarhammer3/battle/stats.py", "configs/twwarhammer3/report_notes.json",
                 "configs/twwarhammer3/scenarios.json")
-PROMPTS = {"llm": "tactical advice in the prompt", "llm_rules": "no tactical advice",
-           "commander": "plans for scripted unit skills"}
-VARIANTS = {"llm": "tactics", "commander": "plans"}
+PROMPTS = {"llm": "prompt with tactical tips", "llm_rules": "rules-only prompt",
+           "commander": "writes plans that scripted unit skills carry out"}
+VARIANTS = {"llm": "tactical tips", "commander": "plans"}
+# Races by the code in a faction key (wh3_dlc23_chd_astragoth -> chd): name, adjective.
+RACES = {"brt": ("Bretonnia", "Bretonnian"), "emp": ("Empire", "Empire"),
+         "dwf": ("Dwarfs", "Dwarf"), "skv": ("Skaven", "Skaven"),
+         "chd": ("Chaos Dwarfs", "Chaos Dwarf"), "grn": ("Greenskins", "Greenskin"),
+         "ksl": ("Kislev", "Kislev"), "cth": ("Cathay", "Cathayan"),
+         "tze": ("Tzeentch", "Tzeentch"), "kho": ("Khorne", "Khorne"),
+         "sla": ("Slaanesh", "Slaanesh"), "nur": ("Nurgle", "Nurgle"),
+         "dae": ("Daemons of Chaos", "Daemon"), "chs": ("Warriors of Chaos", "Chaos"),
+         "ogr": ("Ogre Kingdoms", "Ogre"), "vmp": ("Vampire Counts", "Vampire Counts"),
+         "wef": ("Wood Elves", "Wood Elf"), "hef": ("High Elves", "High Elf"),
+         "def": ("Dark Elves", "Dark Elf"), "lzd": ("Lizardmen", "Lizardmen"),
+         "tmb": ("Tomb Kings", "Tomb Kings"), "cst": ("Vampire Coast", "Vampire Coast"),
+         "bst": ("Beastmen", "Beastmen"), "nor": ("Norsca", "Norscan")}
 SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the nearest visible enemy"),
             "rush_nearest": ("Charge nearest", "every unit runs at the nearest visible enemy"),
             "hold": ("Hold position", "never gives an order"),
@@ -83,22 +96,32 @@ def scenario_name(definition: dict) -> str | None:
 
 
 def armies(scenario: dict) -> dict:
-    """The declared starting armies in a few words."""
+    """The declared starting armies in a few words, by race: "9 Chaos Dwarf units defending
+    against 16 Greenskin units"."""
     def army(side):
         if not side:
             return None
         if isinstance(side, list):
-            return "; ".join(filter(None, map(army, side)))
-        faction = side.get("faction") or side.get("subculture") or "Unknown faction"
-        faction = re.sub(r"^wh\d?_(?:main|dlc\d+|pro\d+)_(?:sc_)?[a-z]+_", "", faction)
+            return " and ".join(filter(None, map(army, side)))
+        key = side.get("faction") or side.get("subculture") or ""
+        code = re.match(r"wh\d?_(?:main|dlc\d+|pro\d+)_(?:sc_)?([a-z]{3})_", key)
+        name = (RACES[code[1]][1] if code and code[1] in RACES else
+                replay.title(re.sub(r"^wh\d?_(?:main|dlc\d+|pro\d+)_(?:sc_)?[a-z]+_", "", key))
+                or "Unknown")
         count = len(side["units"]) if isinstance(side.get("units"), list) else None
-        return f"{replay.title(faction)} ({count} units)" if count is not None else replay.title(
-            faction)
+        return f"{count} {name} unit{'s' * (count != 1)}" if count is not None else f"{name} army"
 
-    enemy = army(scenario.get("enemy"))
+    friendly, enemy = army(scenario.get("player")), army(scenario.get("enemy"))
     if enemy is None and scenario.get("battle_type") == "survival":
-        enemy = "Waves"
-    return {"friendly": army(scenario.get("player")), "enemy": enemy}
+        enemy = "endless waves"
+    attacker = scenario.get("attacker")
+    defends = (scenario.get("expect") or {}).get("player_defends")
+    if defends is None and scenario.get("battle_type") == "survival":
+        defends = True  # the waves come to the player
+    verb = ("defending against" if attacker == "enemy" or (attacker is None and defends)
+            else "attacking" if attacker == "player" or defends is False else "against")
+    return {"friendly": friendly, "enemy": enemy,
+            "line": f"{friendly} {verb} {enemy}" if friendly and enemy else friendly or enemy}
 
 
 def _json(value: object) -> str:
@@ -365,7 +388,7 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
         scenarios.append({
             "id": f"scenario-{len(scenarios) + 1}", "name": name,
             "title": _title(note, {**scenario, "name": name}),
-            "question": note.get("question"),
+            "heading": note.get("heading"),
             "family": note.get("family") or scenario.get("family"),
             "short": note.get("short") or _title(note, {**scenario, "name": name}),
             "core_candidate": note.get("core_candidate", False),
@@ -500,13 +523,13 @@ def development(payload: dict) -> dict:
 
 
 def start(payload: dict) -> dict:
-    """Where the armies began, for the scenario index: friendly units in the first frame that
-    places them, enemy units where first seen."""
-    first = next((frame for frame in payload["frames"] if frame["friendly"]), {"friendly": []})
-    return {"friendly": [[round(u["x"]), round(u["z"])] for u in first["friendly"]
-                         if isinstance(u.get("x"), (int, float))
-                         and isinstance(u.get("z"), (int, float))],
-            "enemy": [u["at"] for u in route(payload)["enemy"]]}
+    """Where the armies began, for the scenario index: the units of the first frame that places
+    friendly units (enemy units only as far as visible then)."""
+    first = next((frame for frame in payload["frames"] if frame["friendly"]),
+                 {"friendly": [], "enemy": []})
+    return {side: [[round(u["x"]), round(u["z"])] for u in first[side]
+                   if isinstance(u.get("x"), (int, float)) and isinstance(u.get("z"), (int, float))]
+            for side in ("friendly", "enemy")}
 
 
 def render(report: dict, notes: dict | None = None) -> str:

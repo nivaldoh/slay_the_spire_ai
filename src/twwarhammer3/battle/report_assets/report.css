@@ -29,11 +29,15 @@
   --t-l: 19px;
   --t-xl: clamp(22px, 2.2vw, 27px);
   --t-xxl: clamp(30px, 3.2vw, 44px);
-  --sans: Bahnschrift, "Segoe UI", system-ui, "Ubuntu Sans", sans-serif;
-  --serif: Charter, "Bitstream Charter", "Sitka Text", Cambria, "Iowan Old Style", "DejaVu Serif",
-    Georgia, serif;
+  /* Windows: Bahnschrift / Segoe UI and Sitka / Cambria; macOS: SF and Charter / Iowan;
+     Android: Roboto and Noto Serif; Linux: Noto, Ubuntu or Liberation before the generic. */
+  --sans: Bahnschrift, "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Noto Sans",
+    "Ubuntu Sans", Ubuntu, Cantarell, "Liberation Sans", system-ui, sans-serif;
+  --serif: Charter, "Bitstream Charter", "Sitka Text", Cambria, "Iowan Old Style",
+    "Noto Serif", "Liberation Serif", Georgia, serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
   --gutter: 32px;
+  --measure: 68ch;
   --ability: #ff6fd8;
 }
 * {
@@ -184,7 +188,7 @@ button.inline {
   letter-spacing: -0.012em;
 }
 .dek {
-  max-width: 70ch;
+  max-width: var(--measure);
   margin-top: 14px;
   font: 18px / 1.55 var(--serif);
   color: var(--ink-2);
@@ -200,15 +204,16 @@ button.inline {
 }
 .index-item {
   display: grid;
-  gap: 8px;
+  gap: 7px;
   align-content: start;
   min-height: 0;
-  padding: 0 0 8px;
+  padding: 0 0 9px;
   border: 0;
   border-bottom: 3px solid transparent;
   border-radius: 0;
   background: none;
   text-align: left;
+  cursor: pointer;
 }
 .index-map {
   display: block;
@@ -233,8 +238,29 @@ button.inline {
   line-height: 1.25;
   color: var(--ink-2);
 }
-.index-item:hover .index-name {
+.index-item:hover .index-name,
+.index-item:focus-visible .index-name {
   color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.index-item:hover .index-map {
+  outline: 2px solid var(--ink-2);
+  outline-offset: 2px;
+}
+/* A bar per model and one for the best rule, on the scenario's scale. */
+.index-bars {
+  display: grid;
+  gap: 2px;
+}
+.index-bars i {
+  display: block;
+  height: 4px;
+  background: var(--line);
+}
+.index-bars b {
+  display: block;
+  height: 100%;
 }
 .index-item[aria-current="true"] {
   border-bottom-color: var(--ink);
@@ -248,25 +274,20 @@ button.inline {
   height: 16px;
   flex: none;
 }
-.facts-line {
-  margin-top: 10px;
-  font-size: var(--t-s);
-  color: var(--muted);
-}
-
-/* The battle on show: its question, then (wide) the challenge above the replay or (narrow)
-   after it, so the battle comes first on a phone. */
+/* The battle on show: its heading, the replay, then the scenario's paragraph, so the map
+   starts on the first screen. */
 .watch {
   display: flex;
   flex-direction: column;
   scroll-margin-top: 8px;
 }
 .scenario-head h2 {
+  margin-bottom: 14px;
   font: 600 var(--t-xl) / 1.15 var(--serif);
 }
 .challenge {
-  max-width: 80ch;
-  margin: 8px 0 18px;
+  max-width: var(--measure);
+  margin: 20px 0 0;
   font: 16px / 1.55 var(--serif);
   color: var(--ink-2);
 }
@@ -382,13 +403,9 @@ button.inline {
   pointer-events: none;
   line-height: 1.35;
 }
-.map-caption,
-.map-status,
 .map-selection,
 .map-synthetic,
-.map-empty,
-.map-lag,
-.map-legend {
+.map-empty {
   font-size: var(--t-s);
   line-height: 1.35;
   color: var(--stage-ink);
@@ -397,14 +414,22 @@ button.inline {
   border-radius: 6px;
   padding: 5px 9px;
 }
+.map-caption,
+.map-status {
+  line-height: 1.35;
+  color: var(--stage-ink);
+  text-shadow:
+    0 0 3px var(--map),
+    0 0 6px var(--map);
+}
 .map-caption {
-  font-weight: 600;
   max-width: 70%;
   margin-right: auto;
-  border-color: rgba(243, 239, 228, 0.45);
+  font: 600 var(--t-m) / 1.3 var(--sans);
 }
 .map-caption.pinned {
-  border-color: var(--stage-ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 .map-status {
   color: var(--note);
@@ -439,21 +464,12 @@ button.inline {
   min-height: 28px;
   padding: 0 9px;
 }
-.map-bottom {
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  max-width: calc(100% - 110px);
-}
 .map-legend {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: var(--t-xs);
+  color: var(--stage-ink-2);
 }
 .map-legend svg {
   width: 14px;
@@ -462,19 +478,26 @@ button.inline {
 .map-legend span + svg {
   margin-left: 6px;
 }
-.lag-toggle {
-  min-height: 30px;
-  font-size: var(--t-xs);
-  font-weight: 600;
-  line-height: 1;
+.view-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-left: auto;
 }
-.lag-toggle[aria-pressed="true"] {
+.lag-toggle {
+  font-size: var(--t-s);
+  font-weight: 600;
+}
+.viewer .lag-toggle[aria-pressed="true"] {
+  background: var(--stage-ink);
   border-color: var(--stage-ink);
-  box-shadow: 0 0 0 1px var(--stage-ink) inset;
+  color: var(--stage);
 }
 .map-lag {
   flex-basis: 100%;
-  max-width: 460px;
+  font-size: var(--t-xs);
+  color: var(--note);
 }
 .map-empty {
   position: absolute;
@@ -504,16 +527,17 @@ button.inline {
   border-color: var(--stage-ink);
   color: var(--stage);
 }
-/* As specific as the stage button rule above, and after it, so the icon stays. */
-.viewer button.lag-toggle {
-  padding: 0 10px 0 30px;
-  background: rgba(9, 16, 20, 0.88)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='6' cy='8' r='4' fill='none' stroke='%2356b4e9' stroke-width='1.5'/%3E%3Ccircle cx='11' cy='8' r='3.4' fill='%2356b4e9' fill-opacity='.5'/%3E%3C/svg%3E")
-    no-repeat 9px 50% / 16px;
-}
 .controls .play {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   min-width: 96px;
   font-weight: 650;
+}
+.play-icon {
+  width: 13px;
+  height: 13px;
+  fill: currentColor;
 }
 .clock {
   font: 600 var(--t-m) / 1 var(--sans);
@@ -529,9 +553,8 @@ button.inline {
 .viewer .step-group button {
   border: 0;
   background: none;
-  min-width: 36px;
-  padding: 0 8px;
-  font-size: 11px;
+  padding: 0 10px;
+  font-size: var(--t-s);
 }
 .step-label {
   color: var(--stage-muted);
@@ -781,22 +804,9 @@ button.inline {
   color: var(--muted);
 }
 .status-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   margin-bottom: 12px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  background: var(--stage-3);
   font-size: var(--t-s);
   color: var(--stage-ink);
-}
-.status-line .pulse {
-  width: 8px;
-  height: 8px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--stage-ink-2);
 }
 .pinned-line {
   display: flex;
@@ -870,11 +880,16 @@ blockquote {
   gap: 8px;
   align-items: baseline;
 }
-.viewer .jump {
+.viewer button.jump {
   flex: none;
-  min-height: 26px;
-  padding: 0 7px;
-  font: 600 var(--t-xs) / 1 var(--sans);
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--stage-ink);
+  font: 600 var(--t-xs) / 1.4 var(--sans);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .age-sentence strong {
   color: var(--stage-ink);
@@ -1048,7 +1063,7 @@ blockquote {
 }
 .chapter .label {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 8px;
   font-size: var(--t-xs);
   color: var(--muted);
@@ -1132,9 +1147,14 @@ blockquote {
   color: var(--muted);
 }
 .code-chip {
-  min-height: 26px;
-  padding: 0 7px;
-  font: 600 11px/1 var(--sans);
+  min-height: 0;
+  padding: 2px 3px;
+  border: 0;
+  background: none;
+  font: 700 var(--t-xs) / 1.2 var(--sans);
+}
+.code-chip:hover {
+  text-decoration: underline;
 }
 .code-chip[aria-pressed="true"],
 .unit-chip[aria-pressed="true"] {
@@ -1197,9 +1217,9 @@ blockquote {
   font: 600 var(--t-xl) / 1.15 var(--serif);
 }
 .finding {
-  max-width: 84ch;
-  margin-top: 8px;
-  font: 19px / 1.55 var(--serif);
+  max-width: var(--measure);
+  margin-top: 22px;
+  font: 17px / 1.55 var(--serif);
 }
 .finding:empty {
   display: none;
@@ -1239,7 +1259,7 @@ blockquote {
 .board-head,
 .board-row {
   display: grid;
-  grid-template-columns: minmax(150px, 220px) minmax(200px, 1fr) 64px 76px 64px;
+  grid-template-columns: minmax(150px, 220px) minmax(200px, 1fr) 128px 76px 64px;
   gap: 20px;
   align-items: center;
 }
@@ -1345,9 +1365,13 @@ sup {
    each side lost and its orders by kind, on axes shared across the panels. */
 .commanders {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 38px 32px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 40px;
   align-items: start;
+}
+.commanders:has(> :only-child) {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 760px;
 }
 .commander {
   display: grid;
@@ -1423,7 +1447,7 @@ sup {
   stroke-width: 1;
 }
 .development .tick {
-  font-size: 10.5px;
+  font-size: 12px;
   fill: var(--muted);
 }
 .development .count {
@@ -1443,7 +1467,7 @@ sup {
   stroke-linecap: round;
 }
 .development .end-label {
-  font-size: 11px;
+  font-size: 12px;
   fill: var(--ink-2);
 }
 
@@ -1476,12 +1500,13 @@ sup {
 }
 .matrix-axis .scale {
   margin-left: 150px;
-  margin-right: 130px;
+  margin-right: 194px;
 }
 .scenario-row {
   align-items: start;
   padding: 14px 0;
   border-bottom: 1px solid var(--line);
+  cursor: pointer;
 }
 .scenario-row:last-child {
   border-bottom: 0;
@@ -1498,10 +1523,10 @@ sup {
   background: none;
   font-weight: 600;
   text-align: left;
-  text-decoration: underline dotted var(--faint);
   text-underline-offset: 3px;
 }
-.matrix .scenario:hover,
+.scenario-row:hover .scenario,
+.matrix .scenario:focus-visible,
 .scenario-row[aria-current="true"] .scenario {
   text-decoration: underline;
 }
@@ -1511,7 +1536,7 @@ sup {
 }
 .bar-row {
   display: grid;
-  grid-template-columns: 150px minmax(0, 1fr) 58px 72px;
+  grid-template-columns: 150px minmax(0, 1fr) 58px 136px;
   align-items: center;
   font-size: var(--t-s);
 }
@@ -1555,7 +1580,7 @@ sup {
 }
 .footer h2 {
   margin-bottom: 18px;
-  font-size: var(--t-xl);
+  font: 600 var(--t-xl) / 1.15 var(--serif);
   color: var(--ink);
 }
 .interface {
@@ -1693,43 +1718,17 @@ sup {
     font-size: 15.5px;
     line-height: 1.5;
   }
-  .facts-line {
-    margin-top: 6px;
-    font-size: var(--t-xs);
-  }
   .scenario-head h2 {
     font-size: 21px;
   }
-  /* The index scrolls sideways inside its own row; the page never does. */
+  /* The index wraps to three columns: every scenario on screen. */
   .index {
-    display: flex;
-    gap: 12px;
-    margin: 18px calc(-1 * var(--gutter)) 0;
-    padding: 0 var(--gutter);
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    scrollbar-width: none;
-  }
-  .index-item {
-    flex: 0 0 116px;
-    gap: 6px;
-    scroll-snap-align: start;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px 10px;
+    margin-top: 18px;
   }
   .index-name {
     font-size: var(--t-xs);
-  }
-  /* The battle first: the challenge after the replay. */
-  .watch > .viewer {
-    order: 1;
-  }
-  .watch > .challenge-box {
-    order: 2;
-  }
-  .challenge {
-    margin: 16px 0 0;
-  }
-  .watch > .after {
-    order: 3;
   }
   .viewer {
     width: 100%;
@@ -1785,16 +1784,19 @@ sup {
   }
   .commanders {
     grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
   }
   /* Figure 3: the name above narrower bars. */
   .bar-row {
-    grid-template-columns: 122px minmax(0, 1fr) 50px 0;
+    grid-template-columns: 112px minmax(0, 1fr) 46px;
   }
   .bar-row small {
-    display: none;
+    grid-column: 3 / -1;
+    padding: 0;
+    text-align: right;
   }
   .matrix-axis .scale {
-    margin-left: 122px;
-    margin-right: 50px;
+    margin-left: 112px;
+    margin-right: 46px;
   }
 }

@@ -25,16 +25,34 @@ const clock = (ms) => {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 };
-// Figure 2's items: one per model (its commanders pooled) and per scripted rule.
+// Figure 2's items: one per model, its commanders pooled.
 const plansOf = (data, item) => {
   const items = [];
-  for (const row of item.rows) {
-    const same =
-      row.kind === "model" && items.find((i) => i.kind === "model" && i.family === row.family);
+  for (const row of item.rows.filter((r) => r.kind === "model")) {
+    const same = items.find((i) => i.family === row.family);
     if (same) same.battles.push(...row.battles);
     else items.push({ ...row, battles: [...row.battles] });
   }
   return items;
+};
+// A commander's record beside its score, as the page writes it.
+const recordOf = (outcomes) =>
+  outcomes.length === 1
+    ? `${outcomes[0] === "won" ? "won" : outcomes[0] === "draw" ? "drew" : "lost"} its only battle`
+    : `won ${outcomes.filter((o) => o === "won").length} of ${outcomes.length}`;
+// The median order age of a commander's battles: per battle, its plans' ages when it has them
+// (the asynchronous commander), else its batches'.
+const ageOf = (data, keys) => {
+  const ages = keys
+    .map((key) => data.battles[key].timing)
+    .filter(Boolean)
+    .flatMap((t) => (t.plans.length ? t.plans : t.ages))
+    .sort((a, b) => a - b);
+  if (!ages.length) return null;
+  const at = (ages.length - 1) / 2;
+  return (
+    ages[Math.floor(at)] + (ages[Math.ceil(at)] - ages[Math.floor(at)]) * (at - Math.floor(at))
+  );
 };
 
 // The scenario the page opens on: Figure 1's, the largest controlled comparison, else the first.
@@ -125,6 +143,8 @@ async function main() {
     await go(`${stem}.html`);
     const data = JSON.parse(await page.locator("#report-data").textContent());
     const saved = JSON.parse(await fs.readFile(`${stem}.json`, "utf8"));
+    // At 1440 × 900 the map's top is on the first screen.
+    assert.ok((await page.locator("#map").boundingBox()).y < 900, "the map starts on screen");
     assert.deepEqual(
       data.report.groups.map((group) => group.controllers),
       saved.groups.map((group) => group.controllers),
@@ -134,7 +154,7 @@ async function main() {
       const [, gi, ti] = key.match(/^g(\d+)-t(\d+)$/);
       return saved.groups[gi].trials[ti];
     };
-    assert.equal(await text("#question"), scenario.question || scenario.title);
+    assert.equal(await text("#heading"), scenario.heading || scenario.title);
     // The masthead's index: one map per scenario, the opening one marked; the finding speaks
     // for the benchmark as a whole.
     if (data.scenarios.length > 1) {
@@ -152,6 +172,17 @@ async function main() {
       assert.deepEqual(
         await page.locator("#index .index-name").allInnerTexts(),
         data.scenarios.map((s) => s.short),
+      );
+      // Under each map, a bar per model and one for the best rule.
+      const models = new Set(
+        data.scenarios.flatMap((s) =>
+          s.rows.filter((r) => r.kind === "model").map((r) => r.family),
+        ),
+      ).size;
+      const rules = data.scenarios.some((s) => s.rows.some((r) => r.kind === "scripted"));
+      assert.equal(
+        await count("#index .index-item:first-child .index-bars i"),
+        models + (rules ? 1 : 0),
       );
     }
     const [, g, t] = scenario.featured.match(/^g(\d+)-t(\d+)$/);
@@ -212,8 +243,26 @@ async function main() {
         shown.map(Number),
         rows.map((keys) => meanScore(keys)).filter((v) => v != null),
       );
-      assert.match(await text("#finding"), /scores higher in \d+ of \d+ scenario/);
+      // Each row's record and median order age; a commander battle's plan ages stand for that
+      // battle only (a regression: they once hid every other battle's ages).
+      const cells = await page
+        .locator("#headline .board-row")
+        .evaluateAll((lines) =>
+          lines.map((line) => [...line.children].slice(2, 4).map((cell) => cell.textContent)),
+        );
+      rows.forEach((keys, i) => {
+        assert.equal(
+          cells[i][0],
+          recordOf(keys.map((key) => trialOf(key).engine_outcome)),
+          `Figure 1 record, row ${i}`,
+        );
+        const age = ageOf(data, keys);
+        if (age != null)
+          assert.equal(cells[i][1], `${age.toFixed(1)} s`, `Figure 1 order age, row ${i}`);
+      });
+      assert.match(await text("#finding"), /over \d+ launches with one test setup/);
     }
+    assert.match(await text("#finding"), /Early results .*: \d+ battles in/);
     // Cumulative API spend per model, every attempt included.
     const spend = {};
     for (const group of saved.groups)
@@ -420,10 +469,9 @@ async function main() {
         (await plan.locator("figcaption strong").innerText()).replace("†", ""),
         item.name,
       );
-      const wins = item.battles.map(trialOf).filter((trial) => trial.engine_outcome === "won");
       assert.equal(
         await plan.locator("figcaption small").innerText(),
-        `${item.battles.length} battle${item.battles.length === 1 ? "" : "s"}, ${wins.length} won`,
+        recordOf(item.battles.map((key) => trialOf(key).engine_outcome)),
       );
       // Its battle development: soldiers lost and orders by kind, on shared axes.
       if (item.battles.some((key) => data.battles[key].development))
@@ -504,12 +552,16 @@ async function main() {
     assert.equal(reportFile.report.groups.length, data.report.groups.length);
     assert.equal(reportFile.scenarios.length, data.scenarios.length);
 
-    // Phone width: the map is on the first screen and nothing scrolls sideways.
+    // Phone width: every scenario of the index on screen, the map soon after, nothing sideways.
     await page.setViewportSize({ width: 390, height: 844 });
     await go(`${stem}.html`);
     await noHorizontalScroll();
+    for (const box of await page
+      .locator("#index .index-item")
+      .evaluateAll((items) => items.map((item) => item.getBoundingClientRect().right)))
+      assert.ok(box <= 390, "the index wraps on a phone");
     const map = await page.locator("#map").boundingBox();
-    assert.ok(map.y < 844, "the map starts on the first phone screen");
+    assert.ok(map.y < 2 * 844, "the map starts within two phone screens");
     await page.screenshot({ path: path.join(output, "phone.png"), fullPage: true });
 
     // The copied HTML is self-contained; every scenario has its own measures and replay.
@@ -584,8 +636,8 @@ async function main() {
     await page.setViewportSize({ width: 1440, height: 900 });
     await go(pair);
     const pairData = JSON.parse(await page.locator("#report-data").textContent());
-    const sol = (effort) => ["gpt-6-sol", `${effort} reasoning, no tactical advice`],
-      luna = ["gpt-6-luna", "medium reasoning, no tactical advice"];
+    const sol = (effort) => ["gpt-6-sol", `${effort} reasoning, rules-only prompt`],
+      luna = ["gpt-6-luna", "medium reasoning, rules-only prompt"];
     assert.deepEqual(
       pairData.scenarios[0].rows.map((row) => [row.name, row.detail]),
       [luna, sol("high"), sol("low")],
@@ -601,7 +653,7 @@ async function main() {
     await page.locator("#open-settings").click();
     const settings = await text("#settings-body");
     assert.ok(settings.includes(`${luna.join(", ")}, policy llm_rules@gpt-6-luna/medium`));
-    assert.match(settings, /Prompt the model received \(no tactical advice\)/);
+    assert.match(settings, /Prompt the model received \(rules-only prompt\)/);
     await page.locator("#close-settings").click();
 
     // Synthetic demo: SYNTHETIC DEMO in the page, the viewer and every download.

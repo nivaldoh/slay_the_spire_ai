@@ -274,9 +274,11 @@ def test_orders_read_as_one_line_per_unit_with_distances_and_compass_points():
         {"unit": "f4", "status": "unacknowledged", "text": "Guard: turn fire at will off"},
         {"unit": None, "status": "ok", "text": "Army: use Blood Rite"}]
     assert replay.summary_lines([], LABELS) == []
-    # A spell is named without its lore.
+    # A spell is named without its lore; a build names the option and slot in words.
     assert replay.ability_name("wh3_main_spell_tzeentch_blue_fire_of_tzeentch") == (
         "Blue Fire of Tzeentch")
+    assert replay.step_text({"type": "build", "option": "tower_magic_3", "slot": "s1"}, None,
+                            {}) == "build magic tower 3 on slot 1"
 
 
 def test_next_facts_report_recorded_outcomes_within_each_units_window():
