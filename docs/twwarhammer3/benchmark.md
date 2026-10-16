@@ -266,6 +266,27 @@ so this is evidence of an available mana-allocation problem, not a model ranking
 No extra caster screen is needed for this expansion tranche; keep it as a provisional
 core family and audit actual spell value in later controlled work.
 
+**Family audit under "less is more" (2026-10-16, recommendation for the owner).** An
+independent read of the saved battles asked of each live family: which plays were
+executed, whether results moved with the controller's decisions, and whether its decision
+collapses into another family's. [H] marks conclusions that rest on hidden evaluation data.
+The selection itself is the owner's call; nothing has been demoted.
+
+| Family | Evidence | Recommendation |
+|---|---|---|
+| Cavalry against anti-large | Sol won by flanking to the guns (382 s, 487 s); Luna charged into the halberds. At ×1.1 Sol 1/6, Luna 0/8, scripted 0 | Retain |
+| Siege defence | Identical starts, opposite outcomes: Sol's lord went alone and its cannon never fired; Luna held the gate, fired the cannon and retook a point. Ownership time (92% both) and the opening build did not discriminate | Retain |
+| Command a Skaven swarm | Luna 457 s against run-nearest 288 s (enemy active 0.71 against 0.92 [H]); the only large-army latency test (20 units, mean order age 9.2 s) | Retain; it needs Sol battles |
+| Caster-led force | All model evidence predates flight orders and the current prompts; as a timer-winning defender, Sol spent its second half evading | Screen the attacker variant `tze-caster-skv-assault` (declared in b8, never run) first |
+| Survive a Skaven swarm | Four losses, 444-593 s; `hold` matched or beat both `llm_rules` battles (0.53 against 0.64/0.84 [H]) | Demote to evidence; siege defence covers the gunline problem with more workable options |
+| Kislev reinforcement budgeting | Income was about 30 supplies/s (trace-checked); Sol bought the whole pool and kept 5165. The binding constraint was holding the spawn point, the siege's question | Demote unless supplies can be made scarce |
+
+That leaves a core of three distinct questions (manoeuvre against counters, territory and
+reserve, mass coordination under latency), with the caster as a conditional fourth. The
+overnight matched round (M1, [log](log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan))
+runs the retained three first and the two demotion candidates last, so the decision can
+rest on matched evidence.
+
 **Skaven swarm prototypes (screened 2026-10-15).** Both pin the Taurox
 map, very hard AI, modifier 1.0, unit scale 0.75, custom funds 12000 and the 1200 s
 timer, and use base Skaven (`wh2_main`) and Dwarf (`wh_main`) units whose keys exist in

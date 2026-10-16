@@ -1,17 +1,19 @@
 # Project state
 
-Updated 2026-10-16 03:25 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 03:30 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-No game controller is running. The evacuation screen `bench-b12-skv-evacuation-20261016`
-stopped at setup (03:20 UTC, no model call: the authored-placement check runs in the
-teleport's own tick), and the owner then deferred the custom evacuation scenario to a
-low-priority item. Overnight (owner away until 13:00 UTC; goal: continue the benchmark
-plan): the owner's pending report notes are being implemented on branch
-`wh3-report-notes` (worktree `../wh3-report-notes`), not yet merged. Ledger: $16.9058 of $52.
+WH3 queue M1a running since 2026-10-16 03:30 UTC (owner away until 13:00 UTC; goal:
+continue the benchmark plan, favoring game runs): plan
+`runs/twwarhammer3/calibration/m1a-plan-20261016.json` (frozen at `1f1083d`; state in
+`m1a-plan-20261016-state.json`): siege ×6, swarm command ×6, then a two-battle caster
+assault screen. Follow with `uv run python -m twwarhammer3 watch`. Do not commit to
+`main` while it runs (the queue compares HEAD before each job). The owner's report notes
+are being implemented on branch `wh3-report-notes` (worktree `../wh3-report-notes`).
+Ledger: $16.9058 of $52. See the [M1 plan](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -71,7 +73,7 @@ Next steps:
 ## Owner direction
 
 WH3:
-- 2026-10-16 (03:35 UTC): the WH3 API cap rises to $52 (Spire keeps its own $25). Overnight,
+- 2026-10-16 (03:28 UTC): the WH3 API cap rises to $52 (Spire keeps its own $25). Overnight,
   prioritize work that needs the game running, since a fullscreen battle makes the
   computer awkward to use during the day.
 - 2026-10-16 (03:20 UTC): delay the custom battles (the evacuation pilot) for much later in
