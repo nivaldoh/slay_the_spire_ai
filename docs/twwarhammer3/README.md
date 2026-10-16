@@ -173,11 +173,16 @@ families. b12 is implemented; work stopped at the owner's request on 2026-10-16 
 exploratory battles ([log](log.md#2026-10-16-harness-b12-and-distinct-scenario-families)).
 Siege defence and survival have two screens each. Conquest has two reference trials but
 was demoted from the core: its single point cannot test distributed control. Six core
-candidates with live evidence remain; the custom evacuation pilot is deferred.
+candidates with live evidence remain; the custom evacuation pilot is deferred. The
+overnight matched round M1 (58 battles, three models) is complete.
 
-1. Apply the owner's pending report notes ([reports.md](reports.md#pending-report-notes))
-   to the same `runs/twwarhammer3/reports/benchmark.html`, which includes the six new
-   battles and every failed setup attempt. No new battles are queued.
+1. Owner decisions from the overnight round M1 ([log](log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan)):
+   the core selection (the [family audit](benchmark.md#scenario-design) recommends
+   cavalry, siege defence, swarm command and the caster assault, and demoting the swarm
+   survival and Kislev scenarios, which separated no models in M1), and the two delegated
+   report decisions (caster assault as the family's scenario; siege defence scored like
+   land battles). Interface candidates found in M1 are in
+   [controllers.md](controllers.md#candidate-changes-for-the-next-version).
 2. Continue to count cavalry and caster revisions once each. The two swarm roles remain
    provisional distinct questions; the [design audit](benchmark.md#scenario-design)
    records their scarce resources and alternative plays. A future three-point Domination

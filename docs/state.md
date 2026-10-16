@@ -1,20 +1,16 @@
 # Project state
 
-Updated 2026-10-16 05:55 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 11:45 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-WH3 queue M1b running since 2026-10-16 05:54 UTC (owner away until 13:00 UTC; goal:
-continue the benchmark plan, favoring game runs): plan
-`runs/twwarhammer3/calibration/m1b-plan-20261016.json` (frozen at `0d530af`; state in
-`m1b-plan-20261016-state.json`): caster assault ×4, cavalry ×6, siege baselines ×2,
-survive-a-swarm ×6, Kislev ×6; expected to end about 10:30 UTC. Follow with
-`uv run python -m twwarhammer3 watch`. Do not commit to `main` while it runs (the queue
-compares HEAD before each job). M1a finished (results in the
-[M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan)).
-Ledger: $25.27 of $52.
+No game controller is running. The overnight matched round M1 finished at 11:30 UTC on
+2026-10-16: 58 battles over three queues, gpt-6-sol, gpt-6-luna and gpt-6.1-sol
+([M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan)).
+The reworked canonical report (`runs/twwarhammer3/reports/benchmark.html`) includes it.
+Ledger: $45.96 of $52.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -34,17 +30,19 @@ command; clear it when the job stops.
   count once each; the two swarm roles remain provisionally distinct. Conquest was
   demoted because it has one point, not the planned separated objectives. Win-rate admission
   is retired; difficult battles need meaningful, executable choices.
-- Siege and survival each have two new completed exploratory screens with exact rematch
-  starts. The canonical report retains setup failures and historical variants. Results,
-  costs and evidence reviews are in the [b12 log](twwarhammer3/log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
-- API spend: $16.9058 of the $52 cap (raised from $25 on 2026-10-16); no paid job is running.
+- M1 (2026-10-16 night): three battles per model on six core scenarios (gpt-6.1-sol on
+  the four that separate models). Siege, swarm command and caster assault separate the
+  models; survive-a-swarm and Kislev did not. The report page shows core scenarios and
+  completed battles only; its JSON keeps setup failures and variants. Results, costs and
+  reviews: [M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
+- API spend: $45.96 of the $52 cap (raised from $25 on 2026-10-16); no paid job is running.
 
-Next: finish M1; rebuild the canonical report with M1 (the reworked report merged as
-`0d530af`); the owner decides the core selection from the
-[family audit](twwarhammer3/benchmark.md#scenario-design). The custom evacuation pilot is deferred
-([diagnosis](twwarhammer3/log.md#2026-10-16-evacuation-deferred-controller-version-labels-fixed)).
-Later self-comparisons separate army/control workload from neutral prompt length, useful
-history, representation and observation age.
+Next: the owner's decisions listed in [README Next](twwarhammer3/README.md#next) (core
+selection from the family audit and M1; two delegated report decisions). Interface
+candidates from M1 (stale ability readiness, orders to routing units) would be a new
+version. The custom evacuation pilot is deferred. Later self-comparisons separate
+army/control workload from neutral prompt length, useful history, representation and
+observation age.
 Steam is pinned to 9.0.4; old evidence keeps its original build.
 
 ## Slay the Spire

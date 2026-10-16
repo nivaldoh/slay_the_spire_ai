@@ -127,11 +127,43 @@ two demotion candidates did not separate them: every survive-a-swarm battle lost
 489 and 672 s whoever commanded, and Kislev only by survival time (Sol 366-413 s, Luna
 293-365 s). This supports the audit's recommendation; the selection remains the owner's.
 
-**M1c (decided under the owner's overnight delegation, 09:25 UTC).** About three hours of
+**M1c (decided under the owner's overnight delegation, 09:21 UTC).** About three hours of
 game time and $17 of budget remained. A third model on the scenarios that separate models
 adds more than further repeats of the demotion candidates: gpt-6.1-sol (low,
 `llm_rules` v18), three battles each on siege defence, swarm command, caster assault and
 cavalry, same conditions, about $12 and 2.4 hours, ending before the owner returns.
+
+**M1c results** (`f7aae2a`, 09:21-11:30 UTC, gpt-6.1-sol low, `llm_rules` v18; every battle
+ended on an engine result): siege defence won 3 of 3 (538, 538, 587 s; $3.00), swarm
+command won 3 of 3 (497, 449, 455 s; $2.65), caster assault won 3 of 3 (726, 396, 297 s;
+$2.32), cavalry won 690 s and lost 786 and 1102 s ($2.84). M1c cost $10.81; ledger $45.96 of
+$52. Across the four scenarios that separate models, gpt-6.1-sol and gpt-6-sol both won
+everything except cavalry, where each won one of three; gpt-6-luna won one caster assault.
+Three battles per model are a first matched sample, in-sample for prompts developed on
+these scenarios.
+
+**Report rework (owner's notes 1-10 and 12).** Implemented on `wh3-report-notes` and merged as
+`0d530af` after independent design, cold-reader and data reviews (the data review found one
+defect, an order-age pooling bug, fixed with a regression test). The page shows only core
+scenarios and completed battles, opens on a clickable index of scenario maps with score
+bars, uses one hue per model with bars on a shared scale, gives each mode an icon, frames
+the replay on the fighting, marks accepted ability orders with a ring and shows each
+model's battle development and orders in "Same battle, different plans". Item 11
+(OpenRouter) stays pending in [reports.md](reports.md#pending-report-notes).
+
+Two report decisions after the first real-data build, taken under the owner's overnight
+delegation and easy to revert (presentation only; the test-setup fingerprint excludes
+report files and notes): the caster family's core scenario is now the attacker variant
+`tze-caster-skv-assault` (the defender `tze-caster-skv-screen` becomes a variant), and siege
+defence is scored like land battles (100 for a win, otherwise the enemy share dead or out
+of the fight). Ownership time had scored Luna 99 with one win in four and Sol 98 with three;
+it stays on the run card as a measure. The finding sentence now summarises every core
+scenario with three or more battles per model under one test setup.
+
+The canonical `reports/benchmark.html` was rebuilt at 11:40 UTC from 74 listed jobs: 89
+completed battles in six core scenarios on the page (47 MB); offline browser checks passed
+at `report-checks/benchmark`. With three models the finding paragraph lists every
+scenario's record and reads long; a shorter form is a candidate for the owner's review.
 
 ## 2026-10-16: Evacuation deferred; controller version labels fixed
 
