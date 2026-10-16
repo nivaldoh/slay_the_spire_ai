@@ -1,14 +1,15 @@
 # Project state
 
-Updated 2026-10-16 01:19 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 01:48 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-No game controller is running. The siege screen finished: Sol lost at 508 s, Luna won
-at 688 s, with matching rematch starts. Applying the observed survival pool-readiness
-fix and report refinements before the survival screen. WH3 spend: $15.3120 of $25.
+WH3 is stopped after a survival lobby-budget rejection, before any model call. Siege
+screens are complete. The Kislev roster costs 14750 including reserves; the declared
+lobby budget is corrected to 20000 for a retry, followed by conquest and evacuation.
+Ledger: $15.3120 of $25. See the [b12 log](twwarhammer3/log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.

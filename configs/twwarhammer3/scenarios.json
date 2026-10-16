@@ -815,7 +815,7 @@
       "battle_type": "survival",
       "difficulty": "ai_level_very_hard",
       "funds": "funds_custom",
-      "funds_amount": 14000,
+      "funds_amount": 20000,
       "time_limit_s": null,
       "ai_stats_modifier": 1.1,
       "unit_scale": 0.75,

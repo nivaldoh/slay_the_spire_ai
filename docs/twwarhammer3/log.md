@@ -119,6 +119,15 @@ labels variants/history, prints mean survival seconds, and frames the extraction
 Validation after these changes: 392 WH3 tests and Ruff passed. The canonical report now
 includes both siege attempts; offline browser checks passed, including survival durations.
 
+
+The first Kislev job (`bench-b12-kislev-reserves-20261016`) stopped in the lobby before
+any battle or model call: its 14000 budget counted the reinforcement pool as well as the
+starting army. Decoded base costs are 8500 + 6250 = 14750. Its declared lobby budget is
+now 20000; the exact ten starting units and seven reserves are unchanged. Native supplies
+and reinforcement prices are checked separately in battle. Conquest costs 6900 versus
+7700, and evacuation 4450 versus 5200, within their declared budgets. The failed job is
+retained in the canonical report list.
+
 ## Index
 
 - 2026-10-15: [Report: sections by game mode](#2026-10-15-report-sections-by-game-mode) ·
