@@ -72,5 +72,7 @@
   "runs/twwarhammer3/battle/bench-b12-m1c-siege-20261016",
   "runs/twwarhammer3/battle/bench-b12-m1c-skv-swarm-20261016",
   "runs/twwarhammer3/battle/bench-b12-m1c-caster-assault-20261016",
-  "runs/twwarhammer3/battle/bench-b12-m1c-cavalry-20261016"
+  "runs/twwarhammer3/battle/bench-b12-m1c-cavalry-20261016",
+  "runs/twwarhammer3/battle/bench-b12-caster-assault-baselines-20261016",
+  "runs/twwarhammer3/battle/bench-b12-kislev-baselines-20261016"
 ]

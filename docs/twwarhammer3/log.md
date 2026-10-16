@@ -160,9 +160,14 @@ of the fight). Ownership time had scored Luna 99 with one win in four and Sol 98
 it stays on the run card as a measure. The finding sentence now summarises every core
 scenario with three or more battles per model under one test setup.
 
-The canonical `reports/benchmark.html` was rebuilt at 11:40 UTC from 74 listed jobs: 89
-completed battles in six core scenarios on the page (47 MB); offline browser checks passed
-at `report-checks/benchmark`. With three models the finding paragraph lists every
+**M1d** (`9d052a1`, 11:37-11:59 UTC, no API calls): scripted baselines where Figure 3 had
+none. Caster assault: `rush_nearest` lost at 314 s, `attack_nearest` at 261 s. Kislev
+survival: `attack_nearest` lasted 222 s and `hold` 223 s, against 293-413 s for every
+model battle.
+
+The canonical `reports/benchmark.html` was rebuilt at 12:05 UTC from 76 listed jobs: 93
+completed battles in six core scenarios on the page; offline browser checks passed at
+`report-checks/benchmark`. With three models the finding paragraph lists every
 scenario's record and reads long; a shorter form is a candidate for the owner's review.
 
 ## 2026-10-16: Evacuation deferred; controller version labels fixed

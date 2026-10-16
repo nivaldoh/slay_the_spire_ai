@@ -1,15 +1,16 @@
 # Project state
 
-Updated 2026-10-16 11:45 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 12:05 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
 No game controller is running. The overnight matched round M1 finished at 11:30 UTC on
-2026-10-16: 58 battles over three queues, gpt-6-sol, gpt-6-luna and gpt-6.1-sol
+2026-10-16 (58 battles over three queues: gpt-6-sol, gpt-6-luna and gpt-6.1-sol), and
+free scripted baselines (M1d) at 11:59 UTC
 ([M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan)).
-The reworked canonical report (`runs/twwarhammer3/reports/benchmark.html`) includes it.
+The reworked canonical report (`runs/twwarhammer3/reports/benchmark.html`) includes them.
 Ledger: $45.96 of $52.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`

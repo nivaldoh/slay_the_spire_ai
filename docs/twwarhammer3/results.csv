@@ -287,3 +287,7 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-16,bench-b12-m1c-cavalry-20261016,episode-0000,brt-cavalry-emp-assault-hard,llm_rules,gpt-6.1-sol,low,,f7aae2a,realtime,1.0,0.0,lost,786,0.2,0.91,200,8,3.92,1.0376,classic,,,,,0.0,0.879,0.0,engine_result
 2026-10-16,bench-b12-m1c-cavalry-20261016,episode-0001,brt-cavalry-emp-assault-hard,llm_rules,gpt-6.1-sol,low,,f7aae2a,realtime,1.0,0.0,won,690,0.53,0.31,119,4,5.8,0.7294,classic,,,,,0.525,0.0,0.0,engine_result
 2026-10-16,bench-b12-m1c-cavalry-20261016,episode-0002,brt-cavalry-emp-assault-hard,llm_rules,gpt-6.1-sol,low,,f7aae2a,realtime,1.0,0.0,lost,1102,0.06,0.19,176,9,6.26,1.072,classic,,,,,0.0,0.172,0.0,engine_result
+2026-10-16,bench-b12-caster-assault-baselines-20261016,episode-0000,tze-caster-skv-assault,rush_nearest,,,,9d052a1,realtime,1.0,0.0,lost,314,0.06,0.66,1007,0,0.31,0,classic,,,,,0.0,0.665,0.0,engine_result
+2026-10-16,bench-b12-caster-assault-baselines-20261016,episode-0001,tze-caster-skv-assault,attack_nearest,,,,9d052a1,realtime,1.0,0.0,lost,261,0.11,0.77,834,1,0.31,0,classic,,,,,0.0,0.564,0.0,engine_result
+2026-10-16,bench-b12-kislev-baselines-20261016,episode-0000,ksl-reserves-survival,attack_nearest,,,,9d052a1,realtime,1.0,0.0,lost,222,0.24,0.91,537,2,0.4,0,survival,0.32409118915588414,6830,,,0.0,0.912,0.0,engine_result
+2026-10-16,bench-b12-kislev-baselines-20261016,episode-0001,ksl-reserves-survival,hold,,,,9d052a1,realtime,1.0,0.0,lost,223,0.13,0.93,541,0,0.4,0,survival,0.2470948012232416,6609,,,0.0,0.926,0.0,engine_result
