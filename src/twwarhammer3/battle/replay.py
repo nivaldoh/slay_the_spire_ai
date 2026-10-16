@@ -66,10 +66,11 @@ def unit_name(unit: dict) -> str:
 
 
 def ability_name(key) -> str:
-    """``wh_main_character_abilities_foe_seeker`` -> ``Foe Seeker``."""
+    """``wh_main_character_abilities_foe_seeker`` -> ``Foe Seeker``; a spell loses its lore:
+    ``wh3_main_spell_tzeentch_blue_fire_of_tzeentch`` -> ``Blue Fire of Tzeentch``."""
     key = str(key or "?")
     return title(key.rsplit("abilities_", 1)[1] if "abilities_" in key
-                 else re.sub(r"^wh\d?_[a-z0-9]+_", "", key))
+                 else re.sub(r"^wh\d?_[a-z0-9]+_(?:spell_[a-z]+_)?", "", key))
 
 
 def error_text(code) -> str:
