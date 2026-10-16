@@ -18,6 +18,10 @@
     <symbol id="glyph-artillery" viewBox="0 0 24 24"><circle cx="8.5" cy="16" r="5" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="8.5" cy="16" r="1.4" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="4.4" stroke-linecap="round" d="M9.5 13.5L21 6.5"/></symbol>
     <symbol id="glyph-monster" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M5 20C6 13 9 7 13 3M10 21c1-6 4-11 8-15M15 21.5c1-4 3-7.5 6-10"/></symbol>
     <symbol id="glyph-unknown" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="currentColor"/></symbol>
+    <symbol id="mode-land" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M4.5 4.5l10.5 10.5M19.5 4.5L9 15M12.6 17.4l4.8-4.8M6.6 12.6l4.8 4.8M16.5 16.5l3 3M7.5 16.5l-3 3"/></symbol>
+    <symbol id="mode-siege_defence" viewBox="0 0 24 24"><path fill="currentColor" d="M3.5 21V8.5h2.6V5.5h2.8v3h1.8v-3h2.6v3h1.8v-3h2.8v3h2.6V21h-6.2v-4.6a2.3 2.3 0 0 0-4.6 0V21z"/></symbol>
+    <symbol id="mode-survival" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5.5 3h13M5.5 21h13M7 3c0 5.5 9.5 6 9.5 9S7 15.5 7 21M17 3c0 5.5-9.5 6-9.5 9s9.5 3.5 9.5 9"/><path fill="currentColor" d="M8.6 19.6c.6-2.4 3.4-3.2 3.4-4.8 0 1.6 2.8 2.4 3.4 4.8z"/></symbol>
+    <symbol id="mode-other" viewBox="0 0 24 24"><path fill="currentColor" d="M5 2.5h2.2v19H5zM7.2 3.5h11.3l-3.2 4.2 3.2 4.3H7.2z"/></symbol>
     <symbol id="glyph-melee" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M4 4l13 13M20 4L7 17M14.5 20.5l6-6M3.5 14.5l6 6"/></symbol>
   </svg>
   <a class="skip" href="#viewer">Skip to the replay</a>
@@ -25,82 +29,85 @@
 
   <header class="wrap masthead">
     <h1>Language models commanding armies in real time</h1>
-    <p class="dek">Each model reads a text report of a <cite>Total War: WARHAMMER III</cite> battle and gives its regiments orders through a game mod. The battle keeps running while it thinks.</p>
+    <p class="dek">Each model reads a text report of a <cite>Total War: WARHAMMER III</cite> battle and orders its regiments through a game mod while the battle keeps running. Battles take minutes of real time, so the set is kept small and every scenario asks a different question.</p>
+    <nav id="index" class="index" aria-label="Scenarios"></nav>
     <p id="finding" class="finding"></p>
     <p id="facts" class="facts-line"></p>
   </header>
 
-    <section id="watch" class="wrap watch" aria-labelledby="question">
-      <div class="scenario-head">
-        <h2 id="question"></h2>
+  <section id="watch" class="watch" aria-labelledby="question">
+    <div class="wrap scenario-head"><h2 id="question"></h2></div>
+    <div class="wrap challenge-box"><p id="challenge" class="challenge"></p></div>
+    <div id="viewer" class="viewer">
+      <div class="picks">
+        <label id="scenario-pick" class="pick" hidden><span>Scenario</span><select id="scenario"></select></label>
+        <label class="pick run-pick"><span>Battle</span><select id="run-select"></select></label>
+        <span class="watch-actions">
+          <button id="watch-featured" class="primary" type="button">▶ Key maneuver</button>
+          <button id="watch-full" type="button">▶ Full battle</button>
+        </span>
       </div>
-      <div id="viewer" class="viewer">
-        <div class="stage">
-          <div id="map-wrap" class="map-wrap">
-            <svg id="map" class="map" role="img" aria-label="Battle map of recorded unit positions; north is up" tabindex="0"><g id="map-ground"></g><g id="map-lag-layer"></g><g id="map-layer"></g><g id="map-furniture"></g></svg>
-            <div class="map-top">
-              <p id="map-caption" class="map-caption" hidden></p>
-              <p id="map-status" class="map-status" hidden></p>
-              <p id="map-synthetic" class="map-synthetic" hidden>SYNTHETIC DEMO · invented frames</p>
-            </div>
-            <div class="map-bottom">
-              <p id="map-lag" class="map-lag" hidden></p>
-              <p class="map-legend"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-friendly"/></svg><span id="map-army">The model's army</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-enemy"/></svg><span>Game AI</span></p>
-              <button id="lag-toggle" class="lag-toggle" type="button" aria-pressed="false" title="Outline every unit where it stood in the view behind the latest reply">Model's view</button>
-            </div>
-            <div id="map-selection" class="map-selection" hidden></div>
-            <p id="map-empty" class="map-empty" hidden></p>
+      <div class="stage">
+        <div id="map-wrap" class="map-wrap">
+          <svg id="map" class="map" role="img" aria-label="Battle map of recorded unit positions; north is up" tabindex="0"><g id="map-ground"></g><g id="map-lag-layer"></g><g id="map-layer"></g><g id="map-furniture"></g></svg>
+          <div class="map-top">
+            <p id="map-caption" class="map-caption" hidden></p>
+            <p id="map-status" class="map-status" hidden></p>
+            <p id="map-synthetic" class="map-synthetic" hidden>SYNTHETIC DEMO · invented frames</p>
           </div>
-          <div class="controls">
-            <button id="play" class="play" type="button">▶ Play</button>
-            <span id="clock" class="clock" aria-label="Battle clock">0:00 / 0:00</span>
-            <span class="step-group" role="group" aria-label="Step through decisions">
-              <button id="prev-decision" type="button" aria-label="Previous decision" title="Previous decision (←)">◀</button><span class="step-label">Decision</span><button id="next-decision" type="button" aria-label="Next decision" title="Next decision (→)">▶</button>
-            </span>
-            <span class="step-group" role="group" aria-label="Step through events">
-              <button id="prev-event" type="button" aria-label="Previous event" title="Previous event ([)">◀</button><span class="step-label">Event</span><button id="next-event" type="button" aria-label="Next event" title="Next event (])">▶</button>
-            </span>
-            <label class="speed">Replay <select id="speed"><option value="1">1×</option><option value="4" selected>4×</option><option value="16">16×</option></select></label>
+          <div class="map-bottom">
+            <p id="map-lag" class="map-lag" hidden></p>
+            <p class="map-legend"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-friendly"/></svg><span id="map-army">The model's army</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-enemy"/></svg><span>Game AI</span></p>
+            <button id="lag-toggle" class="lag-toggle" type="button" aria-pressed="false" title="Outline every unit where it stood in the view behind the latest reply">Model's view</button>
           </div>
-          <input id="scrubber" class="scrubber" type="range" min="0" max="1" step="0.1" value="0" aria-label="Battle time in seconds">
-          <svg id="strip" class="strip" role="img" aria-label="Timeline: decisions, rejections, highlights and key events"><g id="strip-static"></g><line id="strip-cursor" class="strip-cursor" x1="0" x2="0" y1="0" y2="0"/></svg>
-          <details class="map-key">
-            <summary>Map key</summary>
-            <p>
-              <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-friendly"/></svg>Model's army</span>
-              <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-enemy"/></svg>Enemy (game AI)</span>
-              <span><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M2 12C8 12 12 4 22 4" class="key-path"/></svg>Observed path</span>
-              <span><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M2 8H22" class="key-route"/></svg>Ordered route</span>
-              <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-ring"/></svg>Attack target</span>
-              <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-seen"/></svg>Enemy last seen</span>
-              <span><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="2" width="14" height="12" class="key-blocked"/></svg>Impassable</span>
-              <span class="strip-key">Timeline: <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="7" y="2" width="2.5" height="12" class="key-orders"/></svg>new orders <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2" class="key-keep"/></svg>no new orders <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="7" y="1" width="3" height="14" class="key-rejected"/></svg>rejected order <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" class="key-note"/></svg>analyst note <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3l5 5-5 5-5-5z" class="key-event"/></svg>key event</span>
-              <label class="whole"><input id="whole" type="checkbox"> Show the whole map</label>
-            </p>
-          </details>
-          <p id="map-note" class="map-note"></p>
+          <div id="map-selection" class="map-selection" hidden></div>
+          <p id="map-empty" class="map-empty" hidden></p>
         </div>
-        <aside class="side" aria-label="The battle in the viewer">
-          <div class="run-card">
-            <p id="run-line" class="run-line"></p>
-            <div class="watch-actions">
-              <button id="watch-featured" class="primary" type="button">▶ Key maneuver</button>
-              <button id="watch-full" type="button">▶ Full battle</button>
-            </div>
-            <div class="picks">
-              <p id="scenario-pick" class="scenario-pick" hidden><label for="scenario">Scenario</label><select id="scenario"></select></p>
-              <label class="run-pick"><span>Battle</span><select id="run-select"></select></label>
-            </div>
-          </div>
-          <div id="moment" class="moment" aria-label="This moment in the battle"></div>
-        </aside>
+        <div class="controls">
+          <button id="play" class="play" type="button">▶ Play</button>
+          <span id="clock" class="clock" aria-label="Battle clock">0:00 / 0:00</span>
+          <span class="step-group" role="group" aria-label="Step through decisions">
+            <button id="prev-decision" type="button" aria-label="Previous decision" title="Previous decision (←)">◀</button><span class="step-label">Decision</span><button id="next-decision" type="button" aria-label="Next decision" title="Next decision (→)">▶</button>
+          </span>
+          <span class="step-group" role="group" aria-label="Step through events">
+            <button id="prev-event" type="button" aria-label="Previous event" title="Previous event ([)">◀</button><span class="step-label">Event</span><button id="next-event" type="button" aria-label="Next event" title="Next event (])">▶</button>
+          </span>
+          <label class="speed">Replay <select id="speed"><option value="1">1×</option><option value="4" selected>4×</option><option value="16">16×</option></select></label>
+        </div>
+        <input id="scrubber" class="scrubber" type="range" min="0" max="1" step="0.1" value="0" aria-label="Battle time in seconds">
+        <svg id="strip" class="strip" role="img" aria-label="Timeline: decisions, rejections, highlights and key events"><g id="strip-static"></g><line id="strip-cursor" class="strip-cursor" x1="0" x2="0" y1="0" y2="0"/></svg>
+        <details class="map-key">
+          <summary>Map key</summary>
+          <p>
+            <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-friendly"/></svg>Model's army</span>
+            <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-enemy"/></svg>Enemy (game AI)</span>
+            <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" class="key-ability"/></svg>Ability or spell ordered (5 s)</span>
+            <span><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M2 12C8 12 12 4 22 4" class="key-path"/></svg>Observed path</span>
+            <span><svg viewBox="0 0 24 16" aria-hidden="true"><path d="M2 8H22" class="key-route"/></svg>Ordered route</span>
+            <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" class="key-ring"/></svg>Attack target</span>
+            <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5L14.5 8 8 14.5 1.5 8z" class="key-seen"/></svg>Enemy last seen</span>
+            <span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3l5 5-5 5-5-5z" class="key-point"/></svg>Objective, filled by its holder (larger: victory point)</span>
+            <span><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="2" width="14" height="12" class="key-blocked"/></svg>Impassable</span>
+            <span class="strip-key">Timeline: <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="7" y="2" width="2.5" height="12" class="key-orders"/></svg>new orders <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2" class="key-keep"/></svg>no new orders <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="7" y="1" width="3" height="14" class="key-rejected"/></svg>rejected order <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" class="key-note"/></svg>analyst note <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3l5 5-5 5-5-5z" class="key-event"/></svg>key event</span>
+            <span>Unit labels appear for the selected or hovered unit, or when few units are on the map.</span>
+            <label class="whole"><input id="whole" type="checkbox"> Show the whole map</label>
+          </p>
+        </details>
+        <p id="map-note" class="map-note"></p>
       </div>
-      <p id="challenge" class="challenge"></p>
+      <aside class="side" aria-label="The battle in the viewer">
+        <div class="run-card">
+          <p id="run-line" class="run-line"></p>
+        </div>
+        <div id="moment" class="moment" aria-label="This moment in the battle"></div>
+      </aside>
+    </div>
+    <div class="wrap after">
       <p id="chapters-head" class="chapters-head" hidden><b>Analyst notes</b> written after the battle from its recorded frames and orders (drafted with AI assistance and checked against the records); not the model's words.</p>
       <ol id="highlights" class="chapters" aria-label="Analyst notes"></ol>
       <p id="chapter-text" class="chapter-text" aria-live="polite"></p>
       <div class="below">
-        <details class="armies">
+        <details class="armies" open>
           <summary>The two armies</summary>
           <div id="roster" class="roster"></div>
         </details>
@@ -109,7 +116,8 @@
           <figcaption>In the game: spectator camera, not what the model saw.</figcaption>
         </figure>
       </div>
-    </section>
+    </div>
+  </section>
 
   <main class="wrap">
     <section id="results" class="section" aria-labelledby="results-heading">
@@ -119,11 +127,12 @@
         <figcaption id="headline-caption"></figcaption>
         <p id="headline-foot" class="foot"></p>
       </figure>
+      <p id="spend" class="spend" hidden></p>
     </section>
 
     <section id="plans" class="section" aria-labelledby="plans-heading">
       <h2 id="plans-heading">Same battle, different plans</h2>
-      <div id="routes" class="plans"></div>
+      <div id="commanders" class="commanders"></div>
       <p id="plans-caption" class="figcap"></p>
     </section>
 

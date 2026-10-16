@@ -25,10 +25,7 @@ const clock = (ms) => {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 };
-// The run line's outcome: always the engine's result, with the battle clock duration. A battle
-// that reached the scenario's timer ended there, whatever older jobs recorded as `ended_by`.
-// Figure 2's items: one per model (its commanders pooled) and per scripted rule, without the
-// commanders that never give orders or recorded no army track.
+// Figure 2's items: one per model (its commanders pooled) and per scripted rule.
 const plansOf = (data, item) => {
   const items = [];
   for (const row of item.rows) {
@@ -37,13 +34,7 @@ const plansOf = (data, item) => {
     if (same) same.battles.push(...row.battles);
     else items.push({ ...row, battles: [...row.battles] });
   }
-  const silent = (keys) => {
-    const timings = keys.map((key) => data.battles[key].timing).filter(Boolean);
-    return timings.length && !timings.some((t) => t.plans.length || t.ages.length);
-  };
-  return items.filter(
-    (i) => !silent(i.battles) && i.battles.some((key) => data.battles[key].route?.track.length),
-  );
+  return items;
 };
 
 // The scenario the page opens on: Figure 1's, the largest controlled comparison, else the first.
@@ -52,8 +43,9 @@ const opening = (data) =>
     .filter((s) => s.controlled)
     .sort((a, b) => b.controlled.launches - a.controlled.launches)[0] || data.scenarios[0];
 
+// The run line's outcome: always the engine's result, with the battle clock duration. A battle
+// that reached the scenario's timer ended there, whatever older jobs recorded as `ended_by`.
 const outcome = (trial, group) => {
-  if (!trial.valid) return "Did not finish";
   const word = { won: "Won", lost: "Lost", draw: "Draw" }[trial.engine_outcome];
   const ms = trial.battle_ms ?? trial.battle_s * 1000,
     duration = clock(ms),
@@ -138,7 +130,30 @@ async function main() {
       saved.groups.map((group) => group.controllers),
     );
     const scenario = opening(data);
+    const trialOf = (key) => {
+      const [, gi, ti] = key.match(/^g(\d+)-t(\d+)$/);
+      return saved.groups[gi].trials[ti];
+    };
     assert.equal(await text("#question"), scenario.question || scenario.title);
+    // The masthead's index: one map per scenario, the opening one marked; the finding speaks
+    // for the benchmark as a whole.
+    if (data.scenarios.length > 1) {
+      assert.equal(await count("#index .index-item"), data.scenarios.length);
+      // Each map draws its army where it began.
+      for (const item of data.scenarios)
+        assert.equal(
+          await count(`#index .index-item[data-scenario="${item.id}"] svg circle`),
+          item.start?.friendly.length ?? 0,
+        );
+      assert.equal(
+        await page.locator('#index .index-item[aria-current="true"]').getAttribute("data-scenario"),
+        scenario.id,
+      );
+      assert.deepEqual(
+        await page.locator("#index .index-name").allInnerTexts(),
+        data.scenarios.map((s) => s.short),
+      );
+    }
     const [, g, t] = scenario.featured.match(/^g(\d+)-t(\d+)$/);
     const featured = saved.groups[g].trials[t];
     const runLine = await text("#run-line"),
@@ -151,12 +166,27 @@ async function main() {
         runLine,
         /won \d+ of \d+ here[\s\S]*featured for its analyst notes, not as typical/,
       );
+    // The page shows only completed battles of its scenarios; the JSON keeps every one.
+    const pageKeys = data.scenarios.flatMap((s) => s.battles);
+    assert.ok(
+      pageKeys.every((key) => trialOf(key).valid),
+      "only completed battles on the page",
+    );
+    assert.equal(
+      pageKeys.length + data.omitted.battles.length,
+      saved.groups.reduce((n, group) => n + group.trials.length, 0),
+    );
+    if (data.scenarios.some((s) => s.core_candidate))
+      assert.ok(
+        data.scenarios.every((s) => s.core_candidate),
+        "only core scenarios",
+      );
+    assert.ok(Object.keys(data.replays).every((key) => pageKeys.includes(key)));
     // A battle's score: 100 for a win, else the share of the enemy army broken, in percent.
     const scoreOf = (key) => {
       const [, gi, ti] = key.match(/^g(\d+)-t(\d+)$/),
         trial = saved.groups[gi].trials[ti],
         progress = data.battles[key].progress;
-      if (!trial.valid) return null;
       const custom = data.battles[key].objective_outcome;
       if (custom != null ? custom === "success" : trial.engine_outcome === "won") return 100;
       return progress == null ? null : Math.min(99.99, 100 * progress);
@@ -182,8 +212,19 @@ async function main() {
         shown.map(Number),
         rows.map((keys) => meanScore(keys)).filter((v) => v != null),
       );
-      assert.match(await text("#finding"), /scores \d+/);
+      assert.match(await text("#finding"), /scores higher in \d+ of \d+ scenario/);
     }
+    // Cumulative API spend per model, every attempt included.
+    const spend = {};
+    for (const group of saved.groups)
+      for (const [t, trial] of group.trials.entries()) {
+        const key = `g${saved.groups.indexOf(group)}-t${t}`;
+        if (data.battles[key].commander.kind === "model" && trial.llm?.usd != null)
+          spend[data.battles[key].commander.family] =
+            (spend[data.battles[key].commander.family] || 0) + trial.llm.usd;
+      }
+    for (const [family, usd] of Object.entries(spend))
+      assert.ok((await text("#spend")).includes(`${family} $${usd.toFixed(2)}`), `spend ${family}`);
     await page.screenshot({ path: path.join(output, "desktop.png") });
 
     const { value: replayFile } = await downloaded("#download-replay", "recorded-replay.json");
@@ -263,12 +304,17 @@ async function main() {
     await page.locator("#moment .pinned-line button").click();
     assert.equal(await count("#moment .pinned-line"), 0);
 
-    // Selecting a unit shows its role, from a roster chip (the roster folds) and from the map.
+    // Selecting a unit shows its role, from a roster chip (the two armies are open) and from the
+    // map; a selected unit is named on the map even when it is crowded.
     const archer = replay.roster.find((u) => u.glyph === "missile_cavalry") || replay.roster[0];
-    await page.locator(".armies > summary").click();
+    assert.equal(await page.locator(".armies").getAttribute("open"), "");
     await page.locator(`#roster button[aria-label^="${archer.display},"]`).click();
     assert.ok((await text("#moment .unit-card")).includes(archer.role));
     assert.ok((await text("#map-selection")).includes(archer.display));
+    assert.ok(
+      (await page.locator("#map-layer").textContent()).includes(archer.short),
+      "the selected unit's label",
+    );
     await page.locator("#viewer").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(output, "unit.png") });
     await page.locator("#moment .unit-card button").click();
@@ -301,6 +347,25 @@ async function main() {
     });
     assert.ok(faint.drawn > 0, "faint routes are drawn for moving units");
     assert.deepEqual(faint.loose, [], "every faint route starts at a unit");
+
+    // An accepted ability order rings its unit on the map for a few seconds; its line in the
+    // moment panel carries the same mark.
+    const cast = applied.find((d) =>
+      d.steps.some((s) => s.kind === "ability" && s.status !== "rejected" && s.unit !== "army"),
+    );
+    if (cast) {
+      await seek(cast.applied_ms + 500);
+      assert.ok((await count("#map-layer .ability-ring")) > 0, "ability ring");
+      assert.ok((await count("#moment .orders li.ability")) > 0, "ability mark in the panel");
+      await seek(cast.applied_ms + 6000);
+      const later = applied.some(
+        (d) =>
+          d.applied_ms > cast.applied_ms &&
+          d.applied_ms <= cast.applied_ms + 6000 &&
+          d.steps.some((s) => s.kind === "ability"),
+      );
+      if (!later) assert.equal(await count("#map-layer .ability-ring"), 0, "the ring fades out");
+    }
 
     // Watch the featured maneuver plays from the highlight's lead-in.
     if (replay.highlights?.length) {
@@ -344,33 +409,28 @@ async function main() {
     assert.doesNotMatch(page_text, /capture_failed|throttled|Capture missing|Not measured yet/i);
     if (embedded.length) assert.match(await text("#stills-block"), /not what the model saw/);
 
-    // Figure 2: one map per model and per scripted rule; a map opens its first battle, and
+    // Figure 2: one panel per model and per scripted rule; a panel opens its first battle, and
     // every battle opens from the battle select.
-    const trialOf = (key) => {
-      const [, gi, ti] = key.match(/^g(\d+)-t(\d+)$/);
-      return saved.groups[gi].trials[ti];
-    };
     const outcomeOf = (key) => outcome(trialOf(key), saved.groups[key.match(/^g(\d+)/)[1]]);
     const plans = plansOf(data, scenario);
-    assert.equal(await count("#routes .plan"), plans.length);
+    assert.equal(await count("#commanders .commander"), plans.length);
     for (const [index, item] of plans.entries()) {
-      const plan = page.locator("#routes .plan").nth(index);
+      const plan = page.locator("#commanders .commander").nth(index);
       assert.equal(
         (await plan.locator("figcaption strong").innerText()).replace("†", ""),
         item.name,
       );
-      const finished = item.battles.map(trialOf).filter((trial) => trial.valid);
-      const wins = finished.filter((trial) => trial.engine_outcome === "won");
-      const failed = item.battles.length - finished.length;
+      const wins = item.battles.map(trialOf).filter((trial) => trial.engine_outcome === "won");
       assert.equal(
         await plan.locator("figcaption small").innerText(),
-        `${item.battles.length} battle${item.battles.length === 1 ? "" : "s"}: ${wins.length} won${failed ? `, ${failed} did not finish` : ""}`,
+        `${item.battles.length} battle${item.battles.length === 1 ? "" : "s"}, ${wins.length} won`,
       );
-      // A map opens the commander's earliest finished battle here.
-      const first =
-        scenario.battles.find((key) => item.battles.includes(key) && trialOf(key).valid) ||
-        scenario.battles.find((key) => item.battles.includes(key));
-      await plan.locator(".plan-map").click();
+      // Its battle development: soldiers lost and orders by kind, on shared axes.
+      if (item.battles.some((key) => data.battles[key].development))
+        assert.equal(await plan.locator("svg.development").count(), 1);
+      // A panel opens the commander's earliest battle here.
+      const first = scenario.battles.find((key) => item.battles.includes(key));
+      await plan.locator(".panel-open").click();
       await page.waitForFunction((k) => document.getElementById("run-select").value === k, first);
     }
     for (const key of scenario.battles) {
@@ -380,59 +440,58 @@ async function main() {
     }
     await page.locator("#plans").scrollIntoViewIfNeeded();
     await page.locator("#plans").screenshot({ path: path.join(output, "compare.png") });
-    assert.equal(await count("#matrix tr[data-scenario]"), data.scenarios.length);
-    // Figure 3: one section per game mode in page order (report_html.MODES), the empty ones as
-    // placeholders; the opening scenario's mode is open.
-    const sections = await page.locator("#matrix > details > summary span").allInnerTexts();
+    assert.equal(await count("#matrix .scenario-row"), data.scenarios.length);
+    // Figure 3: one section per game mode with scenarios on the page, in page order.
+    const sections = await page.locator("#matrix .mode h3").allInnerTexts();
     assert.deepEqual(
-      sections.slice(0, data.modes.length),
-      data.modes.map((mode) => mode.title),
+      sections,
+      data.modes
+        .filter((mode) => data.scenarios.some((s) => s.mode === mode.key))
+        .map((m) => m.title),
     );
-    const empty = data.modes.filter((mode) => !data.scenarios.some((s) => s.mode === mode.key));
-    assert.equal(await count("#matrix .placeholder"), empty.length);
-    // Every model score in Figure 3 is its battles' mean as printed: a loss never reads 100.
+    // Every model's bar in Figure 3 is its battles' mean as printed: a loss never reads 100.
+    const families = [
+      ...new Set(
+        data.scenarios.flatMap((s) =>
+          s.rows.filter((r) => r.kind === "model").map((r) => r.family),
+        ),
+      ),
+    ].sort();
     for (const item of data.scenarios) {
-      const row = page.locator(`#matrix tr[data-scenario="${item.id}"]`);
-      const cells = await row
-        .locator("td")
-        .evaluateAll((tds) =>
-          tds.map((td) => td.querySelector(".cell b")?.firstChild?.textContent),
-        );
-      const heads = await row.evaluate((tr) =>
-        [...tr.closest("table").querySelectorAll("thead th")].map((th) => th.textContent),
-      );
-      heads.forEach((family, i) => {
-        if (!i || family === "Best scripted rule") return;
+      const values = await page
+        .locator(`#matrix .scenario-row[data-scenario="${item.id}"] .bar-row`)
+        .evaluateAll((rows) => rows.map((row) => row.querySelector("b")?.textContent ?? null));
+      families.forEach((family, i) => {
         const keys = item.rows.filter((r) => r.family === family).flatMap((r) => r.battles);
         if (item.mode === "survival") {
           const seconds = keys
             .map(trialOf)
-            .filter((t) => t.valid)
             .map((t) => t.measures?.duration_s)
             .filter((v) => v != null);
           if (seconds.length)
             assert.equal(
-              cells[i],
+              values[i],
               `${Math.round(seconds.reduce((a, b) => a + b, 0) / seconds.length)} s`,
-              `${item.title}: ${family}; cells ${JSON.stringify(cells)}; errors ${errors}`,
+              `${item.title}: ${family}; values ${JSON.stringify(values)}; errors ${errors}`,
             );
           return;
         }
         const expected = meanScore(keys);
-        if (expected != null) assert.equal(Number(cells[i]), expected, `${item.title}: ${family}`);
+        assert.equal(
+          values[i] == null ? null : Number(values[i]),
+          expected,
+          `${item.title}: ${family}`,
+        );
       });
     }
-    assert.equal(
-      await page.locator("#matrix > details[open] > summary span").first().innerText(),
-      data.modes.find((mode) => mode.key === scenario.mode).title,
-    );
-    // Unrun or setup-only scenarios never become a scenario or run option.
+    // Only completed battles become run options; the rest are counted in the method.
     assert.equal(await page.locator("#run-select option").count(), scenario.battles.length);
-    const setupOnly =
-      data.setup_only.length + data.scenarios.reduce((n, s) => n + s.setup_only_jobs.length, 0);
-    if (setupOnly) assert.match(await text("#method"), /stopped during setup/);
-    for (const item of data.setup_only)
-      assert.ok(!data.scenarios.some((entry) => entry.name === item.scenario));
+    if (data.omitted.setup_only.length) assert.match(await text("#method"), /stopped during setup/);
+    if (data.omitted.battles.length)
+      assert.match(
+        await text("#method"),
+        new RegExp(`${data.omitted.battles.length} further battle`),
+      );
 
     // Run settings and downloads.
     await page.locator("#open-settings").click();
@@ -460,25 +519,35 @@ async function main() {
     await go(copied);
     await page.locator("#all").scrollIntoViewIfNeeded();
     await page.locator("#all").screenshot({ path: path.join(output, "suite.png") });
+    await page.locator("#index").screenshot({ path: path.join(output, "index.png") });
     for (const [index, item] of data.scenarios.entries()) {
-      const link = page.locator(`#matrix tr[data-scenario="${item.id}"] .scenario`);
-      await link.evaluate((node) => (node.closest("details").open = true)); // pilots fold
+      // Scenarios open from the index (and from Figure 3's names, below).
+      const link =
+        data.scenarios.length > 1
+          ? page.locator(`#index .index-item[data-scenario="${item.id}"]`)
+          : page.locator(`#matrix .scenario-row[data-scenario="${item.id}"] .scenario`);
       await link.click();
       await page.waitForFunction(
         (key) => document.getElementById("run-select").value === key,
         item.featured,
       );
-      if (data.scenarios.length > 1)
+      if (data.scenarios.length > 1) {
         assert.equal(await page.locator("#scenario").inputValue(), String(index));
+        assert.equal(await link.getAttribute("aria-current"), "true");
+      }
       assert.ok((await text("#run-line")).includes(outcomeOf(item.featured)));
-      assert.equal(await count("#routes .plan"), plansOf(data, item).length);
+      assert.equal(await count("#commanders .commander"), plansOf(data, item).length);
       if (data.replays[item.featured]) {
         await page.waitForFunction(() => !document.getElementById("download-replay").disabled);
         await page.waitForSelector("#map-layer .unit");
       }
+      if (item.mode === "siege_defence") {
+        await page.locator("#viewer").screenshot({ path: path.join(output, "siege.png") });
+        await page.locator("#plans").screenshot({ path: path.join(output, "plans-siege.png") });
+      }
       if (item.battles.some((key) => trialOf(key).measures?.custom_objective)) {
         assert.match(await text("#run-line"), /evacuation/);
-        assert.match(await text("#map-layer"), /Extraction/);
+        assert.match(await page.locator("#map-layer").textContent(), /Extraction/);
         await page.locator("#watch").screenshot({ path: path.join(output, "evacuation.png") });
       }
       await page.locator("#open-settings").click();
@@ -521,10 +590,11 @@ async function main() {
       pairData.scenarios[0].rows.map((row) => [row.name, row.detail]),
       [luna, sol("high"), sol("low")],
     );
-    // Figure 2 pools a model's settings into one map, marked †.
-    assert.equal(await count("#routes .plan"), 2);
-    assert.match(await page.locator("#routes .plan").nth(1).innerText(), /gpt-6-sol†/);
-    assert.match(await text("#routes"), /1 did not finish/);
+    // Figure 2 pools a model's settings into one panel, marked †; the battle whose controller
+    // failed to build is not on the page.
+    assert.equal(await count("#commanders .commander"), 2);
+    assert.match(await page.locator("#commanders .commander").nth(1).innerText(), /gpt-6-sol†/);
+    assert.equal(pairData.omitted.battles.length, 1);
     const lunaKey = `g0-t${pairData.report.groups[0].trials.findIndex((t) => t.policy.includes("@"))}`;
     await page.selectOption("#run-select", lunaKey);
     await page.waitForSelector("#map-layer .unit");
@@ -555,22 +625,18 @@ async function main() {
     assert.match(refusedPanel, /refused by validation/);
     assert.doesNotMatch(refusedPanel, /Keeping current orders/);
     const demoData = JSON.parse(await page.locator("#report-data").textContent());
-    assert.equal(await count("#routes .plan"), plansOf(demoData, opening(demoData)).length);
+    assert.equal(
+      await count("#commanders .commander"),
+      plansOf(demoData, opening(demoData)).length,
+    );
     const options = await page.locator("#run-select option").allInnerTexts();
     assert.ok(options.some((option) => /time limit/.test(option)));
-    const failed = await page
-      .locator("#run-select option", { hasText: "Did not finish" })
-      .first()
-      .getAttribute("value");
+    // The battle that did not finish stays in the data, off the page.
+    assert.ok(!options.some((option) => /Did not finish/.test(option)));
     assert.match(await text("#method"), /stopped during setup/);
+    assert.match(await text("#method"), /1 further battle/);
     assert.match(await text("#run-line"), /objectives held 60% of the time observed/);
     assert.match(await text("#run-line"), /500 supplies left/);
-    // A battle that did not finish names its failure in Run settings, not in the page.
-    await page.selectOption("#run-select", failed);
-    assert.match(await text("#run-line"), /Did not finish/);
-    await page.locator("#open-settings").click();
-    assert.match(await text("#settings-body"), /Synthetic policy failure/);
-    await page.locator("#close-settings").click();
     await page.selectOption(
       "#run-select",
       await page.locator("#run-select option").first().getAttribute("value"),

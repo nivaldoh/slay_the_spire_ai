@@ -212,9 +212,9 @@ def test_timer_missing_metrics_repeats_and_setup_only_interruption_are_preserved
     assert data["battles"]["g0-t1"]["progress"] is None
     assert data["report"]["jobs"][1]["error"] == "KeyboardInterrupt"
     assert data["report"]["throughput"]["started_trials"] == 2
-    # No placeholders for unrun catalogue scenarios; the stopped launch is listed on its own.
+    # No placeholders for unrun catalogue scenarios; the stopped launch is counted, off the page.
     assert [scenario["name"] for scenario in data["scenarios"]] == ["frozen"]
-    assert data["setup_only"] == [{"job": 1, "scenario": "historical", "title": "historical"}]
+    assert data["omitted"] == {"battles": [], "setup_only": [1]}
 
 
 def test_safe_embedding_portable_ids_and_no_remote_dependencies(tmp_path):
@@ -364,7 +364,7 @@ def test_diagnostic_probes_stay_in_the_data_but_off_the_page(tmp_path):
     job = make_job(tmp_path, "probe", [("hold", 0, "lost"), ("terrain_probe:Probe", 0, "lost")])
     data = report_html.display_data(report.collect([job]))
     (scenario,) = data["scenarios"]
-    assert scenario["battles"] == ["g0-t0"] and data["diagnostics"] == ["g0-t1"]
+    assert scenario["battles"] == ["g0-t0"] and data["omitted"]["battles"] == ["g0-t1"]
     assert [row["name"] for row in scenario["rows"]] == ["Hold position"]
     assert data["battles"]["g0-t1"]["commander"]["kind"] == "diagnostic"
     only = make_job(tmp_path, "only-probe", [("terrain_probe:Probe", 0, "lost")])
@@ -419,12 +419,12 @@ def test_scenarios_feature_the_selected_run_and_follow_the_notes_order(tmp_path)
     data = embedded(report_html.render(source, notes))
     assert [scenario["name"] for scenario in data["scenarios"]] == ["elsewhere", "frozen"]
     frozen = data["scenarios"][1]
-    assert {key: frozen[key] for key in ("title", "question", "challenge", "footnote", "mode",
-                                         "featured", "featured_reason", "setup_only_jobs")} == {
-        "title": "Frozen pass", "question": "Can it cross?", "challenge": "Cross.",
-        "footnote": "Frozen ground.", "mode": "land", "featured": "g0-t0",
-        "featured_reason": "selected",
-        "setup_only_jobs": [3]}
+    assert {key: frozen[key] for key in ("title", "short", "question", "challenge", "footnote",
+                                         "mode", "featured", "featured_reason")} == {
+        "title": "Frozen pass", "short": "Frozen pass", "question": "Can it cross?",
+        "challenge": "Cross.", "footnote": "Frozen ground.", "mode": "land", "featured": "g0-t0",
+        "featured_reason": "selected"}
+    assert data["omitted"]["setup_only"] == [3]
     # The two launches share one collector group; battles go by job start, never by outcome.
     assert frozen["battles"] == ["g0-t1", "g0-t0"]
     payloads = [json.loads(gzip.decompress(base64.b64decode(data["replays"][key])))
@@ -444,7 +444,7 @@ def test_a_job_without_a_recorded_scenario_still_gets_a_readable_title(tmp_path)
     data = report_html.display_data(report.collect([random_battle]))
     assert data["scenarios"][0]["title"] == "No scenario recorded"
     data = report_html.display_data(report.collect([stopped]))
-    assert data["setup_only"] == [{"job": 0, "scenario": None, "title": "No scenario recorded"}]
+    assert data["scenarios"] == [] and data["omitted"]["setup_only"] == [0]
 
 
 def test_two_models_of_one_policy_are_two_controllers_paired_within_each_launch(tmp_path):
@@ -505,3 +505,61 @@ def test_mode_progress_never_substitutes_casualties_for_an_objective(
     assert battle['progress_basis'] == basis
     if kind == 'ambush':
         assert battle['objective_outcome'] == 'failed'  # even though the native fixture won
+
+
+def test_the_page_shows_core_scenarios_and_only_their_completed_battles(tmp_path):
+    core = make_job(tmp_path, "core", [("hold", 0, "lost"), ("skills", 0, "policy_failure"),
+                                       ("skills", .2, "won")])
+    variant = configured_job(tmp_path, "variant", scenario={"name": "variant"})
+    unplayed = make_job(tmp_path, "unplayed", [("hold", 0, "policy_failure")])
+    path = unplayed / "manifest.json"
+    path.write_text(json.dumps({**json.loads(path.read_text()), "scenario": {"name": "later"}}))
+    source = report.collect([core, variant, unplayed])
+    notes = {"scenarios": {"frozen": {"core_candidate": True, "short": "Frozen"},
+                           "later": {"core_candidate": True}, "variant": {"title": "Variant"}}}
+    data = embedded(report_html.render(source, notes))
+    # One scenario: the core one with completed battles; the core one without any is absent.
+    (scenario,) = data["scenarios"]
+    assert (scenario["name"], scenario["short"]) == ("frozen", "Frozen")
+    assert scenario["battles"] == ["g0-t0", "g0-t2"]
+    assert [row["battles"] for row in scenario["rows"]] == [["g0-t0"], ["g0-t2"]]
+    assert sorted(data["omitted"]["battles"]) == ["g0-t1", "g1-t0", "g2-t0"]
+    # Battles off the page embed no replay; the collector's groups stay complete.
+    assert set(data["replays"]) <= {"g0-t0", "g0-t2"}
+    assert data["report"]["groups"] == report_html._portable(source)["groups"]
+    # A report without any core scenario (an ad hoc report) shows every scenario.
+    names = [entry["name"] for entry in report_html.display_data(source)["scenarios"]]
+    assert sorted(names) == ["frozen", "variant"]
+
+
+def test_development_counts_losses_as_seen_and_accepted_orders_by_kind():
+    def unit(uid, men, men0=100):
+        return {"id": uid, "x": 0, "z": 0, "men": men, "men0": men0}
+
+    def order(kind, status="acknowledged", unit_id="f1"):
+        return {"order": {"unit": unit_id, "type": kind}, "status": status}
+
+    frames = [
+        {"time_ms": 0, "friendly": [unit("f1", 100)], "enemy": [], "enemy_roster": []},
+        {"time_ms": 4000, "friendly": [unit("f1", 90)], "enemy": [unit("e1", 80)],
+         "enemy_roster": []},
+        # e1 out of view keeps its last count; e2 never seen is not counted, even dead.
+        {"time_ms": 9000, "friendly": [unit("f1", 70)], "enemy": [],
+         "enemy_roster": [{"id": "e2", "dead": True}]},
+        {"time_ms": 12000, "friendly": [unit("f1", 60)], "enemy": [],
+         "enemy_roster": [{"id": "e1", "dead": True}]},
+    ]
+    decisions = [
+        {"applied_ms": 1000, "orders": [order("move"), order("ability")], "steps": [
+            {"status": "acknowledged"}, {"status": "queued"}]},
+        {"applied_ms": 6000, "orders": [order("attack"), order("move"), order("halt")],
+         "steps": [{"status": "rejected"}, {"status": "acknowledged"},
+                   {"status": "acknowledged"}]},
+        {"applied_ms": None, "orders": [order("move")], "steps": [{"status": "issued"}]},
+        {"applied_ms": 11000, "orders": [order("reinforce", unit_id="army")],
+         "steps": [{"status": "acknowledged"}]},
+    ]
+    assert report_html.development({"frames": frames, "decisions": decisions}) == {
+        "step_s": 5, "end_s": 12.0, "own": [0, 10, 30, 40], "enemy": [0, 20, 20, 100],
+        "orders": {"move": [1, 1, 0, 0], "ability": [1, 0, 0, 0], "other": [0, 1, 0, 0],
+                   "reinforce": [0, 0, 1, 0]}}
