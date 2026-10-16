@@ -200,9 +200,14 @@ Initial models, with enforced routing ceilings in USD per million tokens:
 
 | Model ID | Input ceiling | Output ceiling | Declared efforts |
 |---|---:|---:|---|
-| `z-ai/glm-5.3` | $1.40 | $4.80 | low, high |
-| `moonshotai/kimi-k3` | $3.00 | $15.00 | low, high |
-| `stepfun/step-5-preview` | $1.00 | $2.70 | low, high |
+| `z-ai/glm-5.3` | $1.40 | $4.80 | low, high, max (always reasons) |
+| `moonshotai/kimi-k3` | $3.00 | $15.00 | none, low, high, max |
+| `stepfun/step-5-preview` | $1.00 | $2.70 | low, medium, high (always reasons) |
+
+Efforts are declared per model (2026-10-16 evening, for the owner's all-modes coverage),
+from the catalogue's `supported_efforts`; `low` is the only one played so far. Each new
+mode needs a schema call before a battle, and `max` may need more than the 4,000-token
+reply allowance. OpenAI models keep `none`, `low`, `medium` and `high`.
 
 These are leading open-weight candidates selected during the design review, not a
 ranking inferred from our tests. Catalogue metadata was checked on 2026-10-16. All three

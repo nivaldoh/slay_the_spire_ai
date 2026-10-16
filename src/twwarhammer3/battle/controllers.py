@@ -57,8 +57,9 @@ def rotation(config: dict) -> list[dict]:
     get_provider(provider)
     for name, (base, model, effort) in identity.items():
         if base in MODEL_POLICIES:
-            if name.endswith("@") or name.endswith("/"):
-                model = None  # an explicit empty suffix must not fall back to job defaults
+            # An explicit empty suffix must not fall back to job defaults.
+            model = None if name.endswith("@") else model
+            effort = None if name.endswith("/") else effort
             validate(provider, model, effort)
         if base not in BUILTINS and base not in MODEL_POLICIES:
             controller_class(name)  # fail before launching on an invalid import

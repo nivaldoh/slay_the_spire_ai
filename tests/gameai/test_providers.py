@@ -9,7 +9,7 @@ import pytest
 
 from gameai import llm
 from gameai.ledger import BudgetExhausted, Ledger
-from gameai.providers import OPENROUTER
+from gameai.providers import OPENROUTER, validate
 
 SCHEMA = {"type": "object", "properties": {"ok": {"type": "boolean"}},
           "required": ["ok"], "additionalProperties": False}
@@ -55,6 +55,17 @@ def test_http_error_redacts_a_key_crossing_the_display_limit(monkeypatch):
     with pytest.raises(llm.APIError) as failure:
         llm.post(key, {}, provider="openrouter")
     assert "secret" not in str(failure.value) and "<key>" in str(failure.value)
+
+
+def test_reasoning_efforts_are_declared_per_model():
+    validate("openrouter", "moonshotai/kimi-k3", "none")
+    validate("openrouter", "z-ai/glm-5.3", "max")
+    validate("openrouter", "stepfun/step-5-preview", "medium")
+    validate("openai", "gpt-6-luna", "medium")
+    for model, effort in [("z-ai/glm-5.3", "none"), ("z-ai/glm-5.3", "medium"),
+                          ("stepfun/step-5-preview", "max")]:
+        with pytest.raises(ValueError, match=f"{model}: use an effort in"):
+            validate("openrouter", model, effort)
 
 
 @pytest.mark.parametrize("name", OPENROUTER.prices)
