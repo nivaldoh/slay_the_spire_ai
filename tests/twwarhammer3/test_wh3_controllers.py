@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from twwarhammer3.battle import commander, controllers, llm
@@ -131,3 +133,13 @@ def test_cards_and_makers_use_each_controllers_model_and_effort(tmp_path, monkey
         "hybrid", "gpt-6-luna", "low", "asynchronous")
     card = controllers.card("hold", makers["hold"](), config)
     assert (card["kind"], card["model"], card["effort"]) == ("scripted", None, None)
+
+
+def test_recorded_versions_match_the_logs_on_main_table():
+    # b12 recorded v17/v4 for v18/v5 battles because this constant lagged the log.
+    log = (Path(__file__).parents[2] / "docs/twwarhammer3/log.md").read_text()
+    table = log.split("## On main", 1)[1].split("\n## ", 1)[0]
+    for name in ("llm", "commander"):
+        row = next(line for line in table.splitlines() if line.startswith(f"| `{name}` |"))
+        assert row.split("|")[2].split()[0] == controllers.VERSIONS[name]
+    assert controllers.VERSIONS["llm_rules"] == controllers.VERSIONS["llm"]

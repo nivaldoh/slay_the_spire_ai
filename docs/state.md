@@ -1,17 +1,17 @@
 # Project state
 
-Updated 2026-10-16 02:39 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 03:25 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-No game controller is running. WH3 expansion stopped at the owner's request on
-2026-10-16 02:39 UTC; no more battles are queued. Six exploratory battles are complete
-(siege, survival, Conquest). The replacement Skaven evacuation pilot is implemented and
-offline-tested, but has not run in the game. Resume with that pilot's setup/ending check
-and two exploratory screens, counting any initial battle toward the 2–3-battle allowance.
-Ledger: $16.9058 of $25. See the [b12 log](twwarhammer3/log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
+No game controller is running. The evacuation screen `bench-b12-skv-evacuation-20261016`
+stopped at setup (03:20 UTC, no model call: the authored-placement check runs in the
+teleport's own tick), and the owner then deferred the custom evacuation scenario to a
+low-priority item. Overnight (owner away until 13:00 UTC; goal: continue the benchmark
+plan): the owner's pending report notes are being implemented on branch
+`wh3-report-notes` (worktree `../wh3-report-notes`), not yet merged. Ledger: $16.9058 of $25.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -25,8 +25,9 @@ command; clear it when the job stops.
 - On `main`: `llm`/`llm_rules` v18, `commander` v5, skills v1.2, benchmark b12,
   evaluator v2 and track `obs-v4+terrain/act-v2/live-1x`. The interface supports native
   objectives/reinforcements and the optional public battery-evacuation objective.
-- Seven candidate decision families remain after the live novelty audit in the
-  [design audit](twwarhammer3/benchmark.md#scenario-design). Cavalry/caster variants
+- Six candidate decision families with live evidence remain after the live novelty audit
+  in the [design audit](twwarhammer3/benchmark.md#scenario-design); the custom evacuation
+  pilot is deferred (owner, 2026-10-16). Cavalry/caster variants
   count once each; the two swarm roles remain provisionally distinct. Conquest was
   demoted because it has one point, not the planned separated objectives. Win-rate admission
   is retired; difficult battles need meaningful, executable choices.
@@ -35,9 +36,11 @@ command; clear it when the job stops.
   costs and evidence reviews are in the [b12 log](twwarhammer3/log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
 - API spend: $16.9058 of the $25 cap; no paid job is running.
 
-Next on resume: validate `emp-battery-skv-evacuation` in the original engine; its
-placement, extraction and scripted ending remain unverified. Later self-comparisons separate army/control
-workload from neutral prompt length, useful history, representation and observation age.
+Next: the owner's [pending report notes](twwarhammer3/reports.md#pending-report-notes),
+then the retained families' playmaking review. The custom evacuation pilot is deferred
+([diagnosis](twwarhammer3/log.md#2026-10-16-evacuation-deferred-controller-version-labels-fixed)).
+Later self-comparisons separate army/control workload from neutral prompt length, useful
+history, representation and observation age.
 Steam is pinned to 9.0.4; old evidence keeps its original build.
 
 ## Slay the Spire
@@ -68,6 +71,11 @@ Next steps:
 ## Owner direction
 
 WH3:
+- 2026-10-16 (03:20 UTC): delay the custom battles (the evacuation pilot) for much later in
+  the plan as a low-priority item, and proceed with other things.
+- 2026-10-16 (planning note): less is more; a smaller set of high-quality scenarios, each
+  answering a distinct question ([scenario design](twwarhammer3/benchmark.md#scenario-design)).
+  Report feedback is recorded in [reports.md](twwarhammer3/reports.md#pending-report-notes).
 - 2026-10-16 (implementation): approved a compact core of 6-8 distinct decision problems;
   variants do not count as new coverage. Implement siege defence, survival and conquest
   plus one custom battery-evacuation pilot; narrow interface extensions and custom

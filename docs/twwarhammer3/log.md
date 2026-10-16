@@ -31,14 +31,37 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | Piece | Version | Defined in | Latest results |
 |---|---|---|---|
 | `llm` | v18 (2026-10-16) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | Shared input validated through `llm_rules` in b12; tactical prompt's last mode campaign was v15 (Luna low: 6 wins in 10 jobs) |
-| `llm_rules` | shares `llm` v18 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | b12: siege Sol loss/Luna win; survival and Conquest two losses each. Evacuation not yet run |
+| `llm_rules` | shares `llm` v18 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | b12: siege Sol loss/Luna win; survival and Conquest two losses each. Evacuation deferred (setup failure) |
 | `commander` | v5 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | b11 smoke, Luna low: lost `dwf-line-skv-swarm` at 593 s ($0.054) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b12 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Six b12 engine outcomes; recorded rematch starts matched. Custom evacuation is offline-tested only |
+| benchmark harness | b12 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Six b12 engine outcomes; recorded rematch starts matched. Custom evacuation deferred: authored placement check fails in the engine |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | scores by game mode, one map per model (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | `reports/benchmark.html` (34 MB): 61 jobs, 91 battles shown in 22 scenarios (6 diagnostic probes held back), six core families with evidence; headline C1 |
+
+## 2026-10-16: Evacuation deferred; controller version labels fixed
+
+`bench-b12-skv-evacuation-20261016` (`a9ba045`; Luna then Sol, `llm_rules` low) stopped at
+setup 0.3 s into its first battle, before any model call: "authored deployment failed for
+friendly/f1". Diagnosed, not fixed: `start()` in the battle script measures the authored
+placement in the same tick as `teleport_to_location`, so it recorded the native ambush
+column, 42-318 m from the authored spots. The first observation, 0.3 s later, had every
+friendly unit at its authored spot, infantry and cavalry still re-forming 5-13 m behind it,
+which the 2 m tolerance would also refuse. A fix measures a moment later (the setup
+already waits for late native state) with a tolerance for re-forming that still excludes
+the native positions. No spend; the register keeps the row as `unsupported_or_invalid`.
+
+**Owner decision (2026-10-16 03:20 UTC):** the custom evacuation scenario moves to the end
+of the plan as a low-priority item. It stays specified and offline-tested but outside the
+active core until resumed; six candidate families with live evidence remain. The failed
+attempt joins the canonical report's job list.
+
+Version labels: `controllers.VERSIONS` still said `llm`/`llm_rules` v17 and `commander` v4,
+so the six b12 battles carry v17 in their controller cards although they ran v18 (their
+source revisions identify the code; `results.csv` has no version column). The constant
+now matches the "On main" table and a test compares them. Harness fingerprints hash the
+sources, so no report grouping changed.
 
 ## 2026-10-16: Harness b12 and distinct scenario families
 
