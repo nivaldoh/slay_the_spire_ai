@@ -247,6 +247,12 @@ different factor; caster can climb further. All need more Sol battles than the c
 or a cheaper reference model. The other three families (cavalry assault 1/3 for
 gpt-6.1-sol; defensive swarm and Kislev 0/3) already sit near or past the winnable edge.
 
+**Per-model reasoning modes** (`ff8a091`, for the owner's all-modes coverage): efforts are
+declared per model, with OpenRouter's catalogue lists (GLM `low`/`high`/`max`, Kimi
+`none`/`low`/`high`/`max`, Step `low`/`medium`/`high`); an empty `/EFFORT` suffix now names
+the effort in its error. Each new mode passed one reply-schema call ($0.0061; OpenRouter
+ledger $1.9333); details in [controllers.md](controllers.md#openrouter). 491 tests pass.
+
 ## 2026-10-16: Live check of the v20 shared-magic warning
 
 **Result.** `bench-b13-glm-v20-caster-20261016` (`ae55309`, 19:28-19:40 UTC) **won** at

@@ -205,9 +205,14 @@ Initial models, with enforced routing ceilings in USD per million tokens:
 | `stepfun/step-5-preview` | $1.00 | $2.70 | low, medium, high (always reasons) |
 
 Efforts are declared per model (2026-10-16 evening, for the owner's all-modes coverage),
-from the catalogue's `supported_efforts`; `low` is the only one played so far. Each new
-mode needs a schema call before a battle, and `max` may need more than the 4,000-token
-reply allowance. OpenAI models keep `none`, `low`, `medium` and `high`.
+from the catalogue's `supported_efforts`; `low` is the only one played so far. All seven
+other modes passed one WH3 reply-schema call each on 2026-10-16 ($0.0061 in total;
+`capability-probes/openrouter-modes-20261016/`). Reported reasoning tokens on that
+trivial prompt: GLM `high` 47, `max` 83; Kimi `none` 0, `high` 67, `max` 66; Step
+`medium` and `high` 0 (the backend may not report them). That shows the modes are
+accepted, not how they differ in a battle; `max` may need more than the 4,000-token
+reply allowance there. OpenAI models keep `none`, `low`, `medium` and `high`, not yet
+checked per mode.
 
 These are leading open-weight candidates selected during the design review, not a
 ranking inferred from our tests. Catalogue metadata was checked on 2026-10-16. All three
