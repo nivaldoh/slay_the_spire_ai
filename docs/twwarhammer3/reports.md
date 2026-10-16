@@ -72,6 +72,11 @@ Historical pilots use their saved configuration's scenario name when their decla
 predates names. No current catalogue is substituted for historical setup. There is no
 aggregate score across different armies or objectives.
 
+The two named calibration controllers, `CentralDefence` and `CoordinatedRush`, are
+shown as scripted **scenario diagnostics**, with their assumptions in Run settings.
+Their completed battles and replays help inspect the proposed tactics; a scenario-aware
+script is not a general model policy. Interface/mechanics probes remain omitted.
+
 Progress is the share of the enemy's registered soldiers dead or out of the fight (fleeing,
 shattered, leaving or undeployed) when the battle ended: `1 - active/registered` from the
 evaluation, unknown when either is missing. A win breaks the whole army in attack

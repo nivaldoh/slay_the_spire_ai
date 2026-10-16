@@ -57,7 +57,11 @@ RACES = {"brt": ("Bretonnia", "Bretonnian"), "emp": ("Empire", "Empire"),
 SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the nearest visible enemy"),
             "rush_nearest": ("Charge nearest", "every unit runs at the nearest visible enemy"),
             "hold": ("Hold position", "never gives an order"),
-            "skills": ("Unit skills", "each unit follows its class's default skill")}
+            "skills": ("Unit skills", "each unit follows its class's default skill"),
+            "twwarhammer3.battle.calibration:CentralDefence": (
+                "Central fallback", "scenario diagnostic: gather at one owned victory point"),
+            "twwarhammer3.battle.calibration:CoordinatedRush": (
+                "Synchronized rush", "scenario diagnostic: delay mobiles to meet the screen")}
 # Unit fields and frame fields the page draws; the job directory keeps the rest.
 UNIT_KEEP = ("id", "x", "z", "bearing", "men", "men0", "hp", "state", "target", "ammo", "ammo0")
 MODE_KEEP = ("role", "capture_points", "supplies", "tickets", "tickets_goal", "custom")

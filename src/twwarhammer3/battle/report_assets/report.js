@@ -1392,6 +1392,8 @@
         ["Test-setup version", entry.battle.harness],
         ["Interface track", definition.track],
         ["Controller version", trial.card?.version || "unrecorded; see source revision"],
+        ["Calibration purpose", trial.card?.disclosure?.purpose],
+        ["Declared scenario knowledge", trial.card?.disclosure?.knowledge],
         ["API gateway", isModel(entry) ? definition.provider || "openai" : null],
         ["Requested model", trial.card?.model || (isModel(entry) ? definition.model : null)],
         ["Served models", trial.metrics?.actual_models?.join(", ")],
