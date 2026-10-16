@@ -10,10 +10,11 @@ entry, and what reads them:
   ``subculture`` (the race); ``faction`` (pins banner and recruitment cards; without it the
   game picks one); ``units`` (recruitment cards, the lord first, or null for the
   Autogenerate army button); ``lord`` (false: a lordless roster whose first card is an
-  ordinary unit; it relies on the profile's "allow no lord" lobby setting); ``mounts`` (zero-based recruitment index to mounted unit key,
-  selected and verified in the lobby); ``recruitment_faction`` (card namespace when it
-  differs from the selected banner); ``reinforcements`` (null for autogeneration, or an
-  explicit list of non-lord unit cards, selected and read back in the lobby).
+  ordinary unit; it relies on the profile's "allow no lord" lobby setting); ``mounts``
+  (zero-based recruitment index to mounted unit key, selected and verified in the lobby);
+  ``recruitment_faction`` (card namespace when it differs from the selected banner);
+  ``reinforcements`` (null for autogeneration, or an explicit list of non-lord unit
+  cards, selected and read back in the lobby).
 - ``map``: without it the lobby keeps the last map of the battle type.
 - ``battle_type``: the lobby battle type, classic by default; the first observation must
   show its engine type (``expected_mode``).
