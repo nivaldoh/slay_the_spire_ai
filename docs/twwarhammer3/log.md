@@ -226,6 +226,27 @@ show the step is unwinnable.
 makes two cannons the caster family's hardest demonstrated step; a loss leaves one cannon
 as the hardest, with two cannons unadmitted. No other paid run follows without the owner.
 
+**V1e caster, paid** (`bench-b13-v1e-caster-cannon2-sol61-20261016`, `af19035`, gpt-6.1-sol /
+low): **won** at 370 s with 46% of its strength left (the enemy routed with 57% of its men);
+62 decisions, 1 invalid order, mean delay 5.95 s, $0.49490000. OpenAI ledger $50.86 of
+$52; no further OpenAI battle is planned. It aimed 23 orders at the two cannons; Kairos's
+barrier was down by 232 s and he kept about 81% HP. GLM lost the same step at 204 s.
+
+**Ladder V1 summary** (one battle per step unless noted; anchors from M1c, v18; the rest v20):
+
+| Family | Anchor (gpt-6.1-sol) | Steps | Hardest step with a demonstrated win |
+|---|---|---|---|
+| Siege defence | won 3/3 | +2 flankers: won (422 s, 66%). +4 flankers: lost (Sol 629 s; Kimi 659 s) | `chd-reserve-grn-siege-flankers-2` |
+| Swarm command | won 3/3 | +2 Gyrocopters: won (535 s, 42%). +4: won (418 s, 50%) | `skv-swarm-dwf-line-gyrocopters-4`; the factor does not bind |
+| Caster assault | won 3/3 | +1 cannon: won (577 s, 25%). +2 cannons: won (370 s, 46%); GLM lost (204 s) | `tze-caster-skv-assault-cannon-2` |
+
+Single battles vary as much as the steps, so these are development readings, not
+difficulty estimates. Against the owner's target (as hard as possible while winnable):
+siege's next question is a three-unit step or a second try at four; swarm needs a
+different factor; caster can climb further. All need more Sol battles than the cap allows,
+or a cheaper reference model. The other three families (cavalry assault 1/3 for
+gpt-6.1-sol; defensive swarm and Kislev 0/3) already sit near or past the winnable edge.
+
 ## 2026-10-16: Live check of the v20 shared-magic warning
 
 **Result.** `bench-b13-glm-v20-caster-20261016` (`ae55309`, 19:28-19:40 UTC) **won** at
