@@ -40,33 +40,39 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build: 81 input jobs, 98 completed battles shown across six candidate scenarios; setup failures and variants retained in JSON/text |
 
-## 2026-10-16: Difficulty ladder, first step for siege and swarm command (plan)
+## 2026-10-16: Difficulty ladder, first step (V1)
 
 gpt-6.1-sol / low won all three battles on both anchors, with margin: siege defence at
 538-587 s with 58-78% of its strength left, swarm command at 449-497 s with 50-52%.
-gpt-6-sol also won the siege 3/3 and the swarm 2/3. Step 3 of the
+gpt-6-sol also won the siege 3/3 and the swarm 2/3. Caster assault followed after the
+v20 check below: gpt-6-sol and gpt-6.1-sol 3/3 each, GLM-5.3 one of two. Step 3 of the
 [plan](benchmark.md#implementation-plan) applies: a clear easy win motivates one harder
 variant, changing one justified factor that presses on the family's scarce resource
-rather than inflating stats. Both anchors stay unchanged.
+rather than inflating stats. The anchors stay unchanged.
 
 | Variant | Factor | Enemy cost | Question |
 |---|---|---|---|
 | `chd-reserve-grn-siege-flankers` | Enemy mobility: adds 2 Orc Boar Boyz and 2 Goblin Wolf Riders, the attacker's first cavalry | 9725 → 11625 (+20%), 20 units | Does one mobile reserve still cover the gun positions when fast units arrive early or by another route? |
 | `skv-swarm-dwf-line-gyrocopters` | A threat the screen cannot block: adds 2 Gyrocopters | 8200 → 9800 (+20%), 11 units | Can the weapon teams, cannon and Warlock Engineer keep their protected time against flyers? |
+| `tze-caster-skv-assault-jezzails` | Pressure on the caster: adds 1 Warplock Jezzails (projectile range 275 m, may target airborne units) | 3775 → 4775 (+26%), 11 units | Do casting position, flight and escort use still allow spell windows when the caster can be shot from beyond most spell ranges? |
 
 Funds caps, maps, timers, AI modifiers and the player rosters are unchanged; the lobby
 lists every added card for those factions (`cards_slot1.txt` of the M1c jobs).
 
 Tranche V1, decided under the owner's standing resume direction (continue calibration
 within the existing budgets) and reviewable:
-1. V1a, $0: one scripted battle per variant, `hold` on the siege (anchor: lost at
-   709 s) and `rush_nearest` on the swarm. Checks that the lobby takes the rosters, where
-   the added units go and how fast a floor controller now loses. A setup failure or
+1. V1a, $0: one scripted battle per siege/swarm variant, `hold` on the siege (anchor:
+   lost at 709 s) and `rush_nearest` on the swarm. Checks that the lobby takes the rosters,
+   where the added units go and how fast a floor controller now loses. A setup failure or
    added units that never engage sends the variant back before any paid battle.
-2. V1b, paid: one gpt-6.1-sol / low `llm_rules` v20 battle per variant, with a cumulative
-   OpenAI ceiling of **$50.00** (now $45.96). The anchors cost $0.90-1.11 per battle;
-   a longer losing battle may cost up to about $2. M1c used v18, so the controller
-   version also differs (v19/v20 changed only ability, routing and magic feedback).
+2. V1b: the caster variant's $0 check (`CasterSkirmish`, anchor: lost at 581 s, Kairos's
+   barrier first down at 473 s), then one gpt-6.1-sol / low `llm_rules` v20 battle on each
+   of the siege and swarm variants, with a cumulative OpenAI ceiling of **$50.00** (now
+   $45.96). The anchors cost $0.90-1.11 per battle; a longer losing battle may cost up to
+   about $2. M1c used v18, so the controller version also differs (v19/v20 changed only
+   ability, routing and magic feedback).
+3. V1c, after reviewing V1b: the caster variant's paid battle, if its check passes and
+   budget remains.
 
 Decision rule per variant, one battle each: a clear win with a similar margin says the
 factor does not bind, so the next step is a different factor, not a repeat. A loss or
@@ -75,9 +81,25 @@ choice, makes the variant a candidate for the small frontier screen. A loss caus
 an interface failure, or by units the controller could not see or reach, sends it back.
 One battle is not a ceiling estimate.
 
+**V1a siege** (`bench-b13-v1a-siege-flankers-hold-20261016`, `f89a9b5`): the lobby took the
+20-unit roster; `hold` lost at 708 s (anchor 709 s, an independent launch). The added
+cavalry engaged: both Boar Boyz units charged the gate area and shattered under fire
+(routing at about 150 s and 340 s); the Wolf Riders passed the line and reached the key
+building's area (z ≈ 290-320) by 440-580 s, one unit at 17 of 60 men. Under a static
+controller the infantry decides the timing; the riders put a threat behind the line,
+which is the reserve question. Passes to V1b.
+
+**V1a swarm** (`bench-b13-v1a-swarm-gyros-rush-20261016`, `f89a9b5`): the lobby took the
+11-unit roster; `rush_nearest` lost at 314 s (anchor 288 s, independent launches). Both
+Gyrocopters stayed airborne and closed to 8-60 m of the Doomwheel, Rat Ogres, slaves and
+Warlord from about 90 s on. They were under fire in 479 samples yet ended with 17 of 18
+men, so the Skaven ranged units barely hurt them. A win may then depend on breaking the
+Dwarf army so the flyers rout with it, a risk to read in V1b rather than a reason to stop.
+Passes to V1b.
+
 ## 2026-10-16: Live check of the v20 shared-magic warning
 
-**Result.** `bench-b13-glm-v20-caster-20261016` (`ae55309`, 19:28-19:55 UTC) **won** at
+**Result.** `bench-b13-glm-v20-caster-20261016` (`ae55309`, 19:28-19:40 UTC) **won** at
 575 s with 69% of its strength left (enemy 43% left, all routed); 80 decisions, 97
 calls, $0.40868230, clock ratio 0.99999. OpenRouter ledger $0.83868719 of the $2.00 run
 ceiling and the $50 allowance. The v19 battle on the same anchor lost at 566 s. One

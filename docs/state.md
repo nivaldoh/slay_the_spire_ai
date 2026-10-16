@@ -6,10 +6,10 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 
 ## Active work
 
-Running since 20:00 UTC: WH3 queue `runs/twwarhammer3/calibration/v1a-plan-20261016.json`,
-two $0 scripted battles on the new siege/swarm ladder variants, then V1b (one
-gpt-6.1-sol battle per variant, OpenAI cumulative cap $50.00) after review
-([plan](twwarhammer3/log.md#2026-10-16-difficulty-ladder-first-step-for-siege-and-swarm-command-plan));
+Running since 20:06 UTC: WH3 queue `runs/twwarhammer3/calibration/v1b-plan-20261016.json`:
+a $0 `CasterSkirmish` check on the new caster variant, then one gpt-6.1-sol / low battle
+on each of the siege and swarm variants (OpenAI cumulative cap $50.00). V1a's two free
+checks passed ([ladder V1](twwarhammer3/log.md#2026-10-16-difficulty-ladder-first-step-v1));
 follow with `uv run python -m twwarhammer3 watch`.
 
 The [v20 live check](twwarhammer3/log.md#2026-10-16-live-check-of-the-v20-shared-magic-warning)
