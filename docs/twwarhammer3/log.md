@@ -191,6 +191,21 @@ flanker step is now 0 of 2 and not admissible; the next siege test steps back to
 dose (`chd-reserve-grn-siege-flankers-2`: one Boar Boyz and one Wolf Riders unit, 9725 to
 10675, 18 units).
 
+**V1c swarm, paid** (`bench-b13-v1c-swarm-gyros4-sol61-20261016`, gpt-6.1-sol / low): **won**
+at 418 s with 50% of its strength left (enemy 33%, nothing active); 54 decisions, 1 invalid
+order, mean delay 7.64 s, $0.66040000. OpenAI ledger $49.76 of $52. Doubling the
+Gyrocopters did not make the battle harder than the two-Gyrocopter step (535 s, 42%) or
+clearly harder than the anchor (449-497 s, 50-52%): that factor does not bind, and the
+spread between single battles is as large as the step. The next swarm step needs a
+different factor, not a larger dose.
+
+**V1d (plan, 21:30 UTC).** Within both caps: `chd-reserve-grn-siege-flankers-2` with
+gpt-6.1-sol / low (OpenAI cap $52; about $1.2), then `tze-caster-skv-assault-cannon-2`
+(two Warp Lightning Cannons, 3775 to 5675, 12 units) with GLM-5.3 / low through OpenRouter
+(cumulative ceiling $5; about $0.4). GLM won one of two caster anchors; a GLM win would show
+the two-cannon step is winnable, a loss would not show the opposite. After V1d the OpenAI
+remainder is about $1; further Sol battles need the owner's decision on that cap.
+
 ## 2026-10-16: Live check of the v20 shared-magic warning
 
 **Result.** `bench-b13-glm-v20-caster-20261016` (`ae55309`, 19:28-19:40 UTC) **won** at
