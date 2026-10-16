@@ -6,7 +6,7 @@
       "noun": "cavalry assault",
       "heading": "Cavalry against a halberd screen guarding the guns",
       "challenge": "Six mounted units face eight enemy units: four halberd units screening two units of handgunners and a cannon. Halberds are built to stop cavalry, so a frontal charge into them risks a losing grind; the gunners behind them are weak in melee. The attacker must defeat the defenders before the 20-minute timer runs out.",
-      "footnote": "Every enemy unit's stats are raised by 10%. In M1, Sol and gpt-6.1-sol each won one of three battles; Luna lost all three. Earlier wins reached the guns around the halberd screen, but repeatability at model latency remains unresolved. Preserve this difficulty as an anchor until the successful route is better understood.",
+      "footnote": "Every enemy unit's stats are raised by 10%. In M1, Sol and gpt-6.1-sol each won one of three battles; Luna lost all three. Earlier wins reached the guns around the halberd screen, but repeatability at model latency remains unresolved. Preserve this difficulty as an anchor until the successful route is better understood. Recorded starting positions match within each M1 cavalry launch despite mixed outcomes; route execution remains a question even before testing other geometries.",
       "family": "cavalry against anti-large",
       "core_candidate": true
     },
@@ -25,7 +25,7 @@
       "challenge": "Twenty Skaven units, most of them cheap and quick to flee, attack nine Dwarf units holding a gun line. The attacker must break the defenders before the 20-minute timer runs out.",
       "family": "command a Skaven swarm",
       "core_candidate": true,
-      "footnote": "In M1, gpt-6.1-sol won three of three, Sol two of three and Luna none. Trace review found the mobile damage units arriving with the slave screen in Sol's wins and arriving ahead of it in losses. This is a coordination hypothesis, not a causal result; a simple coordinated-advance diagnostic should precede a harder roster or another broad model comparison."
+      "footnote": "In M1, Sol won two of three battles, gpt-6.1-sol three of three and Luna none. A speed-based synchronization script lost at 316 s after its Doomwheel arrived 45 s before the infantry. Following the observed screen corrected that sequence but still lost at 440 s. These disclosed frontal-rush diagnostics do not establish that timing alone is enough, or that the strongest models will find the scenario difficult."
     },
     "dwf-line-skv-swarm": {
       "title": "Survive a Skaven swarm",
@@ -82,7 +82,7 @@
       "challenge": "Kairos, a flying character and the army's only spellcaster, attacks with four escorts: two ranged infantry units, one heavily armoured melee unit and a small unit of fast flyers. Ten Skaven units with three times as many troops hold the field: a leader, five clanrat units, two units of expendable slaves, a short-range warpfire team and a catapult unit that reaches 400 m, twice as far as any of Kairos's spells. Each spell costs 5 to 20 points of magic from a pool that starts at 12 and refills slowly, and Kairos is one character, not a regiment: flying him at the catapult risks losing him, while waiting cannot win. The attacker must break every defender before the 20-minute timer runs out; at the timer it loses.",
       "family": "caster-led force against rat screens",
       "core_candidate": true,
-      "footnote": "In M1, Sol and gpt-6.1-sol each won three of three attacker battles; Luna won one of three. Both nearest-enemy scripts lost. Spell use, escort survival and caster withdrawal were executable, but accepted casts are not a measure of spell value. Stale readiness after casting needs correction before new model comparisons; a repeatable cast-and-retreat strategy may make this an easy anchor."
+      "footnote": "In M1, Sol and gpt-6.1-sol each won three of three attacker battles; Luna won one of three. Both nearest-enemy scripts lost. Spell use, escort survival and caster withdrawal were executable, but accepted casts are not a measure of spell value. Controller v19 now flags same-timestamp ability issues; its effect on model behavior is untested. A repeatable cast-and-retreat strategy may make this an easy anchor."
     },
     "siege-kho5-dwf5": {
       "title": "Siege defence pilot",
@@ -137,7 +137,7 @@
       "challenge": "Nine Chaos Dwarf units defend fortified Helmgart against sixteen Greenskin units. Blunderbusses, Fireglaives and a Magma Cannon provide firepower; one Bull Centaur unit is the mobile reserve. Four victory locations and a starting construction budget of 6000 supplies create competing commitments across the fort.",
       "family": "territorial defence",
       "core_candidate": true,
-      "footnote": "In M1, Sol and gpt-6.1-sol each won three of three battles; Luna lost all three. Holding position and walking to the nearest enemy also lost. Earlier trace review linked outcomes to reserve timing, lord exposure and firing positions. This establishes usable choices, but not difficulty for the strongest models; whether a simple central defence suffices remains untested. Point ownership alone did not distinguish wins from losses."
+      "footnote": "In M1, Sol and gpt-6.1-sol each won three of three battles; Luna lost all three. A simple central-fallback diagnostic then lost at 614 s: two left-side units never reached their posts and the blunderbusses fired only 165 rounds. This leaves withdrawal and firing positions unresolved; it does not establish difficulty for the strongest models. The current scenario remains provisional."
     },
     "ksl-reserves-survival": {
       "title": "Hold the reinforcement zone",

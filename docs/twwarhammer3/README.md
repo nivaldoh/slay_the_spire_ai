@@ -189,8 +189,10 @@ failed Step attempt. The separate $50 cap stays in place; no OpenRouter battle h
    Strongest-model evidence is still missing; the audit's recommendations are development
    priorities, not final selection. The [revised proposal](benchmark.md#implementation-plan)
    now has six [calibration cards](benchmark.md#calibration-cards-2026-10-16) from the
-   saved M1 evidence. Two free scripted checks on the unchanged siege/swarm anchors come
-   first. Controller feedback fixes and purposeful cheap probes precede a small frontier
+   saved M1 evidence. Three free siege/swarm diagnostics are complete: central fallback lost,
+   and corrected swarm coordination still lost. Their execution limits are recorded in
+   the [live review](log.md#2026-10-16-free-siegeswarm-calibration-checks). Controller
+   feedback v19 / commander v6 is implemented; purposeful cheap probes precede a small frontier
    screen and any broader matched comparison. No budget has been raised.
 2. Continue to count cavalry and caster revisions once each. The two swarm roles remain
    provisional distinct questions; the [design audit](benchmark.md#scenario-design)

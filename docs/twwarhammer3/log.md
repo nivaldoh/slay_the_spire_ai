@@ -38,14 +38,70 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | benchmark harness | b13 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Exploratory screens and M1 completed; recorded rematch starts matched. Custom evacuation deferred: authored placement check fails in the engine |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
-| report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build: 76 input jobs, 93 completed battles shown across six candidate scenarios; setup failures and variants retained in JSON/text |
+| report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build: 79 input jobs, 96 completed battles shown across six candidate scenarios; setup failures and variants retained in JSON/text |
+
+## 2026-10-16: Free siege/swarm calibration checks
+
+The first tranche uses unchanged anchors and disclosed scripts, unpaused at 1x with
+replay/stills, $0 API spend. Jobs use the prefix `bench-b13-` and suffix `-20261016`:
+
+| Job middle | Controller | Source | Engine outcome | Battle seconds |
+|---|---|---|---|---:|
+| `central-defence` | CentralDefence | `1c03385` | lost | 614 |
+| `coordinated-rush` | CoordinatedRush, speed estimate | `1c03385` | lost | 316 |
+| `coordinated-follow` | CoordinatedRush, observed screen | `d85cae1` | lost | 440 |
+
+The siege fallback issued 196 orders without a refusal. Seven units eventually reached
+within 12 m of their assigned posts, but the left-side Infernal Guard and Fireglaives
+never did. The two blunderbuss units spent only 165 of 3,600 rounds; the cannon spent
+five of 25. The chosen central point was lost at 491 s. This does not establish an easy
+central-defence strategy or justify making the scenario harder: withdrawal routes and
+firing positions remain unresolved. No second siege run was needed to establish that
+this diagnostic did not fully execute its intended concentration.
+
+The first swarm script had 653 issued orders and three `unit_routing` refusals. Its
+Doomwheel arrived before the screen; the following entry records that failure and the
+one allowed repeat's corrected rule. Execution summaries are extracted read-only in
+`calibration/tranche-review-20261016.py` and its JSON. Outcome and execution are separate:
+a timing rule that failed to coordinate units cannot establish the value of coordination.
+
+The repeat released both mobiles at the first observed screen contact, 143.9 s. The
+Doomwheel entered melee at 156.5 s and routed at 180.5 s; the Rat Ogres entered at
+162.8 s and routed at 167.9 s. It issued 1,056 orders with four `unit_routing` refusals.
+The intended sequence now executed, but this frontal tactic still lost. Starts matched
+in roster/resources/loadout, with positions differing by up to 3.3 m (flagged by the
+normal comparison); the two sources also differ. The longer survival is not a controlled
+improvement estimate. No further run is queued in this tranche and no scenario was
+made harder from these losses. All three battle/wall clock ratios were within 0.4% of 1.
+
+The cavalry review of M1b/M1c found identical recorded positions/bearings within each
+launch (six and three episodes), including both wins and losses; there are two starting
+geometries across launches. `calibration/cavalry-start-review-20261016.json` retains the
+nine paths, geometry hashes and opening orders. Keep the current difficulty and inspect
+route execution before buying repeats or increasing enemy strength.
+
+The canonical report now includes 79 input jobs and displays 96 completed battles in
+six provisional scenarios. The named calibration tactics appear as scripted scenario
+diagnostics with their assumptions in Run settings and their replays available. The
+report selection file is excluded from gameplay fingerprints, with a regression check,
+so selecting more evidence does not invent a changed game/controller setup.
+
+Validation: the WH3/shared/documentation suite passed 505 tests (two optional skips);
+focused regressions for the subsequent diagnostic and fingerprint refinements passed.
+Ruff, Prettier and `git diff --check` passed. Offline Chromium checks passed on the final
+recorded, synthetic and copied reports, desktop and mobile. A regeneration without its
+scenario notes initially expanded the page to historical scenarios and failed the layout
+check; rerendering with the canonical notes restored the six-scenario selection.
+Screenshots/downloads: `report-checks/openrouter-calibration/`.
+
+The first new result appended the provider column to the register. All 292 historical
+rows retain every previous field unchanged; new diagnostic rows have no model cost.
 
 ## 2026-10-16: Calibrate the scripted swarm timing rule
 
 The first `CoordinatedRush` diagnostic lost at 316 s on the unchanged swarm anchor. It
-released the
-Doomwheel at 10.7 s; they reached melee at 99.5 s and routed at 107.9 s, before the first
-slave/clanrat contact at 144.5 s. The Rat Ogres released at 56.3 s, reached melee at
+released the Doomwheel at 10.7 s; it reached melee at 99.5 s and routed at 107.9 s, before
+the first slave/clanrat contact at 144.5 s. The Rat Ogres released at 56.3 s, reached melee at
 153.2 s and routed at 158.9 s. A straight-line estimate using advertised run speeds did
 not synchronize the first commitment, so its outcome cannot test that intended tactic.
 
@@ -53,7 +109,7 @@ Revised only this diagnostic: mobile units follow 25 m behind the observed scree
 centre, 30 m apart, and attack after observed screen contact. Posts update after 20 m of
 screen progress, avoiding a new movement order every tick. If the screen is gone the
 mobiles revert to run-nearest. No abilities or scenario changes. The saved first source
-and controller card preserve the original rule; the repeat will have its own source.
+and controller card preserve the original rule; the repeat ran as `coordinated-follow` on `d85cae1` (results above).
 
 Three focused tests and Ruff pass. On 451 recorded snapshots through 315.2 s, the new
 rule produced 687 valid orders and released after observed contact. This offline check

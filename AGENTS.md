@@ -55,7 +55,8 @@ src/twwarhammer3/  Total War: WARHAMMER III custom battles
                    (direct API-model controller: llm, llm_rules), commander.py
                    (asynchronous API model over skills), skills.py (per-unit skill
                    executor, probe_abilities), scripted.py (hold, attack_nearest,
-                   rush_nearest), capture.py (1 Hz replay recorder and stills), digest.py
+                   rush_nearest), calibration.py (disclosed scenario diagnostics),
+                   capture.py (1 Hz replay recorder and stills), digest.py
                    (trace summaries), watch.py (follow a job), stats.py (results
                    register), report.py (paired statistics), report_html.py, replay.py
                    and report_assets/ (the offline HTML report and its replay)

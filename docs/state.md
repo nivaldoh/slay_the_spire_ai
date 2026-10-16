@@ -1,22 +1,19 @@
 # Project state
 
-Updated 2026-10-16 16:57 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 18:08 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-No game controller is running. The overnight matched round M1 finished at 11:30 UTC on
-2026-10-16 (50 battles over three queues, including two scripted baselines), and
-free scripted baselines (M1d) at 11:59 UTC
-([M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan)).
-The reworked canonical report (`runs/twwarhammer3/reports/benchmark.html`) includes them.
-OpenAI ledger: $45.96 of $52. OpenRouter support and the three schema checks passed;
-its ledger is $0.00523146 of $50, including one failed Step request. No paid battle is
-running. The six [calibration cards](twwarhammer3/benchmark.md#calibration-cards-2026-10-16)
-review M1 evidence and define two free scripted checks on existing siege/swarm anchors.
-The report now makes the provisional collection explicit and updates its scenario notes.
-Offline desktop/mobile browser validation passed; the read-only game doctor is ready.
+No game controller is running. OpenRouter support and all three WH3 reply-schema checks
+passed; the [free calibration tranche](twwarhammer3/log.md#2026-10-16-free-siegeswarm-calibration-checks)
+is complete. Controller feedback v19 / commander v6 is integrated and tested against
+recorded M1 traces; its effect on model behavior remains untested. The canonical report
+includes the three disclosed diagnostic replays and passes offline desktop/mobile checks. All six candidates remain
+provisional until a small strongest-model screen.
+
+API ledgers: OpenAI $45.96 of $52; OpenRouter $0.00523146 of $50. No paid battle is queued.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -27,7 +24,7 @@ command; clear it when the job stops.
 [log](twwarhammer3/log.md) (newest first, with the versions on `main` at the top),
 [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v18, `commander` v5, skills v1.2, benchmark b13,
+- On `main`: `llm`/`llm_rules` v19, `commander` v6, skills v1.2, benchmark b13,
   evaluator v2 and track `obs-v4+terrain/act-v2/live-1x`. The interface supports native
   objectives/reinforcements and the optional public battery-evacuation objective.
 - Six candidate decision families with live evidence remain after the live novelty audit
@@ -43,13 +40,12 @@ command; clear it when the job stops.
   reviews: [M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
 - API spend: $45.96 of the $52 cap (raised from $25 on 2026-10-16); no paid job is running.
 
-Next: run the small scripted calibration tranche
-specified by the [cards](twwarhammer3/benchmark.md#calibration-cards-2026-10-16). Correct
-stale post-cast readiness and state the routing-unit rule in a logged controller revision
-before new paid comparisons. OpenRouter's three models passed the real WH3 reply schema
-and parser ([support](twwarhammer3/controllers.md#openrouter)); high effort and live
-battle behavior remain untested. Keep the core provisional until a small strongest-model
-screen. The OpenAI remainder ($6.04) is unallocated; custom evacuation and separate
+Next: use the [cards](twwarhammer3/benchmark.md#calibration-cards-2026-10-16) to select
+a specific remaining play to test (siege withdrawal/firing positions, swarm flank or
+weapon support, or caster withdrawal), then a small strongest-model screen. The feedback
+fixes need live model validation before broader paid comparisons. OpenRouter's three
+models passed the real WH3 reply schema and parser ([support](twwarhammer3/controllers.md#openrouter)); high effort and live
+battle behavior remain untested. The OpenAI remainder ($6.04) is unallocated; custom evacuation and separate
 workload, prompt, history, representation and added-age experiments remain deferred.
 Steam is pinned to 9.0.4; old evidence keeps its original build.
 
