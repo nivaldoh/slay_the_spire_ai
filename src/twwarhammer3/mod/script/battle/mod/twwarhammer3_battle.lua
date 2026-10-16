@@ -487,8 +487,11 @@ local function sample_custom(now, native_result)
             -- A requested ending is not a result. finish() still waits for engine confirmation.
             goal.ending = "scripted"
             local mine = bm:local_alliance()
-            bm.battle:force_battle_end(success and mine or (mine == 1 and 2 or 1),
-                                      "scripted", true, true)
+            local ok, err = pcall(function()
+                bm.battle:force_battle_end(success and mine or (mine == 1 and 2 or 1),
+                                          "scripted", true, true)
+            end)
+            if not ok then goal.ending_error = clean_error(err) end
         end
     end
 end

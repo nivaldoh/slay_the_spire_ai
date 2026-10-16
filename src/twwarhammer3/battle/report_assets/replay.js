@@ -311,6 +311,16 @@ const Viewer = (() => {
     if ($("whole").checked && terrain)
       return [terrain.min_x, terrain.min_z, terrain.max_x, terrain.max_z];
     const points = [...tracks.values()].flat();
+    for (const frame of r.frames) {
+      const zone = frame.mode?.custom?.zone;
+      if (zone) {
+        points.push(
+          { x: zone.x - zone.radius, z: zone.z - zone.radius },
+          { x: zone.x + zone.radius, z: zone.z + zone.radius },
+        );
+        break;
+      }
+    }
     extent ??= points.length ? around(points, 40, 160) : [-256, -256, 256, 256];
     return extent;
   }

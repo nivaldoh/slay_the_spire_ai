@@ -84,6 +84,41 @@ engine mode. The report retains this setup failure. The existing Empire inventor
 caught `great_cannon` as the exact evacuation card key before that scenario ran.
 Offline browser checks passed at `report-checks/b12`.
 
+First siege outcome (`bench-b12-siege-reserve-r2-20261016/episode-0000`, Sol low,
+`llm_rules`): lost at 508 s, $0.9301, mean order age 5.16 s, 98 decisions and 19 rejected
+orders. The setup matched 9 Chaos Dwarfs versus 16 Greenskins; initial supplies were 6000.
+Victory-location ownership was 92% of observed time, key building 100%; 8 builds were
+accepted and 2616 supplies remained. Enemy soldiers: 520 alive, 502 active of 1151
+registered; own 151 alive of 419, none active at the rout.
+
+Observed plays: four early magic towers, then additional cheaper construction; the Bull
+Centaur reserve intercepted trolls outside the gate at 23 s and was withdrawn after heavy
+losses; later orders tried to fall back toward retained points. The central supply point
+fell before the key building. Through the first 112 moves, 96 were accepted (14 were
+unreachable and 2 were refused on routing units); fallback was executable, though target
+selection mattered. All 25 Magma Cannon shots remained at the end. Other missile units
+also retained most ammunition. These are observed missed opportunities, not proof of an
+alternative winning tactic. Luna's completed screen is recorded next.
+
+The same job's Luna-low rematch won at 688 s ($0.0674), 110 decisions, mean order age
+6.23 s and 21 rejected orders. Every recorded starting position and bearing matched;
+resources/loadouts matched too. Victory ownership was 91.89%, key building 100%, eight
+builds and 4103 supplies left. Luna fired the cannon (five shots already spent by 375 s)
+and recovered the central supply point before the ending. Keep this as a distinct
+exploratory family: reserve commitment, firing positions, construction and fallback were
+all executable. One win and one loss do not establish a model ranking or a win-rate band.
+The two battles cost $0.9975; ledger total is $15.3120.
+
+Before survival, review of the old native trace found its reinforcement context empty at
+5600 ms and populated at 6000 ms. b12 now waits up to five seconds of running battle time
+for a declared pool to appear before the first policy call; an absent/wrong pool still
+fails setup. This never pauses the battle. A requested custom ending must receive engine
+confirmation within five seconds; a script error or missing confirmation is an unsupported
+condition, never a fabricated win. The report now selects one core candidate per family,
+labels variants/history, prints mean survival seconds, and frames the extraction circle.
+Validation after these changes: 392 WH3 tests and Ruff passed. The canonical report now
+includes both siege attempts; offline browser checks passed, including survival durations.
+
 ## Index
 
 - 2026-10-15: [Report: sections by game mode](#2026-10-15-report-sections-by-game-mode) ·

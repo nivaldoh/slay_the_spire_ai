@@ -594,6 +594,9 @@
     // A commander's model plans: their age is the model's latency, the executor's is not.
     const ages = plans.length ? plans : timings.flatMap((t) => t.ages);
     const scores = valid.map(scoreOf).filter((value) => value != null);
+    const durations = valid
+      .map((entry) => entry.trial.measures?.duration_s)
+      .filter((v) => v != null);
     return {
       items,
       valid,
@@ -601,6 +604,8 @@
       won: valid.filter(won).length,
       scores,
       score: scores.length ? mean(scores) : null,
+      durations,
+      duration: durations.length ? mean(durations) : null,
       ages,
       executor: plans.length ? median(timings.flatMap((t) => t.ages)) : null,
       box: [0.1, 0.25, 0.5, 0.75, 0.9].map((q) => quantile(ages, q)),
@@ -626,17 +631,27 @@
     }
     // A model pools its commanders here; the scripted column shows its best rule.
     const stats = rows.map((row) => ({ row, ...rowStats(row) }));
+    const metric = item.mode === "survival" ? "duration" : "score";
     const pooled = rowStats({ battles: rows.flatMap((row) => row.battles) }),
-      best = stats.filter((s) => s.score != null).sort((a, b) => b.score - a.score)[0],
+      best = stats.filter((s) => s[metric] != null).sort((a, b) => b[metric] - a[metric])[0],
       shown = family === "Scripted" ? best : pooled;
-    if (shown?.score == null) {
+    if (shown?.[metric] == null) {
       cell.append(el("span", pooled.valid.length ? "not measured" : "did not finish", "none"));
       return cell;
     }
-    cell.style.setProperty("--score", shown.score / 100);
-    cell.append(el("b", points(shown.score)));
+    if (metric === "score") cell.style.setProperty("--score", shown.score / 100);
     cell.append(
-      el("small", family === "Scripted" ? best.row.name : `${shown.scores.length} finished`),
+      el("b", metric === "duration" ? `${Math.round(shown.duration)} s` : points(shown.score)),
+    );
+    cell.append(
+      el(
+        "small",
+        family === "Scripted"
+          ? best.row.name
+          : metric === "duration"
+            ? `${shown.durations.length} finished; mean survival`
+            : `${shown.scores.length} finished`,
+      ),
     );
     if (family === "Scripted" && best.row.harnesses > 1) {
       const mark = el("sup", "†", "pooled");
@@ -648,7 +663,7 @@
       mark.title = stats
         .map(
           (s) =>
-            `${s.row.name}, ${s.row.detail}: ${s.score == null ? "no score" : points(s.score)}${s.row.harnesses > 1 ? ` (${s.row.harnesses} harness versions)` : ""}`,
+            `${s.row.name}, ${s.row.detail}: ${s[metric] == null ? "not measured" : metric === "duration" ? `${Math.round(s.duration)} s` : points(s.score)}${s.row.harnesses > 1 ? ` (${s.row.harnesses} harness versions)` : ""}`,
         )
         .join("\n");
       cell.firstChild.append(mark);
@@ -675,7 +690,10 @@
         head = el("summary");
       head.append(
         el("span", mode.title),
-        el("small", `${items.length} scenario${items.length === 1 ? "" : "s"}`),
+        el(
+          "small",
+          `${items.filter((s) => s.core_candidate).length} core candidates · ${items.filter((s) => !s.core_candidate).length} variants / historical`,
+        ),
       );
       fold.append(head);
       fold.open = items.includes(headline || data.scenarios[0]);
@@ -708,6 +726,13 @@
         name.append(button(item.title, pick(data.scenarios.indexOf(item)), "scenario"));
         const sides = [item.armies?.friendly, item.armies?.enemy].filter(Boolean).join(" against ");
         if (sides) name.append(el("small", sides));
+        if (item.family)
+          name.append(
+            el(
+              "small",
+              `${item.core_candidate ? "Core candidate" : "Variant / historical"}: ${item.family}`,
+            ),
+          );
         tr.append(name);
         for (const family of all) {
           const td = el("td");
@@ -728,7 +753,7 @@
     const caption = el("p", null, "figcap");
     caption.append(
       el("b", "Figure 3. "),
-      `Each model's mean score over its finished battles in every scenario, darker for higher, beside the best scripted rule's; one section per game mode. Click a scenario to watch it above. † pools settings or harness versions: not a controlled comparison.${killed.length ? ` ${killed.length} lost pilot battles recorded casualties only; their scores count the enemy killed, not those who fled (lower bounds).` : ""}`,
+      `Each model's mean score (or seconds survived in endless survival) over its finished battles, darker for higher scores, beside the best scripted rule's; one section per game mode. Click a scenario to watch it above. † pools settings or harness versions: not a controlled comparison.${killed.length ? ` ${killed.length} lost pilot battles recorded casualties only; their scores count the enemy killed, not those who fled (lower bounds).` : ""}`,
     );
     box.append(caption);
   }

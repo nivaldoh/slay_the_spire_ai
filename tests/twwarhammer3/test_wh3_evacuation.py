@@ -31,7 +31,7 @@ def goal_runtime():
                   endings[#endings + 1] = {winner, reason, immediate, force}
               end}}
     ''')
-    get, sample = load_battle(lua, "get", "sample_custom")
+    get, clean_error, sample = load_battle(lua, "get", "clean_error", "sample_custom")
     return lua, sample
 
 
@@ -97,3 +97,11 @@ def test_invalid_authored_objectives_are_rejected(mutation):
     mutation(scenario['custom'])
     with pytest.raises(ValueError):
         setup.validate_custom(scenario)
+
+
+def test_engine_ending_exception_is_reported_without_fabricating_a_game_result():
+    lua, sample = goal_runtime()
+    lua.execute('units.f8.x = 0; bm.battle.force_battle_end = function() error("unavailable") end')
+    sample(1000)
+    assert 'unavailable' in lua.eval('state.custom.ending_error')
+    assert lua.eval('state.result') is None

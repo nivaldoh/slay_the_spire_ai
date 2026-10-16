@@ -230,3 +230,5 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-15,bench-c1-cavalry-ai11-06-20261015,episode-0003,brt-cavalry-emp-assault-hard,llm_rules,gpt-6-sol,low,,4842915,realtime,1.0,0.0,lost,589,0.18,0.47,107,10,5.5,0.7992,classic,,,,,0.0,0.472,0.0,engine_result
 2026-10-15,bench-b11-measures-20261015,episode-0000,dwf-line-skv-swarm,commander,gpt-6-luna,low,,c251401,realtime,1.0,0.0,lost,593,0.21,0.72,1940,3,0.3,0.0538,classic,,,,,0.0,0.613,0.0,engine_result
 2026-10-15,bench-b11-measures-20261015,episode-0001,dwf-line-skv-swarm,llm_rules,gpt-6-luna,low,,c251401,realtime,1.0,0.0,lost,460,0.47,0.87,93,19,4.93,0.0429,classic,,,,,0.0,0.84,0.0,engine_result
+2026-10-16,bench-b12-siege-reserve-r2-20261016,episode-0000,chd-reserve-grn-siege,llm_rules,gpt-6-sol,low,,9857a81,realtime,1.0,0.0,lost,508,0.36,0.45,98,19,5.16,0.9301,siege,0.9245676803816338,2616,1.0,,0.0,0.436,0.0,engine_result
+2026-10-16,bench-b12-siege-reserve-r2-20261016,episode-0001,chd-reserve-grn-siege,llm_rules,gpt-6-luna,low,,9857a81,realtime,1.0,0.0,won,688,0.54,0.31,110,21,6.23,0.0674,siege,0.9188734455010973,4103,1.0,,0.544,0.0,0.0,engine_result

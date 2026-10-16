@@ -224,6 +224,17 @@ research: the [Chaos Dwarfs roster](https://store.steampowered.com/app/2059190/T
 [Creative Assembly's Cathay update](https://community.creative-assembly.com/total-war/total-war-warhammer/blogs/98).
 Local documentation from the installed build governs the script API.
 
+**Retained caster evidence, reviewed 2026-10-16.** The existing base caster scenario has
+three b4 outcomes (Luna 963 s, hold 613 s, walk-nearest 301 s, all losses) and a b7 Sol
+loss at 1077 s. Both model runs began with 12 available mana and 68 in reserve. Their
+accepted ability orders differed materially: Luna requested 16 ordinary and 3 upgraded
+Blue Fires; Sol requested 3 upgraded and 1 ordinary Firestorm, alongside other spells and
+abilities. Their final available mana was 6 and 35 respectively, with reserve nearly
+exhausted. Accepted orders do not prove spell impact, and the harness versions differ,
+so this is evidence of an available mana-allocation problem, not a model ranking.
+No extra caster screen is needed for this expansion tranche; keep it as a provisional
+core family and audit actual spell value in later controlled work.
+
 **Skaven swarm prototypes (screened 2026-10-15).** Both pin the Taurox
 map, very hard AI, modifier 1.0, unit scale 0.75, custom funds 12000 and the 1200 s
 timer, and use base Skaven (`wh2_main`) and Dwarf (`wh_main`) units whose keys exist in

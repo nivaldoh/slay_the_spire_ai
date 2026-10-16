@@ -642,3 +642,47 @@ def test_a_job_rotating_two_models_of_one_policy_snapshots_its_prompt_once(tmp_p
     assert lines[0].startswith("pair-v1-20261015: completed, policy llm_rules gpt-6-sol/low,"
                                "llm_rules@gpt-6-luna/medium gpt-6-luna/medium, scenario")
     assert [line.split(" | ")[1] for line in lines[3:]] == order
+
+
+@pytest.mark.parametrize('ready', [True, False])
+def test_waits_briefly_for_native_reinforcement_context_before_any_policy_call(
+        tmp_path, monkeypatch, ready):
+    def state(seq, ms, pool, **extra):
+        o = bridge_observation(seq, ms, **extra)
+        o['mode'] = {'type': 'survival', 'reinforcements': pool}
+        return o
+    checks = []
+    def check(scenario, o):
+        checks.append(o['seq'])
+        if not o['mode']['reinforcements']:
+            raise play.ProtocolError('reinforcement pool missing')
+        return {'reinforcements': True}
+    monkeypatch.setattr(play, 'check_battle', check)
+    scenario = {'battle_type': 'survival', 'expect': {'time_limit_s': None},
+                'player': {'reinforcements': ['reserve']}}
+    pool = [{'type': 'reserve', 'cost': 500}]
+    mailbox = FakeMailbox([
+        bridge_observation(0, 0, phase='Loading'),
+        state(1, 5600, []),
+        state(2, 6000 if ready else 10600, pool if ready else []),
+        state(3, 7000 if ready else 11600, pool, result='won'),
+    ])
+    result = play.play_episode(tmp_path / 'episode', CONFIG, Hold, mailbox,
+                               not_battle=None, scenario=scenario)
+    assert checks == [2]
+    assert [r[1] for r in mailbox.requests] == ([2] if ready else [])
+    assert result['status'] == ('won' if ready else 'unsupported_or_invalid')
+    rows = [json.loads(line) for line in (tmp_path / 'episode/trace.jsonl').open()]
+    assert any(r['kind'] == 'setup_wait' and r['observation']['seq'] == 1 for r in rows)
+
+
+@pytest.mark.parametrize('error', [None, 'unavailable'])
+def test_unconfirmed_custom_ending_is_an_infrastructure_condition_not_a_win(tmp_path, error):
+    o = bridge_observation(1, 7000)
+    o['mode'] = {'custom': {'status': 'success', 'ending': 'scripted',
+                           'completed_ms': 1000, 'ending_error': error}}
+    result = play.play_episode(tmp_path / 'episode', CONFIG, Hold,
+                               FakeMailbox([bridge_observation(0, 0), o]), not_battle=None)
+    assert result['status'] == 'unsupported_or_invalid'
+    assert 'custom ending' in result['error']
+    assert result['custom_objective']['status'] == 'success'

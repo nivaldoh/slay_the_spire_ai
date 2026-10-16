@@ -157,8 +157,9 @@ async function main() {
         trial = saved.groups[gi].trials[ti],
         progress = data.battles[key].progress;
       if (!trial.valid) return null;
-      if (trial.engine_outcome === "won") return 100;
-      return progress == null ? null : 100 * progress;
+      const custom = data.battles[key].objective_outcome;
+      if (custom != null ? custom === "success" : trial.engine_outcome === "won") return 100;
+      return progress == null ? null : Math.min(99.99, 100 * progress);
     };
     // As printed: never rounded up to a win's 100.
     const meanScore = (keys) => {
@@ -402,9 +403,22 @@ async function main() {
       );
       heads.forEach((family, i) => {
         if (!i || family === "Best scripted rule") return;
-        const expected = meanScore(
-          item.rows.filter((r) => r.family === family).flatMap((r) => r.battles),
-        );
+        const keys = item.rows.filter((r) => r.family === family).flatMap((r) => r.battles);
+        if (item.mode === "survival") {
+          const seconds = keys
+            .map(trialOf)
+            .filter((t) => t.valid)
+            .map((t) => t.measures?.duration_s)
+            .filter((v) => v != null);
+          if (seconds.length)
+            assert.equal(
+              cells[i],
+              `${Math.round(seconds.reduce((a, b) => a + b, 0) / seconds.length)} s`,
+              `${item.title}: ${family}; cells ${JSON.stringify(cells)}; errors ${errors}`,
+            );
+          return;
+        }
+        const expected = meanScore(keys);
         if (expected != null) assert.equal(Number(cells[i]), expected, `${item.title}: ${family}`);
       });
     }
@@ -461,6 +475,11 @@ async function main() {
       if (data.replays[item.featured]) {
         await page.waitForFunction(() => !document.getElementById("download-replay").disabled);
         await page.waitForSelector("#map-layer .unit");
+      }
+      if (item.battles.some((key) => trialOf(key).measures?.custom_objective)) {
+        assert.match(await text("#run-line"), /evacuation/);
+        assert.match(await text("#map-layer"), /Extraction/);
+        await page.locator("#watch").screenshot({ path: path.join(output, "evacuation.png") });
       }
       await page.locator("#open-settings").click();
       assert.match(await text("#settings-body"), /Evaluator version/);

@@ -38,9 +38,9 @@ records a card per trial (kind, class, source file and hash, model, effort, timi
 | `rush_nearest` (run-nearest) | scripted | `attack_nearest`, running | | `scripted.py` |
 | `skills` | scripted | the executor, every unit on its class default | executor v1.2 (`55ab6b3`) | `skills.py` |
 | `probe_abilities` | scripted diagnostic | `skills`, plus every ability as soon as it is ready, the cheapest build on each usable slot and the cheapest affordable unit every 10 s | | `skills.py` |
-| `llm` | model, blocking | the model, raw orders every decision | v17 | `llm.py`, `configs/twwarhammer3/system_prompt.md` |
+| `llm` | model, blocking | the model, raw orders every decision | v18 | `llm.py`, `configs/twwarhammer3/system_prompt.md` |
 | `llm_rules` | model, blocking | as `llm`, with a prompt that states objectives and interface without tactics (`51c1796`, b3) | | `llm.py`, `configs/twwarhammer3/rules_prompt.md` |
-| `commander` | hybrid, asynchronous | the model sets standing skills; the executor acts on every observation | v4 | `commander.py` over `skills.py`, `configs/twwarhammer3/commander_prompt.md` |
+| `commander` | hybrid, asynchronous | the model sets standing skills; the executor acts on every observation | v5 | `commander.py` over `skills.py`, `configs/twwarhammer3/commander_prompt.md` |
 | `package.module:Class` | outside | any class with `decide`, `acknowledge` and `metadata` | | [benchmark-run.md](benchmark-run.md) |
 
 `llm` v15 and `commander` v3 are the log's
@@ -96,6 +96,11 @@ Both `skills` and `commander` decide at the mod's tick rate (about 3-4 decisions
 second). The trace keeps every decision with orders, an error or new metadata, and quiet
 ones once per `--observe-ms`. `result.json` `llm` holds the API totals plus `plans` and
 `plan_age_ms` (mean plan age is `plan_age_ms / plans`).
+
+The 2026-10-16 v18 direct controller and v5 commander additionally render public custom
+objective rules and friendly progress (`mode.custom`, obs-v4). The native-mode prompt
+fixtures are unchanged. This carries no authored enemy locations or analyst tactics;
+see the [b12 log](log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
 
 ## Following a battle
 

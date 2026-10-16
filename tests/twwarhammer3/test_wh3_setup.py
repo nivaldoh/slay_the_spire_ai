@@ -349,6 +349,7 @@ def test_fort_and_survival_verify_selected_mode_instead_of_generic_map_type():
                        ('ksl-reserves-survival', 'survival'),
                        ('emp-battery-wef-evacuation', 'ambush')]:
         checks = setup.menu_checks(setup.scenarios()[name])
-        selected = [s for s in checks if s.get('expression', '').endswith('BattleTypeRecordContext.Key')]
+        selected = [s for s in checks
+                    if s.get('expression', '').endswith('BattleTypeRecordContext.Key')]
         assert selected[0]['expect'] == mode
         assert not any('MapContext.BattleTypeString' in str(s) for s in checks)

@@ -13,7 +13,7 @@
       "question": "Can an AI get its cavalry past the defenders and reach the guns?",
       "challenge": "Six mounted units face eight enemy units: four halberd units screening two units of handgunners and a cannon. Halberds are built to stop cavalry, so a frontal charge into them risks a losing grind; the gunners behind them are weak in melee. The attacker must defeat the defenders before the 20-minute timer runs out.",
       "family": "cavalry against anti-large",
-      "core_candidate": true
+      "core_candidate": false
     },
     "skv-swarm-dwf-line": {
       "title": "Command a Skaven swarm",
@@ -49,14 +49,14 @@
       "question": "Can an AI defend with cavalry alone against an attacking army of halberds and guns?",
       "challenge": "A lord, four regiments of knights and a unit of horse archers, all mounted, defend against eight attacking Empire units: four halberd units, two units of handgunners, a cannon and a general on foot. Charging the halberds head-on risks a losing grind, and standing still leaves it a target for the handgunners and the long-range cannon; but every rider is more than twice as fast as any enemy unit, so the cavalry can pick where and when to fight. As the defender, it wins by breaking the attackers or simply by not being beaten before the 20-minute timer runs out.",
       "family": "cavalry against anti-large",
-      "core_candidate": true
+      "core_candidate": false
     },
     "brt-cavalry-emp-pegasus": {
       "title": "Cavalry versus halberds and a Pegasus",
       "question": "Can an AI's cavalry still defend when the enemy general flies faster than any of its riders?",
       "challenge": "Six mounted units (a lord, four regiments of knights and a unit of horse archers) defend against eight attacking Empire units: four halberd units, two units of handgunners, a cannon and a general riding an Imperial Pegasus. In the air the general is faster than any of the riders, so the cavalry can no longer outrun every enemy, but a general that chases the riders arrives far ahead of its own slow halberds and guns. The defender wins by breaking the attackers or by not being beaten before the 20-minute timer runs out.",
       "family": "cavalry against anti-large",
-      "core_candidate": true
+      "core_candidate": false
     },
     "tze-caster-skv-screen": {
       "title": "Kairos and escorts versus Skaven screens",
@@ -116,7 +116,7 @@
       "challenge": "Trade outer territory for time while committing one mobile reserve and limited construction supplies.",
       "family": "territorial defence",
       "core_candidate": true,
-      "footnote": "Exploratory candidate. Distinctiveness and credible plays require live evidence; no stable model ranking is claimed."
+      "footnote": "Two exploratory screens: Sol lost at 508 s; Luna won at 688 s from a matching rematch start. Construction, reserve commitment, firing positions and fallback were executable. Both held victory locations for about 92% of the observed time, showing why ownership time must be read beside the engine outcome. This is not a model ranking."
     },
     "ksl-reserves-survival": {
       "title": "Spend now or survive later",
@@ -517,6 +517,51 @@
             "replay.jsonl:461",
             "replay.jsonl:475",
             "replay.jsonl:484"
+          ]
+        }
+      ]
+    },
+    "bench-b12-siege-reserve-r2-20261016/episode-0000": {
+      "highlights": [
+        {
+          "time_ms": 5200,
+          "end_ms": 23200,
+          "lead_in_s": 0,
+          "title": "Most supplies committed at the opening",
+          "text": "Sol requested four magic towers, costing 5600 of the 6000 starting supplies. All four construction orders were accepted at 12.1 s.",
+          "kind": "plan",
+          "units": [],
+          "refs": [
+            "trace.jsonl:4"
+          ]
+        },
+        {
+          "time_ms": 23200,
+          "end_ms": 121300,
+          "lead_in_s": 6,
+          "title": "The reserve commits outside the gate",
+          "text": "The Bull Centaurs intercepted the trolls. Sol first ordered them back at 121.3 s, after heavy losses; the reserve eventually routed. This demonstrates a consequential commitment, not evidence that an alternative would win.",
+          "kind": "maneuver",
+          "units": [
+            "f8",
+            "e16"
+          ],
+          "refs": [
+            "trace.jsonl:13",
+            "trace.jsonl:67"
+          ]
+        },
+        {
+          "time_ms": 508000,
+          "lead_in_s": 20,
+          "title": "The army breaks with ammunition left",
+          "text": "The engine declared defeat after the entire remaining army routed. The Magma Cannon retained all 25 shots, and most small-arms ammunition was unspent. Ownership time alone would miss this failure.",
+          "kind": "outcome",
+          "units": [
+            "f9"
+          ],
+          "refs": [
+            "trace.jsonl:296"
           ]
         }
       ]

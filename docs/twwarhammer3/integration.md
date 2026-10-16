@@ -483,6 +483,21 @@ The debug `bm:queue_advisor` is not needed.
 - Stills are not registered to map coordinates; reports show them beside the public
   grid.
 
+## Declared mode and reinforcement checks (2026-10-16)
+
+`SettingsContext.BattleTypeRecordContext.Key` identifies the selected lobby mode.
+`MapContext.BattleTypeString` is generic `land_normal` even for the Hunting Fields
+survival map and Helmgart siege, so it is not a mode check. The first battle observation
+separately verifies the engine's type. Survival's `IsTimeLimitUsed` is false although
+`TimeLimitSeconds` retains the last hidden lobby setting; the battle must report -1.
+
+`PlayerSlotList.At(n).SetIsRecruitingReinforcements(true)` selects the reserve pool for
+ordinary card recruitment. `ClearReinforcements()` clears it, and switching false returns
+to the starting army. `ReinforcingUnitList.JoinString(UnitRecordContext.Key, ";")` reads
+it back. The lobby sorts by unit class; compare multiplicities. These commands recruited
+the fixed seven-unit Kislev pool in the b12 lobby probe. Main army and pool checks still
+run against the first battle observation before any policy decision.
+
 ## Unverified
 
 From the documentation or code reading; probe before relying on them:

@@ -420,6 +420,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
     history = deque()
     delay_ms = config.get("delay_ms", 0)
     active_wall_start = None
+    setup_wait_started_ms = None
     while True:
         remaining = deadline - time.time()
         if remaining <= 0:
@@ -436,9 +437,27 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
         result["battle_ms"] = observation["time_ms"]
         result["remaining_ms"] = observation.get("remaining_ms")
         if "scenario" not in result and observation.get("friendly"):
+            pool = (scenario.get("player") or {}).get("reinforcements")
+            if (isinstance(pool, list) and pool
+                    and not (observation.get("mode") or {}).get("reinforcements")
+                    and not observation.get("result")):
+                # The native pool context appears shortly after Deployed. No controller
+                # sees an unverified empty pool; the battle continues at 1x while it loads.
+                if setup_wait_started_ms is None:
+                    setup_wait_started_ms = observation["time_ms"]
+                if observation["time_ms"] - setup_wait_started_ms < 5000:
+                    event("setup_wait", reason="reinforcement_pool_not_ready",
+                          observation=observation)
+                    continue
             active_wall_start = time.time()
             _start(result, observation, scenario, event)
         track_objectives(result, observation)
+        goal = (observation.get("mode") or {}).get("custom") or {}
+        if goal.get("ending_error"):
+            raise ProtocolError("custom ending failed: " + goal["ending_error"])
+        if (goal.get("ending") == "scripted" and not observation.get("result")
+                and observation["time_ms"] > goal["completed_ms"] + 5000):
+            raise ProtocolError("custom ending was not confirmed by the engine within 5 s")
         if active_wall_start is not None:
             duration = time.time() - active_wall_start
             result["active_wall_s"] = duration

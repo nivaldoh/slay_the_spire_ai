@@ -1,15 +1,14 @@
 # Project state
 
-Updated 2026-10-16 01:16 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 01:19 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-No game controller is running. The first siege attempt stopped in lobby setup before
-any battle/model call: Helmgart's map type is generic land, so setup now verifies the
-selected lobby mode for every declaration. Repair and a fresh two-battle screen follow.
-Failed evidence: `runs/twwarhammer3/battle/bench-b12-siege-reserve-20261016/`.
+No game controller is running. The siege screen finished: Sol lost at 508 s, Luna won
+at 688 s, with matching rematch starts. Applying the observed survival pool-readiness
+fix and report refinements before the survival screen. WH3 spend: $15.3120 of $25.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
