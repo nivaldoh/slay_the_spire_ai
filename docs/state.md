@@ -54,14 +54,19 @@ command; clear it when the job stops.
   reviews: [M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
 - OpenAI spend: $50.90 of $52; OpenRouter $1.93 of $50.
 
-Next: use the [cards](twwarhammer3/benchmark.md#calibration-cards-2026-10-16) to select
-a specific remaining play to test (siege withdrawal/firing positions, swarm flank or
-weapon support, or caster withdrawal), then a small strongest-model screen. The shared-magic
-feedback fix needs live model validation before broader paid comparisons. OpenRouter's three
-models passed the real WH3 reply schema and parser, and GLM completed one battle
-([support](twwarhammer3/controllers.md#openrouter)); Kimi/Step battles and all high-effort
-settings remain untested. The OpenAI remainder ($6.04) is unallocated; custom evacuation and separate
-workload, prompt, history, representation and added-age experiments remain deferred.
+Next, under the owner's evening directions (difficulty target, scenario mix, all-modes
+coverage; [plan](twwarhammer3/benchmark.md#current-proposal-calibrate-before-a-broad-model-comparison)):
+1. Owner review of the [small focused candidates](twwarhammer3/benchmark.md#small-focused-candidates-draft-2026-10-16-evening);
+   then their $0 prerequisites (lordless armies, small funds, few-unit AI) and scripted
+   winnability checks, S1/S2/S4 first.
+2. Ladder: siege between two and four flankers, a new swarm factor, caster beyond two
+   cannons. Each needs a reference-model battle; the OpenAI cap ($1.10 left) blocks Sol,
+   so it waits for the owner's call on that cap or on a cheaper reference.
+3. Owner's pending answers: training-data steps (back up `runs/`, a trace exporter,
+   storing OpenRouter reasoning text), and the size and budget of the all-modes matrix.
+Kimi completed one battle at about three times Sol's latency; Step and all modes above
+`low` are unplayed in battle. Custom evacuation and the workload, prompt, history,
+representation and added-age experiments remain deferred.
 Steam is pinned to 9.0.4; old evidence keeps its original build.
 
 ## Slay the Spire
