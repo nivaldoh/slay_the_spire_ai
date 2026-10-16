@@ -1138,6 +1138,56 @@
       ]
     }
   },
+  "chd-reserve-grn-siege-flankers-2": {
+    "base": "chd-reserve-grn-siege-flankers",
+    "name": "chd-reserve-grn-siege-flankers-2",
+    "brief": "The siege defence with two fast Greenskin units added: one unit of Orc Boar Boyz and one of Goblin Wolf Riders. Hypotheses, not a prescribed solution.",
+    "calibration_change": "Difficulty ladder, step back (2026-10-16): the four-unit flanker step lost with gpt-6.1-sol (629 s) and Kimi K3 (659 s). Half the dose of the same factor: one Boar Boyz and one Wolf Riders unit, 950 of cost over the anchor (9725 to 10675, about 10% more), 18 units. Everything else is unchanged.",
+    "enemy": {
+      "units": [
+        "wh_main_grn_cha_orc_warboss_0",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_big_uns",
+        "wh_main_grn_inf_orc_big_uns",
+        "wh_main_grn_inf_black_orcs",
+        "wh_main_grn_inf_black_orcs",
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_orc_arrer_boyz",
+        "wh_main_grn_inf_orc_arrer_boyz",
+        "wh_main_grn_mon_trolls",
+        "wh_main_grn_mon_trolls",
+        "wh_main_grn_cav_orc_boar_boyz",
+        "wh_main_grn_cav_goblin_wolf_riders_0"
+      ]
+    }
+  },
+  "tze-caster-skv-assault-cannon-2": {
+    "base": "tze-caster-skv-assault-cannon",
+    "name": "tze-caster-skv-assault-cannon-2",
+    "brief": "The caster assault with two Warp Lightning Cannons added. Hypotheses, not a prescribed solution.",
+    "calibration_change": "Difficulty ladder, second step (2026-10-16): gpt-6.1-sol won the one-cannon step at 577 s with 25% of its strength left, after attacking the cannon with every unit. The same factor doubles: two wh2_main_skv_art_warp_lightning_cannon, 1900 of cost over the anchor (3775 to 5675, within the 8000 cap), 12 units. Everything else is unchanged.",
+    "enemy": {
+      "units": [
+        "wh2_main_skv_cha_warlord_0",
+        "wh2_main_skv_inf_clanrats_0",
+        "wh2_main_skv_inf_clanrats_0",
+        "wh2_main_skv_inf_clanrats_0",
+        "wh2_main_skv_inf_clanrat_spearmen_0",
+        "wh2_main_skv_inf_clanrat_spearmen_0",
+        "wh2_main_skv_inf_skavenslaves_0",
+        "wh2_main_skv_inf_skavenslaves_0",
+        "wh2_main_skv_inf_warpfire_thrower",
+        "wh2_main_skv_art_plagueclaw_catapult",
+        "wh2_main_skv_art_warp_lightning_cannon",
+        "wh2_main_skv_art_warp_lightning_cannon"
+      ]
+    }
+  },
   "skv-swarm-dwf-line-gyrocopters-4": {
     "base": "skv-swarm-dwf-line-gyrocopters",
     "name": "skv-swarm-dwf-line-gyrocopters-4",
