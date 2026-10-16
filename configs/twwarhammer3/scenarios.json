@@ -1211,6 +1211,51 @@
       ]
     }
   },
+  "ksl-raiders-emp-halberds": {
+    "name": "ksl-raiders-emp-halberds",
+    "family": "cavalry against anti-large, two-unit form",
+    "scenario_version": 1,
+    "brief": "Two units of Kislev Horse Raiders attack one unit of Empire Halberdiers, with no lords. Halberds resist cavalry charges from the front; the riders are three times as fast. Fixing the block with one unit while the other charges its flank or rear, then pulling out and repeating, competes with a frontal charge. Hypotheses, not a prescribed solution; winnability is not yet shown.",
+    "split": "development",
+    "status": "prototype_not_admitted",
+    "battle_type": "classic",
+    "attacker": "player",
+    "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+    "player": {
+      "subculture": "wh3_main_sc_ksl_kislev",
+      "faction": "wh3_main_ksl_kislev",
+      "lord": false,
+      "units": [
+        "wh3_main_ksl_cav_horse_raiders_0",
+        "wh3_main_ksl_cav_horse_raiders_0"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "lord": false,
+      "units": [
+        "wh_main_emp_inf_halberdiers"
+      ]
+    },
+    "expect": {
+      "battle_type": "land_normal",
+      "difficulty": "ai_level_very_hard",
+      "funds": "funds_custom",
+      "funds_amount": 1100,
+      "time_limit_s": 1200,
+      "ai_stats_modifier": "1.0",
+      "unit_scale": 0.75,
+      "realism": false,
+      "player_defends": false
+    },
+    "protected": [],
+    "content": [
+      "wh_main",
+      "wh3_main"
+    ],
+    "calibration_change": "Small focused candidate S1 (owner's example, 2026-10-16; calibration/micro-scenarios-draft-20261016.md). Defined only: lordless setup, 1100 custom funds and the AI's one-unit behaviour are unverified, and a scripted floor and a disclosed feint-and-flank diagnostic come before any model battle."
+  },
   "tze-caster-skv-assault-cannon": {
     "base": "tze-caster-skv-assault",
     "name": "tze-caster-skv-assault-cannon",

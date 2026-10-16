@@ -9,7 +9,8 @@ entry, and what reads them:
   or null (survival, whose waves the game brings) (``sides``). Each army has:
   ``subculture`` (the race); ``faction`` (pins banner and recruitment cards; without it the
   game picks one); ``units`` (recruitment cards, the lord first, or null for the
-  Autogenerate army button); ``mounts`` (zero-based recruitment index to mounted unit key,
+  Autogenerate army button); ``lord`` (false: a lordless roster whose first card is an
+  ordinary unit; it relies on the profile's "allow no lord" lobby setting); ``mounts`` (zero-based recruitment index to mounted unit key,
   selected and verified in the lobby); ``recruitment_faction`` (card namespace when it
   differs from the selected banner); ``reinforcements`` (null for autogeneration, or an
   explicit list of non-lord unit cards, selected and read back in the lobby).
@@ -234,7 +235,8 @@ def scenario_steps(scenario: dict) -> list[dict]:
                       {"wait_ms": 3000}]
         for index, unit in enumerate(side["units"] or []):
             faction = side.get("recruitment_faction", side["faction"])
-            card = f"CcoUnitsCustomBattlePermissionRecord{unit}:{faction}:{int(index == 0)}"
+            lord = index == 0 and side.get("lord", True)
+            card = f"CcoUnitsCustomBattlePermissionRecord{unit}:{faction}:{int(lord)}"
             steps += [{"find": [card, "unit_card"], "dblclick": True},
                       {"wait_ms": 600}]
             mounted = (side.get("mounts") or {}).get(str(index))

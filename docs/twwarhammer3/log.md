@@ -265,6 +265,18 @@ gpt-6-luna and gpt-6-sol add `none`; no model takes `minimal`. Every listed mode
 $0.037; OpenAI ledger $50.90 of $52. Tests that used `max` as an invalid effort now use
 `minimal`.
 
+**Small focused candidates: S1 defined, not run.** A draft of seven small and two large
+candidates from the game database is in [benchmark.md](benchmark.md#small-focused-candidates-draft-2026-10-16-evening)
+(full draft: `calibration/micro-scenarios-draft-20261016.md`). Setup now accepts `lord:
+false` on a side, so a lordless roster recruits its first card as an ordinary unit (the
+lord card id ends in `:1`). S1, the owner's example, is defined as
+`ksl-raiders-emp-halberds`: two Kislev Horse Raiders (attacking) against one Empire
+Halberdiers unit, no lords, custom funds 1,100, Taurox map, 1200 s. Both cards appeared
+in earlier lobbies. Unverified until a $0 lobby probe: the profile's "allow no lord"
+setting for both slots, funds that small, and the AI's behaviour with one unit. After
+that comes a scripted floor and a disclosed feint-and-flank diagnostic at 0 and 5 s
+delay, before any model battle. Nothing runs until the owner has reviewed the draft.
+
 ## 2026-10-16: Live check of the v20 shared-magic warning
 
 **Result.** `bench-b13-glm-v20-caster-20261016` (`ae55309`, 19:28-19:40 UTC) **won** at

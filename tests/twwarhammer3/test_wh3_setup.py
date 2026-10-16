@@ -110,6 +110,17 @@ def test_scenario_steps_pick_each_race_and_recruit_the_lord_first():
     assert steps[-1] == {"log": setup.NOT_STARTED}
 
 
+def test_a_lordless_roster_recruits_its_first_card_as_a_unit():
+    steps = setup.scenario_steps(setup.load_scenario({"scenario": "ksl-raiders-emp-halberds"}))
+    cards = [s["find"][0] for s in steps if s.get("dblclick")]
+    assert cards == ["CcoUnitsCustomBattlePermissionRecord"
+                     "wh3_main_ksl_cav_horse_raiders_0:wh3_main_ksl_kislev:0"] * 2 + [
+                     "CcoUnitsCustomBattlePermissionRecordwh_main_emp_inf_halberdiers:"
+                     "wh_main_emp_empire:0"]
+    sizes = [s["expect"] for s in steps if s.get("expression", "").endswith("UnitList.Size")]
+    assert sizes == [2, 1]
+
+
 def test_mount_is_selected_after_recruitment_and_pinned_budget_before_it():
     scenario = setup.load_scenario({"scenario": "brt-cavalry-emp-pikes"})
     steps = setup.scenario_steps(scenario)
