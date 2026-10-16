@@ -40,6 +40,21 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build: 76 input jobs, 93 completed battles shown across six candidate scenarios; setup failures and variants retained in JSON/text |
 
+## 2026-10-16: Two public-state calibration diagnostics
+
+Added two small external controllers in `battle/calibration.py` for the first
+[calibration tranche](benchmark.md#calibration-cards-2026-10-16). `CentralDefence`
+gathers at the owned victory point nearest the starting garrison, using the existing
+Skills executor for a melee line, shooters and lord. `CoordinatedRush` uses run-nearest
+but holds the Doomwheel and Rat Ogres until their estimated contact time matches the
+slave/clanrat screen. Each discloses its scenario knowledge and simple geometry in its
+controller card. Neither buys API calls, uses evaluation state or changes the scenario.
+
+These are mechanism diagnostics, not new general-purpose baselines. The first live
+checks are pending; a failure of a fixed post or straight-line estimate cannot establish
+that the scenario has no useful tactic. Five targeted tests passed, including the
+existing nearest-enemy baselines; Ruff passed.
+
 ## 2026-10-16: Calibration cards and report interpretation
 
 Reviewed all 54 episodes in M1a–d with a read-only extraction, saved as
