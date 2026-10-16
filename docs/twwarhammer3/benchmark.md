@@ -458,7 +458,17 @@ gpt-6-luna and gpt-6-sol have six (`none` to `max`), gpt-6.1-sol and gpt-6-astra
 (no `none`), GLM-5.3 three (always reasoning), Kimi K3 four (including `none`) and Step 5
 Preview three: 26 model-mode configurations. Acceptance does not show that two levels
 behave differently in a battle; reported reasoning tokens on a trivial prompt were small
-throughout. Calibration can keep using one reference
+throughout.
+
+Scale of the matrix, from the low-effort battles since 2026-10-15: median battle length is
+417-659 s plus about 2 min of setup and rematch, so roughly 10 minutes of game per battle,
+one battle at a time. Six scenarios × 26 configurations is 156 battles (about 26 hours of
+game) for a single battle per cell; three repeats is about 78 hours, roughly ten nights.
+Median cost per low-effort battle: Luna $0.04, Sol and gpt-6.1-sol $0.88-0.89, GLM $0.41,
+Kimi $0.99 (one battle). Astra (five times Sol's prices) and every mode above `low` are
+unmeasured. Higher modes add reasoning tokens and latency, so one battle per cell is
+likely several hundred dollars. Game time and budget both argue for small scenarios and
+for choosing repeats per question rather than filling every cell equally. Calibration can keep using one reference
 configuration. The full matrix (models × modes × scenarios × repeats) is the frozen
 evaluation round, sized and budgeted by the owner. At about $0.05-1.30 per battle for
 low effort, and more for high effort and Astra, it is likely hundreds of battles.

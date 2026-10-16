@@ -10,8 +10,8 @@ No game or paid API job is running. Difficulty ladder V1 (13 battles, 2026-10-16
 evening) found a hardest won step for each of siege (two added flankers; four lost 2/2),
 swarm (four Gyrocopters; that factor does not bind) and caster (two cannons; GLM lost it)
 ([summary](twwarhammer3/log.md#2026-10-16-difficulty-ladder-first-step-v1)). Reasoning
-efforts are now declared per model from OpenRouter's catalogue (modes beyond `low`
-unplayed). Small focused scenario candidates are drafted for the owner's review
+modes are declared per model and each passed a schema call: 26 model-mode configurations
+(modes beyond `low` unplayed in battle). Small focused scenario candidates are drafted for the owner's review
 ([draft](twwarhammer3/benchmark.md#small-focused-candidates-draft-2026-10-16-evening)).
 
 The [v20 live check](twwarhammer3/log.md#2026-10-16-live-check-of-the-v20-shared-magic-warning)
@@ -26,7 +26,7 @@ labels pending spell costs; it is checked on recorded states but untested with a
 The canonical report now includes the fourth script and GLM replay, backend snapshots
 and reply-validation counts; offline browser checks pass. All six candidates remain provisional.
 
-API ledgers: OpenAI $50.86 of $52 (no further OpenAI battle fits); OpenRouter $1.93 of
+API ledgers: OpenAI $50.90 of $52 (no further OpenAI battle fits); OpenRouter $1.93 of
 $50. More Sol battles need the owner's decision on the OpenAI cap.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
@@ -52,7 +52,7 @@ command; clear it when the job stops.
   models; survive-a-swarm and Kislev did not. The report page shows core scenarios and
   completed battles only; its JSON keeps setup failures and variants. Results, costs and
   reviews: [M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
-- OpenAI spend: $50.86 of $52; OpenRouter $1.93 of $50.
+- OpenAI spend: $50.90 of $52; OpenRouter $1.93 of $50.
 
 Next: use the [cards](twwarhammer3/benchmark.md#calibration-cards-2026-10-16) to select
 a specific remaining play to test (siege withdrawal/firing positions, swarm flank or
