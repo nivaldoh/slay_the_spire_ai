@@ -150,7 +150,8 @@ def render_target(unit: dict, enemies: dict, order: dict | None) -> str:
 
 
 def render_unit(unit: dict, mine: bool, before: tuple | None = None,
-                enemies: dict | None = None, ordered: dict | None = None) -> str:
+                enemies: dict | None = None, ordered: dict | None = None,
+                time_ms: int | None = None) -> str:
     """``before`` is (men, hp %) at the previous decision; ``enemies`` and ``ordered`` (the
     move or attack order it still holds, see ``holds``) annotate a friendly unit's target."""
     if "error" in unit:
@@ -199,7 +200,8 @@ def render_unit(unit: dict, mine: bool, before: tuple | None = None,
             parts.append("toggles " + " ".join(
                 f"{key}={'on' if value else 'off'}" for key, value in unit["behaviours"].items()))
         if unit.get("abilities"):
-            parts.append("abilities " + "; ".join(render_ability(a) for a in unit["abilities"]))
+            parts.append("abilities " + "; ".join(
+                render_ability(a, time_ms) for a in unit["abilities"]))
         if unit.get("command_queue"):
             parts.append("last submitted sequence (completion unconfirmed): "
                          + describe_orders(unit["command_queue"]))
@@ -228,7 +230,7 @@ def render_unit(unit: dict, mine: bool, before: tuple | None = None,
     return ", ".join(parts)
 
 
-def render_ability(ability: dict) -> str:
+def render_ability(ability: dict, time_ms: int | None = None) -> str:
     """``key (Ground; 8 magic; recharging, 42 s left; last issued 61 s)``: target type, cost
     and readiness as the game's ability panel shows them."""
     facts = [ability["target"]] if ability.get("target") else []
@@ -254,7 +256,11 @@ def render_ability(ability: dict) -> str:
         phase = "active now" if ability.get("button") == "selected_inactive" else "recharging"
         facts.append(f"{phase}, {ability['timer']} s left")
     elif ability.get("ready"):
-        facts.append("ready")
+        # tick() applies orders and publishes their acknowledgement snapshot together.
+        # The panel can still show its pre-cast state at that exact timestamp; do not
+        # invent a cooldown or infer that issuing the command confirmed its effect.
+        just_issued = time_ms is not None and ability.get("last_issued_ms") == time_ms
+        facts.append("panel ready; just issued, execution unconfirmed" if just_issued else "ready")
     elif ability.get("ready") is False:
         facts.append("not available now")
     else:
@@ -268,12 +274,12 @@ def render_ability(ability: dict) -> str:
     return f"{ability['key']} ({'; '.join(facts)})"
 
 
-def render_army(army: dict) -> str:
+def render_army(army: dict, time_ms: int | None = None) -> str:
     points = f"; points {army['currency']}" if army.get("currency") is not None else ""
     if army.get("next_unlock") is not None:
         points += f", next unlock at {army['next_unlock']}"
     return (f"Army abilities (order with unit \"army\"{points}): "
-            + "; ".join(render_ability(a) for a in army.get("abilities", [])))
+            + "; ".join(render_ability(a, time_ms) for a in army.get("abilities", [])))
 
 
 def _side(side: str | None) -> str:
@@ -384,14 +390,14 @@ def render_state(observation: dict, last_seen: dict, before: dict | None = None,
     if mode:
         lines.append(mode)
     if (observation.get("army") or {}).get("abilities"):
-        lines.append(render_army(observation["army"]))
+        lines.append(render_army(observation["army"], observation.get("time_ms")))
     magic = observation.get("magic") or {}
     if magic:
         lines.append(f"Winds of Magic: {magic.get('current', 'unknown')} available, "
                      f"{magic.get('reserve', 'unknown')} reserve.")
     lines.append("Your units:")
     lines += ["- " + render_unit(unit, True, before.get(unit["id"]), visible,
-                                 ordered.get(unit["id"]))
+                                 ordered.get(unit["id"]), observation.get("time_ms"))
               for unit in observation.get("friendly", [])]
     roster = observation.get("enemy_roster") or []
     lines.append("Enemy roster: " + (", ".join(

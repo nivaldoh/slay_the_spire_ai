@@ -363,6 +363,30 @@ def test_engine_permission_wins_over_readiness_and_unlocks_may_be_complete():
                                "timer": "28", "ready": False}) == "horn (active now, 28 s left)"
 
 
+def test_same_tick_cast_is_not_presented_as_confirmed_ready_to_cast_again():
+    # M1 caster episode-0000: a second Blue Fire failed after this 72.5 s snapshot.
+    ability = {"key": "blue_fire", "can_use": True, "ready": True,
+               "last_issued_ms": 72500, "cooldown_s": 28}
+    state = observation(time_ms=72500)
+    state["friendly"][0]["abilities"] = [ability]
+    state["army"] = {"abilities": [dict(ability, key="horn")]}
+    text = llm.render_state(state, {})
+    assert text.count("panel ready; just issued, execution unconfirmed") == 2
+    assert ability["ready"] is True  # only rendering changes; public facts stay intact
+    # A later ready reading is not suppressed by an invented cooldown.
+    assert "just issued" not in llm.render_ability(ability, 73500)
+    assert "just issued" not in llm.render_ability(ability)
+
+
+@pytest.mark.parametrize("facts,expected", [
+    ({"can_use": False}, "blocked"), ({"active": True}, "active now"),
+    ({"recharge_s": 27.9}, "recharging, 28 s left")])
+def test_current_ability_feedback_takes_precedence_over_issue_timestamp(facts, expected):
+    text = llm.render_ability({"key": "spell", "ready": True,
+                               "last_issued_ms": 72500, **facts}, 72500)
+    assert expected in text and "just issued" not in text
+
+
 def test_the_mode_section_states_role_objectives_tickets_and_points():
     battle = {
         "type": "conquest", "role": "defender", "timeout_winner": "us",

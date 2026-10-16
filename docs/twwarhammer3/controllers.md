@@ -38,9 +38,9 @@ records a card per trial (kind, class, source file and hash, model, effort, timi
 | `rush_nearest` (run-nearest) | scripted | `attack_nearest`, running | | `scripted.py` |
 | `skills` | scripted | the executor, every unit on its class default | executor v1.2 (`55ab6b3`) | `skills.py` |
 | `probe_abilities` | scripted diagnostic | `skills`, plus every ability as soon as it is ready, the cheapest build on each usable slot and the cheapest affordable unit every 10 s | | `skills.py` |
-| `llm` | model, blocking | the model, raw orders every decision | v18 | `llm.py`, `configs/twwarhammer3/system_prompt.md` |
+| `llm` | model, blocking | the model, raw orders every decision | v19 | `llm.py`, `configs/twwarhammer3/system_prompt.md` |
 | `llm_rules` | model, blocking | as `llm`, with a prompt that states objectives and interface without tactics (`51c1796`, b3) | | `llm.py`, `configs/twwarhammer3/rules_prompt.md` |
-| `commander` | hybrid, asynchronous | the model sets standing skills; the executor acts on every observation | v5 | `commander.py` over `skills.py`, `configs/twwarhammer3/commander_prompt.md` |
+| `commander` | hybrid, asynchronous | the model sets standing skills; the executor acts on every observation | v6 | `commander.py` over `skills.py`, `configs/twwarhammer3/commander_prompt.md` |
 | `package.module:Class` | outside | any class with `decide`, `acknowledge` and `metadata` | | [benchmark-run.md](benchmark-run.md) |
 
 `llm` v15 and `commander` v3 are the log's
@@ -101,6 +101,15 @@ The 2026-10-16 v18 direct controller and v5 commander additionally render public
 objective rules and friendly progress (`mode.custom`, obs-v4). The native-mode prompt
 fixtures are unchanged. This carries no authored enemy locations or analyst tactics;
 see the [b12 log](log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
+
+v19 / commander v6 mark an ability as "panel ready; just issued, execution unconfirmed"
+when its last issue and the snapshot have the same battle timestamp. The mod applies
+orders and publishes that snapshot in one tick, before the panel necessarily refreshes.
+Later readings remain authoritative; this adds neither a guessed cooldown nor an order
+filter. The commander also lists one-shot orders being submitted alongside its next
+request, which precedes their acknowledgement. All three system prompts state that
+routing/shattered units cannot accept unit orders, including abilities. Recorded M1
+traces validate the rendering; the effect on model behavior remains untested.
 
 ## Following a battle
 
@@ -279,18 +288,18 @@ Integration (2026-10-15): `llm`/`llm_rules` v17 and commander v4 share the two f
 above. All 349 WH3 tests and lint passed on current main; golden prompts are unchanged.
 See the [version log](log.md#2026-10-15-integrate-llm-v17-and-commander-v4).
 
-Found in the M1 matched round (2026-10-16), not yet built:
+Found in the M1 matched round (2026-10-16), addressed in v19 / commander v6:
 
 7. **Abilities just cast still read ready.** In M1a (2026-10-16) 70 of Luna's 87 refused
    ability orders re-cast an ability issued no more than 2 s before the observation, which
    still showed it ready ([log](log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan)).
-   Marking abilities ordered in the outstanding or just-acknowledged batch as pending
-   (or reading readiness after the cast registers) changes rendered state: a new version,
-   not a mid-round change.
+   Same-timestamp readiness now explicitly says the command was just issued and execution
+   is unconfirmed; the commander lists its pending one-shot batch separately. This
+   preserves the public panel reading without assuming a cast succeeded.
 8. **Routing units ignore orders, unstated.** In the same round 220 of Luna's 371
    rejections were orders to routing units, 90 to units the observation already showed
-   routing (33 rally orders to its routing lord). The rules prompts never say routing
-   units ignore orders; one sentence in `rules_prompt.md` and `system_prompt.md` would.
+   routing (33 rally orders to its routing lord). The three system prompts now state the
+   rule for routing and shattered units, including their abilities.
 
 ## Designs not built yet
 

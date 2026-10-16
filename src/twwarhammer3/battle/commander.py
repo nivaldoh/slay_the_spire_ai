@@ -192,11 +192,15 @@ class CommanderPolicy:
                    and holds(friendly[unit_id], order)}
         report = "\n".join(self.report) or "(none)"
         self.report.clear()
+        submitting = [order for order in self.batch
+                      if order["type"] in {"ability", "build", "reinforce", "flight"}]
         prompt = "\n\n".join([
             "Battle notes:\n" + (self.notes or "(none)"),
             "Recent plans, oldest first:\n" + ("\n".join(self.history) or "(none)"),
             render_timing(observation, self.age_ms),
             REPORT_HEADER + report,
+            *(["Orders being submitted now (not yet acknowledged or reflected in this "
+               "snapshot):\n" + describe_orders(submitting)] if submitting else []),
             render_state(observation, self.last_seen, self.before, ordered),
             render_assignments(self.skills, observation),
         ])

@@ -11,6 +11,9 @@ engine rejected f2 attack e1 melee: unit_in_melee
 dropped f9 engage: no such unit alive
 dropped f1 ability roar at self: f1: ability 'roar' is not ready
 
+Orders being submitted now (not yet acknowledged or reflected in this snapshot):
+army ability horn_of_khorne at (10, -35)
+
 Terrain samples: first cell centre (-48,-48), columns increase x and rows increase z by 32 m. '.' = 8 m square clear of path restrictions; '#' = restricted. Coarse deployment snapshot, not a path or a guarantee for this unit. Narrow crossings can lie between samples. Do not repeat an unreachable move: select a reported reachable alternative or another goal.
 ..##
 ...#

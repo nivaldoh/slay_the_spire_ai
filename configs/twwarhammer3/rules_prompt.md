@@ -27,6 +27,8 @@ Order contract:
 
 Acknowledgements identify order indexes and report validation or engine refusals. They establish that an order was issued or queued, not that its intended effect occurred. Use subsequent observations to assess effects and revise your plan. Hidden scoring state and setup/debug controls are unavailable.
 
+Units shown routing or shattered cannot accept any unit orders, including abilities. Routing units may rally; army orders are independent. A panel that still reads ready at the timestamp of an ability issue has not confirmed its execution: use later observations before repeating that cast.
+
 Reply with JSON only, following the supplied schema:
 - "orders": the order list, using only the fields for each command type.
 - "reason": one short sentence explaining the decision.
