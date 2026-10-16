@@ -40,6 +40,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build: 76 input jobs, 93 completed battles shown across six candidate scenarios; setup failures and variants retained in JSON/text |
 
+## 2026-10-16: Calibrate the scripted swarm timing rule
+
+The first `CoordinatedRush` diagnostic lost at 316 s on the unchanged swarm anchor. It
+released the
+Doomwheel at 10.7 s; they reached melee at 99.5 s and routed at 107.9 s, before the first
+slave/clanrat contact at 144.5 s. The Rat Ogres released at 56.3 s, reached melee at
+153.2 s and routed at 158.9 s. A straight-line estimate using advertised run speeds did
+not synchronize the first commitment, so its outcome cannot test that intended tactic.
+
+Revised only this diagnostic: mobile units follow 25 m behind the observed screen
+centre, 30 m apart, and attack after observed screen contact. Posts update after 20 m of
+screen progress, avoiding a new movement order every tick. If the screen is gone the
+mobiles revert to run-nearest. No abilities or scenario changes. The saved first source
+and controller card preserve the original rule; the repeat will have its own source.
+
+Three focused tests and Ruff pass. On 451 recorded snapshots through 315.2 s, the new
+rule produced 687 valid orders and released after observed contact. This offline check
+cannot predict counterfactual arrival times or outcomes. Evidence:
+`calibration/coordinated-follow-offline-20261016.json`. The broader WH3/shared/report
+checks preceding this refinement passed: 505 tests, two optional skips.
+
 ## 2026-10-16: llm v19 and commander v6, ability issue feedback
 
 M1's 54 traces contain 247 refused ability orders. In 155 cases the input still read

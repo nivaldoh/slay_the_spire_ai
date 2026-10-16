@@ -68,54 +68,67 @@ class CentralDefence(Skills):
 
 
 class CoordinatedRush(RushNearest):
-    """Rush-nearest, delaying the Doomwheel and Rat Ogres to meet the slave/clanrat screen.
+    """Rush-nearest, with the Doomwheel and Rat Ogres following behind the infantry.
 
-    Release each mobile unit when its straight-line time to contact is within three
-    seconds of the nearest screen's, or when the screen is already in melee. Release is
-    one-way; everything else is the existing run-nearest baseline, without abilities.
+    Follow 25 m behind the slave/clanrat centre until any screen unit enters melee.
+    Release is one-way; everything else is run-nearest, without abilities. This uses
+    observed screen movement because straight-line speed estimates failed in the first
+    live diagnostic: the Doomwheel arrived 45 s before the screen.
     """
 
-    card = {"purpose": "Does synchronizing the first commitment suffice for the swarm anchor?",
+    card = {"purpose": "Does following the infantry protect the swarm's first mobile commitment?",
             "knowledge": "Skavenslaves (excluding slingers) and Clanrats are the screen; "
-                         "Rat Ogres and Doomwheel wait for estimated contact within 3 s. "
-                         "Straight-line distance / public run speed; no terrain prediction."}
+                         "Rat Ogres and Doomwheel follow 25 m behind its centre, 30 m apart. "
+                         "They attack after observed screen contact; "
+                         "no path prediction or abilities."}
 
     def __init__(self):
         super().__init__()
         self.released = {}
         self.waiting = set()
+        self.posts = {}
 
     def decide(self, observation: dict) -> list[dict]:
         units = [unit for unit in friendly_units(observation).values()
                  if unit.get("men") and not OUT.intersection(unit.get("state", []))]
-        enemies = list(visible_enemies(observation).values())
-
-        def eta(unit):
-            speed = (unit.get("speed") or [0, 0])[1]
-            return min((distance(unit, enemy) / speed for enemy in enemies), default=math.inf
-                       ) if speed > 0 else math.inf
-
-        screen = [unit for unit in units if "clanrats" in unit.get("type", "") or
-                  ("skavenslaves" in unit.get("type", "") and "slingers" not in unit["type"])]
+        enemies = [unit for unit in visible_enemies(observation).values()
+                   if unit.get("x") is not None and unit.get("z") is not None]
+        screen = [unit for unit in units if unit.get("x") is not None
+                  and unit.get("z") is not None and ("clanrats" in unit.get("type", "") or
+                  ("skavenslaves" in unit.get("type", "") and "slingers" not in unit["type"]))]
         contact = any("melee" in unit.get("state", []) for unit in screen)
-        screen_eta = min(map(eta, screen), default=0)
-        waiting = set()
+        waiting = []
         for unit in units:
             if not any(kind in unit.get("type", "") for kind in ("rat_ogres", "doomwheel")):
                 continue
             if unit["id"] in self.released:
                 continue
-            mobile_eta = eta(unit)
-            if contact or not screen or (math.isfinite(mobile_eta)
-                                        and screen_eta <= mobile_eta + 3):
+            if contact or not screen:
                 self.released[unit["id"]] = observation.get("time_ms", 0) / 1000
             else:
-                waiting.add(unit["id"])
-        orders = [order for order in super().decide(observation) if order["unit"] not in waiting]
-        orders += [{"unit": unit_id, "type": "halt"} for unit_id in sorted(waiting - self.waiting)]
-        self.waiting = waiting
+                waiting.append(unit)
+        waiting_ids = {unit["id"] for unit in waiting}
+        orders = [order for order in super().decide(observation)
+                  if order["unit"] not in waiting_ids]
+        if waiting and enemies:
+            centre, enemy = _centre(screen), _centre(enemies)
+            dx, dz = enemy["x"] - centre["x"], enemy["z"] - centre["z"]
+            length = math.hypot(dx, dz)
+            dx, dz = (dx / length, dz / length) if length else (0, 1)
+            for index, unit in enumerate(sorted(waiting, key=lambda unit: unit["id"])):
+                across = (index - (len(waiting) - 1) / 2) * 30
+                post = {"x": centre["x"] - dx * 25 - dz * across,
+                        "z": centre["z"] - dz * 25 + dx * across}
+                # Moving posts need not interrupt a path for every metre of screen travel.
+                if distance(post, self.posts.get(unit["id"], {})) >= 20:
+                    orders.append({"unit": unit["id"], "type": "move", "run": True, **post})
+                    self.posts[unit["id"]] = post
+        else:
+            orders += [{"unit": uid, "type": "halt"}
+                       for uid in sorted(waiting_ids - self.waiting)]
+        self.waiting = waiting_ids
         return orders
 
     def metadata(self) -> dict:
         return {"type": "coordinated_rush", "waiting": sorted(self.waiting),
-                "released_s": dict(self.released)}
+                "released_s": dict(self.released), "gate": "observed_screen_contact"}
