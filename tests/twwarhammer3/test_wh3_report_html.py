@@ -108,7 +108,8 @@ def test_the_harness_changes_with_anything_that_shapes_play(tmp_path, field, val
 
 def test_presentation_files_model_and_prose_leave_the_harness_alone(tmp_path):
     code = {"src/twwarhammer3/battle/llm.py": "a", "src/twwarhammer3/battle/report.py": "a",
-            "configs/twwarhammer3/report_notes.json": "a"}
+            "configs/twwarhammer3/report_notes.json": "a",
+            "configs/twwarhammer3/benchmark_jobs.json": "a"}
     definition = {"source": "r1", "track": "t", "model": "m", "evaluator_version": 1,
                   "scenario": {"name": "s", "brief": "old", "status": "draft"}}
     job = {"provenance": {"source_files": code}}
@@ -117,7 +118,8 @@ def test_presentation_files_model_and_prose_leave_the_harness_alone(tmp_path):
         {**definition, "source": "r2", "model": "other", "evaluator_version": 2,
          "scenario": {"name": "s", "brief": "new", "status": "admitted"}},
         {"provenance": {"source_files": {**code, "src/twwarhammer3/battle/report.py": "b",
-                                         "configs/twwarhammer3/report_notes.json": "b"}}})
+                                         "configs/twwarhammer3/report_notes.json": "b",
+                                         "configs/twwarhammer3/benchmark_jobs.json": "b"}}})
     assert base != report_html.harness(definition, {"provenance": {"source_files": {
         **code, "src/twwarhammer3/battle/llm.py": "b"}}})
     # Without file hashes the revision stands in for the code.

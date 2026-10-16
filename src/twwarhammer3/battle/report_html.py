@@ -37,7 +37,7 @@ MAX_STILL_BYTES = 256 * 1024
 PRESENTATION = ("src/twwarhammer3/battle/report", "src/twwarhammer3/battle/replay.py",
                 "src/twwarhammer3/battle/digest.py", "src/twwarhammer3/battle/watch.py",
                 "src/twwarhammer3/battle/stats.py", "configs/twwarhammer3/report_notes.json",
-                "configs/twwarhammer3/scenarios.json")
+                "configs/twwarhammer3/benchmark_jobs.json", "configs/twwarhammer3/scenarios.json")
 PROMPTS = {"llm": "prompt with tactical tips", "llm_rules": "rules-only prompt",
            "commander": "writes plans that scripted unit skills carry out"}
 VARIANTS = {"llm": "tactical tips", "commander": "plans"}
