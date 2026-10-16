@@ -1137,5 +1137,26 @@
         "wh_main_dwf_veh_gyrocopter_0"
       ]
     }
+  },
+  "tze-caster-skv-assault-jezzails": {
+    "base": "tze-caster-skv-assault",
+    "name": "tze-caster-skv-assault-jezzails",
+    "brief": "The caster assault with one unit of Warplock Jezzails added: long-range marksmen whose shots can reach a flying caster. Where Kairos casts from, when he flies and whether the escorts go after the marksmen now compete with the spell windows. Hypotheses, not a prescribed solution.",
+    "calibration_change": "Difficulty ladder, first step (2026-10-16): gpt-6-sol and gpt-6.1-sol won all three anchor battles each, and GLM-5.3 won one of two. One factor changes, pressure on the caster: wh2_dlc12_skv_inf_warplock_jezzails_0 (projectile range 275 m, may target airborne units), 1000 of cost (3775 to 4775), 11 units. Funds, map, timer, modifier and Kairos's army are unchanged.",
+    "enemy": {
+      "units": [
+        "wh2_main_skv_cha_warlord_0",
+        "wh2_main_skv_inf_clanrats_0",
+        "wh2_main_skv_inf_clanrats_0",
+        "wh2_main_skv_inf_clanrats_0",
+        "wh2_main_skv_inf_clanrat_spearmen_0",
+        "wh2_main_skv_inf_clanrat_spearmen_0",
+        "wh2_main_skv_inf_skavenslaves_0",
+        "wh2_main_skv_inf_skavenslaves_0",
+        "wh2_main_skv_inf_warpfire_thrower",
+        "wh2_main_skv_art_plagueclaw_catapult",
+        "wh2_dlc12_skv_inf_warplock_jezzails_0"
+      ]
+    }
   }
 }
