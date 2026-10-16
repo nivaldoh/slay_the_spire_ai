@@ -30,8 +30,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 | Piece | Version | Defined in | Latest results |
 |---|---|---|---|
-| `llm` | v20 (2026-10-16) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | v20 shared-magic warning checked on the GLM trace; new model behavior untested. Tactical prompt's last mode campaign was v15 |
-| `llm_rules` | shares `llm` v20 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | v19 GLM/OpenRouter caster check lost; v20 not yet played. M1 used v18 |
+| `llm` | v20 (2026-10-16) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | v20 shared-magic warning played once (GLM, `llm_rules`): over-spend after a pending spell halved. Tactical prompt's last mode campaign was v15 |
+| `llm_rules` | shares `llm` v20 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | v20 GLM/OpenRouter caster check won at 575 s; spell refusals after a pending spell 7 → 3 (v19 lost). M1 used v18 |
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
@@ -39,6 +39,89 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build: 81 input jobs, 98 completed battles shown across six candidate scenarios; setup failures and variants retained in JSON/text |
+
+## 2026-10-16: Difficulty ladder, first step for siege and swarm command (plan)
+
+gpt-6.1-sol / low won all three battles on both anchors, with margin: siege defence at
+538-587 s with 58-78% of its strength left, swarm command at 449-497 s with 50-52%.
+gpt-6-sol also won the siege 3/3 and the swarm 2/3. Step 3 of the
+[plan](benchmark.md#implementation-plan) applies: a clear easy win motivates one harder
+variant, changing one justified factor that presses on the family's scarce resource
+rather than inflating stats. Both anchors stay unchanged.
+
+| Variant | Factor | Enemy cost | Question |
+|---|---|---|---|
+| `chd-reserve-grn-siege-flankers` | Enemy mobility: adds 2 Orc Boar Boyz and 2 Goblin Wolf Riders, the attacker's first cavalry | 9725 → 11625 (+20%), 20 units | Does one mobile reserve still cover the gun positions when fast units arrive early or by another route? |
+| `skv-swarm-dwf-line-gyrocopters` | A threat the screen cannot block: adds 2 Gyrocopters | 8200 → 9800 (+20%), 11 units | Can the weapon teams, cannon and Warlock Engineer keep their protected time against flyers? |
+
+Funds caps, maps, timers, AI modifiers and the player rosters are unchanged; the lobby
+lists every added card for those factions (`cards_slot1.txt` of the M1c jobs).
+
+Tranche V1, decided under the owner's standing resume direction (continue calibration
+within the existing budgets) and reviewable:
+1. V1a, $0: one scripted battle per variant, `hold` on the siege (anchor: lost at
+   709 s) and `rush_nearest` on the swarm. Checks that the lobby takes the rosters, where
+   the added units go and how fast a floor controller now loses. A setup failure or
+   added units that never engage sends the variant back before any paid battle.
+2. V1b, paid: one gpt-6.1-sol / low `llm_rules` v20 battle per variant, with a cumulative
+   OpenAI ceiling of **$50.00** (now $45.96). The anchors cost $0.90-1.11 per battle;
+   a longer losing battle may cost up to about $2. M1c used v18, so the controller
+   version also differs (v19/v20 changed only ability, routing and magic feedback).
+
+Decision rule per variant, one battle each: a clear win with a similar margin says the
+factor does not bind, so the next step is a different factor, not a repeat. A loss or
+a narrow win, with the trace showing the added units forcing a reserve or protection
+choice, makes the variant a candidate for the small frontier screen. A loss caused by
+an interface failure, or by units the controller could not see or reach, sends it back.
+One battle is not a ceiling estimate.
+
+## 2026-10-16: Live check of the v20 shared-magic warning
+
+**Result.** `bench-b13-glm-v20-caster-20261016` (`ae55309`, 19:28-19:55 UTC) **won** at
+575 s with 69% of its strength left (enemy 43% left, all routed); 80 decisions, 97
+calls, $0.40868230, clock ratio 0.99999. OpenRouter ledger $0.83868719 of the $2.00 run
+ceiling and the $50 allowance. The v19 battle on the same anchor lost at 566 s. One
+battle each from independent launches, so the outcome is not attributed to v20.
+
+| | v19 (lost) | v20 (won) |
+|---|---:|---:|
+| Paid spell orders | 31 | 23 |
+| Decisions whose basis showed a same-snapshot paid spell (v20 warns) | 21 | 16 |
+| ...of which ordered past the pool minus those pending costs | 12 | 4 |
+| Spell refusals (`perform_special_ability`) | 7 | 4 |
+| ...after a same-snapshot paid spell | 7 | 3 |
+| Reply validation failures, of all calls | 17 / 105 | 18 / 97 |
+
+The warning halved the over-spend rate (57% to 25% of warned decisions) but missed
+the pre-set acceptance bar of at most two such refusals. All three remaining cases
+saw the warning and still ordered a spell above the pending-adjusted pool (18 shown,
+16 pending, Glean Magic; 9 and 9, Blue Fire 6; 6 and 5, Blue Fire 6). The fourth
+refusal was an affordable Blue Fire with nothing pending, a different cause not
+diagnosed here. Each refusal costs one order, not the battle. Decision: keep v20; a
+pool display with pending costs deducted stays the candidate change if spell refusals
+matter in the frontier screen, not before. Review:
+`calibration/glm-v20-magic-review-20261016.py` and JSON (both battles, same rules).
+
+The win matters for calibration: GLM-5.3 / low joins gpt-6-sol (3/3) and gpt-6.1-sol
+(3/3) in winning the caster anchor, so this family also needs a harder ladder step
+before a frontier screen tells us anything.
+
+**Plan.** Question: does v20's shared-pool warning stop the model from issuing a paid spell
+that the just-issued spells have already made unaffordable? In the v19 GLM battle
+all seven special-ability refusals followed such a spell. One battle, `llm_rules` v20,
+GLM-5.3 / low through OpenRouter, the unchanged `tze-caster-skv-assault` anchor, source
+`ae55309` (b13). Same model and scenario as v19, so the comparison varies only the
+feedback; it is one battle against one, an independent launch, so outcomes and
+positions are not paired.
+
+Cost: $0.42 for the v19 battle; the M1 repricing envelope is $0.46–$1.30. The cumulative
+OpenRouter ceiling is **$2.00** (now $0.43000489), at most the 20-minute timer plus
+setup. OpenAI is untouched. Measures: refusals after a just-issued paid spell, spell
+commands issued and their later active/recharge readback, magic left at the end.
+Decision: at most two such refusals with spells still cast accepts v20 for later
+paid runs. Five or more means the label does not work; the next candidate would show
+pending costs in the pool itself, an observation change logged as a new version.
+A battle without casting is a regression to investigate before any other paid run.
 
 ## 2026-10-16: First OpenRouter battle and shared-magic feedback
 
