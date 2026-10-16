@@ -30,7 +30,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 | Piece | Version | Defined in | Latest results |
 |---|---|---|---|
-| `llm` | v18 (2026-10-16) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | Shared input validated through `llm_rules` in b11; tactical prompt's last mode campaign was v15 (Luna low: 6 wins in 10 jobs) |
+| `llm` | v18 (2026-10-16) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | Shared input validated through `llm_rules` in b12; tactical prompt's last mode campaign was v15 (Luna low: 6 wins in 10 jobs) |
 | `llm_rules` | shares `llm` v18 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | b12: siege Sol loss/Luna win; survival and Conquest two losses each. Evacuation not yet run |
 | `commander` | v5 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | b11 smoke, Luna low: lost `dwf-line-skv-swarm` at 593 s ($0.054) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
@@ -38,7 +38,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | benchmark harness | b12 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Six b12 engine outcomes; recorded rematch starts matched. Custom evacuation is offline-tested only |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
-| report | scores by game mode, one map per model (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | `reports/benchmark.html` (26 MB): 55 jobs, 85 battles shown in 19 scenarios (6 diagnostic probes held back), headline C1 |
+| report | scores by game mode, one map per model (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | `reports/benchmark.html` (34 MB): 61 jobs, 91 battles shown in 22 scenarios (6 diagnostic probes held back), six core families with evidence; headline C1 |
 
 ## 2026-10-16: Harness b12 and distinct scenario families
 
@@ -154,7 +154,8 @@ The full suite after the setup fixes passed: 1024 tests, 14 optional-dependency 
 
 Completed Conquest screens (`bench-b12-slaanesh-conquest-20261016`, `21e45ee`): Sol-low
 lost at 353 s ($0.5410; 83 decisions, one rejected order, mean age 4.24 s), Luna-low at
-250 s ($0.0190; 39 decisions, 11 rejected orders, mean age 6.16 s). Rematch starts matched.
+250 s ($0.0190; 39 decisions, 11 rejected orders, mean age 6.16 s). Recorded friendly starts/resources matched; enemies were not visible
+at the initial snapshots.
 Both captured the central point; Sol finished with 238/600 tickets against 40, Luna with
 72/600 against 106. Their armies routed before the ticket target. Job cost $0.5600;
 ledger total $16.9058.
@@ -202,6 +203,12 @@ active. Next is original-engine validation of `emp-battery-skv-evacuation`, incl
 scripted ending and rematch; neither that new roster nor the custom objective has yet run
 in a battle. Do not present it as a proven seventh family. Later self-comparisons remain
 specified only, with no new experiments launched.
+
+The final canonical report was rebuilt with 61 jobs, 91 displayed battles in 22 scenarios
+and six core families with live evidence (six older diagnostics remain inspectable
+separately). Offline Chromium checks passed at `report-checks/b12`, including survival
+durations, scenario navigation and standalone downloads. The custom marker is
+offline-tested; there is no real evacuation replay yet.
 
 ## Index
 
