@@ -6,7 +6,7 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 
 ## Active work
 
-Running since 20:06 UTC: WH3 queue `runs/twwarhammer3/calibration/v1b2-plan-20261016.json`:
+Running since 20:11 UTC: WH3 queue `runs/twwarhammer3/calibration/v1b2-plan-20261016.json`:
 a $0 `CasterSkirmish` check on the new caster variant, then one gpt-6.1-sol / low battle
 on each of the siege and swarm variants (OpenAI cumulative cap $50.00). V1a's two free
 checks passed ([ladder V1](twwarhammer3/log.md#2026-10-16-difficulty-ladder-first-step-v1));
@@ -90,6 +90,10 @@ Next steps:
 ## Owner direction
 
 WH3:
+- 2026-10-16 (evening): make each scenario maximally difficult while still demonstrably
+  winnable; fewer high-quality scenarios beat redundant ones that waste compute. Armies,
+  map settings etc. may be modified to calibrate
+  ([difficulty target](twwarhammer3/benchmark.md#current-proposal-calibrate-before-a-broad-model-comparison)).
 - 2026-10-16 (resume): implement OpenRouter and the three chosen models, then continue
   improving benchmark calibration and the report within the existing budgets.
 - 2026-10-16 (OpenRouter): the owner stored an OpenRouter key and set a separate $50

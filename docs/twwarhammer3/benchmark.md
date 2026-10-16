@@ -425,6 +425,17 @@ the six calibration cards and four free siege/swarm/caster checks are complete
 magic after a cast. Feedback v20 / commander v7 labels that uncertainty; its effect on
 model behavior remains untested ([review](log.md#2026-10-16-first-openrouter-battle-and-shared-magic-feedback)).
 
+**Difficulty target (owner, 2026-10-16 evening).** Each retained scenario should be as
+difficult as possible while remaining demonstrably winnable, and fewer high-quality
+scenarios beat many redundant ones that waste compute. Armies, map and battle settings
+may all be changed to calibrate difficulty. For the ladder this means: climb while the
+strongest tested controller still wins, and keep the hardest step with at least one
+engine-confirmed win under the frozen benchmark conditions (any disclosed controller,
+model or scripted). A step that nothing has won is not yet admissible; it waits for a
+win or is stepped back down. This replaces the open-ended "harder variant" stopping
+point below; the other rules (one justified factor per step, decision pressure over stat
+inflation, separate infrastructure failures) still apply.
+
 Revised after M1 at the owner's request, then authorized for implementation on resume.
 This sequence supersedes the earlier implementation sequence and the proposal to settle
 the core from M1.

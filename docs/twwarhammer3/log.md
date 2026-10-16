@@ -79,7 +79,10 @@ factor does not bind, so the next step is a different factor, not a repeat. A lo
 a narrow win, with the trace showing the added units forcing a reserve or protection
 choice, makes the variant a candidate for the small frontier screen. A loss caused by
 an interface failure, or by units the controller could not see or reach, sends it back.
-One battle is not a ceiling estimate.
+One battle is not a ceiling estimate. Revised by the owner's difficulty target
+(2026-10-16 evening, [benchmark.md](benchmark.md#current-proposal-calibrate-before-a-broad-model-comparison)):
+a variant won with margin gets a further step; the family keeps its hardest step with a
+demonstrated win, so a lost step needs a win (or is stepped back) before admission.
 
 **V1a siege** (`bench-b13-v1a-siege-flankers-hold-20261016`, `f89a9b5`): the lobby took the
 20-unit roster; `hold` lost at 708 s (anchor 709 s, an independent launch). The added
@@ -103,6 +106,15 @@ found and double-clicked but did not recruit (10 enemy units, 11 expected). No s
 had used `dlc12` content; The Prophet & the Warlock is presumably not owned on this
 account. The variant now adds a second Warp Lightning Cannon, a `wh2_main` unit the
 swarm anchor recruits, as `tze-caster-skv-assault-cannon`; V1b reruns as a new plan.
+
+**V1b2 caster check** (`bench-b13-v1b2-caster-cannon-skirmish-20261016`, `82a2364`, $0):
+the lobby took the roster; `CasterSkirmish` lost at 644 s (anchor 581 s). The added factor
+binds on the caster: Kairos lost HP from 79 s and his barrier was down by about 96 s
+(anchor: 491 s and 473 s), so the script spent most of the battle withdrawn to recover
+and cast six spells instead of twelve, all with later active/recharge feedback. Kairos
+was airborne throughout and died at 633 s with 20 magic left. Nothing attacked the
+cannon (42 of 42 crew at the end), a play this script does not have. Review:
+`calibration/cannon-caster-review-20261016.py` and JSON. Passes to V1c.
 
 ## 2026-10-16: Live check of the v20 shared-magic warning
 
