@@ -393,8 +393,19 @@ def render_state(observation: dict, last_seen: dict, before: dict | None = None,
         lines.append(render_army(observation["army"], observation.get("time_ms")))
     magic = observation.get("magic") or {}
     if magic:
-        lines.append(f"Winds of Magic: {magic.get('current', 'unknown')} available, "
+        issued = [f"{unit['id']} {ability['key']} ({ability['mana']} magic)"
+                  for unit in observation.get("friendly", [])
+                  for ability in unit.get("abilities", [])
+                  if observation.get("time_ms") is not None
+                  and ability.get("last_issued_ms") == observation["time_ms"]
+                  and ability.get("mana", 0) > 0]
+        amount = "observed" if issued else "available"
+        lines.append(f"Winds of Magic: {magic.get('current', 'unknown')} {amount}, "
                      f"{magic.get('reserve', 'unknown')} reserve.")
+        if issued:
+            lines.append("Spell spend unconfirmed: " + "; ".join(issued)
+                         + " issued in this snapshot. The displayed pool may not yet include "
+                         "these costs; execution is unconfirmed.")
     lines.append("Your units:")
     lines += ["- " + render_unit(unit, True, before.get(unit["id"]), visible,
                                  ordered.get(unit["id"]), observation.get("time_ms"))

@@ -1,26 +1,22 @@
 # Project state
 
-Updated 2026-10-16 18:36 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 19:22 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-WH3 is stopped after the single free airborne-casting diagnostic: lost at 581 s, with
-no invalid orders. The [review and next-run plan](twwarhammer3/log.md#2026-10-16-caster-audit-and-one-airborne-casting-diagnostic)
-records its execution and the failed fixed retreat point. Next is one GLM-5.3 / low
-OpenRouter battle on the unchanged caster anchor, with a $3 cumulative ledger ceiling,
-to validate full prompts and live timing. Review before any further paid allocation.
+No game or paid API job is running. OpenRouter support and three schema checks passed;
+the first GLM-5.3 / low battle completed, losing the caster anchor at 566 s for $0.4248.
+The [review](twwarhammer3/log.md#2026-10-16-first-openrouter-battle-and-shared-magic-feedback)
+records model reply errors, routing and a stale shared-magic reading after casts.
+Four free tactical diagnostics are also complete. Feedback v20 / commander v7 now
+labels pending spell costs; it is checked on recorded states but untested with a model.
+The canonical report now includes the fourth script and GLM replay, backend snapshots
+and reply-validation counts; offline browser checks pass. All six candidates remain provisional.
 
-OpenRouter support and all three WH3 reply-schema checks
-passed; the [free calibration tranche](twwarhammer3/log.md#2026-10-16-free-siegeswarm-calibration-checks)
-is complete. Controller feedback v19 / commander v6 is integrated and tested against
-recorded M1 traces; its effect on model behavior remains untested. The canonical report
-includes three disclosed diagnostic replays and passes offline desktop/mobile checks;
-the fourth is selected for its next rebuild. All six candidates remain
-provisional until a small strongest-model screen.
-
-API ledgers: OpenAI $45.96 of $52; OpenRouter $0.00523146 of $50. The single planned check uses a lower $3 ceiling.
+API ledgers: OpenAI $45.96 of $52; OpenRouter $0.43000489 of $50. The single live
+OpenRouter check stayed within its lower $3 cumulative ceiling. No further paid run is queued.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -31,7 +27,7 @@ command; clear it when the job stops.
 [log](twwarhammer3/log.md) (newest first, with the versions on `main` at the top),
 [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v19, `commander` v6, skills v1.2, benchmark b13,
+- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, benchmark b13,
   evaluator v2 and track `obs-v4+terrain/act-v2/live-1x`. The interface supports native
   objectives/reinforcements and the optional public battery-evacuation objective.
 - Six candidate decision families with live evidence remain after the live novelty audit
@@ -45,14 +41,15 @@ command; clear it when the job stops.
   models; survive-a-swarm and Kislev did not. The report page shows core scenarios and
   completed battles only; its JSON keeps setup failures and variants. Results, costs and
   reviews: [M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
-- API spend: $45.96 of the $52 cap (raised from $25 on 2026-10-16); no paid job is running.
+- OpenAI spend: $45.96 of $52; OpenRouter $0.4300 of $50. Both are idle.
 
 Next: use the [cards](twwarhammer3/benchmark.md#calibration-cards-2026-10-16) to select
 a specific remaining play to test (siege withdrawal/firing positions, swarm flank or
-weapon support, or caster withdrawal), then a small strongest-model screen. The feedback
-fixes need live model validation before broader paid comparisons. OpenRouter's three
-models passed the real WH3 reply schema and parser ([support](twwarhammer3/controllers.md#openrouter)); high effort and live
-battle behavior remain untested. The OpenAI remainder ($6.04) is unallocated; custom evacuation and separate
+weapon support, or caster withdrawal), then a small strongest-model screen. The shared-magic
+feedback fix needs live model validation before broader paid comparisons. OpenRouter's three
+models passed the real WH3 reply schema and parser, and GLM completed one battle
+([support](twwarhammer3/controllers.md#openrouter)); Kimi/Step battles and all high-effort
+settings remain untested. The OpenAI remainder ($6.04) is unallocated; custom evacuation and separate
 workload, prompt, history, representation and added-age experiments remain deferred.
 Steam is pinned to 9.0.4; old evidence keeps its original build.
 

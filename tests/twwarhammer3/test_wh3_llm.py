@@ -319,6 +319,25 @@ def test_magic_state_is_player_only_and_unknown_values_are_not_zero():
     assert "Winds of Magic: unknown available, 42 reserve" in llm.render_state(obs, {})
 
 
+def test_magic_pool_marks_pending_spend_across_different_spells():
+    # GLM at 110.6 s saw 7 magic just as Blue Fire (6) was issued, then requested
+    # Harmonic Convergence (5). The refusal snapshot showed only 2 magic available.
+    obs = {"time_ms": 110600, "magic": {"current": 7, "reserve": 56}, "friendly": [
+        {"id": "f1", "men": 1, "abilities": [
+            {"key": "blue_fire", "mana": 6, "last_issued_ms": 110600},
+            {"key": "harmonic_convergence", "mana": 5, "ready": True},
+            {"key": "free_item", "mana": 0, "last_issued_ms": 110600}]}]}
+    text = llm.render_state(obs, {})
+    assert "Winds of Magic: 7 observed, 56 reserve." in text
+    warning = next(line for line in text.splitlines() if line.startswith("Spell spend"))
+    assert "f1 blue_fire (6 magic)" in warning and "may not yet include these costs" in warning
+    assert "harmonic_convergence" not in warning and "free_item" not in warning
+    obs.update(time_ms=115400, magic={"current": 2, "reserve": 55})
+    text = llm.render_state(obs, {})
+    assert "Winds of Magic: 2 available, 55 reserve." in text
+    assert "Spell spend" not in text
+
+
 def test_an_ability_with_half_a_ground_point_is_described_without_crashing():
     order = {"unit": "f1", "type": "ability", "ability": "roar", "target": None, "x": 10.0,
              "z": None, "facing": None, "width": None}

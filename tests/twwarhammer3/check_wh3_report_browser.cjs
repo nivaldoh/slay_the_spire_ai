@@ -550,6 +550,23 @@ async function main() {
     assert.ok((await text("#settings-body")).includes(data.battles[open].harness));
     await page.screenshot({ path: path.join(output, "settings.png") });
     await page.locator("#close-settings").click();
+    const routed = data.report.groups
+      .flatMap((group, g) => group.trials.map((trial, t) => ({ key: `g${g}-t${t}`, trial })))
+      .find(({ key, trial }) => data.battles[key] && trial.metrics?.backend_models?.length);
+    if (routed) {
+      const routedScenario = data.scenarios.find((item) => item.battles.includes(routed.key));
+      if (data.scenarios.length > 1)
+        await page.locator(`#index .index-item[data-scenario="${routedScenario.id}"]`).click();
+      await page.selectOption("#run-select", routed.key);
+      await page.locator("#open-settings").click();
+      const settings = await text("#settings-body"),
+        validation = routed.trial.metrics.reply_validation;
+      for (const snapshot of routed.trial.metrics.backend_models)
+        assert.ok(settings.includes(snapshot), "Run settings identifies the served snapshot");
+      assert.ok(settings.includes(`${validation.failed} of ${validation.attempts}`));
+      await page.screenshot({ path: path.join(output, "router-settings.png") });
+      await page.locator("#close-settings").click();
+    }
     const { value: reportFile } = await downloaded("#download-report", "recorded-report.json");
     assert.equal(reportFile.report.groups.length, data.report.groups.length);
     assert.equal(reportFile.scenarios.length, data.scenarios.length);

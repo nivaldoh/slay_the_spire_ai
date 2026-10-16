@@ -82,7 +82,7 @@
       "challenge": "Kairos, a flying character and the army's only spellcaster, attacks with four escorts: two ranged infantry units, one heavily armoured melee unit and a small unit of fast flyers. Ten Skaven units with three times as many troops hold the field: a leader, five clanrat units, two units of expendable slaves, a short-range warpfire team and a catapult unit that reaches 400 m, twice as far as any of Kairos's spells. Each spell costs 5 to 20 points of magic from a pool that starts at 12 and refills slowly, and Kairos is one character, not a regiment: flying him at the catapult risks losing him, while waiting cannot win. The attacker must break every defender before the 20-minute timer runs out; at the timer it loses.",
       "family": "caster-led force against rat screens",
       "core_candidate": true,
-      "footnote": "In M1, Sol and gpt-6.1-sol each won three of three attacker battles; Luna won one of three. Both nearest-enemy scripts lost. A free airborne cast-and-return script also lost, at 581 s: all 12 spell commands had subsequent cooldown feedback, but its stationary escorts collapsed and the fixed retreat point became exposed. This leaves adaptive withdrawal and escort protection open; it does not justify increasing enemy strength. Controller v19's feedback change still needs live model validation."
+      "footnote": "In M1, Sol and gpt-6.1-sol each won three of three attacker battles; Luna won one of three. The free airborne script lost at 581 s when its stationary escorts and fixed retreat point failed. GLM's first OpenRouter battle also lost, at 566 s, with 61 enemy soldiers still fighting. Its trace exposed a stale shared-magic reading after casts; controller v20 now labels that uncertainty, with its effect on model behavior still untested. These development trials do not settle frontier difficulty."
     },
     "siege-kho5-dwf5": {
       "title": "Siege defence pilot",
@@ -689,6 +689,25 @@
             "trace.jsonl:1236",
             "trace.jsonl:1281",
             "trace.jsonl:1506"
+          ]
+        }
+      ]
+    },
+    "bench-b13-openrouter-glm-caster-20261016/episode-0000": {
+      "highlights": [
+        {
+          "time_ms": 110600,
+          "end_ms": 147200,
+          "lead_in_s": 8,
+          "title": "The magic display has not caught up with a cast",
+          "text": "Just after Blue Fire was issued, the snapshot still displayed 7 magic. GLM requested Harmonic Convergence for 5; that order was refused, and the next snapshot showed 2 magic. All seven special-ability refusals in this battle followed the same pattern: a just-issued spell, an apparently affordable second spell, then a lower pool reading.",
+          "kind": "trouble",
+          "units": [
+            "f1"
+          ],
+          "refs": [
+            "trace.jsonl:83",
+            "trace.jsonl:95"
           ]
         }
       ]

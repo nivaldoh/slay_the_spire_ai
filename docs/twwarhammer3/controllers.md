@@ -38,9 +38,9 @@ records a card per trial (kind, class, source file and hash, model, effort, timi
 | `rush_nearest` (run-nearest) | scripted | `attack_nearest`, running | | `scripted.py` |
 | `skills` | scripted | the executor, every unit on its class default | executor v1.2 (`55ab6b3`) | `skills.py` |
 | `probe_abilities` | scripted diagnostic | `skills`, plus every ability as soon as it is ready, the cheapest build on each usable slot and the cheapest affordable unit every 10 s | | `skills.py` |
-| `llm` | model, blocking | the model, raw orders every decision | v19 | `llm.py`, `configs/twwarhammer3/system_prompt.md` |
+| `llm` | model, blocking | the model, raw orders every decision | v20 | `llm.py`, `configs/twwarhammer3/system_prompt.md` |
 | `llm_rules` | model, blocking | as `llm`, with a prompt that states objectives and interface without tactics (`51c1796`, b3) | | `llm.py`, `configs/twwarhammer3/rules_prompt.md` |
-| `commander` | hybrid, asynchronous | the model sets standing skills; the executor acts on every observation | v6 | `commander.py` over `skills.py`, `configs/twwarhammer3/commander_prompt.md` |
+| `commander` | hybrid, asynchronous | the model sets standing skills; the executor acts on every observation | v7 | `commander.py` over `skills.py`, `configs/twwarhammer3/commander_prompt.md` |
 | `package.module:Class` | outside | any class with `decide`, `acknowledge` and `metadata` | | [benchmark-run.md](benchmark-run.md) |
 
 `llm` v15 and `commander` v3 are the log's
@@ -109,7 +109,15 @@ Later readings remain authoritative; this adds neither a guessed cooldown nor an
 filter. The commander also lists one-shot orders being submitted alongside its next
 request, which precedes their acknowledgement. All three system prompts state that
 routing/shattered units cannot accept unit orders, including abilities. Recorded M1
-traces validate the rendering; the effect on model behavior remains untested.
+traces validate the rendering. One GLM/OpenRouter integration battle subsequently used
+v19; there is no controlled estimate of the warning's effect.
+
+v20 / commander v7 also mark the shared magic pool as an observed reading when a paid
+spell was issued in that same snapshot. The prompt lists those spells and their stated
+costs, explaining that the pool may precede the spend. No guessed balance is deducted
+and no orders are filtered. Seven GLM refusals showed an apparently affordable spell
+after another spell's issue, followed by an insufficient pool reading. The new warning
+is verified on these recorded states; changed model behavior remains untested.
 
 ## Following a battle
 
@@ -197,8 +205,10 @@ Initial models, with enforced routing ceilings in USD per million tokens:
 | `stepfun/step-5-preview` | $1.00 | $2.70 | low, high |
 
 These are leading open-weight candidates selected during the design review, not a
-ranking inferred from our tests. Catalogue metadata was checked on 2026-10-16. All three passed live WH3 schema/parser checks at low effort; high effort and live
-battle behavior remain untested. Step first returned an empty, token-limited response
+ranking inferred from our tests. Catalogue metadata was checked on 2026-10-16. All three
+passed live WH3 schema/parser checks at low effort. GLM subsequently completed one
+v19 caster battle (lost at 566 s, $0.42477343); Kimi/Step battle behavior and all high-effort
+settings remain untested. Step first returned an empty, token-limited response
 on DeepInfra, then passed with the normal 4,000-token allowance on InferenceNet; both
 the backend and allowance changed, so the cause is unresolved.
 The job default is GLM-5.3 at low effort. Rotations preserve the full vendor/model ID:
@@ -235,6 +245,13 @@ $0.25 test cap; all three models eventually returned valid replies. These
 are API checks, not battles or evidence about tactical ability. Review each failure
 before spending again. Subsequent calibration follows the
 [benchmark plan](benchmark.md#implementation-plan).
+
+The GLM battle used 105 calls across 16 serving backends, reporting snapshot
+`z-ai/glm-5.3-20260816`. Seventeen replies failed validation before retry or order
+salvage; nine issued orders were refused by the engine. Those are separate counts.
+Total OpenRouter ledger spend is $0.43000489 after the smoke checks and battle, below
+that battle's $3 cumulative cap and the owner's $50 account allowance. No further
+paid run is queued; [review](log.md#2026-10-16-first-openrouter-battle-and-shared-magic-feedback).
 
 ## Candidate changes for the next version
 

@@ -1398,6 +1398,13 @@
         ["Requested model", trial.card?.model || (isModel(entry) ? definition.model : null)],
         ["Served models", trial.metrics?.actual_models?.join(", ")],
         ["Serving backends", trial.metrics?.actual_backends?.join(", ")],
+        ["Backend model snapshots", trial.metrics?.backend_models?.join(", ")],
+        [
+          "Replies failing validation",
+          trial.metrics?.reply_validation?.attempts
+            ? `${trial.metrics.reply_validation.failed} of ${trial.metrics.reply_validation.attempts} (including retries; some orders may be recovered)`
+            : null,
+        ],
         [
           "Routing limits",
           definition.provider === "openrouter"

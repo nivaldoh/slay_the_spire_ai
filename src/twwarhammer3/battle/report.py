@@ -46,6 +46,9 @@ def wilson(wins: int, count: int) -> list[float] | None:
 def trial_metrics(directory: Path, result: dict) -> dict:
     kinds, rejections, ages, plan_ages, calls, snapshot_ages = Counter(), Counter(), [], [], [], []
     processing, models, backends, seen_calls = [], set(), set(), set()
+    backend_models, reply_errors = set(), Counter()
+    attempts = list((result.get("failure") or {}).get("attempts") or [])
+    replies = 0
     trace = directory / "trace.jsonl"
     if trace.exists():
         with trace.open() as handle:
@@ -65,20 +68,7 @@ def trial_metrics(directory: Path, result: dict) -> dict:
                     meta = event.get("behavior") or {}
                     if meta.get("plan_age_s") is not None:
                         plan_ages.append(meta["plan_age_s"])
-                    for attempt in meta.get("attempts") or []:
-                        response_id = attempt.get("response_id")
-                        if response_id and response_id in seen_calls:
-                            continue
-                        if response_id:
-                            seen_calls.add(response_id)
-                        if attempt.get("seconds") is not None:
-                            calls.append(attempt["seconds"])
-                        if attempt.get("provider_processing_ms") is not None:
-                            processing.append(attempt["provider_processing_ms"] / 1000)
-                        if attempt.get("actual_model"):
-                            models.add(attempt["actual_model"])
-                        if attempt.get("backend"):
-                            backends.add(attempt["backend"])
+                    attempts.extend(meta.get("attempts") or [])
                 elif kind == "ack":
                     # Empty batches do not count as action latency.
                     if (event.get("ack") or {}).get("results"):
@@ -88,6 +78,25 @@ def trial_metrics(directory: Path, result: dict) -> dict:
                             rejections["engine: " + str(order.get("error", "unknown"))] += 1
                 elif kind == "invalid":
                     rejections["validation: " + str(event.get("error", "unknown"))] += 1
+    for attempt in attempts:
+        response_id = attempt.get("response_id")
+        if response_id and response_id in seen_calls:
+            continue
+        if response_id:
+            seen_calls.add(response_id)
+        replies += 1
+        if attempt.get("error"):
+            reply_errors[attempt["error"]] += 1
+        if attempt.get("seconds") is not None:
+            calls.append(attempt["seconds"])
+        if attempt.get("provider_processing_ms") is not None:
+            processing.append(attempt["provider_processing_ms"] / 1000)
+        if attempt.get("actual_model"):
+            models.add(attempt["actual_model"])
+        if attempt.get("backend"):
+            backends.add(attempt["backend"])
+        if attempt.get("backend_model"):
+            backend_models.add(attempt["backend_model"])
     own, enemy = active_left(result, "friendly"), active_left(result, "enemy")
     duration = (result.get("battle_ms", 0) - result.get("start_time_ms", 0)) / 1000
     return {
@@ -96,7 +105,9 @@ def trial_metrics(directory: Path, result: dict) -> dict:
         "snapshot_age_at_decision_s": distribution(snapshot_ages),
         "call_seconds": distribution(calls), "rejections": dict(rejections),
         "provider_processing_seconds": distribution(processing), "actual_models": sorted(models),
-        "actual_backends": sorted(backends),
+        "actual_backends": sorted(backends), "backend_models": sorted(backend_models),
+        "reply_validation": {"attempts": replies, "failed": sum(reply_errors.values()),
+                             "errors": dict(reply_errors)},
         "decisions_per_battle_s": result.get("decisions", 0) / duration if duration > 0 else None,
         "trace": dict(kinds),
     }

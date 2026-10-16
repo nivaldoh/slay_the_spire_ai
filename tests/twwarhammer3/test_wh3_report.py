@@ -113,6 +113,29 @@ def test_report_distinguishes_snapshot_age_from_command_age_and_missing_timestam
     assert metrics["order_age_s"]["mean"] == 15
 
 
+def test_report_counts_rejected_replies_once_and_keeps_served_snapshots(tmp_path):
+    # A repaired GLM decision has rejected replies even though its issued orders pass.
+    attempts = [{"response_id": "a", "seconds": 8, "backend": "DigitalOcean",
+                 "backend_model": "z-ai/glm-5.3-20260816",
+                 "error": "unknown friendly unit 'keep'"},
+                {"response_id": "b", "seconds": 3,
+                 "error": "f1 is ordered twice without queue"},
+                {"response_id": "c", "seconds": 4, "backend": "Wafer"}]
+    event = {"kind": "decision", "behavior": {"attempts": attempts}}
+    # Asynchronous controllers can repeat metadata. A terminal failure can also retain it.
+    (tmp_path / "trace.jsonl").write_text((json.dumps(event) + "\n") * 2)
+    result = {"failure": {"attempts": [attempts[0],
+              {"response_id": "d", "seconds": 5, "error": "invalid JSON"}]}}
+    metrics = report.trial_metrics(tmp_path, result)
+    assert metrics["reply_validation"] == {"attempts": 4, "failed": 3,
+        "errors": {"unknown friendly unit 'keep'": 1,
+                   "f1 is ordered twice without queue": 1, "invalid JSON": 1}}
+    assert metrics["call_seconds"]["n"] == 4
+    assert metrics["actual_backends"] == ["DigitalOcean", "Wafer"]
+    assert metrics["backend_models"] == ["z-ai/glm-5.3-20260816"]
+    assert metrics["rejections"] == {}  # These replies never became engine orders.
+
+
 def test_rollout_throughput_includes_setup_failures_and_unknown_job_duration(tmp_path):
     played = make_job(tmp_path, "played", [("hold", 0, "lost"), ("skills", .2, "won")])
     failed = make_job(tmp_path, "failed", [])

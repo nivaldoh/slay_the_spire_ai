@@ -27,7 +27,7 @@ BUILTINS = {**POLICIES, "skills": Skills, "probe_abilities": ProbeAbilities}
 MODEL_PROMPTS = {"llm": llm.SYSTEM_PROMPT_PATH, "llm_rules": llm.RULES_PROMPT_PATH,
                  "commander": commander.PROMPT_PATH}
 MODEL_POLICIES = frozenset(MODEL_PROMPTS)
-VERSIONS = {"llm": "v19", "llm_rules": "v19", "commander": "v6", "skills": "v1.2"}
+VERSIONS = {"llm": "v20", "llm_rules": "v20", "commander": "v7", "skills": "v1.2"}
 
 
 def policy_parts(name: str, config: dict) -> tuple[str, str | None, str | None]:

@@ -26,7 +26,8 @@ Status of the remaining owner feedback (the other notes of 2026-10-16 are in the
     WH3 selection are implemented and all three models passed WH3 schema checks.
     The collector records gateway/routing settings; the page labels OpenRouter rows,
     uses readable model names and exposes serving backends and limits in Run settings.
-    No OpenRouter battles are shown until they have actually run.
+    The first GLM caster battle is included after its completed integration check; Kimi
+    and Step have only API schema checks so far.
 
 Not done with the rest, and why:
 
@@ -76,6 +77,11 @@ The named calibration controllers, `CentralDefence`, `CoordinatedRush` and `Cast
 shown as scripted **scenario diagnostics**, with their assumptions in Run settings.
 Their completed battles and replays help inspect the proposed tactics; a scenario-aware
 script is not a general model policy. Interface/mechanics probes remain omitted.
+
+Run settings includes the reported backend model snapshots and the number of model
+replies that failed validation, including retries and replies from which some orders
+were recovered. This is separate from refused engine orders; the JSON retains the
+reply rejection reasons. Unrecorded attempts are not counted as successful replies.
 
 Progress is the share of the enemy's registered soldiers dead or out of the fight (fleeing,
 shattered, leaving or undeployed) when the battle ended: `1 - active/registered` from the

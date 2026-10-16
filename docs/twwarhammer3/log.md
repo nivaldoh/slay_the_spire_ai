@@ -30,15 +30,70 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 | Piece | Version | Defined in | Latest results |
 |---|---|---|---|
-| `llm` | v19 (2026-10-16) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | v19 feedback validated against M1 traces; new model behavior untested. Tactical prompt's last mode campaign was v15 |
-| `llm_rules` | shares `llm` v19 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | v19 feedback not yet played; M1 used v18 and separated models on siege, swarm command and caster assault |
-| `commander` | v6 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v6 pending-order disclosure tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
+| `llm` | v20 (2026-10-16) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | v20 shared-magic warning checked on the GLM trace; new model behavior untested. Tactical prompt's last mode campaign was v15 |
+| `llm_rules` | shares `llm` v20 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | v19 GLM/OpenRouter caster check lost; v20 not yet played. M1 used v18 |
+| `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
 | benchmark harness | b13 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Exploratory screens and M1 completed; recorded rematch starts matched. Custom evacuation deferred: authored placement check fails in the engine |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
-| report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build: 79 input jobs, 96 completed battles shown across six candidate scenarios; setup failures and variants retained in JSON/text |
+| report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build: 81 input jobs, 98 completed battles shown across six candidate scenarios; setup failures and variants retained in JSON/text |
+
+## 2026-10-16: First OpenRouter battle and shared-magic feedback
+
+`bench-b13-openrouter-glm-caster-20261016`, source `ba6d1c3`, completed normally through
+OpenRouter: GLM-5.3 / low, `llm_rules` v19, engine loss at 566 s on the unchanged caster
+anchor. There were 61 of 937 enemy soldiers still active (93.5% progress), with no
+friendly soldiers active. Clock ratio 0.99995; 89 decisions, 105 API calls,
+$0.42477343054 charged. The ledger now totals $0.43000489054, below this run's $3 cap
+and the owner's separate $50 allowance. OpenAI remains $45.96/$52. No further paid
+run is queued. This is an integration/development trial, not a model ranking or a
+frontier-difficulty estimate.
+
+Median API response time was 4.19 s. Calls used sixteen serving backends, all reporting
+`z-ai/glm-5.3-20260816`. Seventeen replies failed parsing/action validation; retries
+repaired most, and the existing salvage rule recovered one decision after three failed
+attempts. One response was token-limited. All attempt charges sum to the result and
+ledger delta. Eighty-two orders were accepted; seven special-ability errors and two
+`target_dead` errors were engine refusals. The read-only audit is
+`calibration/openrouter-battle-review-20261016.py` and JSON. Starts matched the free
+caster script's roster, strength, resources and loadout, but positions differed by up
+to 8.6 m, flagged normally; these are independent development launches.
+
+**llm v20 / commander v7:** all seven special-ability refusals followed another paid
+spell issued at the basis snapshot's timestamp. Each new spell looked affordable in
+that snapshot; the refusal snapshot showed less magic than its cost. Example: Blue
+Fire (6 magic) was just issued while the panel still showed 7; the next Harmonic
+Convergence (5) failed, with 2 magic in the next reading. This identifies misleading
+resource timing, without proving the engine's internal error cause. v19's per-ability
+warning did not describe the shared pool.
+
+The shared renderer now labels that pool as observed and lists the just-issued paid
+spells, stating that costs may not yet be reflected and execution is unconfirmed. It
+neither calculates a replacement balance nor filters orders. Later snapshots retain
+their ordinary available-pool display. No scenario, transport, game speed or system
+prompt changed. `calibration/magic-feedback-review-20261016.py` and JSON validate the
+new warning against all seven states. The observed case has a regression test; all
+existing golden prompts remain byte-identical. Changed model behavior remains untested.
+
+The report collector now retains backend snapshot names and counts replies failing
+validation separately from engine order refusals, including attempts retained by a
+terminal policy failure. Response IDs prevent duplicate counts in repeated commander
+metadata. Run settings exposes both fields; JSON retains the rejection reasons. Added
+the fourth free diagnostic and the GLM battle to the explicit report selection, with
+curated replay highlights for casting, the failed retreat point and stale magic.
+
+Validation: 510 WH3/shared/documentation tests passed (one optional skip); Ruff,
+Prettier and diff checks passed. The rebuilt report has 81 input jobs and 98 completed
+battles across six candidate scenarios. Offline Chromium checks passed on recorded,
+synthetic and copied reports, desktop and mobile, including the GLM snapshot and
+17-of-105 reply-validation count in Run settings. Artifacts:
+`report-checks/openrouter-calibration/`.
+
+Next: inspect these recorded mechanisms before another paid allocation. Keep the
+caster anchor unchanged; adaptive withdrawal, escort protection and spell execution
+remain useful distinctions. All six candidate families remain provisional.
 
 ## 2026-10-16: Caster audit and one airborne-casting diagnostic
 
@@ -53,7 +108,7 @@ Kairos died before the ending, with 23 magic and 3.7 reserves remaining. The rev
 by this loss: adaptive retreat and protecting the escorts remain unresolved. The
 report selection and two replay highlights now retain this diagnostic.
 
-Next paid check: **one** GLM-5.3 / low `llm_rules` v19 battle on the unchanged caster
+Planned paid check (completed and reviewed above): **one** GLM-5.3 / low `llm_rules` v19 battle on the unchanged caster
 anchor, through OpenRouter. Its question is whether the new route completes a real
 battle with full prompts, valid replies, recorded routing/cost and normal live timing;
 it is not a model ranking or a strongest-model ceiling estimate. Historical M1 caster
