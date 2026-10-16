@@ -59,6 +59,80 @@ Cavalry already has six Sol and six Luna battles from C1 (b10/b11), so it runs l
 battles end before the owner returns (13:00 UTC). Three battles per model are a first
 matched sample, not a stable ranking. Results follow in this entry.
 
+**Family audit.** Before M1a's results, an independent read of the saved battles
+recommended a core of cavalry, siege defence and swarm command, the caster family only
+after an attacker-role screen, and demoting the swarm survival and Kislev scenarios
+([benchmark.md](benchmark.md#scenario-design)). The owner decides; M1b was reordered to run
+the retained families and the caster screen's completion first.
+
+**M1a results** (`1f1083d`, 03:30-05:50 UTC, queue
+`calibration/m1a-plan-20261016.json`; every rematch matched its recorded start beyond
+geometry):
+
+| Scenario | gpt-6-sol (low) | gpt-6-luna (low) |
+|---|---|---|
+| `chd-reserve-grn-siege` | won 3 of 3: 614, 840, 736 s; $4.14 | lost 3 of 3: 375, 542, 393 s; $0.13 |
+| `skv-swarm-dwf-line` | won 367 and 393 s, lost 670 s; $3.04 | lost 3 of 3: 614, 546, 441 s; $0.17 |
+| `tze-caster-skv-assault` (first screen) | won 492 s with 7% of its soldiers left; $0.82 | lost 750 s, army destroyed; $0.06 |
+
+Luna's swarm battles had 59-71 rejected orders each against Sol's 3-19. The first
+attacker-role caster battles were close and decided by play, so under the owner's
+delegation the variant is completed to three battles per model in M1b rather than left
+at two. M1a cost $8.36; ledger $25.27 of $52.
+
+**M1a trace review** (independent; patterns from 2-3 battles per model, so causes are
+hypotheses). Siege: Luna sent its Bull Centaur reserve into the trolls at 5 s (first unit
+to rout every time, 87-132 s) and its lord fought alone at the east tower (routed at
+231-260 s); Sol held or withdrew the reserve and kept the lord central (never routed).
+Sol's blunderbusses fired 753-1661 rounds against Luna's 58-143. Tower builds and the
+cannon did not separate them (Luna's 393 s loss copied Sol's build; at most 7 of 25
+cannon shots in any battle). Swarm: Sol's wins committed the Doomwheel and Rat Ogres with
+the slave screen (64-79 s; a western Doomwheel flank at 153 s); Luna sent them ahead,
+and they broke before the screen arrived. Sol's loss reversed its own order. Caster
+assault: casts are confirmed by pool drops (Luna 18, mostly Blue Fire; Sol 10); Sol
+withdrew Kairos at about 253 s to rebuild its barrier and won narrowly; Luna's escorts
+broke by 281 s. The choices were real and executable.
+
+Rejected orders: Luna 371 against Sol 80. 220 went to routing units (90 already shown
+routing, including 33 rally orders to its routing lord; the rules never say routing units
+ignore orders); 87 were abilities whose readiness was stale: 70 re-cast an ability issued
+no more than 2 s before the snapshot, which still read ready. That is an interface defect,
+a candidate for the next harness version (it changes the observation, so not mid-round),
+alongside stating in the rules that routing units ignore orders. One Luna siege call took
+73 s over two transport attempts, leaving its last 54 s without orders (its army was
+already mostly routing). No other infrastructure fault; every battle ended on an engine
+result.
+
+**M1b** (`0d530af`, started 05:54 UTC, queue `calibration/m1b-plan-20261016.json`): caster
+assault 2+2 more, cavalry 3+3, siege scripted baselines (`hold`, `attack_nearest`), then
+the two demotion candidates, `dwf-line-skv-swarm` and `ksl-reserves-survival`, 3+3 each.
+The report rework merged before M1b (presentation files only, so the test-setup
+fingerprint is unchanged and M1a/M1b pool).
+
+**M1b results** (`0d530af`, 05:54-09:20 UTC; every job completed and every rematch matched
+its start beyond geometry):
+
+| Scenario | gpt-6-sol (low) | gpt-6-luna (low) |
+|---|---|---|
+| `tze-caster-skv-assault` (with the screen) | won 3 of 3: 492, 446, 484 s | won 351 s, lost 750 and 689 s |
+| `brt-cavalry-emp-assault-hard` | won 380 s, lost 552 and 613 s | lost 3 of 3: 173, 195, 261 s |
+| `dwf-line-skv-swarm` | lost 3 of 3: 489, 490, 578 s | lost 3 of 3: 672, 494, 494 s |
+| `ksl-reserves-survival` | lost 3 of 3: 366, 368, 413 s | lost 3 of 3: 293, 337, 365 s |
+
+Siege baselines: `attack_nearest` lost at 963 s, `hold` at 709 s. M1b cost $9.88 (Sol $9.47
+over 10 battles, Luna $0.41 over 10); ledger $35.15 of $52. Across M1, three scenarios
+separated the models (siege 3-0 against 0-3, swarm command 2-1 against 0-3, caster assault
+3-0 against 1-2); cavalry under b12 repeated C1's pattern (Sol 1 of 3, Luna 0 of 3). The
+two demotion candidates did not separate them: every survive-a-swarm battle lost between
+489 and 672 s whoever commanded, and Kislev only by survival time (Sol 366-413 s, Luna
+293-365 s). This supports the audit's recommendation; the selection remains the owner's.
+
+**M1c (decided under the owner's overnight delegation, 09:25 UTC).** About three hours of
+game time and $17 of budget remained. A third model on the scenarios that separate models
+adds more than further repeats of the demotion candidates: gpt-6.1-sol (low,
+`llm_rules` v18), three battles each on siege defence, swarm command, caster assault and
+cavalry, same conditions, about $12 and 2.4 hours, ending before the owner returns.
+
 ## 2026-10-16: Evacuation deferred; controller version labels fixed
 
 `bench-b12-skv-evacuation-20261016` (`a9ba045`; Luna then Sol, `llm_rules` low) stopped at

@@ -214,6 +214,19 @@ Integration (2026-10-15): `llm`/`llm_rules` v17 and commander v4 share the two f
 above. All 349 WH3 tests and lint passed on current main; golden prompts are unchanged.
 See the [version log](log.md#2026-10-15-integrate-llm-v17-and-commander-v4).
 
+Found in the M1 matched round (2026-10-16), not yet built:
+
+7. **Abilities just cast still read ready.** In M1a (2026-10-16) 70 of Luna's 87 refused
+   ability orders re-cast an ability issued no more than 2 s before the observation, which
+   still showed it ready ([log](log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan)).
+   Marking abilities ordered in the outstanding or just-acknowledged batch as pending
+   (or reading readiness after the cast registers) changes rendered state: a new version,
+   not a mid-round change.
+8. **Routing units ignore orders, unstated.** In the same round 220 of Luna's 371
+   rejections were orders to routing units, 90 to units the observation already showed
+   routing (33 rally orders to its routing lord). The rules prompts never say routing
+   units ignore orders; one sentence in `rules_prompt.md` and `system_prompt.md` would.
+
 ## Designs not built yet
 
 Ordered by how much each is expected to teach for its cost; test each against the best

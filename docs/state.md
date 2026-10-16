@@ -1,19 +1,20 @@
 # Project state
 
-Updated 2026-10-16 03:30 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 05:55 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-WH3 queue M1a running since 2026-10-16 03:30 UTC (owner away until 13:00 UTC; goal:
+WH3 queue M1b running since 2026-10-16 05:54 UTC (owner away until 13:00 UTC; goal:
 continue the benchmark plan, favoring game runs): plan
-`runs/twwarhammer3/calibration/m1a-plan-20261016.json` (frozen at `1f1083d`; state in
-`m1a-plan-20261016-state.json`): siege ×6, swarm command ×6, then a two-battle caster
-assault screen. Follow with `uv run python -m twwarhammer3 watch`. Do not commit to
-`main` while it runs (the queue compares HEAD before each job). The owner's report notes
-are being implemented on branch `wh3-report-notes` (worktree `../wh3-report-notes`).
-Ledger: $16.9058 of $52. See the [M1 plan](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
+`runs/twwarhammer3/calibration/m1b-plan-20261016.json` (frozen at `0d530af`; state in
+`m1b-plan-20261016-state.json`): caster assault ×4, cavalry ×6, siege baselines ×2,
+survive-a-swarm ×6, Kislev ×6; expected to end about 10:30 UTC. Follow with
+`uv run python -m twwarhammer3 watch`. Do not commit to `main` while it runs (the queue
+compares HEAD before each job). M1a finished (results in the
+[M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan)).
+Ledger: $25.27 of $52.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -38,8 +39,9 @@ command; clear it when the job stops.
   costs and evidence reviews are in the [b12 log](twwarhammer3/log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
 - API spend: $16.9058 of the $52 cap (raised from $25 on 2026-10-16); no paid job is running.
 
-Next: the owner's [pending report notes](twwarhammer3/reports.md#pending-report-notes),
-then the retained families' playmaking review. The custom evacuation pilot is deferred
+Next: finish M1; rebuild the canonical report with M1 (the reworked report merged as
+`0d530af`); the owner decides the core selection from the
+[family audit](twwarhammer3/benchmark.md#scenario-design). The custom evacuation pilot is deferred
 ([diagnosis](twwarhammer3/log.md#2026-10-16-evacuation-deferred-controller-version-labels-fixed)).
 Later self-comparisons separate army/control workload from neutral prompt length, useful
 history, representation and observation age.
