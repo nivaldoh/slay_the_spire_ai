@@ -201,7 +201,7 @@ Other interface gaps, addressed when they obstruct a chosen scenario:
 
 b12 replaces repeated Khorne/Dwarf rosters as the source of new coverage with
 Chaos Dwarf territorial defence, Kislev reinforcement budgeting and an Empire battery
-evacuation under Wood Elf ambush. The Slaanesh Conquest screen is reference evidence: its
+evacuation under Skaven ambush (the Wood Elf recruitment cards were inactive). The Slaanesh Conquest screen is reference evidence: its
 single central point cannot test the planned distributed-control question. The exact declarations
 are in `configs/twwarhammer3/scenarios.json`; the
 [design audit](benchmark.md#scenario-design) separates questions from map/faction variants.

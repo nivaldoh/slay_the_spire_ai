@@ -883,7 +883,7 @@
     "family": "asset evacuation",
     "scenario_version": 1,
     "split": "development",
-    "status": "prototype_not_admitted",
+    "status": "unavailable_content",
     "brief": "Escort two batteries to a public extraction zone before a deadline while scouting concealed Wood Elf threats.",
     "battle_type": "ambush",
     "map": "battle_preset_wh3_main_brt_forest_01_09",
@@ -1063,6 +1063,28 @@
           }
         ]
       }
+    }
+  },
+  "emp-battery-skv-evacuation": {
+    "base": "emp-battery-wef-evacuation",
+    "name": "emp-battery-skv-evacuation",
+    "scenario_version": 2,
+    "status": "prototype_not_admitted",
+    "brief": "Escort two batteries to a public extraction zone before a deadline while scouting stalking Skaven threats.",
+    "enemy": {
+      "subculture": "wh2_main_sc_skv_skaven",
+      "faction": "wh2_main_skv_skaven",
+      "recruitment_faction": "wh2_main_skv_skaven",
+      "units": [
+        "wh2_main_skv_cha_warlord_0",
+        "wh2_main_skv_inf_stormvermin_1",
+        "wh2_main_skv_inf_stormvermin_1",
+        "wh2_main_skv_inf_gutter_runners_1",
+        "wh2_main_skv_inf_gutter_runners_1",
+        "wh2_main_skv_inf_night_runners_1",
+        "wh2_main_skv_inf_night_runners_1",
+        "wh2_main_skv_mon_rat_ogres"
+      ]
     }
   }
 }

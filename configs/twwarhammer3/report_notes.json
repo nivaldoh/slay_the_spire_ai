@@ -139,8 +139,16 @@
       "question": "How much scouting and route clearing can the escort afford before its deadline?",
       "challenge": "Eight Empire units, including two Great Cannon batteries and two Pistolier scouts, face eight Wood Elf units on Backwoods Path. Both batteries must reach the public extraction circle together before 15 minutes, with living crews and neither routing nor shattered. A native victory before the deadline also succeeds if both survive. Enemy positions are revealed to the controller only when visible.",
       "family": "asset evacuation",
+      "core_candidate": false,
+      "footnote": "Unavailable content: all Wood Elf recruitment cards were inactive and the AI army stayed empty. No battle or model call started. Replaced by the Skaven evacuation pilot."
+    },
+    "emp-battery-skv-evacuation": {
+      "title": "Bring the batteries home",
+      "question": "How much scouting and route clearing can the escort afford before its deadline?",
+      "challenge": "Eight Empire units, including two Great Cannon batteries and two Pistolier scouts, face eight Skaven units: a Warlord, two Stormvermin, two stalking Gutter Runners, two Night Runner slingers and Rat Ogres on Backwoods Path. Both batteries must reach the public extraction circle together before 15 minutes, with living crews and neither routing nor shattered. A native victory before the deadline also succeeds if both survive. Enemy positions are revealed to the controller only when visible.",
+      "family": "asset evacuation",
       "core_candidate": true,
-      "footnote": "Exploratory candidate. Distinctiveness and credible plays require live evidence; no stable model ranking is claimed."
+      "footnote": "Exploratory pilot. The unavailable Wood Elf roster was replaced before any battle; the evacuation objective and authored geometry are unchanged. No stable ranking is claimed."
     }
   },
   "units": {

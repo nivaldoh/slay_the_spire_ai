@@ -203,7 +203,7 @@ A candidate stays exploratory until the game shows that its choices are feasible
 | Survive a Skaven swarm | How should a compact gunline preserve firing space under encirclement? | Refuse one flank and concentrate fire; fall back with an intact screen | Swarm assault; the player allocates finite fire lanes/ammunition, rather than expendable screens | Gun movement, ammunition, encirclement and time alive. Standing still beat the model in the existing screen; keep the distinction provisional |
 | `chd-reserve-grn-siege` — territorial defence | When should a point be conceded, and where should the only mobile reserve commit? | Contest outer points with construction support; fall back and concentrate around the decisive point | Defensive swarm; geographically separate victory points and construction supplies make territory itself a resource | Point ownership time, supplies/builds, reserve movement, surviving garrison |
 | `ksl-reserves-survival` — reinforcement budgeting | Buy relief now or preserve supplies for a more expensive reinforcement? | Buy cheap fresh screens; save for a specialist while conserving the starting force | Defensive swarm; purchases change the available army over an unknown future sequence | Supplies, purchases by type/time, fresh units, ammunition, duration and native objectives |
-| `emp-battery-wef-evacuation` — asset evacuation | How much scouting and route-clearing effort can the escort afford before its deadline? | Guard the batteries on a direct route; scout and detour around revealed threats | Ranged protection; moving a designated asset to a public destination under incomplete information is the objective | Batteries in zone, survivors, deadline, sightings, escort separation and engine-confirmed ending |
+| `emp-battery-skv-evacuation` — asset evacuation | How much scouting and route-clearing effort can the escort afford before its deadline? | Guard the batteries on a direct route; scout and detour around revealed threats | Ranged protection; moving a designated asset to a public destination under incomplete information is the objective | Batteries in zone, survivors, deadline, sightings, escort separation and engine-confirmed ending |
 
 **Conquest was demoted during the live check.** `sla-detachments-dwf-conquest` has one
 central point, not the separated objectives its original brief assumed. It therefore
@@ -228,8 +228,11 @@ The roster inventory is local evidence in
 `runs/twwarhammer3/capability-probes/expansion-20261016/`. Selectable faction menus and
 unit cards are evidence of lobby availability, not a complete ownership audit. Steam
 entitlement presence was checked without retaining authentication-ticket contents.
-The implementation uses Chaos Dwarfs, Champions of Chaos units, and Wood Elf opposition;
-recruitment and the first live battle must still validate each exact roster. Mechanics
+The implementation uses playable Chaos Dwarfs and Champions of Chaos units. Wood Elf
+cards appeared in the inventory but were inactive and recruited no units in the live lobby;
+the evacuation pilot therefore uses available base Skaven opposition. Gutter Runners
+have `stalk` in the installed database, preserving the scouting question. This is
+availability evidence, not a claim about the complete DLC purchase history. Mechanics
 research: the [Chaos Dwarfs roster](https://store.steampowered.com/app/2059190/Total_War_WARHAMMER_III__Forge_of_the_Chaos_Dwarfs/),
 [Wood Elves](https://store.steampowered.com/app/534331/?l=english), and
 [Creative Assembly's Cathay update](https://community.creative-assembly.com/total-war/total-war-warhammer/blogs/98).

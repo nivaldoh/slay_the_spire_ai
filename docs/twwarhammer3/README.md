@@ -168,21 +168,26 @@ is separate from Spire's, with its own $25 cap.
 
 ## Next
 
-The [implementation plan](benchmark.md#implementation-plan) requires 6–8 distinct decision
-families, shared measures and one report. b12 is implemented at `be6c614`; the live screens
-are in progress ([log](log.md#2026-10-16-harness-b12-and-distinct-scenario-families)).
+The [implementation plan](benchmark.md#implementation-plan) targets 6–8 distinct decision
+families. b12 is implemented; work stopped at the owner's request on 2026-10-16 after six
+exploratory battles ([log](log.md#2026-10-16-harness-b12-and-distinct-scenario-families)).
+Siege defence and survival have two screens each. Conquest has two reference trials but
+was demoted from the core: its single point cannot test distributed control. Seven core
+candidates remain, six with live evidence.
 
-1. Inspect siege defence, survival, conquest and one battery-evacuation pilot, with 2–3
-   exploratory battles total per candidate. Default to Sol-low and Luna-low with the
-   rules-only prompt. Inspect credible plays and missed opportunities; redesign or drop
-   a candidate without meaningful choices. A difficult loss alone is not grounds to drop it.
-2. Keep each attempt in `runs/`, the results register and the same
-   `runs/twwarhammer3/reports/benchmark.html`. Use tickets, ownership time, survival
-   duration or asset extraction where appropriate, alongside casualties and reliability.
-3. Count cavalry and caster revisions once per family. Retain swarm assault/defence as
-   provisional distinct questions and keep older mode pilots as historical evidence.
-   The [design audit](benchmark.md#scenario-design) is the admission checklist for novelty.
-4. Keep self-comparisons deferred: army/control workload, neutral prompt length, useful
+1. On resume, validate `emp-battery-skv-evacuation` in the game: authored placement,
+   reachable battery movement, public/private boundary, partial progress and an
+   engine-confirmed scripted ending. Then complete 2–3 battles total including the first
+   check. The Wood Elf version never started because its recruitment cards were inactive;
+   the replacement Skaven roster and objective have only offline validation.
+2. Inspect credible plays before retaining that family. Keep all attempts and update the
+   same `runs/twwarhammer3/reports/benchmark.html`. The current report includes the six
+   new battles and all three failed setup attempts. No new battles are queued.
+3. Continue to count cavalry and caster revisions once each. The two swarm roles remain
+   provisional distinct questions; the [design audit](benchmark.md#scenario-design)
+   records their scarce resources and alternative plays. A future three-point Domination
+   candidate must earn its place rather than automatically replace Conquest.
+4. Self-comparisons stay deferred: army/control workload, neutral prompt length, useful
    history, factual representation and observation age are separate interventions.
    More units do not isolate a context-length effect. Siege-attack controls remain later.
 

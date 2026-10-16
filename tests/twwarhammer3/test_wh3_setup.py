@@ -71,6 +71,19 @@ def test_recruitment_card_namespace_can_differ_from_banner():
     assert all(":wh3_dlc23_chd_legion_of_azgorh:" in card for card in cards[:9])
 
 
+def test_declared_armies_verify_recruitment_before_attempting_readiness():
+    scenario = setup.scenarios()["emp-battery-skv-evacuation"]
+    steps = setup.scenario_steps(scenario)
+    start = next(i for i, step in enumerate(steps)
+                 if step.get("find") == ["start_button_frame", "button_start_battle"])
+    for slot, army in enumerate(setup.sides(scenario)):
+        expression = f"{setup.LOBBY}PlayerSlotList.At({slot}).UnitList.Size"
+        check = next(i for i, step in enumerate(steps) if step.get("expression") == expression)
+        assert check < start
+        assert steps[check]["expect"] == len(army["units"])
+        assert steps[check]["required"] is True
+
+
 def test_variants_differ_from_their_base_only_where_declared():
     scenarios = setup.scenarios()
     hard, base = scenarios["brt-cavalry-emp-pikes-hard"], scenarios["brt-cavalry-emp-pikes"]

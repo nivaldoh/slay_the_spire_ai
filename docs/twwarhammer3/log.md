@@ -31,18 +31,19 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | Piece | Version | Defined in | Latest results |
 |---|---|---|---|
 | `llm` | v18 (2026-10-16) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | Shared input validated through `llm_rules` in b11; tactical prompt's last mode campaign was v15 (Luna low: 6 wins in 10 jobs) |
-| `llm_rules` | shares `llm` v18 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | b11 smoke, Luna low: lost `dwf-line-skv-swarm` at 460 s ($0.043) |
+| `llm_rules` | shares `llm` v18 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | b12: siege Sol loss/Luna win; survival and Conquest two losses each. Evacuation not yet run |
 | `commander` | v5 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | b11 smoke, Luna low: lost `dwf-line-skv-swarm` at 593 s ($0.054) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b12 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Two b11 engine outcomes; whole-unit counters and unchanged rematch checked. C1 remains development evidence |
+| benchmark harness | b12 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Six b12 engine outcomes; recorded rematch starts matched. Custom evacuation is offline-tested only |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | scores by game mode, one map per model (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | `reports/benchmark.html` (26 MB): 55 jobs, 85 battles shown in 19 scenarios (6 diagnostic probes held back), headline C1 |
 
 ## 2026-10-16: Harness b12 and distinct scenario families
 
-Implementation in progress. The owner approved a compact core of 6–8 unique decision
+Implementation saved; live work stopped at the owner's request after six battles on
+2026-10-16. Evacuation still needs original-engine validation. The owner approved a compact core of 6–8 unique decision
 problems, a native siege/survival/conquest tranche and one authored evacuation pilot.
 The [design audit](benchmark.md#scenario-design) records each question, plausible plays,
 nearest family, novelty and evidence. Existing cavalry/caster revisions count once per
@@ -170,6 +171,37 @@ and reinforcement-confound review. No extra scenario is added merely to fill the
 The report descriptions now specify the armies, objective and resource constraints of
 all four new scenarios. The local numeric ticket goal is 600; the native help text's
 older 500-ticket wording is not used for scoring.
+
+
+The first evacuation attempt (`bench-b12-battery-evacuation-20261016`, `56ef648`) failed
+readiness before a battle or model call: all eight AI recruitment clicks were silently
+ignored. Lobby-only probe `capability-probes/expansion-20261016/r6-woodelf` confirmed that
+the default faction is Anmyr, the available banner list contains only minor factions,
+every Wood Elf unit card is inactive, and the resulting army list is empty. Card presence
+was insufficient evidence of recruitability. The roster is marked unavailable, without
+claiming a complete DLC ownership audit. Declared rosters now verify `UnitList.Size`
+before readiness; the missing-army regression is covered offline.
+
+The replacement `emp-battery-skv-evacuation` (scenario version 2) preserves the same
+Empire escort, battery ids, public goal, deadline, map and authored positions. Its eight
+opponents are a Warlord, two shielded Stormvermin, two poison Gutter Runners, two Night
+Runner slingers and Rat Ogres, using existing selectable Skaven cards. Decoded base cost
+is 5325 versus the escort's 4450. The installed attribute table confirms `stalk` on the
+Gutter Runners. This substitutes available content while preserving the distinct moving-
+asset and scouting problem; it adds no second family. The first failed attempt remains
+in the report list.
+
+
+At the owner's “wrap it up” request (2026-10-16 02:39 UTC), no more battles were launched.
+The Skaven replacement and lobby recruitment-count guard passed 436 WH3/documentation
+tests and Ruff. The earlier full suite passed 1024 tests with 14 optional-dependency skips;
+the new regression adds one test. Six battles are complete in this tranche, plus three
+preserved setup failures (siege metadata, survival budget, unavailable Wood Elves).
+Spend added in the tranche: $2.5912; ledger $16.9058 of $25. No controller or queue remains
+active. Next is original-engine validation of `emp-battery-skv-evacuation`, including its
+scripted ending and rematch; neither that new roster nor the custom objective has yet run
+in a battle. Do not present it as a proven seventh family. Later self-comparisons remain
+specified only, with no new experiments launched.
 
 ## Index
 

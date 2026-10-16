@@ -1,14 +1,17 @@
 # Project state
 
-Updated 2026-10-16 02:14 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 02:39 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-WH3 is stopped after the siege, survival and Conquest screens. Conquest is demoted to
-reference evidence because its single point does not meet the planned novelty criterion.
-Next: the battery-evacuation pilot. Ledger: $16.9058 of $25.
+No game controller is running. WH3 expansion stopped at the owner's request on
+2026-10-16 02:39 UTC; no more battles are queued. Six exploratory battles are complete
+(siege, survival, Conquest). The replacement Skaven evacuation pilot is implemented and
+offline-tested, but has not run in the game. Resume with that pilot's setup/ending check
+and two exploratory screens, counting any initial battle toward the 2–3-battle allowance.
+Ledger: $16.9058 of $25. See the [b12 log](twwarhammer3/log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -30,10 +33,10 @@ command; clear it when the job stops.
 - Siege and survival each have two new completed exploratory screens with exact rematch
   starts. The canonical report retains setup failures and historical variants. Results,
   costs and evidence reviews are in the [b12 log](twwarhammer3/log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
-- API spend before the active conquest job: $16.3458 of the $25 cap.
+- API spend: $16.9058 of the $25 cap; no paid job is running.
 
-Next: finish conquest and battery evacuation, inspect credible plays, rebuild the one
-benchmark report and verify it offline. Later self-comparisons separate army/control
+Next on resume: validate `emp-battery-skv-evacuation` in the original engine; its
+placement, extraction and scripted ending remain unverified. Later self-comparisons separate army/control
 workload from neutral prompt length, useful history, representation and observation age.
 Steam is pinned to 9.0.4; old evidence keeps its original build.
 

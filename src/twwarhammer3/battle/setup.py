@@ -247,6 +247,12 @@ def scenario_steps(scenario: dict) -> list[dict]:
                           {"wait_ms": 500},
                           {"context": "CcoFrontendRoot", "expression":
                            context + "UnitRecordContext.Key", "expect": mounted, "required": True}]
+        if scenario.get("expect") and side["units"]:
+            # A visible card can be inactive (for example unavailable DLC) and its
+            # double-click silently ignored. Verify recruitment before readiness.
+            steps.append({"context": "CcoFrontendRoot", "expression":
+                          f"{LOBBY}PlayerSlotList.At({slot}).UnitList.Size",
+                          "expect": len(side["units"]), "required": True})
         if isinstance(side.get("reinforcements"), list):
             context = f"{LOBBY}PlayerSlotList.At({slot})."
             steps += [
