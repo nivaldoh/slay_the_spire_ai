@@ -182,35 +182,47 @@ are legacy metadata, pending the implementation below.
 
 ## Scenario design
 
-Owner direction, 2026-10-14: prioritize distinctive tactical challenges over balanced
-general-purpose armies. Scenarios should give agents reasons to use specialist knowledge,
-try unusual approaches and make difficult decisions. Battles should also be interesting
-to watch. These properties guide scenario selection alongside measurable progress.
+Owner direction, 2026-10-16: aim for a compact core of **6–8 distinct decision
+problems**. A different faction, map, army size, role or difficulty is a variant unless
+it introduces a different consequential choice. Keep historical evidence, but do not
+count variants or native-mode smoke tests as extra benchmark coverage.
 
-- **Start with a tactical problem**: a faction mechanic and one or a few anchor units,
-  ours or the enemy's, whose use changes the battle. Supporting units create decisions
-  around the anchor (buy it time, expose a target, protect a casting window). Famous units
-  that can all just attack the nearest target are not enough. Size is a design choice:
-  small forces give clearer decisions, with a budget fitted to the pinned roster.
-- **Give a real disadvantage**, and identify the obvious approach that should be costly.
-  Keep several plausible responses open; no secret trick. These are author hypotheses,
-  never instructions in a prompt; every controller gets the same public rules.
-- **Choose role and victory condition with the question.** Defender timeout wins invited
-  evasion in the compact pilots, even against a faster flying enemy. When the challenge
-  needs engagement, an attacker role or a contested objective supplies the pressure.
-  Verify the AI's actual response; advertised speed does not prove it will force a fight.
+Before adding a core candidate, record its question, scarce resource or commitment,
+at least two credible plays, nearest existing family, reason it adds coverage, public
+information/actions needed and observable evidence. These are analyst hypotheses, never
+tactical advice inserted into a policy prompt. Mechanics and objective rules are public.
+A candidate stays exploratory until the game shows that its choices are feasible.
 
-Each candidate records its question, anchors, pressure, plausible tactics, exact setup,
-what a viewer should recognize (a flank opening, a spell window, a breach, a reversal) and
-development and held-out variants; its entry's `brief` holds the summary.
+| Family / candidate | Benchmark question and hard choice | Credible alternatives to inspect | Nearest family; why distinct | Evidence |
+|---|---|---|---|---|
+| Cavalry against anti-large | Can the controller create a safe charge window, then disengage? | Split the line and strike a flank; concentrate charges against an isolated target | Conquest; here contact and disengagement determine success, rather than distributed ticket income | Charge/withdrawal orders, contacts, unit survival and enemy strength |
+| Caster-led force | Which spell opportunity justifies spending shared mana and risking the caster? | Spend early on a useful cluster; screen and wait for a better casting window | Swarm assault; the binding resource is shared mana and spell timing | Mana, accepted casts, target geometry, screen/caster survival |
+| Command a Skaven swarm | How much cheap infantry should be spent to deliver scarce weapons safely? | Pin broadly while weapons concentrate; send successive screens down one approach | Caster; several independent damage units need synchronized access, not one casting budget | Screen contacts/routs, weapon firing and survival; prior attacks exposed this coordination problem |
+| Survive a Skaven swarm | How should a compact gunline preserve firing space under encirclement? | Refuse one flank and concentrate fire; fall back with an intact screen | Swarm assault; the player allocates finite fire lanes/ammunition, rather than expendable screens | Gun movement, ammunition, encirclement and time alive. Standing still beat the model in the existing screen; keep the distinction provisional |
+| `chd-reserve-grn-siege` — territorial defence | When should a point be conceded, and where should the only mobile reserve commit? | Contest outer points with construction support; fall back and concentrate around the decisive point | Defensive swarm; geographically separate victory points and construction supplies make territory itself a resource | Point ownership time, supplies/builds, reserve movement, surviving garrison |
+| `ksl-reserves-survival` — reinforcement budgeting | Buy relief now or preserve supplies for a more expensive reinforcement? | Buy cheap fresh screens; save for a specialist while conserving the starting force | Defensive swarm; purchases change the available army over an unknown future sequence | Supplies, purchases by type/time, fresh units, ammunition, duration and native objectives |
+| `sla-detachments-dwf-conquest` — dispersed objective control | Split mobile detachments or concentrate to dislodge stronger holders? | Rotate around slow defenders to take an open point; mass temporarily on a defended point | Cavalry; ticket income can make an unfavourable fight or refusal to pursue rational | Tickets, ownership time, movement between points and losses |
+| `emp-battery-wef-evacuation` — asset evacuation | How much scouting and route-clearing effort can the escort afford before its deadline? | Guard the batteries on a direct route; scout and detour around revealed threats | Ranged protection; moving a designated asset to a public destination under incomplete information is the objective | Batteries in zone, survivors, deadline, sightings, escort separation and engine-confirmed ending |
 
-| Candidate | Anchor and faction character | Decisions it should encourage |
-|---|---|---|
-| Cavalry facing anti-large infantry | A few exceptional shock units against a spear or halberd line | Split the defense, choose angles, coordinate charges, disengage before a losing grind |
-| A caster-led force | A strong caster built around its lore and magic economy (Tzeentch first) | Trade screens for casting time, choose spells, protect or risk the caster, spend a shared resource |
-| A siege against severe odds | A small defense with an anchor that shifts between objectives | Allocate supplies, abandon or contest points, time a committed assault |
-| Command a Skaven swarm | Many cheap bodies around a few unusual weapons or casters | Spend expendable units for space and time, preserve the scarce damage |
-| Survive a Skaven swarm | A much smaller force with limited crowd-clearing anchors | Shape the approach, save ammunition and magic, avoid encirclement |
+Cavalry pikes/Pegasus/assault, their difficulty revisions and held-out maps are **one
+family**. The caster variants likewise form one family. Older Dwarf/Slaanesh ranged
+protection and the Khorne/Dwarf mode pilots remain historical/reference evidence.
+Both swarm roles provisionally occupy separate slots because they reverse the scarce
+resource: expendable screens versus limited firing space. If new trace evidence shows
+that either collapses to an already-covered decision, demote it to a variant. Do not
+add a ninth family to preserve a theme. Cathay cohesion under bombardment is a reserve
+replacement: proximity support versus dispersal, requiring an actual mechanic check.
+
+The roster inventory is local evidence in
+`runs/twwarhammer3/capability-probes/expansion-20261016/`. Selectable faction menus and
+unit cards are evidence of lobby availability, not a complete ownership audit. Steam
+entitlement presence was checked without retaining authentication-ticket contents.
+The implementation uses Chaos Dwarfs, Champions of Chaos units, and Wood Elf opposition;
+recruitment and the first live battle must still validate each exact roster. Mechanics
+research: the [Chaos Dwarfs roster](https://store.steampowered.com/app/2059190/Total_War_WARHAMMER_III__Forge_of_the_Chaos_Dwarfs/),
+[Wood Elves](https://store.steampowered.com/app/534331/?l=english), and
+[Creative Assembly's Cathay update](https://community.creative-assembly.com/total-war/total-war-warhammer/blogs/98).
+Local documentation from the installed build governs the script API.
 
 **Skaven swarm prototypes (screened 2026-10-15).** Both pin the Taurox
 map, very hard AI, modifier 1.0, unit scale 0.75, custom funds 12000 and the 1200 s
@@ -423,29 +435,25 @@ drop the scenario from the active collection while retaining its evidence. Adjus
 difficulty to create meaningful choices is allowed; a target win rate is still not the
 selection rule. Apply this requirement to existing and new scenarios.
 
-The runtime already supports nine battle types beyond land, with real-game results
-([battle types](battle-types.md#results)). The gap is useful varied scenario content and
-consistent presentation, plus specific interface gaps. Proposed expansion order:
+The approved tranche is siege defence, survival, conquest and **one custom battery
+pilot**, retaining the existing caster family. The native scenarios freeze maps, rosters,
+mounts, settings and (for survival) a selected reinforcement pool in `scenarios.json`.
+The evacuation pilot adds only a versioned objective and authored placement hook. Its
+public rules require both batteries, with living crews and neither routing, inside the
+extraction zone by the deadline, or a native victory with both batteries surviving.
+Partial progress is the number currently in the zone; reaching it alone does not make a
+battery invulnerable or remove it from the battle. Asset loss and deadline request a
+scripted defeat. Native early endings retain their actual engine outcome and a separate
+objective success/failure. Private placement data never enters controller observations.
 
-| Priority | Different battle experience | Reuse and remaining work |
-|---|---|---|
-| First | Siege defence: a compact force holding a fortified settlement against a larger assault | Defence, capture points, supplies and construction have run successfully. Choose a distinctive garrison/attacker roster and map; do not wait for siege-attack controls. |
-| First | Survival: escalating waves and reinforcement decisions | Setup and purchases work. Replace the five-unit pilot with a force/pool that can sustain meaningful choices; retain severe odds without tuning for a target win rate. Wave numbering/timing is not currently exposed, so use common losses, survivors, duration and objectives. |
-| First | Conquest: mobile forces contesting separated objectives | Mode and tickets work. Choose armies with contrasting mobility, range and holding power; use an appropriate map rather than copying the five-unit pilot. |
-| First | Another sharply different land battle: caster-led or monster/elite force against numerous infantry | Review the existing Tzeentch caster prototypes and supported rosters before adding new controls. Choose a distinct army problem; existing cavalry and both swarm roles remain available. |
-| Then | Domination, ambush or chokepoint; later further settlement, subterranean and free-for-all variants | Reuse existing modes. Prioritize what adds a new tactical or visual experience; no requirement to finish every mode before showing the report. |
-| When needed | Siege attack | Needs gate/wall/equipment orders and a real-game check. This gap does not block siege defence or the rest of the collection. |
-
-These are proposed themes, not frozen roster declarations or scheduled jobs. Pin each
-new scenario's map, army and relevant settings, record any autogenerated reinforcement
-pool, and check the mode and result. Existing battle-type pilots are not all fully
-verified benchmark declarations: the current `expect` checks assume a finite lobby timer,
-which survival/domination hide. Adapt only the checks needed for the chosen mode; retain
-an episode wall limit without pretending it is an engine timer. Use the existing setup
-and record machinery, not a new scenario framework.
+Survival has no engine countdown; a controller wall timeout is a truncation, not a loss.
+Its hidden lobby timer must not be mistaken for an active deadline. Explicit reinforcement
+pools replace autogeneration for declared benchmarks. The setup verifies the purchased
+pool and mode, while native wave rosters are allowed to arrive dynamically. No wave
+forecasts, healing or restocking controls are promised by this tranche.
 
 After implementing each new scenario, play **2-3 battles total for that scenario**, not
-2-3 per model or a fixed multi-model/baseline matrix. Prefer two model-controlled battles;
+2-3 per model or a fixed multi-model/baseline matrix. Default to one Sol-low and one Luna-low `llm_rules` battle;
 use a third for a contrasting controller, a repeat, or a specific behavior check. Pick
 the controllers and small cost allowance before running, based on the question and
 remaining budget. Neither a scripted baseline nor every model is mandatory in every
@@ -459,11 +467,11 @@ model comparisons come later where useful, with fixed conditions and all earlier
 retained. Keep held-out variants out of tuning. General-purpose armies can complement
 specialist forces when they create a different battle.
 
-The ledger has $10.7821 left of its $25 cap at preparation time. Broader coverage takes
+The ledger had $10.6854 left of its $25 cap at implementation start. Broader coverage takes
 priority over repeated expensive reference runs; use cost-conscious model choices and
 do not schedule the full expansion as one unbounded queue. Create a fresh small plan
 from committed implementation for each scenario; old G1/C1 and swarm-only plans remain
-historical. No paid run or queue generation is part of this planning work.
+historical. The owner authorized implementation and the short exploratory screens on 2026-10-16.
 
 ### 4. Keep natural latency; defer added delay
 
@@ -560,27 +568,24 @@ schedule an easier calibration block.
 
 ## Experiments the report should eventually present (definitions only)
 
-From the report brief's section 10; none of these experiment series has run or is
-scheduled. Added observation age is already supported by the harness.
+These are definitions only; this tranche does not execute self-comparison series or
+build a new experiment framework. Compare one model to itself with its exact model id,
+effort, controller/prompt version, build, map, settings and non-treatment conditions fixed.
+Use matched instances, rotate condition order, reset controller memory each episode and
+retain all attempts, including infrastructure/policy failures. Record input/output/cached
+tokens, response latency, observation age, cost, actions and objective progress.
 
-- **Army size.** The cavalry assault at about ×0.5 (3 against 4 units), ×1 (6 against
-  8) and ×2 (12 against 16), same composition ratios, map and timer, funds scaled. The
-  axis is the number of units the controller commands, the lord counted as one. Each
-  size is screened with the same reference and the two scripted baselines, because
-  larger forces also change density, contact timing and the AI's behaviour on a fixed
-  map. Observation tokens, reply time and order age are recorded beside the outcome, and
-  a drop is reported as end-to-end degradation, not as a reasoning limit. Needs three new
-  declarations and a lobby check of funds and unit caps. Motivating observation (uncontrolled,
-  across harness versions and battles; Luna low, mean order delay per battle): about 5-7 s
-  with 10 units on the field, 6.5-7.3 s with 24, 8.2 s with 27 and 9.2 s with 29, the last
-  two from the 2026-10-15 swarm screens. Unit costs now come from `scripts/wh3_db.py`.
-- **Context.** One change per comparison on one scenario and model, for example adding
-  the report's one-line unit roles to the observation against raw unit names. Reported
-  with tokens, reply time and cost beside outcomes; the viewer's role text never reaches
-  a controller unless it is the treatment.
-- **Delay.** Deferred added observation age (`--delay-seconds`), which is not the same
-  intervention as a slower model; natural latency differences between models stay
-  observations, not a dose-response curve.
+| Axis | Change | Interpretation and controls |
+|---|---|---|
+| Army/control workload | Number of independently commanded units, with declared composition ratios | Also changes action volume, density, pathing, contact timing, combat balance and tokens. This is end-to-end scaling, not a pure context-length effect |
+| Prompt-only neutral context | Additional non-tactical text, same battle/state/action space | Vary token count while holding facts and history fixed; record where text is inserted. Check that the text does not introduce advice or alter the task |
+| Useful history | Relevant prior observations/actions at prescribed lengths | Tests memory value and interference; it changes information as well as length. Keep the history-selection rule fixed |
+| Factual representation | Equivalent facts rendered compactly or verbosely | Test representation separately from adding new information; audit factual equivalence |
+| Added observation age | Buffered observations at declared minimum ages | Already supported; distinct from slower generation or a longer prompt. Natural model latency remains measured, not an experimentally assigned dose |
+
+Larger armies and longer prompts may be crossed later to separate their effects. First
+screen feasibility and freeze the treatments; use objective measures appropriate to the
+family, and do not infer reasoning limits solely from slower real-time play.
 
 ## Later
 

@@ -430,6 +430,69 @@ local function evaluation()
             objectives = state.objective_totals}
 end
 
+-- A single authored objective, not a general mission language. Deployment stays private;
+-- only the rules, friendly asset ids and current extraction progress reach policies.
+local function setup_custom()
+    local config = session.custom
+    if not config then return end
+    assert(config.kind == "battery_evacuation", "unknown custom objective")
+    for side, placements in pairs(config.deployment or {}) do
+        for _, placement in ipairs(placements) do
+            local entry = assert(state[side][placement.id], "missing authored unit " .. placement.id)
+            local controller = entry.controller or entry.army:create_unit_controller()
+            if not entry.controller then controller:add_units(entry.unit); controller:take_control() end
+            controller:teleport_to_location(vector(placement.x, bm.battle:get_terrain_height(placement.x, placement.z), placement.z),
+                                            placement.bearing, placement.width)
+            if not entry.controller then controller:release_control() end
+        end
+    end
+    local assets = {}
+    for _, id in ipairs(config.assets) do
+        assert(state.friendly[id], "missing evacuation asset " .. id)
+        assets[#assets + 1] = {id = id, alive = true, in_zone = false}
+    end
+    state.custom = {kind = config.kind, version = config.version, rules = config.rules,
+                    zone = config.zone, deadline_ms = config.deadline_s * 1000,
+                    assets = assets, extracted = 0, status = "pending"}
+end
+
+local function sample_custom(now, native_result)
+    local goal = state.custom
+    if not goal or goal.status ~= "pending" then return end
+    local living, extracted = 0, 0
+    for _, asset in ipairs(goal.assets) do
+        local unit = state.friendly[asset.id].unit
+        asset.alive = get(unit, "number_of_men_alive", 0) > 0
+
+        local position = get(unit, "position", nil)
+        asset.in_zone = asset.alive and not get(unit, "is_leaving_battle", false)
+            and get(unit, "is_deployed", true) and not get(unit, "is_routing", false)
+            and not get(unit, "is_shattered", false) and position ~= nil
+            and (position:get_x() - goal.zone.x)^2 + (position:get_z() - goal.zone.z)^2
+                <= goal.zone.radius^2
+        if asset.alive then living = living + 1 end
+        if asset.in_zone then extracted = extracted + 1 end
+    end
+    goal.extracted, goal.remaining_ms = extracted, math.max(0, goal.deadline_ms - now)
+    local reason, success
+    if living < #goal.assets then reason, success = "asset_lost", false
+    elseif extracted == #goal.assets and now <= goal.deadline_ms then
+        reason, success = "extracted", true
+    elseif native_result then reason, success = "native_ending", native_result == "won" and now <= goal.deadline_ms
+    elseif now >= goal.deadline_ms then reason, success = "deadline", false end
+    if reason then
+        goal.status, goal.reason = success and "success" or "failed", reason
+        goal.completed_ms = now
+        if not native_result then
+            -- A requested ending is not a result. finish() still waits for engine confirmation.
+            goal.ending = "scripted"
+            local mine = bm:local_alliance()
+            bm.battle:force_battle_end(success and mine or (mine == 1 and 2 or 1),
+                                      "scripted", true, true)
+        end
+    end
+end
+
 local function mode_section()
     local section = {}
     for key, value in pairs(state.info) do section[key] = value end
@@ -517,6 +580,7 @@ local function mode_section()
     if get_context("HasSupplies") == true then
         section.supplies = tonumber(get_context("PlayerArmyContext.GlobalCurrency"))
     end
+    if state.custom then section.custom = state.custom end
     return section
 end
 
@@ -986,6 +1050,7 @@ local function finish()
     else
         state.result = winner == mine and "won" or "lost"
     end
+    sample_custom(battle_time(), state.result)
     state.finished = true
     -- For evaluation only: the result observation ends the episode before any decision.
     sample_objectives(battle_time())
@@ -1054,7 +1119,7 @@ local function register(unit, alliance, army)
         if state.started_ms then log("new friendly unit " .. id .. " " .. get(unit, "type", "?")) end
     else
         local id = "e" .. (#state.enemy_ids + 1)
-        state.enemy[id] = {unit = unit, class = unit_class(unit), alliance = alliance,
+        state.enemy[id] = {unit = unit, army = army, class = unit_class(unit), alliance = alliance,
                            initial = not state.started_ms}
         state.enemy_ids[#state.enemy_ids + 1] = id
         state.enemy_by_ui[key] = id
@@ -1137,6 +1202,8 @@ local function tick()
         finish()
         return
     end
+    sample_custom(now)
+    if state.finished then return end
     -- Its own timer: a policy that decides every tick forces an observation with each
     -- acknowledgement, which keeps pushing the regular observation back.
     if now >= state.next_scan_ms then
@@ -1207,6 +1274,8 @@ local function start()
     read_slots()
     local scanned, err = pcall(scan)
     if not scanned then log("scan failed: " .. clean_error(err)) end
+    local custom_ok, custom_error = pcall(setup_custom)
+    if not custom_ok then log("custom setup failed: " .. clean_error(custom_error)) end
     state.started_ms = battle_time()
     state.setup = {unit_scale = get_context("UnitSize"), realism = get_context("IsRealismModeEnabled"),
                    player_defends = get_context("PlayerAllianceContext.IsDefender")}
@@ -1216,6 +1285,22 @@ local function start()
         modifiers[#modifiers + 1] = tonumber(row[1])
     end
     state.setup.army_ai_stats_modifiers = modifiers
+    if session.custom then
+        state.setup.custom = {ok = custom_ok, error = not custom_ok and clean_error(custom_error) or nil}
+        state.setup.custom.deployment = {}
+        for side, placements in pairs(session.custom.deployment or {}) do
+            local measured = {}
+            for _, placement in ipairs(placements) do
+                local entry = state[side][placement.id]
+                local position = entry and get(entry.unit, "position", nil)
+                measured[#measured + 1] = {id = placement.id,
+                    x = position and round(position:get_x(), 1),
+                    z = position and round(position:get_z(), 1),
+                    bearing = entry and round(get(entry.unit, "bearing", nil), 1)}
+            end
+            state.setup.custom.deployment[side] = measured
+        end
+    end
     -- Private setup evidence for modifier calibration, before any controller orders.
     state.setup.unit_base_stats = get_context(
         'ArmyList.JoinString(FactionContext.Key + "@" + UnitList.JoinString('

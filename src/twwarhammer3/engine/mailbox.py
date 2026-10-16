@@ -8,7 +8,8 @@ object (``evaluation.objectives`` in a battle without capture points, an empty `
 
 Files, by writer:
 - controller: ``session.json``, read at each script load (``job``, ``enabled``, ``menu``,
-  ``autostart``, ``observe_ms``, ``tick_ms``, ``record_replay``, ``stills``; the mod
+  ``autostart``, ``observe_ms``, ``tick_ms``, ``record_replay``, ``stills``, optional ``custom``
+  (versioned authored objective and private deployment); the mod
   ignores ``speed`` and ``pause``, which ``require_realtime`` checks); ``orders.json``, one
   outstanding request that the battle script deletes when read, ``{"schema", "job", "battle",
   "request", "based_on", "orders", "say"?}`` or ``{..., "control": "restart"}`` (replay the
@@ -43,7 +44,10 @@ Observation (``observation``, ``unit_record`` and ``mode_section`` in the battle
                "last_issued_ms"?}...]},
      "mode": {"type", "role"?, "timeout_winner"?, "objectives"? (the battle type's rules
               as text), "capture_points"?, "tickets"?, "tickets_goal"?, "gates"?,
-              "reinforcements"?, "spawn_zones"?, "slots"?, "supplies"?},
+              "reinforcements"?, "spawn_zones"?, "slots"?, "supplies"?,
+              "custom"?: {"kind", "version", "rules", "zone": {"x", "z", "radius"},
+                          "deadline_ms", "remaining_ms"?, "assets": [{"id", "alive", "in_zone"}],
+                          "extracted", "status", "reason"?, "ending"?, "completed_ms"?}},
      "terrain"?: {"x0", "z0", "cell_m", "rows" ("." clear, "#" blocked), "sample_width_m",
                   "sampled_ms", "bounds"},
      "orders"?: {"request", "based_on", "applied_ms",
@@ -53,6 +57,10 @@ Observation (``observation``, ``unit_record`` and ``mode_section`` in the battle
 
 A battle's first observation is a ``Loading`` placeholder with ``seq`` 0 and no units; then
 ``phase`` is the engine's (``Deployment``, ``Deployed``, ``VictoryCountdown``, ``Complete``).
+The obs-v4 ``mode.custom`` extension contains only public objective rules and friendly
+progress. Authored enemy placements stay in ``setup.custom``. A scripted objective
+requests an engine ending, but ``result`` still requires engine confirmation. Its objective
+status is recorded separately: a native victory can fail an asset-preservation objective.
 
 A unit has ``id`` (f1..., e1...), ``type``, ``class``, ``commander``, ``can_fly``,
 ``flying``, ``x``, ``z``, ``bearing``, ``men``, ``men0``, ``hp`` (0-1), ``barrier``?,

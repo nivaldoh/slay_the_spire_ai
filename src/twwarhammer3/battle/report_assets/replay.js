@@ -876,6 +876,25 @@ const Viewer = (() => {
           ),
         );
       }
+    const extraction = frame.mode?.custom?.zone;
+    if (extraction && placed(extraction)) {
+      layer.append(
+        svg("circle", {
+          cx: proj.x(extraction.x),
+          cy: proj.y(extraction.z),
+          r: extraction.radius * proj.scale,
+          fill: "#7dd3a722",
+          stroke: "#7dd3a7",
+          "stroke-width": 2,
+          "stroke-dasharray": "5 3",
+        }),
+        svg(
+          "text",
+          { x: proj.x(extraction.x), y: proj.y(extraction.z), class: "tiny", fill: "#7dd3a7" },
+          "Extraction",
+        ),
+      );
+    }
     drawLastSeen(layer, fi, focus);
     for (const side of ["friendly", "enemy"])
       for (const u of frame[side]) drawUnit(layer, u, side, { dim: focus && !focus.has(u.id) });

@@ -478,3 +478,30 @@ def test_modes_follow_the_lobby_type_and_a_siege_splits_by_role():
     # Every lobby type the setup supports has a section, even before any battle of it ran.
     assert {report_html.mode_of({"battle_type": kind}) for kind in setup.ENGINE_TYPES} <= set(keys)
     assert len(keys) == len(set(keys))
+
+
+@pytest.mark.parametrize('kind, result, expected, basis', [
+    ('conquest', {'objectives': {'tickets': {'us': 250, 'enemy': 900}, 'tickets_goal': 1000}},
+     .25, 'tickets'),
+    ('conquest', {'objectives': {'tickets': {'us': 250, 'enemy': 900}}}, None, 'tickets'),
+    ('siege', {'objectives': {'points': {'c1': {'held_ms': 3000, 'observed_ms': 10000}}}},
+     .3, 'objective_time'),
+    ('survival', {}, None, 'duration'),
+    ('ambush', {'custom_objective': {'status': 'failed', 'extracted': 1,
+                                   'assets': [{'id': 'f7'}, {'id': 'f8'}]}}, .5, 'evacuation'),
+])
+def test_mode_progress_never_substitutes_casualties_for_an_objective(
+        tmp_path, kind, result, expected, basis):
+    scenario = {'name': 'objective', 'battle_type': kind}
+    if kind == 'ambush':
+        scenario['custom'] = {'kind': 'battery_evacuation'}
+    job = configured_job(tmp_path, 'objective', scenario=scenario)
+    path = job / 'episode-0000/result.json'
+    saved = json.loads(path.read_text())
+    saved.update(final={'enemy': {'men0': 1000, 'men': 0, 'active_men': 0}}, **result)
+    path.write_text(json.dumps(saved))
+    battle = report_html.display_data(report.collect([job]))['battles']['g0-t0']
+    assert battle['progress'] == expected
+    assert battle['progress_basis'] == basis
+    if kind == 'ambush':
+        assert battle['objective_outcome'] == 'failed'  # even though the native fixture won

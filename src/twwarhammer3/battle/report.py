@@ -137,7 +137,7 @@ def shared_measures(result: dict, scenario: dict) -> dict:
                   if point["observed_ms"] > 0 else None}
                  for key, point in sorted(points.items())
                  if point.get("held_ms") is not None and point.get("observed_ms") is not None]
-    resource_keys = ("supplies_left", "build", "reinforce", "tickets")
+    resource_keys = ("supplies_left", "build", "reinforce", "tickets", "tickets_goal")
     resources = {key: objectives.get(key) for key in resource_keys}
     resources["status"] = ("available" if any(value is not None for value in resources.values())
                            else "not_applicable" if no_objectives else "unavailable")
@@ -156,6 +156,7 @@ def shared_measures(result: dict, scenario: dict) -> dict:
                            "not_applicable" if no_objectives else "unavailable",
                            "points": ownership},
         "resources": resources,
+        "custom_objective": result.get("custom_objective"),
         "duration_s": end_ms / 1000 if end_ms is not None else result.get("battle_s"),
     }
 

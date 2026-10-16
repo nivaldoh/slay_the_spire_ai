@@ -187,3 +187,18 @@ def test_commander_prompt_after_its_first_plan(tmp_path):
     agent.decide(later())
     agent.close()
     check("commander", agent.metadata()["prompt"])
+
+
+def test_custom_objective_rules_and_progress_without_private_placements():
+    from twwarhammer3.battle.llm import render_mode
+
+    mode = {'type': 'land_ambush', 'custom': {
+        'rules': 'Bring both batteries into the circle before 900 seconds.',
+        'zone': {'x': 190, 'z': 300, 'radius': 45}, 'deadline_ms': 900000,
+        'status': 'pending', 'extracted': 1,
+        'assets': [{'id': 'f7', 'alive': True, 'in_zone': True},
+                   {'id': 'f8', 'alive': True, 'in_zone': False}],
+        'deployment': {'enemy': [{'x': 999, 'z': 888}]},
+    }}
+    check('evacuation_mode', render_mode(mode))
+    assert '999' not in render_mode(mode)

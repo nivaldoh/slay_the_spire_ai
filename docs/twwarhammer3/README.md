@@ -37,11 +37,11 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 - **vN**: a version of the `llm` or `commander` prompt and harness; `v1.N` the `skills`
   executor. Each has a log.md entry. The register's `harness` column is the `-vN-` segment
   of the job name (`stats.harness_version`), blank for `bench-*` jobs.
-- **b1-b11**: benchmark harness revisions, each logged in log.md.
+- **b1-b12**: benchmark harness revisions, each logged in log.md.
 - **G1, G2, C1**: historical calibration designs in [benchmark.md](benchmark.md).
   G1 is incomplete, C1 finished and G2 never ran. The 2026-10-15 plan retires win-rate
   admission; added observation-age experiments (0, 6 and 10 s) remain deferred.
-- **Track** `obs-v3+terrain/act-v2/live-1x`: the observation, action and timing contract
+- **Track** `obs-v4+terrain/act-v2/live-1x`: the observation, action and timing contract
   a manifest records (`play.TRACK`). Controller memory/prompt versions and evaluator
   versions are separate. Different conditions can share a report without pooling trials.
 - **Luna, Sol, Astra**: `gpt-6-luna`, `gpt-6-sol`, `gpt-6-astra` (the 2026-10-13

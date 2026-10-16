@@ -294,6 +294,17 @@ def render_mode(mode: dict | None) -> str | None:
     lines = [head + "."]
     if mode.get("objectives"):
         lines.append("The game's description: " + mode["objectives"])
+    if mode.get("custom"):
+        goal = mode["custom"]
+        zone = goal["zone"]
+        lines.append("Scenario objective: " + goal["rules"])
+        lines.append(f"Extraction zone: ({zone['x']}, {zone['z']}), radius {zone['radius']} m;"
+                     f" deadline {goal['deadline_ms'] / 1000:g} s of battle time."
+                     f" Status: {goal['status']}; {goal['extracted']} of {len(goal['assets'])}"
+                     " batteries currently in zone.")
+        lines.append("Designated batteries: " + ", ".join(
+            f"{asset['id']} ({'alive' if asset['alive'] else 'lost'}, "
+            f"{'inside' if asset['in_zone'] else 'outside'} zone)" for asset in goal["assets"]))
     if mode.get("tickets"):
         # Without a goal (a siege defender's tickets) the income figure does not apply.
         goal = mode.get("tickets_goal")

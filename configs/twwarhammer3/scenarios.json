@@ -711,5 +711,358 @@
    "wh2_main"
   ],
   "brief": "Seven Dwarf units must hold against twenty attacking Skaven units; the defender wins if it survives the 1200-second timer. Irondrakes and an Organ Gun are the only crowd-clearing anchors, with limited ammunition. Shaping the approach, anchoring the flanks, spending ammunition on the right targets and avoiding encirclement compete; spreading out to fight everywhere is the naive risk. Evasion should be harder than in the compact defender pilots, a hypothesis to verify. Screened 2026-10-15: the lobby takes both rosters at 12000 and the AI attacks."
- }
+ },
+  "chd-reserve-grn-siege": {
+    "name": "chd-reserve-grn-siege",
+    "family": "territorial defence",
+    "scenario_version": 1,
+    "brief": "Trade outer territory for time while committing one mobile reserve and limited construction supplies.",
+    "split": "development",
+    "status": "prototype_not_admitted",
+    "battle_type": "siege",
+    "map": "battle_preset_wh2_dlc13_minor_settlement_empire_fort",
+    "attacker": "enemy",
+    "player": {
+      "subculture": "wh3_dlc23_sc_chd_chaos_dwarfs",
+      "faction": "wh3_dlc23_chd_astragoth",
+      "units": [
+        "wh3_dlc23_chd_cha_overseer",
+        "wh3_dlc23_chd_inf_chaos_dwarf_warriors",
+        "wh3_dlc23_chd_inf_chaos_dwarf_warriors",
+        "wh3_dlc23_chd_inf_infernal_guard",
+        "wh3_dlc23_chd_inf_chaos_dwarf_blunderbusses",
+        "wh3_dlc23_chd_inf_chaos_dwarf_blunderbusses",
+        "wh3_dlc23_chd_inf_infernal_guard_fireglaives",
+        "wh3_dlc23_chd_veh_magma_cannon",
+        "wh3_dlc23_chd_cav_bull_centaurs_axe"
+      ],
+      "recruitment_faction": "wh3_dlc23_chd_legion_of_azgorh"
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_grn_greenskins",
+      "faction": "wh_main_grn_greenskins",
+      "units": [
+        "wh_main_grn_cha_orc_warboss_0",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_big_uns",
+        "wh_main_grn_inf_orc_big_uns",
+        "wh_main_grn_inf_black_orcs",
+        "wh_main_grn_inf_black_orcs",
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_orc_arrer_boyz",
+        "wh_main_grn_inf_orc_arrer_boyz",
+        "wh_main_grn_mon_trolls",
+        "wh_main_grn_mon_trolls"
+      ]
+    },
+    "expect": {
+      "battle_type": "settlement_standard",
+      "difficulty": "ai_level_very_hard",
+      "funds": "funds_custom",
+      "funds_amount": 14000,
+      "time_limit_s": 1200,
+      "ai_stats_modifier": 1.1,
+      "unit_scale": 0.75,
+      "realism": false,
+      "player_defends": true
+    },
+    "protected": [
+      "wh3_dlc23_chd_veh_magma_cannon",
+      "wh3_dlc23_chd_inf_chaos_dwarf_blunderbusses"
+    ]
+  },
+  "ksl-reserves-survival": {
+    "name": "ksl-reserves-survival",
+    "family": "reinforcement budgeting",
+    "scenario_version": 1,
+    "brief": "Buy immediate relief or preserve supplies for a more expensive reinforcement; sustain ammunition and fresh troops against native waves.",
+    "split": "development",
+    "status": "prototype_not_admitted",
+    "battle_type": "survival",
+    "map": "battle_preset_wh3_endless_survival_kho",
+    "player": {
+      "subculture": "wh3_main_sc_ksl_kislev",
+      "faction": "wh3_main_ksl_kislev",
+      "units": [
+        "wh3_main_ksl_cha_boyar_0",
+        "wh3_main_ksl_inf_armoured_kossars_0",
+        "wh3_main_ksl_inf_armoured_kossars_0",
+        "wh3_main_ksl_inf_armoured_kossars_0",
+        "wh3_main_ksl_inf_kossars_1",
+        "wh3_main_ksl_inf_kossars_1",
+        "wh3_main_ksl_inf_streltsi_0",
+        "wh3_main_ksl_inf_streltsi_0",
+        "wh3_main_ksl_cav_war_bear_riders_1",
+        "wh3_main_ksl_veh_little_grom_0"
+      ],
+      "reinforcements": [
+        "wh3_main_ksl_inf_kossars_1",
+        "wh3_main_ksl_inf_kossars_1",
+        "wh3_main_ksl_inf_armoured_kossars_0",
+        "wh3_main_ksl_inf_armoured_kossars_0",
+        "wh3_main_ksl_inf_streltsi_0",
+        "wh3_main_ksl_cav_war_bear_riders_1",
+        "wh3_main_ksl_veh_little_grom_0"
+      ]
+    },
+    "enemy": null,
+    "expect": {
+      "battle_type": "survival",
+      "difficulty": "ai_level_very_hard",
+      "funds": "funds_custom",
+      "funds_amount": 14000,
+      "time_limit_s": null,
+      "ai_stats_modifier": 1.1,
+      "unit_scale": 0.75,
+      "realism": false,
+      "player_defends": true,
+      "timer_enabled": false
+    }
+  },
+  "sla-detachments-dwf-conquest": {
+    "name": "sla-detachments-dwf-conquest",
+    "family": "dispersed objective control",
+    "scenario_version": 1,
+    "brief": "Split fast detachments across separated objectives or concentrate to dislodge stronger, slower holders; pursuing kills can concede tickets.",
+    "split": "development",
+    "status": "prototype_not_admitted",
+    "battle_type": "conquest",
+    "map": "battle_preset_wh_mp_alpine_ridge_conquest",
+    "attacker": "player",
+    "player": {
+      "subculture": "wh3_main_sc_sla_slaanesh",
+      "faction": "wh3_main_sla_slaanesh",
+      "units": [
+        "wh3_dlc20_chs_cha_chaos_lord_msla",
+        "wh3_main_sla_inf_marauders_0",
+        "wh3_main_sla_inf_marauders_0",
+        "wh3_main_sla_inf_marauders_0",
+        "wh3_main_sla_inf_daemonette_0",
+        "wh3_main_sla_inf_daemonette_0",
+        "wh3_main_sla_cav_hellstriders_0",
+        "wh3_main_sla_cav_hellstriders_0",
+        "wh3_main_sla_cav_seekers_of_slaanesh_0",
+        "wh3_main_sla_inf_chaos_furies_0"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_dwf_dwarfs",
+      "faction": "wh_main_dwf_dwarfs",
+      "units": [
+        "wh_main_dwf_cha_lord_0",
+        "wh_main_dwf_inf_longbeards",
+        "wh_main_dwf_inf_longbeards",
+        "wh_main_dwf_inf_ironbreakers",
+        "wh_main_dwf_inf_ironbreakers",
+        "wh_main_dwf_inf_dwarf_warrior_0",
+        "wh_main_dwf_inf_dwarf_warrior_0",
+        "wh_main_dwf_inf_thunderers_0",
+        "wh_main_dwf_inf_thunderers_0",
+        "wh_main_dwf_art_cannon"
+      ]
+    },
+    "expect": {
+      "battle_type": "conquest",
+      "difficulty": "ai_level_very_hard",
+      "funds": "funds_custom",
+      "funds_amount": 14000,
+      "time_limit_s": 1200,
+      "ai_stats_modifier": 1.1,
+      "unit_scale": 0.75,
+      "realism": false,
+      "player_defends": false
+    }
+  },
+  "emp-battery-wef-evacuation": {
+    "name": "emp-battery-wef-evacuation",
+    "family": "asset evacuation",
+    "scenario_version": 1,
+    "split": "development",
+    "status": "prototype_not_admitted",
+    "brief": "Escort two batteries to a public extraction zone before a deadline while scouting concealed Wood Elf threats.",
+    "battle_type": "ambush",
+    "map": "battle_preset_wh3_main_brt_forest_01_09",
+    "attacker": "enemy",
+    "expect": {
+      "battle_type": "land_ambush",
+      "difficulty": "ai_level_very_hard",
+      "funds": "funds_custom",
+      "funds_amount": 12000,
+      "time_limit_s": 1200,
+      "unit_scale": 0.75,
+      "realism": false,
+      "ai_stats_modifier": 1.1,
+      "player_defends": true
+    },
+    "player": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "units": [
+        "wh_main_emp_cha_general_0",
+        "wh_main_emp_inf_spearmen_1",
+        "wh_main_emp_inf_spearmen_1",
+        "wh_main_emp_inf_halberdiers",
+        "wh_main_emp_cav_pistoliers_1",
+        "wh_main_emp_cav_pistoliers_1",
+        "wh_main_emp_art_cannon",
+        "wh_main_emp_art_cannon"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_dlc05_sc_wef_wood_elves",
+      "faction": "wh_dlc05_wef_anmyr",
+      "recruitment_faction": "wh_dlc05_wef_wood_elves",
+      "units": [
+        "wh_dlc05_wef_cha_glade_lord_0",
+        "wh_dlc05_wef_inf_eternal_guard_0",
+        "wh_dlc05_wef_inf_eternal_guard_0",
+        "wh_dlc05_wef_inf_deepwood_scouts_0",
+        "wh_dlc05_wef_inf_deepwood_scouts_0",
+        "wh_dlc05_wef_inf_glade_guard_0",
+        "wh_dlc05_wef_inf_glade_guard_0",
+        "wh_dlc05_wef_cav_wild_riders_0"
+      ]
+    },
+    "protected": [
+      "wh_main_emp_art_cannon"
+    ],
+    "custom": {
+      "kind": "battery_evacuation",
+      "version": 1,
+      "assets": [
+        "f7",
+        "f8"
+      ],
+      "zone": {
+        "x": 190,
+        "z": 300,
+        "radius": 45
+      },
+      "deadline_s": 900,
+      "rules": "Escort batteries f7 and f8 to the extraction circle before 900 seconds. Both must have living crews and be inside the circle together, neither routing nor shattered. Alternatively, win the native battle with both batteries surviving before the deadline. Losing either battery or reaching the deadline without success loses the objective. A single battery in the zone is partial progress; it remains vulnerable and controllable.",
+      "deployment": {
+        "friendly": [
+          {
+            "id": "f1",
+            "x": 190,
+            "z": -180,
+            "bearing": 0,
+            "width": 20
+          },
+          {
+            "id": "f2",
+            "x": 155,
+            "z": -145,
+            "bearing": 0,
+            "width": 20
+          },
+          {
+            "id": "f3",
+            "x": 225,
+            "z": -145,
+            "bearing": 0,
+            "width": 20
+          },
+          {
+            "id": "f4",
+            "x": 190,
+            "z": -125,
+            "bearing": 0,
+            "width": 20
+          },
+          {
+            "id": "f5",
+            "x": 130,
+            "z": -115,
+            "bearing": 0,
+            "width": 20
+          },
+          {
+            "id": "f6",
+            "x": 250,
+            "z": -115,
+            "bearing": 0,
+            "width": 20
+          },
+          {
+            "id": "f7",
+            "x": 170,
+            "z": -200,
+            "bearing": 0,
+            "width": 20
+          },
+          {
+            "id": "f8",
+            "x": 210,
+            "z": -200,
+            "bearing": 0,
+            "width": 20
+          }
+        ],
+        "enemy": [
+          {
+            "id": "e1",
+            "x": 180,
+            "z": 180,
+            "bearing": 180,
+            "width": 20
+          },
+          {
+            "id": "e2",
+            "x": 100,
+            "z": 180,
+            "bearing": 180,
+            "width": 20
+          },
+          {
+            "id": "e3",
+            "x": 270,
+            "z": 180,
+            "bearing": 180,
+            "width": 20
+          },
+          {
+            "id": "e4",
+            "x": 70,
+            "z": 70,
+            "bearing": 180,
+            "width": 20
+          },
+          {
+            "id": "e5",
+            "x": 300,
+            "z": 90,
+            "bearing": 180,
+            "width": 20
+          },
+          {
+            "id": "e6",
+            "x": 100,
+            "z": 230,
+            "bearing": 180,
+            "width": 20
+          },
+          {
+            "id": "e7",
+            "x": 260,
+            "z": 250,
+            "bearing": 180,
+            "width": 20
+          },
+          {
+            "id": "e8",
+            "x": 340,
+            "z": 160,
+            "bearing": 180,
+            "width": 20
+          }
+        ]
+      }
+    }
+  }
 }

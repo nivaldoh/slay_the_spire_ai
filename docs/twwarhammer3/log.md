@@ -30,15 +30,52 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 | Piece | Version | Defined in | Latest results |
 |---|---|---|---|
-| `llm` | v17 (2026-10-15) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | Shared input validated through `llm_rules` in b11; tactical prompt's last mode campaign was v15 (Luna low: 6 wins in 10 jobs) |
-| `llm_rules` | shares `llm` v17 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | b11 smoke, Luna low: lost `dwf-line-skv-swarm` at 460 s ($0.043) |
-| `commander` | v4 (2026-10-15) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | b11 smoke, Luna low: lost `dwf-line-skv-swarm` at 593 s ($0.054) |
+| `llm` | v18 (2026-10-16) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | Shared input validated through `llm_rules` in b11; tactical prompt's last mode campaign was v15 (Luna low: 6 wins in 10 jobs) |
+| `llm_rules` | shares `llm` v18 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | b11 smoke, Luna low: lost `dwf-line-skv-swarm` at 460 s ($0.043) |
+| `commander` | v5 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | b11 smoke, Luna low: lost `dwf-line-skv-swarm` at 593 s ($0.054) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b11 (2026-10-15), evaluator v2, track `obs-v3+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Two b11 engine outcomes; whole-unit counters and unchanged rematch checked. C1 remains development evidence |
+| benchmark harness | b12 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py` | Two b11 engine outcomes; whole-unit counters and unchanged rematch checked. C1 remains development evidence |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | scores by game mode, one map per model (2026-10-15) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | `reports/benchmark.html` (26 MB): 55 jobs, 85 battles shown in 19 scenarios (6 diagnostic probes held back), headline C1 |
+
+## 2026-10-16: Harness b12 and distinct scenario families
+
+Implementation in progress. The owner approved a compact core of 6–8 unique decision
+problems, a native siege/survival/conquest tranche and one authored evacuation pilot.
+The [design audit](benchmark.md#scenario-design) records each question, plausible plays,
+nearest family, novelty and evidence. Existing cavalry/caster revisions count once per
+family; swarm attack/defence remain provisionally distinct. Old pilots remain evidence.
+Deferred self-comparison definitions separate workload, neutral context, useful history,
+factual representation and observation age.
+
+b12 declares the four rosters, permits a recruitment-card namespace distinct from the
+banner, and selects/verifies explicit reinforcement pools. Survival checks the selected
+mode and disabled timer rather than the land-map type and stale hidden timer; its wall
+limit still produces truncation. Lobby probes under `capability-probes/expansion-20261016/`
+verified all five race card menus and the seven-unit Kislev pool. Failed probes preserve
+an outdated Wood Elf faction key, a map-type mismatch, an unavailable survival role swap,
+and the lobby's reordering of the reinforcement pool; none launched a battle or called a
+model. Exact live battle checks and exploratory results follow below.
+
+Validation before live screens: 385 WH3 tests passed; the full suite passed with
+1017 tests and 14 optional-dependency skips after granting local-socket access. A further
+reinforcement-order regression and the documentation checks passed (70 tests); Ruff passed.
+The original native-mode golden prompts are byte-identical; evacuation has a new golden
+mode fixture. Browser validation and live outcomes are recorded as they complete.
+
+The observation contract becomes `obs-v4+terrain/act-v2/live-1x`: an optional public
+`mode.custom` carries only the evacuation rules and friendly progress. Authored placements
+stay in private setup. The script requests an engine ending on extraction, asset loss or
+deadline; native outcomes and objective outcomes remain separate. Each rematch reloads
+its objective state. `llm`/`llm_rules` v18 and `commander` v5 render these public rules;
+existing native-mode prompt snapshots remain unchanged. Evaluator v2 soldier/unit counts
+are unchanged; objective version 1 is separate.
+
+The shared report uses tickets, ownership time and extraction counts for their respective
+modes, and duration for endless survival. It keeps casualty measures but no longer presents
+them as objective progress. The replay marks the public extraction circle.
 
 ## Index
 

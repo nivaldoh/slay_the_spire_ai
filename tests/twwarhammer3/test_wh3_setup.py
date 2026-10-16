@@ -32,7 +32,43 @@ def test_every_named_scenario_resolves_and_recruits_its_rosters():
         if not scenario.get("random"):
             steps = setup.scenario_steps(scenario)
             assert len([s for s in steps if s.get("dblclick")]) == sum(
-                len(side["units"]) for side in setup.sides(scenario))
+                len(side["units"]) + len(side.get("reinforcements") or [])
+                for side in setup.sides(scenario))
+
+
+def test_timerless_declaration_ignores_hidden_lobby_timer_but_requires_fixed_pool():
+    scenario = setup.scenarios()["ksl-reserves-survival"]
+    config = {"episode_timeout": None, "run_timeout": None, "start_timeout": 600, "episodes": 2}
+    setup.fill_timeouts(scenario, config)
+    setup.validate_declaration(scenario, config)
+    assert config["episode_timeout"] == 3900
+    assert not any("SetTimeLimit" in str(step) or "TimeLimitSeconds" in str(step)
+                   for step in setup.menu_checks(scenario))
+    assert any(s.get("expression", "").endswith("IsTimeLimitUsed") and s["expect"] is False
+               for s in setup.menu_checks(scenario))
+    scenario["player"]["reinforcements"] = None
+    with pytest.raises(ValueError, match="reinforcement pools"):
+        setup.validate_declaration(scenario, config)
+
+
+def test_explicit_reinforcements_are_selected_after_starting_army_and_verified():
+    scenario = setup.scenarios()["ksl-reserves-survival"]
+    steps = setup.scenario_steps(scenario)
+    switch = next(i for i, step in enumerate(steps)
+                  if "SetIsRecruitingReinforcements(true)" in step.get("command", ""))
+    assert sum(bool(s.get("dblclick")) for s in steps[:switch]) == 10
+    assert sum(bool(s.get("dblclick")) for s in steps[switch:]) == 7
+    verify = next(s for s in steps if "ReinforcingUnitList.JoinString" in s.get("expression", ""))
+    assert "expect" not in verify  # The lobby sorts by unit class; check_menu compares counts.
+    assert verify["required"]
+    assert not any("button_autogen_reinforcements" in str(s) for s in steps)
+
+
+def test_recruitment_card_namespace_can_differ_from_banner():
+    steps = setup.scenario_steps(setup.scenarios()["chd-reserve-grn-siege"])
+    assert any(s.get("find", [""])[-1] == "CcoFactionRecordwh3_dlc23_chd_astragoth" for s in steps)
+    cards = [s["find"][0] for s in steps if s.get("dblclick")]
+    assert all(":wh3_dlc23_chd_legion_of_azgorh:" in card for card in cards[:9])
 
 
 def test_variants_differ_from_their_base_only_where_declared():
@@ -189,7 +225,8 @@ def test_a_benchmark_needs_the_declared_realism_preference():
 
 
 def test_setup_rejects_roster_multiplicity_factions_and_settings():
-    scenario = {"expect": {"unit_scale": .75, "realism": False, "player_defends": True,
+    scenario = {"expect": {"time_limit_s": 1200, "unit_scale": .75, "realism": False,
+                           "player_defends": True,
                            "ai_stats_modifier": "1.1"},
                 "player": {"faction": "p", "units": ["lord", "inf", "inf"]},
                 "enemy": {"faction": "e", "units": ["lord"]}}
@@ -213,7 +250,7 @@ def test_setup_rejects_roster_multiplicity_factions_and_settings():
 
 
 def test_map_gate_and_required_steps(tmp_path):
-    scenario = {"map": "intended", "expect": {"battle_type": "land_normal",
+    scenario = {"map": "intended", "player": {}, "expect": {"battle_type": "land_normal",
                 "difficulty": "ai_level_very_hard", "funds": "funds_large", "time_limit_s": 3600,
                 "ai_stats_modifier": "1.0"}}
     lines = [f"step {i}: {step['expression']} = {step['expect']}"
@@ -277,7 +314,7 @@ def test_start_comparison_detects_changed_magic_or_spells_at_identical_positions
 
 
 def test_custom_roster_budget_is_verified_before_scoring(tmp_path):
-    scenario = {"map": "intended", "expect": {"battle_type": "land_normal",
+    scenario = {"map": "intended", "player": {}, "expect": {"battle_type": "land_normal",
                 "difficulty": "ai_level_very_hard", "funds": "funds_custom",
                 "funds_amount": 30000, "time_limit_s": 1200, "ai_stats_modifier": "1.0"}}
     lines = [f"{step['expression']} = {step['expect']}"
@@ -289,4 +326,19 @@ def test_custom_roster_budget_is_verified_before_scoring(tmp_path):
     (tmp_path / "menu.log").write_text(log.replace("CustomBudgetAmount = 30000",
                                                  "CustomBudgetAmount = 10000"))
     with pytest.raises(ProtocolError, match="funds_amount"):
+        setup.check_menu(scenario, tmp_path)
+
+
+def test_lobby_pool_readback_accepts_reordering_but_rejects_missing_copies(tmp_path):
+    scenario = setup.scenarios()['ksl-reserves-survival']
+    lines = [f"{s['expression']} = {s['expect']}" for s in setup.menu_checks(scenario)
+             if 'expression' in s]
+    expr = (setup.LOBBY + 'PlayerSlotList.At(0).'
+            'ReinforcingUnitList.JoinString(UnitRecordContext.Key, ";")')
+    pool = list(reversed(scenario['player']['reinforcements']))
+    (tmp_path / 'map_list.txt').write_text(f"CcoCustomBattleMap{scenario['map']} <selected>\n")
+    (tmp_path / 'menu.log').write_text('\n'.join(lines + [expr + ' = ' + ';'.join(pool)]))
+    assert setup.check_menu(scenario, tmp_path)['reinforcements_slot0']
+    (tmp_path / 'menu.log').write_text('\n'.join(lines + [expr + ' = ' + ';'.join(pool[:-1])]))
+    with pytest.raises(ProtocolError, match='reinforcement pool'):
         setup.check_menu(scenario, tmp_path)

@@ -102,7 +102,11 @@
   const scoreOf = (entry) =>
     !entry.trial.valid
       ? null
-      : won(entry)
+      : (
+            entry.battle.objective_outcome != null
+              ? entry.battle.objective_outcome === "success"
+              : won(entry)
+          )
         ? 100
         : entry.battle.progress == null
           ? null
@@ -124,11 +128,23 @@
     const m = entry.trial.measures || {},
       b = entry.battle,
       out = [];
-    if (won(entry)) out.push("score 100");
-    else if (b.progress != null)
+    const score = scoreOf(entry);
+    const basis = {
+      tickets: "ticket progress",
+      objective_time: "objective ownership time",
+      evacuation: "batteries in extraction zone",
+      duration: "survival duration",
+    }[b.progress_basis];
+    if (score != null) out.push(`score ${points(score)}${basis ? ` (${basis})` : ""}`);
+    if (b.progress_basis === "duration" && m.duration_s != null)
+      out.push(`survived ${clock(m.duration_s * 1000)}`);
+    if (m.custom_objective) {
+      const goal = m.custom_objective;
       out.push(
-        `score ${points(Math.min(99.99, 100 * b.progress))}${b.progress_basis === "killed" ? " (enemy killed, fled not recorded)" : ""}`,
+        `evacuation ${goal.status}: ${goal.extracted} of ${goal.assets.length} batteries in zone`,
       );
+      if (goal.reason) out.push(goal.reason.replaceAll("_", " "));
+    }
     if (b.own_left != null) out.push(`own soldiers alive ${percent(b.own_left)}`);
     const units = m.units || {};
     if (units.friendly && units.enemy)
@@ -142,6 +158,10 @@
       );
     const r = m.resources || {};
     if (r.status === "available") {
+      if (r.tickets)
+        out.push(
+          `tickets: own ${r.tickets.us ?? "?"}, enemy ${r.tickets.enemy ?? "?"}${r.tickets_goal ? `; goal ${r.tickets_goal}` : ""}`,
+        );
       if (r.supplies_left != null) out.push(`${r.supplies_left} supplies left`);
       if (r.build) out.push(`${r.build} built`);
       if (r.reinforce) out.push(`${r.reinforce} reinforcements bought`);
@@ -282,7 +302,7 @@
     $("headline-foot").replaceChildren(
       ...[
         item.footnote && `* ${item.footnote}`,
-        "Score: for each battle, 100 for a win, else the share of the enemy army dead or fled at the end, in percent; the bar is the mean, the line spans the worst to the best battle.",
+        "Score: 100 for success; otherwise the percentage of enemy strength broken in land battles, ticket goal reached in conquest/domination, objective ownership time in sieges/settlements, or batteries in the extraction zone. Survival shows duration instead of an enemy-denominator score. Bars are means and lines span the observed range; scores from different objectives are not interchangeable.",
         "Order age: how old the battle state behind a reply's orders was when the game accepted them (median). Cost: API cost per battle.",
       ]
         .filter(Boolean)
@@ -839,11 +859,15 @@
       ],
       [
         "Real time",
-        "The battle runs at normal speed from start to finish and never waits for a reply; order age is measured on the battle clock, and accepted is not the same as carried out. Planned: the same model with its observations aged by a further 2, 5 and 10 s, to measure what each second costs.",
+        "The battle runs at normal speed from start to finish and never waits for a reply; order age is measured on the battle clock, and accepted is not the same as carried out. Deferred self-comparisons will vary army workload, neutral prompt length, useful history, factual representation or added observation age separately. More units also change combat and action volume; they do not isolate context length.",
       ],
       [
         "Opponent and baselines",
         "The game's own battle AI commands the enemy (difficulty in Run settings). Scripted baselines: attack nearest (walk), charge nearest (run), hold position, and per-unit skills with no model.",
+      ],
+      [
+        "Scenario coverage",
+        `${new Set(data.scenarios.filter((s) => s.core_candidate && s.family).map((s) => s.family)).size} candidate decision families have evidence. Map, faction, difficulty and size variants do not count as new families; historical pilots remain inspectable. Each new family needs a distinct hard choice and at least two credible plays.`,
       ],
       ["Status", status()],
     ];

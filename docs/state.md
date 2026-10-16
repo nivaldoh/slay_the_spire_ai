@@ -1,13 +1,15 @@
 # Project state
 
-Updated 2026-10-15 19:58 UTC: what is running, where each game stands and what comes
+Updated 2026-10-16 00:42 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-No game controller is running. WH3 smoke job `bench-b11-measures-20261015` finished at
-18:00 UTC; v17/commander v4, shared measures and the consolidated report are validated.
+No game controller is running. Implementing b12: distinct scenario families, siege
+defence, survival, conquest and a battery-evacuation pilot. Lobby inventory and explicit
+survival pool recruitment are verified; offline checks and live screens are next.
+Evidence: `runs/twwarhammer3/capability-probes/expansion-20261016/`.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -73,6 +75,11 @@ Next steps:
 ## Owner direction
 
 WH3:
+- 2026-10-16 (implementation): approved a compact core of 6-8 distinct decision problems;
+  variants do not count as new coverage. Implement siege defence, survival and conquest
+  plus one custom battery-evacuation pilot; narrow interface extensions and custom
+  scripting are allowed. Audit existing families for redundancy. Later self-comparisons
+  distinguish army/control workload from prompt length and useful history.
 - 2026-10-15 (playmaking): retain difficult battles only when they give a controller
   meaningful options to exploit advantages and mitigate disadvantages. Exploratory runs
   should inspect those opportunities; redesign or drop scenarios with no credible plays,

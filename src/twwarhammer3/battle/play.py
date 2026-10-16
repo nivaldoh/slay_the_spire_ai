@@ -70,7 +70,7 @@ from twwarhammer3.protocol import (
 SCORED = {"won", "lost", "draw"}
 SOURCES = ("src/gameai", "src/twwarhammer3", "configs/twwarhammer3", "pyproject.toml",
            "uv.lock", ".python-version")
-TRACK = "obs-v3+terrain/act-v2/live-1x"
+TRACK = "obs-v4+terrain/act-v2/live-1x"
 EVALUATOR_VERSION = 2
 CAPTION_LIMIT = 400
 # The mod reads observe_ms, tick_ms, record_replay and stills; speed and pause let
@@ -167,7 +167,9 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
                 write_json(output / "manifest.json", manifest)
                 mailbox = Mailbox(BRIDGE_DIR, job=output.name)
                 mailbox.reset()
-                mailbox.write_session(session(config))
+                mailbox.write_session({**session(config),
+                                       **({"custom": scenario["custom"]}
+                                          if scenario.get("custom") else {})})
                 with OwnedGame(output / "game.log", timeout=config["run_timeout"]) as game:
                     manifest["game"] = game.info
                     with PassiveCapture(BRIDGE_DIR, job=mailbox.job, pid=game.info.get("pid", 0),
@@ -319,6 +321,8 @@ def track_objectives(result: dict, observation: dict) -> None:
     per-tick integrals, plus final supplies and tickets. Acknowledgements separately count
     accepted builds and reinforcement purchases."""
     mode = observation.get("mode") or {}
+    if mode.get("custom"):
+        result["custom_objective"] = mode["custom"]
     victory = any(point.get("victory") for point in mode.get("capture_points") or [])
     if not victory and mode.get("supplies") is None and not mode.get("tickets"):
         return
@@ -327,6 +331,8 @@ def track_objectives(result: dict, observation: dict) -> None:
         measures["supplies_left"] = mode["supplies"]
     if mode.get("tickets"):
         measures["tickets"] = {row["side"]: row["tickets"] for row in mode["tickets"]}
+        if mode.get("tickets_goal") is not None:
+            measures["tickets_goal"] = mode["tickets_goal"]
     totals = (observation.get("evaluation") or {}).get("objectives") or {}
     observed = [value for value in totals.values() if value["observed_ms"] > 0]
     if observed:
@@ -451,6 +457,8 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
                           ended_by="time_limit" if observation.get("remaining_ms") == 0
                           or timer.get("expired") is True
                           else "engine_result")
+            if (observation.get("mode") or {}).get("custom", {}).get("ending") == "scripted":
+                result["ended_by"] = "custom_objective"
             event("result", observation=observation)
             return
         # Evaluation contains hidden enemy totals. It never enters the controller or

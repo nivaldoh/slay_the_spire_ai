@@ -1,0 +1,4 @@
+Battle: land_ambush.
+Scenario objective: Bring both batteries into the circle before 900 seconds.
+Extraction zone: (190, 300), radius 45 m; deadline 900 s of battle time. Status: pending; 1 of 2 batteries currently in zone.
+Designated batteries: f7 (alive, inside zone), f8 (alive, outside zone)

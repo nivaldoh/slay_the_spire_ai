@@ -42,7 +42,8 @@ def test_common_objective_time_uses_integrals_and_preserves_point_identity_and_f
         {"id": "c1", "key": "same_key", "held_s": 3, "observed_s": 6, "share": .5},
         {"id": "c2", "key": "same_key", "held_s": 0, "observed_s": 6, "share": 0}]
     assert measures["resources"] == {"status": "available", "supplies_left": 0, "build": 0,
-                                     "reinforce": 2, "tickets": {"us": 5, "enemy": 10}}
+                                     "reinforce": 2, "tickets": {"us": 5, "enemy": 10},
+                                     "tickets_goal": None}
     # Old observation-voting shares cannot be called time held.
     result["objectives"] = {"victory_held": .8, "held_sum": 8, "samples": 10}
     assert report.shared_measures(result, {"battle_type": "siege"})[

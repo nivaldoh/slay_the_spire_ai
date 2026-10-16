@@ -43,7 +43,7 @@ SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the neares
             "skills": ("Unit skills", "each unit follows its class's default skill")}
 # Unit fields and frame fields the page draws; the job directory keeps the rest.
 UNIT_KEEP = ("id", "x", "z", "bearing", "men", "men0", "hp", "state", "target", "ammo", "ammo0")
-MODE_KEEP = ("role", "capture_points", "supplies", "tickets")
+MODE_KEEP = ("role", "capture_points", "supplies", "tickets", "tickets_goal", "custom")
 TRACK_STEP_MS = 5000  # an army track keeps one centroid per this much battle time
 # The game's custom battle modes in page order (land battles first, then the objective modes,
 # sieges and settlements before survival and the points modes, the rarer layouts last), each
@@ -134,7 +134,7 @@ def harness(definition: dict, job: dict | None) -> str:
     code = ({path: digest for path, digest in files.items() if not path.startswith(PRESENTATION)}
             if files else definition.get("source"))
     scenario = {key: value for key, value in (definition.get("scenario") or {}).items()
-                if key not in ("brief", "status")}
+                if key not in ("brief", "status", "family")}
     settings = {key: definition.get(key) for key in ("game", "track", "observe_ms", "tick_ms",
                                                       "interval_ms", "scenario_name")}
     switches = {key: bool((definition.get(key) or {}).get("enabled"))
@@ -280,6 +280,28 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             "progress_basis": basis,
             "own_left": _share(own.get("remaining"), own.get("registered")),
         }
+        scenario = definition.get("scenario") or {}
+        measures = trial.get("measures") or {}
+        custom = measures.get("custom_objective")
+        if scenario.get("custom"):
+            battles[key].update(
+                progress=_share((custom or {}).get("extracted"),
+                                len((custom or {}).get("assets") or [])),
+                progress_basis="evacuation",
+                objective_outcome=(custom or {}).get("status", "unavailable"))
+        elif mode_of(scenario) in {"conquest", "domination"}:
+            resources = measures.get("resources") or {}
+            battles[key].update(progress=_share((resources.get("tickets") or {}).get("us"),
+                                                resources.get("tickets_goal")),
+                                progress_basis="tickets")
+        elif mode_of(scenario) in {"siege_defence", "siege_attack", "settlement"}:
+            points = (measures.get("objective_time") or {}).get("points") or []
+            held = sum(p["held_s"] for p in points)
+            observed = sum(p["observed_s"] for p in points)
+            battles[key].update(progress=_share(held, observed), progress_basis="objective_time")
+        elif mode_of(scenario) == "survival":
+            # Endless waves have no finite enemy denominator or known completion target.
+            battles[key].update(progress=None, progress_basis="duration")
         by_name.setdefault(scenario_name(definition), []).append(key)
 
     def row(key):
@@ -337,6 +359,8 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             "id": f"scenario-{len(scenarios) + 1}", "name": name,
             "title": _title(note, {**scenario, "name": name}),
             "question": note.get("question"),
+            "family": note.get("family") or scenario.get("family"),
+            "core_candidate": note.get("core_candidate", False),
             "challenge": note.get("challenge") or scenario.get("brief"),
             "footnote": note.get("footnote"),
             "mode": mode_of(scenario),
