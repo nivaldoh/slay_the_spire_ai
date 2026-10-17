@@ -89,11 +89,12 @@ class SmallDiagnostic(Hold):
                 if result.get("error") == "unit_routing":
                     self.routing_at[result["unit"]] = ack["applied_ms"] / 1000
 
-    def open_point(self, points: list[dict]) -> dict:
-        """The first point on clear terrain and away from refused moves, else the first."""
-        # Live S2/S3 runs retried posts inside the map's central rock hundreds of times.
+    def open_point(self, points: list[dict]) -> dict | None:
+        """The first point on clear terrain and away from refused moves, if any."""
+        # Live S2/S3 runs retried posts inside the map's central rock hundreds of times;
+        # with no open point the caller acts from where it stands instead.
         return next((point for point in points if _clear(self.terrain, point) and all(
-            distance(point, bad) >= 30 for bad in self.unreachable)), points[0])
+            distance(point, bad) >= 30 for bad in self.unreachable)), None)
 
 
 class FeintFlank(SmallDiagnostic):
@@ -177,7 +178,7 @@ class CrossKite(SmallDiagnostic):
                          "Enable skirmish/fire-at-will, split to opposite sides at "
                          "120 m, shoot while at 85-145 m and withdraw radially when closer. "
                          "A post on a restricted cell or near a refused move rotates up to 45 "
-                         "degrees around the target. "
+                         "degrees around the target; with none open, shoot from where it is. "
                          "With no ammunition, charge the remaining visible target. "
                          "Fixed initial approach axis; no hidden state or path search."}
 
@@ -206,11 +207,11 @@ class CrossKite(SmallDiagnostic):
                 continue
             gap = distance(unit, target)
             post = self.post(target, 1 if index % 2 else -1)
-            if distance(unit, post) <= 25:
+            if post is None or distance(unit, post) <= 25:
                 self.positioned.add(unit["id"])
             if gap < 85:
                 orders += self.move(unit, _offset(target, _direction(target, unit), 125), target)
-            elif unit["id"] not in self.positioned or gap > 145:
+            elif post is not None and (unit["id"] not in self.positioned or gap > 145):
                 orders += self.move(unit, post, target)
             else:
                 orders += self.attack(unit, target, "ranged")
@@ -300,7 +301,8 @@ class Crossfire(SmallDiagnostic):
                          "and keep it until it routs. Guns wait 30 m behind them until that "
                          "target is in melee, then move 100 m from it at its bearing +-80 "
                          "degrees (one each side) and fire only at it; a post on restricted or "
-                         "refused ground rotates up to 45 degrees. A gun within 50 m of "
+                         "refused ground rotates up to 45 degrees (none open: fire from where "
+                         "it stands). A gun within 50 m of "
                          "another enemy steps 120 m away from it; without ammunition it "
                          "joins the melee. No hidden state or line-of-sight test."}
 
@@ -336,7 +338,7 @@ class Crossfire(SmallDiagnostic):
             elif not pinned:
                 behind = _offset(anchor, _direction(target, anchor), 30, 25 if index % 2 else -25)
                 orders += self.move(gun, behind, target)
-            elif distance(gun, post) > 25:
+            elif post is not None and distance(gun, post) > 25:
                 orders += self.move(gun, post, target)
             else:
                 orders += self.attack(gun, target, "ranged")
@@ -448,7 +450,8 @@ class HammerAnvil(SmallDiagnostic):
                          "it routs. Cavalry waits 40 m behind and 60 m beside the infantry "
                          "until that target is in melee, then rides via a 90 m side "
                          "waypoint to 70 m behind it and charges (waypoints on restricted or "
-                         "refused ground rotate up to 45 degrees). After 8 s of observed "
+                         "refused ground rotate up to 45 degrees, or are skipped). After 8 s of "
+                         "observed "
                          "contact, or the target's rout during the charge, it withdraws "
                          "120 m from the nearest enemy for 10 s (up to 20 s while enemies "
                          "stay within 80 m), then repeats on the infantry's current target. "
@@ -497,9 +500,9 @@ class HammerAnvil(SmallDiagnostic):
         rear = self.open_point([_offset(target, front, -70 * math.cos(math.radians(turn)),
                                         70 * math.sin(math.radians(turn)))
                                 for turn in TURNS])
-        if self.phase == "side" and distance(group, side) < 25:
+        if self.phase == "side" and (side is None or distance(group, side) < 25):
             self.phase = "rear"
-        if self.phase == "rear" and distance(group, rear) < 25:
+        if self.phase == "rear" and (rear is None or distance(group, rear) < 25):
             self.phase, self.contact_s = "charge", None
             self.charges += 1
         if self.phase == "charge":

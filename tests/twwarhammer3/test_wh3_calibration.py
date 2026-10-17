@@ -437,6 +437,30 @@ def test_hammer_anvil_waits_for_the_pin_rides_to_the_rear_charges_and_pulls_out(
     assert policy.phase == "side"  # the pin still holds: the next cycle starts at once
 
 
+REFUSED_EVERYWHERE = [{"x": x, "z": z} for x in range(-150, 151, 20)
+                      for z in range(-140, 161, 20)]
+
+
+def test_with_every_post_refused_guns_shoot_and_knights_charge_from_where_they_are():
+    # Live S3 re-run: with all rotated posts refused, the old fallback retried one 434 times.
+    gun = {"class": "missile", "ammo": 20, "behaviours": {"fire_at_will": False}}
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "spearmen", 0, 0, state=["melee"]),
+           unit("f2", "handgunners", -20, -60, **gun)],
+           "enemy": [unit("e1", "warriors", 0, 10, bearing=180, state=["melee"])]}
+    policy = Crossfire()
+    policy.unreachable = REFUSED_EVERYWHERE
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert [(o["type"], o.get("mode")) for o in by_unit(orders, "f2")] == [("attack", "ranged")]
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "swordsmen", 0, 0, state=["melee"]),
+           unit("f2", "knights", 40, -20, **{"class": "cavalry"})],
+           "enemy": [unit("e1", "swordsmen", 0, 10, state=["melee"])]}
+    policy = HammerAnvil()
+    policy.unreachable = REFUSED_EVERYWHERE
+    charge = by_unit(policy.decide(obs), "f2")[0]
+    assert charge["type"] == "attack" and charge["target"] == "e1" and policy.phase == "charge"
+
+
 def test_hammer_anvil_pulls_out_when_its_charge_target_routs_and_moves_on():
     obs = {"time_ms": 1000, "friendly": [unit("f1", "swordsmen", 0, 0, state=["melee"]),
            unit("f2", "knights", 0, 80, **{"class": "cavalry"})],
