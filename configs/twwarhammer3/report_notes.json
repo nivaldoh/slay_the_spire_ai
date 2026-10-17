@@ -285,6 +285,16 @@
       "core_candidate": false,
       "footnote": "Development candidate S6 (b18), partly overlapping S1's rear charges. Defined only: the lordless setup and funds await their live check, then an attack-nearest floor and a disclosed hammer-and-anvil diagnostic at 0 and 5 s observation age."
     },
+    "emp-knights-emp-swordsmen-2": {
+      "title": "Knights and swordsmen against two units",
+      "short": "Hammer and anvil",
+      "noun": "small combined assault",
+      "heading": "Pin one unit, break it from behind, then the other",
+      "challenge": "One Swordsmen unit and one Empire Knights unit attack two Empire Swordsmen units. The infantry can hold one unit for a while but not both, and the knights suffer in a prolonged melee. The attacker loses at the 20-minute deadline.",
+      "family": "hammer and anvil",
+      "core_candidate": false,
+      "footnote": "S6 step down: against three Swordsmen the attack-nearest floor and the disclosed hammer-and-anvil diagnostic lost every battle. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+    },
     "emp-pitched-grn-20": {
       "title": "Twenty against twenty",
       "short": "Scale and context",
@@ -325,6 +335,16 @@
       "core_candidate": false,
       "footnote": "S7 second step: the hold floor won the four-unit version easily. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
     },
+    "dwf-longbeards-emp-greatswords-2": {
+      "title": "Two Longbeard units against Greatswords",
+      "short": "Deny the envelopment",
+      "noun": "small defence",
+      "heading": "Armour-piercing attackers on the flanks",
+      "challenge": "Two Dwarf Longbeard units defend against two Empire Greatswords units and two Swordsmen units. The Greatswords' armour-piercing blades cut through dwarf armour; blocked ground and the map edge limit how many attackers can reach the defenders at once.",
+      "family": "deny the envelopment",
+      "core_candidate": false,
+      "footnote": "S7 third step: the hold floor won against four and against six Swordsmen, so the attackers change in quality instead of number. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+    },
     "dwf-thunderers-grn-trolls": {
       "title": "Thunderers against regenerating Trolls",
       "short": "Focus fire",
@@ -335,6 +355,16 @@
       "core_candidate": false,
       "footnote": "Development candidate S8 (b20). Defined only: the lordless setup awaits its live check, then a hold floor and a disclosed focus-fire diagnostic at 0 and 5 s observation age."
     },
+    "dwf-thunderers-grn-trolls-2": {
+      "title": "Thunderers against two Troll units",
+      "short": "Focus fire",
+      "noun": "small missile defence",
+      "heading": "Fewer trolls, the same healing",
+      "challenge": "Two Dwarf Thunderer units and one Dwarf Warriors unit defend against two regenerating Troll units. Damage spread across the trolls regenerates; the guns must break one unit before the clubs reach them.",
+      "family": "focus fire against regeneration",
+      "core_candidate": false,
+      "footnote": "S8 step down: against three Trolls the hold floor and the disclosed focus-fire diagnostic lost, and no Troll died. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+    },
     "grn-giant-ksl-streltsi": {
       "title": "A lone Giant against spears and rifles",
       "short": "Monster target choice",
@@ -344,6 +374,16 @@
       "family": "a lone monster's target choice",
       "core_candidate": false,
       "footnote": "Development candidate S9 (b20). Defined only: the one-unit lordless setup awaits its live check, then an attack-nearest floor and a disclosed target-choice diagnostic at 0 and 5 s observation age."
+    },
+    "grn-giant-ksl-streltsi-trolls": {
+      "title": "A Giant and Trolls against spears and rifles",
+      "short": "Monster target choice",
+      "noun": "small monster assault",
+      "heading": "Two large units, one braced target",
+      "challenge": "A Greenskin Giant and one Troll unit attack a braced Kislev Kossar spear unit and a Streltsi rifle unit. Both Greenskin units are large; the spears fight well against them, and the riflemen do not, but they shoot armour-piercing rounds during the approach.",
+      "family": "monster target choice",
+      "core_candidate": false,
+      "footnote": "S9 rebalance: with the Giant alone, the attack-nearest floor and the disclosed target-choice diagnostic lost with either target first. A second, cheaper monster keeps the target question; removing an enemy unit would not. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
     },
     "skv-spears-sla-hellstriders": {
       "title": "Skaven spears against Hellstriders",
@@ -374,6 +414,16 @@
       "family": "counter-battery",
       "core_candidate": false,
       "footnote": "Development candidate S11 (b20), the lowest-confidence item of its batch. Defined only: the lordless setup awaits its live check, then an attack-nearest floor and a disclosed counter-battery diagnostic at 0 and 5 s observation age."
+    },
+    "dwf-cannon-grn-lobbers-1": {
+      "title": "A Dwarf cannon against one Rock Lobber",
+      "short": "Counter-battery",
+      "noun": "small artillery assault",
+      "heading": "Silence the lobber, then face the blocks",
+      "challenge": "One Dwarf Cannon and one Dwarf Warriors unit attack one Goblin Rock Lobber screened by two large Goblin Spearmen units. Silencing the lobber first costs rounds and time the cannon also needs against the spearmen.",
+      "family": "counter-battery",
+      "core_candidate": false,
+      "footnote": "S11 step down: against two lobbers the attack-nearest floor and the disclosed counter-battery diagnostic lost. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
     }
   },
   "units": {

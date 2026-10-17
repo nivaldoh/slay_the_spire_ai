@@ -1551,6 +1551,18 @@
     },
     "calibration_change": "Small focused candidate S6 (b18, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: player 1225 (375 + 850), enemy 1125. Empire mirror as in emp5-emp5. Overlaps S1 (rear charges); keep both only if their screens show different failure modes. Scripted attack_nearest floor, then the disclosed HammerAnvil diagnostic at 0 and 5 s observation age, before any model battle."
   },
+  "emp-knights-emp-swordsmen-2": {
+    "base": "emp-knights-emp-swordsmen",
+    "name": "emp-knights-emp-swordsmen-2",
+    "brief": "One Swordsmen unit and one Empire Knights unit attack two Empire Swordsmen units, with no lords. The infantry can hold one unit for a while but not both; the knights hit hard from behind but suffer in a prolonged melee. Pinning, rear charges, pulling out and moving on after a rout compete with a frontal charge. Hypotheses, not a prescribed solution; winnability is not yet shown.",
+    "enemy": {
+      "units": [
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen"
+      ]
+    },
+    "calibration_change": "S6 step down (2026-10-17, delegated while the owner was away). Against three Swordsmen the attack-nearest floor lost (bench-b20-s6-floor-20261017: 490 s, the knights routed with 7 of 45 left) and HammerAnvil lost all four battles; on b23, with no refused moves (bench-b23-s6-hammer-r2-20261017: 493 s and the 1205 s timer), the pinning Swordsmen routed at 308 s and 277 s and the enemy kept 51% and 73% of its men. One enemy Swordsmen unit fewer (database 375; enemy 750, player 1225); funds 1250 and everything else unchanged. Attack-nearest floor first, since it may now win; HammerAnvil at 0/5 s only after a floor loss."
+  },
   "emp-pitched-grn-20": {
     "name": "emp-pitched-grn-20",
     "family": "scale and context",
@@ -1766,6 +1778,23 @@
     },
     "calibration_change": "S7 second step (2026-10-17). The hold floor won the four-unit version easily (bench-b20-s7-floor-20261017: 469 s, Longbeards 69 and 70 of 75, all Swordsmen routed), the draft's stated risk. Six Swordsmen (database 375 each, 2250) so an envelopment is possible; funds 2500. Hold floor first; CornerHold at 0/5 s after a floor loss."
   },
+  "dwf-longbeards-emp-greatswords-2": {
+    "base": "dwf-longbeards-emp-swordsmen",
+    "name": "dwf-longbeards-emp-greatswords-2",
+    "brief": "Two Dwarf Longbeard units, with no lord, defend against two Empire Greatswords units and two Swordsmen units. The Greatswords' armour-piercing blades cut through the dwarf armour that turns ordinary swords, and all four units are faster and can wrap the dwarfs' flanks and rear in the open; the observation carries the map bounds and restricted terrain cells but no elevation. Where to stand before contact, and which face meets the Greatswords, compete with holding where deployed. Hypotheses, not a prescribed solution; winnability is not yet shown.",
+    "enemy": {
+      "units": [
+        "wh_main_emp_inf_greatswords",
+        "wh_main_emp_inf_greatswords",
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen"
+      ]
+    },
+    "expect": {
+      "funds_amount": 2750
+    },
+    "calibration_change": "S7 third step (2026-10-17, delegated while the owner was away). The hold floor won against four Swordsmen (bench-b20-s7-floor-20261017: 469 s, Longbeards 69 and 70 of 75) and against six (bench-b23-s7-floor-6-20261017: 612 s, Longbeards 58 and 39 of 75): numbers alone do not bind. Database stats: Swordsmen blades deal 21 base + 7 armour-piercing damage against Longbeard armour 100. From the four-unit version, two Swordsmen become Greatswords (database 850 each; 10 base + 25 armour-piercing, +14 against infantry, plate armour 95, leadership 75; custom-battle card for wh_main_emp_empire). Four attackers keep the envelopment. Enemy 2450 (2 x 850 + 2 x 375), near the six-Swordsmen step's 2250 that the floor won with the Longbeards worn down; player 1400; funds 2750. Four Greatswords (3400) are the next step if the floor wins. Hold floor first; CornerHold at 0/5 s only after a floor loss."
+  },
   "dwf-thunderers-grn-trolls": {
     "base": "ksl-raiders-emp-halberds",
     "name": "dwf-thunderers-grn-trolls",
@@ -1799,6 +1828,18 @@
     ],
     "calibration_change": "Small focused candidate S8 (b20, 2026-10-17; docs/twwarhammer3/small-scenarios-2.md). Database costs: player 1850 (2 x 700 + 450), enemy 2250 (3 x 750); funds 2500 for headroom. Defined only: lordless Dwarf/Greenskin recruitment and the Trolls' regeneration in battle are unverified. Floor hold first."
   },
+  "dwf-thunderers-grn-trolls-2": {
+    "base": "dwf-thunderers-grn-trolls",
+    "name": "dwf-thunderers-grn-trolls-2",
+    "brief": "Two Dwarf Thunderer units and one Dwarf Warriors unit defend against two regenerating Troll units, with no lords. Spread fire heals back; which troll unit the guns shoot, and who takes the first contact in front of them, decide whether a troll unit breaks before the clubs reach the guns.",
+    "enemy": {
+      "units": [
+        "wh_main_grn_mon_trolls",
+        "wh_main_grn_mon_trolls"
+      ]
+    },
+    "calibration_change": "S8 step down (2026-10-17, delegated while the owner was away). Against three Trolls the hold floor lost at 136 s (bench-b20-s8-floor-20261017) and FocusFire lost both battles at 147 s and 149 s (bench-b22-s8-focus-20261017): no Troll died after 66-120 rounds per gun unit, and every Dwarf unit routed. One Troll unit fewer (database 750; enemy 1500, player 1850); funds 2500 and everything else unchanged. Hold floor first, since it may now win; FocusFire at 0/5 s only after a floor loss."
+  },
   "grn-giant-ksl-streltsi": {
     "base": "ksl-raiders-emp-halberds",
     "name": "grn-giant-ksl-streltsi",
@@ -1827,6 +1868,22 @@
       "wh3_main"
     ],
     "calibration_change": "Small focused candidate S9 (b20, 2026-10-17; docs/twwarhammer3/small-scenarios-2.md). Database costs: player 1400, enemy 1350 (500 + 850); funds 1600. Defined only: a one-unit lordless monster army is unverified. Floor attack_nearest first."
+  },
+  "grn-giant-ksl-streltsi-trolls": {
+    "base": "grn-giant-ksl-streltsi",
+    "name": "grn-giant-ksl-streltsi-trolls",
+    "family": "monster target choice",
+    "brief": "A Greenskin Giant and one Troll unit attack a Kislev Kossar spear unit and a Streltsi rifle unit, with no lords. Both Greenskin units are large, and the spears are braced against large units; the riflemen are not, but they shoot armour-piercing rounds during the approach. Which unit each monster reaches first, together or apart, and by what route, decides the fight.",
+    "player": {
+      "units": [
+        "wh_main_grn_mon_giant",
+        "wh_main_grn_mon_trolls"
+      ]
+    },
+    "expect": {
+      "funds_amount": 2400
+    },
+    "calibration_change": "S9 rebalance (2026-10-17, delegated while the owner was away). With the Giant alone (1400 against 1350) neither target order won: the attack-nearest floor broke the Kossars first, then the untouched Streltsi shot the Giant until it routed (bench-b20-s9-floor-20261017: lost at 542 s); MonsterTarget went for the Streltsi first (68 to 17 and 38 men) but the Giant routed early and the Kossars never engaged (bench-b23-s9-monster-20261017: lost at 276 s and 242 s). One enemy unit fewer would leave no target to choose, so the player gets a second, smaller monster instead: one Troll unit (database 750, the cheapest base-game Greenskin monster card; a second Giant would double the army to 2800). Both player units are large, so the Kossars' bracing still applies to each, and one can now pin the spears while the other reaches the riflemen. Player 2150, enemy 1350; funds 2400. The family drops 'lone'. Attack-nearest floor first; MonsterTarget (which sends every unit to the same target by the same flank route) at 0/5 s only after a floor loss."
   },
   "skv-spears-sla-hellstriders": {
     "base": "ksl-raiders-emp-halberds",
@@ -1910,5 +1967,18 @@
       "wh_main"
     ],
     "calibration_change": "Small focused candidate S11 (b20, 2026-10-17; docs/twwarhammer3/small-scenarios-2.md), the lowest-confidence item of the batch. Database costs: player 1250 (800 + 450), enemy 1750 (2 x 550 + 2 x 325); funds 1950. Defined only: lordless recruitment and the AI's use of defending artillery are unverified. Floor attack_nearest first."
+  },
+  "dwf-cannon-grn-lobbers-1": {
+    "base": "dwf-cannon-grn-lobbers",
+    "name": "dwf-cannon-grn-lobbers-1",
+    "brief": "One Dwarf Cannon and one Dwarf Warriors unit attack one Goblin Rock Lobber screened by two Goblin Spearmen units, with no lords. Marching under the lobber's fire is costly; silencing it first takes the cannon's limited rounds and time, while the two large goblin blocks still outnumber the Warriors.",
+    "enemy": {
+      "units": [
+        "wh_main_grn_art_goblin_rock_lobber",
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_goblin_spearmen"
+      ]
+    },
+    "calibration_change": "S11 step down (2026-10-17, delegated while the owner was away). Against two Rock Lobbers neither target order won: the attack-nearest floor routed the Goblin Spearmen but the intact lobbers broke the Warriors and the cannon crew (bench-b20-s11-floor-20261017: lost at 509 s), and CounterBattery silenced the lobbers (one routed, then both) but the lone Warriors and the cannon then lost to the two 120-man Goblin Spearmen blocks (bench-b23-s11-counter-20261017: lost at 346 s and 564 s). One Rock Lobber fewer (database 550; enemy 1200, player 1250); funds 1950 and everything else unchanged. Attack-nearest floor first, since it may now win; CounterBattery at 0/5 s only after a floor loss."
   }
 }
