@@ -215,6 +215,11 @@ million tokens:
 | `stepfun/step-5-preview` | $1.00 | $2.70 | low, medium, high (always reasons) |
 | `qwen/qwen3.6-35b-a3b` | $0.15 | $1.00 | none, medium (reasoning on/off) |
 
+Qwen3.6 is the [student model](../posttraining.md#student-model), not a candidate; its
+catalogue lists no effort levels, and both of its modes played S1 in
+[queue E2](log.md#2026-10-17-queue-e2-qwen36-on-s1-step-floors-and-harness-b25). The next
+two paragraphs are about the first three models.
+
 Efforts are declared per model (2026-10-16 evening, for the owner's all-modes coverage),
 from the catalogue's `supported_efforts`; `low` is the only one played so far. All seven
 other modes passed one WH3 reply-schema call each on 2026-10-16 ($0.0061 in total;

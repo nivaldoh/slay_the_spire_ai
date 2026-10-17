@@ -19,8 +19,9 @@ the prompt and memory, not weight training.
   JSON output. The owner chose Luna for cost; `gpt-6-astra`, `gpt-6-sol` and
   `gpt-6.1-sol` have declared prices in `gameai/providers.py` and can be selected with
   `--model`. `spire play --provider openrouter` plays the open-weight models declared there
-  for OpenRouter (Qwen3.6-35B-A3B so far, [posttraining.md](../../posttraining.md)); a model
-  or effort its provider does not declare is refused before the job directory exists.
+  for OpenRouter (only Qwen3.6-35B-A3B has played, [posttraining.md](../../posttraining.md));
+  a model or effort its provider does not declare is refused before the job directory
+  exists.
 - Spend: every call is priced from its reported usage at the standard-tier list prices in
   `gameai.llm.PRICES` (read 2026-10-12) and appended to a ledger. A call is refused
   before it is sent if the ledger's total plus that call's worst-case cost (prompt bytes as
