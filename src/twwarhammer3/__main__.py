@@ -100,6 +100,9 @@ def main() -> int:
     digest.add_argument("path", type=Path, help="job directory or job/episode-NNNN")
     digest.add_argument("--at", type=float, metavar="SECONDS",
                         help="with an episode: the decision nearest this battle time in full")
+    digest.add_argument("--units", action="store_true",
+                        help="per episode: each unit's men, ammunition, first melee and rout, "
+                             "and the engine's refusals")
 
     watch = commands.add_parser("watch", help="Follow a job live: model inputs and outputs")
     watch.add_argument("path", type=Path, nargs="?",
@@ -267,9 +270,11 @@ def main() -> int:
         return 0 if manifest["status"] == "completed" else 1
 
     if args.command == "digest":
-        from twwarhammer3.battle.digest import decision_at, digest
+        from twwarhammer3.battle.digest import decision_at, digest, units_digest
 
-        if args.at is None:
+        if args.units:
+            print(units_digest(args.path))
+        elif args.at is None:
             print(digest(args.path))
         elif (args.path / "trace.jsonl").exists():
             print(decision_at(args.path, args.at))

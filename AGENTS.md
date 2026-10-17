@@ -110,7 +110,7 @@ uv run python -m spire watch runs/fullrun/<job>    # wait for the next finished 
 uv run python -m spire spend       # Spire API ledger total
 uv run python -m spire stats       # milestones per model, effort and harness; --rebuild from runs/
 uv run python -m twwarhammer3 doctor   # read-only: pins, preferences, running game
-uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>   # add /episode-0000 [--at S]
+uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>   # add /episode-0000 [--at S]; --units
 uv run python -m twwarhammer3 watch    # follow the running job beside the game; --prompts
 uv run python -m twwarhammer3 watch runs/twwarhammer3/battle/<job> --next   # next episode, stall or end
 uv run python -m twwarhammer3 stats    # results by scenario, policy, model, harness and mode

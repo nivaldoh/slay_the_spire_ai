@@ -3,7 +3,7 @@ import json
 import pytest
 from wh3_fixtures import observation
 
-from twwarhammer3.battle.digest import decision_at, digest
+from twwarhammer3.battle.digest import decision_at, digest, units_digest
 
 ARMY = {"subculture": "wh3_main_sc_kho_khorne", "units": None}
 
@@ -83,6 +83,27 @@ def test_runs_without_new_orders_fold_into_one_line_but_a_refusal_does_not(tmp_p
         f"    13s  {state}  no new orders | Wait.",
         f"    16s  {state}  no new orders | Wait.",
     ]
+
+
+def test_units_digest_tracks_each_unit_from_first_to_last_sight_and_counts_refusals(tmp_path):
+    first, later = observation(1000), observation(9000, visible=("e1", "e2"))
+    later["friendly"][1].update(men=60, state=["melee"])
+    later["enemy"][0].update(men=40, state=["routing"])
+    for episode in ("episode-0000", "episode-0001"):
+        write_episode(tmp_path / episode, [
+            {"kind": "observation", "observation": first},
+            ack(2, [{"index": 1, "unit": "f2", "ok": False, "error": "unreachable"},
+                    {"index": 2, "unit": "f2", "ok": False, "error": "unreachable"},
+                    {"index": 3, "unit": "f1", "ok": True}]),
+            {"kind": "observation", "observation": later}])
+    lines = units_digest(tmp_path).splitlines()
+    assert lines[0] == "episode-0000 units:" and "episode-0001 units:" in lines
+    assert "| friendly | f2 | chaos_warriors_0 | 110 → 60 |  | 9.0 |  |" in lines
+    assert "| enemy | e1 | dwarf_warriors_0 | 90 → 40 |  |  | 9.0 |" in lines
+    assert "| enemy | e2 | grudge_thrower | 4 → 4 |  |  |  |" in lines
+    assert lines[lines.index("episode-0001 units:") - 2] == "engine refusals: unreachable 2"
+    assert units_digest(tmp_path / "episode-0001") == "\n".join(
+        lines[lines.index("episode-0001 units:"):])
 
 
 def test_decision_at_prints_the_prompt_reply_orders_and_verdicts(tmp_path):

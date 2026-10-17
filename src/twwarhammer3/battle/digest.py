@@ -3,6 +3,7 @@
     python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>                 episode table
     python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>/episode-0000    decision lines
     python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>/episode-0000 --at 95
+    python -m twwarhammer3 digest runs/twwarhammer3/battle/<job> --units         unit fates
 
 An episode prints one line per decision that sent orders or carries a model's reason:
 battle time, both sides' strength in the state the policy saw (units still fighting / men;
@@ -10,10 +11,13 @@ enemies as seen of the roster), the measured delay, the orders, the engine's rej
 a commander's adopted plan with its age and the model's reason. A run of decisions that
 sent no new orders becomes one line with the last reason. Then the final state and the
 model's last notes. ``--at`` prints the one decision nearest a battle time in full: the
-prompt, the raw reply, the orders and the engine's verdicts. It only reads evidence.
+prompt, the raw reply, the orders and the engine's verdicts. ``--units`` prints, per
+episode, each unit's first and last observed men and ammunition, when it was first seen
+in melee and routing, and the engine's refusals by error. It only reads evidence.
 """
 
 import json
+from collections import Counter
 from itertools import groupby
 from pathlib import Path
 
@@ -242,6 +246,46 @@ def job_digest(job: Path) -> str:
         item["policy"] = json.loads(result.read_text()).get("policy", item["policy"])
         lines.append("| " + " | ".join(str(item[column]) for column in DIGEST_COLUMNS) + " |")
     return "\n".join(lines)
+
+
+def unit_fates(episode: Path) -> str:
+    """One table row per unit seen in the episode, then the engine's refusals by error."""
+    fates, refusals = {}, Counter()
+    for raw in (episode / "trace.jsonl").open():
+        record = json.loads(raw)
+        if record["kind"] == "ack":
+            refusals.update(result.get("error", "unknown")
+                            for result in record["ack"].get("results", []) if not result.get("ok"))
+        observation = record.get("observation") or {}
+        seconds = observation.get("time_ms", 0) / 1000
+        for side in ("friendly", "enemy"):
+            for unit in observation.get(side, []):
+                if "men" not in unit:
+                    continue
+                fate = fates.setdefault(unit["id"], {
+                    "side": side, "type": short_type(unit.get("type")), "men0": unit["men"],
+                    "ammo0": unit.get("ammo"), "melee": None, "routing": None})
+                fate.update(men=unit["men"], ammo=unit.get("ammo"))
+                for flag in ("melee", "routing"):
+                    if flag in unit.get("state", []) and fate[flag] is None:
+                        fate[flag] = seconds
+    lines = [f"{episode.name} units:", "| side | id | type | men | ammo | first melee s"
+             " | first routing s |", "|---|---|---|---|---|---|---|"]
+    for uid, fate in fates.items():
+        ammo = f"{fate['ammo0']} → {fate['ammo']}" if fate["ammo0"] else ""
+        times = [f"{fate[flag]:.1f}" if fate[flag] is not None else ""
+                 for flag in ("melee", "routing")]
+        lines.append(f"| {fate['side']} | {uid} | {fate['type']} | {fate['men0']} → {fate['men']}"
+                     f" | {ammo} | {' | '.join(times)} |")
+    lines.append("engine refusals: " + (", ".join(f"{error} {count}" for error, count
+                                                  in refusals.most_common()) or "none"))
+    return "\n".join(lines)
+
+
+def units_digest(path: Path) -> str:
+    episodes = [path] if (path / "trace.jsonl").exists() else sorted(
+        episode for episode in path.glob("episode-*") if (episode / "trace.jsonl").exists())
+    return "\n\n".join(unit_fates(episode) for episode in episodes)
 
 
 def digest(path: Path) -> str:

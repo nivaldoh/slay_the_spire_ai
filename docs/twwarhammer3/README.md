@@ -114,6 +114,7 @@ uv run python -m twwarhammer3 watch [JOB]                 # live beside the game
 uv run python -m twwarhammer3 watch JOB --next            # wait for an episode, stall or end
 uv run python -m twwarhammer3 digest JOB[/episode-NNNN]   # per-episode table, or one battle
 uv run python -m twwarhammer3 digest JOB/episode-NNNN --at SECONDS  # one decision in full
+uv run python -m twwarhammer3 digest JOB[/episode-NNNN] --units  # unit fates and refusals
 uv run python -m twwarhammer3 stats                       # results.csv by scenario and controller
 uv run python -m twwarhammer3 report JOB [JOB ...] --output runs/twwarhammer3/reports/NAME
 uv run python -m twwarhammer3 export JOB [JOB ...] --output runs/twwarhammer3/exports/NAME
