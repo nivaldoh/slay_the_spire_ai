@@ -75,7 +75,9 @@ SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the neares
             "twwarhammer3.battle.calibration:SpellWindow": (
                 "Spell window", "scenario diagnostic: cast only where friends are clear"),
             "twwarhammer3.battle.calibration:HammerAnvil": (
-                "Hammer and anvil", "scenario diagnostic: pin, rear-charge, pull out and repeat")}
+                "Hammer and anvil", "scenario diagnostic: pin, rear-charge, pull out and repeat"),
+            "twwarhammer3.battle.calibration:CornerHold": (
+                "Corner hold", "scenario diagnostic: back into a map corner and hold a line")}
 # Unit fields and frame fields the page draws; the job directory keeps the rest.
 UNIT_KEEP = ("id", "x", "z", "bearing", "men", "men0", "hp", "state", "target", "ammo", "ammo0")
 MODE_KEEP = ("role", "capture_points", "supplies", "tickets", "tickets_goal", "custom")

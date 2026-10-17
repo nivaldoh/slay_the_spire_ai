@@ -8,6 +8,7 @@ from twwarhammer3.battle.calibration import (
     CasterSkirmish,
     CentralDefence,
     CoordinatedRush,
+    CornerHold,
     Crossfire,
     CrossKite,
     FeintFlank,
@@ -47,7 +48,8 @@ def test_feint_flank_waits_for_rear_position_then_withdraws_after_contact():
 
 
 def test_small_diagnostics_do_not_use_hidden_enemies_or_order_routers():
-    for cls in (FeintFlank, CrossKite, Bodyguard, Crossfire, SpellWindow, HammerAnvil):
+    for cls in (FeintFlank, CrossKite, Bodyguard, Crossfire, SpellWindow, HammerAnvil,
+                CornerHold):
         obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 0)],
                "enemy": [], "evaluation": {"enemy": [unit("e1", "hidden", 5, 5)]},
                "enemy_roster": [unit("e1", "hidden", 5, 5)]}
@@ -409,3 +411,55 @@ def test_hammer_anvil_pulls_out_when_its_charge_target_routs_and_moves_on():
     validate_orders(orders, obs)
     assert by_unit(orders, "f1")[0]["target"] == "e2"  # no chasing the router
     assert policy.phase == "withdraw" and by_unit(orders, "f2")[0]["type"] == "move"
+
+
+def corner_terrain():
+    rows = ["." * 25 for _ in range(25)]
+    rows[0] = "#" + rows[0][1:]  # the sample holding the south-west corner post
+    return {"x0": -384, "z0": -384, "cell_m": 32, "sample_width_m": 8, "rows": rows,
+            "bounds": {"min_x": -400, "max_x": 400, "min_z": -400, "max_z": 400}}
+
+
+def test_corner_hold_takes_its_own_side_corner_past_blocked_cells_and_faces_out():
+    obs = {"time_ms": 1000, "terrain": corner_terrain(),
+           "friendly": [unit("f1", "longbeards", -300, -310), unit("f2", "longbeards", -310, -300)],
+           "enemy": [unit("e1", "swordsmen", 300, 300), unit("e2", "swordsmen", 320, 280)]}
+    original = deepcopy(obs)
+    policy = CornerHold()
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert obs == original
+    # 30 m inside the south-west corner is restricted; one 32 m step toward the centre.
+    assert all(math.isclose(policy.corner[axis], -370 + 32 / math.sqrt(2)) for axis in "xz")
+    assert [order["type"] for order in orders] == ["move", "move"]
+    for order in orders:
+        assert math.isclose(math.hypot(order["x"] - policy.corner["x"],
+                                       order["z"] - policy.corner["z"]), 16, abs_tol=1e-6)
+        assert 40 < order["facing"] < 50
+    corner = dict(policy.corner)
+    obs["enemy"][0].update(x=-300, z=300)
+    policy.decide(obs)
+    assert policy.corner == corner  # chosen once
+
+
+def test_corner_hold_clamps_its_line_holds_and_fights_only_in_contact():
+    obs = {"time_ms": 1000, "terrain": {**corner_terrain(), "rows": []},
+           "friendly": [unit("f1", "longbeards", -330, -330), unit("f2", "longbeards", -340, -320)],
+           "enemy": [unit("e1", "swordsmen", -370, 300)]}
+    policy = CornerHold()
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert policy.corner == {"x": -370, "z": -370}
+    assert all(-370 <= order["x"] and -370 <= order["z"] for order in orders)
+    for order in orders:
+        next(u for u in obs["friendly"] if u["id"] == order["unit"]).update(
+            x=order["x"], z=order["z"])
+    obs["time_ms"] = 5000
+    del obs["terrain"]  # later observations may omit the terrain snapshot
+    assert policy.decide(obs) == []
+    obs["enemy"][0].update(x=obs["friendly"][0]["x"] + 5, z=obs["friendly"][0]["z"] + 5)
+    obs["friendly"][0]["state"] = ["melee"]
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert orders == [{"unit": "f1", "type": "attack", "run": True, "mode": "melee",
+                       "target": "e1"}]

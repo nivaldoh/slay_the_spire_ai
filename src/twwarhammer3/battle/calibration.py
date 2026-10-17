@@ -492,6 +492,80 @@ class HammerAnvil(SmallDiagnostic):
                 "target": self.target}
 
 
+def _clear(terrain: dict, point: dict) -> bool:
+    """Whether the terrain sample holding ``point`` is unrestricted (outside the grid: yes)."""
+    rows, cell = terrain.get("rows") or [], terrain.get("cell_m")
+    if not rows or not cell:
+        return True
+    row = round((point["z"] - terrain["z0"]) / cell)
+    column = round((point["x"] - terrain["x0"]) / cell)
+    return not (0 <= row < len(rows) and 0 <= column < len(rows[row])) or rows[row][column] != "#"
+
+
+class CornerHold(SmallDiagnostic):
+    """S7: walk both units into a map corner, face out in a line and hold."""
+
+    card = {"purpose": "Can two outnumbered units deny an envelopment by backing into a corner?",
+            "knowledge": "S7: from the public map bounds and blocked terrain cells, a post 30 m "
+                         "inside each corner, stepped toward the map centre past blocked "
+                         "cells. The army takes the post nearest to it among those nearer to "
+                         "it than to the visible enemy (else the nearest), chosen once. Its "
+                         "units stand 16 m either side of the post facing the map centre "
+                         "(out of the corner) and hold. A unit in "
+                         "melee attacks the nearest enemy within 20 m and does not move. No "
+                         "elevation, path search or hidden state."}
+
+    def __init__(self):
+        super().__init__()
+        self.corner = self.middle = None
+
+    def choose(self, terrain: dict, army: dict, enemies: list[dict]) -> dict | None:
+        bounds = self.bounds
+        if not all(f"{edge}_{axis}" in bounds for edge in ("min", "max") for axis in "xz"):
+            return None
+        self.middle = {axis: (bounds[f"min_{axis}"] + bounds[f"max_{axis}"]) / 2 for axis in "xz"}
+        posts = []
+        for x in (bounds["min_x"] + 30, bounds["max_x"] - 30):
+            for z in (bounds["min_z"] + 30, bounds["max_z"] - 30):
+                post = {"x": x, "z": z}
+                step = _direction(post, self.middle)
+                for _ in range(8):
+                    if _clear(terrain, post):
+                        break
+                    post = _offset(post, step, terrain.get("cell_m") or 32)
+                posts.append(post)
+        enemy = _centre(enemies) if enemies else None
+        safe = [post for post in posts if enemy is None
+                or distance(army, post) < distance(enemy, post)]
+        return min(safe or posts, key=lambda post: distance(army, post))
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units:
+            return []
+        units.sort(key=lambda unit: unit["id"])
+        army = _centre(units)
+        if self.corner is None:
+            self.corner = self.choose(observation.get("terrain") or {}, army, enemies)
+            if self.corner is None:
+                return []
+        # Fixed, so an approaching enemy cannot reshuffle the line; terrain may come only once.
+        front = _direction(self.corner, self.middle)
+        orders = []
+        for index, unit in enumerate(units):
+            if "melee" in unit.get("state", []):
+                near = min(enemies, key=lambda enemy: distance(unit, enemy), default=None)
+                if near and distance(unit, near) <= 20:
+                    orders += self.attack(unit, near)
+                continue
+            spot = _offset(self.corner, front, 0, 16 if index % 2 else -16)
+            orders += self.move(unit, spot, self.middle)
+        return orders
+
+    def metadata(self):
+        return {"type": "corner_hold", "corner": self.corner}
+
+
 def _centre(units: list[dict]) -> dict:
     return {axis: sum(unit[axis] for unit in units) / len(units) for axis in ("x", "z")}
 

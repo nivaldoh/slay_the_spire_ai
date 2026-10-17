@@ -254,6 +254,36 @@
       "family": "hammer and anvil",
       "core_candidate": false,
       "footnote": "Development candidate S6 (b18), partly overlapping S1's rear charges. Defined only: the lordless setup and funds await their live check, then an attack-nearest floor and a disclosed hammer-and-anvil diagnostic at 0 and 5 s observation age."
+    },
+    "emp-pitched-grn-20": {
+      "title": "Twenty against twenty",
+      "short": "Scale and context",
+      "noun": "pitched battle",
+      "heading": "The small problems at once, at forty units",
+      "challenge": "Twenty Empire units, led by a General with a Bright Wizard, two artillery pieces and a mix of halberds, spears, swords, guns and cavalry, attack twenty Greenskin units of equal cost. The Greenskin AI can call Waaagh army abilities. The attacker loses at the 40-minute deadline.",
+      "family": "scale and context",
+      "core_candidate": false,
+      "footnote": "Larger development candidate L1 (b19), overlapping swarm command on order volume. Defined only: setup, duration, observation size and decision delay await attack-nearest and skills setup battles; a scripted win is not expected."
+    },
+    "ksl-ffa-grn-dwf-12": {
+      "title": "A three-way battle",
+      "short": "Opportunism at scale",
+      "noun": "free-for-all",
+      "heading": "Two AI armies that also fight each other",
+      "challenge": "Twelve Kislev units, led by a Boyar with a Frost Maiden, enter a free-for-all against twelve Greenskin and twelve Dwarf units, each army in its own alliance. When to stay out and when to commit decide the battle; the timer ends it at 40 minutes.",
+      "family": "opportunism at scale",
+      "core_candidate": false,
+      "footnote": "Larger development candidate L2 (b19). Defined only: the three-army lobby, funds that every roster must fit and the alliances await a setup battle; the AI rosters are b19 choices, not database-checked."
+    },
+    "dwf-longbeards-emp-swordsmen": {
+      "title": "Two Longbeard units against four",
+      "short": "Deny the envelopment",
+      "noun": "small defence",
+      "heading": "Outnumbered dwarfs and an open flank",
+      "challenge": "Two Dwarf Longbeard units defend against four faster Empire Swordsmen units that can wrap their flanks and rear in the open. Map edges and restricted terrain are visible; elevation is not.",
+      "family": "deny the envelopment",
+      "core_candidate": false,
+      "footnote": "Development candidate S7 (b19), the draft's lowest-confidence item. Defined only: the lordless setup and funds await their live check, then a hold floor and a disclosed corner-hold diagnostic at 0 and 5 s observation age."
     }
   },
   "units": {

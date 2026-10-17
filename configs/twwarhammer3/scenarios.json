@@ -1505,5 +1505,201 @@
       "funds_amount": 1250
     },
     "calibration_change": "Small focused candidate S6 (b18, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: player 1225 (375 + 850), enemy 1125. Empire mirror as in emp5-emp5. Overlaps S1 (rear charges); keep both only if their screens show different failure modes. Scripted attack_nearest floor, then the disclosed HammerAnvil diagnostic at 0 and 5 s observation age, before any model battle."
+  },
+  "emp-pitched-grn-20": {
+    "name": "emp-pitched-grn-20",
+    "family": "scale and context",
+    "scenario_version": 1,
+    "brief": "Twenty Empire units, with a General and a Bright Wizard, attack twenty Greenskin units of equal cost on an open map with a 40-minute timer. Halberds and spears against wolves and boars, guns behind their own line, a wizard beside friendly troops and two artillery pieces to protect are the small scenarios' problems at once; the AI can also call Waaagh army abilities. The question is whether those skills survive forty units, a long history and a high order volume. Hypotheses, not a prescribed solution; winnability is not yet shown.",
+    "split": "development",
+    "status": "prototype_not_admitted",
+    "battle_type": "classic",
+    "attacker": "player",
+    "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+    "player": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "units": [
+        "wh_main_emp_cha_general_0",
+        "wh_main_emp_cha_wizard_fire_0",
+        "wh_main_emp_inf_halberdiers",
+        "wh_main_emp_inf_halberdiers",
+        "wh_main_emp_inf_halberdiers",
+        "wh_main_emp_inf_halberdiers",
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_spearmen_1",
+        "wh_main_emp_inf_spearmen_1",
+        "wh_main_emp_inf_handgunners",
+        "wh_main_emp_inf_handgunners",
+        "wh_main_emp_inf_handgunners",
+        "wh_main_emp_inf_crossbowmen",
+        "wh_main_emp_inf_crossbowmen",
+        "wh_main_emp_cav_empire_knights",
+        "wh_main_emp_cav_pistoliers_1",
+        "wh_main_emp_art_great_cannon",
+        "wh_main_emp_art_mortar"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_grn_greenskins",
+      "faction": "wh_main_grn_greenskins",
+      "units": [
+        "wh_main_grn_cha_orc_warboss_0",
+        "wh_main_grn_cha_orc_shaman_0",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_big_uns",
+        "wh_main_grn_inf_orc_big_uns",
+        "wh_main_grn_inf_black_orcs",
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_night_goblins",
+        "wh_main_grn_inf_night_goblins",
+        "wh_main_grn_inf_orc_arrer_boyz",
+        "wh_main_grn_inf_orc_arrer_boyz",
+        "wh_main_grn_cav_goblin_wolf_riders_0",
+        "wh_main_grn_cav_goblin_wolf_riders_0",
+        "wh_main_grn_cav_orc_boar_boyz",
+        "wh_main_grn_mon_trolls",
+        "wh_main_grn_art_goblin_rock_lobber"
+      ]
+    },
+    "expect": {
+      "battle_type": "land_normal",
+      "difficulty": "ai_level_very_hard",
+      "funds": "funds_custom",
+      "funds_amount": 10500,
+      "time_limit_s": 2400,
+      "ai_stats_modifier": "1.0",
+      "unit_scale": 0.75,
+      "realism": false,
+      "player_defends": false
+    },
+    "protected": [
+      "wh_main_emp_cha_wizard_fire_0",
+      "wh_main_emp_art_great_cannon",
+      "wh_main_emp_art_mortar"
+    ],
+    "content": [
+      "wh_main"
+    ],
+    "calibration_change": "Larger candidate L1 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: Empire 10,375, Greenskins 10,350 (1,308 against 1,428 men), lords on, funds 10,500, 2400 s timer. Every card appears in recorded lobby dumps. Defined only: setup, battle duration, observation size and decision delay at forty units await attack_nearest and skills setup battles; a scripted win is not expected. Overlaps swarm command on order volume."
+  },
+  "ksl-ffa-grn-dwf-12": {
+    "name": "ksl-ffa-grn-dwf-12",
+    "family": "opportunism at scale",
+    "scenario_version": 1,
+    "brief": "Twelve Kislev units in a three-way free-for-all against twelve AI Greenskin and twelve AI Dwarf units, each army in its own alliance, with a 40-minute timer. The two AI armies also fight each other, so when to stay out, whom to engage and when to commit compete over a long horizon. Hypotheses, not a prescribed solution; winnability is not yet shown.",
+    "split": "development",
+    "status": "prototype_not_admitted",
+    "battle_type": "free_for_all",
+    "map": "battle_preset_wh2_mp_ffa_04",
+    "player": {
+      "subculture": "wh3_main_sc_ksl_kislev",
+      "faction": "wh3_main_ksl_kislev",
+      "units": [
+        "wh3_main_ksl_cha_boyar_0",
+        "wh3_main_ksl_cha_frost_maiden_ice_0",
+        "wh3_main_ksl_inf_kossars_1",
+        "wh3_main_ksl_inf_kossars_1",
+        "wh3_main_ksl_inf_kossars_0",
+        "wh3_main_ksl_inf_kossars_0",
+        "wh3_main_ksl_inf_armoured_kossars_0",
+        "wh3_main_ksl_inf_armoured_kossars_0",
+        "wh3_main_ksl_inf_streltsi_0",
+        "wh3_main_ksl_cav_horse_archers_0",
+        "wh3_main_ksl_cav_horse_archers_0",
+        "wh3_main_ksl_cav_winged_lancers_0"
+      ]
+    },
+    "enemy": [
+      {
+        "subculture": "wh_main_sc_grn_greenskins",
+        "faction": "wh_main_grn_greenskins",
+        "units": [
+          "wh_main_grn_cha_orc_warboss_0",
+          "wh_main_grn_cha_orc_shaman_0",
+          "wh_main_grn_inf_orc_boyz",
+          "wh_main_grn_inf_orc_boyz",
+          "wh_main_grn_inf_orc_big_uns",
+          "wh_main_grn_inf_black_orcs",
+          "wh_main_grn_inf_goblin_spearmen",
+          "wh_main_grn_inf_orc_arrer_boyz",
+          "wh_main_grn_inf_orc_arrer_boyz",
+          "wh_main_grn_cav_goblin_wolf_riders_0",
+          "wh_main_grn_cav_orc_boar_boyz",
+          "wh_main_grn_mon_trolls"
+        ]
+      },
+      {
+        "subculture": "wh_main_sc_dwf_dwarfs",
+        "faction": "wh_main_dwf_dwarfs",
+        "units": [
+          "wh_main_dwf_cha_lord_0",
+          "wh_main_dwf_inf_dwarf_warrior_1",
+          "wh_main_dwf_inf_dwarf_warrior_1",
+          "wh_main_dwf_inf_dwarf_warrior_1",
+          "wh_main_dwf_inf_dwarf_warrior_0",
+          "wh_main_dwf_inf_longbeards",
+          "wh_main_dwf_inf_longbeards",
+          "wh_main_dwf_inf_quarrellers_0",
+          "wh_main_dwf_inf_quarrellers_0",
+          "wh_main_dwf_inf_thunderers_0",
+          "wh_main_dwf_inf_miners_0",
+          "wh_main_dwf_art_grudge_thrower"
+        ]
+      }
+    ],
+    "expect": {
+      "battle_type": "land_normal",
+      "difficulty": "ai_level_very_hard",
+      "funds": "funds_custom",
+      "funds_amount": 7500,
+      "time_limit_s": 2400,
+      "ai_stats_modifier": "1.0",
+      "unit_scale": 0.75,
+      "realism": false,
+      "player_defends": false
+    },
+    "protected": [
+      "wh3_main_ksl_cha_frost_maiden_ice_0"
+    ],
+    "content": [
+      "wh_main",
+      "wh3_main"
+    ],
+    "calibration_change": "Larger candidate L2 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). The draft costs Kislev at 7,350 and asks for AI armies near 7,100 (Greenskins) and 7,450 (Dwarfs, Dwarf Warriors with great weapons instead of Ironbreakers); the two AI rosters here are b19 choices from cards in recorded lobby dumps, estimated from the siege and swarm anchors' totals, not database-checked. The four-army five-unit free-for-all was won by attack_nearest (942 s) and an LLM (560 s), so AIs fight each other. Defined only: three-army slots, the 7,500 funds readback (every roster must fit), player_defends false (the earlier free-for-all recorded the player as attacker) and the alliances await a setup battle. Fallback if the AIs both target the player: a three-point Domination."
+  },
+  "dwf-longbeards-emp-swordsmen": {
+    "base": "ksl-raiders-emp-halberds",
+    "name": "dwf-longbeards-emp-swordsmen",
+    "family": "deny the envelopment",
+    "brief": "Two Dwarf Longbeard units, with no lord, defend against four Empire Swordsmen units. The swordsmen are faster and can wrap the dwarfs' flanks and rear in the open; the observation carries the map bounds and restricted terrain cells but no elevation. Where to stand before contact competes with holding where deployed. Hypotheses, not a prescribed solution; winnability is not yet shown.",
+    "attacker": "enemy",
+    "player": {
+      "subculture": "wh_main_sc_dwf_dwarfs",
+      "faction": "wh_main_dwf_dwarfs",
+      "units": [
+        "wh_main_dwf_inf_longbeards",
+        "wh_main_dwf_inf_longbeards"
+      ]
+    },
+    "enemy": {
+      "units": [
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen"
+      ]
+    },
+    "expect": {
+      "funds_amount": 1500,
+      "player_defends": true
+    },
+    "calibration_change": "Small focused candidate S7 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md), the draft's lowest-confidence item. Draft database costs: player 1,400 (2 x 700), enemy 1,500 (4 x 375). Defined only: lordless setup and 1,500 funds await their live check; then a hold floor and the disclosed CornerHold diagnostic at 0 and 5 s observation age, before any model battle. Longbeards may win in the open, and a gap may remain behind a line at the map edge."
   }
 }

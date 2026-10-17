@@ -121,6 +121,24 @@ def test_a_lordless_roster_recruits_its_first_card_as_a_unit():
     assert sizes == [2, 1]
 
 
+def test_larger_and_corner_candidates_declare_their_slots_lords_and_roles():
+    config = {"episode_timeout": 2520, "run_timeout": 99999, "start_timeout": 600,
+              "episodes": 1}
+    for name in ("emp-pitched-grn-20", "ksl-ffa-grn-dwf-12", "dwf-longbeards-emp-swordsmen"):
+        scenario = setup.load_scenario({"scenario": name})
+        setup.validate_declaration(scenario, config)
+    steps = setup.scenario_steps(setup.load_scenario({"scenario": "ksl-ffa-grn-dwf-12"}))
+    adds = [s["when"] for s in steps if s.get("find") == ["bottom_team_parent", "button_add_ai"]]
+    assert adds == [f"{setup.LOBBY}PlayerSlotList.Size < {n}" for n in (2, 3)]
+    cards = [s["find"][0] for s in steps if s.get("dblclick")]
+    assert len(cards) == 36 and sum(card.endswith(":1") for card in cards) == 3
+    pitched = setup.scenarios()["emp-pitched-grn-20"]
+    assert len(pitched["player"]["units"]) == len(pitched["enemy"]["units"]) == 20
+    corner = setup.scenarios()["dwf-longbeards-emp-swordsmen"]
+    assert corner["player"]["lord"] is corner["enemy"]["lord"] is False
+    assert corner["attacker"] == "enemy" and corner["expect"]["player_defends"] is True
+
+
 def test_mount_is_selected_after_recruitment_and_pinned_budget_before_it():
     scenario = setup.load_scenario({"scenario": "brt-cavalry-emp-pikes"})
     steps = setup.scenario_steps(scenario)
