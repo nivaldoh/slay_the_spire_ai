@@ -129,14 +129,23 @@ def test_larger_and_corner_candidates_declare_their_slots_lords_and_roles():
         setup.validate_declaration(scenario, config)
     steps = setup.scenario_steps(setup.load_scenario({"scenario": "ksl-ffa-grn-dwf-12"}))
     adds = [s["when"] for s in steps if s.get("find") == ["bottom_team_parent", "button_add_ai"]]
-    assert adds == [f"{setup.LOBBY}PlayerSlotList.Size < {n}" for n in (2, 3)]
+    assert adds == [f"{setup.LOBBY}PlayerSlotList.Size < {n}" for n in (2, 3, 4)]
     cards = [s["find"][0] for s in steps if s.get("dblclick")]
-    assert len(cards) == 36 and sum(card.endswith(":1") for card in cards) == 3
+    assert len(cards) == 48 and sum(card.endswith(":1") for card in cards) == 4
     pitched = setup.scenarios()["emp-pitched-grn-20"]
     assert len(pitched["player"]["units"]) == len(pitched["enemy"]["units"]) == 20
     corner = setup.scenarios()["dwf-longbeards-emp-swordsmen"]
     assert corner["player"]["lord"] is corner["enemy"]["lord"] is False
     assert corner["attacker"] == "enemy" and corner["expect"]["player_defends"] is True
+
+
+def test_free_for_all_scenarios_declare_four_sides():
+    # The lobby refused a three-army free-for-all: "Free-For-All requires 4 teams" (L2, b23).
+    for name, scenario in setup.scenarios().items():
+        if scenario.get("battle_type") == "free_for_all":
+            count = (1 + scenario.get("enemies", 1) if scenario.get("random")
+                     else len(setup.sides(scenario)))
+            assert count == 4, name
 
 
 def test_mount_is_selected_after_recruitment_and_pinned_budget_before_it():

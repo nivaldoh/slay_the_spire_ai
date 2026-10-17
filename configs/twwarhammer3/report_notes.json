@@ -306,14 +306,14 @@
       "footnote": "Larger development candidate L1 (b19), overlapping swarm command on order volume. Defined only: setup, duration, observation size and decision delay await attack-nearest and skills setup battles; a scripted win is not expected."
     },
     "ksl-ffa-grn-dwf-12": {
-      "title": "A three-way battle",
+      "title": "A four-way battle",
       "short": "Opportunism at scale",
       "noun": "free-for-all",
-      "heading": "Two AI armies that also fight each other",
-      "challenge": "Twelve Kislev units, led by a Boyar with a Frost Maiden, enter a free-for-all against twelve Greenskin and twelve Dwarf units, each army in its own alliance. When to stay out and when to commit decide the battle; the timer ends it at 40 minutes.",
+      "heading": "Three AI armies that also fight each other",
+      "challenge": "Twelve Kislev units, led by a Boyar with a Frost Maiden, enter a free-for-all against twelve Greenskin, twelve Dwarf and twelve Empire units, each army in its own alliance. When to stay out and when to commit decide the battle; the timer ends it at 40 minutes.",
       "family": "opportunism at scale",
       "core_candidate": false,
-      "footnote": "Larger development candidate L2 (b19). Defined only: the three-army lobby, funds that every roster must fit and the alliances await a setup battle; the AI rosters are b19 choices, not database-checked."
+      "footnote": "Larger development candidate L2 (b19). The game refused a three-army free-for-all, so an Empire army was added as the fourth. By database cost the three AI armies are equal (6,875) and Kislev costs 7,350. Defined only: the four-army lobby, funds that every roster must fit and the alliances await a setup battle."
     },
     "dwf-longbeards-emp-swordsmen": {
       "title": "Two Longbeard units against four",
