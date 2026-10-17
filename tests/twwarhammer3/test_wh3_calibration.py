@@ -441,6 +441,24 @@ REFUSED_EVERYWHERE = [{"x": x, "z": z} for x in range(-150, 151, 20)
                       for z in range(-140, 161, 20)]
 
 
+def test_moves_step_off_restricted_cells_or_hold():
+    # Live S6: HammerAnvil's wait post inside the central rock was refused 147 times.
+    rows = ["." * 32 for _ in range(32)]
+    rows[16] = "." * 16 + "#" + "." * 15  # the cell holding (16, 16)
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "knights", 200, 200)],
+           "enemy": [unit("e1", "swordsmen", 0, 0)],
+           "terrain": {"rows": rows, "cell_m": 32, "x0": -496, "z0": -496,
+                       "bounds": {"min_x": -512, "max_x": 512, "min_z": -512, "max_z": 512}}}
+    policy = CrossKite()
+    policy.observe(obs)
+    order = policy.move(obs["friendly"][0], {"x": 16, "z": 16}, obs["enemy"][0])[0]
+    spot = (order["x"], order["z"])
+    assert spot != (16, 16) and math.dist(spot, (16, 16)) <= 64
+    policy.sent.clear()
+    policy.unreachable = REFUSED_EVERYWHERE
+    assert policy.move(obs["friendly"][0], {"x": 16, "z": 16}, obs["enemy"][0]) == []
+
+
 def test_with_every_post_refused_guns_shoot_and_knights_charge_from_where_they_are():
     # Live S3 re-run: with all rotated posts refused, the old fallback retried one 434 times.
     gun = {"class": "missile", "ammo": 20, "behaviours": {"fire_at_will": False}}

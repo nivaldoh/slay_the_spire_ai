@@ -11,6 +11,8 @@ from twwarhammer3.battle.scripted import Hold, RushNearest, distance
 from twwarhammer3.battle.skills import OUT, SHOOTERS, Skills
 from twwarhammer3.protocol import friendly_units, visible_enemies
 
+# Steps to the eight neighbouring terrain cells.
+NEIGHBOURS = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1))
 # Degrees a diagnostic's post may rotate around its target, nearest first.
 TURNS = (0, 15, -15, 30, -30, 45, -45)
 
@@ -33,7 +35,11 @@ def _offset(origin: dict, direction: tuple, forward: float, across: float = 0) -
 
 
 class SmallDiagnostic(Hold):
-    """Order bookkeeping shared by the small public-state diagnostics."""
+    """Order bookkeeping shared by the small public-state diagnostics.
+
+    Every move steps off restricted terrain cells and refused destinations to the nearest
+    open spot within two cells, or the unit holds (disclosed for all diagnostics).
+    """
 
     def __init__(self):
         self.sent = {}
@@ -69,7 +75,13 @@ class SmallDiagnostic(Hold):
             if f"min_{axis}" in self.bounds and f"max_{axis}" in self.bounds:
                 point[axis] = max(self.bounds[f"min_{axis}"] + 30,
                                   min(self.bounds[f"max_{axis}"] - 30, point[axis]))
-        if distance(unit, point) < 12:
+        # Live S6: a wait post inside the map's central rock was refused 147 times. Take the
+        # nearest open spot within two terrain cells, or hold where the unit is.
+        cell = self.terrain.get("cell_m") or 32
+        point = self.open_point([point] + [
+            {"x": point["x"] + dx * cell * ring, "z": point["z"] + dz * cell * ring}
+            for ring in (1, 2) for dx, dz in NEIGHBOURS])
+        if point is None or distance(unit, point) < 12:
             return []
         facing = math.degrees(math.atan2(target["x"] - point["x"],
                                         target["z"] - point["z"])) % 360
