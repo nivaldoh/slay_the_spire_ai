@@ -7,10 +7,12 @@ prompt of the request's last attempt (with any retry feedback) and that attempt'
     uv run python -m gameai.sft EXPORT_DIR... --output DIR [--validation-group GAME:GROUP]
 
 Rows are filtered in this order and counted under the first reason that drops them:
-provider (default openrouter only), effort (with --effort), held_out split, no valid
-target, a retried target with --first-attempt-only, and more tokens than --max-tokens.
-Validation holds exactly the --validation-group groups, so a group never spans train and
-validation.
+provider (default openrouter only), effort (with --effort), require (a --require value
+differs or is missing), held_out split, no valid target, retried (with
+--first-attempt-only, a target whose prompt carries retry feedback), no_reasoning (with
+--reasoning, a target played at an effort other than none without reasoning text), and
+max_tokens (more tokens than --max-tokens). Validation holds exactly the
+--validation-group groups, so a group never spans train and validation.
 """
 
 from __future__ import annotations
@@ -52,6 +54,27 @@ def reasoning_text(attempt: dict) -> str | None:
     text = "".join(part["text"] for part in attempt.get("reasoning") or []
                    if part.get("type") == "reasoning_text")
     return text or None
+
+
+def _requirement(item: str) -> tuple[str, object]:
+    """A --require PATH=VALUE as its dotted path and value, read as JSON when it parses."""
+    path, sep, text = item.partition("=")
+    if not (sep and path):
+        raise ValueError(f"--require {item!r}: use PATH=VALUE")
+    try:
+        return path, json.loads(text)
+    except ValueError:
+        return path, text
+
+
+def _matches(row: dict, path: str, expected) -> bool:
+    """Whether the row has a value at the dotted path, equal to ``expected`` and of its type."""
+    value = row
+    for key in path.split("."):
+        if not isinstance(value, dict) or key not in value:
+            return False
+        value = value[key]
+    return type(value) is type(expected) and value == expected
 
 
 def chat_token_counter(name: str):
@@ -104,11 +127,12 @@ def _stats(values: list[int]) -> dict:
 
 
 def build(exports: list[Path], output: Path, *, providers=DEFAULT_PROVIDERS, efforts=None,
-          validation_groups=(), first_attempt_only=False, reasoning=False,
+          validation_groups=(), requires=(), first_attempt_only=False, reasoning=False,
           tokenizer: str | None = None, max_tokens: int | None = None, counter=None) -> dict:
     """Write train/validation chat files, their row sidecars, manifest.json and datacard.md
-    into the new directory ``output``. ``efforts`` None keeps every effort; ``counter``
-    replaces the --tokenizer counter."""
+    into the new directory ``output``. ``efforts`` None keeps every effort; ``requires``
+    holds PATH=VALUE strings that must all match; ``counter`` replaces the --tokenizer
+    counter."""
     if not exports:
         raise ValueError("Select at least one export directory")
     if max_tokens is not None and tokenizer is None:
@@ -122,6 +146,7 @@ def build(exports: list[Path], output: Path, *, providers=DEFAULT_PROVIDERS, eff
         if not (sep and game and group):
             raise ValueError(f"--validation-group {item!r}: use GAME:GROUP")
         validation.add((game, group))
+    required = [_requirement(item) for item in requires]
     if tokenizer is not None and counter is None:
         counter = chat_token_counter(tokenizer)
     inputs, ids, dropped, by_source = [], set(), Counter(), Counter()
@@ -139,12 +164,19 @@ def build(exports: list[Path], output: Path, *, providers=DEFAULT_PROVIDERS, eff
                 reason = "provider"
             elif efforts is not None and row.get("effort") not in efforts:
                 reason = "effort"
+            elif not all(_matches(row, path, value) for path, value in required):
+                reason = "require"
             elif row["split"] == "held_out":
                 reason = "held_out"
             elif isinstance(found, str):
                 reason = found
-            elif first_attempt_only and found[0]:
+            elif first_attempt_only and found[1]["user_prompt"] != row["attempts"][0].get(
+                    "user_prompt"):
+                # A failed response is resent unchanged: only retry feedback makes a retry.
                 reason = "retried"
+            elif reasoning and row.get("effort") != "none" and not reasoning_text(found[1]):
+                # The chat template would render an empty think block before the reply.
+                reason = "no_reasoning"
             else:
                 index, attempt = found
                 thought = reasoning_text(attempt) if reasoning else None
@@ -177,7 +209,8 @@ def build(exports: list[Path], output: Path, *, providers=DEFAULT_PROVIDERS, eff
         "version": VERSION, "builder_sha256": sha256(Path(__file__)), "inputs": inputs,
         "arguments": {"providers": sorted(providers), "efforts": sorted(
             efforts, key=str) if efforts is not None else None, "validation_groups": sorted(
-            validation_groups), "first_attempt_only": first_attempt_only,
+            validation_groups), "require": sorted(requires),
+            "first_attempt_only": first_attempt_only,
             "reasoning": reasoning, "tokenizer": tokenizer, "max_tokens": max_tokens},
         "counts": {"rows": len(ids), "train": len(kept["train"]),
                    "validation": len(kept["validation"]),
@@ -240,14 +273,20 @@ rows. Dropped by reason: `{json.dumps(counts['dropped'], sort_keys=True)}`.
 - Targets are the last attempt of a request, used only when it was accepted: no attempt
   or row error, status `completed` and non-blank text. Earlier rejected attempts stay in
   the prompt history only through the retry feedback the model saw. A target is not a
-  claim that the action was good: winning and losing battles and runs are both kept.
+  claim that the action was good: unless a required value selects outcomes, winning and
+  losing battles and runs are both kept.
 - Held-out rows (`split` held_out) never enter a dataset.
+- Required values: {', '.join(f'`{item}`' for item in arguments['require']) or 'none'}.
+  A row is kept only when its value at each dotted path equals the given one. Outcomes
+  and labels select rows; they never enter the chats.
 - Validation groups: {', '.join(arguments['validation_groups']) or 'none'}. A group
   (Spire seed, WH3 scenario family) lies wholly in train or in validation.
-- First attempt only: {arguments['first_attempt_only']}. Reasoning: {arguments['reasoning']}
-  ({counts['with_reasoning']} kept rows carry `reasoning_content`, from `reasoning_text`
-  parts only; provider summaries are not reasoning). Without it, replies made with
-  reasoning on are trained as direct answers.
+- First attempt only: {arguments['first_attempt_only']} (a target answering retry feedback
+  is dropped; a failed response resent unchanged is no retry). Reasoning:
+  {arguments['reasoning']} ({counts['with_reasoning']} kept rows carry `reasoning_content`,
+  from `reasoning_text` parts only; provider summaries are not reasoning). With it, targets
+  played with reasoning on but without reasoning text are dropped; without it, replies
+  made with reasoning on are trained as direct answers.
 - Tokenizer: {arguments['tokenizer']}; limit {arguments['max_tokens']}. Rows over the limit
   are dropped, never truncated.
 
@@ -267,8 +306,12 @@ def main(argv: list[str] | None = None) -> None:
                         help="keep rows played at this effort; repeatable (default all)")
     parser.add_argument("--validation-group", action="append", default=[],
                         metavar="GAME:GROUP", help="put this group in validation; repeatable")
+    parser.add_argument("--require", action="append", default=[], metavar="PATH=VALUE",
+                        help="keep rows whose value at this dotted path (e.g. labels.fight.won) "
+                        "equals VALUE, read as JSON when it parses, else as text; repeatable, "
+                        "all must match")
     parser.add_argument("--first-attempt-only", action="store_true",
-                        help="keep only targets accepted on the first attempt")
+                        help="drop targets whose prompt carries retry feedback")
     parser.add_argument("--reasoning", action="store_true",
                         help="add the target's reasoning text as reasoning_content")
     parser.add_argument("--tokenizer", metavar="NAME_OR_PATH",
@@ -280,6 +323,7 @@ def main(argv: list[str] | None = None) -> None:
                          providers=tuple(args.provider or DEFAULT_PROVIDERS),
                          efforts=tuple(args.effort) if args.effort else None,
                          validation_groups=tuple(args.validation_group),
+                         requires=tuple(args.require),
                          first_attempt_only=args.first_attempt_only, reasoning=args.reasoning,
                          tokenizer=args.tokenizer, max_tokens=args.max_tokens)
     except (ValueError, OSError) as error:

@@ -22,6 +22,8 @@ OUTCOMES = {"won", "lost"}
 # The prompt renderer moved into fullrun/ on 2026-10-12; older manifests name its old path.
 RENDERERS = ("src/spire/fullrun/llm.py", "src/spire/llm.py")
 LABELS = ("act", "floor", "current_hp", "max_hp", "gold", "screen_type", "room_type")
+# Reserved for evaluation (delegated, 2026-10-17): the tuning loop never plays them.
+HELD_OUT_SEEDS = frozenset(f"HELDOUT{n:02d}" for n in range(1, 11))
 
 
 def _text_hash(text: str) -> str:
@@ -118,7 +120,10 @@ def _attempts(raw_attempts: list, prompt: str | None, system: str | None, issues
               where: str) -> list[dict]:
     attempts = []
     for index, raw in enumerate(raw_attempts):
-        attempt = dict(raw)
+        # A transport failure has no reply; its message is the attempt's error, as in WH3.
+        attempt = {"text": None, "status": None, "usage": None, **raw}
+        if "transport_error" in raw:
+            attempt["error"] = raw["transport_error"]
         request = raw.get("request")
         if request is not None:
             user, source = request["input"][0]["content"], "recorded_request"
@@ -175,9 +180,13 @@ def _row(request: dict, job: dict, run: dict) -> dict:
     if error and attempts and attempts[-1].get("error") is None:
         attempts[-1]["error"] = error["message"]  # the failed call, or a crashed parse
     if exchange and not event and error is None:
-        # The reply was accepted, but the run stopped before logging its decision.
-        error = {"type": "DecisionNotRecorded",
-                 "message": "Accepted reply without a recorded decision"}
+        if attempts and attempts[-1].get("error") is None:
+            # The reply was accepted, but the run stopped before logging its decision.
+            error = {"type": "DecisionNotRecorded",
+                     "message": "Accepted reply without a recorded decision"}
+        else:
+            # Stopped before any reply was accepted: an interrupt leaves no exchange error.
+            error = {"type": "Interrupted", "message": "Request stopped without an accepted reply"}
     choice = reply = None
     if event:
         candidates = event["decision"]["candidates"]
@@ -198,7 +207,8 @@ def _row(request: dict, job: dict, run: dict) -> dict:
     result = run["result"]
     return {
         "schema_version": SCHEMA_VERSION, "game": "spire", "group": result["seed"],
-        "split": "development", "policy": "llm",
+        "split": "held_out" if str(result["seed"]).upper() in HELD_OUT_SEEDS else "development",
+        "policy": "llm",
         "provider": behavior.get("provider") or config.get("provider", "openai"),
         "model": behavior.get("model") or config.get("model"),
         "effort": behavior.get("effort") or config.get("effort"),
@@ -378,7 +388,8 @@ Sources are unchanged.
   public decision the policy saw (`decision`: observation, candidates, id), the engine
   command chosen (`choice`), the reply's reason and notes, public labels and the run
   outcome. Rows follow the export-row contract shared with WH3: `group` is the game seed
-  and `split` is `development`, since no held-out seed is declared yet.
+  and `split` is `held_out` for the reserved evaluation seeds `HELDOUT01` to `HELDOUT10`,
+  otherwise `development`.
 - `sources.json`: full job manifests (configuration, source fingerprints, revision),
   environment snapshots, each run's result, profile and deployment, input file hashes,
   the exporter hash, filters, counts, issues and the hash of `decisions.jsonl`. Each row's
@@ -401,7 +412,9 @@ stop) has a non-null `error`, no `decision` and no `choice`; its last attempt ca
 error. `error.type` is the exception name (`InvalidReply`, `APIError`, `BudgetExhausted`,
 ...) in every trace format. A reply that was accepted but whose decision was never logged
 (the run stopped in between) has the error `DecisionNotRecorded`, which its attempts do
-not carry. Every row without a decision has an error. `reply.notes` is the notes text as
+not carry; a request stopped before any reply was accepted has `Interrupted`. A transport
+failure's attempt has null `text`, `status` and `usage`; its error is the transport
+message. Every row without a decision has an error. `reply.notes` is the notes text as
 applied (cut to 2,000 characters), null when the reply kept the previous notes. Forced
 single-choice decisions made no request and have no row, but count towards labels.
 

@@ -267,28 +267,46 @@ def test_new_trace_edge_rows_keep_errors_out_of_training_targets(tmp_path):
                  "uncertain_attempts": 1}
     won = [*exchanged(1, "boss", [sent("boss")], floor=50, hp=30, combat=True),
            decision(2, 50, 12, combat=True)]
-    failed = [*exchanged(1, "lost", [transport], decided=False,
+    failed = [*exchanged(1, "lost", [transport, transport], decided=False,
                          error={"type": "APIError", "message": "timed out"}),
-              *exchanged(2, "accepted", [sent("accepted")], decided=False)]
+              *exchanged(2, "accepted", [sent("accepted")], decided=False),
+              # Interrupted mid-retry and before any reply: neither exchange has an error.
+              *exchanged(3, "mid", [sent("mid", text="bad", error="Expecting value")],
+                         decided=False),
+              *exchanged(4, "early", [], decided=False)]
     job = make_job(tmp_path, [
         (won, {"seed": "RUNDEV1", "status": "won", "act": 3, "floor": 50, "score": 900}),
-        (failed, {"seed": "RUNDEV2", "status": "infrastructure_failure"})])
+        (failed, {"seed": "RUNDEV2", "status": "interrupted"})])
     export.export_runs([job], tmp_path / "export")
-    boss, api, accepted = read_export(tmp_path / "export")
+    boss, api, accepted, mid, early = read_export(tmp_path / "export")
     # A run won during its last fight wins that fight; no later decision gives its end HP.
     assert boss["labels"]["fight"] == {"index": 0, "floor": 50, "room_type": "MonsterRoom",
                                        "hp_start": 30, "hp_end": None, "won": True}
     assert boss["outcome"]["gameplay_outcome"] == "won" and boss["error"] is None
     assert boss["issues"] == [] and boss["attempts"][0]["reasoning"] == []
-    # A transport failure keeps the call's error and sent prompt; it had no output to record.
-    one, = api["attempts"]
+    # A transport failure, retried or last, keeps its error and sent prompt; it had no reply.
     assert api["error"] == {"type": "APIError", "message": "timed out"}
-    assert (one["error"], one["user_prompt"], one["reasoning"]) == ("timed out", "lost", None)
+    assert [{k: a[k] for k in ("text", "status", "usage", "error", "user_prompt", "reasoning")}
+            for a in api["attempts"]] == 2 * [
+        {"text": None, "status": None, "usage": None, "error": "timed out",
+         "user_prompt": "lost", "reasoning": None}]
     assert api["issues"] == ["decision_not_recorded"]
     # An accepted reply whose decision was never logged is not a training target.
     assert accepted["error"]["type"] == "DecisionNotRecorded" and accepted["choice"] is None
     assert accepted["attempts"][-1].get("error") is None
     assert accepted["provenance"]["exchange_id"] == "m2"
+    # A request that accepted no reply is never labelled as an accepted one.
+    assert mid["error"]["type"] == early["error"]["type"] == "Interrupted"
+    assert mid["attempts"][-1]["error"] == "Expecting value" and early["attempts"] == []
+
+
+def test_reserved_evaluation_seeds_are_held_out(tmp_path):
+    job = make_job(tmp_path, [(exchanged(1, "a", [sent("a")]), {"seed": seed, "status": "lost"})
+                              for seed in ("HELDOUT01", "RUNDEV1", "HELDOUT10")])
+    export.export_runs([job], tmp_path / "export")
+    assert [r["split"] for r in read_export(tmp_path / "export")] == [
+        "held_out", "development", "held_out"]
+    assert len(export.HELD_OUT_SEEDS) == 10
 
 
 def test_inconsistent_new_traces_are_refused_with_their_trace_line(tmp_path):
