@@ -30,8 +30,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 | Piece | Version | Defined in | Latest results |
 |---|---|---|---|
-| `llm` | v20 (2026-10-16) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | v20 shared-magic warning played once (GLM, `llm_rules`): over-spend after a pending spell halved. Tactical prompt's last mode campaign was v15 |
-| `llm_rules` | shares `llm` v20 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | v20 GLM/OpenRouter caster check won at 575 s; spell refusals after a pending spell 7 → 3 (v19 lost). M1 used v18 |
+| `llm` | v21 (2026-10-17, unmerged draft; prompt text unchanged) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | v20 shared-magic warning played once (GLM, `llm_rules`): over-spend after a pending spell halved. Tactical prompt's last mode campaign was v15 |
+| `llm_rules` | shares `llm` v21 input; v21 states the attack route; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | v20 GLM/OpenRouter caster check won at 575 s; spell refusals after a pending spell 7 → 3 (v19 lost). M1 used v18 |
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
