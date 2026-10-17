@@ -609,3 +609,32 @@ on `main` at `87b370b`:
 Comparability: every run so far is Ironclad unlock level 3, and the profile is 81 points
 from level 4, whose new cards and relics change the pools. The next scored run will
 likely cross it; exports record the level per run.
+
+## 2026-10-17: Qwen3.6 smoke runs and the first end-to-end post-training test
+
+Three `spire play --provider openrouter` jobs with `qwen/qwen3.6-35b-a3b` on harness
+v10 (source `fa71813`), each one run; ledger `runs/spire-openrouter-spend.jsonl`, $0.245
+in all, including $0.0128 of live mode checks:
+
+| Job | Effort, seed, limit | Outcome | Decisions (calls) | Cost | Time |
+|---|---|---|---|---|---|
+| `llm-qwen36-v10-smoke-20261017` | none, QWENSMOKE1 | Lost to the Act 1 boss, floor 16, score 96 | 240 (188) | $0.114 | 18 min |
+| `llm-qwen36medium-v10-smoke-20261017` | medium, QWENSMOKE1, 40 actions | Truncated on floor 2, as set | 37 (36) | $0.096 | 14 min |
+| `llm-qwen36-v10-smoke2-20261017` | none, QWENSMOKE2, 150 actions | Lost on floor 6 | 73 (55) | $0.026 | 5 min |
+
+With reasoning off, calls took 2-5 s and 113-309 output tokens. Every attempt went to an fp8
+endpoint (Parasail, AkashML, DeepInfra). One reply ran away to the output cap and its retry
+succeeded. With reasoning on, calls averaged 23 s (up to 144 s) and 2.4k reasoning tokens;
+4 of 40 attempts hit the 4,000-token cap and were retried successfully within the 40
+actions. These are smoke runs on new seeds, not a baseline: one run per configuration.
+
+Unlock state: all three runs started at Ironclad level 3 with progress 1,419, unchanged by
+the first run's death (score 96). A run that ends on the death screen evidently does not
+save its score into unlock progress, which matches the rare progress changes of the Luna
+runs. Content therefore stayed comparable with the Luna data.
+
+End-to-end test ([posttraining.md](../../posttraining.md#first-end-to-end-test-2026-10-17)):
+`spire export` of the three jobs gave 273 rows with no issues (all fp8 backends; per-fight
+labels: eight fights won, then the boss lost). Together with the WH3 Qwen3.6 export, a
+non-thinking dataset (`runs/sft/qwen36-smoke-20261017`) and a 33-row reasoning dataset were
+built, and the local smoke fine-tune ran on the first.

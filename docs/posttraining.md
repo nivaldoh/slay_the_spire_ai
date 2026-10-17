@@ -145,6 +145,24 @@ unknown game or split, and duplicate ids. Output is deterministic for unchanged 
 The manifest records input hashes, arguments, counts kept and dropped by reason and by
 game, model and effort, the groups per split, token statistics and the builder's hash.
 
+## First end-to-end test (2026-10-17)
+
+Qwen3.6-35B-A3B played both games through OpenRouter on 2026-10-17. Run details are in the
+[Spire log](spire/fullrun/log.md#2026-10-17-qwen36-smoke-runs-and-the-first-end-to-end-post-training-test)
+and the [WH3 log](twwarhammer3/log.md#2026-10-17-queue-e2-qwen36-on-s1-step-floors-and-harness-b25).
+
+| Step | Output | Result |
+|---|---|---|
+| Spire play: one full run and two short runs (reasoning off; one short run with it on) | `runs/fullrun/llm-qwen36*-smoke*-20261017` | $0.24; lost on floor 16 (boss) and floor 6 |
+| WH3 play: S1 twice with reasoning off, once with it on | `runs/twwarhammer3/battle/bench-b24-s1-qwen-*` | $0.05; both lost; reasoning on ended at the cap |
+| Export | `runs/fullrun-exports/qwen36-smoke-20261017`, `runs/twwarhammer3/exports/qwen36-smoke-20261017` | 273 Spire rows, no issues; 84 WH3 rows, 2 missing acknowledgements |
+| Build, `--effort none`, validation `spire:QWENSMOKE2` | `runs/sft/qwen36-smoke-20261017` | 268 train (Spire QWENSMOKE1 and WH3 S1), 55 validation; p50 2.5k, max 5.9k tokens |
+| Build, `--effort medium --reasoning` | `runs/sft/qwen36-reasoning-smoke-20261017` | 33 chats with `reasoning_content` (about 5.8k characters on the first) |
+| Smoke fine-tune, 60 steps on Qwen3-0.6B | `runs/sft/qwen36-smoke-20261017-smoke` | Loss 1.22 to 1.02 (first and last five steps); adapter reloaded and verified; 8 of 8 validation replies valid JSON, none exact (the 0.6B model always chose 0) |
+
+The pipeline works from play to an adapter. None of these numbers is a result: one run per
+configuration, a 0.6B stand-in for the student, and 60 steps.
+
 ## Missing
 
 - Tinker training and sampling: no credential, no training client, no recipe.

@@ -15,9 +15,11 @@ prepare fine-tuning an open model through OpenRouter, a minimal test in both gam
 pipeline on [posttraining.md](posttraining.md); queue E1 ([log](twwarhammer3/log.md#2026-10-17-queue-e1-harness-b24-and-post-training-data-capture)).
 Queue E2 and harness b25 are on `main`
 ([log](twwarhammer3/log.md#2026-10-17-queue-e2-qwen36-on-s1-step-floors-and-harness-b25)).
-Next, one game at a time: a Spire Qwen3.6 run, then a dataset from both games and the
-local smoke fine-tune, then WH3 queue E3 (S7 CornerHold, S3 Crossfire b24, S5 SpellWindow
-b25, L2 setup). Commit to `main` only between jobs (queues check HEAD).
+The minimal post-training test ran in both games: Qwen3.6 through OpenRouter, exports, a
+cross-game dataset and a local smoke fine-tune
+([results](posttraining.md#first-end-to-end-test-2026-10-17)). Next: WH3 queue E3 (S7
+CornerHold, S3 Crossfire b24, S5 SpellWindow b25, L2 setup). Commit to `main` only between
+jobs (queues check HEAD).
 
 The overnight tranche ended at about 12:40 UTC, 2026-10-17. The owner's overnight goal was to continue the benchmark scenario
 implementation unattended. Harness b18-b23 are on `main`:

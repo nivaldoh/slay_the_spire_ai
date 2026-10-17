@@ -31,3 +31,6 @@ date,job,run,seed,character,ascension,model,effort,harness,source,outcome,act,fl
 2026-10-12,llm-luna-v9-dev-20261012,run-0001,RUNDEV2,IRONCLAD,0,gpt-6-luna,low,v9,005083f,unsupported_or_invalid,3,38,,0.1198
 2026-10-13,smoke-gameai-20261012,run-0000,RUNDEV1,IRONCLAD,0,gpt-6-luna,low,,1a24d2f,truncated,1,3,,0.0050
 2026-10-13,llm-luna-v10-dev-20261013,run-0000,RUNDEV1,IRONCLAD,0,gpt-6-luna,low,v10,54a5967,infrastructure_failure,1,10,,0.0201
+2026-10-17,llm-qwen36-v10-smoke-20261017,run-0000,QWENSMOKE1,IRONCLAD,0,qwen/qwen3.6-35b-a3b,none,v10,fa71813,lost,1,16,96,0.1141
+2026-10-17,llm-qwen36medium-v10-smoke-20261017,run-0000,QWENSMOKE1,IRONCLAD,0,qwen/qwen3.6-35b-a3b,medium,v10,fa71813,truncated,1,2,,0.0957
+2026-10-17,llm-qwen36-v10-smoke2-20261017,run-0000,QWENSMOKE2,IRONCLAD,0,qwen/qwen3.6-35b-a3b,none,v10,fa71813,lost,1,6,34,0.0256
