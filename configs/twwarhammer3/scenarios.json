@@ -1502,12 +1502,12 @@
       ]
     },
     "expect": {
-      "funds_amount": 800
+      "funds_amount": 1200
     },
     "protected": [
       "wh_main_emp_cha_wizard_fire_0"
     ],
-    "calibration_change": "Small focused candidate S5 (b18, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: player 600 (250 + 350), enemy 750. Empire mirror as in emp5-emp5. Defined only: a hero-led lordless roster, the wizard's lore and the 800 custom funds are unverified. Scripted probe_abilities and attack_nearest floors, then the disclosed SpellWindow diagnostic at 0 and 5 s observation age, before any model battle."
+    "calibration_change": "Small focused candidate S5 (b18, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: player 600 (250 + 350), enemy 750. Empire mirror as in emp5-emp5. Defined only: a hero-led lordless roster, the wizard's lore and the 800 custom funds are unverified. Scripted probe_abilities and attack_nearest floors, then the disclosed SpellWindow diagnostic at 0 and 5 s observation age, before any model battle. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 800."
   },
   "emp-knights-emp-swordsmen": {
     "base": "ksl-raiders-emp-halberds",
@@ -1600,7 +1600,7 @@
       "battle_type": "land_normal",
       "difficulty": "ai_level_very_hard",
       "funds": "funds_custom",
-      "funds_amount": 10500,
+      "funds_amount": 12000,
       "time_limit_s": 2400,
       "ai_stats_modifier": "1.0",
       "unit_scale": 0.75,
@@ -1615,7 +1615,7 @@
     "content": [
       "wh_main"
     ],
-    "calibration_change": "Larger candidate L1 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: Empire 10,375, Greenskins 10,350 (1,308 against 1,428 men), lords on, funds 10,500, 2400 s timer. Every card appears in recorded lobby dumps. Defined only: setup, battle duration, observation size and decision delay at forty units await attack_nearest and skills setup battles; a scripted win is not expected. Overlaps swarm command on order volume."
+    "calibration_change": "Larger candidate L1 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: Empire 10,375, Greenskins 10,350 (1,308 against 1,428 men), lords on, funds 10,500, 2400 s timer. Every card appears in recorded lobby dumps. Defined only: setup, battle duration, observation size and decision delay at forty units await attack_nearest and skills setup battles; a scripted win is not expected. Overlaps swarm command on order volume. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 10500."
   },
   "ksl-ffa-grn-dwf-12": {
     "name": "ksl-ffa-grn-dwf-12",
@@ -1686,7 +1686,7 @@
       "battle_type": "land_normal",
       "difficulty": "ai_level_very_hard",
       "funds": "funds_custom",
-      "funds_amount": 7500,
+      "funds_amount": 9000,
       "time_limit_s": 2400,
       "ai_stats_modifier": "1.0",
       "unit_scale": 0.75,
@@ -1700,7 +1700,7 @@
       "wh_main",
       "wh3_main"
     ],
-    "calibration_change": "Larger candidate L2 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). The draft costs Kislev at 7,350 and asks for AI armies near 7,100 (Greenskins) and 7,450 (Dwarfs, Dwarf Warriors with great weapons instead of Ironbreakers); the two AI rosters here are b19 choices from cards in recorded lobby dumps, estimated from the siege and swarm anchors' totals, not database-checked. The four-army five-unit free-for-all was won by attack_nearest (942 s) and an LLM (560 s), so AIs fight each other. Defined only: three-army slots, the 7,500 funds readback (every roster must fit), player_defends false (the earlier free-for-all recorded the player as attacker) and the alliances await a setup battle. Fallback if the AIs both target the player: a three-point Domination."
+    "calibration_change": "Larger candidate L2 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). The draft costs Kislev at 7,350 and asks for AI armies near 7,100 (Greenskins) and 7,450 (Dwarfs, Dwarf Warriors with great weapons instead of Ironbreakers); the two AI rosters here are b19 choices from cards in recorded lobby dumps, estimated from the siege and swarm anchors' totals, not database-checked. The four-army five-unit free-for-all was won by attack_nearest (942 s) and an LLM (560 s), so AIs fight each other. Defined only: three-army slots, the 7,500 funds readback (every roster must fit), player_defends false (the earlier free-for-all recorded the player as attacker) and the alliances await a setup battle. Fallback if the AIs both target the player: a three-point Domination. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 7500."
   },
   "dwf-longbeards-emp-swordsmen": {
     "base": "ksl-raiders-emp-halberds",
@@ -1725,9 +1725,9 @@
       ]
     },
     "expect": {
-      "funds_amount": 1500,
+      "funds_amount": 1600,
       "player_defends": true
     },
-    "calibration_change": "Small focused candidate S7 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md), the draft's lowest-confidence item. Draft database costs: player 1,400 (2 x 700), enemy 1,500 (4 x 375). Defined only: lordless setup and 1,500 funds await their live check; then a hold floor and the disclosed CornerHold diagnostic at 0 and 5 s observation age, before any model battle. Longbeards may win in the open, and a gap may remain behind a line at the map edge."
+    "calibration_change": "Small focused candidate S7 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md), the draft's lowest-confidence item. Draft database costs: player 1,400 (2 x 700), enemy 1,500 (4 x 375). Defined only: lordless setup and 1,500 funds await their live check; then a hold floor and the disclosed CornerHold diagnostic at 0 and 5 s observation age, before any model battle. Longbeards may win in the open, and a gap may remain behind a line at the map edge. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 1500."
   }
 }
