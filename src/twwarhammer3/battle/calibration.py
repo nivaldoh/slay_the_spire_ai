@@ -413,15 +413,24 @@ class SpellWindow(SmallDiagnostic):
                          "from an enemy within 50 m. Burning Head when two enemies are "
                          "within 40 m of each other and over 40 m from every friendly unit, "
                          "cast at the nearer one towards the other; else Flame Storm on an "
-                         "enemy not in melee and over 40 m from friends; else Fireball, "
-                         "preferring an enemy not in melee. The cheapest ready, affordable "
-                         "variant by key name, within 95% of its range; 5 s between casts."}
+                         "enemy not in melee, over 40 m from friends and not moving within "
+                         "45 degrees of straight at the wizard; else Fireball, preferring an "
+                         "enemy not in melee. The cheapest ready, affordable variant by key "
+                         "name, within 95% of its range; 5 s between casts. After an accepted "
+                         "cast the wizard gets no other order until a view from after the "
+                         "order applied shows that spell not ready, or 6 s of battle time "
+                         "pass, unless the wizard is in melee (then it steps away); a cast "
+                         "does not reset its last move, which is re-sent only when the move "
+                         "changes or the wizard idles."}
+    # Live S5 b23: completed casts read not ready 0.9-5.1 s after the order applied.
+    HOLD_S = 6
 
     def __init__(self):
         super().__init__()
         self.target = None
         self.last_cast_s = -math.inf
         self.casts = []
+        self.pending = None  # the last cast until it lands, the hold times out or is refused
 
     def spell(self, caster, name, magic):
         ready = [ability for ability in caster.get("abilities", [])
@@ -434,6 +443,13 @@ class SpellWindow(SmallDiagnostic):
         def clear(enemy):
             return all(distance(enemy, unit) > 40 for unit in units)
 
+        def charging(enemy):
+            # Live S5 b23: six Flame Storms on a runner chasing the wizard killed about 2.
+            if "moving" not in enemy.get("state", []):
+                return False
+            heading = math.degrees(math.atan2(caster["x"] - enemy["x"], caster["z"] - enemy["z"]))
+            return abs((enemy.get("bearing", heading) - heading + 180) % 360 - 180) <= 45
+
         options = []
         pairs = [(a, b) for a in enemies for b in enemies
                  if a["id"] < b["id"] and distance(a, b) <= 40 and clear(a) and clear(b)]
@@ -443,7 +459,8 @@ class SpellWindow(SmallDiagnostic):
             options.append(("burning_head", near, far))
         free = sorted((enemy for enemy in enemies if "melee" not in enemy.get("state", [])),
                       key=lambda enemy: distance(caster, enemy))
-        options += [("flame_storm", enemy, None) for enemy in free if clear(enemy)]
+        options += [("flame_storm", enemy, None) for enemy in free
+                    if clear(enemy) and not charging(enemy)]
         options += [("fireball", enemy, None) for enemy in free + sorted(
             enemies, key=lambda enemy: distance(caster, enemy))]
         for name, enemy, toward in options:
@@ -465,6 +482,18 @@ class SpellWindow(SmallDiagnostic):
         orders = [order for unit in line for order in self.attack(unit, target)]
         if caster is None:
             return orders
+        threat = min(enemies, key=lambda enemy: distance(caster, enemy))
+        away = _offset(threat, _direction(threat, caster), 120)
+        if self.pending and not self.landed(caster):
+            # Live S5 b23: a Fireball spends its magic 1-4 s after the order applies and any
+            # later order to the wizard cancels it; of 192 Fireballs followed by a wizard
+            # order within 2.4 s, none completed.
+            if "melee" not in caster.get("state", []):
+                return orders
+            self.sent.pop(caster["id"], None)  # the cast replaced its last move
+            self.pending = None
+            return orders + self.move(caster, away, threat)
+        self.pending = None
         magic = (observation.get("magic") or {}).get("current", 0)
         choice = self.now - self.last_cast_s >= 5 and self.cast(caster, units, enemies, magic)
         if choice:
@@ -480,22 +509,40 @@ class SpellWindow(SmallDiagnostic):
             else:
                 order["target"] = enemy["id"]
             self.last_cast_s = self.now
-            self.sent.pop(caster["id"], None)  # a cast interrupts the wizard's movement
+            self.pending = {"unit": caster["id"], "ability": ability["key"], "time_s": self.now}
             self.casts.append({"time_s": self.now, "ability": ability["key"],
                                "target": enemy["id"]})
             return orders + [order]
-        threat = min(enemies, key=lambda enemy: distance(caster, enemy))
         if distance(caster, threat) < 50:
-            return orders + self.move(caster, _offset(threat, _direction(threat, caster), 120),
-                                      threat)
+            return orders + self.move(caster, away, threat)
         if line:
             centre = _centre(line)
             orders += self.move(caster, _offset(centre, _direction(target, centre), 100), target)
         return orders
 
+    def landed(self, caster) -> bool:
+        """The pending spell reads not ready in a view from after it applied, or HOLD_S passed."""
+        # Live S5 b23: magic is taken when the cast starts; two Fireballs with magic already
+        # taken were refunded by a move 0.3-0.6 s later. Only the spent spell's cooldown counts.
+        since = self.now - self.pending.get("applied_s", self.pending["time_s"])
+        spell = next((ability for ability in caster.get("abilities", [])
+                      if ability["key"] == self.pending["ability"]), {})
+        return since >= self.HOLD_S or (since >= 0 and spell.get("ready") is False)
+
+    def acknowledge(self, ack, latency):
+        super().acknowledge(ack, latency)
+        if self.pending and "applied_s" not in self.pending:
+            result = next((item for item in ack.get("results", [])
+                           if item.get("unit") == self.pending["unit"]), {})
+            if result.get("ok"):
+                self.pending["applied_s"] = ack["applied_ms"] / 1000
+            else:
+                self.pending = None
+
     def metadata(self):
         return {"type": "spell_window", "target": self.target, "casts": len(self.casts),
-                "last_cast": self.casts[-1] if self.casts else None}
+                "last_cast": self.casts[-1] if self.casts else None,
+                "hold": dict(self.pending) if self.pending else None}
 
 
 class HammerAnvil(SmallDiagnostic):

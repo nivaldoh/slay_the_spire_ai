@@ -473,6 +473,105 @@ def test_spell_window_keeps_area_spells_off_its_own_melee():
     assert move["type"] == "move" and move["z"] < -60
 
 
+def answer(orders, applied_ms, ok=True):
+    """An acknowledgement that accepts (or refuses) every order, applied at ``applied_ms``."""
+    return {"applied_ms": applied_ms, "results": [
+        {"index": index, "unit": order["unit"], "ok": ok, **({} if ok else {"error": "x"})}
+        for index, order in enumerate(orders, 1)]}
+
+
+def wizard_orders(policy, obs, applied_ms=None, ok=True):
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    if applied_ms is not None:
+        policy.acknowledge(answer(orders, applied_ms, ok), {})
+    return by_unit(orders, "f1")
+
+
+def cast_from_post(policy, obs, applied_ms):
+    """The wizard walks to its post, then casts Fireball at e1 at 2 s (only it is affordable)."""
+    (post,) = wizard_orders(policy, obs, 1300)
+    assert post["type"] == "move" and (post["x"], post["z"]) == (0, -100)
+    obs.update(time_ms=2000, magic={"current": 6})
+    obs["friendly"][0].update(z=-80, state=[])
+    (cast,) = wizard_orders(policy, obs, applied_ms)
+    assert cast == {"unit": "f1", "type": "ability", "ability": "wh_main_spell_fire_fireball",
+                    "target": "e1"}
+    return cast
+
+
+def test_spell_window_sends_the_wizard_nothing_until_its_cast_lands():
+    # Live S5 b23: the flee move right after each Fireball cancelled it (and refunded the
+    # magic once it was taken); 4 of 177 Fireball orders completed in the fresh episode.
+    obs, policy = wizard_state(magic=0), SpellWindow()
+    cast_from_post(policy, obs, 2300)
+    obs["enemy"][0].update(z=-35, state=["moving"], bearing=180)  # 45 m off, running at it
+    obs["time_ms"] = 3500
+    assert wizard_orders(policy, obs, 3800) == []  # b24 fled here
+    obs.update(time_ms=4700, magic={"current": 1})  # magic taken, spell still ready: casting
+    assert wizard_orders(policy, obs, 5000) == []
+    obs["friendly"][0]["abilities"][3]["ready"] = False  # on cooldown: the Fireball landed
+    obs["time_ms"] = 5900
+    (flee,) = wizard_orders(policy, obs, 6200)
+    assert flee["type"] == "move" and flee["z"] < -80
+    assert policy.metadata()["hold"] is None
+
+
+def test_spell_window_keeps_its_post_move_through_a_cast():
+    obs, policy = wizard_state(magic=0), SpellWindow()
+    cast_from_post(policy, obs, 2300)
+    obs["friendly"][0]["abilities"][3]["ready"] = False
+    obs.update(time_ms=4100, magic={"current": 1})
+    assert wizard_orders(policy, obs, 4400) == []  # landed; the post move is not re-sent
+    obs["friendly"][0]["state"] = ["idle"]  # the cast is over and the wizard stands short
+    obs["time_ms"] = 4700
+    (post,) = wizard_orders(policy, obs, 5000)
+    assert post["type"] == "move" and (post["x"], post["z"]) == (0, -100)
+
+
+def test_spell_window_releases_a_cast_that_never_lands_after_six_seconds():
+    obs, policy = wizard_state(magic=0), SpellWindow()
+    cast = cast_from_post(policy, obs, 7300)  # a 5 s old view: it applied at 7.3 s
+    assert policy.metadata()["hold"] == {"unit": "f1", "ability": cast["ability"],
+                                         "time_s": 2, "applied_s": 7.3}
+    obs["enemy"][0].update(z=-35)  # within 50 m: b24 fled at once
+    for time_ms in (3500, 7300, 13200):  # the hold counts from when the order applied
+        obs["time_ms"] = time_ms
+        assert wizard_orders(policy, obs, time_ms + 5300) == []
+    obs["time_ms"] = 13300  # 6 s on, the spell still ready: no cast happened; cast again
+    assert wizard_orders(policy, obs, 18600, ok=False) == [cast]
+    obs["time_ms"] = 14500  # that cast was refused: no hold, the wizard steps away
+    (flee,) = wizard_orders(policy, obs)
+    assert flee["type"] == "move" and flee["z"] < -80
+
+
+def test_spell_window_flees_melee_contact_while_a_cast_is_pending():
+    obs, policy = wizard_state(magic=0), SpellWindow()
+    cast_from_post(policy, obs, 2300)
+    obs["enemy"][0].update(z=-77, state=["melee"])
+    obs["time_ms"] = 3000
+    assert wizard_orders(policy, obs, 3300) == []  # no contact yet in the wizard's state
+    obs["friendly"][0]["state"] = ["melee"]
+    obs["time_ms"] = 3600
+    (flee,) = wizard_orders(policy, obs, 3900)
+    assert flee["type"] == "move" and round(flee["z"]) == -197
+    assert policy.metadata()["hold"] is None
+
+
+def test_spell_window_fireballs_an_enemy_charging_the_wizard_instead_of_a_flame_storm():
+    # Live S5 b23: six Flame Storms on a Swordsmen unit chasing the wizard killed about 2 men.
+    fireball = {"ability": "wh_main_spell_fire_fireball", "target": "e2"}
+    storm = {"ability": "wh_main_spell_fire_flame_storm", "x": 30, "z": 110}
+    for bearing, spell_order in ((190, fireball), (230, fireball), (100, storm)):
+        obs, policy = wizard_state(magic=20), SpellWindow()
+        obs["enemy"][0].update(z=20, state=["melee"])
+        obs["friendly"][1]["state"] = ["melee"]
+        obs["enemy"][1].update(state=["moving", "running"], bearing=bearing)  # 190: at f1
+        orders = policy.decide(obs)
+        validate_orders(orders, obs)
+        assert by_unit(orders, "f1") == [{"unit": "f1", "type": "ability", **spell_order}]
+
+
 def test_hammer_anvil_waits_for_the_pin_rides_to_the_rear_charges_and_pulls_out():
     obs = {"time_ms": 1000, "friendly": [unit("f1", "swordsmen", 0, 0),
            unit("f2", "knights", 40, -20, **{"class": "cavalry"})],
