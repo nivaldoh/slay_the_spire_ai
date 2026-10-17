@@ -69,9 +69,10 @@ and `still-<battle>-<trigger>.png` presentation captures. Replay exports embed d
 public data and exact prompts; images never become policy inputs. Missing/throttled
 captures and malformed recorder lines remain evidence rather than being reconstructed.
 
-Since WH3 harness b14, traces also contain `model_exchange` events with exact API request
-bodies and returned output items, including failed calls and late commander replies.
-The [offline exporter](../docs/twwarhammer3/traces.md) joins them to orders, acknowledgements
+Since WH3 harness b14 and Spire `87b370b` (2026-10-17), traces also contain
+`model_exchange` events with exact API request bodies and returned output items, including
+failed calls and late commander replies.
+WH3's [offline exporter](../docs/twwarhammer3/traces.md) joins them to orders, acknowledgements
 and outcomes. Historical gaps are labelled; source jobs and spend ledgers stay unchanged.
 
 Records in `first-combat/` name their original `runs/<name>` paths; see

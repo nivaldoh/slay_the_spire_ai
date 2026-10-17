@@ -205,13 +205,15 @@ traces or command arguments. The owner's `~/.config/openrouter/api_key` has mode
 A read-only preflight reported $50 remaining and zero usage on 2026-10-16. Sanitized
 metadata is in `runs/twwarhammer3/capability-probes/openrouter-20261016/`.
 
-Initial models, with enforced routing ceilings in USD per million tokens:
+Initial models (Qwen3.6 added 2026-10-17), with enforced routing ceilings in USD per
+million tokens:
 
 | Model ID | Input ceiling | Output ceiling | Declared efforts |
 |---|---:|---:|---|
 | `z-ai/glm-5.3` | $1.40 | $4.80 | low, high, max (always reasons) |
 | `moonshotai/kimi-k3` | $3.00 | $15.00 | none, low, high, max |
 | `stepfun/step-5-preview` | $1.00 | $2.70 | low, medium, high (always reasons) |
+| `qwen/qwen3.6-35b-a3b` | $0.15 | $1.00 | none, medium (reasoning on/off) |
 
 Efforts are declared per model (2026-10-16 evening, for the owner's all-modes coverage),
 from the catalogue's `supported_efforts`; `low` is the only one played so far. All seven
@@ -242,8 +244,11 @@ today's catalogue.
 
 Requests require backend parameter support and enforce the declared
 [price ceilings](https://openrouter.ai/docs/guides/routing/provider-selection), including
-zero per-request fees. Reservations count serialized schema/prompt bytes plus framing
-allowance, assume no cache discount and cover all three transport attempts. Reported
+zero per-request fees. Per-model `ROUTES` and `SAMPLING` fields in `providers.py` are added
+to the request and recorded with it (Qwen3.6: fp8 or bf16 endpoints only, temperature 1.0,
+top_p 0.95; [student model](../posttraining.md#student-model)). Reservations count
+serialized schema/prompt bytes plus framing allowance, assume no cache discount and cover
+all three transport attempts. Reported
 [usage.cost](https://openrouter.ai/docs/cookbook/administration/usage-accounting) is charged;
 missing/invalid cost charges the reservation and stops. Attempts with uncertain billing
 (timeouts or server failures) are conservatively charged at their reserved rate, even
@@ -254,14 +259,21 @@ is the final account-wide limit.
 OpenRouter's WH3 ledger is `runs/twwarhammer3/openrouter-spend.jsonl`. The job's
 `--budget-usd` is cumulative, not an additional allowance, and cannot exceed $50. API
 smokes and battle jobs use the same file. `spend --provider openrouter` reads it. Keep
-existing OpenAI ledgers and caps intact; never reset a ledger. A future second game
-must share this OpenRouter allowance, not create another $50 allocation.
+existing OpenAI ledgers and caps intact; never reset a ledger. Spire's OpenRouter jobs
+(`spire play --provider openrouter`, since 2026-10-17) charge their own file,
+`runs/spire-openrouter-spend.jsonl`, and the owner's $50 OpenRouter allowance covers both
+files (*delegated*: two files, one allowance). Each job's `--budget-usd` caps only its own
+file, so it must leave room for the other file's total. At 22:51 UTC on 2026-10-17 the WH3
+file held $3.6161 and the Spire file $0.2451, $3.86 of the $50
+(`twwarhammer3 spend --provider openrouter`, `spire spend --provider openrouter`).
 
 Controller cards/configurations record gateway and routing limits. Responses record
 actual model, backend and gateway retry count when supplied; absent metadata remains
 unavailable. The report collector separates gateways/routing settings and exposes them
 in its saved definitions. The CSV register also records the gateway; old rows remain
-readable. OpenAI defaults, successful Spire trace fields and all prompt text are unchanged.
+readable. Adding the gateway changed no OpenAI default, Spire trace field or prompt text;
+Spire's exchange capture later changed its traces (2026-10-17,
+[traces](traces.md#capture-for-future-battles)).
 
 Offline regressions passed, followed by live requests using WH3's actual reply schema
 and parser. Four calls including Step's failed first attempt cost $0.00523146 of a

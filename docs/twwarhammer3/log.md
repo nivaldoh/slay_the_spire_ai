@@ -47,22 +47,23 @@ post-training minimal test, then the five step floors declared in b24.
 
 | Job | Check | Outcome | Battle time | Notes |
 |---|---|---|---|---|
-| `bench-b24-s1-qwen-none-20261017` ep 0 | S1, Qwen3.6-35B-A3B / none (`llm_rules`) | Lost | 172 s | 40 decisions, mean delay 4.2 s, 1 invalid reply |
-| same, ep 1 | S1, Qwen3.6 / none | Lost | 171 s | 41 decisions, mean delay 4.1 s |
+| `bench-b24-s1-qwen-none-20261017` ep 0 | S1, Qwen3.6-35B-A3B / none (`llm_rules`) | Lost | 172 s | 40 decisions, mean delay 4.2 s, 1 invalid reply, 1 refused order |
+| same, ep 1 | S1, Qwen3.6 / none | Lost | 171 s | 41 decisions, mean delay 4.1 s, 2 invalid replies |
 | `bench-b24-s6-floor-2-20261017` | S6 two Swordsmen, attack-nearest | Won | 461 s | Too easy at this step |
 | `bench-b24-s7-floor-greatswords-20261017` | S7 two Greatswords, hold | Lost | 387 s | Not too easy; CornerHold is next |
 | `bench-b24-s8-floor-2-20261017` | S8 two Trolls, hold | Won | 214 s | Too easy at this step |
 | `bench-b24-s9-floor-trolls-20261017` | S9 Giant + Trolls, attack-nearest | Won | 328 s | Too easy at this step |
 | `bench-b24-s11-floor-1-20261017` | S11 one Rock Lobber, attack-nearest | Won | 469 s | Too easy at this step |
-| `bench-b24-s1-qwen-medium-20261017` | S1, Qwen3.6 / medium | Policy failure | n/a | 2 decisions, mean delay 29.1 s; no valid reply within the 4,000-token cap |
+| `bench-b24-s1-qwen-medium-20261017` | S1, Qwen3.6 / medium | Policy failure | 64 s | 2 decisions, mean delay 29.1 s; no valid reply within the 4,000-token cap |
 
-Qwen3.6 with reasoning off played S1 for $0.05 in both battles. Its 84 attempts all went to
-fp8 endpoints (Parasail 80, AkashML 4; snapshot `qwen3.6-35b-a3b-20260415`), each request
+Qwen3.6 with reasoning off played S1 for $0.05 in both battles ($0.07 with the reasoning-on
+job's $0.019). The 84 reasoning-off attempts all went to fp8 or bf16 endpoints (routing
+constraint; Parasail 80, AkashML 4; snapshot `qwen3.6-35b-a3b-20260415`), each request
 recorded with the sampling and quantization filter; 3 invalid replies were retried and
-every decision ended with an accepted reply (124-309 output tokens, 2-6 s per call). With
-reasoning on, the battle ended at its third decision, as the live checks predicted. The
-export and dataset of this job are part of the post-training test (Spire entry of the same
-date, [posttraining.md](../posttraining.md)).
+every decision ended with an accepted reply (124-348 output tokens, 2.0-7.8 s per call).
+With reasoning on, the battle ended at its third decision, as the live checks predicted.
+The export and dataset of this job are part of the post-training test (Spire entry of the
+same date, [posttraining.md](../posttraining.md)).
 
 Four of the five step-downs overshot: S6, S8, S9 and S11 were too hard at their original
 step and are too easy now. Each needs an intermediate step (for example the original
@@ -154,11 +155,11 @@ tonight.
 - Post-training (shared with Spire; [posttraining.md](../posttraining.md)):
   - Qwen3.6-35B-A3B (`qwen/qwen3.6-35b-a3b`), the open-weight model to fine-tune, is
     declared on OpenRouter. *Delegated:* efforts `none` and `medium` only. Live checks
-    (2026-10-17, Spire and WH3 reply schemas, $0.0128 in all): every effort value was
-    accepted, `none` did not reason (76 and 273 output tokens, 3 s), and low to max
-    reasoned 1.3k-4k tokens without scaling. It routes only to fp8 or bf16 endpoints (the
-    cheapest is fp4) at $0.15/$1.00 ceilings, with the model card's sampling sent
-    explicitly (temperature 1.0, top_p 0.95).
+    (2026-10-17, Spire and WH3 reply schemas, $0.0140 in all: $0.0097 in the Spire
+    OpenRouter ledger, $0.0043 in WH3's): every effort value was accepted, `none` did not
+    reason (76 and 273 output tokens, 3 s), and low to max reasoned 1.3k-4k tokens without
+    scaling. It routes only to fp8 or bf16 endpoints (the cheapest is fp4) at $0.15/$1.00
+    ceilings, with the model card's sampling sent explicitly (temperature 1.0, top_p 0.95).
   - Thinking-on Qwen exhausted the 4,000-token output cap in 2 of 5 live calls (both
     `medium`, one per game), which adds to the open output-allowance question.
   - Transport (`gameai/llm.py`): a failed upstream response (the Kimi m28 shape) is resent
@@ -177,9 +178,10 @@ tonight.
 
 Validation: 1,204 tests pass and Ruff passes on `87b370b`. The new dataset builder and the
 local smoke trainer ran end to end on the existing OpenRouter evidence (12 jobs, 597 rows,
-575 kept; 475 non-thinking GLM rows trained 30 LoRA steps on Qwen3-0.6B, loss 1.81 to
-1.62, adapter reloaded and verified, 4 of 4 decoded validation replies valid JSON). By the
-student's tokenizer, WH3 rows are p50 4.9k and at most 7.0k tokens.
+575 kept; 475 GLM rows (reasoning on, trained without it) trained 30 LoRA steps on
+Qwen3-0.6B, loss 1.81 to 1.62, adapter reloaded and verified, 4 of 4 decoded validation
+replies valid JSON). By the student's tokenizer, WH3 rows are p50 4.9k and at most 7.0k
+tokens.
 
 ## 2026-10-17: Overnight tranche, harness b18-b23
 

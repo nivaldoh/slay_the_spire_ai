@@ -261,7 +261,7 @@ class Model:
             attempt.update(request=body, output=response.get("output", []),
                            response_error=response.get("error"),
                            incomplete_details=response.get("incomplete_details"))
-        # Opt-in for WH3; the existing Spire trace schema and timing stay unchanged.
+        # Opt-in (both games' play commands): served model, backend and transport wall time.
         if "_transport" in response:
             transport = response["_transport"]
             attempt.update({key: transport[key] for key in
@@ -344,7 +344,7 @@ class Model:
     def drain_exchanges(self):
         """Completed calls, including failures and unadopted asynchronous replies.
 
-        The caller writes them on its own thread. Opt-in keeps Spire evidence unchanged.
+        The caller writes them on its own thread. Opt-in; both games' play commands record them.
         """
         while True:
             try:
