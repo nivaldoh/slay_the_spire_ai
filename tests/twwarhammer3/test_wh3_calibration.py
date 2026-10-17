@@ -349,6 +349,76 @@ def test_crossfire_waits_behind_the_pin_then_flanks_and_shoots_only_its_target()
     assert by_unit(orders, "f3")[0]["mode"] == "melee"
 
 
+def pinned_guns(reach):
+    gun = {"class": "missile", "ammo": 20, "range": reach, "behaviours": {"fire_at_will": False}}
+    return {"time_ms": 1000, "friendly": [unit("f1", "spearmen", 0, 0, state=["melee"]),
+            unit("f2", "handgunners", -20, -60, **gun), unit("f3", "handgunners", 20, -60, **gun)],
+            "enemy": [unit("e1", "warriors", 0, 10, bearing=180, state=["melee"])]}
+
+
+def gun_orders(policy, obs):
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    return {order["unit"]: order for order in orders if order["unit"] != "f1"}
+
+
+def test_crossfire_fixes_each_post_when_the_pin_starts():
+    # Live S3 r3: posts recomputed from the target's live bearing moved with it.
+    obs, policy = pinned_guns(reach=60), Crossfire()  # the target is 73 m away: go to posts
+    first = gun_orders(policy, obs)
+    assert round(first["f2"]["x"], 1) == 98.5 and round(first["f3"]["x"], 1) == -98.5
+    obs["time_ms"] = 5000
+    obs["enemy"][0].update(x=10, z=20, bearing=90)
+    policy.sent.clear()
+    spots = {uid: (order["x"], order["z"]) for uid, order in gun_orders(policy, obs).items()}
+    assert spots == {uid: (order["x"], order["z"]) for uid, order in first.items()}
+    assert policy.metadata()["pin"] == {"id": "e1", "x": 0, "z": 10, "bearing": 180}
+    obs["enemy"][0]["state"] = []  # the pin breaks; the next one fixes new posts
+    gun_orders(policy, obs)
+    obs["enemy"][0]["state"] = ["melee"]
+    again = gun_orders(policy, obs)
+    assert policy.metadata()["pin"]["bearing"] == 90 and again["f2"]["z"] > 100
+
+
+def test_crossfire_guns_shoot_a_target_in_range_from_where_they_stand():
+    obs = pinned_guns(reach=145)
+    orders = gun_orders(Crossfire(), obs)
+    assert [(o["type"], o["mode"], o["target"]) for o in orders.values()] == [
+        ("attack", "ranged", "e1")] * 2
+
+
+def test_crossfire_guns_shoot_an_attacker_while_it_stays_in_range():
+    # Live S3 r3: guns ran 120 m from hunters within 50 m without firing, then turned back.
+    obs, policy = pinned_guns(reach=145), Crossfire()
+    obs["enemy"].append(unit("e2", "warriors", -20, -100))  # 40 m from f2, 57 m from f3
+    orders = gun_orders(policy, obs)
+    assert (orders["f2"]["target"], orders["f2"]["mode"]) == ("e2", "ranged")
+    assert orders["f3"]["target"] == "e1"
+    obs["enemy"][1]["z"] = -160  # backs off to 100 m: still in range, still the target
+    policy.sent.clear()
+    assert gun_orders(policy, obs)["f2"]["target"] == "e2"
+    obs["enemy"][1]["z"] = -300  # out of range: back to the pinned target
+    assert gun_orders(policy, obs)["f2"]["target"] == "e1"
+    assert policy.metadata()["attackers"] == {}
+
+
+def test_crossfire_without_spearmen_shoots_the_nearest_in_range_or_halts():
+    # Live S3 r3: with the line routed, guns kept chasing posts beside a pursuing target.
+    obs, policy = pinned_guns(reach=145), Crossfire()
+    obs["friendly"][0]["state"] = ["routing"]
+    obs["enemy"][0].update(x=0, z=200, state=[])
+    obs["enemy"].append(unit("e2", "warriors", -60, -110))  # 64 m from f2, 94 m from f3
+    orders = gun_orders(policy, obs)
+    assert [(o["unit"], o["type"], o["target"]) for o in orders.values()] == [
+        ("f2", "attack", "e2"), ("f3", "attack", "e2")]
+    obs["enemy"][1].update(x=-60, z=-400)
+    obs["time_ms"] = 3000
+    assert gun_orders(policy, obs) == {"f2": {"unit": "f2", "type": "halt"},
+                                       "f3": {"unit": "f3", "type": "halt"}}
+    obs["time_ms"] = 9000
+    assert gun_orders(policy, obs) == {}
+
+
 def spell(key, mana, kinds, cast_range=200):
     return {"key": key, "mana": mana, "target": kinds, "cast_range": cast_range,
             "ready": True, "can_use": True}
@@ -457,6 +527,28 @@ def test_moves_step_off_restricted_cells_or_hold():
     policy.sent.clear()
     policy.unreachable = REFUSED_EVERYWHERE
     assert policy.move(obs["friendly"][0], {"x": 16, "z": 16}, obs["enemy"][0]) == []
+
+
+def test_step_ring_stays_inside_the_map_and_off_map_points_are_blocked():
+    # Live S3 r3 (b23): 13 of 14 refusals were ring points at x -514/-546, past min_x -512.
+    bounds = {"min_x": -512, "max_x": 512, "min_z": -512, "max_z": 512}
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "handgunners", -400, -255)],
+           "enemy": [unit("e1", "warriors", 0, 0)],
+           "terrain": {"rows": [], "cell_m": 32, "x0": -496, "z0": -496, "bounds": bounds}}
+    policy = Crossfire()
+    policy.observe(obs)
+    policy.unreachable = [{"x": -482, "z": -255}, {"x": -450, "z": -255}]
+    (order,) = policy.move(obs["friendly"][0], {"x": -600, "z": -255}, obs["enemy"][0])
+    assert (order["x"], order["z"]) == (-482, -223)  # b23: (-514, -255)
+    # Every on-map spot within two cells of (-482, -255) is restricted: hold, not step off it.
+    rows = ["." * 32 for _ in range(32)]
+    rows[5:12] = ["###" + "." * 29] * 7
+    obs["terrain"]["rows"] = rows
+    policy = Crossfire()
+    policy.observe(obs)
+    assert policy.move(obs["friendly"][0], {"x": -600, "z": -255}, obs["enemy"][0]) == []
+    # Posts are not clamped: one past the map's edge is blocked (b23: open), so the next is used.
+    assert policy.open_point([{"x": -514, "z": 0}, {"x": -450, "z": 0}]) == {"x": -450, "z": 0}
 
 
 def test_with_every_post_refused_guns_shoot_and_knights_charge_from_where_they_are():

@@ -38,7 +38,9 @@ class SmallDiagnostic(Hold):
     """Order bookkeeping shared by the small public-state diagnostics.
 
     Every move steps off restricted terrain cells and refused destinations to the nearest
-    open spot within two cells, or the unit holds (disclosed for all diagnostics).
+    open spot within two cells, or the unit holds (disclosed for all diagnostics). Those
+    spots stay 30 m inside the map bounds like the destination, and points off the map
+    count as blocked.
     """
 
     def __init__(self):
@@ -69,17 +71,23 @@ class SmallDiagnostic(Hold):
         self.sent[unit["id"]] = (order, self.now)
         return [order]
 
-    def move(self, unit, point, target):
+    def inside(self, point: dict) -> dict:
+        """``point`` moved to at least 30 m inside the map bounds the observation reports."""
         point = dict(point)
         for axis in ("x", "z"):
             if f"min_{axis}" in self.bounds and f"max_{axis}" in self.bounds:
                 point[axis] = max(self.bounds[f"min_{axis}"] + 30,
                                   min(self.bounds[f"max_{axis}"] - 30, point[axis]))
+        return point
+
+    def move(self, unit, point, target):
+        point = self.inside(point)
         # Live S6: a wait post inside the map's central rock was refused 147 times. Take the
-        # nearest open spot within two terrain cells, or hold where the unit is.
+        # nearest open spot within two terrain cells, or hold where the unit is. Live S3 r3:
+        # 13 refusals were ring points past the map's edge (x -514/-546, min_x -512).
         cell = self.terrain.get("cell_m") or 32
         point = self.open_point([point] + [
-            {"x": point["x"] + dx * cell * ring, "z": point["z"] + dz * cell * ring}
+            self.inside({"x": point["x"] + dx * cell * ring, "z": point["z"] + dz * cell * ring})
             for ring in (1, 2) for dx, dz in NEIGHBOURS])
         if point is None or distance(unit, point) < 12:
             return []
@@ -189,8 +197,9 @@ class CrossKite(SmallDiagnostic):
             "knowledge": "S2: target visible Slayers before other units, else the nearest. "
                          "Enable skirmish/fire-at-will, split to opposite sides at "
                          "120 m, shoot while at 85-145 m and withdraw radially when closer. "
-                         "A post on a restricted cell or near a refused move rotates up to 45 "
-                         "degrees around the target; with none open, shoot from where it is. "
+                         "A post on a restricted cell, off the map or near a refused move "
+                         "rotates up to 45 degrees around the target; with none open, shoot "
+                         "from where it is. "
                          "With no ammunition, charge the remaining visible target. "
                          "Fixed initial approach axis; no hidden state or path search."}
 
@@ -311,16 +320,23 @@ class Crossfire(SmallDiagnostic):
     card = {"purpose": "Can two gun units find lines of fire past their own melee?",
             "knowledge": "S3: fire-at-will off. Spearmen attack the nearest visible enemy "
                          "and keep it until it routs. Guns wait 30 m behind them until that "
-                         "target is in melee, then move 100 m from it at its bearing +-80 "
-                         "degrees (one each side) and fire only at it; a post on restricted or "
-                         "refused ground rotates up to 45 degrees (none open: fire from where "
-                         "it stands). A gun within 50 m of "
-                         "another enemy steps 120 m away from it; without ammunition it "
-                         "joins the melee. No hidden state or line-of-sight test."}
+                         "target is in melee. Then a gun with it in range shoots it from where "
+                         "it stands; otherwise it moves to a post fixed when the pin starts, "
+                         "100 m from the target at its bearing then +-80 degrees (one each "
+                         "side), and fires only at it; a post on restricted, refused or "
+                         "off-map ground rotates up to 45 degrees (none open: fire at it). "
+                         "A gun that another enemy comes within 50 m of shoots that enemy from "
+                         "where it stands while it stays in range (out of range: steps 120 m "
+                         "away from it). Without spearmen, each gun shoots the nearest "
+                         "visible enemy in range from where it stands, else halts. Without "
+                         "ammunition a gun joins the melee. No hidden state or line-of-sight "
+                         "test."}
 
     def __init__(self):
         super().__init__()
         self.target = None
+        self.pin = None
+        self.attackers = {}
 
     def decide(self, observation):
         units, enemies = self.observe(observation)
@@ -333,7 +349,13 @@ class Crossfire(SmallDiagnostic):
         target = _keep(enemies, self.target, anchor)
         self.target = target["id"]
         orders = [order for unit in line for order in self.attack(unit, target)]
-        pinned = "melee" in target.get("state", []) or not line
+        # Live S3 r3: posts recomputed from the target's live bearing moved with it and
+        # were never reached. Fix them on the map when the pin starts.
+        pinned = bool(line) and "melee" in target.get("state", [])
+        if not pinned:
+            self.pin = None
+        elif self.pin is None or self.pin["id"] != target["id"]:
+            self.pin = {key: target[key] for key in ("id", "x", "z", "bearing") if key in target}
         for index, gun in enumerate(guns):
             if gun.get("behaviours", {}).get("fire_at_will"):
                 orders.append({"unit": gun["id"], "type": "behaviour",
@@ -341,23 +363,45 @@ class Crossfire(SmallDiagnostic):
             if not gun.get("ammo"):
                 orders += self.attack(gun, target)
                 continue
+            reach = gun.get("range", 0)
+            near = min(enemies, key=lambda enemy: distance(gun, enemy))
             threat = min((enemy for enemy in enemies if enemy is not target),
                          key=lambda enemy: distance(gun, enemy), default=None)
-            post = self.open_point([_beside(target, (80 + turn) * (1 if index % 2 else -1), 100)
-                                    for turn in TURNS])
             if threat and distance(gun, threat) < 50:
+                self.attackers[gun["id"]] = threat["id"]
+            attacker = next((enemy for enemy in enemies if distance(gun, enemy) <= reach
+                             and enemy["id"] == self.attackers.get(gun["id"])), None)
+            if attacker is None:
+                self.attackers.pop(gun["id"], None)
+            # Live S3 r3: guns ran 120 m from hunters without a shot and chased posts
+            # beside a target that chased them once the spearmen routed.
+            if not line and distance(gun, near) <= reach:
+                orders += self.attack(gun, near, "ranged")
+            elif attacker:
+                orders += self.attack(gun, attacker, "ranged")
+            elif threat and distance(gun, threat) < 50:
                 orders += self.move(gun, _offset(threat, _direction(threat, gun), 120), threat)
+            elif not line:
+                previous = self.sent.get(gun["id"], ({}, 0))[0]
+                if previous.get("type") in ("move", "attack"):
+                    orders += self.issue(gun, {"unit": gun["id"], "type": "halt"})
             elif not pinned:
                 behind = _offset(anchor, _direction(target, anchor), 30, 25 if index % 2 else -25)
                 orders += self.move(gun, behind, target)
-            elif post is not None and distance(gun, post) > 25:
-                orders += self.move(gun, post, target)
-            else:
+            elif distance(gun, target) <= reach:
                 orders += self.attack(gun, target, "ranged")
+            else:
+                post = self.open_point([_beside(self.pin, (80 + turn) * (1 if index % 2 else -1),
+                                                100) for turn in TURNS])
+                if post is not None and distance(gun, post) > 25:
+                    orders += self.move(gun, post, target)
+                else:
+                    orders += self.attack(gun, target, "ranged")
         return orders
 
     def metadata(self):
-        return {"type": "crossfire", "target": self.target}
+        return {"type": "crossfire", "target": self.target, "pin": self.pin,
+                "attackers": dict(self.attackers)}
 
 
 class SpellWindow(SmallDiagnostic):
@@ -461,9 +505,9 @@ class HammerAnvil(SmallDiagnostic):
             "knowledge": "S6: infantry attacks the nearest visible enemy and keeps it until "
                          "it routs. Cavalry waits 40 m behind and 60 m beside the infantry "
                          "until that target is in melee, then rides via a 90 m side "
-                         "waypoint to 70 m behind it and charges (waypoints on restricted or "
-                         "refused ground rotate up to 45 degrees, or are skipped). After 8 s of "
-                         "observed "
+                         "waypoint to 70 m behind it and charges (waypoints on restricted, "
+                         "refused or off-map ground rotate up to 45 degrees, or are skipped). "
+                         "After 8 s of observed "
                          "contact, or the target's rout during the charge, it withdraws "
                          "120 m from the nearest enemy for 10 s (up to 20 s while enemies "
                          "stay within 80 m), then repeats on the infantry's current target. "
@@ -539,13 +583,14 @@ class HammerAnvil(SmallDiagnostic):
 
 
 def _clear(terrain: dict, point: dict) -> bool:
-    """Whether the terrain sample holding ``point`` is unrestricted (outside the grid: yes)."""
+    """Whether the terrain sample holding ``point`` is unrestricted (off the map: no)."""
     rows, cell = terrain.get("rows") or [], terrain.get("cell_m")
     if not rows or not cell:
         return True
     row = round((point["z"] - terrain["z0"]) / cell)
     column = round((point["x"] - terrain["x0"]) / cell)
-    return not (0 <= row < len(rows) and 0 <= column < len(rows[row])) or rows[row][column] != "#"
+    # The grid spans the map bounds; b23 counted points past its edge as open.
+    return 0 <= row < len(rows) and 0 <= column < len(rows[row]) and rows[row][column] != "#"
 
 
 class CornerHold(SmallDiagnostic):
