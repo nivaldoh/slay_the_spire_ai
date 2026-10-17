@@ -104,6 +104,26 @@ def test_bodyguard_keeps_the_gun_home_and_stops_chasing_a_departing_target():
         "unit": "f1", "type": "halt"}
 
 
+def test_bodyguard_keeps_its_target_between_two_equidistant_riders():
+    obs = {"time_ms": 1000, "friendly": [
+           unit("f1", "helblaster", 0, 0, ammo=100, range=290, **{"class": "artillery"}),
+           unit("f2", "halberds", 0, 20)], "enemy": [
+           unit("e1", "yeomen", 0, 250, **{"class": "cavalry"}),
+           unit("e2", "yeomen", 10, 251, **{"class": "cavalry"})]}
+    policy = Bodyguard()
+    first = next(order for order in policy.decide(obs) if order["unit"] == "f1")["target"]
+    other = "e2" if first == "e1" else "e1"
+    # Live S4 (bench-b17-s4-bodyguard) flipped the gun between e2 and e3 five times in 2 s.
+    for step in range(6):
+        obs["time_ms"] += 300
+        rider = next(enemy for enemy in obs["enemy"] if enemy["id"] == other)
+        rider["z"] -= 2
+        assert all(order.get("target", first) == first for order in policy.decide(obs))
+    rider["z"] = 150
+    obs["time_ms"] += 300
+    assert next(order for order in policy.decide(obs) if order["unit"] == "f1")["target"] == other
+
+
 def test_routing_refusal_is_newer_than_a_delayed_snapshot():
     obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 100)],
            "enemy": [unit("e1", "halberds", 0, 0)]}

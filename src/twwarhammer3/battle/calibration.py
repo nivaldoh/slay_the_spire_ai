@@ -207,12 +207,17 @@ class Bodyguard(SmallDiagnostic):
 
     card = {"purpose": "Can a single halberd escort preserve a fragile artillery unit?",
             "knowledge": "S4: the gun stays in place and shoots cavalry before infantry "
-                         "when in range. Its escort waits "
+                         "when in range, keeping one target until it routs or another is 30 m "
+                         "nearer the gun. Its escort shares that target and waits "
                          "25 m toward the nearest cavalry and 20 m to the side, intercepts "
                          "within 120 m of the gun, and returns after the threat routes. "
                          "The early intercept allows for roughly 45 m of rider movement "
                          "during five seconds of observation age. "
                          "No abilities, hidden targets or predicted paths."}
+
+    def __init__(self):
+        super().__init__()
+        self.target = None
 
     def decide(self, observation):
         units, enemies = self.observe(observation)
@@ -223,7 +228,13 @@ class Bodyguard(SmallDiagnostic):
             return [order for unit in units for order in self.attack(
                 unit, min(enemies, key=lambda enemy: distance(unit, enemy)))]
         riders = [enemy for enemy in enemies if "cavalry" in enemy.get("class", "")]
-        target = min(riders or enemies, key=lambda enemy: distance(gun, enemy))
+        # The first live run re-picked between two equidistant riders every decision.
+        nearest = min(riders or enemies, key=lambda enemy: distance(gun, enemy))
+        target = next((enemy for enemy in riders or enemies if enemy["id"] == self.target),
+                      nearest)
+        if distance(gun, nearest) < distance(gun, target) - 30:
+            target = nearest
+        self.target = target["id"]
         if gun.get("ammo") and distance(gun, target) <= gun.get("range", 0):
             orders = self.attack(gun, target, "ranged")
         else:
@@ -241,7 +252,7 @@ class Bodyguard(SmallDiagnostic):
         return orders
 
     def metadata(self):
-        return {"type": "bodyguard"}
+        return {"type": "bodyguard", "target": self.target}
 
 
 def _beside(target: dict, degrees: float, metres: float) -> dict:
