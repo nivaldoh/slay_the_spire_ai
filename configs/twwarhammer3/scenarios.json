@@ -1332,6 +1332,23 @@
     ],
     "calibration_change": "S4, small-scenario tranche: hold floor, then disclosed Bodyguard at 0 and 5 s observation age. No model battle before review."
   },
+  "emp-helblaster-brt-raiders-2": {
+    "base": "emp-helblaster-brt-raiders",
+    "name": "emp-helblaster-brt-raiders-2",
+    "brief": "A Helblaster and one Halberdier escort defend against two Mounted Yeomen and two Men-at-arms units. The escort cannot beat both infantry units alone; the volley gun must survive the riders to shoot the infantry in the open.",
+    "enemy": {
+      "units": [
+        "wh_main_brt_cav_mounted_yeomen_0",
+        "wh_main_brt_cav_mounted_yeomen_0",
+        "wh_main_brt_inf_men_at_arms",
+        "wh_main_brt_inf_men_at_arms"
+      ]
+    },
+    "expect": {
+      "funds_amount": 1900
+    },
+    "calibration_change": "S4 second step (2026-10-17). Bodyguard won 4 of 4 at 5 s observation age and 1 of 4 fresh on the original, but every battle lost the gun by 97-141 s after 37-42 rounds: the escort's melee won, so the named skill did not bind. Add a second Men-at-arms unit (database cost 450; enemy 1700, player 1550) so the gun's survival should decide the battle; funds 1900. Hold floor first; Bodyguard at 0/5 s after a floor loss."
+  },
   "chd-reserve-grn-siege-flankers-3": {
     "base": "chd-reserve-grn-siege-flankers-2",
     "name": "chd-reserve-grn-siege-flankers-3",

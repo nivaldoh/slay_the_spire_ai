@@ -205,6 +205,16 @@
       "core_candidate": false,
       "footnote": "Development candidate S4. The hold-position floor lost at 160 s, with 59% of its soldiers surviving against 81% of the attackers. Cavalry reached the Helblaster after only 42 of its 594 rounds had been used, then stopped its fire. A disclosed bodyguard diagnostic will test whether escort placement and cavalry-first targeting preserve useful firing time."
     },
+    "emp-helblaster-brt-raiders-2": {
+      "title": "Keep the volley gun alive, outnumbered",
+      "short": "Protect a fragile gun",
+      "noun": "gun defence",
+      "heading": "The escort cannot win alone",
+      "challenge": "A Helblaster volley gun and one Halberdier escort defend against two Mounted Yeomen and two Men-at-arms units. The infantry outnumbers the escort, so the gun has to survive the riders and fire on the infantry.",
+      "family": "protect a fragile gun",
+      "core_candidate": false,
+      "footnote": "S4 second step: on the original, the scripted bodyguard won mainly through the escort's melee after the gun was lost. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+    },
     "brt-archers-dwf-slayers": {
       "title": "Cheaper horse archers against Slayers",
       "short": "Ammunition and kiting",
