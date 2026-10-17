@@ -1,43 +1,37 @@
 # Project state
 
-Updated 2026-10-17 00:57 UTC: what is running, where each game stands and what comes
+Updated 2026-10-17 23:40 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
 ## Active work
 
-[Main README](../README.md) refresh and repository cleanup are complete
-([record](twwarhammer3/log.md#2026-10-16-readme-refresh-and-repository-cleanup)).
+Nothing is running: the owner asked to wrap up at 23:24 UTC, 2026-10-17, and queue E3
+stopped after its S5 battle.
 
-Owner away since 2026-10-17 19:10 UTC with a post-training goal (review data collection,
-prepare fine-tuning an open model through OpenRouter, a minimal test in both games) and
-"run more of the planned TW3 games". Done: harness b24 on `main` (`87b370b`), with the
-pipeline on [posttraining.md](posttraining.md); queue E1 ([log](twwarhammer3/log.md#2026-10-17-queue-e1-harness-b24-and-post-training-data-capture)).
-Queue E2 and harness b25 are on `main`
-([log](twwarhammer3/log.md#2026-10-17-queue-e2-qwen36-on-s1-step-floors-and-harness-b25)).
-The minimal post-training test ran in both games: Qwen3.6 through OpenRouter, exports, a
-cross-game dataset and a local smoke fine-tune
-([results](posttraining.md#first-end-to-end-test-2026-10-17)). Wrapping up (owner, 23:24 UTC): queue E3 on b25 (`d4338ea`, started 22:26 UTC,
-`runs/twwarhammer3/calibration/queue-e3-b25-20261017.json`) ends after its current S5
-battle; this commit moves HEAD, so the queue starts no further job (S3 Crossfire and L2
-remain unplayed). Commit to `main` only between
-jobs (queues check HEAD).
+Today, while the owner was away (goal: post-training readiness and a minimal test in both
+games; also "run more of the planned TW3 games"):
+- Post-training pipeline on `main` (harness b24-b26, `4ebf08e`), described on
+  [posttraining.md](posttraining.md): exchange capture and OpenRouter play in both games,
+  `spire export`, WH3 export schema 2, the shared dataset builder `gameai.sft`, a local
+  LoRA smoke test, and Qwen3.6-35B-A3B (the open-weight model to fine-tune) declared on
+  OpenRouter. OpenRouter serves inference only; it cannot fine-tune or serve a fine-tune.
+- Minimal test in both games ([results](posttraining.md#first-end-to-end-test-2026-10-17)):
+  Qwen3.6 played Spire (three jobs, $0.24) and WH3 S1 (three battles, $0.07); both games'
+  exports built a cross-game dataset; the smoke fine-tune lowered validation loss on an
+  unseen Spire seed from 1.685 to 1.328.
+- WH3 queues E1-E3 (free scripted checks, [log](twwarhammer3/log.md#2026-10-17-queue-e3-s5-and-s7-wins-harness-b26-and-wrap-up)):
+  S5 SpellWindow and S7 CornerHold now show wins at both ages; four step-downs overshot.
 
-The overnight tranche ended at about 12:40 UTC, 2026-10-17. The owner's overnight goal was to continue the benchmark scenario
-implementation unattended. Harness b18-b23 are on `main`:
-- S3 and S5-S11 small candidates with disclosed diagnostics;
-- L1/L2 large candidates;
-- step variants;
-- terrain-safe diagnostic moves;
-- `digest --units`.
-
-40 jobs ran, mostly free scripted checks; OpenRouter spend rose from $1.93 to $3.54
-of the $10 working ceiling. What happened, every delegated choice and the proposals are
-in the [overnight entry](twwarhammer3/log.md#2026-10-17-overnight-tranche-harness-b18-b23);
-each candidate's status is on the
-[board](twwarhammer3/benchmark.md#small-scenario-status-after-the-overnight-tranche-2026-10-17).
-Unmerged for the owner: `wh3-rules-v21-attack-path` (`llm_rules` v21 states the attack
-route) and `wh3-openrouter-pin` (optional backend pin), both pushed.
+Owner decisions waiting (details in the log entries):
+1. A training host and a route to play a fine-tune back in both harnesses (Tinker
+   credential, or a host that trains and serves LoRA).
+2. A larger output allowance for reasoning-on modes: Qwen3.6 `medium` hit the 4,000-token
+   cap in 5 of 36 Spire attempts and ended its WH3 battle; GLM and Step high did the same.
+3. Whether OpenAI outputs may train a model (25,503 exported rows are left out by default).
+4. Whether Step 5 preview has open weights; backing up `runs/` off this machine.
+5. Earlier: `wh3-rules-v21-attack-path` (unmerged); `wh3-openrouter-pin` is superseded by
+   the per-model routing in `providers.py` (review: do not merge it as the baseline pin).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -48,7 +42,7 @@ command; clear it when the job stops.
 [log](twwarhammer3/log.md) (newest first, with the versions on `main` at the top),
 [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, benchmark b23,
+- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, benchmark b26,
   evaluator v2 and track `obs-v4+terrain/act-v2/live-1x`. The interface supports native
   objectives/reinforcements and the optional public battery-evacuation objective.
 - Six candidate decision families with live evidence remain after the live novelty audit
@@ -62,7 +56,8 @@ command; clear it when the job stops.
   models; survive-a-swarm and Kislev did not. The report page shows core scenarios and
   completed battles only; its JSON keeps setup failures and variants. Results, costs and
   reviews: [M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
-- OpenAI spend: $50.90 of $52; OpenRouter $3.54 of $50. No further OpenAI battle fits
+- OpenAI spend: $50.90 of $52; OpenRouter $3.86 of $50 (the allowance covers the WH3 and
+  Spire OpenRouter ledgers). No further OpenAI battle fits
   the current cap; more Sol battles need the owner's budget decision.
 - [Difficulty ladder V1](twwarhammer3/log.md#2026-10-16-difficulty-ladder-first-step-v1)
   is complete. All 26 declared model-mode configurations passed schema checks; modes
@@ -70,19 +65,18 @@ command; clear it when the job stops.
 
 The exporter is implemented ([b14](twwarhammer3/log.md#2026-10-16-harness-b14-offline-trace-export-and-model-exchange-capture)).
 Next, per the [board](twwarhammer3/benchmark.md#small-scenario-status-after-the-overnight-tranche-2026-10-17):
-1. Small scenarios. Wins are shown for S1 and S4. Next:
-   - re-run Crossfire for S3 on b23;
-   - S5: find why the ability probe barely cast, then SpellWindow;
-   - step-downs for S6, S8, S9 and S11, floor first;
-   - S7 with armour-piercing attackers;
-   - setup checks for L1 and L2.
+1. Small scenarios. Wins are shown for S1, S4, S5 and S7. Next:
+   - model screens for S5 and S7 (and S1/S4 with stronger models);
+   - S3 Crossfire on b24 (a 0/5 s pair, unplayed when the owner wrapped up);
+   - intermediate steps for S6, S8, S9 and S11 (each too hard at its original step and
+     too easy after the step-down);
+   - the L2 setup check with its fourth side (scenario version 2).
 
    S2 and S10 are set aside pending the owner.
 2. Ladder: GLM-5.3 / low lost both the siege and swarm anchors (one battle each), so
    its added-factor steps wait for stronger models.
-3. Model coverage: GLM high and Step high both exhausted the 4,000-token output cap
-   with reasoning. Modes above `low` need a larger output allowance first. Step low
-   decided about once a minute.
+3. Model coverage: reasoning-on modes (GLM and Step high, Qwen3.6 `medium`) exhaust the
+   4,000-token output cap; they need a larger output allowance first.
 
 Open: backing up `runs/` off this machine; the all-modes matrix size and budget. Custom
 evacuation and the workload, prompt, history, representation and added-age experiments
@@ -92,13 +86,16 @@ Steam is pinned to 9.0.4; old evidence keeps its original build.
 ## Slay the Spire
 
 Full runs with an API model ([README](spire/fullrun/README.md): reference and loop;
-[log](spire/fullrun/log.md): versions), idle since 2026-10-13; v10 is on `main`, untested.
-No run has won; the furthest reached Act 4 (v8, floor 54); `uv run python -m spire stats`
-gives acts, wins and floors per version. API spend: $2.52 of the $25 cap
-(`uv run python -m spire spend`, 2026-10-13). Open owner decisions:
-[fullrun/README.md](spire/fullrun/README.md#open-owner-decisions). Paused: the first-combat
-track ([README](spire/first-combat/README.md)). Planned: a remotely trained open-weight
-model ([README](spire/open-weight/README.md); only a skeleton in `src/spire/openweight/`).
+[log](spire/fullrun/log.md): versions); v10 is on `main`, untested with Luna. On
+2026-10-17 Qwen3.6 played three OpenRouter smoke jobs for the post-training test
+(best: Act 1 boss, floor 16). No run has won; the furthest reached Act 4 (v8, floor 54);
+`uv run python -m spire stats` gives acts, wins and floors per version. API spend: OpenAI
+$2.52 of the $25 cap (`uv run python -m spire spend`); OpenRouter $0.25
+(`--provider openrouter`). Seeds `HELDOUT01`-`HELDOUT10` are reserved for evaluation.
+Open owner decisions: [fullrun/README.md](spire/fullrun/README.md#open-owner-decisions).
+Paused: the first-combat track ([README](spire/first-combat/README.md)). Planned: a
+remotely trained open-weight model ([README](spire/open-weight/README.md); data path on
+[posttraining.md](posttraining.md)).
 
 Next steps:
 1. Replay v10 (`54a5967`, hand-select purpose) on `RUNDEV1`–`RUNDEV3`: its only job died
@@ -115,6 +112,14 @@ Next steps:
    [approaches.md addendum](spire/approaches.md#addendum-2026-10-12-evening-an-open-sts1-benchmark).
 
 ## Owner direction
+
+Both games:
+- 2026-10-17 (19:10 UTC, away): "Review the repo in terms of its preparation for
+  post-training experiments. Review whether we're collecting data properly, check and
+  improve the quality of related code, prepare the structure required to fine-tune an open
+  model with OpenRouter (and do an initial minimal test run for this, with both games)."
+  Shortly after: "run more of the planned TW3 games in the background". At 23:24 UTC:
+  "wrap it up after the current battle ends". Done; see Active work.
 
 WH3:
 - 2026-10-17 UTC: cleared the active goal and asked to wrap up. Stop further game/API

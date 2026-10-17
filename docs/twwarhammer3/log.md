@@ -35,10 +35,59 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b25 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `report.py`, `export.py` | E1 on b23: S5 SpellWindow won at 524 s (5 s age) by Fireball kiting; S3 Crossfire lost twice (revised in b24); L1 set up; L2 refused (needs four sides). Status board in benchmark.md |
+| benchmark harness | b26 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `report.py`, `export.py` | E3 on b25: S5 SpellWindow won fresh (440 s) and at 5 s (488 s); S7 CornerHold won twice. E2: four step-downs too easy. S3 Crossfire b24 and L2 (four sides) unplayed. Status board in benchmark.md |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
+
+## 2026-10-17: Queue E3 (S5 and S7 wins), harness b26 and wrap-up
+
+Queue E3 (`calibration/queue-e3-b25-20261017.json`, `d4338ea`, b25, $0). At 23:24 UTC the
+owner asked to wrap up after the current battle; a docs-only commit moved HEAD, so the queue
+started no further job after S5 (S3 Crossfire b24 and the L2 setup check remain unplayed).
+
+| Job | Check | Outcome | Battle time | Notes |
+|---|---|---|---|---|
+| `bench-b25-s7-cornerhold-20261017` ep 0 | S7 Greatswords step, CornerHold, fresh | Won (timer) | 1205 s | The defender held to the timer |
+| same, ep 1 | 5.41 s mean age | Won (timer) | 1205 s | |
+| `bench-b25-s5-spell-20261017` ep 0 | S5 SpellWindow b25, fresh | Won | 440 s | b23's fresh episode lost on the timer |
+| same, ep 1 | 5.41 s mean age | Won | 488 s | 1 invalid batch |
+
+S5 now shows a fresh win: holding the wizard until each cast lands (b25) turned b23's
+timer loss into a 440 s win. S7 with armour-piercing attackers shows wins at both ages
+after its hold floor lost. Both are "win shown" on the board; their casts and hold geometry
+were not reviewed beyond the outcomes, and a model screen is next for each.
+
+**Harness b26** (`4ebf08e`): the fixes from a final review of the day's work (four area
+reviewers and a completeness critic, every finding checked by an adversarial verifier).
+- Transport (`gameai/llm.py`): a failed upstream response is resent unchanged up to twice
+  on its own counter, so it no longer uses up the parse retries and blocks salvage; the
+  cut-off notice needs `incomplete_details.reason == max_output_tokens` and a JSON error
+  other than "Extra data". `battle/play.py` keeps an APIError's attempts in the failure, so
+  the report counts a failed response that ends an episode.
+- `SpellWindow` casts nothing while the wizard is in melee (it steps away first); the S9
+  Trolls step inherits S9's family, so its split group stays with S9's earlier jobs.
+- Data (`spire/fullrun/export.py`, `gameai/sft.py`, `scripts/sft_smoke.py`): Spire rows of the
+  ten reserved evaluation seeds `HELDOUT01`-`HELDOUT10` (in any spelling the game reads as
+  the same seed) are `held_out`; transport-failure attempts carry the contract's null fields;
+  a request stopped mid-retry is labelled `Interrupted`. The builder gains `--require
+  PATH=VALUE` on outcome and label fields, drops reasoning-on targets without reasoning text
+  under `--reasoning`, and counts a target as retried only when its prompt changed. The smoke
+  test reports validation loss before and after on fixed rows and an action-match rate.
+- Docs: the owner's $50 OpenRouter allowance covers both OpenRouter ledgers (WH3 and Spire;
+  $3.86 spent at 22:51 UTC); corrected counts in today's entries; Qwen3.6 in the controllers
+  page; a CLI test of `spire play --provider`.
+
+Checks after the merge: 1,241 tests and Ruff pass. The b26 smoke test on the cross-game Qwen
+dataset (60 steps, Qwen3-0.6B) lowered the validation loss on the 55 rows of the unseen Spire
+seed from 1.685 to 1.328; 16 of 16 decoded replies were valid JSON and 5 matched the
+reference action. A schema-2 export of every finished WH3 episode (379 episodes, 15,085
+rows, 681 of them from open-weight models) is in `exports/trace-v2-20261017`.
+
+Open for the owner (also in [state.md](../state.md)): a training host and a route to play a
+fine-tune back in both harnesses; a larger output allowance for reasoning-on modes; the
+OpenAI-outputs terms question; whether Step 5 preview has open weights; intermediate steps
+for S6, S8, S9 and S11.
 
 ## 2026-10-17: Queue E2 (Qwen3.6 on S1, step floors) and harness b25
 

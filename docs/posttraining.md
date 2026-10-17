@@ -199,6 +199,10 @@ and the [WH3 log](twwarhammer3/log.md#2026-10-17-queue-e2-qwen36-on-s1-step-floo
 | Build, `--effort medium --reasoning` | `runs/sft/qwen36-reasoning-smoke-20261017` | 33 chats with `reasoning_content` (about 5.8k characters on the first) |
 | Smoke fine-tune, 60 steps on Qwen3-0.6B | `runs/sft/qwen36-smoke-20261017-smoke` | Loss 1.22 to 1.02 (first and last five steps); adapter reloaded and verified; 8 of 8 validation replies valid JSON, none exact (the 0.6B model always chose 0) |
 
+The b26 smoke test (same dataset and settings, `runs/sft/qwen36-smoke-20261017-smoke-b26`)
+adds measures on fixed rows: validation loss on the 55 rows of the unseen Spire seed fell
+from 1.685 to 1.328, and 5 of 16 decoded replies matched the reference action.
+
 The pipeline works from play to an adapter. None of these numbers is a result: one run per
 configuration, a 0.6B stand-in for the student, and 60 steps.
 

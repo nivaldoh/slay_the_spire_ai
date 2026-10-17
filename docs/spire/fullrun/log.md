@@ -641,3 +641,15 @@ endpoints (routing constraint); per-fight labels: eight fights won, then the bos
 Together with the WH3 Qwen3.6 export, a non-thinking dataset
 (`runs/sft/qwen36-smoke-20261017`) and a 33-row reasoning dataset were built, and the
 local smoke fine-tune ran on the first.
+
+## 2026-10-17: harness b26 data fixes and a Luna re-export (no scaffolding change)
+
+Shared with WH3 harness b26 ([WH3 log](../../twwarhammer3/log.md#2026-10-17-queue-e3-s5-and-s7-wins-harness-b26-and-wrap-up)):
+ten seeds, `HELDOUT01`-`HELDOUT10`, are reserved for evaluation and export as `held_out` in
+any spelling the game reads as the same seed (it maps O to 0 and ignores leading zeros);
+never play them in the tuning loop. A failed provider response is resent up to twice
+without using a parse retry, and the cut-off notice needs the max-output reason.
+
+`runs/fullrun-exports/luna-v1-v10-20261017`: the 13 Luna jobs (30 runs, harness v1-v10 and
+the smoke run) export to 11,099 rows with no issue but the expected missing reasoning. They
+are OpenAI outputs, which the dataset builder leaves out by default.
