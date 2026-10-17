@@ -1,5 +1,6 @@
 """Provider isolation, structured responses and budget failures without network access."""
 
+import http.client
 import io
 import json
 import urllib.error
@@ -113,12 +114,30 @@ def test_invalid_cost_is_charged_conservatively_and_stops(tmp_path, cost):
     assert agent.totals["usd"] == record["usd"]
 
 
+@pytest.mark.parametrize("cost", [None, 1.0])
+def test_cost_failures_stop_without_retry_and_keep_the_billed_attempt(tmp_path, cost):
+    # Even on a failed response, a missing or over-reservation cost is never resent.
+    sent = []
+    agent = model(tmp_path, lambda body: sent.append(body) or reply(
+        status="failed", error={"code": "server_error"},
+        usage={"input_tokens": 100, "output_tokens": 20, "cost": cost}))
+    with pytest.raises(llm.APIError, match="and stopped") as failure:
+        agent.ask("test", SCHEMA, json.loads, retries=2)
+    assert len(sent) == 1 and not failure.value.retryable
+    assert failure.value.attempt["usd"] == pytest.approx(agent.ledger.spent)
+
+
 def test_uncertain_transport_attempts_are_charged_on_success_and_failure(tmp_path, monkeypatch):
     class Response(io.BytesIO):
         headers = {}
 
+    class Truncated(Response):
+        def read(self, *args):
+            raise http.client.IncompleteRead(b'{"id"', 100)
+
+    # Undecodable and truncated bodies are uncertain transport too, never a raw traceback.
     outcomes = [TimeoutError("secret-key"), Response(json.dumps(reply()).encode()),
-                TimeoutError("secret-key"), TimeoutError("secret-key"), TimeoutError("secret-key")]
+                Response(b"\xff"), TimeoutError("secret-key"), Truncated()]
 
     def urlopen(request, timeout):
         assert request.full_url == OPENROUTER.url
@@ -134,6 +153,7 @@ def test_uncertain_transport_attempts_are_charged_on_success_and_failure(tmp_pat
     with pytest.raises(llm.APIError) as error:
         agent.call("test", SCHEMA)
     assert "secret-key" not in str(error.value)
+    assert str(error.value).startswith("IncompleteRead") and not outcomes
     records = [json.loads(line) for line in agent.ledger.path.read_text().splitlines()]
     assert [r.get("attempts") for r in records] == [1, None, 3]
     assert records[2]["usd"] == pytest.approx(3 * records[0]["usd"])

@@ -9,6 +9,7 @@ schema and parser.
 
 from __future__ import annotations
 
+import http.client
 import json
 import math
 import os
@@ -27,14 +28,17 @@ API_URL = OPENAI.url
 PRICES = OPENAI.prices
 TRANSPORT_ATTEMPTS = 3
 TRANSIENT_HTTP = {408, 409, 429, 500, 502, 503, 504}
+CUT_OFF = ("\n\nYour previous reply was cut off at the output limit before the JSON ended."
+           " Reply again.")
 
 
 class APIError(RuntimeError):
-    """Transport or service failure: infrastructure, never a gameplay outcome."""
+    """Transport or service failure: infrastructure, never a gameplay outcome. Only a failed
+    response is ``retryable``: ``Model.ask`` resends the same request while retries remain."""
 
-    def __init__(self, message: str, uncertain_attempts: int = 0):
+    def __init__(self, message: str, uncertain_attempts: int = 0, retryable: bool = False):
         super().__init__(message)
-        self.uncertain_attempts = uncertain_attempts
+        self.uncertain_attempts, self.retryable = uncertain_attempts, retryable
 
 
 class InvalidReply(RuntimeError):
@@ -117,8 +121,7 @@ def post(key: str, body: dict, attempts: int = TRANSPORT_ATTEMPTS, *,
             uncertain += error.code >= 500 or error.code == 408
             if error.code not in TRANSIENT_HTTP or attempt == attempts:
                 raise APIError(f"HTTP {error.code}: {detail}", uncertain) from None
-        except (urllib.error.URLError, TimeoutError, ConnectionError,
-                json.JSONDecodeError) as error:
+        except (OSError, http.client.HTTPException, ValueError) as error:
             uncertain += 1
             if attempt == attempts:
                 detail = str(error).replace(key, "<key>")
@@ -237,19 +240,18 @@ class Model:
                 "reasoning_tokens", 0),
             cached_tokens=(usage.get("input_tokens_details") or {}).get("cached_tokens", 0),
         )
-        failure = None
         if cost_error:
-            failure = f"{cost_error}; charged reservation and stopped"
+            error = APIError(f"{cost_error}; charged reservation and stopped")
         elif usd > reservation:
-            failure = "Reported cost exceeded reservation; charged actual cost and stopped"
+            error = APIError("Reported cost exceeded reservation; charged actual cost and stopped")
         elif response.get("error"):
-            failure = f"{self.provider} returned a failed response {response.get('id')}"
-        if failure:
-            error = APIError(failure)
-            if self.record_exchanges:
-                error.attempt = attempt
-            raise error
-        return attempt
+            attempt["error"] = f"{self.provider} returned a failed response {response.get('id')}"
+            error = APIError(attempt["error"], retryable=True)
+        else:
+            return attempt
+        # Attached even without exchange capture, so the caller keeps the billed attempt.
+        error.attempt = attempt
+        raise error
 
     def _charge_uncertain(self, reservation: float, attempts: int) -> None:
         if attempts:
@@ -260,26 +262,37 @@ class Model:
 
     def ask(self, prompt: str, schema: dict, parse, retries: int) -> tuple[object, list[dict]]:
         """The parsed reply and every attempt. A reply that ``parse`` rejects with
-        ValueError is retried with the error appended to the prompt."""
+        ValueError is retried with the error appended to the prompt, or with a cut-off
+        notice when the reply hit the output limit; a failed response is resent unchanged.
+        The last failure is raised when retries run out."""
         attempts, feedback = [], ""
         self.exchange_count += 1
         exchange = {"id": f"m{self.exchange_count}", "prompt": prompt, "attempts": attempts}
         try:
-            for _ in range(1 + retries):
-                attempt = self.call(prompt + feedback, schema)
+            for remaining in range(retries, -1, -1):
+                failure = None
+                try:
+                    attempt = self.call(prompt + feedback, schema)
+                except APIError as error:
+                    if not hasattr(error, "attempt"):
+                        raise
+                    failure, attempt = error, error.attempt
                 if self.record_exchanges:
                     attempt["exchange_id"] = exchange["id"]
                 attempts.append(attempt)
+                if failure:
+                    if failure.retryable and remaining:
+                        continue
+                    raise failure
                 try:
                     return parse(attempt["text"]), attempts
                 except ValueError as error:
                     attempt["error"] = str(error)
-                    feedback = f"\n\nYour previous reply was invalid: {error}. Reply again."
+                    feedback = (CUT_OFF if attempt["status"] == "incomplete" else
+                                f"\n\nYour previous reply was invalid: {error}. Reply again.")
             raise InvalidReply(attempts)
         except Exception as error:
             if self.record_exchanges:
-                if hasattr(error, "attempt"):
-                    attempts.append(dict(error.attempt, exchange_id=exchange["id"]))
                 exchange["error"] = {"type": type(error).__name__, "message": str(error)}
             raise
         finally:

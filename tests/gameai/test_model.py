@@ -1,6 +1,7 @@
 """Pricing, key loading and transport retries for OpenAI calls; no network."""
 
 import io
+import json
 import urllib.error
 
 import pytest
@@ -66,6 +67,49 @@ def test_ask_retries_rejected_replies_with_feedback_then_gives_up(tmp_path):
     with pytest.raises(api.InvalidReply) as error:
         model.ask("Wall ahead.", {}, lambda text: parse("jump"), retries=0)
     assert len(error.value.attempts) == 1 and model.totals["calls"] == 4
+
+
+def test_cut_off_reply_is_retried_with_a_neutral_notice(tmp_path):
+    replies, prompts = [("incomplete", '{"key": "u'), ("completed", '{"key": "up"}')], []
+
+    def send(body):
+        prompts.append(body["input"][0]["content"])
+        status, text = replies.pop(0)
+        return {"status": status, "usage": USAGE, "output": [{"type": "message", "content": [
+            {"type": "output_text", "text": text}]}]}
+
+    model = api.Model("gpt-6-luna", "none", Ledger(tmp_path / "spend.jsonl", 1.0), send=send,
+                      instructions="Press a key.", max_output_tokens=200)
+    value, attempts = model.ask("Wall ahead.", {}, json.loads, retries=1)
+    assert value == {"key": "up"} and attempts[0]["error"].startswith("Unterminated string")
+    assert prompts[1] == ("Wall ahead.\n\nYour previous reply was cut off at the output limit"
+                          " before the JSON ended. Reply again.")
+
+
+@pytest.mark.parametrize("capture", [False, True])
+def test_failed_response_is_resent_unchanged_and_kept_once(tmp_path, capture):
+    # A Kimi decision ended on one upstream failure (bench-b23-s1-kimi-low-20261017 m28).
+    bodies = []
+
+    def send(body):
+        bodies.append(body)
+        failed = len(bodies) == 1
+        return {"id": f"r{len(bodies)}", "status": "failed" if failed else "completed",
+                "usage": USAGE, "output": [{"type": "message", "content": [
+                    {"type": "output_text", "text": "down" if failed else "up"}]}],
+                **({"error": {"code": "server_error"}} if failed else {})}
+
+    model = api.Model("gpt-6-luna", "none", Ledger(tmp_path / "spend.jsonl", 1.0), send=send,
+                      instructions="Press a key.", max_output_tokens=200,
+                      record_exchanges=capture)
+    value, attempts = model.ask("Wall ahead.", {}, lambda text: text, retries=1)
+    assert value == "up" and bodies[1] == bodies[0]
+    assert [a.get("error") for a in attempts] == ["openai returned a failed response r1", None]
+    assert model.totals["calls"] == 2
+    assert model.ledger.spent == pytest.approx(2 * attempts[1]["usd"])
+    if capture:
+        exchange, = model.drain_exchanges()
+        assert exchange["attempts"] == attempts and "error" not in exchange
 
 
 def test_wh3_transport_opt_in_records_wall_time_header_and_actual_model(tmp_path, monkeypatch):
@@ -165,15 +209,20 @@ def test_failed_exchanges_keep_all_available_attempts_and_errors(tmp_path, failu
                                                  else 1), instructions="system",
                       max_output_tokens=200, send=send, record_exchanges=True)
     with pytest.raises({"transport": api.APIError, "response": api.APIError,
-                        "parse": api.InvalidReply, "budget": BudgetExhausted}[failure]):
+                        "parse": api.InvalidReply, "budget": BudgetExhausted}[failure]) as error:
         model.ask("user", {}, parse, 1)
     exchange, = list(model.drain_exchanges())
     assert exchange["prompt"] == "user" and exchange["error"]["type"]
-    assert len(exchange["attempts"]) == (0 if failure == "budget" else 2 if failure == "parse"
-                                        else 1)
+    assert len(exchange["attempts"]) == (0 if failure == "budget" else 1 if failure == "transport"
+                                        else 2)
     if failure == "transport":
         attempt, = exchange["attempts"]
         assert attempt["transport_error"] == "service failed" and "text" not in attempt
         assert attempt["request"]["input"][0]["content"] == "user"
     if failure == "response":
-        assert exchange["attempts"][0]["response_error"] == {"code": "failed"}
+        # Resent unchanged until retries ran out; the last failure stays infrastructure.
+        assert exchange["error"]["type"] == "APIError" and error.value.retryable
+        assert all(a["response_error"] == {"code": "failed"} and a["exchange_id"] == "m1"
+                   and a["request"]["input"][0]["content"] == "user"
+                   for a in exchange["attempts"])
+        assert error.value.attempt is exchange["attempts"][-1]
