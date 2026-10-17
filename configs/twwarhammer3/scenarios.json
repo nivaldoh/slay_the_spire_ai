@@ -1519,12 +1519,12 @@
       ]
     },
     "expect": {
-      "funds_amount": 1200
+      "funds_amount": 3000
     },
     "protected": [
       "wh_main_emp_cha_wizard_fire_0"
     ],
-    "calibration_change": "Small focused candidate S5 (b18, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: player 600 (250 + 350), enemy 750. Empire mirror as in emp5-emp5. Defined only: a hero-led lordless roster, the wizard's lore and the 800 custom funds are unverified. Scripted probe_abilities and attack_nearest floors, then the disclosed SpellWindow diagnostic at 0 and 5 s observation age, before any model battle. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 800."
+    "calibration_change": "Small focused candidate S5 (b18, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: player 600 (250 + 350), enemy 750. Empire mirror as in emp5-emp5. Defined only: a hero-led lordless roster, the wizard's lore and the 800 custom funds are unverified. Scripted probe_abilities and attack_nearest floors, then the disclosed SpellWindow diagnostic at 0 and 5 s observation age, before any model battle. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 800. The lobby refused 1200 as well (bench-b20-s5-floors-20261017; the player's own slot blocked readiness), so funds 3000."
   },
   "emp-knights-emp-swordsmen": {
     "base": "ksl-raiders-emp-halberds",
@@ -1617,7 +1617,7 @@
       "battle_type": "land_normal",
       "difficulty": "ai_level_very_hard",
       "funds": "funds_custom",
-      "funds_amount": 12000,
+      "funds_amount": 15000,
       "time_limit_s": 2400,
       "ai_stats_modifier": "1.0",
       "unit_scale": 0.75,
@@ -1632,7 +1632,7 @@
     "content": [
       "wh_main"
     ],
-    "calibration_change": "Larger candidate L1 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: Empire 10,375, Greenskins 10,350 (1,308 against 1,428 men), lords on, funds 10,500, 2400 s timer. Every card appears in recorded lobby dumps. Defined only: setup, battle duration, observation size and decision delay at forty units await attack_nearest and skills setup battles; a scripted win is not expected. Overlaps swarm command on order volume. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 10500."
+    "calibration_change": "Larger candidate L1 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: Empire 10,375, Greenskins 10,350 (1,308 against 1,428 men), lords on, funds 10,500, 2400 s timer. Every card appears in recorded lobby dumps. Defined only: setup, battle duration, observation size and decision delay at forty units await attack_nearest and skills setup battles; a scripted win is not expected. Overlaps swarm command on order volume. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 10500. Raised again to 15000 after S5's 1200 refusal: four characters may carry lobby markups."
   },
   "ksl-ffa-grn-dwf-12": {
     "name": "ksl-ffa-grn-dwf-12",
@@ -1703,7 +1703,7 @@
       "battle_type": "land_normal",
       "difficulty": "ai_level_very_hard",
       "funds": "funds_custom",
-      "funds_amount": 9000,
+      "funds_amount": 11000,
       "time_limit_s": 2400,
       "ai_stats_modifier": "1.0",
       "unit_scale": 0.75,
@@ -1717,7 +1717,7 @@
       "wh_main",
       "wh3_main"
     ],
-    "calibration_change": "Larger candidate L2 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). The draft costs Kislev at 7,350 and asks for AI armies near 7,100 (Greenskins) and 7,450 (Dwarfs, Dwarf Warriors with great weapons instead of Ironbreakers); the two AI rosters here are b19 choices from cards in recorded lobby dumps, estimated from the siege and swarm anchors' totals, not database-checked. The four-army five-unit free-for-all was won by attack_nearest (942 s) and an LLM (560 s), so AIs fight each other. Defined only: three-army slots, the 7,500 funds readback (every roster must fit), player_defends false (the earlier free-for-all recorded the player as attacker) and the alliances await a setup battle. Fallback if the AIs both target the player: a three-point Domination. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 7500."
+    "calibration_change": "Larger candidate L2 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). The draft costs Kislev at 7,350 and asks for AI armies near 7,100 (Greenskins) and 7,450 (Dwarfs, Dwarf Warriors with great weapons instead of Ironbreakers); the two AI rosters here are b19 choices from cards in recorded lobby dumps, estimated from the siege and swarm anchors' totals, not database-checked. The four-army five-unit free-for-all was won by attack_nearest (942 s) and an LLM (560 s), so AIs fight each other. Defined only: three-army slots, the 7,500 funds readback (every roster must fit), player_defends false (the earlier free-for-all recorded the player as attacker) and the alliances await a setup battle. Fallback if the AIs both target the player: a three-point Domination. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 7500. Raised again to 11000 after S5's 1200 refusal: characters may carry lobby markups."
   },
   "dwf-longbeards-emp-swordsmen": {
     "base": "ksl-raiders-emp-halberds",
