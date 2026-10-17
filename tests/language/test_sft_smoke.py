@@ -61,3 +61,28 @@ def test_read_split_requires_aligned_sidecar(tmp_path):
     (tmp_path / "train-rows.jsonl").write_text("")
     with pytest.raises(ValueError):
         smoke.read_split(tmp_path, "train")
+
+
+def test_action_match_ignores_only_top_level_free_text():
+    reference = '{"choice": 1, "reason": "safer", "notes": null}'
+    assert smoke.score('{"notes": "keep", "choice": 1, "reason": "other"}', reference) == {
+        "json_valid": True, "exact_match": False, "action_match": True}
+    assert smoke.score('{"choice":1,"reason":"safer","notes":null}', reference) == {
+        "json_valid": True, "exact_match": True, "action_match": True}
+    assert smoke.score('{"choice": 0, "reason": "safer", "notes": null}', reference) == {
+        "json_valid": True, "exact_match": False, "action_match": False}
+    assert smoke.score("choice 1", reference) == {
+        "json_valid": False, "exact_match": False, "action_match": False}
+    # Free text inside an action (a WH3 order) is part of the action.
+    orders = '{"orders": [{"unit": "f1", "reason": "%s"}], "reason": "r", "notes": null}'
+    assert not smoke.score(orders % "a", orders % "b")["action_match"]
+
+
+def test_token_loss_weights_rows_by_target_tokens():
+    rows = smoke.usable(Tokenizer(), [(chat('{"a": 1}'), "a"), (chat("{}"), "b")], 150,
+                        Counter())
+    assert [len(target) for *_, target in rows] == [18, 12]
+
+    # Each row's mean loss is its length here: (18 * 18 + 12 * 12) / 30 tokens.
+    assert smoke.token_loss(rows, lambda prompt, target: len(target)) == pytest.approx(15.6)
+    assert smoke.token_loss([], lambda prompt, target: 1.0) is None

@@ -97,14 +97,45 @@ def test_build_keeps_accepted_last_attempts_and_splits_whole_groups(tmp_path):
 
 
 def test_provider_and_first_attempt_filters(tmp_path):
-    source = export(tmp_path / "export", ROWS)
+    # A failed response is resent unchanged, so the reply after it answers the first prompt.
+    resent = row("s4", attempt("", status="failed", error="failed response r1"), attempt(),
+                 group=3)
+    source = export(tmp_path / "export", [*ROWS, resent])
 
     manifest = sft.build([source], tmp_path / "data", providers=("openai", "openrouter"),
                          first_attempt_only=True)
 
-    assert [r["id"] for r in lines(tmp_path / "data/train-rows.jsonl")] == ["s1", "s3", "w2"]
+    assert [r["id"] for r in lines(tmp_path / "data/train-rows.jsonl")] == [
+        "s1", "s3", "w2", "s4"]
     assert manifest["counts"]["dropped"]["retried"] == 1
     assert "provider" not in manifest["counts"]["dropped"]
+
+
+def test_require_selects_rows_by_typed_values_at_dotted_paths(tmp_path):
+    fight = {"floor": 3, "fight": {"won": True}}
+    source = export(tmp_path / "export", [
+        row("won", attempt(), labels=fight),
+        row("lost", attempt(), labels={"floor": 3, "fight": {"won": False}}),
+        row("outside", attempt(), labels={"floor": 3, "fight": None}),
+        row("text", attempt(), labels={"floor": 3, "fight": {"won": "true"}}),
+        row("other", attempt(), labels=fight, outcome={"gameplay_outcome": "won"})])
+
+    sft.main([str(source), "--output", str(tmp_path / "data"),
+              "--require", "labels.fight.won=true", "--require", "outcome.gameplay_outcome=lost"])
+
+    manifest = json.loads((tmp_path / "data/manifest.json").read_text())
+    kept = lines(tmp_path / "data/train-rows.jsonl")
+    assert [r["id"] for r in kept] == ["won"] and kept[0]["labels"] == fight
+    assert manifest["counts"]["dropped"] == {"require": 4}
+    assert manifest["arguments"]["require"] == ["labels.fight.won=true",
+                                                "outcome.gameplay_outcome=lost"]
+    assert "`labels.fight.won=true`" in (tmp_path / "data/datacard.md").read_text()
+    # Outcomes and labels select rows; they never enter the chat.
+    assert "won" not in json.dumps(lines(tmp_path / "data/train.jsonl"))
+    sft.build([source], tmp_path / "text", requires=["labels.fight.won=\"true\""])
+    assert [r["id"] for r in lines(tmp_path / "text/train-rows.jsonl")] == ["text"]
+    with pytest.raises(ValueError, match="PATH=VALUE"):
+        sft.build([source], tmp_path / "bad", requires=["labels.fight.won"])
 
 
 def test_effort_filter_and_kept_models_in_the_data_card(tmp_path):
@@ -135,7 +166,10 @@ def test_reasoning_content_uses_reasoning_text_never_summaries(tmp_path):
     source = export(tmp_path / "export", [
         row("r1", attempt(reasoning=parts)),
         row("r2", attempt(reasoning=parts[:1])),
-        row("r3", attempt(reasoning=None))])
+        row("r3", attempt(reasoning=None)),
+        row("r4", attempt(reasoning=parts), effort="medium"),
+        # Reasoning on without its text would train an empty think block.
+        row("r5", attempt(reasoning=parts[:1]), effort="medium")])
 
     manifest = sft.build([source], tmp_path / "with", reasoning=True)
     sft.build([source], tmp_path / "without")
@@ -144,11 +178,13 @@ def test_reasoning_content_uses_reasoning_text_never_summaries(tmp_path):
     assert answers[0] == {"role": "assistant", "content": '{"a": 1}',
                           "reasoning_content": "Block first."}
     assert "reasoning_content" not in answers[1] and "reasoning_content" not in answers[2]
-    assert [r["reasoning"] for r in lines(tmp_path / "with/train-rows.jsonl")] == [
-        "Block first.", None, None]
-    assert manifest["counts"]["with_reasoning"] == 1
-    assert all("reasoning_content" not in r["messages"][2]
-               for r in lines(tmp_path / "without/train.jsonl"))
+    assert [(r["id"], r["reasoning"]) for r in lines(tmp_path / "with/train-rows.jsonl")] == [
+        ("r1", "Block first."), ("r2", None), ("r3", None), ("r4", "Block first.")]
+    assert manifest["counts"]["with_reasoning"] == 2
+    assert manifest["counts"]["dropped"] == {"no_reasoning": 1}
+    without = lines(tmp_path / "without/train.jsonl")
+    assert len(without) == 5 and all("reasoning_content" not in r["messages"][2]
+                                     for r in without)
 
 
 def test_token_limit_drops_rows_and_reports_percentiles(tmp_path):

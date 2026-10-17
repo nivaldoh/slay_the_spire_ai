@@ -144,20 +144,29 @@ Jobs still marked running and runs without `result.json` are refused. `--model`,
 filter are alternatives, and every filter given must match.
 
 Rows follow the export-row contract shared with the [WH3 exporter](../../twwarhammer3/traces.md):
-`group` is the seed, `split` is `development` (no held-out seed is declared yet), and
-`harness` and `prompt_version` are the job-name label. Spire rows add the public
+`group` is the seed, `split` is `held_out` for the reserved seeds below and `development`
+otherwise, and `harness` and `prompt_version` are the job-name label. Spire rows add the public
 `decision` the policy saw, the `choice`, the reply's reason and notes, and `labels` taken
 from decision observations only, including each combat decision's `fight`: won when a
 later decision is out of combat or the run is won during it, lost when the run is lost
 during it, otherwise unknown, with HP at its start and at the next out-of-combat decision.
 A request that never got an accepted reply (invalid replies, an API failure, a budget
 stop) is a row with an `error` and no decision, and so is an accepted reply whose decision
-was never logged (`DecisionNotRecorded`). Traces from before exchange capture (no `model_exchange_version` in the
+was never logged (`DecisionNotRecorded`) and a request stopped by an interrupt before any
+reply was accepted (`Interrupted`). Traces from before exchange capture (no `model_exchange_version` in the
 manifest: every job up to v10) kept the first prompt but no retry prompt or reasoning;
 those gaps are labelled as issues, never reconstructed. Their 11,167 requests all come
 from OpenAI's `gpt-6-luna`, whose rows must not enter a training set by default (the
 owner has not decided the terms question), and every readable profile is at Ironclad
 unlock level 3; the data card explains both.
+
+Held-out seeds: `HELDOUT01` to `HELDOUT10` (`HELD_OUT_SEEDS` in `export.py`, chosen on
+2026-10-17 under the owner's delegation) are reserved for evaluating models and
+fine-tunes. The tuning loop must never play them, and no harness change may be chosen on
+their results; their exported rows are `held_out`, so the dataset builder never trains on
+them. The game reads a seed in any case, the letter O as 0 and leading zeros as nothing
+(`HELD0UT01` is `HELDOUT01`); the exporter holds out every such spelling, but a seed's
+`group` is the seed as typed.
 
 ## Autoresearch rules
 
