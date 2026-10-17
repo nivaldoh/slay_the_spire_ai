@@ -17,8 +17,10 @@ Queue E2 and harness b25 are on `main`
 ([log](twwarhammer3/log.md#2026-10-17-queue-e2-qwen36-on-s1-step-floors-and-harness-b25)).
 The minimal post-training test ran in both games: Qwen3.6 through OpenRouter, exports, a
 cross-game dataset and a local smoke fine-tune
-([results](posttraining.md#first-end-to-end-test-2026-10-17)). Next: WH3 queue E3 (S7
-CornerHold, S3 Crossfire b24, S5 SpellWindow b25, L2 setup). Commit to `main` only between
+([results](posttraining.md#first-end-to-end-test-2026-10-17)). Wrapping up (owner, 23:24 UTC): queue E3 on b25 (`d4338ea`, started 22:26 UTC,
+`runs/twwarhammer3/calibration/queue-e3-b25-20261017.json`) ends after its current S5
+battle; this commit moves HEAD, so the queue starts no further job (S3 Crossfire and L2
+remain unplayed). Commit to `main` only between
 jobs (queues check HEAD).
 
 The overnight tranche ended at about 12:40 UTC, 2026-10-17. The owner's overnight goal was to continue the benchmark scenario
