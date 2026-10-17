@@ -92,16 +92,26 @@ def test_off_schema_replies_are_retried_then_fail_as_policy_failure(tmp_path, ba
 
 def test_off_schema_orders_are_retried_then_dropped_from_the_last_reply(tmp_path):
     good = {"unit": "f2", "type": "halt"}
+    huge = {"unit": "f1", "type": "move", "x": 10**400, "z": 0}  # beyond float range
     bad = json.dumps({"orders": [{"unit": ["f2"], "type": "halt"}, {"unit": "f2", "type": "move"},
-                                 "f1 halt", good], "reason": "go", "notes": None})
+                                 "f1 halt", huge, good], "reason": "go", "notes": None})
     agent = policy(tmp_path, bad, bad, bad)
     assert agent.decide(observation()) == [good]
-    assert "order fields must be strings" in agent.fake.bodies[1]["input"][0]["content"]
+    assert "order field 'unit' must be a string" in agent.fake.bodies[1]["input"][0]["content"]
     assert agent.metadata()["dropped"] == [
-        "['f2'] halt: order fields must be strings, numbers, booleans or null:"
-        " {'unit': ['f2'], 'type': 'halt'}",
+        "['f2'] halt: order field 'unit' must be a string, number, boolean or null",
         """{"unit": "f2", "type": "move"}: f2: move needs finite x and z""",
-        """"f1 halt": order is not an object: 'f1 halt'"""]
+        """"f1 halt": order is not an object: 'f1 halt'""",
+        f"{json.dumps(huge)}: f1: move needs finite x and z"]
+
+
+def test_a_reply_nested_too_deeply_to_parse_is_retried_then_a_policy_failure(tmp_path):
+    deep = "[" * 100000
+    agent = policy(tmp_path, deep, deep, deep)
+    with pytest.raises(PolicyFailure) as failure:
+        agent.decide(observation())
+    assert failure.value.failure["kind"] == "invalid_reply"
+    assert all("recursion" in a["error"] for a in failure.value.failure["attempts"])
 
 
 def test_attack_on_an_unseen_enemy_is_invalid(tmp_path):

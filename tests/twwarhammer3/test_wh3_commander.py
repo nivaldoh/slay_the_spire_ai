@@ -102,6 +102,30 @@ def test_plans_are_checked_against_the_state_they_arrive_in(tmp_path):
     finish(agent)
 
 
+def test_assignments_may_leave_out_target_and_point(tmp_path):
+    reply = json.dumps({"assignments": [{"unit": "f2", "skill": "hold"}], "abilities": [],
+                        "reason": "go", "notes": None})
+    agent = commander(tmp_path, reply, plan())
+    agent.decide(observation(30000))
+    answer(agent)
+    agent.decide(observation(33000))
+    assert agent.metadata()["dropped"] == []
+    assert agent.skills.assignments["f2"]["skill"] == "hold"
+    finish(agent)
+
+
+def test_only_abilities_builds_reinforcements_and_flight_go_in_abilities(tmp_path):
+    move = {"unit": "f2", "type": "move", "x": 5, "z": 1}
+    agent = commander(tmp_path, plan(abilities=[move]), plan())
+    agent.decide(observation(30000))
+    answer(agent)
+    orders = agent.decide(observation(33000))
+    assert move not in orders and agent.metadata()["abilities"] == []
+    assert agent.metadata()["dropped"] == [
+        "f2 move (5, 1): not an ability, build, reinforce or flight order"]
+    finish(agent)
+
+
 def test_abilities_are_revalidated_and_sent_once(tmp_path):
     roar = {"unit": "f1", "type": "ability", "ability": "roar", "target": None, "x": None,
             "z": None, "facing": None, "width": None}
@@ -168,6 +192,10 @@ def test_budget_and_invalid_replies_surface_from_decide(tmp_path):
      "assignment 1 field 'x' must be number or null"),
     (json.loads(plan([{"skill": "move", "x": float("nan"), "z": 1}])),
      "assignment 1 field 'x' must be number or null"),
+    (json.loads(plan([{"skill": "move", "x": 10**400, "z": 1}])),
+     "assignment 1 field 'x' must be number or null"),
+    ({"assignments": [{"unit": "f2", "target": None}], "abilities": [], "reason": "go",
+      "notes": None}, "assignment 1 has no 'skill' field"),
 ])
 def test_off_schema_plans_are_retried_then_fail_as_policy_failure(tmp_path, bad, message):
     # Open-weight backends need not enforce the strict schema; a strict one does.

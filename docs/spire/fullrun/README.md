@@ -74,9 +74,10 @@ The version that introduced each piece is in brackets; [log.md](log.md) has the 
   on what they do (v9).
 - A hand selection names its source when the trace shows it: the card or potion just
   played, or Gambling Chip on turn 1 (v10).
-- Invalid replies (bad JSON or an out-of-range choice) are re-asked twice, with the error
-  appended. A third invalid reply ends the run as `policy_failure`. Transient HTTP and
-  network errors are retried three times. Every attempt is billed and recorded.
+- Invalid replies (bad JSON, a missing or wrong-typed field such as `choice` true or 1.0,
+  or an out-of-range choice) are re-asked twice, with the error appended. A third invalid
+  reply ends the run as `policy_failure`. Transient HTTP and network errors are retried
+  three times. Every attempt is billed and recorded.
 
 What the model does not get: card, relic or power text; damage calculators; search; lookup
 tools. Section 3 of [approaches.md](../approaches.md) suggests these matter. They are

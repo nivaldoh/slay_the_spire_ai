@@ -143,22 +143,29 @@ def reasoning_parts(output: list | None) -> list[dict]:
 def _is_json(value, kind: str) -> bool:
     if isinstance(value, bool):
         return kind == "boolean"
-    if isinstance(value, float) and not math.isfinite(value):
-        return False  # Python's parser accepts NaN and Infinity; JSON has neither
+    if isinstance(value, (int, float)):
+        try:
+            if not math.isfinite(value):
+                return False  # Python's parser accepts NaN and Infinity; JSON has neither
+        except OverflowError:
+            return False  # an integer beyond float range
     return isinstance(value, JSON_TYPES[kind])
 
 
 def check_fields(value, schema: dict, name: str = "reply"):
-    """``value`` if it is an object holding every field ``schema`` requires, each of a type
-    and enum value the schema allows (a boolean is not a number); ValueError, which ``ask``
-    retries, otherwise. OpenAI enforces strict schemas, but open-weight backends may not.
-    Items of arrays are the game's to check."""
+    """``value`` if it is an object holding every field ``schema`` requires, and each of the
+    schema's fields it holds has a type and enum value the schema allows (a boolean is not a
+    number, nor is an integer beyond float range); ValueError, which ``ask`` retries,
+    otherwise. OpenAI enforces strict schemas, but open-weight backends may not. Extra
+    fields pass; items of arrays are the game's to check."""
     if not isinstance(value, dict):
         raise ValueError(f"{name} must be a JSON object")
-    for key in schema["required"]:
+    for key, spec in schema["properties"].items():
         if key not in value:
-            raise ValueError(f"{name} has no {key!r} field")
-        spec, field = schema["properties"][key], value[key]
+            if key in schema["required"]:
+                raise ValueError(f"{name} has no {key!r} field")
+            continue
+        field = value[key]
         kinds = [spec["type"]] if isinstance(spec["type"], str) else spec["type"]
         if not any(_is_json(field, kind) for kind in kinds):
             raise ValueError(f"{name} field {key!r} must be {' or '.join(kinds)}")
@@ -290,7 +297,8 @@ class Model:
 
     def ask(self, prompt: str, schema: dict, parse, retries: int) -> tuple[object, list[dict]]:
         """The parsed reply and every attempt. A reply that ``parse`` rejects with
-        ValueError is retried with the error appended to the prompt."""
+        ValueError, or nests too deeply to parse, is retried with the error appended to the
+        prompt."""
         attempts, feedback = [], ""
         self.exchange_count += 1
         exchange = {"id": f"m{self.exchange_count}", "prompt": prompt, "attempts": attempts}
@@ -302,7 +310,7 @@ class Model:
                 attempts.append(attempt)
                 try:
                     return parse(attempt["text"]), attempts
-                except ValueError as error:
+                except (ValueError, RecursionError) as error:
                     attempt["error"] = str(error)
                     feedback = f"\n\nYour previous reply was invalid: {error}. Reply again."
             raise InvalidReply(attempts)

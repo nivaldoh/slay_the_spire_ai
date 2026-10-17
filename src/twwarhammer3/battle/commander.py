@@ -25,6 +25,7 @@ from twwarhammer3.battle.llm import (
     NUMBER_OR_NULL,
     REINFORCE_SCHEMA,
     STRING_OR_NULL,
+    describe_dropped,
     describe_orders,
     holds,
     invalid_reply,
@@ -42,6 +43,7 @@ INVALID_RETRIES = 1  # only a reply off the schema is invalid; the plan is check
 PLAN_HISTORY = 6
 REPORT_LENGTH = 8
 REPORT_HEADER = "Dropped or rejected since your last plan:\n"
+ABILITY_TYPES = ("ability", "build", "reinforce", "flight")  # the skills give the rest
 ASSIGNMENT_SCHEMA = {
     "type": "object",
     "properties": {"unit": {"type": "string"}, "skill": {"type": "string", "enum": list(SKILLS)},
@@ -66,8 +68,10 @@ REPLY_SCHEMA = {
 
 def parse_plan(text: str) -> dict:
     reply = check_fields(json.loads(text), REPLY_SCHEMA)
+    # A plan's readers take a missing target, x or z as null.
+    fields = dict(ASSIGNMENT_SCHEMA, required=["unit", "skill"])
     for index, item in enumerate(reply["assignments"], 1):
-        check_fields(item, ASSIGNMENT_SCHEMA, f"assignment {index}")
+        check_fields(item, fields, f"assignment {index}")
     return reply
 
 
@@ -174,7 +178,14 @@ class CommanderPolicy:
                                " enemy, so it was cleared")
                 item = dict(item, target=None)
             self.skills.assign(unit, item, now_ms / 1000)
-        abilities, rejected = split_valid(reply["abilities"], observation)
+        orders = []
+        for order in reply["abilities"]:
+            if isinstance(order, dict) and order.get("type") not in ABILITY_TYPES:
+                dropped.append(f"{describe_dropped(order)}: not an ability, build, reinforce"
+                               " or flight order")
+            else:
+                orders.append(order)
+        abilities, rejected = split_valid(orders, observation)
         dropped += rejected
         if reply["notes"] is not None:
             self.notes = reply["notes"][:NOTES_LIMIT]
@@ -199,8 +210,7 @@ class CommanderPolicy:
                    and holds(friendly[unit_id], order)}
         report = "\n".join(self.report) or "(none)"
         self.report.clear()
-        submitting = [order for order in self.batch
-                      if order["type"] in {"ability", "build", "reinforce", "flight"}]
+        submitting = [order for order in self.batch if order["type"] in ABILITY_TYPES]
         prompt = "\n\n".join([
             "Battle notes:\n" + (self.notes or "(none)"),
             "Recent plans, oldest first:\n" + ("\n".join(self.history) or "(none)"),

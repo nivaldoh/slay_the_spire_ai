@@ -86,11 +86,14 @@ One plan request is in flight at a time, on a worker thread, so `decide` never w
 (`commander.py` docstring). On adoption, assignments for dead or unknown units, a `move`
 without a point and `shoot` for a unit without missiles are dropped; a dead or unknown
 target is cleared; a target out of sight is kept (the skill acts as with no target until
-it reappears); abilities are revalidated and sent once. Drops and engine rejections go
+it reappears); abilities are revalidated and sent once, and any order there other than an
+ability, build, reinforcement or flight change is dropped. Drops and engine rejections go
 into the next prompt. Units the plan omits keep their assignment; until the first plan
-arrives, units follow their class defaults. A reply that is not JSON is retried once
-(`INVALID_RETRIES`); the direct controller retries an invalid reply twice, then keeps
-the last reply's valid orders.
+arrives, units follow their class defaults. A reply off the schema (not a JSON object, a
+missing or wrong-typed field, a malformed assignment or an unknown skill) is retried once
+(`INVALID_RETRIES`), then ends the episode as a `policy_failure` of kind `invalid_reply`;
+the direct controller retries an invalid reply twice, then keeps the last reply's valid
+orders.
 
 Both `skills` and `commander` decide at the mod's tick rate (about 3-4 decisions a
 second). The trace keeps every decision with orders, an error or new metadata, and quiet

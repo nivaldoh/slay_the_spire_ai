@@ -515,14 +515,14 @@ def split_valid(orders: list[dict], observation: dict) -> tuple[list[dict], list
             validate_orders(kept + [order], observation)
             kept.append(order)
         except IllegalActionError as error:
-            dropped.append(f"{_describe_dropped(order)}: {error}")
+            dropped.append(f"{describe_dropped(order)}: {error}")
     return kept, dropped
 
 
-def _describe_dropped(order) -> str:
+def describe_dropped(order) -> str:
     try:
         return describe_orders([order])
-    except (AttributeError, KeyError, TypeError, ValueError):  # an order off the reply schema
+    except (AttributeError, KeyError, TypeError, ValueError, OverflowError):  # off the schema
         return json.dumps(order)
 
 
@@ -532,7 +532,7 @@ def salvage(attempts: list[dict], observation: dict) -> tuple[dict, list[str]] |
     that reply is not even a JSON object with the reply's fields."""
     try:
         reply = check_fields(json.loads(attempts[-1]["text"]), REPLY_SCHEMA)
-    except ValueError:
+    except (ValueError, RecursionError):
         return None
     kept, dropped = split_valid(reply["orders"], observation)
     return dict(reply, orders=kept), dropped
