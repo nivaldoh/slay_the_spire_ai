@@ -35,7 +35,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b19 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | b18 adds S3/S5/S6 and the Bodyguard target fix. b17 checks: S2 Yeomen floor won, S4 Bodyguard won at 5 s only, swarm-Slayer setup engaged |
+| benchmark harness | b20 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | b18 adds S3/S5/S6 and the Bodyguard target fix. b17 checks: S2 Yeomen floor won, S4 Bodyguard won at 5 s only, swarm-Slayer setup engaged |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
@@ -134,6 +134,17 @@ episodes with rotation seed 4 (5, 0, 0, 5 s) to separate them. In every S4 battl
 riders reached the gun around 70 s, after about 30-50 of its 594 rounds; the escort's
 melee, not the gun, decided the wins.
 
+Queue C's order check (`bench-b19-s4-bodyguard-order-20261017`, rotation seed 4) ran
+5, 0, 0 and 5 s: won 548 s, lost 217 s, won 561 s, won 451 s. Across the three Bodyguard
+jobs the 5 s arm won 4 of 4 and the fresh arm 1 of 4, so the delayed wins are not a
+rematch effect. The two 5 s episodes of this job are identical in rounds fired (42),
+gun rout time (96.7 s) and order count (11): with snapshots held to a fixed age, the
+battle replayed exactly. Every Bodyguard battle lost the gun by 97-141 s after 37-42
+rounds, so the escort's melee wins, not the gun's protection. S4 therefore has a
+demonstrated executable win but does not yet test its named skill. A later step should
+make the gun's survival decisive (for example a stronger infantry enemy that the escort
+cannot beat alone). Review: `calibration/s4-bodyguard-order-review-20261017.json`.
+
 S2 did not bind at either stat step: the game's own skirmish mode does the kiting, and
 both attack-nearest floors won. *Delegated:* one last S2 step, the draft's named decoy
 (`brt-archers-dwf-slayers-decoy`: one Dwarf Warriors unit added at modifier 1.0, funds
@@ -161,6 +172,51 @@ b19 (`wh3-b19-large`, merged between queues) adds:
 - Funds headroom where characters or exact totals risk the S5 refusal: S5 1,200, S7
   1,600, L1 12,000 (draft 10,500), L2 9,000 (7,500). Rosters are fixed, so funds only cap
   recruitment; the change is recorded in each `calibration_change`.
+
+b20 (`wh3-b20-small2`) adds a second batch of small candidates for diversity, defined in
+[small-scenarios-2.md](small-scenarios-2.md) with database costs and kept apart from
+hypotheses. *Delegated:* the owner asked for many small one-or-two-skill battles, and
+the first batch leaned on Empire, Dwarfs, Bretonnia and Kislev. The four declared ones
+get only free setup/floor checks tonight:
+
+| Id | Scenario | Skill | Player / enemy (database cost) | Funds |
+|---|---|---|---|---|
+| S8 | `dwf-thunderers-grn-trolls` (defend) | Focus fire against regeneration | 2 Thunderers + Dwarf Warriors (1,850) / 3 Trolls (2,250) | 2,500 |
+| S9 | `grn-giant-ksl-streltsi` (attack) | A lone monster's target choice | Giant (1,400) / Kossar spears + Streltsi (1,350) | 1,600 |
+| S10 | `skv-spears-sla-hellstriders` (defend) | Receiving cavalry: facing and bracing | 3 Clanrat Spearmen (975) / 2 Hellstriders, never rout (1,350) | 1,500 |
+| S11 | `dwf-cannon-grn-lobbers` (attack) | Counter-battery before advancing | Cannon + Dwarf Warriors (1,250) / 2 Rock Lobbers + 2 Goblin Spearmen (1,750) | 1,950 |
+
+S12 (rally and leadership) and S13 (fatigue) are defined but not declared; the draft
+judges both weak. No diagnostics yet for S8-S11.
+
+The S2 decoy floor (`bench-b19-s2-decoy-floor-20261017`) lost at 483 s: setup passed at
+1,500 funds; attack-nearest split its orders between Slayers (387) and Warriors (273),
+spent 1,595 of 1,620 arrows, took the Slayers to 1 man and the Warriors from 75 to 74.
+One archer unit routed at 205 s and the other at 483 s. The first S2 floor loss;
+`CrossKite` (Slayers first) at 0/5 s follows in queue D to test winnability, since the
+Warriors must still be broken without arrows.
+
+S3's three-unit floor (`bench-b19-s3-floor-3-20261017`) lost at 403 s: the Spearmen routed
+at 194 s, the third dwarf unit reached a gun unit by 189 s, and the guns fired only
+317 and 326 rounds each. The dwarves ended at 61, 68 and 73 of 75. The step binds the
+floor; `Crossfire` at 0/5 s follows in queue D.
+
+Queue C stopped at its fourth job, the GLM S4 screen (`bench-b19-s4-glm-20261017`): episode 0
+lost at 191 s; episode 1 ended at 294 s as a policy failure ("No valid reply after declared
+retries"). The last replies, from the "Decart" backend, degenerated into run-on text and
+hit the output-token limit, while GLM's preceding notes described a winning defensive
+melee with both Yeomen units broken. That episode is an infrastructure/policy failure,
+not a gameplay outcome. The remaining queue C jobs move to queue D.
+
+Serving backends matter for open-weight models. Across tonight's four GLM jobs OpenRouter
+spread calls over 18 backends. The share of attempts that failed parsing or validation
+ranged from about 5% (DeepInfra, PrimeIntellect) to about 42% (InferenceNet, Modal);
+Sail Research and Wafer, the busiest, were near 21-23%. The counts include both
+decision and exchange records, so their absolute numbers may double-count, but the
+rates compare. A model's measured play therefore partly reflects which backend
+served each call. Proposal for the owner, not implemented: pin an OpenRouter backend
+order (or a quantization) per model for benchmark battles, recorded in the card, and
+compare one battle per pinned backend before relying on GLM/Kimi/Step results.
 
 Live checks still owed: lordless recruitment at these funds, whether the wizard becomes
 the commanding unit, its Lore of Fire ability keys (SpellWindow matches `burning_head`,
