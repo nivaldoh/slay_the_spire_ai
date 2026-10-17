@@ -120,17 +120,21 @@ def test_report_counts_rejected_replies_once_and_keeps_served_snapshots(tmp_path
                  "error": "unknown friendly unit 'keep'"},
                 {"response_id": "b", "seconds": 3,
                  "error": "f1 is ordered twice without queue"},
-                {"response_id": "c", "seconds": 4, "backend": "Wafer"}]
+                {"response_id": "c", "seconds": 4, "backend": "Wafer"},
+                # A provider's failed response is resent, not a rejected model reply.
+                {"response_id": "e", "seconds": 2, "status": "failed",
+                 "error": "openrouter returned a failed response e"}]
     event = {"kind": "decision", "behavior": {"attempts": attempts}}
     # Asynchronous controllers can repeat metadata. A terminal failure can also retain it.
     (tmp_path / "trace.jsonl").write_text((json.dumps(event) + "\n") * 2)
     result = {"failure": {"attempts": [attempts[0],
               {"response_id": "d", "seconds": 5, "error": "invalid JSON"}]}}
     metrics = report.trial_metrics(tmp_path, result)
-    assert metrics["reply_validation"] == {"attempts": 4, "failed": 3,
+    assert metrics["reply_validation"] == {"attempts": 5, "failed": 3,
         "errors": {"unknown friendly unit 'keep'": 1,
-                   "f1 is ordered twice without queue": 1, "invalid JSON": 1}}
-    assert metrics["call_seconds"]["n"] == 4
+                   "f1 is ordered twice without queue": 1, "invalid JSON": 1},
+        "failed_responses": 1}
+    assert metrics["call_seconds"]["n"] == 5
     assert metrics["actual_backends"] == ["DigitalOcean", "Wafer"]
     assert metrics["backend_models"] == ["z-ai/glm-5.3-20260816"]
     assert metrics["rejections"] == {}  # These replies never became engine orders.

@@ -13,6 +13,7 @@ src/gameai/        Game-neutral code both games import; it never imports a game 
                    reply-retry loop)
   providers.py     OpenAI/OpenRouter endpoints, credentials, model settings and price ceilings
   ledger.py        Append-only spend ledger with a hard budget, for any paid model
+  sft.py           Fine-tuning datasets from either game's export (docs/posttraining.md)
   provenance.py    Repository root, scoped source fingerprints, committed-source check,
                    atomic JSON writes
   windows.py       Windows games owned from WSL: runtime lock, supervised launch, probes
@@ -69,11 +70,13 @@ configs/
                    report_notes.json (the report's scenario, unit and highlight text)
 scripts/           Spire first-combat tools (inventory, audits, dataset export, training
                    drivers, plots); wh3_queue.py runs a frozen plan of WH3 play jobs;
-                   wh3_db.py reads WH3 unit costs and attributes from the game database
+                   wh3_db.py reads WH3 unit costs and attributes from the game database;
+                   sft_smoke.py, a local LoRA smoke test of a built dataset
 tests/             One directory per package; tests/fixtures holds Spire engine transitions;
                    test_doc_links.py checks every Markdown link and anchor
 docs/
   state.md         The session page for both games: status only
+  posttraining.md  Traces to fine-tuning datasets for both games: roles, contract, splits
   spire/           integration.md (engine and protocol facts), approaches.md (survey),
                    fullrun/, first-combat/, open-weight/ (one folder per track)
   twwarhammer3/    README.md (track page; its Pages table lists the others), log.md
@@ -118,6 +121,7 @@ uv run python -m twwarhammer3 stats    # results by scenario, policy, model, har
 uv run python -m twwarhammer3 report <job> [<job> ...] --output runs/twwarhammer3/reports/<name>
 uv run python -m twwarhammer3 export <job> [<job> ...] --output runs/twwarhammer3/exports/<name>
 uv run python -m twwarhammer3 spend    # WH3 API ledger total
+uv run python -m gameai.sft <export> [<export> ...] --output runs/sft/<name>   # see docs/posttraining.md
 ```
 
 - The dev group includes lupa (Lua 5.1) and Pillow, so `uv run pytest` runs the WH3 Lua and

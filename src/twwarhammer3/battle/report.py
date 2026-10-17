@@ -46,7 +46,7 @@ def wilson(wins: int, count: int) -> list[float] | None:
 def trial_metrics(directory: Path, result: dict) -> dict:
     kinds, rejections, ages, plan_ages, calls, snapshot_ages = Counter(), Counter(), [], [], [], []
     processing, models, backends, seen_calls = [], set(), set(), set()
-    backend_models, reply_errors = set(), Counter()
+    backend_models, reply_errors, failed_responses = set(), Counter(), 0
     attempts = list((result.get("failure") or {}).get("attempts") or [])
     replies = 0
     trace = directory / "trace.jsonl"
@@ -85,7 +85,9 @@ def trial_metrics(directory: Path, result: dict) -> dict:
         if response_id:
             seen_calls.add(response_id)
         replies += 1
-        if attempt.get("error"):
+        if attempt.get("status") == "failed":  # the provider's failure, resent unchanged
+            failed_responses += 1
+        elif attempt.get("error"):
             reply_errors[attempt["error"]] += 1
         if attempt.get("seconds") is not None:
             calls.append(attempt["seconds"])
@@ -107,7 +109,7 @@ def trial_metrics(directory: Path, result: dict) -> dict:
         "provider_processing_seconds": distribution(processing), "actual_models": sorted(models),
         "actual_backends": sorted(backends), "backend_models": sorted(backend_models),
         "reply_validation": {"attempts": replies, "failed": sum(reply_errors.values()),
-                             "errors": dict(reply_errors)},
+                             "errors": dict(reply_errors), "failed_responses": failed_responses},
         "decisions_per_battle_s": result.get("decisions", 0) / duration if duration > 0 else None,
         "trace": dict(kinds),
     }

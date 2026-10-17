@@ -36,9 +36,10 @@ end.*
    is written to the trace as a `model_exchange` event: the prompt, every attempt with its
    request body, raw output items, reply text, status, usage and backend, and the error
    of a request that failed.
-2. **Export** each game's stopped evidence to `decisions.jsonl` and `sources.json`
-   (WH3: `twwarhammer3 export`, [trace exports](twwarhammer3/traces.md); Spire full runs
-   have their own exporter emitting the same contract). Exports never render new prompts.
+2. **Export** each game's stopped evidence to `decisions.jsonl`, `sources.json` and a data
+   card: `twwarhammer3 export` ([trace exports](twwarhammer3/traces.md)) into
+   `runs/twwarhammer3/exports/`, `spire export` ([full-run README](spire/fullrun/README.md))
+   into `runs/fullrun-exports/`. Exports never render new prompts.
 3. **Build** a dataset from one or more exports with `gameai.sft`.
 4. **Train**: Tinker (planned); `scripts/sft_smoke.py` checks the pipeline locally now.
 5. **Evaluate** the fine-tune by playing it in both harnesses (not yet possible, see
@@ -127,8 +128,10 @@ uv run python -m gameai.sft runs/twwarhammer3/exports/NAME [EXPORT ...] \
     --output runs/sft/NAME --validation-group twwarhammer3:FAMILY --effort none
 # Options: --provider P and --effort E (repeatable), --first-attempt-only, --reasoning
 # Token counts and limits need the llm extra (transformers):
+# runs/sft/tokenizers/Qwen3.6-35B-A3B holds the student's tokenizer and chat template at
+# Hugging Face revision 995ad96 (REVISION file; Apache-2.0 LICENSE beside it).
 uv run --locked --extra llm python -m gameai.sft runs/twwarhammer3/exports/NAME \
-    --output runs/sft/NAME --tokenizer Qwen/Qwen3.6-35B-A3B --max-tokens 8192
+    --output runs/sft/NAME --tokenizer runs/sft/tokenizers/Qwen3.6-35B-A3B --max-tokens 8192
 # Local smoke test (CUDA; refuses while a game runs): ~30 LoRA steps on Qwen3-0.6B, then
 # reload and verify the adapter and decode validation rows (JSON-valid, exact-match rates)
 uv run --locked --extra llm python scripts/sft_smoke.py runs/sft/NAME \
@@ -138,9 +141,9 @@ uv sync --locked   # removes the llm extra again
 
 The builder refuses an existing output directory, an export whose `decisions.jsonl` no
 longer matches its `sources.json` hash, rows without `id`, `game`, `group` or `split`, an
-unknown game or split, and duplicate ids. Output is deterministic for unchanged inputs; the manifest records input
-hashes, arguments, counts kept and dropped by reason and by game, model and effort, the
-groups per split, token statistics and the builder's hash.
+unknown game or split, and duplicate ids. Output is deterministic for unchanged inputs.
+The manifest records input hashes, arguments, counts kept and dropped by reason and by
+game, model and effort, the groups per split, token statistics and the builder's hash.
 
 ## Missing
 
@@ -149,4 +152,10 @@ groups per split, token statistics and the builder's hash.
   need a provider route to Tinker sampling or another endpoint before a fine-tune can be
   played and compared with its base.
 - Held-out Spire seeds, and held-out WH3 scenarios beyond those already declared.
+- WH3 scenarios without a declared `family` each form their own group, so variants that
+  share armies (the `kho5-dwf5` battle types) can land in different splits. Declare
+  families before validating on them.
+- Spire's content changes with the Ironclad unlock level: every run so far is level 3, and
+  the profile was 81 points short of level 4 on 2026-10-17. Exports record the level per
+  run; compare like with like.
 - Thinking datasets: they need effort `medium` play that fits the output cap.

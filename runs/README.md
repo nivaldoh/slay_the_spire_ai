@@ -11,7 +11,11 @@ runs/
                       named <model>-v<scaffolding>-<seed set>-<date> (e.g.
                       llm-luna-v7-dev-20261012), with its stdout and stderr beside it as
                       <job>.log.
+  spire-openrouter-spend.jsonl  Slay the Spire's OpenRouter ledger (`spire play --provider
+                      openrouter`); independent of the OpenAI cap
   fullrun-exports/    `spire export` datasets: decisions.jsonl, sources.json, datacard.md
+  sft/                `python -m gameai.sft` datasets (both games) and their smoke-test
+                      outputs; tokenizers/ holds pinned tokenizer files of student models
   first-combat/       Slay the Spire, frozen 2026-10-11 evidence: rollouts, evaluations,
                       catalogs, PPO and language training runs, their sidecar logs, audits
                       and declarations, and scripts/ with the one-off launch and summary

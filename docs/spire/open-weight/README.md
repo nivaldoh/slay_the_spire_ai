@@ -60,6 +60,9 @@ B. **Measure the starting point.**
    - If a model struggles with the interface or rarely wins, give it a small supervised warm start
      on verified successful trajectories. Otherwise go straight to RL, so a large demonstration
      dataset is not a prerequisite.
+   - The data path for that warm start (traces, exports, the shared dataset builder and a local
+     smoke test) is on the [post-training page](../../posttraining.md); `spire play` and
+     `twwarhammer3 play` run the untouched Qwen3.6-35B-A3B through OpenRouter.
 
 C. **Train on game outcomes.** Use RLVR with GRPO, on a curriculum: single fights, then varied
    Act 1 encounters, then complete Act 1, then full runs.
