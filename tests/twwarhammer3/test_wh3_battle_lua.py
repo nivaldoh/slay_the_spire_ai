@@ -36,7 +36,7 @@ def test_terrain_grid_uses_engine_bounds_without_math_huge():
     assert dict(terrain["bounds"]) == {"min_x": -32, "max_x": 32, "min_z": -32, "max_z": 32}
 
 
-def test_flight_precedes_the_infantry_category_but_keeps_commanding_role():
+def test_flight_precedes_infantry_and_only_a_character_commander_is_a_lord():
     lua = runtime()
     lua.execute("function get(unit, key, default) return unit[key] or default end")
     _, classify = load_battle(lua, "CLASSES", "unit_class")
@@ -44,8 +44,23 @@ def test_flight_precedes_the_infantry_category_but_keeps_commanding_role():
     screamer = lua.table_from({"unit_class": "inf_mel", "can_fly": True})
     assert classify(screamer) == "flying"
     screamer["is_commanding_unit"] = True
-    assert classify(screamer) == "lord"
+    assert classify(screamer) == "flying"
+    assert classify(lua.table_from({"unit_class": "com", "can_fly": True,
+                                    "is_commanding_unit": True})) == "lord"
     assert classify(lua.table_from({"unit_class": "inf_mel"})) == "infantry"
+
+
+def test_lordless_commanding_regiments_keep_their_combat_class():
+    lua = runtime()
+    lua.execute("function get(unit, key, default) return unit[key] or default end")
+    _, classify = load_battle(lua, "CLASSES", "unit_class")
+    for raw, missile_range, expected in (("cav_mel", 0, "cavalry"),
+                                          ("cav_mis", 140, "missile_cavalry"),
+                                          ("art_fld", 290, "artillery"),
+                                          ("inf_mel", 0, "infantry")):
+        unit = lua.table_from({"unit_class": raw, "missile_range": missile_range,
+                               "is_commanding_unit": True})
+        assert classify(unit) == expected
 
 
 FLIGHT_GET = """

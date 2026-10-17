@@ -35,10 +35,46 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b14 (2026-10-16), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | Offline trace exporter and exact model-exchange capture checked; M1 and ladder evidence stay on their original revisions |
+| benchmark harness | b16 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | S1 fronts lost; flanking won fresh and lost with 5 s age. b16 fixes lordless classes and diagnostic routing handling; live checks continue |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build (2026-10-16 evening): 94 input jobs; adds the GLM v20 caster win to the page, ladder V1 variants and the Jezzail setup failure to JSON/text; footnotes summarise the ladder |
+
+## 2026-10-17: Harness b16, lordless roles and small-diagnostic routing feedback
+
+The S1 probe exposed ordinary commanding regiments labelled as lords. The classifier
+now reserves `lord` for a commanding character (`com` in the game's land_units class),
+keeping ordinary cavalry, missile cavalry, infantry and artillery roles. The separate
+`commander` flag stays true. The shipped API documentation says `unit_class()` reads
+land_units; the database confirms `com` for Kairos, the Overseer and Dwarf Lord, and
+`art_fld` for the Helblaster. No model prompt or field shape changes. The S2/S4 live
+checks must confirm their commanding units keep the right roles before model calls.
+
+The first S1 delayed diagnostic lost at 384 s (29% own / 20% enemy men left), with
+mean order age 5.42 s and 13 routing refusals. It charged alone when its partner routed
+and repeatedly retried orders using snapshots older than a routing acknowledgement.
+The diagnostic now withdraws the remaining rider while a non-shattered partner can
+rally; all three small diagnostics defer a routing unit until a snapshot newer than
+that acknowledgement arrives. These are disclosed diagnostic changes, not model tactics.
+Regressions cover both observed failures. A second S1 check remains development data.
+
+Also prepared, without changing anchors: siege with three added cavalry units
+(one Boar Boyz, two Wolf Riders); swarm with two added Slayers in place of the
+inconclusive Gyrocopter factor; caster with three added Warp Lightning Cannons.
+GLM-5.3 / low first needs the siege/swarm anchor references. The swarm factor gets a
+free setup/engagement check before its model battle. The paid tranche will use a
+cumulative OpenRouter ceiling of $10, within the owner's $50 cap ($1.9333 spent).
+Expect roughly $0.10-0.60 per ordinary GLM battle, allowing longer losing battles.
+One battle per named question, review before further spending; no OpenAI calls.
+
+The report now recognises `FeintFlank`, `CrossKite` and `Bodyguard` as disclosed scripted
+diagnostics, and has provisional small-scenario notes. They remain outside the core
+selection while calibration runs. Earlier evidence retains its original source and
+class labels; it is not rewritten.
+
+Validation before live checks: the complete WH3 suite passed with the class correction
+(447 passed, 1 skipped); after routing/rally changes, 11 calibration tests and Ruff
+passed. Exact existing model prompt fixtures remained unchanged. Live results follow.
 
 ## 2026-10-17: Small-scenario checks and cheap-reference ladder (b15, in progress)
 
@@ -62,6 +98,31 @@ Their controller cards disclose their geometry, target preferences and timers. T
 use public visible units only; rejected movement orders can retry, routing units are
 excluded, and ammunition exhaustion changes ranged orders to melee. No model prompt or
 observation contract changes. Engine execution and winnability remain to be checked.
+
+The running control on `77726f1`, `bench-b15-s1-rush-20261017`, also lost:
+217 s, own men 19%, enemy men 59%, zero invalid orders. Both frontal baselines lose.
+The free `FeintFlank` pair at 0 and 5 s added observation age is next, with rotation seed
+0 (fresh first), same scenario and unchanged source. Added observation age tests stale
+sensing, not the model's full decision cadence. Read-only execution summaries live in
+`calibration/s1-{walk,rush}-review-20261017.json`.
+
+S1 `FeintFlank`, first arm (fresh observations), won at 336 s with 62% of the cavalry
+left and 42% of the halberdiers surviving but routed. Zero invalid orders. Five charge
+phases were issued; after the first, one approach in each pair was 160-174 degrees off
+the enemy front when ordered. These are approach angles, not a claim that every entity
+landed a rear hit. Both frontal controls lost, so this establishes an executable
+alternative, not its necessity or the scenario's maximum difficulty. The 5 s arm lost at 384 s with mean order age 5.42 s (29% own / 20% enemy men left),
+13 routing refusals. Source and conditions were unchanged within this diagnostic pair;
+rosters, loadouts, strengths and resources matched on rematch. The next diagnostic
+revision and class correction are recorded in b16 above.
+
+The lordless roster also exposed a classification defect: the engine nominates the
+first regiment as commander (`is_commanding_unit` true), and the old Lua classifier
+labelled it `lord` even when it was Horse Raiders or Halberdiers. This does not affect
+the S1 diagnostics, which use ids and positions, but would hide S4's Helblaster from
+class-based gun selection and misdescribe it to models. A fix is staged in the isolated
+`wh3-ladder-calibration` worktree: only character-class commanders become `lord`;
+ordinary regiments keep their combat class and the independent commander flag. It is now merged as b16 and awaits live S2/S4 validation.
 
 Initial validation: 39 calibration/setup tests passed. New tests check charge/withdraw
 sequencing, hidden-enemy exclusion, refusal retries, ammunition exhaustion and cavalry

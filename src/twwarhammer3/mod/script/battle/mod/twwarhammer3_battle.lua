@@ -168,10 +168,12 @@ local CLASSES = {
 }
 
 local function unit_class(unit)
-    if get(unit, "is_commanding_unit", false) then return "lord" end
-    if get(unit, "can_fly", false) then return "flying" end
     local land_class = tostring(get(unit, "unit_class", ""))
     local class = CLASSES[string.match(land_class, "^(%a+)") or ""]
+    -- A lordless army nominates an ordinary regiment as commander. Keep its combat
+    -- class; the separate commander flag already records its leadership role.
+    if class == "hero" and get(unit, "is_commanding_unit", false) then return "lord" end
+    if get(unit, "can_fly", false) then return "flying" end
     if not class then return land_class ~= "" and land_class or "monster" end
     if (get(unit, "missile_range", 0) or 0) > 0 then
         if class == "infantry" then return "missile" end

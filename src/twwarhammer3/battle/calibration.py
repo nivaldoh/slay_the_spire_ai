@@ -34,13 +34,16 @@ class SmallDiagnostic(Hold):
 
     def __init__(self):
         self.sent = {}
+        self.routing_at = {}
         self.now = 0
         self.bounds = {}
 
     def observe(self, observation):
         self.now = observation.get("time_ms", 0) / 1000
         self.bounds = (observation.get("terrain") or {}).get("bounds") or {}
-        return (_active(friendly_units(observation).values()),
+        units = [unit for unit in _active(friendly_units(observation).values())
+                 if self.now > self.routing_at.get(unit["id"], -math.inf)]
+        return (units,
                 _active(visible_enemies(observation).values()))
 
     def issue(self, unit, order):
@@ -75,6 +78,8 @@ class SmallDiagnostic(Hold):
         for result in ack.get("results", []):
             if not result.get("ok"):
                 self.sent.pop(result.get("unit"), None)
+                if result.get("error") == "unit_routing":
+                    self.routing_at[result["unit"]] = ack["applied_ms"] / 1000
 
 
 class FeintFlank(SmallDiagnostic):
@@ -85,6 +90,8 @@ class FeintFlank(SmallDiagnostic):
                          "other goes via a 120 m side waypoint to 80 m behind. Both charge "
                          "when the flanker arrives; withdraw radially 120 m after 6 s of "
                          "observed contact, regroup for at least 12 s and swap roles. "
+                         "If one rider routs but is not shattered, withdraw the other "
+                         "until it rallies instead of charging alone. "
                          "Only visible positions/states; no hidden targets or path search."}
 
     def __init__(self):
@@ -103,7 +110,16 @@ class FeintFlank(SmallDiagnostic):
         units.sort(key=lambda unit: unit["id"])
         target = min(enemies, key=lambda enemy: distance(_centre(units), enemy))
         if len(units) < 2:
+            recoverable = [unit for unit in friendly_units(observation).values()
+                           if unit.get("men") and "shattered" not in unit.get("state", [])]
+            if len(recoverable) >= 2:
+                self.phase, self.axis = "rally", None
+                return self.move(units[0], _offset(target, _direction(target, units[0]), 140),
+                                 target)
             return self.attack(units[0], target)
+        if self.phase == "rally":
+            self.phase = "side"
+            self.contact_s = None
         bait, flanker = units[self.cycle % 2], units[(self.cycle + 1) % 2]
         if self.axis is None:
             self.axis = _direction(target, bait)

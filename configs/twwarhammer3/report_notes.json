@@ -174,6 +174,36 @@
       "family": "asset evacuation",
       "core_candidate": true,
       "footnote": "Exploratory pilot. The unavailable Wood Elf roster was replaced before any battle; the evacuation objective and authored geometry are unchanged. No stable ranking is claimed."
+    },
+    "ksl-raiders-emp-halberds": {
+      "title": "Two cavalry units against halberdiers",
+      "short": "Feint and flank",
+      "noun": "small cavalry assault",
+      "heading": "Two fast units against one braced block",
+      "challenge": "Two Kislev Horse Raider units attack one Empire Halberdier unit. A frontal charge meets anti-large weapons; surrounding the block and withdrawing may create better charges. The attacker loses at the 20-minute deadline.",
+      "family": "cavalry against anti-large",
+      "core_candidate": false,
+      "footnote": "Development candidate S1. Lordless setup and 1,100 custom funds passed live checks. Walking and running frontal baselines both lost; the disclosed flanking diagnostic is being checked. A diagnostic encodes the proposed tactic and is not a general model policy."
+    },
+    "ksl-archers-dwf-slayers": {
+      "title": "Horse archers against Slayers",
+      "short": "Ammunition and kiting",
+      "noun": "horse-archer assault",
+      "heading": "Finite arrows against an enemy that never routs",
+      "challenge": "Two Horse Archer units attack one Slayer unit. The riders can keep their distance but have limited arrows; the Slayers cannot rout. Firing angles, ammunition and a possible melee finish compete with the attacker deadline.",
+      "family": "ammunition and kiting",
+      "core_candidate": false,
+      "footnote": "Development candidate S2. Setup and tactical feasibility are being checked with scripted floors and a disclosed kiting diagnostic before model tests."
+    },
+    "emp-helblaster-brt-raiders": {
+      "title": "Protect a Helblaster",
+      "short": "Protect the gun",
+      "noun": "gun defence",
+      "heading": "One escort must keep fast attackers off a fragile gun",
+      "challenge": "A Helblaster and one Halberdier escort defend against two Mounted Yeomen units and Men-at-arms. The gun can do damage while the escort buys firing time, but the riders can approach from either side.",
+      "family": "protect a fragile gun",
+      "core_candidate": false,
+      "footnote": "Development candidate S4. The hold-position floor and a disclosed bodyguard diagnostic check whether targeting and interception can change the outcome."
     }
   },
   "units": {

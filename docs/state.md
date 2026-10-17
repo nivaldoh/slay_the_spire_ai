@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-17 00:12 UTC: what is running, where each game stands and what comes
+Updated 2026-10-17 00:27 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -10,10 +10,11 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 ([record](twwarhammer3/log.md#2026-10-16-readme-refresh-and-repository-cleanup)).
 
 WH3 small-scenario checks and cheap-reference ladder are active (owner, 2026-10-16).
-The free S1 lobby/walking-floor check completed. No game is running while b15's
-S1/S2/S4 diagnostics are validated and committed. Next: S1 running floor and the
-scripted diagnostics, then GLM-5.3 / low anchor and ladder battles under the existing
-OpenRouter cap. [Live record](twwarhammer3/log.md#2026-10-17-small-scenario-checks-and-cheap-reference-ladder-b15-in-progress).
+S1's first pair completed (fresh win, delayed loss). No game runs while b16's
+lordless-class fix, routing/rally feedback and next ladder definitions are committed.
+Next: S2/S4 floors and the corrected S1 delayed diagnostic, then remaining small
+checks and GLM anchor/ladder battles. No paid calls in this tranche yet.
+[Live record](twwarhammer3/log.md#2026-10-17-harness-b16-lordless-roles-and-small-diagnostic-routing-feedback).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -24,7 +25,7 @@ command; clear it when the job stops.
 [log](twwarhammer3/log.md) (newest first, with the versions on `main` at the top),
 [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, benchmark b14,
+- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, benchmark b16,
   evaluator v2 and track `obs-v4+terrain/act-v2/live-1x`. The interface supports native
   objectives/reinforcements and the optional public battery-evacuation objective.
 - Six candidate decision families with live evidence remain after the live novelty audit

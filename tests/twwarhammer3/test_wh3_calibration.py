@@ -84,6 +84,37 @@ def test_bodyguard_prioritises_cavalry_over_closer_infantry():
     assert obs == original
 
 
+def test_routing_refusal_is_newer_than_a_delayed_snapshot():
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 100)],
+           "enemy": [unit("e1", "halberds", 0, 0)]}
+    policy = FeintFlank()
+    assert policy.decide(obs)
+    policy.acknowledge({"applied_ms": 6000, "results": [
+        {"unit": "f1", "ok": False, "error": "unit_routing"}]}, {})
+    # The live delayed run repeatedly retried a known router from five-second-old state.
+    obs["time_ms"] = 5000
+    assert policy.decide(obs) == []
+    obs["time_ms"] = 7000
+    obs["friendly"][0]["state"] = ["routing"]
+    assert policy.decide(obs) == []
+    obs["friendly"][0]["state"] = []  # rallied: later public evidence permits orders again
+    assert policy.decide(obs)
+
+
+def test_flanking_waits_for_a_rally_instead_of_charging_alone():
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 50),
+           unit("f2", "horse", 50, 50, state=["routing"])],
+           "enemy": [unit("e1", "halberds", 0, 0)]}
+    policy = FeintFlank()
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert orders[0]["type"] == "move" and orders[0]["z"] > 100
+    assert policy.phase == "rally"
+    obs["friendly"][1]["state"] = []
+    policy.decide(obs)
+    assert policy.phase == "side"
+
+
 def test_central_defence_uses_an_owned_point_and_keeps_its_initial_commitment():
     obs = {"time_ms": 1000, "friendly": [
         unit("f1", "lord", 0, 0, commander=True), unit("f2", "screen", 0, 10),

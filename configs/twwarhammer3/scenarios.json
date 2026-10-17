@@ -1331,5 +1331,78 @@
       "wh_main_emp_art_helblaster_volley_gun"
     ],
     "calibration_change": "S4, small-scenario tranche: hold floor, then disclosed Bodyguard at 0 and 5 s observation age. No model battle before review."
+  },
+  "chd-reserve-grn-siege-flankers-3": {
+    "base": "chd-reserve-grn-siege-flankers-2",
+    "name": "chd-reserve-grn-siege-flankers-3",
+    "brief": "Three added cavalry units: one Boar Boyz and two Wolf Riders. Intermediate pressure between the won two-unit addition and the four-unit addition without a win.",
+    "enemy": {
+      "units": [
+        "wh_main_grn_cha_orc_warboss_0",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_big_uns",
+        "wh_main_grn_inf_orc_big_uns",
+        "wh_main_grn_inf_black_orcs",
+        "wh_main_grn_inf_black_orcs",
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_orc_arrer_boyz",
+        "wh_main_grn_inf_orc_arrer_boyz",
+        "wh_main_grn_mon_trolls",
+        "wh_main_grn_mon_trolls",
+        "wh_main_grn_cav_orc_boar_boyz",
+        "wh_main_grn_cav_goblin_wolf_riders_0",
+        "wh_main_grn_cav_goblin_wolf_riders_0"
+      ]
+    },
+    "calibration_change": "V2 (2026-10-17): Three added cavalry units: one Boar Boyz and two Wolf Riders. Intermediate pressure between the won two-unit addition and the four-unit addition without a win. Map, player, funds, timer and modifier unchanged. GLM low reference; a loss does not establish impossibility."
+  },
+  "skv-swarm-dwf-line-slayers": {
+    "base": "skv-swarm-dwf-line",
+    "name": "skv-swarm-dwf-line-slayers",
+    "brief": "Two added unbreakable anti-large Slayer units threaten the Doomwheel and Rat Ogres. Screen allocation and weapon targeting may preserve their useful time. Enemy cost 8200 to 10000, eleven units; a new factor after Gyrocopters did not bind.",
+    "enemy": {
+      "units": [
+        "wh_main_dwf_cha_lord_0",
+        "wh_main_dwf_inf_hammerers",
+        "wh_main_dwf_inf_ironbreakers",
+        "wh_main_dwf_inf_ironbreakers",
+        "wh_main_dwf_inf_longbeards",
+        "wh_main_dwf_inf_thunderers_0",
+        "wh_main_dwf_inf_thunderers_0",
+        "wh_main_dwf_inf_irondrakes_0",
+        "wh_main_dwf_art_organ_gun",
+        "wh_main_dwf_inf_slayers",
+        "wh_main_dwf_inf_slayers"
+      ]
+    },
+    "calibration_change": "V2 (2026-10-17): Two added unbreakable anti-large Slayer units threaten the Doomwheel and Rat Ogres. Screen allocation and weapon targeting may preserve their useful time. Enemy cost 8200 to 10000, eleven units; a new factor after Gyrocopters did not bind. Map, player, funds, timer and modifier unchanged. GLM low reference; a loss does not establish impossibility."
+  },
+  "tze-caster-skv-assault-cannon-3": {
+    "base": "tze-caster-skv-assault-cannon-2",
+    "name": "tze-caster-skv-assault-cannon-3",
+    "brief": "Three added Warp Lightning Cannons pressure the caster from long range. Enemy cost 5675 to 6625, thirteen units. GLM lost the two-cannon step; this is a bounded transfer check, not a ceiling estimate.",
+    "enemy": {
+      "units": [
+        "wh2_main_skv_cha_warlord_0",
+        "wh2_main_skv_inf_clanrats_0",
+        "wh2_main_skv_inf_clanrats_0",
+        "wh2_main_skv_inf_clanrats_0",
+        "wh2_main_skv_inf_clanrat_spearmen_0",
+        "wh2_main_skv_inf_clanrat_spearmen_0",
+        "wh2_main_skv_inf_skavenslaves_0",
+        "wh2_main_skv_inf_skavenslaves_0",
+        "wh2_main_skv_inf_warpfire_thrower",
+        "wh2_main_skv_art_plagueclaw_catapult",
+        "wh2_main_skv_art_warp_lightning_cannon",
+        "wh2_main_skv_art_warp_lightning_cannon",
+        "wh2_main_skv_art_warp_lightning_cannon"
+      ]
+    },
+    "calibration_change": "V2 (2026-10-17): Three added Warp Lightning Cannons pressure the caster from long range. Enemy cost 5675 to 6625, thirteen units. GLM lost the two-cannon step; this is a bounded transfer check, not a ceiling estimate. Map, player, funds, timer and modifier unchanged. GLM low reference; a loss does not establish impossibility."
   }
 }
