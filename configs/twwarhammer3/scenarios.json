@@ -1469,6 +1469,19 @@
     },
     "calibration_change": "Small focused candidate S3 (b18, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: player 1550 (350 + 2 x 600), enemy 900. Defined only: lordless setup, 1600 custom funds and the cards are unverified. Scripted attack_nearest floor, then the disclosed Crossfire diagnostic at 0 and 5 s observation age, before any model battle."
   },
+  "emp-handgunners-dwf-warriors-3": {
+    "base": "emp-handgunners-dwf-warriors",
+    "name": "emp-handgunners-dwf-warriors-3",
+    "brief": "One Empire Spearmen unit and two Handgunner units attack three shielded Dwarf Warrior units, with no lords. The spearmen cannot hold for long, the dwarf shields block frontal shots, and low-trajectory guns cannot shoot over friends; where the guns stand and whom they shoot decide the fight.",
+    "enemy": {
+      "units": [
+        "wh_main_dwf_inf_dwarf_warrior_0",
+        "wh_main_dwf_inf_dwarf_warrior_0",
+        "wh_main_dwf_inf_dwarf_warrior_0"
+      ]
+    },
+    "calibration_change": "S3 second step (2026-10-17, the draft's first named ladder step). The attack-nearest floor won the two-unit version (bench-b18-s3-floor-20261017: 433 s; the spearmen routed at 201 s, the guns kept firing and both dwarf units routed). Add a third Dwarf Warriors unit (draft cost 450, enemy 1350); funds 1600 and everything else unchanged. Floor first; Crossfire at 0/5 s only after a floor loss."
+  },
   "emp-wizard-emp-swordsmen": {
     "base": "ksl-raiders-emp-halberds",
     "name": "emp-wizard-emp-swordsmen",

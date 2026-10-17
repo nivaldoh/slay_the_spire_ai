@@ -245,6 +245,16 @@
       "core_candidate": false,
       "footnote": "Development candidate S3 (b18). Defined only: the lordless setup, funds and cards await their live check, then an attack-nearest floor and a disclosed flanking-fire diagnostic at 0 and 5 s observation age."
     },
+    "emp-handgunners-dwf-warriors-3": {
+      "title": "Handgunners against three shield walls",
+      "short": "Lines of fire",
+      "noun": "small infantry assault",
+      "heading": "Low-trajectory guns behind a losing melee, outnumbered",
+      "challenge": "One Empire Spearmen unit and two Handgunner units attack three shielded Dwarf Warrior units. The handguns cannot shoot over friends and the dwarf shields block frontal shots.",
+      "family": "lines of fire",
+      "core_candidate": false,
+      "footnote": "S3 second step: the attack-nearest floor won the two-unit version at 433 s. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+    },
     "emp-wizard-emp-swordsmen": {
       "title": "One Bright Wizard and a small line",
       "short": "Spell timing",
