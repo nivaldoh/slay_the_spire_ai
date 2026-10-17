@@ -335,3 +335,14 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-17,bench-b19-s3-floor-3-20261017,episode-0000,emp-handgunners-dwf-warriors-3,attack_nearest,,,,f9ab81d,realtime,1.0,0.0,lost,403,0.43,0.9,1302,0,0.31,0,classic,,,,,0.0,0.898,0.0,engine_result,
 2026-10-17,bench-b19-s4-glm-20261017,episode-0000,emp-helblaster-brt-raiders,llm_rules,z-ai/glm-5.3,low,,f9ab81d,realtime,1.0,0.0,lost,191,0.63,0.78,39,0,4.85,0.0994,classic,,,,,0.0,0.783,0.0,engine_result,openrouter
 2026-10-17,bench-b19-s4-glm-20261017,episode-0001,emp-helblaster-brt-raiders,llm_rules,z-ai/glm-5.3,low,,f9ab81d,realtime,1.0,0.0,policy_failure,296,0.44,0.53,61,3,4.77,0.1595,classic,,,,,0.439,0.467,0.0,,openrouter
+2026-10-17,bench-b20-s2-decoy-kite-20261017,episode-0000,brt-archers-dwf-slayers-decoy,twwarhammer3.battle.calibration:CrossKite,,,,d69bbf3,realtime,1.0,0.0,lost,256,0.77,0.81,823,144,0.3,0,classic,,,,,0.0,0.815,0.0,engine_result,
+2026-10-17,bench-b20-s2-decoy-kite-20261017,episode-0001,brt-archers-dwf-slayers-decoy,twwarhammer3.battle.calibration:CrossKite,,,,d69bbf3,realtime,1.0,0.0,lost,255,0.5,0.95,799,290,5.42,0,classic,,,,,0.0,0.948,5.0,engine_result,
+2026-10-17,bench-b20-s3-crossfire-3-20261017,episode-0000,emp-handgunners-dwf-warriors-3,twwarhammer3.battle.calibration:Crossfire,,,,d69bbf3,realtime,1.0,0.0,lost,992,0.21,0.97,3237,415,0.31,0,classic,,,,,0.0,0.973,0.0,engine_result,
+2026-10-17,bench-b20-s3-crossfire-3-20261017,episode-0001,emp-handgunners-dwf-warriors-3,twwarhammer3.battle.calibration:Crossfire,,,,d69bbf3,realtime,1.0,0.0,lost,1205,0.53,0.99,3925,517,5.41,0,classic,,,,,0.527,0.991,5.0,time_limit,
+2026-10-17,bench-b20-s4-floor-2-20261017,episode-0000,emp-helblaster-brt-raiders-2,hold,,,,d69bbf3,realtime,1.0,0.0,lost,161,0.61,0.88,511,0,0.3,0,classic,,,,,0.0,0.881,0.0,engine_result,
+2026-10-17,bench-b20-s6-floor-20261017,episode-0000,emp-knights-emp-swordsmen,attack_nearest,,,,d69bbf3,realtime,1.0,0.0,lost,490,0.43,0.58,1594,0,0.3,0,classic,,,,,0.0,0.578,0.0,engine_result,
+2026-10-17,bench-b20-s7-floor-20261017,episode-0000,dwf-longbeards-emp-swordsmen,hold,,,,d69bbf3,realtime,1.0,0.0,won,469,0.93,0.28,1529,0,0.3,0,classic,,,,,0.927,0.0,0.0,engine_result,
+2026-10-17,bench-b20-s8-floor-20261017,episode-0000,dwf-thunderers-grn-trolls,hold,,,,d69bbf3,realtime,1.0,0.0,lost,136,0.87,1.0,427,0,0.31,0,classic,,,,,0.0,1.0,0.0,engine_result,
+2026-10-17,bench-b20-s10-floor-20261017,episode-0000,skv-spears-sla-hellstriders,hold,,,,d69bbf3,realtime,1.0,0.0,won,207,0.86,0.27,666,0,0.3,0,classic,,,,,0.864,0.0,0.0,engine_result,
+2026-10-17,bench-b20-s11-floor-20261017,episode-0000,dwf-cannon-grn-lobbers,attack_nearest,,,,d69bbf3,realtime,1.0,0.0,lost,509,0.31,0.25,1646,0,0.31,0,classic,,,,,0.0,0.173,0.0,engine_result,
+2026-10-17,bench-b20-s9-floor-20261017,episode-0000,grn-giant-ksl-streltsi,attack_nearest,,,,d69bbf3,realtime,1.0,0.0,lost,542,1.0,0.5,1761,1,0.3,0,classic,,,,,0.0,0.5,0.0,engine_result,

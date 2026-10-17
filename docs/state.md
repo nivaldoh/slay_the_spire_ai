@@ -10,16 +10,15 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 ([record](twwarhammer3/log.md#2026-10-16-readme-refresh-and-repository-cleanup)).
 
 Overnight goal (2026-10-17 04:00 UTC, owner away until 13:00 UTC): continue the
-benchmark scenario implementation; game jobs end before 13:00 UTC. Queues A, B and C are
-done (B stopped at the S5 lobby, C at a GLM policy failure). b20 (second small batch
-S8-S11 with diagnostics, S4 step 2) is on `main`. Running: WH3 queue
-`runs/twwarhammer3/calibration/queue-d1-b20-20261017.json`, started about 06:58 UTC
-(free: S2/S3 diagnostics, S4 step 2, then first S5-S11 setup floors). Next: the GLM
-mode pilot and second anchors, follow-up diagnostics, L1/L2 setup checks. Watch:
-`uv run python -m twwarhammer3 watch`. Results and delegated choices:
+benchmark scenario implementation; game jobs end before 12:45 UTC. Queues A, B, C and
+D1 are done; b21 is on `main`. Running: WH3 queue
+`runs/twwarhammer3/calibration/queue-d2-b21-20261017.json`, started about 08:45 UTC
+(follow-up diagnostics, S7/S10 step floors, S1 mode pilot, S5 floors, L1/L2 setup),
+to be interrupted by 12:45 UTC if still running. Watch: `uv run python -m twwarhammer3
+watch`. Results and delegated choices:
 [overnight entry](twwarhammer3/log.md#2026-10-17-overnight-tranche-harness-b18-s3-s5-s6).
 Unmerged for the owner: `wh3-rules-v21-attack-path` (`llm_rules` v21 states the attack
-route), drafted after GLM's S1 plan/order mismatch.
+route) and `wh3-openrouter-pin` (optional backend pin), both pushed.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.

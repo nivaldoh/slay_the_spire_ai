@@ -35,7 +35,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b20 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | b18 adds S3/S5/S6 and the Bodyguard target fix. b17 checks: S2 Yeomen floor won, S4 Bodyguard won at 5 s only, swarm-Slayer setup engaged |
+| benchmark harness | b21 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | b18 adds S3/S5/S6 and the Bodyguard target fix. b17 checks: S2 Yeomen floor won, S4 Bodyguard won at 5 s only, swarm-Slayer setup engaged |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
@@ -217,6 +217,50 @@ rates compare. A model's measured play therefore partly reflects which backend
 served each call. Proposal for the owner, not implemented: pin an OpenRouter backend
 order (or a quantization) per model for benchmark battles, recorded in the card, and
 compare one battle per pinned backend before relying on GLM/Kimi/Step results.
+
+Queue D1 (`calibration/queue-d1-b20-20261017.json`, `d69bbf3`, $0) began with the S2 decoy
+`CrossKite` pair (`bench-b20-s2-decoy-kite-20261017`): lost at 256 s (fresh) and 255 s
+(5.42 s age). It was the diagnostic's first live use, and it failed on terrain: one
+flank post lay inside the Taurox map's central rock, and the engine refused 144 and 289
+moves while the diagnostic retried them. The Slayers fell only to 36 and 54 of 60.
+b21 rotates a post up to 45 degrees around the target when it lands on a restricted
+cell or near a refused move (disclosed; regression added). The pair is re-run on b21.
+
+The S3 `Crossfire` pair (`bench-b20-s3-crossfire-3-20261017`) failed the same way: 415 and
+517 unreachable refusals for one gun's flank post. The guns fired 68 and 0 rounds while
+the Spearmen were destroyed; lost at 992 s (fresh) and on the 1205 s timer (5.41 s age),
+with the dwarves at 75, 75 and 69-73 of 75. b21 moves the post rotation into a shared
+`SmallDiagnostic.open_point`, used by `CrossKite`, `Crossfire` and `HammerAnvil`
+(disclosed on each card). Both diagnostics are re-run on b21.
+
+Queue D1 setup floors (all lordless rosters recruited; `calibration/s*-floor*-review-20261017.json`):
+
+| Job | Scenario | Floor | Outcome | Battle time | Notes |
+|---|---|---|---|---|---|
+| `bench-b20-s4-floor-2-20261017` | S4 step 2 (two Men-at-arms) | hold | Lost | 161 s | Gun routed at 122 s after 39 rounds; neither infantry unit engaged |
+| `bench-b20-s6-floor-20261017` | S6 hammer and anvil | attack-nearest | Lost | 490 s | Knights routed at 393 s (7 of 45 left); enemy 76, 58, 22 of 90 |
+| `bench-b20-s7-floor-20261017` | S7 corner defence | hold | Won | 469 s | Longbeards 69 and 70 of 75; all four Swordsmen routed |
+| `bench-b20-s8-floor-20261017` | S8 Thunderers vs Trolls | hold | Lost | 136 s | All three Dwarf units routed with 71, 52 and 46 men left; Thunderers fired about 60 rounds each; no Troll died |
+| `bench-b20-s10-floor-20261017` | S10 spears vs Hellstriders | hold | Won | 207 s | The AI charged braced fronts head-on; both rider units routed (9 and 15 of 45) |
+| `bench-b20-s11-floor-20261017` | S11 counter-battery | attack-nearest | Lost | 509 s | Goblin Spearmen routed (3 and 26 of 120), but the two Rock Lobbers (24 and 29 of 33) broke the Warriors and the cannon crew |
+
+Floor losses get their disclosed diagnostic at 0/5 s in queue D2 (S4 step 2, S6, S8, S11).
+*Delegated:* the two floor wins climb one step each. S7 goes to six Swordsmen (database
+2,250; funds 2,500), since enveloping two units needs numbers. S10 adds a third
+Hellstriders unit (enemy 2,025; funds 2,250). S10's live run also contradicts the draft's
+database reading that Hellstriders never rout (`immune_to_psychology`): both units were
+reported routing.
+
+D1's last two jobs: S9's attack-nearest floor (`bench-b20-s9-floor-20261017`) lost at 542 s.
+The Giant broke the Kossar spears (68 to 2, routed at 272 s), then the untouched Streltsi
+shot it until it routed. Target order is the question, so `MonsterTarget` follows at
+0/5 s. The S5 lobby refused readiness again at 1,200 funds, and the blocking slot was the
+player's own. b21 gives S5 3,000, and raises L1 to 15,000 and L2 to 11,000 before
+their first lobbies. A character's lobby price is unknown; rosters stay fixed.
+
+b21 (merged after D1) holds the shared post rotation, the S7 and S10 steps and these
+funds changes. Queue D2 runs the follow-up diagnostics, then the S1 mode pilot, S5's
+floors, and L1/L2 setup checks, cut before 12:45 UTC.
 
 Live checks still owed: lordless recruitment at these funds, whether the wizard becomes
 the commanding unit, its Lore of Fire ability keys (SpellWindow matches `burning_head`,
