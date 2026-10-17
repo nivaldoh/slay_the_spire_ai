@@ -133,8 +133,9 @@ For OpenRouter it preserves returned reasoning output without adding a new routi
 requirement ([Responses reasoning](https://openrouter.ai/docs/api_reference/responses/reasoning)).
 An empty reasoning list means the response was captured but contained no visible text;
 null means it was unavailable. Raw encrypted items remain opaque. Reasoning is never
-fed back into prompts. Capture is off by default in shared `gameai.Model`, so Spire's
-request settings and trace format stay unchanged. Controller prompts remain v20/v7;
+fed back into prompts. Capture is off by default in shared `gameai.Model`; Spire full runs
+opted in on 2026-10-17 (`87b370b`), so their traces gain the same events and their OpenAI
+requests ask for summaries too. Controller prompts remain v20/v7;
 `manifest.model_exchange_version: 1` and source revisions identify the capture change.
 The capture request setting is offline-tested; no new paid API call was used to validate it.
 
