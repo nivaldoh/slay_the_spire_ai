@@ -672,16 +672,16 @@ candidate is admitted. Statuses:
 |---|---|---|---|---|---|
 | S1 feint and flank | `ksl-raiders-emp-halberds` | walk and run lost | FeintFlank won fresh, lost at 5 s (x2) | GLM-5.3 low 0/2: planned a two-flank charge, sent direct attacks | Win shown. Next: stronger models; `llm_rules` v21 draft states the attack route |
 | S2 kiting | `brt-archers-dwf-slayers-decoy` | three earlier steps won; decoy lost | CrossKite lost x4 (terrain refusals; then a morale collapse at full strength) | none | No win yet. Set aside: engine skirmish mode automates the kiting. Range-aware CrossKite or drop |
-| S3 lines of fire | `emp-handgunners-dwf-warriors-3` | 2-unit won; 3-unit lost | Crossfire lost x4, all with refused posts (fixed in b22/b23) | none | No win yet. Next: Crossfire on b23 |
+| S3 lines of fire | `emp-handgunners-dwf-warriors-3` | 2-unit won; 3-unit lost | Crossfire lost x6; on b23 (E1) it ran as disclosed but the guns barely fired (314 and 0 rounds) | none | No win yet. Crossfire revised in b24 (guns shoot from where they stand, fixed posts). Next: a 0/5 s pair on b24 |
 | S4 protect the gun | `emp-helblaster-brt-raiders` (step `-2`) | hold lost (both steps) | Bodyguard: original won 4/4 at 5 s, 1/4 fresh; step 2 lost x2 | GLM 0/1 plus one policy failure | Win shown on the original, but by the escort's melee; the gun always fell. The named skill is not yet tested |
-| S5 spell window | `emp-wizard-emp-swordsmen` | ability probe and attack-nearest lost (at 3,000 funds) | none yet | none | Lobby refused 800 and 1,200 funds. The wizard becomes the commanding `lord` and carries items, which explains the price. The probe floor cast only once (power stone at 571 s). Next: check why, then SpellWindow (its ability keys match) |
+| S5 spell window | `emp-wizard-emp-swordsmen` | ability probe and attack-nearest lost (at 3,000 funds; the probe casts only self abilities in melee) | SpellWindow lost fresh (timer), won at 5 s (524 s) | none | Win shown, by Fireball kiting: later wizard orders cancelled most casts. Next: hold the wizard until a cast lands, then a 0/5 s pair |
 | S6 hammer and anvil | `emp-knights-emp-swordsmen` | lost | HammerAnvil lost x4 (first pair: refused wait post) | none | No win yet. Next: two enemy units, floor first |
 | S7 corner defence | `dwf-longbeards-emp-swordsmen-6` | 4-unit and 6-unit won | none yet | none | Too easy: Longbeards outclass Swordsmen at any count tried. Next: armour-piercing attackers (e.g. Greatswords), not more Swordsmen |
 | S8 focus vs regeneration | `dwf-thunderers-grn-trolls` | lost | FocusFire lost x2; no Troll died | none | No win yet. Next: two Trolls |
 | S9 lone monster | `grn-giant-ksl-streltsi` | lost | MonsterTarget lost x2 | none | No win yet. Next: rebalance |
 | S10 receive the charge | `skv-spears-sla-hellstriders-3` | 2-rider and 3-rider won | none yet | none | Too easy: the AI charges braced spears head-on at any count tried. Set aside unless a different enemy (missile cavalry) changes its behaviour |
 | S11 counter-battery | `dwf-cannon-grn-lobbers` | lost | CounterBattery lost x2; lobbers broken, spearmen won | none | No win yet. Next: one Rock Lobber |
-| L1 / L2 | `emp-pitched-grn-20`, `ksl-ffa-grn-dwf-12` | not run | n/a | none | Declared; first setup checks are next |
+| L1 / L2 | `emp-pitched-grn-20`, `ksl-ffa-grn-dwf-12` | L1 attack-nearest lost at 523 s; L2 refused by the lobby | n/a | none | L1 sets up. L2 needs a fourth side ("Free-For-All requires 4 teams") |
 
 Across all of them, terrain defeated the first versions of the geometric diagnostics:
 on the Taurox map, posts and waypoints often fell inside the central rock, and the

@@ -9,8 +9,16 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Main README](../README.md) refresh and repository cleanup are complete
 ([record](twwarhammer3/log.md#2026-10-16-readme-refresh-and-repository-cleanup)).
 
-No game controller or queue is running (the overnight tranche ended at about 12:40 UTC,
-2026-10-17). The owner's overnight goal was to continue the benchmark scenario
+Owner away since 2026-10-17 19:10 UTC with a post-training goal (review data collection,
+prepare fine-tuning an open model through OpenRouter, a minimal test in both games) and
+"run more of the planned TW3 games". Done: harness b24 on `main` (`87b370b`), with the
+pipeline on [posttraining.md](posttraining.md); queue E1 ([log](twwarhammer3/log.md#2026-10-17-queue-e1-harness-b24-and-post-training-data-capture)).
+Next, one game at a time: WH3 queue E2 (Qwen3.6 on S1, the five step floors), then a
+Spire Qwen3.6 run, then a dataset from both games and the local smoke fine-tune, then
+diagnostics for the floors that lose. Commit to `main` only between jobs (queues check
+HEAD).
+
+The overnight tranche ended at about 12:40 UTC, 2026-10-17. The owner's overnight goal was to continue the benchmark scenario
 implementation unattended. Harness b18-b23 are on `main`:
 - S3 and S5-S11 small candidates with disclosed diagnostics;
 - L1/L2 large candidates;

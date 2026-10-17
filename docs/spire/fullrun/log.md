@@ -575,3 +575,37 @@ run stops as before.
 WSL virtual machine restarted at 04:36 UTC; the run is an infrastructure failure and the
 autoresearch session that ran it ended with the VM. RUNDEV2 and RUNDEV3 were not played.
 v10 remains untested.
+
+## 2026-10-17: open models through OpenRouter, exchange capture and `spire export` (no scaffolding change)
+
+Owner goal (away): review the preparation for post-training, check data collection,
+prepare fine-tuning an open model with OpenRouter and run a minimal test in both games.
+The cross-game pipeline is on [posttraining.md](../../posttraining.md); the WH3 side is
+harness b24 ([WH3 log](../../twwarhammer3/log.md#2026-10-17-queue-e1-harness-b24-and-post-training-data-capture)).
+Prompts and scaffolding are unchanged (v10), but the trace format and the request change,
+on `main` at `87b370b`:
+- `spire play --provider openrouter` plays OpenRouter models against their own ledger,
+  `runs/spire-openrouter-spend.jsonl`. The model and effort are checked before the job
+  directory exists. Qwen3.6-35B-A3B, the open-weight model to fine-tune, is declared with
+  efforts `none` and `medium` (on/off).
+- Exchange capture, as WH3 b14: each model request writes a `model_exchange` event with its
+  prompt, every attempt's request body and output items (reasoning text from open models;
+  OpenAI requests now ask for reasoning summaries), and a failed request's error. The
+  manifest gains `model_exchange_version`, the behavior metadata `provider`, and attempts
+  the served model, backend and wall time. Before, a policy failure kept no prompt and an
+  API error lost its billed attempts. `digest`, `watch` and `stats` ignore the new events.
+- Shared transport: a failed upstream response is resent unchanged; a reply cut at the
+  output limit gets a cut-off notice; a body truncated during the read is retried.
+- The reply parser retries off-schema replies (a string, bool or float choice, missing
+  keys, a non-object). Before, they ended as infrastructure failures or, for `true`,
+  silently chose candidate 1. OpenAI's strict mode prevented them; OpenRouter backends do
+  not guarantee it.
+- `spire export` (`fullrun/export.py`): every model request with exact prompts, attempts,
+  reasoning, the choice, public per-fight labels (won, HP at start and end) and the run
+  outcome. The 33 existing runs export to 11,167 rows (gpt-6-luna/low, one attempt each,
+  no reasoning recorded, no hash mismatch). Those rows are OpenAI outputs, which the
+  dataset builder leaves out by default until the owner decides the terms question.
+
+Comparability: every run so far is Ironclad unlock level 3, and the profile is 81 points
+from level 4, whose new cards and relics change the pools. The next scored run will
+likely cross it; exports record the level per run.

@@ -35,10 +35,109 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b23 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | Overnight 2026-10-17: S3, S5-S11, L1/L2 declared with diagnostics; 40 jobs; wins shown for S1 and S4 only. Status board in benchmark.md |
+| benchmark harness | b24 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `report.py`, `export.py` | E1 on b23: S5 SpellWindow won at 524 s (5 s age) by Fireball kiting; S3 Crossfire lost twice (revised in b24); L1 set up; L2 refused (needs four sides). Status board in benchmark.md |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
+
+## 2026-10-17: Queue E1, harness b24 and post-training data capture
+
+Owner goal (19:10 UTC, away, no questions possible): "Review the repo in terms of its
+preparation for post-training experiments. Review whether we're collecting data properly,
+check and improve the quality of related code, prepare the structure required to
+fine-tune an open model with OpenRouter (and do an initial minimal test run for this, with
+both games)." Shortly after: "While I'm away, see if you can run more of the planned TW3
+games in the background". Choices marked *delegated* were made under these and are open
+to review. The cross-game pipeline is on [posttraining.md](../posttraining.md).
+
+Queue E1 (`calibration/queue-e1-b23-20261017.json`, `40c40f7`, b23, $0): the board's
+ready checks, which needed no new code.
+
+| Job | Check | Outcome | Battle time | Notes |
+|---|---|---|---|---|
+| `bench-b23-s3-crossfire-3-r3-20261017` ep 0 | S3 Crossfire, fresh | Lost (timer) | 1205 s | Guns fired 314 of 2,992 rounds; the dwarves kept 204 of 225 men; 1 refused move |
+| same, ep 1 | 5.41 s mean age | Lost (rout) | 1162 s | No rounds fired; 219 of 225 men left; 14 refused moves, 13 of them off the map |
+| `bench-b23-s5-spell-20261017` ep 0 | S5 SpellWindow, fresh | Lost (timer) | 1205 s | 177 Fireballs accepted, 4 landed; 72 of 80 magic spent; 116 of 180 enemy men left; spearmen routed at 360 s |
+| same, ep 1 | 5.41 s mean age | Won | 524 s | 41 Fireballs ordered, 7 landed (about 98 kills); both Swordsmen units routed with 54 men left; the wizard unhurt |
+| `bench-b23-l1-setup-20261017` | L1 setup, attack-nearest floor | Lost | 523 s | The 20-unit pitched battle set up and ended in an engine result |
+| `bench-b23-l2-setup-20261017` | L2 setup | Setup failure | n/a | The lobby refused: "Free-For-All requires 4 teams"; L2 declares three sides |
+
+S3 (`calibration/s3-crossfire-3-r3-review-20261017.json`): replaying the logged
+observations through `Crossfire` reproduced every decision, so the play ran as disclosed,
+and b23 cut refused moves from hundreds to 1 and 14. The play itself kept the guns silent.
+At three units the AI sends free Dwarf Warriors after the guns; a gun shot only from its
+post, which moved with the target's facing every tick, and ran 120 m from any enemy within
+50 m without shooting. When the play did happen it worked: one gun on a flank post fired
+246 rounds in 55 s. The spearmen carry the lordless army's commander flag, and their
+captain's death cut every unit's morale. Separately, the two-cell step ring that moves a
+destination off blocked ground was not clamped to the map, and `_clear` treated off-map
+points as open.
+
+S5 (`calibration/s5-spellwindow-review-20261017.json`): the play ran as disclosed (the
+replay reproduced every decision), and the win counts as "win shown" with an S4-style
+qualifier: Fireball kiting won, and the named spell-window choice never mattered. An `ok`
+acknowledgement is not a cast. A Fireball spends its magic 1-4 s after the order applies,
+and any later order to the wizard cancels it; `SpellWindow` re-sent its post or flee move
+right after each cast, so none of the 192 Fireballs followed by another wizard order
+within 2.4 s spent magic. All refusals were re-casts on cooldown (episode 1's from the 5 s
+old view). Six Flame Storms at enemies running at the wizard used 78 magic for about 2
+kills; Burning Head was never in range. Episode 0 lost mostly by chance: one Swordsmen unit
+left the melee earlier and stronger to hunt the wizard. Next: hold the wizard until a
+cast confirms, drop Flame Storm on moving targets, then a 0/5 s pair; a model screen only
+after a fresh win. The cast-cancel fact could also enter the model prompt (a logged
+version). The probe floor's single overnight cast is explained too: `probe_abilities`
+casts only abilities whose target is exactly "Self" or "Around self", in melee, and every
+fire spell targets an enemy or the ground.
+
+L2 needs a fourth side (or a different battle type) before it can be played; not changed
+tonight.
+
+**Harness b24** (`87b370b`) merges four reviewed branches:
+- Diagnostics (`battle/calibration.py`): every step ring stays on the map and off-map points
+  count as blocked (CrossKite and HammerAnvil cards say so). *Delegated:* Crossfire fixes
+  each gun's post when the pin starts; a gun with the pinned unit in range shoots it from
+  where it stands; it shoots an enemy that comes within 50 m while that enemy stays in
+  range, instead of running; without the spearmen, each gun shoots the nearest enemy in
+  range or halts. Replays of every earlier diagnostic job through b24 change no decision
+  except CrossKite's moves at the map edge. The guns will now mostly fire from their wait
+  spot rather than from flank posts, so S3 tests fire past one's own melee more than
+  crossfire geometry.
+- E2 steps (`configs/twwarhammer3/scenarios.json`, `report_notes.json`; *delegated*, run
+  as "planned games"): `emp-knights-emp-swordsmen-2` (S6, two enemy Swordsmen),
+  `dwf-longbeards-emp-greatswords-2` (S7, two Greatswords replace two of four Swordsmen;
+  funds 2,750), `dwf-thunderers-grn-trolls-2` (S8, two Trolls), `grn-giant-ksl-streltsi-trolls`
+  (S9, the Giant plus one Troll unit, funds 2,400; MonsterTarget gives both monsters one
+  target, so a loss says nothing about splitting them) and `dwf-cannon-grn-lobbers-1`
+  (S11, one Rock Lobber). Costs come from the game database; each runs its floor first.
+- Post-training (shared with Spire; [posttraining.md](../posttraining.md)):
+  - Qwen3.6-35B-A3B (`qwen/qwen3.6-35b-a3b`), the open-weight model to fine-tune, is
+    declared on OpenRouter. *Delegated:* efforts `none` and `medium` only. Live checks
+    (2026-10-17, Spire and WH3 reply schemas, $0.0128 in all): every effort value was
+    accepted, `none` did not reason (76 and 273 output tokens, 3 s), and low to max
+    reasoned 1.3k-4k tokens without scaling. It routes only to fp8 or bf16 endpoints (the
+    cheapest is fp4) at $0.15/$1.00 ceilings, with the model card's sampling sent
+    explicitly (temperature 1.0, top_p 0.95).
+  - Thinking-on Qwen exhausted the 4,000-token output cap in 2 of 5 live calls (both
+    `medium`, one per game), which adds to the open output-allowance question.
+  - Transport (`gameai/llm.py`): a failed upstream response (the Kimi m28 shape) is resent
+    unchanged within the retry allowance and kept once in the attempts; a reply cut at
+    the output limit that is not valid JSON gets a neutral cut-off retry notice; a body
+    truncated during the read is retried and charged as uncertain.
+  - Parsers (`battle/llm.py`, `commander.py`, `protocol.py`): off-schema replies (wrong
+    top-level types, missing keys, huge integers, deep nesting) are retried and end as
+    invalid or policy failures instead of infrastructure failures. Valid replies and the
+    prompt fixtures are unchanged; commander assignments may still omit target and point.
+  - Export schema 2 (`battle/export.py`, [traces.md](traces.md)): rows carry `game`,
+    `group` (scenario family, else name; random draws by seed) and `split`; ids no longer
+    depend on the checkout path; `error` is always null or `{type, message}`; the
+    duplicate per-attempt system prompt is dropped (about 120 MB of the 567 MB export).
+  - The report counts a provider's failed responses apart from rejected replies.
+
+Validation: 1,204 tests pass and Ruff passes on `87b370b`. The new dataset builder and the
+local smoke trainer ran end to end on the existing OpenRouter evidence (12 jobs, 597 rows,
+575 kept; 475 non-thinking GLM rows trained 30 LoRA steps on Qwen3-0.6B, loss 1.81 to
+1.62, adapter reloaded and verified, 4 of 4 decoded validation replies valid JSON). By the
+student's tokenizer, WH3 rows are p50 4.9k and at most 7.0k tokens.
 
 ## 2026-10-17: Overnight tranche, harness b18-b23
 
