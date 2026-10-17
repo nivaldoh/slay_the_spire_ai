@@ -1,5 +1,6 @@
 """Only the diagnostics' commitments; game execution still needs the live checks."""
 
+import math
 from copy import deepcopy
 
 from twwarhammer3.battle.calibration import (
@@ -7,8 +8,11 @@ from twwarhammer3.battle.calibration import (
     CasterSkirmish,
     CentralDefence,
     CoordinatedRush,
+    Crossfire,
     CrossKite,
     FeintFlank,
+    HammerAnvil,
+    SpellWindow,
 )
 from twwarhammer3.protocol import validate_orders
 
@@ -43,7 +47,7 @@ def test_feint_flank_waits_for_rear_position_then_withdraws_after_contact():
 
 
 def test_small_diagnostics_do_not_use_hidden_enemies_or_order_routers():
-    for cls in (FeintFlank, CrossKite, Bodyguard):
+    for cls in (FeintFlank, CrossKite, Bodyguard, Crossfire, SpellWindow, HammerAnvil):
         obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 0)],
                "enemy": [], "evaluation": {"enemy": [unit("e1", "hidden", 5, 5)]},
                "enemy_roster": [unit("e1", "hidden", 5, 5)]}
@@ -237,3 +241,151 @@ def test_caster_uses_visible_clusters_and_waits_for_takeoff():
     validate_orders(orders, obs)
     assert orders[-1] == {"unit": "f1", "type": "ability",
                            "ability": policy.FIRESTORM, "x": 0, "z": 500}
+
+
+def by_unit(orders, uid):
+    return [order for order in orders if order["unit"] == uid]
+
+
+def test_crossfire_waits_behind_the_pin_then_flanks_and_shoots_only_its_target():
+    gun = {"class": "missile", "ammo": 20, "behaviours": {"fire_at_will": True}}
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "spearmen", 0, 0),
+           unit("f2", "handgunners", -20, -10, **gun), unit("f3", "handgunners", 20, -10, **gun)],
+           "enemy": [unit("e1", "warriors", 0, 150, bearing=180),
+                     unit("e2", "warriors", 150, 200, bearing=180)]}
+    original = deepcopy(obs)
+    policy = Crossfire()
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert obs == original
+    assert by_unit(orders, "f1")[0]["target"] == "e1"
+    for uid in ("f2", "f3"):
+        hold_fire, move = by_unit(orders, uid)
+        assert hold_fire["behaviour"] == "fire_at_will" and hold_fire["enabled"] is False
+        assert move["type"] == "move" and move["z"] < 0  # behind the spearmen, no shots
+    obs["enemy"][0].update(z=10, state=["melee"])
+    obs["friendly"][0]["state"] = ["melee"]
+    for gun_unit in obs["friendly"][1:]:
+        gun_unit["behaviours"] = {"fire_at_will": False}
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    posts = {uid: by_unit(orders, uid)[0] for uid in ("f2", "f3")}
+    assert round(posts["f2"]["x"], 1) == 98.5 and round(posts["f3"]["x"], 1) == -98.5
+    assert all(round(math.dist((p["x"], p["z"]), (0, 10))) == 100 for p in posts.values())
+    for uid, post in posts.items():
+        obs["friendly"][int(uid[1]) - 1].update(x=post["x"], z=post["z"])
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert [(o["unit"], o["target"], o["mode"]) for o in orders if o["unit"] != "f1"] == [
+        ("f2", "e1", "ranged"), ("f3", "e1", "ranged")]
+    obs["enemy"][1].update(x=posts["f2"]["x"], z=30)  # a second unit closes on one gun
+    obs["friendly"][2]["ammo"] = 0
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    evade = by_unit(orders, "f2")[0]
+    assert evade["type"] == "move" and round(math.dist(
+        (evade["x"], evade["z"]), (posts["f2"]["x"], 30))) == 120
+    assert by_unit(orders, "f3")[0]["mode"] == "melee"
+
+
+def spell(key, mana, kinds, cast_range=200):
+    return {"key": key, "mana": mana, "target": kinds, "cast_range": cast_range,
+            "ready": True, "can_use": True}
+
+
+def wizard_state(magic=12):
+    abilities = [spell("wh_main_spell_fire_the_burning_head", 10, "Ground"),
+                 spell("wh_main_spell_fire_flame_storm", 13, "Ground"),
+                 spell("wh_main_spell_fire_fireball_upgraded", 8, "Enemy", 300),
+                 spell("wh_main_spell_fire_fireball", 5, "Enemy", 300)]
+    return {"time_ms": 1000, "magic": {"current": magic, "reserve": 68},
+            "friendly": [unit("f1", "wizard", 0, -60, abilities=abilities,
+                              **{"class": "hero"}), unit("f2", "spearmen", 0, 0)],
+            "enemy": [unit("e1", "swordsmen", 0, 100), unit("e2", "swordsmen", 30, 110)]}
+
+
+def test_spell_window_aims_burning_head_along_a_clear_pair_and_spaces_casts():
+    obs, policy = wizard_state(), SpellWindow()
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert by_unit(orders, "f2")[0]["target"] == "e1"
+    (cast,) = by_unit(orders, "f1")
+    assert cast["ability"] == "wh_main_spell_fire_the_burning_head" and "target" not in cast
+    assert round(math.dist((cast["x"], cast["z"]), (0, 100))) == 15
+    toward = math.degrees(math.atan2(30 - cast["x"], 110 - cast["z"])) % 360
+    assert abs(cast["facing"] - toward) < 1e-6
+    obs["time_ms"] = 3000
+    assert not any(o["type"] == "ability" for o in policy.decide(obs))
+    obs.update(time_ms=7000, magic={"current": 6})  # only the cheaper Fireball is affordable
+    (cast,) = by_unit(policy.decide(obs), "f1")
+    assert cast == {"unit": "f1", "type": "ability", "ability": "wh_main_spell_fire_fireball",
+                    "target": "e1"}
+
+
+def test_spell_window_keeps_area_spells_off_its_own_melee():
+    obs, policy = wizard_state(magic=20), SpellWindow()
+    obs["enemy"][0].update(z=20, state=["melee"])
+    obs["friendly"][1]["state"] = ["melee"]
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    (cast,) = by_unit(orders, "f1")  # no pair is clear of the spearmen: storm the free unit
+    assert cast == {"unit": "f1", "type": "ability",
+                    "ability": "wh_main_spell_fire_flame_storm", "x": 30, "z": 110}
+    obs["friendly"][0]["abilities"][1]["ready"] = False
+    obs["enemy"][1].update(x=20, z=30)  # now beside the spearmen: missiles only
+    obs["time_ms"] = 7000
+    (cast,) = by_unit(policy.decide(obs), "f1")
+    assert cast["ability"] == "wh_main_spell_fire_fireball" and cast["target"] == "e2"
+    obs.update(time_ms=13000, magic={"current": 0})
+    obs["enemy"][1].update(x=0, z=-30)  # an enemy reached the wizard: step away
+    move = by_unit(policy.decide(obs), "f1")[0]
+    assert move["type"] == "move" and move["z"] < -60
+
+
+def test_hammer_anvil_waits_for_the_pin_rides_to_the_rear_charges_and_pulls_out():
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "swordsmen", 0, 0),
+           unit("f2", "knights", 40, -20, **{"class": "cavalry"})],
+           "enemy": [unit("e1", "swordsmen", 0, 100), unit("e2", "swordsmen", -80, 120),
+                     unit("e3", "swordsmen", 80, 140)]}
+    policy = HammerAnvil()
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert by_unit(orders, "f1")[0]["target"] == "e1"
+    post = by_unit(orders, "f2")[0]
+    assert (round(post["x"]), round(post["z"])) == (60, -40) and policy.phase == "wait"
+    obs["enemy"][0].update(z=10, state=["melee"])
+    obs["friendly"][0]["state"] = ["melee"]
+    side = by_unit(policy.decide(obs), "f2")[0]
+    assert (round(side["x"]), round(side["z"])) == (90, 10) and policy.phase == "side"
+    obs["friendly"][1].update(x=90, z=10)
+    rear = by_unit(policy.decide(obs), "f2")[0]
+    assert (round(rear["x"]), round(rear["z"])) == (0, 80)
+    obs["friendly"][1].update(x=0, z=80)
+    charge = by_unit(policy.decide(obs), "f2")[0]
+    assert charge["type"] == "attack" and charge["target"] == "e1" and policy.charges == 1
+    obs["friendly"][1]["state"] = ["melee"]
+    obs["time_ms"] = 3000
+    policy.decide(obs)
+    obs["time_ms"] = 11000
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert policy.phase == "withdraw" and by_unit(orders, "f2")[0]["type"] == "move"
+    obs["friendly"][1].update(state=[], x=0, z=300)
+    obs["time_ms"] = 22000
+    policy.decide(obs)
+    assert policy.phase == "side"  # the pin still holds: the next cycle starts at once
+
+
+def test_hammer_anvil_pulls_out_when_its_charge_target_routs_and_moves_on():
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "swordsmen", 0, 0, state=["melee"]),
+           unit("f2", "knights", 0, 80, **{"class": "cavalry"})],
+           "enemy": [unit("e1", "swordsmen", 0, 10, state=["melee"]),
+                     unit("e2", "swordsmen", -80, 120)]}
+    policy = HammerAnvil()
+    policy.target, policy.phase = "e1", "charge"
+    assert by_unit(policy.decide(obs), "f2")[0]["target"] == "e1"
+    obs["enemy"][0]["state"] = ["routing"]
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert by_unit(orders, "f1")[0]["target"] == "e2"  # no chasing the router
+    assert policy.phase == "withdraw" and by_unit(orders, "f2")[0]["type"] == "move"

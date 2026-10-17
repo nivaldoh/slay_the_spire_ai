@@ -30,7 +30,7 @@ def _offset(origin: dict, direction: tuple, forward: float, across: float = 0) -
 
 
 class SmallDiagnostic(Hold):
-    """Order bookkeeping shared by the three small public-state diagnostics."""
+    """Order bookkeeping shared by the small public-state diagnostics."""
 
     def __init__(self):
         self.sent = {}
@@ -242,6 +242,243 @@ class Bodyguard(SmallDiagnostic):
 
     def metadata(self):
         return {"type": "bodyguard"}
+
+
+def _beside(target: dict, degrees: float, metres: float) -> dict:
+    """A point ``metres`` from a unit, ``degrees`` clockwise from its bearing (0 = +z)."""
+    angle = math.radians(target.get("bearing", 0) + degrees)
+    return {"x": target["x"] + math.sin(angle) * metres,
+            "z": target["z"] + math.cos(angle) * metres}
+
+
+def _keep(enemies: list[dict], target_id, origin: dict) -> dict:
+    """The committed target while it stays visible and unrouted, else the nearest."""
+    return next((enemy for enemy in enemies if enemy["id"] == target_id), None) or min(
+        enemies, key=lambda enemy: distance(origin, enemy))
+
+
+class Crossfire(SmallDiagnostic):
+    """S3: the spearmen pin one dwarf unit; then each gun fires into one of its flanks."""
+
+    card = {"purpose": "Can two gun units find lines of fire past their own melee?",
+            "knowledge": "S3: fire-at-will off. Spearmen attack the nearest visible enemy "
+                         "and keep it until it routs. Guns wait 30 m behind them until that "
+                         "target is in melee, then move 100 m from it at its bearing +-80 "
+                         "degrees (one each side) and fire only at it. A gun within 50 m of "
+                         "another enemy steps 120 m away from it; without ammunition it "
+                         "joins the melee. No hidden state or line-of-sight test."}
+
+    def __init__(self):
+        super().__init__()
+        self.target = None
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        units.sort(key=lambda unit: unit["id"])
+        guns = [unit for unit in units if unit.get("class") in SHOOTERS]
+        line = [unit for unit in units if unit not in guns]
+        anchor = _centre(line or guns)
+        target = _keep(enemies, self.target, anchor)
+        self.target = target["id"]
+        orders = [order for unit in line for order in self.attack(unit, target)]
+        pinned = "melee" in target.get("state", []) or not line
+        for index, gun in enumerate(guns):
+            if gun.get("behaviours", {}).get("fire_at_will"):
+                orders.append({"unit": gun["id"], "type": "behaviour",
+                               "behaviour": "fire_at_will", "enabled": False})
+            if not gun.get("ammo"):
+                orders += self.attack(gun, target)
+                continue
+            threat = min((enemy for enemy in enemies if enemy is not target),
+                         key=lambda enemy: distance(gun, enemy), default=None)
+            post = _beside(target, 80 if index % 2 else -80, 100)
+            if threat and distance(gun, threat) < 50:
+                orders += self.move(gun, _offset(threat, _direction(threat, gun), 120), threat)
+            elif not pinned:
+                behind = _offset(anchor, _direction(target, anchor), 30, 25 if index % 2 else -25)
+                orders += self.move(gun, behind, target)
+            elif distance(gun, post) > 25:
+                orders += self.move(gun, post, target)
+            else:
+                orders += self.attack(gun, target, "ranged")
+        return orders
+
+    def metadata(self):
+        return {"type": "crossfire", "target": self.target}
+
+
+class SpellWindow(SmallDiagnostic):
+    """S5: the spearmen fight; the wizard casts from behind them when its allies are clear."""
+
+    card = {"purpose": "Can one wizard spend scarce magic without burning its own line?",
+            "knowledge": "S5: spearmen attack the nearest visible enemy and keep it until it "
+                         "routs. The wizard stays 100 m behind them and steps 120 m away "
+                         "from an enemy within 50 m. Burning Head when two enemies are "
+                         "within 40 m of each other and over 40 m from every friendly unit, "
+                         "cast at the nearer one towards the other; else Flame Storm on an "
+                         "enemy not in melee and over 40 m from friends; else Fireball, "
+                         "preferring an enemy not in melee. The cheapest ready, affordable "
+                         "variant by key name, within 95% of its range; 5 s between casts."}
+
+    def __init__(self):
+        super().__init__()
+        self.target = None
+        self.last_cast_s = -math.inf
+        self.casts = []
+
+    def spell(self, caster, name, magic):
+        ready = [ability for ability in caster.get("abilities", [])
+                 if name in ability["key"] and ability.get("ready") and ability.get("can_use")
+                 and ability.get("mana", 0) <= magic]
+        return min(ready, key=lambda ability: ability.get("mana", 0), default=None)
+
+    def cast(self, caster, units, enemies, magic):
+        """The first spell whose public conditions hold, as (ability, target, toward)."""
+        def clear(enemy):
+            return all(distance(enemy, unit) > 40 for unit in units)
+
+        options = []
+        pairs = [(a, b) for a in enemies for b in enemies
+                 if a["id"] < b["id"] and distance(a, b) <= 40 and clear(a) and clear(b)]
+        if pairs:
+            pair = min(pairs, key=lambda pair: sum(distance(caster, enemy) for enemy in pair))
+            near, far = sorted(pair, key=lambda enemy: distance(caster, enemy))
+            options.append(("burning_head", near, far))
+        free = sorted((enemy for enemy in enemies if "melee" not in enemy.get("state", [])),
+                      key=lambda enemy: distance(caster, enemy))
+        options += [("flame_storm", enemy, None) for enemy in free if clear(enemy)]
+        options += [("fireball", enemy, None) for enemy in free + sorted(
+            enemies, key=lambda enemy: distance(caster, enemy))]
+        for name, enemy, toward in options:
+            ability = self.spell(caster, name, magic)
+            if ability and distance(caster, enemy) <= ability.get("cast_range", 0) * .95:
+                return ability, enemy, toward
+        return None
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        units.sort(key=lambda unit: unit["id"])
+        caster = next((unit for unit in units if any(
+            ability.get("mana", 0) > 0 for ability in unit.get("abilities", []))), None)
+        line = [unit for unit in units if unit is not caster]
+        target = _keep(enemies, self.target, _centre(line or units))
+        self.target = target["id"]
+        orders = [order for unit in line for order in self.attack(unit, target)]
+        if caster is None:
+            return orders
+        magic = (observation.get("magic") or {}).get("current", 0)
+        choice = self.now - self.last_cast_s >= 5 and self.cast(caster, units, enemies, magic)
+        if choice:
+            ability, enemy, toward = choice
+            order = {"unit": caster["id"], "type": "ability", "ability": ability["key"]}
+            kinds = ability.get("target", "")
+            if "Ground" in kinds and (toward or "Enemy" not in kinds):
+                start = _offset(enemy, _direction(toward, enemy), 15) if toward else enemy
+                order.update(x=start["x"], z=start["z"])
+                if toward:
+                    order["facing"] = math.degrees(math.atan2(
+                        toward["x"] - start["x"], toward["z"] - start["z"])) % 360
+            else:
+                order["target"] = enemy["id"]
+            self.last_cast_s = self.now
+            self.sent.pop(caster["id"], None)  # a cast interrupts the wizard's movement
+            self.casts.append({"time_s": self.now, "ability": ability["key"],
+                               "target": enemy["id"]})
+            return orders + [order]
+        threat = min(enemies, key=lambda enemy: distance(caster, enemy))
+        if distance(caster, threat) < 50:
+            return orders + self.move(caster, _offset(threat, _direction(threat, caster), 120),
+                                      threat)
+        if line:
+            centre = _centre(line)
+            orders += self.move(caster, _offset(centre, _direction(target, centre), 100), target)
+        return orders
+
+    def metadata(self):
+        return {"type": "spell_window", "target": self.target, "casts": len(self.casts),
+                "last_cast": self.casts[-1] if self.casts else None}
+
+
+class HammerAnvil(SmallDiagnostic):
+    """S6: the infantry pins one unit; the knights charge its rear, pull out and repeat."""
+
+    card = {"purpose": "Can an infantry pin and rear charges beat three equal units?",
+            "knowledge": "S6: infantry attacks the nearest visible enemy and keeps it until "
+                         "it routs. Cavalry waits 40 m behind and 60 m beside the infantry "
+                         "until that target is in melee, then rides via a 90 m side "
+                         "waypoint to 70 m behind it and charges. After 8 s of observed "
+                         "contact, or the target's rout during the charge, it withdraws "
+                         "120 m from the nearest enemy for 10 s (up to 20 s while enemies "
+                         "stay within 80 m), then repeats on the infantry's current target. "
+                         "Without infantry it charges the nearest enemy the same way. "
+                         "No hidden state or path search."}
+
+    def __init__(self):
+        super().__init__()
+        self.target = None
+        self.phase = "wait"
+        self.side = 1
+        self.contact_s = None
+        self.withdraw_s = None
+        self.retreat = None
+        self.charges = 0
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        units.sort(key=lambda unit: unit["id"])
+        riders = [unit for unit in units if "cavalry" in unit.get("class", "")]
+        line = [unit for unit in units if unit not in riders]
+        target = _keep(enemies, self.target, _centre(line or riders))
+        routed = self.target not in (None, target["id"])
+        self.target = target["id"]
+        orders = [order for unit in line for order in self.attack(unit, target)]
+        if not riders:
+            return orders
+        group = _centre(riders)
+        front = _direction(target, _centre(line or riders))
+        if routed and self.phase in ("side", "rear"):
+            self.phase = "wait"
+        if self.phase == "withdraw":
+            elapsed = self.now - self.withdraw_s
+            if elapsed >= 20 or elapsed >= 10 and all(
+                    distance(group, enemy) >= 80 for enemy in enemies):
+                self.phase = "wait"
+        if self.phase == "wait" and ("melee" in target.get("state", []) or not line):
+            self.phase = "side"
+            self.side = 1 if distance(group, _offset(target, front, 0, 90)) <= distance(
+                group, _offset(target, front, 0, -90)) else -1
+        side = _offset(target, front, 0, 90 * self.side)
+        rear = _offset(target, front, -70)
+        if self.phase == "side" and distance(group, side) < 25:
+            self.phase = "rear"
+        if self.phase == "rear" and distance(group, rear) < 25:
+            self.phase, self.contact_s = "charge", None
+            self.charges += 1
+        if self.phase == "charge":
+            if self.contact_s is None and any("melee" in unit.get("state", []) for unit in riders):
+                self.contact_s = self.now
+            if routed or (self.contact_s is not None and self.now - self.contact_s >= 8):
+                threat = min(enemies, key=lambda enemy: distance(group, enemy))
+                self.phase, self.withdraw_s = "withdraw", self.now
+                self.retreat = _offset(threat, _direction(threat, group), 120)
+        if self.phase == "withdraw":
+            return orders + [order for unit in riders
+                             for order in self.move(unit, self.retreat, target)]
+        if self.phase == "charge":
+            return orders + [order for unit in riders for order in self.attack(unit, target)]
+        goal = {"wait": _offset(_centre(line or riders), front, 40, 60 * self.side),
+                "side": side, "rear": rear}[self.phase]
+        return orders + [order for unit in riders for order in self.move(unit, goal, target)]
+
+    def metadata(self):
+        return {"type": "hammer_anvil", "phase": self.phase, "charges": self.charges,
+                "target": self.target}
 
 
 def _centre(units: list[dict]) -> dict:

@@ -213,7 +213,47 @@
       "challenge": "Two Bretonnian Mounted Yeomen Archer units attack one unbreakable Slayer unit. Compared with the original Horse Archers, they have weaker missiles and melee performance. The enemy, map and deadline stay fixed.",
       "family": "ammunition and kiting",
       "core_candidate": false,
-      "footnote": "S2 harder step after the original attack-nearest floor won. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+      "footnote": "S2 harder step after the original attack-nearest floor won. Its own attack-nearest floor also won, narrowly (326 s, the Slayers left with one man): one archer unit was caught in melee and destroyed with 346 arrows left, the other spent all 810. The next step raises the AI stats modifier to 1.1."
+    },
+    "brt-archers-dwf-slayers-hard": {
+      "title": "Cheaper horse archers against stronger Slayers",
+      "short": "Ammunition and kiting",
+      "noun": "horse-archer assault",
+      "heading": "The same raid against an enemy with a stats bonus",
+      "challenge": "Two Bretonnian Mounted Yeomen Archer units attack one unbreakable Slayer unit whose AI side receives the game's 1.1 stats modifier. Armies, map and deadline stay fixed.",
+      "family": "ammunition and kiting",
+      "core_candidate": false,
+      "footnote": "S2 second harder step after the Mounted Yeomen floor won narrowly. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+    },
+    "emp-handgunners-dwf-warriors": {
+      "title": "Handgunners past a shield wall",
+      "short": "Lines of fire",
+      "noun": "small infantry assault",
+      "heading": "Low-trajectory guns behind a losing melee",
+      "challenge": "One Empire Spearmen unit and two Handgunner units attack two shielded Dwarf Warrior units. The handguns cannot shoot over friends and the dwarf shields block frontal shots, while the spearmen lose a long melee. The attacker loses at the 20-minute deadline.",
+      "family": "lines of fire",
+      "core_candidate": false,
+      "footnote": "Development candidate S3 (b18). Defined only: the lordless setup, funds and cards await their live check, then an attack-nearest floor and a disclosed flanking-fire diagnostic at 0 and 5 s observation age."
+    },
+    "emp-wizard-emp-swordsmen": {
+      "title": "One Bright Wizard and a small line",
+      "short": "Spell timing",
+      "noun": "small caster assault",
+      "heading": "Scarce fire magic next to friendly troops",
+      "challenge": "A Bright Wizard and one Spearmen unit attack two Empire Swordsmen units. Fire spells can decide a two-to-one infantry fight but also burn friendly troops, and the opening magic pool is small. The attacker loses at the 20-minute deadline.",
+      "family": "spell timing with scarce magic",
+      "core_candidate": false,
+      "footnote": "Development candidate S5 (b18), overlapping the caster family. Defined only: the hero-led lordless roster, the wizard's spells and the funds await their live check, then ability-probe and attack-nearest floors and a disclosed spell-window diagnostic at 0 and 5 s observation age."
+    },
+    "emp-knights-emp-swordsmen": {
+      "title": "Knights and swordsmen against three units",
+      "short": "Hammer and anvil",
+      "noun": "small combined assault",
+      "heading": "Pin one unit, charge its rear, move on",
+      "challenge": "One Swordsmen unit and one Empire Knights unit attack three Empire Swordsmen units. The infantry cannot hold three units for long, and the knights suffer in a prolonged melee. The attacker loses at the 20-minute deadline.",
+      "family": "hammer and anvil",
+      "core_candidate": false,
+      "footnote": "Development candidate S6 (b18), partly overlapping S1's rear charges. Defined only: the lordless setup and funds await their live check, then an attack-nearest floor and a disclosed hammer-and-anvil diagnostic at 0 and 5 s observation age."
     }
   },
   "units": {

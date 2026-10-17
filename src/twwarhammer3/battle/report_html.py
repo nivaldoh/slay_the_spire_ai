@@ -69,7 +69,13 @@ SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the neares
             "twwarhammer3.battle.calibration:CrossKite": (
                 "Crossfire kiting", "scenario diagnostic: separate horse archers and keep range"),
             "twwarhammer3.battle.calibration:Bodyguard": (
-                "Gun bodyguard", "scenario diagnostic: shoot cavalry and intercept beside the gun")}
+                "Gun bodyguard", "scenario diagnostic: shoot cavalry and intercept beside the gun"),
+            "twwarhammer3.battle.calibration:Crossfire": (
+                "Flanking fire", "scenario diagnostic: pin one unit and shoot into its flanks"),
+            "twwarhammer3.battle.calibration:SpellWindow": (
+                "Spell window", "scenario diagnostic: cast only where friends are clear"),
+            "twwarhammer3.battle.calibration:HammerAnvil": (
+                "Hammer and anvil", "scenario diagnostic: pin, rear-charge, pull out and repeat")}
 # Unit fields and frame fields the page draws; the job directory keeps the rest.
 UNIT_KEEP = ("id", "x", "z", "bearing", "men", "men0", "hp", "state", "target", "ammo", "ammo0")
 MODE_KEEP = ("role", "capture_points", "supplies", "tickets", "tickets_goal", "custom")

@@ -1418,5 +1418,92 @@
       ]
     },
     "calibration_change": "S2 first harder step (2026-10-17). The original Horse Archer floor won at 352 s with 81% of its men; one unit exhausted its arrows and the other retained 241. Change only the player roster to the draft's cheaper Mounted Yeomen Archers (500 each instead of 600). Enemy, map, timer, modifier and 1200 funds remain unchanged. Scripted floor first; diagnostic at 0/5 s age only after a floor loss."
+  },
+  "brt-archers-dwf-slayers-hard": {
+    "base": "brt-archers-dwf-slayers",
+    "name": "brt-archers-dwf-slayers-hard",
+    "expect": {
+      "ai_stats_modifier": "1.1"
+    },
+    "calibration_change": "S2 second harder step (2026-10-17). The Mounted Yeomen Archer floor won narrowly (bench-b17-s2y-floor-20261017: 326 s, the Slayers left with one man; one archer unit was caught in melee and destroyed with 346 arrows left, the other spent all 810). Raise only the AI stats modifier to 1.1; armies, map, timer and 1200 funds are unchanged. Scripted floor first; CrossKite at 0/5 s observation age only after a floor loss."
+  },
+  "emp-handgunners-dwf-warriors": {
+    "base": "ksl-raiders-emp-halberds",
+    "name": "emp-handgunners-dwf-warriors",
+    "family": "lines of fire",
+    "brief": "One Empire Spearmen unit and two Handgunner units attack two shielded Dwarf Warrior units, with no lords. Handguns fire low and cannot shoot over friends, and dwarf shields block frontal shots; the spearmen lose a long melee. Where the guns stand once the lines meet competes with firing from behind the line. Hypotheses, not a prescribed solution; winnability is not yet shown.",
+    "player": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "units": [
+        "wh_main_emp_inf_spearmen_1",
+        "wh_main_emp_inf_handgunners",
+        "wh_main_emp_inf_handgunners"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_dwf_dwarfs",
+      "faction": "wh_main_dwf_dwarfs",
+      "units": [
+        "wh_main_dwf_inf_dwarf_warrior_0",
+        "wh_main_dwf_inf_dwarf_warrior_0"
+      ]
+    },
+    "expect": {
+      "funds_amount": 1600
+    },
+    "calibration_change": "Small focused candidate S3 (b18, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: player 1550 (350 + 2 x 600), enemy 900. Defined only: lordless setup, 1600 custom funds and the cards are unverified. Scripted attack_nearest floor, then the disclosed Crossfire diagnostic at 0 and 5 s observation age, before any model battle."
+  },
+  "emp-wizard-emp-swordsmen": {
+    "base": "ksl-raiders-emp-halberds",
+    "name": "emp-wizard-emp-swordsmen",
+    "family": "spell timing with scarce magic",
+    "brief": "A Bright Wizard and one Spearmen unit attack two Empire Swordsmen units, with no lords. Fire spells can win a two-to-one infantry fight but also burn the wizard's own line, and the opening magic pool is small. When, where and on whom to spend it competes with casting at first sight. Hypotheses, not a prescribed solution; winnability is not yet shown.",
+    "player": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "units": [
+        "wh_main_emp_cha_wizard_fire_0",
+        "wh_main_emp_inf_spearmen_1"
+      ]
+    },
+    "enemy": {
+      "units": [
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen"
+      ]
+    },
+    "expect": {
+      "funds_amount": 800
+    },
+    "protected": [
+      "wh_main_emp_cha_wizard_fire_0"
+    ],
+    "calibration_change": "Small focused candidate S5 (b18, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: player 600 (250 + 350), enemy 750. Empire mirror as in emp5-emp5. Defined only: a hero-led lordless roster, the wizard's lore and the 800 custom funds are unverified. Scripted probe_abilities and attack_nearest floors, then the disclosed SpellWindow diagnostic at 0 and 5 s observation age, before any model battle."
+  },
+  "emp-knights-emp-swordsmen": {
+    "base": "ksl-raiders-emp-halberds",
+    "name": "emp-knights-emp-swordsmen",
+    "family": "hammer and anvil",
+    "brief": "One Swordsmen unit and one Empire Knights unit attack three Empire Swordsmen units, with no lords. The infantry cannot hold three units for long; the knights hit hard from behind but suffer in a prolonged melee. Pinning, rear charges, pulling out and moving on after a rout compete with a frontal charge. Hypotheses, not a prescribed solution; winnability is not yet shown.",
+    "player": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "units": [
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_cav_empire_knights"
+      ]
+    },
+    "enemy": {
+      "units": [
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen"
+      ]
+    },
+    "expect": {
+      "funds_amount": 1250
+    },
+    "calibration_change": "Small focused candidate S6 (b18, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). Draft database costs: player 1225 (375 + 850), enemy 1125. Empire mirror as in emp5-emp5. Overlaps S1 (rear charges); keep both only if their screens show different failure modes. Scripted attack_nearest floor, then the disclosed HammerAnvil diagnostic at 0 and 5 s observation age, before any model battle."
   }
 }
