@@ -26,29 +26,58 @@ in the source inventory. Outputs are deterministic for unchanged inputs and expo
 ## Files and schema
 
 - `decisions.jsonl`: one JSON object per model request, with all its reply attempts.
-- `sources.json`: source manifests, environments, results, file hashes, filters, coverage,
-  exporter/measures code hashes and the hash of `decisions.jsonl`.
+- `sources.json`: source manifests, environments, results, file hashes, filters, coverage
+  (rows by split, group and provider), exporter/measures code hashes and the hash of
+  `decisions.jsonl`.
 - `datacard.md`: a generated data card documenting the specific export and its limitations.
 
-Every row carries `schema_version`, a stable `id`, model, provider, effort, policy,
-scenario, track, added delay, prompt version and prompt hashes. `provenance.source_id`
-references the source catalog; the row also names its episode, source revision, controller
-card, trace/result hashes and original trace lines. Source manifests preserve the full
-configuration, source-file fingerprints, engine build, deployment and mod hashes; missing
-historical environment data remains null.
+Rows follow the export-row contract both games' exporters share (schema 2): a dataset
+builder reads only `schema_version`, `id`, `game`, `group`, `split`, policy, provider,
+model, effort, `prompt_version`, the system and user prompts with their hashes,
+`attempts`, `error`, `outcome`, `labels` and `provenance`. Everything else in a row is
+WH3 detail. Its fine-tuning target is a row's last attempt, and only when that attempt has
+no error, status `completed` and non-empty text, the row's `error` is null and its
+`split` is `development`. `id` is `<source id>/<episode>/m<decision index>`; the source id is the
+SHA-256 of the job directory name, a newline and the manifest's SHA-256, so ids and row
+bytes do not depend on where the evidence is stored (`sources[].path` still records it).
+`provenance` names the source id, episode, source revision, controller card,
+trace/result hashes and the trace lines of the prompt and model exchange. Source
+manifests preserve the full configuration, source-file fingerprints, engine build,
+deployment and mod hashes; missing historical environment data remains null.
 
 | Field | Meaning |
 |---|---|
+| `game`, `group`, `split` | `twwarhammer3`; the unit to keep whole when splitting; `development` or `held_out` (below) |
 | `system_prompt`, `user_prompt` | Saved system instructions and initial user prompt, without rerendering or trimming |
-| `attempts` | Every saved raw reply attempt, including invalid replies, usage, cost and recorded timing/backend fields |
+| `attempts` | Every saved raw reply attempt in request order, including invalid replies, usage, cost and recorded timing/backend fields |
 | `attempts[].user_prompt` | That attempt's exact user prompt, including its retry feedback |
+| `attempts[].text`, `status`, `error` | Raw reply and provider status (null after a transport failure); null error for the accepted reply, else the parser's, transport's or failed request's message |
 | `attempts[].prompt_source` | Recorded request, saved initial prompt, verified historical retry reconstruction, or unavailable |
 | `attempts[].request`, `output` | New traces: exact request body (including schema) and returned output items |
 | `attempts[].reasoning` | Returned text parts, preserving summary/content type and position; null when unavailable |
 | `decision_metadata` | Saved reason, notes, adopted plan, dropped orders and other controller metadata |
 | `execution` | Submitted order batches, validation failures, engine acknowledgements and latency |
+| `error` | Null when the request ended with an accepted reply, else `{"type", "message"}` |
 | `outcome` | Original status, gameplay outcome, final measurements and common report measures |
+| `labels` | Scenario, battle type, added delay, locally rejected batches and engine-refused orders |
 | `issues` | Explicit gaps such as a missing prompt, reply or acknowledgement |
+
+`group` is the declared scenario family (`manifest.scenario.family`), else the scenario
+name. A random scenario draws a new battle per seed and jobs can repeat a seed (paired
+controllers), so its group is `<scenario>/seed-<seed>`, or the job directory name if no
+seed was recorded. `split` is `held_out` only for a scenario declared
+`"split": "held_out"`. Held-out variants inherit their family from development
+scenarios, so the split, not the group, keeps them out of training. `labels` count batches and refusals
+over the row's `execution`, which for commander includes later executor ticks.
+
+Schema 2 changed from schema 1: rows gained `game`, `group`, `split` and `labels`; ids no
+longer hash the absolute job path; `error` is always present, and the old string failure
+kind became `{"type": kind, "message": <the result's error>}`; attempts always carry
+`text`, `status`, `usage` and `error`; `attempts[].system_prompt` is gone (it repeated the
+row's `system_prompt`, about a fifth of the first full export); `prompt_trace_line` and
+`exchange_trace_line` moved into `provenance`. Each recorded request's instructions are
+still checked against the saved system prompt; a job without a saved prompt file takes
+the instructions of its recorded requests, which must agree.
 
 The catalog retains full results, including measurements not repeated in each row.
 Only `won`, `lost` and `draw` populate `outcome.gameplay_outcome`. Policy/infrastructure
@@ -101,7 +130,8 @@ request settings and trace format stay unchanged. Controller prompts remain v20/
 The capture request setting is offline-tested; no new paid API call was used to validate it.
 
 Before training or redistribution, review the source provider/model terms for the actual
-intended use, including restrictions on training competing models. The export is not a
-training license. The evidence includes tuning battles, rematches and repeated scenario
-variants; design splits at the episode/scenario level to avoid leakage. It is not a
-curated expert-demonstration dataset.
+intended use, including restrictions on training competing models. Until the owner decides,
+rows produced by OpenAI models stay out of training sets by default; rows from open-weight
+models served through OpenRouter may enter them. The export is not a training license.
+The evidence includes tuning battles, rematches and repeated scenario variants; split by
+`group` to avoid leakage. It is not a curated expert-demonstration dataset.
