@@ -11,6 +11,7 @@ runs/
                       named <model>-v<scaffolding>-<seed set>-<date> (e.g.
                       llm-luna-v7-dev-20261012), with its stdout and stderr beside it as
                       <job>.log.
+  fullrun-exports/    `spire export` datasets: decisions.jsonl, sources.json, datacard.md
   first-combat/       Slay the Spire, frozen 2026-10-11 evidence: rollouts, evaluations,
                       catalogs, PPO and language training runs, their sidecar logs, audits
                       and declarations, and scripts/ with the one-off launch and summary

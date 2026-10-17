@@ -124,6 +124,41 @@ playable card (and those with attacks exceeding block), card rewards skipped (an
 where one was reopened), potions used and held at the end, and the last turn's incoming
 damage against block and HP. They point into the traces and do not replace reading them.
 
+## Export
+
+`spire export` turns saved jobs or runs into a dataset for post-training and analysis.
+It is offline: no API call, no game, and the evidence is never changed. Code:
+`src/spire/fullrun/export.py`.
+
+```bash
+uv run python -m spire export runs/fullrun/<job> [runs/fullrun/<job>/run-NNNN ...] \
+    --output runs/fullrun-exports/<name>
+```
+
+It writes `decisions.jsonl` (one row per model request, with every attempt), `sources.json`
+(manifests, environments, each run's result, profile and deployment, input and exporter
+hashes, filters, counts and issues) and `datacard.md`. The output must be a new directory
+outside the jobs; it is built beside it and renamed after every input hash is rechecked.
+Jobs still marked running and runs without `result.json` are refused. `--model`,
+`--provider` and `--prompt-sha256` (the system prompt's) are repeatable: values of one
+filter are alternatives, and every filter given must match.
+
+Rows follow the export-row contract shared with the [WH3 exporter](../../twwarhammer3/traces.md):
+`group` is the seed, `split` is `development` (no held-out seed is declared yet), and
+`harness` and `prompt_version` are the job-name label. Spire rows add the public
+`decision` the policy saw, the `choice`, the reply's reason and notes, and `labels` taken
+from decision observations only, including each combat decision's `fight`: won when a
+later decision is out of combat or the run is won during it, lost when the run is lost
+during it, otherwise unknown, with HP at its start and at the next out-of-combat decision.
+A request that never got an accepted reply (invalid replies, an API failure, a budget
+stop) is a row with an `error` and no decision, and so is an accepted reply whose decision
+was never logged (`DecisionNotRecorded`). Traces from before exchange capture (no `model_exchange_version` in the
+manifest: every job up to v10) kept the first prompt but no retry prompt or reasoning;
+those gaps are labelled as issues, never reconstructed. Their 11,167 requests all come
+from OpenAI's `gpt-6-luna`, whose rows must not enter a training set by default (the
+owner has not decided the terms question), and every readable profile is at Ironclad
+unlock level 3; the data card explains both.
+
 ## Autoresearch rules
 
 - Editable surface: `configs/llm/` (system prompt and monster notes), and the rendering,

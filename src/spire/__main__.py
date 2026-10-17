@@ -88,6 +88,15 @@ def main() -> int:
     spend = commands.add_parser("spend", help="Full runs: total the API spend ledger")
     spend.add_argument("--provider", default="openai", choices=PROVIDERS)
     spend.add_argument("--ledger", type=Path, help="override the provider's ledger")
+    export = commands.add_parser("export", help="Full runs: export saved model requests")
+    export.add_argument("paths", nargs="+", type=Path, metavar="JOB_OR_RUN")
+    export.add_argument("--output", type=Path, required=True,
+                        help="new directory outside the jobs, e.g. runs/fullrun-exports/<name>")
+    export.add_argument("--model", action="append", default=[], help="keep this model; repeatable")
+    export.add_argument("--provider", action="append", default=[],
+                        help="keep this provider; repeatable")
+    export.add_argument("--prompt-sha256", action="append", default=[],
+                        help="keep this exact system prompt hash; repeatable")
     stats = commands.add_parser("stats", help="Full runs: milestones from the results register")
     stats.add_argument("--rebuild", action="store_true",
                        help="Rewrite the register from every job under runs/fullrun")
@@ -243,6 +252,18 @@ def main() -> int:
 
         path = args.ledger or LEDGERS[args.provider]
         print(f"${Ledger(path, budget_usd=0).spent:.4f} spent ({path})")
+        return 0
+    if args.command == "export":
+        from spire.fullrun.export import export_runs
+
+        try:
+            summary = export_runs(args.paths, args.output, models=tuple(args.model),
+                                  providers=tuple(args.provider),
+                                  prompt_hashes=tuple(args.prompt_sha256))
+        except (OSError, ValueError) as error:
+            parser.error(str(error))
+        print(json.dumps({"output": str(args.output), "counts": summary["counts"],
+                          "issues": summary["issues"]}, sort_keys=True))
         return 0
     if args.command == "stats":
         from spire.fullrun.stats import JOBS_ROOT, rebuild, summary

@@ -18,8 +18,8 @@ src/gameai/        Game-neutral code both games import; it never imports a game 
   windows.py       Windows games owned from WSL: runtime lock, supervised launch, probes
   windows_game.py  The Windows-side supervisor (job object, controller EOF and time limit)
 src/spire/         Slay the Spire 1
-  __main__.py      CLI: doctor, play, digest, watch, spend, stats (full runs); rollout,
-                   evaluate, train, report (first combat)
+  __main__.py      CLI: doctor, play, digest, watch, spend, stats, export (full runs);
+                   rollout, evaluate, train, report (first combat)
   protocol.py      Decision/Action types, the error taxonomy and the first-combat
                    observation contract (frozen)
   policies.py      Scripted first-combat policies: random, starter heuristic, end turn (frozen)
@@ -29,7 +29,7 @@ src/spire/         Slay the Spire 1
   fullrun/         Full-run track: play.py (complete-run loop for any policy), llm.py
                    (prompt, memory and replies: the tuning surface), digest.py (trace
                    summaries and mistake flags), watch.py (job events), stats.py (the
-                   results register)
+                   results register), export.py (offline model-request datasets)
   openweight/      Planned remote open-weight track (skeleton, mostly NotImplementedError):
                    tasks and seed splits, env backends, Tinker policy, rewards, rollout,
                    GRPO, dynamics
@@ -109,6 +109,7 @@ uv run python -m spire digest runs/fullrun/<job>   # per-seed table; add /run-00
 uv run python -m spire watch runs/fullrun/<job>    # wait for the next finished run, stall or job end
 uv run python -m spire spend       # Spire API ledger total
 uv run python -m spire stats       # milestones per model, effort and harness; --rebuild from runs/
+uv run python -m spire export runs/fullrun/<job> ... --output runs/fullrun-exports/<name>
 uv run python -m twwarhammer3 doctor   # read-only: pins, preferences, running game
 uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>   # add /episode-0000 [--at S]; --units
 uv run python -m twwarhammer3 watch    # follow the running job beside the game; --prompts
