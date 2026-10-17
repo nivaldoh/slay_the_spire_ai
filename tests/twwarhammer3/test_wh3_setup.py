@@ -395,3 +395,22 @@ def test_fort_and_survival_verify_selected_mode_instead_of_generic_map_type():
                     if s.get('expression', '').endswith('BattleTypeRecordContext.Key')]
         assert selected[0]['expect'] == mode
         assert not any('MapContext.BattleTypeString' in str(s) for s in checks)
+
+
+def test_second_small_batch_declares_lordless_rosters_sides_and_headroom():
+    config = {"episode_timeout": 1320, "run_timeout": 99999, "start_timeout": 600,
+              "episodes": 1}
+    sides = {"dwf-thunderers-grn-trolls": (3, 3, True), "grn-giant-ksl-streltsi": (1, 2, False),
+             "skv-spears-sla-hellstriders": (3, 2, True), "dwf-cannon-grn-lobbers": (2, 4, False)}
+    for name, (player, enemy, defends) in sides.items():
+        scenario = setup.load_scenario({"scenario": name})
+        setup.validate_declaration(scenario, config)
+        declared = setup.scenarios()[name]
+        assert declared["player"]["lord"] is declared["enemy"]["lord"] is False
+        counts = len(declared["player"]["units"]), len(declared["enemy"]["units"])
+        assert counts == (player, enemy)
+        assert declared["expect"]["player_defends"] is defends
+        assert (declared["attacker"] == "enemy") is defends
+        steps = setup.scenario_steps(scenario)
+        sizes = [s["expect"] for s in steps if s.get("expression", "").endswith("UnitList.Size")]
+        assert sizes == [player, enemy]

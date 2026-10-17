@@ -19,6 +19,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [controllers.md](controllers.md) | the policies and their versions, comparing them, candidate changes, designs not built |
 | [battle-types.md](battle-types.md) | the battle-type scenarios, the `mode` state, the `build` and `reinforce` orders |
 | [benchmark.md](benchmark.md) | the benchmark contract, shared measures and the scenario expansion plan |
+| [small-scenarios-2.md](small-scenarios-2.md) | second batch of small scenario candidates (S8-S13): rosters, database facts, hypotheses |
 | [benchmark-run.md](benchmark-run.md) | running paired benchmark trials, outside controllers |
 | [reports.md](reports.md) | the offline HTML report and replay, its curated notes |
 | [traces.md](traces.md) | offline model-decision exports, reasoning capture and data provenance |

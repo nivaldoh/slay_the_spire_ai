@@ -1729,5 +1729,134 @@
       "player_defends": true
     },
     "calibration_change": "Small focused candidate S7 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md), the draft's lowest-confidence item. Draft database costs: player 1,400 (2 x 700), enemy 1,500 (4 x 375). Defined only: lordless setup and 1,500 funds await their live check; then a hold floor and the disclosed CornerHold diagnostic at 0 and 5 s observation age, before any model battle. Longbeards may win in the open, and a gap may remain behind a line at the map edge. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 1500."
+  },
+  "dwf-thunderers-grn-trolls": {
+    "base": "ksl-raiders-emp-halberds",
+    "name": "dwf-thunderers-grn-trolls",
+    "family": "focus fire against regeneration",
+    "brief": "Two Dwarf Thunderer units and one Dwarf Warriors unit defend against three regenerating Troll units, with no lords. Spread fire heals back; which troll unit the guns shoot, and who takes the first contact in front of them, decide whether any troll unit breaks before the clubs reach the guns.",
+    "attacker": "enemy",
+    "player": {
+      "subculture": "wh_main_sc_dwf_dwarfs",
+      "faction": "wh_main_dwf_dwarfs",
+      "units": [
+        "wh_main_dwf_inf_thunderers_0",
+        "wh_main_dwf_inf_thunderers_0",
+        "wh_main_dwf_inf_dwarf_warrior_0"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_grn_greenskins",
+      "faction": "wh_main_grn_greenskins",
+      "units": [
+        "wh_main_grn_mon_trolls",
+        "wh_main_grn_mon_trolls",
+        "wh_main_grn_mon_trolls"
+      ]
+    },
+    "expect": {
+      "funds_amount": 2500,
+      "player_defends": true
+    },
+    "content": [
+      "wh_main"
+    ],
+    "calibration_change": "Small focused candidate S8 (b20, 2026-10-17; docs/twwarhammer3/small-scenarios-2.md). Database costs: player 1850 (2 x 700 + 450), enemy 2250 (3 x 750); funds 2500 for headroom. Defined only: lordless Dwarf/Greenskin recruitment and the Trolls' regeneration in battle are unverified. Floor hold first."
+  },
+  "grn-giant-ksl-streltsi": {
+    "base": "ksl-raiders-emp-halberds",
+    "name": "grn-giant-ksl-streltsi",
+    "family": "a lone monster's target choice",
+    "brief": "One Greenskin Giant attacks a Kislev Kossar spear unit and a Streltsi rifle unit, with no lords. The spears are braced against large monsters; the riflemen are not, but they shoot armour-piercing rounds as the Giant approaches. Which unit to reach first, and by what route, decides the fight.",
+    "player": {
+      "subculture": "wh_main_sc_grn_greenskins",
+      "faction": "wh_main_grn_greenskins",
+      "units": [
+        "wh_main_grn_mon_giant"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh3_main_sc_ksl_kislev",
+      "faction": "wh3_main_ksl_kislev",
+      "units": [
+        "wh3_main_ksl_inf_kossars_1",
+        "wh3_main_ksl_inf_streltsi_0"
+      ]
+    },
+    "expect": {
+      "funds_amount": 1600
+    },
+    "content": [
+      "wh_main",
+      "wh3_main"
+    ],
+    "calibration_change": "Small focused candidate S9 (b20, 2026-10-17; docs/twwarhammer3/small-scenarios-2.md). Database costs: player 1400, enemy 1350 (500 + 850); funds 1600. Defined only: a one-unit lordless monster army is unverified. Floor attack_nearest first."
+  },
+  "skv-spears-sla-hellstriders": {
+    "base": "ksl-raiders-emp-halberds",
+    "name": "skv-spears-sla-hellstriders",
+    "family": "receiving cavalry: facing and bracing",
+    "brief": "Three Skaven Clanrat Spearmen units defend against two fearsome Hellstrider cavalry units that never rout, with no lords. Braced spear fronts stop charges; open flanks and rears invite them. Formation and facing decide whether the rats can wear the riders down.",
+    "attacker": "enemy",
+    "player": {
+      "subculture": "wh2_main_sc_skv_skaven",
+      "faction": "wh2_main_skv_skaven",
+      "units": [
+        "wh2_main_skv_inf_clanrat_spearmen_0",
+        "wh2_main_skv_inf_clanrat_spearmen_0",
+        "wh2_main_skv_inf_clanrat_spearmen_0"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh3_main_sc_sla_slaanesh",
+      "faction": "wh3_main_sla_slaanesh",
+      "units": [
+        "wh3_main_sla_cav_hellstriders_0",
+        "wh3_main_sla_cav_hellstriders_0"
+      ]
+    },
+    "expect": {
+      "funds_amount": 1500,
+      "player_defends": true
+    },
+    "content": [
+      "wh2_main",
+      "wh3_main"
+    ],
+    "calibration_change": "Small focused candidate S10 (b20, 2026-10-17; docs/twwarhammer3/small-scenarios-2.md). Database costs: player 975 (3 x 325), enemy 1350 (2 x 675); funds 1500. Defined only: lordless Skaven/Slaanesh recruitment is unverified. Floors hold and attack_nearest first."
+  },
+  "dwf-cannon-grn-lobbers": {
+    "base": "ksl-raiders-emp-halberds",
+    "name": "dwf-cannon-grn-lobbers",
+    "family": "counter-battery",
+    "brief": "One Dwarf Cannon and one Dwarf Warriors unit attack two Goblin Rock Lobbers screened by two Goblin Spearmen units, with no lords. Marching under two lobbers' fire is costly; silencing them first takes the cannon's limited rounds and time.",
+    "player": {
+      "subculture": "wh_main_sc_dwf_dwarfs",
+      "faction": "wh_main_dwf_dwarfs",
+      "units": [
+        "wh_main_dwf_art_cannon",
+        "wh_main_dwf_inf_dwarf_warrior_0"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_grn_greenskins",
+      "faction": "wh_main_grn_greenskins",
+      "units": [
+        "wh_main_grn_art_goblin_rock_lobber",
+        "wh_main_grn_art_goblin_rock_lobber",
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_goblin_spearmen"
+      ]
+    },
+    "expect": {
+      "funds_amount": 1950
+    },
+    "protected": [
+      "wh_main_dwf_art_cannon"
+    ],
+    "content": [
+      "wh_main"
+    ],
+    "calibration_change": "Small focused candidate S11 (b20, 2026-10-17; docs/twwarhammer3/small-scenarios-2.md), the lowest-confidence item of the batch. Database costs: player 1250 (800 + 450), enemy 1750 (2 x 550 + 2 x 325); funds 1950. Defined only: lordless recruitment and the AI's use of defending artillery are unverified. Floor attack_nearest first."
   }
 }

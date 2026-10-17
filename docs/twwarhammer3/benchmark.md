@@ -653,7 +653,9 @@ scripted floor that should lose, then one
 disclosed diagnostic encoding the hypothesised play at `delay_seconds` 0 and 5. A win at
 5 s tests stale sensing (it does not reproduce a model's full decision cadence);
 a floor win means the scenario is too easy and climbs. Suggested order: the lord/funds
-probe, S1, S2 and S4, then S3, S5 and S6; S7 last.
+probe, S1, S2 and S4, then S3, S5 and S6; S7 last. A second batch (S8-S11 declared,
+S12-S13 defined only) covers focus fire, a lone monster, receiving cavalry and
+counter-battery: [small-scenarios-2.md](small-scenarios-2.md).
 
 ### Owner decisions and next tranche (2026-10-16 night)
 

@@ -304,6 +304,46 @@
       "family": "deny the envelopment",
       "core_candidate": false,
       "footnote": "Development candidate S7 (b19), the draft's lowest-confidence item. Defined only: the lordless setup and funds await their live check, then a hold floor and a disclosed corner-hold diagnostic at 0 and 5 s observation age."
+    },
+    "dwf-thunderers-grn-trolls": {
+      "title": "Thunderers against regenerating Trolls",
+      "short": "Focus fire",
+      "noun": "small missile defence",
+      "heading": "Spread fire heals back",
+      "challenge": "Two Dwarf Thunderer units and one Dwarf Warriors unit defend against three regenerating Troll units. Damage spread across the trolls regenerates; the guns must break one unit at a time before the clubs reach them.",
+      "family": "focus fire against regeneration",
+      "core_candidate": false,
+      "footnote": "Development candidate S8 (b20). Defined only: the lordless setup awaits its live check, then a hold floor and a disclosed focus-fire diagnostic at 0 and 5 s observation age."
+    },
+    "grn-giant-ksl-streltsi": {
+      "title": "A lone Giant against spears and rifles",
+      "short": "Monster target choice",
+      "noun": "single-monster assault",
+      "heading": "Reach the riflemen, not the spears",
+      "challenge": "One Greenskin Giant attacks a braced Kislev Kossar spear unit and a Streltsi rifle unit. The spears fight well against large monsters; the riflemen do not, but they shoot armour-piercing rounds during the approach.",
+      "family": "a lone monster's target choice",
+      "core_candidate": false,
+      "footnote": "Development candidate S9 (b20). Defined only: the one-unit lordless setup awaits its live check, then an attack-nearest floor and a disclosed target-choice diagnostic at 0 and 5 s observation age."
+    },
+    "skv-spears-sla-hellstriders": {
+      "title": "Skaven spears against Hellstriders",
+      "short": "Receive the charge",
+      "noun": "small anti-cavalry defence",
+      "heading": "Fronts toward the riders",
+      "challenge": "Three Skaven Clanrat Spearmen units defend against two fearsome Hellstrider cavalry units that never rout. Braced spear fronts stop charges; open flanks and rears invite them.",
+      "family": "receiving cavalry: facing and bracing",
+      "core_candidate": false,
+      "footnote": "Development candidate S10 (b20). Defined only: the lordless setup awaits its live check, then hold and attack-nearest floors and a disclosed bracing diagnostic at 0 and 5 s observation age."
+    },
+    "dwf-cannon-grn-lobbers": {
+      "title": "A Dwarf cannon against two Rock Lobbers",
+      "short": "Counter-battery",
+      "noun": "small artillery assault",
+      "heading": "Silence the lobbers before the march",
+      "challenge": "One Dwarf Cannon and one Dwarf Warriors unit attack two Goblin Rock Lobbers screened by two Goblin Spearmen units. Marching under two lobbers' fire is costly; silencing them first takes the cannon's limited rounds.",
+      "family": "counter-battery",
+      "core_candidate": false,
+      "footnote": "Development candidate S11 (b20), the lowest-confidence item of its batch. Defined only: the lordless setup awaits its live check, then an attack-nearest floor and a disclosed counter-battery diagnostic at 0 and 5 s observation age."
     }
   },
   "units": {
