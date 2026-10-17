@@ -37,9 +37,11 @@ model, effort, `prompt_version`, the system and user prompts with their hashes,
 `attempts`, `error`, `outcome`, `labels` and `provenance`. Everything else in a row is
 WH3 detail. Its fine-tuning target is a row's last attempt, and only when that attempt has
 no error, status `completed` and non-empty text, the row's `error` is null and its
-`split` is `development`. `id` is `<source id>/<episode>/m<decision index>`; the source id is the
-SHA-256 of the job directory name, a newline and the manifest's SHA-256, so ids and row
-bytes do not depend on where the evidence is stored (`sources[].path` still records it).
+`split` is `development`. `id` is `<source id>/<episode>/m<decision index>`; the source
+id is the SHA-256 of the job directory name, a newline and the manifest's SHA-256, so ids
+and row bytes do not depend on where the evidence is stored (`sources[].path` still
+records it). Rows follow the job names, and selecting one job from two locations is an
+error.
 `provenance` names the source id, episode, source revision, controller card,
 trace/result hashes and the trace lines of the prompt and model exchange. Source
 manifests preserve the full configuration, source-file fingerprints, engine build,
@@ -67,8 +69,15 @@ name. A random scenario draws a new battle per seed and jobs can repeat a seed (
 controllers), so its group is `<scenario>/seed-<seed>`, or the job directory name if no
 seed was recorded. `split` is `held_out` only for a scenario declared
 `"split": "held_out"`. Held-out variants inherit their family from development
-scenarios, so the split, not the group, keeps them out of training. `labels` count batches and refusals
-over the row's `execution`, which for commander includes later executor ticks.
+scenarios, so the split, not the group, keeps them out of training. Variants that share a
+`base` but declare no family get one group each; declare a family in `scenarios.json` to
+keep them together. `labels` count batches and refusals over the row's `execution`, which
+for commander includes later executor ticks; `battle_type` is `classic` unless the
+scenario declares another, as in `stats`.
+
+A salvaged llm reply (its still-valid orders kept after every retry failed) has the error
+`{"type": "InvalidReply", ...}`: new traces record it in the exchange, and for older
+traces, whose decisions record the dropped orders but not the error, its message is null.
 
 Schema 2 changed from schema 1: rows gained `game`, `group`, `split` and `labels`; ids no
 longer hash the absolute job path; `error` is always present, and the old string failure

@@ -227,19 +227,23 @@ def test_failed_requests_mark_their_unaccepted_attempts(tmp_path):
     assert second["attempts"][0]["error"] == "Reported cost exceeded reservation"
 
 
-@pytest.mark.parametrize("declared, config, group, split", [
-    ({"family": "cavalry", "split": "held_out"}, {}, "cavalry", "held_out"),
-    ({"family": "cavalry", "split": "development"}, {}, "cavalry", "development"),
-    (None, {}, "battle", "development"),
-    ({"map": "m"}, {"scenario": "random-siege", "seed": 7}, "random-siege/seed-7", "development"),
-    ({"map": "m"}, {"scenario": "random"}, "job", "development"),
+@pytest.mark.parametrize("declared, config, group, split, battle_type", [
+    ({"family": "cavalry", "split": "held_out", "battle_type": "siege"}, {}, "cavalry",
+     "held_out", "siege"),
+    ({"family": "cavalry", "split": "development"}, {}, "cavalry", "development", "classic"),
+    (None, {}, "battle", "development", "classic"),
+    ({"map": "m"}, {"scenario": "random-siege", "seed": 7}, "random-siege/seed-7",
+     "development", "classic"),
+    ({"map": "m"}, {"scenario": "random"}, "job", "development", "classic"),
 ])
 def test_group_and_split_follow_the_scenario_declaration(tmp_path, declared, config, group,
-                                                         split):
+                                                         split, battle_type):
     job = make_job(tmp_path, [decision("r1", attempts=[attempt()])], declared=declared, **config)
     export.export_traces([job], tmp_path / "export")
     row, = read_export(tmp_path / "export")
     assert (row["game"], row["group"], row["split"]) == ("twwarhammer3", group, split)
+    # Battles are classic unless the scenario declares another type, as in stats.
+    assert row["labels"]["battle_type"] == battle_type
 
 
 def test_rows_and_ids_do_not_depend_on_the_checkout_path(tmp_path):
@@ -251,6 +255,17 @@ def test_rows_and_ids_do_not_depend_on_the_checkout_path(tmp_path):
         tmp_path / "two/decisions.jsonl").read_bytes()
     assert first["sources"].keys() == second["sources"].keys()
     assert read_export(tmp_path / "one")[0]["id"].endswith("/episode-0000/m0")
+    # Rows follow the job names, not where each job is stored.
+    other = make_job(tmp_path / "c", [decision("r1", attempts=[attempt()])], name="a-job")
+    export.export_traces([job, other], tmp_path / "three")
+    export.export_traces([copy, shutil.copytree(other, tmp_path / "0/a-job")], tmp_path / "four")
+    assert (tmp_path / "three/decisions.jsonl").read_bytes() == (
+        tmp_path / "four/decisions.jsonl").read_bytes()
+    assert [row["provenance"]["episode"] for row in read_export(tmp_path / "three")] == [
+        "episode-0000"] * 2
+    with pytest.raises(ValueError, match="two locations"):
+        export.export_traces([job, copy], tmp_path / "five")
+    assert not (tmp_path / "five").exists()
 
 
 @pytest.mark.parametrize("prompt_file", [True, False])
@@ -269,6 +284,28 @@ def test_attempts_share_one_checked_system_prompt(tmp_path, prompt_file):
     assert row["system_prompt"] == "Other instructions"
     assert row["system_prompt_sha256"] == digest("Other instructions")
     assert "system_prompt" not in row["attempts"][0] and row["issues"] == []
+    # Without a saved prompt, a request's attempts must still agree with each other.
+    retry = recorded_attempt(PROMPT)
+    trace = job / "episode-0000/trace.jsonl"
+    trace.write_text(json.dumps({"kind": "model_exchange", "id": "m1", "prompt": PROMPT,
+                                 "attempts": [raw, retry]}) + "\n")
+    with pytest.raises(ValueError, match="Recorded requests disagree on the system prompt"):
+        export.export_traces([job], tmp_path / "export-2")
+
+
+def test_salvaged_reply_without_exchange_records_its_invalid_reply(tmp_path):
+    raw = [attempt("bad", error="cooldown"), attempt('{"orders": []}', error="cooldown")]
+    events = [decision("r1", attempts=raw, dropped=["f1 cast: cooldown"]), acknowledgement("r1"),
+              decision("r2", None, [attempt()], kind="commander", dropped=[]),
+              acknowledgement("r2")]
+    job = make_job(tmp_path, events)
+    export.export_traces([job], tmp_path / "export")
+    salvaged, commander = read_export(tmp_path / "export")
+    assert salvaged["error"] == {"type": "InvalidReply", "message": None}
+    assert salvaged["execution"][0]["orders"] == ORDERS
+    assert salvaged["decision_metadata"]["dropped"] == ["f1 cast: cooldown"]
+    # A commander records dropped assignments of a plan it accepted.
+    assert commander["error"] is None
 
 
 def test_unverifiable_retry_does_not_claim_an_exact_prompt(tmp_path):

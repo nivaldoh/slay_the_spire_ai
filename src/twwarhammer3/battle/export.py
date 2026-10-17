@@ -146,6 +146,11 @@ def _decisions(trace: Path, result: dict) -> tuple[list[dict], int]:
         record.update(attempts=failure["attempts"],
                       error={"type": failure.get("kind"), "message": result.get("error")})
     for record in records:
+        # Only an InvalidReply is salvaged (its valid orders kept, the rest dropped). Old
+        # traces did not record that error; new ones take it from the exchange.
+        if (record["error"] is None and "dropped" in record["decision_metadata"]
+                and record["attempts"] and record["attempts"][-1].get("error")):
+            record["error"] = {"type": "InvalidReply", "message": None}
         for step in record["execution"]:
             step["acknowledgement"] = acks.get(step["request"])
             if step["acknowledgement"] is None:
@@ -156,7 +161,7 @@ def _decisions(trace: Path, result: dict) -> tuple[list[dict], int]:
 def _attempts(record: dict, system: str | None, manifest: dict) -> tuple[list[dict], str | None]:
     """The attempts with each one's exact user prompt, and the system prompt they were sent
     with (the saved prompt file, else the recorded request instructions)."""
-    attempts = []
+    attempts, saved = [], system is not None
     for index, raw in enumerate(record["attempts"]):
         # A transport failure has no reply; its message is the attempt's error.
         attempt = {"text": None, "status": None, "usage": None,
@@ -167,7 +172,8 @@ def _attempts(record: dict, system: str | None, manifest: dict) -> tuple[list[di
             if system is None:
                 system = request["instructions"]
             elif request["instructions"] != system:
-                raise ValueError("Recorded request differs from the saved system prompt")
+                raise ValueError("Recorded request differs from the saved system prompt" if saved
+                                 else "Recorded requests disagree on the system prompt")
             if index == 0 and record["user_prompt"] is not None and user != record["user_prompt"]:
                 raise ValueError("Recorded request differs from the saved user prompt")
             origin = "recorded_request"
@@ -242,7 +248,7 @@ def _labels(record: dict, manifest: dict, delay_ms: int) -> dict:
     steps = record["execution"]
     acks = [step["acknowledgement"]["ack"] for step in steps if step["acknowledgement"]]
     return {"scenario": manifest["config"]["scenario"],
-            "battle_type": (manifest.get("scenario") or {}).get("battle_type"),
+            "battle_type": (manifest.get("scenario") or {}).get("battle_type", "classic"),
             "delay_ms": delay_ms,
             "rejected_batches": sum(step["validation"] is not None for step in steps),
             "refused_orders": sum(not result.get("ok") for ack in acks
@@ -336,12 +342,16 @@ def export_traces(paths: list[Path], output: Path, *, prompt_versions: tuple[str
     with tempfile.TemporaryDirectory(prefix=".wh3-export-", dir=output.parent) as temporary:
         directory = Path(temporary)
         with (directory / "decisions.jsonl").open("w") as handle:
-            for job, episodes in sorted(selected.items()):
+            # By name first, so the row order does not depend on where the jobs are either.
+            for job, episodes in sorted(selected.items(), key=lambda item: (item[0].name,
+                                                                            str(item[0]))):
                 manifest = _read(job / "manifest.json", files)
                 if manifest.get("status") == "running":
                     raise ValueError(f"{job}: job manifest is still running; use stopped evidence")
                 # The job's name and manifest identify it wherever the checkout is.
                 source_id = _text_hash(job.name + "\n" + files[str(job / "manifest.json")])
+                if source_id in sources:
+                    raise ValueError(f"{job}: same job selected from two locations")
                 environment_path = job / "environment.json"
                 environment = _read(environment_path, files) if environment_path.exists() else None
                 source = {"path": str(job), "manifest": manifest, "environment": environment,
@@ -422,9 +432,11 @@ items. A transport failure has null text, status and usage. HTTP retries within 
 request only expose recorded counts, not unreturned provider responses.
 
 `error` is null when the request ended with an accepted reply, else its `type` and
-`message`. An attempt's `error` is null for the accepted reply, else the parser's,
+`message` (a salvaged llm reply is an InvalidReply; old traces did not record its
+message). An attempt's `error` is null for the accepted reply, else the parser's,
 transport's or failed request's message. `labels` count the row's locally rejected
-batches and engine-refused orders (for commander, including later executor ticks).
+batches and engine-refused orders (for commander, including later executor ticks);
+`battle_type` is classic unless the scenario declares another.
 
 `group` is the unit to keep whole when splitting: the declared scenario family, else the
 scenario name; a random scenario's group is its name and draw seed. `split` is `held_out`
