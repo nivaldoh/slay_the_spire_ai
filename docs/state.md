@@ -12,7 +12,7 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 Overnight goal (2026-10-17 04:00 UTC, owner away until 13:00 UTC): continue the
 benchmark scenario implementation; game jobs end before 12:45 UTC. Queues A, B, C and
 D1 are done; b21 is on `main`. Running: WH3 queue
-`runs/twwarhammer3/calibration/queue-d2b-b21-20261017.json` (a retry of D2, whose first lobby stalled), started 08:56 UTC
+`runs/twwarhammer3/calibration/queue-d2d-b23-20261017.json` on b23 (after D2, its retry D2b and D2c on b22), from about 10:40 UTC
 (follow-up diagnostics, S7/S10 step floors, S1 mode pilot, S5 floors, L1/L2 setup),
 to be interrupted by 12:45 UTC if still running. Watch: `uv run python -m twwarhammer3
 watch`. Results and delegated choices:

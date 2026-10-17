@@ -35,7 +35,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b22 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | b18 adds S3/S5/S6 and the Bodyguard target fix. b17 checks: S2 Yeomen floor won, S4 Bodyguard won at 5 s only, swarm-Slayer setup engaged |
+| benchmark harness | b23 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | b18 adds S3/S5/S6 and the Bodyguard target fix. b17 checks: S2 Yeomen floor won, S4 Bodyguard won at 5 s only, swarm-Slayer setup engaged |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
@@ -286,6 +286,22 @@ b22 returns no post in that case: guns and archers shoot from where they stand, 
 b22 also adds `digest --units` (per-unit men, ammunition, first melee and rout times,
 and engine refusals), replacing the ad-hoc review script used tonight. It merged while
 the S4 step-2 job played its last episode; the remaining D2b jobs continue as D2c on b22.
+
+S4 step 2's `Bodyguard` pair (`bench-b21-s4-bodyguard-2-20261017`, D2b) lost at 227 s (fresh) and
+346 s (5.41 s age). The escort again broke both Yeomen units (14-15 and 1-5 of 45 left),
+but the gun crew routed at 122 s and 84 s after only 18 and 45 rounds. The two Men-at-arms
+units, nearly untouched, then beat the Halberdiers. The step does make the gun's survival
+decisive, but this disclosed escort cannot keep the gun alive past the riders' arrival
+around 70 s. No win is demonstrated; the original S4 keeps its escort-melee wins.
+
+S6's `HammerAnvil` pair (`bench-b22-s6-hammer-20261017`, D2c on b22) lost at 402 s (fresh)
+and on the 1205 s timer (5.41 s age), with 147 and 139 refused moves. This time the
+refused point was its wait post beside the infantry, inside the Taurox map's central rock
+where the fight formed; that post never passed through the rotation helper. b23 applies
+one rule to every diagnostic move: a destination on a restricted cell or near a refused
+move steps to the nearest open spot within two terrain cells, or the unit holds
+(disclosed in `SmallDiagnostic`; regression added). D2c's remaining jobs continue on b23
+as D2d, with an S6 re-run.
 
 Live checks still owed: lordless recruitment at these funds, whether the wizard becomes
 the commanding unit, its Lore of Fire ability keys (SpellWindow matches `burning_head`,
