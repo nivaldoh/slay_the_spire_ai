@@ -1276,5 +1276,60 @@
         "wh2_main_skv_art_warp_lightning_cannon"
       ]
     }
+  },
+  "ksl-archers-dwf-slayers": {
+    "base": "ksl-raiders-emp-halberds",
+    "name": "ksl-archers-dwf-slayers",
+    "family": "ammunition and kiting",
+    "brief": "Two Horse Archer units attack one unbreakable Slayer unit. Finite ammunition, firing angles and safe distance compete with a possible melee finish. A development candidate; its intended play remains unverified.",
+    "player": {
+      "units": [
+        "wh3_main_ksl_cav_horse_archers_0",
+        "wh3_main_ksl_cav_horse_archers_0"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_dwf_dwarfs",
+      "faction": "wh_main_dwf_dwarfs",
+      "units": [
+        "wh_main_dwf_inf_slayers"
+      ]
+    },
+    "expect": {
+      "funds_amount": 1200
+    },
+    "calibration_change": "S2, small-scenario tranche: hold floor, then disclosed CrossKite at 0 and 5 s observation age. No model battle before review."
+  },
+  "emp-helblaster-brt-raiders": {
+    "base": "ksl-raiders-emp-halberds",
+    "name": "emp-helblaster-brt-raiders",
+    "family": "protect a fragile gun",
+    "brief": "A Helblaster and one Halberdier escort defend against two Mounted Yeomen and Men-at-arms. Gun targeting and escort placement must preserve firing time. A development candidate; its intended play remains unverified.",
+    "attacker": "enemy",
+    "player": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "units": [
+        "wh_main_emp_art_helblaster_volley_gun",
+        "wh_main_emp_inf_halberdiers"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_brt_bretonnia",
+      "faction": "wh_main_brt_bretonnia",
+      "units": [
+        "wh_main_brt_cav_mounted_yeomen_0",
+        "wh_main_brt_cav_mounted_yeomen_0",
+        "wh_main_brt_inf_men_at_arms"
+      ]
+    },
+    "expect": {
+      "funds_amount": 1600,
+      "player_defends": true
+    },
+    "protected": [
+      "wh_main_emp_art_helblaster_volley_gun"
+    ],
+    "calibration_change": "S4, small-scenario tranche: hold floor, then disclosed Bodyguard at 0 and 5 s observation age. No model battle before review."
   }
 }

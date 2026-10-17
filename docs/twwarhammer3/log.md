@@ -40,6 +40,33 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build (2026-10-16 evening): 94 input jobs; adds the GLM v20 caster win to the page, ladder V1 variants and the Jezzail setup failure to JSON/text; footnotes summarise the ladder |
 
+## 2026-10-17: Small-scenario checks and cheap-reference ladder (b15, in progress)
+
+Owner goal: proceed with the small scenarios and GLM-5.3 / low ladder, in that order,
+within the existing caps. No OpenAI battles are planned. The first small tranche is
+S1/S2/S4; each gets a naive floor and a disclosed public-state diagnostic at 0 and 5 s
+observation age before any model screen. Review outcomes before changing a roster or
+buying a battle. Later small candidates remain subject to the same checks.
+
+The S1 setup/floor check on `15c2462`,
+`bench-b14-s1-floor-20261016`, completed: both armies were lordless, the lobby read back
+1,100 funds, and the battle verified two Horse Raiders against one Halberdier unit.
+The lone AI held until contact. `attack_nearest` lost at 356 s, with 28% of the player's
+men and 68% of the enemy's remaining; zero invalid orders and $0 API spend. It walked
+until contact at about 230 s, so `rush_nearest` is also needed before attributing a
+diagnostic improvement to flanking rather than running.
+
+b15 adds the S2 horse-archer/Slayer and S4 Helblaster-bodyguard declarations plus three
+small diagnostics in `battle/calibration.py`: `FeintFlank`, `CrossKite` and `Bodyguard`.
+Their controller cards disclose their geometry, target preferences and timers. They
+use public visible units only; rejected movement orders can retry, routing units are
+excluded, and ammunition exhaustion changes ranged orders to melee. No model prompt or
+observation contract changes. Engine execution and winnability remain to be checked.
+
+Initial validation: 39 calibration/setup tests passed. New tests check charge/withdraw
+sequencing, hidden-enemy exclusion, refusal retries, ammunition exhaustion and cavalry
+priority without input mutation. Live results follow here.
+
 ## 2026-10-16: README refresh and repository cleanup
 
 Pushed the main README refresh (`ea590eb`): recorded replay animation, scenario index,

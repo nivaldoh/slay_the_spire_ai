@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-16 23:32 UTC: what is running, where each game stands and what comes
+Updated 2026-10-17 00:12 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -9,11 +9,11 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Main README](../README.md) refresh and repository cleanup are complete
 ([record](twwarhammer3/log.md#2026-10-16-readme-refresh-and-repository-cleanup)).
 
-No game or paid API job is running. WH3 [trace export and model-exchange capture](twwarhammer3/traces.md)
-are complete offline (b14); the new summary-capture request setting awaits its first paid
-call. The small-scenario probes and cheap-reference ladder remain next in the
-[owner's order](twwarhammer3/benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night).
-Neither has started since the b14 implementation.
+WH3 small-scenario checks and cheap-reference ladder are active (owner, 2026-10-16).
+The free S1 lobby/walking-floor check completed. No game is running while b15's
+S1/S2/S4 diagnostics are validated and committed. Next: S1 running floor and the
+scripted diagnostics, then GLM-5.3 / low anchor and ladder battles under the existing
+OpenRouter cap. [Live record](twwarhammer3/log.md#2026-10-17-small-scenario-checks-and-cheap-reference-ladder-b15-in-progress).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -45,7 +45,7 @@ command; clear it when the job stops.
   beyond `low` remain unplayed in battle. The six core candidates remain provisional.
 
 The exporter is implemented ([b14](twwarhammer3/log.md#2026-10-16-harness-b14-offline-trace-export-and-model-exchange-capture)).
-Next game work, in the owner's order, awaits the go-ahead
+Game work is authorized and proceeding in the owner's order
 ([decisions](twwarhammer3/benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night)):
 1. Small scenarios: the $0 S1 lobby probe (lordless, 1,100 funds, one-unit AI), then
    scripted floors and disclosed diagnostics for S1, S2 and S4.

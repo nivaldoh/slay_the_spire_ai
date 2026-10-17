@@ -7,9 +7,216 @@ hypothesis; failures of its simple geometry/timing are not evidence of impossibi
 
 import math
 
-from twwarhammer3.battle.scripted import RushNearest, distance
+from twwarhammer3.battle.scripted import Hold, RushNearest, distance
 from twwarhammer3.battle.skills import OUT, SHOOTERS, Skills
 from twwarhammer3.protocol import friendly_units, visible_enemies
+
+
+def _active(units) -> list[dict]:
+    return [unit for unit in units if unit.get("men") and unit.get("x") is not None
+            and unit.get("z") is not None and not OUT.intersection(unit.get("state", []))]
+
+
+def _direction(origin: dict, target: dict) -> tuple[float, float]:
+    dx, dz = target["x"] - origin["x"], target["z"] - origin["z"]
+    length = math.hypot(dx, dz)
+    return (dx / length, dz / length) if length else (0, 1)
+
+
+def _offset(origin: dict, direction: tuple, forward: float, across: float = 0) -> dict:
+    dx, dz = direction
+    return {"x": origin["x"] + dx * forward - dz * across,
+            "z": origin["z"] + dz * forward + dx * across}
+
+
+class SmallDiagnostic(Hold):
+    """Order bookkeeping shared by the three small public-state diagnostics."""
+
+    def __init__(self):
+        self.sent = {}
+        self.now = 0
+        self.bounds = {}
+
+    def observe(self, observation):
+        self.now = observation.get("time_ms", 0) / 1000
+        self.bounds = (observation.get("terrain") or {}).get("bounds") or {}
+        return (_active(friendly_units(observation).values()),
+                _active(visible_enemies(observation).values()))
+
+    def issue(self, unit, order):
+        """Keep a moving goal until it changes materially; retry dropped/rejected orders."""
+        previous, when = self.sent.get(unit["id"], ({}, -math.inf))
+        same = order == previous
+        if order["type"] == previous.get("type") == "move":
+            same = distance(order, previous) < 15
+        if same and (self.now - when < 3 or "idle" not in unit.get("state", [])):
+            return []
+        self.sent[unit["id"]] = (order, self.now)
+        return [order]
+
+    def move(self, unit, point, target):
+        point = dict(point)
+        for axis in ("x", "z"):
+            if f"min_{axis}" in self.bounds and f"max_{axis}" in self.bounds:
+                point[axis] = max(self.bounds[f"min_{axis}"] + 30,
+                                  min(self.bounds[f"max_{axis}"] - 30, point[axis]))
+        if distance(unit, point) < 12:
+            return []
+        facing = math.degrees(math.atan2(target["x"] - point["x"],
+                                        target["z"] - point["z"])) % 360
+        return self.issue(unit, {"unit": unit["id"], "type": "move", "run": True,
+                                 "facing": facing, **point})
+
+    def attack(self, unit, target, mode="melee"):
+        return self.issue(unit, {"unit": unit["id"], "type": "attack", "run": True,
+                                 "mode": mode, "target": target["id"]})
+
+    def acknowledge(self, ack, latency):
+        for result in ack.get("results", []):
+            if not result.get("ok"):
+                self.sent.pop(result.get("unit"), None)
+
+
+class FeintFlank(SmallDiagnostic):
+    """S1: approach on opposite sides, charge together, withdraw and swap roles."""
+
+    card = {"purpose": "Can two light cavalry units beat a braced anti-large block?",
+            "knowledge": "Disclosed S1 strategy: one rider waits 55 m in front while the "
+                         "other goes via a 120 m side waypoint to 80 m behind. Both charge "
+                         "when the flanker arrives; withdraw radially 120 m after 6 s of "
+                         "observed contact, regroup for at least 12 s and swap roles. "
+                         "Only visible positions/states; no hidden targets or path search."}
+
+    def __init__(self):
+        super().__init__()
+        self.phase = "side"
+        self.cycle = 0
+        self.axis = None
+        self.contact_s = None
+        self.withdraw_s = None
+        self.retreats = {}
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        units.sort(key=lambda unit: unit["id"])
+        target = min(enemies, key=lambda enemy: distance(_centre(units), enemy))
+        if len(units) < 2:
+            return self.attack(units[0], target)
+        bait, flanker = units[self.cycle % 2], units[(self.cycle + 1) % 2]
+        if self.axis is None:
+            self.axis = _direction(target, bait)
+        side = _offset(target, self.axis, 0, 120)
+        rear = _offset(target, self.axis, -80)
+        if self.phase == "side" and distance(flanker, side) < 25:
+            self.phase = "rear"
+        if self.phase == "rear" and distance(flanker, rear) < 25:
+            self.phase = "charge"
+            self.contact_s = None
+        if self.phase == "charge":
+            if any("melee" in unit.get("state", []) for unit in units):
+                if self.contact_s is None:
+                    self.contact_s = self.now
+            if self.contact_s is not None and self.now - self.contact_s >= 6:
+                self.phase, self.withdraw_s = "withdraw", self.now
+                self.retreats = {unit["id"]: _offset(target, _direction(target, unit), 120)
+                                 for unit in units}
+        if self.phase == "withdraw":
+            if (self.now - self.withdraw_s >= 12
+                    and all(distance(unit, target) >= 80 for unit in units)):
+                self.cycle += 1
+                self.phase, self.axis = "side", None
+            return [order for unit in units
+                    for order in self.move(unit, self.retreats[unit["id"]], target)]
+        if self.phase == "charge":
+            return [order for unit in units for order in self.attack(unit, target)]
+        front = _offset(target, self.axis, 55)
+        return (self.move(bait, front, target)
+                + self.move(flanker, side if self.phase == "side" else rear, target))
+
+    def metadata(self):
+        return {"type": "feint_flank", "phase": self.phase, "cycles": self.cycle}
+
+
+class CrossKite(SmallDiagnostic):
+    """S2: split horse archers around the target and preserve shooting distance."""
+
+    card = {"purpose": "Can separated horse archers spend their ammunition effectively?",
+            "knowledge": "S2: enable skirmish/fire-at-will, split to opposite sides at "
+                         "120 m, shoot while at 85-145 m and withdraw radially when closer. "
+                         "With no ammunition, charge the remaining visible target. "
+                         "Fixed initial approach axis; no hidden state or path search."}
+
+    def __init__(self):
+        super().__init__()
+        self.axis = None
+        self.positioned = set()
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        units.sort(key=lambda unit: unit["id"])
+        target = min(enemies, key=lambda enemy: distance(_centre(units), enemy))
+        if self.axis is None:
+            self.axis = _direction(target, _centre(units))
+        orders = []
+        for index, unit in enumerate(units):
+            for key in ("skirmish", "fire_at_will"):
+                if unit.get("behaviours", {}).get(key) is False:
+                    orders.append({"unit": unit["id"], "type": "behaviour",
+                                   "behaviour": key, "enabled": True})
+            if not unit.get("ammo"):
+                orders += self.attack(unit, target)
+                continue
+            gap = distance(unit, target)
+            post = _offset(target, self.axis, 30, 115 if index % 2 else -115)
+            if distance(unit, post) <= 25:
+                self.positioned.add(unit["id"])
+            if gap < 85:
+                orders += self.move(unit, _offset(target, _direction(target, unit), 125), target)
+            elif unit["id"] not in self.positioned or gap > 145:
+                orders += self.move(unit, post, target)
+            else:
+                orders += self.attack(unit, target, "ranged")
+        return orders
+
+    def metadata(self):
+        return {"type": "cross_kite", "positioned": sorted(self.positioned)}
+
+
+class Bodyguard(SmallDiagnostic):
+    """S4: shoot the nearest cavalry and intercept beside the gun."""
+
+    card = {"purpose": "Can a single halberd escort preserve a fragile artillery unit?",
+            "knowledge": "S4: the gun shoots cavalry before infantry. Its escort waits "
+                         "25 m toward the nearest cavalry and 20 m to the side, intercepts "
+                         "within 65 m of the gun, and returns after the threat routes. "
+                         "No abilities, hidden targets or predicted paths."}
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        gun = next((unit for unit in units if unit.get("class") == "artillery"), None)
+        if gun is None:
+            return [order for unit in units for order in self.attack(
+                unit, min(enemies, key=lambda enemy: distance(unit, enemy)))]
+        riders = [enemy for enemy in enemies if "cavalry" in enemy.get("class", "")]
+        target = min(riders or enemies, key=lambda enemy: distance(gun, enemy))
+        orders = self.attack(gun, target, "ranged" if gun.get("ammo") else "melee")
+        for escort in units:
+            if escort is gun:
+                continue
+            if distance(gun, target) < 65:
+                orders += self.attack(escort, target)
+            else:
+                orders += self.move(escort, _offset(gun, _direction(gun, target), 25, 20), target)
+        return orders
+
+    def metadata(self):
+        return {"type": "bodyguard"}
 
 
 def _centre(units: list[dict]) -> dict:

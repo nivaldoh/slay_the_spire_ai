@@ -2,13 +2,86 @@
 
 from copy import deepcopy
 
-from twwarhammer3.battle.calibration import CasterSkirmish, CentralDefence, CoordinatedRush
+from twwarhammer3.battle.calibration import (
+    Bodyguard,
+    CasterSkirmish,
+    CentralDefence,
+    CoordinatedRush,
+    CrossKite,
+    FeintFlank,
+)
 from twwarhammer3.protocol import validate_orders
 
 
 def unit(uid, kind, x, z, speed=5, **extra):
     return {"id": uid, "type": kind, "x": x, "z": z, "men": 30, "men0": 30,
             "speed": [2, speed], "class": "infantry", "state": [], **extra}
+
+
+def test_feint_flank_waits_for_rear_position_then_withdraws_after_contact():
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 100),
+            unit("f2", "horse", 10, 100)], "enemy": [unit("e1", "halberds", 0, 0)]}
+    policy = FeintFlank()
+    first = policy.decide(obs)
+    validate_orders(first, obs)
+    assert all(order["type"] == "move" for order in first)
+    flank = next(order for order in first if order["unit"] == "f2")
+    obs["friendly"][1].update(x=flank["x"], z=flank["z"])
+    rear = next(order for order in policy.decide(obs) if order["unit"] == "f2")
+    assert rear["z"] < 0
+    obs["friendly"][1].update(x=rear["x"], z=rear["z"])
+    charge = policy.decide(obs)
+    validate_orders(charge, obs)
+    assert len(charge) == 2 and all(order["type"] == "attack" for order in charge)
+    obs["friendly"][1].update(x=0, z=-5, state=["melee"])
+    obs["time_ms"] = 11000
+    policy.decide(obs)
+    obs["time_ms"] = 18000
+    retreat = policy.decide(obs)
+    validate_orders(retreat, obs)
+    assert policy.phase == "withdraw" and all(order["type"] == "move" for order in retreat)
+
+
+def test_small_diagnostics_do_not_use_hidden_enemies_or_order_routers():
+    for cls in (FeintFlank, CrossKite, Bodyguard):
+        obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 0)],
+               "enemy": [], "evaluation": {"enemy": [unit("e1", "hidden", 5, 5)]},
+               "enemy_roster": [unit("e1", "hidden", 5, 5)]}
+        policy = cls()
+        assert policy.decide(obs) == []
+        obs["enemy"] = obs["enemy_roster"]
+        obs["friendly"][0]["state"] = ["routing"]
+        assert policy.decide(obs) == []
+
+
+def test_kiting_uses_melee_when_ammunition_is_gone_and_retries_refusals():
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "horse_archer", 0, 40, ammo=10,
+           behaviours={"skirmish": False, "fire_at_will": True})],
+           "enemy": [unit("e1", "slayers", 0, 0)]}
+    policy = CrossKite()
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert orders[-1]["type"] == "move" and orders[-1]["z"] > 100
+    assert not any(o["type"] == "move" for o in policy.decide(obs))
+    policy.acknowledge({"results": [{"unit": "f1", "ok": False}]}, {})
+    assert policy.decide(obs)[-1]["type"] == "move"
+    obs["friendly"][0]["ammo"] = 0
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert orders[-1]["mode"] == "melee"
+
+
+def test_bodyguard_prioritises_cavalry_over_closer_infantry():
+    obs = {"time_ms": 1000, "friendly": [
+           unit("f1", "helblaster", 0, 0, ammo=100, **{"class": "artillery"}),
+           unit("f2", "halberds", 0, 20)], "enemy": [
+           unit("e1", "infantry", 0, 20),
+           unit("e2", "yeomen", 40, 0, **{"class": "cavalry"})]}
+    original = deepcopy(obs)
+    orders = Bodyguard().decide(obs)
+    validate_orders(orders, obs)
+    assert len(orders) == 2 and all(order["target"] == "e2" for order in orders)
+    assert obs == original
 
 
 def test_central_defence_uses_an_owned_point_and_keeps_its_initial_commitment():
