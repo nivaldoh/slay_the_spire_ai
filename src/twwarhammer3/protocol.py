@@ -65,6 +65,11 @@ def validate_orders(orders: list, observation: dict) -> None:
     for order in orders:
         if not isinstance(order, dict):
             raise IllegalActionError(f"order is not an object: {order!r}")
+        field = next((key for key, value in order.items()
+                      if value is not None and not isinstance(value, (str, int, float))), None)
+        if field is not None:
+            raise IllegalActionError(f"order field {field!r} must be a string, number, boolean"
+                                     " or null")
         unit, kind = order.get("unit"), order.get("type")
         if unit == "army" and kind == "ability":
             _validate_army_ability(order, observation, friendly, enemies, settings)
@@ -199,7 +204,12 @@ def _validate_ability_target(unit, order, friendly, enemies) -> None:
 
 
 def _finite(value) -> bool:
-    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        return False
+    try:
+        return math.isfinite(value)
+    except OverflowError:  # an integer beyond float range
+        return False
 
 
 def scenario_key(observation: dict) -> str:

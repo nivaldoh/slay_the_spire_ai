@@ -14,7 +14,7 @@ from collections import Counter, deque
 from concurrent.futures import ThreadPoolExecutor
 
 from gameai.ledger import Ledger
-from gameai.llm import InvalidReply, Model
+from gameai.llm import InvalidReply, Model, check_fields
 from gameai.provenance import REPO_ROOT
 from twwarhammer3.battle.llm import (
     ABILITY_SCHEMA,
@@ -25,6 +25,7 @@ from twwarhammer3.battle.llm import (
     NUMBER_OR_NULL,
     REINFORCE_SCHEMA,
     STRING_OR_NULL,
+    describe_dropped,
     describe_orders,
     holds,
     invalid_reply,
@@ -38,10 +39,11 @@ from twwarhammer3.battle.skills import SKILLS, Skills
 from twwarhammer3.protocol import friendly_units
 
 PROMPT_PATH = REPO_ROOT / "configs/twwarhammer3/commander_prompt.md"
-INVALID_RETRIES = 1  # only a reply that is not JSON is invalid; the plan is checked on arrival
+INVALID_RETRIES = 1  # only a reply off the schema is invalid; the plan is checked on arrival
 PLAN_HISTORY = 6
 REPORT_LENGTH = 8
 REPORT_HEADER = "Dropped or rejected since your last plan:\n"
+ABILITY_TYPES = ("ability", "build", "reinforce", "flight")  # the skills give the rest
 ASSIGNMENT_SCHEMA = {
     "type": "object",
     "properties": {"unit": {"type": "string"}, "skill": {"type": "string", "enum": list(SKILLS)},
@@ -62,6 +64,15 @@ REPLY_SCHEMA = {
     "required": ["assignments", "abilities", "reason", "notes"],
     "additionalProperties": False,
 }
+
+
+def parse_plan(text: str) -> dict:
+    reply = check_fields(json.loads(text), REPLY_SCHEMA)
+    # A plan's readers take a missing target, x or z as null.
+    fields = dict(ASSIGNMENT_SCHEMA, required=["unit", "skill"])
+    for index, item in enumerate(reply["assignments"], 1):
+        check_fields(item, fields, f"assignment {index}")
+    return reply
 
 
 def describe_assignment(item: dict) -> str:
@@ -140,7 +151,7 @@ class CommanderPolicy:
     def _ask(self, prompt: str, seen_ms: int) -> tuple[dict, list[dict], int]:
         """On the worker thread: only the call, so all state changes stay on the caller's."""
         try:
-            reply, attempts = self.api.ask(prompt, REPLY_SCHEMA, json.loads, INVALID_RETRIES)
+            reply, attempts = self.api.ask(prompt, REPLY_SCHEMA, parse_plan, INVALID_RETRIES)
         except InvalidReply as error:
             raise invalid_reply(error) from None
         return reply, attempts, seen_ms
@@ -167,7 +178,14 @@ class CommanderPolicy:
                                " enemy, so it was cleared")
                 item = dict(item, target=None)
             self.skills.assign(unit, item, now_ms / 1000)
-        abilities, rejected = split_valid(reply["abilities"], observation)
+        orders = []
+        for order in reply["abilities"]:
+            if isinstance(order, dict) and order.get("type") not in ABILITY_TYPES:
+                dropped.append(f"{describe_dropped(order)}: not an ability, build, reinforce"
+                               " or flight order")
+            else:
+                orders.append(order)
+        abilities, rejected = split_valid(orders, observation)
         dropped += rejected
         if reply["notes"] is not None:
             self.notes = reply["notes"][:NOTES_LIMIT]
@@ -192,8 +210,7 @@ class CommanderPolicy:
                    and holds(friendly[unit_id], order)}
         report = "\n".join(self.report) or "(none)"
         self.report.clear()
-        submitting = [order for order in self.batch
-                      if order["type"] in {"ability", "build", "reinforce", "flight"}]
+        submitting = [order for order in self.batch if order["type"] in ABILITY_TYPES]
         prompt = "\n\n".join([
             "Battle notes:\n" + (self.notes or "(none)"),
             "Recent plans, oldest first:\n" + ("\n".join(self.history) or "(none)"),

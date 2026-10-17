@@ -155,6 +155,50 @@ def test_failed_response_after_a_rejected_reply_keeps_its_feedback(tmp_path, ret
     assert bodies[1]["input"][0]["content"].endswith("invalid: unknown key left. Reply again.")
 
 
+def test_ask_retries_a_reply_nested_too_deeply_to_parse(tmp_path):
+    texts = ["[" * 100000, "[]"]
+
+    def send(body):
+        return {"id": "r", "usage": USAGE, "output": [{"type": "message", "content": [
+            {"type": "output_text", "text": texts.pop(0)}]}]}
+
+    model = api.Model("gpt-6-luna", "none", Ledger(tmp_path / "spend.jsonl", 1.0), send=send,
+                      instructions="Reply.", max_output_tokens=200)
+    value, attempts = model.ask("Go.", {}, json.loads, retries=1)
+    assert value == [] and "recursion" in attempts[0]["error"]
+
+
+FIELDS = {"properties": {"n": {"type": "integer"}, "x": {"type": "number"},
+                         "s": {"type": ["string", "null"]},
+                         "e": {"type": "string", "enum": ["up", "down"]}},
+          "required": ["n", "x", "s"]}
+GOOD = {"n": 1, "x": 1.5, "s": None, "extra": [1]}
+
+
+def test_check_fields_passes_a_reply_with_the_fields_its_schema_allows():
+    assert api.check_fields(GOOD, FIELDS) is GOOD  # extra fields pass; "e" is optional
+    assert api.check_fields(dict(GOOD, x=2, s="a", e="up"), FIELDS)
+
+
+@pytest.mark.parametrize(("value", "message"), [
+    ([GOOD], "plan must be a JSON object"),
+    ({"n": 1, "x": 1}, "plan has no 's' field"),
+    (dict(GOOD, n=True), "plan field 'n' must be integer"),
+    (dict(GOOD, n=1.0), "plan field 'n' must be integer"),
+    (dict(GOOD, x=False), "plan field 'x' must be number"),
+    (dict(GOOD, x=float("nan")), "plan field 'x' must be number"),
+    (dict(GOOD, x=float("-inf")), "plan field 'x' must be number"),
+    (dict(GOOD, x=10**400), "plan field 'x' must be number"),
+    (dict(GOOD, s=0), "plan field 's' must be string or null"),
+    (dict(GOOD, e="left"), "plan field 'e' must be one of up, down"),
+    (dict(GOOD, e=None), "plan field 'e' must be string"),
+])
+def test_check_fields_rejects_what_its_schema_does_not_allow(value, message):
+    with pytest.raises(ValueError) as error:
+        api.check_fields(value, FIELDS, "plan")
+    assert str(error.value) == message
+
+
 def test_wh3_transport_opt_in_records_wall_time_header_and_actual_model(tmp_path, monkeypatch):
     class Response(io.BytesIO):
         headers = {"openai-processing-ms": "1234.5"}

@@ -77,6 +77,29 @@ def test_invalid_replies_are_retried_then_fail_as_policy_failure(tmp_path):
     assert len(error.value.failure["attempts"]) == 3
 
 
+@pytest.mark.parametrize(("bad", "message"), [
+    (reply("1"), "reply field 'choice' must be integer"),
+    (reply(True), "reply field 'choice' must be integer"),
+    (reply(1.0), "reply field 'choice' must be integer"),
+    (reply(1, notes=5), "reply field 'notes' must be string or null"),
+    ({"choice": 1, "reason": "because"}, "reply has no 'notes' field"),
+    ([reply(1)], "reply must be a JSON object"),
+])
+def test_off_schema_replies_are_retried_then_fail_as_policy_failure(tmp_path, bad, message):
+    # Open-weight backends need not enforce the strict schema; a strict one does.
+    agent = policy(tmp_path, bad, reply(0))
+    first = decision()
+    assert agent.choose(first) == first.candidates[0]
+    assert [a.get("error") for a in agent.choice_metadata(first.id)["attempts"]] == [message, None]
+    assert f"previous reply was invalid: {message}." in (
+        agent.api.send.bodies[1]["input"][0]["content"])
+    failing = policy(tmp_path, bad, bad, bad)
+    with pytest.raises(PolicyFailure) as error:
+        failing.choose(decision())
+    assert error.value.failure["kind"] == "invalid_reply"
+    assert [a["error"] for a in error.value.failure["attempts"]] == [message] * 3
+
+
 def test_budget_refuses_a_call_before_sending(tmp_path):
     agent = policy(tmp_path, reply(0), budget=0.0001)
     with pytest.raises(BudgetExhausted):

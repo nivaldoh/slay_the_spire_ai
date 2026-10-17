@@ -30,6 +30,8 @@ TRANSPORT_ATTEMPTS = 3
 TRANSIENT_HTTP = {408, 409, 429, 500, 502, 503, 504}
 CUT_OFF = ("\n\nYour previous reply was cut off at the output limit before the JSON ended."
            " Reply again.")
+JSON_TYPES = {"object": dict, "array": list, "string": str, "integer": int,
+              "number": (int, float), "boolean": bool, "null": type(None)}
 
 
 class APIError(RuntimeError):
@@ -140,6 +142,41 @@ def reasoning_parts(output: list | None) -> list[dict]:
             for i, item in enumerate(output or []) if item.get("type") == "reasoning"
             for field in ("summary", "content")
             for part in item.get(field) or [] if isinstance(part.get("text"), str)]
+
+
+def _is_json(value, kind: str) -> bool:
+    if isinstance(value, bool):
+        return kind == "boolean"
+    if isinstance(value, (int, float)):
+        try:
+            if not math.isfinite(value):
+                return False  # Python's parser accepts NaN and Infinity; JSON has neither
+        except OverflowError:
+            return False  # an integer beyond float range
+    return isinstance(value, JSON_TYPES[kind])
+
+
+def check_fields(value, schema: dict, name: str = "reply"):
+    """``value`` if it is an object holding every field ``schema`` requires, and each of the
+    schema's fields it holds has a type and enum value the schema allows (a boolean is not a
+    number, nor is an integer beyond float range); ValueError, which ``ask`` retries,
+    otherwise. OpenAI enforces strict schemas, but open-weight backends may not. Extra
+    fields pass; items of arrays are the game's to check."""
+    if not isinstance(value, dict):
+        raise ValueError(f"{name} must be a JSON object")
+    for key, spec in schema["properties"].items():
+        if key not in value:
+            if key in schema["required"]:
+                raise ValueError(f"{name} has no {key!r} field")
+            continue
+        field = value[key]
+        kinds = [spec["type"]] if isinstance(spec["type"], str) else spec["type"]
+        if not any(_is_json(field, kind) for kind in kinds):
+            raise ValueError(f"{name} field {key!r} must be {' or '.join(kinds)}")
+        if "enum" in spec and field not in spec["enum"]:
+            allowed = ", ".join(map(str, spec["enum"]))
+            raise ValueError(f"{name} field {key!r} must be one of {allowed}")
+    return value
 
 
 def _output_text(response: dict) -> str:
@@ -263,10 +300,10 @@ class Model:
 
     def ask(self, prompt: str, schema: dict, parse, retries: int) -> tuple[object, list[dict]]:
         """The parsed reply and every attempt. A reply that ``parse`` rejects with
-        ValueError is retried with the error appended to the prompt, or with a cut-off
-        notice when a reply cut at the output limit is not valid JSON; a failed response is
-        resent unchanged. The last failure is raised when retries run out; an APIError then
-        carries the attempts made so far as ``attempts``."""
+        ValueError, or nests too deeply to parse, is retried with the error appended to the
+        prompt, or with a cut-off notice when a reply cut at the output limit is not valid
+        JSON; a failed response is resent unchanged. The last failure is raised when retries
+        run out; an APIError then carries the attempts made so far as ``attempts``."""
         attempts, feedback = [], ""
         self.exchange_count += 1
         exchange = {"id": f"m{self.exchange_count}", "prompt": prompt, "attempts": attempts}
@@ -288,7 +325,7 @@ class Model:
                     raise failure
                 try:
                     return parse(attempt["text"]), attempts
-                except ValueError as error:
+                except (ValueError, RecursionError) as error:
                     attempt["error"] = str(error)
                     feedback = (CUT_OFF if attempt["status"] == "incomplete"
                                 and isinstance(error, json.JSONDecodeError) else

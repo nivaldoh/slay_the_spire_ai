@@ -12,7 +12,7 @@ import re
 from collections import deque
 
 from gameai.ledger import Ledger
-from gameai.llm import InvalidReply, Model
+from gameai.llm import InvalidReply, Model, check_fields
 from gameai.provenance import REPO_ROOT
 from twwarhammer3.battle.scripted import distance
 from twwarhammer3.protocol import (
@@ -499,7 +499,7 @@ def render_prompt(observation: dict, notes: str, history: list[str], last_seen: 
 
 
 def parse_reply(text: str, observation: dict) -> dict:
-    reply = json.loads(text)
+    reply = check_fields(json.loads(text), REPLY_SCHEMA)
     try:
         validate_orders(reply["orders"], observation)
     except IllegalActionError as error:
@@ -515,17 +515,24 @@ def split_valid(orders: list[dict], observation: dict) -> tuple[list[dict], list
             validate_orders(kept + [order], observation)
             kept.append(order)
         except IllegalActionError as error:
-            dropped.append(f"{describe_orders([order])}: {error}")
+            dropped.append(f"{describe_dropped(order)}: {error}")
     return kept, dropped
+
+
+def describe_dropped(order) -> str:
+    try:
+        return describe_orders([order])
+    except (AttributeError, KeyError, TypeError, ValueError, OverflowError):  # off the schema
+        return json.dumps(order)
 
 
 def salvage(attempts: list[dict], observation: dict) -> tuple[dict, list[str]] | None:
     """The last attempt's reply without the orders that are still invalid, so one order
     the model keeps repeating (a cast on cooldown, say) does not end the battle; None if
-    that reply is not even JSON."""
+    that reply is not even a JSON object with the reply's fields."""
     try:
-        reply = json.loads(attempts[-1]["text"])
-    except ValueError:
+        reply = check_fields(json.loads(attempts[-1]["text"]), REPLY_SCHEMA)
+    except (ValueError, RecursionError):
         return None
     kept, dropped = split_valid(reply["orders"], observation)
     return dict(reply, orders=kept), dropped
