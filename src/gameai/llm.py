@@ -24,8 +24,7 @@ from gameai.ledger import Ledger
 from gameai.providers import OPENAI, get_provider, routing, validate
 
 API_URL = OPENAI.url
-PRICES = OPENAI.prices  # existing Spire imports keep their OpenAI defaults
-EFFORTS = OPENAI.efforts["gpt-6-luna"]
+PRICES = OPENAI.prices
 TRANSPORT_ATTEMPTS = 3
 TRANSIENT_HTTP = {408, 409, 429, 500, 502, 503, 504}
 
@@ -125,6 +124,18 @@ def post(key: str, body: dict, attempts: int = TRANSPORT_ATTEMPTS, *,
                 detail = str(error).replace(key, "<key>")
                 raise APIError(f"{type(error).__name__}: {detail}", uncertain) from None
         time.sleep(2**attempt)
+
+
+def reasoning_parts(output: list | None) -> list[dict]:
+    """Text parts of returned reasoning items, with their provider type, field and item index.
+
+    OpenAI returns summaries (``summary_text``); open-weight models through OpenRouter return
+    the reasoning itself (``reasoning_text`` in ``content``).
+    """
+    return [dict(part, item_index=i, field=field)
+            for i, item in enumerate(output or []) if item.get("type") == "reasoning"
+            for field in ("summary", "content")
+            for part in item.get(field) or [] if isinstance(part.get("text"), str)]
 
 
 def _output_text(response: dict) -> str:

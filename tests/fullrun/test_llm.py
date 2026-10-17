@@ -50,7 +50,10 @@ def test_choice_updates_notes_history_ledger_and_metadata(tmp_path):
     assert metadata["reason"] == "because" and metadata["notes"] == "Jaw Worm hits hard."
     assert "Choices:\n0: play Strike (1 attack) -> Jaw Worm [1]" in metadata["prompt"]
     body = agent.api.send.bodies[0]
-    assert body["reasoning"] == {"effort": "low"} and body["store"] is False
+    assert body["reasoning"] == {"effort": "low", "summary": "auto"} and body["store"] is False
+    exchange = next(agent.api.drain_exchanges())
+    assert exchange["prompt"] == metadata["prompt"]
+    assert exchange["attempts"][0]["request"] == body and "output" in exchange["attempts"][0]
     assert body["text"]["format"]["strict"] is True
     agent.choose(decision())
     second_prompt = agent.api.send.bodies[1]["input"][0]["content"]

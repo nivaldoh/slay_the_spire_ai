@@ -4,8 +4,8 @@ import argparse
 import json
 from pathlib import Path
 
-from gameai.llm import EFFORTS, PRICES
-from spire.fullrun.llm import LEDGER_PATH
+from gameai.providers import PROVIDERS, validate
+from spire.fullrun.llm import LEDGERS
 from spire.fullrun.stats import RESULTS_PATH
 
 
@@ -61,13 +61,17 @@ def main() -> int:
         "--learning-rate", type=float, help="PPO Adam learning rate (default: 0.0003)"
     )
     play = commands.add_parser("play", help="Full runs: play complete runs with an API model")
-    play.add_argument("--model", required=True, choices=sorted(PRICES))
-    play.add_argument("--effort", default="low", choices=EFFORTS)
+    play.add_argument("--provider", default="openai", choices=PROVIDERS)
+    play.add_argument("--model", required=True,
+                      choices=sorted({m for p in PROVIDERS.values() for m in p.prices}))
+    play.add_argument("--effort", default="low",
+                      choices=sorted({e for p in PROVIDERS.values() for v in p.efforts.values()
+                                      for e in v}))
     play.add_argument("--seed", type=_seed, action="append", dest="seeds", required=True,
                       help="Alphanumeric game seed; repeat for several runs")
     play.add_argument("--budget-usd", type=float, required=True,
                       help="Hard cap on the ledger's total spend, including earlier jobs")
-    play.add_argument("--ledger", type=Path, default=LEDGER_PATH)
+    play.add_argument("--ledger", type=Path, help="override the provider's ledger")
     play.add_argument("--results", type=Path, default=RESULTS_PATH,
                       help="Results register that gets one row per run")
     play.add_argument("--max-actions", type=int, default=4000)
@@ -82,7 +86,8 @@ def main() -> int:
     watch = commands.add_parser("watch", help="Full runs: wait for a job's next run, stall or end")
     watch.add_argument("job", type=Path, help="A job directory under runs/fullrun")
     spend = commands.add_parser("spend", help="Full runs: total the API spend ledger")
-    spend.add_argument("--ledger", type=Path, default=LEDGER_PATH)
+    spend.add_argument("--provider", default="openai", choices=PROVIDERS)
+    spend.add_argument("--ledger", type=Path, help="override the provider's ledger")
     stats = commands.add_parser("stats", help="Full runs: milestones from the results register")
     stats.add_argument("--rebuild", action="store_true",
                        help="Rewrite the register from every job under runs/fullrun")
@@ -206,15 +211,21 @@ def main() -> int:
         from spire.fullrun.llm import LLMPolicy
         from spire.fullrun.play import play as run_play
 
+        try:
+            validate(args.provider, args.model, args.effort)
+        except ValueError as error:
+            parser.error(str(error))
         config = vars(args).copy()
         output = config.pop("output")
         config.pop("command")
-        config["ledger"] = str(config["ledger"])
+        config["ledger"] = str(args.ledger or LEDGERS[args.provider])
         config["results"] = str(config["results"])
-        ledger = Ledger(args.ledger, args.budget_usd)
-        send = partial(post, api_key())  # a missing key fails here, before any launch
+        ledger = Ledger(Path(config["ledger"]), args.budget_usd)
+        # A missing key fails here, before any launch.
+        send = partial(post, api_key(args.provider), provider=args.provider,
+                       record_transport=True)
         manifest = run_play(output, config, policy_factory=lambda: LLMPolicy(
-            args.model, args.effort, ledger, send=send))
+            args.model, args.effort, ledger, send=send, provider=args.provider))
         print(f"Evidence: {output.resolve()}")
         return 0 if manifest["status"] == "completed" else 1
     if args.command == "digest":
@@ -230,7 +241,8 @@ def main() -> int:
     if args.command == "spend":
         from gameai.ledger import Ledger
 
-        print(f"${Ledger(args.ledger, budget_usd=0).spent:.4f} spent ({args.ledger})")
+        path = args.ledger or LEDGERS[args.provider]
+        print(f"${Ledger(path, budget_usd=0).spent:.4f} spent ({path})")
         return 0
     if args.command == "stats":
         from spire.fullrun.stats import JOBS_ROOT, rebuild, summary

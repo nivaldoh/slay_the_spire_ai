@@ -5,7 +5,8 @@ are enforced routing ceilings, not the catalogue's cheapest advertised endpoint.
 Checked 2026-10-16; actual OpenRouter charges come from the response's usage.cost.
 Reasoning efforts are per model, each accepted by one live schema call on 2026-10-16:
 OpenAI's lists come from the API's own unsupported-value errors, OpenRouter's from the
-catalogue's supported_efforts.
+catalogue's supported_efforts. A model whose catalogue entry lists none is on/off: "none"
+and "medium" (OpenRouter's level for reasoning enabled).
 """
 
 from dataclasses import dataclass
@@ -31,10 +32,18 @@ OPENAI = Provider(
 OPENROUTER = Provider(
     "https://openrouter.ai/api/v1/responses", "OPENROUTER_API_KEY", "OPENROUTER_API_KEY_FILE",
     {"z-ai/glm-5.3": (1.40, 1.40, 4.80), "moonshotai/kimi-k3": (3.00, 3.00, 15.00),
-     "stepfun/step-5-preview": (1.00, 1.00, 2.70)},
+     "stepfun/step-5-preview": (1.00, 1.00, 2.70), "qwen/qwen3.6-35b-a3b": (0.15, 0.15, 1.00)},
     {"z-ai/glm-5.3": ("low", "high", "max"), "moonshotai/kimi-k3": ("none", "low", "high", "max"),
-     "stepfun/step-5-preview": ("low", "medium", "high")},
+     "stepfun/step-5-preview": ("low", "medium", "high"),
+     # On/off: the catalogue lists no effort levels. Live 2026-10-17, every effort value was
+     # accepted, "none" did not reason, and low to max all reasoned 1.3k-4k tokens.
+     "qwen/qwen3.6-35b-a3b": ("none", "medium")},
 )
+# Per-model request fields, sent and recorded with every request. Qwen3.6-35B-A3B is the
+# open-weight model to fine-tune: its baseline runs at fp8 or better (its cheapest endpoint
+# is fp4) with the catalogue's default sampling made explicit.
+ROUTES = {"qwen/qwen3.6-35b-a3b": {"quantizations": ["fp8", "bf16"]}}
+SAMPLING = {"qwen/qwen3.6-35b-a3b": {"temperature": 1.0, "top_p": 0.95}}
 PROVIDERS = {"openai": OPENAI, "openrouter": OPENROUTER}
 
 
@@ -56,8 +65,11 @@ def validate(provider: str, model: str, effort: str) -> None:
 
 
 def routing(provider: str, model: str) -> dict:
+    """Request fields that route and sample ``model`` beyond the transport's own."""
     if provider == "openai":
         return {}
     price_in, _, price_out = get_provider(provider).prices[model]
     return {"provider": {"require_parameters": True,
-                         "max_price": {"prompt": price_in, "completion": price_out, "request": 0}}}
+                         "max_price": {"prompt": price_in, "completion": price_out, "request": 0},
+                         **ROUTES.get(model, {})},
+            **SAMPLING.get(model, {})}

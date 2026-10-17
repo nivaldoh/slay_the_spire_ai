@@ -14,6 +14,7 @@ from collections import Counter
 from functools import lru_cache
 from pathlib import Path
 
+from gameai.llm import reasoning_parts
 from gameai.provenance import REPO_ROOT, sha256
 from twwarhammer3.battle.controllers import MODEL_POLICIES, policy_parts
 from twwarhammer3.battle.report import shared_measures
@@ -176,11 +177,7 @@ def _attempts(record: dict, system: str | None, manifest: dict) -> list[dict]:
                     record["issues"].append("missing_retry_prompt")
         reasoning = None
         if "output" in raw:
-            reasoning = [dict(part, item_index=i, field=field)
-                         for i, item in enumerate(raw["output"] or [])
-                         if item.get("type") == "reasoning"
-                         for field in ("summary", "content")
-                         for part in item.get(field) or [] if isinstance(part.get("text"), str)]
+            reasoning = reasoning_parts(raw["output"])
         elif "transport_error" not in raw:
             record["issues"].append("reasoning_not_recorded")
         attempt.update(user_prompt=user, system_prompt=instructions,

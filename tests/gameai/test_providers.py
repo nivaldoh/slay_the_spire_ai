@@ -9,7 +9,7 @@ import pytest
 
 from gameai import llm
 from gameai.ledger import BudgetExhausted, Ledger
-from gameai.providers import OPENROUTER, validate
+from gameai.providers import OPENROUTER, routing, validate
 
 SCHEMA = {"type": "object", "properties": {"ok": {"type": "boolean"}},
           "required": ["ok"], "additionalProperties": False}
@@ -23,7 +23,8 @@ def reply(**fields):
 
 
 def model(tmp_path, send, budget=1, name="z-ai/glm-5.3"):
-    return llm.Model(name, "low", Ledger(tmp_path / "ledger.jsonl", budget),
+    effort = OPENROUTER.efforts[name][-1]
+    return llm.Model(name, effort, Ledger(tmp_path / "ledger.jsonl", budget),
                      instructions="Reply with JSON.", max_output_tokens=256,
                      send=send, provider="openrouter")
 
@@ -65,8 +66,11 @@ def test_reasoning_efforts_are_declared_per_model():
     validate("openai", "gpt-6.1-sol", "max")
     with pytest.raises(ValueError, match="gpt-6.1-sol: use an effort in low"):
         validate("openai", "gpt-6.1-sol", "none")
+    validate("openrouter", "qwen/qwen3.6-35b-a3b", "none")
+    validate("openrouter", "qwen/qwen3.6-35b-a3b", "medium")
     for model, effort in [("z-ai/glm-5.3", "none"), ("z-ai/glm-5.3", "medium"),
-                          ("stepfun/step-5-preview", "max")]:
+                          ("stepfun/step-5-preview", "max"), ("qwen/qwen3.6-35b-a3b", "low"),
+                          ("qwen/qwen3.6-35b-a3b", "high")]:
         with pytest.raises(ValueError, match=f"{model}: use an effort in"):
             validate("openrouter", model, effort)
 
@@ -167,3 +171,12 @@ def test_incomplete_empty_response_keeps_its_charge_and_failure_evidence(tmp_pat
 def test_nonfinite_or_negative_budgets_cannot_disable_the_cap(tmp_path, budget):
     with pytest.raises(ValueError, match="finite and nonnegative"):
         Ledger(tmp_path / "ledger", budget)
+
+
+def test_the_model_to_fine_tune_routes_at_fp8_or_better_with_explicit_sampling():
+    route = routing("openrouter", "qwen/qwen3.6-35b-a3b")
+    assert route["provider"]["quantizations"] == ["fp8", "bf16"]
+    assert route["provider"]["require_parameters"] is True
+    assert (route["temperature"], route["top_p"]) == (1.0, 0.95)
+    assert "quantizations" not in routing("openrouter", "z-ai/glm-5.3")["provider"]
+    assert "temperature" not in routing("openrouter", "z-ai/glm-5.3")

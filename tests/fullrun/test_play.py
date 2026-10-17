@@ -127,3 +127,27 @@ def test_budget_exhaustion_ends_the_run_and_stops_the_job(tmp_path, harness):
     [row] = csv.DictReader(results.open())
     assert (row["job"], row["run"], row["seed"], row["outcome"]) == (
         "job", "run-0000", "SEEDA", "budget_exhausted")
+
+
+def test_a_failed_model_decision_keeps_its_prompt_and_attempts_in_the_trace(tmp_path, harness):
+    from gameai.ledger import Ledger
+    from spire.fullrun.llm import LLMPolicy
+
+    sessions, sent = harness
+    sessions.append([MENU, combat_message()])
+    replies = iter(["not json"] * 3)
+
+    def send(body):
+        return {"id": "r", "status": "completed", "output": [{"type": "message", "content": [
+            {"type": "output_text", "text": next(replies)}]}],
+            "usage": {"input_tokens": 10, "output_tokens": 5}}
+
+    agent = LLMPolicy("gpt-6-luna", "low", Ledger(tmp_path / "spend.jsonl", 1.0), send=send,
+                      system_prompt="Play well.")
+    result = play.play_run(tmp_path / "run", {**CONFIG, "seed": "SEEDA"}, agent)
+    assert result["status"] == "policy_failure" and sent == ["START IRONCLAD 0 SEEDA"]
+    trace = [json.loads(line) for line in (tmp_path / "run/trace.jsonl").read_text().splitlines()]
+    [exchange] = [event for event in trace if event["kind"] == "model_exchange"]
+    assert exchange["prompt"].startswith("Run notes:") and len(exchange["attempts"]) == 3
+    assert exchange["attempts"][0]["request"]["instructions"] == "Play well."
+    assert exchange["error"]["type"] == "InvalidReply"

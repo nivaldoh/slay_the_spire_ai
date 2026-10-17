@@ -58,6 +58,13 @@ def _summary(state: dict) -> dict:
     }
 
 
+def _record_exchanges(policy, event) -> None:
+    """Finished model requests, failed ones included, each with its prompt and attempts."""
+    api = getattr(policy, "api", None)
+    for exchange in api.drain_exchanges() if api is not None else ():
+        event("model_exchange", **exchange)
+
+
 def _decide(message: dict, policy, session_id: str, sequence: int, result: dict, event) -> str:
     """The policy's command for this state; a forced single choice skips the policy."""
     decision = decisions.decision_from_message(message, session_id=session_id, sequence=sequence)
@@ -65,7 +72,10 @@ def _decide(message: dict, policy, session_id: str, sequence: int, result: dict,
         choice, behavior = decision.candidates[0], {"type": "forced"}
     else:
         result["policy_calls"] += 1
-        choice = policy.choose(decision)
+        try:
+            choice = policy.choose(decision)
+        finally:
+            _record_exchanges(policy, event)
         if choice not in decision.candidates:
             raise IllegalActionError("Choice is not a current candidate")
         behavior = policy.choice_metadata(decision.id)
@@ -180,6 +190,7 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
         "scope": "full_run",
         "observation_contract": decisions.OBSERVATION_CONTRACT,
         "system_prompt_sha256": sha256(SYSTEM_PROMPT_PATH),
+        "model_exchange_version": 1,
         "status": "running",
         "runs": [],
     }

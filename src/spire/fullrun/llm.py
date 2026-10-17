@@ -3,7 +3,8 @@
 This file and ``configs/llm/`` are the autoresearch loop's editable surface; transport,
 prices and spend live in ``gameai.llm``. Run memory is bounded: model-written notes
 (rewritten through the reply's ``notes`` field) and the last few decisions. No transcript
-accumulates.
+accumulates. Every model exchange (request body, output items and reasoning text, failed
+requests included) is captured for the trace and later export.
 """
 
 from __future__ import annotations
@@ -22,8 +23,11 @@ from spire.protocol import Decision, PolicyFailure
 SYSTEM_PROMPT_PATH = REPO_ROOT / "configs/llm/system_prompt.md"
 # Short rules notes for enemies the model was seen to misplay, keyed by monster ID.
 MONSTER_NOTES_PATH = SYSTEM_PROMPT_PATH.with_name("monsters.json")
-# Every full-run job shares this spend file, and so one budget; other games keep their own.
+# Every full-run job shares its provider's spend file, and so one budget per provider;
+# other games keep their own.
 LEDGER_PATH = REPO_ROOT / "runs/llm-spend.jsonl"
+OPENROUTER_LEDGER_PATH = LEDGER_PATH.with_name("spire-openrouter-spend.jsonl")
+LEDGERS = {"openai": LEDGER_PATH, "openrouter": OPENROUTER_LEDGER_PATH}
 MAX_OUTPUT_TOKENS = 4000
 NOTES_LIMIT = 2000
 HISTORY_LENGTH = 12
@@ -224,10 +228,10 @@ class LLMPolicy:
     """One instance per run: its notes and history are that run's only memory."""
 
     def __init__(self, model: str, effort: str, ledger: Ledger, *, send=None,
-                 system_prompt: str | None = None):
-        self.api = Model(model, effort, ledger, send=send,
+                 system_prompt: str | None = None, provider: str = "openai"):
+        self.api = Model(model, effort, ledger, send=send, provider=provider,
                          instructions=system_prompt or SYSTEM_PROMPT_PATH.read_text(),
-                         max_output_tokens=MAX_OUTPUT_TOKENS)
+                         max_output_tokens=MAX_OUTPUT_TOKENS, record_exchanges=True)
         self.totals = self.api.totals
         self.monster_notes = json.loads(MONSTER_NOTES_PATH.read_text())
         self.notes = ""
@@ -269,8 +273,9 @@ class LLMPolicy:
         prompt = render_prompt(decision, self.notes, list(self.history), self.monster_notes,
                                self._reminders(observation))
         self._metadata = metadata = {
-            "type": "llm", "model": self.api.name, "effort": self.api.effort,
-            "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(), "prompt": prompt,
+            "type": "llm", "provider": self.api.provider, "model": self.api.name,
+            "effort": self.api.effort, "prompt": prompt,
+            "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
         }
         try:
             reply, metadata["attempts"] = self.api.ask(
