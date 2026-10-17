@@ -35,7 +35,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b18 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | b18 adds S3/S5/S6 and the Bodyguard target fix. b17 checks: S2 Yeomen floor won, S4 Bodyguard won at 5 s only, swarm-Slayer setup engaged |
+| benchmark harness | b19 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | b18 adds S3/S5/S6 and the Bodyguard target fix. b17 checks: S2 Yeomen floor won, S4 Bodyguard won at 5 s only, swarm-Slayer setup engaged |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
@@ -80,6 +80,87 @@ with disclosed diagnostics (`battle/calibration.py`), outside the core selection
 | S3 | `emp-handgunners-dwf-warriors` | Spearmen + 2 Handgunners (1,550) / 2 Dwarf Warriors (900) | 1,600 | `Crossfire`: spearmen pin the nearest unit; once it is in melee each gun takes a post 100 m away at its bearing +-80 degrees and shoots only it; fire-at-will off |
 | S5 | `emp-wizard-emp-swordsmen` | Bright Wizard + Spearmen (600) / 2 Swordsmen (750), Empire mirror | 800 | `SpellWindow`: wizard 100 m behind its line; Burning Head along two enemies clear of friends, else Flame Storm on an unengaged enemy clear of friends, else Fireball |
 | S6 | `emp-knights-emp-swordsmen` | Swordsmen + Empire Knights (1,225) / 3 Swordsmen (1,125), Empire mirror | 1,250 | `HammerAnvil`: infantry pins; knights wait, ride round to 70 m behind the pinned unit, charge, pull out after 8 s or a rout, repeat |
+
+Queue B (`calibration/queue-b18-20261017.json`, `c3c3c29`):
+
+| Job | Check | Outcome | Battle time | Notes |
+|---|---|---|---|---|
+| `bench-b18-s4-bodyguard-r2-20261017` ep 0 | S4 Bodyguard with target commitment, fresh | Lost | 269 s | Gun fired 30 rounds, routed at 93 s; Yeomen left 10 and 9 of 45 |
+| same, ep 1 | 5.41 s mean age | Won | 534 s | Gun lost again (routed 188 s); both Yeomen units destroyed to 1 man, then the Men-at-arms routed |
+| `bench-b18-s2-hard-floor-20261017` | S2 Yeomen floor at modifier 1.1 | Won | 330 s | 88 of 90 riders left; Slayers to 1 man with 1,144 arrows spent |
+
+| `bench-b18-s1-glm-20261017` ep 0 | S1, GLM-5.3 / low (`llm_rules`) | Lost | 173 s | 30% own / 76% enemy men; $0.084; mean delay 4.3 s |
+| same, ep 1 | S1, GLM-5.3 / low | Lost | 183 s | 29% / 71%; $0.083; 2 routing refusals |
+
+GLM named the right play and did not execute it. Its first reasoning reads "Cycle-charge
+from both sides. Move f1 to west flank, f2 to east flank, then converge", and its
+notes plan "a simultaneous two-flank charge". The orders it sent were two direct
+`attack` orders on the halberds from 530 m, which the engine carries out as a frontal
+charge (approach 1-2 degrees off the enemy front), in both battles. The outcomes match
+the frontal floors. S1 thus separates the disclosed flank (a fresh-observation win)
+from this model's play, and the failure is executing a stated plan, not knowing it.
+Review: `calibration/s1-glm-review-20261017.json`.
+
+| `bench-b18-siege-anchor-glm-20261017` | Siege anchor, GLM-5.3 / low | Lost | 606 s | 31% / 46%; $0.456; mean delay 7.67 s (max 34.8 s); key building held throughout (victory_held 0.93) |
+
+GLM's siege reference lost on morale, not on the objective: the army routed at 606 s
+with about 600 s left on a timer that favours the defender. It held the outer wall and
+gatehouse instead of trading territory: six of eight units never left their start
+line. It charged the Bull Centaur reserve into Trolls at the gate at 62 s, seven
+seconds after a note keeping it in reserve; the Centaurs routed at 327 s, and five more
+units routed between 340 and 460 s before an army-losses shock broke the rest. It spent
+5,364 of 6,000 supplies at 5 s on six cheap piercing towers 120 m or more behind its
+line, then let income pile up unspent (4,255). Plan and orders diverged again: casts announced
+as flight orders for a unit that cannot fly, a withdrawal sent as an attack, a reason
+reading "placeholder", and two replies of 12-13k characters that repeated one order
+until the JSON broke. The won `gpt-6.1-sol` battle (`bench-b12-m1c-siege-20261016`
+episode 1) withdrew the whole army under its towers at 5 s, kept the reserve until
+284 s and won at 538 s. On this anchor Sol 6.1 won 3/3, Sol 3/4, Luna 1/4, GLM 0/1.
+GLM's siege ladder stops at the anchor; one more reference battle follows in queue C.
+
+The swarm reference, `bench-b18-swarm-anchor-glm-20261017`, also lost: 536 s, 36% own /
+49% enemy men left, 12 invalid orders, mean delay 7.8 s, $0.403. On this anchor Sol 6.1
+won 3/3, Sol 2/3, Luna 0/4. With one battle per anchor, GLM-5.3 / low sits at or below
+Luna on siege and swarm. *Delegated:* its added-factor steps (siege with three
+cavalry, swarm with two Slayers) are not played with GLM, because a step above a lost
+anchor says little. They wait for the stronger models, as planned. Queue C adds a
+second reference battle on each anchor instead.
+
+S3's first live check (`bench-b18-s3-floor-20261017`) passed setup: lordless Spearmen and two Handgunners at 1,600 funds against two Dwarf Warriors units. The attack-nearest floor won at 433 s: the Spearmen routed at 201 s with 29 of 90 left, but the guns kept firing (561 and 734 of 1,496 rounds spent), one gun unit routed briefly when caught in melee, and both dwarf units routed (9 and 45 of 75 left). Too easy under the floor rule. *Delegated:* step 2, `emp-handgunners-dwf-warriors-3`, adds a third Dwarf Warriors unit (the draft's first named step); funds stay 1,600.
+
+S4's pattern repeated, but in both jobs the fresh episode was the first battle and the
+delayed one the rematch, so delay and episode order are confounded. Queue C runs four
+episodes with rotation seed 4 (5, 0, 0, 5 s) to separate them. In every S4 battle the
+riders reached the gun around 70 s, after about 30-50 of its 594 rounds; the escort's
+melee, not the gun, decided the wins.
+
+S2 did not bind at either stat step: the game's own skirmish mode does the kiting, and
+both attack-nearest floors won. *Delegated:* one last S2 step, the draft's named decoy
+(`brt-archers-dwf-slayers-decoy`: one Dwarf Warriors unit added at modifier 1.0, funds
+1,500), with `CrossKite` now preferring visible Slayers (disclosed). If its floor also
+wins, or it looks unwinnable, S2 is set aside for the owner's review.
+
+Queue B stopped at its seventh job: the S5 lobby refused readiness ("a player has
+spent too much on their army setup") at 800 funds, although the database costs, read
+with `scripts/wh3_db.py` from a freshly downloaded RPFM schema, sum to 600 (wizard 250,
+spearmen 350) and 750. A character's lobby price evidently exceeds its database cost.
+No battle started; the S6 floor did not run. Database costs otherwise match the draft
+(Slayers 900, so the S2 decoy needs its 1,500 funds).
+
+b19 (`wh3-b19-large`, merged between queues) adds:
+- L1 `emp-pitched-grn-20`: the draft's 20-unit Empire and Greenskin armies with lords,
+  Taurox, 2400 s; protected wizard and guns. Setup/scale check only; no scripted win
+  is expected.
+- L2 `ksl-ffa-grn-dwf-12`: three-way free-for-all on `ffa_04`, 2400 s, Kislev's 12
+  drafted units against AI Greenskins and Dwarfs. The two AI rosters are new choices
+  sized near the draft's totals. `setup.py` already adds AI slots to match the armies.
+- S7 `dwf-longbeards-emp-swordsmen` (2 Longbeards defending against 4 Swordsmen) with
+  the disclosed `CornerHold` diagnostic: take the nearest map corner the army reaches
+  before the enemy, form a line of two facing the map centre, and hold.
+- S2's decoy step and S3's three-unit step (above).
+- Funds headroom where characters or exact totals risk the S5 refusal: S5 1,200, S7
+  1,600, L1 12,000 (draft 10,500), L2 9,000 (7,500). Rosters are fixed, so funds only cap
+  recruitment; the change is recorded in each `calibration_change`.
 
 Live checks still owed: lordless recruitment at these funds, whether the wizard becomes
 the commanding unit, its Lore of Fire ability keys (SpellWindow matches `burning_head`,

@@ -10,12 +10,16 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 ([record](twwarhammer3/log.md#2026-10-16-readme-refresh-and-repository-cleanup)).
 
 Overnight goal (2026-10-17 04:00 UTC, owner away until 13:00 UTC): continue the
-benchmark scenario implementation; game jobs end before 13:00 UTC. Queue A (free b17
-checks) completed at 04:32 UTC; b18 (S3, S5, S6 and the Bodyguard fix) is on `main`.
-Running: WH3 queue `runs/twwarhammer3/calibration/queue-b18-20261017.json`, started
-04:35 UTC (S4 Bodyguard r2, S2 hard floor, GLM S1 screen and siege/swarm anchors, then
-S3/S5/S6 setup floors). Watch: `uv run python -m twwarhammer3 watch`. Results so far:
+benchmark scenario implementation; game jobs end before 13:00 UTC. Queues A (free b17
+checks) and B (b18 checks, GLM S1 screen and siege/swarm references) are done; B stopped
+at the S5 lobby (funds). b19 (L1, L2, S7, S2/S3 steps, funds headroom) is on `main`.
+Running: WH3 queue `runs/twwarhammer3/calibration/queue-b19-20261017.json`, started
+05:55 UTC (free S4/S2/S3 checks, GLM S4 screen, an S1 reasoning-mode pilot, second
+GLM anchors, then S6/S7/S5 setup floors). Watch: `uv run python -m twwarhammer3 watch`.
+Results and delegated choices:
 [overnight entry](twwarhammer3/log.md#2026-10-17-overnight-tranche-harness-b18-s3-s5-s6).
+Unmerged for the owner: `wh3-rules-v21-attack-path` (`llm_rules` v21 states the attack
+route), drafted after GLM's S1 plan/order mismatch.
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
