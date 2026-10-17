@@ -33,8 +33,9 @@ CUT_OFF = ("\n\nYour previous reply was cut off at the output limit before the J
 
 
 class APIError(RuntimeError):
-    """Transport or service failure: infrastructure, never a gameplay outcome. Only a failed
-    response is ``retryable``: ``Model.ask`` resends the same request while retries remain."""
+    """Transport or service failure: infrastructure, never a gameplay outcome. ``retryable``
+    names the failure kind, a failed response, which ``Model.ask`` resends unchanged while
+    retries remain; it stays set on the one raised after they run out."""
 
     def __init__(self, message: str, uncertain_attempts: int = 0, retryable: bool = False):
         super().__init__(message)
@@ -263,8 +264,9 @@ class Model:
     def ask(self, prompt: str, schema: dict, parse, retries: int) -> tuple[object, list[dict]]:
         """The parsed reply and every attempt. A reply that ``parse`` rejects with
         ValueError is retried with the error appended to the prompt, or with a cut-off
-        notice when the reply hit the output limit; a failed response is resent unchanged.
-        The last failure is raised when retries run out."""
+        notice when a reply cut at the output limit is not valid JSON; a failed response is
+        resent unchanged. The last failure is raised when retries run out; an APIError then
+        carries the attempts made so far as ``attempts``."""
         attempts, feedback = [], ""
         self.exchange_count += 1
         exchange = {"id": f"m{self.exchange_count}", "prompt": prompt, "attempts": attempts}
@@ -288,10 +290,13 @@ class Model:
                     return parse(attempt["text"]), attempts
                 except ValueError as error:
                     attempt["error"] = str(error)
-                    feedback = (CUT_OFF if attempt["status"] == "incomplete" else
+                    feedback = (CUT_OFF if attempt["status"] == "incomplete"
+                                and isinstance(error, json.JSONDecodeError) else
                                 f"\n\nYour previous reply was invalid: {error}. Reply again.")
             raise InvalidReply(attempts)
         except Exception as error:
+            if isinstance(error, APIError):
+                error.attempts = attempts
             if self.record_exchanges:
                 exchange["error"] = {"type": type(error).__name__, "message": str(error)}
             raise

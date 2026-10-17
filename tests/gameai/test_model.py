@@ -70,7 +70,9 @@ def test_ask_retries_rejected_replies_with_feedback_then_gives_up(tmp_path):
 
 
 def test_cut_off_reply_is_retried_with_a_neutral_notice(tmp_path):
-    replies, prompts = [("incomplete", '{"key": "u'), ("completed", '{"key": "up"}')], []
+    # A cut reply that still parses keeps the game's own rejection as feedback.
+    replies, prompts = [("incomplete", '{"key": "u'), ("incomplete", '{"key": "jump"}'),
+                        ("completed", '{"key": "up"}')], []
 
     def send(body):
         prompts.append(body["input"][0]["content"])
@@ -78,12 +80,20 @@ def test_cut_off_reply_is_retried_with_a_neutral_notice(tmp_path):
         return {"status": status, "usage": USAGE, "output": [{"type": "message", "content": [
             {"type": "output_text", "text": text}]}]}
 
+    def parse(text):
+        reply = json.loads(text)
+        if reply["key"] not in ("up", "down"):
+            raise ValueError(f"unknown key {reply['key']}")
+        return reply
+
     model = api.Model("gpt-6-luna", "none", Ledger(tmp_path / "spend.jsonl", 1.0), send=send,
                       instructions="Press a key.", max_output_tokens=200)
-    value, attempts = model.ask("Wall ahead.", {}, json.loads, retries=1)
+    value, attempts = model.ask("Wall ahead.", {}, parse, retries=2)
     assert value == {"key": "up"} and attempts[0]["error"].startswith("Unterminated string")
     assert prompts[1] == ("Wall ahead.\n\nYour previous reply was cut off at the output limit"
                           " before the JSON ended. Reply again.")
+    assert prompts[2] == ("Wall ahead.\n\nYour previous reply was invalid: unknown key jump."
+                          " Reply again.")
 
 
 @pytest.mark.parametrize("capture", [False, True])
@@ -110,6 +120,39 @@ def test_failed_response_is_resent_unchanged_and_kept_once(tmp_path, capture):
     if capture:
         exchange, = model.drain_exchanges()
         assert exchange["attempts"] == attempts and "error" not in exchange
+
+
+@pytest.mark.parametrize("retries", [1, 2])
+def test_failed_response_after_a_rejected_reply_keeps_its_feedback(tmp_path, retries):
+    # With retries left the failed request goes out again as it was; without, the APIError
+    # carries every billed attempt even when exchanges are not captured.
+    texts, bodies = ["left", "down", "up"], []
+
+    def send(body):
+        bodies.append(body)
+        return {"id": f"r{len(bodies)}", "status": "failed" if len(bodies) == 2 else "completed",
+                "usage": USAGE, "output": [{"type": "message", "content": [
+                    {"type": "output_text", "text": texts.pop(0)}]}],
+                **({"error": {"code": "server_error"}} if len(bodies) == 2 else {})}
+
+    def parse(text):
+        if text != "up":
+            raise ValueError(f"unknown key {text}")
+        return text
+
+    model = api.Model("gpt-6-luna", "none", Ledger(tmp_path / "spend.jsonl", 1.0), send=send,
+                      instructions="Press a key.", max_output_tokens=200)
+    errors = ["unknown key left", "openai returned a failed response r2", None]
+    if retries == 1:
+        with pytest.raises(api.APIError) as failure:
+            model.ask("Wall ahead.", {}, parse, retries)
+        assert [a.get("error") for a in failure.value.attempts] == errors[:2]
+        assert failure.value.attempt is failure.value.attempts[-1]
+        return
+    value, attempts = model.ask("Wall ahead.", {}, parse, retries)
+    assert value == "up" and [a.get("error") for a in attempts] == errors
+    assert bodies[2] == bodies[1] != bodies[0]
+    assert bodies[1]["input"][0]["content"].endswith("invalid: unknown key left. Reply again.")
 
 
 def test_wh3_transport_opt_in_records_wall_time_header_and_actual_model(tmp_path, monkeypatch):

@@ -127,6 +127,22 @@ def test_cost_failures_stop_without_retry_and_keep_the_billed_attempt(tmp_path, 
     assert failure.value.attempt["usd"] == pytest.approx(agent.ledger.spent)
 
 
+def test_failed_openrouter_response_at_zero_cost_is_resent(tmp_path):
+    # The shape of bench-b23-s1-kimi-low-20261017 m28: a truncation reported as failed, unbilled.
+    failed = reply(status="failed", error={
+        "code": "server_error", "message": "Upstream error from Morph: Invalid structured"
+        " output: output_truncated (schema #)."}, usage={
+        "input_tokens": 2861, "output_tokens": 3664, "cost": 0,
+        "output_tokens_details": {"reasoning_tokens": 3472}}, output=[
+        {"type": "message", "content": [{"type": "output_text", "text": '{"ok":tr'}]}])
+    replies, sent = [failed, reply()], []
+    agent = model(tmp_path, lambda body: sent.append(body) or replies.pop(0))
+    value, attempts = agent.ask("test", SCHEMA, json.loads, retries=1)
+    assert value == {"ok": True} and sent[1] == sent[0]
+    assert attempts[0]["error"] == "openrouter returned a failed response gen-test"
+    assert agent.ledger.spent == pytest.approx(.0002)
+
+
 def test_uncertain_transport_attempts_are_charged_on_success_and_failure(tmp_path, monkeypatch):
     class Response(io.BytesIO):
         headers = {}
