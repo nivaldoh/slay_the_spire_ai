@@ -314,8 +314,10 @@ def policy_call(policy, method: str, *args):
     except (PolicyFailure, BudgetExhausted):
         raise
     except Exception as exc:
-        raise PolicyFailure(f"{method}: {type(exc).__name__}: {exc}",
-                            failure={"method": method, "error_type": type(exc).__name__}) from exc
+        failure = {"method": method, "error_type": type(exc).__name__}
+        if getattr(exc, "attempts", None) is not None:  # an APIError's billed attempts
+            failure["attempts"] = exc.attempts
+        raise PolicyFailure(f"{method}: {type(exc).__name__}: {exc}", failure=failure) from exc
 
 
 def track_objectives(result: dict, observation: dict) -> None:

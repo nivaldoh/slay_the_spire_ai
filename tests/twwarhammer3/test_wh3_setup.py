@@ -94,6 +94,18 @@ def test_variants_differ_from_their_base_only_where_declared():
         **scenarios["kho5-dwf5"], "battle_type": None, "map": None, "attacker": None}
 
 
+def test_a_step_named_after_its_base_keeps_the_base_family_as_its_split_group():
+    # Final review: the S9 Trolls step declared its own family, which split S9's jobs into
+    # two export groups (docs/posttraining.md: a group must not leak across splits).
+    entries = json.loads(setup.SCENARIOS_PATH.read_text())
+    scenarios = setup.scenarios()
+    steps = [(name, entry["base"]) for name, entry in entries.items()
+             if entry.get("base") and name.startswith(entry["base"] + "-")]
+    assert ("grn-giant-ksl-streltsi-trolls", "grn-giant-ksl-streltsi") in steps
+    assert [(name, base) for name, base in steps
+            if scenarios[name].get("family") != scenarios[base].get("family")] == []
+
+
 def test_scenario_steps_pick_each_race_and_recruit_the_lord_first():
     steps = setup.scenario_steps(setup.load_scenario({"scenario": "kho5-dwf5"}))
     races = [s["find"][1] for s in steps if s.get("find", [""])[0] == "button_select_race"]

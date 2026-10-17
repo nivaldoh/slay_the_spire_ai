@@ -561,6 +561,20 @@ def test_spell_window_flees_melee_contact_while_a_cast_is_pending():
     assert policy.metadata()["hold"] is None
 
 
+def test_spell_window_steps_out_of_melee_before_it_casts():
+    # Final review b25: a cast made in melee was cancelled by the step away a view later,
+    # and the cast had replaced the escape move.
+    obs, policy = wizard_state(magic=20), SpellWindow()
+    obs["friendly"][0]["state"] = ["melee"]
+    obs["enemy"][0].update(z=-30, state=["melee"])  # 30 m from the wizard
+    (flee,) = wizard_orders(policy, obs, 1300)  # b25 stormed e2 here
+    assert flee["type"] == "move" and round(flee["z"]) == -150
+    obs["friendly"][0].update(z=-150, state=["moving"])
+    obs["time_ms"] = 2500
+    (cast,) = wizard_orders(policy, obs)
+    assert cast["type"] == "ability" and cast["target"] == "e2"
+
+
 def test_spell_window_fireballs_an_enemy_charging_the_wizard_instead_of_a_flame_storm():
     # Live S5 b23: six Flame Storms on a Swordsmen unit chasing the wizard killed about 2 men.
     fireball = {"ability": "wh_main_spell_fire_fireball", "target": "e2"}

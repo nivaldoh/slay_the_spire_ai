@@ -10,7 +10,8 @@ import pytest
 from wh3_fixtures import bridge_observation, observation
 
 from gameai.ledger import BudgetExhausted
-from twwarhammer3.battle import commander, digest, llm, play, setup, stats
+from gameai.llm import APIError
+from twwarhammer3.battle import commander, digest, llm, play, report, setup, stats
 from twwarhammer3.battle.scripted import AttackNearest, Hold
 from twwarhammer3.protocol import BattleRestarted, MailboxTimeout, PolicyFailure
 
@@ -259,6 +260,27 @@ def test_the_observation_a_failing_decision_saw_is_kept_in_the_trace(tmp_path):
     assert result["status"] == "policy_failure"
     kinds = [json.loads(line)["kind"] for line in (tmp_path / "e/trace.jsonl").open()]
     assert kinds[-1] == "observation"
+
+
+def test_a_failed_response_that_ends_the_episode_keeps_its_attempts_for_the_report(tmp_path):
+    # Final review: the report counted no failed response in bench-b23-s1-kimi-low-20261017,
+    # whose only one ended the episode; the failure dict had dropped the APIError's attempts.
+    attempt = {"response_id": "r1", "status": "failed", "seconds": 2,
+               "error": "openrouter returned a failed response r1"}
+
+    class Failing(Hold):
+        def decide(self, observation):
+            error = APIError(attempt["error"], retryable=True)
+            error.attempt, error.attempts = attempt, [attempt]
+            raise error
+
+    mailbox = FakeMailbox([bridge_observation(0, 0), bridge_observation(1, 1000)])
+    result = play.play_episode(tmp_path / "e", CONFIG, Failing, mailbox, not_battle=None)
+    assert result["status"] == "policy_failure"
+    assert result["failure"] == {"method": "decide", "error_type": "APIError",
+                                 "attempts": [attempt]}
+    metrics = report.trial_metrics(tmp_path / "e", result)
+    assert metrics["reply_validation"]["failed_responses"] == 1
 
 
 def test_delayed_policy_gets_old_public_state_but_results_use_current_evaluation(tmp_path):

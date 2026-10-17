@@ -77,8 +77,9 @@ def test_cut_off_reply_is_retried_with_a_neutral_notice(tmp_path):
     def send(body):
         prompts.append(body["input"][0]["content"])
         status, text = replies.pop(0)
-        return {"status": status, "usage": USAGE, "output": [{"type": "message", "content": [
-            {"type": "output_text", "text": text}]}]}
+        cut = {"reason": "max_output_tokens"} if status == "incomplete" else None
+        return {"status": status, "incomplete_details": cut, "usage": USAGE, "output": [
+            {"type": "message", "content": [{"type": "output_text", "text": text}]}]}
 
     def parse(text):
         reply = json.loads(text)
@@ -94,6 +95,32 @@ def test_cut_off_reply_is_retried_with_a_neutral_notice(tmp_path):
                           " before the JSON ended. Reply again.")
     assert prompts[2] == ("Wall ahead.\n\nYour previous reply was invalid: unknown key jump."
                           " Reply again.")
+    # Kept without exchange capture, where the notice needs it; absent on complete replies.
+    assert attempts[0]["incomplete_details"] == {"reason": "max_output_tokens"}
+    assert "incomplete_details" not in attempts[2]
+
+
+@pytest.mark.parametrize(("reason", "text", "error"), [
+    ("content_filter", '{"key": "u', "Unterminated string starting at: line 1 column 9 (char 8)"),
+    # The JSON ended and more output followed: not cut off before the JSON ended.
+    ("max_output_tokens", '{"key": "up"}\n{"key"', "Extra data: line 2 column 1 (char 14)"),
+])
+def test_cut_off_notice_needs_the_output_limit_and_an_unfinished_json(tmp_path, reason, text,
+                                                                      error):
+    replies, prompts = [("incomplete", text), ("completed", '{"key": "up"}')], []
+
+    def send(body):
+        prompts.append(body["input"][0]["content"])
+        status, reply = replies.pop(0)
+        details = {"reason": reason} if status == "incomplete" else None
+        return {"status": status, "incomplete_details": details, "usage": USAGE, "output": [
+            {"type": "message", "content": [{"type": "output_text", "text": reply}]}]}
+
+    model = api.Model("gpt-6-luna", "none", Ledger(tmp_path / "spend.jsonl", 1.0), send=send,
+                      instructions="Press a key.", max_output_tokens=200)
+    value, attempts = model.ask("Wall ahead.", {}, json.loads, retries=1)
+    assert value == {"key": "up"} and attempts[0]["error"] == error
+    assert prompts[1] == f"Wall ahead.\n\nYour previous reply was invalid: {error}. Reply again."
 
 
 @pytest.mark.parametrize("capture", [False, True])
@@ -122,37 +149,63 @@ def test_failed_response_is_resent_unchanged_and_kept_once(tmp_path, capture):
         assert exchange["attempts"] == attempts and "error" not in exchange
 
 
-@pytest.mark.parametrize("retries", [1, 2])
-def test_failed_response_after_a_rejected_reply_keeps_its_feedback(tmp_path, retries):
-    # With retries left the failed request goes out again as it was; without, the APIError
-    # carries every billed attempt even when exchanges are not captured.
-    texts, bodies = ["left", "down", "up"], []
-
+def replying(replies, bodies):
+    """A send that answers "left" (rejected), "up" (accepted) or a failed response."""
     def send(body):
         bodies.append(body)
-        return {"id": f"r{len(bodies)}", "status": "failed" if len(bodies) == 2 else "completed",
+        reply = replies.pop(0)
+        return {"id": f"r{len(bodies)}", "status": "failed" if reply == "fail" else "completed",
                 "usage": USAGE, "output": [{"type": "message", "content": [
-                    {"type": "output_text", "text": texts.pop(0)}]}],
-                **({"error": {"code": "server_error"}} if len(bodies) == 2 else {})}
+                    {"type": "output_text", "text": "up" if reply == "up" else "left"}]}],
+                **({"error": {"code": "server_error"}} if reply == "fail" else {})}
+    return send
 
-    def parse(text):
-        if text != "up":
-            raise ValueError(f"unknown key {text}")
-        return text
 
-    model = api.Model("gpt-6-luna", "none", Ledger(tmp_path / "spend.jsonl", 1.0), send=send,
+def parse_up(text):
+    if text != "up":
+        raise ValueError(f"unknown key {text}")
+    return text
+
+
+def test_failed_response_after_a_rejected_reply_keeps_its_feedback(tmp_path):
+    # The failed request goes out again as it was, and the resend spends no retry.
+    bodies = []
+    model = api.Model("gpt-6-luna", "none", Ledger(tmp_path / "spend.jsonl", 1.0),
+                      send=replying(["left", "fail", "up"], bodies),
                       instructions="Press a key.", max_output_tokens=200)
-    errors = ["unknown key left", "openai returned a failed response r2", None]
-    if retries == 1:
-        with pytest.raises(api.APIError) as failure:
-            model.ask("Wall ahead.", {}, parse, retries)
-        assert [a.get("error") for a in failure.value.attempts] == errors[:2]
-        assert failure.value.attempt is failure.value.attempts[-1]
-        return
-    value, attempts = model.ask("Wall ahead.", {}, parse, retries)
-    assert value == "up" and [a.get("error") for a in attempts] == errors
+    value, attempts = model.ask("Wall ahead.", {}, parse_up, retries=1)
+    assert value == "up" and [a.get("error") for a in attempts] == [
+        "unknown key left", "openai returned a failed response r2", None]
     assert bodies[2] == bodies[1] != bodies[0]
     assert bodies[1]["input"][0]["content"].endswith("invalid: unknown key left. Reply again.")
+
+
+def test_failed_response_on_the_last_retry_still_ends_as_an_invalid_reply(tmp_path):
+    # Final review: a failure on the last retry raised APIError, which WH3 cannot salvage.
+    bodies = []
+    model = api.Model("gpt-6-luna", "none", Ledger(tmp_path / "spend.jsonl", 1.0),
+                      send=replying(["left", "left", "fail", "left"], bodies),
+                      instructions="Press a key.", max_output_tokens=200)
+    with pytest.raises(api.InvalidReply) as failure:
+        model.ask("Wall ahead.", {}, parse_up, retries=2)
+    attempts = failure.value.attempts
+    assert [a["response_id"] for a in attempts] == ["r1", "r2", "r3", "r4"]
+    assert attempts[2]["status"] == "failed" and bodies[3] == bodies[2]
+    assert model.ledger.spent == pytest.approx(sum(a["usd"] for a in attempts))
+
+
+def test_failed_responses_are_resent_twice_then_raised_with_every_billed_attempt(tmp_path):
+    bodies = []
+    model = api.Model("gpt-6-luna", "none", Ledger(tmp_path / "spend.jsonl", 1.0),
+                      send=replying(["fail"] * 3, bodies),
+                      instructions="Press a key.", max_output_tokens=200)
+    with pytest.raises(api.APIError) as failure:
+        model.ask("Wall ahead.", {}, parse_up, retries=2)
+    attempts = failure.value.attempts
+    assert failure.value.retryable and bodies[2] == bodies[0]
+    assert [a["response_id"] for a in attempts] == ["r1", "r2", "r3"]
+    assert failure.value.attempt is attempts[-1] and model.totals["calls"] == 3
+    assert model.ledger.spent == pytest.approx(sum(a["usd"] for a in attempts))
 
 
 def test_ask_retries_a_reply_nested_too_deeply_to_parse(tmp_path):
@@ -300,14 +353,14 @@ def test_failed_exchanges_keep_all_available_attempts_and_errors(tmp_path, failu
         model.ask("user", {}, parse, 1)
     exchange, = list(model.drain_exchanges())
     assert exchange["prompt"] == "user" and exchange["error"]["type"]
-    assert len(exchange["attempts"]) == (0 if failure == "budget" else 1 if failure == "transport"
-                                        else 2)
+    made = {"budget": 0, "transport": 1, "response": 3, "parse": 2}[failure]
+    assert len(exchange["attempts"]) == made
     if failure == "transport":
         attempt, = exchange["attempts"]
         assert attempt["transport_error"] == "service failed" and "text" not in attempt
         assert attempt["request"]["input"][0]["content"] == "user"
     if failure == "response":
-        # Resent unchanged until retries ran out; the last failure stays infrastructure.
+        # Resent unchanged until the resends ran out; the last failure stays infrastructure.
         assert exchange["error"]["type"] == "APIError" and error.value.retryable
         assert all(a["response_error"] == {"code": "failed"} and a["exchange_id"] == "m1"
                    and a["request"]["input"][0]["content"] == "user"
