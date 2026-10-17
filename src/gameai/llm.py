@@ -27,6 +27,7 @@ from gameai.providers import OPENAI, get_provider, routing, validate
 API_URL = OPENAI.url
 PRICES = OPENAI.prices
 TRANSPORT_ATTEMPTS = 3
+FAILED_RESENDS = 2  # per ask, apart from the parse retries
 TRANSIENT_HTTP = {408, 409, 429, 500, 502, 503, 504}
 CUT_OFF = ("\n\nYour previous reply was cut off at the output limit before the JSON ended."
            " Reply again.")
@@ -36,8 +37,8 @@ JSON_TYPES = {"object": dict, "array": list, "string": str, "integer": int,
 
 class APIError(RuntimeError):
     """Transport or service failure: infrastructure, never a gameplay outcome. ``retryable``
-    names the failure kind, a failed response, which ``Model.ask`` resends unchanged while
-    retries remain; it stays set on the one raised after they run out."""
+    names the failure kind, a failed response, which ``Model.ask`` resends unchanged up to
+    FAILED_RESENDS times; it stays set on the one raised after they run out."""
 
     def __init__(self, message: str, uncertain_attempts: int = 0, retryable: bool = False):
         super().__init__(message)
@@ -259,9 +260,11 @@ class Model:
         }
         if self.record_exchanges:
             attempt.update(request=body, output=response.get("output", []),
-                           response_error=response.get("error"),
-                           incomplete_details=response.get("incomplete_details"))
-        # Opt-in for WH3; the existing Spire trace schema and timing stay unchanged.
+                           response_error=response.get("error"))
+        if self.record_exchanges or response.get("incomplete_details"):
+            # Kept without capture too: ``ask`` chooses the cut-off notice by its reason.
+            attempt["incomplete_details"] = response.get("incomplete_details")
+        # Opt-in (both games' play commands): served model, backend and transport wall time.
         if "_transport" in response:
             transport = response["_transport"]
             attempt.update({key: transport[key] for key in
@@ -302,13 +305,15 @@ class Model:
         """The parsed reply and every attempt. A reply that ``parse`` rejects with
         ValueError, or nests too deeply to parse, is retried with the error appended to the
         prompt, or with a cut-off notice when a reply cut at the output limit is not valid
-        JSON; a failed response is resent unchanged. The last failure is raised when retries
-        run out; an APIError then carries the attempts made so far as ``attempts``."""
-        attempts, feedback = [], ""
+        JSON. A failed response is resent unchanged, up to FAILED_RESENDS times per ask
+        without spending a retry. When either allowance runs out the last failure is raised,
+        a rejected reply as InvalidReply; an APIError carries the attempts made so far as
+        ``attempts``."""
+        attempts, feedback, resends = [], "", FAILED_RESENDS
         self.exchange_count += 1
         exchange = {"id": f"m{self.exchange_count}", "prompt": prompt, "attempts": attempts}
         try:
-            for remaining in range(retries, -1, -1):
+            while True:
                 failure = None
                 try:
                     attempt = self.call(prompt + feedback, schema)
@@ -320,17 +325,23 @@ class Model:
                     attempt["exchange_id"] = exchange["id"]
                 attempts.append(attempt)
                 if failure:
-                    if failure.retryable and remaining:
+                    if failure.retryable and resends:
+                        resends -= 1
                         continue
                     raise failure
                 try:
                     return parse(attempt["text"]), attempts
                 except (ValueError, RecursionError) as error:
                     attempt["error"] = str(error)
-                    feedback = (CUT_OFF if attempt["status"] == "incomplete"
-                                and isinstance(error, json.JSONDecodeError) else
+                    # Not "Extra data": that JSON ended, and more output followed it.
+                    cut = ((attempt.get("incomplete_details") or {}).get("reason")
+                           == "max_output_tokens" and isinstance(error, json.JSONDecodeError)
+                           and error.msg != "Extra data")
+                    feedback = (CUT_OFF if cut else
                                 f"\n\nYour previous reply was invalid: {error}. Reply again.")
-            raise InvalidReply(attempts)
+                if not retries:
+                    raise InvalidReply(attempts)
+                retries -= 1
         except Exception as error:
             if isinstance(error, APIError):
                 error.attempts = attempts
@@ -344,7 +355,7 @@ class Model:
     def drain_exchanges(self):
         """Completed calls, including failures and unadopted asynchronous replies.
 
-        The caller writes them on its own thread. Opt-in keeps Spire evidence unchanged.
+        The caller writes them on its own thread. Opt-in; both games' play commands record them.
         """
         while True:
             try:

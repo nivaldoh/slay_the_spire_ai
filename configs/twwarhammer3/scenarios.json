@@ -1890,7 +1890,6 @@
   "grn-giant-ksl-streltsi-trolls": {
     "base": "grn-giant-ksl-streltsi",
     "name": "grn-giant-ksl-streltsi-trolls",
-    "family": "monster target choice",
     "brief": "A Greenskin Giant and one Troll unit attack a Kislev Kossar spear unit and a Streltsi rifle unit, with no lords. Both Greenskin units are large, and the spears are braced against large units; the riflemen are not, but they shoot armour-piercing rounds during the approach. Which unit each monster reaches first, together or apart, and by what route, decides the fight.",
     "player": {
       "units": [
@@ -1901,7 +1900,7 @@
     "expect": {
       "funds_amount": 2400
     },
-    "calibration_change": "S9 rebalance (2026-10-17, delegated while the owner was away). With the Giant alone (1400 against 1350) neither target order won: the attack-nearest floor broke the Kossars first, then the untouched Streltsi shot the Giant until it routed (bench-b20-s9-floor-20261017: lost at 542 s); MonsterTarget went for the Streltsi first (68 to 17 and 38 men) but the Giant routed early and the Kossars never engaged (bench-b23-s9-monster-20261017: lost at 276 s and 242 s). One enemy unit fewer would leave no target to choose, so the player gets a second, smaller monster instead: one Troll unit (database 750, the cheapest base-game Greenskin monster card; a second Giant would double the army to 2800). Both player units are large, so the Kossars' bracing still applies to each, and one can now pin the spears while the other reaches the riflemen. Player 2150, enemy 1350; funds 2400. The family drops 'lone'. Attack-nearest floor first; MonsterTarget (which sends every unit to the same target by the same flank route) at 0/5 s only after a floor loss."
+    "calibration_change": "S9 rebalance (2026-10-17, delegated while the owner was away). With the Giant alone (1400 against 1350) neither target order won: the attack-nearest floor broke the Kossars first, then the untouched Streltsi shot the Giant until it routed (bench-b20-s9-floor-20261017: lost at 542 s); MonsterTarget went for the Streltsi first (68 to 17 and 38 men) but the Giant routed early and the Kossars never engaged (bench-b23-s9-monster-20261017: lost at 276 s and 242 s). One enemy unit fewer would leave no target to choose, so the player gets a second, smaller monster instead: one Troll unit (database 750, the cheapest base-game Greenskin monster card; a second Giant would double the army to 2800). Both player units are large, so the Kossars' bracing still applies to each, and one can now pin the spears while the other reaches the riflemen. Player 2150, enemy 1350; funds 2400. The report label drops 'lone'; the family, its split group, stays S9's. Attack-nearest floor first; MonsterTarget (which sends every unit to the same target by the same flank route) at 0/5 s only after a floor loss."
   },
   "skv-spears-sla-hellstriders": {
     "base": "ksl-raiders-emp-halberds",

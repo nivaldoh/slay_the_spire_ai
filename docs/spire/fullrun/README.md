@@ -17,16 +17,26 @@ the prompt and memory, not weight training.
 
 - Model: `gpt-6-luna` through the OpenAI Responses API, reasoning effort `low`, structured
   JSON output. The owner chose Luna for cost; `gpt-6-astra`, `gpt-6-sol` and
-  `gpt-6.1-sol` have declared prices in `gameai.llm` and can be selected with `--model`.
+  `gpt-6.1-sol` have declared prices in `gameai/providers.py` and can be selected with
+  `--model`. `spire play --provider openrouter` plays the open-weight models declared there
+  for OpenRouter (only Qwen3.6-35B-A3B has played, [posttraining.md](../../posttraining.md));
+  a model or effort its provider does not declare is refused before the job directory
+  exists.
 - Spend: every call is priced from its reported usage at the standard-tier list prices in
   `gameai.llm.PRICES` (read 2026-10-12) and appended to a ledger. A call is refused
   before it is sent if the ledger's total plus that call's worst-case cost (prompt bytes as
   an upper bound on input tokens, plus 4,000 output tokens) would exceed `--budget-usd`. The
   default ledger is `runs/llm-spend.jsonl`; the owner's cap is in [state.md](../../state.md).
   An API request that times out on our side may still be billed without a ledger entry, so
-  the OpenAI dashboard total is the final check.
+  the OpenAI dashboard total is the final check. OpenRouter calls are charged their
+  reported `usage.cost` to `runs/spire-openrouter-spend.jsonl`, which shares the owner's
+  $50 OpenRouter allowance with WH3's file
+  ([controllers.md](../../twwarhammer3/controllers.md#openrouter)), so `--budget-usd` must
+  leave room for that file's total; `spire spend --provider openrouter` totals it.
 - Key: `gameai.llm` reads it, for both games, from `OPENAI_API_KEY` or the file named by
-  `SPIRE_OPENAI_KEY_FILE`. It is never logged; evidence records only response IDs and usage.
+  `SPIRE_OPENAI_KEY_FILE`; for OpenRouter, from `OPENROUTER_API_KEY` or the file named by
+  `OPENROUTER_API_KEY_FILE`. It is never logged; evidence records only response IDs and
+  usage.
 - Engine: the pinned original game, one fresh JVM per run, `START IRONCLAD 0 <seed>`. The
   run ends only on the engine's death or victory screen, or at a declared action or time
   limit.
@@ -106,7 +116,7 @@ uv run python -m spire digest runs/fullrun/<job>/run-0000             # floors, 
 uv run python -m spire digest runs/fullrun/<job>/run-0000 --picks     # also each choice and reason
 uv run python -m spire digest runs/fullrun/<job>/run-0000 --floor 16  # one floor, turn by turn
 uv run python -m spire watch runs/fullrun/<job>  # waits for the next finished run, stall or end
-uv run python -m spire spend                                          # ledger total
+uv run python -m spire spend                   # OpenAI ledger total; --provider openrouter
 uv run python -m spire stats                  # milestones per model, effort and harness version
 uv run python -m spire stats --rebuild        # rewrite results.csv from every saved job
 ```
@@ -144,20 +154,29 @@ Jobs still marked running and runs without `result.json` are refused. `--model`,
 filter are alternatives, and every filter given must match.
 
 Rows follow the export-row contract shared with the [WH3 exporter](../../twwarhammer3/traces.md):
-`group` is the seed, `split` is `development` (no held-out seed is declared yet), and
-`harness` and `prompt_version` are the job-name label. Spire rows add the public
+`group` is the seed, `split` is `held_out` for the reserved seeds below and `development`
+otherwise, and `harness` and `prompt_version` are the job-name label. Spire rows add the public
 `decision` the policy saw, the `choice`, the reply's reason and notes, and `labels` taken
 from decision observations only, including each combat decision's `fight`: won when a
 later decision is out of combat or the run is won during it, lost when the run is lost
 during it, otherwise unknown, with HP at its start and at the next out-of-combat decision.
 A request that never got an accepted reply (invalid replies, an API failure, a budget
 stop) is a row with an `error` and no decision, and so is an accepted reply whose decision
-was never logged (`DecisionNotRecorded`). Traces from before exchange capture (no `model_exchange_version` in the
+was never logged (`DecisionNotRecorded`) and a request stopped by an interrupt before any
+reply was accepted (`Interrupted`). Traces from before exchange capture (no `model_exchange_version` in the
 manifest: every job up to v10) kept the first prompt but no retry prompt or reasoning;
 those gaps are labelled as issues, never reconstructed. Their 11,167 requests all come
 from OpenAI's `gpt-6-luna`, whose rows must not enter a training set by default (the
 owner has not decided the terms question), and every readable profile is at Ironclad
 unlock level 3; the data card explains both.
+
+Held-out seeds: `HELDOUT01` to `HELDOUT10` (`HELD_OUT_SEEDS` in `export.py`, chosen on
+2026-10-17 under the owner's delegation) are reserved for evaluating models and
+fine-tunes. The tuning loop must never play them, and no harness change may be chosen on
+their results; their exported rows are `held_out`, so the dataset builder never trains on
+them. The game reads a seed in any case, the letter O as 0 and leading zeros as nothing
+(`HELD0UT01` is `HELDOUT01`); the exporter holds out every such spelling, but a seed's
+`group` is the seed as typed.
 
 ## Autoresearch rules
 

@@ -92,13 +92,14 @@ New full-run behavior belongs in `fullrun/`.
 A new game gets `src/<game>/`, `configs/<game>/`, `docs/<game>/`, `runs/<game>/` and
 `tests/<game>/`. Slay the Spire predates this and keeps `configs/llm/`, `configs/suites/`,
 `tests/{combat,engine,fullrun,language,ppo,openweight}/`, `tests/test_decisions.py`,
-`tests/test_protocol.py`, `tests/fixtures/`, `runs/fullrun/`, `runs/first-combat/`,
-`runs/research-notes/` and `runs/llm-spend.jsonl`. Move code into `gameai` when a second
-game would otherwise copy it, not before. The job modules (play, digest, watch, stats) stay
-per game: Spire starts a fresh JVM per run and its trace bytes must stay identical, WH3
-launches once per job and restarts by rematch, and each has its own result fields and
-exceptions. Test files share one namespace (there is no `tests/__init__.py`), so every
-test file name must be unique across `tests/`.
+`tests/test_protocol.py`, `tests/fixtures/`, `runs/fullrun/`, `runs/fullrun-exports/`,
+`runs/first-combat/`, `runs/research-notes/`, `runs/llm-spend.jsonl` and
+`runs/spire-openrouter-spend.jsonl`. Move code into `gameai` when a second game would
+otherwise copy it, not before. The job modules (play, digest, watch, stats) stay per game:
+Spire starts a fresh JVM per run and its trace bytes must stay identical, WH3 launches once
+per job and restarts by rematch, and each has its own result fields and exceptions. Test
+files share one namespace (there is no `tests/__init__.py`), so every test file name must
+be unique across `tests/`.
 
 ## Commands
 
@@ -110,7 +111,7 @@ uv run ruff check .
 uv run python -m spire doctor      # read-only runtime check
 uv run python -m spire digest runs/fullrun/<job>   # per-seed table; add /run-0000 [--picks | --floor N]
 uv run python -m spire watch runs/fullrun/<job>    # wait for the next finished run, stall or job end
-uv run python -m spire spend       # Spire API ledger total
+uv run python -m spire spend       # Spire OpenAI ledger total; --provider openrouter for OpenRouter
 uv run python -m spire stats       # milestones per model, effort and harness; --rebuild from runs/
 uv run python -m spire export runs/fullrun/<job> ... --output runs/fullrun-exports/<name>
 uv run python -m twwarhammer3 doctor   # read-only: pins, preferences, running game
@@ -120,7 +121,7 @@ uv run python -m twwarhammer3 watch runs/twwarhammer3/battle/<job> --next   # ne
 uv run python -m twwarhammer3 stats    # results by scenario, policy, model, harness and mode
 uv run python -m twwarhammer3 report <job> [<job> ...] --output runs/twwarhammer3/reports/<name>
 uv run python -m twwarhammer3 export <job> [<job> ...] --output runs/twwarhammer3/exports/<name>
-uv run python -m twwarhammer3 spend    # WH3 API ledger total
+uv run python -m twwarhammer3 spend    # WH3 OpenAI ledger total; --provider openrouter for OpenRouter
 uv run python -m gameai.sft <export> [<export> ...] --output runs/sft/<name>   # see docs/posttraining.md
 ```
 
@@ -216,17 +217,21 @@ engine-reported won, lost or draw is a gameplay outcome.
 
 Run evidence stays out of Git (layout in `runs/README.md`): Spire jobs in
 `runs/<track>/<job>/`, WH3 jobs in `runs/twwarhammer3/battle/<job>/`. Each game has its own
-API spend ledger, `runs/llm-spend.jsonl` for Spire and `runs/twwarhammer3/llm-spend.jsonl`
-for WH3 OpenAI; WH3 OpenRouter uses `runs/twwarhammer3/openrouter-spend.jsonl`. A job's
-`--budget-usd` caps its selected ledger's total, earlier jobs included. Never
-move or reset a ledger. Compact first-combat results are committed in
-`docs/spire/first-combat/results/`. Each `play` appends one row per run or episode to its
-game's results register (`docs/spire/fullrun/results.csv`,
-`docs/twwarhammer3/results.csv`). Log every version in `docs/spire/fullrun/log.md` or
-`docs/twwarhammer3/log.md` and commit the register with that entry. Update `docs/state.md`
-when work starts, stops or changes direction, and keep it short: what runs, what is
-stopped and why, what is next, with links. Results, validation counts and history go in
-the logs.
+API spend ledgers: OpenAI uses `runs/llm-spend.jsonl` (Spire) and
+`runs/twwarhammer3/llm-spend.jsonl` (WH3); OpenRouter (`spire play --provider openrouter`,
+`twwarhammer3 play --provider openrouter`; key from `OPENROUTER_API_KEY` or the file named
+by `OPENROUTER_API_KEY_FILE`) uses `runs/spire-openrouter-spend.jsonl` and
+`runs/twwarhammer3/openrouter-spend.jsonl`. A job's `--budget-usd` caps its selected
+ledger's total, earlier jobs included. The owner's $50 OpenRouter allowance covers both
+OpenRouter files, so a job's `--budget-usd` must leave room for the other file's total
+(`spend --provider openrouter` in each game). Never move or reset a ledger. Compact
+first-combat results are committed in `docs/spire/first-combat/results/`. Each `play`
+appends one row per run or episode to its game's results register
+(`docs/spire/fullrun/results.csv`, `docs/twwarhammer3/results.csv`). Log every version in
+`docs/spire/fullrun/log.md` or `docs/twwarhammer3/log.md` and commit the register with
+that entry. Update `docs/state.md` when work starts, stops or changes direction, and keep
+it short: what runs, what is stopped and why, what is next, with links. Results,
+validation counts and history go in the logs.
 
 ## Coding Style
 

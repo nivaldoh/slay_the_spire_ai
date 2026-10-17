@@ -24,8 +24,9 @@ end.*
 
 - Reasoning is on/off: effort `none` (no reasoning) or `medium` (reasoning on). Checked
   live on 2026-10-17, `low` to `max` were all accepted and all reasoned 1.3k-4k tokens.
-- Routing: fp8 or bf16 endpoints only (its cheapest endpoint is fp4),
-  `require_parameters`, and price ceilings of $0.15 input and $1.00 output per million tokens.
+- Routing: fp8 or bf16 (the routing constraint; the served quantization is not recorded),
+  which excludes its cheapest endpoint (fp4); `require_parameters`; price ceilings of $0.15
+  input and $1.00 output per million tokens.
 - Sampling made explicit: temperature 1.0, top_p 0.95.
 - Thinking-on replies often exhaust both harnesses' 4,000-token output cap, so the first
   datasets come from effort `none`.
@@ -68,14 +69,25 @@ unknown), `text` (raw reply), `status` (provider status: `completed`, `incomplet
 `failed`), `error` (absent or null when the reply was accepted, else the parser's or
 transport's message), `reasoning` (parts from `gameai.llm.reasoning_parts` with
 `type`, `text`, `field`, `item_index`; null when not recorded), `usage`, and when
-recorded `request`, `output` and backend fields.
+recorded `request`, `output` and backend fields. A transport failure's attempt has null
+`text`, `status` and `usage`.
 
 The SFT target of a row is its **last attempt**, used only when that attempt has no error,
 status `completed` and non-blank text, the row's `error` is null and its split is
 `development`. The user message is that attempt's own prompt, so a retried target keeps
-the feedback the model was answering. Outcomes do not select targets: replies from lost
-battles and runs are kept, and `outcome` and `labels` travel beside the chats for
-filtering or weighting, never into a prompt.
+the feedback the model was answering. By default outcomes do not select targets: replies
+from lost battles and runs are kept, and `outcome` and `labels` travel beside the chats
+for filtering or weighting, never into a prompt.
+
+`--require PATH=VALUE` (repeatable; every one must match) keeps only rows whose value at
+a dotted path into the row equals VALUE, for example `labels.fight.won=true`,
+`outcome.gameplay_outcome=won` or `provenance.unlock_level=3`. VALUE is read as JSON when
+it parses (`true`, `3`, `null`, `"3"`), else as text, and must match in type as well; a
+row without the path is dropped. Dropped rows count as `require`, and the manifest and
+data card list the requirements. Outcomes and labels still never enter the messages.
+`--first-attempt-only` drops targets whose prompt differs from the first attempt's, that
+is, targets answering retry feedback (`retried`); a failed response resent unchanged is
+not a retry.
 
 ## Splits
 
@@ -83,18 +95,28 @@ filtering or weighting, never into a prompt.
   scenario's declared `family`, else its name, and for `random` scenarios `NAME/seed-N`
   (the job directory only when no seed is recorded). Repeated starts of one seed or
   scenario, in any job, share a group.
+- A WH3 group comes from the scenario snapshot in each job's manifest, so renaming a
+  family splits that scenario's earlier and later jobs into different groups. Treat
+  declared families as fixed ids.
 - `held_out` rows never enter a dataset. WH3 rows are held out when their scenario
   declares `split: held_out`, so a WH3 family can hold both kinds; its held-out rows are
-  dropped. Spire declares no held-out seed yet, so every Spire row is `development`.
+  dropped. Spire reserves ten evaluation seeds, `HELDOUT01` to `HELDOUT10`
+  (`HELD_OUT_SEEDS` in [`spire/fullrun/export.py`](../src/spire/fullrun/export.py)); their
+  rows are `held_out` and every other Spire row is `development`. The tuning loop never
+  plays them.
 - Validation is exactly the groups named with `--validation-group GAME:GROUP`; everything
   else kept is train. A group is never in both. A named group without kept rows is refused.
+  WH3 families contain spaces, commas and apostrophes, so quote the argument:
+  `--validation-group "twwarhammer3:cavalry against anti-large, two-unit form"`.
 
 ## Provider terms
 
 By default the builder keeps only `openrouter` rows (open-weight models). Rows produced
 by OpenAI models are dropped and counted: whether their outputs may train a model is the
-owner's open decision. `--provider openai` includes them explicitly; do not do so before
-that decision. Every dataset's `datacard.md` repeats this.
+owner's open decision. A lone `--provider` replaces the default, so `--provider openai`
+alone keeps only OpenAI rows; `--provider openai --provider openrouter` adds them to the
+open-weight rows. Do not include them before that decision. Every dataset's
+`datacard.md` repeats this.
 
 OpenRouter also serves closed models, so `openrouter` means open-weight only while
 [`providers.py`](../src/gameai/providers.py) declares nothing else for it (today GLM-5.3,
@@ -107,10 +129,12 @@ lists its kept models, and each one's terms must be checked before training. Whe
 Exports keep the visible reasoning of each attempt. OpenAI returns summaries
 (`summary_text`); open-weight models through OpenRouter return the reasoning itself
 (`reasoning_text`). With `--reasoning`, the assistant message gets `reasoning_content`, the
-concatenated `reasoning_text` parts of the target attempt; summaries are never used.
-Without it, a reply made with reasoning on is trained as a direct answer, so build
-non-thinking datasets from effort `none` play: `--effort none` drops the other rows and
-counts them. The smoke test refuses reasoning datasets.
+concatenated `reasoning_text` parts of the target attempt; summaries are never used. It
+drops rows played at an effort other than `none` whose target has no `reasoning_text`
+(`no_reasoning`): the chat template would render them with an empty think block, as
+non-thinking replies. Without it, a reply made with reasoning on is trained as a direct
+answer, so build non-thinking datasets from effort `none` play: `--effort none` drops the
+other rows and counts them. The smoke test refuses reasoning datasets.
 
 ## Token limits
 
@@ -120,20 +144,35 @@ reports count, p50, p99 and max per split. The smoke test skips rows over its ow
 `--max-tokens` (default 4,096) and rows whose reply the chat template renders differently
 (Qwen's strips leading newlines), and counts both in its `metrics.json`.
 
+## Smoke-test measures
+
+The training loss of single shuffled rows is noise, so the smoke test measures the mean
+loss per assistant token on fixed evaluation rows (the first `--loss-rows`, default 64,
+usable validation rows; train rows when there is no validation) before training and again
+with the saved adapter, reloaded and verified (`eval_loss` in `metrics.json`). It then
+decodes the first `--eval-rows` (default 8) of them and reports the JSON-valid, exact-match
+and action-match rates. Exact match compares the whole normalised JSON, including the
+free-text `reason` and `notes`, so it stays near zero; action match compares the replies
+after dropping the top-level `reason` and `notes` keys (Spire's `choice`, WH3's `orders`).
+A lower loss after training on validation rows is the learning signal; on train rows it
+shows only fitting.
+
 ## Commands
 
 ```bash
 # Build: train and validation chats, aligned row sidecars, manifest.json, datacard.md
 uv run python -m gameai.sft runs/twwarhammer3/exports/NAME [EXPORT ...] \
-    --output runs/sft/NAME --validation-group twwarhammer3:FAMILY --effort none
-# Options: --provider P and --effort E (repeatable), --first-attempt-only, --reasoning
+    --output runs/sft/NAME --validation-group "twwarhammer3:FAMILY NAME" --effort none
+# Options: --provider P, --effort E and --require PATH=VALUE (repeatable),
+# --first-attempt-only, --reasoning
 # Token counts and limits need the llm extra (transformers):
 # runs/sft/tokenizers/Qwen3.6-35B-A3B holds the student's tokenizer and chat template at
 # Hugging Face revision 995ad96 (REVISION file; Apache-2.0 LICENSE beside it).
 uv run --locked --extra llm python -m gameai.sft runs/twwarhammer3/exports/NAME \
     --output runs/sft/NAME --tokenizer runs/sft/tokenizers/Qwen3.6-35B-A3B --max-tokens 8192
-# Local smoke test (CUDA; refuses while a game runs): ~30 LoRA steps on Qwen3-0.6B, then
-# reload and verify the adapter and decode validation rows (JSON-valid, exact-match rates)
+# Local smoke test (CUDA; refuses while a game runs): validation loss, ~30 LoRA steps on
+# Qwen3-0.6B, then reload and verify the adapter, validation loss again, and decode
+# validation rows (JSON-valid, exact-match and action-match rates)
 uv run --locked --extra llm python scripts/sft_smoke.py runs/sft/NAME \
     --output runs/sft/NAME-smoke
 uv sync --locked   # removes the llm extra again
@@ -169,7 +208,8 @@ configuration, a 0.6B stand-in for the student, and 60 steps.
 - Serving a fine-tune back into both harnesses: OpenRouter cannot serve it, so the games
   need a provider route to Tinker sampling or another endpoint before a fine-tune can be
   played and compared with its base.
-- Held-out Spire seeds, and held-out WH3 scenarios beyond those already declared.
+- Held-out WH3 scenarios beyond those already declared. Spire's held-out seeds are
+  declared but not yet played.
 - WH3 scenarios without a declared `family` each form their own group, so variants that
   share armies (the `kho5-dwf5` battle types) can land in different splits. Declare
   families before validating on them.

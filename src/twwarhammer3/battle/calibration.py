@@ -416,7 +416,8 @@ class SpellWindow(SmallDiagnostic):
                          "enemy not in melee, over 40 m from friends and not moving within "
                          "45 degrees of straight at the wizard; else Fireball, preferring an "
                          "enemy not in melee. The cheapest ready, affordable variant by key "
-                         "name, within 95% of its range; 5 s between casts. After an accepted "
+                         "name, within 95% of its range; 5 s between casts, and none while the "
+                         "wizard is in melee (it steps away first). After an accepted "
                          "cast the wizard gets no other order until a view from after the "
                          "order applied shows that spell recharging or active, or 6 s of "
                          "battle time pass, unless the wizard is in melee (then it steps "
@@ -496,7 +497,9 @@ class SpellWindow(SmallDiagnostic):
             return orders + self.move(caster, away, threat)
         self.pending = None
         magic = (observation.get("magic") or {}).get("current", 0)
-        choice = self.now - self.last_cast_s >= 5 and self.cast(caster, units, enemies, magic)
+        # Final review b25: a cast in melee was cancelled by the step away a view later.
+        choice = ("melee" not in caster.get("state", []) and self.now - self.last_cast_s >= 5
+                  and self.cast(caster, units, enemies, magic))
         if choice:
             ability, enemy, toward = choice
             order = {"unit": caster["id"], "type": "ability", "ability": ability["key"]}
