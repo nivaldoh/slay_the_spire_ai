@@ -152,3 +152,41 @@ def test_budget_and_invalid_replies_surface_from_decide(tmp_path):
     assert failure.value.failure["kind"] == "invalid_reply"
     assert len(failure.value.failure["attempts"]) == 2
     finish(garbled)
+
+
+@pytest.mark.parametrize(("bad", "message"), [
+    ([], "reply must be a JSON object"),
+    ({"assignments": [], "abilities": [], "reason": "go"}, "reply has no 'notes' field"),
+    ({"assignments": {}, "abilities": [], "reason": "go", "notes": None},
+     "reply field 'assignments' must be array"),
+    ({"assignments": [], "abilities": [], "reason": True, "notes": None},
+     "reply field 'reason' must be string"),
+    ({"assignments": ["f2 engage"], "abilities": [], "reason": "go", "notes": None},
+     "assignment 1 must be a JSON object"),
+    (json.loads(plan([{"skill": "dance"}])), "assignment 1 field 'skill' must be one of"),
+    (json.loads(plan([{"skill": "move", "x": "5", "z": 1}])),
+     "assignment 1 field 'x' must be number or null"),
+    (json.loads(plan([{"skill": "move", "x": float("nan"), "z": 1}])),
+     "assignment 1 field 'x' must be number or null"),
+])
+def test_off_schema_plans_are_retried_then_fail_as_policy_failure(tmp_path, bad, message):
+    # Open-weight backends need not enforce the strict schema; a strict one does.
+    bad = json.dumps(bad)
+    agent = commander(tmp_path, bad, plan(), plan())
+    agent.decide(observation(30000))
+    agent.fake.gate.release()
+    answer(agent)
+    agent.decide(observation(31000))
+    error, retried = [a.get("error") for a in agent.metadata()["attempts"]]
+    assert error.startswith(message) and retried is None
+    assert f"previous reply was invalid: {message}" in agent.fake.bodies[1]["input"][0]["content"]
+    finish(agent)
+    failing = commander(tmp_path, bad, bad)
+    failing.decide(observation(30000))
+    failing.fake.gate.release()
+    answer(failing)
+    with pytest.raises(PolicyFailure) as failure:
+        failing.decide(observation(31000))
+    assert failure.value.failure["kind"] == "invalid_reply"
+    assert [a["error"][:len(message)] for a in failure.value.failure["attempts"]] == [message] * 2
+    finish(failing)

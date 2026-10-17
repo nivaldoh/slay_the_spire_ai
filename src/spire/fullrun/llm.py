@@ -15,7 +15,7 @@ import re
 from collections import Counter, deque
 
 from gameai.ledger import Ledger
-from gameai.llm import InvalidReply, Model
+from gameai.llm import InvalidReply, Model, check_fields
 from gameai.provenance import REPO_ROOT
 from spire.decisions import Choice, card_text, live_targets
 from spire.protocol import Decision, PolicyFailure
@@ -217,8 +217,8 @@ def render_prompt(decision: Decision, notes: str, history: list[str],
 
 
 def _parse(text: str, count: int) -> dict:
-    # The strict reply schema fixes the keys and types; only the range is left to check.
-    reply = json.loads(text)
+    # Strict schemas fix the keys and types on OpenAI but not on every open-weight backend.
+    reply = check_fields(json.loads(text), REPLY_SCHEMA)
     if not 0 <= reply["choice"] < count:
         raise ValueError(f"choice must be an integer from 0 to {count - 1}")
     return reply

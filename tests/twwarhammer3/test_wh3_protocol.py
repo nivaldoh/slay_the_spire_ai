@@ -29,6 +29,7 @@ def test_allowed_orders_pass(orders):
     ([{"unit": "f1", "type": "move", "x": True, "z": 1}], "finite"),
     ([{"unit": "f1", "type": "attack", "target": "e1"}], "not visible"),
     (["halt"], "not an object"),
+    ([{"unit": "f2", "type": "attack", "target": ["e2"]}], "fields must be strings"),
 ])
 def test_disallowed_orders_are_named(orders, message):
     with pytest.raises(protocol.IllegalActionError, match=message):

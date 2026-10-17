@@ -14,7 +14,7 @@ from collections import Counter, deque
 from concurrent.futures import ThreadPoolExecutor
 
 from gameai.ledger import Ledger
-from gameai.llm import InvalidReply, Model
+from gameai.llm import InvalidReply, Model, check_fields
 from gameai.provenance import REPO_ROOT
 from twwarhammer3.battle.llm import (
     ABILITY_SCHEMA,
@@ -38,7 +38,7 @@ from twwarhammer3.battle.skills import SKILLS, Skills
 from twwarhammer3.protocol import friendly_units
 
 PROMPT_PATH = REPO_ROOT / "configs/twwarhammer3/commander_prompt.md"
-INVALID_RETRIES = 1  # only a reply that is not JSON is invalid; the plan is checked on arrival
+INVALID_RETRIES = 1  # only a reply off the schema is invalid; the plan is checked on arrival
 PLAN_HISTORY = 6
 REPORT_LENGTH = 8
 REPORT_HEADER = "Dropped or rejected since your last plan:\n"
@@ -62,6 +62,13 @@ REPLY_SCHEMA = {
     "required": ["assignments", "abilities", "reason", "notes"],
     "additionalProperties": False,
 }
+
+
+def parse_plan(text: str) -> dict:
+    reply = check_fields(json.loads(text), REPLY_SCHEMA)
+    for index, item in enumerate(reply["assignments"], 1):
+        check_fields(item, ASSIGNMENT_SCHEMA, f"assignment {index}")
+    return reply
 
 
 def describe_assignment(item: dict) -> str:
@@ -140,7 +147,7 @@ class CommanderPolicy:
     def _ask(self, prompt: str, seen_ms: int) -> tuple[dict, list[dict], int]:
         """On the worker thread: only the call, so all state changes stay on the caller's."""
         try:
-            reply, attempts = self.api.ask(prompt, REPLY_SCHEMA, json.loads, INVALID_RETRIES)
+            reply, attempts = self.api.ask(prompt, REPLY_SCHEMA, parse_plan, INVALID_RETRIES)
         except InvalidReply as error:
             raise invalid_reply(error) from None
         return reply, attempts, seen_ms

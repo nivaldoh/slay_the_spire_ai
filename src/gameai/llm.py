@@ -27,6 +27,8 @@ API_URL = OPENAI.url
 PRICES = OPENAI.prices
 TRANSPORT_ATTEMPTS = 3
 TRANSIENT_HTTP = {408, 409, 429, 500, 502, 503, 504}
+JSON_TYPES = {"object": dict, "array": list, "string": str, "integer": int,
+              "number": (int, float), "boolean": bool, "null": type(None)}
 
 
 class APIError(RuntimeError):
@@ -136,6 +138,34 @@ def reasoning_parts(output: list | None) -> list[dict]:
             for i, item in enumerate(output or []) if item.get("type") == "reasoning"
             for field in ("summary", "content")
             for part in item.get(field) or [] if isinstance(part.get("text"), str)]
+
+
+def _is_json(value, kind: str) -> bool:
+    if isinstance(value, bool):
+        return kind == "boolean"
+    if isinstance(value, float) and not math.isfinite(value):
+        return False  # Python's parser accepts NaN and Infinity; JSON has neither
+    return isinstance(value, JSON_TYPES[kind])
+
+
+def check_fields(value, schema: dict, name: str = "reply"):
+    """``value`` if it is an object holding every field ``schema`` requires, each of a type
+    and enum value the schema allows (a boolean is not a number); ValueError, which ``ask``
+    retries, otherwise. OpenAI enforces strict schemas, but open-weight backends may not.
+    Items of arrays are the game's to check."""
+    if not isinstance(value, dict):
+        raise ValueError(f"{name} must be a JSON object")
+    for key in schema["required"]:
+        if key not in value:
+            raise ValueError(f"{name} has no {key!r} field")
+        spec, field = schema["properties"][key], value[key]
+        kinds = [spec["type"]] if isinstance(spec["type"], str) else spec["type"]
+        if not any(_is_json(field, kind) for kind in kinds):
+            raise ValueError(f"{name} field {key!r} must be {' or '.join(kinds)}")
+        if "enum" in spec and field not in spec["enum"]:
+            allowed = ", ".join(map(str, spec["enum"]))
+            raise ValueError(f"{name} field {key!r} must be one of {allowed}")
+    return value
 
 
 def _output_text(response: dict) -> str:

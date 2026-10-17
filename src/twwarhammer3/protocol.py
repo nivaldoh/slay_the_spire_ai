@@ -65,6 +65,10 @@ def validate_orders(orders: list, observation: dict) -> None:
     for order in orders:
         if not isinstance(order, dict):
             raise IllegalActionError(f"order is not an object: {order!r}")
+        if not all(value is None or isinstance(value, (str, int, float))
+                   for value in order.values()):
+            raise IllegalActionError("order fields must be strings, numbers, booleans or"
+                                     f" null: {order!r}")
         unit, kind = order.get("unit"), order.get("type")
         if unit == "army" and kind == "ability":
             _validate_army_ability(order, observation, friendly, enemies, settings)
