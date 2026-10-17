@@ -3,6 +3,7 @@
 One row per model request (including retries), not per executor tick. A commander's
 execution spans its adoption through the next adoption. Default-skill ticks before its
 first plan are not model actions. Missing historical data stays missing and is labelled.
+Rows follow the export-row contract both games share (docs/twwarhammer3/traces.md).
 """
 
 import hashlib
@@ -19,7 +20,7 @@ from gameai.provenance import REPO_ROOT, sha256
 from twwarhammer3.battle.controllers import MODEL_POLICIES, policy_parts
 from twwarhammer3.battle.report import shared_measures
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 OUTCOMES = {"won", "lost", "draw"}
 RETRY_SUFFIX = "\n\nYour previous reply was invalid: {error}. Reply again."
 
@@ -50,8 +51,8 @@ def _legacy_retry_supported(revision: str, source_hash: str) -> bool:
         'feedback = f"\\n\\nYour previous reply was invalid: {error}. Reply again."'))
 
 
-def _new_record(prompt, line: int, behavior: dict) -> dict:
-    return {"user_prompt": prompt, "prompt_trace_line": line, "attempts": [],
+def _new_record(prompt, line: int | None, behavior: dict) -> dict:
+    return {"user_prompt": prompt, "prompt_trace_line": line, "attempts": [], "error": None,
             "decision_metadata": {}, "execution": [], "issues": [],
             "model": behavior.get("model"), "effort": behavior.get("effort")}
 
@@ -130,17 +131,26 @@ def _decisions(trace: Path, result: dict) -> tuple[list[dict], int]:
         if not matches:
             records.append(record)
         claimed.add(id(record))
+        error = exchange.get("error")
         record.update(attempts=exchange["attempts"], exchange_id=exchange["id"],
-                      exchange_trace_line=line, error=exchange.get("error"))
+                      exchange_trace_line=line,
+                      error={"type": error.get("type"), "message": error.get("message")}
+                      if error else None)
     # Old direct failures never wrote their final prompt. Preserve the attempts without
     # pretending the previous successful prompt was the failed one. Commander did log it.
     failure = result.get("failure") or {}
     if failure.get("attempts") and not exchanges:
-        record = pending if pending is not None else _new_record(None, 0, {})
+        record = pending if pending is not None else _new_record(None, None, {})
         if pending is None:
             records.append(record)
-        record.update(attempts=failure["attempts"], error=failure.get("kind"))
+        record.update(attempts=failure["attempts"],
+                      error={"type": failure.get("kind"), "message": result.get("error")})
     for record in records:
+        # Only an InvalidReply is salvaged (its valid orders kept, the rest dropped). Old
+        # traces did not record that error; new ones take it from the exchange.
+        if (record["error"] is None and "dropped" in record["decision_metadata"]
+                and record["attempts"] and record["attempts"][-1].get("error")):
+            record["error"] = {"type": "InvalidReply", "message": None}
         for step in record["execution"]:
             step["acknowledgement"] = acks.get(step["request"])
             if step["acknowledgement"] is None:
@@ -148,22 +158,27 @@ def _decisions(trace: Path, result: dict) -> tuple[list[dict], int]:
     return records, unattributed
 
 
-def _attempts(record: dict, system: str | None, manifest: dict) -> list[dict]:
-    attempts = []
+def _attempts(record: dict, system: str | None, manifest: dict) -> tuple[list[dict], str | None]:
+    """The attempts with each one's exact user prompt, and the system prompt they were sent
+    with (the saved prompt file, else the recorded request instructions)."""
+    attempts, saved = [], system is not None
     for index, raw in enumerate(record["attempts"]):
-        attempt = dict(raw)
+        # A transport failure has no reply; its message is the attempt's error.
+        attempt = {"text": None, "status": None, "usage": None,
+                   "error": raw.get("transport_error"), **raw}
         request = raw.get("request")
         if request is not None:
             user = request["input"][0]["content"]
-            instructions = request["instructions"]
-            if system is not None and instructions != system:
-                raise ValueError("Recorded request differs from the saved system prompt")
+            if system is None:
+                system = request["instructions"]
+            elif request["instructions"] != system:
+                raise ValueError("Recorded request differs from the saved system prompt" if saved
+                                 else "Recorded requests disagree on the system prompt")
             if index == 0 and record["user_prompt"] is not None and user != record["user_prompt"]:
                 raise ValueError("Recorded request differs from the saved user prompt")
             origin = "recorded_request"
         else:
-            instructions, user = system, record["user_prompt"]
-            origin = "recorded_prompt"
+            user, origin = record["user_prompt"], "recorded_prompt"
             if index:
                 previous = record["attempts"][index - 1]
                 supported = _legacy_retry_supported(
@@ -180,10 +195,14 @@ def _attempts(record: dict, system: str | None, manifest: dict) -> list[dict]:
             reasoning = reasoning_parts(raw["output"])
         elif "transport_error" not in raw:
             record["issues"].append("reasoning_not_recorded")
-        attempt.update(user_prompt=user, system_prompt=instructions,
-                       prompt_source=origin, reasoning=reasoning)
+        attempt.update(user_prompt=user, prompt_source=origin, reasoning=reasoning)
         attempts.append(attempt)
-    return attempts
+    # A request that failed after its last reply (a failed response, a cost stop) did not
+    # accept that reply either.
+    error = record["error"]
+    if error and attempts and attempts[-1]["error"] is None:
+        attempts[-1]["error"] = error["message"] or error["type"]
+    return attempts, system
 
 
 def _prompt(job: Path, base: str, manifest: dict, files: dict):
@@ -212,6 +231,30 @@ def _version(result: dict, job: Path, base: str) -> tuple[str | None, str]:
     return None, "unavailable"
 
 
+def _group(job: Path, manifest: dict) -> str:
+    """The leak-free split unit: the declared scenario family, else the scenario name. A
+    random scenario is one draw per seed, which jobs can repeat."""
+    config, scenario = manifest["config"], manifest.get("scenario") or {}
+    name = config["scenario"]
+    if scenario.get("family"):
+        return scenario["family"]
+    if name == "random" or name.startswith("random-"):
+        return f"{name}/seed-{config['seed']}" if config.get("seed") is not None else job.name
+    return name
+
+
+def _labels(record: dict, manifest: dict, delay_ms: int) -> dict:
+    """WH3 facts a dataset builder may filter on without reading ``execution``."""
+    steps = record["execution"]
+    acks = [step["acknowledgement"]["ack"] for step in steps if step["acknowledgement"]]
+    return {"scenario": manifest["config"]["scenario"],
+            "battle_type": (manifest.get("scenario") or {}).get("battle_type", "classic"),
+            "delay_ms": delay_ms,
+            "rejected_batches": sum(step["validation"] is not None for step in steps),
+            "refused_orders": sum(not result.get("ok") for ack in acks
+                                  for result in ack.get("results") or [])}
+
+
 def episode_records(episode: Path, manifest: dict, files: dict) -> tuple[list[dict], dict]:
     job = episode.parent
     result = _read(episode / "result.json", files)
@@ -233,10 +276,10 @@ def episode_records(episode: Path, manifest: dict, files: dict) -> tuple[list[di
                else None, "ended_by": result.get("ended_by"), "error": result.get("error"),
                "measures": shared_measures(result, scenario), "final": result.get("final"),
                "objectives": result.get("objectives"), "llm": result.get("llm")}
+    group = _group(job, manifest)
+    split = "held_out" if scenario.get("split") == "held_out" else "development"
     for index, record in enumerate(records):
-        record["attempts"] = _attempts(record, system, manifest)
-        recorded_system = next((a["system_prompt"] for a in record["attempts"]
-                                if a["system_prompt"] is not None), system)
+        record["attempts"], recorded_system = _attempts(record, system, manifest)
         if recorded_system is None:
             record["issues"].append("missing_system_prompt")
         if record["user_prompt"] is None:
@@ -244,7 +287,8 @@ def episode_records(episode: Path, manifest: dict, files: dict) -> tuple[list[di
         if not record["attempts"]:
             record["issues"].append("reply_not_recorded")
         record.update(
-            schema_version=SCHEMA_VERSION, decision_index=index, policy=base,
+            schema_version=SCHEMA_VERSION, game="twwarhammer3", group=group, split=split,
+            decision_index=index, policy=base,
             model=record["model"] or model, effort=record["effort"] or effort,
             provider=result.get("card", {}).get("provider") or
             manifest["config"].get("provider", "openai"),
@@ -257,9 +301,12 @@ def episode_records(episode: Path, manifest: dict, files: dict) -> tuple[list[di
             scenario=manifest["config"].get("scenario"),
             track=result.get("track", manifest.get("track")),
             delay_ms=result.get("delay_ms", 0), outcome=outcome,
+            labels=_labels(record, manifest, result.get("delay_ms", 0)),
             provenance={"source_revision": manifest.get("source_revision"),
                         "episode": episode.name, "trace_sha256": files[str(trace)],
                         "result_sha256": files[str(episode / "result.json")],
+                        "prompt_trace_line": record.pop("prompt_trace_line"),
+                        "exchange_trace_line": record.pop("exchange_trace_line", None),
                         "controller": result.get("card")})
         record["issues"] = sorted(set(record["issues"]))
     inventory.update(records=len(records), unattributed_executor_ticks=unattributed)
@@ -291,14 +338,20 @@ def export_traces(paths: list[Path], output: Path, *, prompt_versions: tuple[str
     output.parent.mkdir(parents=True, exist_ok=True)
     files, sources, issues = {}, {}, Counter()
     counts = Counter(records=0, attempts=0, episodes=0, execution_steps=0)
+    rows_by = {key: Counter() for key in ("split", "group", "provider")}
     with tempfile.TemporaryDirectory(prefix=".wh3-export-", dir=output.parent) as temporary:
         directory = Path(temporary)
         with (directory / "decisions.jsonl").open("w") as handle:
-            for job, episodes in sorted(selected.items()):
+            # By name first, so the row order does not depend on where the jobs are either.
+            for job, episodes in sorted(selected.items(), key=lambda item: (item[0].name,
+                                                                            str(item[0]))):
                 manifest = _read(job / "manifest.json", files)
                 if manifest.get("status") == "running":
                     raise ValueError(f"{job}: job manifest is still running; use stopped evidence")
-                source_id = _text_hash(str(job) + "\n" + files[str(job / "manifest.json")])
+                # The job's name and manifest identify it wherever the checkout is.
+                source_id = _text_hash(job.name + "\n" + files[str(job / "manifest.json")])
+                if source_id in sources:
+                    raise ValueError(f"{job}: same job selected from two locations")
                 environment_path = job / "environment.json"
                 environment = _read(environment_path, files) if environment_path.exists() else None
                 source = {"path": str(job), "manifest": manifest, "environment": environment,
@@ -327,11 +380,15 @@ def export_traces(paths: list[Path], output: Path, *, prompt_versions: tuple[str
                         counts["execution_steps"] += len(record["execution"])
                         inventory["exported_records"] += 1
                         issues.update(record["issues"])
+                        for key, counter in rows_by.items():
+                            counter[record[key]] += 1
         for path, digest in files.items():
             if sha256(Path(path)) != digest:
                 raise ValueError(f"Source changed during export: {path}")
         summary = {"schema_version": SCHEMA_VERSION, "counts": dict(counts),
                    "issues": dict(sorted(issues.items())),
+                   "rows_by": {key: dict(sorted(counter.items()))
+                               for key, counter in rows_by.items()},
                    "filters": {"prompt_versions": list(prompt_versions), "models": list(models),
                                "prompt_hashes": list(prompt_hashes)},
                    "exporter_sha256": sha256(Path(__file__)),
@@ -349,7 +406,8 @@ def _data_card(summary: dict) -> str:
     return f"""# WH3 model-decision export (schema {SCHEMA_VERSION})
 
 Offline export of saved original-game battles. One JSONL row per model request, with
-all reply attempts. No training or train/test split is performed. Sources are unchanged.
+all reply attempts, in the export-row contract both games share. No training is
+performed. Sources are unchanged.
 
 ## Contents and provenance
 
@@ -358,9 +416,11 @@ all reply attempts. No training or train/test split is performed. Sources are un
 - `sources.json`: full source manifests (configuration, source hashes, deployment pins),
   environment snapshots, episode results, input hashes, exporter and measures code hashes,
   filters, coverage and the decisions file hash. Each row references its source id.
-- Rows carry model, provider, effort, scenario, controller/prompt version, track and delay.
-  Older version labels from job names are labelled as such; unknown versions are null.
-  Exact system prompt hashes and source revisions identify every recorded format.
+- Rows carry game, group, split, model, provider, effort, scenario, controller/prompt
+  version, track and delay. Older version labels from job names are labelled as such;
+  unknown versions are null. Exact system prompt hashes and source revisions identify
+  every recorded format. Row and source ids derive from job names and manifest hashes,
+  not from where the evidence is stored.
 
 ## Interpretation
 
@@ -368,8 +428,20 @@ all reply attempts. No training or train/test split is performed. Sources are un
 retry feedback; `prompt_source` distinguishes recorded requests, saved initial prompts and
 retries reconstructed from the hash-checked historical implementation. Unknown prompts
 are null. New attempts include the request body (including the JSON schema) and raw output
-items. A transport failure has no reply text. HTTP retries within one request only expose
-recorded counts, not unreturned provider responses.
+items. A transport failure has null text, status and usage. HTTP retries within one
+request only expose recorded counts, not unreturned provider responses.
+
+`error` is null when the request ended with an accepted reply, else its `type` and
+`message` (a salvaged llm reply is an InvalidReply; old traces did not record its
+message). An attempt's `error` is null for the accepted reply, else the parser's,
+transport's or failed request's message. `labels` count the row's locally rejected
+batches and engine-refused orders (for commander, including later executor ticks);
+`battle_type` is classic unless the scenario declares another.
+
+`group` is the unit to keep whole when splitting: the declared scenario family, else the
+scenario name; a random scenario's group is its name and draw seed. `split` is `held_out`
+only for scenarios declared held out. Held-out variants share their family with
+development scenarios, so the split, not the group, separates them.
 
 For commander, `execution` contains the logged executor ticks from adoption until the
 next adopted plan. Persistent assignments can come from earlier plans: these are hybrid
@@ -395,6 +467,8 @@ Counts: `{json.dumps(summary['counts'], sort_keys=True)}`.
 
 Rows with each missing-data issue: `{json.dumps(summary['issues'], sort_keys=True)}`.
 
+Rows by split, group and provider: `{json.dumps(summary['rows_by'], sort_keys=True)}`.
+
 Filters: `{json.dumps(summary['filters'], sort_keys=True)}`.
 
 Built-in llm, llm_rules and commander are supported. Scripted/external controllers have
@@ -402,10 +476,12 @@ no exported model rows and remain in the inventory. Historical prompts, lost res
 and reasoning cannot be recovered when they were never recorded. A hard process crash
 can still lose in-flight requests. No current prompt or outcome is substituted for them.
 The sample contains development/tuning battles, losses and invalid replies, not an expert
-or held-out dataset. Keep entire episodes, paired scenarios and tuning variants together
-when designing splits; avoid leakage through shared histories and repeated starts.
+dataset. Keep whole groups together when designing splits; avoid leakage through shared
+histories and repeated starts.
 
 Before post-training or redistribution, review the source provider/model terms for the
-intended use (including restrictions on training competing models). This export is not
+intended use (including restrictions on training competing models). Rows produced by
+OpenAI models stay out of training sets by default while that review is open; rows from
+open-weight models served through OpenRouter may enter them. This export is not
 permission or a training license. No credentials or HTTP authorization headers are read.
 """

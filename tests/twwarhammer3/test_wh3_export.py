@@ -1,6 +1,7 @@
 """Exact model inputs, async plan ownership and evidence integrity in offline exports."""
 import hashlib
 import json
+import shutil
 import sys
 from types import SimpleNamespace
 
@@ -12,6 +13,7 @@ from twwarhammer3.battle import export
 SYSTEM = "Command well.\n\nKeep spacing. é\n"
 PROMPT = "Battle notes:\nnone\n\nTime 5 s.\n"
 ORDERS = [{"unit": "f1", "type": "attack", "target": "e2"}]
+SCENARIO = {"battle_type": "classic", "split": "development"}
 LEGACY = ('attempts, feedback = [], ""\nself.call(prompt + feedback, schema)\n'
           'attempt["error"] = str(error)\n'
           'feedback = f"\\n\\nYour previous reply was invalid: {error}. Reply again."')
@@ -44,7 +46,7 @@ def acknowledgement(request, *, ok=True):
 
 
 def make_job(tmp_path, events, *, policy="llm_rules", status="won", legacy=False,
-             failure=None, version="v20", name="job"):
+             failure=None, error=None, version="v20", name="job", declared=SCENARIO, **config):
     job = tmp_path / name
     ep = job / "episode-0000"
     ep.mkdir(parents=True)
@@ -53,13 +55,13 @@ def make_job(tmp_path, events, *, policy="llm_rules", status="won", legacy=False
     manifest = {"status": "completed", "source_revision": "a" * 40,
                 "source_files": {"src/gameai/llm.py": digest(LEGACY)},
                 "config": {"policy": policy, "model": "gpt-6-sol", "effort": "low",
-                           "scenario": "battle", "provider": "openai"},
-                "scenario": {"battle_type": "classic", "split": "development"},
+                           "scenario": "battle", "provider": "openai", **config},
+                "scenario": declared,
                 "deployment": {"pack": {"sha256": "pack-hash"}},
                 "track": "obs-v4+terrain/act-v2/live-1x",
                 prompt_name.removesuffix(".md") + "_sha256": digest(SYSTEM)}
     result = {"policy": policy, "status": status, "battle_ms": 6000,
-              "card": {"version": version}, "failure": failure,
+              "card": {"version": version}, "failure": failure, "error": error,
               "final": {"friendly": {"men": 1, "men0": 2}, "enemy": {"men": 0, "men0": 2}}}
     (job / "manifest.json").write_text(json.dumps(manifest))
     (job / "environment.json").write_text(json.dumps({"game": {"sha256": "engine-hash"}}))
@@ -86,7 +88,15 @@ def test_exact_historical_retries_orders_ack_outcome_and_provenance(tmp_path, mo
     summary = export.export_traces([job, job / "episode-0000", job], output)
     row, = read_export(output)
     assert row["system_prompt"] == SYSTEM and row["user_prompt"] == PROMPT
+    assert (row["schema_version"], row["game"], row["group"], row["split"]) == (
+        2, "twwarhammer3", "battle", "development")
+    assert row["error"] is None and row["provider"] == "openai"
     assert [a["text"] for a in row["attempts"]] == [a["text"] for a in raw]
+    assert [a["error"] for a in row["attempts"]] == ["bad target é", "again", None]
+    assert not any("system_prompt" in a for a in row["attempts"])
+    assert row["labels"] == {"scenario": "battle", "battle_type": "classic", "delay_ms": 0,
+                             "rejected_batches": 1, "refused_orders": 1}
+    assert row["provenance"]["prompt_trace_line"] == 2
     assert row["attempts"][1]["user_prompt"] == PROMPT + export.RETRY_SUFFIX.format(
         error="bad target é")
     assert row["attempts"][2]["user_prompt"] == PROMPT + export.RETRY_SUFFIX.format(error="again")
@@ -104,6 +114,8 @@ def test_exact_historical_retries_orders_ack_outcome_and_provenance(tmp_path, mo
     assert row["provenance"]["source_revision"] == "a" * 40
     assert all(p.read_bytes() == content for p, content in before.items())
     assert summary["counts"]["records"] == 1
+    assert summary["rows_by"] == {"split": {"development": 1}, "group": {"battle": 1},
+                                  "provider": {"openai": 1}}
     assert (output / "datacard.md").exists()
     # Stable bytes and identities, independent of destination or duplicate selections.
     export.export_traces([job / "episode-0000"], tmp_path / "again")
@@ -164,7 +176,8 @@ def test_new_failed_exchange_preserves_exact_prompt_without_fabricating_actions(
     row, = read_export(tmp_path / "export")
     assert row["user_prompt"] == PROMPT and row["execution"] == []
     assert row["outcome"]["gameplay_outcome"] is None
-    assert row["error"] == {"type": "InvalidReply"}
+    assert row["error"] == {"type": "InvalidReply", "message": None}
+    assert row["attempts"][0]["error"] == "invalid JSON"
 
 
 @pytest.mark.parametrize("status", ["policy_failure", "infrastructure_failure", "interrupted",
@@ -179,13 +192,120 @@ def test_failure_is_not_a_gameplay_loss_and_missing_ack_is_not_an_empty_ack(tmp_
 
 
 def test_old_failed_direct_call_never_uses_previous_prompt(tmp_path):
+    failure = {"kind": "invalid_reply", "attempts": [attempt("broken", error="Expecting value")]}
     job = make_job(tmp_path, [decision("r1", attempts=[attempt("good")]), acknowledgement("r1")],
-                   status="policy_failure", failure={"attempts": [attempt("broken")]})
+                   status="policy_failure", failure=failure,
+                   error="No valid reply after declared retries")
     export.export_traces([job], tmp_path / "export")
     good, failed = read_export(tmp_path / "export")
-    assert good["user_prompt"] == PROMPT
+    assert good["user_prompt"] == PROMPT and good["error"] is None
     assert failed["user_prompt"] is None and failed["attempts"][0]["user_prompt"] is None
     assert failed["execution"] == [] and "missing_user_prompt" in failed["issues"]
+    assert failed["error"] == {"type": "invalid_reply",
+                               "message": "No valid reply after declared retries"}
+    assert failed["provenance"]["prompt_trace_line"] is None
+
+
+def test_failed_requests_mark_their_unaccepted_attempts(tmp_path):
+    lost = {"request": recorded_attempt(PROMPT)["request"], "transport_error": "HTTP 503",
+            "uncertain_attempts": 0, "exchange_id": "m1"}
+    stopped = recorded_attempt("later", exchange="m2")
+    events = [{"kind": "model_exchange", "id": "m1", "prompt": PROMPT, "attempts": [lost],
+               "error": {"type": "APIError", "message": "HTTP 503"}},
+              {"kind": "model_exchange", "id": "m2", "prompt": "later", "attempts": [stopped],
+               "error": {"type": "APIError", "message": "Reported cost exceeded reservation"}}]
+    job = make_job(tmp_path, events, status="infrastructure_failure")
+    export.export_traces([job], tmp_path / "export")
+    first, second = read_export(tmp_path / "export")
+    assert first["attempts"][0] | {"request": None} == {
+        "request": None, "transport_error": "HTTP 503", "uncertain_attempts": 0,
+        "exchange_id": "m1", "text": None, "status": None, "usage": None, "error": "HTTP 503",
+        "user_prompt": PROMPT, "prompt_source": "recorded_request", "reasoning": None}
+    assert first["error"] == {"type": "APIError", "message": "HTTP 503"}
+    assert first["issues"] == [] and first["provenance"]["exchange_trace_line"] == 1
+    assert second["attempts"][0]["text"] == stopped["text"]
+    assert second["attempts"][0]["error"] == "Reported cost exceeded reservation"
+
+
+@pytest.mark.parametrize("declared, config, group, split, battle_type", [
+    ({"family": "cavalry", "split": "held_out", "battle_type": "siege"}, {}, "cavalry",
+     "held_out", "siege"),
+    ({"family": "cavalry", "split": "development"}, {}, "cavalry", "development", "classic"),
+    (None, {}, "battle", "development", "classic"),
+    ({"map": "m"}, {"scenario": "random-siege", "seed": 7}, "random-siege/seed-7",
+     "development", "classic"),
+    ({"map": "m"}, {"scenario": "random"}, "job", "development", "classic"),
+])
+def test_group_and_split_follow_the_scenario_declaration(tmp_path, declared, config, group,
+                                                         split, battle_type):
+    job = make_job(tmp_path, [decision("r1", attempts=[attempt()])], declared=declared, **config)
+    export.export_traces([job], tmp_path / "export")
+    row, = read_export(tmp_path / "export")
+    assert (row["game"], row["group"], row["split"]) == ("twwarhammer3", group, split)
+    # Battles are classic unless the scenario declares another type, as in stats.
+    assert row["labels"]["battle_type"] == battle_type
+
+
+def test_rows_and_ids_do_not_depend_on_the_checkout_path(tmp_path):
+    job = make_job(tmp_path / "a", [decision("r1", attempts=[attempt()])])
+    copy = shutil.copytree(job, tmp_path / "b/job")
+    first = export.export_traces([job], tmp_path / "one")
+    second = export.export_traces([copy], tmp_path / "two")
+    assert (tmp_path / "one/decisions.jsonl").read_bytes() == (
+        tmp_path / "two/decisions.jsonl").read_bytes()
+    assert first["sources"].keys() == second["sources"].keys()
+    assert read_export(tmp_path / "one")[0]["id"].endswith("/episode-0000/m0")
+    # Rows follow the job names, not where each job is stored.
+    other = make_job(tmp_path / "c", [decision("r1", attempts=[attempt()])], name="a-job")
+    export.export_traces([job, other], tmp_path / "three")
+    export.export_traces([copy, shutil.copytree(other, tmp_path / "0/a-job")], tmp_path / "four")
+    assert (tmp_path / "three/decisions.jsonl").read_bytes() == (
+        tmp_path / "four/decisions.jsonl").read_bytes()
+    assert [row["provenance"]["episode"] for row in read_export(tmp_path / "three")] == [
+        "episode-0000"] * 2
+    with pytest.raises(ValueError, match="two locations"):
+        export.export_traces([job, copy], tmp_path / "five")
+    assert not (tmp_path / "five").exists()
+
+
+@pytest.mark.parametrize("prompt_file", [True, False])
+def test_attempts_share_one_checked_system_prompt(tmp_path, prompt_file):
+    raw = recorded_attempt(PROMPT)
+    raw["request"] = dict(raw["request"], instructions="Other instructions")
+    job = make_job(tmp_path, [{"kind": "model_exchange", "id": "m1", "prompt": PROMPT,
+                               "attempts": [raw]}])
+    if prompt_file:
+        with pytest.raises(ValueError, match="saved system prompt"):
+            export.export_traces([job], tmp_path / "export")
+        return
+    (job / "llm_rules_prompt.md").unlink()
+    export.export_traces([job], tmp_path / "export")
+    row, = read_export(tmp_path / "export")
+    assert row["system_prompt"] == "Other instructions"
+    assert row["system_prompt_sha256"] == digest("Other instructions")
+    assert "system_prompt" not in row["attempts"][0] and row["issues"] == []
+    # Without a saved prompt, a request's attempts must still agree with each other.
+    retry = recorded_attempt(PROMPT)
+    trace = job / "episode-0000/trace.jsonl"
+    trace.write_text(json.dumps({"kind": "model_exchange", "id": "m1", "prompt": PROMPT,
+                                 "attempts": [raw, retry]}) + "\n")
+    with pytest.raises(ValueError, match="Recorded requests disagree on the system prompt"):
+        export.export_traces([job], tmp_path / "export-2")
+
+
+def test_salvaged_reply_without_exchange_records_its_invalid_reply(tmp_path):
+    raw = [attempt("bad", error="cooldown"), attempt('{"orders": []}', error="cooldown")]
+    events = [decision("r1", attempts=raw, dropped=["f1 cast: cooldown"]), acknowledgement("r1"),
+              decision("r2", None, [attempt()], kind="commander", dropped=[]),
+              acknowledgement("r2")]
+    job = make_job(tmp_path, events)
+    export.export_traces([job], tmp_path / "export")
+    salvaged, commander = read_export(tmp_path / "export")
+    assert salvaged["error"] == {"type": "InvalidReply", "message": None}
+    assert salvaged["execution"][0]["orders"] == ORDERS
+    assert salvaged["decision_metadata"]["dropped"] == ["f1 cast: cooldown"]
+    # A commander records dropped assignments of a plan it accepted.
+    assert commander["error"] is None
 
 
 def test_unverifiable_retry_does_not_claim_an_exact_prompt(tmp_path):
