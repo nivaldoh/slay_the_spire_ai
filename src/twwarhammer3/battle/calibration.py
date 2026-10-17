@@ -568,6 +568,205 @@ class CornerHold(SmallDiagnostic):
         return {"type": "corner_hold", "corner": self.corner}
 
 
+def _fraction(unit: dict) -> float:
+    return unit["men"] / unit["men0"] if unit.get("men0") else 1
+
+
+class FocusFire(SmallDiagnostic):
+    """S8: every shooter fires at one enemy until it routs; the infantry screens them."""
+
+    card = {"purpose": "Does concentrated fire break regenerating units that spread fire cannot?",
+            "knowledge": "S8: shooters fire only at one committed enemy, kept until it routs "
+                         "or leaves sight, then the visible enemy with the lowest men "
+                         "fraction; they hold while it is out of range. A shooter with an "
+                         "enemy within 40 m, not yet in melee, moves 80 m away from it; "
+                         "without ammunition it attacks its nearest enemy. Other units attack "
+                         "the enemy nearest the shooters. No hidden state or regeneration "
+                         "estimate."}
+
+    def __init__(self):
+        super().__init__()
+        self.target = None
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        units.sort(key=lambda unit: unit["id"])
+        guns = [unit for unit in units if unit.get("class") in SHOOTERS]
+        line = [unit for unit in units if unit not in guns]
+        anchor = _centre(guns or units)
+        target = next((enemy for enemy in enemies if enemy["id"] == self.target), None) or min(
+            enemies, key=lambda enemy: (_fraction(enemy), distance(anchor, enemy)))
+        self.target = target["id"]
+        screen = min(enemies, key=lambda enemy: distance(anchor, enemy))
+        orders = [order for unit in line for order in self.attack(unit, screen)]
+        for gun in guns:
+            near = min(enemies, key=lambda enemy: distance(gun, enemy))
+            if not gun.get("ammo"):
+                orders += self.attack(gun, near)
+            elif distance(gun, near) < 40 and "melee" not in gun.get("state", []):
+                orders += self.move(gun, _offset(near, _direction(near, gun), 80), near)
+            elif distance(gun, target) <= gun.get("range", 0):
+                orders += self.attack(gun, target, "ranged")
+        return orders
+
+    def metadata(self):
+        return {"type": "focus_fire", "target": self.target}
+
+
+ANTI_LARGE = ("spear", "halberd", "pike", "kossars_1")  # disclosed card-key words
+
+
+class MonsterTarget(SmallDiagnostic):
+    """S9: a large unit goes round the anti-large unit onto the one without that bonus."""
+
+    card = {"purpose": "Can a lone monster pick the target that cannot fight large units?",
+            "knowledge": "S9: prefers visible enemies whose card key lacks spear, halberd, "
+                         "pike or kossars_1, kept until it routs or leaves sight, else the "
+                         "nearest enemy. Beyond 90 m it walks first to a point 60 m past "
+                         "that target on the side away from the nearest anti-large unit, "
+                         "then attacks. After 10 s in melee beside an anti-large unit it "
+                         "re-attacks its preferred target. No hidden state or path search."}
+
+    def __init__(self):
+        super().__init__()
+        self.target = None
+        self.contact_s = {}
+        self.arrived = set()
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        units.sort(key=lambda unit: unit["id"])
+        spears = [enemy for enemy in enemies if any(word in enemy.get("type", "")
+                                                    for word in ANTI_LARGE)]
+        soft = [enemy for enemy in enemies if enemy not in spears]
+        target = _keep(soft or enemies, self.target, _centre(units))
+        self.target = target["id"]
+        orders = []
+        for unit in units:
+            near = min(enemies, key=lambda enemy: distance(unit, enemy))
+            if "melee" in unit.get("state", []) and near in spears and target is not near:
+                start = self.contact_s.setdefault(unit["id"], self.now)
+                if self.now - start < 10:
+                    continue
+            else:
+                self.contact_s.pop(unit["id"], None)
+            guard = min(spears, key=lambda enemy: distance(target, enemy), default=None)
+            post = _offset(target, _direction(guard, target), 60) if guard else target
+            if distance(unit, post) < 25 or distance(unit, target) <= 90:
+                self.arrived.add(unit["id"])
+            if guard and unit["id"] not in self.arrived:
+                orders += self.move(unit, post, target)
+            else:
+                orders += self.attack(unit, target)
+        return orders
+
+    def metadata(self):
+        return {"type": "monster_target", "target": self.target, "arrived": sorted(self.arrived)}
+
+
+class BraceFacing(SmallDiagnostic):
+    """S10: spear units stand in a triangle and turn their fronts toward the riders."""
+
+    card = {"purpose": "Can spear infantry keep its fronts toward cavalry without chasing?",
+            "knowledge": "S10: posts chosen once in a triangle around the starting centre "
+                         "(two 20 m either side and 10 m toward the nearest visible enemy, "
+                         "one 20 m behind). Each unit walks to its post and turns to the "
+                         "nearest enemy while that enemy is over 60 m away; nearer, it stands "
+                         "braced. A unit attacks only an enemy within 20 m of it, or one "
+                         "within 15 m of a friendly unit in melee and 60 m of itself. No "
+                         "hidden state or path search."}
+
+    def __init__(self):
+        super().__init__()
+        self.posts = {}
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        units.sort(key=lambda unit: unit["id"])
+        if not self.posts:
+            centre = _centre(units)
+            front = _direction(centre, min(enemies, key=lambda enemy: distance(centre, enemy)))
+            spots = [_offset(centre, front, 10, -20), _offset(centre, front, 10, 20),
+                     _offset(centre, front, -20)]
+            self.posts = {unit["id"]: spots[index % 3] for index, unit in enumerate(units)}
+        fighting = [unit for unit in units if "melee" in unit.get("state", [])]
+        orders = []
+        for unit in units:
+            near = min(enemies, key=lambda enemy: distance(unit, enemy))
+            helped = [enemy for enemy in enemies if distance(enemy, unit) <= 60 and any(
+                distance(enemy, friend) <= 15 for friend in fighting if friend is not unit)]
+            if distance(unit, near) <= 20:
+                orders += self.attack(unit, near)
+            elif helped:
+                orders += self.attack(unit, min(helped, key=lambda enemy: distance(unit, enemy)))
+            elif distance(unit, near) > 60:
+                post = self.posts.get(unit["id"], unit)
+                facing = math.degrees(math.atan2(near["x"] - post["x"], near["z"] - post["z"]))
+                turn = abs((facing - unit.get("bearing", facing) + 180) % 360 - 180)
+                if distance(unit, post) >= 12 or turn > 30:
+                    orders += self.issue(unit, {"unit": unit["id"], "type": "move", "run": False,
+                                                "facing": facing % 360, "x": post["x"],
+                                                "z": post["z"]})
+        return orders
+
+    def metadata(self):
+        return {"type": "brace_facing", "posts": self.posts}
+
+
+class CounterBattery(SmallDiagnostic):
+    """S11: the gun shoots enemy artillery first; the infantry waits by it until then."""
+
+    card = {"purpose": "Does silencing the enemy artillery first make the assault winnable?",
+            "knowledge": "S11: artillery shoots visible enemy artillery, kept until it routs "
+                         "or leaves sight, else the nearest enemy; out of range it moves to "
+                         "90% of its range from that target. Other units stay 30 m beside the "
+                         "gun while any enemy artillery is visible, attacking only an enemy "
+                         "within 60 m of the gun; then they attack the nearest enemy. No "
+                         "hidden state, enemy ammunition or path search."}
+
+    def __init__(self):
+        super().__init__()
+        self.target = None
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        units.sort(key=lambda unit: unit["id"])
+        guns = [unit for unit in units if unit.get("class") == "artillery"]
+        line = [unit for unit in units if unit not in guns]
+        batteries = [enemy for enemy in enemies if enemy.get("class") == "artillery"]
+        anchor = _centre(guns or units)
+        target = _keep(batteries or enemies, self.target, anchor)
+        self.target = target["id"]
+        orders = []
+        for gun in guns:
+            if not gun.get("ammo"):
+                continue
+            if distance(gun, target) <= gun.get("range", 0):
+                orders += self.attack(gun, target, "ranged")
+            else:
+                spot = _offset(target, _direction(target, gun), gun.get("range", 0) * .9)
+                orders += self.move(gun, spot, target)
+        threat = min(enemies, key=lambda enemy: distance(anchor, enemy))
+        for unit in line:
+            if not batteries or distance(anchor, threat) <= 60:
+                orders += self.attack(unit, threat)
+            else:
+                orders += self.move(unit, _offset(anchor, _direction(anchor, target), 0, 30),
+                                    target)
+        return orders
+
+    def metadata(self):
+        return {"type": "counter_battery", "target": self.target}
+
+
 def _centre(units: list[dict]) -> dict:
     return {axis: sum(unit[axis] for unit in units) / len(units) for axis in ("x", "z")}
 

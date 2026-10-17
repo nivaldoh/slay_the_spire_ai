@@ -27,7 +27,10 @@ age. A floor win means the step is too easy and climbs.
 | S10 | `skv-spears-sla-hellstriders` | receiving cavalry: facing and bracing | 3 Clanrat Spearmen (975) | 2 Hellstriders (1,350) | 1,500 |
 | S11 | `dwf-cannon-grn-lobbers` | counter-battery and when to advance | 1 Cannon, 1 Dwarf Warriors (1,250) | 2 Rock Lobbers, 2 Goblin Spearmen (1,750) | 1,950 |
 
-S12 and S13 below are definitions only, not declared.
+S12 and S13 below are definitions only, not declared. The four disclosed diagnostics are
+implemented in `battle/calibration.py` as `FocusFire`, `MonsterTarget`, `BraceFacing` and
+`CounterBattery`; their controller cards state every rule, and the paragraphs below
+describe them as built.
 
 ## S8. Focus fire against regeneration
 
@@ -45,8 +48,9 @@ breaks, and the trolls reach the guns. Winning: both gun units shoot the same tr
 until it routs (morale 45), the warriors take the first contact in front of the guns,
 and the guns step back from any troll that reaches them. Main risk: low troll morale may
 make plain fire at will enough (trivial), or the clubs may overrun the warriors before
-focus fire matters. Floor: `hold`. Diagnostic idea, `FocusFire`: both shooters attack the
-in-range enemy with the lowest visible men fraction; the warriors attack the enemy
+focus fire matters. Floor: `hold`. Diagnostic `FocusFire`: every shooter fires only at one
+committed enemy (kept until it routs or leaves sight, then the visible enemy with the
+lowest men fraction), holding while it is out of range; other units attack the enemy
 nearest the guns; a gun with an enemy within 40 m moves 80 m away from it. Overlap: S3
 also coordinates guns and a melee screen, but there the question is the line of fire,
 not the target.
@@ -67,9 +71,10 @@ trade blows with anti-large while the Streltsi shoot. Winning: walk around the s
 onto the Streltsi (no anti-large bonus), rout them through terror, then take the Kossars
 in the flank or rear. Main risk: the Giant may win any engagement (trivial), or the
 armour-piercing rifles may kill it before it arrives (impossible); terror may decide
-either way. Floor: `attack_nearest`. Diagnostic idea, `MonsterTarget`: prefer a visible
-enemy whose card lacks anti-large (disclosed key list), approach through a waypoint 60 m
-to its side away from the spears, and leave a melee with anti-large after 10 s. Overlap:
+either way. Floor: `attack_nearest`. Diagnostic `MonsterTarget`: prefer a visible enemy
+whose card key lacks spear, halberd, pike or `kossars_1` (the observation labels both
+Kislev units `missile`, and the Giant `infantry`), walk first to a point 60 m past it on
+the side away from the spears, then attack; leave a melee beside anti-large after 10 s. Overlap:
 the mirror of S1, from the monster's side. The question is target choice for a single
 entity, not a two-unit flank.
 
@@ -90,9 +95,10 @@ tight triangle or back-to-back block, turn the fronts toward the riders without 
 off position, and let a second spear unit counter-charge a rider unit stuck on the
 first. Main risk: riders that never rout must all die to weak spears (unwinnable), or
 the AI may charge braced fronts head-on (trivial). Floor: `hold`; also `attack_nearest`.
-Diagnostic idea, `BraceFacing`: three posts 25 m apart in a triangle near the start;
-each unit faces the nearest cavalry when it is over 60 m away and attacks only a rider
-in contact with it or with a neighbour. Overlap: the defender's side of S1's problem;
+Diagnostic `BraceFacing`: posts in a triangle around the start (two 20 m
+either side and 10 m forward, one 20 m behind); each unit turns to the nearest enemy
+while it is over 60 m away, stands still when nearer, and attacks only a rider within
+20 m of it or within 15 m of a neighbour in melee. Overlap: the defender's side of S1's problem;
 the question is formation and facing discipline.
 
 ## S11. Counter-battery before the advance
@@ -112,9 +118,10 @@ routs the lobber crews first while the warriors wait out of their range, then th
 warriors advance on goblins with no supporting fire. Main risk: an earlier measurement put
 artillery at about one crew kill per three shots, so 22 rounds may not silence two
 lobbers; inaccurate lobbers may not threaten armoured, shielded dwarfs (trivial). Lowest
-confidence of this batch. Floor: `attack_nearest`. Diagnostic idea, `CounterBattery`:
-the cannon shoots visible artillery first; the warriors hold 250 m back until no enemy
-artillery is active, then attack the nearest enemy. Overlap: S4 protects artillery, and
+confidence of this batch. Floor: `attack_nearest`. Diagnostic `CounterBattery`:
+the cannon shoots visible artillery first (moving to 90% of its range when out of
+range); the warriors wait 30 m beside the gun while enemy artillery is visible, attacking
+only an enemy within 60 m of it, then attack the nearest enemy. Overlap: S4 protects artillery, and
 siege firing positions; here artillery is the target.
 
 ## Definitions not declared

@@ -5,14 +5,18 @@ from copy import deepcopy
 
 from twwarhammer3.battle.calibration import (
     Bodyguard,
+    BraceFacing,
     CasterSkirmish,
     CentralDefence,
     CoordinatedRush,
     CornerHold,
+    CounterBattery,
     Crossfire,
     CrossKite,
     FeintFlank,
+    FocusFire,
     HammerAnvil,
+    MonsterTarget,
     SpellWindow,
 )
 from twwarhammer3.protocol import validate_orders
@@ -49,7 +53,7 @@ def test_feint_flank_waits_for_rear_position_then_withdraws_after_contact():
 
 def test_small_diagnostics_do_not_use_hidden_enemies_or_order_routers():
     for cls in (FeintFlank, CrossKite, Bodyguard, Crossfire, SpellWindow, HammerAnvil,
-                CornerHold):
+                CornerHold, FocusFire, MonsterTarget, BraceFacing, CounterBattery):
         obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 0)],
                "enemy": [], "evaluation": {"enemy": [unit("e1", "hidden", 5, 5)]},
                "enemy_roster": [unit("e1", "hidden", 5, 5)]}
@@ -475,3 +479,102 @@ def test_corner_hold_clamps_its_line_holds_and_fights_only_in_contact():
     validate_orders(orders, obs)
     assert orders == [{"unit": "f1", "type": "attack", "run": True, "mode": "melee",
                        "target": "e1"}]
+
+
+def test_focus_fire_commits_every_gun_to_the_weakest_enemy_and_backs_off_contact():
+    gun = {"class": "missile", "ammo": 10, "range": 145}
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "thunderers", 0, 0, **gun),
+           unit("f2", "thunderers", 20, 0, **gun), unit("f3", "warriors", 10, 20)],
+           "enemy": [unit("e1", "trolls", 0, 100), unit("e2", "trolls", 30, 110, men=6)]}
+    original = deepcopy(obs)
+    policy = FocusFire()
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    shots = [order for order in orders if order["unit"] in ("f1", "f2")]
+    assert len(shots) == 2 and all(o["target"] == "e2" and o["mode"] == "ranged" for o in shots)
+    assert next(order for order in orders if order["unit"] == "f3")["target"] == "e1"
+    assert obs == original
+    obs["time_ms"] = 2000
+    obs["enemy"][0]["men"] = 3  # weaker now, but the committed target stays
+    policy.decide(obs)
+    assert policy.target == "e2"
+    obs["time_ms"] = 6000
+    obs["enemy"][0].update(x=0, z=30)
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    retreat = next(order for order in orders if order["unit"] == "f1")
+    assert retreat["type"] == "move" and retreat["z"] < -30
+
+
+def test_monster_target_goes_round_the_spears_then_leaves_their_melee():
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "giant", 0, 0)],
+           "enemy": [unit("e1", "wh3_main_ksl_inf_kossars_1", 0, 200),
+                     unit("e2", "wh3_main_ksl_inf_streltsi_0", 40, 260)]}
+    original = deepcopy(obs)
+    policy = MonsterTarget()
+    [order] = policy.decide(obs)
+    validate_orders([order], obs)
+    # 60 m beyond the riflemen, on the side away from the spears.
+    assert order["type"] == "move" and math.hypot(order["x"] - 73.3, order["z"] - 309.9) < 1
+    assert obs == original
+    obs["time_ms"] = 2000
+    obs["friendly"][0].update(x=73, z=309)
+    [order] = policy.decide(obs)
+    assert order == {"unit": "f1", "type": "attack", "run": True, "mode": "melee",
+                     "target": "e2"}
+    caught = MonsterTarget()
+    obs["friendly"][0].update(x=0, z=195, state=["melee"])
+    assert caught.decide(obs) == []
+    obs["time_ms"] = 12000
+    assert caught.decide(obs)[0]["target"] == "e2"
+
+
+def test_brace_facing_turns_posts_to_the_riders_and_only_fights_contact():
+    obs = {"time_ms": 1000, "friendly": [unit(f"f{n}", "clanrats", 10 * (n - 1), 0, bearing=180)
+                                         for n in (1, 2, 3)],
+           "enemy": [unit("e1", "hellstriders", 10, 300, **{"class": "cavalry"})]}
+    original = deepcopy(obs)
+    policy = BraceFacing()
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert [(round(o["x"]), round(o["z"])) for o in orders] == [(30, 10), (-10, 10), (10, -20)]
+    for order in orders:
+        toward = math.degrees(math.atan2(10 - order["x"], 300 - order["z"]))
+        assert order["type"] == "move" and not order["run"]
+        assert abs((order["facing"] - toward + 180) % 360 - 180) < 1
+    assert obs == original
+    near = BraceFacing()
+    obs["enemy"][0].update(x=10, z=50)
+    assert near.decide(obs) == []  # within 60 m: stand braced, no chase
+    obs["friendly"][0].update(state=["melee"])
+    obs["friendly"][2].update(x=40, z=0)
+    obs["enemy"][0].update(x=0, z=5)
+    orders = near.decide(obs)
+    validate_orders(orders, obs)
+    assert {order["unit"] for order in orders} == {"f1", "f2", "f3"}
+    assert all(order["type"] == "attack" and order["target"] == "e1" for order in orders)
+
+
+def test_counter_battery_shoots_artillery_first_and_holds_infantry_by_the_gun():
+    obs = {"time_ms": 1000, "friendly": [
+           unit("f1", "cannon", 0, 0, ammo=20, range=300, **{"class": "artillery"}),
+           unit("f2", "warriors", 10, 0)],
+           "enemy": [unit("e1", "lobber", 0, 280, **{"class": "artillery"}),
+                     unit("e2", "goblins", 20, 200)]}
+    original = deepcopy(obs)
+    policy = CounterBattery()
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    shot, wait = orders
+    assert shot["target"] == "e1" and shot["mode"] == "ranged"
+    assert wait["type"] == "move" and round(wait["x"]) == -30 and round(wait["z"]) == 0
+    assert obs == original
+    far = CounterBattery()
+    obs["enemy"][0]["z"] = 400
+    move = far.decide(obs)[0]
+    assert move["type"] == "move" and round(move["z"]) == 130
+    obs["enemy"][0]["state"] = ["routing"]
+    obs["time_ms"] = 5000
+    orders = far.decide(obs)
+    validate_orders(orders, obs)
+    assert {order["target"] for order in orders if order["type"] == "attack"} == {"e2"}
