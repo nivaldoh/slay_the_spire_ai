@@ -1649,8 +1649,8 @@
   "ksl-ffa-grn-dwf-12": {
     "name": "ksl-ffa-grn-dwf-12",
     "family": "opportunism at scale",
-    "scenario_version": 1,
-    "brief": "Twelve Kislev units in a three-way free-for-all against twelve AI Greenskin and twelve AI Dwarf units, each army in its own alliance, with a 40-minute timer. The two AI armies also fight each other, so when to stay out, whom to engage and when to commit compete over a long horizon. Hypotheses, not a prescribed solution; winnability is not yet shown.",
+    "scenario_version": 2,
+    "brief": "Twelve Kislev units in a four-way free-for-all against twelve AI Greenskin, twelve AI Dwarf and twelve AI Empire units, each army in its own alliance, with a 40-minute timer. The three AI armies also fight each other, so when to stay out, whom to engage and when to commit compete over a long horizon. Hypotheses, not a prescribed solution; winnability is not yet shown.",
     "split": "development",
     "status": "prototype_not_admitted",
     "battle_type": "free_for_all",
@@ -1709,13 +1709,31 @@
           "wh_main_dwf_inf_miners_0",
           "wh_main_dwf_art_grudge_thrower"
         ]
+      },
+      {
+        "subculture": "wh_main_sc_emp_empire",
+        "faction": "wh_main_emp_empire",
+        "units": [
+          "wh_main_emp_cha_general_0",
+          "wh_main_emp_cha_wizard_fire_0",
+          "wh_main_emp_inf_halberdiers",
+          "wh_main_emp_inf_halberdiers",
+          "wh_main_emp_inf_swordsmen",
+          "wh_main_emp_inf_swordsmen",
+          "wh_main_emp_inf_handgunners",
+          "wh_main_emp_inf_handgunners",
+          "wh_main_emp_inf_crossbowmen",
+          "wh_main_emp_cav_empire_knights",
+          "wh_main_emp_cav_empire_knights",
+          "wh_main_emp_art_great_cannon"
+        ]
       }
     ],
     "expect": {
       "battle_type": "land_normal",
       "difficulty": "ai_level_very_hard",
       "funds": "funds_custom",
-      "funds_amount": 11000,
+      "funds_amount": 15000,
       "time_limit_s": 2400,
       "ai_stats_modifier": "1.0",
       "unit_scale": 0.75,
@@ -1729,7 +1747,7 @@
       "wh_main",
       "wh3_main"
     ],
-    "calibration_change": "Larger candidate L2 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). The draft costs Kislev at 7,350 and asks for AI armies near 7,100 (Greenskins) and 7,450 (Dwarfs, Dwarf Warriors with great weapons instead of Ironbreakers); the two AI rosters here are b19 choices from cards in recorded lobby dumps, estimated from the siege and swarm anchors' totals, not database-checked. The four-army five-unit free-for-all was won by attack_nearest (942 s) and an LLM (560 s), so AIs fight each other. Defined only: three-army slots, the 7,500 funds readback (every roster must fit), player_defends false (the earlier free-for-all recorded the player as attacker) and the alliances await a setup battle. Fallback if the AIs both target the player: a three-point Domination. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 7500. Raised again to 11000 after S5's 1200 refusal: characters may carry lobby markups."
+    "calibration_change": "Larger candidate L2 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md). The draft costs Kislev at 7,350 and asks for AI armies near 7,100 (Greenskins) and 7,450 (Dwarfs, Dwarf Warriors with great weapons instead of Ironbreakers); the two AI rosters here are b19 choices from cards in recorded lobby dumps, estimated from the siege and swarm anchors' totals, not database-checked. The four-army five-unit free-for-all was won by attack_nearest (942 s) and an LLM (560 s), so AIs fight each other. Defined only: three-army slots, the 7,500 funds readback (every roster must fit), player_defends false (the earlier free-for-all recorded the player as attacker) and the alliances await a setup battle. Fallback if the AIs both target the player: a three-point Domination. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 7500. Raised again to 11000 after S5's 1200 refusal: characters may carry lobby markups. Version 2 (2026-10-17, after queue E1): the lobby refused the three-army version (bench-b23-l2-setup-20261017: \"Free-For-All requires 4 teams\"), so a fourth army joins as the last AI slot: twelve Empire units, a General with a Bright Wizard, every card recruited in L1's lobby (b23). The id keeps its b19 name. Database costs (scripts/wh3_db.py, main_units_tables multiplayer_cost): Kislev 7,350 (832 men), Greenskins 6,875 (918), Dwarfs 6,875 (973), Empire 6,875 (916); the b19 AI rosters were 6,875 each, not the drafted 7,100/7,450. Funds 15000 (was 11000), as in L1: lobbies that started put the character markups at most 4,625 for L1's General with a Bright Wizard, 4,650 for its Warboss with a Shaman, 600 for a Dwarf Lord (12,000 funds, 11,400 database), so every side keeps at least 3,475 above its proven bound; Kislev's Boyar with a Frost Maiden has no bound yet and 7,650 headroom."
   },
   "dwf-longbeards-emp-swordsmen": {
     "base": "ksl-raiders-emp-halberds",
