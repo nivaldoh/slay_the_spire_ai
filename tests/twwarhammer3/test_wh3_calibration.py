@@ -508,9 +508,12 @@ def test_spell_window_sends_the_wizard_nothing_until_its_cast_lands():
     obs["enemy"][0].update(z=-35, state=["moving"], bearing=180)  # 45 m off, running at it
     obs["time_ms"] = 3500
     assert wizard_orders(policy, obs, 3800) == []  # b24 fled here
-    obs.update(time_ms=4700, magic={"current": 1})  # magic taken, spell still ready: casting
+    # Magic taken: the rest cannot pay for another Fireball, so it reads not ready while it
+    # is still being cast (live S5 b23: 6 such casts, 1.2-4.8 s before 5 of them landed).
+    obs.update(time_ms=4700, magic={"current": 1})
+    obs["friendly"][0]["abilities"][3]["ready"] = False
     assert wizard_orders(policy, obs, 5000) == []
-    obs["friendly"][0]["abilities"][3]["ready"] = False  # on cooldown: the Fireball landed
+    obs["friendly"][0]["abilities"][3]["recharge_s"] = 28.2  # on cooldown: it landed
     obs["time_ms"] = 5900
     (flee,) = wizard_orders(policy, obs, 6200)
     assert flee["type"] == "move" and flee["z"] < -80
@@ -520,7 +523,7 @@ def test_spell_window_sends_the_wizard_nothing_until_its_cast_lands():
 def test_spell_window_keeps_its_post_move_through_a_cast():
     obs, policy = wizard_state(magic=0), SpellWindow()
     cast_from_post(policy, obs, 2300)
-    obs["friendly"][0]["abilities"][3]["ready"] = False
+    obs["friendly"][0]["abilities"][3].update(ready=False, recharge_s=28.2)
     obs.update(time_ms=4100, magic={"current": 1})
     assert wizard_orders(policy, obs, 4400) == []  # landed; the post move is not re-sent
     obs["friendly"][0]["state"] = ["idle"]  # the cast is over and the wizard stands short

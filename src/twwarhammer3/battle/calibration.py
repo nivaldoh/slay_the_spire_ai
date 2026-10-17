@@ -418,11 +418,12 @@ class SpellWindow(SmallDiagnostic):
                          "enemy not in melee. The cheapest ready, affordable variant by key "
                          "name, within 95% of its range; 5 s between casts. After an accepted "
                          "cast the wizard gets no other order until a view from after the "
-                         "order applied shows that spell not ready, or 6 s of battle time "
-                         "pass, unless the wizard is in melee (then it steps away); a cast "
-                         "does not reset its last move, which is re-sent only when the move "
-                         "changes or the wizard idles."}
-    # Live S5 b23: completed casts read not ready 0.9-5.1 s after the order applied.
+                         "order applied shows that spell recharging or active, or 6 s of "
+                         "battle time pass, unless the wizard is in melee (then it steps "
+                         "away); a cast does not reset its last move, which is re-sent only "
+                         "when the move changes or the wizard idles."}
+    # Live S5 b23: completed casts first showed a recharge (Fireball) 2.1-4.8 s, or turned
+    # active (Flame Storm) 5.1-6.0 s, after the order applied; views came ~1.2 s apart.
     HOLD_S = 6
 
     def __init__(self):
@@ -521,13 +522,17 @@ class SpellWindow(SmallDiagnostic):
         return orders
 
     def landed(self, caster) -> bool:
-        """The pending spell reads not ready in a view from after it applied, or HOLD_S passed."""
+        """The pending spell recharges or is active in a view from after it applied, or
+        HOLD_S passed."""
         # Live S5 b23: magic is taken when the cast starts; two Fireballs with magic already
-        # taken were refunded by a move 0.3-0.6 s later. Only the spent spell's cooldown counts.
+        # taken were refunded by a move 0.3-0.6 s later. ``ready`` is no landing signal: it
+        # also turns false when the magic left cannot pay for the spell again: 6 of 217
+        # accepted casts read not ready 0.9-1.2 s after applying, 1.2-4.8 s before 5 landed.
         since = self.now - self.pending.get("applied_s", self.pending["time_s"])
         spell = next((ability for ability in caster.get("abilities", [])
                       if ability["key"] == self.pending["ability"]), {})
-        return since >= self.HOLD_S or (since >= 0 and spell.get("ready") is False)
+        return since >= self.HOLD_S or (
+            since >= 0 and bool(spell.get("recharge_s") or spell.get("active")))
 
     def acknowledge(self, ack, latency):
         super().acknowledge(ack, latency)
