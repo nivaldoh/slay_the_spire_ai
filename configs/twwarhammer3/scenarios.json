@@ -1747,6 +1747,25 @@
     },
     "calibration_change": "Small focused candidate S7 (b19, 2026-10-17; calibration/micro-scenarios-draft-20261016.md), the draft's lowest-confidence item. Draft database costs: player 1,400 (2 x 700), enemy 1,500 (4 x 375). Defined only: lordless setup and 1,500 funds await their live check; then a hold floor and the disclosed CornerHold diagnostic at 0 and 5 s observation age, before any model battle. Longbeards may win in the open, and a gap may remain behind a line at the map edge. Funds raised above the army costs (2026-10-17): the S5 lobby refused readiness at 800 funds (a player had spent too much on their army setup) although the database costs sum to 600/750, so a character's lobby price exceeds its database cost. Rosters are fixed; funds only cap recruitment. Was 1500."
   },
+  "dwf-longbeards-emp-swordsmen-6": {
+    "base": "dwf-longbeards-emp-swordsmen",
+    "name": "dwf-longbeards-emp-swordsmen-6",
+    "brief": "Two Dwarf Longbeard units defend against six Empire Swordsmen units, with no lords. Enough enemies to wrap both flanks: backing into a corner or against blocked ground limits how many can reach the Dwarfs at once.",
+    "enemy": {
+      "units": [
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen"
+      ]
+    },
+    "expect": {
+      "funds_amount": 2500
+    },
+    "calibration_change": "S7 second step (2026-10-17). The hold floor won the four-unit version easily (bench-b20-s7-floor-20261017: 469 s, Longbeards 69 and 70 of 75, all Swordsmen routed), the draft's stated risk. Six Swordsmen (database 375 each, 2250) so an envelopment is possible; funds 2500. Hold floor first; CornerHold at 0/5 s after a floor loss."
+  },
   "dwf-thunderers-grn-trolls": {
     "base": "ksl-raiders-emp-halberds",
     "name": "dwf-thunderers-grn-trolls",

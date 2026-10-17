@@ -315,6 +315,16 @@
       "core_candidate": false,
       "footnote": "Development candidate S7 (b19), the draft's lowest-confidence item. Defined only: the lordless setup and funds await their live check, then a hold floor and a disclosed corner-hold diagnostic at 0 and 5 s observation age."
     },
+    "dwf-longbeards-emp-swordsmen-6": {
+      "title": "Two Longbeard units against six",
+      "short": "Deny the envelopment",
+      "noun": "small defence",
+      "heading": "Enough enemies to wrap both flanks",
+      "challenge": "Two Dwarf Longbeard units defend against six Empire Swordsmen units. Blocked ground and the map edge limit how many attackers can reach the defenders at once.",
+      "family": "terrain defence",
+      "core_candidate": false,
+      "footnote": "S7 second step: the hold floor won the four-unit version easily. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+    },
     "dwf-thunderers-grn-trolls": {
       "title": "Thunderers against regenerating Trolls",
       "short": "Focus fire",
