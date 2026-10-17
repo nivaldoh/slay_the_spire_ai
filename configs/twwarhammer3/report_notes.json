@@ -183,7 +183,7 @@
       "challenge": "Two Kislev Horse Raider units attack one Empire Halberdier unit. A frontal charge meets anti-large weapons; surrounding the block and withdrawing may create better charges. The attacker loses at the 20-minute deadline.",
       "family": "cavalry against anti-large",
       "core_candidate": false,
-      "footnote": "Development candidate S1. Lordless setup and 1,100 custom funds passed live checks. Walking and running frontal baselines both lost; the disclosed flanking diagnostic is being checked. A diagnostic encodes the proposed tactic and is not a general model policy."
+      "footnote": "Development candidate S1. Lordless setup and 1,100 funds passed live checks. Walking and running frontal baselines lost. The disclosed flanking script won with fresh observations (336 s, 62% of riders left) and lost with 5 s added observation age (384 s). A rally-aware retry also lost (566 s, 28% of each side surviving), with 3 routing refusals versus 13. Initial positions differed between launches, so this is not a controlled estimate of the correction. These scripts encode the tactic and are not general model policies. Early traces mislabeled ordinary commanders as lords; b16 corrects their combat classes."
     },
     "ksl-archers-dwf-slayers": {
       "title": "Horse archers against Slayers",
@@ -193,7 +193,7 @@
       "challenge": "Two Horse Archer units attack one Slayer unit. The riders can keep their distance but have limited arrows; the Slayers cannot rout. Firing angles, ammunition and a possible melee finish compete with the attacker deadline.",
       "family": "ammunition and kiting",
       "core_candidate": false,
-      "footnote": "Development candidate S2. Setup and tactical feasibility are being checked with scripted floors and a disclosed kiting diagnostic before model tests."
+      "footnote": "Development candidate S2. The attack-nearest floor won at 352 s with 81% of the riders left. One archer unit exhausted its arrows and finished in melee; the other retained 241 arrows. This original step is too easy under the floor rule and is retained as development evidence. The next step uses cheaper Mounted Yeomen Archers."
     },
     "emp-helblaster-brt-raiders": {
       "title": "Protect a Helblaster",
@@ -203,7 +203,17 @@
       "challenge": "A Helblaster and one Halberdier escort defend against two Mounted Yeomen units and Men-at-arms. The gun can do damage while the escort buys firing time, but the riders can approach from either side.",
       "family": "protect a fragile gun",
       "core_candidate": false,
-      "footnote": "Development candidate S4. The hold-position floor and a disclosed bodyguard diagnostic check whether targeting and interception can change the outcome."
+      "footnote": "Development candidate S4. The hold-position floor lost at 160 s, with 59% of its soldiers surviving against 81% of the attackers. Cavalry reached the Helblaster after only 42 of its 594 rounds had been used, then stopped its fire. A disclosed bodyguard diagnostic will test whether escort placement and cavalry-first targeting preserve useful firing time."
+    },
+    "brt-archers-dwf-slayers": {
+      "title": "Cheaper horse archers against Slayers",
+      "short": "Ammunition and kiting",
+      "noun": "horse-archer assault",
+      "heading": "Weaker arrows make the melee finish matter more",
+      "challenge": "Two Bretonnian Mounted Yeomen Archer units attack one unbreakable Slayer unit. Compared with the original Horse Archers, they have weaker missiles and melee performance. The enemy, map and deadline stay fixed.",
+      "family": "ammunition and kiting",
+      "core_candidate": false,
+      "footnote": "S2 harder step after the original attack-nearest floor won. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
     }
   },
   "units": {

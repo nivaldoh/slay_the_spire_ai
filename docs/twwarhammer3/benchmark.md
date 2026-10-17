@@ -620,7 +620,12 @@ screen, before any broad comparison or final core selection.
 
 A first draft of the owner's [scenario mix](#current-proposal-calibrate-before-a-broad-model-comparison),
 from the game database and earlier lobby card lists. These are definitions for the owner to
-review, not admitted scenarios. Nothing has run. The full draft, with rosters, database facts
+review, not admitted scenarios. Live checks began on 2026-10-17: S1's lordless setup
+and low funds passed, both frontal floors lost, and its first flanking diagnostic won
+with fresh observations but lost with 5 s added age. The corrected delayed S1 attempt
+also lost; S2's floor won and S4's hold floor lost. Work stopped at the owner's request
+after these seven battles ([checkpoint](log.md#2026-10-17-harness-b17-small-scenario-checkpoint-work-stopped)).
+The full draft, with rosters, database facts
 kept apart from hypotheses and the ladders, is `calibration/micro-scenarios-draft-20261016.md`.
 Shared settings: classic battle, very hard AI, modifier 1.0, unit scale 0.75, 1200 s
 timer, funds equal to the larger army's cost. Only base-game cards seen in earlier lobbies
@@ -638,26 +643,32 @@ are used (no DLC assumed).
 | L1 | Small skills at scale, context length | Empire, 20 units | Greenskins, 20 units, 2400 s | Overlaps swarm command on order volume. |
 | L2 | Three-way battle, two AI opponents | Kislev, 12 units | AI Greenskins and AI Dwarfs | Earlier five-unit free-for-alls show the AIs fight each other. Fallback: a three-point Domination. |
 
-Prerequisites, each a $0 lobby or scripted check: armies without lords (the profile's
-"Start without Lord(s)" box; `scenario_steps` currently recruits the first card as a lord
-card, so lordless rosters need a small setup change and a read-back), custom funds of
-800-1,600 (all scenarios so far use at least 8,000), and how the AI behaves with one to
-three units. Winnability per candidate: a naive scripted floor that should lose, then one
+Prerequisites, each a $0 lobby or scripted check: armies without lords, custom funds
+of 800-1,600, and how the AI behaves with one to three units. The S1 probe verified
+lordless recruitment, 1,100 funds and a one-unit AI that held until contact. b16 also
+corrects ordinary commanders being labelled as lords; S2's live roster confirms its
+commander remains missile cavalry; S4 also verified its infantry commander and artillery.
+Other small rosters still need their own checks. Winnability per candidate: a naive
+scripted floor that should lose, then one
 disclosed diagnostic encoding the hypothesised play at `delay_seconds` 0 and 5. A win at
-5 s shows the play survives model latency; a floor win means the scenario is too easy and
-climbs. Suggested order: the lord/funds probe, S1, S2 and S4, then S3, S5 and S6; S7 last.
+5 s tests stale sensing (it does not reproduce a model's full decision cadence);
+a floor win means the scenario is too easy and climbs. Suggested order: the lord/funds
+probe, S1, S2 and S4, then S3, S5 and S6; S7 last.
 
 ### Owner decisions and next tranche (2026-10-16 night)
 
 The owner answered the three open questions. Item 3's exporter and exchange capture are
-now implemented as [harness b14](traces.md); the game work in items 1 and 2 has not started.
+now implemented as [harness b14](traces.md). The owner resumed items 1 and 2 on
+2026-10-17, then cleared the goal and requested a wrap-up after seven scripted battles.
+Remaining checks and the cheap-reference ladder are pending, with no paid calls in
+this tranche.
 
 1. **Small scenarios: approved to try.** In order: a $0 lobby probe on S1 (both slots
    lordless, 1,100 custom funds, how the AI uses one unit); then for S1, S2 and S4 a naive
    scripted floor and one disclosed diagnostic of the hypothesised play at 0 and 5 s
    delay; then S3, S5 and S6; S7 last or dropped. A candidate that survives gets
-   cheap-reference model battles and report notes. Needed code: the diagnostics in
-   `battle/calibration.py` and the S2-S6 scenario entries (S1 and lordless setup exist).
+   cheap-reference model battles and report notes. S1/S2/S4 declarations and their
+   disclosed diagnostics are implemented as b15/b16. S3/S5/S6 remain later candidates.
 2. **Ladder reference: a cheaper model for now.** Expensive models (gpt-6.1-sol, Astra,
    higher modes) return later. The cheap reference is GLM-5.3 / low through OpenRouter:
    $0.10-0.42 per battle, the only cheap model with a caster-anchor win, $48 left on its
@@ -683,9 +694,12 @@ now implemented as [harness b14](traces.md); the game work in items 1 and 2 has 
    any use. Backing up `runs/` off this machine, recommended alongside, is still open.
 
 Reasoning capture and the exporter are complete offline; the new capture request setting
-has not had a paid API check. Next: the S1 probe and the S1/S2/S4 scripted checks ($0);
-GLM reference battles on the anchors, then its ladder steps; expensive models and the
-all-modes matrix later.
+has not had a paid API check. On resumption: a bounded GLM S1 screen (no more S1 bot
+tuning), the prepared weaker S2 roster's floor/diagnostic checks, and S4's bodyguard
+diagnostic. Review surviving candidates with GLM; then GLM siege/swarm reference
+battles and the three named ladder steps. Expensive models and the all-modes matrix
+remain later work. Scripted checks establish setup, executable plays and obvious
+triviality; their losses do not establish that a scenario is impossible for a model.
 
 ## Earlier implementation sequence (2026-10-15)
 

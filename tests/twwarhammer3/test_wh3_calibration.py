@@ -73,7 +73,7 @@ def test_kiting_uses_melee_when_ammunition_is_gone_and_retries_refusals():
 
 def test_bodyguard_prioritises_cavalry_over_closer_infantry():
     obs = {"time_ms": 1000, "friendly": [
-           unit("f1", "helblaster", 0, 0, ammo=100, **{"class": "artillery"}),
+           unit("f1", "helblaster", 0, 0, ammo=100, range=290, **{"class": "artillery"}),
            unit("f2", "halberds", 0, 20)], "enemy": [
            unit("e1", "infantry", 0, 20),
            unit("e2", "yeomen", 40, 0, **{"class": "cavalry"})]}
@@ -82,6 +82,22 @@ def test_bodyguard_prioritises_cavalry_over_closer_infantry():
     validate_orders(orders, obs)
     assert len(orders) == 2 and all(order["target"] == "e2" for order in orders)
     assert obs == original
+
+
+def test_bodyguard_keeps_the_gun_home_and_stops_chasing_a_departing_target():
+    obs = {"time_ms": 1000, "friendly": [
+           unit("f1", "helblaster", 0, 0, ammo=100, range=290, **{"class": "artillery"}),
+           unit("f2", "halberds", 0, 20)],
+           "enemy": [unit("e1", "yeomen", 0, 500, **{"class": "cavalry"})]}
+    policy = Bodyguard()
+    assert all(order["unit"] != "f1" for order in policy.decide(obs))
+    obs["enemy"][0]["z"] = 200
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert next(order for order in orders if order["unit"] == "f1")["type"] == "attack"
+    obs["enemy"][0]["z"] = 400
+    assert next(order for order in policy.decide(obs) if order["unit"] == "f1") == {
+        "unit": "f1", "type": "halt"}
 
 
 def test_routing_refusal_is_newer_than_a_delayed_snapshot():

@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-17 00:27 UTC: what is running, where each game stands and what comes
+Updated 2026-10-17 00:57 UTC: what is running, where each game stands and what comes
 next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
 
@@ -9,12 +9,13 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Main README](../README.md) refresh and repository cleanup are complete
 ([record](twwarhammer3/log.md#2026-10-16-readme-refresh-and-repository-cleanup)).
 
-WH3 small-scenario checks and cheap-reference ladder are active (owner, 2026-10-16).
-S1's first pair completed (fresh win, delayed loss). No game runs while b16's
-lordless-class fix, routing/rally feedback and next ladder definitions are committed.
-Next: S2/S4 floors and the corrected S1 delayed diagnostic, then remaining small
-checks and GLM anchor/ladder battles. No paid calls in this tranche yet.
-[Live record](twwarhammer3/log.md#2026-10-17-harness-b16-lordless-roles-and-small-diagnostic-routing-feedback).
+No game controller or queue is running. The owner cleared the goal and asked to wrap
+up (2026-10-17 UTC). The b16 queue completed at 00:52:54 UTC: S2's floor won, S4's
+floor lost, and the corrected S1 five-second diagnostic lost. Across this tranche,
+seven scripted battles completed with $0 API spend. S1 has a fresh-observation
+diagnostic win, but neither delayed attempt won; no small scenario is admitted yet.
+Prepared changes are saved as b17, with their live checks pending.
+[Checkpoint and remaining work](twwarhammer3/log.md#2026-10-17-harness-b17-small-scenario-checkpoint-work-stopped).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
@@ -25,7 +26,7 @@ command; clear it when the job stops.
 [log](twwarhammer3/log.md) (newest first, with the versions on `main` at the top),
 [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, benchmark b16,
+- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, benchmark b17,
   evaluator v2 and track `obs-v4+terrain/act-v2/live-1x`. The interface supports native
   objectives/reinforcements and the optional public battery-evacuation objective.
 - Six candidate decision families with live evidence remain after the live novelty audit
@@ -46,10 +47,11 @@ command; clear it when the job stops.
   beyond `low` remain unplayed in battle. The six core candidates remain provisional.
 
 The exporter is implemented ([b14](twwarhammer3/log.md#2026-10-16-harness-b14-offline-trace-export-and-model-exchange-capture)).
-Game work is authorized and proceeding in the owner's order
-([decisions](twwarhammer3/benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night)):
-1. Small scenarios: the $0 S1 lobby probe (lordless, 1,100 funds, one-unit AI), then
-   scripted floors and disclosed diagnostics for S1, S2 and S4.
+Game work is stopped at the owner's request. When resumed, the remaining work follows
+the earlier order ([decisions](twwarhammer3/benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night)):
+1. Small scenarios: the lobby probe and S1/S2/S4 floors are complete. S1 awaits a
+   bounded GLM screen; S2's weaker mounted-archer variant needs its floor/diagnostic
+   checks, and S4 needs the bodyguard diagnostic. No more S1 bot tuning is planned.
 2. Ladder with GLM-5.3 / low as the cheap reference: anchor battles for siege and swarm,
    then three flankers, a new swarm factor, three cannons. Expensive models later.
 Open: backing up `runs/` off this machine; the all-modes matrix size and budget.
@@ -86,11 +88,14 @@ Next steps:
 ## Owner direction
 
 WH3:
+- 2026-10-17 UTC: cleared the active goal and asked to wrap up. Stop further game/API
+  jobs, save the completed calibration evidence and leave the remaining plan pending.
 - 2026-10-16 (trace-export goal): implement the offline exporter for future post-training.
   Complete as [b14](twwarhammer3/traces.md); no new game/API jobs or training.
 - 2026-10-16 (night): small scenarios approved to try; ladder continues with a cheaper
   reference model for now (expensive models later); write a trace exporter and store
-  reasoning text. Exporter/capture are complete as b14; the new game tranche has not started
+  reasoning text. Exporter/capture are complete as b14; the small scripted tranche is
+  recorded in b15-b17, while its model checks and the cheaper ladder remain unplayed
   ([decisions](twwarhammer3/benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night)).
 - 2026-10-16 (evening, latest): benchmark every reasoning mode of every model in each
   scenario; verify each model's real modes first (some open-weight models are only

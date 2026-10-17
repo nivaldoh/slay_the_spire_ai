@@ -1404,5 +1404,19 @@
       ]
     },
     "calibration_change": "V2 (2026-10-17): Three added Warp Lightning Cannons pressure the caster from long range. Enemy cost 5675 to 6625, thirteen units. GLM lost the two-cannon step; this is a bounded transfer check, not a ceiling estimate. Map, player, funds, timer and modifier unchanged. GLM low reference; a loss does not establish impossibility."
+  },
+  "brt-archers-dwf-slayers": {
+    "base": "ksl-archers-dwf-slayers",
+    "name": "brt-archers-dwf-slayers",
+    "brief": "Two Mounted Yeomen Archer units attack one unbreakable Slayer unit. Compared with Horse Archers, these cheaper riders have weaker missiles and melee performance. Finite ammunition and safe firing angles must support a possible melee finish.",
+    "player": {
+      "subculture": "wh_main_sc_brt_bretonnia",
+      "faction": "wh_main_brt_bretonnia",
+      "units": [
+        "wh_main_brt_cav_mounted_yeomen_1",
+        "wh_main_brt_cav_mounted_yeomen_1"
+      ]
+    },
+    "calibration_change": "S2 first harder step (2026-10-17). The original Horse Archer floor won at 352 s with 81% of its men; one unit exhausted its arrows and the other retained 241. Change only the player roster to the draft's cheaper Mounted Yeomen Archers (500 each instead of 600). Enemy, map, timer, modifier and 1200 funds remain unchanged. Scripted floor first; diagnostic at 0/5 s age only after a floor loss."
   }
 }

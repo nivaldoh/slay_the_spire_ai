@@ -206,9 +206,12 @@ class Bodyguard(SmallDiagnostic):
     """S4: shoot the nearest cavalry and intercept beside the gun."""
 
     card = {"purpose": "Can a single halberd escort preserve a fragile artillery unit?",
-            "knowledge": "S4: the gun shoots cavalry before infantry. Its escort waits "
+            "knowledge": "S4: the gun stays in place and shoots cavalry before infantry "
+                         "when in range. Its escort waits "
                          "25 m toward the nearest cavalry and 20 m to the side, intercepts "
-                         "within 65 m of the gun, and returns after the threat routes. "
+                         "within 120 m of the gun, and returns after the threat routes. "
+                         "The early intercept allows for roughly 45 m of rider movement "
+                         "during five seconds of observation age. "
                          "No abilities, hidden targets or predicted paths."}
 
     def decide(self, observation):
@@ -221,11 +224,17 @@ class Bodyguard(SmallDiagnostic):
                 unit, min(enemies, key=lambda enemy: distance(unit, enemy)))]
         riders = [enemy for enemy in enemies if "cavalry" in enemy.get("class", "")]
         target = min(riders or enemies, key=lambda enemy: distance(gun, enemy))
-        orders = self.attack(gun, target, "ranged" if gun.get("ammo") else "melee")
+        if gun.get("ammo") and distance(gun, target) <= gun.get("range", 0):
+            orders = self.attack(gun, target, "ranged")
+        else:
+            # A ranged attack beyond range would walk this slow, fragile gun forward.
+            previous = self.sent.get(gun["id"], ({}, 0))[0]
+            orders = (self.issue(gun, {"unit": gun["id"], "type": "halt"})
+                      if previous.get("type") == "attack" else [])
         for escort in units:
             if escort is gun:
                 continue
-            if distance(gun, target) < 65:
+            if distance(gun, target) < 120:
                 orders += self.attack(escort, target)
             else:
                 orders += self.move(escort, _offset(gun, _direction(gun, target), 25, 20), target)

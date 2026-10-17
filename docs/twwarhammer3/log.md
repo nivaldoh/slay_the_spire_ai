@@ -35,10 +35,63 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b16 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | S1 fronts lost; flanking won fresh and lost with 5 s age. b16 fixes lordless classes and diagnostic routing handling; live checks continue |
+| benchmark harness | b17 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | Seven scripted small battles complete; S1 won fresh only, S2 floor won, S4 floor lost. b17 saves the next checks; work stopped at owner request |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
-| report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Latest build (2026-10-16 evening): 94 input jobs; adds the GLM v20 caster win to the page, ladder V1 variants and the Jezzail setup failure to JSON/text; footnotes summarise the ladder |
+| report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
+
+## 2026-10-17: Harness b17, small-scenario checkpoint; work stopped
+
+The owner cleared the active goal and asked to wrap up. The b16 queue completed at
+00:52:54 UTC, with no controller left running. No further game or API jobs were started.
+Seven scripted battles completed in this tranche, all at unpaused 1x and $0 API spend:
+
+| Scenario / check | Outcome | Battle time | Own / enemy men left |
+|---|---|---|---|
+| S1 walking frontal floor | Lost | 356 s | 28% / 68% |
+| S1 running frontal floor | Lost | 217 s | 19% / 59% |
+| S1 disclosed flank, fresh observations | Won | 336 s | 62% / 42% (enemy routed) |
+| S1 disclosed flank, 5 s added age | Lost | 384 s | 29% / 20% |
+| S1 corrected flank, 5 s added age | Lost | 566 s | 28% / 28% |
+| S2 horse-archer attack-nearest floor | Won | 352 s | 81% / 0% |
+| S4 hold-position floor | Lost | 160 s | 59% / 81% |
+
+The final S1 retry (`bench-b16-s1-flank-r2-20261017`, `a882872`) exercised the rally
+withdrawal rule and reduced routing refusals from 13 to 3, but still lost at 566 s
+(mean order age 5.41 s). Both cavalry units routed with 25/90 riders surviving against
+25/90 halberdiers. This independent launch had different initial positions (up to
+7.66 m), so the outcome change cannot be attributed solely to the script correction.
+Reviews: `calibration/s1-flank-r2-review-20261017.json` and
+`calibration/s1-r2-start-comparison-20261017.json`.
+
+b17 saves changes already prepared while that queue ran: the weaker S2 player roster
+(`brt-archers-dwf-slayers`, two Mounted Yeomen Archers), and Bodyguard's gun-range guard
+and earlier 120 m interception. A regression checks that the gun stays put outside
+range and halts if its target leaves range. These changes have no live validation yet.
+Report notes record completed outcomes; the canonical jobs list adds all six new jobs,
+including both episodes of the first S1 diagnostic. The small candidates remain outside
+the core selection. No model prompt or observation contract changed.
+
+Next session, when requested: a bounded GLM-5.3 / low S1 screen, without further S1 bot
+tuning; the weaker S2 floor and, if it loses, the disclosed kiting checks; S4 Bodyguard
+at 0/5 s age; then model checks for surviving candidates. The cheap-reference ladder
+has not started: GLM siege/swarm anchors, then siege with three added cavalry, swarm
+with two added Slayers (free engagement check first), and caster with three cannons.
+Initial cumulative OpenRouter ceiling remains $10 within the owner's $50 cap; its
+ledger is unchanged at $1.9333. No further OpenAI battle fits the $52 cap.
+
+The bots calibrate an eventual model benchmark: confirm the game/interface works,
+reject trivial setups, and demonstrate meaningful executable alternatives. Their
+losses do not prove impossibility. S1 now has such an alternative, but its timing
+robustness is unresolved; S2 needs the harder step and S4 still needs a tactical win.
+No new small scenario is admitted, and the broader two-step plan remains incomplete.
+
+Validation: 495 WH3/documentation tests passed, Ruff and `git diff --check` passed.
+The read-only Windows doctor reported ready with no running game. Rebuilt
+`reports/benchmark.{html,json,txt}` (100 jobs, 176 trials) and
+`reports/small-calibration-20261017.{html,json,txt}` (6 jobs, all 7 new battles).
+The core page remains unchanged in scope; development evidence stays in JSON/text
+and the separate small report. OpenRouter spend rechecked at $1.9333.
 
 ## 2026-10-17: Harness b16, lordless roles and small-diagnostic routing feedback
 
@@ -48,7 +101,7 @@ keeping ordinary cavalry, missile cavalry, infantry and artillery roles. The sep
 `commander` flag stays true. The shipped API documentation says `unit_class()` reads
 land_units; the database confirms `com` for Kairos, the Overseer and Dwarf Lord, and
 `art_fld` for the Helblaster. No model prompt or field shape changes. The S2/S4 live
-checks must confirm their commanding units keep the right roles before model calls.
+checks below confirm their commanding units keep the right roles before model calls.
 
 The first S1 delayed diagnostic lost at 384 s (29% own / 20% enemy men left), with
 mean order age 5.42 s and 13 routing refusals. It charged alone when its partner routed
@@ -72,11 +125,39 @@ diagnostics, and has provisional small-scenario notes. They remain outside the c
 selection while calibration runs. Earlier evidence retains its original source and
 class labels; it is not rewritten.
 
+Live S2 setup passed on `a882872`: both Horse Archers are `missile_cavalry`, including
+the commanding first unit; the commanding Slayers are `infantry`. Each archer unit
+starts with 810 arrows, skirmish and fire-at-will enabled. This verifies the class fix
+for an ordinary commander. The S2 floor (`bench-b16-s2-floor-20261017`) won at 352 s, with 73/90 archers alive,
+zero invalid orders. The first unit exhausted all 810 arrows and lost one rider in its
+late melee finish; the second retained 241 arrows and 29/45 riders. It briefly entered
+melee from 163 s but escaped without routing. The original setup is too easy under the
+floor rule. Next is the draft's weaker-player step, two Mounted Yeomen Archers, before
+any diagnostic/model spending. Review: `calibration/s2-floor-review-20261017.json`.
+
+S4 setup also passed on `a882872`: the commanding Halberdiers are `infantry`, the
+Helblaster is `artillery` (not commander), and the enemy's commanding Men-at-arms are
+`infantry`, beside two cavalry units. The game reorders the recruitment list; the
+first recruited gun did not become commander. The gun starts with 594 rounds and
+fire-at-will enabled. The hold-position floor (`bench-b16-s4-floor-20261017`) lost
+at 160 s with 59% of its men left against 81% of the enemy's, zero invalid orders.
+The gun had used 42 rounds before entering melee around 80 s and fired no more;
+its crew routed while the Halberdiers were still fighting. This supports testing the
+named escort/targeting hypothesis. Review: `calibration/s4-floor-review-20261017.json`.
+Prepared for b17 before its first live use, Bodyguard gains a range guard: it must not walk the gun
+forward by ordering a ranged attack outside its range. It also intercepts at 120 m,
+rather than the draft's 65 m, to allow for about 45 m of rider travel during five
+seconds of observation age; this is disclosed diagnostic knowledge.
+
+Latest pre-queue validation: 494 WH3 and documentation tests passed, Ruff and
+`git diff --check` passed. The queue is frozen to `a882872`.
+
 Validation before live checks: the complete WH3 suite passed with the class correction
 (447 passed, 1 skipped); after routing/rally changes, 11 calibration tests and Ruff
-passed. Exact existing model prompt fixtures remained unchanged. Live results follow.
+passed. Exact existing model prompt fixtures remained unchanged. Final queue results are in
+the b17 checkpoint above.
 
-## 2026-10-17: Small-scenario checks and cheap-reference ladder (b15, in progress)
+## 2026-10-17: Small-scenario checks and cheap-reference ladder (b15)
 
 Owner goal: proceed with the small scenarios and GLM-5.3 / low ladder, in that order,
 within the existing caps. No OpenAI battles are planned. The first small tranche is
@@ -101,7 +182,7 @@ observation contract changes. Engine execution and winnability remain to be chec
 
 The running control on `77726f1`, `bench-b15-s1-rush-20261017`, also lost:
 217 s, own men 19%, enemy men 59%, zero invalid orders. Both frontal baselines lose.
-The free `FeintFlank` pair at 0 and 5 s added observation age is next, with rotation seed
+The free `FeintFlank` pair used 0 and 5 s added observation age, with rotation seed
 0 (fresh first), same scenario and unchanged source. Added observation age tests stale
 sensing, not the model's full decision cadence. Read-only execution summaries live in
 `calibration/s1-{walk,rush}-review-20261017.json`.
@@ -111,7 +192,8 @@ left and 42% of the halberdiers surviving but routed. Zero invalid orders. Five 
 phases were issued; after the first, one approach in each pair was 160-174 degrees off
 the enemy front when ordered. These are approach angles, not a claim that every entity
 landed a rear hit. Both frontal controls lost, so this establishes an executable
-alternative, not its necessity or the scenario's maximum difficulty. The 5 s arm lost at 384 s with mean order age 5.42 s (29% own / 20% enemy men left),
+alternative, not its necessity or the scenario's maximum difficulty. The 5 s arm lost
+at 384 s with mean order age 5.42 s (29% own / 20% enemy men left),
 13 routing refusals. Source and conditions were unchanged within this diagnostic pair;
 rosters, loadouts, strengths and resources matched on rematch. The next diagnostic
 revision and class correction are recorded in b16 above.
@@ -119,10 +201,11 @@ revision and class correction are recorded in b16 above.
 The lordless roster also exposed a classification defect: the engine nominates the
 first regiment as commander (`is_commanding_unit` true), and the old Lua classifier
 labelled it `lord` even when it was Horse Raiders or Halberdiers. This does not affect
-the S1 diagnostics, which use ids and positions, but would hide S4's Helblaster from
-class-based gun selection and misdescribe it to models. A fix is staged in the isolated
-`wh3-ladder-calibration` worktree: only character-class commanders become `lord`;
-ordinary regiments keep their combat class and the independent commander flag. It is now merged as b16 and awaits live S2/S4 validation.
+the S1 diagnostics, which use ids and positions, but could hide an artillery commander from
+class-based selection and misdescribe ordinary commanders to models. S4 later proved
+to nominate its Halberdiers, not the gun. b16 corrects this: only character-class
+commanders become `lord`; ordinary regiments keep their combat class and the independent
+commander flag. S2/S4 live checks verified the ordinary commanding-unit classes.
 
 Initial validation: 39 calibration/setup tests passed. New tests check charge/withdraw
 sequencing, hidden-enemy exclusion, refusal retries, ammunition exhaustion and cavalry

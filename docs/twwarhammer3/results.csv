@@ -312,3 +312,6 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-17,bench-b15-s1-rush-20261017,episode-0000,ksl-raiders-emp-halberds,rush_nearest,,,,77726f1,realtime,1.0,0.0,lost,217,0.19,0.59,700,0,0.3,0,classic,,,,,0.0,0.589,0.0,engine_result,
 2026-10-17,bench-b15-s1-flank-20261017,episode-0000,ksl-raiders-emp-halberds,twwarhammer3.battle.calibration:FeintFlank,,,,77726f1,realtime,1.0,0.0,won,336,0.62,0.42,1088,0,0.3,0,classic,,,,,0.622,0.0,0.0,engine_result,
 2026-10-17,bench-b15-s1-flank-20261017,episode-0001,ksl-raiders-emp-halberds,twwarhammer3.battle.calibration:FeintFlank,,,,77726f1,realtime,1.0,0.0,lost,384,0.29,0.2,1223,13,5.42,0,classic,,,,,0.0,0.2,5.0,engine_result,
+2026-10-17,bench-b16-s2-floor-20261017,episode-0000,ksl-archers-dwf-slayers,attack_nearest,,,,a882872,realtime,1.0,0.0,won,352,0.81,0.0,1144,0,0.3,0,classic,,,,,0.811,0.0,0.0,engine_result,
+2026-10-17,bench-b16-s4-floor-20261017,episode-0000,emp-helblaster-brt-raiders,hold,,,,a882872,realtime,1.0,0.0,lost,160,0.59,0.81,508,0,0.3,0,classic,,,,,0.0,0.806,0.0,engine_result,
+2026-10-17,bench-b16-s1-flank-r2-20261017,episode-0000,ksl-raiders-emp-halberds,twwarhammer3.battle.calibration:FeintFlank,,,,a882872,realtime,1.0,0.0,lost,566,0.28,0.28,1823,3,5.41,0,classic,,,,,0.0,0.278,5.0,engine_result,

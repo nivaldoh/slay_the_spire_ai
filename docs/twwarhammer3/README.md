@@ -38,7 +38,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 - **vN**: a version of the `llm` or `commander` prompt and harness; `v1.N` the `skills`
   executor. Each has a log.md entry. The register's `harness` column is the `-vN-` segment
   of the job name (`stats.harness_version`), blank for `bench-*` jobs.
-- **b1-b14**: benchmark harness revisions, each logged in log.md.
+- **b1-b17**: benchmark harness revisions, each logged in log.md.
 - **G1, G2, C1**: historical calibration designs in [benchmark.md](benchmark.md).
   G1 is incomplete, C1 finished and G2 never ran. The 2026-10-15 plan retires win-rate
   admission; added observation-age experiments (0, 6 and 10 s) remain deferred.
@@ -180,11 +180,15 @@ The six core scenarios remain provisional; the [design audit](benchmark.md#scena
 counts distinct decision problems, with cavalry/caster variants counted once per family
 and Conquest demoted because it has only one point.
 
-Next game work follows the [owner's latest order](benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night):
+Work stopped at the owner's request after seven scripted small-scenario battles
+([checkpoint](log.md#2026-10-17-harness-b17-small-scenario-checkpoint-work-stopped)).
+When resumed, the remaining plan is:
 
-1. **Small focused scenarios.** Start with the $0 S1 lobby probe (lordless rosters,
-   1,100 funds, one-unit AI), then scripted floors and disclosed diagnostics for S1,
-   S2 and S4. Candidates and remaining setup work are in the
+1. **Small focused scenarios.** Lordless setup and all three floors are checked. S1's
+   frontal controls lost; flanking won fresh and lost in both delayed attempts. Next is
+   a bounded GLM screen, without more S1 bot tuning. S2's floor won, so the prepared
+   weaker mounted-archer variant needs checking. S4's hold floor lost; its bodyguard
+   diagnostic awaits live checks at 0 and 5 s observation age. Candidates are in the
    [small-scenario draft](benchmark.md#small-focused-candidates-draft-2026-10-16-evening).
 2. **A cheaper ladder reference.** GLM-5.3 / low needs reference battles on the unchanged
    siege and swarm anchors before trying three added flankers, a new swarm factor and
