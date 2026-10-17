@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import re
 import shutil
 import sys
 
@@ -45,6 +46,24 @@ def decision(n, floor=1, hp=70, *, combat=False, screen="MAP", prompt=None, note
     return {"kind": "decision", "elapsed": n, "choice_id": candidates[0]["id"],
             "decision": {"id": f"s:{n}", "candidates": candidates, "observation": observation},
             "behavior": behavior}
+
+
+def sent(prompt, instructions=SYSTEM, **fields):
+    """A new-format attempt with its recorded request body and output items."""
+    request = {"instructions": instructions, "input": [{"role": "user", "content": prompt}]}
+    return attempt(request=request, output=[], **fields)
+
+
+def exchanged(n, prompt, attempts, *, error=None, decided=True, **observed):
+    """A new-format request: its model exchange, then its decision unless none was logged."""
+    attempts = [dict(a, exchange_id=f"m{n}") for a in attempts]
+    events = [{"kind": "model_exchange", "id": f"m{n}", "prompt": prompt,
+               "attempts": attempts, **({"error": error} if error else {})}]
+    if decided:
+        event = decision(n, prompt=prompt, **observed)
+        event["behavior"]["attempts"] = attempts
+        events.append(event)
+    return events
 
 
 def make_job(tmp_path, runs, *, name="llm-luna-v10-dev-20261013", status="completed"):
@@ -129,8 +148,8 @@ def test_old_traces_export_requests_public_fight_labels_and_provenance(tmp_path)
         "source_id": None, "job": job.name, "run": "run-0000", "seed": "RUNDEV1",
         "source_revision": "a" * 40, "renderer_sha256": "renderer-hash",
         "monsters_sha256": "monsters-hash", "unlock_level": 3, "trace_sha256": None,
-        "result_sha256": None, "decision_trace_line": 1, "exchange_trace_line": None,
-        "failure_trace_line": None}
+        "result_sha256": None, "exchange_id": None, "decision_trace_line": 1,
+        "exchange_trace_line": None, "failure_trace_line": None}
     # Fights: won (HP at the next decision), an event's two fights, then the losing one.
     assert hallway["labels"]["current_hp"] == 80
     assert hallway["labels"]["fight"] == {"index": 0, "floor": 1, "room_type": "MonsterRoom",
@@ -143,7 +162,7 @@ def test_old_traces_export_requests_public_fight_labels_and_provenance(tmp_path)
     assert fine["labels"]["fight"]["won"] is None
     assert fine["outcome"]["gameplay_outcome"] is None
     assert failure["decision"] is failure["choice"] is failure["reply"] is None
-    assert failure["error"] == {"type": "invalid_reply",
+    assert failure["error"] == {"type": "InvalidReply",
                                 "message": "No valid reply after declared retries"}
     assert [a["user_prompt"] for a in failure["attempts"]] == [None, None, None]
     assert failure["attempts"][-1]["error"] == "choice must be an integer from 0 to 1"
@@ -163,6 +182,9 @@ def test_old_traces_export_requests_public_fight_labels_and_provenance(tmp_path)
     export.export_runs([elsewhere], tmp_path / "again")
     assert (tmp_path / "again/decisions.jsonl").read_bytes() == (
         tmp_path / "export/decisions.jsonl").read_bytes()
+    # So the same job from two locations would repeat every id: it is refused.
+    with pytest.raises(ValueError, match="selected twice"):
+        export.export_runs([job, elsewhere], tmp_path / "twice")
 
 
 def test_new_traces_keep_retry_prompts_reasoning_and_failed_requests(tmp_path):
@@ -216,8 +238,8 @@ def test_new_traces_keep_retry_prompts_reasoning_and_failed_requests(tmp_path):
     assert chosen["choice"]["index"] == 1 and chosen["reply"] == {"reason": "safer",
                                                                   "notes": "keep"}
     assert chosen["labels"]["fight"]["won"] is None and chosen["issues"] == []
-    assert (chosen["provenance"]["exchange_trace_line"],
-            chosen["provenance"]["decision_trace_line"]) == (1, 2)
+    assert (chosen["provenance"]["exchange_id"], chosen["provenance"]["exchange_trace_line"],
+            chosen["provenance"]["decision_trace_line"]) == ("m1", 1, 2)
     # The failed request is one row, matched to its policy_failure line, never two.
     assert invalid["decision"] is None and invalid["error"]["type"] == "InvalidReply"
     assert invalid["user_prompt"].startswith("Run notes:") and len(invalid["attempts"]) == 3
@@ -236,6 +258,57 @@ def test_new_traces_keep_retry_prompts_reasoning_and_failed_requests(tmp_path):
         output = tmp_path / f"filtered-{len(list(tmp_path.glob('filtered-*')))}"
         counts = export.export_runs([job], output, **filters)["counts"]
         assert (counts["records"], counts["filtered_out"]) == (kept, 3 - kept)
+        if not kept:
+            assert "runs with exported rows: `{}`" in (output / "datacard.md").read_text()
+
+
+def test_new_trace_edge_rows_keep_errors_out_of_training_targets(tmp_path):
+    transport = {"request": sent("lost")["request"], "transport_error": "timed out",
+                 "uncertain_attempts": 1}
+    won = [*exchanged(1, "boss", [sent("boss")], floor=50, hp=30, combat=True),
+           decision(2, 50, 12, combat=True)]
+    failed = [*exchanged(1, "lost", [transport], decided=False,
+                         error={"type": "APIError", "message": "timed out"}),
+              *exchanged(2, "accepted", [sent("accepted")], decided=False)]
+    job = make_job(tmp_path, [
+        (won, {"seed": "RUNDEV1", "status": "won", "act": 3, "floor": 50, "score": 900}),
+        (failed, {"seed": "RUNDEV2", "status": "infrastructure_failure"})])
+    export.export_runs([job], tmp_path / "export")
+    boss, api, accepted = read_export(tmp_path / "export")
+    # A run won during its last fight wins that fight; no later decision gives its end HP.
+    assert boss["labels"]["fight"] == {"index": 0, "floor": 50, "room_type": "MonsterRoom",
+                                       "hp_start": 30, "hp_end": None, "won": True}
+    assert boss["outcome"]["gameplay_outcome"] == "won" and boss["error"] is None
+    assert boss["issues"] == [] and boss["attempts"][0]["reasoning"] == []
+    # A transport failure keeps the call's error and sent prompt; it had no output to record.
+    one, = api["attempts"]
+    assert api["error"] == {"type": "APIError", "message": "timed out"}
+    assert (one["error"], one["user_prompt"], one["reasoning"]) == ("timed out", "lost", None)
+    assert api["issues"] == ["decision_not_recorded"]
+    # An accepted reply whose decision was never logged is not a training target.
+    assert accepted["error"]["type"] == "DecisionNotRecorded" and accepted["choice"] is None
+    assert accepted["attempts"][-1].get("error") is None
+    assert accepted["provenance"]["exchange_id"] == "m2"
+
+
+def test_inconsistent_new_traces_are_refused_with_their_trace_line(tmp_path):
+    request = exchanged(1, "p", [sent("p")])
+    stray = {"kind": "policy_failure",
+             "failure": {"kind": "invalid_reply", "attempts": request[0]["attempts"]}}
+    cases = [
+        (exchanged(1, "p", [sent("p", instructions="Other.\n")]),
+         ":1: recorded request differs from the job's system prompt"),
+        (exchanged(1, "p", [sent("q")]), ":1: recorded request differs from the saved user"),
+        ([{**request[0], "prompt": "q"}, request[1]],
+         ":1: exchange prompt differs from its decision's"),
+        (request[1:], ":1: decision without its model exchange m1"),
+        ([*request, request[1]], ":3: decision without its model exchange m1"),
+        ([stray], ":1: policy failure without its model exchange m1"),
+    ]
+    for index, (events, message) in enumerate(cases):
+        job = make_job(tmp_path / f"case-{index}", [(events, {"seed": "S", "status": "lost"})])
+        with pytest.raises(ValueError, match=re.escape("trace.jsonl" + message)):
+            export.export_runs([job], tmp_path / f"export-{index}")
 
 
 def test_unfinished_changed_or_misplaced_evidence_is_refused(tmp_path, monkeypatch):

@@ -45,7 +45,7 @@ def _requests(trace: Path) -> tuple[list[dict], list[dict]]:
 
     A new trace logs a request's exchange just before its decision; their attempts share
     the exchange id. A policy failure repeats its exchange's attempts, or, in old traces,
-    is the failed request's only record.
+    is the failed request's only record. An exchange id without its exchange is refused.
     """
     labels, requests, exchanges = [], [], {}
     with trace.open() as handle:
@@ -68,17 +68,26 @@ def _requests(trace: Path) -> tuple[list[dict], list[dict]]:
                 behavior = event["behavior"]
                 if behavior.get("type") != "llm":
                     continue
-                request = exchanges.get(_exchange_id(behavior.get("attempts"), where))
-                if request is None or "decision" in request:
+                key = _exchange_id(behavior.get("attempts"), where)
+                if key is None:
                     request = {}
                     requests.append(request)
+                elif key not in exchanges or "decision" in exchanges[key]:
+                    raise ValueError(f"{where}: decision without its model exchange {key}")
+                else:
+                    request = exchanges[key]
                 request.update(decision=event, decision_line=line, labels=labels[-1])
             elif kind == "policy_failure":
                 failure = event.get("failure") or {}
-                request = exchanges.get(_exchange_id(failure.get("attempts"), where))
-                if request is None:
+                key = _exchange_id(failure.get("attempts"), where)
+                if key is None:
                     request = {"failure": failure}
                     requests.append(request)
+                elif key not in exchanges:
+                    raise ValueError(f"{where}: policy failure without its model exchange "
+                                     f"{key}")
+                else:
+                    request = exchanges[key]
                 request["failure_line"] = line
     return labels, requests
 
@@ -86,8 +95,8 @@ def _requests(trace: Path) -> tuple[list[dict], list[dict]]:
 def _fights(labels: list[dict], status: str) -> None:
     """A fight is a maximal run of consecutive combat decisions on one floor.
 
-    It was won when a later decision is out of combat, lost when the run ended lost during
-    it, and unknown otherwise (a truncated or failed run).
+    It was won when a later decision is out of combat or the run ended won during it, lost
+    when the run ended lost during it, and unknown otherwise (a truncated or failed run).
     """
     fight, count = None, 0
     for label in labels:
@@ -105,8 +114,8 @@ def _fights(labels: list[dict], status: str) -> None:
         fight["won"] = {"lost": False, "won": True}.get(status)
 
 
-def _attempts(raw_attempts: list, prompt: str | None, system: str | None,
-              issues: set) -> list[dict]:
+def _attempts(raw_attempts: list, prompt: str | None, system: str | None, issues: set,
+              where: str) -> list[dict]:
     attempts = []
     for index, raw in enumerate(raw_attempts):
         attempt = dict(raw)
@@ -114,9 +123,11 @@ def _attempts(raw_attempts: list, prompt: str | None, system: str | None,
         if request is not None:
             user, source = request["input"][0]["content"], "recorded_request"
             if system is not None and request["instructions"] != system:
-                raise ValueError("Recorded request differs from the job's system prompt")
+                raise ValueError(f"{where}: recorded request differs from the job's system "
+                                 "prompt")
             if index == 0 and prompt is not None and user != prompt:
-                raise ValueError("Recorded request differs from the saved user prompt")
+                raise ValueError(f"{where}: recorded request differs from the saved user "
+                                 "prompt")
         elif index == 0 and prompt is not None:
             user, source = prompt, "recorded_prompt"
         else:
@@ -149,15 +160,24 @@ def _row(request: dict, job: dict, run: dict) -> dict:
         raise ValueError(f"{run['trace']}:{request['exchange_line']}: exchange prompt "
                          "differs from its decision's")
     raw = exchange.get("attempts", behavior.get("attempts", failure.get("attempts", [])))
-    attempts = _attempts(raw, prompt, job["system_prompt"], issues)
+    line = (request.get("exchange_line") or request.get("decision_line")
+            or request.get("failure_line"))
+    attempts = _attempts(raw, prompt, job["system_prompt"], issues, f"{run['trace']}:{line}")
     system = job["system_prompt"]
     if system is None:
         system = next((a["request"]["instructions"] for a in attempts if "request" in a), None)
     error = exchange.get("error")
     if failure and not exchange:
-        error = {"type": failure.get("kind"), "message": run["result"].get("error")}
+        # Old traces name the failure kind; new ones the exception, as exchanges do.
+        kind = failure.get("kind")
+        error = {"type": {"invalid_reply": "InvalidReply"}.get(kind, kind),
+                 "message": run["result"].get("error")}
     if error and attempts and attempts[-1].get("error") is None:
         attempts[-1]["error"] = error["message"]  # the failed call, or a crashed parse
+    if exchange and not event and error is None:
+        # The reply was accepted, but the run stopped before logging its decision.
+        error = {"type": "DecisionNotRecorded",
+                 "message": "Accepted reply without a recorded decision"}
     choice = reply = None
     if event:
         candidates = event["decision"]["candidates"]
@@ -204,6 +224,7 @@ def _row(request: dict, job: dict, run: dict) -> dict:
             "monsters_sha256": source_files.get("configs/llm/monsters.json"),
             "unlock_level": run["unlock_level"], "trace_sha256": run["trace_sha256"],
             "result_sha256": run["result_sha256"],
+            "exchange_id": exchange.get("id"),
             "decision_trace_line": request.get("decision_line"),
             "exchange_trace_line": request.get("exchange_line"),
             "failure_trace_line": request.get("failure_line")},
@@ -293,6 +314,9 @@ def export_runs(paths: list[Path], output: Path, *, models: tuple[str, ...] = ()
         with (directory / "decisions.jsonl").open("w") as handle:
             for path, runs in sorted(selected.items(), key=lambda item: (item[0].name, item[0])):
                 job = _job(path, files)
+                if job["source_id"] in sources:
+                    raise ValueError(f"{path}: job {job['name']} is selected twice (same name "
+                                     "and manifest)")
                 source = sources[job["source_id"]] = {
                     "job": job["name"], "path": str(path), "manifest": job["manifest"],
                     "environment": job["environment"], "runs": []}
@@ -336,7 +360,8 @@ def export_runs(paths: list[Path], output: Path, *, models: tuple[str, ...] = ()
 
 
 def _data_card(summary: dict) -> str:
-    runs = [run for source in summary["sources"].values() for run in source["runs"]]
+    runs = [run for source in summary["sources"].values() for run in source["runs"]
+            if run["exported_records"]]
     statuses = Counter(run["status"] for run in runs)
     levels = Counter(str((run["profile"] or {}).get("ironclad_unlock_level")) for run in runs)
     openai = sum(n for key, n in summary["records_by_model"].items()
@@ -373,9 +398,12 @@ full reasoning. Reasoning never re-enters the prompts.
 
 A request that ended without an accepted reply (invalid replies, an API failure, a budget
 stop) has a non-null `error`, no `decision` and no `choice`; its last attempt carries the
-error. `reply.notes` is the notes text as applied (cut to 2,000 characters), null when
-the reply kept the previous notes. Forced single-choice decisions made no request and
-have no row, but count towards labels.
+error. `error.type` is the exception name (`InvalidReply`, `APIError`, `BudgetExhausted`,
+...) in every trace format. A reply that was accepted but whose decision was never logged
+(the run stopped in between) has the error `DecisionNotRecorded`, which its attempts do
+not carry. Every row without a decision has an error. `reply.notes` is the notes text as
+applied (cut to 2,000 characters), null when the reply kept the previous notes. Forced
+single-choice decisions made no request and have no row, but count towards labels.
 
 `outcome.gameplay_outcome` is only `won` or `lost`; truncations, interruptions and
 infrastructure or policy failures keep their status. A run's outcome does not make each
@@ -386,13 +414,13 @@ of its choices a good training target.
 `labels` holds public facts from the row's decision observation: act, floor, HP, max HP,
 gold, screen and room type, and whether it is in combat. `fight` (null outside combat) is
 a maximal run of consecutive combat decisions on one floor, numbered from 0 within the
-run. `won` is true when a later decision is out of combat, false when the run was lost
-during the fight, and null otherwise (a truncated or failed run). `hp_start` is the HP at
-the fight's first decision, after any damage taken before it; `hp_end`, set only for won
-fights, is the HP at the next decision, after end-of-combat healing such as Burning
-Blood's. An escape (Smoke Bomb) counts as won; an event's two fights on one floor (the
-Colosseum) are two fights. Labels never read raw engine messages, so they hold no hidden
-state.
+run. `won` is true when a later decision is out of combat or the run was won during the
+fight, false when the run was lost during it, and null otherwise (a truncated or failed
+run). `hp_start` is the HP at the fight's first decision, after any damage taken before
+it; `hp_end` is the HP at the next out-of-combat decision, after end-of-combat healing
+such as Burning Blood's, and null when no decision follows the fight. An escape (Smoke
+Bomb) counts as won; an event's two fights on one floor (the Colosseum) are two fights.
+Labels never read raw engine messages, so they hold no hidden state.
 
 ## Coverage and limitations
 
@@ -402,11 +430,11 @@ Rows by provider and model: `{json.dumps(summary['records_by_model'], sort_keys=
 
 Rows with each issue: `{json.dumps(summary['issues'], sort_keys=True)}`.
 
-Run statuses: `{json.dumps(dict(statuses), sort_keys=True)}`.
+Statuses of the runs with exported rows: `{json.dumps(dict(statuses), sort_keys=True)}`.
 
 Filters: `{json.dumps(summary['filters'], sort_keys=True)}`.
 
-Ironclad unlock level per run (`None`: profile unreadable):
+Ironclad unlock level per run with exported rows (`None`: profile unreadable):
 `{json.dumps(dict(levels), sort_keys=True)}`. Every readable profile saved by 2026-10-17
 is at unlock level 3, and the profile was then 81 points from level 4. A new unlock level
 adds cards and relics to the reward, shop and event pools, so runs at different levels
