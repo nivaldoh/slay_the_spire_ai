@@ -11,6 +11,9 @@ from twwarhammer3.battle.scripted import Hold, RushNearest, distance
 from twwarhammer3.battle.skills import OUT, SHOOTERS, Skills
 from twwarhammer3.protocol import friendly_units, visible_enemies
 
+# Degrees a diagnostic's post may rotate around its target, nearest first.
+TURNS = (0, 15, -15, 30, -30, 45, -45)
+
 
 def _active(units) -> list[dict]:
     return [unit for unit in units if unit.get("men") and unit.get("x") is not None
@@ -85,6 +88,12 @@ class SmallDiagnostic(Hold):
                     self.unreachable.append({"x": order["x"], "z": order["z"]})
                 if result.get("error") == "unit_routing":
                     self.routing_at[result["unit"]] = ack["applied_ms"] / 1000
+
+    def open_point(self, points: list[dict]) -> dict:
+        """The first point on clear terrain and away from refused moves, else the first."""
+        # Live S2/S3 runs retried posts inside the map's central rock hundreds of times.
+        return next((point for point in points if _clear(self.terrain, point) and all(
+            distance(point, bad) >= 30 for bad in self.unreachable)), points[0])
 
 
 class FeintFlank(SmallDiagnostic):
@@ -209,14 +218,9 @@ class CrossKite(SmallDiagnostic):
 
     def post(self, target, side):
         """The disclosed post 119 m out at 75 degrees, rotated off blocked or refused ground."""
-        # The first live S2 decoy run retried a post inside Taurox's central rock 144 times.
-        for turn in (0, 15, -15, 30, -30, 45, -45):
-            angle = math.radians(side * (75 + turn))
-            point = _offset(target, self.axis, 119 * math.cos(angle), 119 * math.sin(angle))
-            if _clear(self.terrain, point) and all(
-                    distance(point, bad) >= 30 for bad in self.unreachable):
-                return point
-        return _offset(target, self.axis, 30, 115 * side)
+        angles = [math.radians(side * (75 + turn)) for turn in TURNS]
+        return self.open_point([_offset(target, self.axis, 119 * math.cos(angle),
+                                        119 * math.sin(angle)) for angle in angles])
 
     def metadata(self):
         return {"type": "cross_kite", "positioned": sorted(self.positioned)}
@@ -295,7 +299,8 @@ class Crossfire(SmallDiagnostic):
             "knowledge": "S3: fire-at-will off. Spearmen attack the nearest visible enemy "
                          "and keep it until it routs. Guns wait 30 m behind them until that "
                          "target is in melee, then move 100 m from it at its bearing +-80 "
-                         "degrees (one each side) and fire only at it. A gun within 50 m of "
+                         "degrees (one each side) and fire only at it; a post on restricted or "
+                         "refused ground rotates up to 45 degrees. A gun within 50 m of "
                          "another enemy steps 120 m away from it; without ammunition it "
                          "joins the melee. No hidden state or line-of-sight test."}
 
@@ -324,7 +329,8 @@ class Crossfire(SmallDiagnostic):
                 continue
             threat = min((enemy for enemy in enemies if enemy is not target),
                          key=lambda enemy: distance(gun, enemy), default=None)
-            post = _beside(target, 80 if index % 2 else -80, 100)
+            post = self.open_point([_beside(target, (80 + turn) * (1 if index % 2 else -1), 100)
+                                    for turn in TURNS])
             if threat and distance(gun, threat) < 50:
                 orders += self.move(gun, _offset(threat, _direction(threat, gun), 120), threat)
             elif not pinned:
@@ -441,7 +447,8 @@ class HammerAnvil(SmallDiagnostic):
             "knowledge": "S6: infantry attacks the nearest visible enemy and keeps it until "
                          "it routs. Cavalry waits 40 m behind and 60 m beside the infantry "
                          "until that target is in melee, then rides via a 90 m side "
-                         "waypoint to 70 m behind it and charges. After 8 s of observed "
+                         "waypoint to 70 m behind it and charges (waypoints on restricted or "
+                         "refused ground rotate up to 45 degrees). After 8 s of observed "
                          "contact, or the target's rout during the charge, it withdraws "
                          "120 m from the nearest enemy for 10 s (up to 20 s while enemies "
                          "stay within 80 m), then repeats on the infantry's current target. "
@@ -484,8 +491,12 @@ class HammerAnvil(SmallDiagnostic):
             self.phase = "side"
             self.side = 1 if distance(group, _offset(target, front, 0, 90)) <= distance(
                 group, _offset(target, front, 0, -90)) else -1
-        side = _offset(target, front, 0, 90 * self.side)
-        rear = _offset(target, front, -70)
+        side = self.open_point([_offset(target, front, 90 * math.sin(math.radians(turn)),
+                                        90 * math.cos(math.radians(turn)) * self.side)
+                                for turn in TURNS])
+        rear = self.open_point([_offset(target, front, -70 * math.cos(math.radians(turn)),
+                                        70 * math.sin(math.radians(turn)))
+                                for turn in TURNS])
         if self.phase == "side" and distance(group, side) < 25:
             self.phase = "rear"
         if self.phase == "rear" and distance(group, rear) < 25:
