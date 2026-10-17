@@ -19,6 +19,7 @@ from twwarhammer3.battle.calibration import (
     MonsterTarget,
     SpellWindow,
 )
+from twwarhammer3.battle.scripted import distance
 from twwarhammer3.protocol import validate_orders
 
 
@@ -74,6 +75,28 @@ def test_kiting_prefers_slayers_over_a_nearer_decoy():
     # Posts flank the Slayers (z 0), not the nearer decoy (z 60).
     assert len(orders) == 2 and all(order["z"] < 50 for order in orders)
     assert obs == original
+
+
+def test_kiting_posts_avoid_restricted_cells_and_refused_moves():
+    # Live S2 decoy: one post sat inside the map's central rock and was refused 144 times.
+    rows = ["." * 32 for _ in range(32)]
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "horse_archer", 0, 100, ammo=10),
+                                         unit("f2", "horse_archer", 20, 100, ammo=10)],
+           "enemy": [unit("e1", "slayers", 0, 0)],
+           "terrain": {"rows": rows, "cell_m": 32, "x0": -496, "z0": -496,
+                       "bounds": {"min_x": -512, "max_x": 512, "min_z": -512, "max_z": 512}}}
+    policy = CrossKite()
+    first = {order["unit"]: order for order in policy.decide(obs)}
+    block = first["f2"]
+    row, column = round((block["z"] + 496) / 32), round((block["x"] + 496) / 32)
+    rows[row] = rows[row][:column] + "#" + rows[row][column + 1:]
+    policy.sent.clear()
+    moved = {order["unit"]: order for order in policy.decide(obs)}["f2"]
+    assert distance(moved, block) > 20
+    policy.acknowledge({"applied_ms": 2000, "results": [
+        {"unit": "f1", "ok": False, "error": "unreachable"}]}, {})
+    again = {order["unit"]: order for order in policy.decide(obs)}["f1"]
+    assert distance(again, first["f1"]) > 20
 
 
 def test_kiting_uses_melee_when_ammunition_is_gone_and_retries_refusals():

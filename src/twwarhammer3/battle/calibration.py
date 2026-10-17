@@ -37,10 +37,13 @@ class SmallDiagnostic(Hold):
         self.routing_at = {}
         self.now = 0
         self.bounds = {}
+        self.terrain = {}
+        self.unreachable = []
 
     def observe(self, observation):
         self.now = observation.get("time_ms", 0) / 1000
-        self.bounds = (observation.get("terrain") or {}).get("bounds") or {}
+        self.terrain = observation.get("terrain") or self.terrain
+        self.bounds = self.terrain.get("bounds") or {}
         units = [unit for unit in _active(friendly_units(observation).values())
                  if self.now > self.routing_at.get(unit["id"], -math.inf)]
         return (units,
@@ -77,7 +80,9 @@ class SmallDiagnostic(Hold):
     def acknowledge(self, ack, latency):
         for result in ack.get("results", []):
             if not result.get("ok"):
-                self.sent.pop(result.get("unit"), None)
+                order = self.sent.pop(result.get("unit"), ({},))[0]
+                if result.get("error") == "unreachable" and order.get("type") == "move":
+                    self.unreachable.append({"x": order["x"], "z": order["z"]})
                 if result.get("error") == "unit_routing":
                     self.routing_at[result["unit"]] = ack["applied_ms"] / 1000
 
@@ -162,6 +167,8 @@ class CrossKite(SmallDiagnostic):
             "knowledge": "S2: target visible Slayers before other units, else the nearest. "
                          "Enable skirmish/fire-at-will, split to opposite sides at "
                          "120 m, shoot while at 85-145 m and withdraw radially when closer. "
+                         "A post on a restricted cell or near a refused move rotates up to 45 "
+                         "degrees around the target. "
                          "With no ammunition, charge the remaining visible target. "
                          "Fixed initial approach axis; no hidden state or path search."}
 
@@ -189,7 +196,7 @@ class CrossKite(SmallDiagnostic):
                 orders += self.attack(unit, target)
                 continue
             gap = distance(unit, target)
-            post = _offset(target, self.axis, 30, 115 if index % 2 else -115)
+            post = self.post(target, 1 if index % 2 else -1)
             if distance(unit, post) <= 25:
                 self.positioned.add(unit["id"])
             if gap < 85:
@@ -199,6 +206,17 @@ class CrossKite(SmallDiagnostic):
             else:
                 orders += self.attack(unit, target, "ranged")
         return orders
+
+    def post(self, target, side):
+        """The disclosed post 119 m out at 75 degrees, rotated off blocked or refused ground."""
+        # The first live S2 decoy run retried a post inside Taurox's central rock 144 times.
+        for turn in (0, 15, -15, 30, -30, 45, -45):
+            angle = math.radians(side * (75 + turn))
+            point = _offset(target, self.axis, 119 * math.cos(angle), 119 * math.sin(angle))
+            if _clear(self.terrain, point) and all(
+                    distance(point, bad) >= 30 for bad in self.unreachable):
+                return point
+        return _offset(target, self.axis, 30, 115 * side)
 
     def metadata(self):
         return {"type": "cross_kite", "positioned": sorted(self.positioned)}
