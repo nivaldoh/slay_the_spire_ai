@@ -301,11 +301,13 @@ def test_new_trace_edge_rows_keep_errors_out_of_training_targets(tmp_path):
 
 
 def test_reserved_evaluation_seeds_are_held_out(tmp_path):
+    # The game reads O as 0 and ignores case and leading zeros: these are all held-out seeds.
+    seeds = ("HELDOUT01", "RUNDEV1", "HELDOUT10", "held0ut02", "00HELDOUT03", "HELDOUT11")
     job = make_job(tmp_path, [(exchanged(1, "a", [sent("a")]), {"seed": seed, "status": "lost"})
-                              for seed in ("HELDOUT01", "RUNDEV1", "HELDOUT10")])
+                              for seed in seeds])
     export.export_runs([job], tmp_path / "export")
     assert [r["split"] for r in read_export(tmp_path / "export")] == [
-        "held_out", "development", "held_out"]
+        "held_out", "development", "held_out", "held_out", "held_out", "development"]
     assert len(export.HELD_OUT_SEEDS) == 10
 
 

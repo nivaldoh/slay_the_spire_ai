@@ -30,6 +30,13 @@ def _text_hash(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()
 
 
+def _held_out(seed) -> bool:
+    """Whether the game would play a held-out seed: it reads a seed in any case, the letter
+    O as 0, and as a base-35 number, so leading zeros do not count (SeedHelper.getLong)."""
+    return str(seed).upper().replace("O", "0").lstrip("0") in {
+        name.replace("O", "0") for name in HELD_OUT_SEEDS}
+
+
 def _read(path: Path, files: dict) -> dict:
     files[str(path)] = sha256(path)
     return json.loads(path.read_text())
@@ -207,7 +214,7 @@ def _row(request: dict, job: dict, run: dict) -> dict:
     result = run["result"]
     return {
         "schema_version": SCHEMA_VERSION, "game": "spire", "group": result["seed"],
-        "split": "held_out" if str(result["seed"]).upper() in HELD_OUT_SEEDS else "development",
+        "split": "held_out" if _held_out(result["seed"]) else "development",
         "policy": "llm",
         "provider": behavior.get("provider") or config.get("provider", "openai"),
         "model": behavior.get("model") or config.get("model"),
@@ -388,8 +395,8 @@ Sources are unchanged.
   public decision the policy saw (`decision`: observation, candidates, id), the engine
   command chosen (`choice`), the reply's reason and notes, public labels and the run
   outcome. Rows follow the export-row contract shared with WH3: `group` is the game seed
-  and `split` is `held_out` for the reserved evaluation seeds `HELDOUT01` to `HELDOUT10`,
-  otherwise `development`.
+  and `split` is `held_out` for the reserved evaluation seeds `HELDOUT01` to `HELDOUT10`
+  (in any spelling the game reads as the same seed), otherwise `development`.
 - `sources.json`: full job manifests (configuration, source fingerprints, revision),
   environment snapshots, each run's result, profile and deployment, input file hashes,
   the exporter hash, filters, counts, issues and the hash of `decisions.jsonl`. Each row's

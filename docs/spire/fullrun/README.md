@@ -164,7 +164,9 @@ Held-out seeds: `HELDOUT01` to `HELDOUT10` (`HELD_OUT_SEEDS` in `export.py`, cho
 2026-10-17 under the owner's delegation) are reserved for evaluating models and
 fine-tunes. The tuning loop must never play them, and no harness change may be chosen on
 their results; their exported rows are `held_out`, so the dataset builder never trains on
-them.
+them. The game reads a seed in any case, the letter O as 0 and leading zeros as nothing
+(`HELD0UT01` is `HELDOUT01`); the exporter holds out every such spelling, but a seed's
+`group` is the seed as typed.
 
 ## Autoresearch rules
 
