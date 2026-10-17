@@ -35,7 +35,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b21 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | b18 adds S3/S5/S6 and the Bodyguard target fix. b17 checks: S2 Yeomen floor won, S4 Bodyguard won at 5 s only, swarm-Slayer setup engaged |
+| benchmark harness | b22 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | b18 adds S3/S5/S6 and the Bodyguard target fix. b17 checks: S2 Yeomen floor won, S4 Bodyguard won at 5 s only, swarm-Slayer setup engaged |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
@@ -261,6 +261,31 @@ their first lobbies. A character's lobby price is unknown; rosters stay fixed.
 b21 (merged after D1) holds the shared post rotation, the S7 and S10 steps and these
 funds changes. Queue D2 runs the follow-up diagnostics, then the S1 mode pilot, S5's
 floors, and L1/L2 setup checks, cut before 12:45 UTC.
+
+Queue D2's first lobby stalled at the maps tab (`MailboxTimeout`, step 4 of 85; no battle);
+the unchanged jobs were re-queued as D2b on the same revision.
+
+The S2 decoy `CrossKite` re-run on b21 (`bench-b21-s2-decoy-kite-r3-20261017`) lost again:
+262 s (fresh) and 283 s (5.42 s age). Post rotation cut unreachable refusals to 13 and
+40, but about 1,450 arrows per episode killed only 8 and 25 Slayers and one Warrior; no
+rider entered melee. At about 257 s both units took an "Army losses" morale effect with
+no men lost, their leadership fell from 1.0 to below zero within five seconds, and the engine
+ended the battle when both routed at full strength. The first pair collapsed at a
+similar time. The cause is not visible in the observation. CrossKite also shoots
+from an 85-145 m band set for Horse Archers (140 m range) although Yeomen reach 125 m.
+*Delegated:* S2 work stops tonight. Its two stat steps were too easy, and the decoy step
+lost its floor but has no demonstrated win. A range-aware CrossKite, or dropping S2
+(engine skirmish mode automates its kiting), is the owner's call.
+
+The S3 `Crossfire` re-run on b21 (`bench-b21-s3-crossfire-3-r2-20261017`) lost both
+episodes on the 1205 s timer. The guns fired 22 and 0 rounds, and the engine refused 156
+and 434 moves. b21's fallback was the defect: with every rotated post refused or
+restricted, `open_point` returned the first candidate, which was retried indefinitely.
+b22 returns no post in that case: guns and archers shoot from where they stand, and
+`HammerAnvil` skips a blocked waypoint and charges (disclosed; regression added).
+b22 also adds `digest --units` (per-unit men, ammunition, first melee and rout times,
+and engine refusals), replacing the ad-hoc review script used tonight. It merged while
+the S4 step-2 job played its last episode; the remaining D2b jobs continue as D2c on b22.
 
 Live checks still owed: lordless recruitment at these funds, whether the wizard becomes
 the commanding unit, its Lore of Fire ability keys (SpellWindow matches `burning_head`,
