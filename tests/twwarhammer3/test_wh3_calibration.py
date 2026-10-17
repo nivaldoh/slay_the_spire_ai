@@ -60,6 +60,18 @@ def test_small_diagnostics_do_not_use_hidden_enemies_or_order_routers():
         assert policy.decide(obs) == []
 
 
+def test_kiting_prefers_slayers_over_a_nearer_decoy():
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "horse_archer", 0, 100, ammo=10),
+                                         unit("f2", "horse_archer", 20, 100, ammo=10)],
+           "enemy": [unit("e1", "dwarf_warrior", 0, 60), unit("e2", "slayers", 0, 0)]}
+    original = deepcopy(obs)
+    orders = CrossKite().decide(obs)
+    validate_orders(orders, obs)
+    # Posts flank the Slayers (z 0), not the nearer decoy (z 60).
+    assert len(orders) == 2 and all(order["z"] < 50 for order in orders)
+    assert obs == original
+
+
 def test_kiting_uses_melee_when_ammunition_is_gone_and_retries_refusals():
     obs = {"time_ms": 1000, "friendly": [unit("f1", "horse_archer", 0, 40, ammo=10,
            behaviours={"skirmish": False, "fire_at_will": True})],

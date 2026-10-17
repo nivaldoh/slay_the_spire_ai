@@ -225,6 +225,16 @@
       "core_candidate": false,
       "footnote": "S2 second harder step after the Mounted Yeomen floor won narrowly. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
     },
+    "brt-archers-dwf-slayers-decoy": {
+      "title": "Horse archers, Slayers and a shield wall",
+      "short": "Ammunition and target choice",
+      "noun": "horse-archer assault",
+      "heading": "A shielded decoy competes for the arrows",
+      "challenge": "Two Bretonnian Mounted Yeomen Archer units attack one unbreakable Slayer unit and one shielded Dwarf Warriors unit. Arrows spent on the shields are lost to the Slayers.",
+      "family": "ammunition and kiting",
+      "core_candidate": false,
+      "footnote": "S2 third step: the attack-nearest floor won both earlier steps (modifier 1.0 and 1.1), because the game's skirmish mode kites by itself. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+    },
     "emp-handgunners-dwf-warriors": {
       "title": "Handgunners past a shield wall",
       "short": "Lines of fire",

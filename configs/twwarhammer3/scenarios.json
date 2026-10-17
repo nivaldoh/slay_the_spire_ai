@@ -1427,6 +1427,21 @@
     },
     "calibration_change": "S2 second harder step (2026-10-17). The Mounted Yeomen Archer floor won narrowly (bench-b17-s2y-floor-20261017: 326 s, the Slayers left with one man; one archer unit was caught in melee and destroyed with 346 arrows left, the other spent all 810). Raise only the AI stats modifier to 1.1; armies, map, timer and 1200 funds are unchanged. Scripted floor first; CrossKite at 0/5 s observation age only after a floor loss."
   },
+  "brt-archers-dwf-slayers-decoy": {
+    "base": "brt-archers-dwf-slayers",
+    "name": "brt-archers-dwf-slayers-decoy",
+    "brief": "Two Mounted Yeomen Archer units attack one unbreakable Slayer unit escorted by one shielded Dwarf Warriors unit. Arrows spent on the armoured, shielded decoy are lost to the Slayers; which unit to shoot, from where, and when to finish in melee decide whether the ammunition lasts.",
+    "enemy": {
+      "units": [
+        "wh_main_dwf_inf_slayers",
+        "wh_main_dwf_inf_dwarf_warrior_0"
+      ]
+    },
+    "expect": {
+      "funds_amount": 1500
+    },
+    "calibration_change": "S2 third step (2026-10-17, the draft's named decoy). The Mounted Yeomen floor won at modifier 1.0 (326 s) and again at 1.1 (bench-b18-s2-hard-floor-20261017: 330 s, 88 of 90 riders left): the engine's skirmish mode does the kiting, so stat steps do not bind. From the 1.0 step, add one Dwarf Warriors unit (draft cost 450; 55% shield, armour 85); funds 1500 so both rosters recruit. Floor first; CrossKite, now preferring the Slayers, at 0/5 s only after a floor loss. The decoy may make the battle unwinnable once arrows run out."
+  },
   "emp-handgunners-dwf-warriors": {
     "base": "ksl-raiders-emp-halberds",
     "name": "emp-handgunners-dwf-warriors",

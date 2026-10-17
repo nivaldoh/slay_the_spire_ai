@@ -159,7 +159,8 @@ class CrossKite(SmallDiagnostic):
     """S2: split horse archers around the target and preserve shooting distance."""
 
     card = {"purpose": "Can separated horse archers spend their ammunition effectively?",
-            "knowledge": "S2: enable skirmish/fire-at-will, split to opposite sides at "
+            "knowledge": "S2: target visible Slayers before other units, else the nearest. "
+                         "Enable skirmish/fire-at-will, split to opposite sides at "
                          "120 m, shoot while at 85-145 m and withdraw radially when closer. "
                          "With no ammunition, charge the remaining visible target. "
                          "Fixed initial approach axis; no hidden state or path search."}
@@ -174,7 +175,8 @@ class CrossKite(SmallDiagnostic):
         if not units or not enemies:
             return []
         units.sort(key=lambda unit: unit["id"])
-        target = min(enemies, key=lambda enemy: distance(_centre(units), enemy))
+        target = min(enemies, key=lambda enemy: ("slayers" not in enemy.get("type", ""),
+                                                 distance(_centre(units), enemy)))
         if self.axis is None:
             self.axis = _direction(target, _centre(units))
         orders = []
