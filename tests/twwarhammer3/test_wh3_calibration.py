@@ -547,6 +547,8 @@ def test_step_ring_stays_inside_the_map_and_off_map_points_are_blocked():
     policy = Crossfire()
     policy.observe(obs)
     assert policy.move(obs["friendly"][0], {"x": -600, "z": -255}, obs["enemy"][0]) == []
+    # Posts are not clamped: one past the map's edge is blocked (b23: open), so the next is used.
+    assert policy.open_point([{"x": -514, "z": 0}, {"x": -450, "z": 0}]) == {"x": -450, "z": 0}
 
 
 def test_with_every_post_refused_guns_shoot_and_knights_charge_from_where_they_are():
