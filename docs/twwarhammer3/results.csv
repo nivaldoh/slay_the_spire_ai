@@ -315,3 +315,7 @@ date,job,episode,scenario,policy,model,effort,harness,source,mode,speed,interval
 2026-10-17,bench-b16-s2-floor-20261017,episode-0000,ksl-archers-dwf-slayers,attack_nearest,,,,a882872,realtime,1.0,0.0,won,352,0.81,0.0,1144,0,0.3,0,classic,,,,,0.811,0.0,0.0,engine_result,
 2026-10-17,bench-b16-s4-floor-20261017,episode-0000,emp-helblaster-brt-raiders,hold,,,,a882872,realtime,1.0,0.0,lost,160,0.59,0.81,508,0,0.3,0,classic,,,,,0.0,0.806,0.0,engine_result,
 2026-10-17,bench-b16-s1-flank-r2-20261017,episode-0000,ksl-raiders-emp-halberds,twwarhammer3.battle.calibration:FeintFlank,,,,a882872,realtime,1.0,0.0,lost,566,0.28,0.28,1823,3,5.41,0,classic,,,,,0.0,0.278,5.0,engine_result,
+2026-10-17,bench-b17-s2y-floor-20261017,episode-0000,brt-archers-dwf-slayers,attack_nearest,,,,1117518,realtime,1.0,0.0,won,326,0.5,0.0,1061,0,0.3,0,classic,,,,,0.5,0.0,0.0,engine_result,
+2026-10-17,bench-b17-s4-bodyguard-20261017,episode-0000,emp-helblaster-brt-raiders,twwarhammer3.battle.calibration:Bodyguard,,,,1117518,realtime,1.0,0.0,lost,219,0.65,0.74,704,0,0.3,0,classic,,,,,0.0,0.678,0.0,engine_result,
+2026-10-17,bench-b17-s4-bodyguard-20261017,episode-0001,emp-helblaster-brt-raiders,twwarhammer3.battle.calibration:Bodyguard,,,,1117518,realtime,1.0,0.0,won,503,0.24,0.13,1619,18,5.41,0,classic,,,,,0.244,0.0,5.0,engine_result,
+2026-10-17,bench-b17-swarm-slayers-check-20261017,episode-0000,skv-swarm-dwf-line-slayers,twwarhammer3.battle.calibration:CoordinatedRush,,,,1117518,realtime,1.0,0.0,lost,429,0.42,0.67,1385,0,0.31,0,classic,,,,,0.0,0.647,0.0,engine_result,
