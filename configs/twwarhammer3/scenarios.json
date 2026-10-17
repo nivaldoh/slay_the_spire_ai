@@ -1861,6 +1861,22 @@
     ],
     "calibration_change": "Small focused candidate S10 (b20, 2026-10-17; docs/twwarhammer3/small-scenarios-2.md). Database costs: player 975 (3 x 325), enemy 1350 (2 x 675); funds 1500. Defined only: lordless Skaven/Slaanesh recruitment is unverified. Floors hold and attack_nearest first."
   },
+  "skv-spears-sla-hellstriders-3": {
+    "base": "skv-spears-sla-hellstriders",
+    "name": "skv-spears-sla-hellstriders-3",
+    "brief": "Three Clanrat Spearmen units defend against three Hellstrider units, with no lords. Enough riders to charge every face of the block at once; facing, bracing and counter-charges decide whether the rats hold.",
+    "enemy": {
+      "units": [
+        "wh3_main_sla_cav_hellstriders_0",
+        "wh3_main_sla_cav_hellstriders_0",
+        "wh3_main_sla_cav_hellstriders_0"
+      ]
+    },
+    "expect": {
+      "funds_amount": 2250
+    },
+    "calibration_change": "S10 second step (2026-10-17). The hold floor won the two-rider version at 207 s (bench-b20-s10-floor-20261017): the AI charged braced fronts head-on, the draft's trivial risk, and both Hellstrider units routed (the draft read immune_to_psychology as never routing; live state says otherwise). One more Hellstriders unit (database 675, enemy 2025); funds 2250. Hold floor first; BraceFacing at 0/5 s after a floor loss."
+  },
   "dwf-cannon-grn-lobbers": {
     "base": "ksl-raiders-emp-halberds",
     "name": "dwf-cannon-grn-lobbers",

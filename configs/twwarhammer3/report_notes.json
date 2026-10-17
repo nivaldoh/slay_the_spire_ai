@@ -321,7 +321,7 @@
       "noun": "small defence",
       "heading": "Enough enemies to wrap both flanks",
       "challenge": "Two Dwarf Longbeard units defend against six Empire Swordsmen units. Blocked ground and the map edge limit how many attackers can reach the defenders at once.",
-      "family": "terrain defence",
+      "family": "deny the envelopment",
       "core_candidate": false,
       "footnote": "S7 second step: the hold floor won the four-unit version easily. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
     },
@@ -354,6 +354,16 @@
       "family": "receiving cavalry: facing and bracing",
       "core_candidate": false,
       "footnote": "Development candidate S10 (b20). Defined only: the lordless setup awaits its live check, then hold and attack-nearest floors and a disclosed bracing diagnostic at 0 and 5 s observation age."
+    },
+    "skv-spears-sla-hellstriders-3": {
+      "title": "Rat spears against three rider units",
+      "short": "Receive the charge",
+      "noun": "small defence",
+      "heading": "Enough riders to hit every face",
+      "challenge": "Three Clanrat Spearmen units defend against three Hellstrider units. Facing, bracing and counter-charges decide whether the block holds.",
+      "family": "receiving cavalry: facing and bracing",
+      "core_candidate": false,
+      "footnote": "S10 second step: the hold floor won the two-rider version at 207 s. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
     },
     "dwf-cannon-grn-lobbers": {
       "title": "A Dwarf cannon against two Rock Lobbers",
