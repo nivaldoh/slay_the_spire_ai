@@ -182,24 +182,32 @@ The six core scenarios remain provisional; the [design audit](benchmark.md#scena
 counts distinct decision problems, with cavalry/caster variants counted once per family
 and Conquest demoted because it has only one point.
 
-Work stopped at the owner's request after seven scripted small-scenario battles
-([checkpoint](log.md#2026-10-17-harness-b17-small-scenario-checkpoint-work-stopped)).
-When resumed, the remaining plan is:
+The overnight tranche of 2026-10-17 (harness b18-b23) added eight small candidates
+(S3, S5-S11) and two large ones (L1, L2). It played 40 jobs, mostly free scripted
+floors and diagnostics, plus GLM references
+([log](log.md#2026-10-17-overnight-tranche-harness-b18-b23)). Each candidate's
+status and next step is on one board,
+[small-scenario status](benchmark.md#small-scenario-status-after-the-overnight-tranche-2026-10-17).
+Remaining plan:
 
-1. **Small focused scenarios.** Lordless setup and all three floors are checked. S1's
-   frontal controls lost; flanking won fresh and lost in both delayed attempts. Next is
-   a bounded GLM screen, without more S1 bot tuning. S2's floor won, so the prepared
-   weaker mounted-archer variant needs checking. S4's hold floor lost; its bodyguard
-   diagnostic awaits live checks at 0 and 5 s observation age. Candidates are in the
-   [small-scenario draft](benchmark.md#small-focused-candidates-draft-2026-10-16-evening).
-2. **A cheaper ladder reference.** GLM-5.3 / low needs reference battles on the unchanged
-   siege and swarm anchors before trying three added flankers, a new swarm factor and
-   three cannons. Expensive models return later. A cheap model's loss does not establish
-   that a scenario is unwinnable.
-3. **Later model coverage.** All 26 declared model-mode configurations passed schema
-   checks. GLM and Kimi have played through [OpenRouter](controllers.md#openrouter);
-   Step and modes beyond `low` remain unplayed in battle. The broad comparison's size
-   and budget remain open. Current caps and activity are in [state.md](../state.md).
+1. **Small focused scenarios.** Wins are shown for S1 (flank, fresh) and S4 (escort
+   melee, mostly at 5 s); S2, S7 and S10 were too easy or depend on AI behaviour. Next:
+   - Crossfire for S3 on b23, SpellWindow for S5 (check why the ability probe barely
+     cast), and step-downs for S6, S8, S9 and S11, each floor first;
+   - S7 with armour-piercing attackers;
+   - setup checks for L1 and L2.
+2. **Cheap ladder reference: stopped at the anchors.** GLM-5.3 / low lost the siege and
+   swarm anchors (one battle each), so its added-factor steps wait for stronger models.
+   It lost S1 twice by sending direct attacks after planning a two-flank charge, and
+   S4 once (the second S4 battle ended as a policy failure).
+3. **Model coverage.** The S1 mode pilot showed GLM high exhausting the 4,000-token
+   output cap with reasoning. Modes above `low` need a larger allowance before the
+   all-modes matrix. Per-backend error rates differed several-fold; pinning a backend
+   is drafted on `wh3-openrouter-pin`.
+
+Owner decisions waiting: the unmerged `wh3-rules-v21-attack-path` (`llm_rules` v21 states
+that attacks take the engine's route) and `wh3-openrouter-pin`; whether to drop S2 and
+S10; the output allowance for high modes; the remaining OpenAI budget.
 
 Controller inputs are v20 / commander v7. The direct v20 warning has a
 [GLM live check](log.md#2026-10-16-live-check-of-the-v20-shared-magic-warning); commander v7

@@ -657,6 +657,38 @@ probe, S1, S2 and S4, then S3, S5 and S6; S7 last. A second batch (S8-S11 declar
 S12-S13 defined only) covers focus fire, a lone monster, receiving cavalry and
 counter-battery: [small-scenarios-2.md](small-scenarios-2.md).
 
+### Small-scenario status after the overnight tranche (2026-10-17)
+
+One row per candidate. Floors are naive scripted controls that should lose. Diagnostics
+are disclosed public-state plays, run at 0 and 5 s added observation age. Evidence and
+delegated choices are in the
+[overnight log entry](log.md#2026-10-17-overnight-tranche-harness-b18-b23). No
+candidate is admitted. Statuses:
+- "win shown": a diagnostic won.
+- "too easy": a floor won.
+- "no win yet": the floor and the diagnostic both lost.
+
+| Id | Latest step | Floor | Diagnostic | Model battles | Status and next step |
+|---|---|---|---|---|---|
+| S1 feint and flank | `ksl-raiders-emp-halberds` | walk and run lost | FeintFlank won fresh, lost at 5 s (x2) | GLM-5.3 low 0/2: planned a two-flank charge, sent direct attacks | Win shown. Next: stronger models; `llm_rules` v21 draft states the attack route |
+| S2 kiting | `brt-archers-dwf-slayers-decoy` | three earlier steps won; decoy lost | CrossKite lost x4 (terrain refusals; then a morale collapse at full strength) | none | No win yet. Set aside: engine skirmish mode automates the kiting. Range-aware CrossKite or drop |
+| S3 lines of fire | `emp-handgunners-dwf-warriors-3` | 2-unit won; 3-unit lost | Crossfire lost x4, all with refused posts (fixed in b22/b23) | none | No win yet. Next: Crossfire on b23 |
+| S4 protect the gun | `emp-helblaster-brt-raiders` (step `-2`) | hold lost (both steps) | Bodyguard: original won 4/4 at 5 s, 1/4 fresh; step 2 lost x2 | GLM 0/1 plus one policy failure | Win shown on the original, but by the escort's melee; the gun always fell. The named skill is not yet tested |
+| S5 spell window | `emp-wizard-emp-swordsmen` | ability probe and attack-nearest lost (at 3,000 funds) | none yet | none | Lobby refused 800 and 1,200 funds. The wizard becomes the commanding `lord` and carries items, which explains the price. The probe floor cast only once (power stone at 571 s). Next: check why, then SpellWindow (its ability keys match) |
+| S6 hammer and anvil | `emp-knights-emp-swordsmen` | lost | HammerAnvil lost x4 (first pair: refused wait post) | none | No win yet. Next: two enemy units, floor first |
+| S7 corner defence | `dwf-longbeards-emp-swordsmen-6` | 4-unit and 6-unit won | none yet | none | Too easy: Longbeards outclass Swordsmen at any count tried. Next: armour-piercing attackers (e.g. Greatswords), not more Swordsmen |
+| S8 focus vs regeneration | `dwf-thunderers-grn-trolls` | lost | FocusFire lost x2; no Troll died | none | No win yet. Next: two Trolls |
+| S9 lone monster | `grn-giant-ksl-streltsi` | lost | MonsterTarget lost x2 | none | No win yet. Next: rebalance |
+| S10 receive the charge | `skv-spears-sla-hellstriders-3` | 2-rider and 3-rider won | none yet | none | Too easy: the AI charges braced spears head-on at any count tried. Set aside unless a different enemy (missile cavalry) changes its behaviour |
+| S11 counter-battery | `dwf-cannon-grn-lobbers` | lost | CounterBattery lost x2; lobbers broken, spearmen won | none | No win yet. Next: one Rock Lobber |
+| L1 / L2 | `emp-pitched-grn-20`, `ksl-ffa-grn-dwf-12` | not run | n/a | none | Declared; first setup checks are next |
+
+Across all of them, terrain defeated the first versions of the geometric diagnostics:
+on the Taurox map, posts and waypoints often fell inside the central rock, and the
+engine refused the moves. Since b23 every diagnostic move steps to open ground or holds.
+Lobby prices for characters exceed their database costs, so character-led rosters
+get funds headroom.
+
 ### Owner decisions and next tranche (2026-10-16 night)
 
 The owner answered the three open questions. Item 3's exporter and exchange capture are

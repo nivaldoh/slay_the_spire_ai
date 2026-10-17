@@ -9,14 +9,20 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Main README](../README.md) refresh and repository cleanup are complete
 ([record](twwarhammer3/log.md#2026-10-16-readme-refresh-and-repository-cleanup)).
 
-Overnight goal (2026-10-17 04:00 UTC, owner away until 13:00 UTC): continue the
-benchmark scenario implementation; game jobs end before 12:45 UTC. Queues A, B, C and
-D1 are done; b21 is on `main`. Running: WH3 queue
-`runs/twwarhammer3/calibration/queue-d2d-b23-20261017.json` on b23 (after D2, its retry D2b and D2c on b22), from about 10:40 UTC
-(follow-up diagnostics, S7/S10 step floors, S1 mode pilot, S5 floors, L1/L2 setup),
-to be interrupted by 12:45 UTC if still running. Watch: `uv run python -m twwarhammer3
-watch`. Results and delegated choices:
-[overnight entry](twwarhammer3/log.md#2026-10-17-overnight-tranche-harness-b18-s3-s5-s6).
+No game controller or queue is running (the overnight tranche ended at about 12:40 UTC,
+2026-10-17). The owner's overnight goal was to continue the benchmark scenario
+implementation unattended. Harness b18-b23 are on `main`:
+- S3 and S5-S11 small candidates with disclosed diagnostics;
+- L1/L2 large candidates;
+- step variants;
+- terrain-safe diagnostic moves;
+- `digest --units`.
+
+40 jobs ran, mostly free scripted checks; OpenRouter spend rose from $1.93 to $3.54
+of the $10 working ceiling. What happened, every delegated choice and the proposals are
+in the [overnight entry](twwarhammer3/log.md#2026-10-17-overnight-tranche-harness-b18-b23);
+each candidate's status is on the
+[board](twwarhammer3/benchmark.md#small-scenario-status-after-the-overnight-tranche-2026-10-17).
 Unmerged for the owner: `wh3-rules-v21-attack-path` (`llm_rules` v21 states the attack
 route) and `wh3-openrouter-pin` (optional backend pin), both pushed.
 
@@ -29,7 +35,7 @@ command; clear it when the job stops.
 [log](twwarhammer3/log.md) (newest first, with the versions on `main` at the top),
 [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, benchmark b17,
+- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, benchmark b23,
   evaluator v2 and track `obs-v4+terrain/act-v2/live-1x`. The interface supports native
   objectives/reinforcements and the optional public battery-evacuation objective.
 - Six candidate decision families with live evidence remain after the live novelty audit
@@ -43,24 +49,31 @@ command; clear it when the job stops.
   models; survive-a-swarm and Kislev did not. The report page shows core scenarios and
   completed battles only; its JSON keeps setup failures and variants. Results, costs and
   reviews: [M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
-- OpenAI spend: $50.90 of $52; OpenRouter $1.93 of $50. No further OpenAI battle fits
+- OpenAI spend: $50.90 of $52; OpenRouter $3.54 of $50. No further OpenAI battle fits
   the current cap; more Sol battles need the owner's budget decision.
 - [Difficulty ladder V1](twwarhammer3/log.md#2026-10-16-difficulty-ladder-first-step-v1)
   is complete. All 26 declared model-mode configurations passed schema checks; modes
   beyond `low` remain unplayed in battle. The six core candidates remain provisional.
 
 The exporter is implemented ([b14](twwarhammer3/log.md#2026-10-16-harness-b14-offline-trace-export-and-model-exchange-capture)).
-Game work is stopped at the owner's request. When resumed, the remaining work follows
-the earlier order ([decisions](twwarhammer3/benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night)):
-1. Small scenarios: the lobby probe and S1/S2/S4 floors are complete. S1 awaits a
-   bounded GLM screen; S2's weaker mounted-archer variant needs its floor/diagnostic
-   checks, and S4 needs the bodyguard diagnostic. No more S1 bot tuning is planned.
-2. Ladder with GLM-5.3 / low as the cheap reference: anchor battles for siege and swarm,
-   then three flankers, a new swarm factor, three cannons. Expensive models later.
-Open: backing up `runs/` off this machine; the all-modes matrix size and budget.
-Kimi completed one battle at about three times Sol's latency; Step and all modes above
-`low` are unplayed in battle. Custom evacuation and the workload, prompt, history,
-representation and added-age experiments remain deferred.
+Next, per the [board](twwarhammer3/benchmark.md#small-scenario-status-after-the-overnight-tranche-2026-10-17):
+1. Small scenarios. Wins are shown for S1 and S4. Next:
+   - re-run Crossfire for S3 on b23;
+   - S5: find why the ability probe barely cast, then SpellWindow;
+   - step-downs for S6, S8, S9 and S11, floor first;
+   - S7 with armour-piercing attackers;
+   - setup checks for L1 and L2.
+
+   S2 and S10 are set aside pending the owner.
+2. Ladder: GLM-5.3 / low lost both the siege and swarm anchors (one battle each), so
+   its added-factor steps wait for stronger models.
+3. Model coverage: GLM high and Step high both exhausted the 4,000-token output cap
+   with reasoning. Modes above `low` need a larger output allowance first. Step low
+   decided about once a minute.
+
+Open: backing up `runs/` off this machine; the all-modes matrix size and budget. Custom
+evacuation and the workload, prompt, history, representation and added-age experiments
+remain deferred.
 Steam is pinned to 9.0.4; old evidence keeps its original build.
 
 ## Slay the Spire

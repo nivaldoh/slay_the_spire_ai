@@ -35,12 +35,12 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b23 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | b18 adds S3/S5/S6 and the Bodyguard target fix. b17 checks: S2 Yeomen floor won, S4 Bodyguard won at 5 s only, swarm-Slayer setup engaged |
+| benchmark harness | b23 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | Overnight 2026-10-17: S3, S5-S11, L1/L2 declared with diagnostics; 40 jobs; wins shown for S1 and S4 only. Status board in benchmark.md |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
 
-## 2026-10-17: Overnight tranche, harness b18 (S3, S5, S6)
+## 2026-10-17: Overnight tranche, harness b18-b23
 
 Owner goal (04:00 UTC, away until 13:00 UTC, no questions possible): "Continue the
 Total War Warhammer 3 benchmark scenario implementation ... implement more things if you
@@ -303,12 +303,105 @@ move steps to the nearest open spot within two terrain cells, or the unit holds
 (disclosed in `SmallDiagnostic`; regression added). D2c's remaining jobs continue on b23
 as D2d, with an S6 re-run.
 
-Live checks still owed: lordless recruitment at these funds, whether the wizard becomes
-the commanding unit, its Lore of Fire ability keys (SpellWindow matches `burning_head`,
-`flame_storm` and `fireball` by substring) and whether handgunners' fire-at-will can be
-switched off. The draft's costs come from the database notes; `wh3_db.py` needs an RPFM
-schema that is not on this machine. The report labels the three new diagnostics and
-carries provisional notes. No model prompt or observation contract changed.
+S8's `FocusFire` pair (`bench-b22-s8-focus-20261017`) lost at 147 s and 149 s. The Trolls
+reached the line by about 70 s and lost no one (12 of 12 in every unit) after 66-120
+rounds per gun unit; all Dwarf units routed by 149 s with 34-51 men left. Focus did not
+change the result, and nothing shown so far wins. Proposal, not run: a step down to two
+Trolls (enemy 1,500) before any model screen. Without a win the scenario fails the
+winnability rule.
+
+S11's `CounterBattery` pair (`bench-b23-s11-counter-20261017`, D2d on b23) lost at 346 s and
+564 s. Counter-battery fire worked (the lobbers fell to 20/12 and 14/9 of 33, routing one
+in the first episode and both in the second), but the lone Warriors and the cannon then
+lost to the two 120-man Goblin Spearmen blocks. The floor showed the reverse (spearmen
+routed, lobbers intact). At 1,750 against 1,250 neither target order wins. Proposal,
+not run: one Rock Lobber instead of two.
+
+S9's `MonsterTarget` pair (`bench-b23-s9-monster-20261017`) lost at 276 s and 242 s. The Giant
+went for the Streltsi first (68 to 17 and 38) but routed early; the Kossar spears were
+never engaged. The floor did the reverse and lost later: it destroyed the spears, then
+the Streltsi shot it down. Neither target order wins at 1,400 against 1,350.
+Proposal, not run: rebalance (a second monster, or one enemy unit fewer) before the
+target-choice question can be tested.
+
+S6's `HammerAnvil` re-run on b23 (`bench-b23-s6-hammer-r2-20261017`) had no refused moves,
+which confirms the b23 fix, but lost at 493 s (fresh) and on the 1205 s timer (5.41 s age).
+The pinning Swordsmen routed at 308 s and 277 s; the enemy kept 51% and 73% of its men.
+The cycle charges did not outpace one unit's collapse against three. Proposal, not run:
+two enemy Swordsmen (check the floor first, since it may then win).
+
+S7's six-unit hold floor (`bench-b23-s7-floor-6-20261017`) won at 612 s: Longbeards 58 and 39
+of 75, all six Swordsmen units routed (10-49 of 90 left). Numbers alone do not bind; the
+next step should change the attackers' quality (armour-piercing Greatswords), not add
+more Swordsmen. Not run tonight.
+
+S10's three-rider hold floor (`bench-b23-s10-floor-3-20261017`) won at 216 s: the AI again
+charged braced fronts head-on and all three Hellstrider units routed (17-18 of 45 left).
+The candidate depends on an AI behaviour that makes it trivial; *delegated:* set aside
+unless a different enemy changes that.
+
+S5's lobby passed at 3,000 funds (`bench-b23-s5-floors-20261017`). The Bright Wizard became the
+army's commanding unit (class `lord`) and starts with items: a power stone and a bound
+blast item. That explains a lobby price above its database cost. Its Lore of Fire keys include
+`wh_main_spell_fire_the_burning_head`, `..._flame_storm` and `..._fireball` (plus upgraded
+versions), so `SpellWindow`'s substring matching applies; magic started at 12 current, 68
+reserve. Both floors lost: `probe_abilities` at 656 s and attack-nearest at 544 s, with
+about 80% of the enemy left. The probe cast only once (the power stone at 571 s), so the
+probe floor did not test magic; the cause needs a look before `SpellWindow` runs.
+
+S1 mode pilot, first configuration: GLM-5.3 / high (`bench-b23-s1-glm-high-20261017`) ended
+as a policy failure after three decisions. Its fourth reply was retried three times
+on one backend (Wafer). Each time, 12-13k characters of reasoning used the whole
+4,000-token output cap and left no JSON reply. The first call (PrimeIntellect) had
+finished in 1,935 tokens. Higher effort modes need a larger output allowance (or a
+separate reasoning budget) before the all-modes matrix can be measured. That is a harness
+setting, recorded for the owner, not a statement about the model's play. D2d stopped
+there; the remaining pilot battles (Step 5 Preview low/high, Kimi K3 low) ran as a final
+mini-queue, D2e.
+
+Step 5 Preview's first battles (D2e): low (`bench-b23-s1-step-low-20261017`) lost S1 at 230 s
+with 17% own / 68% enemy men left. It made only four decisions, with a mean order delay of
+60.1 s: two direct attacks on the halberds at 5 s and 30 s, a third at 173 s and a
+halt at 186 s. Its cost was $0.061. High (`bench-b23-s1-step-high-20261017`) failed before
+its first decision. Three attempts each spent 13-14k characters of reasoning, filled the
+4,000-token cap and returned no reply ($0.035). Both high-mode configurations tried
+tonight fail on the same output allowance. Kimi K3 / low closes the pilot (D2f).
+
+Kimi K3 / low (`bench-b23-s1-kimi-low-20261017`, D2f) ended at 102 s as an infrastructure
+failure: OpenRouter returned a failed response (`APIError`). It had made 27 decisions,
+with a mean delay of 3.58 s, the fastest model tonight, at $0.135. The pilot thus
+completed one battle per configuration only for GLM low and Step low; all three
+high-mode or Kimi attempts ended in policy or API failures. Game work ended at 12:34 UTC.
+OpenRouter spend for the night: $1.9333 to $3.5445, within the $10 working ceiling; no
+OpenAI calls.
+
+Every new lordless roster recruited once funds allowed. S5 needed 3,000 because its wizard
+becomes the commanding unit with items; its ability keys match `SpellWindow`. Database
+costs came from `wh3_db.py`, using an RPFM schema downloaded to the session scratchpad
+(not into the repository). The report labels every new diagnostic and carries provisional
+notes. No model prompt or observation contract changed on `main`.
+
+Summary, with every candidate's row on the
+[status board](benchmark.md#small-scenario-status-after-the-overnight-tranche-2026-10-17):
+- Wins shown: S1 (flank, fresh) and S4 (escort melee, mostly at 5 s).
+- Too easy at every step tried: S2 (until the decoy), S7 and S10.
+- No win yet: S3, S5, S6, S8, S9 and S11. For S3 and S6 the diagnostics were defeated by
+  terrain until b23. S8, S9 and S11 look too hard, and step-downs are proposed.
+- Not yet run: L1 and L2.
+- GLM-5.3 / low lost every model battle it completed (S1 x2, S4, both anchors), and two
+  others ended in policy failures.
+- Mode pilot: high efforts of GLM and Step exhaust the 4,000-token output cap, Step low
+  decides about once a minute, and Kimi low hit an API failure.
+
+Delegated choices are marked above. Proposals waiting on the owner: the `llm_rules`
+v21 branch, the OpenRouter backend pin, larger output allowances for high modes, the
+step-downs, and whether to drop S2 and S10.
+
+Validation: the WH3 and documentation suites pass on `main` (515 tests), and Ruff and
+`git diff --check` pass. Every battle ran unpaused at 1x (checked: episode wall time
+matched battle time). Rebuilt `reports/benchmark.{html,json,txt}` (140 jobs, 231 trials,
+220 valid) and `reports/overnight-20261017.{html,json,txt}` (tonight's 40 jobs, 55
+trials, 51 valid). The read-only doctor reported ready after the last job.
 
 ## 2026-10-17: Harness b17, small-scenario checkpoint; work stopped
 
