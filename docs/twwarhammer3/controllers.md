@@ -274,6 +274,19 @@ Total OpenRouter ledger spend is $0.43000489 after the smoke checks and battle, 
 that battle's $3 cumulative cap and the owner's $50 account allowance. No further
 paid run is queued; [review](log.md#2026-10-16-first-openrouter-battle-and-shared-magic-feedback).
 
+Proposed, unmerged (branch `wh3-openrouter-pin`, 2026-10-17): `play
+--openrouter-backends A,B` pins the serving providers. Each request's `provider` object
+then also carries `order` and `only` set to those names and `allow_fallbacks: false`,
+and the card, `model_routing` and manifest record the pin, so pinned and unpinned battles
+stay separable. Without the flag the request is unchanged; with `--provider openai` it
+is refused before launch. Motivation: across four GLM jobs on 2026-10-17, attempts that
+failed parsing or validation ranged from about 42% on InferenceNet and Modal to about
+5% on DeepInfra and PrimeIntellect (counts may double-count decision and exchange
+records), so an open-weight model's result partly reflects its backend mix. Unchecked
+live: whether OpenRouter matches the display names our traces record (for example
+"DeepInfra") or needs its lower-case slugs, and that `only` with `allow_fallbacks` false
+refuses rather than reroutes when the pinned backends are unavailable.
+
 ## Candidate changes for the next version
 
 Verified contradictions between the prompts and the code. Each changes prompt bytes or

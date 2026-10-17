@@ -581,8 +581,9 @@ class LLMPolicy:
     """One instance per episode: its notes, history and last-seen map are the memory."""
 
     def __init__(self, model: str, effort: str, ledger: Ledger, *, send=None,
-                 system_prompt: str | None = None, provider: str = "openai"):
-        self.api = Model(model, effort, ledger, send=send, provider=provider,
+                 system_prompt: str | None = None, provider: str = "openai",
+                 backends: tuple[str, ...] = ()):
+        self.api = Model(model, effort, ledger, send=send, provider=provider, backends=backends,
                          instructions=system_prompt or SYSTEM_PROMPT_PATH.read_text(),
                          max_output_tokens=MAX_OUTPUT_TOKENS, record_exchanges=True)
         self.totals = self.api.totals

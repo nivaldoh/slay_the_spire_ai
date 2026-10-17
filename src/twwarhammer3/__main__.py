@@ -64,6 +64,9 @@ def main() -> int:
                       " takes its own model and effort as NAME@MODEL or NAME@MODEL/EFFORT")
     play.add_argument("--provider", default="openai", choices=PROVIDERS,
                       help="API gateway for every model controller in this job")
+    play.add_argument("--openrouter-backends", default=None,
+                      help="pin OpenRouter serving providers in order, e.g. DeepInfra,"
+                      "PrimeIntellect; no fallback to others (default: any within the limits)")
     play.add_argument("--model", default=None,
                       help="model for policies without @MODEL; default: gpt-6-luna (OpenAI),"
                       " z-ai/glm-5.3 (OpenRouter)")

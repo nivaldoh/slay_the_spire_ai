@@ -99,8 +99,9 @@ class CommanderPolicy:
     """One instance per episode; ``close`` waits for the request still in flight."""
 
     def __init__(self, model: str, effort: str, ledger: Ledger, *, send=None,
-                 system_prompt: str | None = None, provider: str = "openai"):
-        self.api = Model(model, effort, ledger, send=send, provider=provider,
+                 system_prompt: str | None = None, provider: str = "openai",
+                 backends: tuple[str, ...] = ()):
+        self.api = Model(model, effort, ledger, send=send, provider=provider, backends=backends,
                          instructions=system_prompt or PROMPT_PATH.read_text(),
                          max_output_tokens=MAX_OUTPUT_TOKENS, record_exchanges=True)
         self.skills = Skills()

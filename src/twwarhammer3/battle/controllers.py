@@ -112,7 +112,7 @@ def card(name: str, policy, config: dict) -> dict:
     }
     if model:
         provider = config.get("provider", "openai")
-        result.update(provider=provider, routing=routing(provider, model))
+        result.update(provider=provider, routing=routing(provider, model, backends(config)))
     if path:
         revision = subprocess.run(["git", "-C", str(Path(path).parent), "rev-parse", "HEAD"],
                                   capture_output=True, text=True)
@@ -120,8 +120,16 @@ def card(name: str, policy, config: dict) -> dict:
     return result
 
 
+def backends(config: dict) -> tuple[str, ...]:
+    """The pinned OpenRouter serving providers (``--openrouter-backends A,B``), if any."""
+    return tuple(name.strip() for name in (config.get("openrouter_backends") or "").split(",")
+                 if name.strip())
+
+
 def factories(config: dict) -> dict:
     """Prepare constructors once; each trial calls one to get fresh episode state."""
+    if backends(config) and config.get("provider", "openai") != "openrouter":
+        raise ValueError("--openrouter-backends needs --provider openrouter")
     parts = {name: policy_parts(name, config) for name in config["policy"].split(",")}
     models = {name for name, (base, _, _) in parts.items() if base in MODEL_POLICIES}
     makers = {}
@@ -132,7 +140,8 @@ def factories(config: dict) -> dict:
         for name in models:
             _, model, effort = parts[name]
             validate(provider, model, effort)
-        config["model_routing"] = {parts[name][1]: routing(provider, parts[name][1])
+        config["model_routing"] = {parts[name][1]: routing(provider, parts[name][1],
+                                                           backends(config))
                                    for name in sorted(models)}
         if provider == "openrouter" and config["budget_usd"] > 50:
             raise ValueError("OpenRouter's cumulative budget cannot exceed $50")
@@ -141,8 +150,9 @@ def factories(config: dict) -> dict:
         for name in models:
             base, model, effort = parts[name]
             kind = commander.CommanderPolicy if base == "commander" else llm.LLMPolicy
+            pin = {"backends": backends(config)} if backends(config) else {}
             makers[name] = partial(kind, model, effort, ledger, send=send, provider=provider,
-                                   system_prompt=MODEL_PROMPTS[base].read_text())
+                                   system_prompt=MODEL_PROMPTS[base].read_text(), **pin)
     for name in parts.keys() - models:
         makers[name] = controller_class(name)
     return makers

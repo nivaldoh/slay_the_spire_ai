@@ -167,6 +167,21 @@ def test_openrouter_rotation_keeps_vendor_model_ids_and_final_effort_suffix(tmp_
         controllers.factories({**config, "budget_usd": 51})
 
 
+def test_openrouter_backend_pin_reaches_the_card_and_needs_openrouter(tmp_path, monkeypatch):
+    config = {"provider": "openrouter", "policy": "llm_rules@z-ai/glm-5.3", "effort": "low",
+              "ledger": str(tmp_path / "router.jsonl"), "budget_usd": .25,
+              "openrouter_backends": "DeepInfra, PrimeIntellect"}
+    controllers.rotation(config)
+    monkeypatch.setattr(controllers, "api_key", lambda provider: "key")
+    policy = controllers.factories(config)["llm_rules@z-ai/glm-5.3"]()
+    assert policy.api.backends == ("DeepInfra", "PrimeIntellect")
+    card = controllers.card("llm_rules@z-ai/glm-5.3", policy, config)
+    assert card["routing"]["provider"]["order"] == ["DeepInfra", "PrimeIntellect"]
+    assert config["model_routing"]["z-ai/glm-5.3"] == card["routing"]
+    with pytest.raises(ValueError, match="needs --provider openrouter"):
+        controllers.factories({**config, "provider": "openai", "policy": "hold"})
+
+
 @pytest.mark.parametrize("policy", ["llm_rules@z-ai/glm-5.3/", "llm_rules@z-ai/glm-5.3/medium",
                                    "llm_rules@", "llm_rules@gpt-6-luna"])
 def test_openrouter_rejects_unsupported_settings_before_launch(policy):

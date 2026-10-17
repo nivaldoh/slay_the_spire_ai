@@ -55,9 +55,15 @@ def validate(provider: str, model: str, effort: str) -> None:
                          f"{', '.join(spec.efforts[model])}")
 
 
-def routing(provider: str, model: str) -> dict:
+def routing(provider: str, model: str, backends: tuple[str, ...] = ()) -> dict:
+    """OpenRouter routing limits; ``backends`` pins the serving providers, in order."""
     if provider == "openai":
+        if backends:
+            raise ValueError("serving backends can only be pinned through OpenRouter")
         return {}
     price_in, _, price_out = get_provider(provider).prices[model]
-    return {"provider": {"require_parameters": True,
-                         "max_price": {"prompt": price_in, "completion": price_out, "request": 0}}}
+    route = {"require_parameters": True,
+             "max_price": {"prompt": price_in, "completion": price_out, "request": 0}}
+    if backends:
+        route.update(order=list(backends), only=list(backends), allow_fallbacks=False)
+    return {"provider": route}

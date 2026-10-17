@@ -9,7 +9,7 @@ import pytest
 
 from gameai import llm
 from gameai.ledger import BudgetExhausted, Ledger
-from gameai.providers import OPENROUTER, validate
+from gameai.providers import OPENROUTER, routing, validate
 
 SCHEMA = {"type": "object", "properties": {"ok": {"type": "boolean"}},
           "required": ["ok"], "additionalProperties": False}
@@ -88,6 +88,26 @@ def test_structured_calls_route_with_price_caps_and_charge_reported_cost(tmp_pat
     assert route["require_parameters"] is True and route["max_price"]["request"] == 0
     assert agent.ledger.spent == .0002  # actual billed cost, not the conservative ceiling
     assert json.loads(agent.ledger.path.read_text())["provider"] == "openrouter"
+
+
+def test_pinned_backends_add_an_order_without_fallback_and_default_routing_is_unchanged(
+        tmp_path):
+    assert routing("openrouter", "z-ai/glm-5.3") == {"provider": {
+        "require_parameters": True, "max_price": {"prompt": 1.40, "completion": 4.80,
+                                                  "request": 0}}}
+    sent = []
+    agent = llm.Model("z-ai/glm-5.3", "low", Ledger(tmp_path / "ledger.jsonl", 1),
+                      instructions="Reply with JSON.", max_output_tokens=256,
+                      send=lambda body: sent.append(body) or reply(), provider="openrouter",
+                      backends=("DeepInfra", "PrimeIntellect"))
+    agent.ask("Return ok=true.", SCHEMA, json.loads, retries=0)
+    route = sent[0]["provider"]
+    assert route["order"] == route["only"] == ["DeepInfra", "PrimeIntellect"]
+    assert route["allow_fallbacks"] is False and route["max_price"]["request"] == 0
+    with pytest.raises(ValueError, match="only be pinned through OpenRouter"):
+        llm.Model("gpt-6-luna", "low", Ledger(tmp_path / "openai.jsonl", 1),
+                  instructions="x", max_output_tokens=256, send=lambda body: None,
+                  backends=("DeepInfra",))
 
 
 def test_schema_overhead_and_all_transport_attempts_must_fit_before_sending(tmp_path):

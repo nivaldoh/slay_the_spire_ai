@@ -140,12 +140,13 @@ class Model:
 
     def __init__(self, name: str, effort: str, ledger: Ledger, *, instructions: str,
                  max_output_tokens: int, send=None, provider: str = "openai",
-                 record_exchanges: bool = False):
+                 record_exchanges: bool = False, backends: tuple[str, ...] = ()):
         validate(provider, name, effort)
+        routing(provider, name, backends)  # refuse a pin outside OpenRouter at construction
         if max_output_tokens <= 0:
             raise ValueError("max_output_tokens must be positive")
         self.name, self.effort, self.ledger = name, effort, ledger
-        self.provider = provider
+        self.provider, self.backends = provider, tuple(backends)
         self.instructions, self.max_output_tokens = instructions, max_output_tokens
         self.send = send or partial(post, api_key(provider), provider=provider,
                                    record_transport=provider == "openrouter")
@@ -165,7 +166,7 @@ class Model:
             "text": {"format": {"type": "json_schema", "name": "decision",
                                 "schema": schema, "strict": True}},
             "store": False,
-            **routing(self.provider, self.name),
+            **routing(self.provider, self.name, self.backends),
         }
         if self.record_exchanges and self.provider == "openai" and self.effort != "none":
             body["reasoning"]["summary"] = "auto"
