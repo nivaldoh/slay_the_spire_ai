@@ -35,10 +35,58 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b17 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | Seven scripted small battles complete; S1 won fresh only, S2 floor won, S4 floor lost. b17 saves the next checks; work stopped at owner request |
+| benchmark harness | b18 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x` | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `report.py`, `export.py` | b18 adds S3/S5/S6 and the Bodyguard target fix. b17 checks: S2 Yeomen floor won, S4 Bodyguard won at 5 s only, swarm-Slayer setup engaged |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
+
+## 2026-10-17: Overnight tranche, harness b18 (S3, S5, S6)
+
+Owner goal (04:00 UTC, away until 13:00 UTC, no questions possible): "Continue the
+Total War Warhammer 3 benchmark scenario implementation ... implement more things if you
+finish earlier." This resumes the pending plan (small scenarios, then the GLM-5.3 / low
+ladder). Choices marked *delegated* were made under that goal and are open to review.
+Game jobs end before 13:00 UTC.
+
+Queue A (`calibration/small-checks-b17-20261017.json`, `1117518`, $0):
+
+| Job | Check | Outcome | Battle time | Notes |
+|---|---|---|---|---|
+| `bench-b17-s2y-floor-20261017` | S2 Mounted Yeomen floor, attack-nearest | Won | 326 s | Slayers left with 1 man; one archer unit caught at 203 s and destroyed with 346 arrows left, the other spent all 810 without melee |
+| `bench-b17-s4-bodyguard-20261017` ep 0 | S4 Bodyguard, fresh | Lost | 219 s | Gun fired 36 of 594 rounds; crew routed at 139 s |
+| same, ep 1 | S4 Bodyguard, 5.41 s mean age | Won | 503 s | Gun lost (routed 276 s); the Halberdiers routed both Yeomen units (2/45 left each), then the Men-at-arms |
+| `bench-b17-swarm-slayers-check-20261017` | Swarm + two Slayers, CoordinatedRush | Lost | 429 s | Setup and engagement check: both Slayer units fought from 142/162 s and fell to 2 and 14 of 60; Rat Ogres and Doomwheel destroyed; 42% own / 67% enemy men left |
+
+S2's weaker roster is still too easy under the floor rule. *Delegated:* the second step
+is `brt-archers-dwf-slayers-hard`, the repository's `-hard` convention (AI stats
+modifier 1.1, armies, map, timer and funds unchanged). It is the smallest step that
+keeps the decision problem; the draft's Dwarf Warriors decoy adds a second question
+and may make the battle unwinnable once the arrows are spent.
+
+S4 now has a scripted win, but under delay and without the gun surviving, so the
+escort's melee did the work. The fresh episode exposed a diagnostic defect: Bodyguard
+re-picked the nearer of two almost equidistant riders on every decision. The gun was
+re-ordered five times between 37 s and 39 s, and from 88 s the Halberdiers switched
+targets about fifteen times. b18 keeps one target until it routs or another is 30 m
+nearer the gun (disclosed on the card; regression test added). The 5 s episode
+re-ordered less often, which may explain part of the difference. Review:
+`calibration/s4-bodyguard-review-20261017.json`.
+
+b18 adds the remaining draft candidates S3, S5 and S6 as development declarations
+with disclosed diagnostics (`battle/calibration.py`), outside the core selection:
+
+| Id | Scenario | Player / enemy (draft costs) | Funds | Diagnostic |
+|---|---|---|---|---|
+| S3 | `emp-handgunners-dwf-warriors` | Spearmen + 2 Handgunners (1,550) / 2 Dwarf Warriors (900) | 1,600 | `Crossfire`: spearmen pin the nearest unit; once it is in melee each gun takes a post 100 m away at its bearing +-80 degrees and shoots only it; fire-at-will off |
+| S5 | `emp-wizard-emp-swordsmen` | Bright Wizard + Spearmen (600) / 2 Swordsmen (750), Empire mirror | 800 | `SpellWindow`: wizard 100 m behind its line; Burning Head along two enemies clear of friends, else Flame Storm on an unengaged enemy clear of friends, else Fireball |
+| S6 | `emp-knights-emp-swordsmen` | Swordsmen + Empire Knights (1,225) / 3 Swordsmen (1,125), Empire mirror | 1,250 | `HammerAnvil`: infantry pins; knights wait, ride round to 70 m behind the pinned unit, charge, pull out after 8 s or a rout, repeat |
+
+Live checks still owed: lordless recruitment at these funds, whether the wizard becomes
+the commanding unit, its Lore of Fire ability keys (SpellWindow matches `burning_head`,
+`flame_storm` and `fireball` by substring) and whether handgunners' fire-at-will can be
+switched off. The draft's costs come from the database notes; `wh3_db.py` needs an RPFM
+schema that is not on this machine. The report labels the three new diagnostics and
+carries provisional notes. No model prompt or observation contract changed.
 
 ## 2026-10-17: Harness b17, small-scenario checkpoint; work stopped
 

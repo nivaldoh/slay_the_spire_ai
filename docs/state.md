@@ -9,13 +9,13 @@ next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
 [Main README](../README.md) refresh and repository cleanup are complete
 ([record](twwarhammer3/log.md#2026-10-16-readme-refresh-and-repository-cleanup)).
 
-No game controller or queue is running. The owner cleared the goal and asked to wrap
-up (2026-10-17 UTC). The b16 queue completed at 00:52:54 UTC: S2's floor won, S4's
-floor lost, and the corrected S1 five-second diagnostic lost. Across this tranche,
-seven scripted battles completed with $0 API spend. S1 has a fresh-observation
-diagnostic win, but neither delayed attempt won; no small scenario is admitted yet.
-Prepared changes are saved as b17, with their live checks pending.
-[Checkpoint and remaining work](twwarhammer3/log.md#2026-10-17-harness-b17-small-scenario-checkpoint-work-stopped).
+Overnight goal (2026-10-17 04:00 UTC, owner away until 13:00 UTC): continue the
+benchmark scenario implementation; game jobs end before 13:00 UTC. Queue A (free b17
+checks) completed at 04:32 UTC; b18 (S3, S5, S6 and the Bodyguard fix) is on `main`.
+Running: WH3 queue `runs/twwarhammer3/calibration/queue-b18-20261017.json`, started
+04:35 UTC (S4 Bodyguard r2, S2 hard floor, GLM S1 screen and siege/swarm anchors, then
+S3/S5/S6 setup floors). Watch: `uv run python -m twwarhammer3 watch`. Results so far:
+[overnight entry](twwarhammer3/log.md#2026-10-17-overnight-tranche-harness-b18-s3-s5-s6).
 
 When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
 command; clear it when the job stops.
