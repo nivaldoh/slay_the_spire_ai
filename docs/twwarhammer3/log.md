@@ -35,10 +35,52 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b24 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `report.py`, `export.py` | E1 on b23: S5 SpellWindow won at 524 s (5 s age) by Fireball kiting; S3 Crossfire lost twice (revised in b24); L1 set up; L2 refused (needs four sides). Status board in benchmark.md |
+| benchmark harness | b25 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `report.py`, `export.py` | E1 on b23: S5 SpellWindow won at 524 s (5 s age) by Fireball kiting; S3 Crossfire lost twice (revised in b24); L1 set up; L2 refused (needs four sides). Status board in benchmark.md |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
+
+## 2026-10-17: Queue E2 (Qwen3.6 on S1, step floors) and harness b25
+
+Queue E2 (`calibration/queue-e2-b24-20261017.json`, `c8b221e`, b24): the WH3 half of the
+post-training minimal test, then the five step floors declared in b24.
+
+| Job | Check | Outcome | Battle time | Notes |
+|---|---|---|---|---|
+| `bench-b24-s1-qwen-none-20261017` ep 0 | S1, Qwen3.6-35B-A3B / none (`llm_rules`) | Lost | 172 s | 40 decisions, mean delay 4.2 s, 1 invalid reply |
+| same, ep 1 | S1, Qwen3.6 / none | Lost | 171 s | 41 decisions, mean delay 4.1 s |
+| `bench-b24-s6-floor-2-20261017` | S6 two Swordsmen, attack-nearest | Won | 461 s | Too easy at this step |
+| `bench-b24-s7-floor-greatswords-20261017` | S7 two Greatswords, hold | Lost | 387 s | Not too easy; CornerHold is next |
+| `bench-b24-s8-floor-2-20261017` | S8 two Trolls, hold | Won | 214 s | Too easy at this step |
+| `bench-b24-s9-floor-trolls-20261017` | S9 Giant + Trolls, attack-nearest | Won | 328 s | Too easy at this step |
+| `bench-b24-s11-floor-1-20261017` | S11 one Rock Lobber, attack-nearest | Won | 469 s | Too easy at this step |
+| `bench-b24-s1-qwen-medium-20261017` | S1, Qwen3.6 / medium | Policy failure | n/a | 2 decisions, mean delay 29.1 s; no valid reply within the 4,000-token cap |
+
+Qwen3.6 with reasoning off played S1 for $0.05 in both battles. Its 84 attempts all went to
+fp8 endpoints (Parasail 80, AkashML 4; snapshot `qwen3.6-35b-a3b-20260415`), each request
+recorded with the sampling and quantization filter; 3 invalid replies were retried and
+every decision ended with an accepted reply (124-309 output tokens, 2-6 s per call). With
+reasoning on, the battle ended at its third decision, as the live checks predicted. The
+export and dataset of this job are part of the post-training test (Spire entry of the same
+date, [posttraining.md](../posttraining.md)).
+
+Four of the five step-downs overshot: S6, S8, S9 and S11 were too hard at their original
+step and are too easy now. Each needs an intermediate step (for example the original
+rosters at a lower AI stats modifier, or a weaker unit in place of the removed one); not
+declared tonight. S7 with Greatswords holds.
+
+**Harness b25** (`726770d`): two reviewed branches.
+- `SpellWindow` (*delegated*, from the S5 review): after an acknowledged cast the wizard
+  gets no other order until the spell shows its recharge (Fireball) or effect (Flame Storm),
+  or 6 s pass; "not ready" alone is not a landing, because it also appears when the cast
+  takes the magic. It flees during a hold only in melee, the post move is no longer re-sent
+  after each cast, and Flame Storm is never aimed at an enemy heading at the wizard (within
+  45 degrees). Replaying the b23 S5 episodes, casts followed by another wizard order within
+  2.4 s drop from 172 to 1 (fresh) and from 28 to 0 (5 s).
+- L2 (`ksl-ffa-grn-dwf-12`, scenario version 2; *delegated*): a fourth army, Empire with 12
+  units (6,875 database cost, the same as the Greenskin and Dwarf sides), and funds 15,000,
+  so the free-for-all lobby accepts it. A regression checks every free-for-all scenario
+  declares four sides.
 
 ## 2026-10-17: Queue E1, harness b24 and post-training data capture
 

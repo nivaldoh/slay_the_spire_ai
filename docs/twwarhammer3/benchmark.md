@@ -675,12 +675,12 @@ candidate is admitted. Statuses:
 | S3 lines of fire | `emp-handgunners-dwf-warriors-3` | 2-unit won; 3-unit lost | Crossfire lost x6; on b23 (E1) it ran as disclosed but the guns barely fired (314 and 0 rounds) | none | No win yet. Crossfire revised in b24 (guns shoot from where they stand, fixed posts). Next: a 0/5 s pair on b24 |
 | S4 protect the gun | `emp-helblaster-brt-raiders` (step `-2`) | hold lost (both steps) | Bodyguard: original won 4/4 at 5 s, 1/4 fresh; step 2 lost x2 | GLM 0/1 plus one policy failure | Win shown on the original, but by the escort's melee; the gun always fell. The named skill is not yet tested |
 | S5 spell window | `emp-wizard-emp-swordsmen` | ability probe and attack-nearest lost (at 3,000 funds; the probe casts only self abilities in melee) | SpellWindow lost fresh (timer), won at 5 s (524 s) | none | Win shown, by Fireball kiting: later wizard orders cancelled most casts. Next: hold the wizard until a cast lands, then a 0/5 s pair |
-| S6 hammer and anvil | `emp-knights-emp-swordsmen` | lost | HammerAnvil lost x4 (first pair: refused wait post) | none | No win yet. Next: two enemy units, floor first |
-| S7 corner defence | `dwf-longbeards-emp-swordsmen-6` | 4-unit and 6-unit won | none yet | none | Too easy: Longbeards outclass Swordsmen at any count tried. Next: armour-piercing attackers (e.g. Greatswords), not more Swordsmen |
-| S8 focus vs regeneration | `dwf-thunderers-grn-trolls` | lost | FocusFire lost x2; no Troll died | none | No win yet. Next: two Trolls |
-| S9 lone monster | `grn-giant-ksl-streltsi` | lost | MonsterTarget lost x2 | none | No win yet. Next: rebalance |
+| S6 hammer and anvil | `emp-knights-emp-swordsmen-2` | 3 Swordsmen lost; 2 Swordsmen won (b24) | HammerAnvil lost x4 at 3 Swordsmen | none | Too hard at three, too easy at two. Next: an intermediate step (e.g. three at a lower AI stats modifier) |
+| S7 corner defence | `dwf-longbeards-emp-greatswords-2` | 4- and 6-Swordsmen steps won; 2 Greatswords + 2 Swordsmen lost (b24, 387 s) | none yet | none | Floor holds with armour-piercing attackers. Next: CornerHold at 0/5 s |
+| S8 focus vs regeneration | `dwf-thunderers-grn-trolls-2` | 3 Trolls lost; 2 Trolls won (b24, 214 s) | FocusFire lost x2 at 3 Trolls; no Troll died | none | Too hard at three, too easy at two. Next: an intermediate step |
+| S9 monster target choice | `grn-giant-ksl-streltsi-trolls` | Giant alone lost; Giant + Trolls won (b24, 328 s) | MonsterTarget lost x2 with the Giant alone | none | Too easy with the Trolls. Next: Giant + Trolls against a second Streltsi unit, floor first |
 | S10 receive the charge | `skv-spears-sla-hellstriders-3` | 2-rider and 3-rider won | none yet | none | Too easy: the AI charges braced spears head-on at any count tried. Set aside unless a different enemy (missile cavalry) changes its behaviour |
-| S11 counter-battery | `dwf-cannon-grn-lobbers` | lost | CounterBattery lost x2; lobbers broken, spearmen won | none | No win yet. Next: one Rock Lobber |
+| S11 counter-battery | `dwf-cannon-grn-lobbers-1` | 2 Rock Lobbers lost; 1 won (b24, 469 s) | CounterBattery lost x2 at 2 Lobbers | none | Too hard at two, too easy at one. Next: an intermediate step |
 | L1 / L2 | `emp-pitched-grn-20`, `ksl-ffa-grn-dwf-12` | L1 attack-nearest lost at 523 s; L2 refused by the lobby | n/a | none | L1 sets up. L2 needs a fourth side ("Free-For-All requires 4 teams") |
 
 Across all of them, terrain defeated the first versions of the geometric diagnostics:
