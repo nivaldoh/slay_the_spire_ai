@@ -1,5 +1,6 @@
 import hashlib
 import json
+import sys
 
 import pytest
 
@@ -106,6 +107,27 @@ def test_provider_and_first_attempt_filters(tmp_path):
     assert "provider" not in manifest["counts"]["dropped"]
 
 
+def test_effort_filter_and_kept_models_in_the_data_card(tmp_path):
+    source = export(tmp_path / "export", [
+        row("a", attempt()), row("b", attempt(), effort="medium"),
+        row("c", attempt(), provider="openai", model="gpt-5")])
+
+    sft.main([str(source), "--output", str(tmp_path / "data"), "--effort", "none"])
+
+    manifest = json.loads((tmp_path / "data/manifest.json").read_text())
+    assert [r["id"] for r in lines(tmp_path / "data/train-rows.jsonl")] == ["a"]
+    assert manifest["counts"]["dropped"] == {"effort": 1, "provider": 1}
+    assert manifest["arguments"]["efforts"] == ["none"]
+    card = (tmp_path / "data/datacard.md").read_text()
+    assert "Models kept: qwen/qwen3.6-35b-a3b. Efforts kept: none." in card
+
+
+def test_tokenizer_without_the_llm_extra_is_a_clear_error(tmp_path, monkeypatch):
+    monkeypatch.setitem(sys.modules, "transformers", None)  # import fails
+    with pytest.raises(ValueError, match="llm extra"):
+        sft.build([export(tmp_path / "export", ROWS)], tmp_path / "data", tokenizer="Qwen")
+
+
 def test_reasoning_content_uses_reasoning_text_never_summaries(tmp_path):
     parts = [{"type": "summary_text", "text": "Summary.", "field": "summary", "item_index": 0},
              {"type": "reasoning_text", "text": "Block ", "field": "content", "item_index": 0},
@@ -164,6 +186,7 @@ def test_output_is_deterministic_and_never_replaced(tmp_path):
 @pytest.mark.parametrize("rows, message", [
     ([{k: v for k, v in row("a", attempt()).items() if k != "group"}], "lacks id, game, group"),
     ([row("a", attempt(), split="test")], "unknown split"),
+    ([row("a", attempt(), game="sts2")], "unknown game"),
     ([row("a", attempt()), row("a", attempt())], "Duplicate row id"),
 ])
 def test_refuses_rows_outside_the_contract(tmp_path, rows, message):

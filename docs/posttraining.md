@@ -14,7 +14,8 @@ end.*
 - **Training happens elsewhere.** Tinker is planned (remote LoRA for Qwen3.6-35B-A3B; prices
   and the RL plan are on the [open-weight track page](spire/open-weight/README.md)); no
   credential exists yet. Until then a local RTX 3060 (12 GB) runs only a small smoke test
-  on Qwen3-0.6B with the `llm` extra, never during a WH3 battle.
+  on Qwen3-0.6B with the `llm` extra, never while a game runs (the script refuses to start
+  then).
 
 ## Student model
 
@@ -78,11 +79,12 @@ filtering or weighting, never into a prompt.
 ## Splits
 
 - The group is the unit that must not leak: Spire uses the game seed; WH3 uses the
-  scenario's declared `family`, else its name, and for `random` scenarios the job
-  directory. Repeated starts of one seed or scenario share a group.
+  scenario's declared `family`, else its name, and for `random` scenarios `NAME/seed-N`
+  (the job directory only when no seed is recorded). Repeated starts of one seed or
+  scenario, in any job, share a group.
 - `held_out` rows never enter a dataset. WH3 rows are held out when their scenario
-  declares `split: held_out`; Spire declares no held-out seed yet, so every Spire row is
-  `development`.
+  declares `split: held_out`, so a WH3 family can hold both kinds; its held-out rows are
+  dropped. Spire declares no held-out seed yet, so every Spire row is `development`.
 - Validation is exactly the groups named with `--validation-group GAME:GROUP`; everything
   else kept is train. A group is never in both. A named group without kept rows is refused.
 
@@ -93,6 +95,12 @@ by OpenAI models are dropped and counted: whether their outputs may train a mode
 owner's open decision. `--provider openai` includes them explicitly; do not do so before
 that decision. Every dataset's `datacard.md` repeats this.
 
+OpenRouter also serves closed models, so `openrouter` means open-weight only while
+[`providers.py`](../src/gameai/providers.py) declares nothing else for it (today GLM-5.3,
+Kimi K3, Step 5 preview and Qwen3.6). The builder does not check licenses: each data card
+lists its kept models, and each one's terms must be checked before training. Whether
+`stepfun/step-5-preview` has open weights is not verified here.
+
 ## Reasoning
 
 Exports keep the visible reasoning of each attempt. OpenAI returns summaries
@@ -100,33 +108,37 @@ Exports keep the visible reasoning of each attempt. OpenAI returns summaries
 (`reasoning_text`). With `--reasoning`, the assistant message gets `reasoning_content`, the
 concatenated `reasoning_text` parts of the target attempt; summaries are never used.
 Without it, a reply made with reasoning on is trained as a direct answer, so build
-non-thinking datasets from effort `none` play. The smoke test refuses reasoning datasets.
+non-thinking datasets from effort `none` play: `--effort none` drops the other rows and
+counts them. The smoke test refuses reasoning datasets.
 
 ## Token limits
 
 `--tokenizer NAME_OR_PATH` (the `llm` extra) counts each row's chat-template rendering;
 with `--max-tokens N`, longer rows are dropped and counted, never truncated. The manifest
-reports count, p50, p99 and max per split. The smoke test refuses rows over its own
-`--max-tokens` (default 4,096).
+reports count, p50, p99 and max per split. The smoke test skips rows over its own
+`--max-tokens` (default 4,096) and rows whose reply the chat template renders differently
+(Qwen's strips leading newlines), and counts both in its `metrics.json`.
 
 ## Commands
 
 ```bash
 # Build: train and validation chats, aligned row sidecars, manifest.json, datacard.md
 uv run python -m gameai.sft runs/twwarhammer3/exports/NAME [EXPORT ...] \
-    --output runs/sft/NAME --validation-group twwarhammer3:FAMILY
-# Options: --provider P (repeatable), --first-attempt-only, --reasoning,
-#          --tokenizer Qwen/Qwen3.6-35B-A3B --max-tokens 8192
-# Local smoke test (CUDA; never while a game runs): ~30 LoRA steps on Qwen3-0.6B, then
-# reload the adapter and decode validation rows (JSON-valid and exact-match rates)
+    --output runs/sft/NAME --validation-group twwarhammer3:FAMILY --effort none
+# Options: --provider P and --effort E (repeatable), --first-attempt-only, --reasoning
+# Token counts and limits need the llm extra (transformers):
+uv run --locked --extra llm python -m gameai.sft runs/twwarhammer3/exports/NAME \
+    --output runs/sft/NAME --tokenizer Qwen/Qwen3.6-35B-A3B --max-tokens 8192
+# Local smoke test (CUDA; refuses while a game runs): ~30 LoRA steps on Qwen3-0.6B, then
+# reload and verify the adapter and decode validation rows (JSON-valid, exact-match rates)
 uv run --locked --extra llm python scripts/sft_smoke.py runs/sft/NAME \
     --output runs/sft/NAME-smoke
 uv sync --locked   # removes the llm extra again
 ```
 
 The builder refuses an existing output directory, an export whose `decisions.jsonl` no
-longer matches its `sources.json` hash, rows without `id`, `game`, `group` or `split`, and
-duplicate ids. Output is deterministic for unchanged inputs; the manifest records input
+longer matches its `sources.json` hash, rows without `id`, `game`, `group` or `split`, an
+unknown game or split, and duplicate ids. Output is deterministic for unchanged inputs; the manifest records input
 hashes, arguments, counts kept and dropped by reason and by game, model and effort, the
 groups per split, token statistics and the builder's hash.
 

@@ -7,9 +7,10 @@ prompt of the request's last attempt (with any retry feedback) and that attempt'
     uv run python -m gameai.sft EXPORT_DIR... --output DIR [--validation-group GAME:GROUP]
 
 Rows are filtered in this order and counted under the first reason that drops them:
-provider (default openrouter only), held_out split, no valid target, a retried target
-with --first-attempt-only, and more tokens than --max-tokens. Validation holds exactly
-the --validation-group groups, so a group never spans train and validation.
+provider (default openrouter only), effort (with --effort), held_out split, no valid
+target, a retried target with --first-attempt-only, and more tokens than --max-tokens.
+Validation holds exactly the --validation-group groups, so a group never spans train and
+validation.
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ from pathlib import Path
 from gameai.provenance import sha256
 
 VERSION = 1
+GAMES = ("spire", "twwarhammer3")
 SPLITS = ("development", "held_out")
 DEFAULT_PROVIDERS = ("openrouter",)
 
@@ -54,7 +56,10 @@ def reasoning_text(attempt: dict) -> str | None:
 
 def chat_token_counter(name: str):
     """Tokens of the tokenizer's chat-template rendering of the full conversation."""
-    from transformers import AutoTokenizer  # the llm extra
+    try:
+        from transformers import AutoTokenizer
+    except ImportError as error:
+        raise ValueError("--tokenizer needs the llm extra (uv run --extra llm)") from error
 
     tokenizer = AutoTokenizer.from_pretrained(name, trust_remote_code=False)
 
@@ -77,6 +82,8 @@ def _read_export(directory: Path) -> tuple[dict, list[dict]]:
             if not (row.get("id") and row.get("game") and row.get("group") not in (None, "")
                     and row.get("split")):
                 raise ValueError(f"{decisions}:{line}: row lacks id, game, group or split")
+            if row["game"] not in GAMES:
+                raise ValueError(f"{decisions}:{line}: unknown game {row['game']!r}")
             if row["split"] not in SPLITS:
                 raise ValueError(f"{decisions}:{line}: unknown split {row['split']!r}")
             rows.append(row)
@@ -96,11 +103,12 @@ def _stats(values: list[int]) -> dict:
             "p99": values[math.ceil(0.99 * n) - 1], "max": values[-1]}
 
 
-def build(exports: list[Path], output: Path, *, providers=DEFAULT_PROVIDERS,
+def build(exports: list[Path], output: Path, *, providers=DEFAULT_PROVIDERS, efforts=None,
           validation_groups=(), first_attempt_only=False, reasoning=False,
           tokenizer: str | None = None, max_tokens: int | None = None, counter=None) -> dict:
     """Write train/validation chat files, their row sidecars, manifest.json and datacard.md
-    into the new directory ``output``. ``counter`` replaces the --tokenizer counter."""
+    into the new directory ``output``. ``efforts`` None keeps every effort; ``counter``
+    replaces the --tokenizer counter."""
     if not exports:
         raise ValueError("Select at least one export directory")
     if max_tokens is not None and tokenizer is None:
@@ -129,6 +137,8 @@ def build(exports: list[Path], output: Path, *, providers=DEFAULT_PROVIDERS,
             found = target(row)
             if row.get("provider") not in providers:
                 reason = "provider"
+            elif efforts is not None and row.get("effort") not in efforts:
+                reason = "effort"
             elif row["split"] == "held_out":
                 reason = "held_out"
             elif isinstance(found, str):
@@ -165,7 +175,8 @@ def build(exports: list[Path], output: Path, *, providers=DEFAULT_PROVIDERS,
     sources = sorted({key[:3] for key in by_source}, key=str)
     manifest = {
         "version": VERSION, "builder_sha256": sha256(Path(__file__)), "inputs": inputs,
-        "arguments": {"providers": sorted(providers), "validation_groups": sorted(
+        "arguments": {"providers": sorted(providers), "efforts": sorted(
+            efforts, key=str) if efforts is not None else None, "validation_groups": sorted(
             validation_groups), "first_attempt_only": first_attempt_only,
             "reasoning": reasoning, "tokenizer": tokenizer, "max_tokens": max_tokens},
         "counts": {"rows": len(ids), "train": len(kept["train"]),
@@ -200,6 +211,9 @@ def build(exports: list[Path], output: Path, *, providers=DEFAULT_PROVIDERS,
 
 def _data_card(manifest: dict) -> str:
     counts, arguments = manifest["counts"], manifest["arguments"]
+    models = sorted({str(item["model"]) for item in counts["by_game_model"] if item["kept"]})
+    efforts = ("all" if arguments["efforts"] is None
+               else ", ".join(map(str, arguments["efforts"])))
     return f"""# Supervised fine-tuning dataset (builder version {VERSION})
 
 Built by `gameai.sft` from {len(manifest['inputs'])} model-decision export(s); see
@@ -220,6 +234,9 @@ rows. Dropped by reason: `{json.dumps(counts['dropped'], sort_keys=True)}`.
 - Providers kept: {', '.join(arguments['providers'])}. Rows produced by other providers'
   models are dropped by default: whether OpenAI outputs may train a model is the owner's
   open provider-terms decision. Open-weight model rows served through OpenRouter may.
+  OpenRouter also serves closed models, so `openrouter` means open-weight only while
+  `gameai/providers.py` declares nothing else for it: check each kept model's license.
+- Models kept: {', '.join(models) or 'none'}. Efforts kept: {efforts}.
 - Targets are the last attempt of a request, used only when it was accepted: no attempt
   or row error, status `completed` and non-blank text. Earlier rejected attempts stay in
   the prompt history only through the retry feedback the model saw. A target is not a
@@ -246,6 +263,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--output", type=Path, required=True, help="new dataset directory")
     parser.add_argument("--provider", action="append",
                         help="keep rows from this provider; repeatable (default openrouter)")
+    parser.add_argument("--effort", action="append",
+                        help="keep rows played at this effort; repeatable (default all)")
     parser.add_argument("--validation-group", action="append", default=[],
                         metavar="GAME:GROUP", help="put this group in validation; repeatable")
     parser.add_argument("--first-attempt-only", action="store_true",
@@ -259,6 +278,7 @@ def main(argv: list[str] | None = None) -> None:
     try:
         manifest = build(args.exports, args.output,
                          providers=tuple(args.provider or DEFAULT_PROVIDERS),
+                         efforts=tuple(args.effort) if args.effort else None,
                          validation_groups=tuple(args.validation_group),
                          first_attempt_only=args.first_attempt_only, reasoning=args.reasoning,
                          tokenizer=args.tokenizer, max_tokens=args.max_tokens)
