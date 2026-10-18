@@ -35,10 +35,29 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b31 (2026-10-18), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `report.py`, `export.py` | Tactic cards (b28-b30): expendables is a candidate card; the chariot card leaks (a rush foil won 1 of 2); models won 3 of 12 chariot battles, 1 of 5 expendables, and gpt-6.1-sol won S1. Board in [tactic-cards.md](tactic-cards.md) |
+| benchmark harness | b34 (2026-10-18), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | The chariot card at 1.1 (witness `SnapHitAndRun`, rule in `cards.py`): its confirmation round is 4 of 20 plans in, not admitted yet; foils lost 7 of 7 at 1.1, fixed-age witnesses won 5 of 5, the witness at model pace 2 of 4. Board in [tactic-cards.md](tactic-cards.md) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
+
+## 2026-10-18: The chariot card, harness b32 to b34
+
+Owner goal (afternoon, away, delegated): at least one good, reliable benchmark. 14 scripted
+launches (16 battles), $0, every result unverified (no agreed check); [the card](tactic-cards.md#the-chariot-card-the-first-benchmark-card).
+- b32 (`cabb246`) `HitAndRun`: leaves after 2 s of observed melee and rides away from both
+  enemies (`CycleCharge` stuck about 30 s between them at 1.1). b33 (`f7db96a`)
+  `SnapHitAndRun` (no dwell) and `battle/cards.py` with `twwarhammer3 card`: board from
+  manifests and replays, the cycles signature, failure classes, verdict. b34 (`5396182`)
+  pre-registers the rule.
+- E1 (`calibration/e1`): `HitAndRun` won 3 of 3 at 5 s (no chariot lost) and lost 2 of 2 at
+  model pace (5 s age, 5 s interval); `hold` lost on the timer (the AI defends), so it is no
+  foil here. E2: `SnapHitAndRun` won 1 of 1 at 5 s and 2 of 3 at model pace.
+- Under delegation (17:45 UTC, during E2's last launch): the model-pace witness is
+  reported, not a gate.
+- Round C1 (`calibration/c1`, 20 plans) stopped at the owner's return after 4: foils lost
+  4 of 4, witness 1 of 1 at 5 s, 0 of 1 at model pace. Incomplete, not admitted.
+- No model battle: the OpenRouter account holds $10 of credit with $9.62 used (the key's
+  $50 limit is not the balance, which explains the HTTP 402); OpenAI has $0.57 left.
 
 ## 2026-10-18: Tactic cards, harness b28 to b30 and the overnight checks
 

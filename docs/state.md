@@ -9,9 +9,8 @@ verified so far; everything below is unverified.
 
 ## Active work
 
-Nothing is running. The WH3 overnight tactic-card checks (2026-10-18, owner away until
-13:00 UTC, delegated) ended at 12:56 UTC; plans are in `runs/twwarhammer3/calibration/n1`
-to `n9`.
+Nothing is running. The chariot card's chains (2026-10-18, 16:08-18:39 UTC, owner away)
+stopped at the owner's return; plans are in `runs/twwarhammer3/calibration/e1`, `e2`, `c1`.
 
 ## Priorities (owner, 2026-10-18)
 
@@ -26,27 +25,25 @@ to `n9`.
 [tactic cards](twwarhammer3/tactic-cards.md) (the benchmark definition and its board),
 [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, harness b31 (tactic-card
-  scenarios and diagnostics), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`.
-- Benchmark definition (owner, 2026-10-18): minimal battles each won only by applying one
-  tactic (cards), with foils that must lose, a witness that must win at 5 s age, a
-  signature, rules parity and a held-out variant; draft, no check agreed.
-- Night of 2026-10-18 (69 launches, n = 1-4 per cell, unpinned backends, rules v20;
-  [board](twwarhammer3/tactic-cards.md#the-first-checks-night-of-2026-10-18)): the
-  expendables card is a candidate (foils 0 of 2, witness 3 of 4, Kimi K3 low won); the
-  chariot card leaks (rush-nearest won 1 of 2) although its witness won 4 of 4 and models
-  won 3 of 12; gpt-6.1-sol won S1, the first model win on it; S5 dropped; flyers, giant and
-  riflemen have no reliable witness. These are the first model wins on small scenarios.
-- Spend: OpenAI $51.43 of $52; OpenRouter $6.69 (WH3) + $0.25 (Spire) of $50.
+- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, harness b34 (the tactic
+  card board and the chariot card's rule in `battle/cards.py`, `twwarhammer3 card`),
+  evaluator v2, track `obs-v4+terrain/act-v2/live-1x`.
+- Benchmark: [the chariot card](twwarhammer3/tactic-cards.md#the-chariot-card-the-first-benchmark-card)
+  (one chariot against two Swordsmen units at AI modifier 1.1; tactic: cycle charging;
+  witness `SnapHitAndRun`; signature: cycles; rule pre-registered at `5396182`). Its
+  confirmation round is 4 of 20 plans in (foils 0 of 4, witness 1 of 1): not admitted
+  yet. At 1.1 the foils lost 7 of 7 and fixed-age witnesses won 5 of 5, exploration
+  included; at model pace the witness won 2 of 4. No model has played it. All unverified.
+- Spend: OpenAI $51.43 of $52; OpenRouter about $0.38 of the account's $10 credit is left.
 
 Next (proposals for the owner):
-1. Agree or amend the card contract and the admission checks, then turn the agreed ones
-   into AGENTS.md rows.
-2. Find the chariot card's step between 1.0 (a rush foil won 1 of 2) and 1.1 (the witness
-   won 1 of 3); finish the expendables card
-   (foil repeats, held-out variant, a fixed signature rule); check OpenRouter credits and
-   pin backends; then several launches per model, since one launch is a screen.
-3. Redesign flyers and giant (witnesses that keep their target); draft the next cards.
+1. Finish the chariot round: regenerate `calibration/c1` plans 05-20 at the current HEAD
+   (the queue requires it; the card code is unchanged since `5396182`), about 2.7 h at
+   $0, then `twwarhammer3 card chariot runs/twwarhammer3/calibration/c1`.
+2. If admitted: a model round, 10 launches per model-mode in interleaved single-model jobs
+   (Kimi K3 low and high, GLM-5.3 low, Qwen3.6 none, gpt-6.1-sol low, Luna low): about
+   $10 and one night; needs OpenRouter credit and an OpenAI cap raise.
+3. Agree the card's rule as an AGENTS.md check; then the expendables card the same way.
 
 ## Slay the Spire
 
@@ -74,18 +71,17 @@ fine-tune in both games, and a way to choose targets (winning targets are scarce
 
 ## Known issues
 
-- OpenRouter returned HTTP 402 "in_flight_budget_exhausted" on 2026-10-18 with $6.93 of
-  the $50 allowance on the ledgers: check the account's credits before paid jobs.
-- No OpenRouter model pins its serving backend (Qwen3.6 only a quantization); across four
-  GLM jobs, parse or validation failures ran from about 5% to 42% by backend. Pin before
-  comparing models. Tag `archive/wh3-openrouter-pin` is an older draft: not the baseline pin.
+- OpenRouter's HTTP 402 on 2026-10-18 was the account balance: $10 of credit, $9.62 used
+  (all keys); the key's $50 limit is only a cap. Check `/api/v1/credits` before paid jobs.
+- No OpenRouter model pins its serving backend (Qwen3.6 only a quantization); parse or
+  validation failures ran about 5-42% by backend (four GLM jobs). Pin before comparing
+  models (tag `archive/wh3-openrouter-pin` is an older draft, not the baseline pin).
 - No test yet shows whether a game patch changes results (owner: later). A build warning
   shows in `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
 - Only WH3's $50 OpenRouter ceiling per ledger is in code; the OpenAI caps and the
   OpenRouter allowance shared by both games' ledgers are kept by hand.
-- WH3 register: the version column is blank on benchmark rows (each manifest's card has
-  it), and `stats` groups by commit, so results fragment; an API failure is recorded as a
-  `policy_failure`.
+- WH3 register and `stats`: blank version on benchmark rows, grouping by commit, API
+  failures as `policy_failure` (`twwarhammer3 card` classifies failures and keys by setup).
 - Not in the automated tests: the battle Lua's order application and the mailbox JSON
   codec; the report JavaScript (a manual browser check only); several Spire play-loop
   stop paths (source change, interruption).
@@ -96,8 +92,9 @@ fine-tune in both games, and a way to choose targets (winning targets are scarce
 ## Owner decisions waiting
 
 1. Where to back up `runs/`.
-2. The tactic-card checks ([proposal](twwarhammer3/tactic-cards.md#proposed-admission-checks);
-   "winnable": a witness wins 3 of 4 at 5 s, or a model wins) and launches per cell.
+2. The chariot card's rule (foils lose 10 of 10, witness wins 4 of 5 at 5 s with a cycle,
+   the model-pace witness reported, not a gate; decided under delegation) and OpenRouter
+   credit for its model round.
 3. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (whether
    they may train a model; 25,503 rows excluded), GLM-5.3, or rejection-sampled Qwen3.6.
 4. Whether Step 5 preview has open weights, and whether to request token log-probabilities

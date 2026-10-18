@@ -6,6 +6,66 @@ none is agreed, so every result is unverified ([hard rule](../../AGENTS.md#verif
 The contract, timing and outcome rules it builds on are in [benchmark.md](benchmark.md);
 running jobs in [benchmark-run.md](benchmark-run.md).
 
+## The chariot card: the first benchmark card
+
+Built on 2026-10-18 while the owner was away (goal: "at least a single good, reliable
+benchmark"), under delegation: the rule is the assistant's and not agreed, so its results
+are unverified until the owner accepts a check. `battle/cards.py` holds the card, its
+frozen signature and its admission rule; `twwarhammer3 card chariot [JOB_OR_PLAN_DIR ...]`
+prints the board from manifests and replays, and the verdict for given jobs.
+
+| Field | The chariot card |
+|---|---|
+| battle | `grn-chariot-emp-swordsmen-hard`: one Orc Boar Chariot unit (6 chariots, Greenskins, no lord) attacks two Empire Swordsmen units (90 men each) on Taurox; very hard AI, AI stats modifier 1.1, 1200 s timer; a battle takes 2-10 min |
+| tactic | cycle charging: charge, pull out, charge again instead of grinding |
+| why necessary | the chariot wins by routing the Swordsmen with repeated charge shock; in a long melee both units hold it and it routs, mostly with every chariot alive |
+| foils | `attack_nearest` and `rush_nearest` at 0 s added age. `hold` is no foil: the AI defends, so standing still loses on the timer by the mode's rule (1205 s) |
+| witness | `SnapHitAndRun` (rule disclosed in its card): attack the nearest enemy and keep it; on the first observation showing melee ride to 120 m from the enemies' centre, on its own side; charge again once 80 m from the target and 10 s after leaving |
+| signature | **cycles**: engagements, other than the last, in which the controller's own move order took effect (melee runs from the 1 Hz replay, gaps under 3 s merged). Fixed before the confirmation round; a win with 0 cycles did not use the tactic, which is how the 1.0 card's rush-foil win reads |
+| knowledge | withheld: the rules prompt states neither charge bonuses nor cycle charging |
+| reference | the witness at model pace (5 s age and one decision per 5 s, `--interval-ms 5000`; models made about 0.2 decisions a second): reported, not a gate |
+
+**Admission rule** (committed at `5396182` before the round): in fresh launches,
+`attack_nearest` and `rush_nearest` each lose all of 10 (one win fails the card), and the
+witness at 5 s added age wins at least 4 of 5, each win with at least one cycle. A foil
+that wins 20% of its battles passes 10 straight losses 11% of the time; a witness that
+wins half its battles passes 4 of 5 19% of the time.
+
+**Score** per model and mode: wins over scored launches with a 95% Wilson interval, beside
+the median cycles and order age. Invalid replies after the declared retries are losses;
+provider errors (HTTP 402, a failed response), harness exceptions and budget stops are
+excluded and rerun.
+
+**Results at modifier 1.1** (2026-10-18, 22 scripted battles, $0; board:
+`twwarhammer3 card chariot`). Exploration rounds E1 and E2 chose the witness and do not
+count for admission:
+
+| Control | Battles | Won | Note |
+|---|---|---|---|
+| `attack_nearest`, 0 s | 3 | 0 | 392-418 s |
+| `rush_nearest`, 0 s | 4 | 0 | 138-161 s |
+| `hold` | 1 | 0 | timer, 1205 s |
+| `CycleCharge`, 5 s | 3 | 1 | stuck about 30 s between both units per charge |
+| `HitAndRun` (2 s dwell), 5 s | 3 | 3 | no chariot lost |
+| `HitAndRun`, model pace | 2 | 0 | its pull-outs applied about 14 s after contact |
+| `SnapHitAndRun`, 5 s | 2 | 2 | one in E2, one in the round |
+| `SnapHitAndRun`, model pace | 4 | 2 | won 467 and 625 s, lost 485 and 615 s (at 615 s one Swordsmen unit was routing as the chariot broke) |
+
+Cycles read 0 on every foil battle, including the modifier 1.0 rush-foil win, and 3-8 on
+every witness win. The confirmation round (`runs/twwarhammer3/calibration/c1`, 20 plans)
+stopped at the owner's return after 4: foils 0 of 4 battles (2 launches each), the witness
+1 of 1 at 5 s and 0 of 1 at model pace. **Verdict: not admitted yet (incomplete)**; 8
+foil launches and 4 witness launches remain, about 2.7 h at $0. At model pace the witness
+wins about half its battles (2 of 4), so the card is latency-sensitive by construction:
+the same tactic wins reliably with continuous reactions to 5 s-old state and about half
+the time at one decision per 5 s.
+
+**For post-training**: one unit, a fixed opponent and 2-10 minute battles make the card a
+cheap environment with a binary reward (the win) and a shaping signal (cycles). Qwen3.6, the
+planned student, exports through `twwarhammer3 export`; the witness is a free
+demonstrator, but scripted decisions have no exported rows yet (they would need the
+prompt the model would have seen at each decision).
+
 ## What the benchmark measures
 
 For outside AI researchers: which models, at which reasoning modes, can apply specific
