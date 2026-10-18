@@ -78,7 +78,7 @@ fine-tune in both games, and a way to choose targets (winning targets are scarce
   GLM jobs, parse or validation failures ran from about 5% to 42% by backend. Pin before
   comparing models. Tag `archive/wh3-openrouter-pin` is an older draft: not the baseline pin.
 - No test yet shows whether a game patch changes results (owner: later). A build warning
-  reaches only stderr, `doctor` and the manifest; `stats` would pool builds (the report does not).
+  shows in `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
 - Only WH3's $50 OpenRouter ceiling per ledger is in code; the OpenAI caps and the
   OpenRouter allowance shared by both games' ledgers are kept by hand.
 - WH3 register: the version column is blank on benchmark rows (each manifest's card has

@@ -109,3 +109,31 @@ def test_next_returns_once_per_episode_stall_or_job_end(tmp_path, monkeypatch):
     (tmp_path / "refused.log").write_text("starting\nRuntimeError: uncommitted changes\n")
     assert next_event(tmp_path / "refused", poll=0) == (
         "NOT STARTED: starting | RuntimeError: uncommitted changes")
+
+
+def test_an_updated_game_build_is_announced_by_watch_and_digest(tmp_path):
+    # Steam may update the game (owner, 2026-10-18): the job records it and the tools say so.
+    from twwarhammer3.battle.digest import job_digest
+
+    job = tmp_path / "job"
+    episode = job / "episode-0000"
+    episode.mkdir(parents=True)
+    (episode / "trace.jsonl").write_text("".join(json.dumps(r) + "\n" for r in records()))
+    (episode / "result.json").write_text(json.dumps({"status": "won", "policy": "hold"}))
+    manifest = {"status": "completed", "episodes": [{"episode": "episode-0000"}],
+                "deployment": {"steam_build_id": "99", "steam_build_pinned": True},
+                "config": {"policy": "hold", "scenario": "kho5-dwf5", "model": None,
+                           "effort": None, "seed": None},
+                "created_at": "2026-10-18T00:00:00", "source_revision": "abc1234"}
+    (job / "manifest.json").write_text(json.dumps(manifest))
+    lines = []
+    follow(job, out=lines.append)
+    assert not any("WARNING" in line for line in lines)
+    assert "WARNING" not in check(job, 0) and "WARNING" not in job_digest(job)
+    manifest["deployment"]["steam_build_pinned"] = False
+    (job / "manifest.json").write_text(json.dumps(manifest))
+    warning = "WARNING: game build 99 is not the pinned build; tell the owner"
+    lines = []
+    follow(job, out=lines.append)
+    assert lines[0].startswith(warning) and sum("WARNING" in line for line in lines) == 1
+    assert check(job, 0).startswith(warning) and job_digest(job).startswith(warning)

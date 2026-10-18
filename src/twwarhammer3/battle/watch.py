@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 from twwarhammer3.battle.commander import REPORT_HEADER, describe_plan
-from twwarhammer3.battle.digest import episode_digest, strength
+from twwarhammer3.battle.digest import build_warning, episode_digest, strength
 from twwarhammer3.battle.llm import describe_orders, short_type
 
 STATUS_S = 30
@@ -163,8 +163,11 @@ def follow(path: Path, prompts: bool = False, out=_print, poll: float = 1.0) -> 
     if (path / "trace.jsonl").exists():
         episode(path, prompts, out)
         return
-    index = 0
+    index, warned = 0, False
     while True:
+        if not warned and (warning := build_warning(path)):
+            out(warning)
+            warned = True
         directory = path / f"episode-{index:04d}"
         if (directory / "trace.jsonl").exists():
             episode(directory, prompts, out)
@@ -183,11 +186,13 @@ def check(job: Path, seen: int, stall_s: float = STALL_S) -> str | None:
     manifest = json.loads(path.read_text())
     ended = "" if manifest["status"] == "running" else f"job {manifest['status']}" + (
         f": {manifest['error']}" if manifest.get("error") else "")
+    warning = build_warning(job)
+    warning = f"{warning}\n" if warning else ""
     if len(manifest["episodes"]) > seen:
         episode = job / manifest["episodes"][seen]["episode"]
-        return episode_digest(episode, decisions=False) + (f"\n{ended}" if ended else "")
+        return warning + episode_digest(episode, decisions=False) + (f"\n{ended}" if ended else "")
     if ended:
-        return ended
+        return warning + ended
     # The game's log while it starts, the menu log during setup, then the traces.
     files = [path, job / "game.log", job / "menu.log", *job.glob("episode-*/trace.jsonl")]
     newest = max((file for file in files if file.exists()), key=lambda file: file.stat().st_mtime)

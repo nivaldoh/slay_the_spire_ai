@@ -46,8 +46,8 @@ Owner goal: improve the codebase first ([direction](../owner-direction.md)). No 
 - Output cap 16,000 tokens (was 4,000) in `llm`, `llm_rules` and `commander`, for
   reasoning-on modes, and a 600 s socket read timeout (was 60 s; no OpenAI attempt so far
   took over 32 s). Unplayed: whether those modes now finish, and their latency.
-- A Steam build other than the pin warns on stderr and is recorded
-  (`deployment.steam_build_pinned`, doctor `warnings`); it no longer blocks.
+- A Steam build other than the pin warns and is recorded (`deployment.steam_build_pinned`,
+  doctor `warnings`); `watch` and the job `digest` repeat the warning. It no longer blocks.
 - `play` refuses a ledger file that does not exist (a worktree or a typo would start at $0).
 - The `wh3-version-review` judges also score "No change" (collect more evidence), and the
   judges' picks decide the returned winner.

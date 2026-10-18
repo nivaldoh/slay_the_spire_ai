@@ -230,6 +230,16 @@ def _draw(manifest: dict) -> str:
             f" on {scenario['map']})")
 
 
+def build_warning(job: Path) -> str | None:
+    """The warning a job's game build earns when Steam updated it past the pin."""
+    path = job / "manifest.json"
+    deployment = (json.loads(path.read_text()).get("deployment") or {}) if path.exists() else {}
+    if deployment.get("steam_build_pinned") is False:
+        return (f"WARNING: game build {deployment.get('steam_build_id')} is not the pinned"
+                " build; tell the owner before comparing results")
+    return None
+
+
 def job_digest(job: Path) -> str:
     manifest = json.loads((job / "manifest.json").read_text())
     config = manifest["config"]
@@ -245,7 +255,8 @@ def job_digest(job: Path) -> str:
         item = row(job, result.parent)  # the register's base name; the table names the trial's
         item["policy"] = json.loads(result.read_text()).get("policy", item["policy"])
         lines.append("| " + " | ".join(str(item[column]) for column in DIGEST_COLUMNS) + " |")
-    return "\n".join(lines)
+    warning = build_warning(job)
+    return "\n".join([warning, *lines] if warning else lines)
 
 
 def unit_fates(episode: Path) -> str:
