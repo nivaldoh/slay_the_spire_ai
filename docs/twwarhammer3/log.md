@@ -35,7 +35,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b30 (2026-10-18), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `report.py`, `export.py` | Tactic cards (b28-b30): expendables is a candidate card; the chariot card leaks (a rush foil won 1 of 2); models won 3 of 12 chariot battles, 1 of 5 expendables, and gpt-6.1-sol won S1. Board in [tactic-cards.md](tactic-cards.md) |
+| benchmark harness | b31 (2026-10-18), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `report.py`, `export.py` | Tactic cards (b28-b30): expendables is a candidate card; the chariot card leaks (a rush foil won 1 of 2); models won 3 of 12 chariot battles, 1 of 5 expendables, and gpt-6.1-sol won S1. Board in [tactic-cards.md](tactic-cards.md) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
@@ -75,6 +75,9 @@ agreed, so every result is unverified; every battle is a row of the register.
   The two last repeats (N6) gave no result: gpt-6.1-sol stopped on the OpenAI cap
   (`budget_exhausted`, next call up to $0.567) and Kimi K3 low on an OpenRouter HTTP 402
   ("in_flight_budget_exhausted": the account's credits, not this project's ledger).
+- **Harness b31** (`4c16944`) and N8 (`calibration/n8`, $0): the chariot card at modifier
+  1.1 after its leak. Rush-nearest lost 2 of 2 (138, 154 s), attack-nearest lost 409 s,
+  `CycleCharge` won 1 of 2 at 5 s (390 s; lost 327 s): undecided. 68 launches in all.
 
 ## 2026-10-18: Harness b27, cleanup and the verification rule
 
