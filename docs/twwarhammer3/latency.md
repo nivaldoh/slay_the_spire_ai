@@ -120,9 +120,14 @@ and disclosed.
 - **Open-loop probes (no game).** Re-send recorded prompts from critical moments (battle start,
   within 6 s of contact, 80 m out after leaving) to each model and grade the orders against the
   tactic: knowledge K without latency, as robot learning separates offline from closed-loop
-  evaluation. Model battles keep their prompts (`model_exchange` `request.input`); witness
-  moments need a renderer that rebuilds `render_prompt` state (last-seen enemies, changes since
-  the last decision), which does not exist. About 210 engagements and 85 such moments exist.
+  evaluation. Replaying `LLMPolicy` with a fake transport reproduced 915 of 915 recorded model
+  prompts byte for byte, so witness moments can be rendered by driving `LLMPolicy` with the
+  witness's recorded orders and acknowledgements, notes and history blanked (they would leak
+  plans). Moments: 210 engagements in 42 battles; a frozen draw of 70 (battle start, in melee
+  within 6 s of contact, 80 m out after leaving), graded automatically: in melee, an unqueued
+  move to at least 80 m is right, but a held attack with a stated dwell is its own class (most
+  moments are within 1 s of contact, so plain grading would score the snap rule, not cycle
+  charging); out, an attack is right. A paired variant states a 1 s or a 12 s last delay.
 - **Reading a model-mode.** K low: knowledge-bound. K high, W(model) low: the tactic does not
   fit that latency. K and W(model) high, closed-loop wins E low: an execution gap beyond
   latency. At 10 launches a cell (5 for W(model)) these are screens, not rankings: at 10 a
@@ -169,13 +174,20 @@ after the first card's admission: a lost limb (the unit controller's documented 
 | 5 | a strong planner every 15-30 s or on events, a small fast model turning plans into skill assignments, skills at 3-4 Hz | not built | planner and executor models |
 | 6 | k staggered calls in flight, same model | not built | decision interval at a fixed order age |
 
-**Rung 1** would add: the call time on the battle clock instead of the wall-clock "you took"
-(distorted before 18:01 UTC on 2026-10-18), the last few order ages (p50, p90, max), the
-snapshot's age including any added age and interval, positions and time to contact
-dead-reckoned to the expected arrival, what happened during the last call, a fresh state and
-the elapsed time on a retry, and the cost of an empty reply. It informs and never pauses, and
-is a logged prompt version. At least 4 of about 530 chariot decisions mention their own
-delay (all GLM-5.3, two battles).
+**Rung 1**, specified as a separate controller `llm_latency` v1 on the unchanged rules prompt
+(full text in the readiness spec), replaces the timing line with: the last batch's order age
+and call time on the battle clock (the wall-clock "you took" goes); the last 10 order ages
+(median, 90th percentile, longest); the snapshot's age and when the reply should apply at the
+median, 90th-percentile and longest call; a straight-line projection to contact for visible
+units (a disclosed rendering aid: contact-time error a median 0.8 s over 25 recorded contacts,
+mostly within 5 s ahead); public events since the last decision; and the cost of an empty
+reply. At Kimi K3 low's 77 s decision it would have projected contact at 85.8 s (actual 86.0 s).
+It needs about 130 lines in `battle/llm.py`, the decision clock passed to the policy, and a
+reader thread in `play.py` (during a blocking call the harness reads no observations: 13
+snapshots went unread in that call), which also makes added age exact for slow controllers
+(today it compounds; no recorded job is affected). The fresh-state retry belongs to rung 2.
+Rung 0's golden prompts stay byte-identical. At least 4 of about 530 chariot decisions
+mention their own delay (all GLM-5.3, two battles).
 
 **The planner-executor design (rung 5) the owner remembers.** It was proposed, never built. The
 owner's modding guide (`001d1ce:docs/twwarhammer3/guide.txt:309`, deleted in `c916e6c`) already
@@ -237,14 +249,14 @@ $15-35 on host accounts (outside the OpenRouter credit) and 25-34 game hours.
 |---|---|---|---|---|---|---|
 | P1 | what the frozen chariot rule gives on fresh launches | foil and witness rates and start configurations for card version 2 (not admission) | nothing (current HEAD) | 16 plans | $0 | 2.7 |
 | P2 | what latency the tactic tolerates (L50) | whether the card discriminates at 3-8 s | nothing | 25 launches | $0 | about 4 |
-| P3 | do backend pins hold through the Responses API | pins for P5 | a route entry per model | 3 calls each | about $0.1 | 0 |
-| P4 | does each mode know the step, offline (K) | which modes enter P5 | probe script | 70 prompts x 4 modes | about $1.2 | 0 |
+| P3 | do backend pins hold through the Responses API | pins for P5 | `provider.only` and `order`, no fallbacks, per model in `providers.ROUTES` | 3 calls x 4 cells | about $0.03 | 0 |
+| P4 | does each mode know the step, offline (K) | knowledge-bound modes, before P5 | probe script | 130 prompts x 4 modes (70 moments, 60 delay variants) | about $1.7 | 0 |
 | P5 | closed-loop wins on 1.1 under "the battle never waits" (E) | the first model result | the scoring change; pins | 10 launches x Kimi K3 low, high, GLM-5.3 low, Qwen3.6 none | $12-20 | 6-8 |
-| P6 | does rung 1 help | rung 1 as default or arm | a prompt version | 10 launches, GLM-5.3 low | $2-4 | 1.5-2 |
+| P6 | does rung 1 help | rung 1 as default or arm | `llm_latency` (harness b35) | 20 within-launch pairs, GLM-5.3 low | $4-10 | 4-5 |
 | P7 | W(model) from P5's call sequences | latency-bound or execution-bound per model | a battle-clock hold | 5 x 4 | $0 | 3 |
 
 Nothing runs while the owner is away: P1 and P2 are game runs and wait for a go-ahead.
-OpenRouter $15-25 in all. Proposed (decision 4): paid stages stop at $20; P6 would be cut
+OpenRouter $18-32 in all. Proposed (decision 4): paid stages stop at $20; P6 would be cut
 first, which defers the latency-awareness note. P4's four modes are those P5 can afford; the
 others are left out for cut-offs (GLM-5.3 high, Step 5), invalid orders (Qwen3.6 medium) and
 cost (Step 5 about $8.6 at 70 prompts a mode). gpt-6.1-sol low and Luna wait on decision 4
@@ -253,7 +265,7 @@ cost (Step 5 about $8.6 at 70 prompts a mode). gpt-6.1-sol low and Luna wait on 
 ledger total ($6.69 now; the shared $50 allowance less Spire's $0.25 leaves $43.06; the
 account's $50.38 is a separate limit) plus one timer-length battle and one maximum reservation
 (Kimi K3 about +$2.45), so that slow battles do not stop on the budget and drop out as
-exclusions. Game hours P1-P7: about 17-20, two or three nights; fine-tuning adds 25-34.
+exclusions. Game hours P1-P7: about 20-23, two or three nights; fine-tuning adds 25-34.
 
 ## Owner decisions
 
@@ -265,9 +277,11 @@ exclusions. Game hours P1-P7: about 17-20, two or three nights; fine-tuning adds
    snapshots) with a new round. P5 then runs on an unadmitted card and its results stay
    provisional. Recommended; this revises the session review's advice not to resume `c1`.
 3. **The scored route**: one pinned backend per model, named in the controller card, for
-   comparisons (Kimi K3 on Sail Research held 108 attempts without a failure; GLM-5.3 and
-   Qwen3.6 medium have no clear pin yet), natural routing later as a deployment arm.
-   Recommended.
+   comparisons; natural routing later as a deployment arm. Proposed pins: Kimi K3 (both
+   modes, since `ROUTES` is keyed by model) on Sail Research, 0 failures in 100-108
+   attempts; GLM-5.3 low on Decart with DeepInfra as fallback (weak evidence); Qwen3.6 none
+   on Parasail, 8 of 121 failures, priced exactly at the ceiling. A pin in `providers.ROUTES`
+   also pins Spire's runs of the same model. Recommended.
 4. **Budget**: at most $20 of OpenRouter credit for P3-P6; about $5 more OpenAI cap only if
    gpt-6.1-sol (the only model to win both chariot 1.0 and S1, one battle each) stays the
    reference.

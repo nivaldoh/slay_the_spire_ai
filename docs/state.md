@@ -43,8 +43,9 @@ Next (proposals for the owner; stages in [latency.md](twwarhammer3/latency.md#st
    at the current HEAD as evidence (regenerate plans 05-20), then witness latency sweeps.
 2. After the scoring rule ("the battle never waits") and backend pins: open-loop probes and
    a model round on the 1.1 card, Kimi K3 low and high, GLM-5.3 low, Qwen3.6 none, 10
-   launches each: $13-21 of OpenRouter credit, stop at $20.
-3. A card version 2 (launch counting, start configuration, more foils) with its admission
+   launches each: $14-22 of OpenRouter credit, stop at $20.
+3. [Card version 2](twwarhammer3/tactic-cards.md#card-version-2-draft-2026-10-18-evening-not-agreed)
+   (drafted: start classes, three more foils, cycles v2, launch counting) with its admission
    rule proposed as an AGENTS.md check; then the expendables card the same way.
 
 ## Slay the Spire
@@ -73,9 +74,8 @@ fine-tune in both games, and a way to choose targets (winning targets are scarce
 
 ## Known issues
 
-- OpenRouter's HTTP 402 on 2026-10-18 was the account balance (then $10 of credit, $9.62
-  used, all keys; $2.69 of it is in neither ledger); the key's $50 limit is only a cap.
-  The account now has $50.38. Check `/api/v1/credits` before paid jobs.
+- OpenRouter: the ledgers missed $2.69 of account use by 2026-10-18 and the key's $50 limit
+  is only a cap, so check `/api/v1/credits` before paid jobs.
 - No OpenRouter model pins its serving backend (Qwen3.6 only a quantization); parse or
   validation failures ran about 5-42% by backend (four GLM jobs). Pin before comparing
   models (tag `archive/wh3-openrouter-pin` is an older draft, not the baseline pin).

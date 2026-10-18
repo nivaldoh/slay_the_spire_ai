@@ -65,6 +65,9 @@ Plan: [latency.md](latency.md). All unverified.
 - Corrected: witness wins at 1.1 read 6-9 cycles (not 3-8); fixed-age witnesses won 6 of 8 at 1.1
   (not 5 of 5); Kimi K3 high's chariot win ordered no pull-out from melee; the read timeout is
   600 s (controllers.md said 60 s). "Only the 3 fastest models won" (said in session) is wrong.
+- Readiness specs (read-only, verified): chariot card version 2 (tactic-cards.md), OpenRouter
+  pins through `provider.only` on `/responses`, open-loop probes rendered by replaying
+  `LLMPolicy` (915 of 915 recorded prompts reproduced), and rung 1 as `llm_latency` v1.
 
 ## 2026-10-18: The chariot card, harness b32 to b34
 
