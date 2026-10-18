@@ -3,8 +3,9 @@
 Updated 2026-10-18: what runs, where each game stands, what comes next. Status only:
 history goes to the logs ([WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md),
 [first combat](spire/first-combat/README.md)), owner directions to
-[owner-direction.md](owner-direction.md). Nothing here is verified in the sense of the
-[hard rule](../AGENTS.md#verification-hard-rule): no verification method is agreed yet.
+[owner-direction.md](owner-direction.md). Under the
+[hard rule](../AGENTS.md#verification-hard-rule) only the missing-ledger refusal is
+verified so far; everything below is unverified.
 
 ## Active work
 

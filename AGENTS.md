@@ -18,9 +18,15 @@ How the assistant applies it:
   check that decides it and its caveats. A summary never says more than its log entry.
 - When a feature matters, propose a repeatable check; add a row below only after the
   owner agrees. A feature counts as verified only at revisions where its check passed.
+- Test what matters, and add no slop tests (owner, 2026-10-18): balance verifying
+  important behaviour against filling the codebase with low-value tests.
 
 Agreed verification methods (feature, check and command, date agreed, last passing
-revision): none yet.
+revision):
+- Play commands refuse a missing ledger file: `uv run pytest
+  tests/fullrun/test_spire_cli.py::test_play_refuses_a_missing_ledger_before_any_job
+  tests/twwarhammer3/test_wh3_controllers.py::test_each_model_controller_gets_its_own_prompt_and_the_shared_budget`;
+  agreed 2026-10-18; passed at `6b054f3`.
 
 ## Working habits
 

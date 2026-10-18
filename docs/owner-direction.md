@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-18 (closing the goal): unit tests suffice to verify the missing-ledger refusal;
+  "we will need to strike a good balance in order to verify/test important things while
+  also not polluting the codebase with a bunch of slop tests". The game smoke check of the
+  16k cap and relay change waits; the goal is done.
 - 2026-10-18 (goal: improve the codebase before anything else): (1) clean up accumulated
   files and branches; (2) find low-hanging fixes for excessive bookkeeping, unfounded
   claims, token use and garbage, starting simple and minimal, and look for infrastructure
