@@ -1238,6 +1238,7 @@ class CycleCharge(SmallDiagnostic):
                          "leaves sight. After 6 s of its own observed melee it moves 120 m "
                          "radially away from that enemy; it charges again once at least 80 m "
                          "away and 10 s after starting to withdraw. No hidden state."}
+    dwell_s = 6
 
     def __init__(self):
         super().__init__()
@@ -1260,25 +1261,47 @@ class CycleCharge(SmallDiagnostic):
                     del self.withdraw_s[uid]
                     self.charges += 1
                 else:
-                    orders += self.move(unit, _offset(target, _direction(target, unit), 120),
-                                        target)
+                    orders += self.move(unit, self.retreat(unit, target, enemies), target)
                     continue
             if "melee" in unit.get("state", []):
                 start = self.contact_s.setdefault(uid, self.now)
-                if self.now - start >= 6:
+                if self.now - start >= self.dwell_s:
                     del self.contact_s[uid]
                     self.withdraw_s[uid] = self.now
-                    orders += self.move(unit, _offset(target, _direction(target, unit), 120),
-                                        target)
+                    orders += self.move(unit, self.retreat(unit, target, enemies), target)
                     continue
             else:
                 self.contact_s.pop(uid, None)
             orders += self.attack(unit, target)
         return orders
 
+    def retreat(self, unit, target, enemies):
+        return _offset(target, _direction(target, unit), 120)
+
     def metadata(self):
         return {"type": "cycle_charge", "target": self.target, "charges": self.charges,
                 "withdrawing": sorted(self.withdraw_s)}
+
+
+class HitAndRun(CycleCharge):
+    """CycleCharge that leaves sooner and rides away from every enemy, not only its target.
+
+    On the chariot card at modifier 1.1 CycleCharge lost 2 of 3: after 6 s of observed
+    melee (11 s at 5 s age) the second unit had closed and the chariot spent about 30 s
+    trying to get out (bench-b31-chariothard-cycle-5s-l2-20261018).
+    """
+
+    card = {"purpose": CycleCharge.card["purpose"],
+            "knowledge": "Each unit attacks the nearest visible enemy, kept until it routs or "
+                         "leaves sight. After 2 s of its own observed melee it moves to 120 m "
+                         "from the centre of the visible enemies, on its own side of it; it "
+                         "charges again once at least 80 m from its target and 10 s after "
+                         "starting to withdraw. No hidden state."}
+    dwell_s = 2
+
+    def retreat(self, unit, target, enemies):
+        centre = _centre(enemies)
+        return _offset(centre, _direction(centre, unit), 120)
 
 
 def _blocks(unit: dict, gun: dict, target: dict, clearance: float = 15) -> bool:

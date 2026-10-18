@@ -18,6 +18,7 @@ from twwarhammer3.battle.calibration import (
     FlankLane,
     FocusFire,
     HammerAnvil,
+    HitAndRun,
     MonsterTarget,
     PinThenRear,
     PriorityStrike,
@@ -60,7 +61,7 @@ def test_feint_flank_waits_for_rear_position_then_withdraws_after_contact():
 def test_small_diagnostics_do_not_use_hidden_enemies_or_order_routers():
     for cls in (FeintFlank, CrossKite, Bodyguard, Crossfire, SpellWindow, HammerAnvil,
                 CornerHold, FocusFire, MonsterTarget, CounterBattery, PinThenRear,
-                FireballSpam, PriorityStrike, CycleCharge, FlankLane, SlaveTarpit):
+                FireballSpam, PriorityStrike, CycleCharge, HitAndRun, FlankLane, SlaveTarpit):
         obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 0)],
                "enemy": [], "evaluation": {"enemy": [unit("e1", "hidden", 5, 5)]},
                "enemy_roster": [unit("e1", "hidden", 5, 5)]}
@@ -905,6 +906,16 @@ def test_cycle_charge_pulls_out_after_six_seconds_of_melee_and_recharges_from_ra
     obs["time_ms"] = 17000
     assert policy.decide(obs)[0]["type"] == "attack" and policy.charges == 1
 
+
+
+def test_hit_and_run_leaves_after_two_seconds_away_from_both_enemies():
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "chariot", 0, 5, state=["melee"])],
+           "enemy": [unit("e1", "swordsmen", 0, 0), unit("e2", "swordsmen", 40, 0)]}
+    policy = HitAndRun()
+    assert policy.decide(obs)[0]["type"] == "attack"
+    obs["time_ms"] = 3000
+    out = policy.decide(obs)
+    assert out[0]["type"] == "move" and out[0]["x"] < -80  # away from the pair, not e1 alone
 
 def test_flank_lane_shoots_past_its_screen_only_with_a_clear_lane():
     gun = unit("f2", "handgunners", 0, -40, ammo=1496, range=145, width=30,
