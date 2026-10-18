@@ -15,11 +15,13 @@ from twwarhammer3.battle.calibration import (
     CycleCharge,
     FeintFlank,
     FireballSpam,
+    FlankLane,
     FocusFire,
     HammerAnvil,
     MonsterTarget,
     PinThenRear,
     PriorityStrike,
+    SlaveTarpit,
     SpellWindow,
 )
 from twwarhammer3.battle.scripted import distance
@@ -58,7 +60,7 @@ def test_feint_flank_waits_for_rear_position_then_withdraws_after_contact():
 def test_small_diagnostics_do_not_use_hidden_enemies_or_order_routers():
     for cls in (FeintFlank, CrossKite, Bodyguard, Crossfire, SpellWindow, HammerAnvil,
                 CornerHold, FocusFire, MonsterTarget, CounterBattery, PinThenRear,
-                FireballSpam, PriorityStrike, CycleCharge):
+                FireballSpam, PriorityStrike, CycleCharge, FlankLane, SlaveTarpit):
         obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 0)],
                "enemy": [], "evaluation": {"enemy": [unit("e1", "hidden", 5, 5)]},
                "enemy_roster": [unit("e1", "hidden", 5, 5)]}
@@ -902,3 +904,36 @@ def test_cycle_charge_pulls_out_after_six_seconds_of_melee_and_recharges_from_ra
     assert policy.decide(obs) == []  # still regrouping
     obs["time_ms"] = 17000
     assert policy.decide(obs)[0]["type"] == "attack" and policy.charges == 1
+
+
+def test_flank_lane_shoots_past_its_screen_only_with_a_clear_lane():
+    gun = unit("f2", "handgunners", 0, -40, ammo=1496, range=145, width=30,
+               behaviours={"skirmish": True}, **{"class": "missile"})
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "spearmen", 0, 0, width=40), gun],
+           "enemy": [unit("e1", "big_uns", 0, 30, state=["melee"])]}
+    orders = FlankLane().decide(obs)
+    validate_orders(orders, obs)
+    assert {"unit": "f2", "type": "behaviour", "behaviour": "skirmish",
+            "enabled": False} in orders
+    move = next(order for order in orders if order["unit"] == "f2" and order["type"] == "move")
+    assert abs(move["x"]) > 60  # blocked behind its own screen: walk to a flank post
+    obs["friendly"][1].update(x=80, z=30, behaviours={"skirmish": False})
+    orders = FlankLane().decide(obs)
+    assert {(order["unit"], order["type"]) for order in orders} >= {("f2", "attack")}
+
+
+def test_slave_tarpit_pins_each_halberd_unit_before_the_ogres_strike_the_guns():
+    obs = {"time_ms": 1000,
+           "friendly": [unit("f1", "rat_ogres", 0, -20), unit("f2", "skavenslaves_0", -20, 0),
+                        unit("f3", "skavenslaves_0", 20, 0)],
+           "enemy": [unit("e1", "halberdiers", -20, 60), unit("e2", "halberdiers", 20, 60),
+                     unit("e3", "handgunners", 0, 150)]}
+    policy = SlaveTarpit()
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert policy.pins == {"f2": "e1", "f3": "e2"}
+    assert next(order for order in orders if order["unit"] == "f1")["type"] == "move"
+    for enemy in obs["enemy"][:2]:
+        enemy["state"] = ["melee"]
+    strike = next(order for order in policy.decide(obs) if order["unit"] == "f1")
+    assert strike["type"] == "attack" and strike["target"] == "e3"

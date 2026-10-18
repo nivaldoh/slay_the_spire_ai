@@ -2103,7 +2103,7 @@
       "wh_main",
       "wh2_main"
     ],
-    "calibration_change": "Tactic card (2026-10-18 night, docs/twwarhammer3/tactic-cards.md), declared under the owner's delegation. Foils first: the naive floors must lose before a witness is written or counted. Rosters from lobby card lists; lordless setup and funds for this roster are unverified; funds only cap recruitment. Panel draft slaves-take-the-halberds, revised per its critic: ogres listed first (commander flag off the chaff), two halberd units and the player defending so the anti-large threat reaches the ogres."
+    "calibration_change": "Tactic card (2026-10-18 night, docs/twwarhammer3/tactic-cards.md), declared under the owner's delegation. Foils first: the naive floors must lose before a witness is written or counted. Rosters from lobby card lists; lordless setup and funds for this roster are unverified; funds only cap recruitment. Panel draft slaves-take-the-halberds, revised per its critic: ogres listed first (commander flag off the chaff), two halberd units and the player defending so the anti-large threat reaches the ogres. Live b28 (bench-b28-slaves-floor-attack-20261018): the commander flag still went to a Skavenslaves unit (f1), so spending that unit risks the army's commander; the ogres read class infantry."
   },
   "grn-chariot-emp-swordsmen": {
     "base": "ksl-raiders-emp-halberds",
@@ -2162,5 +2162,25 @@
     },
     "protected": [],
     "calibration_change": "Tactic card (2026-10-18 night, docs/twwarhammer3/tactic-cards.md), declared under the owner's delegation. Foils first: the naive floors must lose before a witness is written or counted. Rosters from lobby card lists; lordless setup and funds for this roster are unverified; funds only cap recruitment. Panel draft giant-shooter-first, revised per its critic: Halberdiers plus Handgunners near S9's cost parity instead of Spearmen plus Crossbowmen. MonsterTarget is the witness unchanged."
+  },
+  "emp-wizard-emp-swordsmen-hard": {
+    "base": "emp-wizard-emp-swordsmen",
+    "name": "emp-wizard-emp-swordsmen-hard",
+    "brief": "S5 with the AI stats modifier at 1.1 (about +10% melee stats and +8 leadership for the AI's two Swordsmen units). A Bright Wizard and one Spearmen unit attack, with no lords; the opening magic pool is small and fire spells also burn the wizard's own line. Hypotheses, not a prescribed solution.",
+    "expect": {
+      "ai_stats_modifier": "1.1"
+    },
+    "calibration_change": "Tactic-card step (2026-10-18 night, delegated): at modifier 1.0 the FireballSpam foil (Fireball at the nearest enemy whenever ready) won at 560 s with 5 s age (bench-b28-s5-fireballspam-5s-l1-20261018), as did SpellWindow (479 and 534 s), so spell choice did not bind. One factor: the AI modifier 1.1, read back in the lobby before. Run FireballSpam first; the card survives only if it loses while SpellWindow wins; otherwise drop S5 as a duplicate of the caster family."
+  },
+  "emp-handgunners-grn-savage-orcs": {
+    "base": "emp-handgunners-grn-bigguns",
+    "name": "emp-handgunners-grn-savage-orcs",
+    "brief": "The riflemen card one step easier: one Handgunners unit and one shielded Spearmen unit receive an attack by one Savage Orcs unit, with no lords. The orcs are faster than the guns; handguns fire low, so whether the gun keeps a lane past its own line decides how much damage it deals. Hypotheses, not a prescribed solution.",
+    "enemy": {
+      "units": [
+        "wh_main_grn_inf_savage_orcs"
+      ]
+    },
+    "calibration_change": "Tactic-card step down (2026-10-18 night, delegated): against Big 'Uns the attack-nearest foil lost at 221 s with the Spearmen routed after 33 s of melee and 193 of 1,496 rounds fired (bench-b28-rifle-floor-attack-20261018), too short for any lane to matter. One factor: Savage Orcs instead of Big 'Uns (the critic's ladder: Savage Orcs, then Big 'Uns, then modifier 1.1). Foils first, then FlankLane at 5 s."
   }
 }

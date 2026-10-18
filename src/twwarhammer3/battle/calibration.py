@@ -1095,11 +1095,12 @@ class PinThenRear(SmallDiagnostic):
     card = {"purpose": "Can two light cavalry units beat a braced anti-large block by pinning it?",
             "knowledge": "Disclosed S1 strategy: the rider with more men pins, the other is the "
                          "hammer. The pinning rider waits 150 m in front while the hammer goes "
-                         "via a 120 m side waypoint to 100 m behind the block, on the far side "
+                         "via a 120 m side waypoint to 60 m behind the block, on the far side "
                          "from the pinning rider. Then the pinning rider attacks and stays; "
                          "the hammer attacks only once both the pinning rider and the block "
-                         "show melee. Both withdraw radially 120 m after 8 s of the hammer's "
-                         "observed melee, or as soon as the pinning rider wavers; they regroup "
+                         "show melee. Both withdraw radially 120 m after 5 s of the hammer's "
+                         "observed melee, or as soon as the pinning rider wavers or has lost "
+                         "a third of the men it started the cycle with; they regroup "
                          "for at least 12 s beyond 80 m and repeat, re-choosing the pin. A "
                          "lone rider withdraws until the other rallies, as in FeintFlank. "
                          "Only visible positions/states; no hidden targets or path search."}
@@ -1111,6 +1112,7 @@ class PinThenRear(SmallDiagnostic):
         self.roles = None
         self.contact_s = None
         self.withdraw_s = None
+        self.pin_men = 0
         self.retreats = {}
 
     def decide(self, observation):
@@ -1134,18 +1136,22 @@ class PinThenRear(SmallDiagnostic):
             self.roles = (ranked[0]["id"], ranked[1]["id"])
         pin, hammer = by_id[self.roles[0]], by_id[self.roles[1]]
         axis = _direction(target, pin)
-        side, rear = _offset(target, axis, 0, 120), _offset(target, axis, -100)
+        # Live S1 b28 (5 s age): from 100 m behind the hammer met the block 20 s after the
+        # pin did; the pin lost 14 of 45 men in 33 s of melee and routed while pulling out.
+        side, rear = _offset(target, axis, 0, 120), _offset(target, axis, -60)
         if self.phase == "side" and distance(hammer, side) < 25:
             self.phase = "rear"
         if self.phase == "rear" and distance(hammer, rear) < 30:
             self.phase, self.contact_s = "pin", None
+            self.pin_men = pin["men"]
         if self.phase == "pin" and all("melee" in unit.get("state", []) for unit in (pin, target)):
             self.phase = "charge"
         if self.phase == "charge":
             if self.contact_s is None and "melee" in hammer.get("state", []):
                 self.contact_s = self.now
-            if ((self.contact_s is not None and self.now - self.contact_s >= 8)
-                    or "wavering" in pin.get("state", [])):
+            if ((self.contact_s is not None and self.now - self.contact_s >= 5)
+                    or "wavering" in pin.get("state", [])
+                    or pin["men"] < self.pin_men * 2 / 3):
                 self.phase, self.withdraw_s = "withdraw", self.now
                 self.retreats = {unit["id"]: _offset(target, _direction(target, unit), 120)
                                  for unit in units}
@@ -1273,3 +1279,138 @@ class CycleCharge(SmallDiagnostic):
     def metadata(self):
         return {"type": "cycle_charge", "target": self.target, "charges": self.charges,
                 "withdrawing": sorted(self.withdraw_s)}
+
+
+def _blocks(unit: dict, gun: dict, target: dict, clearance: float = 15) -> bool:
+    """Whether ``unit`` stands on the gun-to-target line, within ``clearance`` m plus half
+    its formation width (a geometric test; the game's line of sight is not observed)."""
+    dx, dz = target["x"] - gun["x"], target["z"] - gun["z"]
+    length2 = dx * dx + dz * dz
+    if not length2:
+        return False
+    t = ((unit["x"] - gun["x"]) * dx + (unit["z"] - gun["z"]) * dz) / length2
+    if not 0 < t < 1:
+        return False
+    off = math.hypot(unit["x"] - gun["x"] - t * dx, unit["z"] - gun["z"] - t * dz)
+    return off < clearance + (unit.get("width") or 0) / 2
+
+
+class FlankLane(SmallDiagnostic):
+    """Rifle card: the screen holds; the gun keeps a firing lane past its own line."""
+
+    card = {"purpose": "Can one gun unit keep a line of fire past its own screen?",
+            "knowledge": "Skirmish off for the guns. The screen holds 40 m in front of the gun "
+                         "towards the nearest visible enemy, attacks that enemy once it is "
+                         "within 60 m of the screen or the gun, and keeps it until it routs. "
+                         "A gun shoots the screen's target while it is in range and no "
+                         "friendly unit stands within 15 m (plus half its width) of the "
+                         "gun-to-target line; otherwise it moves to a post 80 m from the "
+                         "target, square to the screen-to-target axis on the gun's side. An "
+                         "enemy within 40 m of a gun that is not in melee sends the gun 40 m "
+                         "behind the screen. Without ammunition a gun holds. No hidden state; "
+                         "the lane test is geometry, not the game's line of sight."}
+
+    def __init__(self):
+        super().__init__()
+        self.target = None
+        self.lanes = 0
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        units.sort(key=lambda unit: unit["id"])
+        guns = [unit for unit in units if unit.get("class") in SHOOTERS]
+        line = [unit for unit in units if unit not in guns]
+        anchor = _centre(guns or units)
+        target = _keep(enemies, self.target, _centre(line or units))
+        self.target = target["id"]
+        orders = []
+        for unit in line:
+            if distance(unit, target) <= 60 or distance(anchor, target) <= 60:
+                orders += self.attack(unit, target)
+            else:
+                orders += self.move(unit, _offset(anchor, _direction(anchor, target), 40), target)
+        for gun in guns:
+            if gun.get("behaviours", {}).get("skirmish"):
+                orders.append({"unit": gun["id"], "type": "behaviour", "behaviour": "skirmish",
+                               "enabled": False})
+            near = min(enemies, key=lambda enemy: distance(gun, enemy))
+            screen = _centre(line) if line else None
+            if not gun.get("ammo"):
+                continue
+            if distance(gun, near) < 40 and "melee" not in near.get("state", []) and screen:
+                orders += self.move(gun, _offset(screen, _direction(near, screen), 40), near)
+            elif distance(gun, target) <= gun.get("range", 0) and not any(
+                    _blocks(unit, gun, target) for unit in line):
+                orders += self.attack(gun, target, "ranged")
+            elif screen:
+                axis = _direction(screen, target)
+                side = 1 if (gun["x"] - target["x"]) * -axis[1] + (
+                    gun["z"] - target["z"]) * axis[0] >= 0 else -1
+                post = _offset(target, axis, 0, 80 * side)
+                if distance(gun, post) > 25:
+                    self.lanes += 1  # decisions spent walking to a lane
+                orders += self.move(gun, post, target)
+            else:
+                orders += self.attack(gun, target, "ranged")
+        return orders
+
+    def metadata(self):
+        return {"type": "flank_lane", "target": self.target, "lane_decisions": self.lanes}
+
+
+class SlaveTarpit(SmallDiagnostic):
+    """Expendables card: slaves hold the anti-large units; the ogres strike elsewhere."""
+
+    card = {"purpose": "Can expendable slaves hold the anti-large units while the ogres strike?",
+            "knowledge": "Units whose card key holds 'slave' each attack a visible enemy whose "
+                         "card key holds spear, halberd or pike, one slave unit per enemy unit "
+                         "as far as they go, nearest first, kept until it routs. Other units "
+                         "wait 80 m behind the slaves' centre, away from the nearest enemy, "
+                         "until every visible anti-large enemy is in melee; then they attack "
+                         "the nearest visible enemy without those words, and with none left "
+                         "the anti-large enemy in melee with the lowest men fraction. No "
+                         "hidden state or path search."}
+
+    def __init__(self):
+        super().__init__()
+        self.pins = {}
+        self.target = None
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        units.sort(key=lambda unit: unit["id"])
+        slaves = [unit for unit in units if "slave" in unit.get("type", "")]
+        strikers = [unit for unit in units if unit not in slaves]
+        spears = [enemy for enemy in enemies
+                  if any(word in enemy.get("type", "") for word in ANTI_LARGE)]
+        soft = [enemy for enemy in enemies if enemy not in spears]
+        visible = {enemy["id"] for enemy in enemies}
+        self.pins = {uid: eid for uid, eid in self.pins.items() if eid in visible}
+        orders = []
+        for slave in slaves:
+            if slave["id"] not in self.pins:
+                free = [enemy for enemy in spears if enemy["id"] not in self.pins.values()]
+                pick = min(free or spears or enemies, key=lambda enemy: distance(slave, enemy))
+                self.pins[slave["id"]] = pick["id"]
+            pinned = next(enemy for enemy in enemies if enemy["id"] == self.pins[slave["id"]])
+            orders += self.attack(slave, pinned)
+        held = all("melee" in enemy.get("state", []) for enemy in spears)
+        if not strikers:
+            return orders
+        anchor = _centre(slaves) if slaves else _centre(strikers)
+        if spears and not held and slaves:
+            near = min(enemies, key=lambda enemy: distance(anchor, enemy))
+            return orders + [order for unit in strikers for order in self.move(
+                unit, _offset(anchor, _direction(near, anchor), 80), near)]
+        engaged = [enemy for enemy in spears if "melee" in enemy.get("state", [])]
+        target = (min(soft, key=lambda enemy: distance(_centre(strikers), enemy)) if soft
+                  else min(engaged or spears or enemies, key=_fraction))
+        self.target = target["id"]
+        return orders + [order for unit in strikers for order in self.attack(unit, target)]
+
+    def metadata(self):
+        return {"type": "slave_tarpit", "pins": dict(self.pins), "target": self.target}

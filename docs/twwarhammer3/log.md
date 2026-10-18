@@ -35,10 +35,56 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b27 (2026-10-18), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `report.py`, `export.py` | b27 unplayed. E3 on b25: S5 SpellWindow won fresh (440 s) and at 5 s (488 s); S7 CornerHold's two wins were timer wins without contact. E2: four step-downs too easy. S3 Crossfire b24 and L2 (four sides) unplayed. Status board in benchmark.md |
+| benchmark harness | b29 (2026-10-18), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `report.py`, `export.py` | Tactic cards (b28, N2): every foil on five new cards lost; S5's FireballSpam foil won at 560 s; S1 PinThenRear won fresh (223 s), lost at 5 s. Board in [tactic-cards.md](tactic-cards.md) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
+
+## 2026-10-18: Tactic cards, harness b28 and the overnight necessity checks
+
+Owner direction (night, then away until 13:00 UTC with delegation): define minimal battles
+that each test one tactic and are won only by applying it; run them overnight; find what
+only WH3 can test ([owner-direction.md](../owner-direction.md)). Definition draft and card
+list: [tactic-cards.md](tactic-cards.md). Every check below is proposed, none agreed, so
+every result is unverified.
+- Panels (read-only): two agents audited the evidence and four drafted benchmark
+  definitions (judged twice); a survey of game and real-time agent benchmarks; four
+  agents drafted 22 cards and four adversarial critics tried to win each without its
+  tactic (1 kept, 17 to revise, 4 dropped).
+- **Harness b28** (`f063730`): five card scenarios (`emp-handgunners-grn-bigguns`,
+  `tze-screamers-skv-cannon`, `skv-ogres-slaves-emp-halberds`, `grn-chariot-emp-swordsmen`,
+  `grn-giant-emp-halberds-handgunners`) and four diagnostics: `PinThenRear` (S1: charge the
+  rear only once the front is pinned), `FireballSpam` (S5 foil: Fireball at the nearest
+  enemy), `PriorityStrike` (flyers on artillery or a lord) and `CycleCharge`.
+- **N1** (`queue-n1-b27-20261018.json`, `788617c`, b27, $0): S5 card check. SpellWindow at
+  5 s age, single-episode launches: won 479 s and 534 s (contact; 10 of 10 and 11 of 14
+  casts spent magic; the wizard itself was in melee from 310 and 333 s). Foils:
+  attack-nearest lost 493 s, rush-nearest lost 365 s. The last two witness launches were
+  skipped (the b28 merge stopped the queue as intended) so the decisive foil could run first.
+- **N2** (`calibration/n2/`, one-job plans chained by a runner that skips a failed job and
+  stops after two in a row; `4217ea7`, b28, $0; three plans were rewritten mid-chain, their
+  file names keep the old job): every result is one launch.
+
+| Card | Controller | Age | Outcome | Notes |
+|---|---|---|---|---|
+| S5 caster | FireballSpam (foil) | 5 s | won 560 s | spell choice does not bind: the foil wins like the witness |
+| S1 flank | PinThenRear | 5 s | lost 359 s | the pinning rider spent 33 s in melee (45 → 31, then routed while pulling out); the hammer met the block 20 s after the pin |
+| S1 flank | PinThenRear | fresh | won 223 s | the halberds routed at 45 of 90: the tactic works at 0.3 s and failed at 5 s (n = 1 each) |
+| riflemen (Big 'Uns) | attack-nearest | 0 | lost 221 s | Spearmen routed after 33 s of melee; 193 of 1,496 rounds fired |
+| riflemen (Big 'Uns) | hold | 0 | lost 337 s | Spearmen lasted 38 s: too short for any lane, so the card steps down |
+| flyers | attack-nearest | 0 | lost 253 s | both Screamers units dived into the Stormvermin and died (12 → 0) |
+| expendables | attack-nearest | 0 | lost 244 s | the faster Rat Ogres hit the halberds first and routed 18 s later; the commander flag went to a Skavenslaves unit, not the first card |
+| chariot | attack-nearest | 0 | lost 462 s | close: one Swordsmen unit routed, the other at 56 of 90 |
+| giant | attack-nearest | 0 | lost 289 s | 81 s against the halberds, the Handgunners untouched |
+| flyers | rush-nearest | 0 | lost 144 s | the same dive into the screen; the cannon untouched |
+
+  Every foil on the five new cards lost (n = 1 each), so each card's witness runs next.
+- **Harness b29**: `PinThenRear` tightened from the 5 s loss (hammer 60 m behind, 5 s of
+  contact, the pin pulls out after losing a third of its men); new witnesses `FlankLane`
+  (riflemen keep a geometric lane past their screen) and `SlaveTarpit`; two steps:
+  `emp-wizard-emp-swordsmen-hard` (S5 at modifier 1.1, since FireballSpam won at 1.0) and
+  `emp-handgunners-grn-savage-orcs` (the riflemen card against Savage Orcs). Checks: the
+  full suite (1,236 passed) and Ruff; none is an agreed verification method.
 
 ## 2026-10-18: Harness b27, cleanup and the verification rule
 
