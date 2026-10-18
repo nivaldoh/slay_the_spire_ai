@@ -9,8 +9,8 @@ verified so far; everything below is unverified.
 
 ## Active work
 
-Nothing is running. The chariot card's chains (2026-10-18, 16:08-18:39 UTC, owner away)
-stopped at the owner's return; plans are in `runs/twwarhammer3/calibration/e1`, `e2`, `c1`.
+Nothing is running. Since 20:25 UTC on 2026-10-18 (owner away): the latency program,
+offline only ($0, no game); the chariot plans wait in `runs/twwarhammer3/calibration/c1`.
 
 ## Priorities (owner, 2026-10-18)
 
@@ -23,7 +23,7 @@ stopped at the owner's return; plans are in `runs/twwarhammer3/calibration/e1`, 
 
 [README](twwarhammer3/README.md), [log](twwarhammer3/log.md) ("On main" at the top),
 [tactic cards](twwarhammer3/tactic-cards.md) (the benchmark definition and its board),
-[results.csv](twwarhammer3/results.csv).
+[latency program](twwarhammer3/latency.md) (plan), [results.csv](twwarhammer3/results.csv).
 
 - On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, harness b34 (the tactic
   card board and the chariot card's rule in `battle/cards.py`, `twwarhammer3 card`),
@@ -31,20 +31,21 @@ stopped at the owner's return; plans are in `runs/twwarhammer3/calibration/e1`, 
 - Benchmark: [the chariot card](twwarhammer3/tactic-cards.md#the-chariot-card-the-first-benchmark-card)
   (one chariot against two Swordsmen units at AI modifier 1.1; tactic: cycle charging;
   witness `SnapHitAndRun`; signature: cycles; rule pre-registered at `5396182`). Its
-  confirmation round is 4 of 20 plans in (foils 0 of 4, witness 1 of 1): not admitted
-  yet. At 1.1 the foils lost 7 of 7 and fixed-age witnesses won 5 of 5, exploration
-  included; at model pace the witness won 2 of 4. No model has played it. All unverified.
+  confirmation round is 4 of 20 plans in: not admitted. No model has played it. A review
+  found the signature met by construction and the start configuration a possible confound
+  (post hoc, 14 launches)
+  ([log](twwarhammer3/log.md#2026-10-18-latency-program-plan-only)). All unverified.
 - Spend: OpenAI $51.43 of $52. OpenRouter: the account has $50.38 of credit (owner,
   2026-10-18 evening; spend carefully), shared with Spire; the WH3 ledger holds $6.69.
 
-Next (proposals for the owner):
-1. Finish the chariot round: regenerate `calibration/c1` plans 05-20 at the current HEAD
-   (the queue requires it; the card code is unchanged since `5396182`), about 2.7 h at
-   $0, then `twwarhammer3 card chariot runs/twwarhammer3/calibration/c1`.
-2. If admitted: a model round, 10 launches per model-mode in interleaved single-model jobs
-   (Kimi K3 low and high, GLM-5.3 low, Qwen3.6 none, gpt-6.1-sol low, Luna low): about
-   $10 and one night; needs OpenRouter credit and an OpenAI cap raise.
-3. Agree the card's rule as an AGENTS.md check; then the expendables card the same way.
+Next (proposals for the owner; stages in [latency.md](twwarhammer3/latency.md#staged-plan)):
+1. P1, P2 ($0, about 7 game hours, no code; waiting for the owner's go-ahead): finish `c1`
+   at the current HEAD as evidence (regenerate plans 05-20), then witness latency sweeps.
+2. After the scoring rule ("the battle never waits") and backend pins: open-loop probes and
+   a model round on the 1.1 card, Kimi K3 low and high, GLM-5.3 low, Qwen3.6 none, 10
+   launches each: $13-21 of OpenRouter credit, stop at $20.
+3. A card version 2 (launch counting, start configuration, more foils) with its admission
+   rule proposed as an AGENTS.md check; then the expendables card the same way.
 
 ## Slay the Spire
 
@@ -95,8 +96,10 @@ fine-tune in both games, and a way to choose targets (winning targets are scarce
 
 1. Where to back up `runs/`.
 2. The chariot card's rule (foils lose 10 of 10, witness wins 4 of 5 at 5 s with a cycle,
-   the model-pace witness reported, not a gate; decided under delegation) and OpenRouter
-   credit for its model round.
+   the model-pace witness reported, not a gate; decided under delegation, against E2's own
+   rule; moot if card version 2 is chosen), and the
+   [latency program's](twwarhammer3/latency.md#owner-decisions) four: the scoring rule,
+   `c1` as evidence, the scored route, the $20 stop.
 3. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (whether
    they may train a model; 25,503 rows excluded), GLM-5.3, or rejection-sampled Qwen3.6.
 4. Whether Step 5 preview has open weights, and whether to request token log-probabilities

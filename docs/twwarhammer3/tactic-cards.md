@@ -25,7 +25,8 @@ prints the board from manifests and replays, and the verdict for given jobs.
 | knowledge | withheld: the rules prompt states neither charge bonuses nor cycle charging |
 | reference | the witness at model pace (5 s age and one decision per 5 s, `--interval-ms 5000`; models made about 0.2 decisions a second): reported, not a gate |
 
-**Admission rule** (committed at `5396182` before the round): in fresh launches,
+**Admission rule** (committed at `5396182` before the round; the model-pace gate was dropped
+at 17:45 UTC, against E2's own rule): in fresh launches,
 `attack_nearest` and `rush_nearest` each lose all of 10 (one win fails the card), and the
 witness at 5 s added age wins at least 4 of 5, each win with at least one cycle. A foil
 that wins 20% of its battles passes 10 straight losses 11% of the time; a witness that
@@ -51,14 +52,14 @@ count for admission:
 | `SnapHitAndRun`, 5 s | 2 | 2 | one in E2, one in the round |
 | `SnapHitAndRun`, model pace | 4 | 2 | won 467 and 625 s, lost 485 and 615 s (at 615 s one Swordsmen unit was routing as the chariot broke) |
 
-Cycles read 0 on every foil battle, including the modifier 1.0 rush-foil win, and 3-8 on
-every witness win. The confirmation round (`runs/twwarhammer3/calibration/c1`, 20 plans)
-stopped at the owner's return after 4: foils 0 of 4 battles (2 launches each), the witness
+Cycles read 0 on every foil battle, including the modifier 1.0 rush-foil win (by construction:
+foils never order a move), and 6-9 on every witness win at 1.1 (witness losses read 2-8).
+The confirmation round (`runs/twwarhammer3/calibration/c1`, 20 plans) stopped at the owner's
+return after 4: foils 0 of 4 battles (2 launches each), the witness
 1 of 1 at 5 s and 0 of 1 at model pace. **Verdict: not admitted yet (incomplete)**; 8
-foil launches and 4 witness launches remain, about 2.7 h at $0. At model pace the witness
-wins about half its battles (2 of 4), so the card is latency-sensitive by construction:
-the same tactic wins reliably with continuous reactions to 5 s-old state and about half
-the time at one decision per 5 s.
+foil launches and 8 witness launches (4 at model pace) remain, about 2.7 h at $0. At model
+pace the witness won 2 of 4 against 2 of 2 continuously (p 0.47); the start configuration may
+explain more than tempo ([log](log.md#2026-10-18-latency-program-plan-only)).
 
 **For post-training**: one unit, a fixed opponent and 2-10 minute battles make the card a
 cheap environment with a binary reward (the win) and a shaping signal (cycles). Qwen3.6, the
@@ -178,8 +179,9 @@ What the night showed about the definition itself:
   halberd giant step saw the tactic executed (the guns routed) and the battle still lost; a
   one-factor step gave the expendables card its first witness wins.
 - **A model win can be read against the tactic.** Each of the 3 model wins on the chariot
-  card came with ordered pull-outs and recharges, said in the model's own notes (Kimi K3
-  high: "pull out southwest and immediately queue a re-charge"), and on the expendables
+  card was planned as cycle charging in the model's own notes (Kimi K3 high: "pull out
+  southwest and immediately queue a re-charge"); two ordered pull-outs from melee, while Kimi
+  K3 high's one move batch was decided between engagements, and on the expendables
   card Kimi K3 low routed the guns while the slaves held the halberds. Kimi K3 high also
   planned the right play on the expendables card and on S1, and lost both when its orders
   arrived 24-135 s late: knowing the tactic and executing it in time are separate results.

@@ -35,10 +35,36 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b34 (2026-10-18), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | The chariot card at 1.1 (witness `SnapHitAndRun`, rule in `cards.py`): its confirmation round is 4 of 20 plans in, not admitted yet; foils lost 7 of 7 at 1.1, fixed-age witnesses won 5 of 5, the witness at model pace 2 of 4. Board in [tactic-cards.md](tactic-cards.md) |
+| benchmark harness | b34 (2026-10-18), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | The chariot card at 1.1 (witness `SnapHitAndRun`, rule in `cards.py`): its confirmation round is 4 of 20 plans in, not admitted yet; foils lost 7 of 7 at 1.1, fixed-age witnesses won 6 of 8 (`CycleCharge` 1 of 3), the witness at model pace 2 of 4. Board in [tactic-cards.md](tactic-cards.md) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
+
+## 2026-10-18: Latency program (plan only)
+
+Owner notes (evening, away; [direction](../owner-direction.md)): measure the gap between knowing a
+tactic and executing it under variable latency, read the army as a robot body, a
+planner-executor harness, latency awareness, a fine-tuning comparison, wins that account for
+latency; OpenRouter credit now $50.38. Two read-only reviews ($0, no game), each finding checked
+by an independent verifier; scripts and outputs in `calibration/latency-review-20261018/` (local).
+Plan: [latency.md](latency.md). All unverified.
+- Benchmark review of the chariot card: foils score 0 cycles by construction (no move orders)
+  and 6 of 9 model losses show a cycle; witness results track the start configuration (4
+  discrete Swordsmen start pairs, 18/12/6/4 of 40 launches; near-tie starts won 7 of 8,
+  asymmetric 1 of 6, p 0.026, post hoc) more than tempo (6 of 8 against 2 of 6, p 0.28);
+  rematch starts match but one tick splits outcomes (S4 pair: lost 217 s, won 561 s);
+  `verdict()` counts episodes, not launches; the model-pace gate was dropped at 17:45 UTC
+  against E2's own rule (2 of 3 paced plus the fixed-age win met its "both tempos" branch);
+  WSL clock steps distorted wall-clock fields until 18:01 UTC.
+- Gap measures (30 model battles, 47 scripted): the tactic stated before contact won 5 of 10,
+  otherwise 0 of 17 (7 of those unmeasured: three replies or fewer before contact); median order age does not separate (GLM-5.3 low, the fastest, lost); 4 of
+  5 slow decisive chariot calls were retry loops; register and board order ages omit calls that
+  never applied. The multi-timing design (fast controllers, optional specialists) came from a
+  pasted "ChatGPT 6 Astra Pro" answer (2026-10-13); the owner's modding guide had allowed a
+  commander over the game's AI; only `commander` was built.
+- Corrected: witness wins at 1.1 read 6-9 cycles (not 3-8); fixed-age witnesses won 6 of 8 at 1.1
+  (not 5 of 5); Kimi K3 high's chariot win ordered no pull-out from melee; the read timeout is
+  600 s (controllers.md said 60 s). "Only the 3 fastest models won" (said in session) is wrong.
 
 ## 2026-10-18: The chariot card, harness b32 to b34
 

@@ -182,9 +182,9 @@ comparison should use:
 | idle units while a useful action exists | not computed |
 | losses weighted by unit value instead of men | not computed (needs unit costs) |
 
-Model tiers: prices per million tokens are in `gameai.llm.PRICES`; a call over 60 s
-times out in `gameai.llm.post`. One commander smoke battle per model on `kho5-dwf5` at
-low effort (log.md, "Skills and commander v1") measured mean think time 6.4 s for
+Model tiers: prices per million tokens are in `gameai.llm.PRICES`; `gameai.llm.post` waits
+up to 600 s per socket read, over 3 transport attempts. One commander smoke battle per model
+on `kho5-dwf5` at low effort (log.md, "Skills and commander v1") measured mean think time 6.4 s for
 `gpt-6-luna`, 5.8 s for `gpt-6.1-sol` and 4.8 s for `gpt-6-astra` (Sol and Astra reasoned
 very little at low effort), and $0.02, $0.18 and $1.17 per battle. One battle per model
 measures latency and cost, not strength.
