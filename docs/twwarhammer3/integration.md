@@ -15,7 +15,9 @@ Patch 9.0.4 (executable product/file version 9.0.4.0), Steam buildid 25961564,
 `engine/runtime.py`). Steam completed this update on 2026-10-15; earlier trials used
 9.0.3, build 4366297, Steam 25823491, executable hash
 `518c4f292f275142df13b96b9db704a3db7b4870b2c519df83d850596ecc822a`. Their manifests retain
-that build and the report keeps the conditions separate. Windows Python 3.13.1 at
+that build and the report keeps the conditions separate. Since 2026-10-18 another build
+warns (`doctor` warnings, `deployment.steam_build_pinned` false) instead of blocking; the
+owner decides whether to re-pin. Windows Python 3.13.1 at
 `C:/Python313/python.exe`; `--stills`
 needs Pillow there. Profile preferences when pinned: fullscreen 1920x1080, unit size 2
 ("large"), AI stats modifier 1.1, realism off, multithreaded model on. `doctor` reads them

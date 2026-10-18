@@ -158,16 +158,19 @@ uv run pytest tests/twwarhammer3                          # Lua (lupa) and image
 
 ## The loop
 
-Compare versions or controllers on paired battles: the same `--scenario random --seed N`
-draws for each (one job per seed; a rematch replays the same draw, so a deterministic
-controller plays each seed once), or one job rotating the controllers on a declared
-scenario. Fixed scenarios such as `kho5-dwf5` are quick diagnostics. Review the battles,
-make one change to the prompt, rendering, memory or executor, and log the version in
-[log.md](log.md). The review is the `wh3-version-review` workflow
+Compare versions or controllers on paired battles: one job rotating the controllers on a
+declared scenario (since 2026-10-16 mostly small focused scenarios; the earlier
+`--scenario random --seed N` draws are superseded, see
+[owner direction](../owner-direction.md)). A rematch replays the same battle, so a
+deterministic controller's rematches are not independent samples. Review the battles,
+make at most one change to the prompt, rendering, memory or executor, and log the version
+in [log.md](log.md). The review is the `wh3-version-review` workflow
 (`.claude/workflows/wh3-version-review.js`): a reviewer per episode reads the digest and
 the prompts and replies at the turning points (`digest EPISODE --at SECONDS`), three
 proposers each suggest one change (tactics prompt, state and memory, order interface)
-with the version history and the baseline in view, and three judges score them. While it
+with the version history and the baseline in view, and three judges score them against
+"No change" (collect more evidence first), which wins when a few battles cannot separate
+a flaw from noise. While it
 runs, play more seeds with the same version and draft the next change in a git worktree:
 a job stops if its source scope changes. Note each job's start and stop in
 [Active work](../state.md#active-work). The WH3 ledger (`runs/twwarhammer3/llm-spend.jsonl`)
@@ -175,44 +178,10 @@ is separate from Spire's, with its own cap: $25, raised to $52 on 2026-10-16.
 
 ## Next
 
-The [offline trace exporter and exchange capture](traces.md) are implemented and checked
-against saved battles (b14). [Matched round M1](log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan)
-and [difficulty ladder V1](log.md#2026-10-16-difficulty-ladder-first-step-v1) are complete.
-The six core scenarios remain provisional; the [design audit](benchmark.md#scenario-design)
-counts distinct decision problems, with cavalry/caster variants counted once per family
-and Conquest demoted because it has only one point.
-
-The overnight tranche of 2026-10-17 (harness b18-b23) added eight small candidates
-(S3, S5-S11) and two large ones (L1, L2). It played 40 jobs, mostly free scripted
-floors and diagnostics, plus GLM references
-([log](log.md#2026-10-17-overnight-tranche-harness-b18-b23)). Each candidate's
-status and next step is on one board,
-[small-scenario status](benchmark.md#small-scenario-status-after-the-overnight-tranche-2026-10-17).
-Remaining plan:
-
-1. **Small focused scenarios.** Wins are shown for S1 (flank, fresh) and S4 (escort
-   melee, mostly at 5 s); S2, S7 and S10 were too easy or depend on AI behaviour. Next:
-   - Crossfire for S3 on b23, SpellWindow for S5 (check why the ability probe barely
-     cast), and step-downs for S6, S8, S9 and S11, each floor first;
-   - S7 with armour-piercing attackers;
-   - setup checks for L1 and L2.
-2. **Cheap ladder reference: stopped at the anchors.** GLM-5.3 / low lost the siege and
-   swarm anchors (one battle each), so its added-factor steps wait for stronger models.
-   It lost S1 twice by sending direct attacks after planning a two-flank charge, and
-   S4 once (the second S4 battle ended as a policy failure).
-3. **Model coverage.** The S1 mode pilot showed GLM high exhausting the 4,000-token
-   output cap with reasoning. Modes above `low` need a larger allowance before the
-   all-modes matrix. Per-backend error rates differed several-fold; pinning a backend
-   is drafted on `wh3-openrouter-pin`.
-
-Owner decisions waiting: the unmerged `wh3-rules-v21-attack-path` (`llm_rules` v21 states
-that attacks take the engine's route) and `wh3-openrouter-pin`; whether to drop S2 and
-S10; the output allowance for high modes; the remaining OpenAI budget.
-
-Controller inputs are v20 / commander v7. The direct v20 warning has a
-[GLM live check](log.md#2026-10-16-live-check-of-the-v20-shared-magic-warning); commander v7
-and b14's new summary-capture request setting are checked offline and await paid use.
-Backing up local `runs/` off this machine remains open.
+Status, priorities and next steps are on [state.md](../state.md#total-war-warhammer-iii);
+each small candidate's status is on the
+[board](benchmark.md#small-scenario-status-after-the-overnight-tranche-2026-10-17). This
+section keeps only what is deferred.
 
 Deferred: the custom `emp-battery-skv-evacuation` pilot (its
 [placement diagnosis](log.md#2026-10-16-evacuation-deferred-controller-version-labels-fixed)),
@@ -221,8 +190,9 @@ representation and observation-age experiments. More units do not isolate a cont
 effect. The older random-draw comparison still has seeds 264482191, 1355466036 and
 238913231 left, then Sol and Astra as commander; it is not the current priority.
 Other candidates remain in [controllers.md](controllers.md#candidate-changes-for-the-next-version)
-and [battle-types.md](battle-types.md#next). The unique `wh3-fire-report` and `wh3-v4-info`
-branches are retained; both predate the v13 interface and need review before reuse.
+and [battle-types.md](battle-types.md#next). The `wh3-fire-report` and `wh3-v4-info` drafts
+are archived as tags `archive/wh3-fire-report` and `archive/wh3-v4-info`; both predate the
+v13 interface and need review before reuse.
 
 Deferred cleanups:
 - Lua changes that each need one engine smoke battle: drop the pause-mode leftovers

@@ -653,3 +653,14 @@ without using a parse retry, and the cut-off notice needs the max-output reason.
 `runs/fullrun-exports/luna-v1-v10-20261017`: the 13 Luna jobs (30 runs, harness v1-v10 and
 the smoke run) export to 11,099 rows with no issue but the expected missing reasoning. They
 are OpenAI outputs, which the dataset builder leaves out by default.
+
+## 2026-10-18: runner changes for long model replies (no scaffolding change)
+
+Shared with WH3 harness b27 ([WH3 log](../../twwarhammer3/log.md#2026-10-18-harness-b27-cleanup-and-the-verification-rule)).
+The output cap is 16,000 tokens (was 4,000). The Windows relay keeps its timeout for the
+connection only, so a model may think longer than `--bridge-timeout` (300 s), which used to
+end the run; the supervisor still ends the relay with the game. A test now checks that the
+relay waits past its connect timeout (it replaces the test of the old exit; the old relay
+was seen exiting in that case once, by hand). Neither change has run with the game.
+`spire play` refuses a ledger file that does not exist. Prompts and scaffolding are v10's,
+but jobs from now on are labelled v10.1 so they do not pool with 4,000-cap v10 runs.

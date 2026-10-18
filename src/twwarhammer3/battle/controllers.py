@@ -136,7 +136,7 @@ def factories(config: dict) -> dict:
                                    for name in sorted(models)}
         if provider == "openrouter" and config["budget_usd"] > 50:
             raise ValueError("OpenRouter's cumulative budget cannot exceed $50")
-        ledger = Ledger(Path(config["ledger"]), config["budget_usd"])
+        ledger = Ledger(Path(config["ledger"]), config["budget_usd"], must_exist=True)
         send = partial(post, api_key(provider), provider=provider, record_transport=True)
         for name in models:
             base, model, effort = parts[name]

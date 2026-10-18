@@ -405,7 +405,7 @@ def test_named_calibration_policies_are_disclosed_scripted_comparisons(tmp_path)
                 for name in ("CentralDefence", "CoordinatedRush", "CasterSkirmish",
                              "FeintFlank", "CrossKite", "Bodyguard", "Crossfire", "SpellWindow",
                              "HammerAnvil", "CornerHold", "FocusFire", "MonsterTarget",
-                             "BraceFacing", "CounterBattery")]
+                             "CounterBattery")]
     job = make_job(tmp_path, "calibration", [(name, 0, "lost") for name in policies])
     data = report_html.display_data(report.collect([job]))
     assert len(data["scenarios"][0]["battles"]) == len(policies)

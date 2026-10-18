@@ -30,7 +30,7 @@ RULES_PROMPT_PATH = SYSTEM_PROMPT_PATH.with_name("rules_prompt.md")
 # Every WH3 job shares this spend file, and so one budget; Spire keeps its own.
 LEDGER_PATH = REPO_ROOT / "runs/twwarhammer3/llm-spend.jsonl"
 OPENROUTER_LEDGER_PATH = LEDGER_PATH.with_name("openrouter-spend.jsonl")
-MAX_OUTPUT_TOKENS = 4000
+MAX_OUTPUT_TOKENS = 16000  # room for reasoning-on modes (owner, 2026-10-18)
 NOTES_LIMIT = 2000
 HISTORY_LENGTH = 8
 INVALID_RETRIES = 2

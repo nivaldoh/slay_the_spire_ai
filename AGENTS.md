@@ -5,6 +5,39 @@ Ascension 0) and Total War: WARHAMMER III (WH3; real-time custom battles through
 mod). Start every session with [docs/state.md](docs/state.md): what is running, each
 game's current track and next step. Then read the page of the track you are working on.
 
+## Verification (hard rule)
+
+The owner's rule (2026-10-18): **if the owner has not explicitly discussed with the
+assistant how to verify (repeatably test) whether a feature is correct, assume it might
+have issues.** Be careful making claims about, or building on top of, unverified things.
+
+How the assistant applies it:
+- Passing tests, smoke runs and single battles are evidence, not verification. Say
+  "unverified" when reporting or building on anything without an agreed method below.
+- Every claim carries what it rests on: the number of battles or runs behind a rate, the
+  check that decides it and its caveats. A summary never says more than its log entry.
+- When a feature matters, propose a repeatable check; add a row below only after the
+  owner agrees. A feature counts as verified only at revisions where its check passed.
+
+Agreed verification methods (feature, check and command, date agreed, last passing
+revision): none yet.
+
+## Working habits
+
+The assistant's proposals for the owner's 2026-10-18 goal (less bookkeeping, garbage and
+token use):
+- `docs/state.md` stays status only, under about 120 lines, and holds the current next
+  steps (other pages keep candidates and deferred items). New owner directions go in
+  `docs/owner-direction.md`. A log entry stays within about 20 lines: what changed, its
+  evidence with counts, and what is unverified.
+- Read docs by section. Use multi-agent workflows only for independent verification, the
+  WH3 loop's review step, or when the owner asks.
+- Delete a branch and its worktree once merged; create worktrees outside `/tmp`, which a
+  WSL restart wipes. While a WH3 queue runs, commit nothing: it stops before its next job
+  when HEAD moves. Add no file, scenario or diagnostic that no planned experiment uses.
+- When `doctor` or a job warns that a game build differs from its pin, tell the owner;
+  re-pin only with their approval.
+
 ## Layout
 
 ```
@@ -67,7 +100,8 @@ configs/
   suites/          Spire: first-combat suite and catalog declarations
   twwarhammer3/    WH3: system_prompt.md (llm), rules_prompt.md (llm_rules),
                    commander_prompt.md, scenarios.json, custom_battle.json (random draws),
-                   report_notes.json (the report's scenario, unit and highlight text)
+                   report_notes.json (the report's scenario, unit and highlight text),
+                   benchmark_jobs.json (the jobs the report and export read)
 scripts/           Spire first-combat tools (inventory, audits, dataset export, training
                    drivers, plots); wh3_queue.py runs a frozen plan of WH3 play jobs;
                    wh3_db.py reads WH3 unit costs and attributes from the game database;
@@ -76,6 +110,7 @@ tests/             One directory per package; tests/fixtures holds Spire engine 
                    test_doc_links.py checks every Markdown link and anchor
 docs/
   state.md         The session page for both games: status only
+  owner-direction.md  Every dated owner direction, newest first; superseded ones marked
   posttraining.md  Traces to fine-tuning datasets for both games: roles, contract, splits
   spire/           integration.md (engine and protocol facts), approaches.md (survey),
                    fullrun/, first-combat/, open-weight/ (one folder per track)
@@ -192,7 +227,8 @@ policy failures. Only an engine-confirmed victory or death is a gameplay outcome
 
 There is no external game API; a Lua mod is the API
 ([how it works](docs/twwarhammer3/README.md#how-it-works)). The Steam build and executable
-hash are pinned in `twwarhammer3/engine/runtime.py`. Under `RuntimeLock`
+hash are pinned in `twwarhammer3/engine/runtime.py`; Steam may update the game, and a
+different build warns and is recorded but never blocks (owner, 2026-10-18). Under `RuntimeLock`
 (`C:/wh3-agent/owner.lock`), `runtime.prepare_runtime` packs and installs the mod, and
 `runtime.OwnedGame` starts `Warhammer3.exe` once per job under the same `windows_game.py`
 supervisor. The controller and the Lua scripts exchange JSON files in
@@ -231,7 +267,9 @@ appends one row per run or episode to its game's results register
 `docs/spire/fullrun/log.md` or `docs/twwarhammer3/log.md` and commit the register with
 that entry. Update `docs/state.md` when work starts, stops or changes direction, and keep
 it short: what runs, what is stopped and why, what is next, with links. Results,
-validation counts and history go in the logs.
+validation counts and history go in the logs. A play command refuses a ledger file that
+does not exist (a mistyped path or a job started from a worktree would count from $0):
+create it deliberately for a new ledger.
 
 ## Coding Style
 

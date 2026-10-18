@@ -99,7 +99,7 @@ weight training) is verified narrowly, and D and F are incomplete.
 3. The PPO learning-rate experiment needs a new declaration; the launchers in
    `runs/first-combat/scripts/run_ppo_*.py` predate the package layout and their clock
    gate has expired.
-4. Branch `integration/heldout-clip-continuation` holds three reviewed, unmerged commits:
+4. Tag `archive/heldout-clip-continuation` (formerly a branch) holds three reviewed, unmerged commits:
    a PPO clipping-fraction diagnostic, held-out evaluation purpose propagation, and a
    bounded two-combat continuation (764 CPU tests passed there). It predates the package
    layout, so it needs a rebase before merging.

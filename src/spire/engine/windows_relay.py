@@ -7,7 +7,8 @@ contain spaces):
 Connect before emitting ``ready``. Game state goes to the runner unchanged; every later
 stdout byte is a command from the runner. The runner's bridge enforces the line limit.
 Diagnostics go to stderr. There is deliberately no reconnection: reconnecting could
-reuse stale state.
+reuse stale state. ``--timeout`` bounds the connection only: a model may think longer
+than any idle limit, and the Windows supervisor ends the relay with the game.
 """
 
 from __future__ import annotations
@@ -73,6 +74,7 @@ def main() -> int:
         msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
     try:
         with socket.create_connection((args.host, args.port), args.timeout) as connection:
+            connection.settimeout(None)
             relay(connection)
     except (OSError, RelayError) as exc:
         print(f"windows_relay: {exc}", file=sys.stderr, flush=True)

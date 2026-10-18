@@ -42,6 +42,9 @@ OPENROUTER = Provider(
 # Per-model request fields, sent and recorded with every request. Qwen3.6-35B-A3B is the
 # open-weight model to fine-tune: its baseline runs at fp8 or better (its cheapest endpoint
 # is fp4) with the catalogue's default sampling made explicit.
+# Known issue (owner, 2026-10-18): no model pins its serving backend (Qwen3.6 only a
+# quantization), and failure rates differ by backend (docs/twwarhammer3/log.md, queue C).
+# Pin backends before comparing OpenRouter models.
 ROUTES = {"qwen/qwen3.6-35b-a3b": {"quantizations": ["fp8", "bf16"]}}
 SAMPLING = {"qwen/qwen3.6-35b-a3b": {"temperature": 1.0, "top_p": 0.95}}
 PROVIDERS = {"openai": OPENAI, "openrouter": OPENROUTER}

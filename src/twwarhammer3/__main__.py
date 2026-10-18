@@ -264,7 +264,7 @@ def main() -> int:
         try:
             rotation(config)
             makers = factories(config)
-        except (ValueError, ImportError, AttributeError) as exc:
+        except (ValueError, ImportError, AttributeError, FileNotFoundError) as exc:
             parser.error(str(exc))
         manifest = run_play(args.output, config, makers=makers)
         return 0 if manifest["status"] == "completed" else 1

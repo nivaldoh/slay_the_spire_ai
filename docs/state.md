@@ -1,232 +1,125 @@
 # Project state
 
-Updated 2026-10-17 23:40 UTC: what is running, where each game stands and what comes
-next. Status only; history goes to the logs: [WH3](twwarhammer3/log.md),
-[Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md).
+Updated 2026-10-18: what runs, where each game stands, what comes next. Status only:
+history goes to the logs ([WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md),
+[first combat](spire/first-combat/README.md)), owner directions to
+[owner-direction.md](owner-direction.md). Nothing here is verified in the sense of the
+[hard rule](../AGENTS.md#verification-hard-rule): no verification method is agreed yet.
 
 ## Active work
 
-Nothing is running: the owner asked to wrap up at 23:24 UTC, 2026-10-17, and queue E3
-stopped after its S5 battle.
+Nothing is running (2026-10-18: codebase cleanup, no game or API jobs). Note each job's
+game, directory, start time (`date -u`) and `watch` command here; clear it when it stops.
 
-Today, while the owner was away (goal: post-training readiness and a minimal test in both
-games; also "run more of the planned TW3 games"):
-- Post-training pipeline on `main` (harness b24-b26, `4ebf08e`), described on
-  [posttraining.md](posttraining.md): exchange capture and OpenRouter play in both games,
-  `spire export`, WH3 export schema 2, the shared dataset builder `gameai.sft`, a local
-  LoRA smoke test, and Qwen3.6-35B-A3B (the open-weight model to fine-tune) declared on
-  OpenRouter. OpenRouter serves inference only; it cannot fine-tune or serve a fine-tune.
-- Minimal test in both games ([results](posttraining.md#first-end-to-end-test-2026-10-17)):
-  Qwen3.6 played Spire (three jobs, $0.24) and WH3 S1 (three battles, $0.07); both games'
-  exports built a cross-game dataset; the smoke fine-tune lowered validation loss on an
-  unseen Spire seed from 1.685 to 1.328.
-- WH3 queues E1-E3 (free scripted checks, [log](twwarhammer3/log.md#2026-10-17-queue-e3-s5-and-s7-wins-harness-b26-and-wrap-up)):
-  S5 SpellWindow and S7 CornerHold now show wins at both ages; four step-downs overshot.
+## Priorities (owner, 2026-10-18)
 
-Owner decisions waiting (details in the log entries):
-1. A training host and a route to play a fine-tune back in both harnesses (Tinker
-   credential, or a host that trains and serves LoRA).
-2. A larger output allowance for reasoning-on modes: Qwen3.6 `medium` hit the 4,000-token
-   cap in 5 of 36 Spire attempts and ended its WH3 battle; GLM and Step high did the same.
-3. Whether OpenAI outputs may train a model (25,503 exported rows are left out by default).
-4. Whether Step 5 preview has open weights; backing up `runs/` off this machine.
-5. Earlier: `wh3-rules-v21-attack-path` (unmerged); `wh3-openrouter-pin` is superseded by
-   the per-model routing in `providers.py` (review: do not merge it as the baseline pin).
+1. The WH3 benchmark.
+2. Slay the Spire, after WH3.
+3. Post-training is secondary, and not only SFT: RL and other methods will be tried, so
+   traces must suit them ([what they keep](posttraining.md#beyond-supervised-fine-tuning)).
 
-When a job starts, note here its game, job directory, start time (`date -u`) and `watch`
-command; clear it when the job stops.
+## Total War: WARHAMMER III
 
-## Total War: WARHAMMER III battles
-
-[README](twwarhammer3/README.md) (track page and [Next](twwarhammer3/README.md#next)),
-[log](twwarhammer3/log.md) (newest first, with the versions on `main` at the top),
+[README](twwarhammer3/README.md), [log](twwarhammer3/log.md) ("On main" at the top),
+[board](twwarhammer3/benchmark.md#small-scenario-status-after-the-overnight-tranche-2026-10-17),
 [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, benchmark b26,
-  evaluator v2 and track `obs-v4+terrain/act-v2/live-1x`. The interface supports native
-  objectives/reinforcements and the optional public battery-evacuation objective.
-- Six candidate decision families with live evidence remain after the live novelty audit
-  in the [design audit](twwarhammer3/benchmark.md#scenario-design); the custom evacuation
-  pilot is deferred (owner, 2026-10-16). Cavalry/caster variants
-  count once each; the two swarm roles remain provisionally distinct. Conquest was
-  demoted because it has one point, not the planned separated objectives. Win-rate admission
-  is retired; difficult battles need meaningful, executable choices.
-- M1 (2026-10-16 night): three battles per model on six core scenarios (gpt-6.1-sol on
-  the four that separate models). Siege, swarm command and caster assault separate the
-  models; survive-a-swarm and Kislev did not. The report page shows core scenarios and
-  completed battles only; its JSON keeps setup failures and variants. Results, costs and
-  reviews: [M1 entry](twwarhammer3/log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
-- OpenAI spend: $50.90 of $52; OpenRouter $3.86 of $50 (the allowance covers the WH3 and
-  Spire OpenRouter ledgers). No further OpenAI battle fits
-  the current cap; more Sol battles need the owner's budget decision.
-- [Difficulty ladder V1](twwarhammer3/log.md#2026-10-16-difficulty-ladder-first-step-v1)
-  is complete. All 26 declared model-mode configurations passed schema checks; modes
-  beyond `low` remain unplayed in battle. The six core candidates remain provisional.
+- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, harness b27 (16,000-token
+  cap; a game update warns, never blocks), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`.
+- M1 (2026-10-16, three battles per model and scenario): pooled over the six planned core
+  scenarios Sol won 9 of 18 and Luna 1 of 18 (8/17 against 1/17 without the M1a caster
+  launch), Fisher p 0.007-0.017, optimistic as rematches correlate. No scenario separates
+  the models alone (at three a side the smallest two-sided p is 0.10); no difference
+  detected between gpt-6.1-sol and gpt-6-sol (10/12 against 8/11, 9/12 with M1a).
+- Small scenarios: none admitted; no model win (6 lost, 5 policy failures: 3 at the old
+  4,000-token cap, 1 API error, 1 degenerate backend output). Scripted diagnostics: S5 won
+  at both ages with contact; S1 only with fresh (0.3 s) information; S4's escort won while
+  the gun it guards fell every time; S7's two wins came on the timer without contact (the
+  defenders hid in a corner). S2 and S10 are set aside. Ladder V1: GLM-5.3 / low lost both
+  anchors, so its added-factor steps wait for stronger models.
+- All modes of all models: 34 configurations (32 before Qwen3.6, not 26), 204 battles per
+  repeat over six scenarios. Spend: OpenAI $50.90 of $52 (no Sol battle fits); OpenRouter
+  $3.86 of $50 (one allowance for both games).
 
-The exporter is implemented ([b14](twwarhammer3/log.md#2026-10-16-harness-b14-offline-trace-export-and-model-exchange-capture)).
-Next, per the [board](twwarhammer3/benchmark.md#small-scenario-status-after-the-overnight-tranche-2026-10-17):
-1. Small scenarios. Wins are shown for S1, S4, S5 and S7. Next:
-   - model screens for S5 and S7 (and S1/S4 with stronger models);
-   - S3 Crossfire on b24 (a 0/5 s pair, unplayed when the owner wrapped up);
-   - intermediate steps for S6, S8, S9 and S11 (each too hard at its original step and
-     too easy after the step-down);
-   - the L2 setup check with its fourth side (scenario version 2).
-
-   S2 and S10 are set aside pending the owner.
-2. Ladder: GLM-5.3 / low lost both the siege and swarm anchors (one battle each), so
-   its added-factor steps wait for stronger models.
-3. Model coverage: reasoning-on modes (GLM and Step high, Qwen3.6 `medium`) exhaust the
-   4,000-token output cap; they need a larger output allowance first.
-
-Open: backing up `runs/` off this machine; the all-modes matrix size and budget. Custom
-evacuation and the workload, prompt, history, representation and added-age experiments
-remain deferred.
-Steam is pinned to 9.0.4; old evidence keeps its original build.
+Next:
+1. Agree with the owner what "demonstrably winnable" requires (below).
+2. A model screen on S5 with cheap OpenRouter models, then S1 and S4 with stronger ones;
+   pin backends first (known issues). Reasoning modes are unplayed at the 16,000-token cap.
+3. Redesign S7 so hiding until the timer cannot win; intermediate steps for S6, S8, S9 and
+   S11; S3 Crossfire on b24; the L2 setup check.
 
 ## Slay the Spire
 
-Full runs with an API model ([README](spire/fullrun/README.md): reference and loop;
-[log](spire/fullrun/log.md): versions); v10 is on `main`, untested with Luna. On
-2026-10-17 Qwen3.6 played three OpenRouter smoke jobs for the post-training test
-(best: Act 1 boss, floor 16). No run has won; the furthest reached Act 4 (v8, floor 54);
-`uv run python -m spire stats` gives acts, wins and floors per version. API spend: OpenAI
-$2.52 of the $25 cap (`uv run python -m spire spend`); OpenRouter $0.25
-(`--provider openrouter`). Seeds `HELDOUT01`-`HELDOUT10` are reserved for evaluation.
-Open owner decisions: [fullrun/README.md](spire/fullrun/README.md#open-owner-decisions).
-Paused: the first-combat track ([README](spire/first-combat/README.md)). Planned: a
-remotely trained open-weight model ([README](spire/open-weight/README.md); data path on
-[posttraining.md](posttraining.md)).
+[README](spire/fullrun/README.md), [log](spire/fullrun/log.md),
+[results.csv](spire/fullrun/results.csv). v10 on `main`; the relay now waits as long as a
+model thinks. No run has won; the furthest reached Act 4 (v8, floor 54). Version
+differences sit within run-to-run variation (about 11 floors per run on one seed; replays
+of one harness differed by 13-26 floors), measured only on the three tuning seeds, so
+harness progress is not shown. `HELDOUT01`-`HELDOUT10` are reserved and unplayed. Spend:
+OpenAI $2.52 of $25, OpenRouter $0.25.
 
-Next steps:
-1. Replay v10 (`54a5967`, hand-select purpose) on `RUNDEV1`–`RUNDEV3`: its only job died
-   on floor 10 at a WSL restart, so it and its settings-screen `key cancel` are untested.
-2. Keys memory (drafted as v11 on branch `v11-keys`, unmerged): CommunicationMod 1.2.1
-   never sends `keys`, so the model cannot see the keys it holds; v9 RUNDEV1 died on an
-   elite path taken for a key it had ([integration.md](spire/integration.md),
-   [candidates](spire/fullrun/README.md#candidate-changes)).
-3. The rest of the results register ([results.csv](spire/fullrun/results.csv)): SpireBench's
-   other measures, before more versions are compared. SpireBench released no code; its
-   metric definitions and fixed held-out seeds carry over
-   ([ideas](spire/fullrun/README.md#ideas-from-related-work-2026-10-12)).
-4. An open StS1 full-run benchmark built from this harness: owner interest, scoped in the
-   [approaches.md addendum](spire/approaches.md#addendum-2026-10-12-evening-an-open-sts1-benchmark).
+Next, after WH3: one decisive comparison (current scaffolding against an ablated one, 20-30
+fresh seeds per arm, about $5 and three nights) or a freeze; `v11-keys` waits on it. Jobs
+after the 2026-10-18 runner change are labelled v10.1 (16,000-token cap), so they do not
+pool with v10. Open decisions: [fullrun README](spire/fullrun/README.md#open-owner-decisions);
+paused: [first combat](spire/first-combat/README.md); planned:
+[open-weight](spire/open-weight/README.md).
 
-## Owner direction
+## Post-training
 
-Both games:
-- 2026-10-17 (19:10 UTC, away): "Review the repo in terms of its preparation for
-  post-training experiments. Review whether we're collecting data properly, check and
-  improve the quality of related code, prepare the structure required to fine-tune an open
-  model with OpenRouter (and do an initial minimal test run for this, with both games)."
-  Shortly after: "run more of the planned TW3 games in the background". At 23:24 UTC:
-  "wrap it up after the current battle ends". Done; see Active work.
+[posttraining.md](posttraining.md): capture, exports, dataset builder and a local smoke
+test work end to end. The smoke numbers are not learning: the 0.6B stand-in's "5 of 16
+action matches" equals always choosing 0. Missing: a training host, a route to play a
+fine-tune in both games, and a way to choose targets (winning targets are scarce).
 
-WH3:
-- 2026-10-17 UTC: cleared the active goal and asked to wrap up. Stop further game/API
-  jobs, save the completed calibration evidence and leave the remaining plan pending.
-- 2026-10-16 (trace-export goal): implement the offline exporter for future post-training.
-  Complete as [b14](twwarhammer3/traces.md); no new game/API jobs or training.
-- 2026-10-16 (night): small scenarios approved to try; ladder continues with a cheaper
-  reference model for now (expensive models later); write a trace exporter and store
-  reasoning text. Exporter/capture are complete as b14; the small scripted tranche is
-  recorded in b15-b17, while its model checks and the cheaper ladder remain unplayed
-  ([decisions](twwarhammer3/benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night)).
-- 2026-10-16 (evening, latest): benchmark every reasoning mode of every model in each
-  scenario; verify each model's real modes first (some open-weight models are only
-  on/off) ([model coverage](twwarhammer3/benchmark.md#current-proposal-calibrate-before-a-broad-model-comparison)).
-- 2026-10-16 (evening, later): mostly many small battles that each test one or two
-  specific things (e.g. two cheap cavalry units against one braced pikeman unit, if
-  winnable: feint and flank), plus a few larger battles for context length and
-  scale-only problems; diversity, quality and room for unexpected behaviour
-  ([scenario mix](twwarhammer3/benchmark.md#current-proposal-calibrate-before-a-broad-model-comparison)).
-- 2026-10-16 (evening): make each scenario maximally difficult while still demonstrably
-  winnable; fewer high-quality scenarios beat redundant ones that waste compute. Armies,
-  map settings etc. may be modified to calibrate
-  ([difficulty target](twwarhammer3/benchmark.md#current-proposal-calibrate-before-a-broad-model-comparison)).
-- 2026-10-16 (resume): implement OpenRouter and the three chosen models, then continue
-  improving benchmark calibration and the report within the existing budgets.
-- 2026-10-16 (OpenRouter): the owner stored an OpenRouter key and set a separate $50
-  budget. Requested support and three leading open-weight model API checks, then
-  clarified: stop after cleanup and design this turn; no implementation or paid calls.
-- 2026-10-16 (after M1): planning only. Keep the core provisional until the strongest
-  models have been tested; current scenarios may be too easy for them. Calibrate
-  challenges and extract more useful evidence before spending on another large model
-  comparison ([proposal](twwarhammer3/benchmark.md#implementation-plan)).
-- 2026-10-16 (03:28 UTC): the WH3 API cap rises to $52 (Spire keeps its own $25). Overnight,
-  prioritize work that needs the game running, since a fullscreen battle makes the
-  computer awkward to use during the day.
-- 2026-10-16 (03:20 UTC): delay the custom battles (the evacuation pilot) for much later in
-  the plan as a low-priority item, and proceed with other things.
-- 2026-10-16 (planning note): less is more; a smaller set of high-quality scenarios, each
-  answering a distinct question ([scenario design](twwarhammer3/benchmark.md#scenario-design)).
-  Report feedback is recorded in [reports.md](twwarhammer3/reports.md#pending-report-notes).
-- 2026-10-16 (implementation): approved a compact core of 6-8 distinct decision problems;
-  variants do not count as new coverage. Implement siege defence, survival and conquest
-  plus one custom battery-evacuation pilot; narrow interface extensions and custom
-  scripting are allowed. Audit existing families for redundancy. Later self-comparisons
-  distinguish army/control workload from prompt length and useful history.
-- 2026-10-15 (playmaking): retain difficult battles only when they give a controller
-  meaningful options to exploit advantages and mitigate disadvantages. Exploratory runs
-  should inspect those opportunities; redesign or drop scenarios with no credible plays,
-  preserving their evidence. This applies to existing challenges too.
-- 2026-10-15 (implementation): authorized the first three steps: controller integration,
-  common measures and one report. Scenario expansion remains next.
-- 2026-10-15 (refined): planning only at that stage. Prioritize scenarios that look and play very
-  differently: varied armies, siege, survival, conquest and other modes. Start with
-  general measures (kills, survivors, objective time, etc.); scenario-specific points
-  are a possible future improvement. Play 2-3 exploratory battles total per new scenario,
-  with deeper testing later. Keep difficult odds, no win-rate admission campaign, and
-  one HTML report for the whole benchmark (supporting files allowed). Interface versions
-  remain metadata; added-delay experiments wait. See the
-  [plan](twwarhammer3/benchmark.md#implementation-plan).
-- 2026-10-14 (benchmark steering): specialist anchor units and faction-specific mechanics
-  should drive scenario design. Prioritize extreme tactical problems (cavalry against
-  anti-large, caster-led forces, difficult sieges, commanding/fighting Skaven swarms),
-  meaningful creative choices and battles worth watching; well-rounded armies can follow.
-  Small armies on either or both sides are equally suitable; high funds and large
-  rosters are not requirements. Start the first specialist prototypes compact.
-- 2026-10-14 (night, sieges): benchmark who holds the victory points over time and the
-  supplies left unspent; both are now measured per episode.
-- 2026-10-13 (benchmark idea, the owner's words): "Eventually we could turn this game into
-  some kind of serious LLM benchmark? For now I'm just registering this here. Could try to
-  create certain challenge scenario battles where the opponent side is stronger, and see
-  how well different models perform and whether they discover certain key insights
-  required to win these battles. Eventually these challenge scenarios could even be
-  AI-generated themselves."
-- 2026-10-13: an API model plays real-time battles, with the order delay measured; control
-  through an in-game mod, never screenshots or desktop input; a hard $25 cap (now $52) on its own
-  ledger, `runs/twwarhammer3/llm-spend.jsonl`. Battles always run unpaused at 1x.
-- 2026-10-13 (evening): an asynchronous `commander` over scripted `skills`, beside the
-  direct `llm`; the other designs wait in [controllers.md](twwarhammer3/controllers.md).
-- 2026-10-13 (late): evaluate on paired random draws (`--scenario random`, the same seeds
-  for every controller, races drawn, armies autogenerated) at AI difficulty very hard;
-  fixed scenarios only for quick diagnostics. Other battle types next.
+## Known issues
 
-Slay the Spire:
-- 2026-10-12: complete runs by a frontier API model (`gpt-6-luna`, low effort), scaffolding
-  found by autoresearch from observed mistakes; a hard $25 cap on `runs/llm-spend.jsonl`.
-- 2026-10-12: interest in an open StS1 benchmark, since SpireBench's code is not public.
-  Later, a remotely trained open-weight model (Qwen3.6-35B-A3B, then GLM-5.3, RL on Tinker).
-- 2026-10-11: PPO paused for language-model post-training, itself paused for full runs.
+- No OpenRouter model pins its serving backend (Qwen3.6 only a quantization); across four
+  GLM jobs, parse or validation failures ran from about 5% to 42% by backend. Pin before
+  comparing models. Tag `archive/wh3-openrouter-pin` is an older draft: not the baseline pin.
+- No test yet shows whether a game patch changes results (owner: later). A build warning
+  reaches only stderr, `doctor` and the manifest; `stats` would pool builds (the report does not).
+- Only WH3's $50 OpenRouter ceiling per ledger is in code; the OpenAI caps and the
+  OpenRouter allowance shared by both games' ledgers are kept by hand.
+- WH3 register: the version column is blank on benchmark rows (each manifest's card has
+  it), and `stats` groups by commit, so results fragment; an API failure is recorded as a
+  `policy_failure`.
+- Not in the automated tests: the battle Lua's order application and the mailbox JSON
+  codec; the report JavaScript (a manual browser check only); several Spire play-loop
+  stop paths (source change, interruption).
+- Spire's Workshop mod pins still block a run when a mod updates.
+- `runs/` (22 GB) has no off-machine copy; its core evidence (traces, manifests, results,
+  ledgers, replays) was about 2.6 GB, 90 MB with zstd, on 2026-10-17.
+
+## Owner decisions waiting
+
+1. Where to back up `runs/`.
+2. What "demonstrably winnable" requires: does a scripted win at 0.3 s count, or a timer
+   win without contact, or must a model win? And the frozen round's size and battles per cell.
+3. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (whether
+   they may train a model; 25,503 rows excluded), GLM-5.3, or rejection-sampled Qwen3.6.
+4. Whether Step 5 preview has open weights, and whether to request token log-probabilities
+   or a sampler seed before the next model screens
+   ([gaps](posttraining.md#beyond-supervised-fine-tuning)).
+5. `wh3-rules-v21-attack-path` (unmerged); whether to keep `commander` (unplayed since v4).
+6. S2 and S10: drop them or keep them set aside. More OpenAI budget for Sol battles.
 
 ## Runtime and ownership
 
 - Slay the Spire ([runtime facts](spire/integration.md#runtime-and-source-pins)): the owner
   authorizes the installed Steam game and personal profile slot 0, including changes to
-  stats, unlock progress, run history and achievements (Ironclad unlock level was 3 of 5
-  on 2026-10-11; runs record profile evidence).
-- WH3: [engine facts](twwarhammer3/integration.md). A launch builds the mod into
-  `C:/wh3-agent/mods`, writes `twwarhammer3_mods.txt` into the game folder, installs the
-  startup-video skip pack `data/zzz_twwarhammer3_skip_intro.pack` and sets
-  `fe_game_intro_video_enabled false`; both persist for ordinary Steam launches
-  ([how to reverse](twwarhammer3/README.md#commands)).
+  stats, unlock progress, run history and achievements (Ironclad unlock level 3 of 5; runs
+  record profile evidence).
+- WH3 ([engine facts](twwarhammer3/integration.md)): a launch's mod list and startup-video
+  skip persist for ordinary Steam launches ([how to reverse](twwarhammer3/README.md#commands)).
+  Steam auto-update stays on.
 - Also authorized: game windows, local GPU work, commits and pushes to public `main`, and
-  paid OpenAI API use within each ledger's cap. One game controller at a time across both
-  games (each game's lock and process check cover only that game); one GPU job at a time.
+  paid API use within each ledger's cap. One game controller at a time across both games
+  (each game's lock and process check cover only that game); one GPU job at a time.
 
-## Unmerged branches
+## Branches
 
-- `integration/heldout-clip-continuation` (`940d698`): first-combat work, on `01f2984`.
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
-- `wh3-fire-report` (`832b233`): WH3 fire-report candidate, on v9 (`d928965`); untested.
-- `wh3-v4-info` (`aa1ece5`): WH3 orientation and losses candidate, on v3 (`c34c246`).
+- `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` v21 draft.
+- Archived drafts are tags: `archive/wh3-fire-report`, `archive/wh3-v4-info`,
+  `archive/wh3-openrouter-pin` and `archive/heldout-clip-continuation`.

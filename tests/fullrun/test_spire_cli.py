@@ -9,7 +9,7 @@ import pytest
 from gameai import llm
 from spire.__main__ import main
 from spire.fullrun import play
-from spire.fullrun.llm import LEDGER_PATH, OPENROUTER_LEDGER_PATH
+from spire.fullrun.llm import LEDGER_PATH, LEDGERS, OPENROUTER_LEDGER_PATH
 
 
 def run(monkeypatch, *arguments):
@@ -24,6 +24,10 @@ def run(monkeypatch, *arguments):
 ])
 def test_play_charges_the_providers_ledger_and_records_the_provider(
         tmp_path, monkeypatch, arguments, provider, ledger):
+    assert LEDGERS[provider] == ledger
+    ledger = tmp_path / ledger.name  # a stand-in, so a fresh clone without runs/ passes
+    ledger.touch()
+    monkeypatch.setitem(LEDGERS, provider, ledger)
     seen = {}
     monkeypatch.setattr(llm, "api_key", lambda name: seen.setdefault("key", name))
 
@@ -56,6 +60,17 @@ def test_play_ledger_override_and_spend_read_the_named_file(tmp_path, monkeypatc
     assert capsys.readouterr().out == f"$0.7500 spent ({path})\n"
     assert run(monkeypatch, "spend", "--provider", "openrouter") == 0
     assert capsys.readouterr().out.endswith(f" spent ({OPENROUTER_LEDGER_PATH})\n")
+
+
+def test_play_refuses_a_missing_ledger_before_any_job(tmp_path, monkeypatch, capsys):
+    # A mistyped --ledger, or a job started from a worktree, would otherwise start at $0.
+    monkeypatch.setattr(llm, "api_key", lambda name: pytest.fail("read a key"))
+    monkeypatch.setattr(play, "play", lambda *args, **kwargs: pytest.fail("started a job"))
+    with pytest.raises(SystemExit) as error:
+        run(monkeypatch, "play", "--model", "gpt-6-luna", "--seed", "ABC", "--budget-usd", "1",
+            "--ledger", str(tmp_path / "typo.jsonl"), "--output", str(tmp_path / "job"))
+    assert error.value.code == 2 and "No spend ledger at" in capsys.readouterr().err
+    assert not (tmp_path / "typo.jsonl").exists() and not (tmp_path / "job").exists()
 
 
 @pytest.mark.parametrize(("arguments", "message"), [

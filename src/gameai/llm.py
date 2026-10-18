@@ -28,6 +28,9 @@ API_URL = OPENAI.url
 PRICES = OPENAI.prices
 TRANSPORT_ATTEMPTS = 3
 FAILED_RESENDS = 2  # per ask, apart from the parse retries
+# A non-streaming reply arrives only when finished: room for a 16,000-token reply at about
+# 30 tokens/s. No OpenAI attempt so far took over 32 s; longer ones are untested.
+READ_TIMEOUT_S = 600
 TRANSIENT_HTTP = {408, 409, 429, 500, 502, 503, 504}
 CUT_OFF = ("\n\nYour previous reply was cut off at the output limit before the JSON ended."
            " Reply again.")
@@ -95,7 +98,7 @@ def post(key: str, body: dict, attempts: int = TRANSPORT_ATTEMPTS, *,
     for attempt in range(1, attempts + 1):
         try:
             request = urllib.request.Request(get_provider(provider).url, data=data, headers=headers)
-            with urllib.request.urlopen(request, timeout=60) as response:
+            with urllib.request.urlopen(request, timeout=READ_TIMEOUT_S) as response:
                 value = json.load(response)
                 if uncertain:
                     value["_uncertain_attempts"] = uncertain

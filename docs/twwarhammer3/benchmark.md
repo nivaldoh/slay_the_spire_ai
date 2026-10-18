@@ -456,14 +456,15 @@ frozen. Done on 2026-10-16: `gameai/providers.py` now declares each model's mode
 one accepted by a live schema call ([controllers.md](controllers.md#openrouter)).
 gpt-6-luna and gpt-6-sol have six (`none` to `max`), gpt-6.1-sol and gpt-6-astra five
 (no `none`), GLM-5.3 three (always reasoning), Kimi K3 four (including `none`) and Step 5
-Preview three: 26 model-mode configurations. Acceptance does not show that two levels
+Preview three: 32 model-mode configurations (34 with Qwen3.6, declared 2026-10-17). Acceptance does not show that two levels
 behave differently in a battle; reported reasoning tokens on a trivial prompt were small
 throughout.
 
 Scale of the matrix, from the low-effort battles since 2026-10-15: median battle length is
 417-659 s plus about 2 min of setup and rematch, so roughly 10 minutes of game per battle,
-one battle at a time. Six scenarios × 26 configurations is 156 battles (about 26 hours of
-game) for a single battle per cell; three repeats is about 78 hours, roughly ten nights.
+one battle at a time. Six scenarios × 34 configurations is 204 battles (about 34 hours of
+game) for a single battle per cell; three repeats is about 102 hours, roughly thirteen
+nights.
 Median cost per low-effort battle: Luna $0.04, Sol and gpt-6.1-sol $0.88-0.89, GLM $0.41,
 Kimi $0.99 (one battle). Astra (five times Sol's prices) and every mode above `low` are
 unmeasured. Higher modes add reasoning tokens and latency, so one battle per cell is
@@ -664,19 +665,19 @@ are disclosed public-state plays, run at 0 and 5 s added observation age. Eviden
 delegated choices are in the
 [overnight log entry](log.md#2026-10-17-overnight-tranche-harness-b18-b23). No
 candidate is admitted. Statuses:
-- "win shown": a diagnostic won.
+- "win shown": a diagnostic won (a scripted win; no model has won a small scenario).
 - "too easy": a floor won.
 - "no win yet": the floor and the diagnostic both lost.
 
 | Id | Latest step | Floor | Diagnostic | Model battles | Status and next step |
 |---|---|---|---|---|---|
-| S1 feint and flank | `ksl-raiders-emp-halberds` | walk and run lost | FeintFlank won fresh, lost at 5 s (x2) | GLM-5.3 low 0/2: planned a two-flank charge, sent direct attacks | Win shown. Next: stronger models; `llm_rules` v21 draft states the attack route |
+| S1 feint and flank | `ksl-raiders-emp-halberds` | walk and run lost | FeintFlank won fresh, lost at 5 s (x2) | GLM-5.3 low 0/2: planned a two-flank charge, sent direct attacks | Win shown fresh only (0.3 s); both 5 s battles lost. Next: stronger models; `llm_rules` v21 draft states the attack route |
 | S2 kiting | `brt-archers-dwf-slayers-decoy` | three earlier steps won; decoy lost | CrossKite lost x4 (terrain refusals; then a morale collapse at full strength) | none | No win yet. Set aside: engine skirmish mode automates the kiting. Range-aware CrossKite or drop |
 | S3 lines of fire | `emp-handgunners-dwf-warriors-3` | 2-unit won; 3-unit lost | Crossfire lost x6; on b23 (E1) it ran as disclosed but the guns barely fired (314 and 0 rounds) | none | No win yet. Crossfire revised in b24 (guns shoot from where they stand, fixed posts). Next: a 0/5 s pair on b24 |
 | S4 protect the gun | `emp-helblaster-brt-raiders` (step `-2`) | hold lost (both steps) | Bodyguard: original won 4/4 at 5 s, 1/4 fresh; step 2 lost x2 | GLM 0/1 plus one policy failure | Win shown on the original, but by the escort's melee; the gun always fell. The named skill is not yet tested |
 | S5 spell window | `emp-wizard-emp-swordsmen` | ability probe and attack-nearest lost (at 3,000 funds; the probe casts only self abilities in melee) | b23 lost fresh, won at 5 s; b25 (cast hold) won fresh (440 s) and at 5 s (488 s) | none | Win shown at both ages. Next: a model screen |
 | S6 hammer and anvil | `emp-knights-emp-swordsmen-2` | 3 Swordsmen lost; 2 Swordsmen won (b24) | HammerAnvil lost x4 at 3 Swordsmen | none | Too hard at three, too easy at two. Next: an intermediate step (e.g. three at a lower AI stats modifier) |
-| S7 corner defence | `dwf-longbeards-emp-greatswords-2` | 4- and 6-Swordsmen steps won; 2 Greatswords + 2 Swordsmen lost (b24, 387 s) | CornerHold won fresh and at 5 s (held to the timer, b25) | none | Win shown at both ages. Next: a model screen |
+| S7 corner defence | `dwf-longbeards-emp-greatswords-2` | 4- and 6-Swordsmen steps won; 2 Greatswords + 2 Swordsmen lost (b24, 387 s) | CornerHold won fresh and at 5 s on the timer, without contact: both armies ended at 100%, the Longbeards hidden in a corner (b25) | none | Timer win without contact, not a demonstration. Next: a step where hiding to the timer cannot win, before any model screen |
 | S8 focus vs regeneration | `dwf-thunderers-grn-trolls-2` | 3 Trolls lost; 2 Trolls won (b24, 214 s) | FocusFire lost x2 at 3 Trolls; no Troll died | none | Too hard at three, too easy at two. Next: an intermediate step |
 | S9 monster target choice | `grn-giant-ksl-streltsi-trolls` | Giant alone lost; Giant + Trolls won (b24, 328 s) | MonsterTarget lost x2 with the Giant alone | none | Too easy with the Trolls. Next: Giant + Trolls against a second Streltsi unit, floor first |
 | S10 receive the charge | `skv-spears-sla-hellstriders-3` | 2-rider and 3-rider won | none yet | none | Too easy: the AI charges braced spears head-on at any count tried. Set aside unless a different enemy (missile cavalry) changes its behaviour |

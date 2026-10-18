@@ -25,7 +25,7 @@ the prompt and memory, not weight training.
 - Spend: every call is priced from its reported usage at the standard-tier list prices in
   `gameai.llm.PRICES` (read 2026-10-12) and appended to a ledger. A call is refused
   before it is sent if the ledger's total plus that call's worst-case cost (prompt bytes as
-  an upper bound on input tokens, plus 4,000 output tokens) would exceed `--budget-usd`. The
+  an upper bound on input tokens, plus the 16,000-token output cap) would exceed `--budget-usd`. The
   default ledger is `runs/llm-spend.jsonl`; the owner's cap is in [state.md](../../state.md).
   An API request that times out on our side may still be billed without a ledger entry, so
   the OpenAI dashboard total is the final check. OpenRouter calls are charged their

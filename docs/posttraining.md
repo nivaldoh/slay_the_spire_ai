@@ -28,8 +28,9 @@ end.*
   which excludes its cheapest endpoint (fp4); `require_parameters`; price ceilings of $0.15
   input and $1.00 output per million tokens.
 - Sampling made explicit: temperature 1.0, top_p 0.95.
-- Thinking-on replies often exhaust both harnesses' 4,000-token output cap, so the first
-  datasets come from effort `none`.
+- Thinking-on replies often exhausted both harnesses' 4,000-token output cap, so the first
+  datasets come from effort `none`. The cap is 16,000 tokens since 2026-10-18; no
+  thinking-on battle or run has been played at it yet.
 
 ## Data flow
 
@@ -45,6 +46,40 @@ end.*
 4. **Train**: Tinker (planned); `scripts/sft_smoke.py` checks the pipeline locally now.
 5. **Evaluate** the fine-tune by playing it in both harnesses (not yet possible, see
    [Missing](#missing)).
+
+## Beyond supervised fine-tuning
+
+*Owner, 2026-10-18: post-training will also try RL and other methods, so traces must serve
+them, not only SFT.* Exports are rebuilt from a stopped job's traces at any time; what the
+traces keep:
+
+- Every model request: the exact prompts, raw outputs with visible reasoning, sampling
+  settings, usage, backend and wall time.
+- Every decision: its index in the episode and trace lines; Spire's public observation,
+  candidates, the choice and labels (HP, gold, floor, the fight); WH3's decision time,
+  orders, the engine's verdict on each and the observation age.
+- Every episode: the engine-confirmed outcome and measures, and the raw trace. Spire keeps
+  every CommunicationMod message and command. WH3 keeps the public observation behind each
+  decision, the hidden enemy totals only at the start and the end (the trace's `roster` and
+  `result` records; for scoring, never prompts)
+  and, by default, a 1 Hz replay of public state (45 of the 125 model jobs have one).
+
+So episode rewards, and decision rewards from public state (HP lost per fight, visible
+strength exchanged between two decisions), can be computed later without replaying a
+game. Not captured:
+
+- WH3 hidden state between the start and the end of a battle, so decision rewards cannot
+  use the enemy's true losses.
+
+- Token log-probabilities of the model that played: off-policy corrections need them.
+  They are not requested (provider support is unverified); on-policy RL samples its own.
+- More than one reply per state, which preference methods such as DPO pair up. Saved
+  prompts allow resampling offline later; the outcome of another action needs the game.
+- A sampler seed: none is sent.
+- Play by a model outside OpenAI and OpenRouter, which online RL needs ([Missing](#missing)).
+
+No RL or preference run has used these data yet, so their fitness is unverified
+([AGENTS.md](../AGENTS.md#verification-hard-rule)).
 
 ## Export-row contract
 
@@ -201,7 +236,10 @@ and the [WH3 log](twwarhammer3/log.md#2026-10-17-queue-e2-qwen36-on-s1-step-floo
 
 The b26 smoke test (same dataset and settings, `runs/sft/qwen36-smoke-20261017-smoke-b26`)
 adds measures on fixed rows: validation loss on the 55 rows of the unseen Spire seed fell
-from 1.685 to 1.328, and 5 of 16 decoded replies matched the reference action.
+from 1.685 to 1.328, and 5 of 16 decoded replies matched the reference action. All 16
+replies chose index 0, and 5 of those 16 references are 0, so the match equals the
+always-choose-0 baseline. About 94% of the validation target characters are the free-text
+`notes` and `reason`; how the loss drop splits by field is unmeasured.
 
 The pipeline works from play to an adapter. None of these numbers is a result: one run per
 configuration, a 0.6B stand-in for the student, and 60 steps.
@@ -220,4 +258,7 @@ configuration, a 0.6B stand-in for the student, and 60 steps.
 - Spire's content changes with the Ironclad unlock level: every run so far is level 3, and
   the profile was 81 points short of level 4 on 2026-10-17. Exports record the level per
   run; compare like with like.
-- Thinking datasets: they need effort `medium` play that fits the output cap.
+- Thinking datasets: they need effort `medium` play at the 16,000-token cap (unplayed).
+- Target selection: which replies to learn from (a teacher's, rejection-sampled wins, or
+  RL from the start). Winning targets are scarce: 79 WH3 rows from one GLM battle win, no
+  Spire win.

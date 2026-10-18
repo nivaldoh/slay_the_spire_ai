@@ -1949,7 +1949,7 @@
     "expect": {
       "funds_amount": 2250
     },
-    "calibration_change": "S10 second step (2026-10-17). The hold floor won the two-rider version at 207 s (bench-b20-s10-floor-20261017): the AI charged braced fronts head-on, the draft's trivial risk, and both Hellstrider units routed (the draft read immune_to_psychology as never routing; live state says otherwise). One more Hellstriders unit (database 675, enemy 2025); funds 2250. Hold floor first; BraceFacing at 0/5 s after a floor loss."
+    "calibration_change": "S10 second step (2026-10-17). The hold floor won the two-rider version at 207 s (bench-b20-s10-floor-20261017): the AI charged braced fronts head-on, the draft's trivial risk, and both Hellstrider units routed (the draft read immune_to_psychology as never routing; live state says otherwise). One more Hellstriders unit (database 675, enemy 2025); funds 2250. Hold floor first; a diagnostic only after a floor loss (BraceFacing was removed unplayed)."
   },
   "dwf-cannon-grn-lobbers": {
     "base": "ksl-raiders-emp-halberds",

@@ -12,6 +12,7 @@ import functools
 import re
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from gameai import windows
@@ -87,10 +88,14 @@ def mod_list_text(working_directory: str) -> str:
 
 
 def prepare_runtime() -> dict:
-    """While stopped and locked, install the mod, startup skip and supervisor."""
+    """While stopped and locked, install the mod, startup skip and supervisor. Steam may
+    update the game (owner, 2026-10-18): an unpinned build warns and is recorded, and the
+    owner decides whether to re-pin it."""
     build = steam_build_id()
     if build != PINS["steam_build_id"]:
-        raise RuntimeError(f"Steam build {build} is not the pinned {PINS['steam_build_id']}")
+        print(f"WARNING: Steam build {build} is not the pinned {PINS['steam_build_id']}; the"
+              " game was updated and results may not compare with earlier builds",
+              file=sys.stderr, flush=True)
     pids = running_pids()
     if pids:
         raise RuntimeError(f"The game is already running (PIDs {pids}); cannot prepare runtime")
@@ -106,6 +111,7 @@ def prepare_runtime() -> dict:
     shutil.copy2(Path(__file__).with_name("windows_capture.py"), RUNTIME_DIR / "windows_capture.py")
     return {
         "steam_build_id": build,
+        "steam_build_pinned": build == PINS["steam_build_id"],
         "startup": startup_record,
         "pack": {"path": str(mods / PACK_NAME), "sha256": sha256(mods / PACK_NAME),
                  "files": sorted(files)},

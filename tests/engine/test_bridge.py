@@ -219,15 +219,19 @@ def test_bridge_alone_enforces_the_line_limit_on_relayed_state():
                     process.communicate(timeout=2)
 
 
-def test_relay_timeout_exits_even_if_game_stdin_remains_open():
+def test_relay_waits_past_its_connect_timeout_for_a_slow_runner():
+    # A model may think longer than any idle limit; only the connection is bounded.
     with BridgeServer(timeout=2) as bridge:
         with launch_relay(bridge.address, "--timeout", "0.05") as process:
             try:
                 bridge.accept()
-                process.wait(timeout=2)
+                with pytest.raises(subprocess.TimeoutExpired):
+                    process.wait(timeout=0.5)
+                bridge.send("END")
+                bridge.close()
                 stdout, stderr = process.communicate(timeout=2)
-                assert stdout == b"ready\n"
-                assert b"timed out" in stderr
+                assert stdout == b"ready\nEND\n"
+                assert b"runner disconnected" in stderr
                 assert process.returncode == 1
             finally:
                 if process.poll() is None:

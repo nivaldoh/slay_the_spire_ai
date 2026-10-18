@@ -82,8 +82,6 @@ SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the neares
                 "Focus fire", "scenario diagnostic: every shooter on one enemy until it routs"),
             "twwarhammer3.battle.calibration:MonsterTarget": (
                 "Monster target", "scenario diagnostic: go round the spears onto the other unit"),
-            "twwarhammer3.battle.calibration:BraceFacing": (
-                "Brace and face", "scenario diagnostic: a spear triangle turned to the riders"),
             "twwarhammer3.battle.calibration:CounterBattery": (
                 "Counter-battery", "scenario diagnostic: shoot enemy artillery before advancing")}
 # Unit fields and frame fields the page draws; the job directory keeps the rest.

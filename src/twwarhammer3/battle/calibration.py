@@ -812,57 +812,6 @@ class MonsterTarget(SmallDiagnostic):
         return {"type": "monster_target", "target": self.target, "arrived": sorted(self.arrived)}
 
 
-class BraceFacing(SmallDiagnostic):
-    """S10: spear units stand in a triangle and turn their fronts toward the riders."""
-
-    card = {"purpose": "Can spear infantry keep its fronts toward cavalry without chasing?",
-            "knowledge": "S10: posts chosen once in a triangle around the starting centre "
-                         "(two 20 m either side and 10 m toward the nearest visible enemy, "
-                         "one 20 m behind). Each unit walks to its post and turns to the "
-                         "nearest enemy while that enemy is over 60 m away; nearer, it stands "
-                         "braced. A unit attacks only an enemy within 20 m of it, or one "
-                         "within 15 m of a friendly unit in melee and 60 m of itself. No "
-                         "hidden state or path search."}
-
-    def __init__(self):
-        super().__init__()
-        self.posts = {}
-
-    def decide(self, observation):
-        units, enemies = self.observe(observation)
-        if not units or not enemies:
-            return []
-        units.sort(key=lambda unit: unit["id"])
-        if not self.posts:
-            centre = _centre(units)
-            front = _direction(centre, min(enemies, key=lambda enemy: distance(centre, enemy)))
-            spots = [_offset(centre, front, 10, -20), _offset(centre, front, 10, 20),
-                     _offset(centre, front, -20)]
-            self.posts = {unit["id"]: spots[index % 3] for index, unit in enumerate(units)}
-        fighting = [unit for unit in units if "melee" in unit.get("state", [])]
-        orders = []
-        for unit in units:
-            near = min(enemies, key=lambda enemy: distance(unit, enemy))
-            helped = [enemy for enemy in enemies if distance(enemy, unit) <= 60 and any(
-                distance(enemy, friend) <= 15 for friend in fighting if friend is not unit)]
-            if distance(unit, near) <= 20:
-                orders += self.attack(unit, near)
-            elif helped:
-                orders += self.attack(unit, min(helped, key=lambda enemy: distance(unit, enemy)))
-            elif distance(unit, near) > 60:
-                post = self.posts.get(unit["id"], unit)
-                facing = math.degrees(math.atan2(near["x"] - post["x"], near["z"] - post["z"]))
-                turn = abs((facing - unit.get("bearing", facing) + 180) % 360 - 180)
-                if distance(unit, post) >= 12 or turn > 30:
-                    orders += self.issue(unit, {"unit": unit["id"], "type": "move", "run": False,
-                                                "facing": facing % 360, "x": post["x"],
-                                                "z": post["z"]})
-        return orders
-
-    def metadata(self):
-        return {"type": "brace_facing", "posts": self.posts}
-
-
 class CounterBattery(SmallDiagnostic):
     """S11: the gun shoots enemy artillery first; the infantry waits by it until then."""
 

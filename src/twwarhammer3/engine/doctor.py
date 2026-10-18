@@ -1,7 +1,8 @@
 """Read-only launch check and environment record; never a game launch.
 
-Blockers are what would stop ``prepare_runtime`` or the Windows supervisor. Jobs save
-this report as ``environment.json``.
+Blockers are what would stop ``prepare_runtime`` or the Windows supervisor. A game
+version other than the pins is a warning: Steam may update the game, and the owner
+decides whether to re-pin it. Jobs save this report as ``environment.json``.
 """
 
 import os
@@ -16,17 +17,19 @@ from twwarhammer3.engine import runtime, startup
 
 
 def collect_diagnostics() -> dict:
-    blockers = []
+    blockers, warnings = [], []
     exe = runtime.GAME_DIR / "Warhammer3.exe"
     game = {
         "path": str(exe),
         "sha256": sha256(exe) if exe.is_file() else None,
         "steam_build_id": runtime.steam_build_id(),
     }
-    if game["sha256"] != runtime.PINS["Warhammer3.exe"]:
-        blockers.append("Warhammer3.exe is missing or differs from the pinned hash")
+    if not exe.is_file():
+        blockers.append("Warhammer3.exe is missing")
+    elif game["sha256"] != runtime.PINS["Warhammer3.exe"]:
+        warnings.append("Warhammer3.exe differs from the pinned hash (game updated?)")
     if game["steam_build_id"] != runtime.PINS["steam_build_id"]:
-        blockers.append(f"Steam build {game['steam_build_id']} is not the pinned build")
+        warnings.append(f"Steam build {game['steam_build_id']} is not the pinned build")
     probes = {"windows_python": probe([str(WINDOWS_PYTHON), "--version"])}
     blockers += [f"{key} did not run" for key, item in probes.items() if item["status"] != "ok"]
     try:
@@ -53,6 +56,7 @@ def collect_diagnostics() -> dict:
         "collected_at": datetime.now(UTC).isoformat(),
         "status": "blocked" if blockers else "ready",
         "blockers": blockers,
+        "warnings": warnings,
         "game": game,
         "preferences": preferences,
         "startup": startup_status,
@@ -85,5 +89,6 @@ def render_diagnostics(report: dict) -> str:
     if "pack" in startup_status:
         lines.append(f"Startup pack: {startup_status['pack']['path']} "
                      f"(sha256={startup_status['pack']['sha256'] or 'missing'})")
+    lines += [f"Warning: {warning}" for warning in report["warnings"]]
     lines += [f"Blocked: {blocker}" for blocker in report["blockers"]]
     return "\n".join(lines)

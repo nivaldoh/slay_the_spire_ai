@@ -1,13 +1,14 @@
 export const meta = {
   name: 'wh3-version-review',
-  description: 'Review each episode of a WH3 LLM battle job, propose one harness change from three angles, judge them',
+  description: 'Review each episode of a WH3 LLM battle job, propose one harness change from three angles, judge them against making no change',
   whenToUse: 'After a twwarhammer3 play job of the autoresearch loop. args: {job: "runs/twwarhammer3/battle/<job>", episodes: ["episode-0000", ...], history: "versions so far, the baseline, measured facts"}; or no job and episodes as "runs/twwarhammer3/battle/<job>/episode-NNNN" paths, to review several jobs together',
   phases: [{ title: 'Review' }, { title: 'Propose' }, { title: 'Judge' }],
 }
 
 // The autoresearch loop's review step (docs/twwarhammer3/README.md#the-loop): one reviewer
 // per episode, three proposers (tactics prompt, state and memory, interface), three judges.
-// The orchestrator reads the totals and implements the winning change.
+// The orchestrator implements the returned winner, or nothing when "No change" wins: a
+// few battles often cannot tell a harness flaw from noise.
 
 const ROOT = '/home/niv/repos/slay_the_spire_ai'
 const job = args.job
@@ -76,17 +77,24 @@ ${JSON.stringify(done, null, 1)}
 
 Propose ONE change for the next harness version, focused on ${focus}. Weigh the version history: what changed between versions and how results moved, and the scripted baseline. It must address the mistakes that cost the most in these reviews, be small and lean (this codebase avoids bloat), and generalise across scenarios. Read the current files before proposing so the change fits them. If you think the best change is outside your angle, still give the best one within it.`,
   { label: `propose:${key}`, phase: 'Propose', schema: PROPOSAL })))
-const props = proposals.filter(Boolean)
+const NO_CHANGE = {
+  title: 'No change',
+  change: 'Keep the current version and collect more evidence first (more battles, or a matched comparison).',
+  evidence: 'Choose this when the mistakes appear in only one or two battles, could be noise or the game AI\'s variation, or no candidate is directly supported by repeated mistakes.',
+  expected_effect: 'The next decision rests on more evidence.',
+  risks: 'Slower iteration.',
+}
+const props = [...proposals.filter(Boolean), NO_CHANGE]
 
 phase('Judge')
 const judges = await parallel([0, 1, 2].map(i => () => agent(`${CONTEXT}
 Episode reviews:
 ${JSON.stringify(done.map(r => ({ episode: r.episode, outcome: r.outcome, summary: r.summary, mistakes: r.mistakes })), null, 1)}
 
-Candidate changes for the next version (only one will be made):
+Candidate changes for the next version (only one will be made, or none if "No change" wins):
 ${JSON.stringify(props, null, 1)}
 
-Score each candidate 1-10 on impact (expected improvement in battle outcomes), evidence (how directly the reviews support it), simplicity (small, lean, low risk), generality (helps across scenarios and armies). Judge ${i + 1} of 3: be independent and skeptical; check claims against the traces where cheap. Then pick the single best candidate by title.`,
+Score each candidate 1-10 on impact (expected improvement in battle outcomes), evidence (how directly the reviews support it), simplicity (small, lean, low risk), generality (helps across scenarios and armies). Judge ${i + 1} of 3: be independent and skeptical; check claims against the traces where cheap. Count how many battles show each mistake: one or two battles cannot separate a real flaw from noise, so prefer "No change" unless a change is supported by repeated evidence. Then pick the single best candidate by title.`,
   { label: `judge:${i + 1}`, phase: 'Judge', schema: SCORE })))
 const valid = judges.filter(Boolean)
 const totals = props.map(p => {
@@ -94,4 +102,7 @@ const totals = props.map(p => {
   const mean = s.length ? s.reduce((a, x) => a + x.impact + x.evidence + x.simplicity + x.generality, 0) / s.length : 0
   return { title: p.title, mean, picks: valid.filter(j => j.pick === p.title).length }
 })
-return { reviews: done, proposals: props, totals, comments: valid.map(j => j.scores.map(x => `${x.title}: ${x.comment}`)) }
+// The judges' picks decide; the mean only breaks ties ("No change" scores low on impact by
+// construction).
+const winner = [...totals].sort((a, b) => b.picks - a.picks || b.mean - a.mean)[0]?.title
+return { winner, reviews: done, proposals: props, totals, comments: valid.map(j => j.scores.map(x => `${x.title}: ${x.comment}`)) }

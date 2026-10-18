@@ -35,10 +35,29 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b26 (2026-10-17), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `report.py`, `export.py` | E3 on b25: S5 SpellWindow won fresh (440 s) and at 5 s (488 s); S7 CornerHold won twice. E2: four step-downs too easy. S3 Crossfire b24 and L2 (four sides) unplayed. Status board in benchmark.md |
+| benchmark harness | b27 (2026-10-18), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `report.py`, `export.py` | b27 unplayed. E3 on b25: S5 SpellWindow won fresh (440 s) and at 5 s (488 s); S7 CornerHold's two wins were timer wins without contact. E2: four step-downs too easy. S3 Crossfire b24 and L2 (four sides) unplayed. Status board in benchmark.md |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
+
+## 2026-10-18: Harness b27, cleanup and the verification rule
+
+Owner goal: improve the codebase first ([direction](../owner-direction.md)). No battles.
+- Output cap 16,000 tokens (was 4,000) in `llm`, `llm_rules` and `commander`, for
+  reasoning-on modes, and a 600 s socket read timeout (was 60 s; no OpenAI attempt so far
+  took over 32 s). Unplayed: whether those modes now finish, and their latency.
+- A Steam build other than the pin warns on stderr and is recorded
+  (`deployment.steam_build_pinned`, doctor `warnings`); it no longer blocks.
+- `play` refuses a ledger file that does not exist (a worktree or a typo would start at $0).
+- The `wh3-version-review` judges also score "No change" (collect more evidence), and the
+  judges' picks decide the returned winner.
+- M1 re-checked: Sol 9/18 against Luna 1/18 pooled (Fisher p 0.007; 8/17 against 1/17,
+  p 0.017, without the M1a caster launch); per scenario at most p 0.10 at three a side.
+- Removed `BraceFacing`, which never played. S7's board status is now "timer win without
+  contact"; the all-modes count is 34 configurations, not 26.
+- Branches: 30 merged ones deleted; four stale drafts kept as `archive/*` tags.
+Checks: the full test suite and ruff; none is an agreed verification method
+([hard rule](../../AGENTS.md#verification-hard-rule)).
 
 ## 2026-10-17: Queue E3 (S5 and S7 wins), harness b26 and wrap-up
 

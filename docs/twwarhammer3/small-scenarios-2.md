@@ -27,10 +27,11 @@ age. A floor win means the step is too easy and climbs.
 | S10 | `skv-spears-sla-hellstriders` | receiving cavalry: facing and bracing | 3 Clanrat Spearmen (975) | 2 Hellstriders (1,350) | 1,500 |
 | S11 | `dwf-cannon-grn-lobbers` | counter-battery and when to advance | 1 Cannon, 1 Dwarf Warriors (1,250) | 2 Rock Lobbers, 2 Goblin Spearmen (1,750) | 1,950 |
 
-S12 and S13 below are definitions only, not declared. The four disclosed diagnostics are
-implemented in `battle/calibration.py` as `FocusFire`, `MonsterTarget`, `BraceFacing` and
+S12 and S13 below are definitions only, not declared. Three disclosed diagnostics are
+implemented in `battle/calibration.py` as `FocusFire`, `MonsterTarget` and
 `CounterBattery`; their controller cards state every rule, and the paragraphs below
-describe them as built.
+describe them as built. `BraceFacing` (S10) was removed on 2026-10-18 without ever
+playing (S10 is set aside); it remains in Git history before that date.
 
 ## S8. Focus fire against regeneration
 
@@ -95,7 +96,7 @@ tight triangle or back-to-back block, turn the fronts toward the riders without 
 off position, and let a second spear unit counter-charge a rider unit stuck on the
 first. Main risk: riders that never rout must all die to weak spears (unwinnable), or
 the AI may charge braced fronts head-on (trivial). Floor: `hold`; also `attack_nearest`.
-Diagnostic `BraceFacing`: posts in a triangle around the start (two 20 m
+Diagnostic `BraceFacing` (removed unplayed, see above): posts in a triangle around the start (two 20 m
 either side and 10 m forward, one 20 m behind); each unit turns to the nearest enemy
 while it is over 60 m away, stands still when nearer, and attacks only a rider within
 20 m of it or within 15 m of a neighbour in melee. Overlap: the defender's side of S1's problem;

@@ -10,13 +10,18 @@ def test_doctor_reports_blockers_without_launching(tmp_path, monkeypatch):
     monkeypatch.setattr(runtime, "conflicting_games", lambda game_dir, rules: [{"ProcessId": 9}])
     monkeypatch.setattr(runtime, "preferences", lambda: {"gfx_unit_size": "2"})
     report = doctor.collect_diagnostics()
-    text = "\n".join(report["blockers"])
-    assert "pinned hash" in text and "PIDs 9" in text
+    assert report["blockers"] == ["The game is already running (PIDs 9)"]
+    # A game update warns but never blocks (owner, 2026-10-18).
+    assert report["warnings"] == ["Warhammer3.exe differs from the pinned hash (game updated?)"]
     assert report["mod"]["files"] == ["script\\battle\\mod\\twwarhammer3_battle.lua"]
-    assert "gfx_unit_size=2" in doctor.render_diagnostics(report)
+    text = doctor.render_diagnostics(report)
+    assert "gfx_unit_size=2" in text and "Warning: Warhammer3.exe differs" in text
     monkeypatch.setattr(runtime, "conflicting_games", lambda game_dir, rules: [])
-    monkeypatch.setitem(runtime.PINS, "Warhammer3.exe", report["game"]["sha256"])
     assert doctor.collect_diagnostics()["status"] == "ready"
+    monkeypatch.setitem(runtime.PINS, "Warhammer3.exe", report["game"]["sha256"])
+    assert doctor.collect_diagnostics()["warnings"] == []
+    (runtime.GAME_DIR / "Warhammer3.exe").unlink()
+    assert doctor.collect_diagnostics()["blockers"] == ["Warhammer3.exe is missing"]
 
 
 def test_doctor_reports_missing_installed_and_changed_startup_without_writing(tmp_path,

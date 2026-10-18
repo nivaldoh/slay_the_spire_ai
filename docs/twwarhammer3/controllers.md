@@ -227,7 +227,7 @@ other modes passed one WH3 reply-schema call each on 2026-10-16 ($0.0061 in tota
 trivial prompt: GLM `high` 47, `max` 83; Kimi `none` 0, `high` 67, `max` 66; Step
 `medium` and `high` 0 (the backend may not report them). That shows the modes are
 accepted, not how they differ in a battle; `max` may need more than the 4,000-token
-reply allowance there. OpenAI's lists come from the API's own unsupported-value errors,
+reply allowance there (raised to 16,000 on 2026-10-18). OpenAI's lists come from the API's own unsupported-value errors,
 and every listed mode passed one schema call ($0.037 in total;
 `capability-probes/openai-modes*-20261016/`): gpt-6-luna and gpt-6-sol take `none`,
 `low`, `medium`, `high`, `xhigh` and `max`; gpt-6.1-sol and gpt-6-astra take the same
@@ -251,7 +251,11 @@ Requests require backend parameter support and enforce the declared
 [price ceilings](https://openrouter.ai/docs/guides/routing/provider-selection), including
 zero per-request fees. Per-model `ROUTES` and `SAMPLING` fields in `providers.py` are added
 to the request and recorded with it (Qwen3.6: fp8 or bf16 endpoints only, temperature 1.0,
-top_p 0.95; [student model](../posttraining.md#student-model)). Reservations count
+top_p 0.95; [student model](../posttraining.md#student-model)). No model pins its serving
+backend (Qwen3.6 pins only a quantization): four GLM jobs spread calls over 18 backends, whose
+parse or validation failure rates ran from about 5% to 42%
+([log](log.md#2026-10-17-overnight-tranche-harness-b18-b23)), so comparisons between
+OpenRouter models are confounded until backends are pinned (a known issue). Reservations count
 serialized schema/prompt bytes plus framing allowance, assume no cache discount and cover
 all three transport attempts. Reported
 [usage.cost](https://openrouter.ai/docs/cookbook/administration/usage-accounting) is charged;
@@ -406,7 +410,7 @@ implemented controller, one change at a time.
    own (`uic:SetStateText(text)` on a component the battle script creates or borrows),
    map markers for plan points (`bm:add_ping_icon(x, y, z, type, waypoint, rotation)`,
    `remove_ping_icon`), each unit's phase and last order, the enemy composition as seen,
-   and kills per fire order (unmerged branch `wh3-fire-report`).
+   and kills per fire order (unmerged draft, tag `archive/wh3-fire-report`).
 
 Precedents the commander already follows: AgileThinker (ICLR 2026) runs a planner and a
 reactive process concurrently, the reactive one on the latest observation; real-time

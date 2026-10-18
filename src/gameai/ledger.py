@@ -20,10 +20,14 @@ class BudgetExhausted(RuntimeError):
 class Ledger:
     """Append-only spend record; every job naming the same file shares one budget."""
 
-    def __init__(self, path: Path, budget_usd: float):
+    def __init__(self, path: Path, budget_usd: float, *, must_exist: bool = False):
         if not math.isfinite(budget_usd) or budget_usd < 0:
             raise ValueError("Budget must be finite and nonnegative")
         self.path = Path(path)
+        if must_exist and not self.path.is_file():
+            # A mistyped path, or a job started from a worktree, would start at $0 spent.
+            raise FileNotFoundError(f"No spend ledger at {self.path}; create the file to"
+                                    " start a new ledger deliberately")
         self.budget = budget_usd
         lines = self.path.read_text().splitlines() if self.path.exists() else []
         self.spent = sum(json.loads(line)["usd"] for line in lines)

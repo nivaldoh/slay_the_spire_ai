@@ -229,7 +229,10 @@ def main() -> int:
         config.pop("command")
         config["ledger"] = str(args.ledger or LEDGERS[args.provider])
         config["results"] = str(config["results"])
-        ledger = Ledger(Path(config["ledger"]), args.budget_usd)
+        try:
+            ledger = Ledger(Path(config["ledger"]), args.budget_usd, must_exist=True)
+        except FileNotFoundError as error:
+            parser.error(str(error))
         # A missing key fails here, before any launch.
         send = partial(post, api_key(args.provider), provider=args.provider,
                        record_transport=True)

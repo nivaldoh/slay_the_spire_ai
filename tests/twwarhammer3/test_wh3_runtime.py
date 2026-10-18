@@ -26,11 +26,15 @@ def test_prepare_runtime_builds_the_pack_and_mod_list(install):
     assert (install / "mnt/c/wh3-agent/bridge").is_dir()
 
 
-def test_prepare_runtime_refuses_an_unpinned_build(install):
+def test_prepare_runtime_warns_on_an_unpinned_build_and_records_it(install, capsys):
+    # Steam may update the game (owner, 2026-10-18): warn and record, never block.
+    assert runtime.prepare_runtime()["steam_build_pinned"]
+    assert "WARNING" not in capsys.readouterr().err
     runtime.STEAM_MANIFEST.write_text('"buildid"\t\t"99"\n')
-    with pytest.raises(RuntimeError, match="not the pinned"):
-        runtime.prepare_runtime()
-    assert not (install / "steamapps/common/game/twwarhammer3_mods.txt").exists()
+    record = runtime.prepare_runtime()
+    assert record["steam_build_id"] == "99" and not record["steam_build_pinned"]
+    assert "WARNING: Steam build 99 is not the pinned 25823491" in capsys.readouterr().err
+    assert (install / "steamapps/common/game/twwarhammer3_mods.txt").exists()
 
 
 def test_preferences_keep_only_gameplay_relevant_keys(tmp_path):

@@ -10,7 +10,8 @@ game. Battles always run unpaused at 1x.
 
 The supported setup:
 - Windows with WSL2, Steam running and logged in, and WH3 at the build pinned in
-  `src/twwarhammer3/engine/runtime.py`, in the default Steam library on `C:`;
+  `src/twwarhammer3/engine/runtime.py` (another build warns and is recorded), in the
+  default Steam library on `C:`;
 - Windows Python 3.13 at `C:/Python313/python.exe` (with Pillow, only for `--stills`);
 - the content the scenario uses (its `content` lists the DLC);
 - a desktop the game can hold fullscreen, and no other game controller.
@@ -97,7 +98,8 @@ uv run python -m twwarhammer3 play --scenario brt-cavalry-emp-assault \
   `--start-timeout` (900 s) bounds the launch, the lobby setup and each battle load.
 - **Models**: `llm`, `llm_rules` and `commander` need `--budget-usd`, which caps the
   cumulative WH3 ledger (`runs/twwarhammer3/llm-spend.jsonl`), earlier jobs included.
-  Never reset or move it. `uv run python -m twwarhammer3 spend` prints its total. Each
+  Never reset or move it; on a fresh clone create it first (`touch` the file), since
+  `play` refuses a missing ledger. `uv run python -m twwarhammer3 spend` prints its total. Each
   job saves the prompt of every model policy it rotates as `<base policy>_prompt.md` with
   its hash (`llm_rules@gpt-6-luna` uses `llm_rules_prompt.md`); a prompt difference is a
   controller difference.

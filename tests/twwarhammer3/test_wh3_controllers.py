@@ -44,6 +44,9 @@ def test_each_model_controller_gets_its_own_prompt_and_the_shared_budget(tmp_pat
     assert controllers.MODEL_POLICIES == frozenset({"llm", "llm_rules", "commander"})
     config = {"policy": "llm,llm_rules,commander", "model": "gpt-6-luna", "effort": "low",
               "ledger": str(tmp_path / "spend.jsonl"), "budget_usd": 1}
+    with pytest.raises(FileNotFoundError, match="No spend ledger"):
+        controllers.factories(config)  # a missing file would count as $0 spent
+    (tmp_path / "spend.jsonl").touch()
     makers = controllers.factories(config)
     original, rules, planner = makers["llm"](), makers["llm_rules"](), makers["commander"]()
     assert original.api.instructions == llm.SYSTEM_PROMPT_PATH.read_text()
@@ -116,6 +119,7 @@ def test_cards_and_makers_use_each_controllers_model_and_effort(tmp_path, monkey
     monkeypatch.setattr(commander, "CommanderPolicy", FakeCommander)
     config = {**JOB, "policy": "llm_rules,llm_rules@gpt-6-luna/medium,commander@gpt-6-luna,hold",
               "ledger": str(tmp_path / "spend.jsonl"), "budget_usd": 1}
+    (tmp_path / "spend.jsonl").touch()
     makers = controllers.factories(config)
     assert set(makers) == set(config["policy"].split(","))
     sol, luna, planner = (makers[name]() for name in config["policy"].split(",")[:3])
@@ -150,6 +154,7 @@ def test_openrouter_rotation_keeps_vendor_model_ids_and_final_effort_suffix(tmp_
              "commander@stepfun/step-5-preview"]
     config = {"provider": "openrouter", "policy": ",".join(names), "effort": "low",
               "ledger": str(tmp_path / "router.jsonl"), "budget_usd": .25}
+    (tmp_path / "router.jsonl").touch()
     assert controllers.policy_parts(names[0], config) == ("llm_rules", "z-ai/glm-5.3", "low")
     assert controllers.policy_parts(names[1], config) == ("llm_rules", "moonshotai/kimi-k3", "high")
     assert len(controllers.rotation(config)) == 3

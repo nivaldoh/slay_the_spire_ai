@@ -5,7 +5,6 @@ from copy import deepcopy
 
 from twwarhammer3.battle.calibration import (
     Bodyguard,
-    BraceFacing,
     CasterSkirmish,
     CentralDefence,
     CoordinatedRush,
@@ -54,7 +53,7 @@ def test_feint_flank_waits_for_rear_position_then_withdraws_after_contact():
 
 def test_small_diagnostics_do_not_use_hidden_enemies_or_order_routers():
     for cls in (FeintFlank, CrossKite, Bodyguard, Crossfire, SpellWindow, HammerAnvil,
-                CornerHold, FocusFire, MonsterTarget, BraceFacing, CounterBattery):
+                CornerHold, FocusFire, MonsterTarget, CounterBattery):
         obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 0)],
                "enemy": [], "evaluation": {"enemy": [unit("e1", "hidden", 5, 5)]},
                "enemy_roster": [unit("e1", "hidden", 5, 5)]}
@@ -800,32 +799,6 @@ def test_monster_target_goes_round_the_spears_then_leaves_their_melee():
     assert caught.decide(obs) == []
     obs["time_ms"] = 12000
     assert caught.decide(obs)[0]["target"] == "e2"
-
-
-def test_brace_facing_turns_posts_to_the_riders_and_only_fights_contact():
-    obs = {"time_ms": 1000, "friendly": [unit(f"f{n}", "clanrats", 10 * (n - 1), 0, bearing=180)
-                                         for n in (1, 2, 3)],
-           "enemy": [unit("e1", "hellstriders", 10, 300, **{"class": "cavalry"})]}
-    original = deepcopy(obs)
-    policy = BraceFacing()
-    orders = policy.decide(obs)
-    validate_orders(orders, obs)
-    assert [(round(o["x"]), round(o["z"])) for o in orders] == [(30, 10), (-10, 10), (10, -20)]
-    for order in orders:
-        toward = math.degrees(math.atan2(10 - order["x"], 300 - order["z"]))
-        assert order["type"] == "move" and not order["run"]
-        assert abs((order["facing"] - toward + 180) % 360 - 180) < 1
-    assert obs == original
-    near = BraceFacing()
-    obs["enemy"][0].update(x=10, z=50)
-    assert near.decide(obs) == []  # within 60 m: stand braced, no chase
-    obs["friendly"][0].update(state=["melee"])
-    obs["friendly"][2].update(x=40, z=0)
-    obs["enemy"][0].update(x=0, z=5)
-    orders = near.decide(obs)
-    validate_orders(orders, obs)
-    assert {order["unit"] for order in orders} == {"f1", "f2", "f3"}
-    assert all(order["type"] == "attack" and order["target"] == "e1" for order in orders)
 
 
 def test_counter_battery_shoots_artillery_first_and_holds_infantry_by_the_gun():

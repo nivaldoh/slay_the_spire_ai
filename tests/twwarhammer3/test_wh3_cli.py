@@ -7,6 +7,7 @@ import sys
 import pytest
 from wh3_fixtures import configured_job, embedded, make_job
 
+import twwarhammer3.__main__ as cli
 from twwarhammer3.__main__ import add_session_arguments, main
 from twwarhammer3.battle import play, report
 from twwarhammer3.battle.llm import LEDGER_PATH, OPENROUTER_LEDGER_PATH
@@ -99,10 +100,13 @@ def test_cli_openrouter_selects_its_own_ledger_and_default_model(tmp_path, monke
         return {"status": "completed"}
 
     monkeypatch.setattr(play, "play", fake_play)
+    ledger = tmp_path / OPENROUTER_LEDGER_PATH.name  # a stand-in for a fresh clone
+    ledger.touch()
+    monkeypatch.setattr(cli, "OPENROUTER_LEDGER_PATH", ledger)
     monkeypatch.setattr(sys, "argv", ["wh3", "play", "--provider", "openrouter",
         "--scenario", "kho5-dwf5", "--budget-usd", "50", "--output", str(tmp_path / "job")])
     assert main() == 0
-    assert seen["ledger"] == str(OPENROUTER_LEDGER_PATH)
+    assert seen["ledger"] == str(ledger)
     assert seen["model"] == "z-ai/glm-5.3" and seen["provider"] == "openrouter"
 
 
