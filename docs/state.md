@@ -9,9 +9,9 @@ verified so far; everything below is unverified.
 
 ## Active work
 
-WH3 overnight tactic-card checks (owner away until 13:00 UTC, delegated), one-job plans in
-`runs/twwarhammer3/calibration/n2/` and later, chained until 12:45 UTC at the latest; follow
-with `uv run python -m twwarhammer3 watch`. N1 (S5 card check, b27) started 04:11 UTC.
+Nothing is running. The WH3 overnight tactic-card checks (2026-10-18, owner away until
+13:00 UTC, delegated) ended at 12:13 UTC; plans are in `runs/twwarhammer3/calibration/n1`
+to `n7`.
 
 ## Priorities (owner, 2026-10-18)
 
@@ -23,32 +23,29 @@ with `uv run python -m twwarhammer3 watch`. N1 (S5 card check, b27) started 04:1
 ## Total War: WARHAMMER III
 
 [README](twwarhammer3/README.md), [log](twwarhammer3/log.md) ("On main" at the top),
-[board](twwarhammer3/benchmark.md#small-scenario-status-after-the-overnight-tranche-2026-10-17),
+[tactic cards](twwarhammer3/tactic-cards.md) (the benchmark definition and its board),
 [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, harness b27 (16,000-token
-  cap; a game update warns, never blocks), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`.
-- M1 (2026-10-16, three battles per model and scenario): pooled over the six planned core
-  scenarios Sol won 9 of 18 and Luna 1 of 18 (8/17 against 1/17 without the M1a caster
-  launch), Fisher p 0.007-0.017, optimistic as rematches correlate. No scenario separates
-  the models alone (at three a side the smallest two-sided p is 0.10); no difference
-  detected between gpt-6.1-sol and gpt-6-sol (10/12 against 8/11, 9/12 with M1a).
-- Small scenarios: none admitted; no model win (6 lost, 5 policy failures: 3 at the old
-  4,000-token cap, 1 API error, 1 degenerate backend output). Scripted diagnostics: S5 won
-  at both ages with contact; S1 only with fresh (0.3 s) information; S4's escort won while
-  the gun it guards fell every time; S7's two wins came on the timer without contact (the
-  defenders hid in a corner). S2 and S10 are set aside. Ladder V1: GLM-5.3 / low lost both
-  anchors, so its added-factor steps wait for stronger models.
-- All modes of all models: 34 configurations (32 before Qwen3.6, not 26), 204 battles per
-  repeat over six scenarios. Spend: OpenAI $50.90 of $52 (no Sol battle fits); OpenRouter
-  $3.86 of $50 (one allowance for both games).
+- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, harness b30 (tactic-card
+  scenarios and diagnostics), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`.
+- Benchmark definition (owner, 2026-10-18): minimal battles each won only by applying one
+  tactic (cards), with foils that must lose, a witness that must win at 5 s age, a
+  signature, rules parity and a held-out variant; draft, no check agreed.
+- Night of 2026-10-18 (63 launches, n = 1-4 per cell, unpinned backends, rules v20;
+  [board](twwarhammer3/tactic-cards.md#the-first-checks-night-of-2026-10-18)): the
+  expendables card is a candidate (foils 0 of 2, witness 3 of 4, Kimi K3 low won); the
+  chariot card leaks (rush-nearest won 1 of 2) although its witness won 4 of 4 and models
+  won 3 of 12; gpt-6.1-sol won S1, the first model win on it; S5 dropped; flyers, giant and
+  riflemen have no reliable witness. These are the first model wins on small scenarios.
+- Spend: OpenAI $51.43 of $52; OpenRouter $6.69 (WH3) + $0.25 (Spire) of $50.
 
-Next (owner direction 2026-10-18: [tactic cards](twwarhammer3/tactic-cards.md)):
-1. Agree the card contract and admission checks (foils lose, a witness wins by contact at
-   5 s age in 3 of 4 launches, signature, rules parity, held-out variant).
-2. Necessity checks on the declared cards (foils first, then witnesses), then model screens
-   only on cards that pass; pin backends before comparing models.
-3. Draft the remaining cards of the list; harness benchmarks (multi-agent, MCP) later.
+Next (proposals for the owner):
+1. Agree or amend the card contract and the admission checks, then turn the agreed ones
+   into AGENTS.md rows.
+2. Step the chariot card harder until rush-nearest loses; finish the expendables card
+   (foil repeats, held-out variant, a fixed signature rule); check OpenRouter credits and
+   pin backends; then several launches per model, since one launch is a screen.
+3. Redesign flyers and giant (witnesses that keep their target); draft the next cards.
 
 ## Slay the Spire
 
@@ -76,6 +73,8 @@ fine-tune in both games, and a way to choose targets (winning targets are scarce
 
 ## Known issues
 
+- OpenRouter returned HTTP 402 "in_flight_budget_exhausted" on 2026-10-18 with $6.93 of
+  the $50 allowance on the ledgers: check the account's credits before paid jobs.
 - No OpenRouter model pins its serving backend (Qwen3.6 only a quantization); across four
   GLM jobs, parse or validation failures ran from about 5% to 42% by backend. Pin before
   comparing models. Tag `archive/wh3-openrouter-pin` is an older draft: not the baseline pin.
@@ -96,15 +95,15 @@ fine-tune in both games, and a way to choose targets (winning targets are scarce
 ## Owner decisions waiting
 
 1. Where to back up `runs/`.
-2. What "demonstrably winnable" requires: does a scripted win at 0.3 s count, or a timer
-   win without contact, or must a model win? And the frozen round's size and battles per cell.
+2. The tactic-card checks ([proposal](twwarhammer3/tactic-cards.md#proposed-admission-checks);
+   "winnable": a witness wins 3 of 4 at 5 s, or a model wins) and launches per cell.
 3. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (whether
    they may train a model; 25,503 rows excluded), GLM-5.3, or rejection-sampled Qwen3.6.
 4. Whether Step 5 preview has open weights, and whether to request token log-probabilities
    or a sampler seed before the next model screens
    ([gaps](posttraining.md#beyond-supervised-fine-tuning)).
-5. `wh3-rules-v21-attack-path` (unmerged); whether to keep `commander` (unplayed since v4).
-6. S2 and S10: drop them or keep them set aside. More OpenAI budget for Sol battles.
+5. `wh3-rules-v21-attack-path` (unmerged); whether to keep `commander` (unplayed since v4);
+   more OpenAI budget (the $52 cap refuses Sol calls now).
 
 ## Runtime and ownership
 

@@ -54,7 +54,9 @@ accepts it.
    naive floors.
 3. **Witness wins**: the witness wins by contact (not on the timer) in at least 3 of 4
    single-episode launches at 5 s added observation age (`--delay-seconds 5 --episodes 1`).
-4. **Signature**: the witness's wins show the signature.
+4. **Signature**: the witness's wins show the signature, and a measure of it separates
+   the witness's wins from the foils' losses under a rule fixed in advance (for the chariot
+   card, the longest run of melee frames; see the board below).
 5. **Parity**: a `disclosed` card's rules prompt states every engine fact the witness
    relies on; otherwise the card is `withheld`.
 6. **Held out**: a variant (another map or a mirrored start) is reserved before any
@@ -67,12 +69,70 @@ same instance, so repeats inside a launch are not extra samples. Per model and m
 card: contact wins over launches started, with a 95% Wilson interval. Policy failures and
 truncations count as losses; infrastructure failures are listed and rerun. Across cards:
 the mean of the per-card win rates, each card weighted once, beside the median order age,
-the cost per battle and the failure rate. Cards are controller-agnostic, so the same suite
+the cost per battle and the failure rate. Each card also reports its signature measure
+per battle, so a loss that attempted the tactic (Luna on the chariot card pulled out, then
+stayed out of contact for minutes) reads differently from one that never tried it. A card whose witness
+wins only with fresh information (S1 so far) is a **latency card**: it is reported beside
+the order age and is not averaged with the others. Cards are controller-agnostic, so the same suite
 later compares harnesses (owner, 2026-10-18: multi-agent delegation, MCP tools and other
 features) as a third axis beside model and mode; a harness's own automation is disclosed in
 its controller card. The active-strength margin is secondary: it
 ranks floors wrongly on objective battles (on the siege `hold` scored +0.11, above every
 Luna and GLM loss).
+
+## The first checks (night of 2026-10-18)
+
+Single-episode launches on the declared cards, counts as of the end of the night (the
+[log entry](log.md#2026-10-18-tactic-cards-harness-b28-to-b30-and-the-overnight-checks) has
+every battle). Foils and witnesses are free scripted controllers; model battles are paid.
+Every cell is n = 1 to 4 launches, no check is agreed, OpenRouter backends were unpinned
+(each attempt records its backend) and the rules prompt is v20, so every result is
+unverified. An independent four-lens check of the draft against the register, traces and
+replays corrected it before it was written here.
+
+| Card | Kind | Foils (one launch each) | Witness | Models (natural latency, one battle each) | Status |
+|---|---|---|---|---|---|
+| chariot cycle (`grn-chariot-emp-swordsmen`) | battle tactic, one unit | attack-nearest lost 2 of 2 (462, 413 s); rush-nearest lost 154 s, then **won** 157 s without cycling (longest melee 55 frames) | `CycleCharge` at 5 s: won 4 of 4 (338, 204, 281, 309 s), no chariot lost | won: Kimi K3 low (232 s), gpt-6.1-sol low (256 s), Kimi K3 high 1 of 2 (139 s; its second launch lost at 182 s); lost: Qwen3.6 none and medium, Luna low and high, GLM-5.3 low and high, Step 5 low and high (the slowest four mostly by latency) | **leaks**: a naive foil won 1 of 2, so check 2 fails; step it harder (for example modifier 1.1) until rush-nearest loses while `CycleCharge` wins. Also missing a `hold` foil, the knowledge tag (withheld: the prompt does not state cycle charging) and a held-out variant. The first small scenario a model has won, though the leak lowers what those wins show |
+| expendables, one halberd unit (`skv-ogres-slaves-emp-halberds-1`) | concept | attack-nearest lost 173 s; hold lost 337 s | `SlaveTarpit` at 5 s: won 3 of 4 (190, 243, 283 s; lost 319 s) | won: Kimi K3 low (308 s); its repeat ended at 102 s on an OpenRouter credit error (HTTP 402, infrastructure, recorded as a policy failure); lost: Luna high (649 s), Kimi K3 high (418 s: its order to pin the halberds applied 135 s late), Qwen3.6 none (240 s); GLM-5.3 high ended in a policy failure (461 s) | **candidate**: checks 1 and 3 met; each foil ran once; knowledge withheld; no held-out variant; the commander flag sits on a slave unit, so spending it costs the army's commander |
+| S1 flank (`ksl-raiders-emp-halberds`) | battle tactic | attack-nearest (b14) and rush-nearest (b15) lost | `PinThenRear`: won 0 of 2 at 5 s (two timings); fresh 1 of 2 (the first timing won, the tighter one lost) | gpt-6.1-sol low **won** 305 s (3.6 s mean order age: one rider drew the halberds' facing while the other charged their rear, then they swapped); its repeat stopped at 40 s on the OpenAI cap (`budget_exhausted`, not a result); Kimi K3 high lost 419 s (24 s mean order age; it planned the same pincer); 0 of 9 before tonight (5 lost, 4 policy failures; b18-b24) | **candidate**: a model won where the scripted witnesses lost at 5 s, so the bots, not the card, set the 5 s limit; latency-sensitive (the same plan failed at 24 s) |
+| flyers on the cannon (`tze-screamers-skv-cannon`, `-1`) | key decision | lost 3 of 3, and attack-nearest routed the cannon too (219 s, 261 s) | `PriorityStrike` at 5 s lost 2 of 2: it routed the cannon crew at about 100 s, which rallied, while its own rule turned the Screamers onto the screen | none | neither necessity nor sufficiency shown: test a witness that keeps the target until it is dead or keeps the flyers off the screen |
+| riflemen lane (`emp-handgunners-grn-savage-orcs-hard`) | one unit | attack-nearest lost 212 s | `FlankLane` at 5 s: 1 of 2; the win fired as many rounds as the foil (277 against 274) | none | no reliable witness: line of sight is not observable, and walking to a lane cost firing time |
+| giant target (`grn-giant-emp-*-handgunners`) | one unit | lost on both steps | `MonsterTarget` at 5 s: 0 of 3 across two steps | none | no win yet: on the halberd step the witness routed the guns (171 s) and then lost; on the spearmen step it never reached them |
+| S5 caster (`emp-wizard-emp-swordsmen`, `-hard`) | one unit | floors lost | `SpellWindow` at 5 s won 2 of 2 | none | **dropped** as a spell-judgment card: `FireballSpam` (Fireball at the nearest enemy) won at modifiers 1.0 and 1.1 |
+
+The chariot card's signature, a per-battle grade rather than a cause: the longest run of
+consecutive 1 Hz replay frames in which the chariot carries the engine's melee flag
+(whatever its movement flags), was at most 31 frames in all 7 wins that used the tactic (4 witness, 3 model) and at least 41 in all 12 losses (3 foils, 9 model battles); the one foil win (rush-nearest) had 55, so the measure flags a win without the tactic, which is its purpose. The threshold was read off these battles,
+and merging brief exits from melee changes the numbers (by that count the witness's longest
+engagement is about 33 s), so the rule needs fixing before it is a check. Luna / low pulled
+out once at about 134 s and stayed out of contact for about 460 s (15 refused moves) before
+grinding to a rout; Luna / high pulled out five times, but its fourth melee lasted 42 s.
+
+What the night showed about the definition itself:
+- **Foils first is cheap and decisive, and one launch per foil is too few.** One drafted
+  card (riflemen) needed two roster steps on its first foil alone, a careless-play foil
+  (`FireballSpam`) sank S5 after its witness had won 2 of 2, and the chariot card's
+  rush-nearest foil lost its first launch and won its second (the last battle of the night).
+- **A witness win is what tests sufficiency.** The two-halberd expendables card and the
+  halberd giant step saw the tactic executed (the guns routed) and the battle still lost; a
+  one-factor step gave the expendables card its first witness wins.
+- **A model win can be read against the tactic.** Each of the 3 model wins on the chariot
+  card came with ordered pull-outs and recharges, said in the model's own notes (Kimi K3
+  high: "pull out southwest and immediately queue a re-charge"), and on the expendables
+  card Kimi K3 low routed the guns while the slaves held the halberds. Kimi K3 high also
+  planned the right play on the expendables card and on S1, and lost both when its orders
+  arrived 24-135 s late: knowing the tactic and executing it in time are separate results.
+- **A model can beat the scripted witness.** On S1 gpt-6.1-sol alternated a feint and a
+  rear charge and won, where both `PinThenRear` timings lost at 5 s; a witness's loss
+  bounds the bot, not the card.
+- **One launch is a screen, not a ranking.** Kimi K3 high won its first chariot launch and
+  lost its second; per-cell results need several launches before they rank models.
+- **Reasoning effort against order age, one battle per mode:** a higher mode raised the mean
+  order age for Luna (4.8 to 8.8 s; medians 4.5 to 7.2 s) and GLM-5.3 (3.1 to 7.7 s), not
+  for Kimi K3 (4.5 s both). Step 5 high's replies took 6 to 370 s (2 of 4 cut off at the
+  16,000-token cap) and one order batch reached the game before the chariot routed at 139 s;
+  Qwen3.6 medium's only applied order was 102 s old (4 of its 6 replies were rejected). No
+  battle of a mode above low ended in a policy failure; 3 replies hit the cap.
 
 ## Design rules from S1-S11
 
@@ -99,9 +159,11 @@ new card (from the 2026-10-17 board and traces; each rests on 1-6 battles):
    full strength (S2). The flag does not always follow the first card: in the expendables
    card it went to a Skavenslaves unit although the Rat Ogres were listed first (b28).
 9. **Sufficiency, not only necessity**: once the tactic succeeds, the rest of the battle
-   must be winnable. On 2026-10-18 the flyer witness routed the cannon at 100 s and the
-   expendables witness routed the guns at 160 s, and both still lost to the screen left
-   standing, while their foils also lost (n = 1 each). The witness is what tests this.
+   must be winnable. On 2026-10-18 the two-halberd expendables witness routed the guns at
+   160 s and the halberd giant witness at 171 s, and both still lost to the anti-large unit
+   left standing while their foils also lost (n = 1 each). The witness is what tests this.
+10. **A witness must not abandon a routing target**: a routed unit can rally (the cannon
+   crew did); keep it until it is dead or off the field before switching.
 
 ## The card list (draft 1, 2026-10-18)
 
@@ -116,8 +178,8 @@ any witness is written or counted.
 
 | Card | Tactic | Critic's main objection | Status |
 |---|---|---|---|
-| `pin-then-rear` (S1) | one rider pins the braced halberds in melee, the other then charges their rear; repeat | none found; a pinned block kept facing the pinning rider in 4 of 4 traced cycles, while an unengaged one re-faced in 1.2-3.6 s, so triggering on the pin tolerates a model's delay | declared (S1); witness `PinThenRear` |
-| `chariot-cycle` | a chariot charges, pulls out and charges again instead of grinding | grinding may win (armour 80); a move straight through the enemy may beat pulling out | declared; witness `CycleCharge` |
+| `pin-then-rear` (S1) | one rider pins the braced halberds in melee, the other then charges their rear; repeat | none found; a pinned block kept facing the pinning rider in 4 of 4 traced cycles, while an unengaged one re-faced in 1.2-3.6 s, so triggering on the pin tolerates a model's delay | declared (S1); see the board |
+| `chariot-cycle` | a chariot charges, pulls out and charges again instead of grinding | grinding may win (armour 80); a move straight through the enemy may beat pulling out | declared; see the board |
 | `cycle-charge-knights` | knights against Greatswords, the same cycle | `HammerAnvil` with no infantry never charges (a live defect in S6) | draft |
 | `screen-the-gun` (S4) | an escort keeps riders off a Helblaster | the AI splits its riders, so one guard cannot screen; with one rider and more infantry it may hold | draft |
 | `hand-kite` (S2) | kite Slayers by hand | arrows kill at 20-80 m, not at the kiting band; engine skirmish does it anyway | draft, needs a slower chaser |
@@ -127,9 +189,9 @@ any witness is written or counted.
 
 | Card | Tactic | Critic's main objection | Status |
 |---|---|---|---|
-| `rifle-lane` | Handgunners keep a firing lane past their own Spearmen while faster Big 'Uns attack | a blocked lane cut fire to about 40% in the S3 floor, not to zero; the lane must decide the battle and should change more than once | declared (`emp-handgunners-grn-bigguns`), foils first |
-| `wizard-cast-and-hold` (S5) | a wizard's few spells land on enemies away from its own line, without cancelling them | Fireball at the nearest enemy (`FireballSpam`) may win, since the recharge, not the pool, limits casting; the prompt implies a move can accompany a cast | declared (S5); foil `FireballSpam` |
-| `monster-target` | a Giant reaches the guns past the halberds | the old S9 roster made attack-nearest likely to win; Halberdiers plus Handgunners near cost parity | declared (`grn-giant-emp-halberds-handgunners`); witness `MonsterTarget` |
+| `rifle-lane` | Handgunners keep a firing lane past their own Spearmen while faster Big 'Uns attack | a blocked lane cut fire to about 40% in the S3 floor, not to zero; the lane must decide the battle and should change more than once | declared, stepped to Savage Orcs at 1.1; see the board |
+| `wizard-cast-and-hold` (S5) | a wizard's few spells land on enemies away from its own line, without cancelling them | Fireball at the nearest enemy (`FireballSpam`) may win, since the recharge, not the pool, limits casting; the prompt implies a move can accompany a cast | dropped as a spell-judgment card; see the board |
+| `monster-target` | a Giant reaches the guns past the halberds | the old S9 roster made attack-nearest likely to win; Halberdiers plus Handgunners near cost parity | declared, two steps; see the board |
 | `cannon-outrange` (S11) | a cannon fights from outside the Rock Lobbers' reach | the traces show the cannon stood inside the lobbers' range; grade time inside the band | draft |
 | `giant-shooter-first`, `horse-archers-charge-crossbows` | earlier forms | merged into `monster-target`; a frontal charge wins | dropped |
 
@@ -137,8 +199,8 @@ any witness is written or counted.
 
 | Card | Tactic | Critic's main objection | Status |
 |---|---|---|---|
-| `flyers-priority` | Screamers fly past halberd Stormvermin to kill the Warp Lightning Cannon shelling the ground unit | the drafted target, a 3,700 HP Grey Seer, kills Screamers; a fragile artillery target and a ground unit listed first (so the commander flag is not on a flyer) | declared (`tze-screamers-skv-cannon`); witness `PriorityStrike` |
-| `slaves-hold-the-halberds` | Skavenslaves are spent to hold the halberds while the Rat Ogres strike the guns | the ogres outrun the halberds, so no pin is needed unless the anti-large threat can reach them; the first card carries the commander flag | declared (`skv-ogres-slaves-emp-halberds`), foils first |
+| `flyers-priority` | Screamers fly past halberd Stormvermin to kill the Warp Lightning Cannon shelling the ground unit | the drafted target, a 3,700 HP Grey Seer, kills Screamers; a fragile artillery target and a ground unit listed first (so the commander flag is not on a flyer) | declared, two steps; see the board |
+| `slaves-hold-the-halberds` | Skavenslaves are spent to hold the halberds while the Rat Ogres strike the guns | the ogres outrun the halberds, so no pin is needed unless the anti-large threat can reach them; the first card carries the commander flag | declared, stepped to one halberd unit; see the board |
 | `general-on-a-leash` | pull a Pegasus general out of melee before it dies | the general is too strong for the drafted enemy; needs a real lord-killer | draft |
 | `undead-screen` | a Necromancer's Zombies are fed in as a screen; the army crumbles if he dies | Vampire Counts availability is unverified | draft, lobby probe first |
 | `save-the-rounds`, `shoot-the-necromancer` | ammunition rationing; unbreakable undead | guns ended every traced battle with most rounds; the frontal floor likely wins | dropped |

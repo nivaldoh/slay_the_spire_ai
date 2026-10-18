@@ -660,6 +660,10 @@ counter-battery: [small-scenarios-2.md](small-scenarios-2.md).
 
 ### Small-scenario status after the overnight tranche (2026-10-17)
 
+Superseded on 2026-10-18 by the tactic-card definition and its board in
+[tactic-cards.md](tactic-cards.md#the-first-checks-night-of-2026-10-18); kept as the
+record of S1-S11 before it.
+
 One row per candidate. Floors are naive scripted controls that should lose. Diagnostics
 are disclosed public-state plays, run at 0 and 5 s added observation age. Evidence and
 delegated choices are in the
