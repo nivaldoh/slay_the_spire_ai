@@ -77,7 +77,8 @@ agreed, so every result is unverified; every battle is a row of the register.
   ("in_flight_budget_exhausted": the account's credits, not this project's ledger).
 - **Harness b31** (`4c16944`) and N8 (`calibration/n8`, $0): the chariot card at modifier
   1.1 after its leak. Rush-nearest lost 2 of 2 (138, 154 s), attack-nearest lost 409 s,
-  `CycleCharge` won 1 of 2 at 5 s (390 s; lost 327 s): undecided. 68 launches in all.
+  `CycleCharge` won 1 of 3 at 5 s (390 s; lost 327 and 255 s, N9): too hard for the
+  witness, so the card sits between 1.0 and 1.1. 69 launches in all; last end 12:56 UTC.
 
 ## 2026-10-18: Harness b27, cleanup and the verification rule
 

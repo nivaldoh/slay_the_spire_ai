@@ -10,8 +10,8 @@ verified so far; everything below is unverified.
 ## Active work
 
 Nothing is running. The WH3 overnight tactic-card checks (2026-10-18, owner away until
-13:00 UTC, delegated) ended at 12:49 UTC; plans are in `runs/twwarhammer3/calibration/n1`
-to `n8`.
+13:00 UTC, delegated) ended at 12:56 UTC; plans are in `runs/twwarhammer3/calibration/n1`
+to `n9`.
 
 ## Priorities (owner, 2026-10-18)
 
@@ -31,7 +31,7 @@ to `n8`.
 - Benchmark definition (owner, 2026-10-18): minimal battles each won only by applying one
   tactic (cards), with foils that must lose, a witness that must win at 5 s age, a
   signature, rules parity and a held-out variant; draft, no check agreed.
-- Night of 2026-10-18 (68 launches, n = 1-4 per cell, unpinned backends, rules v20;
+- Night of 2026-10-18 (69 launches, n = 1-4 per cell, unpinned backends, rules v20;
   [board](twwarhammer3/tactic-cards.md#the-first-checks-night-of-2026-10-18)): the
   expendables card is a candidate (foils 0 of 2, witness 3 of 4, Kimi K3 low won); the
   chariot card leaks (rush-nearest won 1 of 2) although its witness won 4 of 4 and models
@@ -42,7 +42,8 @@ to `n8`.
 Next (proposals for the owner):
 1. Agree or amend the card contract and the admission checks, then turn the agreed ones
    into AGENTS.md rows.
-2. Settle the chariot card's 1.1 step (foils lost 3 of 3, witness 1 of 2); finish the expendables card
+2. Find the chariot card's step between 1.0 (a rush foil won 1 of 2) and 1.1 (the witness
+   won 1 of 3); finish the expendables card
    (foil repeats, held-out variant, a fixed signature rule); check OpenRouter credits and
    pin backends; then several launches per model, since one launch is a screen.
 3. Redesign flyers and giant (witnesses that keep their target); draft the next cards.
