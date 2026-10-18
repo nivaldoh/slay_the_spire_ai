@@ -23,6 +23,7 @@ from twwarhammer3.battle.calibration import (
     PinThenRear,
     PriorityStrike,
     SlaveTarpit,
+    SnapHitAndRun,
     SpellWindow,
 )
 from twwarhammer3.battle.scripted import distance
@@ -61,7 +62,8 @@ def test_feint_flank_waits_for_rear_position_then_withdraws_after_contact():
 def test_small_diagnostics_do_not_use_hidden_enemies_or_order_routers():
     for cls in (FeintFlank, CrossKite, Bodyguard, Crossfire, SpellWindow, HammerAnvil,
                 CornerHold, FocusFire, MonsterTarget, CounterBattery, PinThenRear,
-                FireballSpam, PriorityStrike, CycleCharge, HitAndRun, FlankLane, SlaveTarpit):
+                FireballSpam, PriorityStrike, CycleCharge, HitAndRun, SnapHitAndRun, FlankLane,
+                SlaveTarpit):
         obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 0)],
                "enemy": [], "evaluation": {"enemy": [unit("e1", "hidden", 5, 5)]},
                "enemy_roster": [unit("e1", "hidden", 5, 5)]}
@@ -916,6 +918,10 @@ def test_hit_and_run_leaves_after_two_seconds_away_from_both_enemies():
     obs["time_ms"] = 3000
     out = policy.decide(obs)
     assert out[0]["type"] == "move" and out[0]["x"] < -80  # away from the pair, not e1 alone
+    snap = SnapHitAndRun()
+    obs["time_ms"] = 1000
+    assert snap.decide(obs)[0]["type"] == "move"  # no dwell: out on the first melee frame
+    assert "As soon as it observes" in snap.card["knowledge"]
 
 def test_flank_lane_shoots_past_its_screen_only_with_a_clear_lane():
     gun = unit("f2", "handgunners", 0, -40, ammo=1496, range=145, width=30,

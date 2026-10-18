@@ -114,6 +114,11 @@ def main() -> int:
     watch.add_argument("--stall-minutes", type=float, default=STALL_S / 60,
                        help="with --next: report a stall after this long without new evidence")
 
+    card = commands.add_parser(
+        "card", help="A tactic card's board; with jobs or plan directories, its verdict")
+    card.add_argument("name", help="card name, e.g. chariot")
+    card.add_argument("paths", nargs="*", type=Path, metavar="JOB_OR_PLAN_DIR")
+
     stats = commands.add_parser("stats", help="Summarise the results register")
     stats.add_argument("--results", type=Path, default=RESULTS_PATH)
 
@@ -300,6 +305,14 @@ def main() -> int:
             follow(path, args.prompts)
         except KeyboardInterrupt:
             pass
+        return 0
+
+    if args.command == "card":
+        from twwarhammer3.battle.cards import CARDS, board
+
+        if args.name not in CARDS:
+            parser.error(f"unknown card {args.name!r}; cards: {', '.join(sorted(CARDS))}")
+        print(board(args.name, args.paths or None))
         return 0
 
     if args.command == "stats":

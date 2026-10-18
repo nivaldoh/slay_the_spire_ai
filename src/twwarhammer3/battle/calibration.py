@@ -1304,6 +1304,20 @@ class HitAndRun(CycleCharge):
         return _offset(centre, _direction(centre, unit), 120)
 
 
+class SnapHitAndRun(HitAndRun):
+    """HitAndRun that pulls out on the first observation showing melee.
+
+    At model pace (5 s age, one decision per 5 s) HitAndRun's 2 s dwell cost a whole
+    decision cycle: its pull-outs applied about 14 s after contact, both Swordsmen units
+    held the chariot, and it lost 2 of 2 (bench-b32-chariothard-hitrun-pace5-l1/l2).
+    """
+
+    card = {"purpose": CycleCharge.card["purpose"],
+            "knowledge": HitAndRun.card["knowledge"].replace(
+                "After 2 s of its own observed melee", "As soon as it observes its own melee")}
+    dwell_s = 0
+
+
 def _blocks(unit: dict, gun: dict, target: dict, clearance: float = 15) -> bool:
     """Whether ``unit`` stands on the gun-to-target line, within ``clearance`` m plus half
     its formation width (a geometric test; the game's line of sight is not observed)."""
