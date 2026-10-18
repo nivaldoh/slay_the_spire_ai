@@ -1,6 +1,6 @@
 import json
 
-from twwarhammer3.battle.cards import cycles, outcome
+from twwarhammer3.battle.cards import CARDS, cycles, outcome, verdict
 
 
 def _frame(second, melee):
@@ -39,3 +39,15 @@ def test_provider_and_harness_stops_are_rerun_while_invalid_replies_lose():
     assert outcome({"status": "policy_failure",
                     "error": "decide: APIError: HTTP 402: credits"}) == "excluded"
     assert outcome({"status": "budget_exhausted"}) == "excluded"
+
+
+def test_one_foil_win_fails_the_card_whatever_the_witness_did():
+    card = CARDS["chariot"]
+
+    def rows(result, count):
+        return [{"outcome": result, "cycles": 3, "setup": "s", "source": "x"}] * count
+    cells = {(foil, 0, 0): rows("lost", 10) for foil in card["foils"]}
+    cells.update({key: rows("won", 5) for key in card["witnesses"]})
+    assert verdict(card, cells)[-1] == "Verdict: admitted"
+    cells[("rush_nearest", 0, 0)] = rows("lost", 9) + rows("won", 1)
+    assert "rush_nearest won 1 of 10" in verdict(card, cells)[-1]

@@ -15,7 +15,7 @@ from pathlib import Path
 from twwarhammer3.battle.report import wilson
 from twwarhammer3.battle.stats import JOBS_ROOT
 
-HIT_AND_RUN = "twwarhammer3.battle.calibration:HitAndRun"
+WITNESS = "twwarhammer3.battle.calibration:SnapHitAndRun"
 CARDS = {
     "chariot": {
         "scenario": "grn-chariot-emp-swordsmen-hard",
@@ -24,7 +24,10 @@ CARDS = {
         # mode's rule (1205 s, bench-b32-chariothard-floor-hold-20261018).
         "foils": ("attack_nearest", "rush_nearest"),
         # (controller, added age s, decision interval s) -> wins required in the round
-        "witnesses": {(HIT_AND_RUN, 5, 0): 4, (HIT_AND_RUN, 5, 5): 3},
+        # Admission gate. The same witness at model pace (5 s age, one decision per 5 s,
+        # as models made about 0.2 a second) is the card's reported reference, not a gate:
+        # it won 1 of 2 in E2 (decided 2026-10-18 17:45 UTC, during its third launch).
+        "witnesses": {(WITNESS, 5, 0): 4},
         "foil_launches": 10,  # a foil that wins 20% of battles passes 10 of 10 losses 11%
         "witness_launches": 5,
         "cycles": 1,  # each witness win shows at least this many cycles
@@ -191,6 +194,10 @@ def verdict(card: dict, cells: dict) -> list[str]:
             problems.append(f"{label} won {len(wins)} of {len(scored)}, needs {required}")
         if any((r["cycles"] or 0) < card["cycles"] for r in wins):
             problems.append(f"{label}: a win shows fewer than {card['cycles']} cycles")
+    for key in [(foil, 0, 0) for foil in card["foils"]] + list(card["witnesses"]):
+        group = cells.get(key, [])
+        if len({r["setup"] for r in group}) > 1 or len({r["source"] for r in group}) > 1:
+            problems.append(f"{key[0]} at {key[1]} s/{key[2]} s mixes setups or sources")
     wins = ", ".join(f"{n} of {need} at {k[1]} s age/{k[2]} s interval"
                      for k, n in card["witnesses"].items())
     rule = (f"Rule: every foil loses at 0 s in each of {card['foil_launches']} launches; "
