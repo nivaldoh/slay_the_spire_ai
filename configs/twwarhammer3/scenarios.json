@@ -2227,5 +2227,14 @@
       ]
     },
     "calibration_change": "Tactic-card step (2026-10-18 night, delegated): with Halberdiers, MonsterTarget routed the Handgunners at 171 s and then lost to the Halberdiers (bench-b29-giant-target-5s-l1-20261018, 327 s), while attack-nearest also lost (289 s): necessary, not sufficient. One factor: Spearmen (spearmen_0) instead of Halberdiers. Foils first."
+  },
+  "grn-chariot-emp-swordsmen-hard": {
+    "base": "grn-chariot-emp-swordsmen",
+    "name": "grn-chariot-emp-swordsmen-hard",
+    "brief": "The chariot card with the AI stats modifier at 1.1 (about +10% melee stats and +8 leadership for the two Empire Swordsmen units). One Orc Boar Chariot unit attacks, with no lords; charging, pulling out and charging again competes with staying in. Hypotheses, not a prescribed solution.",
+    "expect": {
+      "ai_stats_modifier": "1.1"
+    },
+    "calibration_change": "Tactic-card step (2026-10-18, delegated): at modifier 1.0 rush-nearest lost at 154 s and then won at 157 s without cycling (bench-b30-chariot-floor-rush-l2-20261018), so the card leaked while CycleCharge won 4 of 4 at 5 s. One factor: the AI modifier 1.1. Foils first, then the witness."
   }
 }
