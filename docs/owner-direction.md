@@ -5,6 +5,8 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-18 (evening): the OpenRouter account now has $50.38 of credit, shared by both
+  games; "let's spend it carefully though".
 - 2026-10-18 (closing the goal): unit tests suffice to verify the missing-ledger refusal;
   "we will need to strike a good balance in order to verify/test important things while
   also not polluting the codebase with a bunch of slop tests". The game smoke check of the
@@ -28,6 +30,22 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-18 (evening, goal, away), after the benchmark review: (1) the gap between knowing
+  a battle tactic or concept and executing it in real time under variable latency looks
+  relatively unexplored and fairly unique to this game: take advantage of it and start
+  measuring and investigating it specifically; (2) think of a WH3 army as "detachable
+  pieces" of a robot body and draw on robotics research to make the project more
+  interesting and relevant; (3) the owner recalls an explored agent-swarm structure (a
+  stronger model making the larger plan while smaller sub-agents at different timings
+  handle execution, similar to robotics control) and wants it considered for testing
+  later; (4) at least one harness should make the model aware of its own latency; (5) keep
+  working on a path to fine-tuning a specialist army, comparing several fine-tuning
+  methods; (6) "Wins have to account for variable latency. Real-life situations can't
+  slow down if a model fails to respond on time, and neither can our models here";
+  (7) keep track of these notes and keep refining the plan, researching options and
+  making progress toward the benchmark while away.
+- 2026-10-18 (afternoon, goal, away): "at least a single good, reliable benchmark"; built
+  as the chariot card ([log](twwarhammer3/log.md#2026-10-18-the-chariot-card-harness-b32-to-b34)).
 - 2026-10-18 (night, later): multi-agent command delegation was discussed before, but only
   one model plays at a time; eventually also benchmark harnesses (multi-agent, MCP and other
   features), not only models. Delegation was never built: [controllers.md](twwarhammer3/controllers.md#designs-not-built-yet)

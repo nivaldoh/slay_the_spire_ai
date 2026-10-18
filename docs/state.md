@@ -34,7 +34,8 @@ stopped at the owner's return; plans are in `runs/twwarhammer3/calibration/e1`, 
   confirmation round is 4 of 20 plans in (foils 0 of 4, witness 1 of 1): not admitted
   yet. At 1.1 the foils lost 7 of 7 and fixed-age witnesses won 5 of 5, exploration
   included; at model pace the witness won 2 of 4. No model has played it. All unverified.
-- Spend: OpenAI $51.43 of $52; OpenRouter about $0.38 of the account's $10 credit is left.
+- Spend: OpenAI $51.43 of $52. OpenRouter: the account has $50.38 of credit (owner,
+  2026-10-18 evening; spend carefully), shared with Spire; the WH3 ledger holds $6.69.
 
 Next (proposals for the owner):
 1. Finish the chariot round: regenerate `calibration/c1` plans 05-20 at the current HEAD
@@ -71,8 +72,9 @@ fine-tune in both games, and a way to choose targets (winning targets are scarce
 
 ## Known issues
 
-- OpenRouter's HTTP 402 on 2026-10-18 was the account balance: $10 of credit, $9.62 used
-  (all keys); the key's $50 limit is only a cap. Check `/api/v1/credits` before paid jobs.
+- OpenRouter's HTTP 402 on 2026-10-18 was the account balance (then $10 of credit, $9.62
+  used, all keys; $2.69 of it is in neither ledger); the key's $50 limit is only a cap.
+  The account now has $50.38. Check `/api/v1/credits` before paid jobs.
 - No OpenRouter model pins its serving backend (Qwen3.6 only a quantization); parse or
   validation failures ran about 5-42% by backend (four GLM jobs). Pin before comparing
   models (tag `archive/wh3-openrouter-pin` is an older draft, not the baseline pin).
