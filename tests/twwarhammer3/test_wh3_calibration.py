@@ -12,10 +12,14 @@ from twwarhammer3.battle.calibration import (
     CounterBattery,
     Crossfire,
     CrossKite,
+    CycleCharge,
     FeintFlank,
+    FireballSpam,
     FocusFire,
     HammerAnvil,
     MonsterTarget,
+    PinThenRear,
+    PriorityStrike,
     SpellWindow,
 )
 from twwarhammer3.battle.scripted import distance
@@ -53,7 +57,8 @@ def test_feint_flank_waits_for_rear_position_then_withdraws_after_contact():
 
 def test_small_diagnostics_do_not_use_hidden_enemies_or_order_routers():
     for cls in (FeintFlank, CrossKite, Bodyguard, Crossfire, SpellWindow, HammerAnvil,
-                CornerHold, FocusFire, MonsterTarget, CounterBattery):
+                CornerHold, FocusFire, MonsterTarget, CounterBattery, PinThenRear,
+                FireballSpam, PriorityStrike, CycleCharge):
         obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 0)],
                "enemy": [], "evaluation": {"enemy": [unit("e1", "hidden", 5, 5)]},
                "enemy_roster": [unit("e1", "hidden", 5, 5)]}
@@ -824,3 +829,76 @@ def test_counter_battery_shoots_artillery_first_and_holds_infantry_by_the_gun():
     orders = far.decide(obs)
     validate_orders(orders, obs)
     assert {order["target"] for order in orders if order["type"] == "attack"} == {"e2"}
+
+
+def test_pin_then_rear_charges_the_rear_only_after_the_front_is_pinned():
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 100),
+            unit("f2", "horse", 10, 100, men=20)], "enemy": [unit("e1", "halberds", 0, 0)]}
+    policy = PinThenRear()
+    first = policy.decide(obs)
+    validate_orders(first, obs)
+    assert policy.roles == ("f1", "f2") and all(order["type"] == "move" for order in first)
+    flank = next(order for order in first if order["unit"] == "f2")
+    obs["friendly"][1].update(x=flank["x"], z=flank["z"])
+    rear = next(order for order in policy.decide(obs) if order["unit"] == "f2")
+    assert rear["z"] < 0
+    obs["friendly"][1].update(x=rear["x"], z=rear["z"])
+    pinning = policy.decide(obs)
+    assert [(order["unit"], order["type"]) for order in pinning] == [("f1", "attack")]
+    obs["friendly"][0].update(z=5, state=["melee"])
+    assert policy.decide(obs) == []  # the block is not yet engaged with the pin
+    obs["enemy"][0]["state"] = ["melee"]
+    charge = policy.decide(obs)
+    assert [(order["unit"], order["type"]) for order in charge] == [("f2", "attack")]
+    obs["friendly"][1].update(x=0, z=-5, state=["melee"])
+    obs["time_ms"] = 2000
+    policy.decide(obs)
+    obs["time_ms"] = 10000
+    retreat = policy.decide(obs)
+    assert policy.phase == "withdraw" and len(retreat) == 2
+
+
+def test_fireball_spam_casts_at_the_nearest_enemy_even_in_its_own_melee():
+    fireball = spell("wh_main_spell_fire_fireball", 5, "Enemy")
+    obs = {"time_ms": 10000, "magic": {"current": 12},
+           "friendly": [unit("f1", "spearmen", 0, 0),
+                        unit("f2", "wizard", 0, -100, abilities=[fireball])],
+           "enemy": [unit("e1", "swordsmen", 0, 5, state=["melee"]),
+                     unit("e2", "swordsmen", 60, -40)]}
+    order = next(order for order in FireballSpam().decide(obs) if order["unit"] == "f2")
+    assert order["type"] == "ability" and order["target"] == "e2"
+    obs["enemy"][1].update(x=200, z=200)
+    order = next(order for order in FireballSpam().decide(obs) if order["unit"] == "f2")
+    assert order["target"] == "e1"
+
+
+def test_priority_strike_sends_flyers_past_the_screen_and_holds_the_ground_unit():
+    obs = {"time_ms": 1000,
+           "friendly": [unit("f1", "forsaken", 0, 0), unit("f2", "screamers", 10, 0,
+                                                           can_fly=True, flying=True)],
+           "enemy": [unit("e1", "stormvermin", 0, 60),
+                     unit("e2", "warp_lightning_cannon", 0, 300, **{"class": "artillery"})]}
+    policy = PriorityStrike()
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    assert [(order["unit"], order["target"]) for order in orders] == [("f2", "e2")]
+    obs["enemy"].pop()
+    orders = policy.decide(obs)
+    assert {order["unit"] for order in orders} == {"f1", "f2"}
+
+
+def test_cycle_charge_pulls_out_after_six_seconds_of_melee_and_recharges_from_range():
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "chariot", 0, 100)],
+           "enemy": [unit("e1", "swordsmen", 0, 0)]}
+    policy = CycleCharge()
+    assert policy.decide(obs)[0]["type"] == "attack"
+    obs["friendly"][0].update(z=5, state=["melee"])
+    policy.decide(obs)
+    obs["time_ms"] = 7000
+    out = policy.decide(obs)
+    assert out[0]["type"] == "move" and out[0]["z"] > 100
+    obs["friendly"][0].update(z=120, state=[])
+    obs["time_ms"] = 12000
+    assert policy.decide(obs) == []  # still regrouping
+    obs["time_ms"] = 17000
+    assert policy.decide(obs)[0]["type"] == "attack" and policy.charges == 1

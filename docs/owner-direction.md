@@ -28,6 +28,20 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-18 (night, later): multi-agent command delegation was discussed before, but only
+  one model plays at a time; eventually also benchmark harnesses (multi-agent, MCP and other
+  features), not only models. Delegation was never built: [controllers.md](twwarhammer3/controllers.md#designs-not-built-yet)
+  item 4.
+- 2026-10-18 (night, goal, away until 13:00 UTC): "Continue writing the definition for the
+  benchmarks. Run them overnight until I return at 10 AM ... Make the most of this time.
+  Analyze the benchmarks and ensure their utility. Try to identify benchmark opportunities
+  that are unique to Total War Warhammer battles."
+- 2026-10-18 (night): define minimal battles that each test whether a model can apply one
+  tactic, won only if it applies that tactic correctly; an evolving list of battle tactics,
+  single-unit mastery, concept knowledge, key decisions and situation types, with large
+  armies for context length later ([tactic cards](twwarhammer3/tactic-cards.md)). Earlier
+  the same night: overnight runs had been "mostly pointless battles without really knowing
+  what we want to achieve with them".
 - 2026-10-17 UTC: cleared the active goal and asked to wrap up. Stop further game/API
   jobs, save the completed calibration evidence and leave the remaining plan pending.
 - 2026-10-16 (trace-export goal): implement the offline exporter for future post-training.

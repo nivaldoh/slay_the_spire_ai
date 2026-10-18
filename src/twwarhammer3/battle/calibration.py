@@ -1087,3 +1087,189 @@ class CasterSkirmish(Skills):
         return {"type": "caster_skirmish", "stage": self.stage,
                 "recovering": self.recovering,
                 "last_cast_s": self.last_cast_s if math.isfinite(self.last_cast_s) else None}
+
+
+class PinThenRear(SmallDiagnostic):
+    """S1, tactic-card form: one rider pins the block's front; the other then hits its rear."""
+
+    card = {"purpose": "Can two light cavalry units beat a braced anti-large block by pinning it?",
+            "knowledge": "Disclosed S1 strategy: the rider with more men pins, the other is the "
+                         "hammer. The pinning rider waits 150 m in front while the hammer goes "
+                         "via a 120 m side waypoint to 100 m behind the block, on the far side "
+                         "from the pinning rider. Then the pinning rider attacks and stays; "
+                         "the hammer attacks only once both the pinning rider and the block "
+                         "show melee. Both withdraw radially 120 m after 8 s of the hammer's "
+                         "observed melee, or as soon as the pinning rider wavers; they regroup "
+                         "for at least 12 s beyond 80 m and repeat, re-choosing the pin. A "
+                         "lone rider withdraws until the other rallies, as in FeintFlank. "
+                         "Only visible positions/states; no hidden targets or path search."}
+
+    def __init__(self):
+        super().__init__()
+        self.phase = "side"
+        self.cycle = 0
+        self.roles = None
+        self.contact_s = None
+        self.withdraw_s = None
+        self.retreats = {}
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        target = min(enemies, key=lambda enemy: distance(_centre(units), enemy))
+        if len(units) < 2:
+            # The tactic needs both riders: withdraw the survivor while the other can rally.
+            recoverable = [unit for unit in friendly_units(observation).values()
+                           if unit.get("men") and "shattered" not in unit.get("state", [])]
+            if len(recoverable) >= 2:
+                self.phase, self.roles = "rally", None
+                return self.move(units[0], _offset(target, _direction(target, units[0]), 140),
+                                 target)
+            return self.attack(units[0], target)
+        by_id = {unit["id"]: unit for unit in units}
+        if self.phase == "rally" or self.roles is None or not set(self.roles) <= set(by_id):
+            self.phase = "side"
+            ranked = sorted(units, key=lambda unit: (-unit["men"], unit["id"]))
+            self.roles = (ranked[0]["id"], ranked[1]["id"])
+        pin, hammer = by_id[self.roles[0]], by_id[self.roles[1]]
+        axis = _direction(target, pin)
+        side, rear = _offset(target, axis, 0, 120), _offset(target, axis, -100)
+        if self.phase == "side" and distance(hammer, side) < 25:
+            self.phase = "rear"
+        if self.phase == "rear" and distance(hammer, rear) < 30:
+            self.phase, self.contact_s = "pin", None
+        if self.phase == "pin" and all("melee" in unit.get("state", []) for unit in (pin, target)):
+            self.phase = "charge"
+        if self.phase == "charge":
+            if self.contact_s is None and "melee" in hammer.get("state", []):
+                self.contact_s = self.now
+            if ((self.contact_s is not None and self.now - self.contact_s >= 8)
+                    or "wavering" in pin.get("state", [])):
+                self.phase, self.withdraw_s = "withdraw", self.now
+                self.retreats = {unit["id"]: _offset(target, _direction(target, unit), 120)
+                                 for unit in units}
+        if self.phase == "withdraw":
+            if (self.now - self.withdraw_s >= 12
+                    and all(distance(unit, target) >= 80 for unit in units)):
+                self.cycle += 1
+                self.phase, self.roles = "rally", None
+            return [order for unit in units
+                    for order in self.move(unit, self.retreats[unit["id"]], target)]
+        if self.phase in ("pin", "charge"):
+            orders = self.attack(pin, target)
+            return orders + (self.attack(hammer, target) if self.phase == "charge"
+                             else self.move(hammer, rear, target))
+        return (self.move(pin, _offset(target, axis, 150), target)
+                + self.move(hammer, side if self.phase == "side" else rear, target))
+
+    def metadata(self):
+        return {"type": "pin_then_rear", "phase": self.phase, "cycles": self.cycle,
+                "roles": list(self.roles) if self.roles else None}
+
+
+class FireballSpam(SpellWindow):
+    """S5 foil: SpellWindow's posts and cast hold, but Fireball at the nearest enemy only."""
+
+    card = {"purpose": "Foil: does S5 need spell choice, or does casting at first sight win?",
+            "knowledge": "As SpellWindow (spearmen on the nearest enemy, wizard 100 m behind, "
+                         "steps away within 50 m, 5 s between casts, none in melee, the hold "
+                         "after a cast), but the only spell is Fireball, at the nearest "
+                         "visible enemy whether or not it is in melee with the spearmen."}
+
+    def cast(self, caster, units, enemies, magic):
+        enemy = min(enemies, key=lambda enemy: distance(caster, enemy))
+        ability = self.spell(caster, "fireball", magic)
+        if ability and distance(caster, enemy) <= ability.get("cast_range", 0) * .95:
+            return ability, enemy, None
+        return None
+
+    def metadata(self):
+        return {**super().metadata(), "type": "fireball_spam"}
+
+
+class PriorityStrike(SmallDiagnostic):
+    """Flyers ignore the screen for the enemy's artillery or commander; the ground waits."""
+
+    card = {"purpose": "Can flyers skip a screen that beats them to kill the decisive target?",
+            "knowledge": "Flying units attack the visible enemy artillery, else a visible "
+                         "enemy lord, kept until it routs, dies or leaves sight; with neither "
+                         "visible, the enemy with the lowest men fraction. Ground units hold "
+                         "until no artillery or lord is visible, then attack the nearest "
+                         "enemy. No hidden state or path search."}
+
+    def __init__(self):
+        super().__init__()
+        self.target = None
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        # A lordless army's commander flag sits on its first card, so only a real lord counts.
+        priority = [enemy for enemy in enemies if enemy.get("class") in ("artillery", "lord")]
+        priority.sort(key=lambda enemy: enemy.get("class") != "artillery")
+        flyers = [unit for unit in units if unit.get("can_fly")]
+        target = next((enemy for enemy in priority if enemy["id"] == self.target), None) or (
+            priority[0] if priority else min(enemies, key=_fraction))
+        self.target = target["id"]
+        orders = [order for unit in flyers for order in self.attack(unit, target)]
+        if not priority:
+            orders += [order for unit in units if unit not in flyers
+                       for order in self.attack(unit, min(
+                           enemies, key=lambda enemy: distance(unit, enemy)))]
+        return orders
+
+    def metadata(self):
+        return {"type": "priority_strike", "target": self.target}
+
+
+class CycleCharge(SmallDiagnostic):
+    """Charge, pull out after a few seconds of melee, ride clear and charge again."""
+
+    card = {"purpose": "Does repeated charging beat a unit that wins a sustained melee?",
+            "knowledge": "Each unit attacks the nearest visible enemy, kept until it routs or "
+                         "leaves sight. After 6 s of its own observed melee it moves 120 m "
+                         "radially away from that enemy; it charges again once at least 80 m "
+                         "away and 10 s after starting to withdraw. No hidden state."}
+
+    def __init__(self):
+        super().__init__()
+        self.target = None
+        self.contact_s = {}
+        self.withdraw_s = {}
+        self.charges = 0
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        target = _keep(enemies, self.target, _centre(units))
+        self.target = target["id"]
+        orders = []
+        for unit in units:
+            uid = unit["id"]
+            if uid in self.withdraw_s:
+                if self.now - self.withdraw_s[uid] >= 10 and distance(unit, target) >= 80:
+                    del self.withdraw_s[uid]
+                    self.charges += 1
+                else:
+                    orders += self.move(unit, _offset(target, _direction(target, unit), 120),
+                                        target)
+                    continue
+            if "melee" in unit.get("state", []):
+                start = self.contact_s.setdefault(uid, self.now)
+                if self.now - start >= 6:
+                    del self.contact_s[uid]
+                    self.withdraw_s[uid] = self.now
+                    orders += self.move(unit, _offset(target, _direction(target, unit), 120),
+                                        target)
+                    continue
+            else:
+                self.contact_s.pop(uid, None)
+            orders += self.attack(unit, target)
+        return orders
+
+    def metadata(self):
+        return {"type": "cycle_charge", "target": self.target, "charges": self.charges,
+                "withdrawing": sorted(self.withdraw_s)}

@@ -1997,5 +1997,170 @@
       ]
     },
     "calibration_change": "S11 step down (2026-10-17, delegated while the owner was away). Against two Rock Lobbers neither target order won: the attack-nearest floor routed the Goblin Spearmen but the intact lobbers broke the Warriors and the cannon crew (bench-b20-s11-floor-20261017: lost at 509 s), and CounterBattery silenced the lobbers (one routed, then both) but the lone Warriors and the cannon then lost to the two 120-man Goblin Spearmen blocks (bench-b23-s11-counter-20261017: lost at 346 s and 564 s). One Rock Lobber fewer (database 550; enemy 1200, player 1250); funds 1950 and everything else unchanged. Attack-nearest floor first, since it may now win; CounterBattery at 0/5 s only after a floor loss."
+  },
+  "emp-handgunners-grn-bigguns": {
+    "base": "ksl-raiders-emp-halberds",
+    "name": "emp-handgunners-grn-bigguns",
+    "family": "tactic card: riflemen line of fire",
+    "brief": "One Handgunners unit and one shielded Spearmen unit receive an attack by one Savage Orc Big 'Uns unit, with no lords. The orcs are faster than the guns, so the guns cannot simply run; the spearmen should not win the melee alone. Handguns fire low: whether the gun keeps a lane past its own line decides how much damage it deals. Hypotheses, not a prescribed solution.",
+    "attacker": "enemy",
+    "player": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "lord": false,
+      "units": [
+        "wh_main_emp_inf_spearmen_1",
+        "wh_main_emp_inf_handgunners"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_grn_greenskins",
+      "faction": "wh_main_grn_greenskins",
+      "lord": false,
+      "units": [
+        "wh_main_grn_inf_savage_orc_big_uns"
+      ]
+    },
+    "expect": {
+      "funds_amount": 2500,
+      "player_defends": true
+    },
+    "protected": [
+      "wh_main_emp_inf_handgunners"
+    ],
+    "calibration_change": "Tactic card (2026-10-18 night, docs/twwarhammer3/tactic-cards.md), declared under the owner's delegation. Foils first: the naive floors must lose before a witness is written or counted. Rosters from lobby card lists; lordless setup and funds for this roster are unverified; funds only cap recruitment. Panel draft rifle-lane-past-the-screen, revised: the critic found a blocked lane cut fire to about 40% in the S3 floor, not to zero."
+  },
+  "tze-screamers-skv-cannon": {
+    "base": "ksl-raiders-emp-halberds",
+    "name": "tze-screamers-skv-cannon",
+    "family": "tactic card: flyers on the priority target",
+    "brief": "Tzeentch Forsaken and two Screamers units attack two Skaven Stormvermin units guarding a Warp Lightning Cannon, with no lords. The halberd-armed Stormvermin are the nearest enemies and fight large units well; the cannon shells the ground unit from behind them. Flying past the screen onto the cannon competes with fighting what is closest. Hypotheses, not a prescribed solution.",
+    "attacker": "player",
+    "player": {
+      "subculture": "wh3_main_sc_tze_tzeentch",
+      "faction": "wh3_main_tze_tzeentch",
+      "lord": false,
+      "units": [
+        "wh3_main_tze_inf_forsaken_0",
+        "wh3_main_tze_mon_screamers_0",
+        "wh3_main_tze_mon_screamers_0"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh2_main_sc_skv_skaven",
+      "faction": "wh2_main_skv_skaven",
+      "lord": false,
+      "units": [
+        "wh2_main_skv_inf_stormvermin_0",
+        "wh2_main_skv_inf_stormvermin_0",
+        "wh2_main_skv_art_warp_lightning_cannon"
+      ]
+    },
+    "expect": {
+      "funds_amount": 5000
+    },
+    "protected": [],
+    "content": [
+      "wh2_main",
+      "wh3_main"
+    ],
+    "calibration_change": "Tactic card (2026-10-18 night, docs/twwarhammer3/tactic-cards.md), declared under the owner's delegation. Foils first: the naive floors must lose before a witness is written or counted. Rosters from lobby card lists; lordless setup and funds for this roster are unverified; funds only cap recruitment. Panel draft flyers-kill-the-seer, revised per its critic: a fragile decisive target (artillery) instead of a 3,700 HP Grey Seer, a stronger screen, and a ground unit listed first so the commander flag is not on a flyer."
+  },
+  "skv-ogres-slaves-emp-halberds": {
+    "base": "ksl-raiders-emp-halberds",
+    "name": "skv-ogres-slaves-emp-halberds",
+    "family": "tactic card: sacrifice expendable units",
+    "brief": "One Rat Ogres unit and two Skavenslaves units receive an attack by two Empire Halberdiers units and one Handgunners unit, with no lords. The ogres are the only real damage and the halberds counter large units; the slaves are cheap. Whether the slaves are spent to hold the halberds while the ogres strike elsewhere competes with fighting together. Hypotheses, not a prescribed solution.",
+    "attacker": "enemy",
+    "player": {
+      "subculture": "wh2_main_sc_skv_skaven",
+      "faction": "wh2_main_skv_skaven",
+      "lord": false,
+      "units": [
+        "wh2_main_skv_mon_rat_ogres",
+        "wh2_main_skv_inf_skavenslaves_0",
+        "wh2_main_skv_inf_skavenslaves_0"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "lord": false,
+      "units": [
+        "wh_main_emp_inf_halberdiers",
+        "wh_main_emp_inf_halberdiers",
+        "wh_main_emp_inf_handgunners"
+      ]
+    },
+    "expect": {
+      "funds_amount": 3500,
+      "player_defends": true
+    },
+    "protected": [
+      "wh2_main_skv_mon_rat_ogres"
+    ],
+    "content": [
+      "wh_main",
+      "wh2_main"
+    ],
+    "calibration_change": "Tactic card (2026-10-18 night, docs/twwarhammer3/tactic-cards.md), declared under the owner's delegation. Foils first: the naive floors must lose before a witness is written or counted. Rosters from lobby card lists; lordless setup and funds for this roster are unverified; funds only cap recruitment. Panel draft slaves-take-the-halberds, revised per its critic: ogres listed first (commander flag off the chaff), two halberd units and the player defending so the anti-large threat reaches the ogres."
+  },
+  "grn-chariot-emp-swordsmen": {
+    "base": "ksl-raiders-emp-halberds",
+    "name": "grn-chariot-emp-swordsmen",
+    "family": "tactic card: cycle charging",
+    "brief": "One Orc Boar Chariot unit attacks two Empire Swordsmen units, with no lords. A chariot hits hardest on the charge and is expected to lose a long melee against two units; charging, pulling out and charging again competes with staying in. Hypotheses, not a prescribed solution.",
+    "attacker": "player",
+    "player": {
+      "subculture": "wh_main_sc_grn_greenskins",
+      "faction": "wh_main_grn_greenskins",
+      "lord": false,
+      "units": [
+        "wh_main_grn_cav_orc_boar_chariot"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "lord": false,
+      "units": [
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen"
+      ]
+    },
+    "expect": {
+      "funds_amount": 1500
+    },
+    "protected": [],
+    "calibration_change": "Tactic card (2026-10-18 night, docs/twwarhammer3/tactic-cards.md), declared under the owner's delegation. Foils first: the naive floors must lose before a witness is written or counted. Rosters from lobby card lists; lordless setup and funds for this roster are unverified; funds only cap recruitment. Panel draft chariot-cycle-charge; its critic expects the grinding floors may win (armour 80), so floors come first."
+  },
+  "grn-giant-emp-halberds-handgunners": {
+    "base": "ksl-raiders-emp-halberds",
+    "name": "grn-giant-emp-halberds-handgunners",
+    "family": "tactic card: monster target choice",
+    "brief": "One Giant attacks one Empire Halberdiers unit and one Handgunners unit, with no lords. The halberds counter large units and the handguns pierce armour; reaching the guns past the halberds competes with fighting the nearest. Hypotheses, not a prescribed solution.",
+    "attacker": "player",
+    "player": {
+      "subculture": "wh_main_sc_grn_greenskins",
+      "faction": "wh_main_grn_greenskins",
+      "lord": false,
+      "units": [
+        "wh_main_grn_mon_giant"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "lord": false,
+      "units": [
+        "wh_main_emp_inf_halberdiers",
+        "wh_main_emp_inf_handgunners"
+      ]
+    },
+    "expect": {
+      "funds_amount": 2500
+    },
+    "protected": [],
+    "calibration_change": "Tactic card (2026-10-18 night, docs/twwarhammer3/tactic-cards.md), declared under the owner's delegation. Foils first: the naive floors must lose before a witness is written or counted. Rosters from lobby card lists; lordless setup and funds for this roster are unverified; funds only cap recruitment. Panel draft giant-shooter-first, revised per its critic: Halberdiers plus Handgunners near S9's cost parity instead of Spearmen plus Crossbowmen. MonsterTarget is the witness unchanged."
   }
 }
