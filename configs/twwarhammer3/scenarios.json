@@ -2182,5 +2182,50 @@
       ]
     },
     "calibration_change": "Tactic-card step down (2026-10-18 night, delegated): against Big 'Uns the attack-nearest foil lost at 221 s with the Spearmen routed after 33 s of melee and 193 of 1,496 rounds fired (bench-b28-rifle-floor-attack-20261018), too short for any lane to matter. One factor: Savage Orcs instead of Big 'Uns (the critic's ladder: Savage Orcs, then Big 'Uns, then modifier 1.1). Foils first, then FlankLane at 5 s."
+  },
+  "tze-screamers-skv-cannon-1": {
+    "base": "tze-screamers-skv-cannon",
+    "name": "tze-screamers-skv-cannon-1",
+    "brief": "The flyer card with one screen unit: Tzeentch Forsaken and two Screamers units attack one Skaven Stormvermin unit guarding a Warp Lightning Cannon, with no lords. The halberd-armed Stormvermin are the nearest enemy and fight large units well; the cannon shells the ground unit from behind them. Hypotheses, not a prescribed solution.",
+    "enemy": {
+      "units": [
+        "wh2_main_skv_inf_stormvermin_0",
+        "wh2_main_skv_art_warp_lightning_cannon"
+      ]
+    },
+    "calibration_change": "Tactic-card step (2026-10-18 night, delegated): with two Stormvermin units, PriorityStrike routed the cannon crew at 100.7 s but then lost both Screamers units to the screen and the battle at 300 s (bench-b29-flyers-priority-5s-l1-20261018), while both foils lost (253 s, 144 s): killing the target was necessary but not sufficient. One factor: one Stormvermin unit instead of two, so the cannon decides. Foils first again, since a smaller screen may let attack-nearest win."
+  },
+  "skv-ogres-slaves-emp-halberds-1": {
+    "base": "skv-ogres-slaves-emp-halberds",
+    "name": "skv-ogres-slaves-emp-halberds-1",
+    "brief": "The expendables card with one halberd unit: one Rat Ogres unit and two Skavenslaves units receive an attack by one Empire Halberdiers unit and one Handgunners unit, with no lords. The ogres are the only real damage and the halberds counter large units; the slaves are cheap. Hypotheses, not a prescribed solution.",
+    "enemy": {
+      "units": [
+        "wh_main_emp_inf_halberdiers",
+        "wh_main_emp_inf_handgunners"
+      ]
+    },
+    "calibration_change": "Tactic-card step (2026-10-18 night, delegated): with two Halberdiers units, SlaveTarpit pinned both with the slaves at about 90 s and the ogres routed the Handgunners by 160 s, but the slaves broke after 34-55 s and the lone ogres then routed against two halberd units (bench-b29-slaves-tarpit-5s-l1-20261018, lost 235 s), while the attack-nearest foil also lost (244 s): the tactic was necessary but not sufficient. One factor: one Halberdiers unit instead of two. Foils first again."
+  },
+  "emp-handgunners-grn-savage-orcs-hard": {
+    "base": "emp-handgunners-grn-savage-orcs",
+    "name": "emp-handgunners-grn-savage-orcs-hard",
+    "brief": "The riflemen card against Savage Orcs with the AI stats modifier at 1.1 (about +10% melee stats and +8 leadership). One Handgunners unit and one shielded Spearmen unit receive the attack, with no lords. Hypotheses, not a prescribed solution.",
+    "expect": {
+      "ai_stats_modifier": "1.1"
+    },
+    "calibration_change": "Tactic-card step (2026-10-18 night, delegated): between Big 'Uns (attack-nearest lost 221 s, hold 337 s; the Spearmen broke within 38 s) and Savage Orcs (attack-nearest won 227 s, bench-b29-rifle-orcs-floor-attack-20261018). One factor: the AI modifier 1.1, the finest knob read back so far. Foils first."
+  },
+  "grn-giant-emp-spearmen-handgunners": {
+    "base": "grn-giant-emp-halberds-handgunners",
+    "name": "grn-giant-emp-spearmen-handgunners",
+    "brief": "The giant card one step easier: one Giant attacks one Empire Spearmen unit and one Handgunners unit, with no lords. Spearmen still counter large units, more weakly than halberds; the handguns pierce armour. Hypotheses, not a prescribed solution.",
+    "enemy": {
+      "units": [
+        "wh_main_emp_inf_spearmen_0",
+        "wh_main_emp_inf_handgunners"
+      ]
+    },
+    "calibration_change": "Tactic-card step (2026-10-18 night, delegated): with Halberdiers, MonsterTarget routed the Handgunners at 171 s and then lost to the Halberdiers (bench-b29-giant-target-5s-l1-20261018, 327 s), while attack-nearest also lost (289 s): necessary, not sufficient. One factor: Spearmen (spearmen_0) instead of Halberdiers. Foils first."
   }
 }

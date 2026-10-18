@@ -96,7 +96,12 @@ new card (from the 2026-10-17 board and traces; each rests on 1-6 battles):
    below 1.0 are unverified.
 8. **Control confounds**: a lordless army's commander flag sits on its first card and that
    captain's death cuts every unit's morale (S3); an "army losses" shock can rout a unit at
-   full strength (S2).
+   full strength (S2). The flag does not always follow the first card: in the expendables
+   card it went to a Skavenslaves unit although the Rat Ogres were listed first (b28).
+9. **Sufficiency, not only necessity**: once the tactic succeeds, the rest of the battle
+   must be winnable. On 2026-10-18 the flyer witness routed the cannon at 100 s and the
+   expendables witness routed the guns at 160 s, and both still lost to the screen left
+   standing, while their foils also lost (n = 1 each). The witness is what tests this.
 
 ## The card list (draft 1, 2026-10-18)
 
