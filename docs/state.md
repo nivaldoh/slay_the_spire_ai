@@ -9,8 +9,9 @@ verified so far; everything below is unverified.
 
 ## Active work
 
-Nothing is running (2026-10-18: codebase cleanup, no game or API jobs). Note each job's
-game, directory, start time (`date -u`) and `watch` command here; clear it when it stops.
+WH3 overnight tactic-card checks (owner away until 13:00 UTC, delegated), one-job plans in
+`runs/twwarhammer3/calibration/n2/` and later, chained until 12:45 UTC at the latest; follow
+with `uv run python -m twwarhammer3 watch`. N1 (S5 card check, b27) started 04:11 UTC.
 
 ## Priorities (owner, 2026-10-18)
 
@@ -42,12 +43,12 @@ game, directory, start time (`date -u`) and `watch` command here; clear it when 
   repeat over six scenarios. Spend: OpenAI $50.90 of $52 (no Sol battle fits); OpenRouter
   $3.86 of $50 (one allowance for both games).
 
-Next:
-1. Agree with the owner what "demonstrably winnable" requires (below).
-2. A model screen on S5 with cheap OpenRouter models, then S1 and S4 with stronger ones;
-   pin backends first (known issues). Reasoning modes are unplayed at the 16,000-token cap.
-3. Redesign S7 so hiding until the timer cannot win; intermediate steps for S6, S8, S9 and
-   S11; S3 Crossfire on b24; the L2 setup check.
+Next (owner direction 2026-10-18: [tactic cards](twwarhammer3/tactic-cards.md)):
+1. Agree the card contract and admission checks (foils lose, a witness wins by contact at
+   5 s age in 3 of 4 launches, signature, rules parity, held-out variant).
+2. Necessity checks on the declared cards (foils first, then witnesses), then model screens
+   only on cards that pass; pin backends before comparing models.
+3. Draft the remaining cards of the list; harness benchmarks (multi-agent, MCP) later.
 
 ## Slay the Spire
 
