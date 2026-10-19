@@ -4,7 +4,8 @@ A card ([tactic-cards.md](../../../docs/twwarhammer3/tactic-cards.md)) is a mini
 that only one tactic should win. Its foils (naive plays) must lose and its witness (a
 disclosed scripted bot) must win. Both are declared here with the admission rule before
 a confirmation round, so the board and the verdict come from the job evidence alone.
-The launch is the sampling unit: a confirmation round plays each control once per launch.
+The launch is the sampling unit: one episode per controller counts in each launch, and a
+rematch of the same controller in that launch (the same instance again) is skipped.
 """
 
 import json
@@ -12,6 +13,7 @@ import statistics
 from collections import defaultdict
 from pathlib import Path
 
+from twwarhammer3.battle.controllers import policy_parts
 from twwarhammer3.battle.report import wilson
 from twwarhammer3.battle.stats import JOBS_ROOT
 
@@ -23,13 +25,13 @@ CARDS = {
         # hold is no foil here: the AI defends, so standing still loses on the timer by the
         # mode's rule (1205 s, bench-b32-chariothard-floor-hold-20261018).
         "foils": ("attack_nearest", "rush_nearest"),
-        # (controller, added age s, decision interval s) -> wins required in the round
-        # Admission gate. The same witness at model pace (5 s age, one decision per 5 s,
-        # as models made about 0.2 a second) is the card's reported reference, not a gate:
-        # it won 1 of 2 in E2 (decided 2026-10-18 17:45 UTC, during its third launch).
-        "witnesses": {(WITNESS, 5, 0): 4},
+        # (controller, added age ms, decision interval ms) -> wins required in the round.
+        # The gate witness decides at tick rate on 5 s-old information. A model-pace gate
+        # (5 s age, one decision per 5 s) was dropped on 2026-10-18 17:45 UTC, during E2;
+        # the witness by age and interval is the card's tolerance table (tactic-cards.md).
+        "witnesses": {(WITNESS, 5000, 0): 4},
         "foil_launches": 10,  # a foil that wins 20% of battles passes 10 of 10 losses 11%
-        "witness_launches": 5,
+        "witness_launches": 5,  # 4 of 5 passes a 0.5 witness 19% and fails a 0.8 one 26%
         "cycles": 1,  # each witness win shows at least this many cycles
     },
 }
@@ -107,8 +109,10 @@ def jobs(paths: list[Path]) -> list[Path]:
     return list(dict.fromkeys(found))  # a replacement plan can name the same output
 
 
-def battles(card: dict, directories: list[Path]) -> list[dict]:
-    rows = []
+def battles(card: dict, directories: list[Path]) -> tuple[list[dict], int]:
+    """One row per launch and controller, and how many rematch rows of a controller already
+    counted in its launch were skipped."""
+    rows, seen, skipped = [], set(), 0
     for job in directories:
         try:
             manifest = json.loads((job / "manifest.json").read_text())
@@ -116,48 +120,63 @@ def battles(card: dict, directories: list[Path]) -> list[dict]:
             continue
         if (manifest.get("scenario") or {}).get("name") != card["scenario"]:
             continue
+        config, deployment = manifest["config"], manifest.get("deployment") or {}
         setup = json.dumps([manifest["scenario"].get(key) for key in (
             "map", "player", "enemy", "expect", "attacker", "battle_type")], sort_keys=True)
         for episode in manifest.get("episodes", []):
             control = episode.get("card") or {}
+            name = episode.get("policy") or control.get("name") or ""
+            age_ms = episode.get("delay_ms") or 0
+            if (job.name, name, age_ms) in seen:
+                skipped += 1
+                continue
+            seen.add((job.name, name, age_ms))
+            base, model, effort = policy_parts(name, config)
+            delays = sorted(episode.get("delays_ms") or [])
             rows.append({
                 "job": job.name, "outcome": outcome(episode),
-                "controller": episode.get("policy") or control.get("name"),
-                "age_s": round((episode.get("delay_ms") or 0) / 1000),
-                "interval_s": round((manifest["config"].get("interval_ms") or 0) / 1000),
-                "setup": (setup, manifest["deployment"].get("steam_build_id"),
-                          manifest["deployment"]["pack"].get("sha256")),
-                "source": control.get("source_sha256") or control.get("version"),
+                "controller": f"{base}@{model}/{effort}" if model else name,
+                "age_ms": age_ms, "interval_ms": config.get("interval_ms") or 0,
+                "setup": (setup, deployment.get("steam_build_id"),
+                          (deployment.get("pack") or {}).get("sha256")),
+                # A model's prompt is its tuning surface, so another prompt is another source.
+                "source": (control.get("source_sha256") or control.get("version"),
+                           manifest.get(f"{base}_prompt_sha256")),
                 "battle_s": episode.get("battle_s"),
-                "order_age_s": statistics.median(episode["delays_ms"]) / 1000
-                if episode.get("delays_ms") else None,
+                "age_p50_s": statistics.median(delays) / 1000 if delays else None,
+                "age_p90_s": delays[-(-9 * len(delays) // 10) - 1] / 1000 if delays else None,
                 "cycles": cycles(job / str(episode.get("episode"))),
             })
-    return rows
+    return rows, skipped
 
 
 def board(name: str, paths: list[Path] | None = None) -> str:
     """The card's table over the given jobs (default: every job of its scenario) and, for
-    given jobs, the admission verdict under the declared rule."""
+    given jobs that include a control cell, the admission verdict under the declared rule."""
     card = CARDS[name]
     default = paths is None
     directories = sorted(JOBS_ROOT.iterdir()) if default else jobs(paths)
-    rows = battles(card, [d for d in directories if d.is_dir()])
+    unrun = [] if default else [d.name for d in directories if not (d / "manifest.json").exists()]
+    rows, skipped = battles(card, [d for d in directories if d.is_dir()])
     cells = defaultdict(list)
     for row in rows:
-        cells[(row["controller"], row["age_s"], row["interval_s"])].append(row)
+        cells[(row["controller"], row["age_ms"], row["interval_ms"])].append(row)
     lines = [f"Card {name}: {card['scenario']} ({card['tactic']})",
-             f"{len(rows)} battles; a cell mixing setups or controller sources is marked *",
-             "controller                 age pace   n won excl  win [95%]        cycles  "
-             "no-cycle wins  battle s  order age s"]
+             f"{len(rows)} launches"
+             + (f" ({skipped} rematch rows of an already counted controller skipped)"
+                if skipped else "")
+             + "; a cell mixing setups or controller sources is marked *",
+             f"{'controller':36} age pace   n won forf excl  win [95%]        cycles  "
+             "no-cycle wins  battle s  age p50/p90 s"]
     for key in sorted(cells, key=lambda k: (k[0] not in card["foils"], str(k))):
         group = cells[key]
         scored = [row for row in group if row["outcome"] != "excluded"]
         won = sum(row["outcome"] == "won" for row in scored)
+        forfeits = sum(row["outcome"] == "forfeit" for row in scored)
         ci = wilson(won, len(scored))
         mixed = "*" if len({row["setup"] for row in group}) > 1 or len(
             {row["source"] for row in group}) > 1 else ""
-        label = key[0].removeprefix("twwarhammer3.battle.calibration:")[:25] + mixed
+        label = key[0].removeprefix("twwarhammer3.battle.calibration:") + mixed
 
         def median(field, digits=0):
             values = [row[field] for row in scored if row[field] is not None]
@@ -166,12 +185,16 @@ def board(name: str, paths: list[Path] | None = None) -> str:
         interval = f"[{ci[0]:.2f}, {ci[1]:.2f}]" if ci else "-"
         win = f"{won / len(scored):.2f} {interval}" if scored else "-"
         bare = sum(row["outcome"] == "won" and not row["cycles"] for row in scored)
-        lines.append(f"{label:26} {key[1]:3} {key[2]:4} {len(scored):3} {won:3} "
-                     f"{len(group) - len(scored):4}  {win:18} {median('cycles'):>5}  {bare:13}"
-                     f"  {median('battle_s'):>8}  {median('order_age_s', 1):>11}")
+        lines.append(f"{label:36} {key[1] / 1000:3g} {key[2] / 1000:4g} {len(scored):3} {won:3} "
+                     f"{forfeits:4} {len(group) - len(scored):4}  {win:18} {median('cycles'):>5}"
+                     f"  {bare:13}  {median('battle_s'):>8}  {median('age_p50_s', 1):>6}"
+                     f"/{median('age_p90_s', 1)}")
     lines.append("cycles (median): deliberate pull-outs followed by a new charge; a win without"
                  " one did not use the tactic")
-    if not default:
+    if unrun:
+        lines.append("planned, not run: " + ", ".join(unrun))
+    controls = [(foil, 0, 0) for foil in card["foils"]] + list(card["witnesses"])
+    if any(key in cells for key in controls):
         lines += verdict(card, cells)
     return "\n".join(lines)
 
@@ -190,7 +213,7 @@ def verdict(card: dict, cells: dict) -> list[str]:
     for key, required in card["witnesses"].items():
         scored = [r for r in cells.get(key, []) if r["outcome"] != "excluded"]
         wins = [r for r in scored if r["outcome"] == "won"]
-        label = f"witness at {key[1]} s age, {key[2]} s interval"
+        label = f"witness at {key[1] / 1000:g} s age, {key[2] / 1000:g} s interval"
         if len(scored) < need:
             problems.append(f"{label} has {len(scored)} of {need} launches")
         elif len(wins) < required:
@@ -200,10 +223,13 @@ def verdict(card: dict, cells: dict) -> list[str]:
     for key in [(foil, 0, 0) for foil in card["foils"]] + list(card["witnesses"]):
         group = cells.get(key, [])
         if len({r["setup"] for r in group}) > 1 or len({r["source"] for r in group}) > 1:
-            problems.append(f"{key[0]} at {key[1]} s/{key[2]} s mixes setups or sources")
-    wins = ", ".join(f"{n} of {need} at {k[1]} s age/{k[2]} s interval"
+            problems.append(f"{key[0]} at {key[1] / 1000:g} s/{key[2] / 1000:g} s mixes setups"
+                            " or sources")
+    wins = ", ".join(f"{n} of {need} at {k[1] / 1000:g} s age/{k[2] / 1000:g} s interval"
                      for k, n in card["witnesses"].items())
     rule = (f"Rule: every foil loses at 0 s in each of {card['foil_launches']} launches; "
-            f"the witness wins {wins}, each win with at least {card['cycles']} cycle.")
+            f"the witness wins {wins}, each win with at least {card['cycles']} cycle. "
+            f"Signature v1: melee-flag gaps under {MERGE_S} s merge into one engagement; a "
+            "cycle is an applied move order inside an engagement other than the last.")
     return ["", rule, "Verdict: " + ("admitted" if not problems else "not admitted: "
                                      + "; ".join(problems))]

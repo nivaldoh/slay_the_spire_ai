@@ -23,14 +23,21 @@ prints the board from manifests and replays, and the verdict for given jobs.
 | witness | `SnapHitAndRun` (rule disclosed in its card): attack the nearest enemy and keep it; on the first observation showing melee ride to 120 m from the enemies' centre, on its own side; charge again once 80 m from the target and 10 s after leaving |
 | signature | **cycles**: engagements, other than the last, in which the controller's own move order took effect (melee runs from the 1 Hz replay, gaps under 3 s merged). Fixed before the confirmation round; a win with 0 cycles did not use the tactic, which is how the 1.0 card's rush-foil win reads |
 | knowledge | withheld: the rules prompt states neither charge bonuses nor cycle charging |
-| reference | the witness at model pace (5 s age and one decision per 5 s, `--interval-ms 5000`; models made about 0.2 decisions a second): reported, not a gate |
+| tolerance | the witness by added age / decision interval (c1 and P2, 3-5 launches a cell, unverified): 0/0 won 4 of 4, 2/2 4 of 4, 3/3 3 of 4, 5/0 4 of 5, 0/5 3 of 3, 5/5 0 of 5, 8/8 0 of 4. On the diagonal (age equal to interval, the regime a model is in) the window closes between 3 and 5 s; achieved ages run 0.4-0.9 s above nominal (2/2: 2.7 s, 3/3: 3.9 s). Models decide about 0.4 times a second; GLM-5.3 low's achieved profile (median 2.1 s, p90 3.3 s) sits between the 2/2 and 3/3 cells |
 
 **Admission rule** (committed at `5396182` before the round; the model-pace gate was dropped
 at 17:45 UTC, against E2's own rule): in fresh launches,
 `attack_nearest` and `rush_nearest` each lose all of 10 (one win fails the card), and the
-witness at 5 s added age wins at least 4 of 5, each win with at least one cycle. A foil
-that wins 20% of its battles passes 10 straight losses 11% of the time; a witness that
-wins half its battles passes 4 of 5 19% of the time.
+witness at 5 s added age wins at least 4 of 5, each win with at least one cycle. Operating
+characteristics: a foil that wins 20% of its battles passes 10 straight losses 11% of the
+time (10 losses bound a foil below 0.26, one-sided 95%); a witness that wins half its
+battles passes 4 of 5 19% of the time, and one that wins 80% fails it 26% of the time. The
+gate witness decides about three times a second on 5 s-old information, a regime no model
+is in; the tolerance row above is the evidence at model-like cadences. Each c1 foil launch
+rotated both foils, so each foil's 10 battles are on 10 instances shared with the other foil
+(`attack_nearest` played the fresh start in 3, `rush_nearest` in 7; the rest were rematches
+of the instance the other foil had just played). `cards.outcome` changed after
+pre-registration (b35, forfeits) with no effect on c1, which has no forfeit.
 
 **Score** per model and mode: wins over scored launches with a 95% Wilson interval, beside
 the median cycles and order age. The battle never waits (`cards.outcome`, harness b35): a
@@ -39,21 +46,9 @@ truncation is a loss, labelled forfeit; game and setup failures, interrupts and 
 stops (the spend ledger and its safety stops, the account's key or credit: HTTP 401, 402) are
 excluded and rerun. A foil's forfeit is no launch.
 
-**Results at modifier 1.1** (2026-10-18, 22 scripted battles, $0; board:
-`twwarhammer3 card chariot`). Exploration rounds E1 and E2 chose the witness and do not
-count for admission:
-
-| Control | Battles | Won | Note |
-|---|---|---|---|
-| `attack_nearest`, 0 s | 3 | 0 | 392-418 s |
-| `rush_nearest`, 0 s | 4 | 0 | 138-161 s |
-| `hold` | 1 | 0 | timer, 1205 s |
-| `CycleCharge`, 5 s | 3 | 1 | stuck about 30 s between both units per charge |
-| `HitAndRun` (2 s dwell), 5 s | 3 | 3 | no chariot lost |
-| `HitAndRun`, model pace | 2 | 0 | its pull-outs applied about 14 s after contact |
-| `SnapHitAndRun`, 5 s | 2 | 2 | one in E2, one in the round |
-| `SnapHitAndRun`, model pace | 4 | 2 | won 467 and 625 s, lost 485 and 615 s (at 615 s one Swordsmen unit was routing as the chariot broke) |
-
+**Results at modifier 1.1** (board: `twwarhammer3 card chariot`). The exploration rounds
+E1 and E2 (2026-10-18, 22 scripted battles, $0) chose the witness and do not count for
+admission; their table is in git (`git show 9df420f:docs/twwarhammer3/tactic-cards.md`).
 Cycles read 0 on every foil battle, including the modifier 1.0 rush-foil win (by construction:
 foils never order a move), and 6-9 on every witness win at 1.1 (witness losses read 2-8).
 The confirmation round (`runs/twwarhammer3/calibration/c1`, 20 plans; 4 on 2026-10-18 at
@@ -68,20 +63,55 @@ planned student, exports through `twwarhammer3 export`; the witness is a free
 demonstrator, but scripted decisions have no exported rows yet (they would need the
 prompt the model would have seen at each decision).
 
-### Card version 2 (draft, 2026-10-18 evening; not agreed)
+### Card version 2 (proposal, 2026-10-19; not agreed)
 
-Fixes for the review's findings, same battle; the full spec is local in
-`runs/twwarhammer3/calibration/latency-review-20261018/readiness/`:
-- **Start**: report each launch's start class (read from its first observation); starts cannot
-  be fixed without new code.
-- **Foils**: add a general-focus foil (attack the commander-flagged unit and keep it), one
-  pull-out then grind, and a charge straight through.
-- **Signature**: count a cycle only for a move ordered while in melee that gets the unit clear
-  (30 m) before the next charge; freeze it with a test before the round.
-- **Counting**: one control per launch, the first N launches in plan order, the plan list
-  hashed in the card.
-- **Held out**: the reserved `nur_wastes` map, once after admission.
-- Open: models do not see the commander flag that scripted bots can read.
+From the verifiability review ([log](log.md#2026-10-19-benchmark-verifiability-review)); each
+item is an owner decision and none runs a game until agreed. The c1 verdict stays the
+pre-registered v1 result; v2 is frozen before its own round and c1 is shown recomputed under it.
+1. **Signature v2, the countermand clause.** A cycle counts only if no attack order for the
+   unit applied after its pull-out move before the engagement ended: `cards.cycles` today
+   credits a pull-out the controller itself overrode. Recount over the 64 recorded chariot
+   battles: GLM-5.3 low countermanded 14 of its 37 pull-outs (9 of its 30 credited cycles,
+   1 of them in its win), the witness 0 of 246; countermanded engagements lasted a median
+   31 s against 9 s. Trace-only, about 4 lines and one test record that fails on v1; witness
+   counts are unchanged by construction. The draft's 30 m clearance clause is deferred: it
+   moves 13 of 44 counts by 1-3, no verdict and no cell median, and 30 m centre to centre is
+   about one formation apart.
+2. **A model-pace gate, pre-registered inside the tolerance.** Keep the v1 gate as admitted;
+   add the witness at 2 s age and a 2 s interval in fresh launches, 10 of 14 (passes a 0.5
+   witness 9% of the time, a 0.8 witness 87%; 8 of 10 would be 5.5% and 68%), stopped at
+   the loss that decides it. Foils: the 10 instances stand (necessity is bounded by the foil
+   set, not by n) plus the drafted wrong-tactic foils (one pull-out then grind, which GLM
+   played in two losses; charge straight through) and an observation-blind cycler that reads
+   only the clock and the first observation (SMACv2's test: a blind win means the card
+   rewards a recipe, not reading the melee flag). One re-admission night, about 3 h, $0.
+3. **Truncation.** Since b35 only the game or the harness can truncate (the loop never
+   waits), so `truncated` should be excluded and rerun, not a forfeit; b35's wording says
+   forfeit. One line and one assertion; unobserved so far (0 of 97 chariot episodes).
+4. **Model cells.** 10 launches detect only gaps of about 0.6 (Fisher's exact at n = 10:
+   power 0.84 for 0.1 against 0.8, 0.30 against 0.5, 0.15 against 0.4); no difference is
+   claimed below 20 launches per cell and no ranking below 30; added-age or deadline cells
+   for a model only after at least 5 of 10 natural-latency wins. A prompt or harness change
+   starts a new cohort, never pooled (the board marks a mixed prompt hash); the review loop
+   never tunes on scored jobs; the held-out map is declared when a tuning round is planned.
+   On a game build change the admission round is rerun before any paid launch.
+5. **The agreed check to propose.** `uv run --locked pytest -ra tests/twwarhammer3/test_wh3_cards.py`
+   and `uv run python -m twwarhammer3 card chariot runs/twwarhammer3/calibration/c1` printing
+   `Verdict: admitted` (skipped where `runs/` is absent). It rests on `runs/`, so backing up
+   c1, p2 and p5a (owner decision 1) comes first.
+
+Dropped from the 2026-10-18 draft: start classes (recorded starts differ by at most about
+2 m on this card and showed no within-cell association in the three mixed cells, n 3-10;
+`result.start` keeps the raw start), one control per launch (one episode per controller per
+launch is the rule, enforced by the board since b38) and the hashed plan list (the plan files
+and manifests record it; the board lists planned launches that never ran). Considered and
+not adopted: a witness rematch inside every model launch (halves the night's model launches;
+the witness at 0 s won every start seen), fixed starts by teleport (the mod's evacuation code
+can place both sides, but the engine exposes no seed, so a launch is never replayable, and
+the spread here is too small to matter), a witness paced by a model's recorded think times
+(the diagonal cells bracket the current models; a `--delay-seconds D --interval-ms I` cell at
+a model's p90 needs no code) and new offline probe moments (a memoryless probe cannot measure
+commitment; the countermand count does, at $0).
 
 ## What the benchmark measures
 
@@ -144,7 +174,9 @@ accepts it.
 The sampling unit is the launch: one new game start, one episode. A rematch restarts the
 same instance, so repeats inside a launch are not extra samples. Per model and mode, per
 card: contact wins over launches started, with a 95% Wilson interval. Policy failures and
-truncations count as losses; infrastructure failures are listed and rerun. Across cards:
+truncations count as losses; infrastructure failures are listed and rerun. The board prints
+each cell's forfeits, median cycles and order age as p50/p90, and a cell under 10 launches
+is a screen. Across cards:
 the mean of the per-card win rates, each card weighted once, beside the median order age,
 the cost per battle and the failure rate. Each card also reports its signature measure
 per battle, so a loss that attempted the tactic (Luna on the chariot card pulled out, then
@@ -159,59 +191,28 @@ Luna and GLM loss).
 
 ## The first checks (night of 2026-10-18)
 
-Single-episode launches on the declared cards, counts as of the end of the night (the
-[log entry](log.md#2026-10-18-tactic-cards-harness-b28-to-b30-and-the-overnight-checks) has
-every battle). Foils and witnesses are free scripted controllers; model battles are paid.
-Every cell is n = 1 to 4 launches, no check is agreed, OpenRouter backends were unpinned
-(each attempt records its backend) and the rules prompt is v20, so every result is
-unverified. An independent four-lens check of the draft against the register, traces and
-replays corrected it before it was written here.
-
-| Card | Kind | Foils (one launch each) | Witness | Models (natural latency, one battle each) | Status |
-|---|---|---|---|---|---|
-| chariot cycle (`grn-chariot-emp-swordsmen`) | battle tactic, one unit | attack-nearest lost 2 of 2 (462, 413 s); rush-nearest lost 154 s, then **won** 157 s without cycling (longest melee 55 frames) | `CycleCharge` at 5 s: won 4 of 4 (338, 204, 281, 309 s), no chariot lost | won: Kimi K3 low (232 s), gpt-6.1-sol low (256 s), Kimi K3 high 1 of 2 (139 s; its second launch lost at 182 s); lost: Qwen3.6 none and medium, Luna low and high, GLM-5.3 low and high, Step 5 low and high (the slowest four mostly by latency) | **leaks**: a naive foil won 1 of 2, so check 2 fails; step it harder (for example modifier 1.1) until rush-nearest loses while `CycleCharge` wins. Also missing a `hold` foil, the knowledge tag (withheld: the prompt does not state cycle charging) and a held-out variant. The first small scenario a model has won, though the leak lowers what those wins show |
-| chariot cycle at modifier 1.1 (`grn-chariot-emp-swordsmen-hard`, b31, after the leak) | battle tactic, one unit | rush-nearest lost 2 of 2 (138, 154 s); attack-nearest lost 409 s | `CycleCharge` at 5 s won 1 of 3 (won 390 s; lost 327 and 255 s) | none yet | **too hard for the witness**: between 1.0 (a rush foil can win) and 1.1 (the witness mostly loses); next a finer step (a modifier between them is unverified) or another single factor |
-| expendables, one halberd unit (`skv-ogres-slaves-emp-halberds-1`) | concept | attack-nearest lost 173 s; hold lost 337 s | `SlaveTarpit` at 5 s: won 3 of 4 (190, 243, 283 s; lost 319 s) | won: Kimi K3 low (308 s); its repeat ended at 102 s on an OpenRouter credit error (HTTP 402, infrastructure, recorded as a policy failure); lost: Luna high (649 s), Kimi K3 high (418 s: its order to pin the halberds applied 135 s late), Qwen3.6 none (240 s); GLM-5.3 high ended in a policy failure (461 s) | **candidate**: checks 1 and 3 met; each foil ran once; knowledge withheld; no held-out variant; the commander flag sits on a slave unit, so spending it costs the army's commander |
-| S1 flank (`ksl-raiders-emp-halberds`) | battle tactic | attack-nearest (b14) and rush-nearest (b15) lost | `PinThenRear`: won 0 of 2 at 5 s (two timings); fresh 1 of 2 (the first timing won, the tighter one lost) | gpt-6.1-sol low **won** 305 s (3.6 s mean order age: one rider drew the halberds' facing while the other charged their rear, then they swapped); its repeat stopped at 40 s on the OpenAI cap (`budget_exhausted`, not a result); Kimi K3 high lost 419 s (24 s mean order age; it planned the same pincer); 0 of 9 before tonight (5 lost, 4 policy failures; b18-b24) | **candidate**: a model won where the scripted witnesses lost at 5 s, so the bots, not the card, set the 5 s limit; latency-sensitive (the same plan failed at 24 s) |
-| flyers on the cannon (`tze-screamers-skv-cannon`, `-1`) | key decision | lost 3 of 3, and attack-nearest routed the cannon too (219 s, 261 s) | `PriorityStrike` at 5 s lost 2 of 2: it routed the cannon crew at about 100 s, which rallied, while its own rule turned the Screamers onto the screen | none | neither necessity nor sufficiency shown: test a witness that keeps the target until it is dead or keeps the flyers off the screen |
-| riflemen lane (`emp-handgunners-grn-savage-orcs-hard`) | one unit | attack-nearest lost 212 s | `FlankLane` at 5 s: 1 of 2; the win fired as many rounds as the foil (277 against 274) | none | no reliable witness: line of sight is not observable, and walking to a lane cost firing time |
-| giant target (`grn-giant-emp-*-handgunners`) | one unit | lost on both steps | `MonsterTarget` at 5 s: 0 of 3 across two steps | none | no win yet: on the halberd step the witness routed the guns (171 s) and then lost; on the spearmen step it never reached them |
-| S5 caster (`emp-wizard-emp-swordsmen`, `-hard`) | one unit | floors lost | `SpellWindow` at 5 s won 2 of 2 | none | **dropped** as a spell-judgment card: `FireballSpam` (Fireball at the nearest enemy) won at modifiers 1.0 and 1.1 |
-
-The chariot card's signature, a per-battle grade rather than a cause: the longest run of
-consecutive 1 Hz replay frames in which the chariot carries the engine's melee flag
-(whatever its movement flags), was at most 31 frames in all 7 wins that used the tactic (4 witness, 3 model) and at least 41 in all 12 losses (3 foils, 9 model battles); the one foil win (rush-nearest) had 55, so the measure flags a win without the tactic, which is its purpose. The threshold was read off these battles,
-and merging brief exits from melee changes the numbers (by that count the witness's longest
-engagement is about 33 s), so the rule needs fixing before it is a check. Luna / low pulled
-out once at about 134 s and stayed out of contact for about 460 s (15 refused moves) before
-grinding to a rout; Luna / high pulled out five times, but its fourth melee lasted 42 s.
-
-What the night showed about the definition itself:
-- **Foils first is cheap and decisive, and one launch per foil is too few.** One drafted
-  card (riflemen) needed two roster steps on its first foil alone, a careless-play foil
-  (`FireballSpam`) sank S5 after its witness had won 2 of 2, and the chariot card's
-  rush-nearest foil lost its first launch and won its second (the last battle of the night).
-- **A witness win is what tests sufficiency.** The two-halberd expendables card and the
-  halberd giant step saw the tactic executed (the guns routed) and the battle still lost; a
-  one-factor step gave the expendables card its first witness wins.
-- **A model win can be read against the tactic.** Each of the 3 model wins on the chariot
-  card was planned as cycle charging in the model's own notes (Kimi K3 high: "pull out
-  southwest and immediately queue a re-charge"); two ordered pull-outs from melee, while Kimi
-  K3 high's one move batch was decided between engagements, and on the expendables
-  card Kimi K3 low routed the guns while the slaves held the halberds. Kimi K3 high also
-  planned the right play on the expendables card and on S1, and lost both when its orders
-  arrived 24-135 s late: knowing the tactic and executing it in time are separate results.
-- **A model can beat the scripted witness.** On S1 gpt-6.1-sol alternated a feint and a
-  rear charge and won, where both `PinThenRear` timings lost at 5 s; a witness's loss
-  bounds the bot, not the card.
-- **One launch is a screen, not a ranking.** Kimi K3 high won its first chariot launch and
-  lost its second; per-cell results need several launches before they rank models.
-- **Reasoning effort against order age, one battle per mode:** a higher mode raised the mean
-  order age for Luna (4.8 to 8.8 s; medians 4.5 to 7.2 s) and GLM-5.3 (3.1 to 7.7 s), not
-  for Kimi K3 (4.5 s both). Step 5 high's replies took 6 to 370 s (2 of 4 cut off at the
-  16,000-token cap) and one order batch reached the game before the chariot routed at 139 s;
-  Qwen3.6 medium's only applied order was 102 s old (4 of its 6 replies were rejected). No
-  battle of a mode above low ended in a policy failure; 3 replies hit the cap.
+Single-episode launches on the eight declared cards (63 launches: foils, witnesses and one
+model battle per mode, every cell n = 1-4, backends unpinned, rules prompt v20, nothing
+agreed). The per-card table and its signature reading are in git
+(`git show 9df420f:docs/twwarhammer3/tactic-cards.md`) and the
+[log](log.md#2026-10-18-tactic-cards-harness-b28-to-b30-and-the-overnight-checks). What the
+night showed about the definition itself:
+- **Foils first is cheap and decisive, and one launch per foil is too few**: a careless-play
+  foil (`FireballSpam`) sank S5 after its witness had won 2 of 2, and the chariot card's
+  rush-nearest foil lost its first launch and won its second.
+- **A witness win is what tests sufficiency**: two cards saw the tactic executed (the guns
+  routed) and the battle still lost; a one-factor step gave the expendables card its wins.
+- **A model win can be read against the tactic**: each of the 3 chariot model wins was
+  planned as cycle charging in the model's notes and showed pull-outs; Kimi K3 high planned
+  the right play on two other cards and lost both with orders 24-135 s late, so knowing the
+  tactic and executing it in time are separate results.
+- **A model can beat the scripted witness**: gpt-6.1-sol won S1 with a feint and a rear
+  charge where both `PinThenRear` timings lost, so a witness's loss bounds the bot, not the card.
+- **One launch is a screen, not a ranking**: Kimi K3 high won its first chariot launch and
+  lost its second.
+- **Reasoning effort against order age**: a higher mode raised the mean order age for Luna
+  (4.8 to 8.8 s) and GLM-5.3 (3.1 to 7.7 s), not for Kimi K3; Step 5 high's replies took 6
+  to 370 s, 2 of 4 cut off at the 16,000-token cap.
 
 ## Design rules from S1-S11
 

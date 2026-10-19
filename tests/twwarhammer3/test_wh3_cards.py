@@ -1,6 +1,6 @@
 import json
 
-from twwarhammer3.battle.cards import CARDS, cycles, jobs, outcome, verdict
+from twwarhammer3.battle.cards import CARDS, battles, board, cycles, jobs, outcome, verdict
 
 
 def _frame(second, melee):
@@ -68,3 +68,53 @@ def test_a_replacement_plan_naming_the_same_output_counts_its_job_once(tmp_path)
     (tmp_path / "01-x-state.json").write_text("{}")
 
     assert [str(path) for path in jobs([tmp_path])] == ["runs/b/job-l1"]
+
+
+def _job(tmp_path, name, episodes, **manifest):
+    job = tmp_path / name
+    job.mkdir()
+    (job / "manifest.json").write_text(json.dumps({
+        "scenario": {"name": CARDS["chariot"]["scenario"], "map": "m"},
+        "config": {"interval_ms": 0, "provider": "openrouter", "model": "gpt-6-sol",
+                   "effort": "low"},
+        "deployment": {"steam_build_id": "b", "pack": {"sha256": "p"}},
+        "episodes": episodes, **manifest}))
+    return job
+
+
+def _episode(index, policy, status, **fields):
+    return {"episode": f"episode-{index:04d}", "policy": policy, "status": status,
+            "ended_by": "engine_result", "battle": "b", "card": {"source_sha256": "s"},
+            **fields}
+
+
+def test_a_launch_counts_each_controller_once_and_names_a_model_row_by_its_model(tmp_path):
+    job = _job(tmp_path, "job-l1", [
+        _episode(0, "attack_nearest", "lost"),
+        _episode(1, "attack_nearest", "won"),  # the rematch replays the same instance
+        _episode(2, "llm_rules", "lost", delays_ms=[2700, 300, 600]),
+    ], llm_rules_prompt_sha256="prompt1")
+
+    rows, skipped = battles(CARDS["chariot"], [job])
+
+    assert skipped == 1
+    assert [(row["controller"], row["outcome"]) for row in rows] == [
+        ("attack_nearest", "lost"), ("llm_rules@gpt-6-sol/low", "lost")]
+    assert rows[0]["source"] == ("s", None) and rows[1]["source"] == ("s", "prompt1")
+    assert (rows[1]["age_p50_s"], rows[1]["age_p90_s"]) == (0.6, 2.7)
+
+
+def test_the_board_lists_unrun_plans_and_judges_only_cells_with_controls(tmp_path):
+    plans = tmp_path / "plans"
+    plans.mkdir()
+    model = _job(tmp_path, "glm-l1", [_episode(0, "llm_rules@z-ai/glm-5.3/low", "lost")])
+    (plans / "01-glm.json").write_text(json.dumps({"jobs": [{"output": str(model)}]}))
+    (plans / "02-foil.json").write_text(
+        json.dumps({"jobs": [{"output": str(tmp_path / "foil-l1")}]}))
+
+    text = board("chariot", [plans])
+
+    assert "llm_rules@z-ai/glm-5.3/low" in text and "planned, not run: foil-l1" in text
+    assert "Verdict" not in text
+    _job(tmp_path, "foil-l1", [_episode(0, "attack_nearest", "lost")])
+    assert "Verdict: not admitted: attack_nearest has 1 of 10 launches" in board("chariot", [plans])
