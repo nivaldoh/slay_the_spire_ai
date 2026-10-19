@@ -112,7 +112,7 @@ drop out as budget stops.
 2. `c1` finished as evidence, then a [card version 2](tactic-cards.md#card-version-2-draft-2026-10-18-evening-not-agreed).
    Recommended.
 3. One pinned backend per model for comparisons (checked: Kimi K3 on Sail Research, GLM-5.3 on
-   Decart, Qwen3.6 on Parasail). Recommended.
+   Decart, Qwen3.6 on Parasail): merged as b36 under delegation (2026-10-19), for review.
 4. At most $20 of OpenRouter credit for P5; more OpenAI cap only if gpt-6.1-sol stays the
    reference.
 5. A fine-tuning host and its funding.

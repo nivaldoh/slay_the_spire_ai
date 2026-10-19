@@ -251,11 +251,11 @@ Requests require backend parameter support and enforce the declared
 [price ceilings](https://openrouter.ai/docs/guides/routing/provider-selection), including
 zero per-request fees. Per-model `ROUTES` and `SAMPLING` fields in `providers.py` are added
 to the request and recorded with it (Qwen3.6: fp8 or bf16 endpoints only, temperature 1.0,
-top_p 0.95; [student model](../posttraining.md#student-model)). No model pins its serving
-backend (Qwen3.6 pins only a quantization): four GLM jobs spread calls over 18 backends, whose
-parse or validation failure rates ran from about 5% to 42%
-([log](log.md#2026-10-17-overnight-tranche-harness-b18-b23)), so comparisons between
-OpenRouter models are confounded until backends are pinned (a known issue). Reservations count
+top_p 0.95; [student model](../posttraining.md#student-model)). Since harness b36 each
+compared model is served by one backend with no fallback (GLM-5.3 Decart, Kimi K3 Sail
+Research, Qwen3.6 Parasail; Step 5 preview unpinned): before it, four GLM jobs spread calls
+over 18 backends, whose parse or validation failure rates ran from about 5% to 42%
+([log](log.md#2026-10-17-overnight-tranche-harness-b18-b23)). Reservations count
 serialized schema/prompt bytes plus framing allowance, assume no cache discount and cover
 all three transport attempts. Reported
 [usage.cost](https://openrouter.ai/docs/cookbook/administration/usage-accounting) is charged;

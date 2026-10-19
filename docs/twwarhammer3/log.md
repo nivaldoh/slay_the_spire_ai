@@ -35,10 +35,18 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b35 (2026-10-19; the battle never waits, unplayed), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | The chariot card at 1.1 (witness `SnapHitAndRun`, rule in `cards.py`): its confirmation round is 4 of 20 plans in, not admitted yet; foils lost 7 of 7 at 1.1, fixed-age witnesses won 6 of 8 (`CycleCharge` 1 of 3), the witness at model pace 2 of 4. Board in [tactic-cards.md](tactic-cards.md) |
+| benchmark harness | b36 (2026-10-19; OpenRouter backends pinned; b35 the battle never waits), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | The chariot card at 1.1 (witness `SnapHitAndRun`, rule in `cards.py`): its confirmation round is 4 of 20 plans in, not admitted yet; foils lost 7 of 7 at 1.1, fixed-age witnesses won 6 of 8 (`CycleCharge` 1 of 3), the witness at model pace 2 of 4. Board in [tactic-cards.md](tactic-cards.md) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
+
+## 2026-10-19: Harness b36, pinned OpenRouter backends
+
+Decided under delegation (owner away until 10:00; goal: overnight runs with valid results, at
+most $5 of OpenRouter): owner decision 3 in [latency.md](latency.md#owner-decisions). Each
+compared model goes to one backend with no fallback, the endpoints P3 checked live: GLM-5.3
+on Decart, Kimi K3 on Sail Research, Qwen3.6 on Parasail (still fp8 or bf16); Step 5 preview
+stays unpinned. Applies to both games. Unit tests only.
 
 ## 2026-10-19: Harness b35, the battle never waits
 

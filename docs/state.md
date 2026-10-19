@@ -9,8 +9,11 @@ verified so far; everything below is unverified.
 
 ## Active work
 
-Nothing is running. The game stages wait for the owner (2026-10-19: "We'll run the game a
-bit later. I need to check some things first"); the chariot plans wait in `c1`.
+The overnight round of 2026-10-19 (owner goal, away until 10:00: runs that give valid,
+relevant results; at most $5 of OpenRouter): `c1` plans 05-20, P2 witness pace cells (0, 2
+and 8 s) and P5a (GLM-5.3 low x10, Qwen3.6 none x5, pinned), interleaved, chained from
+`runs/twwarhammer3/calibration/night-20261019/`, ending by 09:30. Commit nothing on `main`
+while it runs.
 
 ## Priorities (owner, 2026-10-18)
 
@@ -25,8 +28,9 @@ bit later. I need to check some things first"); the chariot plans wait in `c1`.
 [tactic cards](twwarhammer3/tactic-cards.md) (the benchmark definition and its board),
 [latency program](twwarhammer3/latency.md) (plan), [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, harness b35 (the battle never
-  waits: controller failures are forfeits; unplayed; the card board in `battle/cards.py`),
+- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, harness b36 (OpenRouter
+  backends pinned per model; b35: the battle never waits, controller failures are forfeits;
+  the card board in `battle/cards.py`),
   evaluator v2, track `obs-v4+terrain/act-v2/live-1x`.
 - Benchmark: [the chariot card](twwarhammer3/tactic-cards.md#the-chariot-card-the-first-benchmark-card)
   (one chariot against two Swordsmen units at AI modifier 1.1; tactic: cycle charging;
@@ -40,11 +44,9 @@ bit later. I need to check some things first"); the chariot plans wait in `c1`.
   the first open-loop probes ($2.19, P3 and P4 in [latency.md](twwarhammer3/latency.md)).
 
 Next (proposals for the owner; stages in [latency.md](twwarhammer3/latency.md#staged-plan)):
-1. P1, P2 ($0, about 7 game hours, waiting for the owner): finish `c1` as evidence (plans
-   05-20 regenerated at HEAD; scripted controllers are unchanged under b35), then witness
-   latency sweeps.
-2. A model round on the 1.1 card with the checked pins, Kimi K3 low and high, GLM-5.3 low,
-   Qwen3.6 none, 10 launches each: $12-20 of OpenRouter credit, stop at $20.
+1. P1, P2 ($0): finish `c1` as evidence, then witness latency sweeps (running tonight, P2
+   reduced to three cells).
+2. The rest of P5 after P5a is read: Kimi K3 low and high, 10 launches each ($6-12).
 3. [Card version 2](twwarhammer3/tactic-cards.md#card-version-2-draft-2026-10-18-evening-not-agreed)
    (drafted: start classes, three more foils, cycles v2, launch counting) with its admission
    rule proposed as an AGENTS.md check; then the expendables card the same way.
@@ -77,9 +79,8 @@ fine-tune in both games, and a way to choose targets (winning targets are scarce
 
 - OpenRouter: the ledgers missed $2.69 of account use by 2026-10-18 and the key's $50 limit
   is only a cap, so check `/api/v1/credits` before paid jobs.
-- No OpenRouter model pins its serving backend (Qwen3.6 only a quantization); parse or
-  validation failures ran about 5-42% by backend (four GLM jobs). Pin before comparing
-  models (tag `archive/wh3-openrouter-pin` is an older draft, not the baseline pin).
+- OpenRouter backends are pinned with no fallback since b36 (Step 5 preview is not), so a
+  pinned backend's outage fails every call of that model, which b35 scores against it.
 - No test yet shows whether a game patch changes results (owner: later). A build warning
   shows in `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
 - Only WH3's $50 OpenRouter ceiling per ledger is in code; the OpenAI caps and the

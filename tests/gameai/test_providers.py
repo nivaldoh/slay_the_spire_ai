@@ -212,6 +212,7 @@ def test_nonfinite_or_negative_budgets_cannot_disable_the_cap(tmp_path, budget):
 def test_the_model_to_fine_tune_routes_at_fp8_or_better_with_explicit_sampling():
     route = routing("openrouter", "qwen/qwen3.6-35b-a3b")
     assert route["provider"]["quantizations"] == ["fp8", "bf16"]
+    assert route["provider"]["only"] == ["parasail"] and not route["provider"]["allow_fallbacks"]
     assert route["provider"]["require_parameters"] is True
     assert (route["temperature"], route["top_p"]) == (1.0, 0.95)
     assert "quantizations" not in routing("openrouter", "z-ai/glm-5.3")["provider"]
