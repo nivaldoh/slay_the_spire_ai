@@ -56,6 +56,9 @@ paired tests, none under p 0.05). OpenRouter $2.17 (Kimi K3 high's delay variant
 10 of 60 on the cap), OpenAI $0.04 (Luna). Tool and evidence local in
 `calibration/latency-review-20261018/probes/` (not committed); table in latency.md. All
 exploratory past the frozen columns; nothing agreed.
+- Offline follow-up ($0, recounted): in the 12 chariot 1.0 model battles pull-out depth does not
+  separate outcomes (AUC 0.39, 3 + 6), gaps per minute does post hoc (0.96), and a younger
+  median order age went with winning in 83% of pairs (corrects "speed does not separate").
 
 ## 2026-10-18: Latency program (plan only)
 

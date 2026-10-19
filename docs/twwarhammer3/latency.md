@@ -33,12 +33,19 @@ model has played 1.1, and one grader graded knowledge after seeing outcomes.
   unmeasured. Counting reasoning text as well: 5 of 15 against 0 of 12. Confounded with model
   strength. One of the five wins (Kimi K3 high on the chariot card) never ordered a move from a
   state that showed melee.
-- **Median speed does not separate.** GLM-5.3 low had the lowest median order age of the 12
-  chariot battles (2.7 s) and the highest decision rate (0.33/s), stated cycle charging at 5.3
-  s and lost; gpt-6.1-sol low won at 3.0 s. Contact-to-pull-out times of the six chariot
-  battles that stated the tactic: winners 3.6, 12.0 and 26.4 s, losers 2.7, 8.1 and 12.6 s
-  (melee gaps under 6 s merged; Kimi K3 high's 26.4 s was a move ordered 27 m out, not from
-  melee).
+- **Speed orders the battles but does not separate them.** A younger median order age went
+  with winning in 83% of winner-loser pairs (AUC 0.83 over 3 + 9 battles; 0.75 without the
+  three that never left melee), yet GLM-5.3 low had the youngest (2.7 s) and the highest
+  decision rate (0.33/s), stated cycle charging at 5.3 s and lost. Contact-to-pull-out times
+  of the six chariot battles that stated the tactic: winners 3.6, 12.0 and 26.4 s, losers 2.7,
+  8.1 and 12.6 s (melee gaps under 6 s merged; Kimi K3 high's 26.4 s was a move ordered 27 m
+  out, not from melee).
+- **Cycling rate, not pull-out depth (post hoc).** The deepest pull-out per battle does not
+  separate (AUC 0.39, 3 + 6 battles): winners rode 49-76 m out and re-charged every 9-16 s,
+  losers were either shallow (14-49 m) or deep and slow (gaps of 93-460 s). Gaps per minute
+  ordered the 12 battles best (AUC 0.96). Witness gaps reach a median 87 m from the nearest
+  enemy (117 gaps), and the next engagement began at a run in 10 of 12 winner gaps against 7
+  of 13 loser gaps (`calibration/latency-review-20261018/depth/`, local).
 - **Tails and missing calls stand out**, though no tail measure separates wins from losses
   (n = 12). With one request in flight a call is always running when
   contact begins (by construction); all 7 contacts a model never saw fell inside calls of 16 s
