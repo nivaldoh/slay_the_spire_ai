@@ -4,7 +4,9 @@ A job owns the game for its whole duration. Each episode waits for a new battle 
 the mailbox (the first one after the frontend steps start a custom battle, later ones
 after a ``restart`` control), then alternates observations and decisions: one request
 in flight at a time. By default the acknowledgement observation starts the next
-decision immediately; ``interval_ms`` optionally adds a wait after orders apply. Each
+decision immediately; ``interval_ms`` optionally adds a wait after orders apply. The
+battle never waits for a controller: a decision whose controller fails sends no orders and
+the controller is asked again, and a battle that ended during a call keeps its result. Each
 decision records the think time and the battle-time delay between the state it saw and the
 orders being issued (or queued). A fast policy decides at the mod's tick rate, so the trace
 keeps every decision with orders, an error or new metadata, and quiet ones once per
@@ -22,6 +24,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from gameai.ledger import BudgetExhausted
+from gameai.llm import APIError
 from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
 from twwarhammer3.battle.capture import (
     PassiveCapture,
@@ -314,10 +317,15 @@ def policy_call(policy, method: str, *args):
     except (PolicyFailure, BudgetExhausted):
         raise
     except Exception as exc:
+        message = f"{method}: {type(exc).__name__}: {exc}"
+        # The account's key or credit, or a ledger safety stop: the operator's, no forfeit.
+        if isinstance(exc, APIError) and (str(exc).startswith(("HTTP 401", "HTTP 402"))
+                                          or str(exc).endswith("and stopped")):
+            raise BudgetExhausted(message) from exc
         failure = {"method": method, "error_type": type(exc).__name__}
         if getattr(exc, "attempts", None) is not None:  # an APIError's billed attempts
             failure["attempts"] = exc.attempts
-        raise PolicyFailure(f"{method}: {type(exc).__name__}: {exc}", failure=failure) from exc
+        raise PolicyFailure(message, failure=failure) from exc
 
 
 def track_objectives(result: dict, observation: dict) -> None:
@@ -433,10 +441,9 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
     active_wall_start = None
     setup_wait_started_ms = None
     while True:
-        remaining = deadline - time.time()
-        if remaining <= 0:
-            result.update(status="truncated", reason="episode_timeout")
-            return
+        # The newest observation is read before the deadline applies: an ended battle is
+        # never truncated.
+        remaining = max(deadline - time.time(), 0)
         observation = mailbox.wait_observation(
             battle=battle, after_seq=seq, timeout=min(config["observation_timeout"], remaining))
         if observation.get("awaiting_orders") or observation.get("speed", 1) != 1:
@@ -491,6 +498,9 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
                 result["ended_by"] = "custom_objective"
             event("result", observation=observation)
             return
+        if time.time() > deadline:
+            result.update(status="truncated", reason="episode_timeout")
+            return
         # Evaluation contains hidden enemy totals. It never enters the controller or
         # its delayed input queue, even on a non-gameplay ending.
         public = {key: value for key, value in observation.items()
@@ -509,13 +519,27 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
         basis = history[0]
         read_at = time.time()
         since = observation["time_ms"] - applied_ms if applied_ms is not None else None
+        failure = None
         try:
             orders = policy_call(policy, "decide", basis)
+        except PolicyFailure as exc:
+            failure = exc
         except BaseException:
             event("observation", observation=basis, since_previous_applied_ms=since)
             raise
         finally:
             record_exchanges(policy, event)
+        # The mod publishes the result observation last, so a battle that ended during the
+        # call shows it now: the result stands and whatever the call returned is not sent.
+        if (mailbox.read_observation() or {}).get("result"):
+            continue
+        if failure:
+            event("observation", observation=basis, since_previous_applied_ms=since)
+            if failure.__cause__ is not None and not isinstance(failure.__cause__, APIError):
+                raise failure  # an exception in the controller's own code ends the episode
+            # No valid reply or a provider error: no orders, and the next state asks again.
+            event("forfeit", seq=basis["seq"], error=str(failure), failure=failure.failure)
+            continue
         invalid = refusal = None
         try:
             validate_orders(orders, basis)

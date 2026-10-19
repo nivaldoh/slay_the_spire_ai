@@ -136,8 +136,8 @@ class CommanderPolicy:
         self._metadata = {"type": "commander", "model": self.api.name, "effort": self.api.effort}
         abilities = []
         if self.pending and self.pending.done():
-            reply, attempts, seen_ms = self.pending.result()  # a worker's error surfaces here
-            self.pending = None
+            done, self.pending = self.pending, None  # after a failure the next tick asks again
+            reply, attempts, seen_ms = done.result()  # a worker's error surfaces here
             abilities = self._adopt(reply, observation, seen_ms)
             self._metadata["attempts"] = attempts
         self.batch = self.skills.decide(observation) + abilities

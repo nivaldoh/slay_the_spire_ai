@@ -31,14 +31,20 @@ def test_a_cycle_needs_an_applied_pull_out_during_melee_and_a_new_charge(tmp_pat
     assert cycles(tmp_path) == 1
 
 
-def test_provider_and_harness_stops_are_rerun_while_invalid_replies_lose():
+def test_controller_failures_forfeit_while_game_failures_and_operator_stops_are_rerun():
     assert outcome({"status": "won", "ended_by": "engine_result"}) == "won"
     assert outcome({"status": "won", "ended_by": "time_limit"}) == "lost"
-    assert outcome({"status": "policy_failure",
-                    "error": "No valid reply after declared retries"}) == "lost"
-    assert outcome({"status": "policy_failure",
-                    "error": "decide: APIError: HTTP 402: credits"}) == "excluded"
-    assert outcome({"status": "budget_exhausted"}) == "excluded"
+    for status, error in [("policy_failure", "No valid reply after declared retries"),
+                          ("policy_failure", "decide: KeyError: 'terrain'"),
+                          ("truncated", "no observation after seq 8573")]:
+        assert outcome({"status": status, "battle": "b", "error": error}) == "forfeit"
+    for episode in [{"status": "policy_failure", "battle": "b",
+                     "error": "decide: APIError: HTTP 402: credits"},
+                    {"status": "policy_failure", "error": "controller construction: no key"},
+                    {"status": "budget_exhausted", "battle": "b"},
+                    {"status": "infrastructure_failure", "battle": "b"},
+                    {"status": "interrupted", "battle": "b"}]:
+        assert outcome(episode) == "excluded"
 
 
 def test_one_foil_win_fails_the_card_whatever_the_witness_did():
@@ -51,3 +57,6 @@ def test_one_foil_win_fails_the_card_whatever_the_witness_did():
     assert verdict(card, cells)[-1] == "Verdict: admitted"
     cells[("rush_nearest", 0, 0)] = rows("lost", 9) + rows("won", 1)
     assert "rush_nearest won 1 of 10" in verdict(card, cells)[-1]
+    # A foil's forfeit is no launch.
+    cells[("rush_nearest", 0, 0)] = rows("lost", 9) + rows("forfeit", 1)
+    assert "rush_nearest has 9 of 10 launches" in verdict(card, cells)[-1]

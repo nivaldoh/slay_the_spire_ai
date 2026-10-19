@@ -78,6 +78,8 @@ def trial_metrics(directory: Path, result: dict) -> dict:
                             rejections["engine: " + str(order.get("error", "unknown"))] += 1
                 elif kind == "invalid":
                     rejections["validation: " + str(event.get("error", "unknown"))] += 1
+                elif kind == "forfeit":  # a failed decision the episode went on after
+                    attempts.extend(event["failure"].get("attempts") or [])
     for attempt in attempts:
         response_id = attempt.get("response_id")
         if response_id and response_id in seen_calls:

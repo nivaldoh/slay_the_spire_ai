@@ -250,37 +250,66 @@ def test_quiet_decisions_of_a_fast_policy_are_logged_once_per_observe_interval(t
     assert [e["kind"] for e in events].count("ack") == 3
 
 
-def test_the_observation_a_failing_decision_saw_is_kept_in_the_trace(tmp_path):
-    class Failing(Hold):
-        def decide(self, observation):
-            raise PolicyFailure("no reply", failure={"kind": "invalid_reply"})
-
-    mailbox = FakeMailbox([bridge_observation(0, 0), bridge_observation(1, 1000)])
-    result = play.play_episode(tmp_path / "e", CONFIG, Failing, mailbox, not_battle=None)
-    assert result["status"] == "policy_failure"
-    kinds = [json.loads(line)["kind"] for line in (tmp_path / "e/trace.jsonl").open()]
-    assert kinds[-1] == "observation"
-
-
-def test_a_failed_response_that_ends_the_episode_keeps_its_attempts_for_the_report(tmp_path):
-    # Final review: the report counted no failed response in bench-b23-s1-kimi-low-20261017,
-    # whose only one ended the episode; the failure dict had dropped the APIError's attempts.
+def test_a_failed_decision_sends_nothing_and_the_controller_is_asked_again(tmp_path):
+    # The battle never waits. The report still counts the failed response: it once missed
+    # bench-b23-s1-kimi-low-20261017's, whose failure dict had dropped the attempts.
     attempt = {"response_id": "r1", "status": "failed", "seconds": 2,
                "error": "openrouter returned a failed response r1"}
 
-    class Failing(Hold):
-        def decide(self, observation):
-            error = APIError(attempt["error"], retryable=True)
-            error.attempt, error.attempts = attempt, [attempt]
-            raise error
+    class Flaky(Hold):
+        def __init__(self):
+            self.seen = []
 
-    mailbox = FakeMailbox([bridge_observation(0, 0), bridge_observation(1, 1000)])
-    result = play.play_episode(tmp_path / "e", CONFIG, Failing, mailbox, not_battle=None)
-    assert result["status"] == "policy_failure"
-    assert result["failure"] == {"method": "decide", "error_type": "APIError",
-                                 "attempts": [attempt]}
+        def decide(self, observation):
+            self.seen.append(observation["seq"])
+            if len(self.seen) == 1:
+                raise PolicyFailure("No valid reply after declared retries")
+            if len(self.seen) == 2:
+                error = APIError(attempt["error"], retryable=True)
+                error.attempt, error.attempts = attempt, [attempt]
+                raise error
+            return []
+
+    policy = Flaky()
+    mailbox = FakeMailbox([bridge_observation(i, 1000 * i) for i in range(4)]
+                          + [bridge_observation(4, 4000, ack=True),
+                             bridge_observation(5, 5000, result="won")])
+    result = play.play_episode(tmp_path / "e", CONFIG, lambda: policy, mailbox, not_battle=None)
+    assert result["status"] == "won" and policy.seen == [1, 2, 3]
+    assert [r[1] for r in mailbox.requests] == [3] and result["decisions"] == 1
+    events = [json.loads(line) for line in (tmp_path / "e/trace.jsonl").open()]
+    assert [e["kind"] for e in events] == ["battle", "roster"] + ["observation", "forfeit"] * 2 + [
+        "observation", "decision", "ack", "result"]
+    assert events[5]["failure"] == {"method": "decide", "error_type": "APIError",
+                                    "attempts": [attempt]}
     metrics = report.trial_metrics(tmp_path / "e", result)
     assert metrics["reply_validation"]["failed_responses"] == 1
+
+
+@pytest.mark.parametrize("late", [[{"unit": "f1", "type": "halt"}], ValueError("late bug")])
+def test_a_battle_that_ends_during_a_call_keeps_its_result(tmp_path, late):
+    mailbox = FakeMailbox([bridge_observation(i, 1000 * i) for i in range(3)]
+                          + [bridge_observation(3, 3000, result="won")])
+    mailbox.read_observation = lambda: mailbox.queue[0]  # what the game shows now
+
+    class Slow(Hold):
+        def decide(self, observation):
+            while not mailbox.queue[0].get("result"):  # the battle goes on meanwhile
+                mailbox.queue.popleft()
+            if isinstance(late, Exception):
+                raise late
+            return late
+
+    result = play.play_episode(tmp_path / "e", CONFIG, Slow, mailbox, not_battle=None)
+    assert result["status"] == "won" and result["battle_s"] == 3
+    assert mailbox.requests == [] and result["decisions"] == 0
+
+
+def test_a_passed_episode_deadline_does_not_hide_a_result_that_is_there(tmp_path):
+    mailbox = FakeMailbox([bridge_observation(0, 0), bridge_observation(1, 1000, result="lost")])
+    result = play.play_episode(tmp_path / "e", {**CONFIG, "episode_timeout": 0}, Hold, mailbox,
+                               not_battle=None)
+    assert result["status"] == "lost"
 
 
 def test_delayed_policy_gets_old_public_state_but_results_use_current_evaluation(tmp_path):
@@ -418,10 +447,13 @@ def test_job_plays_episodes_with_restarts_and_records_rows(tmp_path, harness):
     assert b"\r" not in results.read_bytes()  # LF like Spire's register, not csv's CRLF
 
 
-def test_budget_exhaustion_stops_the_job(tmp_path, harness):
+@pytest.mark.parametrize("stop", [
+    BudgetExhausted("cap"), APIError("HTTP 402: no credits"), APIError("HTTP 401: bad key"),
+    APIError("Reported cost exceeded reservation; charged actual cost and stopped")])
+def test_budget_exhaustion_stops_the_job(tmp_path, harness, stop):
     class Broke(Hold):
         def decide(self, observation):
-            raise BudgetExhausted("cap")
+            raise stop
 
     harness.append(FakeMailbox([bridge_observation(0, 0), bridge_observation(1, 1000),
                                 bridge_observation(0, 0, battle="b2")]))

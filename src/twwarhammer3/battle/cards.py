@@ -37,15 +37,17 @@ MERGE_S = 3  # melee-flag gaps shorter than this are one engagement (1 Hz frames
 
 
 def outcome(episode: dict) -> str:
-    """won, lost or excluded (rerun). Invalid replies are the controller's loss; provider,
-    harness and budget stops are not."""
+    """won, lost, forfeit (a loss) or excluded (rerun). The battle never waits: a controller
+    failure or a truncation during a battle forfeits. Game and setup failures, interrupts and
+    operator stops (budget_exhausted; an HTTP 402 policy_failure before b35) are excluded."""
     status = episode.get("status")
     if status == "won" and episode.get("ended_by") != "time_limit":
         return "won"
     if status in ("won", "lost", "draw"):
         return "lost"
-    if status == "policy_failure" and str(episode.get("error")).startswith("No valid reply"):
-        return "lost"
+    if (status in ("policy_failure", "truncated") and episode.get("battle")
+            and "APIError: HTTP 402" not in str(episode.get("error"))):
+        return "forfeit"
     return "excluded"
 
 
@@ -177,7 +179,8 @@ def board(name: str, paths: list[Path] | None = None) -> str:
 def verdict(card: dict, cells: dict) -> list[str]:
     need, problems = card["foil_launches"], []
     for foil in card["foils"]:
-        scored = [r for r in cells.get((foil, 0, 0), []) if r["outcome"] != "excluded"]
+        # A foil's forfeit shows nothing about how it plays, so it is no launch.
+        scored = [r for r in cells.get((foil, 0, 0), []) if r["outcome"] in ("won", "lost")]
         wins = sum(r["outcome"] == "won" for r in scored)
         if wins:
             problems.append(f"{foil} won {wins} of {len(scored)}")

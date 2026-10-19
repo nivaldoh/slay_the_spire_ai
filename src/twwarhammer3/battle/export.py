@@ -77,6 +77,8 @@ def _decisions(trace: Path, result: dict) -> tuple[list[dict], int]:
                 acks[request] = {"trace_line": line, **event}
             elif kind == "invalid":
                 invalid = {"trace_line": line, **event}
+            elif kind == "forfeit":  # the failed plan's request is over
+                pending = None
             elif kind == "decision":
                 request = event["request"]
                 if request in requests:

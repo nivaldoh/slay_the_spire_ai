@@ -167,7 +167,7 @@ def test_budget_and_invalid_replies_surface_from_decide(tmp_path):
     with pytest.raises(BudgetExhausted):
         broke.decide(observation(31000))
     finish(broke)
-    garbled = commander(tmp_path, "not json", "still not json")
+    garbled = commander(tmp_path, "not json", "still not json", plan())
     garbled.decide(observation(30000))
     garbled.fake.gate.release()
     answer(garbled)
@@ -175,6 +175,8 @@ def test_budget_and_invalid_replies_surface_from_decide(tmp_path):
         garbled.decide(observation(31000))
     assert failure.value.failure["kind"] == "invalid_reply"
     assert len(failure.value.failure["attempts"]) == 2
+    garbled.decide(observation(32000))  # it surfaces once; the next tick asks again
+    assert "battle time 32 s" in garbled.metadata()["prompt"]
     finish(garbled)
 
 

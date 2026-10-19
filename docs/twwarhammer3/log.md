@@ -40,6 +40,14 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
 
+## 2026-10-18: Harness b35 (draft, branch, unit tests only)
+
+Branch `wh3-battle-never-waits`, unmerged ("On main" stays b34): owner decision 1 in
+[latency.md](latency.md#owner-decisions). A controller failure or truncation is a forfeit (a
+loss); a failed decision sends nothing and the controller is asked again; a result during a
+call stands, its reply unsent. Re-scored, every recorded episode: 3 excluded become forfeits,
+6 invalid-reply losses are labelled forfeit. 1246 unit tests pass; unverified: no game run.
+
 ## 2026-10-18: Open-loop probes P3 and P4 (no game)
 
 Decided under delegation (owner: "$50.38 of credit ... spend it carefully"), capped at $3.03:

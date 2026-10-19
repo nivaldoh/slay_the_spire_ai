@@ -33,9 +33,11 @@ that wins 20% of its battles passes 10 straight losses 11% of the time; a witnes
 wins half its battles passes 4 of 5 19% of the time.
 
 **Score** per model and mode: wins over scored launches with a 95% Wilson interval, beside
-the median cycles and order age. Invalid replies after the declared retries are losses;
-provider errors (HTTP 402, a failed response), harness exceptions and budget stops are
-excluded and rerun.
+the median cycles and order age. The battle never waits (`cards.outcome`, harness b35): a
+controller failure (no valid reply, a provider error, an exception in its code) or a
+truncation is a loss, labelled forfeit; game and setup failures, interrupts and operator
+stops (the spend ledger and its safety stops, the account's key or credit: HTTP 401, 402) are
+excluded and rerun. A foil's forfeit is no launch.
 
 **Results at modifier 1.1** (2026-10-18, 22 scripted battles, $0; board:
 `twwarhammer3 card chariot`). Exploration rounds E1 and E2 chose the witness and do not

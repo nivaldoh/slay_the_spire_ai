@@ -144,6 +144,16 @@ def test_commander_reply_answers_previous_prompt_and_owns_later_executor_orders(
         "unattributed_executor_ticks"] == 1
 
 
+
+def test_commander_prompt_after_a_forfeit_starts_a_new_record(tmp_path):
+    events = [decision("r1", "first", kind="commander"), acknowledgement("r1"),
+              {"kind": "forfeit"},
+              decision("r2", "second", kind="commander"), acknowledgement("r2")]
+    job = make_job(tmp_path, events, policy="commander", version="v7")
+    export.export_traces([job], tmp_path / "export")
+    assert [row["user_prompt"] for row in read_export(tmp_path / "export")] == [
+        "first", "second"]
+
 def recorded_attempt(prompt, exchange="m1", **kw):
     return attempt(request={"instructions": SYSTEM, "input": [{"role": "user", "content": prompt}],
                             "text": {"format": {"schema": {"type": "object"}}}},
