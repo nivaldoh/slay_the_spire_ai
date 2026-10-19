@@ -41,7 +41,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 - **vN**: a version of the `llm` or `commander` prompt and harness; `v1.N` the `skills`
   executor. Each has a log.md entry. The register's `harness` column is the `-vN-` segment
   of the job name (`stats.harness_version`), blank for `bench-*` jobs.
-- **b1-b17**: benchmark harness revisions, each logged in log.md.
+- **bN**: benchmark harness revisions, each logged in log.md; current revision in state.md.
 - **G1, G2, C1**: historical calibration designs in [benchmark.md](benchmark.md).
   G1 is incomplete, C1 finished and G2 never ran. The 2026-10-15 plan retires win-rate
   admission; added observation-age experiments (0, 6 and 10 s) remain deferred.
@@ -118,6 +118,7 @@ uv run python -m twwarhammer3 digest JOB[/episode-NNNN]   # per-episode table, o
 uv run python -m twwarhammer3 digest JOB/episode-NNNN --at SECONDS  # one decision in full
 uv run python -m twwarhammer3 digest JOB[/episode-NNNN] --units  # unit fates and refusals
 uv run python -m twwarhammer3 stats                       # results.csv by scenario and controller
+uv run python -m twwarhammer3 card chariot [JOB_OR_PLAN_DIR ...]  # board; add paths for a verdict
 uv run python -m twwarhammer3 report JOB [JOB ...] --output runs/twwarhammer3/reports/NAME
 uv run python -m twwarhammer3 export JOB [JOB ...] --output runs/twwarhammer3/exports/NAME
 uv run python -m twwarhammer3 spend                       # runs/twwarhammer3/llm-spend.jsonl
@@ -127,7 +128,7 @@ uv run python -m twwarhammer3 launch                      # build, install, run 
 uv run python -m twwarhammer3 menu --dump 4               # UI tree of the screen (ui_tree.txt)
 uv run python -m twwarhammer3 menu [--battle] --steps steps.json  # tails menu.log or mod.log
 uv run python -m twwarhammer3 pack --list PACK            # --extract PACK NAME; bare: build
-uv run pytest tests/twwarhammer3                          # Lua (lupa) and image tests included
+uv run --locked pytest -ra tests/twwarhammer3              # Lua and image tests; show skip reasons
 ```
 
 - `--model` (default `gpt-6-luna`) and `--effort` (default `low`) pick the API model of
@@ -207,8 +208,5 @@ Deferred cleanups:
   switches `enabled`, `autostart` and `menu`, then drop them from `play.session`; split
   `apply_order`, share the observation-building code, split `mode_section`, and move the
   file helpers into the shared `_lib` script.
-- `play --attach`: request ids restart at `r1` for every `Mailbox`, and the battle drops a
-  request repeating its last id, so a second attach job on the same battle can stall
-  until its episode timeout. A per-mailbox id prefix fixes it.
 - `LLMPolicy.acknowledge` keeps its fallback for acknowledgements without `index`
   (traces before `863d10b`); dropping it is the owner's call.

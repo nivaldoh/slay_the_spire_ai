@@ -1,16 +1,16 @@
 # Project state
 
-Updated 2026-10-18: what runs, where each game stands, what comes next. Status only:
+Updated 2026-10-19: what runs, where each game stands, what comes next. Status only:
 history goes to the logs ([WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md),
 [first combat](spire/first-combat/README.md)), owner directions to
 [owner-direction.md](owner-direction.md). Under the
-[hard rule](../AGENTS.md#verification-hard-rule) only the missing-ledger refusal is
-verified so far; everything below is unverified.
+[hard rule](../AGENTS.md#verification-hard-rule), only the listed component checks are
+verified at their recorded revisions; the gameplay findings below remain unverified.
 
 ## Active work
 
-Nothing is running. The overnight round of 2026-10-19 ended at 09:11
-([log](twwarhammer3/log.md#2026-10-19-overnight-round-at-b36-c1-finished-p2-cells-p5a)).
+Nothing is running. The bounded maintenance pass is complete
+([log](twwarhammer3/log.md#2026-10-19-harness-b37-mailbox-and-order-boundaries)); no game/API jobs.
 
 ## Priorities (owner, 2026-10-18)
 
@@ -25,9 +25,8 @@ Nothing is running. The overnight round of 2026-10-19 ended at 09:11
 [tactic cards](twwarhammer3/tactic-cards.md) (the benchmark definition and its board),
 [latency program](twwarhammer3/latency.md) (plan), [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, harness b36 (OpenRouter
-  backends pinned per model; b35: the battle never waits, controller failures are forfeits;
-  the card board in `battle/cards.py`),
+- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, harness b37 (mailbox
+  identity and finite order fields; b36 pinned OpenRouter backends; b35 controller forfeits),
   evaluator v2, track `obs-v4+terrain/act-v2/live-1x`.
 - Benchmark: [the chariot card](twwarhammer3/tactic-cards.md#the-chariot-card-the-first-benchmark-card)
   (one chariot against two Swordsmen units at AI modifier 1.1; tactic: cycle charging;
@@ -87,8 +86,8 @@ fine-tune in both games, and a way to choose targets (winning targets are scarce
   OpenRouter allowance shared by both games' ledgers are kept by hand.
 - WH3 register and `stats`: blank version on benchmark rows, grouping by commit, API
   failures as `policy_failure` (`twwarhammer3 card` classifies failures and keys by setup).
-- Not in the automated tests: the battle Lua's order application and the mailbox JSON
-  codec; the report JavaScript (a manual browser check only); several Spire play-loop
+- Not in the automated tests: the battle Lua's order application; the report JavaScript
+  (a manual browser check only); several Spire play-loop
   stop paths (source change, interruption).
 - Spire's Workshop mod pins still block a run when a mod updates.
 - `runs/` (22 GB) has no off-machine copy; its core evidence (traces, manifests, results,

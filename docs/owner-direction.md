@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-19: one bounded WH3 maintenance pass, up to three demonstrated issues, no product
+  features or large paid evaluations. Agreed component verification for mailbox identity
+  and finite order fields (real Python/Lua components plus a simulated play-loop regression);
+  actual game effects remain unverified. Preserve shared Codex/Claude guidance and use an
+  independent diff review. Stop after the selected improvements and evidence report.
 - 2026-10-18 (evening): the OpenRouter account now has $50.38 of credit, shared by both
   games; "let's spend it carefully though".
 - 2026-10-18 (closing the goal): unit tests suffice to verify the missing-ledger refusal;

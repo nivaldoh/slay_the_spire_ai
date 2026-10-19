@@ -4,6 +4,7 @@ AI policies that play the original Windows games from WSL: Slay the Spire 1 (Iro
 Ascension 0) and Total War: WARHAMMER III (WH3; real-time custom battles through a Lua
 mod). Start every session with [docs/state.md](docs/state.md): what is running, each
 game's current track and next step. Then read the page of the track you are working on.
+Codex loads this file; Claude Code imports it through `CLAUDE.md`. Keep shared guidance here.
 
 ## Verification (hard rule)
 
@@ -21,12 +22,31 @@ How the assistant applies it:
 - Test what matters, and add no slop tests (owner, 2026-10-18): balance verifying
   important behaviour against filling the codebase with low-value tests.
 
+For each change:
+
+1. State the observable behaviour and its independent reference (requirement, contract or
+   trusted example); a recorded output alone is not proof of correctness.
+2. Choose the cheapest relevant checks. For a bug, show the regression fails before the fix
+   where feasible; for important verification, check it detects a plausible wrong implementation.
+3. Run focused tests with `uv run --locked pytest -ra <tests>` and `uv run --locked ruff
+   check .`; expand when a concrete risk requires it. Preserve useful failure output.
+4. Report passed, failed, skipped and unavailable checks, and what each establishes.
+   Component tests and recorded cases do not establish live-game effects or policy strength.
+
 Agreed verification methods (feature, check and command, date agreed, last passing
 revision):
 - Play commands refuse a missing ledger file: `uv run pytest
   tests/fullrun/test_spire_cli.py::test_play_refuses_a_missing_ledger_before_any_job
   tests/twwarhammer3/test_wh3_controllers.py::test_each_model_controller_gets_its_own_prompt_and_the_shared_budget`;
   agreed 2026-10-18; passed at `6b054f3`.
+- WH3 replacement mailbox requests reach Lua's pending state; duplicate delivery is rejected:
+  `uv run --locked pytest -ra
+  tests/twwarhammer3/test_wh3_mailbox.py::test_new_mailbox_requests_reach_lua_without_disabling_duplicate_rejection`;
+  agreed 2026-10-19; passed at `f7b6c73`. No game execution claim.
+- WH3 non-finite order fields are rejected before transmission, with invalid-batch feedback:
+  `uv run --locked pytest -ra tests/twwarhammer3/test_wh3_protocol.py
+  tests/twwarhammer3/test_wh3_play.py::test_illegal_scripted_orders_are_counted_and_not_sent`;
+  agreed 2026-10-19; passed at `f7b6c73`. Play-loop observations are simulated.
 
 ## Working habits
 
@@ -80,7 +100,7 @@ src/spire/         Slay the Spire 1
                    sampling, REINFORCE
 src/twwarhammer3/  Total War: WARHAMMER III custom battles
   __main__.py      CLI: doctor, pack, launch, menu (runtime and UI probes); play, digest,
-                   watch, stats, report, export, spend (battle jobs and offline evidence)
+                   watch, card, stats, report, export, spend (jobs and offline evidence)
   protocol.py      Order types and validation, the error taxonomy; observations stay dicts
   engine/          runtime (pins, pack build, mod list, launch), startup (video skip), pack
                    (PFH5), mailbox (bridge files; its docstring is the observation
@@ -146,7 +166,7 @@ be unique across `tests/`.
 
 ```bash
 uv sync --locked
-uv run pytest                      # everything; or one track: uv run pytest tests/fullrun
+uv run --locked pytest -ra          # everything; or append tests/twwarhammer3 for WH3
 uv run pytest tests/test_protocol.py -k <pattern>
 uv run ruff check .
 uv run python -m spire doctor      # read-only runtime check
@@ -160,6 +180,7 @@ uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>   # add /epi
 uv run python -m twwarhammer3 watch    # follow the running job beside the game; --prompts
 uv run python -m twwarhammer3 watch runs/twwarhammer3/battle/<job> --next   # next episode, stall or end
 uv run python -m twwarhammer3 stats    # results by scenario, policy, model, harness and mode
+uv run python -m twwarhammer3 card chariot [JOB_OR_PLAN_DIR ...]  # tactic-card evidence
 uv run python -m twwarhammer3 report <job> [<job> ...] --output runs/twwarhammer3/reports/<name>
 uv run python -m twwarhammer3 export <job> [<job> ...] --output runs/twwarhammer3/exports/<name>
 uv run python -m twwarhammer3 spend    # WH3 OpenAI ledger total; --provider openrouter for OpenRouter

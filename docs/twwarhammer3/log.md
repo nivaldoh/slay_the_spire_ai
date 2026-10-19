@@ -35,10 +35,31 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b36 (2026-10-19; OpenRouter backends pinned; b35 the battle never waits), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | The chariot card at 1.1 (witness `SnapHitAndRun`, rule in `cards.py`): its confirmation round is 4 of 20 plans in, not admitted yet; foils lost 7 of 7 at 1.1, fixed-age witnesses won 6 of 8 (`CycleCharge` 1 of 3), the witness at model pace 2 of 4. Board in [tactic-cards.md](tactic-cards.md) |
+| benchmark harness | b37 (2026-10-19; mailbox identity and finite order fields; b36 backend pins; b35 the battle never waits), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [Component checks](#2026-10-19-harness-b37-mailbox-and-order-boundaries); latest game evidence remains the [overnight round at b36](#2026-10-19-overnight-round-at-b36-c1-finished-p2-cells-p5a) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
+
+## 2026-10-19: Harness b37, mailbox and order boundaries
+
+One bounded maintenance pass; owner agreed component verification, no game/API jobs.
+- `bfcfd38`: per-mailbox request prefix fixes repeated `r1` being dropped on reattachment.
+  Regression uses real files, the vendored JSON decoder and Lua `poll`; duplicate rejection stays.
+- `f7b6c73`: reject non-finite numeric fields (including integers beyond Lua's finite range)
+  even when the command ignores them. Preserve existing command diagnostics and invalid-batch
+  feedback. The play-loop regression uses simulated observations, not the game.
+- Before fixes: 6 intended failures, 106 passes. After fixes: 112 focused passes; the
+  owner-agreed checks pass at `f7b6c73`. Disabling Lua duplicate rejection in memory makes
+  the new test fail at its duplicate-delivery assertion. No mutation is retained.
+- `uv run --locked pytest -q -ra`: baseline 1,264 passed; final 1,271 passed; both 14 skips
+  (13 Torch-dependent Spire tests, 1 opt-in Windows process-ownership test). Ruff passed.
+  An intermediate full run caught changed LLM retry text; fixed without changing its test.
+- Shared guidance stays in AGENTS, imported by CLAUDE; add a short verification procedure,
+  skip reporting and current command navigation. Codex 0.163.0's prompt renderer loads the
+  complete file; Claude 2.1.303's installed import implementation was inspected (no model calls).
+- Independent source/test and instruction reviews resolved; no remaining material findings.
+  Only these component checks are verified. Game execution and policy strength remain unverified;
+  no scoring, timing, visibility, track, evaluator or wire-schema changes, and no new results rows.
 
 ## 2026-10-19: Overnight round at b36: c1 finished, P2 cells, P5a
 
