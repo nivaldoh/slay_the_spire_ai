@@ -9,8 +9,8 @@ verified so far; everything below is unverified.
 
 ## Active work
 
-Nothing is running. Since 20:25 UTC on 2026-10-18 (owner away): the latency program, no
-game; open-loop probes ran 23:01-23:57 UTC ($2.23); the chariot plans wait in `c1`.
+Nothing is running. The game stages wait for the owner (2026-10-19: "We'll run the game a
+bit later. I need to check some things first"); the chariot plans wait in `c1`.
 
 ## Priorities (owner, 2026-10-18)
 
@@ -25,8 +25,8 @@ game; open-loop probes ran 23:01-23:57 UTC ($2.23); the chariot plans wait in `c
 [tactic cards](twwarhammer3/tactic-cards.md) (the benchmark definition and its board),
 [latency program](twwarhammer3/latency.md) (plan), [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, harness b34 (the tactic
-  card board and the chariot card's rule in `battle/cards.py`, `twwarhammer3 card`),
+- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, harness b35 (the battle never
+  waits: controller failures are forfeits; unplayed; the card board in `battle/cards.py`),
   evaluator v2, track `obs-v4+terrain/act-v2/live-1x`.
 - Benchmark: [the chariot card](twwarhammer3/tactic-cards.md#the-chariot-card-the-first-benchmark-card)
   (one chariot against two Swordsmen units at AI modifier 1.1; tactic: cycle charging;
@@ -40,11 +40,11 @@ game; open-loop probes ran 23:01-23:57 UTC ($2.23); the chariot plans wait in `c
   the first open-loop probes ($2.19, P3 and P4 in [latency.md](twwarhammer3/latency.md)).
 
 Next (proposals for the owner; stages in [latency.md](twwarhammer3/latency.md#staged-plan)):
-1. P1, P2 ($0, about 7 game hours, no code; waiting for the owner's go-ahead): finish `c1`
-   at the current HEAD as evidence (regenerate plans 05-20), then witness latency sweeps.
-2. After the scoring rule ("the battle never waits"): a model round on the 1.1 card with
-   the checked pins, Kimi K3 low and high, GLM-5.3 low, Qwen3.6 none, 10 launches each:
-   $12-20 of OpenRouter credit, stop at $20 (pins and open-loop probes done, $2.19).
+1. P1, P2 ($0, about 7 game hours, waiting for the owner): finish `c1` as evidence (plans
+   05-20 regenerated at HEAD; scripted controllers are unchanged under b35), then witness
+   latency sweeps.
+2. A model round on the 1.1 card with the checked pins, Kimi K3 low and high, GLM-5.3 low,
+   Qwen3.6 none, 10 launches each: $12-20 of OpenRouter credit, stop at $20.
 3. [Card version 2](twwarhammer3/tactic-cards.md#card-version-2-draft-2026-10-18-evening-not-agreed)
    (drafted: start classes, three more foils, cycles v2, launch counting) with its admission
    rule proposed as an AGENTS.md check; then the expendables card the same way.
@@ -99,8 +99,8 @@ fine-tune in both games, and a way to choose targets (winning targets are scarce
 2. The chariot card's rule (foils lose 10 of 10, witness wins 4 of 5 at 5 s with a cycle,
    the model-pace witness reported, not a gate; decided under delegation, against E2's own
    rule; moot if card version 2 is chosen), and the
-   [latency program's](twwarhammer3/latency.md#owner-decisions) four: the scoring rule,
-   `c1` as evidence, the scored route, the $20 stop.
+   [latency program's](twwarhammer3/latency.md#owner-decisions) three left: `c1` as evidence,
+   the scored route, the $20 stop (the scoring rule merged as b35).
 3. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (whether
    they may train a model; 25,503 rows excluded), GLM-5.3, or rejection-sampled Qwen3.6.
 4. Whether Step 5 preview has open weights, and whether to request token log-probabilities
@@ -126,8 +126,5 @@ fine-tune in both games, and a way to choose targets (winning targets are scarce
 
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` v21 draft.
-- `wh3-battle-never-waits` (`fd8104e`, worktree `../slay_the_spire_ai-bnw`): WH3 harness b35
-  draft of decision 1 in [latency.md](twwarhammer3/latency.md#owner-decisions), one commit,
-  +144/-50; unit tests only, never played, unmerged.
 - Archived drafts are tags: `archive/wh3-fire-report`, `archive/wh3-v4-info`,
   `archive/wh3-openrouter-pin` and `archive/heldout-clip-continuation`.

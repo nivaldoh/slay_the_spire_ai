@@ -33,8 +33,8 @@ offline probes per model-mode; all post hoc:
 Proposed: anything inside the controller is time passing, so a provider error, an invalid or
 cut-off reply or a truncation is a loss ("forfeit"); only game or setup failures and operator
 stops (ledger, credit) are excluded. A failed decision sends no orders and the controller is
-asked again; the engine result is read even while a call blocks. Drafted as harness b35 on
-branch `wh3-battle-never-waits` (unit tests only, unmerged). Today `cards.outcome` excludes
+asked again; the engine result is read even while a call blocks. On `main` since harness b35
+(2026-10-19, owner; unit tests only, unplayed). Today `cards.outcome` excludes
 provider errors, and the two Score texts in tactic-cards.md disagree.
 
 ## Measurements
@@ -108,7 +108,7 @@ drop out as budget stops.
 
 ## Owner decisions
 
-1. "The battle never waits" (branch `wh3-battle-never-waits`). Recommended.
+1. "The battle never waits": merged as b35 (owner, 2026-10-19).
 2. `c1` finished as evidence, then a [card version 2](tactic-cards.md#card-version-2-draft-2026-10-18-evening-not-agreed).
    Recommended.
 3. One pinned backend per model for comparisons (checked: Kimi K3 on Sail Research, GLM-5.3 on
