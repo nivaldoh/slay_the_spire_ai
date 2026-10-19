@@ -302,7 +302,8 @@ exclusions. Game hours P1-P7: about 20-23, two or three nights; fine-tuning adds
 
 ## Owner decisions
 
-1. **"The battle never waits"** as the scoring rule above. Recommended.
+1. **"The battle never waits"** as the scoring rule above. Recommended; drafted as harness b35
+   on branch `wh3-battle-never-waits` (unit tests only, unmerged).
 2. **`c1`**: finish it at the current HEAD as evidence (foil and witness rates on fresh
    launches, start configurations recovered from first observations) without reading its
    verdict as admission, then fix the card into a version 2 (launch counting, start
