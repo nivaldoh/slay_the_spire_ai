@@ -133,6 +133,32 @@ and disclosed.
   latency. At 10 launches a cell (5 for W(model)) these are screens, not rankings: at 10 a
   side a gap is found with 80% power only from 0 to 0.59 or from 0.2 to 0.88.
 
+**First open-loop round (P3 and P4, 2026-10-18, under delegation).** Pins held in 4 of 4 cells
+(2 calls each; a pin to a provider that does not serve the model got a 404, uncharged). Then 70
+frozen moments from the 22 scripted battles at 1.1 (10 at battle start, 30 in melee, 30 out),
+one reply each, plus the 1 s and 12 s variants; OpenRouter $2.17, OpenAI $0.04. Rules and
+moments were frozen before any call; a verifier recomputed every frozen number. One sample per
+prompt, notes and history blanked, and most melee moments fall within 1 s of contact.
+
+| Model, mode | In melee: move to 80 m (frozen) | In melee: any move away | Out: attack (frozen) | Start: full plan, blind | 1.0 closed loop |
+|---|---|---|---|---|---|
+| Kimi K3 low | 0 of 30 | 8 of 30 | 19 of 30 | 6 of 10 | won 1 of 1 |
+| Kimi K3 high | 0 of 30 | 9 of 30 | 18 of 30 | 6 of 10 | won 1 of 2 |
+| GLM-5.3 low | 2 of 30 | 18 of 30 | 29 of 30 | 9 of 10 | lost 1 of 1 |
+| Qwen3.6 none | 0 of 30 | 0 of 30 | 15 of 30 | 0 of 10 | lost 1 of 1 |
+| Luna low | 4 of 30 | 26 of 30 | 23 of 30 | 0 of 10 | lost 1 of 1 |
+
+Read (exploratory past the frozen columns): no model snaps out to 80 m; GLM-5.3 low and Luna
+low mostly move away but stop short (median travel 49 and 58 m; the witness rides to 120 m from
+the enemies' centre), the Kimi modes mostly keep attacking at contact, Qwen3.6 none never
+leaves. GLM-5.3 low has the most complete plan and the most pull-outs, yet lost its one
+closed-loop battle while Kimi won, so open-loop knowledge does not predict the 1.0 outcomes
+(n = 1-2 battles each): the gap is real here, though which part is latency and which is pull-out
+depth stays open. Stating a 12 s instead of a 1 s last delay changed nothing detectable (no p
+under 0.05 in 10 paired tests; Luna low in melee moved to 80 m in 6 of 30 at 1 s and 1 of 30 at
+12 s, p 0.06). Kimi K3 high's delay variants stopped at 10 of 60 on the spend cap. Evidence:
+`runs/twwarhammer3/calibration/latency-review-20261018/probes/` (local).
+
 ## Robotics framing
 
 A unit is a module with its own fixed low-level controller (the engine's formation movement,
@@ -249,8 +275,8 @@ $15-35 on host accounts (outside the OpenRouter credit) and 25-34 game hours.
 |---|---|---|---|---|---|---|
 | P1 | what the frozen chariot rule gives on fresh launches | foil and witness rates and start configurations for card version 2 (not admission) | nothing (current HEAD) | 16 plans | $0 | 2.7 |
 | P2 | what latency the tactic tolerates (L50) | whether the card discriminates at 3-8 s | nothing | 25 launches | $0 | about 4 |
-| P3 | do backend pins hold through the Responses API | pins for P5 | `provider.only` and `order`, no fallbacks, per model in `providers.ROUTES` | 3 calls x 4 cells | about $0.03 | 0 |
-| P4 | does each mode know the step, offline (K) | knowledge-bound modes, before P5 | probe script | 130 prompts x 4 modes (70 moments, 60 delay variants) | about $1.7 | 0 |
+| P3 | do backend pins hold through the Responses API | pins for P5 | `provider.only` and `order`, no fallbacks, per model in `providers.ROUTES` | 3 calls x 4 cells; done: 4 of 4 pass | $0.03 | 0 |
+| P4 | does each mode know the step, offline (K) | knowledge-bound modes, before P5 | probe script | 130 prompts x 4 modes (70 moments, 60 delay variants); done, plus Luna low | $2.17 | 0 |
 | P5 | closed-loop wins on 1.1 under "the battle never waits" (E) | the first model result | the scoring change; pins | 10 launches x Kimi K3 low, high, GLM-5.3 low, Qwen3.6 none | $12-20 | 6-8 |
 | P6 | does rung 1 help | rung 1 as default or arm | `llm_latency` (harness b35) | 20 within-launch pairs, GLM-5.3 low | $4-10 | 4-5 |
 | P7 | W(model) from P5's call sequences | latency-bound or execution-bound per model | a battle-clock hold | 5 x 4 | $0 | 3 |

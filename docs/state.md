@@ -9,8 +9,8 @@ verified so far; everything below is unverified.
 
 ## Active work
 
-Nothing is running. Since 20:25 UTC on 2026-10-18 (owner away): the latency program,
-offline only ($0, no game); the chariot plans wait in `runs/twwarhammer3/calibration/c1`.
+Nothing is running. Since 20:25 UTC on 2026-10-18 (owner away): the latency program, no
+game; open-loop probes ran 23:01-23:57 UTC ($2.23); the chariot plans wait in `c1`.
 
 ## Priorities (owner, 2026-10-18)
 
@@ -35,15 +35,16 @@ offline only ($0, no game); the chariot plans wait in `runs/twwarhammer3/calibra
   found the signature met by construction and the start configuration a possible confound
   (post hoc, 14 launches)
   ([log](twwarhammer3/log.md#2026-10-18-latency-program-plan-only)). All unverified.
-- Spend: OpenAI $51.43 of $52. OpenRouter: the account has $50.38 of credit (owner,
-  2026-10-18 evening; spend carefully), shared with Spire; the WH3 ledger holds $6.69.
+- Spend: OpenAI $51.47 of $52. OpenRouter: the account had $50.38 of credit (owner,
+  2026-10-18 evening; spend carefully), shared with Spire; the WH3 ledger holds $8.88 after
+  the first open-loop probes ($2.19, P3 and P4 in [latency.md](twwarhammer3/latency.md)).
 
 Next (proposals for the owner; stages in [latency.md](twwarhammer3/latency.md#staged-plan)):
 1. P1, P2 ($0, about 7 game hours, no code; waiting for the owner's go-ahead): finish `c1`
    at the current HEAD as evidence (regenerate plans 05-20), then witness latency sweeps.
-2. After the scoring rule ("the battle never waits") and backend pins: open-loop probes and
-   a model round on the 1.1 card, Kimi K3 low and high, GLM-5.3 low, Qwen3.6 none, 10
-   launches each: $14-22 of OpenRouter credit, stop at $20.
+2. After the scoring rule ("the battle never waits"): a model round on the 1.1 card with
+   the checked pins, Kimi K3 low and high, GLM-5.3 low, Qwen3.6 none, 10 launches each:
+   $12-20 of OpenRouter credit, stop at $20 (pins and open-loop probes done, $2.19).
 3. [Card version 2](twwarhammer3/tactic-cards.md#card-version-2-draft-2026-10-18-evening-not-agreed)
    (drafted: start classes, three more foils, cycles v2, launch counting) with its admission
    rule proposed as an AGENTS.md check; then the expendables card the same way.

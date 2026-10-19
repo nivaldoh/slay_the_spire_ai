@@ -40,6 +40,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
 
+## 2026-10-18: Open-loop probes P3 and P4 (no game)
+
+Decided under delegation (owner: "$50.38 of credit ... spend it carefully"), capped at $3.03:
+the plan's no-game stages ([latency.md](latency.md#staged-plan)). P3: OpenRouter pins through
+`provider.only` on `/responses` held in 4 of 4 cells (Kimi K3 on Sail Research, GLM-5.3 on
+Decart, Qwen3.6 on Parasail; 2 calls each; a pin to a non-serving provider got an uncharged
+404), $0.03. P4: 70 moments frozen from the 22 scripted chariot battles at 1.1 (sha256
+`2551d96f`), rendered by driving `LLMPolicy` (530 of 530 recorded prompts reproduced), notes and
+history blanked, one reply each, plus 1 s and 12 s stated-delay variants; frozen automatic
+grades, recomputed by a verifier; battle-start plans graded blind. In melee no model moved to
+80 m (0-4 of 30); out of melee 15-29 of 30 re-charged; full plans: GLM-5.3 low 9 of 10, Kimi K3
+low and high 6, Luna low and Qwen3.6 none 0. The stated delay changed nothing detectable (10
+paired tests, none under p 0.05). OpenRouter $2.17 (Kimi K3 high's delay variants stopped at
+10 of 60 on the cap), OpenAI $0.04 (Luna). Tool and evidence local in
+`calibration/latency-review-20261018/probes/` (not committed); table in latency.md. All
+exploratory past the frozen columns; nothing agreed.
+
 ## 2026-10-18: Latency program (plan only)
 
 Owner notes (evening, away; [direction](../owner-direction.md)): measure the gap between knowing a
