@@ -20,13 +20,16 @@ The runner refuses to start unless HEAD is that revision with no uncommitted cha
 the play source scope or this script, no job output exists and the plan has no state
 file. It runs ``uv run python -m twwarhammer3 play ARGS --output OUTPUT`` per job,
 checking the source again before each, and keeps PLAN-state.json beside the plan: its
-pid, status (running, completed, failed or interrupted), the current job and each
-finished job's exit code. It stops at the first job that exits nonzero, or whose rematch
-started with a missing or changed unit or changed strength, loadout or resources
+pid, status (running, completed, stopped, failed or interrupted), the current job and
+each finished job's exit code. It stops at the first job that exits nonzero, or whose
+rematch started with a missing or changed unit or changed strength, loadout or resources
 (``start_comparison`` in an episode's result.json; position and bearing flags alone do
-not stop it), and never retries; a later attempt is a new plan. SIGINT or SIGTERM passes
-one SIGINT to the running job, which records its own interruption, and marks the plan
-interrupted.
+not stop it), and never retries; a later attempt is a new plan. With ``"keep_going":
+true`` a failed job is recorded and the next one starts; two failures in a row stop the
+plan. Before each job it stops (status stopped) if PLAN-stop exists beside the plan or the
+plan's ``"start_before"`` time (ISO 8601 with an offset) has passed, so the running battle
+ends normally. SIGINT or SIGTERM passes one SIGINT to the running job, which records its
+own interruption, and marks the plan interrupted.
 """
 
 import argparse
@@ -43,7 +46,7 @@ from twwarhammer3.battle.play import SOURCES
 
 PLAY = ["uv", "run", "python", "-m", "twwarhammer3", "play"]
 SCOPE = (*SOURCES, "scripts/wh3_queue.py")
-EXIT_CODES = {"completed": 0, "failed": 1, "interrupted": 130}
+EXIT_CODES = {"completed": 0, "stopped": 0, "failed": 1, "interrupted": 130}
 
 
 def source_error(revision: str) -> str | None:
@@ -77,6 +80,9 @@ def run(plan_path: Path, play: list[str] = PLAY) -> int:
             raise SystemExit(f"Output already exists: {job['output']}")
     state = {"pid": os.getpid(), "source_revision": plan["source_revision"], "completed": []}
     child, stopping, signalled = None, False, None
+    stop_path = plan_path.with_name(plan_path.stem + "-stop")
+    start_before = plan.get("start_before") and datetime.fromisoformat(plan["start_before"])
+    failures, halted = 0, None
 
     def save(**values):
         state.update(values, updated_at=datetime.now(UTC).isoformat())
@@ -95,6 +101,9 @@ def run(plan_path: Path, play: list[str] = PLAY) -> int:
             error = None if stopping else source_error(plan["source_revision"])
             if stopping or error:
                 break
+            if stop_path.exists() or start_before and datetime.now(UTC) >= start_before:
+                halted = "stop file" if stop_path.exists() else "start_before passed"
+                break
             save(status="running", current_job=job["output"])
             print("START", job["output"], flush=True)
             # Its own session: a terminal Ctrl+C reaches the job once, through stop().
@@ -104,7 +113,8 @@ def run(plan_path: Path, play: list[str] = PLAY) -> int:
                 child.send_signal(signal.SIGINT)
             code = child.wait()
             state["completed"].append({"output": job["output"], "exit_code": code})
-            if code:
+            failures = failures + 1 if code else 0
+            if code and (not plan.get("keep_going") or failures == 2):
                 error = f"{job['output']} exited with {code}"
                 break
             if error := start_change(REPO_ROOT / job["output"]):
@@ -112,9 +122,10 @@ def run(plan_path: Path, play: list[str] = PLAY) -> int:
     finally:
         for signum, handler in handlers.items():
             signal.signal(signum, handler)
-    status = "interrupted" if stopping else "failed" if error else "completed"
-    save(status=status, current_job=None, error=error)
-    print(status.upper(), error or "", flush=True)
+    status = ("interrupted" if stopping else "failed" if error else "stopped" if halted
+              else "completed")
+    save(status=status, current_job=None, error=error, stopped=halted)
+    print(status.upper(), error or halted or "", flush=True)
     return EXIT_CODES[status]
 
 

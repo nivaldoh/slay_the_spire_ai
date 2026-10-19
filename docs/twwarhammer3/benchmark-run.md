@@ -184,9 +184,13 @@ in play's source scope or the runner, no output exists and the plan has no state
 It checks the source again before each job, stops at the first job that exits nonzero
 (play does for any manifest status but `completed`) or whose rematch started with a
 missing or changed unit or changed strength, loadout or resources (position
-and bearing flags alone stay in the result), and never retries: continue with a new plan. `my-plan-state.json` beside the plan holds the runner's pid, status (running,
-completed, failed, interrupted), the current job and each exit code. Exit codes: 0
-completed, 1 failed or refused, 130 interrupted. Follow each job with `watch JOB --next`.
+and bearing flags alone stay in the result), and never retries: continue with a new plan.
+A night of single launches is one plan with `"keep_going": true` (a failed job is
+recorded and the next starts; two in a row stop it) and `"start_before"` (no job starts
+after that time). `my-plan-state.json` beside the plan holds the runner's pid, status
+(running, completed, stopped, failed, interrupted), the current job and each exit code.
+Exit codes: 0 completed or stopped, 1 failed or refused, 130 interrupted. Follow each job
+with `watch JOB --next`.
 
 The old G1 plans, completed C1/M1 plans and unstarted `swarm-sol-screens-plan.json` are
 historical. The [current proposal](benchmark.md#implementation-plan) schedules no new
@@ -202,8 +206,10 @@ do not require a new scoring rule per scenario.
   process (`uv run` forwards it). Play records the running episode and the manifest as
   `interrupted`, appends the register row, and the supervisor closes the game. An
   interrupted trial is a failure in the report, never a loss.
-- **A queue**: send SIGINT or SIGTERM to the pid in the state file, or press Ctrl+C in its
-  terminal. The running job gets one SIGINT, later jobs never start and the plan ends
+- **A queue after its current battle**: create `my-plan-stop` beside the plan; the running
+  job ends normally and the plan ends `stopped`.
+- **A queue now**: send SIGINT or SIGTERM to the pid in the state file, or press Ctrl+C in
+  its terminal. The running job gets one SIGINT, later jobs never start and the plan ends
   `interrupted`.
 
 A job started with `&` from a non-interactive shell inherits an ignored SIGINT and cannot

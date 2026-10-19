@@ -34,9 +34,9 @@ def head(monkeypatch):
     return revisions
 
 
-def plan(tmp_path, *jobs, revision=HEAD):
+def plan(tmp_path, *jobs, revision=HEAD, **keys):
     path = tmp_path / "screen-plan.json"
-    path.write_text(json.dumps({"source_revision": revision, "jobs": [
+    path.write_text(json.dumps({"source_revision": revision, **keys, "jobs": [
         {"output": str(tmp_path / name), "args": args} for name, args in jobs]}))
     return path
 
@@ -73,6 +73,33 @@ def test_stops_at_the_first_failed_job_and_never_reruns(tmp_path, head):
     with pytest.raises(SystemExit, match="a plan runs once"):
         queue.run(path, FAKE_PLAY)
 
+
+
+def test_keep_going_runs_past_one_failed_job_and_stops_after_two_in_a_row(tmp_path, head):
+    path = plan(tmp_path, ("a", ["--exit", "3"]), ("b", []), ("c", ["--exit", "3"]),
+                ("d", ["--exit", "4"]), ("e", []), keep_going=True)
+
+    assert queue.run(path, FAKE_PLAY) == 1
+
+    assert [job["exit_code"] for job in state(tmp_path)["completed"]] == [3, 0, 3, 4]
+    assert not (tmp_path / "e").exists() and state(tmp_path)["status"] == "failed"
+
+
+def test_a_stop_file_or_the_start_before_time_ends_the_plan_between_jobs(tmp_path, head):
+    touches_stop = [sys.executable, "-c", (
+        "import pathlib, sys; out = pathlib.Path(sys.argv[-1]); out.mkdir(); "
+        "(out.parent / 'screen-plan-stop').touch()")]
+    path = plan(tmp_path, ("a", []), ("b", []))
+
+    assert queue.run(path, touches_stop) == 0
+
+    assert (tmp_path / "a").exists() and not (tmp_path / "b").exists()
+    assert (state(tmp_path)["status"], state(tmp_path)["stopped"]) == ("stopped", "stop file")
+    (tmp_path / "screen-plan-state.json").unlink()
+    (tmp_path / "screen-plan-stop").unlink()
+    path = plan(tmp_path, ("c", []), start_before="2026-01-01T00:00:00+00:00")
+    assert queue.run(path, FAKE_PLAY) == 0
+    assert not (tmp_path / "c").exists() and state(tmp_path)["stopped"] == "start_before passed"
 
 @pytest.mark.parametrize("comparison,stops", [
     ({"missing_or_changed": [], "resource_or_loadout_changes": {

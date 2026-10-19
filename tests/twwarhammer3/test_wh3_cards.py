@@ -1,6 +1,6 @@
 import json
 
-from twwarhammer3.battle.cards import CARDS, cycles, outcome, verdict
+from twwarhammer3.battle.cards import CARDS, cycles, jobs, outcome, verdict
 
 
 def _frame(second, melee):
@@ -60,3 +60,11 @@ def test_one_foil_win_fails_the_card_whatever_the_witness_did():
     # A foil's forfeit is no launch.
     cells[("rush_nearest", 0, 0)] = rows("lost", 9) + rows("forfeit", 1)
     assert "rush_nearest has 9 of 10 launches" in verdict(card, cells)[-1]
+
+
+def test_a_replacement_plan_naming_the_same_output_counts_its_job_once(tmp_path):
+    for name in ("01-x.json", "01b-x.json"):
+        (tmp_path / name).write_text(json.dumps({"jobs": [{"output": "runs/b/job-l1"}]}))
+    (tmp_path / "01-x-state.json").write_text("{}")
+
+    assert [str(path) for path in jobs([tmp_path])] == ["runs/b/job-l1"]

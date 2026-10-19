@@ -104,7 +104,7 @@ def jobs(paths: list[Path]) -> list[Path]:
             continue
         for plan in plans:
             found += [Path(job["output"]) for job in json.loads(plan.read_text()).get("jobs", [])]
-    return found
+    return list(dict.fromkeys(found))  # a replacement plan can name the same output
 
 
 def battles(card: dict, directories: list[Path]) -> list[dict]:
