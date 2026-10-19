@@ -126,8 +126,8 @@ fine-tune in both games, and a way to choose targets (winning targets are scarce
 
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` v21 draft.
-- `wh3-battle-never-waits` (`75505b1`, worktree `../slay_the_spire_ai-bnw`): WH3 harness b35
-  draft of decision 1 in [latency.md](twwarhammer3/latency.md#owner-decisions); unit tests
-  only (1244 passed), never played, unmerged.
+- `wh3-battle-never-waits` (`fd8104e`, worktree `../slay_the_spire_ai-bnw`): WH3 harness b35
+  draft of decision 1 in [latency.md](twwarhammer3/latency.md#owner-decisions), one commit,
+  +144/-50; unit tests only, never played, unmerged.
 - Archived drafts are tags: `archive/wh3-fire-report`, `archive/wh3-v4-info`,
   `archive/wh3-openrouter-pin` and `archive/heldout-clip-continuation`.
