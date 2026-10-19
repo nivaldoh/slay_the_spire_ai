@@ -9,11 +9,8 @@ verified so far; everything below is unverified.
 
 ## Active work
 
-The overnight round of 2026-10-19 (owner goal, away until 10:00: runs that give valid,
-relevant results; at most $5 of OpenRouter): `c1` plans 05-20, P2 witness pace cells (0, 2
-and 8 s) and P5a (GLM-5.3 low x10, Qwen3.6 none x5, pinned), interleaved, chained from
-`runs/twwarhammer3/calibration/night-20261019/`, ending by 09:30. Commit nothing on `main`
-while it runs.
+Nothing is running. The overnight round of 2026-10-19 ended at 09:11
+([log](twwarhammer3/log.md#2026-10-19-overnight-round-at-b36-c1-finished-p2-cells-p5a)).
 
 ## Priorities (owner, 2026-10-18)
 
@@ -34,22 +31,25 @@ while it runs.
   evaluator v2, track `obs-v4+terrain/act-v2/live-1x`.
 - Benchmark: [the chariot card](twwarhammer3/tactic-cards.md#the-chariot-card-the-first-benchmark-card)
   (one chariot against two Swordsmen units at AI modifier 1.1; tactic: cycle charging;
-  witness `SnapHitAndRun`; signature: cycles; rule pre-registered at `5396182`). Its
-  confirmation round is 4 of 20 plans in: not admitted. No model has played it. A review
-  found the signature met by construction and the start configuration a possible confound
-  (post hoc, 14 launches)
-  ([log](twwarhammer3/log.md#2026-10-18-latency-program-plan-only)). All unverified.
+  witness `SnapHitAndRun`; signature: cycles; rule pre-registered at `5396182`). Round
+  `c1`: foils lost 10 of 10 each, the witness won 4 of 5 at 5 s: admitted under
+  that rule (no check agreed). The witness tolerates 2-3 s at model pace, not 5 s; GLM-5.3 low
+  won 1 of 10 while stating the tactic in all 10, Qwen3.6 none 0 of 5. All unverified.
 - Spend: OpenAI $51.47 of $52. OpenRouter: the account had $50.38 of credit (owner,
-  2026-10-18 evening; spend carefully), shared with Spire; the WH3 ledger holds $8.88 after
-  the first open-loop probes ($2.19, P3 and P4 in [latency.md](twwarhammer3/latency.md)).
+  2026-10-18 evening; spend carefully), shared with Spire; the WH3 ledger holds $10.66
+  after P5a ($1.78, 2026-10-19).
 
 Next (proposals for the owner; stages in [latency.md](twwarhammer3/latency.md#staged-plan)):
-1. P1, P2 ($0): finish `c1` as evidence, then witness latency sweeps (running tonight, P2
-   reduced to three cells).
-2. The rest of P5 after P5a is read: Kimi K3 low and high, 10 launches each ($6-12).
+1. An execution study (no game): what GLM-5.3 low's 9 losses do differently from the witness
+   at the same pace (pull-out depth, refusals and contact length do not separate them); it
+   decides what a harness or a specialist trained on the witness should change.
+2. The rest of P5: Kimi K3 low and high, 10 launches each ($6-12).
 3. [Card version 2](twwarhammer3/tactic-cards.md#card-version-2-draft-2026-10-18-evening-not-agreed)
    (drafted: start classes, three more foils, cycles v2, launch counting) with its admission
    rule proposed as an AGENTS.md check; then the expendables card the same way.
+4. The army as detachable robot parts (owner, kept open): the
+   [robotics framing](twwarhammer3/latency.md#robotics-framing) and harness rungs 3-5, sized
+   by P2's reaction window.
 
 ## Slay the Spire
 

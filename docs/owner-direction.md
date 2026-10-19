@@ -30,6 +30,14 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-19 (night, later): "recent JEV models seem to work well for situations that
+  require low-latency, like our battles? We should remember to experiment with them at some
+  point". Possibly Jev (TypeSafe: structured state to typed decisions, vendor-reported
+  70-500 ms; one web search, unchecked): a candidate fast executor (latency.md rung 5).
+- 2026-10-19 (night, during the overnight round): "I'm still very interested in seeing if we
+  can approach the problem of interpreting an army as detachable robot parts, and control it
+  using ideas inspired by recent robotics research with LLMs"; keep tracking it (the
+  2026-10-18 evening items 2-3; [robotics framing](twwarhammer3/latency.md#robotics-framing)).
 - 2026-10-18 (evening, goal, away), after the benchmark review: (1) the gap between knowing
   a battle tactic or concept and executing it in real time under variable latency looks
   relatively unexplored and fairly unique to this game: take advantage of it and start

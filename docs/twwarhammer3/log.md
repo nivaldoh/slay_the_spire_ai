@@ -40,6 +40,33 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
 
+## 2026-10-19: Overnight round at b36: c1 finished, P2 cells, P5a
+
+Owner goal (away until 10:00): overnight runs with valid, relevant results, at most $5 of
+OpenRouter; decided under delegation. 50 launches, 01:57-09:11, plans, chain and
+`summary.py` in `calibration/night-20261019/`; OpenRouter $1.78 (ledger $10.66). One plan
+refused before launch: the chain lacked the key file. Cells are n = 3-10, post hoc, unverified.
+- c1 (rule at `5396182`): foils lost 10 of 10 each, the witness won 4 of 5 at 5 s (5-8
+  cycles): admitted under that rule. At model pace (5 s age, one decision per 5 s) it lost 5 of 5.
+- P2, the witness by added age / decision interval: 0/0 won 4 of 4, 2/2 4 of 4, 3/3
+  3 of 4, 5/0 4 of 5, 0/5 3 of 3, 5/5 0 of 5, 8/8 0 of 4. It tolerates stale information or a
+  slow decision rate, not both: at model pace the window closes between 3 and 5 s.
+- P5a, pinned, natural latency: GLM-5.3 low won 1 of 10 (199 s, 5 cycles), Qwen3.6 none 0 of
+  5; median order age 2.1 and 2.7 s, inside the tolerated pace; $0.17 and $0.02 a battle.
+  Every attempt went to the pinned backend; no forfeit or cut-off, so b35's forfeit path is
+  unplayed. GLM stated the tactic before contact in 10 of 10, Qwen in 0 of 5 (keywords).
+- Knowing against executing: GLM knew the tactic and decided at a pace the witness wins at,
+  so by elimination it lost on execution; no measure tried shows how. Pull-out depth (GLM 47 m,
+  witness 77-90 m) does not decide (the witness at 5/5 pulled out 77 m and lost all 5); refused
+  moves hit the witness too; most losses (36 of 45) end in their longest contact, and before
+  it losses held contact no longer than wins (medians 12.5 and 18 s). Two verifier agents
+  checked the first 55 battles; their scripts, rerun on all 64, gave these numbers.
+- Start and first target: once the cell is fixed they show nothing (at tolerated paces e1
+  first won 14 of 15, e2 first 4 of 5), so the review's confound reads as tempo.
+- Tooling (branch `wh3-queue-keep-going`, merged after the round): a plan can `keep_going`,
+  `start_before` and stop on `PLAN-stop`, so a night is one plan, not 52 plans and a chain
+  script; the card board counted a job twice when a replacement plan named the same output.
+
 ## 2026-10-19: Harness b36, pinned OpenRouter backends
 
 Decided under delegation (owner away until 10:00; goal: overnight runs with valid results, at

@@ -27,6 +27,11 @@ offline probes per model-mode; all post hoc:
   replies), and the register's order age omits calls that never applied.
 - The prompt already states the last delay; telling a model 12 s instead of 1 s changed nothing
   detectable offline (10 paired tests).
+- 2026-10-19 round ([log](log.md#2026-10-19-overnight-round-at-b36-c1-finished-p2-cells-p5a)):
+  the witness wins with stale information or a slow decision rate but not both (model pace:
+  4 of 4 at 2 s, 0 of 5 at 5 s). GLM-5.3 low stated the tactic in 10 of 10 battles at a
+  tolerated 2 s pace and won 1: by elimination an execution gap, which no measure tried
+  (pull-out depth, refusals, contact length before the last) locates yet.
 
 ## Scoring: the battle never waits
 
@@ -76,7 +81,7 @@ tasks by tactic or a latency-matched scripted reference.
 | 2 | a per-decision deadline | proposal |
 | 3 | model-written standing rules run at tick rate | proposal; disclosed automation |
 | 4 | `commander` over `skills` | built, unplayed since v4 |
-| 5 | a strong planner over a small fast executor model | not built |
+| 5 | a strong planner over a small fast executor model (candidate: Jev, owner 2026-10-19) | not built |
 
 Rung 5 is the design the owner remembers: a "ChatGPT 6 Astra Pro" answer pasted on 2026-10-13
 ("a slow, thoughtful commander above fast, persistent controllers"), never committed; only
@@ -97,12 +102,12 @@ time 50 recorded prompts per candidate host (under $1, no game).
 
 | Stage | Question | n | Cost | Game h |
 |---|---|---|---|---|
-| P1 | foil and witness rates on fresh launches (`c1` plans 05-20, as evidence) | 16 plans | $0 | 2.7 |
-| P2 | the tactic's latency tolerance (sweeps) | 25 launches | $0 | 4 |
+| P1 | foil and witness rates on fresh launches (`c1` plans 05-20, as evidence) | done 2026-10-19 | $0 | 3 |
+| P2 | the tactic's latency tolerance (sweeps) | done: 5 cells, 19 launches | $0 | 3.5 |
 | P3, P4 | pins hold; offline knowledge per mode | done | $2.19 | 0 |
-| P5 | closed-loop wins under the rule, Kimi K3 low and high, GLM-5.3 low, Qwen3.6 none | 40 launches | $12-20 | 6-8 |
+| P5 | closed-loop wins under the rule, Kimi K3 low and high, GLM-5.3 low, Qwen3.6 none | P5a done (GLM, Qwen: 15); Kimi left | $1.78 so far | 2 |
 
-P1 and P2 wait for the owner's go-ahead. A job's `--budget-usd` leaves room for one
+A job's `--budget-usd` leaves room for one
 timer-length battle and one maximum reservation (Kimi K3 about $2.45), so slow battles do not
 drop out as budget stops.
 

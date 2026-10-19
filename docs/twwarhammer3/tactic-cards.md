@@ -56,12 +56,11 @@ count for admission:
 
 Cycles read 0 on every foil battle, including the modifier 1.0 rush-foil win (by construction:
 foils never order a move), and 6-9 on every witness win at 1.1 (witness losses read 2-8).
-The confirmation round (`runs/twwarhammer3/calibration/c1`, 20 plans) stopped at the owner's
-return after 4: foils 0 of 4 battles (2 launches each), the witness
-1 of 1 at 5 s and 0 of 1 at model pace. **Verdict: not admitted yet (incomplete)**; 8
-foil launches and 8 witness launches (4 at model pace) remain, about 2.7 h at $0. At model
-pace the witness won 2 of 4 against 2 of 2 continuously (p 0.47); the start configuration may
-explain more than tempo ([log](log.md#2026-10-18-latency-program-plan-only)).
+The confirmation round (`runs/twwarhammer3/calibration/c1`, 20 plans; 4 on 2026-10-18 at
+b34, 16 on 2026-10-19 at b36) finished: foils lost 10 of 10 each, the witness won 4 of 5 at
+5 s and 0 of 5 at model pace. **Admitted** under its pre-registered rule; no check is
+agreed, so the card stays unverified. The start-configuration confound read as tempo, and
+GLM-5.3 low won 1 of 10 ([log](log.md#2026-10-19-overnight-round-at-b36-c1-finished-p2-cells-p5a)).
 
 **For post-training**: one unit, a fixed opponent and 2-10 minute battles make the card a
 cheap environment with a binary reward (the win) and a shaping signal (cycles). Qwen3.6, the
