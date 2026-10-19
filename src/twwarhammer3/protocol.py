@@ -135,6 +135,14 @@ def validate_orders(orders: list, observation: dict) -> None:
                 raise IllegalActionError(f"{unit}: ability {ability!r} is not ready")
             _validate_ability_target(unit, order, friendly, enemies)
 
+    # Keep command-specific diagnostics above, then check unused fields too: every
+    # field crosses the Lua JSON boundary, even when its command ignores it.
+    for order in orders:
+        for field, value in order.items():
+            if (isinstance(value, (int, float)) and not isinstance(value, bool)
+                    and not _finite(value)):
+                raise IllegalActionError(f"order field {field!r} must be a finite number")
+
 
 def _validate_army_ability(order, observation, friendly, enemies, settings) -> None:
     """An army ability is cast by the army ("unit": "army"), not by one of its units."""

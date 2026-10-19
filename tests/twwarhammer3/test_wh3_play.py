@@ -204,13 +204,17 @@ def test_unlimited_or_unexpired_timer_does_not_imply_timeout(tmp_path):
         assert result["status"] == "lost" and result["ended_by"] == "engine_result"
 
 
-def test_illegal_scripted_orders_are_counted_and_not_sent(tmp_path):
+@pytest.mark.parametrize("order, error", [
+    ({"unit": "f9", "type": "halt"}, "f9"),
+    ({"unit": "f1", "type": "halt", "x": float("nan")}, "finite"),
+])
+def test_illegal_scripted_orders_are_counted_and_not_sent(tmp_path, order, error):
     class Broken(Hold):
         def __init__(self):
             self.feedback = []
 
         def decide(self, observation):
-            return [{"unit": "f9", "type": "halt"}]
+            return [order]
 
         def acknowledge(self, ack, latency):
             self.feedback.append((ack, latency))
@@ -221,8 +225,8 @@ def test_illegal_scripted_orders_are_counted_and_not_sent(tmp_path):
     policy = Broken()
     result = play.play_episode(tmp_path / "e", CONFIG, lambda: policy, mailbox, not_battle=None)
     assert result["status"] == "draw" and result["invalid"] == 1
-    assert mailbox.requests[0][2] == []
-    assert "f9" in policy.feedback[0][0]["validation_error"]
+    assert [request[2] for request in mailbox.requests] == [[]]
+    assert error in policy.feedback[0][0]["validation_error"]
     assert policy.feedback[0][0]["results"][0]["ok"] is False
     assert policy.feedback[0][1]["delay_ms"] == 500
 

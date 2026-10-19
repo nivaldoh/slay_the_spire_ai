@@ -15,6 +15,8 @@ OBSERVATION = {
     [{"unit": "f1", "type": "halt"}],
     [{"unit": "f1", "type": "move", "x": 10, "z": -20.5, "run": True}],
     [{"unit": "f2", "type": "attack", "target": "e2", "run": False}],
+    [{"unit": "f1", "type": "halt", "x": 0, "z": -20.5, "target": None,
+      "run": False, "queue": False, "extra": True}],
 ])
 def test_allowed_orders_pass(orders):
     protocol.validate_orders(orders, OBSERVATION)
@@ -35,6 +37,14 @@ def test_allowed_orders_pass(orders):
 def test_disallowed_orders_are_named(orders, message):
     with pytest.raises(protocol.IllegalActionError, match=message):
         protocol.validate_orders(orders, OBSERVATION)
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf"), 10**400],
+                         ids=["nan", "infinity", "negative-infinity", "oversized-integer"])
+def test_nonfinite_order_fields_are_rejected(value):
+    # Even fields a command ignores cross the Python -> Lua JSON boundary.
+    with pytest.raises(protocol.IllegalActionError, match="finite"):
+        protocol.validate_orders([{"unit": "f1", "type": "halt", "x": value}], OBSERVATION)
 
 
 def test_scenario_key_counts_the_roster_not_the_visible_enemies():
