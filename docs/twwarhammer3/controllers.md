@@ -38,7 +38,7 @@ records a card per trial (kind, class, source file and hash, model, effort, timi
 | `rush_nearest` (run-nearest) | scripted | `attack_nearest`, running | | `scripted.py` |
 | `skills` | scripted | the executor, every unit on its class default | executor v1.2 (`55ab6b3`) | `skills.py` |
 | `probe_abilities` | scripted diagnostic | `skills`, plus every ability as soon as it is ready, the cheapest build on each usable slot and the cheapest affordable unit every 10 s | | `skills.py` |
-| `llm` | model, blocking | the model, raw orders every decision | v20 | `llm.py`, `configs/twwarhammer3/system_prompt.md` |
+| `llm` | model, blocking | the model, raw orders every decision | v21 | `llm.py`, `configs/twwarhammer3/system_prompt.md` |
 | `llm_rules` | model, blocking | as `llm`, with a prompt that states objectives and interface without tactics (`51c1796`, b3) | | `llm.py`, `configs/twwarhammer3/rules_prompt.md` |
 | `commander` | hybrid, asynchronous | the model sets standing skills; the executor acts on every observation | v7 | `commander.py` over `skills.py`, `configs/twwarhammer3/commander_prompt.md` |
 | `package.module:Class` | outside | any class with `decide`, `acknowledge` and `metadata` | | [benchmark-run.md](benchmark-run.md) |

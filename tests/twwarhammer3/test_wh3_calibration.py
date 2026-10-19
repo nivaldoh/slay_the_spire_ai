@@ -19,6 +19,7 @@ from twwarhammer3.battle.calibration import (
     FocusFire,
     HammerAnvil,
     HitAndRun,
+    HitAndRunV2,
     MonsterTarget,
     PinThenRear,
     PriorityStrike,
@@ -62,8 +63,8 @@ def test_feint_flank_waits_for_rear_position_then_withdraws_after_contact():
 def test_small_diagnostics_do_not_use_hidden_enemies_or_order_routers():
     for cls in (FeintFlank, CrossKite, Bodyguard, Crossfire, SpellWindow, HammerAnvil,
                 CornerHold, FocusFire, MonsterTarget, CounterBattery, PinThenRear,
-                FireballSpam, PriorityStrike, CycleCharge, HitAndRun, SnapHitAndRun, FlankLane,
-                SlaveTarpit):
+                FireballSpam, PriorityStrike, CycleCharge, HitAndRun, SnapHitAndRun,
+                HitAndRunV2, FlankLane, SlaveTarpit):
         obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 0)],
                "enemy": [], "evaluation": {"enemy": [unit("e1", "hidden", 5, 5)]},
                "enemy_roster": [unit("e1", "hidden", 5, 5)]}
@@ -922,6 +923,60 @@ def test_hit_and_run_leaves_after_two_seconds_away_from_both_enemies():
     obs["time_ms"] = 1000
     assert snap.decide(obs)[0]["type"] == "move"  # no dwell: out on the first melee frame
     assert "As soon as it observes" in snap.card["knowledge"]
+
+
+def test_hit_and_run_v2_fixes_one_withdrawal_with_the_charge_queued_and_turns_from_the_edge():
+    obs = {"time_ms": 1000, "friendly": [unit("f1", "chariot", 0, 100)],
+           "enemy": [unit("e1", "swordsmen", 0, 0), unit("e2", "swordsmen", 40, 0)]}
+    policy = HitAndRunV2()
+    assert [order["type"] for order in policy.decide(obs)] == ["attack"]
+    obs["friendly"][0].update(z=5, state=["melee"], target="e1")
+    out = policy.decide(obs)
+    validate_orders(out, obs)
+    assert [(o["type"], o.get("queue", False)) for o in out] == [("move", False), ("attack", True)]
+    assert abs(distance(obs["friendly"][0], out[0]) - 150) < 1 and out[0]["x"] < -100
+    assert "facing" in out[0] and policy.pull_outs == 1
+    obs["time_ms"] = 6000  # stale frames still in melee: the batch stands
+    assert policy.decide(obs) == []
+    obs["time_ms"] = 11000
+    obs["friendly"][0].update(target=None, dest=[-145, 41])
+    assert policy.decide(obs) == [] and "f1" in policy.withdrawn
+    obs["friendly"][0].update(x=-120, z=40, state=["moving"])
+    assert policy.decide(obs) == [] and not policy.withdrawn  # armed again, the queue runs on
+    obs["friendly"][0].update(x=-60, z=20, target="e1", dest=None)  # the queued charge runs
+    assert policy.decide(obs) == []
+    obs["time_ms"] = 20000
+    obs["friendly"][0].update(x=-5, z=5, state=["melee"])
+    assert policy.decide(obs)[0]["type"] == "move" and policy.pull_outs == 2
+    obs["time_ms"] = 22000  # the flag flickers off 11 m away: not armed yet
+    obs["friendly"][0].update(x=-10, z=15, state=["moving"], target=None, dest=[-150, 40])
+    assert policy.decide(obs) == [] and "f1" in policy.withdrawn
+    obs["time_ms"] = 36000  # held in melee where it stood for 15 s: pull out again
+    obs["friendly"][0].update(state=["melee"], target="e2", dest=None)
+    assert policy.decide(obs)[0]["type"] == "move" and policy.pull_outs == 3
+    # Near the west edge the radial retreat would leave the map: the point turns along it,
+    # no nearer the edge than the unit, and never back through the enemy.
+    edge = HitAndRunV2()
+    obs = {"time_ms": 1000, "terrain": {"bounds": {"min_x": -512, "max_x": 512,
+                                                   "min_z": -512, "max_z": 512}},
+           "friendly": [unit("f1", "chariot", -450, 0, state=["melee"])],
+           "enemy": [unit("e1", "swordsmen", -400, 0)]}
+    move = edge.decide(obs)[0]
+    assert move["x"] >= -451 and abs(move["z"]) > 100
+    assert abs(distance(obs["friendly"][0], move) - 150) < 1
+    edge.acknowledge({"applied_ms": 2000, "results": [
+        {"index": 1, "unit": "f1", "ok": False, "error": "unreachable"}]}, {})
+    again = edge.decide(obs)[0]  # refused: pull out again, at least 30 m from that point
+    assert again["type"] == "move" and distance(again, move) >= 30
+    # With every deep point blocked, the first clear point clamped inside the map serves.
+    obs["terrain"].update(x0=-496, z0=-496, cell_m=32, rows=["." * 32] * 32)
+    rows = obs["terrain"]["rows"]
+    for row in range(10, 21):  # z -176..144: the unit's row and every deep candidate
+        rows[row] = "#" * 32
+    assert HitAndRunV2().decide(obs) == []  # nothing clear: silent, as v1 held
+    rows[19] = "." + "#" * 31  # the clamped 45 degree point (-482, 106) clears
+    fallback = HitAndRunV2().decide(obs)[0]
+    assert (round(fallback["x"]), round(fallback["z"])) == (-482, 106)
 
 def test_flank_lane_shoots_past_its_screen_only_with_a_clear_lane():
     gun = unit("f2", "handgunners", 0, -40, ammo=1496, range=145, width=30,

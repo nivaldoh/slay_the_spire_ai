@@ -30,8 +30,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 | Piece | Version | Defined in | Latest results |
 |---|---|---|---|
-| `llm` | v20 (2026-10-16) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | v20 shared-magic warning played once (GLM, `llm_rules`): over-spend after a pending spell halved. Tactical prompt's last mode campaign was v15 |
-| `llm_rules` | shares `llm` v20 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | v20 GLM/OpenRouter caster check won at 575 s; spell refusals after a pending spell 7 → 3 (v19 lost). M1 used v18 |
+| `llm` | v21 (2026-10-19) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | v21 states that positions are unit centres and the melee flag decides contact (unplayed by `llm`). v20 shared-magic warning played once (GLM, `llm_rules`): over-spend after a pending spell halved. Tactical prompt's last mode campaign was v15 |
+| `llm_rules` | shares `llm` v21 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | v21 chariot cohort: [b40 round](#2026-10-19-witness-v2-and-prompt-v21-harness-b40). v20 GLM/OpenRouter caster check won at 575 s; spell refusals after a pending spell 7 → 3 (v19 lost). M1 used v18 |
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
@@ -39,6 +39,47 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
+
+## 2026-10-19: Witness v2 and prompt v21 (harness b40)
+
+Owner goal (evening): keep making progress on the benchmark; battles and some API spend
+allowed; understand the results before drawing strong conclusions. Decided under delegation
+from the [second-pass decisions](tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions):
+decisions 1 and 2 run tonight, 3-5 stay with the owner; the v1 rule and verdict are untouched.
+Recounted first from the raw replays (my own script, two numbers corrected by the diff
+review): all ten 5/5 and 8/8 witness losses ended 12-72 m from a map edge and the 3/3 loss
+at 30 m; every win but one 120-432 m from it (the 0/0 l1 win ended 50 m from the south
+edge). GLM's in-melee reasons at 20-30 m centre distance read "still hasn't connected" (l1,
+117-120 s) and "broke contact" (l3, 121-124 s) with the melee flag shown, then "let it grind
+rather than risk another failed disengage" (l1, 140 s) and "let the charge bonus work" for
+10 s (l3), so the interface gap is real and is not GLM's only fault.
+- b40 (`calibration.py`): `HitAndRunV2`, a disclosed control beside the admitted witness: on
+  the first observed melee one batch, a run 150 m from where the unit stands away from the
+  enemies' centre, turned in 45 degree steps to lie 100 m inside the map (or no nearer its
+  edge than the unit) on clear ground, else the first clear point clamped inside, with the
+  attack queued behind it; it re-arms once an observation shows the unit out of melee and
+  30 m from where the batch was sent (the flag flickers inside one engagement in 1 of 13
+  recorded ones); a unit still in melee where it stood 15 s later pulls out again; a refused
+  point un-arms it so the next decision pulls out elsewhere. Its `pull_outs` count is not
+  v1's `charges`, and a refused pull-out counts two invalid orders (the queued attack too).
+  One test (the batch, two stale frames, re-arming, the charge run, the flicker, the stuck
+  retry, the edge turn, the refused point, the blocked fallback); the hidden-enemy test
+  covers it. `cards.py` labels a model cell with its prompt version, so the v21 cohort is its
+  own row beside P5a's v20 (before, the board pooled them into one starred cell).
+- `llm`/`llm_rules` v21: one Information sentence in both prompts (positions are unit
+  centres; the "melee" flag, not the centre distance, says whether a unit is in contact).
+  Diff review (three read-only agents, their findings recounted): a clause saying the flag
+  clears only once the unit has left the fight was dropped, since the recorded replays show
+  it off within 2-13 m of an enemy centre; v2's first draft fell silent where no retreat
+  point passed the 100 m margin and the terrain blocks (162 of 4096 grid positions, most
+  within 56 m of an edge), hence the fallback.
+- Round `calibration/v2-20261019/plan.json` (one plan, `keep_going`): witness v2 at 5/5 and
+  8/8 (5 launches each) and 2/2 (3, its sanity cell); GLM-5.3 low v21, 10 launches (about
+  $1.70); then Kimi K3 low v21, 10 launches (P5's remainder, about $5); paid jobs stop the
+  WH3 OpenRouter ledger at $20 (held $10.66; the account had $46.41). Reading rules fixed
+  before the round: witness v2 against v1 per cell with Wilson intervals, no threshold; GLM
+  v21 against the P5a cell, one-sided Fisher, a screen at n = 10; no verdict words. Results
+  are appended below when the round ends. Unverified: no check agreed.
 
 ## 2026-10-19: Benchmark verifiability, second pass (harness b39)
 

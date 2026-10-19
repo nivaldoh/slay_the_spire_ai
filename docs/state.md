@@ -9,12 +9,14 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
-Nothing is running. [Robotics research notes](twwarhammer3/robotics.md) now include concrete
-controller designs, comparisons and integration constraints. Documentation only; no game/API jobs.
-The benchmark verifiability second pass is complete
-([log](twwarhammer3/log.md#2026-10-19-benchmark-verifiability-second-pass-harness-b39)): its
-reader fixes are on `main` (b39) and its five decisions await the owner in the
-[second-pass section](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions).
+The b40 round runs on the chariot card (owner, 2026-10-19 evening: keep making progress;
+battles and some spend allowed): witness v2 at 5/5, 8/8 and 2/2, GLM-5.3 low on prompt v21,
+then Kimi K3 low v21; one plan, `runs/twwarhammer3/calibration/v2-20261019/plan.json`
+(`PURPOSE.md` beside it), about 4 h from 19:00 local, paid jobs capped at a $20 ledger total
+([log](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)). Decisions 3-5
+of the [second pass](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)
+still await the owner. Follow it: `uv run python -m twwarhammer3 watch`; stop it before its
+next job with a `plan-stop` file beside the plan.
 
 ## Priorities (owner, 2026-10-18)
 
@@ -29,11 +31,13 @@ reader fixes are on `main` (b39) and its five decisions await the owner in the
 [tactic cards](twwarhammer3/tactic-cards.md) (the benchmark definition and its board),
 [latency program](twwarhammer3/latency.md) (plan), [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, harness b39 (the card
-  board judges the witness on its first launches, carries the served model and the mod
-  cadence in a cell's identity and prints the information age; b38 launches and prompt
-  changes; b37 mailbox identity and finite order fields; b36 pinned OpenRouter backends;
-  b35 controller forfeits), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`.
+- On `main`: `llm`/`llm_rules` v21 (positions are unit centres; the melee flag decides
+  contact), `commander` v7, skills v1.2, harness b40 (witness v2 `HitAndRunV2`; the card
+  board names a model row by its prompt version; b39 judges the witness on its first
+  launches, carries the served model and the mod cadence in a cell's identity and prints the
+  information age; b38 launches and prompt changes; b37 mailbox identity and finite order
+  fields; b36 pinned OpenRouter backends; b35 controller forfeits), evaluator v2, track
+  `obs-v4+terrain/act-v2/live-1x`.
 - Benchmark: [the chariot card](twwarhammer3/tactic-cards.md#the-chariot-card-the-first-benchmark-card)
   (one chariot against two Swordsmen units at AI modifier 1.1; tactic: cycle charging;
   witness `SnapHitAndRun`; signature: cycles; rule pre-registered at `5396182`). Round

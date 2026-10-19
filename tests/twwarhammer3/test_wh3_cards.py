@@ -169,13 +169,17 @@ def test_the_board_lists_unrun_plans_and_judges_only_named_directories(tmp_path,
     plans = tmp_path / "plans"
     plans.mkdir()
     model = _job(tmp_path, "glm-l1", [_episode(0, "llm_rules@z-ai/glm-5.3/low", "lost")])
-    (plans / "01-glm.json").write_text(json.dumps({"jobs": [{"output": str(model)}]}))
+    later = _job(tmp_path, "glm-v21-l1", [_episode(0, "llm_rules@z-ai/glm-5.3/low", "lost", card={
+        "source_sha256": "s", "version": "v21"})])  # another prompt version: its own row
+    (plans / "01-glm.json").write_text(json.dumps({"jobs": [{"output": str(model)},
+                                                            {"output": str(later)}]}))
     (plans / "02-foil.json").write_text(
         json.dumps({"jobs": [{"output": str(tmp_path / "foil-l1")}]}))
 
     text = board("chariot", [plans])
 
-    assert "llm_rules@z-ai/glm-5.3/low" in text and "planned, not run: foil-l1" in text
+    assert "llm_rules@z-ai/glm-5.3/low " in text and "llm_rules v21@z-ai/glm-5.3/low " in text
+    assert "*" not in text.split("\n", 3)[3] and "planned, not run: foil-l1" in text
     assert "Verdict" not in text
     _job(tmp_path, "foil-l1", [_episode(0, "attack_nearest", "lost")])
     assert "Verdict: not admitted: attack_nearest has 1 of 10 launches" in board("chariot", [plans])

@@ -156,6 +156,9 @@ def battles(card: dict, directories: list[Path]) -> tuple[list[dict], int]:
                 continue
             seen.add((job.name, name, age_ms))
             base, model, effort = policy_parts(name, config)
+            # A model plays a prompt version (its tuning surface): another version is
+            # another row, not a starred pool.
+            label = f"{base} {control['version']}" if model and control.get("version") else base
             delays = sorted(episode.get("delays_ms") or [])
             age_p50 = statistics.median(delays) / 1000 if delays else None
             battle_s, decisions = episode.get("battle_s"), episode.get("decisions")
@@ -163,7 +166,7 @@ def battles(card: dict, directories: list[Path]) -> tuple[list[dict], int]:
             rows.append({
                 "job": job.name, "outcome": outcome(episode),
                 "started": episode.get("started_at") or "",
-                "controller": f"{base}@{model}/{effort}" if model else name,
+                "controller": f"{label}@{model}/{effort}" if model else name,
                 "age_ms": age_ms, "interval_ms": config.get("interval_ms") or 0,
                 "setup": (setup, deployment.get("steam_build_id"),
                           (deployment.get("pack") or {}).get("sha256"),

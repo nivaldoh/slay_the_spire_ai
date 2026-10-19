@@ -1318,6 +1318,109 @@ class SnapHitAndRun(HitAndRun):
     dwell_s = 0
 
 
+class HitAndRunV2(SnapHitAndRun):
+    """SnapHitAndRun with a withdrawal fixed when it starts and the re-charge queued behind it.
+
+    SnapHitAndRun recomputed its retreat point every decision from stale positions and
+    charged again only 80 m from its target and 10 s later; at 5 s and 8 s of pace it stalled
+    at the map's edge (nine of its ten slow-cell losses ended within 35 m of it). Here the
+    first observation showing melee sends one batch: a run to a point 150 m from the unit
+    away from the enemies' centre, turned in 45 degree steps until it lies 100 m inside the
+    map (or no nearer its edge than the unit) on clear ground, with the attack on the same
+    target queued behind it, so the re-charge needs no further decision. The next pull-out
+    arms once an observation shows the unit out of melee and 30 m from where the batch was
+    sent (the flag flickers inside one engagement); a unit still in melee where it stood 15 s
+    after its batch pulls out again. Whether the tolerance curve was the tactic's or the
+    recipe's is what this control tests (tactic-cards.md, second pass).
+    """
+
+    card = {"purpose": CycleCharge.card["purpose"],
+            "knowledge": "Each unit attacks the nearest visible enemy, kept until it routs or "
+                         "leaves sight. As soon as it observes its own melee it runs 150 m from "
+                         "where it stands, straight away from the visible enemies' centre or "
+                         "turned from that line where the map edge or blocked ground is near, "
+                         "with the attack on its target queued behind the move. It pulls out "
+                         "again on the first melee it observes after an observation out of "
+                         "melee and 30 m from where that pull-out was sent, or 15 s after a "
+                         "pull-out that left it in melee where it stood. No hidden state."}
+    pull_m = 150
+    edge_m = 100
+    stuck_s = 15
+
+    def __init__(self):
+        super().__init__()
+        self.withdrawn = {}  # unit id -> (position, time) of its pull-out, until seen clear
+        self.pull_outs = 0
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        target = _keep(enemies, self.target, _centre(units))
+        self.target = target["id"]
+        orders = []
+        for unit in units:
+            uid = unit["id"]
+            in_melee = "melee" in unit.get("state", [])
+            if uid in self.withdrawn:
+                where, when = self.withdrawn[uid]
+                moved = distance(unit, where) >= 30
+                if not in_melee and (moved or "idle" in unit.get("state", [])):
+                    del self.withdrawn[uid]
+                elif in_melee and not moved and self.now - when >= self.stuck_s:
+                    orders += self.pull_out(unit, enemies, target)  # held where it stood
+            elif in_melee:
+                orders += self.pull_out(unit, enemies, target)
+            elif not unit.get("target") and not unit.get("dest"):
+                orders += self.attack(unit, target)  # the opening charge, or a lapsed one
+        return orders
+
+    def pull_out(self, unit, enemies, target):
+        point = self.retreat_point(unit, enemies)
+        if point is None:
+            return []
+        uid = unit["id"]
+        facing = math.degrees(math.atan2(target["x"] - point["x"], target["z"] - point["z"])) % 360
+        move = {"unit": uid, "type": "move", "run": True, "facing": facing, **point}
+        self.sent[uid] = (move, self.now)  # acknowledge() records a refused point
+        self.withdrawn[uid] = ({"x": unit["x"], "z": unit["z"]}, self.now)
+        self.pull_outs += 1
+        return [move, {"unit": uid, "type": "attack", "run": True, "mode": "melee",
+                       "target": target["id"], "queue": True}]
+
+    def retreat_point(self, unit, enemies):
+        """The first point 150 m from the unit, away from the enemies' centre or turned from
+        that line in 45 degree steps, on clear ground away from refused moves and 100 m
+        inside the map or no nearer its edge than the unit; failing that, the first such
+        point clamped 30 m inside the map and at least 50 m away; None when none is clear."""
+        centre = _centre(enemies)
+        away = math.atan2(unit["x"] - centre["x"], unit["z"] - centre["z"])
+        points = [self.inside({"x": unit["x"] + math.sin(away + math.radians(turn)) * self.pull_m,
+                               "z": unit["z"] + math.cos(away + math.radians(turn)) * self.pull_m})
+                  for turn in (0, 45, -45, 90, -90, 135, -135, 180)]
+        deep = [p for p in points if all(
+            self.depth(p, axis) >= min(self.edge_m, self.depth(unit, axis)) - 1 for axis in "xz")]
+        return (self.open_point(deep)
+                or self.open_point([p for p in points if distance(unit, p) >= 50]))
+
+    def depth(self, point, axis):
+        """Metres from the point to the map's nearest bound on the axis (infinite, unknown)."""
+        if f"min_{axis}" not in self.bounds or f"max_{axis}" not in self.bounds:
+            return math.inf
+        return min(point[axis] - self.bounds[f"min_{axis}"],
+                   self.bounds[f"max_{axis}"] - point[axis])
+
+    def acknowledge(self, ack, latency):
+        super().acknowledge(ack, latency)
+        for result in ack.get("results", []):
+            if not result.get("ok"):
+                self.withdrawn.pop(result.get("unit"), None)  # pull out again, elsewhere
+
+    def metadata(self):
+        return {"type": "hit_and_run_v2", "target": self.target, "pull_outs": self.pull_outs,
+                "withdrawing": sorted(self.withdrawn)}
+
+
 def _blocks(unit: dict, gun: dict, target: dict, clearance: float = 15) -> bool:
     """Whether ``unit`` stands on the gun-to-target line, within ``clearance`` m plus half
     its formation width (a geometric test; the game's line of sight is not observed)."""
