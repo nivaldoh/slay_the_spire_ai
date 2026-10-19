@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from wh3_lua import MOD, load_battle, runtime
 
 from twwarhammer3.engine.mailbox import Mailbox
 from twwarhammer3.protocol import BattleRestarted, MailboxTimeout
@@ -61,20 +62,52 @@ def test_wait_new_battle_skips_the_previous_battle(mailbox):
     assert mailbox.wait_new_battle(not_battle="b1", timeout=0.05) == message
 
 
-def test_requests_are_numbered_and_wait_for_consumption(mailbox):
+def test_requests_are_distinct_and_wait_for_consumption(mailbox):
     request = mailbox.write_orders("b1", 7, [{"unit": "f1", "type": "halt"}])
     message = json.loads((mailbox.directory / "orders.json").read_text())
     assert message == {
-        "schema": 1, "job": "job-a", "battle": "b1", "request": "r1", "based_on": 7,
+        "schema": 1, "job": "job-a", "battle": "b1", "request": request, "based_on": 7,
         "orders": [{"unit": "f1", "type": "halt"}],
     }
-    assert request == "r1"
+    assert isinstance(request, str) and request
     with pytest.raises(MailboxTimeout, match="consume"):
         mailbox.write_control("b1", "restart", timeout=0.05)
     (mailbox.directory / "orders.json").unlink()
-    assert mailbox.write_control("b1", "restart", timeout=0.05) == "r2"
-    assert json.loads((mailbox.directory / "orders.json").read_text())["control"] == "restart"
+    restart = mailbox.write_control("b1", "restart", timeout=0.05)
+    assert restart != request
+    assert json.loads((mailbox.directory / "orders.json").read_text()) == {
+        "schema": 1, "job": "job-a", "battle": "b1", "request": restart, "control": "restart",
+    }
     assert not (mailbox.directory / "orders.json.tmp").exists()
+
+
+def test_new_mailbox_requests_reach_lua_without_disabling_duplicate_rejection(mailbox):
+    # Real files, JSON decoder and poll; only unrelated game callbacks are stubbed.
+    lua = runtime()
+    lua.execute((MOD / "script/_lib/mod/twwarhammer3_json.lua").read_text())
+    lua.execute("json = twwarhammer3_json; function run_menu() end; function log() end")
+    globals_ = lua.globals()
+    globals_.BRIDGE = str(mailbox.directory) + "/"
+    globals_.session = lua.table_from({"job": mailbox.job})
+    globals_.state = lua.table_from({"battle": "b1"})
+    _, poll = load_battle(lua, "read_file", "poll")
+    path = mailbox.directory / "orders.json"
+    replacement = Mailbox(mailbox.directory, job=mailbox.job)
+    for box in (mailbox, replacement):
+        request = box.write_orders("b1", 7, [{"unit": "f1", "type": "halt"}])
+        payload = path.read_text()
+        poll()
+        assert not path.exists()
+        pending = globals_.state.pending
+        assert pending is not None, "a new mailbox's request must reach Lua"
+        assert pending.request == request and pending.based_on == 7
+        assert dict(pending.orders[1]) == {"unit": "f1", "type": "halt"}
+        # Simulate consumption, then redelivery of exactly the same request.
+        globals_.state.pending = None
+        path.write_text(payload)
+        poll()
+        assert not path.exists()
+        assert globals_.state.pending is None, "duplicate delivery must still be rejected"
 
 
 def test_session_and_log_slices(mailbox):

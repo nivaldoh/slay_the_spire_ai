@@ -108,6 +108,7 @@ import json
 import os
 import time
 from pathlib import Path
+from uuid import uuid4
 
 from twwarhammer3.protocol import BattleRestarted, MailboxTimeout
 
@@ -127,6 +128,8 @@ class Mailbox:
         self.directory = directory
         self.job = job
         self.poll = poll
+        # A new --attach controller shares the live battle's last-request history.
+        self.request_prefix = uuid4().hex
         self.requests = 0
 
     # -- publishing -------------------------------------------------------------------
@@ -169,7 +172,7 @@ class Mailbox:
                 raise MailboxTimeout("the game did not consume the previous request")
             time.sleep(self.poll)
         self.requests += 1
-        request = f"r{self.requests}"
+        request = f"{self.request_prefix}-r{self.requests}"
         message = {"schema": SCHEMA, "job": self.job, "battle": battle, "request": request, **body}
         self._publish("orders.json", message)
         return request
