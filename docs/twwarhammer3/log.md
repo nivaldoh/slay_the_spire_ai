@@ -62,32 +62,19 @@ exploratory past the frozen columns; nothing agreed.
 
 ## 2026-10-18: Latency program (plan only)
 
-Owner notes (evening, away; [direction](../owner-direction.md)): measure the gap between knowing a
-tactic and executing it under variable latency, read the army as a robot body, a
-planner-executor harness, latency awareness, a fine-tuning comparison, wins that account for
-latency; OpenRouter credit now $50.38. Two read-only reviews ($0, no game), each finding checked
-by an independent verifier; scripts and outputs in `calibration/latency-review-20261018/` (local).
-Plan: [latency.md](latency.md). All unverified.
-- Benchmark review of the chariot card: foils score 0 cycles by construction (no move orders)
-  and 6 of 9 model losses show a cycle; witness results track the start configuration (4
-  discrete Swordsmen start pairs, 18/12/6/4 of 40 launches; near-tie starts won 7 of 8,
-  asymmetric 1 of 6, p 0.026, post hoc) more than tempo (6 of 8 against 2 of 6, p 0.28);
-  rematch starts match but one tick splits outcomes (S4 pair: lost 217 s, won 561 s);
-  `verdict()` counts episodes, not launches; the model-pace gate was dropped at 17:45 UTC
-  against E2's own rule (2 of 3 paced plus the fixed-age win met its "both tempos" branch);
-  WSL clock steps distorted wall-clock fields until 18:01 UTC.
-- Gap measures (30 model battles, 47 scripted): the tactic stated before contact won 5 of 10,
-  otherwise 0 of 17 (7 of those unmeasured: three replies or fewer before contact); median order age does not separate (GLM-5.3 low, the fastest, lost); 4 of
-  5 slow decisive chariot calls were retry loops; register and board order ages omit calls that
-  never applied. The multi-timing design (fast controllers, optional specialists) came from a
-  pasted "ChatGPT 6 Astra Pro" answer (2026-10-13); the owner's modding guide had allowed a
-  commander over the game's AI; only `commander` was built.
-- Corrected: witness wins at 1.1 read 6-9 cycles (not 3-8); fixed-age witnesses won 6 of 8 at 1.1
-  (not 5 of 5); Kimi K3 high's chariot win ordered no pull-out from melee; the read timeout is
-  600 s (controllers.md said 60 s). "Only the 3 fastest models won" (said in session) is wrong.
-- Readiness specs (read-only, verified): chariot card version 2 (tactic-cards.md), OpenRouter
-  pins through `provider.only` on `/responses`, open-loop probes rendered by replaying
-  `LLMPolicy` (915 of 915 recorded prompts reproduced), and rung 1 as `llm_latency` v1.
+Owner notes (evening, away; [direction](../owner-direction.md)); plan in [latency.md](latency.md).
+Read-only reviews, $0, each finding checked by a second agent; evidence local in
+`calibration/latency-review-20261018/`. All unverified.
+- Chariot card: foils score 0 cycles by construction; witness wins track the start
+  configuration (4 discrete Swordsmen start pairs; near-tie starts won 7 of 8, others 1 of 6,
+  post hoc) more than tempo; `verdict()` counts episodes, not launches; the model-pace gate was
+  dropped against E2's own rule.
+- Gap (30 model battles): wins only with the tactic stated before contact (5 of 10, else 0 of
+  17); 4 of 5 slow decisive calls were retry loops; order ages omit calls never applied.
+- The planner-executor design came from a "ChatGPT 6 Astra Pro" answer pasted on 2026-10-13;
+  only `commander` was built.
+- Corrected: witness cycles 6-9 (not 3-8), fixed-age witnesses 6 of 8 (not 5 of 5), read
+  timeout 600 s (not 60 s).
 
 ## 2026-10-18: The chariot card, harness b32 to b34
 

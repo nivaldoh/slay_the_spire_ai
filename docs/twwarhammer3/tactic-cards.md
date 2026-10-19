@@ -69,33 +69,18 @@ prompt the model would have seen at each decision).
 
 ### Card version 2 (draft, 2026-10-18 evening; not agreed)
 
-Fixes the review's findings ([latency program](latency.md#owner-decisions), decision 2); the
-full spec and its scripts are local evidence in
-`runs/twwarhammer3/calibration/latency-review-20261018/readiness/`.
-
-| Field | Version 2 |
-|---|---|
-| battle | `grn-chariot-emp-swordsmen-hard`, unchanged |
-| start | each launch's class from its first observation: `tie` (distance margin under 0.5 m), `e1-near`, `e2-near`; board and verdict report every class. Fixed starts exist only inside the evacuation `custom` objective (friendly placement seen once, 8 of 8 units; enemy placement never observed); moving only the chariot to about (-58, -362) would make e2 nearer by 6.7-9.7 m in all four configurations on an open route (code and a two-launch probe, unprobed) |
-| foils | `rush_nearest` and `attack_nearest` (they already switch targets 1-18 and 3-9 times a battle, n = 11), plus `GeneralFocus` (attack the commander-flagged unit, e1 by construction, and keep it; never move), `OnePullout` (the witness until its first re-charge, then grind) and `ChargeThrough` (a running move 60 m beyond the target and back; unprobed) |
-| witness | `SnapHitAndRunV2`: `SnapHitAndRun` with a tie-break to the lowest id when two enemies are within 5 m in distance (it then picks the general; disclosed) |
-| signature | cycles v2: a move applied from a decision whose snapshot shows the unit in melee, after which it leaves melee and gets at least 30 m from every unrouted enemy, then an attack applies by the next onset frame. On the 42 recorded battles 18 counts change and Kimi K3 high's 1.0 win reads 0; two readings of the rule differ in 3 battles, so it needs a frozen reference implementation and a fixture test |
-| counting | one control per launch (`--episodes 1`); the first N scored launches per control in plan order; a hash of the plan list in the card; the verdict refuses duplicates, second episodes and mixed setups |
-| scoring | [the battle never waits](latency.md#scoring-the-battle-never-waits); in admission a witness failure is a loss, a foil failure is excluded |
-| held out | `grn-chariot-emp-swordsmen-hard-heldout-wastes` on `battle_preset_wh3_nur_wastes_01_04` (the project's reserved held-out map, never played), once after admission, untuned; it needs its own card entry |
-
-Admission rule v2, to pre-register at the commit holding the plan hash before any plan exists:
-`rush_nearest` and `attack_nearest` lose 10 of 10; the three new foils lose 6 of 6; the
-witness at 5 s age wins at least 6 of 8, each win with at least 2 cycles, and at least half in
-every start class with 2 or more launches. A good card (foils at 1%, witness at 90%) passes at
-most about 66% of the time; a 20% foil passes 6 launches 26% of the time; and 10 rush launches
-miss the 1.0 leak's start class (drawn 15% of the time) with probability 20%, so a minimum per
-class is needed unless starts are fixed. A `ChargeThrough` win would make the tactic "repeated
-impact"; that is decided before exploration. Cost, $0: exploration (2 launches each of the new
-foils and the witness) 0.7-1.8 h; the round, 46 launches, 4.6-8 h plus 0.7-0.8 h for four
-model-pace references; the held-out check, 20 launches, about 2-3 h. Open: whether models see
-the commander flag (it is in every policy observation, `engine/mailbox.py:65`, but
-`render_unit` leaves it out, so scripted bots can use it and models cannot).
+Fixes for the review's findings, same battle; the full spec is local in
+`runs/twwarhammer3/calibration/latency-review-20261018/readiness/`:
+- **Start**: report each launch's start class (read from its first observation); starts cannot
+  be fixed without new code.
+- **Foils**: add a general-focus foil (attack the commander-flagged unit and keep it), one
+  pull-out then grind, and a charge straight through.
+- **Signature**: count a cycle only for a move ordered while in melee that gets the unit clear
+  (30 m) before the next charge; freeze it with a test before the round.
+- **Counting**: one control per launch, the first N launches in plan order, the plan list
+  hashed in the card.
+- **Held out**: the reserved `nur_wastes` map, once after admission.
+- Open: models do not see the commander flag that scripted bots can read.
 
 ## What the benchmark measures
 
