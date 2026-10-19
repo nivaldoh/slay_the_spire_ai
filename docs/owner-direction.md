@@ -35,6 +35,19 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-19 (afternoon): "think more deeply about verifiability and reproducibility for our
+  WH3 benchmark" and improve it, keeping the code clean and lean: are knowing a tactic and
+  executing it checked properly; a battle must be guaranteed winnable and let the model
+  exercise exactly the skill measured; battles are real time and API response times vary;
+  refer to similar research projects for ideas. Done as a review with proposals
+  ([log](twwarhammer3/log.md#2026-10-19-benchmark-verifiability-review)).
+- 2026-10-19 (research follow-up): refine the robotics documentation with concrete
+  comparisons, clean integration into this codebase, benefits, risks and viability checks;
+  continue looking for high-value ideas. Documentation only.
+- 2026-10-19: research the army as a robot body: code as policy, fast learned unit control
+  (including VLAs and diffusion), and a slower planner. Write useful ideas for benchmark
+  design and model performance, grounded in research and the current harness; consider
+  risks and unsupported assumptions. No implementation.
 - 2026-10-19 (night, later): "recent JEV models seem to work well for situations that
   require low-latency, like our battles? We should remember to experiment with them at some
   point". Possibly Jev (TypeSafe: structured state to typed decisions, vendor-reported

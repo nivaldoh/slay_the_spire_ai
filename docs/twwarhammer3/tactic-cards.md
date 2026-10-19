@@ -68,15 +68,10 @@ prompt the model would have seen at each decision).
 From the verifiability review ([log](log.md#2026-10-19-benchmark-verifiability-review)); each
 item is an owner decision and none runs a game until agreed. The c1 verdict stays the
 pre-registered v1 result; v2 is frozen before its own round and c1 is shown recomputed under it.
-1. **Signature v2, the countermand clause.** A cycle counts only if no attack order for the
-   unit applied after its pull-out move before the engagement ended: `cards.cycles` today
-   credits a pull-out the controller itself overrode. Recount over the 64 recorded chariot
-   battles: GLM-5.3 low countermanded 14 of its 37 pull-outs (9 of its 30 credited cycles,
-   1 of them in its win), the witness 0 of 246; countermanded engagements lasted a median
-   31 s against 9 s. Trace-only, about 4 lines and one test record that fails on v1; witness
-   counts are unchanged by construction. The draft's 30 m clearance clause is deferred: it
-   moves 13 of 44 counts by 1-3, no verdict and no cell median, and 30 m centre to centre is
-   about one formation apart.
+1. **Signature v2** is the ladder's cycle ([below](#knowledge-against-execution-the-ladder-and-the-told-arm-proposal-2026-10-19-not-agreed)):
+   a non-last engagement with a pull-out and no countermand. `cards.cycles` today credits a
+   pull-out the controller itself overrode (GLM-5.3 low: 9 of its 30 credited cycles; the
+   witness 0 of 228). The draft's 30 m clearance clause is dropped: depth is a descriptor.
 2. **A model-pace gate, pre-registered inside the tolerance.** Keep the v1 gate as admitted;
    add the witness at 2 s age and a 2 s interval in fresh launches, 10 of 14 (passes a 0.5
    witness 9% of the time, a 0.8 witness 87%; 8 of 10 would be 5.5% and 68%), stopped at
@@ -112,6 +107,84 @@ the spread here is too small to matter), a witness paced by a model's recorded t
 (the diagonal cells bracket the current models; a `--delay-seconds D --interval-ms I` cell at
 a model's p90 needs no code) and new offline probe moments (a memoryless probe cannot measure
 commitment; the countermand count does, at $0).
+
+### Knowledge against execution: the ladder and the told arm (proposal, 2026-10-19; not agreed)
+
+How a card tells "did not know the tactic" from "could not execute it live"
+([research and panel](log.md#2026-10-19-knowledge-against-execution-the-protocol)): read the
+controller's applied orders on its own information, never its reply text, and intervene on
+knowledge once. A plan; every number is a postdiction over the 64 recorded chariot battles.
+- **The ladder** (`cards.ladder`, about 40 lines replacing the body of `cycles`; $0, read
+  retroactively). Per engagement of the card unit: *observed* when some decision's basis
+  showed it in melee, else *unobserved* (the engine ended the contact before the controller
+  saw it: the latency share, witness 5/5 2 of 31, 8/8 1 of 17, GLM 0 of 43); the *pull-out*,
+  graded at the first in-melee decision: an applied unqueued move whose destination lies
+  farther from the nearest visible enemy in that basis than the unit stands (*first*), or at a
+  later in-melee decision (*late*), else *none* (an approach or a refused move is none); a
+  *countermand*: an unqueued attack applied after the pull-out before the engagement ends,
+  split by the basis gap at that decision into *stuck* (within 5 m) and *believed clear*; a
+  queued attack in the pull-out's own batch is counted apart; *silent*: an observed
+  engagement of 10 s or more with no order applied. Printed, never scored: destination gap
+  and gap at the first re-attack, reaction, health lost per engagement, order age at the
+  first in-melee decisions. The reading is the **per-battle class** over the cell's launches:
+  won with a cycle, won without one (a leak: the play becomes a foil), never pulled out,
+  countermanded, executed-lost, forfeit.
+- **Recount**: witness 0/0, 2/2 and 0/5 won all; 3/3 and 5/0 one executed-lost each; 5/5 and
+  8/8 executed-lost 9 of 9 with 7 silent engagements, first-decision pull-outs in 16 of 24
+  and 4 of 12 observed engagements, 0 countermands; foils never, 20 of 20; GLM-5.3 low won 1,
+  countermanded 6, executed-lost 3 (pull-outs first 18, late 12, none 3 of 33 observed
+  non-last engagements; countermands 3 stuck, 9 believed clear; 8 queued re-attacks);
+  Qwen3.6 none never, 5 of 5. The local P4 probe's first-contact grade agrees with the live
+  first-decision reading (GLM moved away 18 of 30 against 18 of 33), so the ladder gives it
+  at $0 and the keyword screen and the probe retire as instruments.
+- **The told arm**, the one intervention on knowledge: a base policy `llm_card` whose system
+  prompt is the rules prompt plus a frozen "Card knowledge:" paragraph stating the witness's
+  rule in the second person (attack the nearest enemy; on the first observation showing your
+  unit in melee, move it to 120 m from the enemies' centre on your own side; charge again
+  once 80 m from the target and 10 s after leaving), composed by `controllers.system_prompt`,
+  saved and hashed as the job's prompt (the export's equality check holds), separated on the
+  board and in the register by name; about 15 source lines. Only `llm_rules` gets a told
+  twin: the `llm` and `commander` prompts advise against the tactic ("once a unit is in melee,
+  keep it there"), so they are another cohort.
+- **Arms per model and mode**, unpaused at 1x, no added-age model cells: U, the scored
+  `llm_rules` cell at natural latency, 10 launches (GLM's 10 and Qwen's 5 are recorded); T,
+  `llm_card`, 10 launches when U won at most 2 of 10 and forfeited under 3, skipped when U
+  won 6 or more; a new model pairs them in one launch (`--policy llm_rules@m/e,llm_card@m/e
+  --episodes 2`); the witness at 2/2 twice the same night as the drift control. Cost: 12
+  launches, about 1.5-2 h, about $1.70 for GLM-5.3 low. Read as direction only, Fisher on
+  launches (10 against 10 separates gaps near 0.6; smaller prints "not separated"):
+
+| U reads (most launches) | T reads | Reading |
+|---|---|---|
+| won 6 of 10 or more, each with a cycle | skipped | knows and executes |
+| executed-lost, unobserved and silent up, 0 countermands (the witness at 5/5, 8/8) | skipped | latency-bound |
+| never pulled out (Qwen 5 of 5) | pull-outs appear, cycles or wins rise | the step was missing: knowledge |
+| never pulled out | still none | recipe not adopted: unattributed |
+| countermanded (GLM 6 of 10) | believed-clear countermands fall, wins rise | parameters and a standing rule were missing: a disclosure effect, since GLM's notes held the plan |
+| countermanded | countermands persist | execution: it overrides its own pull-out under the clock |
+| executed-lost at an age the witness wins | persists | the recipe ran and lost: card or pace residual; read the descriptors |
+| any | T wins below U | the recipe hurts this model: flagged, not diagnosed |
+
+- **Validation before any model row is read**: the recorded known groups through the same
+  code (witness first-decision pull-outs in at least 0.9 of observed non-last engagements at
+  every cell, 0 countermands; 5/5 and 8/8 class as executed-lost, never countermanded; foils
+  never) and one synthetic fixture with positions and basis records: an approach move reads
+  none; an away move then an unqueued attack reads countermand and cycle 0 where v1 reads 1;
+  a queued attack in the same batch is no countermand; a 1 s flicker merges; no in-melee
+  basis reads unobserved; the composed `llm_card` prompt equals the rules text plus the
+  paragraph and the manifest hash is its sha256; one `llm_card` and one `llm_rules` row of a
+  model form two unstarred cells. No live bots are required (PullOutOnce and the blind cycler
+  stay in item 2); a shallow cycler (retreat 60 m from the nearest enemy, re-charge at 45 m,
+  5 launches) is optional, to test whether depth matters at all.
+- **Not separated**: knowledge from salience in T; ignoring the text from being unable to act
+  on it; a wrong clearance belief applied reads countermand, and only T says whether the
+  number fixes it; latency matched by constant-age cells, not the model's tail; 1 Hz replay;
+  whether 80 m is necessary (GLM won at 49 m clearance); one night, one backend.
+- **Owner check to propose**: `uv run --locked pytest -ra tests/twwarhammer3/test_wh3_cards.py
+  tests/twwarhammer3/test_wh3_controllers.py`, and `uv run python -m twwarhammer3 card chariot`
+  printing the known-group readings above and `Verdict: admitted` (skipped where `runs/` is
+  absent); after the told night, the board over its plan directory printing `llm_card` and
+  `llm_rules` as two cells with classes, wins and intervals.
 
 ## What the benchmark measures
 

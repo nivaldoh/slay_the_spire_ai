@@ -365,6 +365,10 @@ Found in the M1 matched round (2026-10-16), addressed in v19 / commander v6:
 
 ## Designs not built yet
 
+The [robotics research notes](robotics.md#comparisons-that-answer-different-questions)
+develop controlled comparisons and [integration boundaries](robotics.md#fit-to-the-current-codebase)
+for these candidates; they remain proposals, not demonstrated improvements.
+
 Ordered by how much each is expected to teach for its cost; test each against the best
 implemented controller, one change at a time.
 

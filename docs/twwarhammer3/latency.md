@@ -2,8 +2,8 @@
 
 The plan for the owner's WH3 notes of 2026-10-18 (evening, [owner-direction.md](../owner-direction.md)):
 measure the gap between knowing a tactic and executing it in a battle that never waits, borrow
-from robotics, and find harnesses and a fine-tuning path that close the gap. Nothing here is
-agreed, so every number is unverified ([hard rule](../../AGENTS.md#verification-hard-rule)).
+from robotics, and find harnesses and a fine-tuning path that close the gap. Research checks
+remain proposals and gameplay findings unverified ([hard rule](../../AGENTS.md#verification-hard-rule)).
 History and counts are in the [log](log.md#2026-10-18-latency-program-plan-only); local evidence
 in `runs/twwarhammer3/calibration/latency-review-20261018/`.
 
@@ -28,19 +28,30 @@ offline probes per model-mode; all post hoc:
 - The prompt already states the last delay; telling a model 12 s instead of 1 s changed nothing
   detectable offline (10 paired tests).
 - 2026-10-19 round ([log](log.md#2026-10-19-overnight-round-at-b36-c1-finished-p2-cells-p5a)):
-  the witness wins with stale information or a slow decision rate but not both (model pace:
-  4 of 4 at 2 s, 0 of 5 at 5 s). GLM-5.3 low stated the tactic in 10 of 10 battles at a
-  tolerated 2 s pace and won 1: by elimination an execution gap, which no measure tried
-  (pull-out depth, refusals, contact length before the last) locates yet.
+  the witness won 4 of 4 at 2 s added age / 2 s decision interval, and 0 of 5 at 5 s / 5 s.
+  GLM-5.3 low stated the tactic in 10 of 10 battles and won 1, with median order age 2.1 s.
+  The 2026-10-19 [review](log.md#2026-10-19-benchmark-verifiability-review) located the
+  cause: GLM ordered a pull-out in 37 of 43 engagements with a 4.5 s median reaction (the
+  admitted witness: 5.1 s) and countermanded 14 of them with an attack before leaving melee
+  (witness 0 of 246); those engagements lasted 31 s median against 9 s. A commitment
+  failure, not tempo (10 battles, one night, one backend).
 
 ## Scoring: the battle never waits
 
-Proposed: anything inside the controller is time passing, so a provider error, an invalid or
-cut-off reply or a truncation is a loss ("forfeit"); only game or setup failures and operator
-stops (ledger, credit) are excluded. A failed decision sends no orders and the controller is
-asked again; the engine result is read even while a call blocks. On `main` since harness b35
-(2026-10-19, owner; unit tests only, unplayed). Today `cards.outcome` excludes
-provider errors, and the two Score texts in tactic-cards.md disagree.
+Since b35, controller failures and truncations that end an in-battle episode count as losses
+(forfeits) in `cards.outcome`; game/setup failures, interrupts and operator stops are excluded.
+Recoverable provider or invalid-reply failures in `_drive` instead log a `forfeit` event,
+send no new orders and request again. That event alone does not force a terminal loss:
+`cards.outcome` scores the final episode status. Invalid order batches are recorded and sent
+as no orders. Earlier engine actions continue while no replacement is issued. Open: since b35
+only the game or the harness can truncate, so
+[card v2](tactic-cards.md#card-version-2-proposal-2026-10-19-not-agreed) item 3 proposes
+excluding a truncation instead of forfeiting it.
+
+If the battle ends during a blocking call, the loop checks for its result after the call
+returns and does not send the late orders. It does not continuously read results inside
+that call. These are current code semantics, not agreed live verification; the failed-call
+paths remain unverified in the game. Compare failed decisions and terminal forfeits separately.
 
 ## Measurements
 
@@ -48,18 +59,26 @@ provider errors, and the two Score texts in tactic-cards.md disagree.
   equal to the decision interval at 0, 2, 3.5 and 8 s, plus 0 s age with a 5 s interval, 5
   launches each, with existing flags. The win rate against latency is the card's tolerance.
 - **Open-loop probes** (no game): recorded critical moments rendered by `LLMPolicy` and sent to
-  each model; graded against the tactic. One round done (log, 2026-10-18).
+  each model; graded against the tactic. One round done (log, 2026-10-18). Retired as an
+  instrument by the proposed
+  [ladder](tactic-cards.md#knowledge-against-execution-the-ladder-and-the-told-arm-proposal-2026-10-19-not-agreed):
+  its first-contact grade agrees with the live first-decision reading.
 - **Closed-loop round**: 10 launches per model-mode on the 1.1 card under the rule above, with
   pinned backends; at that n only gaps of about 0.6 in win rate are detectable.
-- Reported beside the win: order age including calls that never applied, and contact-to-pull-out
-  time per engagement. Thresholds read off past battles are frozen before new ones.
+- Reported beside the win (board, b38): order age as p50/p90 and forfeits; a forfeited call's
+  age is recorded once a forfeit occurs. Thresholds read off past battles are frozen before
+  new ones.
 
 ## Robotics framing
 
+The [robotics research notes](robotics.md) develop these ideas into candidate comparisons,
+with primary sources, limits of transfer and the current commander's constraints.
+
 A unit is a module with its own low-level controller (the engine's movement, pathing and melee
-targeting), the model is the brain, casualties and routs are actuator loss. Robot hierarchies
-keep the slow loop faster than the reaction window; here the planner's 3-7 s medians and 30 s
-tails are slower than the window, which is what makes the gap measurable.
+targeting); routing can temporarily remove a module and death removes it permanently. Local
+execution must react within the task's window. A higher-level planner can be slower if its
+assignments remain useful and the executor handles the intervening changes. The measured
+chariot timing cells motivate testing that separation; they do not set a universal safe rate.
 
 | Work | Mechanism | WH3 use |
 |---|---|---|
@@ -91,12 +110,15 @@ need an origin tag so the signature credits the model, not the executor.
 
 ## Fine-tuning
 
-Methods to compare on one card with one held-out variant: SFT on witness demonstrations, SFT on
-delay-shifted labels, distillation from winning model traces, rejection sampling, DPO/KTO; online
-RL in the live game is out of reach (thousands of episodes at 6-8 a game hour). The blocker is
-serving: no host publishes fine-tune latency, which decides cards, and the 3060 cannot hold the
-Qwen3.6 student ([post-training](../posttraining.md#beyond-supervised-fine-tuning)). First step:
-time 50 recorded prompts per candidate host (under $1, no game).
+Candidates on one card with a reserved variant: witness imitation, training with explicit
+delay and intervening-action context, distillation, rejection sampling and preference methods.
+Simply shifting labels against older observations can mislabel the state. The
+[robotics notes](robotics.md#4-learn-micro-control-only-where-the-action-problem-warrants-it)
+also consider small structured-state learners and bounded corrections to a reference.
+Large online RL runs are costly at 1x; this does not rule out a bounded later experiment.
+A student still needs a measured serving route and suitable data
+([post-training](../posttraining.md#beyond-supervised-fine-tuning)). A serving probe on recorded
+inputs can measure latency without a game, but cannot establish policy performance.
 
 ## Staged plan
 
@@ -114,7 +136,7 @@ drop out as budget stops.
 ## Owner decisions
 
 1. "The battle never waits": merged as b35 (owner, 2026-10-19).
-2. `c1` finished as evidence, then a [card version 2](tactic-cards.md#card-version-2-draft-2026-10-18-evening-not-agreed).
+2. `c1` finished as evidence, then a [card version 2](tactic-cards.md#card-version-2-proposal-2026-10-19-not-agreed).
    Recommended.
 3. One pinned backend per model for comparisons (checked: Kimi K3 on Sail Research, GLM-5.3 on
    Decart, Qwen3.6 on Parasail): merged as b36 under delegation (2026-10-19), for review.

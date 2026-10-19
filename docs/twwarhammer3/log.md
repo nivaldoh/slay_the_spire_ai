@@ -35,10 +35,76 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b37 (2026-10-19; mailbox identity and finite order fields; b36 backend pins; b35 the battle never waits), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [Component checks](#2026-10-19-harness-b37-mailbox-and-order-boundaries); latest game evidence remains the [overnight round at b36](#2026-10-19-overnight-round-at-b36-c1-finished-p2-cells-p5a) |
+| benchmark harness | b38 (2026-10-19; the card board counts one episode per controller per launch, names model rows by model and effort, marks prompt changes, prints forfeits, p50/p90 order age and planned launches that never ran; b37 mailbox identity and finite order fields; b36 backend pins; b35 the battle never waits), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py` (`TRACK`), `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [Verifiability review](#2026-10-19-benchmark-verifiability-review) and [component checks](#2026-10-19-harness-b37-mailbox-and-order-boundaries); latest game evidence remains the [overnight round at b36](#2026-10-19-overnight-round-at-b36-c1-finished-p2-cells-p5a) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
+
+## 2026-10-19: Knowledge against execution: the protocol
+
+Owner goal: a good solution for "knowledge against execution is not checked properly". A
+14-agent pass (surveys of agent benchmarks, imitation and robotics evaluation, measurement
+validity, repository feasibility; three designers, six critics, a judge), every number
+recounted by my own script over the 64 recorded chariot battles; no game, no paid call;
+nothing verified. Result: [the ladder and the told arm](tactic-cards.md#knowledge-against-execution-the-ladder-and-the-told-arm-proposal-2026-10-19-not-agreed), plan only.
+- Read orders, not text: a per-engagement ladder graded at the first decision whose basis
+  showed melee (so latency cannot read as ignorance: the witness pulls out there in at least
+  0.9 of observed engagements at every pace cell; its stale cells show unobserved and silent
+  engagements instead), countermands split by what the controller believed, per-battle
+  classes as the reading (GLM-5.3 low: won 1, countermanded 6, executed-lost 3; Qwen3.6 none
+  never pulled out 5 of 5; foils never 20 of 20); cycles v2 is its by-product.
+- Intervene once: `llm_card`, the rules prompt plus the witness's rule, 10 launches when a
+  model lost; its contrast with the scored cell reads knowledge, direction only ($1.70, 2 h).
+- Retired: the keyword screen; the local P4 probe (its first-contact grade matches the live
+  first-decision reading, 18 of 30 against 18 of 33). Not adopted: live control bots as a
+  gate, a depth rung in the score, thresholds read off model battles, verdict words at n = 10.
+- Borrowed: BALROG and STOCKTAKE (knowing-doing rates; hints in the prompt may be ignored),
+  AgentBoard (a progress ladder beside success), DAgger (grade on the policy's own states),
+  known-groups validation and pre-registration (controls read before any model row).
+
+## 2026-10-19: Benchmark verifiability review
+
+Owner question: are knowing a tactic and executing it checked properly, is a card winnable
+and skill-isolating, how to account for variable latency. A 15-agent review (three literature
+briefs, engine capabilities, a code review, local data; three designers, six critics), every
+number recounted by a second script; no game, no paid call; nothing is verified under the
+hard rule. Proposals: [card version 2](tactic-cards.md#card-version-2-proposal-2026-10-19-not-agreed).
+- Knowledge against execution: the live "stated the tactic" is a keyword screen in a scratch
+  script; the uncommitted P4 offline probe measures the first-decision step the ladder of the
+  later entry reads live. `cards.cycles`
+  credits any applied move inside an engagement: over the 64 recorded chariot battles GLM-5.3
+  low countermanded 14 of its 37 pull-outs with an attack before leaving melee (9 of its 30
+  credited cycles), the witness 0 of 246; those engagements lasted 31 s median against 9 s.
+  GLM's reaction to contact (4.5 s median) was not slower than the admitted witness's (5.1 s)
+  and its achieved age profile (median 2.1 s, p90 3.3 s) lies between the witness's 2/2 and
+  3/3 cells, which won 7 of 8: a commitment gap, not latency (10 battles, one night, one backend).
+- The rule: 4 of 5 passes a 0.5 witness 19% of the time and fails a 0.8 witness 26%; 0 of 10
+  bounds a foil below 0.26; the gate witness decides 3 times a second; each c1 foil's 10
+  battles are 10 instances shared with the other foil; `outcome` changed after
+  pre-registration (b35), no effect on c1. 10-launch model cells separate 0.1 from 0.8, not 0.4.
+- Engine: no script seed, so a launch is never replayable; the mod's evacuation code can fix
+  both sides' starts by teleport, unneeded here (starts within 1.6 m over 25 launches).
+- Board, b38 (`cards.py`, two regressions that fail on b37): one episode per controller per
+  launch, full model labels, the prompt hash in a model cell's identity, integer-ms cell
+  keys, forfeits and p50/p90 age, planned launches that never ran (p2's fourth 0/5 launch),
+  a verdict only with control cells, the merge constant in the rule line. No score or verdict
+  changed: c1 still reads admitted. tactic-cards.md: the tolerance table replaces the
+  model-pace reference row; two 2026-10-18 tables retired to git (`9df420f`).
+- Borrowed: The World Won't Wait (action age as median and p95; held-out tasks), SMACv2 (an
+  observation-blind control), Fishtest (sequential rules), Bowyer et al. (Wilson at small n).
+
+## 2026-10-19: Robotics research notes
+
+Owner requested research only, then concrete comparisons and codebase fit.
+[robotics.md](robotics.md) connects 14 primary research
+sources to generated feedback rules, planner/executor comparisons, action commitment,
+learned micro control and adaptation tests. Refinement adds parameter-selection and bounded
+correction baselines, assignment lifecycle, artifact identity and generator-level sampling.
+Independent reviews checked repository fit, transfer claims and comparison validity.
+Corrected latency.md's causal overclaim and failed-decision versus terminal-forfeit description.
+No controller, scenario, prompt, result or version changed;
+no game, training or paid model calls. Proposals and WH3 performance remain unverified.
+Documentation checks: 50 link tests passed; `uv run --locked ruff check .` passed.
 
 ## 2026-10-19: Harness b37, mailbox and order boundaries
 

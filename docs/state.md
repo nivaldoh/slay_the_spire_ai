@@ -9,8 +9,12 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
-Nothing is running. The bounded maintenance pass is complete
-([log](twwarhammer3/log.md#2026-10-19-harness-b37-mailbox-and-order-boundaries)); no game/API jobs.
+Nothing is running. [Robotics research notes](twwarhammer3/robotics.md) now include concrete
+controller designs, comparisons and integration constraints. Documentation only; no game/API jobs.
+The benchmark verifiability review is complete
+([log](twwarhammer3/log.md#2026-10-19-benchmark-verifiability-review)): its board fixes are
+on `main` (b38) and its proposals await decisions in
+[card version 2](twwarhammer3/tactic-cards.md#card-version-2-proposal-2026-10-19-not-agreed).
 
 ## Priorities (owner, 2026-10-18)
 
@@ -25,30 +29,35 @@ Nothing is running. The bounded maintenance pass is complete
 [tactic cards](twwarhammer3/tactic-cards.md) (the benchmark definition and its board),
 [latency program](twwarhammer3/latency.md) (plan), [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, harness b37 (mailbox
-  identity and finite order fields; b36 pinned OpenRouter backends; b35 controller forfeits),
-  evaluator v2, track `obs-v4+terrain/act-v2/live-1x`.
+- On `main`: `llm`/`llm_rules` v20, `commander` v7, skills v1.2, harness b38 (the card
+  board counts launches and marks prompt changes; b37 mailbox identity and finite order
+  fields; b36 pinned OpenRouter backends; b35 controller forfeits), evaluator v2, track
+  `obs-v4+terrain/act-v2/live-1x`.
 - Benchmark: [the chariot card](twwarhammer3/tactic-cards.md#the-chariot-card-the-first-benchmark-card)
   (one chariot against two Swordsmen units at AI modifier 1.1; tactic: cycle charging;
   witness `SnapHitAndRun`; signature: cycles; rule pre-registered at `5396182`). Round
   `c1`: foils lost 10 of 10 each, the witness won 4 of 5 at 5 s: admitted under
   that rule (no check agreed). The witness tolerates 2-3 s at model pace, not 5 s; GLM-5.3 low
-  won 1 of 10 while stating the tactic in all 10, Qwen3.6 none 0 of 5. All unverified.
+  won 1 of 10 while stating the tactic in all 10, Qwen3.6 none 0 of 5. The 2026-10-19
+  review located GLM's losses in countermanded pull-outs (14 of 37; the witness 0 of 246),
+  not latency, and found the rule's error rates half stated (a 0.8 witness fails 4 of 5 26%
+  of the time). All unverified.
 - Spend: OpenAI $51.47 of $52. OpenRouter: the account had $50.38 of credit (owner,
   2026-10-18 evening; spend carefully), shared with Spire; the WH3 ledger holds $10.66
   after P5a ($1.78, 2026-10-19).
 
 Next (proposals for the owner; stages in [latency.md](twwarhammer3/latency.md#staged-plan)):
-1. An execution study (no game): what GLM-5.3 low's 9 losses do differently from the witness
-   at the same pace (pull-out depth, refusals and contact length do not separate them); it
-   decides what a harness or a specialist trained on the witness should change.
+1. Owner decisions on [card version 2](twwarhammer3/tactic-cards.md#card-version-2-proposal-2026-10-19-not-agreed)
+   and its [knowledge-against-execution protocol](twwarhammer3/tactic-cards.md#knowledge-against-execution-the-ladder-and-the-told-arm-proposal-2026-10-19-not-agreed):
+   the ladder ($0, replaces `cycles`), the told arm `llm_card` (one night, about $1.70), a
+   model-pace gate at 2 s/2 s with 10 of 14, truncation excluded, cell n rules and the agreed
+   check; then one re-admission night ($0). The execution study is answered by the ladder:
+   GLM's losses are countermanded pull-outs.
 2. The rest of P5: Kimi K3 low and high, 10 launches each ($6-12).
-3. [Card version 2](twwarhammer3/tactic-cards.md#card-version-2-draft-2026-10-18-evening-not-agreed)
-   (drafted: start classes, three more foils, cycles v2, launch counting) with its admission
-   rule proposed as an AGENTS.md check; then the expendables card the same way.
+3. The expendables card the same way, once the chariot card's version 2 is agreed.
 4. The army as detachable robot parts (owner, kept open): the
-   [robotics framing](twwarhammer3/latency.md#robotics-framing) and harness rungs 3-5, sized
-   by P2's reaction window.
+   [robotics research and comparison designs](twwarhammer3/robotics.md), including harness
+   rungs 3-5; no approach has demonstrated a WH3 improvement yet.
 
 ## Slay the Spire
 
@@ -96,11 +105,14 @@ fine-tune in both games, and a way to choose targets (winning targets are scarce
 ## Owner decisions waiting
 
 1. Where to back up `runs/`.
-2. The chariot card's rule (foils lose 10 of 10, witness wins 4 of 5 at 5 s with a cycle,
-   the model-pace witness reported, not a gate; decided under delegation, against E2's own
-   rule; moot if card version 2 is chosen), and the
-   [latency program's](twwarhammer3/latency.md#owner-decisions) three left: `c1` as evidence,
-   the scored route, the $20 stop (the scoring rule merged as b35).
+2. The chariot card: the five items of
+   [card version 2](twwarhammer3/tactic-cards.md#card-version-2-proposal-2026-10-19-not-agreed)
+   (they supersede the 2026-10-18 rule question; the v1 rule stays as the admitted
+   pre-registered verdict), the protocol's open points (the told text's form; whether the
+   recorded P5a cells stand as the untold arm; a Qwen told screen, 5 launches, $0.20; the
+   constants: stuck 5 m, silent 10 s, merge 3 s; the optional shallow cycler; one engine
+   launch on queue semantics), and the [latency program's](twwarhammer3/latency.md#owner-decisions)
+   three left: `c1` as evidence, the scored route, the $20 stop (the scoring rule merged as b35).
 3. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (whether
    they may train a model; 25,503 rows excluded), GLM-5.3, or rejection-sampled Qwen3.6.
 4. Whether Step 5 preview has open weights, and whether to request token log-probabilities
