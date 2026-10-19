@@ -40,7 +40,9 @@ WH3:
   executing it checked properly; a battle must be guaranteed winnable and let the model
   exercise exactly the skill measured; battles are real time and API response times vary;
   refer to similar research projects for ideas. Done as a review with proposals
-  ([log](twwarhammer3/log.md#2026-10-19-benchmark-verifiability-review)).
+  ([log](twwarhammer3/log.md#2026-10-19-benchmark-verifiability-review)), then as a second
+  pass that recounted them, fixed the card reader (b39) and left five decisions
+  ([log](twwarhammer3/log.md#2026-10-19-benchmark-verifiability-second-pass-harness-b39)).
 - 2026-10-19 (research follow-up): refine the robotics documentation with concrete
   comparisons, clean integration into this codebase, benefits, risks and viability checks;
   continue looking for high-value ideas. Documentation only.

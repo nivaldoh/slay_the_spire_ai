@@ -115,7 +115,7 @@ planning. Add a later task where targets compete or the tactic must change. A fi
 baseline should fail for a stated reason before calling that task a planning test.
 Also compare the fields each component actually receives: a sanitized observation and a
 rendered model prompt need not expose the same information. The
-[card draft](tactic-cards.md#card-version-2-proposal-2026-10-19-not-agreed) already
+[design rules](tactic-cards.md#design-rules-from-s1-s11) already
 flags the commander field available to scripted controllers but absent from model inputs.
 
 ## 3 Treat stale plans and action commitment as control problems

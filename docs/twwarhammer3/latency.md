@@ -30,11 +30,14 @@ offline probes per model-mode; all post hoc:
 - 2026-10-19 round ([log](log.md#2026-10-19-overnight-round-at-b36-c1-finished-p2-cells-p5a)):
   the witness won 4 of 4 at 2 s added age / 2 s decision interval, and 0 of 5 at 5 s / 5 s.
   GLM-5.3 low stated the tactic in 10 of 10 battles and won 1, with median order age 2.1 s.
-  The 2026-10-19 [review](log.md#2026-10-19-benchmark-verifiability-review) located the
-  cause: GLM ordered a pull-out in 37 of 43 engagements with a 4.5 s median reaction (the
-  admitted witness: 5.1 s) and countermanded 14 of them with an attack before leaving melee
-  (witness 0 of 246); those engagements lasted 31 s median against 9 s. A commitment
-  failure, not tempo (10 battles, one night, one backend).
+  GLM ordered a pull-out in 37 of 43 engagements and re-attacked 12-14 of them before leaving
+  melee, by whether a queued later-batch attack counts (the witness never): the 2026-10-19
+  [second pass](log.md#2026-10-19-benchmark-verifiability-second-pass-harness-b39) read 12 of
+  those re-attacks as decided at 2-29 m centre distance while the melee flag still read on
+  (it clears at a median of about 30 m), an interface gap rather than a commitment failure,
+  and read the witness's own slow-cell losses as a withdrawal stall ending near the map edge,
+  so the tolerance curve reads as the recipe's. Unverified (10 battles, one night, one
+  backend).
 
 ## Scoring: the battle never waits
 
@@ -43,10 +46,10 @@ Since b35, controller failures and truncations that end an in-battle episode cou
 Recoverable provider or invalid-reply failures in `_drive` instead log a `forfeit` event,
 send no new orders and request again. That event alone does not force a terminal loss:
 `cards.outcome` scores the final episode status. Invalid order batches are recorded and sent
-as no orders. Earlier engine actions continue while no replacement is issued. Open: since b35
-only the game or the harness can truncate, so
-[card v2](tactic-cards.md#card-version-2-proposal-2026-10-19-not-agreed) item 3 proposes
-excluding a truncation instead of forfeiting it.
+as no orders. Earlier engine actions continue while no replacement is issued. Since b35
+only the game or the harness can truncate; none has in 80 chariot episodes, so the
+[second pass](tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)
+dropped the proposal to exclude truncations until one is seen.
 
 If the battle ends during a blocking call, the loop checks for its result after the call
 returns and does not send the late orders. It does not continuously read results inside
@@ -57,17 +60,22 @@ paths remain unverified in the game. Compare failed decisions and terminal forfe
 
 - **Witness latency sweeps** ($0, game time): `SnapHitAndRun` on the 1.1 card with added age
   equal to the decision interval at 0, 2, 3.5 and 8 s, plus 0 s age with a 5 s interval, 5
-  launches each, with existing flags. The win rate against latency is the card's tolerance.
+  launches each, with existing flags. The win rate against latency is this recipe's
+  tolerance, a lower bound on the tactic's: its slow-cell losses are a withdrawal stall
+  ([witness v2 pending](tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)).
 - **Open-loop probes** (no game): recorded critical moments rendered by `LLMPolicy` and sent to
   each model; graded against the tactic. One round done (log, 2026-10-18). Retired as an
-  instrument by the proposed
-  [ladder](tactic-cards.md#knowledge-against-execution-the-ladder-and-the-told-arm-proposal-2026-10-19-not-agreed):
-  its first-contact grade agrees with the live first-decision reading.
+  instrument: its first-contact grade matched the live first-decision reading in count (18 of
+  30 against 18 of 33; not checked per battle), and the live reading needs no probe (the
+  ladder built on it was dropped by the
+  [second pass](tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)).
 - **Closed-loop round**: 10 launches per model-mode on the 1.1 card under the rule above, with
-  pinned backends; at that n only gaps of about 0.6 in win rate are detectable.
+  pinned backends; at that n only gaps of about 0.6 in win rate are detectable (two-sided; about 0.5 one-sided).
 - Reported beside the win (board, b38): order age as p50/p90 and forfeits; a forfeited call's
-  age is recorded once a forfeit occurs. Thresholds read off past battles are frozen before
-  new ones.
+  age is recorded once a forfeit occurs. Since b39 also the information age (median order
+  age plus half the decision gap, the time-average age of the order in force), on which the
+  witness cells order monotonically and a model row lands directly. Thresholds read off
+  past battles are frozen before new ones.
 
 ## Robotics framing
 
@@ -125,7 +133,7 @@ inputs can measure latency without a game, but cannot establish policy performan
 | Stage | Question | n | Cost | Game h |
 |---|---|---|---|---|
 | P1 | foil and witness rates on fresh launches (`c1` plans 05-20, as evidence) | done 2026-10-19 | $0 | 3 |
-| P2 | the tactic's latency tolerance (sweeps) | done: 5 cells, 19 launches | $0 | 3.5 |
+| P2 | the tactic's latency tolerance (sweeps) | done: 5 cells, 19 launches; the curve is `SnapHitAndRun`'s, witness v2 pending | $0 | 3.5 |
 | P3, P4 | pins hold; offline knowledge per mode | done | $2.19 | 0 |
 | P5 | closed-loop wins under the rule, Kimi K3 low and high, GLM-5.3 low, Qwen3.6 none | P5a done (GLM, Qwen: 15); Kimi left | $1.78 so far | 2 |
 
@@ -136,7 +144,8 @@ drop out as budget stops.
 ## Owner decisions
 
 1. "The battle never waits": merged as b35 (owner, 2026-10-19).
-2. `c1` finished as evidence, then a [card version 2](tactic-cards.md#card-version-2-proposal-2026-10-19-not-agreed).
+2. `c1` finished as evidence, then the
+   [second-pass decisions](tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions).
    Recommended.
 3. One pinned backend per model for comparisons (checked: Kimi K3 on Sail Research, GLM-5.3 on
    Decart, Qwen3.6 on Parasail): merged as b36 under delegation (2026-10-19), for review.

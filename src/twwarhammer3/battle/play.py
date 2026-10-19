@@ -476,7 +476,9 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
         if (goal.get("ending") == "scripted" and not observation.get("result")
                 and observation["time_ms"] > goal["completed_ms"] + 5000):
             raise ProtocolError("custom ending was not confirmed by the engine within 5 s")
-        if active_wall_start is not None:
+        # The result is read only after the call that straddled it returned, so the clock
+        # ratio stops at the last observation of the running battle.
+        if active_wall_start is not None and not observation.get("result"):
             duration = time.time() - active_wall_start
             result["active_wall_s"] = duration
             result["clock_ratio"] = ((observation["time_ms"] - result["start_time_ms"]) / 1000

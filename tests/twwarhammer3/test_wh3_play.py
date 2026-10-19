@@ -3,6 +3,7 @@ restarts, failures, objectives and register rows. Some tests end by reading the 
 digest or stats, which checks what play writes for them."""
 import csv
 import json
+import time
 from collections import deque
 from contextlib import nullcontext
 
@@ -300,6 +301,7 @@ def test_a_battle_that_ends_during_a_call_keeps_its_result(tmp_path, late):
         def decide(self, observation):
             while not mailbox.queue[0].get("result"):  # the battle goes on meanwhile
                 mailbox.queue.popleft()
+            time.sleep(0.05)  # the result sat unread while the call went on
             if isinstance(late, Exception):
                 raise late
             return late
@@ -307,6 +309,9 @@ def test_a_battle_that_ends_during_a_call_keeps_its_result(tmp_path, late):
     result = play.play_episode(tmp_path / "e", CONFIG, Slow, mailbox, not_battle=None)
     assert result["status"] == "won" and result["battle_s"] == 3
     assert mailbox.requests == [] and result["decisions"] == 0
+    # The clock ratio stops at the last observation of the running battle: the wall time
+    # of the straddling call is not charged to the battle clock.
+    assert result["active_wall_s"] < 0.05
 
 
 def test_a_passed_episode_deadline_does_not_hide_a_result_that_is_there(tmp_path):
