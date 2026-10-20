@@ -34,8 +34,13 @@ class FakeMailbox:
     def write_session(self, session):
         self.session = session
 
+    def owned_session(self, session):
+        self.write_session(session)
+        return nullcontext()
+
     def write_menu(self, steps):
         self.menu = steps
+        return "menu-r"
 
     def wait_new_battle(self, *, not_battle, timeout):
         if not self.queue:
@@ -75,7 +80,11 @@ class FakeMailbox:
 
     def log_since(self, offset, name="mod.log"):
         if name == "menu.log":
-            return "frontend loaded\n" + (self.menu_outcome + "\n" if self.menu else "")
+            result = self.menu_outcome + "\n"
+            if self.menu_outcome.endswith("done") or self.menu_outcome.endswith("failed"):
+                status = "failed" if "failed" in self.menu_outcome else "done"
+                result += f"menu menu-r: {status}\n"
+            return "frontend loaded\n" + (result if self.menu else "")
         return "[0] loaded battle b1\n"
 
 
@@ -132,11 +141,6 @@ def test_a_refused_benchmark_declaration_creates_no_job_directory(tmp_path, harn
     config = {**CONFIG, "scenario": "brt-cavalry-emp-assault", "episode_timeout": 1200}
     with pytest.raises(ValueError, match="exceed a finite game timer"):
         play.play(tmp_path / "job", config, makers={"attack_nearest": Hold})
-    # Unset timeouts are derived; the stubbed environment lacks the realism preference.
-    config.update(episode_timeout=None, run_timeout=None)
-    with pytest.raises(play.ProtocolError, match="battle_realism_mode"):
-        play.play(tmp_path / "job", config, makers={"attack_nearest": Hold})
-    assert (config["episode_timeout"], config["run_timeout"]) == (1320, 8 * 3600)
     assert not (tmp_path / "job").exists()
 
 
@@ -485,6 +489,31 @@ def test_a_failed_menu_step_stops_the_job_before_any_episode(tmp_path, harness):
     assert "failed" in (tmp_path / "job/menu.log").read_text()
 
 
+@pytest.mark.parametrize("early_completion", ["done", "menu another-request: done"])
+def test_frontend_waits_for_its_own_terminal_marker_and_preserves_a_later_failure(
+        tmp_path, monkeypatch, early_completion):
+    mailbox = FakeMailbox([])
+    settled = False
+    reason = "step 1: failed: insufficient funds for swordsmen"
+
+    def logs(offset, name="menu.log"):
+        if mailbox.menu is None:
+            return "frontend loaded\n"
+        return reason + "\n" + early_completion + "\n" + (
+            "menu menu-r: failed\n" if settled else "")
+
+    def next_poll(seconds):
+        nonlocal settled
+        settled = True
+
+    monkeypatch.setattr(mailbox, "log_since", logs)
+    monkeypatch.setattr(play.time, "sleep", next_poll)
+    with pytest.raises(play.ProtocolError, match="insufficient funds for swordsmen") as caught:
+        play.start_frontend(mailbox, CONFIG, tmp_path, [{"log": "probe"}])
+    assert settled and str(caught.value) == "custom battle setup failed: " + reason
+    assert "menu menu-r: failed" in (tmp_path / "menu.log").read_text()
+
+
 @pytest.mark.parametrize("failure,status", [
     (MailboxTimeout("frontend did not report in"), "infrastructure_failure"),
     (RuntimeError("source changed"), "infrastructure_failure"),
@@ -528,6 +557,24 @@ def test_attach_rejects_an_old_non_realtime_session(tmp_path, monkeypatch, harne
     manifest = json.loads((tmp_path / "job/manifest.json").read_text())
     assert manifest["status"] == "infrastructure_failure" and manifest["episodes"] == []
     assert manifest["error_type"] == "ValueError" and "unpaused at 1x" in manifest["error"]
+    assert (bridge / "session.json").exists()
+
+
+def test_attach_preserves_the_launch_owners_session(tmp_path, monkeypatch, harness):
+    bridge = tmp_path / "bridge"
+    bridge.mkdir()
+    session = bridge / "session.json"
+    original = json.dumps({"job": "launch-owner", "speed": 1, "pause": False})
+    session.write_text(original)
+    monkeypatch.setattr(play, "BRIDGE_DIR", bridge)
+    mailbox = FakeMailbox([bridge_observation(0, 0), bridge_observation(1, 1000, result="won")])
+    mailbox.reset = lambda: pytest.fail("attach must not reset the launch owner's bridge")
+    mailbox.owned_session = lambda _: pytest.fail("attach borrows session activation")
+    harness.append(mailbox)
+    result = play.play(tmp_path / "attached", {**CONFIG, "attach": True,
+                                               "results": str(tmp_path / "r.csv")},
+                       makers={"attack_nearest": Hold})
+    assert result["status"] == "completed" and session.read_text() == original
 
 
 @pytest.mark.parametrize("policy,prompt", [

@@ -36,12 +36,12 @@ function ui.dump(step, directory)
     local root = core:get_ui_root()
     if step.find then
         root = ui.find(step.find)
-        if not root then return "dump root not found" end
+        assert(root, "dump root not found")
     end
     local lines = {}
     dump(root, 0, step.depth or 4, lines, step.context)
     local file = io.open(directory .. step.dump, "w")
-    if not file then return "cannot write " .. step.dump end
+    assert(file, "cannot write " .. step.dump)
     file:write(table.concat(lines, "\n") .. "\n")
     file:close()
     return "dumped " .. #lines .. " lines to " .. step.dump
@@ -95,7 +95,8 @@ function ui.experience(step)
         local command = delta == 1 and "IncreaseExperience()" or "DecreaseExperience()"
         for _ = 1, math.abs(wanted.rank - current) do
             common.call_context_command("CcoFrontendRoot", "", prefix .. command)
-            assert(rank() == current + delta, "experience did not change (funds or unit restriction)")
+            assert(rank() == current + delta, "experience did not change for " .. wanted.type
+                .. " from " .. current .. " to " .. (current + delta))
             current = current + delta
         end
         counts[wanted.type] = count + 1
@@ -103,12 +104,57 @@ function ui.experience(step)
     return "experience set for slot " .. step.slot .. ": " .. #step.experience .. " units"
 end
 
--- One step that needs no waiting: dump, key, find (once), log, advisor text ("" closes
+-- Use the lobby's recruitment permissions and its separate cost-label funds check.
+-- Mount before assigning XP; matching rank-zero duplicates are interchangeable.
+function ui.recruit(step)
+    local encode = twwarhammer3_json.encode
+    local slot = "CustomBattleLobbyContext.PlayerSlotList.At(" .. step.slot .. ")."
+    local unit = "DatabaseRecordContext(\"CcoMainUnitRecord\", " .. encode(step.recruit) .. ")"
+    local permission = unit .. ".CustomBattlePermissionsContext("
+        .. "DatabaseRecordContext(\"CcoFactionRecord\", " .. encode(step.faction) .. "))"
+    local reserve = step.reinforcements == true and "true" or "false"
+    local pool = slot .. (step.reinforcements == true and "ReinforcingUnitList" or "UnitList")
+    local function value(expression)
+        return common.get_context_value("CcoFrontendRoot", "", expression)
+    end
+    local function command(expression)
+        common.call_context_command("CcoFrontendRoot", "", expression)
+    end
+    if value(slot .. "CanRecruitUnit(" .. unit .. ", " .. reserve .. ")") ~= true then
+        error("cannot recruit " .. step.recruit .. " in slot " .. step.slot .. ": "
+              .. tostring(value(slot .. "TooltipForUnit(" .. unit .. ", " .. reserve .. ")")))
+    end
+    local main_funds = step.reinforcements ~= true or value(permission .. ".IsGeneralUnit") == true
+    local remaining = value(slot .. "FundsRemaining(" .. tostring(main_funds) .. ")")
+    local cost = value(unit .. ".Cost")
+    assert(type(remaining) == "number" and type(cost) == "number", "recruitment funds unavailable")
+    assert(cost <= remaining, "insufficient funds for " .. step.recruit
+        .. ": cost " .. cost .. ", remaining " .. remaining)
+    local count = value(pool .. ".Size")
+    command(slot .. "RecruitUnit(" .. permission .. ", " .. reserve .. ")")
+    assert(value(pool .. ".Size") == count + 1, "recruitment did not add " .. step.recruit)
+    if step.mount then
+        local original = pool .. ".Count(UnitRecordContext.Key == " .. encode(step.recruit) .. ")"
+        local mounted = pool .. ".Count(UnitRecordContext.Key == " .. encode(step.mount) .. ")"
+        local before, after = value(original), value(mounted)
+        local selected = pool .. ".FirstContext(UnitRecordContext.Key == " .. encode(step.recruit) .. ")."
+        command(selected .. "ChangeMount(" .. selected
+            .. "AvailableMountsList.FirstContext(MountedUnitContext.Key == " .. encode(step.mount) .. "))")
+        assert(value(original) == before - 1 and value(mounted) == after + 1,
+               "mount did not change " .. step.recruit .. " to " .. step.mount)
+    end
+    return "recruited " .. step.recruit .. " in slot " .. step.slot
+end
+
+-- One immediate step: recruit (unit key, slot, faction, optional mount/reinforcements),
+-- experience (final types/ranks and slot), dump, key, find (once), log, advisor text ("" closes
 -- it), an expression on a context object ({"context": "CcoBattleUnit", "id": "...",
 -- "expression": "..."}), a context command ({"context": ..., "command": "..."}) or, for
 -- probing the script API, a Lua chunk whose return value is logged ({"lua": "return ..."}).
 function ui.run(step, directory)
-    if step.experience ~= nil then
+    if step.recruit then
+        return ui.recruit(step)
+    elseif step.experience ~= nil then
         return ui.experience(step)
     elseif step.log then
         return "log " .. tostring(step.log)
@@ -120,7 +166,7 @@ function ui.run(step, directory)
         return "advice shown"
     elseif step.lua then
         local chunk, err = loadstring(step.lua)
-        if not chunk then return "lua: " .. tostring(err) end
+        assert(chunk, "lua: " .. tostring(err))
         setfenv(chunk, getfenv(1))  -- the mod's environment, where bm and core live
         return "lua = " .. tostring(chunk())
     elseif step.command then
@@ -145,10 +191,9 @@ function ui.run(step, directory)
         local uic = ui.find(step.find)
         if not uic then
             local message = "not found: " .. table.concat(step.find, "/")
-            if step.required then error(message) end
-            return message
+            error(message)
         end
         return ui.act(uic, step)
     end
-    return "unknown step"
+    error("unknown step")
 end

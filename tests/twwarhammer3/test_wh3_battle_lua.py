@@ -311,6 +311,190 @@ def test_flight_checks_live_state_and_refuses_blocked_changes():
         apply(entry, land)
 
 
+def test_startup_rank_query_failure_keeps_observation_ticks_and_does_not_invent_rank_zero():
+    lua = runtime()
+    lua.execute("""
+        local function unit(id)
+            return {type = function() return 'swordsmen' end,
+                    unique_ui_id = function() return id end}
+        end
+        state = {friendly_ids = {'f1', 'f2'}, enemy_ids = {}, army_abilities = {},
+                 friendly = {f1 = {unit = unit(1001)}, f2 = {unit = unit(1002)}}}
+        session = {tick_ms = 250}
+        callbacks, ticks = 0, 0
+        function tick() ticks = ticks + 1 end
+        bm = {
+            get_player_alliance = function() return {} end,
+            alliances = function() return {count = function() return 2 end} end,
+            modify_battle_speed = function(_, speed, lock) assert(speed == 1 and lock) end,
+            repeat_callback = function(_, callback, interval, name)
+                assert(interval == 250 and name == 'twwarhammer3_tick')
+                callbacks, scheduled = callbacks + 1, callback
+            end,
+        }
+        common = {get_context_value = function(context, id, expression)
+            if context == 'CcoBattleUnit' and expression == 'ExperienceLevel' then
+                if id == '1001' then error('unit context unavailable') end
+                assert(id == '1002')
+                return 3
+            end
+        end}
+        function battle_info() return {type = 'land_normal', alliances = 2} end
+        function battle_time() return 500 end
+        function read_slots() end
+        function scan() end
+        function setup_custom() end
+        function context_rows() return {} end
+        function read_terrain() return {rows = {'..'}} end
+        function sample_objectives() end
+        function log() end
+    """)
+    _, _, start = load_battle(lua, "get", "get_context", "start")
+    start()
+    g = lua.globals()
+    assert g.state.started and g.state.force_observe
+    assert g.callbacks == 1
+    g.scheduled()
+    assert g.ticks == 1
+    ranks = g.state.setup.unit_experience.friendly
+    assert ranks[1]["rank"] is None and ranks[2]["rank"] == 3
+    start()
+    assert g.callbacks == 1
+
+
+@pytest.fixture
+def order_dispatch():
+    """Record engine calls using the extracted CA unitcontroller signatures.
+
+    docs/twwarhammer3/integration.md#moves-and-attacks adds the harness's attack-mode
+    and failed-predecessor contract; acknowledgements establish submission, not execution.
+    """
+    lua = runtime()
+    lua.execute("""
+        calls = {}
+        local controller = {}
+        for _, name in ipairs({'goto_location', 'goto_location_q',
+                'goto_location_angle_width', 'goto_location_angle_width_q',
+                'attack_unit', 'attack_unit_q', 'melee'}) do
+            controller[name] = function(_, ...) calls[#calls + 1] = {name, ...} end
+        end
+        local function unit()
+            return {alive = 50, visible = true, reachable = true, range = 150,
+                    number_of_men_alive = function(self) return self.alive end,
+                    can_reach_position = function(self, point)
+                        assert(point.y == 7)
+                        return self.reachable
+                    end,
+                    ammo_left = function() return 20 end,
+                    missile_range = function(self) return self.range end}
+        end
+        state = {started = true,
+            friendly = {f1 = {unit = unit(), controller = controller},
+                        f2 = {unit = unit(), controller = controller}},
+            enemy = {e1 = {unit = unit()}}}
+        state.enemy.e1.unit.id = 'enemy-1'
+        bm = {battle = {get_terrain_height = function() return 7 end}}
+        function vector(x, y, z) return {x = x, y = y, z = z} end
+        function visible_to_player(target) return target.visible end
+        function battle_time() return 1234 end
+        function log() end
+    """)
+    _, _, _, apply, batch = load_battle(lua, "get", "round", "clean_error",
+                                       "apply_order", "apply_pending")
+    return lua, apply, batch
+
+
+@pytest.mark.parametrize("formation,run", [(False, False), (True, True)])
+def test_moves_submit_immediate_and_native_queued_methods_with_engine_arguments(
+        order_dispatch, formation, run):
+    lua, _, batch = order_dispatch
+    shape = {"facing": 60, "width": 20} if formation else {}
+    orders = [{"unit": "f1", "type": "move", "x": 10, "z": 20, "run": run, **shape},
+              {"unit": "f1", "type": "move", "x": 30, "z": 40,
+               "run": not run, "queue": True, **shape}]
+    g = lua.globals()
+    g.state.pending = lua.table_from({"request": "r1", "based_on": 7, "orders": orders},
+                                    recursive=True)
+    batch(1234)
+    name = "goto_location_angle_width" if formation else "goto_location"
+    for call, method, point, fast in zip(g.calls.values(), [name, name + "_q"],
+                                       [(10, 20), (30, 40)], [run, not run], strict=True):
+        assert call[1] == method
+        assert dict(call[2]) == {"x": point[0], "y": 7, "z": point[1]}
+        assert list(call.values())[2:] == ([60, 20, fast] if formation else [fast])
+    ack = g.state.applied
+    assert ack.request == "r1" and ack.based_on == 7 and ack.applied_ms == 1234
+    assert [dict(result) for result in ack.results.values()] == [
+        {"index": 1, "unit": "f1", "ok": True, "queued": False},
+        {"index": 2, "unit": "f1", "ok": True, "queued": True}]
+    assert [order["x"] for order in g.state.friendly.f1.command_queue.values()] == [10, 30]
+
+
+@pytest.mark.parametrize("mode,missile_range,primary", [
+    ("auto", 150, True), ("ranged", 150, True), ("melee", 150, False), ("melee", 0, True),
+])
+def test_attacks_choose_primary_or_secondary_and_queued_attacks_keep_current_move_mode(
+        order_dispatch, mode, missile_range, primary):
+    lua, apply, batch = order_dispatch
+    g = lua.globals()
+    g.state.friendly.f1.unit.range = missile_range
+    attack = {"unit": "f1", "type": "attack", "target": "e1", "mode": mode, "run": True}
+    assert apply(lua.table_from(attack))["ok"]
+    assert list(g.calls[1].values()) == ["melee", mode == "melee"]
+    assert g.calls[2][1] == "attack_unit" and g.calls[2][2]["id"] == "enemy-1"
+    assert list(g.calls[2].values())[2:] == [primary, True]
+    lua.execute("calls = {}")
+    g.state.pending = lua.table_from({"orders": [
+        {"unit": "f1", "type": "move", "x": 10, "z": 20}, {**attack, "queue": True}]},
+        recursive=True)
+    batch(1234)
+    assert [call[1] for call in g.calls.values()] == ["goto_location", "attack_unit_q"]
+    assert g.calls[2][2]["id"] == "enemy-1"
+    assert list(g.calls[2].values())[2:] == [primary, True]
+    assert g.state.applied.results[2]["ok"] and g.state.applied.results[2]["queued"]
+
+
+@pytest.mark.parametrize("alive,visible,error", [
+    (0, True, "target_dead"), (50, False, "target_not_visible"),
+])
+def test_attack_rechecks_dead_and_hidden_targets_before_any_engine_call(
+        order_dispatch, alive, visible, error):
+    lua, apply, _ = order_dispatch
+    g = lua.globals()
+    g.state.enemy.e1.unit.alive, g.state.enemy.e1.unit.visible = alive, visible
+    result = apply(lua.table_from({"unit": "f1", "type": "attack", "target": "e1"}))
+    assert dict(result) == {"unit": "f1", "ok": False, "error": error}
+    assert len(g.calls) == 0 and g.state.friendly.f1.command is None
+
+
+def test_failed_or_missing_move_predecessor_blocks_queued_successors_but_not_other_units(
+        order_dispatch):
+    lua, _, batch = order_dispatch
+    g = lua.globals()
+    g.state.friendly.f1.unit.reachable = False
+    g.state.pending = lua.table_from({"orders": [
+        {"unit": "f1", "type": "move", "x": 10, "z": 20},
+        {"unit": "f1", "type": "move", "x": 30, "z": 40, "queue": True},
+        {"unit": "f1", "type": "attack", "target": "e1", "queue": True},
+        {"unit": "f2", "type": "move", "x": 50, "z": 60}]}, recursive=True)
+    batch(1234)
+    results = list(g.state.applied.results.values())
+    assert [result["index"] for result in results] == [1, 2, 3, 4]
+    assert [result["error"] for result in results] == [
+        "unreachable", "queue_predecessor_failed_or_missing",
+        "queue_predecessor_failed_or_missing", None]
+    assert [result["ok"] for result in results] == [False, False, False, True]
+    assert len(g.calls) == 1 and g.calls[1][1] == "goto_location"
+    assert dict(g.calls[1][2]) == {"x": 50, "y": 7, "z": 60}
+    lua.execute("calls = {}")
+    g.state.friendly.f1.unit.reachable = True
+    g.state.pending = lua.table_from({"orders": [
+        {"unit": "f1", "type": "move", "x": 30, "z": 40, "queue": True}]}, recursive=True)
+    batch(1500)
+    assert g.state.applied.results[1]["error"] == "queue_predecessor_failed_or_missing"
+    assert len(g.calls) == 0
+
+
 def test_battle_script_flushes_replay_before_result_publication():
     finish = battle_source("finish")
     assert finish.index("record_replay(battle_time(), true)") < finish.index(

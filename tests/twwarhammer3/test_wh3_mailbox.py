@@ -1,4 +1,5 @@
 import json
+from contextlib import AbstractContextManager
 
 import pytest
 from wh3_lua import MOD, load_battle, runtime
@@ -119,6 +120,39 @@ def test_session_and_log_slices(mailbox):
     offset = mailbox.log_offset()
     (mailbox.directory / "mod.log").write_text("loaded\napplied r1\n")
     assert mailbox.log_since(offset) == "applied r1\n"
+
+
+@pytest.mark.parametrize("failure", [None, RuntimeError("startup"), KeyboardInterrupt()])
+def test_owned_session_outlives_game_teardown_and_cleans_up_after_errors(mailbox, failure):
+    path = mailbox.directory / "session.json"
+    events = []
+
+    class Game(AbstractContextManager):
+        def __enter__(self):
+            assert path.exists()
+            if isinstance(failure, RuntimeError):
+                raise failure
+            return self
+
+        def __exit__(self, *_):
+            assert path.exists(), "session must stay active until game teardown"
+            events.append("stopped")
+
+    def run():
+        with mailbox.owned_session({"speed": 1}), Game():
+            (mailbox.directory / "mod.log").write_text("evidence")
+            if failure:
+                raise failure
+
+    if failure:
+        with pytest.raises(type(failure)):
+            run()
+    else:
+        run()
+    assert not path.exists()
+    assert events == ([] if isinstance(failure, RuntimeError) else ["stopped"])
+    if not isinstance(failure, RuntimeError):
+        assert (mailbox.directory / "mod.log").read_text() == "evidence"
 
 
 @pytest.mark.parametrize("session", [{"pause": True}, {"speed": 0.5}, {"speed": 2}])

@@ -15,6 +15,41 @@ from twwarhammer3.battle.scripted import Hold
 from twwarhammer3.battle.stats import RESULTS_PATH
 
 
+@pytest.mark.parametrize("battle,outcome,status", [
+    (False, "done", 0), (True, "done", 0), (False, "failed", 1),
+    (True, "failed", 1), (False, "foreign", 1), (False, "timeout", 1),
+])
+def test_menu_waits_for_its_own_completion_and_returns_failure_on_timeout(
+        tmp_path, monkeypatch, capsys, battle, outcome, status):
+    from twwarhammer3.engine import runtime
+    from twwarhammer3.engine.mailbox import Mailbox
+
+    monkeypatch.setattr(runtime, "BRIDGE_DIR", tmp_path)
+    (tmp_path / "session.json").write_text(json.dumps({"job": "live"}))
+    steps = tmp_path / "steps.json"
+    steps.write_text('[{"log": "probe"}]')
+    publish = Mailbox.write_menu
+
+    def answer(box, steps):
+        request = publish(box, steps)
+        if outcome != "timeout":
+            terminal = "done" if outcome == "foreign" else outcome
+            identity = "unrelated" if outcome == "foreign" else request
+            line = f"menu {identity}: {terminal}\n"
+            (tmp_path / ("mod.log" if battle else "menu.log")).write_text(line)
+        return request
+
+    monkeypatch.setattr(Mailbox, "write_menu", answer)
+    clock = iter([0, 0, 2])
+    monkeypatch.setattr(cli.time, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(cli.time, "sleep", lambda _: None)
+    monkeypatch.setattr(sys, "argv", ["wh3", "menu", "--steps", str(steps), "--wait", "1",
+                                      *(["--battle"] if battle else [])])
+    assert main() == status
+    if outcome in ("foreign", "timeout"):
+        assert "timed out" in capsys.readouterr().err
+
+
 @pytest.mark.parametrize("arguments", [["--pause"], ["--speed", "0.5"], ["--speed", "2"]])
 def test_cli_cannot_request_paused_or_changed_speed_battles(arguments):
     parser = argparse.ArgumentParser()

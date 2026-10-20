@@ -14,7 +14,11 @@ Files, by writer:
   outstanding request that the battle script deletes when read, ``{"schema", "job", "battle",
   "request", "based_on", "orders", "say"?}`` or ``{..., "control": "restart"}`` (replay the
   battle through the results popup's rematch); ``menu.json``, UI steps run by the frontend
-  script, or by the battle script during a battle, and deleted when read.
+  script, or by the battle script during a battle, and deleted when read. Menu requests
+  carry ``job``, ``request`` and ``steps``; each consumer rejects foreign jobs and logs
+  ``menu <request>: done|failed``. ``menu`` waits for its own completion and returns
+  nonzero on failure or timeout. The frontend also retains its standalone ``done`` or
+  ``failed`` marker; setup can instead hand off to the first battle observation.
 - game: ``observation.json`` (below), rewritten every ``observe_ms`` of battle time and
   after each applied request; the append-only ``mod.log`` (``[battle ms] text``) and
   ``menu.log`` (step results, then ``done``); UI dumps named by ``dump`` steps; per battle,
@@ -25,6 +29,9 @@ Files, by writer:
 An episode copies its battle's files when it ends. ``reset`` (``play`` without ``--attach``,
 and ``launch``) removes the messages, logs and per-battle files before the game runs. UI
 dumps stay; ``play`` copies a dump only when this job's ``menu.log`` reports writing it.
+Owned launches remove session activation after the game stops, including ordinary errors
+and interruption. Attached controllers borrow the session and leave it to its owner.
+An uncatchable controller termination can still leave a stale session file.
 
 Every message carries the job name. The battle script makes a ``battle`` id at each load
 and numbers observations by ``seq``, which is how the controller tells restarts and new
@@ -108,6 +115,7 @@ and later observations confirm the change.
 import json
 import os
 import time
+from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
 
@@ -150,6 +158,19 @@ class Mailbox:
         require_realtime(session)
         self._publish("session.json", {"schema": SCHEMA, "job": self.job, **session})
 
+    @contextmanager
+    def owned_session(self, session: dict):
+        """Publish activation for an owned launch; exit after the game has stopped.
+
+        The caller holds RuntimeLock. Attached controllers borrow this file and must
+        not enter this context. Evidence files remain available after teardown.
+        """
+        self.write_session(session)
+        try:
+            yield
+        finally:
+            (self.directory / "session.json").unlink(missing_ok=True)
+
     def write_orders(self, battle: str, based_on: int, orders: list[dict], *,
                      say: str | None = None, timeout: float = 15) -> str:
         """Send one request; the previous one must have been consumed first. ``say`` is
@@ -163,8 +184,12 @@ class Mailbox:
         """``restart``: replay the battle through the results popup's rematch."""
         return self._request(battle, {"control": control}, timeout)
 
-    def write_menu(self, steps: list[dict]) -> None:
-        self._publish("menu.json", {"schema": SCHEMA, "job": self.job, "steps": steps})
+    def write_menu(self, steps: list[dict]) -> str:
+        """Send UI steps; completion is logged as ``menu <request>: done|failed``."""
+        request = uuid4().hex
+        self._publish("menu.json", {"schema": SCHEMA, "job": self.job,
+                                    "request": request, "steps": steps})
+        return request
 
     def _request(self, battle: str, body: dict, timeout: float) -> str:
         deadline = time.monotonic() + timeout

@@ -8,6 +8,8 @@
 -- if it never is. A step with "when" (a context expression on the frontend root, such as
 -- "CustomBattleLobbyContext.PlayerSlotList.Size < 2") runs only if it is true. Results go
 -- to menu.log; the file is deleted when read and "done" is logged after the last step.
+-- Expressions with timeout_ms retry their assertion; false when branches do not wait.
+-- Every terminal outcome also logs "menu <request>: done|failed" for the requesting CLI.
 
 local BRIDGE = "C:/wh3-agent/bridge/"
 local json = twwarhammer3_json
@@ -43,13 +45,19 @@ local function clean_error(err)
 end
 
 local ui = twwarhammer3_ui
-local state = {steps = nil, index = 0, wait_polls = 0, retries = 0}
+local state = {steps = nil, index = 0, wait_polls = 0, retries = 0, job = nil}
+
+local function complete(status)
+    log(status)
+    log("menu " .. tostring(state.request) .. ": " .. (state.failed and "failed" or status))
+    state.steps = nil
+end
 
 -- One step; nil means "not yet" (a timed find whose component is not visible yet).
 local function run_step(step)
     if step.when then
         local value = common.get_context_value("CcoFrontendRoot", "", step.when)
-        if value ~= true then return "skipped: " .. step.when .. " is " .. tostring(value) end
+        if value ~= true then return "skipped: " .. step.when .. " is " .. tostring(value), true end
     end
     if step.wait_ms then
         state.wait_polls = math.ceil(step.wait_ms / POLL_MS)
@@ -66,6 +74,12 @@ local function run_step(step)
         local done = ui.act(uic, step)
         if state.retries > 0 then done = done .. " after " .. state.retries * POLL_MS .. " ms" end
         return done
+    elseif step.expression and step.timeout_ms then
+        local ok, result = pcall(ui.run, step, BRIDGE)
+        if ok then return result end
+        if state.retries * POLL_MS >= step.timeout_ms then error(result) end
+        state.retries = state.retries + 1
+        return nil
     end
     return ui.run(step, BRIDGE)
 end
@@ -80,7 +94,12 @@ local function poll()
             log("menu.json unreadable; dropped")
             return
         end
+        if message.job ~= state.job then
+            log("foreign menu request; dropped")
+            return
+        end
         state.steps, state.index, state.wait_polls, state.retries = message.steps, 0, 0, 0
+        state.request, state.failed = message.request, false
         log(string.format("menu: %d steps", #state.steps))
         return
     end
@@ -88,29 +107,31 @@ local function poll()
         state.wait_polls = state.wait_polls - 1
         return
     end
-    local step = state.steps[state.index + 1]
-    if not step then
-        log("done")
-        state.steps = nil
-        return
-    end
-    local ok, result = pcall(run_step, step)
-    if ok and result == nil then return end
-    state.index, state.retries = state.index + 1, 0
-    if ok then
-        log(string.format("step %d: %s", state.index, tostring(result)))
-    elseif step.timeout_ms or step.required then
-        log(string.format("step %d: %s", state.index, clean_error(result)))
-        log("failed")
-        state.steps = nil
-    else
-        log(string.format("step %d: failed: %s", state.index, clean_error(result)))
+    -- A warm preset skips its entire cold branch in this callback. Actual UI actions
+    -- still run at one per callback, and explicit waits retain their existing cadence.
+    while state.steps do
+        local step = state.steps[state.index + 1]
+        if not step then complete("done"); return end
+        local ok, result, skipped = pcall(run_step, step)
+        if ok and result == nil then return end
+        state.index, state.retries = state.index + 1, 0
+        if ok then
+            log(string.format("step %d: %s", state.index, tostring(result)))
+        else
+            state.failed = true
+            log(string.format("step %d: failed: %s", state.index, clean_error(result)))
+            if type(step) ~= "table" or step.timeout_ms or step.required then
+                complete("failed"); return
+            end
+        end
+        if not skipped then return end
     end
 end
 
 local function load()
     local session = read_json(BRIDGE .. "session.json")
     if not session or not session.menu then return end
+    state.job = session.job
     log("frontend loaded for job " .. tostring(session.job))
     tm:repeat_real_callback(function()
         local ok, err = pcall(poll)

@@ -114,8 +114,10 @@ local function plain(text)
     return (string.gsub(text or "", "%[%[.-%]%]", ""))
 end
 
-local function get_context(expression)
-    local ok, value = pcall(function() return common.get_context_value("CcoBattleRoot", "", expression) end)
+local function get_context(expression, context, id)
+    local ok, value = pcall(function()
+        return common.get_context_value(context or "CcoBattleRoot", id or "", expression)
+    end)
     if ok then return value end
     return nil
 end
@@ -1233,10 +1235,24 @@ local function run_menu()
     os.remove(BRIDGE .. "menu.json")
     local ok, message = pcall(json.decode, text)
     if not ok or type(message) ~= "table" or type(message.steps) ~= "table" then return end
+    if message.job ~= session.job then log("foreign menu request; dropped"); return end
+    local failed = false
+    for _, step in ipairs(message.steps) do
+        if type(step) ~= "table" or step.wait_ms ~= nil or step.timeout_ms ~= nil or step.when ~= nil then
+            log("ui failed: battle probes need immediate step objects (no wait_ms, timeout_ms or when)")
+            log("menu " .. tostring(message.request) .. ": failed")
+            return
+        end
+    end
     for index, step in ipairs(message.steps) do
         local done_ok, done = pcall(ui.run, step, BRIDGE)
         log(string.format("ui %d: %s", index, done_ok and tostring(done) or clean_error(done)))
+        if not done_ok then
+            failed = true
+            if step.required then break end
+        end
     end
+    log("menu " .. tostring(message.request) .. ": " .. (failed and "failed" or "done"))
 end
 
 local function poll()
@@ -1297,8 +1313,8 @@ local function start()
         for _, id in ipairs(state[side .. "_ids"]) do
             local entry = state[side][id]
             ranks[#ranks + 1] = {type = get(entry.unit, "type", "?"),
-                rank = common.get_context_value("CcoBattleUnit",
-                    tostring(get(entry.unit, "unique_ui_id", "")), "ExperienceLevel")}
+                rank = get_context("ExperienceLevel", "CcoBattleUnit",
+                                   tostring(get(entry.unit, "unique_ui_id", "")))}
         end
         state.setup.unit_experience[side] = ranks
     end
@@ -1323,8 +1339,8 @@ local function start()
         'ArmyList.JoinString(FactionContext.Key + "@" + UnitList.JoinString('
         .. 'UnitRecordContext.Key + ":" + UnitDetailsContext.StatList.JoinString('
         .. 'Key + "=" + ValueBase, "/"), ";"), "@@")')
-    -- ValueBase excludes modifiers/buffs; retain Value as well to measure the actual
-    -- starting-stat differences between the declared AI modifier settings.
+    -- Observed ValueBase already includes AI stat bonuses despite the API description;
+    -- retain Value too, since it includes current effects (integration.md, b2 probe).
     state.setup.unit_current_stats = get_context(
         'ArmyList.JoinString(FactionContext.Key + "@" + UnitList.JoinString('
         .. 'UnitRecordContext.Key + ":" + UnitDetailsContext.StatList.JoinString('

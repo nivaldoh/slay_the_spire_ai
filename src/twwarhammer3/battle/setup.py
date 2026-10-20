@@ -27,11 +27,10 @@ entry, and what reads them:
 - ``expect``: declares a benchmark, which must pin its map, factions and rosters
   (``validate_declaration``). The lobby sets ``funds``, ``funds_amount`` (with
   funds_custom), ``time_limit_s`` (1200, 2400 or 3600; null for survival/domination,
-  whose hidden lobby timer is not a battle deadline) and ``ai_stats_modifier``
-  (``menu_checks``) and verifies them together with ``battle_type`` (the engine name the
-  top-level battle_type selects, such as land_normal) and ``difficulty``, which the game
-  profile keeps (``check_menu``); the battle verifies ``unit_scale``, ``realism`` (also
-  the game preference, ``check_preferences``) and ``player_defends`` (``check_battle``).
+  whose hidden lobby timer is not a battle deadline), ``ai_stats_modifier``, ``difficulty``,
+  ``unit_scale`` and ``realism`` (``menu_checks``), and reads them back with ``battle_type``.
+  These lobby settings can persist into ordinary play. The battle independently checks
+  ``unit_scale``, ``realism`` and ``player_defends`` (``check_battle``).
 - ``protected``: unit types whose survival the report and replay measure.
 - ``custom``: the versioned battery-evacuation rules, asset ids, extraction zone and
   deadline; optional ``deployment`` maps friendly/enemy ids to authored positions.
@@ -72,12 +71,16 @@ ENGINE_TYPES = {
     "survival": "survival",
 }
 TIMERS = {1200: "time_limit_short", 2400: "time_limit_medium", 3600: "time_limit_long"}
+UNIT_SCALES = {.25: "unit_scale_small", .5: "unit_scale_normal",
+               .75: "unit_scale_large", 1: "unit_scale_ultra"}
 LOBBY_FIELDS = {
     "battle_type": "BattleTypeRecordContext.Key",
     "difficulty": "DifficultyLevelSettingContext.Key",
     "funds": "FundTypeSettingContext.Key",
     "time_limit_s": "TimeLimitSeconds",
     "ai_stats_modifier": "BattleAiStatsModifier",
+    "unit_scale": "UnitScaleSettingContext.Key",
+    "realism": "IsRealismMode",
 }
 
 
@@ -199,33 +202,30 @@ def scenario_steps(scenario: dict, *, build_id: str | None = None) -> list[dict]
         steps += [
             {"find": ["teams_parent", f"CcoCustomBattlePlayerSlotslot{slot}"], "click": True,
              "timeout_ms": 30000},
-            {"wait_ms": 2500},
-            {"find": ["faction_pic_mask_parent", "button_select_race"], "click": True,
-             "timeout_ms": 15000},
-            {"wait_ms": 1500},
-            # The race list never reads as visible from the root, so this find does not wait.
-            {"find": ["button_select_race", "CcoSubcultureRecord" + side["subculture"]],
-             "click": True},
-            {"wait_ms": 2500},
         ]
+        context = f"{LOBBY}PlayerSlotList.At({slot})."
+        steps += [{"context": "CcoFrontendRoot", "command": context +
+                   f"SetSubculture({context}AvailableSubcultureList.FirstContext(Key == "
+                   + json.dumps(side["subculture"]) + "))", "required": True},
+                  {"context": "CcoFrontendRoot", "expression": context + "SubcultureContext.Key",
+                   "expect": side["subculture"], "timeout_ms": 15000, "required": True}]
         if side.get("faction"):
-            steps += [
-                {"find": ["faction_pic_mask_parent", "dropdown_context_scroll"], "click": True,
-                 "timeout_ms": 15000},
-                {"wait_ms": 1500},
-                {"find": ["dropdown_context_scroll", "CcoFactionRecord" + side["faction"]],
-                 "click": True},
-                {"wait_ms": 2000},
-            ]
+            steps += [{"context": "CcoFrontendRoot", "command": context +
+                       f"SetFaction({context}AvailableFactionsForCurrentSubcultureList."
+                       "FirstContext(Key == "
+                       + json.dumps(side["faction"]) + "))", "required": True},
+                      {"context": "CcoFrontendRoot", "expression":
+                       context + "FactionRecordContext.Key",
+                       "expect": side["faction"], "timeout_ms": 15000, "required": True}]
         army_start = len(steps)
         steps += [
-            {"find": ["button_bar_parent", "button_clear"], "click": True, "timeout_ms": 15000},
-            {"wait_ms": 800},
+            {"context": "CcoFrontendRoot", "command": context + "ClearMainArmy()",
+             "required": True},
+            {"context": "CcoFrontendRoot", "command": context + "ClearReinforcements()",
+             "required": True},
+            {"context": "CcoFrontendRoot", "command":
+             context + "SetIsRecruitingReinforcements(false)", "required": True},
         ]
-        if side["units"]:
-            # The cards this race offers, so a card that is missing names the ones that exist.
-            steps += [{"dump": f"cards_slot{slot}.txt", "depth": 3,
-                       "find": ["recruitment_options_list"]}]
         if side["units"] is None:
             steps += [{"find": ["clear_autogen_parent", "button_autogen"], "click": True,
                        "timeout_ms": 15000},
@@ -241,36 +241,22 @@ def scenario_steps(scenario: dict, *, build_id: str | None = None) -> list[dict]
                       {"wait_ms": 3000}]
         for index, unit in enumerate(side["units"] or []):
             faction = side.get("recruitment_faction", side["faction"])
-            lord = index == 0 and side.get("lord", True)
-            card = f"CcoUnitsCustomBattlePermissionRecord{unit}:{faction}:{int(lord)}"
-            steps += [{"find": [card, "unit_card"], "dblclick": True},
-                      {"wait_ms": 600}]
             mounted = (side.get("mounts") or {}).get(str(index))
-            if mounted:
-                context = f"{LOBBY}PlayerSlotList.At({slot}).UnitList.At({index})."
-                steps += [{"context": "CcoFrontendRoot", "command": context +
-                           "ChangeMount(" + context + "AvailableMountsList.FirstContext(" +
-                           "MountedUnitContext.Key == " + json.dumps(mounted) + "))",
-                           "required": True},
-                          {"wait_ms": 500},
-                          {"context": "CcoFrontendRoot", "expression":
-                           context + "UnitRecordContext.Key", "expect": mounted, "required": True}]
+            steps.append({"recruit": unit, "faction": faction, "slot": slot, "required": True,
+                          **({"mount": mounted} if mounted else {})})
         if side.get("experience"):
             steps.append({"experience": [{"type": unit, "rank": rank} for unit, rank in
                                          zip(battle_units(side), ranks, strict=True)],
                           "slot": slot, "required": True})
         if isinstance(side.get("reinforcements"), list):
-            context = f"{LOBBY}PlayerSlotList.At({slot})."
             steps += [
-                {"context": "CcoFrontendRoot", "command": context + "ClearReinforcements()"},
                 {"context": "CcoFrontendRoot", "command":
                  context + "SetIsRecruitingReinforcements(true)"},
-                {"wait_ms": 800},
             ]
             for unit in side["reinforcements"]:
                 faction = side.get("recruitment_faction", side["faction"])
-                card = f"CcoUnitsCustomBattlePermissionRecord{unit}:{faction}:0"
-                steps += [{"find": [card, "unit_card"], "dblclick": True}, {"wait_ms": 600}]
+                steps.append({"recruit": unit, "faction": faction, "slot": slot,
+                              "reinforcements": True, "required": True})
             steps += [
                 {"context": "CcoFrontendRoot", "expression": context +
                  'ReinforcingUnitList.JoinString(UnitRecordContext.Key, ";")',
@@ -389,8 +375,11 @@ def lobby_fields(scenario: dict) -> dict:
 def lobby_value(scenario: dict, key: str):
     # A fort and a survival map both report land_normal as their map type. Verify the
     # selected lobby mode here; expected_mode separately checks the engine mode in battle.
-    return (scenario.get("battle_type", "classic") if key == "battle_type"
-            else scenario["expect"][key])
+    if key == "battle_type":
+        return scenario.get("battle_type", "classic")
+    if key == "unit_scale":
+        return UNIT_SCALES[scenario["expect"][key]]
+    return scenario["expect"][key]
 
 
 def fill_timeouts(scenario: dict, config: dict) -> None:
@@ -482,17 +471,6 @@ def validate_custom(scenario: dict) -> None:
             used.add(unit)
 
 
-def check_preferences(scenario: dict, environment: dict) -> None:
-    """A benchmark's realism must match the game preference, which the lobby cannot set."""
-    if not scenario.get("expect"):
-        return
-    actual = (environment.get("preferences") or {}).get("battle_realism_mode")
-    wanted = str(scenario["expect"]["realism"]).lower()
-    if str(actual) != wanted:
-        raise ProtocolError(f"setup preference battle_realism_mode: {actual!r},"
-                            f" expected {wanted!r}")
-
-
 def menu_checks(scenario: dict) -> list[dict]:
     modifier = float(scenario["expect"]["ai_stats_modifier"])
     if not math.isfinite(modifier) or modifier <= 0:
@@ -502,8 +480,6 @@ def menu_checks(scenario: dict) -> list[dict]:
                'SetTimeLimitSettingContext(' + SETTINGS +
                f'TimeLimitSettingList.FirstContext(Key == "{timer}"))', "required": True}]
               if timer else [])
-    checks.append({"context": "CcoFrontendRoot", "command":
-                   SETTINGS + f"SetBattleAiStatsModifier({modifier:g})", "required": True})
     checks.append({"context": "CcoFrontendRoot", "command": SETTINGS +
                    'SetFundTypeSettingContext(' + SETTINGS +
                    'FundTypeSettingList.FirstContext(Key == ' +
@@ -512,6 +488,18 @@ def menu_checks(scenario: dict) -> list[dict]:
         checks.append({"context": "CcoFrontendRoot", "command": SETTINGS +
                        f'SetCustomFundsAmount("{scenario["expect"]["funds_amount"]}")',
                        "required": True})
+    for name, key in (("DifficultyLevel", scenario["expect"]["difficulty"]),
+                      ("UnitScale", lobby_value(scenario, "unit_scale"))):
+        checks.append({"context": "CcoFrontendRoot", "command": SETTINGS +
+                       f"Set{name}SettingContext({SETTINGS}{name}SettingList."
+                       f"FirstContext(Key == {json.dumps(key)}))", "required": True})
+    checks.append({"context": "CcoFrontendRoot", "command": SETTINGS + "ToggleRealismMode()",
+                   "when": ("!" if scenario["expect"]["realism"] else "") +
+                   SETTINGS + "IsRealismMode", "required": True})
+    # Selecting difficulty resets its default modifier (very hard -> 1.1 in the live
+    # integration check), so the declaration's explicit modifier must be applied last.
+    checks.append({"context": "CcoFrontendRoot", "command":
+                   SETTINGS + f"SetBattleAiStatsModifier({modifier:g})", "required": True})
     return checks + [{"context": "CcoFrontendRoot", "expression": SETTINGS + field,
              "expect": modifier if key == "ai_stats_modifier" else lobby_value(scenario, key),
              "required": True}

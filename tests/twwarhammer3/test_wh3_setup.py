@@ -31,9 +31,14 @@ def test_every_named_scenario_resolves_and_recruits_its_rosters():
         assert "base" not in scenario and scenario.get("name", name) == name
         if not scenario.get("random"):
             steps = setup.scenario_steps(scenario)
-            assert len([s for s in steps if s.get("dblclick")]) == sum(
-                len(side["units"]) + len(side.get("reinforcements") or [])
-                for side in setup.sides(scenario))
+            actual = [(s["slot"], s["recruit"], s.get("reinforcements", False))
+                      for s in steps if "recruit" in s]
+            expected = [(slot, unit, reserve)
+                        for slot, side in enumerate(setup.sides(scenario))
+                        for reserve, units in ((False, side["units"]),
+                                               (True, side.get("reinforcements")))
+                        for unit in units or []]
+            assert actual == expected, name
 
 
 def test_timerless_declaration_ignores_hidden_lobby_timer_but_requires_fixed_pool():
@@ -56,8 +61,10 @@ def test_explicit_reinforcements_are_selected_after_starting_army_and_verified()
     steps = setup.scenario_steps(scenario)
     switch = next(i for i, step in enumerate(steps)
                   if "SetIsRecruitingReinforcements(true)" in step.get("command", ""))
-    assert sum(bool(s.get("dblclick")) for s in steps[:switch]) == 10
-    assert sum(bool(s.get("dblclick")) for s in steps[switch:]) == 7
+    main = [s for s in steps[:switch] if "recruit" in s]
+    reserve = [s for s in steps[switch:] if "recruit" in s]
+    assert len(main) == 10 and all(not s.get("reinforcements") for s in main)
+    assert len(reserve) == 7 and all(s["reinforcements"] for s in reserve)
     verify = next(s for s in steps if "ReinforcingUnitList.JoinString" in s.get("expression", ""))
     assert "expect" not in verify  # The lobby sorts by unit class; check_menu compares counts.
     assert verify["required"]
@@ -66,9 +73,10 @@ def test_explicit_reinforcements_are_selected_after_starting_army_and_verified()
 
 def test_recruitment_card_namespace_can_differ_from_banner():
     steps = setup.scenario_steps(setup.scenarios()["chd-reserve-grn-siege"])
-    assert any(s.get("find", [""])[-1] == "CcoFactionRecordwh3_dlc23_chd_astragoth" for s in steps)
-    cards = [s["find"][0] for s in steps if s.get("dblclick")]
-    assert all(":wh3_dlc23_chd_legion_of_azgorh:" in card for card in cards[:9])
+    assert any(s.get("expression") == setup.LOBBY + "PlayerSlotList.At(0).FactionRecordContext.Key"
+               and s["expect"] == "wh3_dlc23_chd_astragoth" for s in steps)
+    recruits = [s for s in steps if "recruit" in s and s["slot"] == 0]
+    assert recruits and all(s["faction"] == "wh3_dlc23_chd_legion_of_azgorh" for s in recruits)
 
 
 def test_declared_armies_verify_recruitment_before_attempting_readiness():
@@ -106,29 +114,29 @@ def test_a_step_named_after_its_base_keeps_the_base_family_as_its_split_group():
             if scenarios[name].get("family") != scenarios[base].get("family")] == []
 
 
-def test_scenario_steps_pick_each_race_and_recruit_the_lord_first():
+def test_scenario_steps_pick_each_race_faction_and_preserve_recruitment_order():
     steps = setup.scenario_steps(setup.load_scenario({"scenario": "kho5-dwf5"}))
-    races = [s["find"][1] for s in steps if s.get("find", [""])[0] == "button_select_race"]
-    assert races == ["CcoSubcultureRecordwh3_main_sc_kho_khorne",
-                     "CcoSubcultureRecordwh_main_sc_dwf_dwarfs"]
-    factions = [s["find"][1] for s in steps if s.get("find", [""])[0] == "dropdown_context_scroll"]
-    assert factions == ["CcoFactionRecordwh3_main_kho_khorne", "CcoFactionRecordwh_main_dwf_dwarfs"]
-    cards = [s["find"][0] for s in steps if s.get("dblclick")]
-    assert cards[0] == ("CcoUnitsCustomBattlePermissionRecord"
-                        "wh3_main_kho_cha_herald_of_khorne_0:wh3_main_kho_khorne:1")
-    assert cards[5].endswith("wh_main_dwf_cha_lord_0:wh_main_dwf_dwarfs:1")
-    assert len(cards) == 10 and all(card.endswith(":0") for card in cards[1:5] + cards[6:])
+    races = [s["expect"] for s in steps
+             if s.get("expression", "").endswith("SubcultureContext.Key")]
+    assert races == ["wh3_main_sc_kho_khorne", "wh_main_sc_dwf_dwarfs"]
+    factions = [s["expect"] for s in steps
+                if s.get("expression", "").endswith("FactionRecordContext.Key")]
+    assert factions == ["wh3_main_kho_khorne", "wh_main_dwf_dwarfs"]
+    commands = [s.get("command", "") for s in steps]
+    assert sum("SetSubculture(" in value for value in commands) == 2
+    assert sum("SetFaction(" in value for value in commands) == 2
+    recruits = [s for s in steps if "recruit" in s]
+    assert recruits[0]["recruit"] == "wh3_main_kho_cha_herald_of_khorne_0"
+    assert recruits[5]["recruit"] == "wh_main_dwf_cha_lord_0"
+    assert len(recruits) == 10
     assert steps[-4]["find"] == ["start_button_frame", "button_start_battle"]
     assert steps[-1] == {"log": setup.NOT_STARTED}
 
 
-def test_a_lordless_roster_recruits_its_first_card_as_a_unit():
+def test_a_lordless_roster_preserves_its_units_without_adding_a_lord():
     steps = setup.scenario_steps(setup.load_scenario({"scenario": "ksl-raiders-emp-halberds"}))
-    cards = [s["find"][0] for s in steps if s.get("dblclick")]
-    assert cards == ["CcoUnitsCustomBattlePermissionRecord"
-                     "wh3_main_ksl_cav_horse_raiders_0:wh3_main_ksl_kislev:0"] * 2 + [
-                     "CcoUnitsCustomBattlePermissionRecordwh_main_emp_inf_halberdiers:"
-                     "wh_main_emp_empire:0"]
+    recruits = [s["recruit"] for s in steps if "recruit" in s]
+    assert recruits == ["wh3_main_ksl_cav_horse_raiders_0"] * 2 + ["wh_main_emp_inf_halberdiers"]
     sizes = [s["expect"] for s in steps if s.get("expression", "").endswith("UnitList.Size")]
     assert sizes == [2, 1]
 
@@ -142,8 +150,6 @@ def test_larger_and_corner_candidates_declare_their_slots_lords_and_roles():
     steps = setup.scenario_steps(setup.load_scenario({"scenario": "ksl-ffa-grn-dwf-12"}))
     adds = [s["when"] for s in steps if s.get("find") == ["bottom_team_parent", "button_add_ai"]]
     assert adds == [f"{setup.LOBBY}PlayerSlotList.Size < {n}" for n in (2, 3, 4)]
-    cards = [s["find"][0] for s in steps if s.get("dblclick")]
-    assert len(cards) == 48 and sum(card.endswith(":1") for card in cards) == 4
     pitched = setup.scenarios()["emp-pitched-grn-20"]
     assert len(pitched["player"]["units"]) == len(pitched["enemy"]["units"]) == 20
     corner = setup.scenarios()["dwf-longbeards-emp-swordsmen"]
@@ -160,15 +166,15 @@ def test_free_for_all_scenarios_declare_four_sides():
             assert count == 4, name
 
 
-def test_mount_is_selected_after_recruitment_and_pinned_budget_before_it():
+def test_mount_stays_attached_to_its_recruited_type_with_budget_already_set():
     scenario = setup.load_scenario({"scenario": "brt-cavalry-emp-pikes"})
     steps = setup.scenario_steps(scenario)
-    recruit = next(i for i, s in enumerate(steps) if s.get("dblclick"))
-    mount = next(i for i, s in enumerate(steps) if "ChangeMount(" in s.get("command", ""))
+    mounted = next(i for i, s in enumerate(steps) if "mount" in s)
     budgets = [i for i, s in enumerate(steps) if "SetCustomFundsAmount(" in s.get("command", "")]
-    assert budgets[0] < recruit < mount < budgets[-1]
-    assert steps[mount + 2]["expect"] == "wh_main_brt_cha_lord_4"
-    assert steps[mount + 2]["required"]
+    assert budgets[0] < mounted < budgets[-1]
+    assert steps[mounted]["recruit"] == scenario["player"]["units"][0]
+    assert steps[mounted]["mount"] == "wh_main_brt_cha_lord_4"
+    assert steps[mounted]["required"]
 
 
 def test_battle_type_scenarios_select_the_type_slots_and_roles():
@@ -279,12 +285,35 @@ def test_unset_timeouts_become_the_least_a_benchmark_accepts():
         setup.validate_declaration(benchmark, {**config, "attach": True})
 
 
-def test_a_benchmark_needs_the_declared_realism_preference():
-    benchmark = setup.load_scenario({"scenario": "brt-cavalry-emp-assault"})
-    setup.check_preferences(benchmark, {"preferences": {"battle_realism_mode": "false"}})
-    setup.check_preferences({}, {})
-    with pytest.raises(ProtocolError, match="battle_realism_mode: 'true'"):
-        setup.check_preferences(benchmark, {"preferences": {"battle_realism_mode": "true"}})
+@pytest.mark.parametrize("scale,key,realism,condition", [
+    (.25, "unit_scale_small", True, "!"), (1, "unit_scale_ultra", False, ""),
+])
+def test_declared_lobby_settings_are_set_and_read_back(scale, key, realism, condition):
+    scenario = setup.load_scenario({"scenario": "brt-cavalry-emp-assault"})
+    scenario["expect"].update(unit_scale=scale, realism=realism)
+    steps = setup.menu_checks(scenario)
+    commands = [s.get("command", "") for s in steps]
+    assert any("SetDifficultyLevelSettingContext(" in value
+               and 'Key == "ai_level_very_hard"' in value for value in commands)
+    assert any("SetUnitScaleSettingContext(" in value and f'Key == "{key}"' in value
+               for value in commands)
+    toggle = next(s for s in steps if "ToggleRealismMode()" in s.get("command", ""))
+    assert toggle["when"] == condition + setup.SETTINGS + "IsRealismMode"
+    readbacks = {s["expression"]: s["expect"] for s in steps if "expression" in s}
+    assert readbacks[setup.SETTINGS + "DifficultyLevelSettingContext.Key"] == "ai_level_very_hard"
+    assert readbacks[setup.SETTINGS + "UnitScaleSettingContext.Key"] == key
+    assert readbacks[setup.SETTINGS + "IsRealismMode"] is realism
+
+
+def test_explicit_ai_modifier_is_applied_after_difficulty_resets_its_default():
+    # Live integration r1: selecting very hard reset the modifier from 1.0 to 1.1.
+    scenario = setup.load_scenario({"scenario": "brt-cavalry-emp-pikes"})
+    scenario["expect"].update(difficulty="ai_level_very_hard", ai_stats_modifier="1.0")
+    commands = [s.get("command", "") for s in setup.menu_checks(scenario)]
+    difficulty = next(i for i, value in enumerate(commands)
+                      if "SetDifficultyLevelSettingContext(" in value)
+    modifier = commands.index(setup.SETTINGS + "SetBattleAiStatsModifier(1)")
+    assert difficulty < modifier, "difficulty must not overwrite the explicit AI modifier"
 
 
 def test_setup_rejects_roster_multiplicity_factions_and_settings():
@@ -315,7 +344,7 @@ def test_setup_rejects_roster_multiplicity_factions_and_settings():
 def test_map_gate_and_required_steps(tmp_path):
     scenario = {"map": "intended", "player": {}, "expect": {"battle_type": "land_normal",
                 "difficulty": "ai_level_very_hard", "funds": "funds_large", "time_limit_s": 3600,
-                "ai_stats_modifier": "1.0"}}
+                "ai_stats_modifier": "1.0", "unit_scale": .75, "realism": False}}
     lines = [f"step {i}: {step['expression']} = {step['expect']}"
              for i, step in enumerate(setup.menu_checks(scenario)) if "expression" in step]
     (tmp_path / "menu.log").write_text("\n".join(lines))
@@ -371,7 +400,8 @@ def test_presets_reuse_only_identical_fixed_armies_on_the_same_build():
     random_pool = {**scenario["enemy"], "reinforcements": None}
     assert setup.army_preset_name(scenario, random_pool, "build1") is None
     steps = setup.scenario_steps(scenario, build_id="build1")
-    assert all(s.get("when", "").startswith("!") for s in steps if s.get("dblclick"))
+    recruits = [s for s in steps if "recruit" in s]
+    assert recruits and all(s.get("when", "").startswith("!") for s in recruits)
     checks = [s for s in steps if "UnitList.Count(" in s.get("expression", "")]
     assert checks and all(s["required"] and "when" not in s for s in checks)
 
@@ -381,7 +411,7 @@ def test_experience_is_assigned_after_recruitment_with_types_including_mounted_v
             "mounts": {"0": "horse"}, "experience": {"2": 1, "3": 9}}
     steps = setup.scenario_steps({"player": army})
     change = next(i for i, step in enumerate(steps) if "experience" in step)
-    assert change > max(i for i, step in enumerate(steps) if step.get("dblclick"))
+    assert change > max(i for i, step in enumerate(steps) if "recruit" in step)
     assert steps[change]["experience"] == [{"type": u, "rank": r} for u, r in
         zip(["horse", "sword", "missile", "sword"], [0, 0, 1, 9], strict=True)]
 
@@ -439,7 +469,8 @@ def test_start_comparison_detects_changed_magic_or_spells_at_identical_positions
 def test_custom_roster_budget_is_verified_before_scoring(tmp_path):
     scenario = {"map": "intended", "player": {}, "expect": {"battle_type": "land_normal",
                 "difficulty": "ai_level_very_hard", "funds": "funds_custom",
-                "funds_amount": 30000, "time_limit_s": 1200, "ai_stats_modifier": "1.0"}}
+                "funds_amount": 30000, "time_limit_s": 1200, "ai_stats_modifier": "1.0",
+                "unit_scale": .75, "realism": False}}
     lines = [f"{step['expression']} = {step['expect']}"
              for step in setup.menu_checks(scenario) if "expression" in step]
     log = "\n".join(lines)

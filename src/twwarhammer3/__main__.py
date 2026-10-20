@@ -207,9 +207,9 @@ def main() -> int:
             print(json.dumps(record, sort_keys=True))
             mailbox = Mailbox(BRIDGE_DIR, job=job)
             mailbox.reset()
-            mailbox.write_session(session(vars(args)))
             try:
-                with (OwnedGame(output / "game.log", timeout=args.timeout) as game,
+                with (mailbox.owned_session(session(vars(args))),
+                      OwnedGame(output / "game.log", timeout=args.timeout) as game,
                       PassiveCapture(BRIDGE_DIR, job=job, pid=game.info.get("pid", 0),
                                      enabled=args.stills)):
                     print(json.dumps(game.info), flush=True)
@@ -230,6 +230,8 @@ def main() -> int:
         from twwarhammer3.engine.mailbox import Mailbox
         from twwarhammer3.engine.runtime import BRIDGE_DIR
 
+        if not (BRIDGE_DIR / "session.json").exists():
+            parser.error("menu needs an active launch session")
         live = json.loads((BRIDGE_DIR / "session.json").read_text())
         mailbox = Mailbox(BRIDGE_DIR, job=live["job"])
         if args.steps:
@@ -245,17 +247,21 @@ def main() -> int:
         # The battle script runs menu.json steps too (the frontend is unloaded in battle).
         log = "mod.log" if args.battle else "menu.log"
         offset = mailbox.log_offset(log)
-        mailbox.write_menu(steps)
+        request = mailbox.write_menu(steps)
         deadline = time.monotonic() + args.wait
         while time.monotonic() < deadline:
             text = mailbox.log_since(offset, log)
             if text:
                 offset += len(text.encode())
                 print(text.rstrip(), flush=True)
-                if text.rstrip().endswith("done") or f"ui {len(steps)}:" in text:
-                    break
+                lines = text.splitlines()
+                if any(line.endswith(f"menu {request}: failed") for line in lines):
+                    return 1
+                if any(line.endswith(f"menu {request}: done") for line in lines):
+                    return 0
             time.sleep(0.5)
-        return 0
+        print("menu request timed out before completion", file=sys.stderr)
+        return 1
 
     if args.command == "play":
         from twwarhammer3.battle.controllers import factories, rotation

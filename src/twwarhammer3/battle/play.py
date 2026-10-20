@@ -47,7 +47,6 @@ from twwarhammer3.battle.setup import (
     NOT_STARTED,
     check_battle,
     check_menu,
-    check_preferences,
     compare_starts,
     expected_mode,
     fill_timeouts,
@@ -97,7 +96,6 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
     validate_declaration(scenario, config)
     environment = collect_diagnostics()
     steps = scenario_steps(scenario, build_id=environment.get("game", {}).get("steam_build_id"))
-    check_preferences(scenario, environment)
     revision = committed_revision("attributable battles", SOURCES)
     files = source_fingerprints(SOURCES)
     output.mkdir(parents=True)
@@ -171,10 +169,10 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
                 write_json(output / "manifest.json", manifest)
                 mailbox = Mailbox(BRIDGE_DIR, job=output.name)
                 mailbox.reset()
-                mailbox.write_session({**session(config),
-                                       **({"custom": scenario["custom"]}
-                                          if scenario.get("custom") else {})})
-                with OwnedGame(output / "game.log", timeout=config["run_timeout"]) as game:
+                settings = {**session(config), **({"custom": scenario["custom"]}
+                                                 if scenario.get("custom") else {})}
+                with (mailbox.owned_session(settings),
+                      OwnedGame(output / "game.log", timeout=config["run_timeout"]) as game):
                     manifest["game"] = game.info
                     with PassiveCapture(BRIDGE_DIR, job=mailbox.job, pid=game.info.get("pid", 0),
                                         enabled=config.get("stills", False)):
@@ -220,18 +218,21 @@ def start_frontend(mailbox: Mailbox, config: dict, output: Path, steps: list[dic
             raise MailboxTimeout("the frontend script did not report in")
         time.sleep(1)
     offset = mailbox.log_offset("menu.log")
-    mailbox.write_menu(steps)
+    request = mailbox.write_menu(steps)
     try:
         while True:
             lines = mailbox.log_since(offset, "menu.log").splitlines()
             (output / "menu.log").write_text(mailbox.log_since(0, "menu.log"))
-            if "failed" in lines:
-                raise ProtocolError("custom battle setup failed: " + lines[-2])
+            if f"menu {request}: failed" in lines:
+                reason = next((line for line in reversed(lines) if ": failed:" in line),
+                              next((line for line in reversed(lines) if line.startswith("step ")),
+                                   "see menu.log"))
+                raise ProtocolError("custom battle setup failed: " + reason)
             if any(line.endswith(NOT_STARTED) for line in lines):
                 reason = next((line for line in lines if "ReadyStatusText" in line), "")
                 reason = re.sub(r"\[\[.*?\]\]", "", reason.split(" = ", 1)[-1])
                 raise ProtocolError("custom battle did not start: " + reason)
-            if "done" in lines or mailbox.read_observation() is not None:
+            if f"menu {request}: done" in lines or mailbox.read_observation() is not None:
                 return
             if time.time() > deadline:
                 raise MailboxTimeout("the custom battle steps did not finish")
