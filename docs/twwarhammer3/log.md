@@ -35,7 +35,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b43 (2026-10-20: three Empire scenarios, no code change; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [Integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42); latest benchmark [b40 round](#2026-10-19-witness-v2-and-prompt-v21-harness-b40) |
+| benchmark harness | b45 (2026-10-20: the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (39 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
@@ -58,7 +58,38 @@ the risks. All of it is unverified; no check is agreed.
   Qwen3.6 none on the 20 v 20. Paid jobs stop the WH3 OpenRouter ledger at $22.50 (held
   $12.49; the account had $44.57).
 
-**Results**: appended when the queue ends.
+- b44 (`55bd657`, 05:01): `LineTeam` and `LineTeamReserve` in `calibration.py` (the fixed
+  and one-rule arms of the robot-team comparison; one offline test each) and the knights
+  battle stepped to Orc Boyz. Queue `plan-b.json`, 16 launches. b45 (`9bb2abd`, 07:20):
+  `emp-line-grn-raid-xp5`, the line battle with every player unit at experience rank 5
+  (startup check: friendly ranks 5, enemy 0). Queue `plan-c.json`, 6 launches.
+
+**Results** (39 launches 02:37-08:18 local, every job exit 0; OpenRouter $7.57 of the
+$10 cap, ledger $12.49 to $20.06; per-launch table and per-unit times:
+`calibration/empire-20261020/review.py --units`; readings on [empire.md](empire.md#results);
+all unverified, single launches unless counted):
+- **New scenarios' floors.** Line battle (rank 0): hold lost 327 s; attack_nearest a timer
+  stalemate at 1205 s (13% against 17%), not a contact win. Wolves: hold lost 245 s (the
+  guns never fired: skirmish mode made them run), attack_nearest lost 456 s. Knights
+  (goblin screen): attack_nearest won 371 s, rush_nearest lost 122 s; stepped to Orc Boyz,
+  where both floors lost (453 s, 130 s). Rank-5 line battle: hold lost 327 s, attack_nearest
+  lost 449 s.
+- **GLM-5.3 low, `llm_rules` v21, 19 launches, $4.86: 5 contact wins.** Hammer and anvil
+  2 of 2 (382, 333 s; a step the walking floor also wins), wolves 1 of 2 (295 s), Helblaster
+  1 of 2 (172 s, the gun alive for the first time on that scenario), rank-5 line battle
+  1 of 1 (687 s; Kimi K3 low lost it at 532 s, $0.63); 0 of 3 on the rank-0 line battle
+  (455, 432, 569 s), 0 of 2 riflemen at
+  1.1, 0 of 2 crossfire, 0 of 2 wizard (the second a backend anomaly: four replies padded
+  with whitespace, 120-178 s each), 0 of 1 knights on each step, 20 v 20 lost 732 s
+  ($0.88; enemy 47% left). Kimi K3 low: 0 of 2 on the rank-0 line battle (349, 925 s;
+  $0.55 and $1.47). Qwen3.6 none on the 20 v 20: lost 523 s (20 decisions, order age
+  18 s from 20-order replies, $0.05).
+- **Scripted team arms.** Rank-0 line battle: LineTeam lost 592 and 381 s, LineTeamReserve
+  lost 392 and 499 s (the rule fired within 9 s of the first line rout; the line broke
+  within 30 s). Rank 5: LineTeam **won by contact at 461 s** (every enemy unit routed, the
+  guns never caught), LineTeamReserve lost 491 s with six of seven enemy units routed.
+- Decisions and risks for the owner: [empire.md](empire.md#for-the-owner-to-decide).
+  Defect found: LineTeam's guns flip targets (41-43 orders, 5-7 targets a battle).
 
 ## 2026-10-20: UI and lobby integration (harness b42)
 

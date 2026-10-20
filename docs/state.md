@@ -9,12 +9,10 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
-**Running** (2026-10-20, ends by about 10:00): the WH3 [Empire set](twwarhammer3/empire.md)
-second queue, `runs/twwarhammer3/calibration/empire-20261020/plan-b.json` (16 launches:
-the two scripted line-team arms on the 7 v 7 line battle, the knights battle one step
-harder, more GLM-5.3 low launches, Kimi K3 low on the line battle, GLM on the 20 v 20;
-OpenRouter cap $22.50 on the WH3 ledger). The first queue (17 launches, $2.30) finished
-at 05:01. Stop the queue between jobs with a `plan-b-stop` file beside the plan.
+Nothing is running. The WH3 [Empire set](twwarhammer3/empire.md) night of 2026-10-20
+finished at 08:18: three queues, 39 launches, $7.57
+([log](twwarhammer3/log.md#2026-10-20-the-empire-set-harness-b43)); its decisions and
+risks wait for the owner ([list](twwarhammer3/empire.md#for-the-owner-to-decide)).
 Integration maintenance is complete ([b42](twwarhammer3/log.md#2026-10-20-ui-and-lobby-integration-harness-b42));
 the chariot b40 round stays stopped, Kimi on the chariot card unrun
 ([results](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)).
@@ -28,7 +26,7 @@ Priorities (owner, 2026-10-18): WH3 benchmark first, then Spire; post-training s
 [tactic cards](twwarhammer3/tactic-cards.md) (the benchmark definition and its board),
 [latency program](twwarhammer3/latency.md) (plan), [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v21, `commander` v7, skills v1.2, harness b42,
+- On `main`: `llm`/`llm_rules` v21, `commander` v7, skills v1.2, harness b45,
   evaluator v2, track `obs-v4+terrain/act-v2/live-1x`. Definitions and earlier changes:
   [log](twwarhammer3/log.md#on-main).
 - Benchmark: [the chariot card](twwarhammer3/tactic-cards.md#the-chariot-card-the-first-benchmark-card)
@@ -37,13 +35,15 @@ Priorities (owner, 2026-10-18): WH3 benchmark first, then Spire; post-training s
   [b40 round](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)
   found witness v2 winning 4 of 5 at 5/5 and 8/8, GLM 0 of 10. No model has won above
   its foils' bound. These gameplay findings remain unverified.
-- Spend: OpenAI $51.47 of $52; WH3 OpenRouter ledger $12.49 ($1.83 b40 round).
+- Spend: OpenAI $51.47 of $52; WH3 OpenRouter ledger $20.06 ($7.57 the Empire night).
   Before b40, the account had $46.41 shared with Spire (owner: spend carefully).
 
 Next (proposals for the owner; stages in [latency.md](twwarhammer3/latency.md#staged-plan)):
-0. Read the night's [Empire set](twwarhammer3/empire.md#results) results and its decisions;
-   then step the new scenarios (a floor win means a stronger enemy) and write the line
-   battle's handover signature and witness if the floors and screens say it is worth it.
+0. Read the night's [Empire set](twwarhammer3/empire.md#results) and its
+   [decisions](twwarhammer3/empire.md#for-the-owner-to-decide): the rank-5 line battle as
+   the first team card (foils and the fixed plan at 3+ launches, then model screens), a
+   scored handover signature, Kimi's cost, backend anomalies, a planner-executor harness
+   before more 20 v 20, and the first Empire export (23 model episodes).
 1. Freeze the chariot card: decisions 3-5 of the
    [second pass](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)
    (reference arms, reporting rules, dropped items) and whether witness v2 replaces v1 in
