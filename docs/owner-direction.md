@@ -40,6 +40,11 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-20 (research follow-up): expand and organize the robot-team research notes and
+  plans using relevant robotics, LLM, agent, benchmark, evaluation and post-training
+  research. Keep concrete uses, comparisons and limitations so the ideas remain useful
+  for later experiments. Recorded in the [research guide](twwarhammer3/robot-team-research.md)
+  and [Empire plan](twwarhammer3/robot-team-plan.md); documentation only.
 - 2026-10-20 (night, goal, away until 11:00): keep making progress toward the WH3
   benchmark, but spend less time perfecting one battle and explore a larger range of
   options; small battles to understand units, early tests of larger battles for the

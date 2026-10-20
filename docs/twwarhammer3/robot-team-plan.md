@@ -1,180 +1,231 @@
 # Robot team research plan
 
-Rough draft, 2026-10-20. Planning only; the proposed comparisons have not run and their
-verification methods are not yet agreed. The first concrete test became the seven-unit
-Empire line battle `emp-line-grn-raid` ([Empire set](empire.md#the-line-battle-emp-line-grn-raid));
-the Skaven battle below was the earlier candidate.
+Updated 2026-10-20. **Can a controller keep an army working when one unit can no longer
+perform the job that other units depend on?** The first candidate is the Empire line
+battle. The next decision is whether it actually requires recovery, before adding a new
+controller or training a model.
 
-**Can an agent keep a team working when one member can no longer do its job?** In WH3,
-one unit can hold an enemy in place while another attacks elsewhere. If the first unit
-breaks, the second unit's plan may stop making sense even though it is still healthy.
-We want to test whether the controller notices, finds a workable replacement, or changes
-the plan.
-
-This develops the owner's idea of an army as detachable robot parts. Each unit already has
-local control supplied by the game: movement, pathfinding and individual fighting. The
-useful robotics connection is deciding how those units work together as their abilities
-and availability change. The units have no mechanical joints; success here would not by
-itself show that a controller works on physical robots.
+The [research guide](robot-team-research.md) explains the relevant work, what it establishes
+and which comparisons it suggests. The [controller notes](robotics.md) hold implementation
+options and constraints. The [Empire set](empire.md) holds the battle records.
+The comparisons and checks here are proposals, not agreed verification methods;
+gameplay findings remain unverified under the [repository rule](../../AGENTS.md#verification-hard-rule).
 
 ## What might make this interesting
 
-The team's useful abilities depend on its members' relationships. A weak unit can buy time
-for a strong one. Losing that weak unit can remove an opportunity elsewhere. Replacing it
-with a slower or tougher unit may require changing the timing of the whole plan.
+The engine already handles each unit's movement, pathfinding and individual fighting.
+Our controller chooses how units support one another: an infantry unit holds an enemy
+while guns fire or cavalry moves elsewhere. When that infantry routes, a healthy
+teammate's assignment can stop making sense.
 
-Robotics already studies related problems. [EMOS](https://arxiv.org/abs/2410.22662)
-uses language models to coordinate robots with different physical capabilities.
-[Reactive Task Allocation and Planning](https://arxiv.org/abs/2110.08436) studies recovery
-from failures and obstructions. [DPT-Agent](https://arxiv.org/abs/2502.11882) combines fast
-local behavior with slower reasoning, and
-[The World Won't Wait](https://arxiv.org/abs/2610.20665) evaluates agents while games
-continue during inference.
+This is a problem of team allocation and execution above local controllers. Units have
+no mechanical connections, and a single central planner is not a decentralized robot
+system. The possible research contribution is an inspectable set of situations where
+cooperation breaks while a remote controller is thinking and existing orders continue.
+Neither team recovery nor slow planning over fast execution is new; see the
+[research comparisons](robot-team-research.md#scope-and-possible-contribution).
 
-The possible contribution here is a small, inspectable set of battles where an opponent
-disrupts cooperation while existing orders keep running. We could identify whether a
-failure came from choosing roles, carrying them out, or continuing a plan after its
-conditions disappeared. This is a candidate research direction, not a claim of first use.
+Three questions should be answered separately:
 
-## The earlier Skaven candidate
+1. **Allocation:** who should take over, and when is abandoning the original plan better?
+2. **Execution:** can the chosen unit actually reach and perform the replacement job?
+3. **Plan adoption:** does a reply based on the old arrangement undo a useful recovery?
 
-Start from the existing `skv-ogres-slaves-emp-halberds-1` scenario in
-[scenarios.json](../../configs/twwarhammer3/scenarios.json). Keep its map and declared
-settings: a normal land battle, player defending, no lords, AI stats modifier 1.0 and a
-20-minute limit. Every battle runs unpaused at 1x.
+A win alone cannot distinguish these. A stronger robotics claim would also require the
+same useful mechanism to work in a robot-team task, such as delivery with one carrier
+unavailable. WH3 alone establishes results about this game and interface.
 
-| Side | Units | Proposed jobs |
+## The current Empire candidate
+
+The current candidate is `emp-line-grn-raid-xp5`, the rank-5 variation of
+`emp-line-grn-raid`, on Taurox; adopting rank 5 remains an owner decision.
+Both are already declared in [scenarios.json](../../configs/twwarhammer3/scenarios.json).
+Both sides are lordless; the player defends and the battle runs unpaused at 1x.
+Keep declared settings fixed within a comparison.
+
+| Side | Roster | Possible cooperation |
 |---|---|---|
-| Player | One Rat Ogres unit | Reach and fight the Handgunners while the Halberdiers are occupied |
-| Player | Two Skavenslaves units | One holds the Halberdiers; the other waits nearby to replace it |
-| Enemy AI | One Halberdiers unit and one Handgunners unit | Their behavior remains controlled by the game |
+| Empire | Halberdiers, two Swordsmen, reserve Spearmen, two Handgunners, Empire Knights | Infantry holds the line, guns fire, the reserve repairs a gap and knights respond to a threat |
+| Greenskins | Two Orc Boyz, Big 'Uns, Goblin Spearmen, Arrer Boyz, Wolf Riders, Boar Boyz | The game AI chooses its own attacks |
 
-The scene we hope to observe is concrete: the first slave unit is fighting the halberds,
-the ogres are fighting the guns, and the reserve is still available. The first slave unit
-routes: it breaks and flees. Can the reserve engage the halberds before they reach the
-ogres? If it cannot, does the controller get the ogres out or choose another workable action?
+The scene to look for: a line unit protects a gun while the reserve is available.
+The line unit routes during a planner request. Before the reply returns, the enemy
+approaches the gun. Can the controller fill the gap, move the gun, or give up that
+position? Does a late reply send the reserve away or cancel the withdrawal?
+This is a candidate sequence, not an established recurring event.
 
-The controller would place the reserve through ordinary movement orders. Its waiting
-distance needs development runs; the current setup does not give us a proven arrangement
-that produces this sequence. Do not add exact starting positions or a timed forced rout
-to the experiment's description until those controls work.
+### What the existing launches establish
 
-There is some relevant experience, but no handover result:
-the [expendables pilot](log.md#2026-10-18-tactic-cards-harness-b28-to-b30-and-the-overnight-checks)
-recorded attack-nearest and hold each losing one battle, and `SlaveTarpit` winning 3/4.
-That script sends **both** slave units to the single halberd unit. Its wins do not show
-that keeping a reserve is useful. These small gameplay samples remain unverified.
+The [Empire results](empire.md#results) contain feasibility evidence:
 
-The first practical question is whether reserving a unit ever creates a useful choice.
-Sending both in immediately might be better, the ogres might finish before a replacement
-is needed, or the first rout might break the rest of the army. Any of those findings could
-make this a poor recovery task.
+- At rank 0, `LineTeam` and `LineTeamReserve` each lost two launches.
+- At rank 5, the fixed `LineTeam` won its one launch; **its reserve never entered melee**.
+  `LineTeamReserve` lost its one launch after six enemy units had routed.
+- At rank 5, GLM won its one launch and Kimi lost its one; the two simple floors each
+  lost one. These are individual outcomes, not reliable differences between controllers.
+- The b46 changes to target retention and knight behavior are unplayed. Earlier results
+  do not establish the behavior of those revised controllers.
+
+The fixed-plan win is a reason to test whether recovery matters. A battle can be a useful
+coordination card even if it is a poor recovery card. Do not harden it until every model
+loses or count a reserve order as a successful handover.
 
 ## What to compare
 
-Use one shared local controller that can carry out an assignment: engage an enemy,
-wait at a position, or withdraw. It must continue operating while a model thinks. Start
-with written rules. Learning those movements or generating new control code would be a
-separate comparison.
+First establish that a useful allocation choice exists. Use one shared local executor,
+the same public fields, update schedule, opening arrangement and supplied tactical
+knowledge. These are proposed experimental arms; today's two `LineTeam` classes are
+starting points, not a completed common-executor comparison.
 
-Then compare three ways of choosing assignments:
+| Arm | Assignment decision | What it tests |
+|---|---|---|
+| Fixed jobs | Retain opening roles, with ordinary local checks for unavailable targets | Whether replanning is needed at all |
+| Commit the reserve early | Put the reserve into a declared useful job before a break | Whether waiting for a handover is an unnecessary restriction |
+| Simple replacement | On a line unit's rout, send an available reserve toward the gap | Whether one authored rule is sufficient |
+| Capability and distance rule | Select among legal replacements using declared capability constraints and distance, with a penalty for abandoning another job | Whether a small allocator handles the meaningful choices |
+| Model assignments | Choose replacement, redirection or abandonment above the same executor | Whether model decisions add value beyond those rules |
 
-| Controller | What changes during the battle |
-|---|---|
-| Fixed assignments | Keeps the opening jobs. Local movement and ordinary checks for unavailable units or targets still run |
-| Simple replacement rule | Starts with the same jobs; when the first screen routes, sends the reserve to the halberds |
-| Model choosing assignments | Starts with the same jobs; can replace the screen, redirect the ogres, or abandon the plan |
+Add the capability rule only if there is more than one consequential choice. Distance
+is a rough travel proxy, not a promise of reachability or an accurate arrival time.
+Disclose every tactical rule supplied to the executor and allocator.
+`hold` and nearest-attack remain context, but are too weak to establish a planning benefit.
 
-Give all three the same public information about their army and visible enemies, local
-controller and update rate. Explain the tactic to the model: this comparison concerns
-changing an assignment, not recalling a game tactic. Record who changed each assignment
-and when it took effect.
-Keep the existing both-slaves-at-once script as a reference; beating an intentionally
-restricted fixed plan is insufficient if that simpler approach still does better.
+If a hierarchy is useful, run a separate adoption comparison with the **same planner**:
+ordinary legality checks; legality plus a fixed age limit; legality plus explicit
+conditions for the assignment to remain useful. For example, "continue this flank while
+the supporting infantry is still holding" is different from "the target is alive."
+Keep unchanged assignments and their progress when patching a plan.
 
-Allow other ways to win. A controller that finishes the guns before the screen breaks
-may have made a better plan. Report that as a win without calling it evidence of recovery.
+The conditions themselves are supplied behavior. Start with authored conditions and say
+so; having the model select them is a later experiment. Excessive rejection can be worse
+than accepting an imperfect plan. Count rejected plans whose declared conditions still
+held, and independently review applicability with an unknown category. Their unobserved
+battle outcome remains unknown. Also measure delayed recovery and obsolete orders adopted.
+Define the response to false or unknown support before comparison: retain a still-valid
+assignment, use a declared local fallback, or request replanning. Unknown must not
+silently count as false.
 
 ## What we would observe
 
-Keep the engine's win, loss or draw as the main outcome. Also review the sequence around
-the first screen's rout:
+Keep the engine outcome and ending type. For this card, a **contact win** means the
+enemy is routed or destroyed before the timer; report defender timer wins separately.
+For each relevant disruption, record the sequence below on the battle clock.
 
-- Was the reserve still available, and were the guns still a threat?
-- When did the controller see the rout, change the assignment and submit the new order?
-- Did the replacement actually reach and occupy the halberds? Did the ogres continue their
-  attack, withdraw successfully, or get caught?
-- Did a late plan cancel a useful action already in progress?
+| Event | Evidence and limit |
+|---|---|
+| Support becomes unavailable | Public routing, destruction or loss of progress, with the rule stated in advance; these events are not interchangeable |
+| Controller observes it | Snapshot sequence/time and which component received it |
+| Planner requests or returns a change | Source snapshot, request/return/adoption times, assignment identity and rejection reason |
+| Replacement order is submitted | Acknowledgement and order origin; this establishes submission, not the effect |
+| Protection is restored or abandoned | Reviewed movement/contact and the protected unit's behavior; define the observable criterion before scoring |
+| Whole battle ends | Contact win, timer win, loss, draw or classified failure, under the frozen outcome rule |
 
-An accepted attack order does not prove that the reserve held the enemy. Review the replay
-alongside public positions and melee/routing flags. Before scoring handovers automatically,
-agree examples of a successful handover and a failed one, including an accepted order that
-arrives too late. The 1 Hz replay limits timing precision; a melee flag alone does not say
-which unit an enemy is fighting.
+Before automating handover scoring, agree examples of success, failure and ambiguity:
+an order that arrives too late, a replacement that never reaches the fight, an unnecessary
+handover, and a purposeful retreat. Public melee flags alone do not identify the opponent
+being fought. The 1 Hz replay cannot resolve subsecond timing; retain an unknown category
+when the evidence cannot decide.
 
-Report whole-battle results for every assigned launch, including battles without a rout.
-Natural routing depends on earlier decisions. Comparing only the battles where each
-controller happened to lose its screen would not isolate its ability to recover.
+Measure planner request time, observation age at adoption, local update intervals and
+observed effect separately, including failed and unfinished calls. The current
+`--delay-seconds` ages the entire policy's snapshot; a planner-only delay with fresh local
+feedback requires a separate implementation. No paused or slowed WH3 condition is allowed.
+
+Score every assigned launch, including battles with no rout. Natural routing depends on
+earlier decisions, so selecting only episodes where a unit routed does not isolate
+recovery. Replays can identify failure sequences; they cannot reveal the outcome of an
+untried alternative. Controlled mid-battle removal or a restored battle checkpoint is
+not an established experimental capability.
 
 ## A small sequence of experiments
 
-1. **Check that the battle poses the intended problem.** Review existing replays first.
-   If worthwhile, propose a script-only pilot: three fresh launches each for sending the
-   ogres around the halberds without a screen, both slaves together, and reserve replacement.
-   Compare with the recorded simple-attack results; repeat that control if its setup differs.
-   Nine planned launches would locate obvious problems, not establish reliable success
-   rates. If replacement never matters or cannot work, revise or drop this setup before
-   model runs.
-2. **Test whether the model adds useful decisions.** Run the three assignment controllers
-   above on one frozen setup. Decide the launch count, spending limit, stopping rule and
-   minimum useful improvement before running. Randomize controller order across fresh
-   launches; rematches are not extra independent samples. Keep development results separate.
-3. **Change one team member.** Reserve a legal roster variation, such as replacing the
-   reserve slaves with Clanrats, after checking recruitment and winnability. Compare
-   controllers within that same variation. More wins with a stronger army alone would not
-   show better adaptation. Keep the variation out of controller tuning.
-4. **Test a disruption during play only if the earlier steps justify it.** A temporary
-   loss of control, permanent removal, or delayed replacement could expose recovery more
-   directly. Each needs a validated scenario mechanism and a reference that can recover.
-   Test them separately; routing and death have different consequences.
+These are gates, not a large suite to run at once. Choose counts, budgets, a stopping rule
+and a minimum useful improvement with the owner before any live comparison.
 
-A later timing experiment could delay only the planner while the local controller keeps
-receiving fresh state. Today's `--delay-seconds` delays the whole policy's observations,
-so it does not perform that comparison. Measure actual delays and include failed calls.
-Our [chariot results](log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40) already caution
-against treating every execution failure as a speed problem.
+### 1 Establish a recoverable coordination problem
+
+Review the recorded line battles for occasions where a replacement could plausibly matter.
+Then propose a small script-only screen using the revised fixed, early-commitment and
+replacement arms. Three fresh launches per arm would be a feasibility screen, not a
+reliable rate comparison. Record starting geometry and the commander flag.
+
+Proceed only if there are recoverable disruptions and more than a cosmetic change of
+target. If fixed jobs or early commitment consistently solve the development cases
+without recovery, retain the battle as a coordination example and choose another recovery
+candidate. If every break causes an unavoidable morale collapse, revise the setup or stop.
+
+### 2 Test one allocation change
+
+Freeze the shared executor and the best relevant simple rules, then compare model
+assignments. Explain the tactic to all model arms: this study concerns allocation and
+recovery, not recalling an undisclosed game tactic.
+
+Reserve a legal roster or geometry variation before tuning. A stronger reserve's extra
+wins alone do not show adaptation; compare controllers within each variation. Randomize
+controller order across fresh launches, report all starts, and keep rematches grouped
+with their launch. Reserve development, selection and final evaluation groups.
+
+### 3 Test one timing or adoption mechanism
+
+Only after a useful assignment comparison exists, change one of:
+planner delay; plan adoption checks; or event-triggered versus periodic replanning.
+Keep the executor's observation interface and update cadence fixed, using each arm's
+current battle state. The planner's model and configuration stay fixed; its replies can
+differ as battles diverge. Begin with natural latency and a declared fixed added delay;
+add variable delay or stalls only when the question needs them. Delays must be assigned
+independently of observed battle difficulty.
+
+Check the implementation on a short known event sequence first. A deliberately wrong
+"accept every legal plan" implementation should fail a contract requiring rejection after
+the support unit routes. This establishes the adoption contract, not a benefit in battle.
+Then measure whether the changed mechanism improves outcomes or recovery without simply
+rejecting everything.
+
+### 4 Learn only the remaining decision
+
+If failures cluster around a bounded choice, such as retain assignment, replace support
+or withdraw, first try a small classifier/ranker or bounded correction to a reference.
+The [learning section](robot-team-research.md#learning-from-recovery-and-feedback)
+compares demonstrations, recovery labels, offline guidance and reward-conditioned learning.
+
+Compare with the unchanged script, a simple written correction and imitation on the same
+data. Count demonstrator effort and all development battles. Whole held-out launches and
+variants decide whether learning helps; action agreement and lower loss are screening
+checks. Do not begin large online RL before a serving route, useful reward and affordable
+interaction budget exist.
+
+## The earlier Skaven candidate
+
+`skv-ogres-slaves-emp-halberds-1` has one Rat Ogres unit and two Skavenslaves against
+Halberdiers and Handgunners. Its proposed handover is simple: one slave unit holds the
+halberds while the ogres reach the guns, then the reserve replaces the routing screen.
+It remains deferred in favor of Empire data.
+
+The [earlier pilot](log.md#2026-10-18-tactic-cards-harness-b28-to-b30-and-the-overnight-checks)
+recorded `SlaveTarpit` winning 3/4, and hold and nearest-attack each losing one.
+`SlaveTarpit` sends both slave units together; those wins do not demonstrate a useful
+reserve. The ogres might also bypass the halberds without any screen. If this candidate
+returns, compare those simpler choices before developing a handover controller.
 
 ## Main risks and reasons to change course
 
-- **The scene may be too easy or unrecoverable.** If both slaves together solve every
-  variation, or the first rout reliably ends the battle, choose a different small task.
-  The ogres may also outrun the halberds and reach the guns without a screen.
-  Pin-then-rear is another candidate, but its existing results also need development.
-- **A bad route can look like a bad plan.** Record starting positions and inspect terrain
-  and friendly units that block movement. A fresh launch does not guarantee the same
-  starting arrangement.
-- **Morale may dominate the comparison.** In an earlier lordless expendables battle the
-  game marked a slave unit as commander. Check that role and its consequences before
-  interpreting a rout. The model prompt currently omits a commander field that scripts can
-  see; the compared inputs must be made consistent.
-- **The local rules may supply the useful decisions.** Changing assignment selection and
-  movement logic together would hide where an improvement came from. The current
-  `commander` is an architectural starting point, not a proven controller for this task;
-  its [known constraints](robotics.md#2-make-the-planner-and-executor-independently-replaceable)
-  need attention.
-- **A simple replacement rule may be enough.** That would be a useful result. It would
-  justify trying one harder choice or a new roster, not adding more model agents by default.
-- **More units may only add noise.** Later compare a few independent fights with a few
-  fights that depend on one another. This asks whether coordination, rather than unit
-  count, is the difficulty.
-- **WH3 may remain a game-specific result.** A stronger robotics claim would require
-  trying the useful idea in a robot-team task, such as completing a delivery when one
-  robot can no longer take its assigned route.
+- **The game can win without the proposed skill.** Test the shortcut before claiming a
+  recovery benchmark; the rank-5 fixed-plan win already warns about this.
+- **Morale or movement can dominate.** Lordless armies still receive a commander flag.
+  A rout cascade or blocked path can overwhelm an otherwise sensible assignment.
+  Scripts and rendered model prompts currently expose different commander information;
+  match their inputs before comparing.
+- **A monitor can supply the solution.** A rule that chooses the replacement, its route
+  and its timing already performs much of the task. Attribute decisions to the component
+  that actually made them.
+- **More units do not establish more coordination.** Compare interdependent jobs with
+  similarly sized independent fights before interpreting team-size effects. Defer
+  per-unit language agents until communication itself is a question.
+- **The baseline may solve the task.** Keep that result. Do not add complications solely
+  to make a model necessary.
+- **A narrow game result may be all we obtain.** Broader claims need another task family
+  and eventually a robot-team setting where the same mechanism can be tested.
 
-The immediate next step was the feasibility review of the expendables battle. On
-2026-10-20 the owner asked for Empire data and early larger battles, so the first
-concrete test is the seven-unit Empire line battle `emp-line-grn-raid` in the
-[Empire set](empire.md#the-line-battle-emp-line-grn-raid); the Skaven step is deferred. Campaign
-play, independent model teammates and large training runs can wait until a small battle
-shows which decisions are worth studying. Implementation details and other controller
-ideas remain in the [robotics notes](robotics.md).
+The immediate next step is the Empire feasibility review in gate 1. The
+[Empire owner decisions](empire.md#for-the-owner-to-decide) remain pending; this research
+update does not admit a card, authorize a new run plan or change benchmark priorities.

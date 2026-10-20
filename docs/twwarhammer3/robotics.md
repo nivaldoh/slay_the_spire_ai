@@ -5,9 +5,11 @@ reacting while a slower planner chooses its assignments. Compare their contribut
 separately. Try fixed control rules and model-selected parameters before generating new
 rules or learning movement.
 
-The [robot team research plan](robot-team-plan.md) develops the next question: can another
-unit take over when a teammate can no longer do its job? It gives a concrete battle to
-consider, proposed comparisons and reasons the setup might fail.
+The [research guide](robot-team-research.md) connects capability allocation, recovery,
+delayed plans, evaluation and learning to published work and recent preprints. The
+[robot team plan](robot-team-plan.md) turns those ideas into a staged Empire experiment:
+first establish whether replacing a broken line unit helps. This page keeps the
+controller designs and code boundaries.
 
 These are proposals, not implementation or agreed verification methods. WH3 performance
 claims remain unverified under [the repository rule](../../AGENTS.md#verification-hard-rule).
@@ -26,7 +28,7 @@ melee state and order history matter; so do other units, morale and an adversary
 |---|---|---|
 | Hierarchical control | Planner assigns roles and targets; executor manages engagement and disengagement | A good executor can supply the entire tactic being tested |
 | Delayed feedback | The battle changes between observing, deciding and issuing an order | Issuing an order does not establish when its effect starts |
-| Changing embodiment | Units die, rout, rally or join; capabilities and available roles change | Units have no fixed mechanical connections, and routing can reverse |
+| Changing team capabilities | Units die, rout, rally or join; capabilities and available roles change | Units have no fixed mechanical connections, and routing can reverse |
 | Partial observability | Public state plus memory of previously visible enemies | No access to hidden enemy state or evaluator data |
 | Hybrid actions | Select attack/move/ability and a target, with continuous positions and bearings | Continuous trajectory methods cannot simply interpolate command types or target IDs |
 

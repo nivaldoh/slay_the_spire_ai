@@ -40,6 +40,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
 
+## 2026-10-20: Research for robot team coordination
+
+Expanded the [research guide](robot-team-research.md) around capability allocation,
+recovery, execution during slow calls, plan adoption, evaluation and learning. Each source
+has a concrete WH3 use and transfer limits; published results and preprints are identified.
+The [experiment plan](robot-team-plan.md) now starts with the Empire evidence, preserves
+the deferred Skaven candidate, and separates allocation, execution and adoption.
+Its first gate asks whether recovery helps beyond fixed jobs and early commitment.
+Corrected [post-training](../posttraining.md#beyond-supervised-fine-tuning): missing
+behavior probabilities prevent some importance corrections, not every offline RL method.
+Two independent source reviews checked the summaries and experiment wording. No controller,
+scenario, agreed verification method or gameplay result changed; no game or paid call ran.
+All 53 Markdown link tests and Ruff pass; an initial missing test scratch directory was
+created before rerunning the link checks. These checks do not validate paper claims.
+The research contribution and proposed interventions remain unverified.
+
 ## 2026-10-20: LineTeam kept targets and a reason cap (harness b46)
 
 A review of the Empire night (report and findings in `runs/twwarhammer3/review-20261020/`)

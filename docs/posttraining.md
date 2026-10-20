@@ -74,10 +74,14 @@ game. Not captured:
 - WH3 hidden state between the start and the end of a battle, so decision rewards cannot
   use the enemy's true losses.
 
-- Token log-probabilities of the model that played: off-policy corrections need them.
-  They are not requested (provider support is unverified); on-policy RL samples its own.
-  Without them, and without recorded sampling for GLM and Kimi, the Empire night's rows
-  are teacher data for SFT and distillation, not for off-policy RL.
+- Token log-probabilities of the model that played. They are not requested (provider
+  support is unverified), and GLM/Kimi sampling defaults are not recorded. This prevents
+  reconstructing the behavior probabilities needed by some importance-weighted updates;
+  it does not rule out all offline RL. For example,
+  [IQL](https://arxiv.org/html/2110.06169v1) uses recorded transitions and
+  advantage-weighted imitation without saved behavior probabilities.
+  Suitability still depends on state/action coverage,
+  transitions, rewards and the chosen method; it has not been established for these rows.
 - More than one reply per state, which preference methods such as DPO pair up. Saved
   prompts allow resampling offline later; the outcome of another action needs the game.
 - A sampler seed: none is sent.
@@ -85,6 +89,10 @@ game. Not captured:
 
 No RL or preference run has used these data yet, so their fitness is unverified
 ([AGENTS.md](../AGENTS.md#verification-hard-rule)).
+The [robot-team learning notes](twwarhammer3/robot-team-research.md#learning-from-recovery-and-feedback)
+compare ways to collect recovery examples, learn from outcomes and improve guidance
+between battles. They also list additional timing and action-origin fields to audit
+before using WH3 traces for those studies.
 
 ## Export-row contract
 
