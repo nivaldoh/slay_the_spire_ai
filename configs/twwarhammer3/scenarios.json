@@ -2236,5 +2236,156 @@
       "ai_stats_modifier": "1.1"
     },
     "calibration_change": "Tactic-card step (2026-10-18, delegated): at modifier 1.0 rush-nearest lost at 154 s and then won at 157 s without cycling (bench-b30-chariot-floor-rush-l2-20261018), so the card leaked while CycleCharge won 4 of 4 at 5 s. One factor: the AI modifier 1.1. Foils first, then the witness."
+  },
+  "emp-line-grn-raid": {
+    "name": "emp-line-grn-raid",
+    "family": "team coordination",
+    "scenario_version": 1,
+    "brief": "Seven Empire units receive an attack by seven Greenskin units, with no lords: a line of Halberdiers, two Swordsmen and a Spearmen reserve, two Handgunner units behind it and one Empire Knights unit, against two Orc Boyz, Big 'Uns, Goblin Spearmen, Arrer Boyz, Goblin Wolf Riders and Boar Boyz. The team's jobs change as the battle goes: the riders go round the line for the guns, infantry units break and leave gaps, and the knights have a charge or two to spend. Who guards what, when the reserve fills a gap and when the knights commit are the decisions. Hypotheses, not a prescribed solution; winnability is not yet shown.",
+    "split": "development",
+    "status": "prototype_not_admitted",
+    "battle_type": "classic",
+    "attacker": "enemy",
+    "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+    "player": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "lord": false,
+      "units": [
+        "wh_main_emp_inf_halberdiers",
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_swordsmen",
+        "wh_main_emp_inf_spearmen_1",
+        "wh_main_emp_inf_handgunners",
+        "wh_main_emp_inf_handgunners",
+        "wh_main_emp_cav_empire_knights"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_grn_greenskins",
+      "faction": "wh_main_grn_greenskins",
+      "lord": false,
+      "units": [
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_big_uns",
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_orc_arrer_boyz",
+        "wh_main_grn_cav_goblin_wolf_riders_0",
+        "wh_main_grn_cav_orc_boar_boyz"
+      ]
+    },
+    "expect": {
+      "battle_type": "land_normal",
+      "difficulty": "ai_level_very_hard",
+      "funds": "funds_custom",
+      "funds_amount": 6000,
+      "time_limit_s": 1200,
+      "ai_stats_modifier": "1.0",
+      "unit_scale": 0.75,
+      "realism": false,
+      "player_defends": true
+    },
+    "protected": [
+      "wh_main_emp_inf_handgunners"
+    ],
+    "content": [
+      "wh_main",
+      "wh3_main"
+    ],
+    "calibration_change": "Empire set, first medium battle (2026-10-20 night, delegated; docs/twwarhammer3/empire.md). The robot-team question at seven units a side: whether a controller reassigns units as teammates break and threats move. Database costs: player 3,700 (550 + 2 x 375 + 350 + 2 x 600 + 850); enemy Goblin Spearmen 325 and Wolf Riders 300 known, the rest unread, so funds 6,000 leave headroom. Lordless both sides to match the small cards (the commander flag sits on the first card). Floors hold and attack_nearest first, then model screens; a floor win means the enemy steps up."
+  },
+  "emp-handgunners-grn-wolves-boyz": {
+    "name": "emp-handgunners-grn-wolves-boyz",
+    "family": "two threats",
+    "scenario_version": 1,
+    "brief": "The riflemen pair against two different threats: one shielded Spearmen unit and one Handgunners unit receive an attack by one Goblin Wolf Riders unit and one Orc Boyz unit, with no lords. The riders are fast and reach the guns first; the Boyz are slower and stronger in a long melee. Which unit meets which threat, and when the guns change target, are the decisions. Hypotheses, not a prescribed solution; winnability is not yet shown.",
+    "split": "development",
+    "status": "prototype_not_admitted",
+    "battle_type": "classic",
+    "attacker": "enemy",
+    "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+    "player": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "lord": false,
+      "units": [
+        "wh_main_emp_inf_spearmen_1",
+        "wh_main_emp_inf_handgunners"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_grn_greenskins",
+      "faction": "wh_main_grn_greenskins",
+      "lord": false,
+      "units": [
+        "wh_main_grn_cav_goblin_wolf_riders_0",
+        "wh_main_grn_inf_orc_boyz"
+      ]
+    },
+    "expect": {
+      "battle_type": "land_normal",
+      "difficulty": "ai_level_very_hard",
+      "funds": "funds_custom",
+      "funds_amount": 2500,
+      "time_limit_s": 1200,
+      "ai_stats_modifier": "1.0",
+      "unit_scale": 0.75,
+      "realism": false,
+      "player_defends": true
+    },
+    "protected": [
+      "wh_main_emp_inf_handgunners"
+    ],
+    "content": [
+      "wh_main",
+      "wh3_main"
+    ],
+    "calibration_change": "Empire set (2026-10-20 night, delegated; docs/twwarhammer3/empire.md). The riflemen card's roster (player 950) against a fast and a slow threat instead of one Savage Orcs unit: a two-unit version of the team question. Enemy Wolf Riders 300, Orc Boyz cost unread; funds 2,500 as the riflemen card. Floors hold and attack_nearest first."
+  },
+  "emp-knights-grn-arrers-spears": {
+    "name": "emp-knights-grn-arrers-spears",
+    "family": "cavalry target choice",
+    "scenario_version": 1,
+    "brief": "One Empire Knights unit attacks one Orc Arrer Boyz unit and one Goblin Spearmen unit, with no lords. The archers hurt the knights at range and are easy to ride down; the spear wall is bad ground for horses. Which unit to charge first, from where, and whether to pull out and charge again are the decisions. Hypotheses, not a prescribed solution; winnability is not yet shown.",
+    "split": "development",
+    "status": "prototype_not_admitted",
+    "battle_type": "classic",
+    "attacker": "player",
+    "map": "battle_preset_qb_wh2_dlc17_taurox_rune_tortured_axes",
+    "player": {
+      "subculture": "wh_main_sc_emp_empire",
+      "faction": "wh_main_emp_empire",
+      "lord": false,
+      "units": [
+        "wh_main_emp_cav_empire_knights"
+      ]
+    },
+    "enemy": {
+      "subculture": "wh_main_sc_grn_greenskins",
+      "faction": "wh_main_grn_greenskins",
+      "lord": false,
+      "units": [
+        "wh_main_grn_inf_goblin_spearmen",
+        "wh_main_grn_inf_orc_arrer_boyz"
+      ]
+    },
+    "expect": {
+      "battle_type": "land_normal",
+      "difficulty": "ai_level_very_hard",
+      "funds": "funds_custom",
+      "funds_amount": 1500,
+      "time_limit_s": 1200,
+      "ai_stats_modifier": "1.0",
+      "unit_scale": 0.75,
+      "realism": false,
+      "player_defends": false
+    },
+    "protected": [],
+    "content": [
+      "wh_main",
+      "wh3_main"
+    ],
+    "calibration_change": "Empire set (2026-10-20 night, delegated; docs/twwarhammer3/empire.md). The Empire cavalry counterpart of the giant card: one unit choosing its target past an anti-large screen. Knights 850; Goblin Spearmen 325, Arrer Boyz cost unread; funds 1,500. Floors attack_nearest and rush_nearest first; a floor win means the screen steps up (Orc Boyz or modifier 1.1)."
   }
 }
