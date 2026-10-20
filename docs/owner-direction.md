@@ -40,6 +40,10 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-20 (evaluation guidelines): read the twelve supplied evaluation resources and
+  relevant cited work; write comprehensive, concrete benchmark guidelines covering
+  definition, methods, reliability, interpretation, possible code enforcement and WH3
+  exceptions. Documentation only; keep all writing and research artifacts in this repo.
 - 2026-10-20 (scope review): assess whether the benchmark has a clear scope and a credible
   path to being strong, useful, reliable, interesting and distinctive; improve definition
   and documentation where needed, with no implementation. The release boundary and

@@ -40,6 +40,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
 
+## 2026-10-20: Evaluation guidelines from the research readings
+
+- Added [evaluation-guidelines.md](evaluation-guidelines.md): 42 guidelines covering
+  task definition, splits, real-time comparisons, failure accounting, statistics,
+  human/LLM review, rubrics, training separation and research artifacts. Each area has
+  proposed code checks; common evaluation practices have explicit WH3 adaptations.
+- Read all twelve supplied sources and selected cited research; source tables identify
+  their uses and limits. Three independent reviews checked statistics, judging and the
+  benchmark contract. Corrected the withdrawal example, pairwise-judge handling, trial
+  grouping description and failure/track boundaries; numerical examples checked.
+- Checks: 54 documentation-link tests passed; `uv run --locked ruff check .` passed.
+  Evidence: `runs/twwarhammer3/eval-guidelines-20261020/`. No code, score, historical
+  cohort or agreed verification method changed; no battles or paid model runs.
+- Live-game effects, judge accuracy and proposed safeguards remain unverified. The guide
+  supplies methods for later agreement and execution, not new verification claims.
+
 ## 2026-10-20: Benchmark scope and release criteria
 
 Consolidated the [scope](benchmark.md#scope-and-first-release): complete controllers on

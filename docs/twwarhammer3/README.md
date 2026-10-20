@@ -22,6 +22,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [controllers.md](controllers.md) | the policies and their versions, comparing them, candidate changes, designs not built |
 | [battle-types.md](battle-types.md) | the battle-type scenarios, the `mode` state, the `build` and `reinforce` orders |
 | [benchmark.md](benchmark.md) | scope, release criteria, proposed verification, research comparisons and the recorded contract |
+| [evaluation-guidelines.md](evaluation-guidelines.md) | research-based evaluation guidelines: task design, failure accounting, statistics, human/LLM review, proposed code checks and publication |
 | [tactic-cards.md](tactic-cards.md) | the chariot's frozen rule, card design, candidate list and what WH3 adds |
 | [latency.md](latency.md) | the latency program (2026-10-18 plan): knowing a tactic against executing it in time, measures, robotics framing, harness ladder, fine-tuning path |
 | [robotics.md](robotics.md) | robotics ideas and concrete comparison designs: parameterized/generated policies, learned micro, controller boundaries and codebase fit |

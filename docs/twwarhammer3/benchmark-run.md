@@ -8,6 +8,10 @@ game. Battles always run unpaused at 1x.
 
 ## Before a run
 
+Use the [evaluation guidelines](evaluation-guidelines.md) to define the question,
+sampling, scoring and failure rules; its [study declaration](evaluation-guidelines.md#use-a-short-study-declaration)
+is a short planning template. New checks and score changes there remain proposals.
+
 The supported setup:
 - Windows with WSL2, Steam running and logged in, and WH3 at the build pinned in
   `src/twwarhammer3/engine/runtime.py` (another build warns and is recorded), in the

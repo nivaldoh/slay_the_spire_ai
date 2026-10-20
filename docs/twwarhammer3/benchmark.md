@@ -5,6 +5,8 @@ not newly agreed verification methods. Gameplay findings remain unverified under
 [hard rule](../../AGENTS.md#verification-hard-rule). The owner's brief is
 [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md).
 How to run it: [benchmark-run.md](benchmark-run.md). The report: [reports.md](reports.md).
+Design and review guidance: [evaluation-guidelines.md](evaluation-guidelines.md), covering
+the supplied evaluation research, WH3 adaptations and proposed code enforcement.
 What is running now: [docs/state.md](../state.md). Dated history: [log.md](log.md).
 Evidence paths under `runs/` are local and not in Git.
 

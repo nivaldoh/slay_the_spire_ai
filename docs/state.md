@@ -9,14 +9,14 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
-No benchmark or paid job is running. The WH3 [scope review](twwarhammer3/benchmark.md#scope-and-first-release)
-defines the release boundary and separates a reusable suite from research claims.
-Suite membership, new checks and card gates remain proposals. The [Empire night](twwarhammer3/empire.md)
+No benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md)
+cover design, scoring, statistics, review and proposed checks; the [scope](twwarhammer3/benchmark.md#scope-and-first-release)
+defines the release boundary. Suite membership, new checks and card gates remain proposals.
+The [Empire night](twwarhammer3/empire.md)
 finished at 09:00 (45 launches, $8.84); its [owner items](twwarhammer3/empire.md#for-the-owner-to-decide)
 remain pending. The revised b46 LineTeam arms are unplayed; the chariot b40 round stays stopped.
 
-Priorities (owner, 2026-10-18): WH3 benchmark first, then Spire; post-training secondary.
-[Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
+Priorities (2026-10-18): WH3 first, then Spire; post-training secondary. [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
 
 ## Total War: WARHAMMER III
 
