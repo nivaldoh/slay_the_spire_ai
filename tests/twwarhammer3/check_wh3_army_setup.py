@@ -71,15 +71,25 @@ def check_stats(log, observation):
     evidence = []
     for before, army in zip(lobby, battle, strict=True):
         after = stats_rows(army.split("@", 1)[1])
-        keys = ("stat_melee_attack", "stat_melee_defence", "stat_morale")
+        keys = ("stat_melee_attack", "stat_melee_defence")
         expected = Counter((unit, *(stats[k] for k in keys)) for unit, _, stats in before)
         actual = Counter((unit, *(stats[k] for k in keys)) for unit, stats in after)
         assert actual == expected, (actual, expected)
         swords = {rank: stats for unit, rank, stats in before if unit == SWORD}
         assert set(swords) == {0, 3, 9}
+        deployed = sorted([stats for unit, stats in after if unit == SWORD],
+                          key=lambda stats: stats["stat_melee_attack"])
+        assert len(deployed) == 3
+        keys = (*keys, "stat_morale")
         for key in keys:
             assert swords[0][key] < swords[3][key] < swords[9][key], (key, swords)
-        evidence.append({rank: {k: s[k] for k in keys} for rank, s in swords.items()})
+            # Leadership has a side-wide battle offset (-4 on the tested player side).
+            # XP must preserve the lobby's bonuses over rank zero, independently of that.
+            assert [s[key] - deployed[0][key] for s in deployed] == [
+                swords[r][key] - swords[0][key] for r in (0, 3, 9)], (key, deployed, swords)
+        evidence.append({"lobby": {r: {k: swords[r][k] for k in keys} for r in (0, 3, 9)},
+                         "battle": {r: {k: s[k] for k in keys}
+                                    for r, s in zip((0, 3, 9), deployed, strict=True)}})
     return evidence
 
 
