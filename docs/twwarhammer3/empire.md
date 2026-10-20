@@ -129,6 +129,10 @@ comparison between models.
   on the default toggles; the prompt shows the toggles, and the model can change them.
 - Single launches say almost nothing about rates; they say whether a setup works and
   what a battle looks like.
+- A pinned OpenRouter backend can degrade mid-battle: GLM-5.3 on Decart padded four
+  replies with whitespace for 120-178 s each in the second wizard launch. The harness
+  scores it as the model's loss; a screen of several launches must say how many were
+  played at normal reply times.
 
 ## Results
 
@@ -276,3 +280,104 @@ plan folder prints the table and the per-unit times); the log entry
 **First queue done at 05:01**: 17 launches, $2.30 (GLM-5.3 $1.70 on 9 battles, Kimi
 $0.55, Qwen $0.05); WH3 OpenRouter ledger $14.79. Model contact wins: 1 of 12 (GLM on
 the two-Swordsmen hammer and anvil, a step the walking floor also wins).
+
+Second queue (b44, from 05:02):
+- **Line battle, `LineTeam` (fixed jobs), launch 1: lost at 592 s**, 22% of its men left
+  against 36% (the longest contact battle on this scenario; hold 327 s, the models
+  349-455 s). The opening held: guns 216 and 263 rounds before melee (hold: 73-75), the
+  knights counter-charged the Boar Boyz at 150 s and both enemy cavalry units were routed
+  by 237 s (3 and 1 riders left), but the knights died doing it (0 of 45 by 228 s, the
+  infantry wave arriving at 177-192 s on top of them). The line in guard mode fought from
+  155 s and broke between 299 and 381 s, taking the Big 'Uns to 17 (routed at 405 s) and
+  the goblins to 44 (routed at 523 s); the reserve engaged at 338 s under its 25 m rule
+  and lasted to 490 s. Defect seen: the guns' "nearest in range" rule flipped targets
+  (41 and 43 orders, 5-7 targets each); a kept-target rule like `Bodyguard`'s is the fix
+  for the next version. Fixed jobs are not enough: the knights need a rule that keeps
+  them off a fresh cavalry unit while the infantry wave is arriving, or a second charge
+  target that is not the boars.
+- **Line battle, `LineTeamReserve` (replacement rule), launch 1: lost at 392 s**, 40%
+  left against 52%. The rule fired as written: the first line unit was seen routing at
+  344.8 s and the reserve's attack on the Boyz nearest its position went out in the same
+  decision; but the other two line units broke within 30 s (356 and 375 s), so the
+  reserve (80 of 90 men at the end) replaced one unit of a line that no longer existed.
+  The knights again went wolves, boars, archers and were down to 6 by 240 s. Seven
+  launches on this battle and no contact win: before more model launches the battle
+  needs a step that a sound fixed plan can win. Proposed step: the same rosters with the
+  player's units at experience rank 5 (`emp-line-grn-raid-xp5`), the finer knob the
+  owner named on 2026-10-19 and the b41 check verified at battle start; floors first.
+- **Knights battle, harder step (Orc Boyz for the goblins), floors: both lost.** Walking
+  (`attack_nearest`) lost at 453 s: the knights ground the Boyz down to 1 of 90 (routed at
+  291 s) and then lost the melee with the archers from 304 s, ending with 11 of 45 against
+  35 of 68 archers. Running (`rush_nearest`) lost at 130 s, routing with 25 of 45 after
+  53 s of melee against the fresh Boyz (66 of 90 left). So on this step neither naive play
+  wins, and the archers-first, cycle-against-the-Boyz play is what remains to test.
+- **Knights battle, harder step, GLM-5.3 low, launch 1: lost at 124 s** ($0.07, 46
+  decisions, age p50 2.4 s). It charged the Boyz first (contact at 78 s), switched to the
+  archers at 88 s with a pull-out move, and the unit routed at 124 s with 35 of 45 riders
+  alive: the same morale collapse as the running floor (the commander flag sits on the
+  only unit, so one rider's death is a "lord died" shock). On the easier step the model
+  had played archers-first; here it did not.
+- **Line battle, GLM-5.3 low, launch 3: lost at 569 s** ($0.44, 164 decisions, age p50
+  3.1 s), the closest model battle on this scenario: it tidied the line and set guard
+  mode by 16 s, kept the guns out of melee for the whole battle (476 and 571 rounds), had
+  the knights charge the Boar Boyz at 132 s and the line units pick targets as the wave
+  arrived, and routed four of the seven enemy units (riders 183 s, boars 278 s, both Boyz
+  345-352 s, goblins 363 s). The Big 'Uns (33 of 75 left) and the archers then broke what
+  was left of the line at 449-453 s, and from 477 s the model rode the surviving knights
+  (19) around the map edge instead of charging the Big 'Uns' rear. Enemy 42% left.
+- **Line battle, Kimi K3 low, launch 2: lost at 925 s** ($1.47, 245 decisions, age p50
+  3.0 s, 58 refusals, 53 of them unreachable points). Guard mode and skirmish off at 5 s,
+  the knights on the Boar Boyz at 144 s, the Spearmen reserve sent at the Wolf Riders at
+  161 s; the enemy cavalry was routed by 261 s and the archers at 333 s, the guns fired
+  646 and 457 rounds. Then the line broke at 351-376 s and from 380 s the model ran the
+  guns and knights to the western map edge with move orders every 3-4 s, dozens of them
+  past the boundary (x -480 to -490 against a -512 edge, all refused), until the guns
+  were caught at 387 s and 536 s. Enemy 43% left. Kimi's long battles cost about six
+  times GLM's; the ledger reads $16.89 after this one.
+- **20 v 20, GLM-5.3 low, launch 1: lost at 732 s** ($0.88, 167 decisions, order age
+  p50 3.6 s, 10 refusals). GLM replies in about 2 s with a few orders per reply (unlike
+  Qwen's 20), so it decided every 3-4 s on a 40-unit prompt; the first 84 s cost $0.13 and
+  projected to $4-6, so a watcher was set to interrupt the job at a $19.50 ledger, but
+  decisions slowed as the battle went on and it finished on its own at $0.88. The battle:
+  the whole infantry line met the Orc line at 265-280 s and every line unit routed between
+  352 and 373 s (the general at 418 s), while the guns fired 274-566 rounds each, the
+  Pistoliers shot 990 of 1,080 rounds and the enemy cavalry, trolls and Rock Lobber were
+  routed; enemy 47% left against Qwen's 88% and the walking floor's 61%. Per-decision
+  cost at scale is a second reason, after order age, for a planner-executor split.
+- **Line battle, `LineTeam` (fixed jobs), launch 2: lost at 381 s**, 43% left against
+  58%: the same course as launch 1 but faster (both enemy cavalry units routed by 216 s,
+  the knights down to 5 by 336 s, the line broken 321-354 s, the guns 213 and 158 rounds
+  before melee). Two launches, 592 and 381 s: the fixed plan does not win this battle.
+- **Line battle, `LineTeamReserve`, launch 2: lost at 499 s**, 29% left against 38%.
+  Three enemy units routed (goblins 306 s, both Boyz 390-399 s) and the reserve went in
+  at 377 s, nine seconds after the first line rout; the Big 'Uns (38) and the untouched
+  archers (68) finished the rest. The knights again died by 234 s. Two launches each for
+  both scripted arms, four losses: on this roster the fixed plan and the one-rule plan
+  both fall to the second cavalry unit plus the Big 'Uns, which is why the rank-5 step
+  comes next.
+- **Wolves battle, GLM-5.3 low, launch 2: won by contact at 295 s** ($0.21, 115
+  decisions, age p50 2.1 s, no refusals): the first model contact win tonight on a
+  scenario whose floors both lost. Spearmen in guard mode and the guns placed behind
+  them at 5 s, skirmish off at 11 s; the guns shot the riders from 141 s and the riders
+  broke on the spears at 169 s (35 of 60 left); the guns switched to the Boyz (256 rounds
+  in all, never in melee, 68 of 68 men), and the Boyz routed at 295 s with 46 of 90 while
+  the Spearmen kept 47 of 90. The same plan GLM played in launch 1 (lost at 367 s), so
+  the scenario sits near this plan's edge: GLM 1 of 2, floors 0 of 2 (all unverified).
+- **Riflemen card at 1.1, GLM-5.3 low, launch 2: lost at 237 s** ($0.20, 118 decisions,
+  age p50 1.8 s). This time it left skirmish on (it even re-enabled it at 5 s) and only
+  moved the Spearmen; the guns fired 119 rounds before the orcs reached them, the
+  Spearmen routed at 204 s, the guns at 237 s with the orcs at 76 of 90. GLM 0 of 2 on
+  this card by two different routes (hand-kiting, then no plan at all).
+- **Wizard battle, GLM-5.3 low, launch 2: lost at 526 s with 5 decisions** ($0.16): a
+  backend failure, not a tactic. The first three replies took 1.6 s; from the fourth the
+  Decart backend returned JSON padded with thousands of spaces, each reply taking 120-178 s
+  and one hitting the 16,000-token output cap (an incomplete reply, retried). The army
+  walked at the enemy under its 5 s orders and was never commanded again. The reply
+  text is in the trace (`m4`-`m7`). Counted as a loss by the harness rule (the battle
+  never waits), flagged here as a served-backend anomaly for the owner's "pinned backend
+  outages count against the model" issue.
+- **Hammer and anvil (two Swordsmen), GLM-5.3 low, launch 2: won by contact at 333 s**
+  ($0.24, 126 decisions, age p50 2.1 s): the Swordsmen pinned one enemy unit, the knights
+  charged the other and pulled out three times (82, 118, 151 s) before it routed at 246 s,
+  then the pinned unit at 333 s; 19 of 45 knights, 56 of 90 swordsmen left. GLM 2 of 2
+  on this step (the walking floor also wins it).

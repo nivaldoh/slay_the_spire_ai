@@ -2402,5 +2402,22 @@
       "funds_amount": 1800
     },
     "calibration_change": "Empire set step (2026-10-20 night, delegated): against Goblin Spearmen the attack-nearest floor won by contact at 371 s (bench-b43-knights-grn-floor-attack-20261020: the goblins routed at 294 s with 1 of 120 left, 29 of 45 knights alive), so the screen was no screen. One factor: Orc Boyz in place of the goblins (cost unread; funds 1,800). Floors first."
+  },
+  "emp-line-grn-raid-xp5": {
+    "base": "emp-line-grn-raid",
+    "name": "emp-line-grn-raid-xp5",
+    "brief": "The Empire line battle with every player unit at experience rank 5 (the lobby's per-unit experience control; ranks raise melee attack, defence and leadership). Same rosters, map and settings: seven Empire units receive seven Greenskin units, with no lords. Hypotheses, not a prescribed solution.",
+    "player": {
+      "experience": {
+        "0": 5,
+        "1": 5,
+        "2": 5,
+        "3": 5,
+        "4": 5,
+        "5": 5,
+        "6": 5
+      }
+    },
+    "calibration_change": "Empire set step (2026-10-20 morning, delegated): at rank 0 no controller won the line battle by contact in seven launches (hold 327 s, attack_nearest a timer stalemate at 1205 s, GLM 455 and 432 s, Kimi 349 s, LineTeam 592 s, LineTeamReserve 392 s), so a sound fixed plan cannot yet win it. One factor: experience rank 5 on every player unit, the finer knob the owner named on 2026-10-19 (b41 verified ranks at battle start). Floors first."
   }
 }
