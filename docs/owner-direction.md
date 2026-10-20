@@ -5,6 +5,8 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-20 (writing): use simpler, more concrete and intuitive language from now on;
+  avoid inflated wording and unnecessary jargon. Record the preference in shared guidance.
 - 2026-10-19 (artifact locations): put task-created files only inside the repository;
   stop polluting the environment root. Remember this in shared guidance and leave earlier
   garbage for a later cleanup pass.
@@ -38,6 +40,9 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-20 (research plan): keep the robot-team framing and write a rough plan in the
+  repository, with a concrete battle example, what to observe, uncertainties and risks.
+  [Draft](twwarhammer3/robot-team-plan.md); this request is for research planning.
 - 2026-10-19 (integration review): implement the agreed UI/modding cleanup plan, including
   structural simplification where useful. Apply declared lobby settings automatically;
   compare context setup with the click route, disturb settings, exercise unavailable units,

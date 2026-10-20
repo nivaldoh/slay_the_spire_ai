@@ -72,6 +72,9 @@ token use):
 - Read docs by section; do not reload full guidance already present in the session.
   Use multi-agent workflows only for independent verification, the WH3 loop's review step,
   or when the owner asks.
+- Write in simple, concrete language (owner, 2026-10-20). Describe what a unit, controller
+  or experiment actually does. Avoid inflated wording and unnecessary jargon; explain
+  technical terms when they help.
 - Put task-created scripts, logs, temporary artifacts and diagnostics inside this repository
   (normally ignored `runs/`), never in the environment/home root or unrelated directories.
   Keep test scratch directories there too; inventory earlier garbage for a later cleanup

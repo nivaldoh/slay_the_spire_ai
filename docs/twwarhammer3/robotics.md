@@ -1,10 +1,13 @@
 # Robotics ideas for WH3 control and evaluation
 
-Research notes, 2026-10-19. The most promising transfer is **persistent feedback control
-under a slower planner**, with experiments that separate the planner's contribution from
-the executor's. First compare a model choosing parameters for a fixed controller with a
-model generating its transition rules. Learned micro policies become worthwhile when we
-identify failures that simpler controllers cannot handle.
+Research notes, updated 2026-10-20. A useful starting point is a local controller that keeps
+reacting while a slower planner chooses its assignments. Compare their contributions
+separately. Try fixed control rules and model-selected parameters before generating new
+rules or learning movement.
+
+The [robot team research plan](robot-team-plan.md) develops the next question: can another
+unit take over when a teammate can no longer do its job? It gives a concrete battle to
+consider, proposed comparisons and reasons the setup might fail.
 
 These are proposals, not implementation or agreed verification methods. WH3 performance
 claims remain unverified under [the repository rule](../../AGENTS.md#verification-hard-rule).
@@ -32,12 +35,12 @@ and [engine facts](integration.md#battle). A useful robotics benchmark need not 
 the current structured-state interface already isolates several control problems. Screenshot
 input would create a separate perception and information-boundary experiment.
 
-There is a reason to investigate execution, but its cause remains open. In the recorded
-[b36 round](log.md#2026-10-19-overnight-round-at-b36-c1-finished-p2-cells-p5a), GLM-5.3 low
-stated cycle charging before contact in 10 of 10 chariot battles and won 1. The witness won
-4 of 4 with 2 s added observation age and a 2 s decision interval, but 0 of 5 at 5 s / 5 s.
-These small samples motivate an execution study; words in a reply do not prove tactical
-understanding, and a similar median latency does not match the timing of critical decisions.
+The latest [b40 round](log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40) gives a reason
+to investigate execution. The revised scripted chariot controller won 4/5 battles at
+5 s added observation age / 5 s decision interval, and 4/5 at 8 s / 8 s. GLM-5.3 low with
+the corrected prompt won 0/10 at younger information ages. These small, unverified samples
+weaken a latency-only explanation. Withdrawal geometry and repeated changes of orders are
+hypotheses suggested by the traces; their causal effects have not been isolated.
 
 ## 1 Compare parameter selection with generated feedback rules
 
@@ -420,11 +423,12 @@ available budget cannot distinguish that improvement, call the result a feasibil
 
 ## What to establish before a live comparison
 
-The first task remains the existing execution study: compare the nine GLM chariot losses
-with the witness, preserving event timing and observed effects. Pull-out depth, refusals and
-aggregate contact length have already failed to explain the gap. A replay can suggest a
-failure or test a rule's decisions, but cannot reveal the counterfactual battle after a new
-order. Disagreeing with the witness is not itself an error.
+For a chariot execution study, use the latest b40 model and reference traces, preserving
+event timing and observed effects. The changed withdrawal recipe and corrected prompt mean
+earlier explanations need rechecking. A replay can suggest a failure or test a rule's
+decisions, but cannot show what the battle would have done after a different order.
+Disagreeing with the reference controller is not itself an error. The
+[robot team plan](robot-team-plan.md) proposes a separate study of changing assignments.
 
 Agree the chosen repeatable check with the owner before treating a feature as verified:
 

@@ -45,9 +45,10 @@ Next (proposals for the owner; stages in [latency.md](twwarhammer3/latency.md#st
    one 10-launch model cell, no exploration cells); definitions first.
 3. The rest of P5 when a night is free: Kimi K3 low on v21 (10 plans written, about $5),
    then high; a stronger model at modifier 1.1 is still untested (the OpenAI cap).
-4. The army as detachable robot parts (owner, kept open): the
-   [robotics research and comparison designs](twwarhammer3/robotics.md), including harness
-   rungs 3-5; no approach has demonstrated a WH3 improvement yet.
+4. [Robot team research draft](twwarhammer3/robot-team-plan.md) (owner, 2026-10-20):
+   can another unit take over when a teammate breaks? Next is reviewing whether the
+   expendables battle can test this; experiments have not started. Controller ideas remain
+   in the [robotics notes](twwarhammer3/robotics.md).
 
 ## Slay the Spire
 

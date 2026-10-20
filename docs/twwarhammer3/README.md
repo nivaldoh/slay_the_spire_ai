@@ -22,6 +22,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [tactic-cards.md](tactic-cards.md) | the benchmark definition (2026-10-18 draft): minimal battles won only by applying one tactic, the card list, what only WH3 can test |
 | [latency.md](latency.md) | the latency program (2026-10-18 plan): knowing a tactic against executing it in time, measures, robotics framing, harness ladder, fine-tuning path |
 | [robotics.md](robotics.md) | robotics ideas and concrete comparison designs: parameterized/generated policies, learned micro, controller boundaries and codebase fit |
+| [robot-team-plan.md](robot-team-plan.md) | rough research plan: can another unit take over when a teammate breaks; a concrete battle, comparisons and risks |
 | [small-scenarios-2.md](small-scenarios-2.md) | second batch of small scenario candidates (S8-S13): rosters, database facts, hypotheses |
 | [benchmark-run.md](benchmark-run.md) | running paired benchmark trials, outside controllers |
 | [reports.md](reports.md) | the offline HTML report and replay, its curated notes |
