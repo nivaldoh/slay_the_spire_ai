@@ -35,10 +35,30 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b42 (2026-10-20: context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [Integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42); latest benchmark [b40 round](#2026-10-19-witness-v2-and-prompt-v21-harness-b40) |
+| benchmark harness | b43 (2026-10-20: three Empire scenarios, no code change; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [Integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42); latest benchmark [b40 round](#2026-10-19-witness-v2-and-prompt-v21-harness-b40) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
+
+## 2026-10-20: The Empire set (harness b43)
+
+Owner goal (night, away until 11:00): breadth over perfecting one battle; small battles
+to understand units, early larger battles for the robot-team framing; specialize in
+Empire units for post-training data; record decisions and risks. Taken as the
+[Empire set](empire.md): its page holds the why, the scenario table, the decisions and
+the risks. All of it is unverified; no check is agreed.
+- b43 (`4fefd1c`): three Empire scenarios declared, no code change. `emp-line-grn-raid`
+  (7 v 7, the player defends, lordless: a line with a reserve, two gun units and knights
+  against Orc infantry, archers, wolf riders and boar boyz), `emp-handgunners-grn-wolves-boyz`
+  (the riflemen pair against a fast and a slow threat) and `emp-knights-grn-arrers-spears`
+  (one cavalry unit choosing its target past a spear screen). Floors first, then screens.
+- Queue `calibration/empire-20261020/plan.json` (17 single-episode launches, `keep_going`,
+  start before 09:30 local): floors on the three new scenarios; GLM-5.3 low on `llm_rules`
+  v21 on eight Empire scenarios (the line battle twice); Kimi K3 low on the line battle;
+  Qwen3.6 none on the 20 v 20. Paid jobs stop the WH3 OpenRouter ledger at $22.50 (held
+  $12.49; the account had $44.57).
+
+**Results**: appended when the queue ends.
 
 ## 2026-10-20: UI and lobby integration (harness b42)
 

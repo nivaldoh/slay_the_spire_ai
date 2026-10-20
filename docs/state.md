@@ -9,9 +9,14 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
-Nothing is running. WH3 integration maintenance is complete; agreed component and live
-setup checks passed ([b42](twwarhammer3/log.md#2026-10-20-ui-and-lobby-integration-harness-b42)).
-The b40 benchmark round remains stopped at the owner's request; Kimi stays unrun
+**Running** (2026-10-20, ends by about 10:00): the WH3 [Empire set](twwarhammer3/empire.md)
+second queue, `runs/twwarhammer3/calibration/empire-20261020/plan-b.json` (16 launches:
+the two scripted line-team arms on the 7 v 7 line battle, the knights battle one step
+harder, more GLM-5.3 low launches, Kimi K3 low on the line battle, GLM on the 20 v 20;
+OpenRouter cap $22.50 on the WH3 ledger). The first queue (17 launches, $2.30) finished
+at 05:01. Stop the queue between jobs with a `plan-b-stop` file beside the plan.
+Integration maintenance is complete ([b42](twwarhammer3/log.md#2026-10-20-ui-and-lobby-integration-harness-b42));
+the chariot b40 round stays stopped, Kimi on the chariot card unrun
 ([results](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)).
 
 Priorities (owner, 2026-10-18): WH3 benchmark first, then Spire; post-training secondary.
@@ -36,6 +41,9 @@ Priorities (owner, 2026-10-18): WH3 benchmark first, then Spire; post-training s
   Before b40, the account had $46.41 shared with Spire (owner: spend carefully).
 
 Next (proposals for the owner; stages in [latency.md](twwarhammer3/latency.md#staged-plan)):
+0. Read the night's [Empire set](twwarhammer3/empire.md#results) results and its decisions;
+   then step the new scenarios (a floor win means a stronger enemy) and write the line
+   battle's handover signature and witness if the floors and screens say it is worth it.
 1. Freeze the chariot card: decisions 3-5 of the
    [second pass](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)
    (reference arms, reporting rules, dropped items) and whether witness v2 replaces v1 in

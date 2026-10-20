@@ -169,7 +169,10 @@ against treating every execution failure as a speed problem.
   trying the useful idea in a robot-team task, such as completing a delivery when one
   robot can no longer take its assigned route.
 
-The immediate next step is the feasibility review of the expendables battle. Campaign
+The immediate next step was the feasibility review of the expendables battle. On
+2026-10-20 the owner asked for Empire data and early larger battles, so the first
+concrete test is the seven-unit Empire line battle `emp-line-grn-raid` in the
+[Empire set](empire.md#the-line-battle-emp-line-grn-raid); the Skaven step is deferred. Campaign
 play, independent model teammates and large training runs can wait until a small battle
 shows which decisions are worth studying. Implementation details and other controller
 ideas remain in the [robotics notes](robotics.md).

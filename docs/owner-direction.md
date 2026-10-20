@@ -40,6 +40,14 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-20 (night, goal, away until 11:00): keep making progress toward the WH3
+  benchmark, but spend less time perfecting one battle and explore a larger range of
+  options; small battles to understand units, early tests of larger battles for the
+  framing of an army as a robot team that must stay coordinated as its environment
+  changes; specialize mostly in Empire units so the collected data can post-train an
+  Empire specialist (other factions for specific challenges such as the Orc chariot);
+  use best judgement, record design decisions and risks for review. Taken as the
+  [Empire set](twwarhammer3/empire.md) and its night queue.
 - 2026-10-20 (research plan): keep the robot-team framing and write a rough plan in the
   repository, with a concrete battle example, what to observe, uncertainties and risks.
   [Draft](twwarhammer3/robot-team-plan.md); this request is for research planning.
