@@ -23,7 +23,7 @@ prints the board from manifests and replays, and the verdict for given jobs.
 | witness | `SnapHitAndRun` (rule disclosed in its card): attack the nearest enemy and keep it; on the first observation showing melee ride to 120 m from the enemies' centre, on its own side; charge again once 80 m from the target and 10 s after leaving |
 | signature | **cycles**: engagements, other than the last, in which the controller's own move order took effect (melee runs from the 1 Hz replay, gaps under 3 s merged). Fixed before the confirmation round; a win with 0 cycles did not use the tactic, which is how the 1.0 card's rush-foil win reads. It counts pull-out attempts: witness wins read 4-21 and witness losses 1-15, so it flags the tactic and does not separate wins from losses |
 | knowledge | withheld: the rules prompt states neither charge bonuses nor cycle charging |
-| tolerance | `SnapHitAndRun` by added age / decision interval, every launch of each cell on the board (3-8 a cell, unverified): 0/0 won 4 of 4, 0/5 3 of 3, 2/2 4 of 4, 3/3 3 of 4, 5/0 5 of 6, 5/5 2 of 8, 8/8 0 of 4. Added age and interval round up to the 1.2 s observation cadence: the 2/2 cell runs at 2.7 s age and period, 5/5 at 6.3 s. On one axis, the time-average age of the order in force (median order age plus half the decision gap; the board's `info age`), the cells order monotonically: 0.5 s 4/4, 3.5 s 3/3, 4.1 s 4/4, 5.6 s 5/6, 5.9 s 3/4, 9.5 s 2/8, 13.2 s 0/4. GLM-5.3 low sits at 3.4 s and Qwen3.6 none at 4.2 s, where the witness won 11 of 11. The slow cells' losses read as a withdrawal stall of this recipe, so the curve bounds the tactic's tolerance from below until witness v2 runs ([second pass](#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)) |
+| tolerance | `SnapHitAndRun` by added age / decision interval, every launch of each cell on the board (3-8 a cell, unverified): 0/0 won 4 of 4, 0/5 3 of 3, 2/2 4 of 4, 3/3 3 of 4, 5/0 5 of 6, 5/5 2 of 8, 8/8 0 of 4. Added age and interval round up to the 1.2 s observation cadence: the 2/2 cell runs at 2.7 s age and period, 5/5 at 6.3 s. On one axis, the time-average age of the order in force (median order age plus half the decision gap; the board's `info age`), the cells order monotonically: 0.5 s 4/4, 3.5 s 3/3, 4.1 s 4/4, 5.6 s 5/6, 5.9 s 3/4, 9.5 s 2/8, 13.2 s 0/4. GLM-5.3 low sits at 3.4 s and Qwen3.6 none at 4.2 s, where the witness won 11 of 11. The slow cells' losses read as a withdrawal stall of this recipe, and witness v2 (`HitAndRunV2`, b40, 2026-10-19 evening) confirmed it: 2/2 3 of 3, 5/5 4 of 5, 8/8 4 of 5 (info age 4.1, 9.5 and 13.1 s), its wins leaving 26-68 of 180 enemy men where v1's slow-cell losses left 109-169; pooled slow cells v2 8 of 10 against v1 2 of 12 (one-sided Fisher 0.005; unverified, [log](log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)). So the tactic tolerates at least 13 s of information age with the right recipe, and this is not a latency card at model paces ([second pass](#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)) |
 
 **Admission rule** (committed at `5396182` before the round; the model-pace gate was dropped
 at 17:45 UTC, against E2's own rule): in fresh launches,
@@ -56,7 +56,11 @@ b34, 16 on 2026-10-19 at b36) finished: foils lost 10 of 10 each, the witness wo
 5 s and 0 of 5 at model pace (2 of 8 with the three b33 launches of the same cell, which the
 default board pools). **Admitted** under its pre-registered rule; no check is
 agreed, so the card stays unverified. The start-configuration confound read as tempo, and
-GLM-5.3 low won 1 of 10 ([log](log.md#2026-10-19-overnight-round-at-b36-c1-finished-p2-cells-p5a)).
+GLM-5.3 low won 1 of 10 on prompt v20
+([log](log.md#2026-10-19-overnight-round-at-b36-c1-finished-p2-cells-p5a)) and 0 of 10 on
+v21, which tells it that positions are unit centres and the melee flag decides contact
+([log](log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)); Qwen3.6 none 0 of 5 (v20).
+No model has won the card at a rate above its foils' bound.
 
 **For post-training**: one unit, a fixed opponent and 2-10 minute battles make the card a
 cheap environment with a binary reward (the win); cycles are a leak check, not a shaping
@@ -135,7 +139,12 @@ postdiction over recorded files and unverified under the hard rule. It replaces 
    decisions applied 7-10 s after their basis, two inside an engagement. A constant-age
    witness cell cannot show that tail, but it rarely fell on the decisive decision.
 
-**Version 2 decisions for the owner** (nothing runs until agreed):
+**Version 2 decisions for the owner** (decisions 1 and 2 ran on 2026-10-19 evening under the
+owner's "battles allowed" direction, [b40 log](log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40):
+witness v2 won 4 of 5 at both 5/5 and 8/8, so the curve was the recipe's; GLM-5.3 low on the
+amended prompt won 0 of 10, with fewer in-melee re-attacks and more damage, every loss a
+leadership rout after 4-45 m pull-outs; decisions 3-5 remain, plus whether v2 becomes the
+card's witness and at which cell):
 1. **Witness v2**: compute the retreat point once per withdrawal, measure the retreat and the
    re-charge from the same reference, and try a queued re-attack in the pull-out batch (a few
    lines of `calibration.py`, a new disclosed control beside the admitted one); rerun 5/5 and
@@ -284,7 +293,14 @@ new card (from the 2026-10-17 board and traces; each rests on 1-6 battles):
    Taurox rock broke S2, S3 and S6).
 7. **Climb in fine steps from a witness win**: four of five unit-count step-downs went from
    too hard to too easy. The 1.1 modifier gives about +10% stats and +8 leadership; values
-   below 1.0 are unverified.
+   below 1.0 are unverified. A second, finer knob (owner, 2026-10-19): unit experience
+   ranks, which the custom battle lobby sets per unit and which raise a unit's stats rank by
+   rank, so one side's units can be strengthened without touching the AI modifier. Not used
+   yet: no scenario field carries a rank. Where the control is (owner): clicking a unit on
+   the army selection page shows two small buttons under its card, "Increase experience" and
+   "Decrease experience"; a lobby step would click the unit, then one of them per rank
+   (unverified: the one lobby UI dump kept, `runs/twwarhammer3/launch-m1`, predates a unit
+   click and has no such component, so the next `menu --dump` after a click should find them).
 8. **Control confounds**: a lordless army's commander flag sits on its first card and that
    captain's death cuts every unit's morale (S3); an "army losses" shock can rout a unit at
    full strength (S2). The flag does not always follow the first card: in the expendables

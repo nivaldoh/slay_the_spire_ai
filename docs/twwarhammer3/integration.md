@@ -520,6 +520,12 @@ From the documentation or code reading; probe before relying on them:
 - Same-tick combat and timer expiry (see [Result, timer and restart](#result-timer-and-restart)).
 - Whether the lobby settings a declared scenario set (timer, AI stats modifier, funds)
   persist into a later undeclared job, which leaves them as the lobby has them.
+- Two lobby controls the owner named (2026-10-19) that the UI steps do not use yet, to be
+  located with `menu --dump` on the army selection page: a button that saves an army setup
+  and one that loads it (the steps now reset both armies and pick every unit again on each
+  launch), and, after a unit card is clicked, two small buttons under it, "Increase
+  experience" and "Decrease experience" (unit ranks raise stats: a finer calibration knob
+  than the AI modifier, [tactic-cards.md](tactic-cards.md#design-rules-from-s1-s11)).
 
 ## References
 

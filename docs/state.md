@@ -9,14 +9,12 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
-The b40 round runs on the chariot card (owner, 2026-10-19 evening: keep making progress;
-battles and some spend allowed): witness v2 at 5/5, 8/8 and 2/2, GLM-5.3 low on prompt v21,
-then Kimi K3 low v21; one plan, `runs/twwarhammer3/calibration/v2-20261019/plan.json`
-(`PURPOSE.md` beside it), about 4 h from 19:00 local, paid jobs capped at a $20 ledger total
-([log](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)). Decisions 3-5
-of the [second pass](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)
-still await the owner. Follow it: `uv run python -m twwarhammer3 watch`; stop it before its
-next job with a `plan-stop` file beside the plan.
+Nothing is running. The b40 round on the chariot card ended at 21:36 on 2026-10-19 when the
+owner wrapped it up (23 of 33 launches; the Kimi K3 arm stays unrun):
+[results](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40). Witness v2
+won 4 of 5 at both 5 s and 8 s of pace where v1 won 2 of 8 and 0 of 4, so the card is not
+latency-bound at model paces; GLM-5.3 low on prompt v21 won 0 of 10 with its losses reading
+as execution (4-45 m pull-outs to reused points, leadership routs). Unverified.
 
 ## Priorities (owner, 2026-10-18)
 
@@ -43,23 +41,29 @@ next job with a `plan-stop` file beside the plan.
   witness `SnapHitAndRun`; signature: cycles; rule pre-registered at `5396182`). Round
   `c1`: foils lost 10 of 10 each, the witness won 4 of 5 at 5 s: admitted under
   that rule (no check agreed). GLM-5.3 low won 1 of 10, Qwen3.6 none 0 of 5. The second
-  pass read the witness's slow-cell losses as its recipe's stall (nine of ten end within
-  35 m of the map edge) and 12 of GLM's 14 countermands as re-attacks at 2-29 m centre
-  distance with the melee flag still on, an interface gap rather than a commitment failure.
-  All unverified; results and readings are in the log.
-- Spend: OpenAI $51.47 of $52. OpenRouter: the account had $50.38 of credit (owner,
-  2026-10-18 evening; spend carefully), shared with Spire; the WH3 ledger holds $10.66
-  after P5a ($1.78, 2026-10-19).
+  pass read the witness's slow-cell losses as its recipe's stall and 12 of GLM's 14
+  countermands as an interface gap; the b40 round then showed witness v2 winning 4 of 5 at
+  5/5 and 8/8 (the stall confirmed; not a latency card) and GLM 0 of 10 on the amended
+  prompt, with fewer re-attacks and more damage but the same leadership routs after shallow
+  pull-outs. No model has won the card above its foils' bound. All unverified.
+- Spend: OpenAI $51.47 of $52. OpenRouter: the account had $46.41 of credit before the b40
+  round (shared with Spire; owner: spend carefully); the WH3 ledger holds $12.49 after it
+  ($1.83, 2026-10-19 evening).
 
 Next (proposals for the owner; stages in [latency.md](twwarhammer3/latency.md#staged-plan)):
-1. The five [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions):
-   witness v2 and a $0 rerun of the 5/5 and 8/8 cells; one rules-prompt sentence on unit
-   centres and the melee flag (a new cohort, GLM 10 launches about $1.70) before any told
-   arm; reference arms at 14-20 foil launches and a 10-of-14 curtailed 2/2 gate with pooled
-   nightly controls; the reporting rules; the dropped items.
-2. The rest of P5: Kimi K3 low and high, 10 launches each ($6-12).
-3. The expendables card the same way, once the chariot card's version 2 is agreed.
-4. The army as detachable robot parts (owner, kept open): the
+1. Freeze the chariot card: decisions 3-5 of the
+   [second pass](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)
+   (reference arms, reporting rules, dropped items) and whether witness v2 replaces v1 in
+   the rule, gated at 5/5 or 8/8 where it is now known to win.
+2. Breadth over repetition (owner's question, 2026-10-19): the expendables card, then
+   pin-then-rear, with the lean protocol only (foils at 10 launches each, one witness gate,
+   one 10-launch model cell, no exploration cells); definitions first.
+3. Lobby time and knobs (owner notes): find the save and load army buttons and the per-unit
+   "Increase experience" and "Decrease experience" buttons with a `menu --dump` after a unit
+   click ([integration.md](twwarhammer3/integration.md#unverified)).
+4. The rest of P5 when a night is free: Kimi K3 low on v21 (10 plans written, about $5),
+   then high; a stronger model at modifier 1.1 is still untested (the OpenAI cap).
+5. The army as detachable robot parts (owner, kept open): the
    [robotics research and comparison designs](twwarhammer3/robotics.md), including harness
    rungs 3-5; no approach has demonstrated a WH3 improvement yet.
 

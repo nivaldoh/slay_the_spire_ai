@@ -35,6 +35,24 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-19 (evening, during the b40 round): a battle can also be calibrated by giving
+  units different experience ranks, since units gain stats as they gain ranks; in the lobby,
+  clicking a unit on the army selection page shows two small buttons under its card,
+  "Increase experience" and "Decrease experience". Registered as a card knob in
+  [tactic-cards.md](twwarhammer3/tactic-cards.md#design-rules-from-s1-s11), not built. The
+  owner also asked why the chariot battle is repeated so often (answered in the session: the
+  repetitions are the sampling behind each cell's rate, and the card is the template for the
+  next ones; breadth comes next) and then: "Let's wrap up the runs for now after the current
+  battle ends" (the plan-stop file ended the round after that job). For later: the lobby
+  rebuilds both armies unit by unit on every launch, which wastes time; the game has a button
+  to save an army setup and another to load it, to be found and used
+  ([integration.md](twwarhammer3/integration.md#unverified)).
+- 2026-10-19 (evening): "Continue to make progress on the benchmark. You're allowed to run
+  battles and spend some API budget as needed. Make sure you understand the benchmark and the
+  results well before drawing strong conclusions." Taken as the go-ahead for second-pass
+  decisions 1 and 2 (witness v2, the prompt sentence and GLM's rerun) and P5's Kimi
+  remainder, under delegation; decisions 3-5 still wait
+  ([log](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)).
 - 2026-10-19 (afternoon): "think more deeply about verifiability and reproducibility for our
   WH3 benchmark" and improve it, keeping the code clean and lean: are knowing a tactic and
   executing it checked properly; a battle must be guaranteed winnable and let the model

@@ -81,6 +81,43 @@ rather than risk another failed disengage" (l1, 140 s) and "let the charge bonus
   v21 against the P5a cell, one-sided Fisher, a screen at n = 10; no verdict words. Results
   are appended below when the round ends. Unverified: no check agreed.
 
+**Results** (23 launches 18:21-21:36 local, every job exit 0; the owner stopped the round
+before the Kimi arm, whose 10 plans stay unrun; OpenRouter $1.83, ledger $12.49; per-episode
+table from `calibration/v2-20261019/review.py`; all unverified, cells of 3-5 and 10):
+- **Witness v2, 13 launches, $0: 2/2 3 of 3, 5/5 4 of 5, 8/8 4 of 5** (v1: 4 of 4, 2 of 8,
+  0 of 4), at information ages 4.1, 9.5 and 13.1 s; cycles 3-9 (median 5), 5-11 pull-out
+  batches a battle, all six chariots alive in 8 of 10 slow-cell battles. Its wins left 26-68
+  of 180 enemy men; v1's slow-cell losses left 109-169. Its two losses (5/5 l3 at 341 s, 8/8
+  l1 at 394 s) ended 347 and 184 m from the edge with 68-102 men left, so no stall. Pooled
+  slow cells v2 8 of 10 against v1 2 of 12: one-sided Fisher 0.005 (8/8 alone 0.04, 5/5
+  0.086). Reading: the tolerance curve was `SnapHitAndRun`'s; with this recipe the tactic
+  tolerates at least 13 s of information age, three times the model cells' 3.4-4.2 s, so
+  the chariot card is not a latency card at model paces and a model's loss on it is not
+  explained by its order age.
+- **GLM-5.3 low on v21, 10 launches, $1.83: 0 of 10** (v20: 1 of 10; one-sided Fisher 1.0),
+  battles 206-566 s (median 242), every attempt on Decart serving `z-ai/glm-5.3-20260816`,
+  the recorded prompt hash the v21 file's. The sentence changed the play, not the outcome:
+  attack orders issued with the melee flag on fell from 56 in 10 battles (6 battles with 3
+  or more) to 38 (4 battles with 3 or more: l7-l10, 3-12 each), enemy men left fell from a
+  median of 143 (71-165) to 110 (59-138), and move-plus-queued-charge batches rose (0-7 a
+  battle to 0-26). Every loss was a leadership rout with 4-6 of 6 chariots alive (minimum
+  leadership shown 0-18% in 8 of the 9 battles measured, 34% in the ninth). Where it lost:
+  pull-outs 4-45 m deep in 7 of 9 measured battles (the witnesses withdraw 77-150 m), often
+  to the same 2-6 fixed points, which the Swordsmen advanced onto (l1 withdrew six times to
+  (-160, 70) while the enemy stood at (-165, 78)); l5 sent 26 batches in 206 s, re-ordering
+  the pull-out every decision. Reading: the second pass's interface gap explained GLM's
+  re-attacks, not its losses, which are execution (withdrawal depth and re-planning), the
+  gap the card is meant to measure; no "latency" or "knowledge" reading applies.
+- Validity: build 25961564 throughout; witness v2's first batch was the intended move plus
+  queued charge; a register row per episode; no forfeit, refusal of a retreat point or
+  invalid batch from the witness (GLM: 0-3 invalid orders a battle). The default board now
+  shows `llm_rules v20@...` and `llm_rules v21@...` as separate rows.
+- Not done: the Kimi K3 arm (P5's remainder, 10 launches, about $5); decisions 3-5 of the
+  second pass; whether v2 becomes the card's witness and at which cell is a new owner
+  decision (the v1 rule and its admitted verdict stand). Owner notes for later: unit
+  experience ranks as a knob, and the lobby's save and load army buttons to skip rebuilding
+  both armies on every launch ([integration.md](integration.md#unverified)).
+
 ## 2026-10-19: Benchmark verifiability, second pass (harness b39)
 
 Owner question repeated (afternoon). Eight read-only agents (two recounts of the 80 recorded

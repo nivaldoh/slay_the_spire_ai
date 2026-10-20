@@ -38,6 +38,12 @@ offline probes per model-mode; all post hoc:
   and read the witness's own slow-cell losses as a withdrawal stall ending near the map edge,
   so the tolerance curve reads as the recipe's. Unverified (10 battles, one night, one
   backend).
+- 2026-10-19 evening ([b40 log](log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)):
+  witness v2 (one fixed 150 m withdrawal with the charge queued behind it) won 4 of 5 at
+  5 s / 5 s and 4 of 5 at 8 s / 8 s, where v1 had won 2 of 8 and 0 of 4, so the tactic
+  tolerates at least 13 s of information age and the chariot card is not a latency card at
+  model paces. GLM-5.3 low on the amended prompt won 0 of 10 with fewer in-melee re-attacks
+  and more damage dealt: its losses are withdrawal depth and re-planning, not order age.
 
 ## Scoring: the battle never waits
 
@@ -133,7 +139,7 @@ inputs can measure latency without a game, but cannot establish policy performan
 | Stage | Question | n | Cost | Game h |
 |---|---|---|---|---|
 | P1 | foil and witness rates on fresh launches (`c1` plans 05-20, as evidence) | done 2026-10-19 | $0 | 3 |
-| P2 | the tactic's latency tolerance (sweeps) | done: 5 cells, 19 launches; the curve is `SnapHitAndRun`'s, witness v2 pending | $0 | 3.5 |
+| P2 | the tactic's latency tolerance (sweeps) | done: 5 cells, 19 launches; the curve was `SnapHitAndRun`'s: witness v2 (b40, 13 launches) won 4 of 5 at both 5/5 and 8/8 ([log](log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)) | $0 | 5.5 |
 | P3, P4 | pins hold; offline knowledge per mode | done | $2.19 | 0 |
 | P5 | closed-loop wins under the rule, Kimi K3 low and high, GLM-5.3 low, Qwen3.6 none | P5a done (GLM, Qwen: 15); Kimi left | $1.78 so far | 2 |
 
