@@ -9,7 +9,9 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
-Nothing is running. The b40 round on the chariot card ended at 21:36 on 2026-10-19 when the
+Active: probing army save/load and per-unit experience controls in the WH3 lobby; no
+benchmark queue or paid model runs. Owner agreed restart/load and lobby/battle rank checks.
+The b40 round on the chariot card ended at 21:36 on 2026-10-19 when the
 owner wrapped it up (23 of 33 launches; the Kimi K3 arm stays unrun):
 [results](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40). Witness v2
 won 4 of 5 at both 5 s and 8 s of pace where v1 won 2 of 8 and 0 of 4, so the card is not

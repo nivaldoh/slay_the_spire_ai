@@ -350,6 +350,66 @@ def test_bad_mount_declarations_are_refused(mounts):
         setup.battle_units({"units": ["lord", "infantry"], "mounts": mounts})
 
 
+@pytest.mark.parametrize("experience", [None, [3], {"-1": 3}, {"2": 3}, {"00": 3},
+                                        {0: 3}, {"0": True}, {"0": 1.5}, {"0": -1}, {"0": 10}])
+def test_invalid_experience_is_refused_before_building_menu_steps(experience):
+    army = {"units": ["lord", "swordsmen"], "experience": experience}
+    with pytest.raises(ValueError, match="experience must map"):
+        setup.scenario_steps({"player": army})
+
+
+def test_presets_reuse_only_identical_fixed_armies_on_the_same_build():
+    scenario = setup.scenarios()["grn-chariot-emp-swordsmen"]
+    name = setup.army_preset_name(scenario, scenario["enemy"], "build1")
+    assert name and name == setup.army_preset_name(deepcopy(scenario), scenario["enemy"], "build1")
+    for field, value in (("units", ["other"]), ("experience", {"1": 3}),
+                         ("mounts", {"0": "mounted"}), ("faction", "other")):
+        changed = {**scenario["enemy"], field: value}
+        assert setup.army_preset_name(scenario, changed, "build1") != name
+    assert setup.army_preset_name(scenario, scenario["enemy"], "build2") != name
+    assert setup.army_preset_name(scenario, {**scenario["enemy"], "units": None}, "build1") is None
+    random_pool = {**scenario["enemy"], "reinforcements": None}
+    assert setup.army_preset_name(scenario, random_pool, "build1") is None
+    steps = setup.scenario_steps(scenario, build_id="build1")
+    assert all(s.get("when", "").startswith("!") for s in steps if s.get("dblclick"))
+    checks = [s for s in steps if "UnitList.Count(" in s.get("expression", "")]
+    assert checks and all(s["required"] and "when" not in s for s in checks)
+
+
+def test_experience_is_assigned_after_recruitment_with_types_including_mounted_variants():
+    army = {"subculture": "a", "faction": "a", "units": ["lord", "sword", "missile", "sword"],
+            "mounts": {"0": "horse"}, "experience": {"2": 1, "3": 9}}
+    steps = setup.scenario_steps({"player": army})
+    change = next(i for i, step in enumerate(steps) if "experience" in step)
+    assert change > max(i for i, step in enumerate(steps) if step.get("dblclick"))
+    assert steps[change]["experience"] == [{"type": u, "rank": r} for u, r in
+        zip(["horse", "sword", "missile", "sword"], [0, 0, 1, 9], strict=True)]
+
+
+def test_battle_rank_check_rejects_correct_types_with_wrong_or_missing_ranks():
+    scenario = setup.scenarios()["grn-chariot-emp-swordsmen"]
+    scenario["enemy"]["experience"] = {"1": 3}
+    ranks = {"friendly": [{"type": scenario["player"]["units"][0], "rank": 0}],
+             "enemy": [{"type": u, "rank": r} for u, r in
+                       zip(scenario["enemy"]["units"], [3, 0], strict=True)]}
+    state = {"setup": {**scenario["expect"], "army_ai_stats_modifiers": [1., 1.],
+                        "unit_experience": ranks},
+             "armies": {side: {"faction": scenario[side]["faction"]}
+                        for side in ("player", "enemy")}, "terrain": {"rows": [".."]},
+             "friendly": [{"type": u, "id": f"f{i}"}
+                          for i, u in enumerate(scenario["player"]["units"])],
+             "enemy_roster": [{"type": u} for u in scenario["enemy"]["units"]]}
+    setup.check_battle(scenario, state)  # order can change on load
+    before = setup.fingerprint(deepcopy(state))
+    ranks["enemy"][0]["rank"] = 0
+    with pytest.raises(ProtocolError, match="enemy experience"):
+        setup.check_battle(scenario, state)
+    assert setup.compare_starts(before, setup.fingerprint(state))["flagged"]
+    del state["setup"]["unit_experience"]
+    with pytest.raises(ProtocolError, match="friendly experience"):
+        setup.check_battle(scenario, state)
+
+
 def test_start_comparison_uses_circular_bearings_and_reports_missing_units():
     initial = {"friendly": {"f1": {"type": "a", "x": 0, "z": 0, "bearing": 359}}}
     same = {"friendly": {"f1": {"type": "a", "x": .1, "z": 0, "bearing": 1}}}

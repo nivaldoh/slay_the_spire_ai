@@ -1290,6 +1290,18 @@ local function start()
         modifiers[#modifiers + 1] = tonumber(row[1])
     end
     state.setup.army_ai_stats_modifiers = modifiers
+    -- Private startup ranks, including hidden enemies, for scenario/rematch checks.
+    state.setup.unit_experience = {}
+    for _, side in ipairs({"friendly", "enemy"}) do
+        local ranks = {}
+        for _, id in ipairs(state[side .. "_ids"]) do
+            local entry = state[side][id]
+            ranks[#ranks + 1] = {type = get(entry.unit, "type", "?"),
+                rank = common.get_context_value("CcoBattleUnit",
+                    tostring(get(entry.unit, "unique_ui_id", "")), "ExperienceLevel")}
+        end
+        state.setup.unit_experience[side] = ranks
+    end
     if session.custom then
         state.setup.custom = {ok = custom_ok, error = not custom_ok and clean_error(custom_error) or nil}
         state.setup.custom.deployment = {}

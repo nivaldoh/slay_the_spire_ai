@@ -12,6 +12,7 @@ entry, and what reads them:
   Autogenerate army button); ``lord`` (false: a lordless roster whose first card is an
   ordinary unit; it relies on the profile's "allow no lord" lobby setting); ``mounts``
   (zero-based recruitment index to mounted unit key, selected and verified in the lobby);
+  ``experience`` (zero-based recruitment index to rank 0–9; omitted ranks are zero);
   ``recruitment_faction`` (card namespace when it differs from the selected banner);
   ``reinforcements`` (null for autogeneration, or an explicit list of non-lord unit
   cards, selected and read back in the lobby).
@@ -41,6 +42,7 @@ entry, and what reads them:
   provenance that no code reads; it reaches reports through the manifest's scenario.
 """
 
+import hashlib
 import json
 import math
 import random
@@ -57,6 +59,7 @@ CATALOGUE_PATH = SCENARIOS_PATH.with_name("custom_battle.json")
 LOBBY = "CustomBattleLobbyContext."
 PLAYER_ATTACKS = LOBBY + "LocalPlayerSlotContext.TeamContext.IsAttacker"
 SETTINGS = LOBBY + "SettingsContext."
+PRESETS = LOBBY + "ArmyPresetFileHandlerContext."
 NOT_STARTED = "the battle did not start"
 # The battle's BattleTypeState for each lobby battle type, as the 2026-10-14 smoke battles
 # reported them; classic was checked in b1 acceptance and free-for-all shares land_normal.
@@ -145,15 +148,15 @@ def expected_mode(scenario: dict) -> dict:
     return expect
 
 
-def scenario_steps(scenario: dict) -> list[dict]:
+def scenario_steps(scenario: dict, *, build_id: str | None = None) -> list[dict]:
     """Menu steps from the main menu to the start of a custom battle.
 
     The lobby keeps the last battle type, map and slots between battles (a survival battle
     removes the AI slot), so every scenario selects its battle type, and AI slots are added
     or removed until there is one per side, each step guarded by a ``when`` expression.
-    Each side picks its race, then its faction if named (the game's pick varied between
-    jobs), and clears the army; it then recruits its units by double-click (the last field
-    of a lord's card id is 1) or autogenerates them. A benchmark makes every step required.
+    Each side picks its race and faction, then recruits or loads a saved army. Supplying
+    the installed build id enables presets for fixed rosters; their names fingerprint the
+    army, lobby settings and build. Random armies are always regenerated.
     """
     steps = [{"log": "custom battle; waiting for the main menu"},
              {"find": ["buttons_holder", "button_battle"], "click": True, "timeout_ms": 240000},
@@ -192,6 +195,7 @@ def scenario_steps(scenario: dict) -> list[dict]:
                    "timeout_ms": 15000, "when": swap},
                   {"wait_ms": 1500}]
     for slot, side in enumerate(armies):
+        ranks = experience_ranks(side)
         steps += [
             {"find": ["teams_parent", f"CcoCustomBattlePlayerSlotslot{slot}"], "click": True,
              "timeout_ms": 30000},
@@ -213,6 +217,7 @@ def scenario_steps(scenario: dict) -> list[dict]:
                  "click": True},
                 {"wait_ms": 2000},
             ]
+        army_start = len(steps)
         steps += [
             {"find": ["button_bar_parent", "button_clear"], "click": True, "timeout_ms": 15000},
             {"wait_ms": 800},
@@ -250,12 +255,10 @@ def scenario_steps(scenario: dict) -> list[dict]:
                           {"wait_ms": 500},
                           {"context": "CcoFrontendRoot", "expression":
                            context + "UnitRecordContext.Key", "expect": mounted, "required": True}]
-        if scenario.get("expect") and side["units"]:
-            # A visible card can be inactive (for example unavailable DLC) and its
-            # double-click silently ignored. Verify recruitment before readiness.
-            steps.append({"context": "CcoFrontendRoot", "expression":
-                          f"{LOBBY}PlayerSlotList.At({slot}).UnitList.Size",
-                          "expect": len(side["units"]), "required": True})
+        if side.get("experience"):
+            steps.append({"experience": [{"type": unit, "rank": rank} for unit, rank in
+                                         zip(battle_units(side), ranks, strict=True)],
+                          "slot": slot, "required": True})
         if isinstance(side.get("reinforcements"), list):
             context = f"{LOBBY}PlayerSlotList.At({slot})."
             steps += [
@@ -275,6 +278,26 @@ def scenario_steps(scenario: dict) -> list[dict]:
                 {"context": "CcoFrontendRoot", "command":
                  context + "SetIsRecruitingReinforcements(false)"},
             ]
+        preset = army_preset_name(scenario, side, build_id)
+        if preset:
+            exists = PRESETS + f"ArmyPresetExists({json.dumps(preset)})"
+            fresh = [{**step, "when": "!" + exists} for step in steps[army_start:]]
+            steps[army_start:] = [
+                {"context": "CcoFrontendRoot", "command": PRESETS +
+                 f"ArmyPresetList(0).FirstContext(Name == {json.dumps(preset)})."
+                 f"LoadForPlayerSlot({LOBBY}PlayerSlotList.At({slot}))",
+                 "when": exists, "required": True},
+                *fresh,
+            ]
+        if side["units"]:
+            steps += army_checks(side, slot)
+        if preset:
+            steps += [{"context": "CcoFrontendRoot", "command": PRESETS +
+                       f"SaveArmyPresetForPlayerSlot({json.dumps(preset)}, "
+                       f"{LOBBY}PlayerSlotList.At({slot}))", "when": "!" + exists,
+                       "required": True},
+                      {"context": "CcoFrontendRoot", "expression": exists,
+                       "expect": True, "required": True}]
     steps += [
         {"find": ["teams_parent", "CcoCustomBattlePlayerSlotslot0"], "click": True,
          "timeout_ms": 30000},
@@ -302,6 +325,55 @@ def battle_units(army: dict) -> list[str]:
             raise ValueError("mounts must map a zero-based recruitment index to a unit key")
         units[int(index)] = mounted
     return units
+
+
+def experience_ranks(army: dict) -> list[int]:
+    """Ranks follow recruitment indices, like mounts; reject mistakes before launching."""
+    ranks = [0] * len(army.get("units") or [])
+    experience = army.get("experience", {})
+    if not isinstance(experience, dict):
+        raise ValueError("experience must map zero-based recruitment indices to ranks 0–9")
+    for index, rank in experience.items():
+        if (not isinstance(index, str) or not index.isdecimal() or str(int(index)) != index
+                or int(index) >= len(ranks) or type(rank) is not int or not 0 <= rank <= 9):
+            raise ValueError("experience must map zero-based recruitment indices to ranks 0–9")
+        ranks[int(index)] = rank
+    return ranks
+
+
+def army_preset_name(scenario: dict, army: dict, build_id: str | None) -> str | None:
+    """Game-owned presets only for fully specified armies, scoped to the installed build."""
+    if (not build_id or not army.get("units") or not army.get("faction")
+            or ("reinforcements" in army and army["reinforcements"] is None)):
+        return None
+    spec = [1, build_id, scenario.get("battle_type", "classic"), scenario.get("expect"), army]
+    digest = hashlib.sha256(json.dumps(spec, sort_keys=True).encode()).hexdigest()[:20]
+    return "gameai-" + digest
+
+
+def army_checks(army: dict, slot: int) -> list[dict]:
+    """Check type/rank multiplicities: loading a preset can reorder its unit list."""
+    context = f"{LOBBY}PlayerSlotList.At({slot})."
+    roster = Counter(zip(battle_units(army), experience_ranks(army), strict=True))
+    checks = [{"context": "CcoFrontendRoot", "expression": context + "UnitList.Size",
+               "expect": len(army["units"]), "required": True}]
+    for (unit, rank), count in roster.items():
+        checks.append({"context": "CcoFrontendRoot", "expression": context +
+                       f"UnitList.Count(UnitRecordContext.Key == {json.dumps(unit)} && "
+                       f"ExperienceLevel == {rank})", "expect": count, "required": True})
+    if isinstance(army.get("reinforcements"), list):
+        checks.append({"context": "CcoFrontendRoot", "expression": context +
+                       'ReinforcingUnitList.JoinString(UnitRecordContext.Key, ";")',
+                       "required": True})
+        checks.append({"context": "CcoFrontendRoot", "expression":
+                       context + "ReinforcingUnitList.Size",
+                       "expect": len(army["reinforcements"]), "required": True})
+        for unit, count in Counter(army["reinforcements"]).items():
+            checks.append({"context": "CcoFrontendRoot", "expression": context +
+                           "ReinforcingUnitList.Count(UnitRecordContext.Key == "
+                           f"{json.dumps(unit)})",
+                           "expect": count, "required": True})
+    return checks
 
 
 def lobby_fields(scenario: dict) -> dict:
@@ -334,6 +406,8 @@ def fill_timeouts(scenario: dict, config: dict) -> None:
 
 
 def validate_declaration(scenario: dict, config: dict) -> None:
+    for army in sides(scenario):
+        experience_ranks(army)
     if scenario.get("custom"):
         validate_custom(scenario)
     if not scenario.get("expect"):
@@ -502,6 +576,20 @@ def check_battle(scenario: dict, observation: dict) -> dict:
             missing, extra = dict(Counter(wanted) - actual), dict(actual - Counter(wanted))
             raise ProtocolError(f"setup {side} roster mismatch: missing {missing}, extra {extra}")
         checks[side + "_roster"] = dict(actual)
+    ranks = settings.get("unit_experience")
+    if ranks is not None or any(army.get("experience") for army in sides(scenario)):
+        for side, armies in (("friendly", [scenario["player"]]),
+                             ("enemy", sides(scenario)[1:])):
+            if side == "enemy" and scenario.get("battle_type") == "survival":
+                continue
+            wanted = Counter(pair for army in armies for pair in
+                             zip(battle_units(army), experience_ranks(army), strict=True))
+            actual = Counter((unit.get("type"), unit.get("rank"))
+                             for unit in (ranks or {}).get(side, []))
+            if actual != wanted:
+                raise ProtocolError(f"setup {side} experience: {dict(actual)!r}, "
+                                    f"expected {dict(wanted)!r}")
+        checks["unit_experience"] = ranks
     if expected["time_limit_s"] is None:
         if observation.get("remaining_ms") != -1:
             raise ProtocolError("setup: timerless mode reported a finite battle countdown")
@@ -560,6 +648,9 @@ def fingerprint(observation: dict) -> dict:
     start = {side: {unit["id"]: {key: unit.get(key) for key in fields}
                     for unit in observation.get(side, [])}
              for side in ("friendly", "enemy")}
+    ranks = observation.get("setup", {}).get("unit_experience")
+    if ranks is not None:
+        start["unit_experience"] = ranks
     for unit in observation.get("friendly", []):
         start["friendly"][unit["id"]]["abilities"] = sorted(
             ({key: ability.get(key) for key in ("key", "target", "mana", "uses", "cooldown_s",
@@ -580,6 +671,9 @@ def fingerprint(observation: dict) -> dict:
 
 def compare_starts(reference: dict, current: dict) -> dict:
     deltas, missing, changes = {}, [], {}
+    if reference.get("unit_experience") != current.get("unit_experience"):
+        changes["unit_experience"] = {"before": reference.get("unit_experience"),
+                                      "after": current.get("unit_experience")}
     if reference.get("resources") != current.get("resources"):
         changes["resources"] = {"before": reference.get("resources"),
                                 "after": current.get("resources")}

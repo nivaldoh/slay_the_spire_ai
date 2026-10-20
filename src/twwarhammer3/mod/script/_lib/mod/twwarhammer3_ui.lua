@@ -73,12 +73,44 @@ function ui.act(uic, step)
     return table.concat(done, ", ")
 end
 
+-- Set a recruited unit's rank through the same commands as its +/- buttons. Read after
+-- each command: insufficient funds or a unit that cannot gain XP must fail setup.
+function ui.experience(step)
+    local counts = {}
+    -- Recruitment sorts by class. Apply ranks only after the entire army is recruited,
+    -- matching by type and occurrence. Rank changes do not reorder this lobby list.
+    for _, wanted in ipairs(step.experience) do
+        assert(type(wanted.rank) == "number" and wanted.rank % 1 == 0
+            and wanted.rank >= 0 and wanted.rank <= 9, "experience must be an integer from 0 to 9")
+        local count = counts[wanted.type] or 0
+        local prefix = "CustomBattleLobbyContext.PlayerSlotList.At(" .. step.slot
+            .. ").UnitList.Filter(UnitRecordContext.Key == " .. twwarhammer3_json.encode(wanted.type)
+            .. ").At(" .. count .. ")."
+        local function rank()
+            return common.get_context_value("CcoFrontendRoot", "", prefix .. "ExperienceLevel")
+        end
+        local current = rank()
+        assert(type(current) == "number", "unit experience unavailable: " .. wanted.type)
+        local delta = wanted.rank > current and 1 or -1
+        local command = delta == 1 and "IncreaseExperience()" or "DecreaseExperience()"
+        for _ = 1, math.abs(wanted.rank - current) do
+            common.call_context_command("CcoFrontendRoot", "", prefix .. command)
+            assert(rank() == current + delta, "experience did not change (funds or unit restriction)")
+            current = current + delta
+        end
+        counts[wanted.type] = count + 1
+    end
+    return "experience set for slot " .. step.slot .. ": " .. #step.experience .. " units"
+end
+
 -- One step that needs no waiting: dump, key, find (once), log, advisor text ("" closes
 -- it), an expression on a context object ({"context": "CcoBattleUnit", "id": "...",
 -- "expression": "..."}), a context command ({"context": ..., "command": "..."}) or, for
 -- probing the script API, a Lua chunk whose return value is logged ({"lua": "return ..."}).
 function ui.run(step, directory)
-    if step.log then
+    if step.experience ~= nil then
+        return ui.experience(step)
+    elseif step.log then
         return "log " .. tostring(step.log)
     elseif step.advice == "" then
         bm:close_advisor()

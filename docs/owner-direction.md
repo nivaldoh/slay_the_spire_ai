@@ -35,6 +35,8 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-19 (army setup goal): find and use the lobby's saved-army save/load controls
+  and per-unit Increase/Decrease experience controls; keep the code simple and clean.
 - 2026-10-19 (evening, during the b40 round): a battle can also be calibrated by giving
   units different experience ranks, since units gain stats as they gain ranks; in the lobby,
   clicking a unit on the army selection page shows two small buttons under its card,

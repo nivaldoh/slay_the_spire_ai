@@ -81,7 +81,8 @@ three before a controller sees a snapshot. ``evaluation`` has both armies' true 
 and tick-integrated capture point ownership (``objectives``). ``final`` freezes it at the
 engine result; on other endings the harness keeps the last ``evaluation``. ``setup``, sent
 until the first request is applied, has the unit scale, realism mode and the armies' AI
-stat modifiers and unit stats.
+stat modifiers and unit stats. ``setup.unit_experience`` holds friendly/enemy lists of
+``{type, rank}`` at startup for scenario and rematch checks; hidden enemy ranks stay private.
 
 Evaluator ``version: 2`` adds ``units`` to each side: ``registered``, ``destroyed``
 (engine reports zero living entities), ``alive``, ``active`` (alive, deployed, not
