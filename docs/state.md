@@ -9,13 +9,10 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
-Nothing is running. The WH3 [Empire set](twwarhammer3/empire.md) night of 2026-10-20
-finished at 09:00: four queues, 45 launches, $8.84
-([log](twwarhammer3/log.md#2026-10-20-the-empire-set-harness-b43)); its decisions and
-risks wait for the owner ([list](twwarhammer3/empire.md#for-the-owner-to-decide)). A
-review of the night corrected its pages and the LineTeam arms' target rules
-([b46](twwarhammer3/log.md#2026-10-20-lineteam-kept-targets-and-a-reason-cap-harness-b46));
-the revised arms are unplayed. The chariot b40 round stays stopped.
+Nothing is running. The WH3 [definition review](twwarhammer3/benchmark.md) is documented;
+its new checks and card gates are proposals. The [Empire night](twwarhammer3/empire.md)
+finished at 09:00 (45 launches, $8.84); its [owner items](twwarhammer3/empire.md#for-the-owner-to-decide)
+remain pending. The revised b46 LineTeam arms are unplayed; the chariot b40 round stays stopped.
 
 Priorities (owner, 2026-10-18): WH3 benchmark first, then Spire; post-training secondary.
 [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
@@ -23,7 +20,7 @@ Priorities (owner, 2026-10-18): WH3 benchmark first, then Spire; post-training s
 ## Total War: WARHAMMER III
 
 [README](twwarhammer3/README.md), [log](twwarhammer3/log.md) ("On main" at the top),
-[tactic cards](twwarhammer3/tactic-cards.md) (the benchmark definition and its board),
+[benchmark definition](twwarhammer3/benchmark.md), [tactic cards](twwarhammer3/tactic-cards.md),
 [latency program](twwarhammer3/latency.md) (plan), [results.csv](twwarhammer3/results.csv).
 
 - On `main`: `llm`/`llm_rules` v21, `commander` v7, skills v1.2, harness b46,
@@ -34,16 +31,16 @@ Priorities (owner, 2026-10-18): WH3 benchmark first, then Spire; post-training s
   No model has won above its foils' bound (an unverified gameplay finding).
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter ledger $21.33 ($8.84 the Empire night).
 
-Next (proposals for the owner; stages in [latency.md](twwarhammer3/latency.md#staged-plan)):
+Next (proposals for the owner; [gates](twwarhammer3/benchmark.md#from-a-candidate-to-a-scored-card)):
 0. Read the night's [results](twwarhammer3/empire.md#results) and its six
    [owner items](twwarhammer3/empire.md#for-the-owner-to-decide), from the rank-5 line
    battle as the first team card to the first Empire export (29 model episodes).
-1. Freeze the chariot card once owner decision 2 below is taken.
-2. Breadth over repetition (owner's question, 2026-10-19): the expendables card, then
-   pin-then-rear, with the lean protocol only (foils at 10 launches each, one witness gate,
-   one 10-launch model cell, no exploration cells); definitions first.
-3. The rest of P5 when a night is free: Kimi K3 low on v21 (10 plans written, about $5),
-   then high; a stronger model at modifier 1.1 is still untested (the OpenAI cap).
+1. Agree the [correctness checks](twwarhammer3/benchmark.md#correctness-checks-to-agree)
+   and chariot version decisions; preserve c1's frozen historical rule.
+2. Breadth: review the [shortlist](twwarhammer3/tactic-cards.md#which-candidates-to-resolve-next),
+   Empire rifle lane/protection, then pin-then-rear. The Skaven expendables candidate stays deferred.
+3. P5's Kimi plans remain unplayed; choose their question before scheduling more chariot
+   cells. A stronger model at modifier 1.1 remains untested (the OpenAI cap).
 4. [Robot team plan](twwarhammer3/robot-team-plan.md): review whether the Empire line
    battle offers useful recovery, then compare fixed jobs, early commitment and replacement.
    The small existing screen does not establish a handover benefit; b46 remains unplayed.

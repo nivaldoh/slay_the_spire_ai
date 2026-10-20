@@ -12,7 +12,10 @@ in `runs/twwarhammer3/calibration/latency-review-20261018/`.
 When a model loses a [tactic card](tactic-cards.md), did it not know the tactic, choose wrongly
 or act too late, and how much latency does the tactic tolerate? Wins at natural latency stay the
 primary score. Battles never pause (AGENTS.md), so knowledge is measured offline and latency
-tolerance with scripted references.
+tolerance with scripted references. Offline knowledge answers remain diagnostics;
+they do not independently identify the cause of a live loss. The
+[current benchmark definition](benchmark.md#the-decisions-the-benchmark-should-support)
+separates those claims.
 
 ## What the evidence shows so far
 
@@ -40,10 +43,11 @@ offline probes per model-mode; all post hoc:
   backend).
 - 2026-10-19 evening ([b40 log](log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)):
   witness v2 (one fixed 150 m withdrawal with the charge queued behind it) won 4 of 5 at
-  5 s / 5 s and 4 of 5 at 8 s / 8 s, where v1 had won 2 of 8 and 0 of 4, so the tactic
-  tolerates at least 13 s of information age and the chariot card is not a latency card at
-  model paces. GLM-5.3 low on the amended prompt won 0 of 10 with fewer in-melee re-attacks
-  and more damage dealt: its losses are withdrawal depth and re-planning, not order age.
+  5 s / 5 s and 4 of 5 at 8 s / 8 s, where v1 had won 2 of 8 and 0 of 4. This shows a
+  more robust recipe at those configured settings, not a 13 s reaction deadline or a
+  causal explanation of model losses. GLM-5.3 low on the amended prompt won 0 of 10 with
+  fewer in-melee re-attacks and more damage dealt; withdrawal depth and re-planning are
+  candidate explanations. Latency sensitivity of the card remains unestablished.
 
 ## Scoring: the battle never waits
 
@@ -64,11 +68,11 @@ paths remain unverified in the game. Compare failed decisions and terminal forfe
 
 ## Measurements
 
-- **Witness latency sweeps** ($0, game time): `SnapHitAndRun` on the 1.1 card with added age
-  equal to the decision interval at 0, 2, 3.5 and 8 s, plus 0 s age with a 5 s interval, 5
-  launches each, with existing flags. The win rate against latency is this recipe's
-  tolerance, a lower bound on the tactic's: its slow-cell losses are a withdrawal stall
-  ([witness v2 pending](tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)).
+- **Witness timing sweeps** ($0 API, game time still costs): completed v1/v2 results are
+  in the [card](tactic-cards.md#the-chariot-card-the-first-benchmark-card). Changing both
+  age and interval compares operating conditions; it does not isolate either variable.
+  More sweeps wait for a distinct question. A witness that loses with delay bounds that
+  recipe, not every possible execution of the tactic.
 - **Open-loop probes** (no game): recorded critical moments rendered by `LLMPolicy` and sent to
   each model; graded against the tactic. One round done (log, 2026-10-18). Retired as an
   instrument: its first-contact grade matched the live first-decision reading in count (18 of
@@ -77,11 +81,16 @@ paths remain unverified in the game. Compare failed decisions and terminal forfe
   [second pass](tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)).
 - **Closed-loop round**: 10 launches per model-mode on the 1.1 card under the rule above, with
   pinned backends; at that n only gaps of about 0.6 in win rate are detectable (two-sided; about 0.5 one-sided).
-- Reported beside the win (board, b38): order age as p50/p90 and forfeits; a forfeited call's
-  age is recorded once a forfeit occurs. Since b39 also the information age (median order
-  age plus half the decision gap, the time-average age of the order in force), on which the
-  witness cells order monotonically and a model row lands directly. Thresholds read off
-  past battles are frozen before new ones.
+- Report order issue age as p50/p90, achieved decision gaps and pending/failed calls.
+  `cards.py`'s `info age` is median issue age plus half the mean decision gap: a proxy,
+  not a measured time average, effective reaction delay or execution age. Unequal gaps
+  matter, empty batches need not change standing orders, and a queued attack executes
+  after issuance. Do not collapse these into one deadline or compare controllers only
+  by this proxy. Calls still in flight at the ending have no issue age; list them separately.
+- `--delay-seconds` supplies older state; `--interval-ms` waits after acknowledgement.
+  Vary one at a time to study that intervention. Neither flag alone reproduces slower
+  computation on fresh input or isolates a slow planner above a fresh-state executor.
+  Such mechanisms need a separate contract and check before use. Battles always stay at 1x.
 
 ## Robotics framing
 
@@ -101,9 +110,9 @@ chariot timing cells motivate testing that separation; they do not set a univers
 | [DPT-Agent](https://arxiv.org/abs/2502.11882) (2025) | a 0.25 s state machine whose logic the slow model rewrites | model-written standing rules |
 | [Shared Modular Policies](https://arxiv.org/abs/2007.04976) (2020) | one shared policy per actuator, transfer across bodies | cards that change the body (a lost unit, another army) |
 
-Closest benchmark: [The World Won't Wait](https://arxiv.org/abs/2610.20665) (2026) runs a live
-clock (a frontier model beat a fast one in 5 of 6 games paused and lost live), without admitting
-tasks by tactic or a latency-matched scripted reference.
+Related live-clock benchmarks and concrete design lessons are in the
+[current source comparison](benchmark.md#research-that-changes-the-design).
+WH3 does not establish novelty merely by running during inference.
 
 ## Harnesses
 

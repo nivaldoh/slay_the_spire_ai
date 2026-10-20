@@ -18,8 +18,8 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [integration.md](integration.md) | engine facts: packs, menus, lobby settings, unit API, context system, battle types, capture |
 | [controllers.md](controllers.md) | the policies and their versions, comparing them, candidate changes, designs not built |
 | [battle-types.md](battle-types.md) | the battle-type scenarios, the `mode` state, the `build` and `reinforce` orders |
-| [benchmark.md](benchmark.md) | the benchmark contract, shared measures and the scenario expansion plan |
-| [tactic-cards.md](tactic-cards.md) | the benchmark definition (2026-10-18 draft): minimal battles won only by applying one tactic, the card list, what only WH3 can test |
+| [benchmark.md](benchmark.md) | the current benchmark definition, proposed verification, research comparisons and the recorded contract |
+| [tactic-cards.md](tactic-cards.md) | the chariot's frozen rule, card design, candidate list and what WH3 adds |
 | [latency.md](latency.md) | the latency program (2026-10-18 plan): knowing a tactic against executing it in time, measures, robotics framing, harness ladder, fine-tuning path |
 | [robotics.md](robotics.md) | robotics ideas and concrete comparison designs: parameterized/generated policies, learned micro, controller boundaries and codebase fit |
 | [robot-team-research.md](robot-team-research.md) | research guide: capability allocation, recovery, delayed plans, evaluation and learning; what each source suggests for WH3 and where it does not transfer |

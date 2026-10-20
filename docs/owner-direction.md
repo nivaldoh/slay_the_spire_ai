@@ -40,6 +40,10 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-20 (benchmark definition): refine the objective and plan, reduce uncertainty,
+  make correctness checks and abstract ideas concrete, and use relevant frontier research.
+  Keep it concise and simple; research and documentation only, no implementation.
+  [Current definition](twwarhammer3/benchmark.md).
 - 2026-10-20 (research follow-up): expand and organize the robot-team research notes and
   plans using relevant robotics, LLM, agent, benchmark, evaluation and post-training
   research. Keep concrete uses, comparisons and limitations so the ideas remain useful
@@ -74,7 +78,8 @@ WH3:
   units different experience ranks, since units gain stats as they gain ranks; in the lobby,
   clicking a unit on the army selection page shows two small buttons under its card,
   "Increase experience" and "Decrease experience". Registered as a card knob in
-  [tactic-cards.md](twwarhammer3/tactic-cards.md#design-rules-from-s1-s11), not built. The
+  [tactic-cards.md](twwarhammer3/tactic-cards.md#design-rules-from-s1-s11); implemented in
+  b41 and used in the Empire rank-5 candidate. The
   owner also asked why the chariot battle is repeated so often (answered in the session: the
   repetitions are the sampling behind each cell's rate, and the card is the template for the
   next ones; breadth comes next) and then: "Let's wrap up the runs for now after the current

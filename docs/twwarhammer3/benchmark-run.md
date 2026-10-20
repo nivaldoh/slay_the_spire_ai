@@ -27,9 +27,9 @@ uv run python -m twwarhammer3 doctor
 `play` refuses uncommitted changes in its source scope (`src/gameai`, `src/twwarhammer3`,
 `configs/twwarhammer3`, `pyproject.toml`, `uv.lock`, `.python-version`) and stops before
 its next episode if one changes, so commit first and draft in a git worktree while a job
-runs. Two settings are one-time manual state: the game's realism preference, which play
-compares with `expect.realism` before it creates the job, and the lobby difficulty,
-which setup reads back but does not set.
+runs. The game's realism preference must match `expect.realism` before play creates the
+job. Since b42 setup also applies declared difficulty, unit scale and realism, then the
+explicit AI modifier, and reads them back; difficulty is no longer a manual setup step.
 
 ## Declaring a scenario
 
@@ -57,9 +57,10 @@ uv run pytest tests/twwarhammer3/test_wh3_setup.py
 
 Commit the entry before playing it. Declare held-out variants (`split: held_out`) before
 any tuning, and never use them to choose rosters, settings or controllers. The scenario
-rules and readiness checks are in [benchmark.md](benchmark.md#scenarios). The old
-win-rate admission rule is retired; the current [calibration proposal](benchmark.md#implementation-plan)
-is planning only. Earlier integration, expansion and M1 runs are recorded in the log.
+rules and readiness checks are in [benchmark.md](benchmark.md#scenarios). Current
+[card gates](benchmark.md#from-a-candidate-to-a-scored-card) are proposals; a frozen
+card's historical rule remains attached to its own evidence. Earlier integration,
+expansion and M1 runs are recorded in the log.
 
 ## One launch
 

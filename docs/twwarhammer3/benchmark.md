@@ -1,8 +1,8 @@
 # WH3 latency-aware battle benchmark
 
-The benchmark as built, with the [implementation plan](#implementation-plan) revised on
-2026-10-16: keep the scenario collection provisional and calibrate its challenges before
-another expensive model comparison. Planned measures are distinguished from recorded ones. The owner's brief is
+Current definition reviewed 2026-10-20; the checks below are proposals for the owner,
+not newly agreed verification methods. Gameplay findings remain unverified under the
+[hard rule](../../AGENTS.md#verification-hard-rule). The owner's brief is
 [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md).
 How to run it: [benchmark-run.md](benchmark-run.md). The report: [reports.md](reports.md).
 What is running now: [docs/state.md](../state.md). Dated history: [log.md](log.md).
@@ -10,9 +10,11 @@ Evidence paths under `runs/` are local and not in Git.
 
 ## Purpose
 
-Another developer connects a battle controller, runs declared tactical scenarios against
-the game AI in the original game, and compares it with other controllers under the same
-observation, action and timing rules. The brief's acceptance question:
+Which controllers can carry out specific tactics while the battle keeps moving, and
+what prevents the others from succeeding? Start with small, inspectable battles against
+the game AI, mostly using Empire units; add larger coordination problems when they test
+a distinct decision. Another developer must be able to substitute a controller and
+interpret its results. The brief's acceptance question:
 
 > Can an independent user evaluate a different battle controller under the same declared
 > scenario, information, action, and timing rules, and understand both its performance
@@ -22,21 +24,103 @@ Settled by the owner on 2026-10-14: each controller's whole latency, network inc
 part of its result, as it would be in a real deployment. A controller that loses because
 it is slow has lost. Delay arms (below) are diagnostics beside that primary result.
 
-## The brief, as built
+## The decisions the benchmark should support
 
-| Brief | As built | Reference |
+| Question | Smallest useful comparison | What it does not establish |
 |---|---|---|
-| §1 Tactical control, any controller design | Classic custom battles against the game AI; scripted, model and hybrid built-ins, and any importable class | `battle/controllers.py` |
-| §2 Observation contract | Named track, visibility-filtered, exact numbers, not player-equivalent; scoring data stripped | [Contract](#observation-and-action-contract) |
-| §2 Actions, failures | Basic orders only; harness refusals and engine rejections both reach the controller | `protocol.py` |
-| §3 Timing | Unpaused 1x always; information age on the battle clock per batch; added-age arms | [Timing](#timing-and-latency) |
-| §4 Scenarios, lifecycle | Declared entries checked in the lobby and in battle; rematches restart the same instance; development and held-out variants | [Scenarios](#scenarios) |
-| §5 Outcomes, failures | Engine result only; timer endings labelled; every started trial recorded with its failure class | [Outcomes](#outcomes-measures-and-comparison) |
-| §6 Baselines | `hold`, walk-nearest, run-nearest, `skills`; `llm`, `llm_rules`, `commander` | [controllers.md](controllers.md) |
-| §7 Records | Manifest (revision, file hashes, resolved scenario, deployment pins, prompts), trace, result, register | [benchmark-run.md](benchmark-run.md) |
-| §8 Path to RL | Episode boundaries, basis observations, orders, battle times, `ended_by`, throughput | [Outcomes](#outcomes-measures-and-comparison) |
-| §9 First milestone | Built and accepted in the game (b1-b9 in the log) | [log.md](log.md) |
-| §9 Initial release | Shared measures, the consolidated report and six candidate families have live evidence; calibration and final selection remain open | [Implementation plan](#implementation-plan) |
+| Can it apply the tactic? | Frozen card, winning reference and plausible wrong plays; review actions and subsequent state | A statement of the tactic is not its execution; finite foils cannot prove only one tactic can win |
+| Does explaining the tactic help? | Same model/interface, rules alone versus the same rules plus the tactic | This is the effect of supplied advice; offline answers or reason text cannot isolate knowledge from execution |
+| Does timing prevent success? | Same controller, one assigned timing change, achieved ages and decision gaps reported | Different models or reasoning modes also change decisions; a slow loss alone does not identify its cause |
+| Can units recover their cooperation? | Fixed jobs, early reserve commitment and replacement above one executor | More units or a reserve order alone do not demonstrate recovery |
+
+Natural latency is the primary deployment condition, including retries and provider
+behavior. A model comparison measures the model and its serving system together.
+Changing a helper changes the controller being evaluated: disclose who chooses targets,
+routes, withdrawals and replacement units. Model, prompt, executor and timing changes
+need separate comparisons before attributing an improvement to one of them.
+
+## From a candidate to a scored card
+
+The [card definition and gates](tactic-cards.md#a-card) are the current proposal; older
+calibration plans below are history, not competing admission rules.
+
+1. **Define the choice.** Name the tactic, winning condition, credible alternative and
+   simplest shortcut. Pin setup, public mechanics, automation, scorer and timing. Reserve
+   a supported map or roster variation before tuning; reserve another group for selecting
+   revisions if needed. New launches of a tuned setup are not held-out tasks.
+2. **Screen cheaply.** Proposed default: three fresh launches per relevant foil and
+   witness, stopping a candidate early on a shortcut win or unusable setup. These are
+   feasibility observations, not reliable rates. Inspect default skirmish/fire-at-will,
+   terrain, commander morale and whether a witness actually wins the whole battle.
+3. **Confirm only useful candidates.** Freeze the rule, counts and stopping conditions;
+   use new launches. A concrete proposed gate is each foil 0/14 and witness at least 10/14,
+   with its signature on reviewed wins, at a declared age and cadence. Fourteen foil
+   losses give a one-sided 95% upper bound of 0.19; this is not proof of necessity.
+   A broken foil supplies no evidence about a shortcut; repair it and label replacements.
+   This proposal does not replace the chariot's frozen 0/10 and 4/5 historical rule.
+4. **Compare controllers.** Choose one primary contrast and the smallest useful win-rate
+   gain before setting the sample budget. Ten launches is a screen, not a general
+   ranking rule. Rotate order within matched launches, keep rematches grouped, retain
+   every start and show uncertainty. If the affordable sample cannot answer the question,
+   call it exploratory rather than running until a favorable result appears.
+5. **Test the reserved variation and independent rerun.** Freeze the controller first.
+   Report each variation separately; a changed roster may also change difficulty.
+   If results guide another revision, that variation is development from then on.
+
+The first reusable evaluation path needs a frozen card with reference results, the checks below,
+and another user's documented run through the
+[outside-controller route](benchmark-run.md#outside-controllers). An initial suite repeats
+that path for a small set of distinct cards. Expand with distinct
+cards, not a quota or a full model-by-mode grid before the cards are useful. A suite score
+requires a fixed card list and coverage; missing cells are not zeroes and cherry-picked
+subsets are not comparable. Keep per-card results primary, with cost and failures beside
+them. A winning alternative remains a win; it challenges the card's interpretation.
+
+## Correctness checks to agree
+
+A passing reader or simulation test cannot establish that a tactic worked in the game.
+Use requirements and independently inspected state as references, not the scorer's own
+output. Reuse the agreed setup/component checks in AGENTS.md; the remaining checks below
+still need owner agreement and later execution. No new test infrastructure is required
+by this documentation change.
+
+| Claim | Repeatable check and independent reference | Plausible wrong behavior it must catch |
+|---|---|---|
+| The declared battle starts | Reuse the agreed army/settings check on fresh launches; check map identity in the lobby and terrain/start evidence in battle. A rematch comparison is a proposed extension, not covered by that army check | Correct types at wrong ranks, inherited settings or changed resources; no independent battle map-key readback exists |
+| The controller has only its declared information | Compare delivered inputs with an allowlist; alter only hidden scoring fields and check public inputs stay identical; separately inspect visibility in game | Scoring totals in prompts, hidden-enemy fields, extra script-only information |
+| An order can cause the intended behavior | In an unpaused live check, follow a known move/withdrawal/cast from basis through acknowledgement to independently observed movement/contact/effect | Accepted but blocked movement, a queued order mistaken for immediate execution |
+| The outcome and denominator are correct | Hand-classify engine win/loss/draw, timer win, terminal controller failure, setup failure and operator stop; compare card/report output | Timer survival counted as contact victory, a failed decision counted as terminal loss, exclusions disappearing |
+| A signature means what it says | Label positive, negative and ambiguous replay/trace examples against a written behavior rule; check the reader and a deliberately wrong reading | A harmless move counted as withdrawal, automatic re-engagement credited to the model, missing replay counted as absence |
+| Another user can reproduce the evaluation | Follow the runbook with one frozen outside controller; rebuild counts from raw files and repeat a declared launch | Undocumented manual steps, a missing ledger, silently pooled builds/prompts or duplicate rematches |
+
+Existing commands check the chariot's component rules and reproduce the recorded c1 verdict:
+
+```bash
+uv run --locked pytest -ra tests/twwarhammer3/test_wh3_cards.py
+uv run --locked python -m twwarhammer3 card chariot runs/twwarhammer3/calibration/c1
+```
+
+They do not satisfy the live-effect or independent-rerun rows. Keep unknown
+signature evidence unknown; do not discard an otherwise scored battle because its replay
+is missing. A patch or provider change creates a new declared condition, not silent
+evidence that the old rates still apply.
+
+## Research that changes the design
+
+Selective primary-source review, 2026-10-20; WH3 uses here are proposals:
+
+| Source | Useful lesson for this plan | Limit |
+|---|---|---|
+| [Realtime-Bench](https://arxiv.org/html/2610.22155v2), October 2026 | Distinguish deployment time from assigned timing conditions and consistency from one successful run | Its paused/token clocks are not WH3 conditions; keep WH3 live at 1x |
+| [The World Won't Wait / TORSI](https://arxiv.org/html/2610.20665), October 2026 | Separate feedback, revision selection and final evaluation; account for actions continuing during inference | Different paper from Realtime-Bench; its paused practice and saved states are not available here |
+| [GameWorld](https://arxiv.org/html/2604.07429), April 2026 | Inspect state-based outcome rules and freeze the whole interface/budget before rerunning | Its live variant already studies inference during play; serialized state alone does not validate a WH3 tactic signature |
+| [SMACv2](https://arxiv.org/abs/2212.07489) | Try a fixed schedule before claiming feedback or recovery is required | Randomized teams in StarCraft do not establish useful or reproducible WH3 variants |
+| [LatencySensitiveBench](https://arxiv.org/html/2505.19481v1) | Faster calls can stop helping once action execution is the bottleneck | Its Street Fighter timing threshold is not a WH3 threshold |
+
+WH3's opportunity is the combination of inspectable tactics, morale, persistent orders
+and units whose support can fail during inference. Live clocks and hierarchical control
+already have prior work. [Robot-team research](robot-team-research.md) develops the
+recovery comparisons and transfer limits; physical-robot benefit remains untested.
 
 ## Terms
 
@@ -44,7 +128,7 @@ it is slow has lost. Delay arms (below) are diagnostics beside that primary resu
 |---|---|
 | scenario | An entry in `configs/twwarhammer3/scenarios.json`; a benchmark scenario has `expect` |
 | variant | A scenario with one declared change (modifier, map, role) as its own entry; `split` is `development` or `held_out` |
-| instance | The battle one launch builds; every rematch restarts it, so one job is one instance |
+| instance | The battle one launch builds; rematches aim to restart it and their starts are compared |
 | trial | One controller playing an instance once (an episode) |
 | track | A named observation contract, action contract and timing policy |
 | controller | Code that turns observations into orders; its `card` records kind, source and disclosure |
@@ -112,7 +196,7 @@ refuses any other session and play refuses an observation that says otherwise.
   reply based on an old snapshot is applied as it is, with its basis recorded.
 
 Recorded per decision: basis `seq` and `time_ms`, decision time, `applied_ms`, `delay_ms`
-(information age at application, battle clock), `think_s` and `roundtrip_s` (wall,
+(information age when orders are issued/queued, battle clock), `think_s` and `roundtrip_s` (wall,
 system clock). Model calls add wall seconds, provider processing time
 (`openai-processing-ms`) and the returned model name; the commander adds `plan_age_s`.
 Each episode records its battle/wall clock ratio. Network conditions are measured, not
@@ -125,6 +209,12 @@ buffer without decisions. D is a minimum: a blocking call leaves gaps in the buf
 the text and JSON reports give the actual snapshot age at decision beside the order
 age. D = 0 is the natural latency, not zero latency. Arms are never pooled with each
 other.
+
+These arms change sensing age, not just inference duration. `--interval-ms` changes the
+wait after acknowledgement; it is not an exact decision period. For a timing comparison,
+change one of these at a time and report achieved age and gaps, including retries and
+unfinished calls. Adding a wait to a fresh reply, or delaying only a planner above a
+fresh-state executor, needs a different mechanism. Neither is implemented by the age flag.
 
 ## Scenarios
 
@@ -141,10 +231,11 @@ error or a realism preference that differs from `expect.realism` stops play befo
 job directory exists. Setup then checks, and any mismatch stops the job before a trial is
 scored:
 - the lobby: every menu step found its component, the selected map key, and read-backs of
-  battle type, difficulty, funds (and amount), timer and AI stats modifier. The steps set
-  all of these except difficulty, which the lobby keeps from its last use;
+  battle type, difficulty, unit scale, realism, funds (and amount), timer and AI stats
+  modifier. Since b42 the steps apply these declared settings, difficulty before the
+  explicit AI modifier; the pre-launch realism preference check still applies;
 - the first battle observation: unit scale, realism, player role, every army's AI
-  modifier, both rosters as multisets, both factions and the terrain grid.
+  modifier, both rosters and experience ranks as multisets, both factions and the terrain grid.
 
 The start fingerprint (positions, bearings, strength, ammunition, barriers, flight,
 ability loadouts, magic, supplies, tickets) of every rematch is compared with the job's
@@ -174,14 +265,12 @@ The 30-70% reference win-rate gate and paired-margin admission test were retired
 owner's 2026-10-15 direction. G1 and C1 remain development evidence. Difficulty is not
 adjusted automatically to a reference model's win rate.
 
-For the planned suite, check that setup repeats correctly, the controls needed for the
-challenge work, the engine result is recorded, and declared progress measures are
-available. Use common measures first; scenario-specific scoring can wait. A hard
-scenario can remain useful when every controller loses but makes different progress. If neither outcomes nor progress distinguish play, review the
-scenario or measurement; do not assume an easier opponent is the remedy. Repetitions
-measure variability, not eligibility. A claim of latency sensitivity still needs an
-added-age experiment. Existing configuration labels such as `prototype_not_admitted`
-are legacy metadata, not a current eligibility gate.
+The current [card gates](#from-a-candidate-to-a-scored-card) supersede the older general
+calibration proposals. An all-losing scenario can remain exploratory evidence when
+controllers make different progress, but a scored tactic card needs a demonstrated
+winning controller under the declared conditions. One win shows possibility, not reliable
+winnability. Repeated witness wins, losing foils and reviewed tactic evidence answer
+different questions. Existing labels such as `prototype_not_admitted` are legacy metadata.
 
 ## Scenario design
 
@@ -345,8 +434,8 @@ Trial statuses (`battle/play.py`):
   `time_limit` when the countdown expired (inferred from the last ticked deadline; see
   [integration.md](integration.md)); the report shows `time_limit` and keeps the engine
   result, so a defender's timeout win is not hidden.
-- `truncated` (episode wall cap), `policy_failure` (the controller raised, failed to
-  construct or close, or exhausted its re-asks), `budget_exhausted` (the WH3 ledger cap),
+- `truncated` (episode wall cap), `policy_failure` (terminal controller, construction or
+  close failure), `budget_exhausted` (the WH3 ledger cap),
   `infrastructure_failure`, `unsupported_or_invalid` (a protocol or battle setup check
   failure) and `interrupted` (operator stop).
 
@@ -381,10 +470,17 @@ The text and JSON reports end with the limitations stated in `report.collect`. T
 page shows outcomes, the typical order delay and cost per battle, and leaves the margin,
 paired differences and limitations to those files ([reports.md](reports.md)).
 
-Reproducibility promises the same declared scenario checked in every job, the same start
-for every controller within a launch (fingerprint reported), and records that recompute
-every measure. It does not promise identical trajectories, identical instances across
-launches or replay of a job.
+The report's engine-completed-trial rate is a diagnostic. The tactic-card score includes
+terminal controller failures as losses and is the primary rate for cards; show exclusions
+and failed decisions beside it ([score](tactic-cards.md#score)). These denominators can
+give different numbers from the same jobs. Native-objective cards must declare their
+success rule before use; do not require enemy destruction for a point-capture objective.
+
+Reproducibility means declared conditions are checked and differences are disclosed.
+Starting fingerprints are compared, not proof of identical internal state. Records should
+permit an independent recount; that still needs the rerun check above. Identical
+trajectories, instances across launches, seeded engine randomness and branchable battle
+replay are not established capabilities.
 
 ## Evidence behind the design
 
@@ -416,206 +512,63 @@ this page before its rewrite (`git show d606d39:docs/twwarhammer3/benchmark.md`)
 
 ## Implementation plan
 
+The following dated plans explain earlier calibration. Current priorities are the
+[card gates](#from-a-candidate-to-a-scored-card), [Empire candidates](empire.md) and
+[robot-team feasibility check](robot-team-plan.md#a-small-sequence-of-experiments).
+Their counts and historical admission statements do not override a frozen card rule.
+
 ### Current proposal: calibrate before a broad model comparison
 
-Implementation resumed on 2026-10-16 after the cleanup review. OpenRouter support and
-its small schema checks are complete ([log](log.md#2026-10-16-harness-b13-shared-openrouter-transport));
-the six calibration cards and four free siege/swarm/caster checks are complete
-($0 API spend). One GLM/OpenRouter integration battle completed for $0.4248 and exposed stale shared
-magic after a cast. Feedback v20 / commander v7 labels that uncertainty; its effect on
-model behavior remains untested ([review](log.md#2026-10-16-first-openrouter-battle-and-shared-magic-feedback)).
+Historical proposal, 2026-10-16; heading retained for existing links. The detailed
+matrix estimates, ladders and tranche instructions are in git:
+`git show f5af096:docs/twwarhammer3/benchmark.md`. The current
+[sequence](#from-a-candidate-to-a-scored-card) replaces those operating instructions.
 
-**Difficulty target (owner, 2026-10-16 evening).** Each retained scenario should be as
-difficult as possible while remaining demonstrably winnable, and fewer high-quality
-scenarios beat many redundant ones that waste compute. Armies, map and battle settings
-may all be changed to calibrate difficulty. For the ladder this means: climb while the
-strongest tested controller still wins, and keep the hardest step with at least one
-engine-confirmed win under the frozen benchmark conditions (any disclosed controller,
-model or scripted). A step that nothing has won is not yet admissible; it waits for a
-win or is stepped back down. This replaces the open-ended "harder variant" stopping
-point below; the other rules (one justified factor per step, decision pressure over stat
-inflation, separate infrastructure failures) still apply.
+Owner goals that still guide selection:
+- **Difficulty:** hard but demonstrably winnable, with meaningful choices. The earlier
+  assistant rule of keeping the hardest step with one win established possibility only;
+  reliable winnability needs repeated evidence. Do not harden a card until every model loses.
+- **Scenario mix:** mostly small battles testing one or two distinct decisions, plus a
+  few larger coordination/scale problems. Different factions or difficulty steps do not
+  automatically add coverage.
+- **Model coverage:** eventually compare the supported reasoning modes of each selected
+  model on the retained suite. Recheck real provider modes before freezing a round.
+  Schema acceptance does not establish that effort levels behave differently.
+- **Budget:** choose repeats per question; do not begin with a broad paid matrix.
+  Declare API and game-time ceilings, permit long losing battles and retain failures.
+  Old cost estimates and ledger balances are historical, not current allowances.
 
-**Scenario mix (owner, 2026-10-16 evening; the intent, not literal rules).** Most of the
-benchmark should be many small battles, each built to test one or two specific things.
-They read easily on the report's map, are easy to explain, and show clearly what a model
-can or cannot do. The owner's example: can two units of cheap cavalry beat one braced
-pikeman unit? If it is possible at all, it may need something more advanced than a
-frontal charge, such as one unit feinting while the other hits a flank. Every such
-idea first needs a check that it is winnable. A few larger battles stay, for context
-length and for problems that appear only at scale (many units, long histories, order
-volume). Across both, the aims are battle diversity, high quality, distinct capabilities
-per scenario and room for interesting, unexpected model behaviour. This sits with the
-difficulty target above: each small test should be as hard as it can be while still
-winnable, and two tests of the same skill count once.
-
-**Model coverage (owner, 2026-10-16 evening).** The comparison should cover every
-reasoning mode of every model, in every retained scenario, so modes can be compared
-within and across models. Each model's real modes must be verified before the matrix is
-frozen. Done on 2026-10-16: `gameai/providers.py` now declares each model's modes, every
-one accepted by a live schema call ([controllers.md](controllers.md#openrouter)).
-gpt-6-luna and gpt-6-sol have six (`none` to `max`), gpt-6.1-sol and gpt-6-astra five
-(no `none`), GLM-5.3 three (always reasoning), Kimi K3 four (including `none`) and Step 5
-Preview three: 32 model-mode configurations (34 with Qwen3.6, declared 2026-10-17). Acceptance does not show that two levels
-behave differently in a battle; reported reasoning tokens on a trivial prompt were small
-throughout.
-
-Scale of the matrix, from the low-effort battles since 2026-10-15: median battle length is
-417-659 s plus about 2 min of setup and rematch, so roughly 10 minutes of game per battle,
-one battle at a time. Six scenarios × 34 configurations is 204 battles (about 34 hours of
-game) for a single battle per cell; three repeats is about 102 hours, roughly thirteen
-nights.
-Median cost per low-effort battle: Luna $0.04, Sol and gpt-6.1-sol $0.88-0.89, GLM $0.41,
-Kimi $0.99 (one battle). Astra (five times Sol's prices) and every mode above `low` are
-unmeasured. Higher modes add reasoning tokens and latency, so one battle per cell is
-likely several hundred dollars. Game time and budget both argue for small scenarios and
-for choosing repeats per question rather than filling every cell equally. Calibration can keep using one reference
-configuration. The full matrix (models × modes × scenarios × repeats) is the frozen
-evaluation round, sized and budgeted by the owner. At about $0.05-1.30 per battle for
-low effort, and more for high effort and Astra, it is likely hundreds of battles.
-
-Revised after M1 at the owner's request, then authorized for implementation on resume.
-This sequence supersedes the earlier implementation sequence and the proposal to settle
-the core from M1.
-
-M1 is development evidence about the tested model/controller configurations. Three
-wins can flag a possible ceiling; three losses do not prove a scenario is impossible
-or uninformative. Neither establishes how the strongest models will perform. Preserve
-all six candidate families for review, the earlier audit and all outcomes. Conquest's
-one-point novelty failure still stands, and custom evacuation remains deferred. The
-report's current core labels are a presentation selection, not a final benchmark.
-
-**1. Extract more information from saved battles before buying more.** For each family,
-write a short calibration card: the capability under test; the actual scarce resource;
-two feasible competing plays; observed turning points and failure causes; a suspected
-easy strategy or exploit; and the smallest unanswered question worth a new battle.
-Separate interface defects, tactical mistakes, natural latency, overwhelming forces
-and inconclusive evidence. Check whether winning models solved the intended problem or
-bypassed it. Reuse traces, replays, start checks, recorded resources and existing unit
-data; no model calls are needed for this pass. Keep analyst tactics out of model prompts.
-
-**2. Make the challenge fair and its result interpretable.** Before new model
-calibration, address the observed stale ability-readiness feedback and missing rule
-that routing units ignore orders in a logged controller/interface revision, with
-targeted engine checks. Verify any mechanic essential to a proposed challenge through
-the actual public interface. No general rewrite or unrelated cleanup is required.
-Retain engine outcomes and common measures; identify the recorded evidence that would
-distinguish good choices within wins or losses. Examples are reserve survival and
-commitment, weapon firing behind a screen, and spell timing alongside mana and target
-state. Accepted orders and mana expenditure alone do not establish effective execution
-or spell value. Avoid a new composite score or speculative creativity score.
-
-**3. Draft a small difficulty ladder for promising families.** Preserve each current
-scenario as an anchor; propose at most two variants initially, each changing one
-justified factor. Prefer pressure on an actual decision (reserve allocation, exposure,
-mana or ammunition scarcity, competing threats) to generic stat inflation. A numerical
-odds adjustment can still be useful when it preserves feasible counterplay. Larger
-armies also change workload, prompt size and latency, so do not call that a pure
-difficulty or reasoning intervention. There is no target win-rate admission rule.
-
-The following are hypotheses to investigate, not selected settings or promised engine
-capabilities. Check feasibility before implementing a variant:
-
-| Family | First calibration question | Candidate adjustment or diagnostic |
-|---|---|---|
-| Siege defence | Do reserve placement and territory trades remain necessary once the obvious mistakes disappear? | Test whether a simple central defence solves it; vary pressure on a second approach or reserve availability while retaining workable fallback choices. |
-| Caster assault | Does winning require choosing spell windows and preserving the caster, or does one repeatable cast/retreat pattern suffice? | Contrast simple casting approaches; vary one of starting magic, escort strength or enemy anti-air pressure, after checking supported controls. |
-| Swarm command | How much does synchronizing the screen and damage units matter beyond a simple coordinated advance? | Contrast staggered and coordinated commitments; vary screen depth or one enemy threat without merely inflating unit count. |
-| Cavalry assault | Are the charge/disengagement opportunities reproducible and visible through the interface? | Establish that the successful flank is repeatable before making it harder; examine one coverage or terrain variant only where it preserves a credible route. |
-| Defensive swarm | Is there an executable defence that improves on holding position? | Check one focused-fire or fallback hypothesis; redesign only if it creates a distinct, controllable firing-space problem. Equal loss records alone do not settle its value. |
-| Kislev survival | Can reinforcement spending become a consequential tradeoff? | Supplies were abundant in the audit; check whether initial resources, income or available purchases can be controlled. If not, describe it as spawn defence or defer it rather than claim budgeting. |
-
-**4. Use cheap tests to eliminate bad designs.** After implementation is authorized,
-start with the existing scripted baselines and a narrowly scoped public-state controller
-for a particular tactical hypothesis where needed. Such a diagnostic may encode a
-strategy; disclose that knowledge and keep it separate from general model results.
-Do not build an expert bot or sweep a large parameter grid. Choose at most two families
-for the first calibration tranche, with roughly 2-3 purposeful battles total per
-candidate variant, reusing existing anchor evidence when conditions are comparable.
-Each battle must resolve a named uncertainty; add a repeat only when variability
-prevents the next decision. A cheap model is useful for interface/usability checks,
-but its losses cannot certify difficulty for a stronger model. Scripted controllers'
-faster reactions likewise do not establish feasibility at model latency.
-
-**5. Buy a small frontier screen once cheaper work stops answering the question.**
-Offline analysis and scripted probes cannot establish the ceiling of the strongest
-models. Select two or three well-supported candidate scenarios, freeze the conditions,
-and initially run one battle each with one strong model/configuration, chosen when
-the screen is planned. Do not automatically cross every scenario, model and effort.
-Specify each run's question, expected cost range, hard spend ceiling and next action
-before starting; review its trace before allocating another paid battle. A repeat is
-for an ambiguous result, a suspected failure or variability that changes a decision.
-One win is not a ceiling estimate and one loss is not evidence of benchmark quality.
-Clear easy wins motivate testing a harder variant, useful varied decisions justify
-later comparison, and interface failures send the candidate back to repair. These
-runs remain development data if they influence scenario or controller design.
-
-**6. Freeze an evaluation collection only after that screen.** Select for distinct
-capabilities, executable alternatives, interpretable progress, difficulty headroom
-and reasonable runtime/cost. Keep an easier anchor when it provides a useful control;
-not every scenario needs to defeat the strongest model. Freeze scenarios, controller
-rules, settings, metrics and stopping rules for a comparison round; later revisions
-are new versions. Reserve unseen variants before tuning and never use them to select
-the design. If held-out evidence prompts redesign, retire it as development evidence
-and reserve fresh variants. Allocate matched repeats only to questions that survived
-calibration, accounting for variation across launches and correlated rematches.
-
-**Spend and stopping discipline.** No broad unattended paid matrix is the default.
-Choose small tranches by how likely a run is to change a design decision, relative to
-its expected API cost and wall time. Keep infrastructure failures separate, retain
-negative evidence and stop a tranche when its question is answered or its cap reached.
-Do not shorten losing battles and report them as engine losses; an interrupted battle
-remains incomplete. Use observed duration, calls, token use and retries for estimates;
-long losing battles need allowance too. The ledger remains $45.96 of $52 as recorded
-after M1, with $6.04 unallocated; this proposal neither spends it nor raises the cap.
-
-**First tranche:** the six cards below define checks on two unchanged anchors, with a
-hypothesis, disclosed controller, observable execution, battle allowance and decision
-rule. Review those checks before choosing a scenario variant or paid frontier screen.
-OpenRouter [support](controllers.md#openrouter) is available with its separate $50 cap.
-Added-age studies, broader controller comparisons and custom evacuation remain deferred.
+The October 16 sequence was: inspect saved battles, fix essential feedback, draft a
+small ladder, try free references, run a small strong-model screen, then freeze a suite.
+It did not settle the core from M1. Custom evacuation stayed deferred; the one-point
+Conquest pilot did not test its intended distributed-control question.
+OpenRouter support and feedback changes are recorded in the
+[b13 log](log.md#2026-10-16-harness-b13-shared-openrouter-transport) and
+[magic-feedback review](log.md#2026-10-16-first-openrouter-battle-and-shared-magic-feedback).
 
 ### Calibration cards, 2026-10-16
 
-These cards use the 54 battles in the saved M1a–d plans, not a new experiment. The
-read-only extraction is `runs/twwarhammer3/calibration/calibration-audit-20261016.py`
-with its JSON alongside it; each row retains its episode path and source revision.
-The [M1 trace review](log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan)
-provides the earlier turning-point analysis. Observed associations are hypotheses
-about causes; no single tactic is established as necessary or sufficient.
+Historical review of 54 saved M1a–d battles. The extraction is
+`runs/twwarhammer3/calibration/calibration-audit-20261016.py` with its JSON alongside;
+the [M1 review](log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan) holds the
+outcomes and turning points. These were hypotheses, not admitted tactic cards.
 
-| Candidate | Question and scarce resource | Competing plays | Evidence and remaining uncertainty | Next useful test |
-|---|---|---|---|---|
-| Siege defence | Can a controller allocate its one mobile reserve while keeping firing positions useful? Time and exposure of the reserve/lord matter more clearly than construction currency. | Defend several approaches with local support; concentrate around a central point and trade outer territory. | Sol and gpt-6.1-sol each won 3/3, Luna 0/3; hold and walk-nearest lost. Earlier review links reserve/lord isolation and weak blunderbuss fire to losses. The newer model won even with only 54 observed blunderbuss rounds in one battle, so that weapon's use is not a demonstrated necessity. | Central fallback lost at 614 s; two left-side units never reached their posts. Resolve withdrawal paths and useful firing positions before using this diagnostic to justify a harder variant. |
-| Swarm command | Can the screen and expensive damage units arrive together? The scarce resource is protected time for the weapons and mobile units, not raw body count. | Commit screen and damage units together; pin the line while a mobile group flanks. | Sol 2/3, gpt-6.1-sol 3/3, Luna 0/3. Sol's loss reversed its successful commitment order. M1c won once despite its Doomwheel routing at 208 s, so preserving every specialist is not required. A simple synchronized advance may suffice. | The speed-estimate diagnostic failed to synchronize; observed screen-following corrected the sequence but still lost. Inspect a specific flank or weapon-support play before proposing a screen-depth variant. These scripts do not establish frontier difficulty. |
-| Caster assault | Choose spell windows and preserve the caster/escorts under a deadline. Mana, barrier recovery and escort lifetime are the candidate constraints. | Spend early to break a dense group; preserve magic and withdraw the caster between windows. | Sol and gpt-6.1-sol each 3/3, Luna 1/3; two nearest-enemy scripts lost. The free airborne script lost at 581 s despite twelve spells with subsequent cooldown feedback: escorts collapsed and its fixed retreat point became exposed. Kairos died with magic left. | Test adaptive withdrawal and escort protection before reducing resources or adding anti-air pressure. One GLM/OpenRouter integration battle lost at 566 s with 61 enemy soldiers active. Its shared-magic timing issue is labelled in v20, still untested with a model; review before further paid runs. Starting magic is not a current scenario field. |
-| Cavalry assault | Reach vulnerable guns without becoming trapped by halberds. The scarce resource is safe approach/disengagement space and time. | Commit to a flank; bait part of the screen and exploit the opening. | Both stronger tested models won 1/3, Luna 0/3. Earlier wins reached the guns; losses often entered the screen. Recorded starts match within each M1b/M1c launch, despite mixed outcomes; there are two starting geometries across those launches. Route repeatability and latency sensitivity remain unresolved. | Keep the current difficulty. Review route execution within each matched start before buying a repeat or changing the roster; do not make an inconsistent manoeuvre test harder yet. |
-| Defensive swarm | Can limited firing space be preserved against encirclement? Ammunition and formation exposure are possible constraints. | Hold a compact line with focused targets; trade ground with a controlled fallback. | Both M1 models lost 3/3; earlier hold evidence matched or beat some model runs. No evidence yet that a general controller can execute a materially better defence at its natural latency. | Test one focused-fire or fallback hypothesis only after the first two families. Retain negative evidence; redesign rather than add enemy strength if executable alternatives remain absent. |
-| Kislev survival | Keep reinforcement access useful while the initial force is pressured. Budget scarcity is not established. | Purchase relief early; preserve a route and bring a specialist later. | Sol bought all seven initial reserves in each M1 run, surviving 366–413 s with 4,004–5,654 supplies left. Its public spawn-zone list first emptied at 229–240 s, with 1,065–1,602 supplies. Luna's list emptied at 210–232 s. This supports a deployment/access problem, not yet a budgeting benchmark. | Reframe the report as reinforcement defence. Check whether starting supplies/income can be controlled before proposing a resource ladder; those are not current scenario fields. Keep it provisional because it may duplicate siege territory control. |
+| Family | Question the review left open |
+|---|---|
+| Siege defence | Do reserve commitment and useful firing positions beat a simple central fallback? Some model wins used little blunderbuss fire, so firing that weapon was not necessary |
+| Swarm command | Must screen and damage units arrive together, or does one simple coordinated advance suffice? The first scripts did not establish a winning reference |
+| Caster assault | Does spell-window choice matter beyond repeatable cast/retreat behavior? Accepted casts and spent magic do not prove spell value |
+| Cavalry assault | Is the safe flank reproducible through the public interface? Mixed outcomes from matching starts did not isolate route execution from timing |
+| Defensive swarm | Can an executable defence improve on holding? All-losing model screens did not settle usefulness |
+| Kislev survival | Is spending scarce, or is this spawn defence? Abundant remaining supplies argued against the original budgeting claim |
 
-The audit distinguishes an empty spawn-zone list (no zone available to the alliance)
-from `usable: false` (no affordable unit can currently be purchased there) and a missing
-`usable` value (not judged because nothing is affordable). Treating all three as lost
-territory would invent a failure cause. Ammo differences are observed expenditure,
-not hits or damage; evaluation-only final counts never enter diagnostic policies.
-
-**First calibration tranche:** siege and swarm command, one purposeful scripted battle
-on each unchanged anchor, $0 API spend, up to 20 battle minutes each plus setup. Build
-only the small public-state diagnostic needed for the named question, disclose its
-scenario knowledge in its controller card, and record execution alongside the outcome.
-Review each trace before a second battle; repeat only for a specific ambiguous mechanism
-or changed start. A second run per family is a ceiling, not a quota (at most 80 battle
-minutes plus setup for the tranche). A scripted win may identify an easy strategy;
-a scripted loss does not establish difficulty for a strong model. No roster variants
-or frontier runs are queued before this review. The two controller feedback issues
-are addressed in v19 / commander v6; their effect on model behavior remains untested.
-
-The first tranche completed with three losses: siege 614 s, swarm estimate 316 s and
-swarm following 440 s. The scripts exposed execution limits rather than an easy solution.
-The [live review](log.md#2026-10-16-free-siegeswarm-calibration-checks) records each
-mechanism and the limits of comparing independent starts. Keep all six candidates
-provisional; next checks should target a named unresolved play, then a small strongest-model
-screen, before any broad comparison or final core selection.
+The first free tranche lost all three battles: central siege fallback at 614 s, swarm
+speed estimate at 316 s and screen-following at 440 s
+([live review](log.md#2026-10-16-free-siegeswarm-calibration-checks)). It exposed execution
+limits rather than an easy solution; those losses did not establish frontier difficulty.
+The audit also distinguished no spawn zone from an unaffordable purchase and unjudged
+affordability. Missing values are not evidence of lost territory, ammunition spent is
+not damage, and scoring-only totals are never diagnostic-policy inputs.
 
 ### Small focused candidates (draft, 2026-10-16 evening)
 

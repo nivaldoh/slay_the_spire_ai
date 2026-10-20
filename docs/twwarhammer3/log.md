@@ -40,6 +40,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
 
+## 2026-10-20: Benchmark definition and proposed checks
+
+Refined [benchmark.md](benchmark.md) into one current plan: define the choice, screen
+shortcuts, confirm useful cards, compare controllers, then test reserved variations and
+independent reruns. Proposed live-effect, information-boundary, signature and scoring
+checks name an independent reference and a plausible wrong result. No method was agreed.
+Preserved the chariot's frozen c1 rule; new 0/14 foil and 10/14 witness gates are proposals.
+Separated terminal forfeits from retried decisions, card/report denominators, and accepted
+orders from observed effects. The roughly 13 s `info age` is a proxy, not a tactic deadline.
+Five primary research comparisons inform timing, shortcut tests and evaluation splits;
+two independent reviews checked the sources and documentation against current code.
+Shortened superseded calibration/novelty material; corrected difficulty/experience status
+and recorded the Empire-first shortlist. No source, scenario, prompt or result changed;
+no game or paid call ran. Link checks: 53 passed, after fixing the scratch parent and
+retrying cache access; Ruff passed. No tests skipped. Gameplay and the proposed checks
+remain unverified; independent live reruns are future work, not evidence from this edit.
+
 ## 2026-10-20: Research for robot team coordination
 
 Expanded the [research guide](robot-team-research.md) around capability allocation,

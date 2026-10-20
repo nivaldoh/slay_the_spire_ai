@@ -1,7 +1,8 @@
 # WH3 tactic cards
 
-The benchmark definition the owner started on 2026-10-18, with the evolving card list. A
-draft: written overnight under the owner's delegation, every check below is proposed and
+The tactic-card design the owner started on 2026-10-18, with the evolving card list. The
+current plan and proposed verification are in [benchmark.md](benchmark.md). This remains a
+draft: every new gameplay check below is proposed and
 none is agreed, so every result is unverified ([hard rule](../../AGENTS.md#verification-hard-rule)).
 The contract, timing and outcome rules it builds on are in [benchmark.md](benchmark.md);
 running jobs in [benchmark-run.md](benchmark-run.md).
@@ -18,12 +19,12 @@ prints the board from manifests and replays, and the verdict for given jobs.
 |---|---|
 | battle | `grn-chariot-emp-swordsmen-hard`: one Orc Boar Chariot unit (6 chariots, Greenskins, no lord) attacks two Empire Swordsmen units (90 men each) on Taurox; very hard AI, AI stats modifier 1.1, 1200 s timer; a battle takes 2-10 min |
 | tactic | cycle charging: charge, pull out, charge again instead of grinding |
-| why necessary | the chariot wins by routing the Swordsmen with repeated charge shock; in a long melee both units hold it and it routs, mostly with every chariot alive |
+| mechanism hypothesis | repeated charges can rout the Swordsmen; the tested long-melee foils lost, mostly with every chariot alive. This does not exclude every other winning play |
 | foils | `attack_nearest` and `rush_nearest` at 0 s added age. `hold` is no foil: the AI defends, so standing still loses on the timer by the mode's rule (1205 s) |
 | witness | `SnapHitAndRun` (rule disclosed in its card): attack the nearest enemy and keep it; on the first observation showing melee ride to 120 m from the enemies' centre, on its own side; charge again once 80 m from the target and 10 s after leaving |
-| signature | **cycles**: engagements, other than the last, in which the controller's own move order took effect (melee runs from the 1 Hz replay, gaps under 3 s merged). Fixed before the confirmation round; a win with 0 cycles did not use the tactic, which is how the 1.0 card's rush-foil win reads. It counts pull-out attempts: witness wins read 4-21 and witness losses 1-15, so it flags the tactic and does not separate wins from losses |
+| signature | **cycles v1**: non-final melee engagements containing an accepted move order (1 Hz melee frames, gaps under 3 s merged). It counts pull-out attempts, not achieved separation or a proven new charge. Witness wins read 4-21 and losses 1-15; the count does not separate winning from losing |
 | knowledge | withheld: the rules prompt states neither charge bonuses nor cycle charging |
-| tolerance | `SnapHitAndRun` by added age / decision interval, every launch of each cell on the board (3-8 a cell, unverified): 0/0 won 4 of 4, 0/5 3 of 3, 2/2 4 of 4, 3/3 3 of 4, 5/0 5 of 6, 5/5 2 of 8, 8/8 0 of 4. Added age and interval round up to the 1.2 s observation cadence: the 2/2 cell runs at 2.7 s age and period, 5/5 at 6.3 s. On one axis, the time-average age of the order in force (median order age plus half the decision gap; the board's `info age`), the cells order monotonically: 0.5 s 4/4, 3.5 s 3/3, 4.1 s 4/4, 5.6 s 5/6, 5.9 s 3/4, 9.5 s 2/8, 13.2 s 0/4. GLM-5.3 low sits at 3.4 s and Qwen3.6 none at 4.2 s, where the witness won 11 of 11. The slow cells' losses read as a withdrawal stall of this recipe, and witness v2 (`HitAndRunV2`, b40, 2026-10-19 evening) confirmed it: 2/2 3 of 3, 5/5 4 of 5, 8/8 4 of 5 (info age 4.1, 9.5 and 13.1 s), its wins leaving 26-68 of 180 enemy men where v1's slow-cell losses left 109-169; pooled slow cells v2 8 of 10 against v1 2 of 12 (one-sided Fisher 0.005; unverified, [log](log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)). So the tactic tolerates at least 13 s of information age with the right recipe, and this is not a latency card at model paces ([second pass](#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)) |
+| tolerance | The [b40 round](log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40) found witness v2 won 3/3 at configured 2 s age / 2 s interval, 4/5 at 5/5 and 4/5 at 8/8. V1 won 2/8 at 5/5 and 0/4 at 8/8. These are recipe-specific results, not a tactic-wide deadline. Actual timing rounds to the engine cadence; queued attacks execute later than their acknowledgement. The board's roughly 13 s `info age` at 8/8 is a summary proxy, not a measured reaction window ([timing](latency.md#measurements)). No causal attribution of model losses to latency follows |
 
 **Admission rule** (committed at `5396182` before the round; the model-pace gate was dropped
 at 17:45 UTC, against E2's own rule): in fresh launches,
@@ -41,8 +42,8 @@ pre-registration (b35, forfeits) with no effect on c1, which has no forfeit.
 
 **Score** per model and mode: wins over scored launches with a 95% Wilson interval, beside
 the median cycles and order age. The battle never waits (`cards.outcome`, harness b35): a
-controller failure (no valid reply, a provider error, an exception in its code) or a
-truncation is a loss, labelled forfeit; game and setup failures, interrupts and operator
+terminal in-battle controller failure or truncation is a loss, labelled forfeit; a failed
+decision that is retried consumes time and does not itself end the battle. Game and setup failures, interrupts and operator
 stops (the spend ledger and its safety stops, the account's key or credit: HTTP 401, 402) are
 excluded and rerun. A foil's forfeit is no launch.
 
@@ -175,10 +176,11 @@ backing up c1, p2 and p5a (142 MB) comes first.
 
 ## What the benchmark measures
 
-For outside AI researchers: which models, at which reasoning modes, can apply specific
-tactics in a real-time battle that keeps moving while they think? Each test is a minimal
-battle (a **card**) built so that it is won only by applying one intended tactic; a naive or
-plausible wrong play loses. A few larger battles test scale and context length later.
+For outside AI researchers: which controllers can apply specific tactics in a battle
+that keeps moving while they think? Each small battle (a **card**) should make its
+intended tactic consequential: a disclosed reference wins and naive or plausible wrong
+plays lose. This is evidence against specified shortcuts, not proof that no other tactic
+can win. Larger battles can test coordination; more units alone do not isolate context length.
 
 Owner direction (2026-10-18): start from minimal battles that each test whether a model can
 apply a certain tactic, and make the model win only if it uses that tactic correctly. The
@@ -199,55 +201,65 @@ list keeps evolving across five kinds, plus scale:
 |---|---|
 | tactic and kind | the one thing tested, and which of the kinds above |
 | setup | rosters (1-4 units a side where possible), map, battle type, role, timer, funds, AI modifier |
-| why necessary | the mechanism that makes the obvious plays lose and the tactic win |
+| mechanism | why the tactic should matter; the simplest way to win without it, to test first |
 | foils | declared plays that must lose: the naive floors (`hold`, `attack_nearest`, `rush_nearest`) and at least one plausible wrong tactic |
 | witness | a disclosed public-state bot (`battle/calibration.py`) that executes the tactic; later a model's or a person's win |
-| signature | what the trace or replay shows when the tactic was used (charge contact angle, rounds fired with a clear lane, the flyer reaching the caster) |
-| knob | what calibrates difficulty so the witness wins and the foils lose |
-| knowledge | `disclosed` (the rules prompt states every mechanic the witness relies on) or `withheld` (the card tests the model's own game knowledge) |
-| reaction window | how fast the tactic must react, against a 5-10 s model order age |
+| signature | observable action and subsequent effect, its source/resolution, and positive, negative and unknown cases; say when it measures only an attempt |
+| knob | one declared difficulty change at a time, such as unit rank; keep the mechanism and a credible winning route |
+| knowledge | mechanics supplied or withheld; separately declare whether the tactic is told; the reference and model must have the same permitted state |
+| timing | configured age and interval, achieved order ages and gaps; any claimed opportunity/deadline needs an observable reference |
+| frozen rule | card/scorer revision, success and failure treatment, foil/witness counts, stopping rule, evidence cohort and reserved variants |
 
-Necessity cannot be proven, only tested: a card is as good as its foil set. Every model win
-is reviewed for the signature, and a win without it means the card leaks (the S4, S5 and S7
-lessons below). The leak becomes a new foil and the card is revised.
+Review every win for its signature. A win without the intended tactic stays a gameplay
+win and challenges the card: it may be a shortcut, a valid alternative or a weak signature.
+Preserve the old verdict and evidence; revise the interpretation or define a new card
+version and foil before new confirmation. Do not erase a win or revise a rule mid-round.
+An unknown signature is not evidence of absence. Do not reward more attempts as if they
+were better tactics: cycles v1 is not a suitable training reward.
 
 ## Proposed admission checks
 
-None is agreed. Each would become a row in AGENTS.md's agreed methods once the owner
-accepts it.
+Use the [current gates](benchmark.md#from-a-candidate-to-a-scored-card) and
+[correctness checks](benchmark.md#correctness-checks-to-agree). They replace the generic
+3-of-4 witness gate and longest-melee-run signature proposed here on October 18; neither
+is the chariot's frozen rule. New gameplay verification methods need owner agreement
+before entering AGENTS.md. Agreement on a component test does not admit a tactic card.
 
-1. **Setup**: the existing lobby and first-observation checks pass (`battle/setup.py`).
-2. **Foils lose**: every declared foil loses in each of its launches, two at least for the
-   naive floors.
-3. **Witness wins**: the witness wins by contact (not on the timer) in at least 3 of 4
-   single-episode launches at 5 s added observation age (`--delay-seconds 5 --episodes 1`).
-4. **Signature**: the witness's wins show the signature, and a measure of it separates
-   the witness's wins from the foils' losses under a rule fixed in advance (for the chariot
-   card, the longest run of melee frames; see the board below).
-5. **Parity**: a `disclosed` card's rules prompt states every engine fact the witness
-   relies on; otherwise the card is `withheld`.
-6. **Held out**: a variant (another map or a mirrored start) is reserved before any
-   model is tuned on the card.
+A witness must win the whole task under the declared sensing and decision schedule.
+It need not lose at slower settings; a robust recipe is useful evidence. If a fixed
+schedule wins the reserved variants, a claim that feedback is essential needs revision.
+Use a plausible partial-tactic foil where it matters (for example, an escort that wins
+after abandoning the gun). Test simpler alternatives before strengthening the opponent.
 
 ## Score
 
-The sampling unit is the launch: one new game start, one episode. A rematch restarts the
-same instance, so repeats inside a launch are not extra samples. Per model and mode, per
-card: contact wins over launches started, with a 95% Wilson interval. Policy failures and
-truncations count as losses; infrastructure failures are listed and rerun. The board prints
-each cell's forfeits, median cycles and order age as p50/p90, and a cell under 10 launches
-is a screen. Across cards:
-the mean of the per-card win rates, each card weighted once, beside the median order age,
-the cost per battle and the failure rate. Each card also reports its signature measure
-per battle, so a loss that attempted the tactic (Luna on the chariot card pulled out, then
-stayed out of contact for minutes) reads differently from one that never tried it. A card whose witness
-wins only with fresh information (S1 so far) is a **latency card**: it is reported beside
-the order age and is not averaged with the others. Cards are controller-agnostic, so the same suite
-later compares harnesses (owner, 2026-10-18: multi-agent delegation, MCP tools and other
-features) as a third axis beside model and mode; a harness's own automation is disclosed in
-its controller card. The active-strength margin is secondary: it
-ranks floors wrongly on objective battles (on the siege `hold` scored +0.11, above every
-Luna and GLM loss).
+The sampling unit is the launch; count at most one trial per controller/condition within
+it. Rematches share the instance and are not extra independent samples. The primary rate
+is wins/scored trials, with a 95% Wilson interval; show total starts, exclusions and
+terminal forfeits explicitly. For example, 10 starts, 1 setup exclusion, 2 terminal
+controller failures and 3 wins gives 3/9, not 3/7. Within-launch contrasts must retain
+pairing; a per-cell Wilson interval alone is not an interval for the difference.
+Launches are the best available sampling unit, but fresh starts do not establish
+independent engine seeds or provider randomness. Intervals remain conditional on the
+declared setup and sampling protocol.
+
+Current classic cards use an engine win before the timer as success. Timer wins and
+draws count as unsuccessful attempts and remain labelled. `cards.outcome` counts terminal
+controller failures/truncations in battle as losses; game/setup failures and operator
+stops are excluded and listed with any replacements. A recoverable failed call consumes
+battle time but is not itself a terminal forfeit: score the final episode. No selective
+reruns for slow or garbled replies. Any backend repair starts a separately labelled cohort.
+Native-objective cards need their own declared success rule before use.
+
+Show signature evidence, p50/p90 issue age, decision gaps, pending/failed calls, cost and
+failure counts beside each rate. The report's rate over engine-completed trials is a
+different diagnostic. Ten trials can be a useful screen but do not establish a ranking;
+neither a high win rate nor its interval establishes the tactic's necessity. Keep
+conditions and card versions separate. Only a frozen suite with matching coverage can
+also report an equal-weight mean over distinct cards; variants do not earn extra weight.
+Strength margin remains secondary because routing, objectives and unit roles can make
+it disagree with success. Controllers may use different helpers, but those helpers
+belong to the controller's result and must be disclosed.
 
 ## The first checks (night of 2026-10-18)
 
@@ -292,15 +304,10 @@ new card (from the 2026-10-17 board and traces; each rests on 1-6 battles):
 6. **Open ground**: check every key point against the terrain grid (refusals on the
    Taurox rock broke S2, S3 and S6).
 7. **Climb in fine steps from a witness win**: four of five unit-count step-downs went from
-   too hard to too easy. The 1.1 modifier gives about +10% stats and +8 leadership; values
-   below 1.0 are unverified. A second, finer knob (owner, 2026-10-19): unit experience
-   ranks, which the custom battle lobby sets per unit and which raise a unit's stats rank by
-   rank, so one side's units can be strengthened without touching the AI modifier. Not used
-   yet: no scenario field carries a rank. Where the control is (owner): clicking a unit on
-   the army selection page shows two small buttons under its card, "Increase experience" and
-   "Decrease experience"; a lobby step would click the unit, then one of them per rank
-   (unverified: the one lobby UI dump kept, `runs/twwarhammer3/launch-m1`, predates a unit
-   click and has no such component, so the next `menu --dump` after a click should find them).
+   too hard to too easy. Experience ranks are now supported per unit (b41), exercised by
+   the agreed army check, and used in the Empire rank-5 candidate. They are a finer knob
+   than adding a unit; they still change combat balance and morale. A stat adjustment
+   must preserve the intended decision rather than simply favor the witness.
 8. **Control confounds**: a lordless army's commander flag sits on its first card and that
    captain's death cuts every unit's morale (S3); an "army losses" shock can rout a unit at
    full strength (S2). The flag does not always follow the first card: in the expendables
@@ -372,62 +379,31 @@ units, matching armour-piercing units to armoured targets, reserve timing, terro
 low leadership, siege sallies, holding until reinforcements arrive, an AI ally, and long
 battles that load the context.
 
-## What only WH3 battles can test
+<a id="what-only-wh3-battles-can-test"></a>
+## What WH3 adds
 
-From a survey of game and real-time agent benchmarks (2026-10-18, sources below, not
-re-checked beyond their abstracts and pages). The gaps a real-time Total War benchmark
-fills, as design targets rather than shown results:
-- **Thinking costs battlefield time, network included, against an opponent, from
-  structured state.** The StarCraft II language-model benchmarks pause the game, wait for
-  the model or script the unit control ([TextStarCraft II](https://arxiv.org/html/2312.11865v3),
-  [LLM-PySC2](https://arxiv.org/html/2411.05348v2), [Orak](https://arxiv.org/html/2506.03610v3):
-  "we pause the StarCraft II game environment"; its v3 of April 2026 adds one live table, in
-  which every model scores 0 at the hard level); SMAC is lockstep and not built for language
-  models ([SMACv2](https://arxiv.org/abs/2212.07489v2)). The real-time ones have no opponent
-  or are pixel-based ([VideoGameBench](https://arxiv.org/abs/2505.18134v3): one run per model
-  and game, and a human reference played with a fixed 0.5 s delay, the one latency-matched
-  human reference found), are uncontrolled
-  model-against-model fights ([LLM Colosseum](https://github.com/OpenGenerativeAI/llm-colosseum)),
-  or count generated tokens instead of seconds
-  ([Real-Time Reasoning Gym](https://arxiv.org/html/2511.04898v1), which also fits wall-clock
-  time to its token clock).
-- **Reasoning mode as a measured axis**: every mode of every model on the same card, with
-  the order age it produced, so thinking quality and slowness can be told apart.
-- **Admission by tactic.** SMACv2 found that policies ignoring their observations won many
-  original SMAC maps; no surveyed suite checks which skill produced a win. Foils and a
-  witness per card close that gap.
-- **Objectives other than killing** (holding a victory point, spending supplies), **morale**
-  (armies break before they die; the general holds them together) and **magic** from a
-  shared pool whose effects land seconds after the order and can be cancelled.
-- **A fixed strong opponent in a commercial engine**: rematches restart the same battle
-  against the very hard AI, a steadier yardstick than model-against-model Elo.
-- **Real-time traces for post-training**, each decision with its delay; the Orak and
-  PokeAgent datasets come from paused or turn-based play.
+Live-clock evaluation, structured game state and slow planners over fast controllers
+already exist. The [primary-source review](benchmark.md#research-that-changes-the-design)
+replaces this page's October 18 novelty survey (kept in git at `f5af096`). WH3's useful
+combination is tactical manoeuvre, morale, continuing orders, magic and changing support
+between units. A literature review does not establish that this combination is unique.
 
-Closest prior work: "Commanding an Army with an LLM: A Hybrid Controller and Trace Dataset
-for Medieval II: Total War" (an [IEEE DataPort](https://ieee-dataport.org/keywords/real-time-strategy-games)
-page; full text not found): an LLM commands an army in real time through a modding
-bridge with typed actions, 60 battles against the built-in AI, paired with a fast reactive
-layer of standing rules that fire between model calls, so its win rates (unquantified on the
-page; the data needs a subscription) are not a pure model's. What separates this
-benchmark: the measured delay axis, admission by tactic, and WH3's magic, flight and factions.
+## Which candidates to resolve next
 
-Ranked opportunities (uniqueness x what it measures x readiness), each a card family:
+Recommended order for the owner's next live plan, not authorization to run it now:
 
-| Opportunity | WH3 mechanic | Minimal card idea | Readiness |
-|---|---|---|---|
-| A manoeuvre whose window is shorter than the order delay | charge defence and reflection against large; measured order age | two light cavalry against braced halberds (S1) | now |
-| Morale as a second health bar | leadership, rear charges, rout cascades, the general's death | pin with one unit, rear-charge with another; a straight fight loses (S6) | intermediate step needed |
-| A shared magic pool whose effects confirm late | Winds of Magic, delayed casts, friendly fire | a wizard's few spells must land away from its own line (S5) | now |
-| Holding an objective on a budget | victory point worth half the tickets, priced towers | a defender too weak in the open holds only by the key building and towers | now (defence); attack needs gate and wall orders |
-| Flight as a mode decision | take-off and landing with a cooldown; "you must attack by land" | flyers land to take a point and lift off whenever pikes close in | now (unverified under fire) |
-| Splitting across capture points | Domination tickets, three points | an army losing any straight fight holds two points and screens the third | now |
-| Third-party timing | free-for-all; the AIs fight each other | a small army wins only by striking the survivor of the other two | four teams needed |
-| Long context while the clock runs | 20-unit armies, 2400 s | a 20 v 20 battle with a scored flank on one wing (L1) | setup works |
+| Candidate | Concrete question and first shortcut to test | Stop or change the claim when |
+|---|---|---|
+| Existing chariot card | Finish the definition/reader checks; preserve c1 as its original cohort and decide separately whether v2 is the future reference | Another delay sweep merely repeats a recipe comparison; no further sweep without a distinct question |
+| Empire rifle lane, then Helblaster protection | Does clearing a lane matter, and does the escort actually preserve the gun? Compare a blocked-lane or abandon-the-gun play with the witness, not just nearest attack | The substitute wins without firing space/protection, or the signature cannot identify the claimed effect |
+| Empire rank-5 line battle | Can replacement improve on fixed jobs and early reserve commitment with the same executor? Review the existing fixed-plan win first | Simple coordination suffices: retain it as coordination evidence and do not label it recovery |
+| Pin-then-rear | Does a continuing pin keep the rear-charge opportunity useful? Compare a frontal/fixed-schedule play and inspect actual contacts before any timing sweep | Only a narrow lucky opening is winnable, or the reference's failure is being called a universal deadline |
 
-Rules disclosed or withheld: running a card with and without a mechanics card built from
-the game database separates game knowledge from reasoning; recasting a card with another
-faction's equivalent units tests transfer. Not unique to WH3 (keep few such cards): focus
-fire and target choice (SMAC's core), kiting and protecting a fragile unit (StarCraft II
-micro; the game's skirmish mode automates kiting), fog of war, build orders, win rate
-against built-in difficulty levels.
+The [Empire record](empire.md) supplies the screens; the
+[team plan](robot-team-plan.md#a-small-sequence-of-experiments) supplies the recovery gates.
+Broader mode and scale cards remain candidates in the list above. Promote only distinct
+choices with a credible winning route. A 20 v 20 tests whole-system scaling, including
+pathing, action volume and combat balance; prompt length alone needs its own comparison.
+Post-training follows a useful card, a reserved variant, a serving route and a data
+contract ([plan](../posttraining.md#beyond-supervised-fine-tuning)). Do not make training
+or a new controller architecture a prerequisite for releasing the benchmark.
