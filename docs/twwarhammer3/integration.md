@@ -175,8 +175,11 @@ declared scenario sets its own AI stats modifier in the lobby
   units; the battle checks private startup ranks too. Reinforcement XP is not configured.
   Repeatable live check: `uv run --locked python tests/twwarhammer3/check_wh3_army_setup.py
   --output runs/twwarhammer3/army-setup-check-<new-name>` (two launches, unpaused at 1x;
-  saves, clears, restarts, loads, compares ranks and lobby/battle stats). Verification status
-  and evidence are recorded in [the log](log.md).
+  saves, clears, restarts, loads, compares ranks and lobby/battle stats). Passed at `c768460`:
+  eight units including a mounted lord and ranks 0/1/3/9. Swordsmen attack/defence matched
+  exactly (32/35/41); leadership XP bonuses over rank zero matched (+3/+10), although all
+  friendly units had a -4 battle leadership offset whose cause remains unverified.
+  [Evidence](log.md#2026-10-19-saved-armies-and-experience-harness-b41).
 - Realism is a game preference the lobby cannot set; a declared scenario checks it
   against the profile before launch (`setup.check_preferences`).
 - Battle read-backs on `CcoBattleRoot` (`setup.check_battle`): `UnitSize` (0.75 on this

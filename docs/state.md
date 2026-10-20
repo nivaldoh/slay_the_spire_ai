@@ -4,19 +4,15 @@ Updated 2026-10-19: what runs, where each game stands, what comes next. Status o
 history goes to the logs ([WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md),
 [first combat](spire/first-combat/README.md)), owner directions to
 [owner-direction.md](owner-direction.md). Under the
-[hard rule](../AGENTS.md#verification-hard-rule), only the listed component checks are
+[hard rule](../AGENTS.md#verification-hard-rule), only the listed agreed checks are
 verified at their recorded revisions; the gameplay findings below remain unverified.
 
 ## Active work
 
-Active: probing army save/load and per-unit experience controls in the WH3 lobby; no
-benchmark queue or paid model runs. Owner agreed restart/load and lobby/battle rank checks.
-The b40 round on the chariot card ended at 21:36 on 2026-10-19 when the
-owner wrapped it up (23 of 33 launches; the Kimi K3 arm stays unrun):
-[results](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40). Witness v2
-won 4 of 5 at both 5 s and 8 s of pace where v1 won 2 of 8 and 0 of 4, so the card is not
-latency-bound at model paces; GLM-5.3 low on prompt v21 won 0 of 10 with its losses reading
-as execution (4-45 m pull-outs to reused points, leadership routs). Unverified.
+Nothing is running. Army presets and experience setup are implemented; the agreed live
+check passed ([b41](twwarhammer3/log.md#2026-10-19-saved-armies-and-experience-harness-b41)).
+The b40 benchmark round remains stopped at the owner's request; Kimi stays unrun
+([results](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)).
 
 ## Priorities (owner, 2026-10-18)
 
@@ -32,7 +28,8 @@ as execution (4-45 m pull-outs to reused points, leadership routs). Unverified.
 [latency program](twwarhammer3/latency.md) (plan), [results.csv](twwarhammer3/results.csv).
 
 - On `main`: `llm`/`llm_rules` v21 (positions are unit centres; the melee flag decides
-  contact), `commander` v7, skills v1.2, harness b40 (witness v2 `HitAndRunV2`; the card
+  contact), `commander` v7, skills v1.2, harness b41 (saved armies and per-unit experience;
+  b40 witness v2 `HitAndRunV2`; the card
   board names a model row by its prompt version; b39 judges the witness on its first
   launches, carries the served model and the mod cadence in a cell's identity and prints the
   information age; b38 launches and prompt changes; b37 mailbox identity and finite order
@@ -60,12 +57,9 @@ Next (proposals for the owner; stages in [latency.md](twwarhammer3/latency.md#st
 2. Breadth over repetition (owner's question, 2026-10-19): the expendables card, then
    pin-then-rear, with the lean protocol only (foils at 10 launches each, one witness gate,
    one 10-launch model cell, no exploration cells); definitions first.
-3. Lobby time and knobs (owner notes): find the save and load army buttons and the per-unit
-   "Increase experience" and "Decrease experience" buttons with a `menu --dump` after a unit
-   click ([integration.md](twwarhammer3/integration.md#unverified)).
-4. The rest of P5 when a night is free: Kimi K3 low on v21 (10 plans written, about $5),
+3. The rest of P5 when a night is free: Kimi K3 low on v21 (10 plans written, about $5),
    then high; a stronger model at modifier 1.1 is still untested (the OpenAI cap).
-5. The army as detachable robot parts (owner, kept open): the
+4. The army as detachable robot parts (owner, kept open): the
    [robotics research and comparison designs](twwarhammer3/robotics.md), including harness
    rungs 3-5; no approach has demonstrated a WH3 improvement yet.
 

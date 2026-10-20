@@ -37,7 +37,11 @@ Agreed verification methods (feature, check and command, date agreed, last passi
 revision):
 - WH3 saved armies and experience: save a known army, change it, restart WH3 and reload;
   compare unit types, counts and ranks. Set several ranks using both increase and decrease,
-  comparing lobby readback and battle-start ranks/stats. Agreed 2026-10-19; not yet passed.
+  comparing lobby readback and battle-start ranks/stats: `uv run --locked python
+  tests/twwarhammer3/check_wh3_army_setup.py --output runs/twwarhammer3/army-check-<new-name>`.
+  Agreed 2026-10-19; passed at `c768460` (two launches, eight units, ranks 0/1/3/9,
+  a mounted lord; attack/defence exact, leadership XP bonuses relative to rank zero).
+  No policy-strength claim; other modes and reinforcement XP remain unverified.
 - Play commands refuse a missing ledger file: `uv run pytest
   tests/fullrun/test_spire_cli.py::test_play_refuses_a_missing_ledger_before_any_job
   tests/twwarhammer3/test_wh3_controllers.py::test_each_model_controller_gets_its_own_prompt_and_the_shared_budget`;
