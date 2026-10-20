@@ -35,10 +35,33 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b41 (2026-10-19: saved armies and per-unit experience; b40 witness v2; b39 card identity; b38 launch sampling; b37 mailbox/finite orders), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [Army setup verification](#2026-10-19-saved-armies-and-experience-harness-b41); latest benchmark [b40 round](#2026-10-19-witness-v2-and-prompt-v21-harness-b40) |
+| benchmark harness | b42 (2026-10-20: context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [Integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42); latest benchmark [b40 round](#2026-10-19-witness-v2-and-prompt-v21-harness-b40) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
+
+## 2026-10-20: UI and lobby integration (harness b42)
+
+- `e32b1b5`: fixed recruitment/factions/settings use native contexts; mounts avoid sorted
+  indices, permissions and funds are checked separately. Difficulty precedes the explicit
+  AI modifier (its setter otherwise resets it). Owned sessions deactivate after teardown.
+- Menu results carry request identity; foreign jobs and unsupported battle scheduling are
+  rejected. Failures propagate; false branches skip promptly; missing startup XP fails setup
+  without disabling the battle tick. Policy inputs/prompts and benchmark scenarios unchanged.
+- Agreed live check passed: `uv run --locked python tests/twwarhammer3/check_wh3_army_setup.py
+  --integration --output runs/twwarhammer3/integration-review-20261019/live-r8`.
+  Four launches: ten saved units, duplicate Swordsmen/Captains, three mounts, ranks 0/1/3/9,
+  zero warm recruitment, exact attack/defence and relative leadership XP bonuses; seven
+  survival reserves. Disturbed settings reapplied; funds/DLC refusals preserved the roster;
+  original settings restored. Unpaused 1x; no paid calls, scored outcomes or register rows.
+- Evidence: `integration-review-20261019/`; r5's eight-unit old-click/context comparison
+  matched types/ranks/stats. Earlier attempts exposed the difficulty reset, Captain XP
+  refusal and checker-only exit/string-search errors. Live-r8 fingerprints match `e32b1b5`.
+- 663 WH3/link tests passed, zero failed/skipped; Ruff passed. Ten plausible wrong component
+  implementations were detected. One unchanged capture test timed out during a concurrent
+  live run; its focused and full reruns passed after shutdown (failure log preserved).
+- Leaner docs link canonical code contracts and list API candidates. Graceful-exit setting
+  persistence, character/reinforcement XP, other modes and policy strength remain unverified.
 
 ## 2026-10-19: Saved armies and experience (harness b41)
 

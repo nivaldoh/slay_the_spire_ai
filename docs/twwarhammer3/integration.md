@@ -1,11 +1,15 @@
 # WH3 integration facts
 
-How the installed game behaves, verified in the engine unless a line says otherwise or it
-sits under [Unverified](#unverified). Evidence paths are under `runs/twwarhammer3/`; a
-`bN` or `vN` label names the [log.md](log.md) entry that holds the run. The interface
-itself is documented in the code: the `engine/mailbox.py` docstring (bridge files and
-observation fields), `protocol.py` (orders), the `battle/setup.py` docstring (scenario
-fields) and `ui.run` in `mod/script/_lib/mod/twwarhammer3_ui.lua` (menu step types).
+Engine observations, API discrepancies and the route to investigate another capability.
+Unless explicitly tied to an [agreed check](../../AGENTS.md#verification-hard-rule), these
+are observations from the cited probes, **unverified** under the owner's rule. A documented
+method name alone establishes neither availability nor its effects in this build.
+Evidence paths are under `runs/twwarhammer3/`; `bN`/`vN` names a [log.md](log.md) entry.
+
+Keep interface definitions in their existing code references: `engine/mailbox.py` for
+bridge files/observation fields, `protocol.py` for orders, `battle/setup.py` for scenario
+fields, and `mod/script/_lib/mod/twwarhammer3_ui.lua` for immediate UI operations. The
+frontend script adds scheduling; battle probes accept immediate operations only.
 
 ## Pins
 
@@ -68,6 +72,10 @@ declared scenario sets its own AI stats modifier in the lobby
   `bm:repeat_real_callback` in battle. There is no `math.huge`. `loadstring` chunks run in
   the global environment, without `bm`; the `lua` menu step gives them the mod's
   environment with `setfenv`.
+- CA replaces `string.find` with a UTF-8 literal search documented with three arguments;
+  stock Lua's pattern/fourth-argument form is `string.find_lua` (`lib_lua_extensions.lua`).
+  A four-argument diagnostic search failed to recognize its error text in this review;
+  its exact native behavior is unverified. Lupa's stock Lua does not model that override.
 - The game ships its scripting documentation as HTML in `data.pack`
   (`documentation/script/battle/*.html`, `documentation/ui/documentation.html`) and its
   script libraries in `data_script.pack` (`script/_lib/lib_battle_manager.lua`, ...).
@@ -76,85 +84,50 @@ declared scenario sets its own AI stats modifier in the lobby
 
 ## Frontend automation
 
-- `find_uicomponent(core:get_ui_root(), name1, name2, ...)`, `uic:SimulateLClick()`,
-  `uic:Id()`, `uic:Visible()`, `uic:ChildCount()`, `uic:Find(i)` (0-based) and
-  `uic:CurrentState()` work from a frontend mod. Tree dumps of the main menu and the
-  custom battle screen are in `runs/twwarhammer3/launch-m1/`.
 - Main menu: `buttons_holder/button_battle`, then `battle_frame/button_practice_battle`
-  opens "Skirmish vs A.I." (the custom battle). The first menu step waits up to 240 s for
-  the first button; no key is pressed.
-- Custom battle screen (`custom_battle`): tabs `button_tab_armies`/`button_tab_maps`;
-  teams `CcoCustomBattlePlayerSlotslot0` (player) and `...slot1` (CPU) under
-  `teams_parent`, `button_add_ai`, `button_swap_attacker_defender`; army header buttons
-  `button_load_preset`, `button_save_preset`, `button_clear`, `button_autogen`; map
-  settings `map_listview/list_box`, `checkbox_large_armies`, `dropdown_funds_type`;
-  `start_button_frame/button_start_battle` (inactive until both armies have units).
-- Unit cards: `recruitment_options_list/CcoUiUnitGroupParentRecord<group>/unit_list/
-  CcoUnitsCustomBattlePermissionRecord<unit key>:<faction key>:<n>/unit_card`; groups
-  seen: commander, heroes_agents, infantry, cavalry_chariots, missile_cavalry_chariots,
-  monster_beasts, artillery_war_machines. The last field is 1 for lords and 0 for other
-  units. A caster with several lores has one card: the lobby offers
-  `wh2_main_skv_cha_grey_seer_plague_0`, not `_ruin_0` (the first swarm screen stopped on
-  it, 2026-10-15). Setup dumps each army's cards to `cards_slot<N>.txt` in the job before
-  recruiting. A simulated left click pins the unit's info panel; `SimulateDblLClick()`
-  recruits it into the selected slot (select the slot, `button_bar_parent/button_clear`,
-  then double-click each card). Cards are found without waiting for them to read as
-  visible; legendary lords use the race's main faction key
-  (`wh_dlc01_chs_cha_prince_sigvald_the_magnificent:wh3_main_sla_slaanesh:1`).
-  A listed card does not prove the unit is available: the Warplock Jezzails card
-  (`wh2_dlc12_...`, The Prophet & the Warlock, presumably not owned) was found and
-  double-clicked without recruiting; setup's unit-count check stopped the job (2026-10-16).
-- Race: `faction_pic_mask_parent/button_select_race` opens a popup of
-  `CcoSubcultureRecord<subculture>` entries (25, e.g. `wh_main_sc_emp_empire`); clicking
-  one switches the selected slot's race and unit cards. The popup never reads as visible
-  from the root, so the click step cannot wait for it.
-- Faction: `faction_pic_mask_parent/dropdown_context_scroll` lists the race's
-  `CcoFactionRecord<faction>` entries; clicking one selects it, and both slots accept the
-  same faction. Without that step the game picks a faction, which varied between jobs.
-  A faction appears cosmetic (the owner's observation): it carries the banner colours,
-  unit card ids keep the race's main faction key, and Autogenerate fills the army from
-  the race, so random draws pick only the race. Beastmen and Undead Legions show no
-  factions (DLC not owned, presumably); `configs/twwarhammer3/custom_battle.json` lists
-  the other 23 races (307 factions) and the maps per battle type.
-- Autogenerate: `button_bar_parent/button_list/clear_autogen_parent/button_autogen` beside
-  `button_clear` fills a cleared army (11 Khorne units at the "large" funds setting). The
-  UI texts say it is disabled while Unit Caps is on; `checkbox_unit_caps` is off on this
-  profile.
-- Maps tab: battle types `map_type_list/CcoBattleTypeRecord<type>` and, per type,
-  `map_listview/.../CcoCustomBattleMap<preset key>` entries (380 for classic).
-  `button_random_map` picks one. A map chosen without starting a battle did not persist.
-- The lobby keeps the last races and map across launches (not the armies), and the last
-  battle type and AI slots between battles; `setup.scenario_steps` therefore sets them
-  every time.
-- The frontend script unloads with the battle loading screen, so a step list that starts
-  a battle never reaches its end; the controller takes the battle's first observation as
-  the end of the menu.
+  opens Skirmish vs A.I. Setup waits up to 240 s for the first button. Map/type tabs,
+  AI-slot controls and Start still use component clicks; race, faction, fixed recruitment,
+  mounts, ranks and declared settings use the lobby contexts behind those controls.
+- `find_uicomponent`, simulated clicks and the component tree work in the frontend.
+  `menu --dump` records ids, visibility, state and text; use context queries for values.
+  Entries outside scroll view can exist without reading as visible. A find with
+  `timeout_ms` waits for visibility; an expression with `timeout_ms` retries its assertion.
+- Slot targeting checks belong to the declared setup, not to a stored UI address. The
+  lobby sorts recruited units by class; its unit context ids encode list positions and
+  are not established stable identities through sorting. Mount immediately by original
+  type; assign XP after recruitment by final type/occurrence and compare multiplicities.
+- Fixed recruitment resolves `CcoMainUnitRecord.CustomBattlePermissionsContext(faction)`
+  and calls the slot's `RecruitUnit(permission, isReserve)`. The banner faction and
+  `recruitment_faction` can differ. `CanRecruitUnit` checks permission; affordability is
+  separate: the game's cost-label predicate compares main-unit cost with
+  `FundsRemaining(!isReserve || permission.IsGeneralUnit)`. Our harness refuses either
+  failure before changing the roster. A listed card alone never proved availability.
+- Autogenerate remains a UI action for random armies; unit caps must allow it. The game
+  keeps the last races/map across launches, and battle type/AI slots between battles.
+  Survival removes the enemy slot; setup therefore selects the mode and fixes slot count.
+- A step's `when` is a condition, not a wait. False branches consume no extra polling
+  intervals; actual actions retain one per callback and explicit waits retain their delay.
+  Failures and completion carry the request id. The frontend unloads when battle loading
+  starts, so `play` uses the first battle observation as its setup handoff. Use `play` for
+  a complete launch; `menu` requires a completed probe sequence before returning success.
 
 ### Lobby settings and declared scenarios
 
-- Settings dropdowns are `dropdown_<name>/popup_menu/list_box/
-  CcoCustomBattleSettingRecord<option>`: `dropdown_funds_type` (`funds_large`,
-  `funds_custom`), `dropdown_unit_scale` (`unit_scale_small`, `_normal`, `_large`,
-  `_ultra`), `dropdown_time_limit` (`time_limit_short` 1200 s, `_medium` 2400 s, `_long`
-  3600 s, `_unlimited`), `dropdown_difficulty` (`ai_level_sandbox`, `_easy`, `_normal`,
-  `_hard`, `_very_hard`); the AI stat modifier is a slider (`ai_stat_mod_slider`). This
-  profile had large funds, large units, the long timer and very hard AI; realism, large
-  armies, unit caps and multiple lords off; "allow no lord" on.
-- A scenario with `expect` sets its settings through context commands on
-  `CcoFrontendRoot` (`setup.menu_checks`), under `CustomBattleLobbyContext.SettingsContext.`:
-  `SetTimeLimitSettingContext(TimeLimitSettingList.FirstContext(Key == "<timer>"))`,
-  `SetBattleAiStatsModifier(<value>)`,
-  `SetFundTypeSettingContext(FundTypeSettingList.FirstContext(Key == "<funds>"))` and,
-  for custom funds, `SetCustomFundsAmount("<amount>")`. It then reads back
-  `MapContext.BattleTypeString`, `DifficultyLevelSettingContext.Key`,
-  `FundTypeSettingContext.Key`, `TimeLimitSeconds`, `BattleAiStatsModifier` and
-  `CustomBudgetAmount`. Difficulty is checked, not set. Set and read back in the engine:
-  the short 1200 s timer and modifiers 1.0 and 1.1 (b2).
-- The lobby refused the declared Herald rosters under the default funds; those scenarios
-  declare custom funds of 30000.
-- Mounts: `CustomBattleLobbyContext.PlayerSlotList.At(slot).UnitList.At(i).ChangeMount(
-  ...AvailableMountsList.FirstContext(MountedUnitContext.Key == "<key>"))`, verified by
-  reading `UnitRecordContext.Key` (`setup.scenario_steps`).
+- A declared scenario applies timer, funds, AI stat modifier, difficulty, unit scale and
+  realism through `CcoFrontendRoot`'s `CustomBattleLobbyContext.SettingsContext`, then
+  reads them back. These controls can persist into ordinary play. Difficulty is selected
+  by record key, not its numeric value; the preference uses a different numeric enum.
+- Unit-scale records have indices 0–3 (small/normal/large/ultra), whereas battle `UnitSize`
+  uses factors .25/.5/.75/1. Realism has `ToggleRealismMode()` and `IsRealismMode`; toggle
+  only when its readback differs. The earlier claim that the lobby could not set it was
+  wrong. The native battle readbacks independently check scale/realism; selected difficulty
+  does not establish AI behavior. Field and command definitions stay in `battle/setup.py`.
+- Selecting difficulty also resets its default AI stat modifier (very hard reset 1.0 to
+  1.1 in the integration check). Apply the declared modifier after selecting difficulty;
+  checking each setter alone would miss this interaction.
+- Custom funds are applied before recruiting or buying mounts/XP. The ordinary UI accepts
+  5000–999999; out-of-range context commands must not be assumed to represent valid funds.
+  The declared Herald rosters need more than default funds and use 30000.
 - Army presets: `button_bar_parent/load_save_parent/button_save_preset` and
   `button_load_preset` are "Save army preset" and "Load army preset". Their API is
   `CustomBattleLobbyContext.ArmyPresetFileHandlerContext`:
@@ -170,6 +143,9 @@ declared scenario sets its own AI stats modifier in the lobby
   recruited card, `xp_visibility_parent/button_upgrade_unit` and `button_downgrade_unit`
   call `CcoCustomBattleUnit.IncreaseExperience()` / `DecreaseExperience()`; readback is
   `ExperienceLevel`. XP costs funds. Setup stops if an increment/decrement is refused.
+  `CanEverIncreaseExperience` and `CanIncreaseExperience` distinguish permanent/current
+  eligibility. A positive Captain rank request was refused in this review; its cause and
+  character XP remain unverified. The live fixture keeps its mounted Captains at rank zero.
   The lobby sorts by class, so XP assignment happens after recruitment and selects units by
   type and occurrence. Loaded armies are checked by type/rank multiplicities, including duplicate
   units; the battle checks private startup ranks too. Reinforcement XP is not configured.
@@ -180,8 +156,15 @@ declared scenario sets its own AI stats modifier in the lobby
   exactly (32/35/41); leadership XP bonuses over rank zero matched (+3/+10), although all
   friendly units had a -4 battle leadership offset whose cause remains unverified.
   [Evidence](log.md#2026-10-19-saved-armies-and-experience-harness-b41).
-- Realism is a game preference the lobby cannot set; a declared scenario checks it
-  against the profile before launch (`setup.check_preferences`).
+- Extended integration check: add `--integration` to the command above. At `e32b1b5`,
+  four launches passed with ten saved units, three mounts (including duplicate Captains),
+  ranks 0/1/3/9, a seven-unit reserve pool and permission/funds refusals without mutation.
+  It deliberately disturbed difficulty/scale/realism, reapplied declarations and compared
+  lobby with battle startup, then restored the original settings. Cold/warm setup took
+  40.2/32.2 s in this one pair; this does not establish a general speedup. Restart uses
+  supervised shutdown. The disturbed settings did not survive that shutdown in this trial;
+  persistence after graceful menu exit remains unverified.
+  [Evidence and component checks](log.md#2026-10-20-ui-and-lobby-integration-harness-b42).
 - Battle read-backs on `CcoBattleRoot` (`setup.check_battle`): `UnitSize` (0.75 on this
   profile), `IsRealismModeEnabled`, `PlayerAllianceContext.IsDefender`, and
   `ArmyList.JoinString("" + AiStatsModifier, ";")`, the modifier per army
@@ -200,7 +183,7 @@ declared scenario sets its own AI stats modifier in the lobby
 
 ## Battle
 
-First verified in `runs/twwarhammer3/battle/attack-m3-20261013` (Khorne against Dwarfs,
+First observed in `runs/twwarhammer3/battle/attack-m3-20261013` (Khorne against Dwarfs,
 5 units each, "An Ogre's Folly"), extended in the capability probes
 (`runs/twwarhammer3/capability-probes/`, v13 to b8).
 
@@ -216,15 +199,15 @@ First verified in `runs/twwarhammer3/battle/attack-m3-20261013` (Khorne against 
 - One `unitcontroller` per friendly unit (`army:create_unit_controller()`, `add_units`,
   `take_control`) applies the orders.
 - The battle UI root holds `menu_bar`, `panel_manager` and `dialogue_box`. The battle
-  script runs the same UI steps as the frontend from `menu.json` (`menu --battle`).
+  script accepts immediate UI steps from `menu.json` (`menu --battle`). Frontend-only
+  `when`, `wait_ms` and `timeout_ms` modifiers are rejected before any step executes.
+  A required failure stops the sequence; optional failures continue diagnostics but
+  still produce a failed request. Both consumers reject another job's requests.
 
 ### Units and axes
 
-- Unit fields that read correctly: `position()`, `bearing()`, `number_of_men_alive()`,
-  `initial_number_of_men()`, `unary_hitpoints()`, `ammo_left()`, `starting_ammo()`,
-  `missile_range()`, `slow_speed()`/`fast_speed()`, `fatigue_state()` (e.g.
-  `threshold_winded`), the state flags, `current_target()` (mapped through
-  `unique_ui_id()`), `is_visible_to_alliance(alliance)`.
+- The unit fields and visibility filter are specified in `engine/mailbox.py`; the
+  following are observed engine quirks, rather than another field inventory.
 - `is_cavalry()` and `is_artillery()` were false for Marauder Horsemen and the
   Skullcannon; the class comes from `unit_class()` (the land_units class, e.g. `art_fld`).
   Screamers have class `inf_mel` while `can_fly()` and `is_currently_flying()` are true,
@@ -270,7 +253,7 @@ First verified in `runs/twwarhammer3/battle/attack-m3-20261013` (Khorne against 
 ### Acknowledgements
 
 Each acknowledgement result has a one-based `index`, `unit`, `ok` and `queued`. A failed
-move rejects its queued successors (verified with an unreachable first point). An
+move rejects its queued successors (observed with an unreachable first point). An
 acknowledgement reports a call issued to the engine, not visible execution; for native
 queues `applied_ms` is the submission time, not the start of each step, and
 `command_queue` is the last submitted sequence, its completion unconfirmed. Results from
@@ -329,7 +312,7 @@ otherwise not exposed (the chokepoint map has no buildings; its crossings are te
   `local_alliance()` give the result ("lost" when the player's army broke).
 - `remaining_conflict_time()` resets to -1 at `VictoryCountdown`. The mod keeps the last
   finite sample taken on engine ticks and infers expiry by comparing its deadline with
-  the result time (verified on an isolated timer ending, b9). There is no end-cause
+  the result time (observed on an isolated timer ending, b9). There is no end-cause
   getter, so combat and expiry in the same tick stay ambiguous.
 - `bm:restart_battle()` (the `RestartBattle` context command on `CcoBattleRoot`) did
   nothing on the results screen. `bm:end_battle()` ends the victory countdown, the
@@ -343,7 +326,7 @@ The script API has no getter for army abilities (army-wide abilities not owned b
 such as Khorne's three kill unlocks) or for any ability's cooldown; the UI's context
 system has both. Script reads it with `common.get_context_value(type, id, expression)`
 and runs commands with `common.call_context_command(type, id, command)`; the UI context
-documentation is `documentation/ui/documentation.html` in `data.pack`. Verified on
+documentation is `documentation/ui/documentation.html` in `data.pack`. Observed on
 `kho5-dwf5` (`runs/twwarhammer3/probe-army-abilities-20261013/`, the mod.log of
 `skills-v1.2-kho-20261013`):
 - A unit's `CcoBattleUnit` id is its `unique_ui_id` as a string (1001, 1002, ... for the
@@ -390,108 +373,48 @@ documentation is `documentation/ui/documentation.html` in `data.pack`. Verified 
 
 ## Battle types (probed 2026-10-14)
 
-Evidence: `runs/twwarhammer3/probe-battle-types-20261014/` (lobby dumps and read-backs of
-all ten types, `probe_types.out`), the smoke jobs `runs/twwarhammer3/battle/smoke-*` and
-`probe-conquest-attack-20261014`. The scenarios and the `mode` state they produce:
-[battle-types.md](battle-types.md).
+Evidence: `probe-battle-types-20261014/` (all ten lobby types), `battle/smoke-*` and
+`probe-conquest-attack-20261014`. Scenario/mode definitions stay in
+[battle-types.md](battle-types.md), maps in `custom_battle.json`, observation fields in
+`engine/mailbox.py`. The engine quirks worth preserving:
 
-Lobby (custom battle screen):
-- Battle type records `map_type_list/CcoBattleTypeRecord<key>`; maps per type: 380
-  classic, 44 conquest, 21 domination, 13 free-for-all, 74 ambush, 69 river crossing
-  (chokepoint), 20 underground intercept, 70 unfortified settlement, 38 siege, 29
-  survival (`custom_battle.json` `battle_type_maps`).
-- Read-backs on `CustomBattleLobbyContext.SettingsContext`: conquest, ambush, chokepoint,
-  underground, settlements and sieges have attackers and defenders
-  (`HasAttackerDefender`, `CanToggleAttackingTeam`); domination, free-for-all and
-  survival do not. Conquest has a ticket limit (600 by default), domination 1500 and a
-  reinforcing army; survival has a reinforcing army and no AI slot (`CanAddAi` false).
-  Domination and survival hide the time limit. Siege adds a settlement level (level 1
-  costs 0).
-- The player's slot sits in the top team, the defenders (`AttackingTeamIndex` 1).
-  `team_spacer/button_swap_attacker_defender` swaps the roles;
-  `CustomBattleLobbyContext.LocalPlayerSlotContext.TeamContext.IsAttacker` reads them.
-- Lobby expressions take `!`, `==` and `<` (`...PlayerSlotList.Size < 2`).
-- Selecting survival removes the AI slot, and it stays removed after switching back to
-  another type; free-for-all slots stay too. `bottom_team_parent/button_add_ai` adds an
-  AI slot (it became `CcoCustomBattlePlayerSlotslot1`, then `slot2`, `slot3`);
-  `CcoCustomBattlePlayerSlotslot<n>/button_remove` removes one.
-- Domination and survival refuse to start without a reinforcing army: the start button
-  stays inactive and `ReadyStatusText` reads "You must select some reinforcing units."
-  `clear_autogen_reinforcement_parent/button_autogen_reinforcements` fills it (9 units in
-  domination, 17 in survival).
+- Mode selection changes the lobby shape. Survival removes AI slots and forbids adding
+  them; switching away does not restore them. Free-for-all slots also persist. Survival
+  and domination hide the timer and refuse Start without reserves. Attacker/defender roles
+  do not apply to survival, domination or free-for-all; ordinary battle types read the
+  player's role through `LocalPlayerSlotContext.TeamContext.IsAttacker`.
+- `BattleTypeState` identifies the native battle mode. Alliance indices are zero-based in
+  UI contexts and one-based in battle Lua. Free-for-all has four alliances;
+  `bm:get_non_player_alliance()` returns only one of the opponents.
+- Objective help text includes both game rules and HUD descriptions; `mode` keeps the
+  former. Capture-point keys can repeat (four `capture_point_tower_only` in Helmgart),
+  and `Radius` read zero. Alpine Ridge has one point, Arnheim three: a mode name alone
+  does not establish a distributed-control task.
+- Tickets count up towards 600/1500 in the conquest/domination examples, but siege
+  defenders begin with 1000 and lose them with capture points. Survival's goal read -1.
+  The `TimeoutWinningAllianceIndex` is the defender, or -1 in free-for-all.
+- Supplies accrue while a policy thinks. Siege began with 6000 and gained about 9/s;
+  survival 1000 and about 20–25/s; domination 500, plus its stated damage income. Do not
+  compare exact supplies without matching elapsed time.
+- Build slots include disabled/unbuilt building options. `CanAfford` returned false even
+  when affordable; evaluating a buildable's `PrimaryAction` through `get_context_value`
+  built it and spent supplies. Eight piercing towers were built at 5.5 s for 500 each;
+  construction took 75 s. This unusual query-with-effects belongs only in order dispatch.
+- `BattleReinforcementPoolContext.UnitsForArmy(PlayerArmyContext, 1)` returned the pool;
+  argument zero returned empty. `PurchaseUnit` requires `call_context_command` (the same
+  expression through `get_context_value` did nothing). Available zones can still refuse
+  a particular purchase, and one unit type can have multiple costs.
+- Purchased units join the army's live `units()` as they enter. Destroyed/rebought units
+  can return with the same `unique_ui_id`: 21 purchases added only six ids in one trial.
+  The reinforcement-army list also contains unbought pools, whose units are not valid
+  targets. A separate one-second scan registers purchases/waves; tying scans to forced
+  observations previously starved them.
+- Amaxon Plain's crossings were terrain, with no buildings or capture points. Backwoods
+  Path's objective mentioned an escape zone, but `HasAmbushWithdrawArea` was false and
+  its position (0,0). The Hunting Fields began with ten enemies, eleven queued enemy
+  armies and three victory locations; its barriers open as waves finish.
 
-Battle (context system on `CcoBattleRoot` unless noted):
-- `BattleTypeState`: `conquest`, `domination`, `survival`, `settlement_standard` (siege),
-  `settlement_unfortified` (minor settlement), `land_ambush`, `land_bridge` (chokepoint),
-  `underground_intercept` and `land_normal` (classic, checked in b1, and free-for-all).
-  `SetupContext.IsPlayerAttacker` gives the role and `TimeoutWinningAllianceIndex` the
-  alliance that wins when time runs out (the defender; -1 in a free-for-all).
-- Alliance ids in the context system are 0-based (the player's was 0) and the script's
-  are 1-based. A free-for-all has four alliances (`bm:alliances():count()`);
-  `bm:get_non_player_alliance()` returns only one of them.
-- `BattleTypeCheatSheetList(0)` holds the objectives as the help panel words them, for
-  example (conquest) "Destroy or rout all enemy units before the timer expires or reach
-  500 victory tickets by seizing capture points." The column also explains the type's
-  mechanics (capture points and tickets, supplies, reinforcements), which the state
-  keeps, and the interface (time limit, balance of power, unit buttons, abilities),
-  which it drops.
-- `CapturePointList`: `Key`, `DisplayName`, `Position.x/z`, `CurrentHolderAlliance` (-1
-  for none), `IsContested`, `IsLocked`, `CapturePercent` (0-1), `ContributesToVictory`.
-  `Radius` read 0. Keys repeat: a siege had four `capture_point_tower_only`.
-  Alpine Ridge Conquest has one central point; Arnheim Domination has three separated
-  points. A mode name alone does not establish a distributed-control challenge.
-- Tickets: `AllianceList.TicketsRemaining` counts up in conquest and domination (+1/s
-  for holding one point, +2/s for two) towards `CaptureLocationManagerContext
-  .TicketsGoal` (600, 1500). A siege defender starts with 1000 (`StartingTickets`, goal
-  0) and loses them with its points (`CapturePointScore` -500 for the key building).
-  Survival's goal reads -1.
-- Siege (Helmgart): 100 buildings, 36 enabled (key building, about 30 wall pieces,
-  gatehouse, four fort towers). `BuildingsList.Filter(IsGate)` gives the gate's
-  `GateCurrentHitpoints`/`GateMaxHitpoints`. Unbuilt tower options are buildings too
-  (`IsEnabled` false). The AI attacker had no siege equipment (`VehicleList` empty).
-- Supplies: `PlayerArmyContext.GlobalCurrency` when `HasSupplies`. The siege defender
-  starts with 6000 and gains about 9/s (6495 at 60 s, 9890 at 508 s with nothing built);
-  survival starts at 1000 and gains about 20-25/s (1120 at 12 s, 1853 at 46 s, 3392 at
-  100 s); domination 500, plus "additional supplies by dealing damage".
-- Building slots, `ToggleableSlotList(PlayerArmyContext)`: siege 8 tower slots (four
-  options, 500-2000), minor settlement 22 slots: 11 barricade slots (four options,
-  300-500) and 11 tower slots (the siege's four options).
-  `IconPathForIndex(army, Index)` names the options (`tower_piercing_1`,
-  `tower_cannon_4`, `barricade_trap`, ...); `Cost(0)` gives the cost; `CurrentIndex` the
-  built option; `IsConstructionInProgress` and `ConstructionTimeRemainingSeconds` the
-  construction (75 s for a piercing tower). `CanAfford(...)` read false even when
-  affordable. Evaluating `...BuildablesList.FirstContext(Index == i).PrimaryAction` with
-  `common.get_context_value` built the tower: supplies dropped by its cost. The siege
-  army built a `tower_piercing_1` on all 8 slots at 5.5 s (500 each).
-- Reinforcement pool: `BattleReinforcementPoolContext.UnitsForArmy(PlayerArmyContext, 1)`
-  lists it (with 0 the list was empty), `CostPerUnit(army id)` the costs.
-  `SpawnZoneList` with `IsAvailableToAlliance(id)` gives the army's zones (ids 6-10 in
-  domination). `common.call_context_command("CcoBattleRoot", "", "BattleReinforcement
-  PoolContext.PurchaseUnit(<pool>.At(1), PlayerArmyContext, 6)")` bought a unit: supplies
-  fell by its cost and it walked in from zone 6. The same purchase through
-  `get_context_value` did nothing. `CanPurchaseUnit(unit, army, zone)` changes during the
-  battle and depends on the unit: zones open to the alliance refused at times, and a
-  unit bought back while recovering was refused everywhere. One type can sit in the pool
-  at two costs (survival marauders 446 and 400).
-- A bought unit joins its army's `units()` list as it enters. A destroyed unit goes back
-  to the pool and, bought again, returns as the same unit (`unique_ui_id`), keeping its
-  id in the state (21 purchases in the llm domination battle gave 6 new ids). The
-  reinforcement armies (`bm.battle:reinforcements():reinforcement_army(i):army():units()`)
-  hold the unbought pools, ours and the enemy's, every unit `is_valid_target()` false.
-  The mod scans both on its own one-second timer (scanning with each observation
-  starved when a policy forced an observation with every acknowledgement); bought units
-  and survival waves register about a second after they arrive.
-- Chokepoint (Amaxon Plain): no buildings (`BuildingsList.Size` 0) and no capture
-  points.
-- Ambush (Backwoods Path): the objective text names an escape zone for the defender,
-  but `HasAmbushWithdrawArea` is false in this custom battle and
-  `AmbushWithdrawAreaPosition` reads (0, 0).
-- Survival (The Hunting Fields): 10 enemy units at the start and eleven enemy
-  reinforcement armies queued (ten of 20 units, one of 2), three victory locations, no
-  building slots at the start. "Objective: Each wave will open the barrier to the next
-  area of the map."
-
-## Advisor text (verified 2026-10-13)
+## Advisor text (probed 2026-10-13)
 
 `common.advice(text)` from the battle script opens the advisor (`advice_interface` turns
 visible) and shows the text as is, in a custom battle unpaused at 1x; each call replaces
@@ -543,10 +466,40 @@ From the documentation or code reading; probe before relying on them:
   after 3 s without a results popup. `play` never sends one.
 - `ToggleFlying` during its transition animation or under combat restrictions.
 - Same-tick combat and timer expiry (see [Result, timer and restart](#result-timer-and-restart)).
-- Whether the lobby settings a declared scenario set (timer, AI stats modifier, funds)
-  persist into a later undeclared job, which leaves them as the lobby has them.
+- Lobby-setting persistence after a graceful menu exit, and what a later undeclared job
+  inherits; disturbed difficulty/scale/realism did not survive the tested supervised shutdown.
 - Experience and saved presets outside the live verification scenario (including
   reinforcement ranks); policy strength and difficulty calibration from XP are unverified.
+
+## Finding another capability
+
+Start with the installed build's own references, not a broad web/API inventory:
+
+1. Read the relevant battle API HTML or one named context's section in
+   `documentation/ui/documentation.html`. The latter is a single large line: parse the
+   HTML and print only the selected heading/table, rather than sending a raw `rg` hit to
+   an agent. The community mirror below is convenient but may describe an older build.
+2. Inspect the actual UI binding when signatures are absent. In `data/ui3.pack`,
+   `ui\frontend ui\custom_battle.twui.xml` binds race/faction/recruitment;
+   `custom_battle_map_settings.twui.xml` binds settings; `custom_battle_unit_upgrades.twui.xml`
+   binds mounts, variants and equipment. Search a named `context_function_id` and its
+   argument expressions, not the whole XML. `engine.pack.extract` can read an entry in
+   memory; `pack --extract PACK NAME` can save a focused reference under ignored `runs/`.
+3. State the desired observable result and its independent reference before probing.
+   Use the current job's `menu` request, check its exit status, and save the relevant
+   readbacks/source/build. A query that returned a value is evidence of that query, not
+   proof of a completed order or a useful policy feature. Agree a repeatable check
+   before calling the behavior verified.
+
+Useful candidates, **documented but not live-checked in this review**:
+
+| Capability | Concrete use and check before adoption |
+|---|---|
+| `unit:unit_distance`, `unit_in_range` | Bounding-box separation and engine missile range could clarify withdrawal/range decisions. Compare approach, overlap, melee and withdrawal with rendered formation boundaries; zero separation alone must not mean contact. |
+| Flank-threat methods; `is_controllable` / `IsOrderable` | Diagnose pin-then-rear or refusals. Compare controlled front/side/rear approaches and rout/rally with HUD and order response; filter threat identities by current visibility. |
+| `CcoCustomBattleUnit.ChangeUnitType`, upgrade `ToggleEquipped` | Fix a caster's lore/spell/equipment loadout. Compare declaration, lobby, saved-preset reload and battle-owned abilities, including duplicate casters with different loadouts. |
+| `CcoBattleResultUnit.DamageDealt`, `DamageDealtCost`, `NumKillsFriendlies` | Private post-battle diagnosis of spells/artillery. Compare the rendered results statistics, zero-shot units and rematch resets before changing any scoring. |
+| Settings for time of day, weather and season | Potential scenario conditions. Add fields only for a planned experiment, with declared/read-back/restarted checks. |
 
 ## References
 

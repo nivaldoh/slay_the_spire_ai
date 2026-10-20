@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-19: what runs, where each game stands, what comes next. Status only:
+Updated 2026-10-20: what runs, where each game stands, what comes next. Status only:
 history goes to the logs ([WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md),
 [first combat](spire/first-combat/README.md)), owner directions to
 [owner-direction.md](owner-direction.md). Under the
@@ -9,17 +9,13 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
-Nothing is running. Army presets and experience setup are implemented; the agreed live
-check passed ([b41](twwarhammer3/log.md#2026-10-19-saved-armies-and-experience-harness-b41)).
+Nothing is running. WH3 integration maintenance is complete; agreed component and live
+setup checks passed ([b42](twwarhammer3/log.md#2026-10-20-ui-and-lobby-integration-harness-b42)).
 The b40 benchmark round remains stopped at the owner's request; Kimi stays unrun
 ([results](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)).
 
-## Priorities (owner, 2026-10-18)
-
-1. The WH3 benchmark.
-2. Slay the Spire, after WH3.
-3. Post-training is secondary, and not only SFT: RL and other methods will be tried, so
-   traces must suit them ([what they keep](posttraining.md#beyond-supervised-fine-tuning)).
+Priorities (owner, 2026-10-18): WH3 benchmark first, then Spire; post-training secondary.
+[Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
 
 ## Total War: WARHAMMER III
 
@@ -27,27 +23,17 @@ The b40 benchmark round remains stopped at the owner's request; Kimi stays unrun
 [tactic cards](twwarhammer3/tactic-cards.md) (the benchmark definition and its board),
 [latency program](twwarhammer3/latency.md) (plan), [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v21 (positions are unit centres; the melee flag decides
-  contact), `commander` v7, skills v1.2, harness b41 (saved armies and per-unit experience;
-  b40 witness v2 `HitAndRunV2`; the card
-  board names a model row by its prompt version; b39 judges the witness on its first
-  launches, carries the served model and the mod cadence in a cell's identity and prints the
-  information age; b38 launches and prompt changes; b37 mailbox identity and finite order
-  fields; b36 pinned OpenRouter backends; b35 controller forfeits), evaluator v2, track
-  `obs-v4+terrain/act-v2/live-1x`.
+- On `main`: `llm`/`llm_rules` v21, `commander` v7, skills v1.2, harness b42,
+  evaluator v2, track `obs-v4+terrain/act-v2/live-1x`. Definitions and earlier changes:
+  [log](twwarhammer3/log.md#on-main).
 - Benchmark: [the chariot card](twwarhammer3/tactic-cards.md#the-chariot-card-the-first-benchmark-card)
   (one chariot against two Swordsmen units at AI modifier 1.1; tactic: cycle charging;
-  witness `SnapHitAndRun`; signature: cycles; rule pre-registered at `5396182`). Round
-  `c1`: foils lost 10 of 10 each, the witness won 4 of 5 at 5 s: admitted under
-  that rule (no check agreed). GLM-5.3 low won 1 of 10, Qwen3.6 none 0 of 5. The second
-  pass read the witness's slow-cell losses as its recipe's stall and 12 of GLM's 14
-  countermands as an interface gap; the b40 round then showed witness v2 winning 4 of 5 at
-  5/5 and 8/8 (the stall confirmed; not a latency card) and GLM 0 of 10 on the amended
-  prompt, with fewer re-attacks and more damage but the same leadership routs after shallow
-  pull-outs. No model has won the card above its foils' bound. All unverified.
-- Spend: OpenAI $51.47 of $52. OpenRouter: the account had $46.41 of credit before the b40
-  round (shared with Spire; owner: spend carefully); the WH3 ledger holds $12.49 after it
-  ($1.83, 2026-10-19 evening).
+  witness `SnapHitAndRun`; signature: cycles; rule pre-registered at `5396182`). The
+  [b40 round](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)
+  found witness v2 winning 4 of 5 at 5/5 and 8/8, GLM 0 of 10. No model has won above
+  its foils' bound. These gameplay findings remain unverified.
+- Spend: OpenAI $51.47 of $52; WH3 OpenRouter ledger $12.49 ($1.83 b40 round).
+  Before b40, the account had $46.41 shared with Spire (owner: spend carefully).
 
 Next (proposals for the owner; stages in [latency.md](twwarhammer3/latency.md#staged-plan)):
 1. Freeze the chariot card: decisions 3-5 of the
@@ -82,26 +68,19 @@ paused: [first combat](spire/first-combat/README.md); planned:
 
 ## Post-training
 
-[posttraining.md](posttraining.md): capture, exports, dataset builder and a local smoke
-test work end to end. The smoke numbers are not learning: the 0.6B stand-in's "5 of 16
-action matches" equals always choosing 0. Missing: a training host, a route to play a
-fine-tune in both games, and a way to choose targets (winning targets are scarce).
+[posttraining.md](posttraining.md): capture/export/dataset smoke passes, with no learning
+claim. Missing: training host, fine-tune serving for both games and useful targets.
 
 ## Known issues
 
-- OpenRouter: the ledgers missed $2.69 of account use by 2026-10-18 and the key's $50 limit
-  is only a cap, so check `/api/v1/credits` before paid jobs.
-- OpenRouter backends are pinned with no fallback since b36 (Step 5 preview is not), so a
-  pinned backend's outage fails every call of that model, which b35 scores against it.
+- Check OpenRouter credits before paid jobs: ledgers missed $2.69 by 2026-10-18.
+- Pinned OpenRouter backend outages count against the model; Step 5 preview is unpinned.
 - No test yet shows whether a game patch changes results (owner: later). A build warning
   shows in `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
-- Only WH3's $50 OpenRouter ceiling per ledger is in code; the OpenAI caps and the
-  OpenRouter allowance shared by both games' ledgers are kept by hand.
+- OpenAI caps and the OpenRouter allowance shared by both games are kept by hand.
 - WH3 register and `stats`: blank version on benchmark rows, grouping by commit, API
   failures as `policy_failure` (`twwarhammer3 card` classifies failures and keys by setup).
-- Not in the automated tests: the battle Lua's order application; the report JavaScript
-  (a manual browser check only); several Spire play-loop
-  stop paths (source change, interruption).
+- No automated checks for report JavaScript or several Spire play-loop stop paths.
 - Spire's Workshop mod pins still block a run when a mod updates.
 - `runs/` (22 GB) has no off-machine copy; its core evidence (traces, manifests, results,
   ledgers, replays) was about 2.6 GB, 90 MB with zstd, on 2026-10-17.
@@ -139,5 +118,4 @@ fine-tune in both games, and a way to choose targets (winning targets are scarce
 
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` v21 draft.
-- Archived drafts are tags: `archive/wh3-fire-report`, `archive/wh3-v4-info`,
-  `archive/wh3-openrouter-pin` and `archive/heldout-clip-continuation`.
+- Archived drafts are tags (`git tag --list 'archive/*'`).

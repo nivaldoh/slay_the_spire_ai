@@ -91,8 +91,9 @@ through it, and every order enters through it.
   its docstring is the scenario field reference. `random` entries draw a map and each
   side's race from `configs/twwarhammer3/custom_battle.json` with `--seed` and
   autogenerate the armies. An entry with `expect` is a declared benchmark scenario: the
-  lobby sets and reads back its timer, AI stats modifier and funds, and the battle checks
-  the rest ([lobby settings](integration.md#lobby-settings-and-declared-scenarios)).
+  lobby sets and reads back its timer, AI stats modifier, funds, difficulty, unit size and
+  realism; startup checks the battle's independent readbacks
+  ([lobby settings](integration.md#lobby-settings-and-declared-scenarios)).
   Other entries leave funds, unit size, time limit and difficulty as the lobby has them.
 - **Jobs.** `battle/play.py` launches the game once, plays the episodes and replays the
   same battle between them through the results popup's rematch. `battle/controllers.py`
@@ -200,14 +201,9 @@ are archived as tags `archive/wh3-fire-report` and `archive/wh3-v4-info`; both p
 v13 interface and need review before reuse.
 
 Deferred cleanups:
-- Lua changes that each need one engine smoke battle: drop the pause-mode leftovers
-  (the observation's constant `speed` and `awaiting_orders`, session `speed` and `pause`,
-  `mailbox.require_realtime` and its guards); remove dead paths (the `start` control,
-  `state.applied_ms`, restart's fallback before a decision with its
-  [Unverified](integration.md#unverified) entry, the duplicate imagery throttle and
-  `shot.backend` in `twwarhammer3_imagery.lua`); stop reading the always-true session
-  switches `enabled`, `autostart` and `menu`, then drop them from `play.session`; split
-  `apply_order`, share the observation-building code, split `mode_section`, and move the
-  file helpers into the shared `_lib` script.
+- Keep public realtime fields/guards and session activation switches: removing them is
+  a compatibility change, not dead-code cleanup. Future Lua refactoring should follow a
+  demonstrated problem and its repeatable check. API candidates and the focused discovery
+  recipe are in [integration.md](integration.md#finding-another-capability).
 - `LLMPolicy.acknowledge` keeps its fallback for acknowledgements without `index`
   (traces before `863d10b`); dropping it is the owner's call.

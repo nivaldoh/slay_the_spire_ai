@@ -38,10 +38,16 @@ revision):
 - WH3 saved armies and experience: save a known army, change it, restart WH3 and reload;
   compare unit types, counts and ranks. Set several ranks using both increase and decrease,
   comparing lobby readback and battle-start ranks/stats: `uv run --locked python
-  tests/twwarhammer3/check_wh3_army_setup.py --output runs/twwarhammer3/army-check-<new-name>`.
-  Agreed 2026-10-19; passed at `c768460` (two launches, eight units, ranks 0/1/3/9,
-  a mounted lord; attack/defence exact, leadership XP bonuses relative to rank zero).
-  No policy-strength claim; other modes and reinforcement XP remain unverified.
+  tests/twwarhammer3/check_wh3_army_setup.py --integration --output runs/twwarhammer3/army-check-<new-name>`.
+  Extended 2026-10-19: disturb declared settings, check funds/permission refusals and a fixed
+  reserve pool, then restore original settings. Passed with `e32b1b5` sources (four launches,
+  ten-unit saved roster, three mounts, ranks 0/1/3/9, seven reserves; attack/defence exact,
+  leadership XP bonuses relative to rank zero). Restart uses supervised shutdown; graceful
+  exit, other modes, reinforcement XP and policy strength remain unverified.
+- WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime:
+  real Python/Lua component checks, with simulated game APIs/play-loop observations:
+  `uv run --locked pytest -ra tests/twwarhammer3`. Agreed 2026-10-19; passed at `e32b1b5`.
+  These checks establish component contracts, not live order effects or policy strength.
 - Play commands refuse a missing ledger file: `uv run pytest
   tests/fullrun/test_spire_cli.py::test_play_refuses_a_missing_ledger_before_any_job
   tests/twwarhammer3/test_wh3_controllers.py::test_each_model_controller_gets_its_own_prompt_and_the_shared_budget`;
@@ -63,8 +69,13 @@ token use):
   steps (other pages keep candidates and deferred items). New owner directions go in
   `docs/owner-direction.md`. A log entry stays within about 20 lines: what changed, its
   evidence with counts, and what is unverified.
-- Read docs by section. Use multi-agent workflows only for independent verification, the
-  WH3 loop's review step, or when the owner asks.
+- Read docs by section; do not reload full guidance already present in the session.
+  Use multi-agent workflows only for independent verification, the WH3 loop's review step,
+  or when the owner asks.
+- Put task-created scripts, logs, temporary artifacts and diagnostics inside this repository
+  (normally ignored `runs/`), never in the environment/home root or unrelated directories.
+  Keep test scratch directories there too; inventory earlier garbage for a later cleanup
+  rather than scattering more files.
 - Delete a branch and its worktree once merged; create worktrees outside `/tmp`, which a
   WSL restart wipes. While a WH3 queue runs, commit nothing: it stops before its next job
   when HEAD moves. Add no file, scenario or diagnostic that no planned experiment uses.

@@ -132,7 +132,7 @@ Commander v7 remains tested offline only.
   rejected (`--prompts` prints it whole), each reply, engine rejections, a strength line
   every 30 s and each result. `watch JOB --next` waits for one event and exits (for agents).
 - `play --show` puts each model reply in the game's advisor window
-  ([advisor text](integration.md#advisor-text-verified-2026-10-13)).
+  ([advisor text](integration.md#advisor-text-probed-2026-10-13)).
 - `digest` summarises a job or episode afterwards; `digest EPISODE --at SECONDS` prints
   one decision in full: the prompt, raw reply, plan or orders and the engine's verdict.
 - The trace stores, per commander request, the full `prompt` and `prompt_sha256` (with

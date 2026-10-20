@@ -5,6 +5,9 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-19 (artifact locations): put task-created files only inside the repository;
+  stop polluting the environment root. Remember this in shared guidance and leave earlier
+  garbage for a later cleanup pass.
 - 2026-10-19: one bounded WH3 maintenance pass, up to three demonstrated issues, no product
   features or large paid evaluations. Agreed component verification for mailbox identity
   and finite order fields (real Python/Lua components plus a simulated play-loop regression);
@@ -35,6 +38,14 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-19 (integration review): implement the agreed UI/modding cleanup plan, including
+  structural simplification where useful. Apply declared lobby settings automatically;
+  compare context setup with the click route, disturb settings, exercise unavailable units,
+  insufficient funds and reserves, then clear/restart/load and compare lobby with battle
+  startup. Real Python/Lua component checks suffice for request isolation, failure reporting,
+  scheduling, startup-query errors and session cleanup. Free live checks only, unpaused at
+  1x; keep benchmark/paid jobs stopped. Document new battle API candidates without exposing
+  new policy signals. Restore pre-review settings after diagnostics.
 - 2026-10-19 (army setup goal): find and use the lobby's saved-army save/load controls
   and per-unit Increase/Decrease experience controls; keep the code simple and clean.
   Agreed verification: save a known army, change it, restart and load; compare types/counts/
