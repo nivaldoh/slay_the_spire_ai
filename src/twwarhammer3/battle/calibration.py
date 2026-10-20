@@ -1554,3 +1554,142 @@ class SlaveTarpit(SmallDiagnostic):
 
     def metadata(self):
         return {"type": "slave_tarpit", "pins": dict(self.pins), "target": self.target}
+
+
+class LineTeam(SmallDiagnostic):
+    """Empire line battle: fixed jobs for a line, two gun units, a reserve and the knights."""
+
+    card = {"purpose": "Does a fixed assignment of jobs win the 7 v 7 Empire line battle, "
+                       "and does a reserve that replaces a broken line unit do better?",
+            "knowledge": "Roles by card key and class: infantry whose key holds 'spearmen' is "
+                         "the reserve, other infantry the line, missile units the guns, "
+                         "cavalry the knights. The line keeps its deployment in guard mode. "
+                         "Forward is from the line's centre toward the visible enemies' "
+                         "centre, read once. Guns stand 30 m behind the line centre, 18 m "
+                         "either side, skirmish off, and shoot the nearest enemy cavalry in "
+                         "range, else the nearest enemy in range, halting otherwise. The "
+                         "reserve waits 35 m behind the line centre in guard mode and "
+                         "attacks an enemy infantry unit within 25 m of it. The knights wait "
+                         "50 m behind the line centre and charge the nearest enemy cavalry "
+                         "once one is within 120 m of them, kept until it routs; with no "
+                         "enemy cavalry left they charge the nearest enemy missile unit, "
+                         "else the enemy infantry unit in melee with the lowest men "
+                         "fraction. No hidden state or predicted paths."}
+    variant = "fixed"
+
+    def __init__(self):
+        super().__init__()
+        self.forward = None
+        self.centre = None
+        self.knights_target = None
+        self.reserve_target = None
+        self.gaps = []
+
+    def roles(self, units):
+        line = [u for u in units if u.get("class") == "infantry" and "spearmen" not in u["type"]]
+        reserve = [u for u in units if u.get("class") == "infantry" and "spearmen" in u["type"]]
+        guns = [u for u in units if u.get("class") in SHOOTERS]
+        knights = [u for u in units if u.get("class") == "cavalry"]
+        return line, reserve, guns, knights
+
+    def decide(self, observation):
+        units, enemies = self.observe(observation)
+        if not units or not enemies:
+            return []
+        line, reserve, guns, knights = self.roles(units)
+        if self.forward is None:
+            self.centre = _centre(line or units)
+            self.forward = _direction(self.centre, _centre(enemies))
+        back = (-self.forward[0], -self.forward[1])
+        orders = []
+        for unit in line + reserve:
+            if unit.get("behaviours", {}).get("defend") is False:
+                orders.append({"unit": unit["id"], "type": "behaviour",
+                               "behaviour": "defend", "enabled": True})
+        cavalry = [e for e in enemies if e.get("class") == "cavalry"]
+        for index, gun in enumerate(sorted(guns, key=lambda u: u["id"])):
+            if gun.get("behaviours", {}).get("skirmish"):
+                orders.append({"unit": gun["id"], "type": "behaviour",
+                               "behaviour": "skirmish", "enabled": False})
+            in_range = [e for e in enemies if distance(gun, e) <= gun.get("range", 0)]
+            near = [e for e in in_range if e in cavalry] or in_range
+            if gun.get("ammo") and near:
+                orders += self.attack(gun, min(near, key=lambda e: distance(gun, e)), "ranged")
+            elif self.sent.get(gun["id"], ({}, 0))[0].get("type") == "attack":
+                orders += self.issue(gun, {"unit": gun["id"], "type": "halt"})
+            else:
+                post = _offset(self.centre, back, 30, 18 if index == 0 else -18)
+                orders += self.move(gun, post, _centre(enemies))
+        orders += self.reserve_orders(reserve, line, enemies, back)
+        for unit in knights:
+            orders += self.knights_orders(unit, enemies, cavalry, back)
+        return orders
+
+    def reserve_orders(self, reserve, line, enemies, back):
+        orders = []
+        for unit in reserve:
+            close = [e for e in enemies if e.get("class") == "infantry" and distance(unit, e) < 25]
+            if close:
+                orders += self.attack(unit, min(close, key=lambda e: distance(unit, e)))
+            else:
+                orders += self.move(unit, _offset(self.centre, back, 35), _centre(enemies))
+        return orders
+
+    def knights_orders(self, unit, enemies, cavalry, back):
+        post = _offset(self.centre, back, 50)
+        target = next((e for e in cavalry if e["id"] == self.knights_target), None)
+        if target is None and cavalry:
+            nearest = min(cavalry, key=lambda e: distance(unit, e))
+            if distance(unit, nearest) <= 120:
+                target = nearest
+        if target is None and not cavalry:
+            shooters = [e for e in enemies if e.get("class") in SHOOTERS]
+            engaged = [e for e in enemies if "melee" in e.get("state", [])]
+            if shooters:
+                target = min(shooters, key=lambda e: distance(unit, e))
+            elif engaged:
+                target = min(engaged, key=_fraction)
+        self.knights_target = target["id"] if target else None
+        if target:
+            return self.attack(unit, target)
+        return self.move(unit, post, _centre(enemies))
+
+    def metadata(self):
+        return {"type": "line_team", "variant": self.variant,
+                "knights_target": self.knights_target,
+                "reserve_target": self.reserve_target, "gaps": list(self.gaps)}
+
+
+class LineTeamReserve(LineTeam):
+    """LineTeam whose reserve replaces the first line unit that breaks."""
+
+    card = {"purpose": LineTeam.card["purpose"],
+            "knowledge": LineTeam.card["knowledge"] + " Replacement rule: when a line unit "
+                         "is seen routing or is gone, the reserve attacks the visible enemy "
+                         "infantry unit nearest to where that line unit was last seen, kept "
+                         "until it routs or vanishes; it then goes back to waiting."}
+    variant = "reserve"
+
+    def __init__(self):
+        super().__init__()
+        self.seen = {}
+        self.broken = set()
+
+    def reserve_orders(self, reserve, line, enemies, back):
+        for unit in line:
+            self.seen[unit["id"]] = {"x": unit["x"], "z": unit["z"]}
+        gone = [uid for uid in self.seen if uid not in {u["id"] for u in line}]
+        for uid in gone:
+            if uid not in self.broken:
+                self.broken.add(uid)
+                self.gaps.append({"unit": uid, "at": self.now})
+        target = next((e for e in enemies if e["id"] == self.reserve_target), None)
+        if target is None and gone:
+            gap = self.seen[gone[-1]]
+            infantry = [e for e in enemies if e.get("class") == "infantry"]
+            if infantry:
+                target = min(infantry, key=lambda e: distance(gap, e))
+        self.reserve_target = target["id"] if target else None
+        if target is None:
+            return super().reserve_orders(reserve, line, enemies, back)
+        return [order for unit in reserve for order in self.attack(unit, target)]

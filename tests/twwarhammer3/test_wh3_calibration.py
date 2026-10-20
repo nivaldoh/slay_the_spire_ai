@@ -20,6 +20,8 @@ from twwarhammer3.battle.calibration import (
     HammerAnvil,
     HitAndRun,
     HitAndRunV2,
+    LineTeam,
+    LineTeamReserve,
     MonsterTarget,
     PinThenRear,
     PriorityStrike,
@@ -64,7 +66,7 @@ def test_small_diagnostics_do_not_use_hidden_enemies_or_order_routers():
     for cls in (FeintFlank, CrossKite, Bodyguard, Crossfire, SpellWindow, HammerAnvil,
                 CornerHold, FocusFire, MonsterTarget, CounterBattery, PinThenRear,
                 FireballSpam, PriorityStrike, CycleCharge, HitAndRun, SnapHitAndRun,
-                HitAndRunV2, FlankLane, SlaveTarpit):
+                HitAndRunV2, FlankLane, SlaveTarpit, LineTeam, LineTeamReserve):
         obs = {"time_ms": 1000, "friendly": [unit("f1", "horse", 0, 0)],
                "enemy": [], "evaluation": {"enemy": [unit("e1", "hidden", 5, 5)]},
                "enemy_roster": [unit("e1", "hidden", 5, 5)]}
@@ -1009,3 +1011,79 @@ def test_slave_tarpit_pins_each_halberd_unit_before_the_ogres_strike_the_guns():
         enemy["state"] = ["melee"]
     strike = next(order for order in policy.decide(obs) if order["unit"] == "f1")
     assert strike["type"] == "attack" and strike["target"] == "e3"
+
+
+def _line_battle():
+    def inf(uid, kind, x, z, **extra):
+        return unit(uid, kind, x, z, behaviours={"defend": False, "fire_at_will": True,
+                                                  "skirmish": False}, **extra)
+    def gun(uid, x, z):
+        return unit(uid, "handgunners", x, z, cls="missile", ammo=1496, range=145,
+                    behaviours={"defend": False, "fire_at_will": True, "skirmish": True})
+    friendly = [inf("f1", "spearmen_1", 0, 20), inf("f2", "swordsmen", -30, 0),
+                inf("f3", "swordsmen", 0, 0), inf("f4", "halberdiers", 30, 0),
+                gun("f5", -20, 15), gun("f6", 20, 15),
+                unit("f7", "empire_knights", 40, 40, cls="cavalry")]
+    for u in friendly:
+        if "cls" in u:
+            u["class"] = u.pop("cls")
+    enemy = [unit("e1", "goblin_spearmen", -20, -400), unit("e2", "orc_boyz", 20, -400),
+             unit("e5", "orc_arrer_boyz", 0, -450, cls="missile"),
+             unit("e6", "goblin_wolf_riders_0", 60, -380, cls="cavalry")]
+    for u in enemy:
+        if "cls" in u:
+            u["class"] = u.pop("cls")
+    return {"time_ms": 1000, "friendly": friendly, "enemy": enemy}
+
+
+def test_line_team_opens_with_guard_mode_posts_and_skirmish_off_then_counter_charges():
+    obs = _line_battle()
+    policy = LineTeam()
+    orders = policy.decide(obs)
+    validate_orders(orders, obs)
+    by_unit = {}
+    for order in orders:
+        by_unit.setdefault(order["unit"], []).append(order)
+    assert {o["behaviour"] for o in by_unit["f2"] + by_unit["f3"] + by_unit["f4"]} == {"defend"}
+    assert [o for o in by_unit["f5"] if o["type"] == "behaviour"][0]["enabled"] is False
+    gun_post = next(o for o in by_unit["f5"] if o["type"] == "move")
+    assert gun_post["z"] > 20  # behind the line, away from the enemy
+    knights_post = next(o for o in by_unit["f7"] if o["type"] == "move")
+    assert knights_post["z"] > gun_post["z"]
+    assert all(o["type"] != "attack" for o in orders)
+    # The wolves come within 120 m of the knights: counter-charge, kept until they rout.
+    obs["enemy"][3].update(x=60, z=-60)
+    obs["time_ms"] = 60000
+    for u in obs["friendly"]:
+        u["state"] = ["idle"]
+    orders = policy.decide(obs)
+    charge = next(o for o in orders if o["unit"] == "f7")
+    assert charge["type"] == "attack" and charge["target"] == "e6"
+    # The guns shoot the cavalry first when it is in range.
+    shots = [o for o in orders if o["unit"] in ("f5", "f6") and o["type"] == "attack"]
+    assert shots and all(o["target"] == "e6" and o["mode"] == "ranged" for o in shots)
+    # Cavalry gone: the knights go for the archers.
+    obs["enemy"].pop(3)
+    obs["time_ms"] = 120000
+    orders = policy.decide(obs)
+    assert next(o for o in orders if o["unit"] == "f7")["target"] == "e5"
+
+
+def test_line_team_reserve_replaces_the_first_broken_line_unit():
+    obs = _line_battle()
+    fixed, reserve = LineTeam(), LineTeamReserve()
+    fixed.decide(obs)
+    reserve.decide(obs)
+    obs["time_ms"] = 200000
+    obs["enemy"][1].update(x=-30, z=-10, state=["melee"])  # Boyz on the left Swordsmen
+    obs["friendly"][1].update(state=["routing"])
+    for u in obs["friendly"]:
+        if u["id"] != "f2":
+            u["state"] = ["idle"]
+    fixed_orders = fixed.decide(obs)
+    reserve_orders = reserve.decide(obs)
+    validate_orders(reserve_orders, obs)
+    assert all(o["type"] != "attack" for o in fixed_orders if o["unit"] == "f1")
+    fill = next(o for o in reserve_orders if o["unit"] == "f1" and o["type"] != "behaviour")
+    assert fill["type"] == "attack" and fill["target"] == "e2"
+    assert reserve.metadata()["gaps"][0]["unit"] == "f2"
