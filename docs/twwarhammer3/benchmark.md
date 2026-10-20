@@ -24,6 +24,67 @@ Settled by the owner on 2026-10-14: each controller's whole latency, network inc
 part of its result, as it would be in a real deployment. A controller that loses because
 it is slow has lost. Delay arms (below) are diagnostics beside that primary result.
 
+## Scope and first release
+
+The scope is **evaluation of complete battle controllers on a small, declared set of
+real-time tactical tasks**. The intended user is a developer choosing or improving a
+controller: they should be able to replace ours, measure success, cost and reliability,
+and inspect a consequential failure. Results describe the controller, its helpers and
+its serving conditions together. They do not rank a model's general intelligence.
+
+This section consolidates the owner's brief and later directions. The release gates
+below are proposals, not newly agreed checks or permission to implement or run them.
+
+| Boundary | Initial benchmark | Outside the initial release |
+|---|---|---|
+| Battles | Declared custom battles against the built-in game AI; mostly small Empire tasks, other factions for a distinct challenge | Campaign, general WH3 mastery, every faction/mode, human or model opponents |
+| Controller | Scripts, direct models and hybrids using the same public contract; disclose all tactical helpers | A required planner, multi-agent architecture, provider or training method |
+| Interface | Structured, numerically exact state with the documented visibility limits; game pathfinding and combat remain active | Vision, mouse/keyboard play, player-equivalent perception or low-level robot control |
+| Time | Unpaused 1x with natural end-to-end latency; assigned delay only as a separately labelled diagnostic | Paused reasoning, an equal-speed intelligence ranking or a guaranteed reaction deadline |
+| Task coverage | Distinct consequential choices, with witnesses, credible wrong plays and inspected effects | A claim that every win uses one tactic, or that a large army alone tests context length |
+| Results | Per-card outcomes and uncertainty, failure counts, achieved timing, cost and inspectable records | One composite leaderboard number or a ranking from selected successful trials |
+| Delivery | Project code/configuration, accessible reference evidence and a runbook for the supported Windows/WSL installation with the required game content | Bundled game assets, general portability, parallel/cloud hosting, deterministic replay |
+
+The **first reusable path** is one frozen card evaluated end to end, including another
+developer's recount and rerun. The **initial suite release** is a frozen small set of
+distinct cards that each pass that path, with reference controllers and results, exact
+commands, evidence access and known limitations. Scenario declarations and a report
+alone are not a release. A suite needs no aggregate score; its claims extend only
+to the named cards and tested variations.
+
+Latency, advice-versus-execution and team recovery are research questions studied using
+that benchmark. Recovery earns a card if it adds a distinct, measurable problem; a
+successful recovery architecture is not required to release useful tactic cards.
+Training remains secondary: preserve usable traces and the controller boundary, but do
+not make an Empire fine-tune, an RL adapter or a training gain a release dependency.
+
+**Readiness today:** the interface and evaluation design are substantially specified;
+the useful suite is not settled. The chariot was admitted under its historical rule but
+remains unverified; the Empire line is a candidate, and the revised b46 arms are unplayed.
+The correctness checks and independent rerun below are still pending. There is a path
+to a useful benchmark, not evidence yet that all its intended claims will hold.
+
+## What would make it good
+
+The first four rows describe intended release quality; distinctiveness is a separate
+research goal. None is established by this document. A useful suite can release without
+a positive novelty or recovery result, and no milestone requires a particular model or
+architecture to win.
+
+| Aim | Evidence needed | Decision if the evidence fails |
+|---|---|---|
+| Strong | Repeated witness success at declared timing, credible shortcuts tested, and a comparison whose uncertainty can resolve its stated question | Keep an all-losing model screen exploratory; narrow the claim or change the candidate, rather than calling it frontier difficulty |
+| Useful | Another developer can substitute a controller and answer a concrete choice about tactics, supplied advice, timing or helpers, with cost and failures visible | If every arm looks the same at the affordable sample size, report an inconclusive comparison; do not advertise a ranking |
+| Reliable | Agreed setup, information-boundary, live-effect, scoring and signature checks pass at the released revisions; an independent recount/rerun works | Hold the affected card or claim out of the release; do not equate component tests with live correctness |
+| Interesting | Inspected decisions change the battle in a way the named simple alternative does not explain; show at least one consequential success and failure | If a fixed opening, engine automation or abandoning the protected unit explains success, relabel the task or drop it |
+| Distinctive | A concrete comparison with the closest benchmarks identifies a useful question this suite makes easier to test, supported by a completed WH3 study | Publish the narrower evaluation contribution if warranted; do not claim unique mechanics, first real-time agents or robot transfer |
+
+Do not pick tasks because a preferred model wins, or keep hardening them until all
+models fail. Freeze selection before the comparison. Inspect alternative winning plays:
+they remain wins and may falsify the claimed skill requirement. A negative recovery or
+latency result is useful when the design can distinguish it from a broken controller,
+uninformative task or insufficient sample.
+
 ## The decisions the benchmark should support
 
 | Question | Smallest useful comparison | What it does not establish |
@@ -85,6 +146,32 @@ rule, reserved variations, and API/game-time ceilings. Include failed candidate 
 in the record. Later reference runs can detect drift but do not enlarge a frozen
 confirmation cohort. If a cap stops an in-battle trial, the remaining complete cases
 cannot support the planned ranking without addressing that missing outcome.
+
+## Route to the first release
+
+Proceed by the evidence each step produces, with no broad model grid or new architecture
+as a prerequisite. The detailed card gates above supply the counts and stopping rules;
+those proposed numbers still need agreement.
+
+| Step | Concrete deliverable | What it unlocks |
+|---|---|---|
+| 1. Settle the contract | Agree the failure/denominator rule and correctness checks; select the next chariot witness/signature version without rewriting c1 | A well-defined next evaluation, not yet a verified card |
+| 2. Close one reusable path | Freeze one card/controller/scorer package, pass its agreed checks, recount accessible evidence and complete the outside rerun | A usable single-card evaluation with explicit limits |
+| 3. Earn breadth | Screen the Empire rifle lane/protection candidates for a decision distinct from the chariot; test the line battle's fixed jobs/early commitment/replacement comparison before calling it recovery | A justified small card list; neither Empire nor team framing grants admission |
+| 4. Demonstrate usefulness | Freeze that list and one primary contrast, run the bounded confirmation/comparison and reserved variations, report uncertainty, failures, timing and cost | Reference results supporting a specific conclusion, or a clearly inconclusive study |
+| 5. Release, then assess contribution | Package commands, versions, controller dependencies, reference evidence and rerun records; for a research claim, also complete the closest-work comparison below | A reusable suite; any further research claim is only as broad as the study supports |
+
+Breadth screening may proceed alongside closing the first path; it need not wait for
+another chariot model round. Before each candidate's next run, record the unresolved
+question and the result that would retain, relabel or drop it, plus a time/spend cap.
+If the cap expires without a useful separation, defer it. Another revision needs a named
+failure and a new bounded plan, rather than indefinite calibration.
+
+The immediate unresolved decisions are the chariot rule/version, the proposed checks
+and failure rule, and which distinct Empire card earns confirmation. Exact suite
+membership, a useful effect size and affordable launch count follow from those screens;
+they are not settled by this scope review. The
+[state page](../state.md#total-war-warhammer-iii) holds the current next actions.
 
 ## Correctness checks to agree
 
@@ -154,11 +241,32 @@ and units whose support can fail during inference. Live clocks and hierarchical 
 already have prior work. [Robot-team research](robot-team-research.md) develops the
 recovery comparisons and transfer limits; physical-robot benefit remains untested.
 
+**Possible coordination research contribution:** a reproducible set of tactical cases
+in which a controller must maintain or restore support between units while its observations
+age, with evidence separating the chosen plan, the issued orders and the observed effects. For example,
+"the reserve was ordered forward" differs from "it arrived before the gun was caught."
+This could support a useful diagnosis that a battle win rate alone misses. It is a
+hypothesis for the team branch, not an established novelty claim or a requirement for
+single-unit cards such as the chariot.
+
+Before a research release, compare the actual retained tasks with the closest work on
+five concrete points: what continues during inference; what decisions the built-in
+executor supplies; whether support can fail and be restored; what action/effect evidence
+is available; and what an outside user can reproduce. Include Realtime-Bench/GameWorld
+for live timing, SMACv2 for coordination and shortcut tests, and
+[DPT-Agent](https://arxiv.org/abs/2502.11882) for asynchronous hierarchical game control.
+Record overlaps and unanswered questions as well as differences, and refresh the search
+at release. A different game or combination of familiar mechanics alone does not prove
+novelty. If fixed jobs or a timed reserve solve the line battle, narrow its recovery
+claim; the other tactic cards can still have value.
+
 ## Terms
 
 | Term | Meaning |
 |---|---|
-| scenario | An entry in `configs/twwarhammer3/scenarios.json`; a benchmark scenario has `expect` |
+| scenario | An entry in `configs/twwarhammer3/scenarios.json`; `expect` declares its benchmark setup, not admission or verification |
+| candidate card | A proposed tactical question with a scenario, witness, wrong plays and an evidence rule; not yet admitted |
+| scored card | A versioned card that passed its frozen admission rule; verification and release readiness are separate checks |
 | variant | A scenario with one declared change (modifier, map, role) as its own entry; `split` is `development` or `held_out` |
 | instance | The battle one launch builds; rematches aim to restart it and their starts are compared |
 | trial | One controller playing an instance once (an episode) |
@@ -258,7 +366,8 @@ A scenario is an entry in `configs/twwarhammer3/scenarios.json`; the `setup.py` 
 docstring lists every field and the code that reads it. Manifests record the resolved
 entry (after `base` inheritance), and the job's source fingerprint versions the file.
 
-An entry with `expect` is a benchmark. `validate_declaration` requires a pinned map,
+An entry with `expect` is a declared benchmark scenario; that alone establishes neither
+card admission nor verification. `validate_declaration` requires a pinned map,
 pinned factions and explicit rosters and every required `expect` key. Timed modes need a
 finite timer (1200, 2400 or 3600 s) and an episode cap at least 120 s above it; native
 timerless survival/domination require `time_limit_s: null` and `timer_enabled: false`.
@@ -435,7 +544,8 @@ this page before its rewrite (`git show d606d39:docs/twwarhammer3/benchmark.md`)
 
 ## Implementation plan
 
-The following dated plans explain earlier calibration. Current priorities are the
+The following dated plans explain earlier calibration. The current
+[release route](#route-to-the-first-release) uses the
 [card gates](#from-a-candidate-to-a-scored-card), [Empire candidates](empire.md) and
 [robot-team feasibility check](robot-team-plan.md#a-small-sequence-of-experiments).
 Their counts and historical admission statements do not override a frozen card rule.

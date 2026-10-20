@@ -201,8 +201,9 @@ Exit codes: 0 completed or stopped, 1 failed or refused, 130 interrupted. Follow
 with `watch JOB --next`.
 
 The old G1 plans, completed C1/M1 plans and unstarted `swarm-sol-screens-plan.json` are
-historical. The [current proposal](benchmark.md#implementation-plan) schedules no new
-runs. After implementation is authorized, each small calibration plan should identify
+historical. The [release route](benchmark.md#route-to-the-first-release) and
+[card gates](benchmark.md#from-a-candidate-to-a-scored-card) schedule no new runs.
+For later authorized experiments, each small calibration plan should identify
 the question, scenario/variant, controller, observable evidence, battle count, runtime
 and spend allowance, decision rule and final committed revision. Start with targeted
 cheap probes; a small frontier screen precedes any broad matched matrix. Shared measures

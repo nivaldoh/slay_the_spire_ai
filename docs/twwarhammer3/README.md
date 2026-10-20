@@ -1,11 +1,14 @@
 # Total War: WARHAMMER III battles
 
-Can an API model command an army in a real-time custom battle against the game AI, with
-the delay between the state it saw and its orders measured and told to it, and can the
-autoresearch loop improve its scaffolding? A Lua mod is the only interface, and the battle
-keeps running unpaused at 1x while the model thinks. Campaign mode and model training come
-later. What is running and the versions on `main`: [../state.md](../state.md); every
-version, job and finding: [log.md](log.md).
+The goal is a reusable benchmark of complete battle controllers on specific tactical
+tasks against the game AI. Scripts, models and hybrids receive structured state through
+a Lua mod while the battle runs unpaused at 1x; their results include their actual delay,
+cost and failures. Start with the [scope and first release](benchmark.md#scope-and-first-release):
+one repeatable card, then a small suite of distinct tasks. The suite and its gameplay
+checks remain unsettled; current results are not a verified benchmark release.
+Controller research, team recovery and training are related work with separate evidence
+requirements. What is running and the versions on `main`: [../state.md](../state.md);
+every version, job and finding: [log.md](log.md).
 
 The owner's initial modding guide (8 October 2026) set the first shape. This page and
 [integration.md](integration.md) supersede it, and git keeps it:
@@ -18,7 +21,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [integration.md](integration.md) | engine facts: packs, menus, lobby settings, unit API, context system, battle types, capture |
 | [controllers.md](controllers.md) | the policies and their versions, comparing them, candidate changes, designs not built |
 | [battle-types.md](battle-types.md) | the battle-type scenarios, the `mode` state, the `build` and `reinforce` orders |
-| [benchmark.md](benchmark.md) | the current benchmark definition, proposed verification, research comparisons and the recorded contract |
+| [benchmark.md](benchmark.md) | scope, release criteria, proposed verification, research comparisons and the recorded contract |
 | [tactic-cards.md](tactic-cards.md) | the chariot's frozen rule, card design, candidate list and what WH3 adds |
 | [latency.md](latency.md) | the latency program (2026-10-18 plan): knowing a tactic against executing it in time, measures, robotics framing, harness ladder, fine-tuning path |
 | [robotics.md](robotics.md) | robotics ideas and concrete comparison designs: parameterized/generated policies, learned micro, controller boundaries and codebase fit |

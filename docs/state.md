@@ -9,9 +9,9 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
-No benchmark or paid job is running. The WH3 [definition review](twwarhammer3/benchmark.md)
-now covers scoring boundaries, timing comparisons and an independent rerun plan;
-its new checks and card gates remain proposals. The [Empire night](twwarhammer3/empire.md)
+No benchmark or paid job is running. The WH3 [scope review](twwarhammer3/benchmark.md#scope-and-first-release)
+defines the release boundary and separates a reusable suite from research claims.
+Suite membership, new checks and card gates remain proposals. The [Empire night](twwarhammer3/empire.md)
 finished at 09:00 (45 launches, $8.84); its [owner items](twwarhammer3/empire.md#for-the-owner-to-decide)
 remain pending. The revised b46 LineTeam arms are unplayed; the chariot b40 round stays stopped.
 
@@ -32,7 +32,7 @@ Priorities (owner, 2026-10-18): WH3 benchmark first, then Spire; post-training s
   No model has won above its foils' bound (an unverified gameplay finding).
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter ledger $21.33 ($8.84 the Empire night).
 
-Next (proposals for the owner; [gates](twwarhammer3/benchmark.md#from-a-candidate-to-a-scored-card)):
+Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-to-the-first-release)):
 0. Read the night's [results](twwarhammer3/empire.md#results) and its six
    [owner items](twwarhammer3/empire.md#for-the-owner-to-decide), from the rank-5 line
    battle as the first team card to the first Empire export (29 model episodes).

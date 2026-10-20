@@ -40,6 +40,10 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-20 (scope review): assess whether the benchmark has a clear scope and a credible
+  path to being strong, useful, reliable, interesting and distinctive; improve definition
+  and documentation where needed, with no implementation. The release boundary and
+  unresolved evidence belong in the [benchmark definition](twwarhammer3/benchmark.md).
 - 2026-10-20 (benchmark definition): refine the objective and plan, reduce uncertainty,
   make correctness checks and abstract ideas concrete, and use relevant frontier research.
   Keep it concise and simple; research and documentation only, no implementation.

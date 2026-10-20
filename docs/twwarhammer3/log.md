@@ -40,6 +40,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
 
+## 2026-10-20: Benchmark scope and release criteria
+
+Consolidated the [scope](benchmark.md#scope-and-first-release): complete controllers on
+declared live tactical tasks, intended users, outputs and explicit initial exclusions.
+Separated a scenario declaration, admitted card, reusable path and frozen suite; aligned
+the README and runbook. Added concrete quality criteria, a
+[release route](benchmark.md#route-to-the-first-release) and bounded candidate decisions.
+Useful release and novel research are separate milestones; team recovery and training
+are conditional studies. Existing cards and c1's rule are unchanged.
+Independent scope/diff review found no new agreement or scoring conflict; clarified that
+coordination research is not required for single-unit cards or a useful suite.
+A separate primary-source review checked SMACv2, Realtime-Bench, GameWorld and DPT-Agent;
+live clocks and hierarchy alone are not a novelty claim. This was a selective review.
+Documentation only: no implementation, game or paid calls. 53 link checks passed, none
+failed or skipped; Ruff and diff whitespace checks passed. Initial uv cache access was
+blocked, then checks passed with access; logs: `runs/twwarhammer3/benchmark-scope-20261020/`.
+Gameplay, proposed verification methods, suite usefulness and novelty remain unverified.
+
 ## 2026-10-20: Benchmark scoring boundaries and rerun plan
 
 Refined the [definition](benchmark.md) after two independent code/document reviews.
