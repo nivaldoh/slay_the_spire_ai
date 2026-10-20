@@ -362,6 +362,13 @@ Found in the M1 matched round (2026-10-16), addressed in v19 / commander v6:
    rejections were orders to routing units, 90 to units the observation already showed
    routing (33 rally orders to its routing lord). The three system prompts now state the
    rule for routing and shattered units, including their abilities.
+9. **Three interface facts the scripts read and the prompt omits** (Empire night review,
+   2026-10-20; not made, since a prompt change is a new version that no longer pools with
+   the v21 cohorts): the map bounds (`terrain.bounds`; 25 of the night's 169 refusals were
+   out-of-bounds moves across five launches, though the model also ignored the rendered
+   `#` cells for 50 of 51 refusals inside the map), the commander flag on a unit (one
+   rider's death on a single-unit roster is a "lord died" morale shock), and a sentence
+   in `rules_prompt.md` that re-sending an unchanged order changes nothing.
 
 ## Designs not built yet
 

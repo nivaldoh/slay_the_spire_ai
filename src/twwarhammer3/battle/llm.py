@@ -32,6 +32,7 @@ LEDGER_PATH = REPO_ROOT / "runs/twwarhammer3/llm-spend.jsonl"
 OPENROUTER_LEDGER_PATH = LEDGER_PATH.with_name("openrouter-spend.jsonl")
 MAX_OUTPUT_TOKENS = 16000  # room for reasoning-on modes (owner, 2026-10-18)
 NOTES_LIMIT = 2000
+REASON_LIMIT = 300  # a garbled 14,858-char reason tripled the next prompts (b44 wizard l2)
 HISTORY_LENGTH = 8
 INVALID_RETRIES = 2
 ARRIVED_M = 15  # a move whose unit stopped this close to the point has been carried out
@@ -637,7 +638,7 @@ class LLMPolicy:
         summary = describe_orders(reply["orders"])
         if metadata.get("dropped"):
             summary += "; dropped as still invalid: " + "; ".join(metadata["dropped"])
-        self.history.append(f"{seconds:.0f} s: {summary} ({reply['reason']})")
+        self.history.append(f"{seconds:.0f} s: {summary} ({reply['reason'][:REASON_LIMIT]})")
         metadata["reason"] = reply["reason"]
         return reply["orders"]
 

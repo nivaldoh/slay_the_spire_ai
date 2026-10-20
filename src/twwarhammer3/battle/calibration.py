@@ -1567,14 +1567,18 @@ class LineTeam(SmallDiagnostic):
                          "Forward is from the line's centre toward the visible enemies' "
                          "centre, read once. Guns stand 30 m behind the line centre, 18 m "
                          "either side, skirmish off, and shoot the nearest enemy cavalry in "
-                         "range, else the nearest enemy in range, halting otherwise. The "
-                         "reserve waits 35 m behind the line centre in guard mode and "
-                         "attacks an enemy infantry unit within 25 m of it. The knights wait "
-                         "50 m behind the line centre and charge the nearest enemy cavalry "
-                         "once one is within 120 m of them, kept until it routs; with no "
-                         "enemy cavalry left they charge the nearest enemy missile unit, "
-                         "else the enemy infantry unit in melee with the lowest men "
-                         "fraction. No hidden state or predicted paths."}
+                         "range, else the nearest enemy in range, keeping a target while it "
+                         "stays in that set and halting with none. The reserve waits 35 m "
+                         "behind the line centre in guard mode and attacks an enemy infantry "
+                         "unit within 25 m of it, preferring its last target while that is "
+                         "within 25 m. The "
+                         "knights wait 50 m behind the line centre and charge the nearest "
+                         "enemy cavalry once one is within 120 m of them; with no enemy "
+                         "cavalry left they charge the nearest enemy missile unit, else the "
+                         "enemy infantry unit in melee with the lowest men fraction. A "
+                         "target is kept until it routs or vanishes; with none the knights "
+                         "ride back to their post unless they are in melee. No hidden state "
+                         "or predicted paths."}
     variant = "fixed"
 
     def __init__(self):
@@ -1614,7 +1618,7 @@ class LineTeam(SmallDiagnostic):
             in_range = [e for e in enemies if distance(gun, e) <= gun.get("range", 0)]
             near = [e for e in in_range if e in cavalry] or in_range
             if gun.get("ammo") and near:
-                orders += self.attack(gun, min(near, key=lambda e: distance(gun, e)), "ranged")
+                orders += self.attack(gun, self.kept(gun, near), "ranged")
             elif self.sent.get(gun["id"], ({}, 0))[0].get("type") == "attack":
                 orders += self.issue(gun, {"unit": gun["id"], "type": "halt"})
             else:
@@ -1625,34 +1629,40 @@ class LineTeam(SmallDiagnostic):
             orders += self.knights_orders(unit, enemies, cavalry, back)
         return orders
 
+    def kept(self, unit, candidates):
+        """The unit's last sent target while it is still a candidate, else the nearest."""
+        # Six b44/b45 launches: the guns re-picked between enemies at almost the same
+        # distance every decision (8-46 target changes a gun) and the reserve alternated in melee.
+        return _keep(candidates, self.sent.get(unit["id"], ({}, 0))[0].get("target"), unit)
+
     def reserve_orders(self, reserve, line, enemies, back):
         orders = []
         for unit in reserve:
             close = [e for e in enemies if e.get("class") == "infantry" and distance(unit, e) < 25]
             if close:
-                orders += self.attack(unit, min(close, key=lambda e: distance(unit, e)))
+                orders += self.attack(unit, self.kept(unit, close))
             else:
                 orders += self.move(unit, _offset(self.centre, back, 35), _centre(enemies))
         return orders
 
     def knights_orders(self, unit, enemies, cavalry, back):
-        post = _offset(self.centre, back, 50)
-        target = next((e for e in cavalry if e["id"] == self.knights_target), None)
-        if target is None and cavalry:
-            nearest = min(cavalry, key=lambda e: distance(unit, e))
-            if distance(unit, nearest) <= 120:
-                target = nearest
-        if target is None and not cavalry:
+        target = next((e for e in enemies if e["id"] == self.knights_target), None)
+        if target is None:
+            close = [e for e in cavalry if distance(unit, e) <= 120]
             shooters = [e for e in enemies if e.get("class") in SHOOTERS]
             engaged = [e for e in enemies if "melee" in e.get("state", [])]
-            if shooters:
+            if close:
+                target = min(close, key=lambda e: distance(unit, e))
+            elif not cavalry and shooters:
                 target = min(shooters, key=lambda e: distance(unit, e))
-            elif engaged:
+            elif not cavalry and engaged:
                 target = min(engaged, key=_fraction)
         self.knights_target = target["id"] if target else None
         if target:
             return self.attack(unit, target)
-        return self.move(unit, post, _centre(enemies))
+        if "melee" in unit.get("state", []):
+            return []  # the target broke under them: finish that fight before riding back
+        return self.move(unit, _offset(self.centre, back, 50), _centre(enemies))
 
     def metadata(self):
         return {"type": "line_team", "variant": self.variant,
@@ -1661,28 +1671,31 @@ class LineTeam(SmallDiagnostic):
 
 
 class LineTeamReserve(LineTeam):
-    """LineTeam whose reserve replaces the first line unit that breaks."""
+    """LineTeam whose reserve attacks the enemy infantry nearest the latest gap in the line."""
 
     card = {"purpose": LineTeam.card["purpose"],
             "knowledge": LineTeam.card["knowledge"] + " Replacement rule: when a line unit "
                          "is seen routing or is gone, the reserve attacks the visible enemy "
-                         "infantry unit nearest to where that line unit was last seen, kept "
-                         "until it routs or vanishes; it then goes back to waiting."}
+                         "infantry unit nearest to where the line unit that broke most "
+                         "recently was last seen, kept until it routs or vanishes; while a "
+                         "line unit is still missing it takes the next such target, and once "
+                         "the line is whole again and its target gone it goes back to its "
+                         "waiting rule."}
     variant = "reserve"
 
     def __init__(self):
         super().__init__()
         self.seen = {}
-        self.broken = set()
+        self.missing = set()
 
     def reserve_orders(self, reserve, line, enemies, back):
+        present = {unit["id"] for unit in line}
         for unit in line:
             self.seen[unit["id"]] = {"x": unit["x"], "z": unit["z"]}
-        gone = [uid for uid in self.seen if uid not in {u["id"] for u in line}]
-        for uid in gone:
-            if uid not in self.broken:
-                self.broken.add(uid)
-                self.gaps.append({"unit": uid, "at": self.now})
+        missing = [uid for uid in self.seen if uid not in present]
+        self.gaps += [{"unit": uid, "at": self.now} for uid in missing if uid not in self.missing]
+        self.missing = set(missing)
+        gone = [gap["unit"] for gap in self.gaps if gap["unit"] not in present]
         target = next((e for e in enemies if e["id"] == self.reserve_target), None)
         if target is None and gone:
             gap = self.seen[gone[-1]]

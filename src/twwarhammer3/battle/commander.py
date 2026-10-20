@@ -23,6 +23,7 @@ from twwarhammer3.battle.llm import (
     MAX_OUTPUT_TOKENS,
     NOTES_LIMIT,
     NUMBER_OR_NULL,
+    REASON_LIMIT,
     REINFORCE_SCHEMA,
     STRING_OR_NULL,
     describe_dropped,
@@ -196,7 +197,7 @@ class CommanderPolicy:
         if abilities:
             plan += "; " + describe_orders(abilities)
         self.history.append(f"state {seen_ms / 1000:.0f} s, adopted {now_ms / 1000:.0f} s:"
-                            f" {plan} ({reply['reason']})")
+                            f" {plan} ({reply['reason'][:REASON_LIMIT]})")
         self._metadata.update(plan=reply["assignments"], abilities=abilities,
                               reason=reply["reason"], notes=self.notes, dropped=dropped,
                               plan_age_s=round(self.age_ms / 1000, 2))

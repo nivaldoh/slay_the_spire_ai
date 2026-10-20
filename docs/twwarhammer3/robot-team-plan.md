@@ -1,7 +1,9 @@
 # Robot team research plan
 
 Rough draft, 2026-10-20. Planning only; the proposed comparisons have not run and their
-verification methods are not yet agreed.
+verification methods are not yet agreed. The first concrete test became the seven-unit
+Empire line battle `emp-line-grn-raid` ([Empire set](empire.md#the-line-battle-emp-line-grn-raid));
+the Skaven battle below was the earlier candidate.
 
 **Can an agent keep a team working when one member can no longer do its job?** In WH3,
 one unit can hold an enemy in place while another attacks elsewhere. If the first unit
@@ -34,7 +36,7 @@ disrupts cooperation while existing orders keep running. We could identify wheth
 failure came from choosing roles, carrying them out, or continuing a plan after its
 conditions disappeared. This is a candidate research direction, not a claim of first use.
 
-## A first battle to try
+## The earlier Skaven candidate
 
 Start from the existing `skv-ogres-slaves-emp-halberds-1` scenario in
 [scenarios.json](../../configs/twwarhammer3/scenarios.json). Keep its map and declared

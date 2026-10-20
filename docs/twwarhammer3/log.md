@@ -35,64 +35,64 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | `bench-g1-cavalry-ai10-01-20261014`: walk-nearest lost at 411 s, run-nearest at 248 s; `bench-b9-timer-acceptance-20261014`: hold lost on the timer at 1205 s |
-| benchmark harness | b45 (2026-10-20: the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (39 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
+| benchmark harness | b46 (2026-10-20: LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
 
+## 2026-10-20: LineTeam kept targets and a reason cap (harness b46)
+
+A review of the Empire night (report and findings in `runs/twwarhammer3/review-20261020/`)
+confirmed 31 issues; b46 holds the fixes.
+- `calibration.py`: `LineTeam`'s guns and waiting reserve keep their last target while
+  it stays in their set (in the six b44/b45 launches the guns re-picked between enemies
+  at almost the same distance every decision, 8-46 target changes a gun, and the reserve
+  alternated in melee); the knights look their kept target up among all enemies (a
+  rallied rider remnant had taken the archers target away) and finish a melee before
+  riding back; `LineTeamReserve` measures from the most recent break, and its card says
+  what the code does (the next target while a line unit is missing, the waiting rule once
+  the line is whole). Three checks in `test_wh3_calibration.py` fail at `76ef7ed` and pass
+  here; a fourth records the chaining the rule already had. Live effect unverified; the
+  revised arms are unplayed.
+- `llm.py`, `commander.py`: a reply's reason enters the prompt history cut at 300
+  characters (`REASON_LIMIT`): the b44 wizard launch's 14,858-character garbled reason
+  tripled the next two prompts. No healthy reason of the night's 3,110 accepted replies
+  exceeded 273, so no fixture prompt changed; `llm` stays v21 unless the owner rules the
+  cap a prompt version. The trace keeps the full reason.
+- Pages corrected from the register and traces: model contact wins 7 of 29 (the page
+  said 9, this log 8), 45 launches and 29 model episodes (39, 23), the rank-5 reserve
+  arm's reading, Kimi's refusals and cost basis, the wizard anomaly as garbled replies
+  (seven accepted in four launches), stale items on state.md, owner-direction.md,
+  posttraining.md and the Spire README; the b43 entry and state.md shortened. 1,351
+  tests and Ruff pass.
+
 ## 2026-10-20: The Empire set (harness b43)
 
-Owner goal (night, away until 11:00): breadth over perfecting one battle; small battles
-to understand units, early larger battles for the robot-team framing; specialize in
-Empire units for post-training data; record decisions and risks. Taken as the
-[Empire set](empire.md): its page holds the why, the scenario table, the decisions and
-the risks. All of it is unverified; no check is agreed.
-- b43 (`4fefd1c`): three Empire scenarios declared, no code change. `emp-line-grn-raid`
-  (7 v 7, the player defends, lordless: a line with a reserve, two gun units and knights
-  against Orc infantry, archers, wolf riders and boar boyz), `emp-handgunners-grn-wolves-boyz`
-  (the riflemen pair against a fast and a slow threat) and `emp-knights-grn-arrers-spears`
-  (one cavalry unit choosing its target past a spear screen). Floors first, then screens.
-- Queue `calibration/empire-20261020/plan.json` (17 single-episode launches, `keep_going`,
-  start before 09:30 local): floors on the three new scenarios; GLM-5.3 low on `llm_rules`
-  v21 on eight Empire scenarios (the line battle twice); Kimi K3 low on the line battle;
-  Qwen3.6 none on the 20 v 20. Paid jobs stop the WH3 OpenRouter ledger at $22.50 (held
-  $12.49; the account had $44.57).
-
-- b44 (`55bd657`, 05:01): `LineTeam` and `LineTeamReserve` in `calibration.py` (the fixed
-  and one-rule arms of the robot-team comparison; one offline test each) and the knights
-  battle stepped to Orc Boyz. Queue `plan-b.json`, 16 launches. b45 (`9bb2abd`, 07:20):
-  `emp-line-grn-raid-xp5`, the line battle with every player unit at experience rank 5
-  (startup check: friendly ranks 5, enemy 0). Queue `plan-c.json`, 6 launches.
-
-**Results** (45 launches 02:37-08:58 local in four queues, every job exit 0; OpenRouter
-$8.84 of the $10 cap, ledger $12.49 to $21.33; per-launch table and per-unit times:
-`calibration/empire-20261020/review.py --units`; readings on [empire.md](empire.md#results);
-all unverified, single launches unless counted):
-- **New scenarios' floors.** Line battle (rank 0): hold lost 327 s; attack_nearest a timer
-  stalemate at 1205 s (13% against 17%), not a contact win. Wolves: hold lost 245 s (the
-  guns never fired: skirmish mode made them run), attack_nearest lost 456 s. Knights
-  (goblin screen): attack_nearest won 371 s, rush_nearest lost 122 s; stepped to Orc Boyz,
-  where both floors lost (453 s, 130 s). Rank-5 line battle: hold lost 327 s, attack_nearest
-  lost 449 s.
-- **GLM-5.3 low, `llm_rules` v21, 25 launches, $6.13: 8 contact wins.** Hammer and anvil
-  (two Swordsmen) 2 of 2 (382, 333 s; a step the walking floor also wins), wolves 1 of 2
-  (295 s), Helblaster 1 of 2 (172 s, the gun alive for the first time on that scenario),
-  rank-5 line battle 1 of 1 (687 s; Kimi K3 low lost it at 532 s, $0.63), riflemen at 1.0
-  1 of 1 (307 s) and two-Dwarf crossfire 1 of 1 (458 s), both steps the walking floor also
-  wins; lost Big 'Uns (183 s), three Swordsmen (335 s), Helblaster step 2 (226 s, the gun
-  moved and never fired) and the wizard at 1.1 (427 s); 0 of 3 on the rank-0 line battle
-  (455, 432, 569 s), 0 of 2 riflemen at
-  1.1, 0 of 2 crossfire, 0 of 2 wizard (the second a backend anomaly: four replies padded
-  with whitespace, 120-178 s each), 0 of 1 knights on each step, 20 v 20 lost 732 s
-  ($0.88; enemy 47% left). Kimi K3 low: 0 of 2 on the rank-0 line battle (349, 925 s;
-  $0.55 and $1.47). Qwen3.6 none on the 20 v 20: lost 523 s (20 decisions, order age
-  18 s from 20-order replies, $0.05).
-- **Scripted team arms.** Rank-0 line battle: LineTeam lost 592 and 381 s, LineTeamReserve
-  lost 392 and 499 s (the rule fired within 9 s of the first line rout; the line broke
-  within 30 s). Rank 5: LineTeam **won by contact at 461 s** (every enemy unit routed, the
-  guns never caught), LineTeamReserve lost 491 s with six of seven enemy units routed.
+The owner's night goal ([owner-direction.md](../owner-direction.md)) taken as the
+[Empire set](empire.md), whose page holds the why, the scenarios, the per-launch readings,
+the decisions and the risks. All of it is unverified; no check is agreed.
+- b43 (`4fefd1c`, 02:37): three Empire scenarios declared, no code change (the line
+  battle, riflemen against wolves and boyz, knights past a goblin spear screen). b44
+  (`355c040` 04:01, `55bd657` 04:13): `LineTeam` and `LineTeamReserve` in `calibration.py`
+  (the robot-team comparison's two scripted arms); knights battle stepped to Orc Boyz. b45
+  (`9bb2abd`, 07:20): `emp-line-grn-raid-xp5`, the line battle at experience rank 5.
+- Four queues in `calibration/empire-20261020/` (`plan.json` 17 launches, `plan-b.json`
+  16, `plan-c.json` 6, `plan-d.json` 6 from 08:19 at `b7e2dd1`, recorded in `76ef7ed`):
+  45 launches 02:37-09:00 local, every job exit 0; OpenRouter $8.84 of the night's $10
+  cap, ledger $12.49 to $21.33. `review.py --units` there prints the per-launch table.
+- **Contact wins** (single launches; readings on [empire.md](empire.md#results)): floors
+  `hold` 0 of 3, `attack_nearest` 1 of 5 (its rank-0 line battle was a timer stalemate at
+  1205 s, not a win), `rush_nearest` 0 of 2; GLM-5.3 low (`llm_rules` v21) 7 of 25, $6.14:
+  hammer and anvil 2 of 2, wolves 1 of 2, Helblaster 1 of 2, rank-5 line 1 of 1, riflemen
+  at 1.0 1 of 1, two-Dwarf crossfire 1 of 1, rank-0 line 0 of 3, the other steps 0 of 13;
+  Kimi K3 low 0 of 3 on the line battle, $2.65; Qwen3.6 none 0 of 1 (the 20 v 20), $0.05;
+  `LineTeam` 1 of 3 (rank 5), `LineTeamReserve` 0 of 3.
+- The second wizard launch lost on garbled replies (gibberish text, no orders) from the
+  pinned Decart backend, 5 decisions, scored as a loss; four more garbled replies were
+  accepted at 11-53 s in knights2 l2, wolves l2 and pitched20 l1.
 - Decisions and risks for the owner: [empire.md](empire.md#for-the-owner-to-decide).
-  Defect found: LineTeam's guns flip targets (41-43 orders, 5-7 targets a battle).
+  Defect found: LineTeam's guns flip targets (41-43 orders, 5-7 targets a battle); fixed
+  in b46 with the knights' and reserve's target rules.
 
 ## 2026-10-20: UI and lobby integration (harness b42)
 

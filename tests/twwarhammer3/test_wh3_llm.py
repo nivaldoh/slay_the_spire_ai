@@ -47,6 +47,16 @@ def test_prompt_shows_units_timing_delay_and_last_seen(tmp_path):
     assert agent.totals["calls"] == 2
 
 
+def test_history_cuts_a_long_reason_but_the_trace_keeps_it(tmp_path):
+    # b44 wizard l2: a garbled 14,858-character reason tripled the next two prompts.
+    agent = policy(tmp_path, reply([], reason="x" * 1000), reply([]))
+    agent.decide(observation())
+    assert len(agent.metadata()["reason"]) == 1000
+    agent.decide(observation(time_ms=45000))
+    prompt = agent.metadata()["prompt"]
+    assert "x" * llm.REASON_LIMIT + ")" in prompt and "x" * (llm.REASON_LIMIT + 1) not in prompt
+
+
 def test_invalid_orders_are_retried_with_feedback_then_dropped_from_the_last_reply(tmp_path):
     bad = {"unit": "f9", "type": "halt"}
     good = {"unit": "f2", "type": "halt"}

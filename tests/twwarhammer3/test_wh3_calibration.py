@@ -1067,6 +1067,53 @@ def test_line_team_opens_with_guard_mode_posts_and_skirmish_off_then_counter_cha
     obs["time_ms"] = 120000
     orders = policy.decide(obs)
     assert next(o for o in orders if o["unit"] == "f7")["target"] == "e5"
+    # A rallied rider remnant 124 m away does not take the archers target away (b44/b45:
+    # the knights alternated targets and were recalled mid-melee in all six launches).
+    obs["enemy"].append(unit("e7", "goblin_wolf_riders_1", 40, -84, cls="cavalry"))
+    obs["enemy"][-1]["class"] = obs["enemy"][-1].pop("cls")
+    obs["time_ms"] = 124000
+    assert next(o for o in policy.decide(obs) if o["unit"] == "f7")["target"] == "e5"
+    # The archers rout under the charge: the knights finish that melee, then ride back.
+    obs["enemy"].pop(2)
+    obs["friendly"][6]["state"] = ["melee"]
+    obs["time_ms"] = 128000
+    assert not [o for o in policy.decide(obs) if o["unit"] == "f7"]
+    obs["friendly"][6]["state"] = ["idle"]
+    obs["time_ms"] = 132000
+    assert next(o for o in policy.decide(obs) if o["unit"] == "f7")["type"] == "move"
+
+
+def test_line_team_guns_and_reserve_keep_a_target_while_it_stays_in_their_set():
+    obs = _line_battle()
+    policy = LineTeam()
+    policy.decide(obs)
+    for u in obs["friendly"]:
+        u["state"] = ["idle"]
+
+    def target(unit_id):
+        return next(o for o in policy.decide(obs)
+                    if o["unit"] == unit_id and o["type"] == "attack")["target"]
+    # Two infantry units in range of the left gun, the goblins a little nearer: the gun
+    # shoots them, and keeps shooting them when the Boyz edge nearer (b44: 8-46 target
+    # changes a battle between near-equidistant enemies), until the goblins leave range.
+    obs["enemy"][0].update(x=-20, z=-100)
+    obs["enemy"][1].update(x=20, z=-100)
+    obs["time_ms"] = 60000
+    assert target("f5") == "e1"
+    obs["enemy"][1].update(x=-20, z=-95)
+    obs["time_ms"] = 64000
+    assert target("f5") == "e1"
+    obs["enemy"][0].update(z=-200)
+    obs["time_ms"] = 68000
+    assert target("f5") == "e2"
+    # The reserve's base rule keeps its close infantry target the same way.
+    obs["enemy"][0].update(x=10, z=34)
+    obs["enemy"][1].update(x=-10, z=35)
+    obs["time_ms"] = 72000
+    assert target("f1") == "e1"
+    obs["enemy"][1].update(x=-8, z=33)
+    obs["time_ms"] = 76000
+    assert target("f1") == "e1"
 
 
 def test_line_team_reserve_replaces_the_first_broken_line_unit():
@@ -1087,3 +1134,33 @@ def test_line_team_reserve_replaces_the_first_broken_line_unit():
     fill = next(o for o in reserve_orders if o["unit"] == "f1" and o["type"] != "behaviour")
     assert fill["type"] == "attack" and fill["target"] == "e2"
     assert reserve.metadata()["gaps"][0]["unit"] == "f2"
+    # The Boyz rout while the Swordsmen are still gone: the next infantry unit nearest the
+    # gap. Once the Swordsmen are back and that target is gone too, the reserve waits again.
+    obs["time_ms"] = 230000
+    obs["enemy"][1]["state"] = ["routing"]
+    assert next(o for o in reserve.decide(obs)
+                if o["unit"] == "f1" and o["type"] == "attack")["target"] == "e1"
+    obs["time_ms"] = 260000
+    obs["friendly"][1]["state"] = ["idle"]
+    obs["enemy"][0]["state"] = ["routing"]
+    assert all(o["type"] != "attack" for o in reserve.decide(obs) if o["unit"] == "f1")
+    assert reserve.metadata()["gaps"] == [{"unit": "f2", "at": 200.0}]
+
+
+def test_line_team_reserve_measures_the_next_target_from_the_latest_gap():
+    obs = _line_battle()
+    obs["enemy"].append(unit("e3", "orc_boyz_1", 30, -12))
+    obs["enemy"][0].update(x=-30, z=-10)
+    obs["enemy"][1].update(x=30, z=-10)
+    reserve = LineTeamReserve()
+    reserve.decide(obs)
+    obs["time_ms"] = 200000
+    for u in obs["friendly"]:
+        u["state"] = ["idle"]
+    obs["friendly"][3]["state"] = ["routing"]  # the Halberdiers on the right break first
+    reserve.decide(obs)
+    obs["time_ms"] = 210000
+    obs["friendly"][1]["state"] = ["routing"]  # then the left Swordsmen
+    obs["enemy"][1]["state"] = ["routing"]  # and the reserve's target routs
+    fill = next(o for o in reserve.decide(obs) if o["unit"] == "f1" and o["type"] == "attack")
+    assert fill["target"] == "e1"  # nearest the left gap, the latest one, not the right

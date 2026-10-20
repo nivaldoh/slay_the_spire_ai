@@ -99,10 +99,14 @@ uv run python -m twwarhammer3 play --scenario brt-cavalry-emp-assault \
 - **Models**: `llm`, `llm_rules` and `commander` need `--budget-usd`, which caps the
   cumulative WH3 ledger (`runs/twwarhammer3/llm-spend.jsonl`), earlier jobs included.
   Never reset or move it; on a fresh clone create it first (`touch` the file), since
-  `play` refuses a missing ledger. `uv run python -m twwarhammer3 spend` prints its total. Each
-  job saves the prompt of every model policy it rotates as `<base policy>_prompt.md` with
-  its hash (`llm_rules@gpt-6-luna` uses `llm_rules_prompt.md`); a prompt difference is a
-  controller difference.
+  `play` refuses a missing ledger. `uv run python -m twwarhammer3 spend` prints its total. A
+  job in a plan may carry a lower `--budget-usd` than the night's cap to leave room for the
+  paid jobs after it; it then stops as `budget_exhausted` and a `keep_going` queue moves on.
+  To stop a job from outside, signal only its Python process, never also the `uv` wrapper
+  (`pkill -f` on the command line matches both and sends two SIGINTs). Each job saves the
+  prompt of every model policy it rotates as `<base policy>_prompt.md` with its hash
+  (`llm_rules@gpt-6-luna` uses `llm_rules_prompt.md`); a prompt difference is a controller
+  difference.
 - **Session settings**: keep `--observe-ms`, `--tick-ms` and `--interval-ms` at their
   defaults; different values make a separate comparison group. `--record-replay` is on
   by default and `--stills` adds presentation images ([reports.md](reports.md)).

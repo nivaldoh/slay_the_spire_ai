@@ -1,9 +1,10 @@
 # Slay the Spire full runs with an API language model
 
-Status: development since 2026-10-12; idle since the v10 job died to a WSL restart on
-2026-10-13, so v10 is untested. The current version and spend are in
-[state.md](../../state.md); every version, its evidence and its per-seed results are in
-[log.md](log.md). Code: `src/spire/fullrun/`, on top of `src/gameai/`.
+Status: development since 2026-10-12; the current version, spend and next step are in
+[state.md](../../state.md). v10 has no Luna pass on the development seeds (its job died to
+a WSL restart on 2026-10-13); since then, three Qwen3.6 smoke runs (2026-10-17) and the
+2026-10-18 runner change (jobs labelled v10.1). Every version, its evidence and per-seed
+results are in [log.md](log.md). Code: `src/spire/fullrun/`, on top of `src/gameai/`.
 
 ## Question
 
@@ -27,8 +28,9 @@ the prompt and memory, not weight training.
   before it is sent if the ledger's total plus that call's worst-case cost (prompt bytes as
   an upper bound on input tokens, plus the 16,000-token output cap) would exceed `--budget-usd`. The
   default ledger is `runs/llm-spend.jsonl`; the owner's cap is in [state.md](../../state.md).
-  An API request that times out on our side may still be billed without a ledger entry, so
-  the OpenAI dashboard total is the final check. OpenRouter calls are charged their
+  A request whose billing is uncertain (a timeout, HTTP 408 or 5xx) is charged at its
+  reservation with a ledger entry, so the ledger overestimates those attempts; the provider
+  dashboard is the final check. OpenRouter calls are charged their
   reported `usage.cost` to `runs/spire-openrouter-spend.jsonl`, which shares the owner's
   $50 OpenRouter allowance with WH3's file
   ([controllers.md](../../twwarhammer3/controllers.md#openrouter)), so `--budget-usd` must

@@ -63,6 +63,8 @@ WH3:
   and per-unit Increase/Decrease experience controls; keep the code simple and clean.
   Agreed verification: save a known army, change it, restart and load; compare types/counts/
   ranks, exercise increases/decreases and compare lobby with battle-start ranks/stats.
+  Done: [b41](twwarhammer3/log.md#2026-10-19-saved-armies-and-experience-harness-b41),
+  check passed at `c768460`.
 - 2026-10-19 (evening, during the b40 round): a battle can also be calibrated by giving
   units different experience ranks, since units gain stats as they gain ranks; in the lobby,
   clicking a unit on the army selection page shows two small buttons under its card,
@@ -74,7 +76,8 @@ WH3:
   battle ends" (the plan-stop file ended the round after that job). For later: the lobby
   rebuilds both armies unit by unit on every launch, which wastes time; the game has a button
   to save an army setup and another to load it, to be found and used
-  ([integration.md](twwarhammer3/integration.md#unverified)).
+  ([integration.md](twwarhammer3/integration.md#unverified)). Done: both found and used in
+  b41 (above).
 - 2026-10-19 (evening): "Continue to make progress on the benchmark. You're allowed to run
   battles and spend some API budget as needed. Make sure you understand the benchmark and the
   results well before drawing strong conclusions." Taken as the go-ahead for second-pass

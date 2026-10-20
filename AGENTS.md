@@ -137,11 +137,12 @@ src/twwarhammer3/  Total War: WARHAMMER III custom battles
                    (asynchronous API model over skills), skills.py (per-unit skill
                    executor, probe_abilities), scripted.py (hold, attack_nearest,
                    rush_nearest), calibration.py (disclosed scenario diagnostics),
-                   capture.py (1 Hz replay recorder and stills), export.py (offline model
-                   decisions, exchanges and provenance), digest.py
-                   (trace summaries), watch.py (follow a job), stats.py (results
-                   register), report.py (paired statistics), report_html.py, replay.py
-                   and report_assets/ (the offline HTML report and its replay)
+                   cards.py (tactic cards: foils, witness, admission rule, board and
+                   verdict; backs `card`), capture.py (1 Hz replay recorder and stills),
+                   export.py (offline model decisions, exchanges and provenance),
+                   digest.py (trace summaries), watch.py (follow a job), stats.py
+                   (results register), report.py (paired statistics), report_html.py,
+                   replay.py and report_assets/ (the offline HTML report and its replay)
 configs/
   llm/             Spire: full-run system prompt and enemy rules notes (its tuning surface)
   suites/          Spire: first-combat suite and catalog declarations

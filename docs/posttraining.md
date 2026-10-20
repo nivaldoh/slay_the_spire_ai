@@ -53,8 +53,10 @@ end.*
 them, not only SFT.* Exports are rebuilt from a stopped job's traces at any time; what the
 traces keep:
 
-- Every model request: the exact prompts, raw outputs with visible reasoning, sampling
-  settings, usage, backend and wall time.
+- Every model request: the exact prompts, raw outputs with visible reasoning, usage,
+  backend, wall time and the sampling fields sent. `providers.py` declares sampling only
+  for Qwen3.6; GLM-5.3 and Kimi K3 requests carry no temperature or top_p, so they ran at
+  the backend's unrecorded default (3,092 of the Empire night's 3,116 rows).
 - Every decision: its index in the episode and trace lines; Spire's public observation,
   candidates, the choice and labels (HP, gold, floor, the fight); WH3's decision time,
   orders, the engine's verdict on each and the observation age.
@@ -62,7 +64,8 @@ traces keep:
   every CommunicationMod message and command. WH3 keeps the public observation behind each
   decision, the hidden enemy totals only at the start and the end (the trace's `roster` and
   `result` records; for scoring, never prompts)
-  and, by default, a 1 Hz replay of public state (45 of the 125 model jobs have one).
+  and, by default, a 1 Hz replay of public state (120 of the 200 model jobs have one,
+  counted from the job directories on 2026-10-20).
 
 So episode rewards, and decision rewards from public state (HP lost per fight, visible
 strength exchanged between two decisions), can be computed later without replaying a
@@ -73,6 +76,8 @@ game. Not captured:
 
 - Token log-probabilities of the model that played: off-policy corrections need them.
   They are not requested (provider support is unverified); on-policy RL samples its own.
+  Without them, and without recorded sampling for GLM and Kimi, the Empire night's rows
+  are teacher data for SFT and distillation, not for off-policy RL.
 - More than one reply per state, which preference methods such as DPO pair up. Saved
   prompts allow resampling offline later; the outcome of another action needs the game.
 - A sampler seed: none is sent.
@@ -258,7 +263,13 @@ configuration, a 0.6B stand-in for the student, and 60 steps.
 - Spire's content changes with the Ironclad unlock level: every run so far is level 3, and
   the profile was 81 points short of level 4 on 2026-10-17. Exports record the level per
   run; compare like with like.
-- Thinking datasets: they need effort `medium` play at the 16,000-token cap (unplayed).
+- Thinking datasets from the student need effort `medium` play at the 16,000-token cap
+  (unplayed). Teacher reasoning rows exist: with `--reasoning`, the Empire night gives
+  2,519 GLM-5.3 and 507 Kimi K3 rows with `reasoning_content` (63 rows have none: 62
+  GLM, 1 Kimi).
 - Target selection: which replies to learn from (a teacher's, rejection-sampled wins, or
-  RL from the start). Winning targets are scarce: 79 WH3 rows from one GLM battle win, no
-  Spire win.
+  RL from the start). Winning targets: 965 WH3 rows from the Empire night's 7 GLM wins
+  (`--require outcome.gameplay_outcome=won`; add `outcome.ended_by=engine_result` to leave
+  out timer wins), no Spire win. Export has no content screen: a reply that parses but is
+  garbage (no orders, a gibberish reason) enters a dataset unless screened; the 2026-10-20
+  review counted 7 such accepted replies in the Empire night, 3 of them in won episodes.
