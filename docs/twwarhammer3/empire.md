@@ -468,3 +468,49 @@ startup check confirmed: friendly ranks 5, enemy 0):
 launches cost $7.57 and the WH3 OpenRouter ledger reads $20.06. On the rank-5 line
 battle: floors 0 of 2, `LineTeam` 1 of 1, `LineTeamReserve` 0 of 1, GLM 1 of 1, Kimi 0 of 1,
 every one a single launch.
+
+Fourth queue (from 08:21; one GLM-5.3 low launch on each Empire scenario not yet played
+tonight):
+- **Riflemen card at 1.0: won by contact at 307 s** ($0.23, 152 decisions, age p50 1.8 s).
+  Two orders in the whole battle: guard mode on both units at 5 s. The guns fired 163
+  rounds at will and were never touched, the braced Spearmen held the Savage Orcs from
+  152 s and the orcs routed at 307 s with 36 of 90. The walking floor also wins this step
+  (2026-10-18), so it is data, not a card result.
+- **Riflemen card against Big 'Uns: lost at 183 s** ($0.12, 68 decisions, age p50 2.4 s).
+  Guard mode and a forward move at 5 s, halts at 52 s, then the Spearmen sent at the orcs
+  at 118 s while the guns were walked back; the Spearmen routed at 169 s after 42 s of
+  melee, the guns at 183 s after 170 rounds, the orcs at 62 of 75. Both floors had lost
+  this step the same way (2026-10-18); nothing a two-unit plan has tried holds Big 'Uns.
+- **Lines of fire against two Dwarf Warriors: won by contact at 458 s** ($0.34, 171
+  decisions, age p50 2.4 s, no refusals). Guard mode at 5 s, a short advance, the guns on
+  one Dwarf unit from 60 s and the Spearmen sent in at 84 s; from 116 s both guns were
+  switched to the unit the Spearmen were fighting and kept there (507 and 696 rounds,
+  never in melee), which fell to 9 of 75 and routed at 384 s; the other followed at 458 s.
+  The walking floor also wins the two-Dwarf step, so this is data; the three-Dwarf step
+  remains unbeaten.
+- **Hammer and anvil against three Swordsmen: lost at 335 s** ($0.20, 88 decisions, age
+  p50 3.3 s). The knights rode a wide loop and charged from 80 s, cycling three times
+  against the same unit (routed none; 66 of 90 left), while the Swordsmen pinned another
+  from 174 s; the knights routed at 319 s with 16 of 45 and the Swordsmen at 335 s.
+  Consistent with the step's history (walking floor and `HammerAnvil` 0 of 5): three
+  Swordsmen are too many for this pair.
+- **Helblaster step 2 (two Men-at-arms): lost at 226 s** ($0.13, 60 decisions, age p50
+  3.3 s). The gun was moved at 5 s and 34 s and so had fired nothing when the riders
+  reached it at 75 s (ammunition 594 of 594 at its death at 110 s); the escort routed one
+  Yeomen unit (135 s) and fell to the two Men-at-arms at 226 s. Moving an artillery piece
+  in the opening minute costs its whole firing window: a lesson that reads straight from
+  the trace.
+- **Wizard at 1.1: lost at 427 s** ($0.26, 91 decisions, age p50 3.9 s, 2 refusals). A
+  long spell sequence from 118 s (Fireballs, upgraded Fireballs, bound blasts, The Burning
+  Head, Flaming Sword and the cloak on the Spearmen) and a kiting wizard; the Spearmen
+  were sent in at 214 s and fought from 260 s; the wizard was caught at 381 s and both
+  routed at 427 s with the enemy at 86 and 61 of 90. GLM 0 of 3 on the wizard battles.
+
+**Fourth queue done at 08:58**: 6 launches, $1.27; GLM won the riflemen card at 1.0 and the
+two-Dwarf crossfire (both steps the walking floor also wins) and lost the Big 'Uns, the
+three-Swordsmen, the Helblaster step 2 and the wizard at 1.1. **The night**: four queues,
+45 launches, $8.84 on OpenRouter (ledger $12.49 to $21.33); model contact wins 9 of 29
+model launches, all GLM-5.3 low: hammer and anvil (two Swordsmen) 2 of 2, wolves 1 of 2,
+Helblaster 1 of 2, riflemen at 1.0 1 of 1, two-Dwarf crossfire 1 of 1, rank-5 line
+battle 1 of 1, and none on the steps where a floor also loses except the wolves,
+Helblaster and rank-5 line battles. All unverified, single launches except where counted.

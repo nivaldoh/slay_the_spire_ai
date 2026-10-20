@@ -10,7 +10,7 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 ## Active work
 
 Nothing is running. The WH3 [Empire set](twwarhammer3/empire.md) night of 2026-10-20
-finished at 08:18: three queues, 39 launches, $7.57
+finished at 08:58: four queues, 45 launches, $8.84
 ([log](twwarhammer3/log.md#2026-10-20-the-empire-set-harness-b43)); its decisions and
 risks wait for the owner ([list](twwarhammer3/empire.md#for-the-owner-to-decide)).
 Integration maintenance is complete ([b42](twwarhammer3/log.md#2026-10-20-ui-and-lobby-integration-harness-b42));
@@ -35,7 +35,7 @@ Priorities (owner, 2026-10-18): WH3 benchmark first, then Spire; post-training s
   [b40 round](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40)
   found witness v2 winning 4 of 5 at 5/5 and 8/8, GLM 0 of 10. No model has won above
   its foils' bound. These gameplay findings remain unverified.
-- Spend: OpenAI $51.47 of $52; WH3 OpenRouter ledger $20.06 ($7.57 the Empire night).
+- Spend: OpenAI $51.47 of $52; WH3 OpenRouter ledger $21.33 ($8.84 the Empire night).
   Before b40, the account had $46.41 shared with Spire (owner: spend carefully).
 
 Next (proposals for the owner; stages in [latency.md](twwarhammer3/latency.md#staged-plan)):

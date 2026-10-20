@@ -64,8 +64,8 @@ the risks. All of it is unverified; no check is agreed.
   `emp-line-grn-raid-xp5`, the line battle with every player unit at experience rank 5
   (startup check: friendly ranks 5, enemy 0). Queue `plan-c.json`, 6 launches.
 
-**Results** (39 launches 02:37-08:18 local, every job exit 0; OpenRouter $7.57 of the
-$10 cap, ledger $12.49 to $20.06; per-launch table and per-unit times:
+**Results** (45 launches 02:37-08:58 local in four queues, every job exit 0; OpenRouter
+$8.84 of the $10 cap, ledger $12.49 to $21.33; per-launch table and per-unit times:
 `calibration/empire-20261020/review.py --units`; readings on [empire.md](empire.md#results);
 all unverified, single launches unless counted):
 - **New scenarios' floors.** Line battle (rank 0): hold lost 327 s; attack_nearest a timer
@@ -74,10 +74,13 @@ all unverified, single launches unless counted):
   (goblin screen): attack_nearest won 371 s, rush_nearest lost 122 s; stepped to Orc Boyz,
   where both floors lost (453 s, 130 s). Rank-5 line battle: hold lost 327 s, attack_nearest
   lost 449 s.
-- **GLM-5.3 low, `llm_rules` v21, 19 launches, $4.86: 5 contact wins.** Hammer and anvil
-  2 of 2 (382, 333 s; a step the walking floor also wins), wolves 1 of 2 (295 s), Helblaster
-  1 of 2 (172 s, the gun alive for the first time on that scenario), rank-5 line battle
-  1 of 1 (687 s; Kimi K3 low lost it at 532 s, $0.63); 0 of 3 on the rank-0 line battle
+- **GLM-5.3 low, `llm_rules` v21, 25 launches, $6.13: 8 contact wins.** Hammer and anvil
+  (two Swordsmen) 2 of 2 (382, 333 s; a step the walking floor also wins), wolves 1 of 2
+  (295 s), Helblaster 1 of 2 (172 s, the gun alive for the first time on that scenario),
+  rank-5 line battle 1 of 1 (687 s; Kimi K3 low lost it at 532 s, $0.63), riflemen at 1.0
+  1 of 1 (307 s) and two-Dwarf crossfire 1 of 1 (458 s), both steps the walking floor also
+  wins; lost Big 'Uns (183 s), three Swordsmen (335 s), Helblaster step 2 (226 s, the gun
+  moved and never fired) and the wizard at 1.1 (427 s); 0 of 3 on the rank-0 line battle
   (455, 432, 569 s), 0 of 2 riflemen at
   1.1, 0 of 2 crossfire, 0 of 2 wizard (the second a backend anomaly: four replies padded
   with whitespace, 120-178 s each), 0 of 1 knights on each step, 20 v 20 lost 732 s
