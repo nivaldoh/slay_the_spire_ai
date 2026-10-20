@@ -9,8 +9,9 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
-Nothing is running. The WH3 [definition review](twwarhammer3/benchmark.md) is documented;
-its new checks and card gates are proposals. The [Empire night](twwarhammer3/empire.md)
+No benchmark or paid job is running. The WH3 [definition review](twwarhammer3/benchmark.md)
+now covers scoring boundaries, timing comparisons and an independent rerun plan;
+its new checks and card gates remain proposals. The [Empire night](twwarhammer3/empire.md)
 finished at 09:00 (45 launches, $8.84); its [owner items](twwarhammer3/empire.md#for-the-owner-to-decide)
 remain pending. The revised b46 LineTeam arms are unplayed; the chariot b40 round stays stopped.
 
@@ -35,8 +36,9 @@ Next (proposals for the owner; [gates](twwarhammer3/benchmark.md#from-a-candidat
 0. Read the night's [results](twwarhammer3/empire.md#results) and its six
    [owner items](twwarhammer3/empire.md#for-the-owner-to-decide), from the rank-5 line
    battle as the first team card to the first Empire export (29 model episodes).
-1. Agree the [correctness checks](twwarhammer3/benchmark.md#correctness-checks-to-agree)
-   and chariot version decisions; preserve c1's frozen historical rule.
+1. Agree the [correctness checks and failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)
+   and chariot version decisions; preserve c1's rule. Prepare the
+   [independent recount/rerun](twwarhammer3/benchmark-run.md#independent-rerun-acceptance-proposal).
 2. Breadth: review the [shortlist](twwarhammer3/tactic-cards.md#which-candidates-to-resolve-next),
    Empire rifle lane/protection, then pin-then-rear. The Skaven expendables candidate stays deferred.
 3. P5's Kimi plans remain unplayed; choose their question before scheduling more chariot

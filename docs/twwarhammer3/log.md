@@ -40,6 +40,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
 
+## 2026-10-20: Benchmark scoring boundaries and rerun plan
+
+Refined the [definition](benchmark.md) after two independent code/document reviews.
+Construction failure can be excluded for lacking a battle id; acknowledgement or cleanup
+failure can prevent an engine ending from being preserved. Documented a proposed phase
+rule and explicit checks; no code fix or live-frequency claim. Failure-stopped rotations
+and budget-stopped battles need missing-outcome treatment before comparisons.
+Failed confirmation cohorts remain evidence; unchanged gates cannot be retried to obtain
+a pass, and later drift checks stay outside admission. Recalculated 10/14 Wilson bounds
+(45–88%) and the 0/14 one-sided bound (0.193); c1's historical rule is unchanged.
+Timing contrasts include the delayed opening and cannot establish rescue by faster serving.
+Recovery adds a conditional fixed-time reserve comparison. The
+[rerun plan](benchmark-run.md#independent-rerun-acceptance-proposal) names the evidence
+handoff, recount and two-launch lifecycle check, with limited claims. Shortened the stale
+scenario survey; history remains at `e75cba5`. Added Gaia2 scorer-validation and statistical
+evaluation lessons, independently checked against the primary papers.
+Documentation only; no source, scenario, prompt or result changed, no game or paid call.
+53 link checks passed, none skipped; Ruff passed. Initial uv cache-permission failures
+were retried with access; logs: `runs/twwarhammer3/benchmark-definition-20261020-r2/`.
+New checks, gameplay effects and the independent live rerun remain unverified.
+
 ## 2026-10-20: Benchmark definition and proposed checks
 
 Refined [benchmark.md](benchmark.md) into one current plan: define the choice, screen

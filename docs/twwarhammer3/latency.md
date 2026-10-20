@@ -90,7 +90,10 @@ paths remain unverified in the game. Compare failed decisions and terminal forfe
 - `--delay-seconds` supplies older state; `--interval-ms` waits after acknowledgement.
   Vary one at a time to study that intervention. Neither flag alone reproduces slower
   computation on fresh input or isolates a slow planner above a fresh-state executor.
-  Such mechanisms need a separate contract and check before use. Battles always stay at 1x.
+  Filling the age buffer also postpones the first order. Isolating reactions after contact
+  would need a shared opening and declared activation point; these are not implemented.
+  Extra delay can show sensitivity, but cannot establish that faster serving would rescue
+  a natural-latency loss. Battles always stay at 1x.
 
 ## Robotics framing
 

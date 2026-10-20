@@ -130,11 +130,14 @@ uv run python -m twwarhammer3 play --scenario brt-cavalry-emp-assault \
   --output runs/twwarhammer3/battle/my-import-check-20261015
 ```
 
-Keep your own class outside the repository and put its directory on the path, for
-example `PYTHONPATH=$HOME/wh3-controllers uv run python -m twwarhammer3 play ...
+Keep a local experimental class under `runs/twwarhammer3/external-controllers/` and put
+that directory on the path, for example
+`PYTHONPATH=runs/twwarhammer3/external-controllers uv run python -m twwarhammer3 play ...
 --policy my_controller:MyController`. Each trial's `card` records the class, its source
 file and sha256, and the file's git revision if it lives in a repository; reports label
-the controller with its hash prefix. Earlier examples are kept, untracked, in
+the controller with its hash prefix. Freeze its source, configuration and any imported
+helpers for a comparison; the entry file's hash alone does not identify those dependencies.
+Earlier examples are kept, untracked, in
 `runs/twwarhammer3/capability-probes/external-controllers/`: `ExternalHold` (the b1
 acceptance controller, with a `card`) and `ProbeFlight` (a flight diagnostic).
 
@@ -239,3 +242,34 @@ command and use the canonical output stem `runs/twwarhammer3/reports/benchmark`.
 Different scenarios and controller versions can share one HTML file while their
 comparison conditions remain distinct. The overview and shared measures are planned;
 no consolidated report was generated during preparation.
+
+## Independent rerun acceptance (proposal)
+
+This is the first reusable-path check, not a new admission rule or a run performed in
+this review. Use one frozen card before attempting a suite. The proposer hands another
+developer:
+
+- the repository revision, card and scorer rule, required game build/content, settings,
+  exact commands and one disclosed outside controller with its dependencies;
+- a named reference cohort with the manifests, results and trace/recording evidence
+  needed to recount outcomes, exclusions and selected signature examples;
+- the expected counts, known manual setup steps and failure/stop instructions.
+
+Local `runs/` paths alone are not that handoff. Provide the agreed evidence separately
+from Git, without game assets or credentials; until it is accessible, independent
+recounting remains unavailable. Existing logs are summaries, not replacements for it.
+
+The recipient first rebuilds the reference counts and labels the selected signature
+cases without reading the scorer's verdict. Disagreement is resolved against engine
+endings and the written rule, not by editing expected numbers. Then, on their supported
+installation, they run two fresh launches with one foil and the frozen outside reference
+per launch, exercising a rematch in each. They inspect setup/start checks, observation
+bases, acknowledgements, continuing battle time and recorded endings, and generate the
+report without undocumented intervention. Every started or skipped trial is accounted for.
+
+Passing requires a correct recount and a usable, documented execution/reset path.
+Two launches do not re-estimate the reference win rate or prove general reset reliability;
+unexpected behavior goes back to the relevant correctness check. Different trajectories
+are allowed. Build differences require separate labels and a new comparability check.
+After this path works, repeat it for the retained distinct cards; architectures, training
+and a large model grid are not prerequisites.

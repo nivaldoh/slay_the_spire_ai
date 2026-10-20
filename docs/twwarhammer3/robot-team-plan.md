@@ -153,6 +153,9 @@ Proceed only if there are recoverable disruptions and more than a cosmetic chang
 target. If fixed jobs or early commitment consistently solve the development cases
 without recovery, retain the battle as a coordination example and choose another recovery
 candidate. If every break causes an unavoidable morale collapse, revise the setup or stop.
+If replacement helps, compare a reserve release whose time and job were fixed from
+development battles before claiming that reacting to a rout is needed. Otherwise the
+benefit may be a better arrival time. Add this arm only when the initial screen warrants it.
 
 ### 2 Test one allocation change
 

@@ -30,8 +30,8 @@ it is slow has lost. Delay arms (below) are diagnostics beside that primary resu
 |---|---|---|
 | Can it apply the tactic? | Frozen card, winning reference and plausible wrong plays; review actions and subsequent state | A statement of the tactic is not its execution; finite foils cannot prove only one tactic can win |
 | Does explaining the tactic help? | Same model/interface, rules alone versus the same rules plus the tactic | This is the effect of supplied advice; offline answers or reason text cannot isolate knowledge from execution |
-| Does timing prevent success? | Same controller, one assigned timing change, achieved ages and decision gaps reported | Different models or reasoning modes also change decisions; a slow loss alone does not identify its cause |
-| Can units recover their cooperation? | Fixed jobs, early reserve commitment and replacement above one executor | More units or a reserve order alone do not demonstrate recovery |
+| How sensitive is success to timing? | Same controller, one assigned timing change, achieved ages and decision gaps reported | Extra delay tests harm from that intervention; it cannot show that faster serving would rescue an existing loss |
+| Can units recover their cooperation? | Fixed jobs, early reserve commitment and replacement above one executor; a timed release if replacement helps | More units or a reserve order alone do not demonstrate recovery |
 
 Natural latency is the primary deployment condition, including retries and provider
 behavior. A model comparison measures the model and its serving system together.
@@ -53,11 +53,14 @@ calibration plans below are history, not competing admission rules.
    feasibility observations, not reliable rates. Inspect default skirmish/fire-at-will,
    terrain, commander morale and whether a witness actually wins the whole battle.
 3. **Confirm only useful candidates.** Freeze the rule, counts and stopping conditions;
-   use new launches. A concrete proposed gate is each foil 0/14 and witness at least 10/14,
-   with its signature on reviewed wins, at a declared age and cadence. Fourteen foil
-   losses give a one-sided 95% upper bound of 0.19; this is not proof of necessity.
-   A broken foil supplies no evidence about a shortcut; repair it and label replacements.
-   This proposal does not replace the chariot's frozen 0/10 and 4/5 historical rule.
+   use new launches. A proposed gate is each foil 0/14 and witness at least 10/14,
+   with its signature on reviewed wins, at a declared age and cadence. This is evidence
+   of a useful separation, not guaranteed winnability: 10/14 has a 95% Wilson interval
+   of about 45–88%; 0/14 gives a one-sided 95% upper bound of 0.19 for that foil.
+   Stop on a foil win or the witness's fifth loss and retain the failed cohort.
+   Repair a broken foil before counting it; a revised card needs a new version and
+   confirmation cohort. Do not keep retrying an unchanged gate to obtain a pass.
+   The chariot's frozen 0/10 and 4/5 historical rule stays attached to c1.
 4. **Compare controllers.** Choose one primary contrast and the smallest useful win-rate
    gain before setting the sample budget. Ten launches is a screen, not a general
    ranking rule. Rotate order within matched launches, keep rematches grouped, retain
@@ -68,13 +71,20 @@ calibration plans below are history, not competing admission rules.
    If results guide another revision, that variation is development from then on.
 
 The first reusable evaluation path needs a frozen card with reference results, the checks below,
-and another user's documented run through the
-[outside-controller route](benchmark-run.md#outside-controllers). An initial suite repeats
+and another user's documented
+[recount and rerun](benchmark-run.md#independent-rerun-acceptance-proposal). An initial suite repeats
 that path for a small set of distinct cards. Expand with distinct
 cards, not a quota or a full model-by-mode grid before the cards are useful. A suite score
 requires a fixed card list and coverage; missing cells are not zeroes and cherry-picked
 subsets are not comparable. Keep per-card results primary, with cost and failures beside
 them. A winning alternative remains a win; it challenges the card's interpretation.
+
+Before a comparison, write one short plan: card/controller/scorer revisions, primary
+contrast, useful effect size, launch count and order, exclusions/replacements, stopping
+rule, reserved variations, and API/game-time ceilings. Include failed candidate versions
+in the record. Later reference runs can detect drift but do not enlarge a frozen
+confirmation cohort. If a cap stops an in-battle trial, the remaining complete cases
+cannot support the planned ranking without addressing that missing outcome.
 
 ## Correctness checks to agree
 
@@ -89,7 +99,7 @@ by this documentation change.
 | The declared battle starts | Reuse the agreed army/settings check on fresh launches; check map identity in the lobby and terrain/start evidence in battle. A rematch comparison is a proposed extension, not covered by that army check | Correct types at wrong ranks, inherited settings or changed resources; no independent battle map-key readback exists |
 | The controller has only its declared information | Compare delivered inputs with an allowlist; alter only hidden scoring fields and check public inputs stay identical; separately inspect visibility in game | Scoring totals in prompts, hidden-enemy fields, extra script-only information |
 | An order can cause the intended behavior | In an unpaused live check, follow a known move/withdrawal/cast from basis through acknowledgement to independently observed movement/contact/effect | Accepted but blocked movement, a queued order mistaken for immediate execution |
-| The outcome and denominator are correct | Hand-classify engine win/loss/draw, timer win, terminal controller failure, setup failure and operator stop; compare card/report output | Timer survival counted as contact victory, a failed decision counted as terminal loss, exclusions disappearing |
+| The outcome and denominator are correct | Hand-classify engine win/loss/draw, timer win, retried and terminal failure, constructor failure, failure while acknowledging a terminal observation, cleanup failure, setup failure and operator stop; compare card/report output against the phase rule below | Timer survival counted as contact victory, a failed decision counted as terminal loss, a recorded ending overwritten or a broken controller disappearing |
 | A signature means what it says | Label positive, negative and ambiguous replay/trace examples against a written behavior rule; check the reader and a deliberately wrong reading | A harmless move counted as withdrawal, automatic re-engagement credited to the model, missing replay counted as absence |
 | Another user can reproduce the evaluation | Follow the runbook with one frozen outside controller; rebuild counts from raw files and repeat a declared launch | Undocumented manual steps, a missing ledger, silently pooled builds/prompts or duplicate rematches |
 
@@ -105,6 +115,26 @@ signature evidence unknown; do not discard an otherwise scored battle because it
 is missing. A patch or provider change creates a new declared condition, not silent
 evidence that the old rates still apply.
 
+For the next chariot signature, independently label a small set of real cases before
+looking at the reader's verdict: a move followed by observed separation and renewed
+contact; a move countermanded while still in melee; separation without a move order;
+and a gap in the recording. Keep attempts, observed withdrawal and renewed contact
+distinct. A melee flag alone cannot prove which enemy was hit or that a charge bonus
+applied. Review disagreements against the evidence, then freeze examples for the reader
+check. Deliberately misleading trace edits test the reader, not live game effects.
+This proposed check does not redefine cycles v1.
+
+**Proposed failure rule for the next evaluator.** Count a controller that fails to
+construct on its assigned attempt as unsuccessful, separately from proven game/setup
+failure. During a valid battle, terminal controller failure is a forfeit; a retried
+decision consumes time. Once an engine ending is observed, preserve that result and
+record later acknowledgement or cleanup errors as reliability failures. List unstarted
+planned trials separately, never as losses. Agree and test this rule before adoption.
+Current code differs: construction precedes recording a battle id, so the card reader
+excludes that failure; acknowledgement or `close()` can fail before the final status is
+stored or preserved. This code inspection does not establish how often either occurs.
+Historical c1 scoring stays fixed.
+
 ## Research that changes the design
 
 Selective primary-source review, 2026-10-20; WH3 uses here are proposals:
@@ -116,6 +146,8 @@ Selective primary-source review, 2026-10-20; WH3 uses here are proposals:
 | [GameWorld](https://arxiv.org/html/2604.07429), April 2026 | Inspect state-based outcome rules and freeze the whole interface/budget before rerunning | Its live variant already studies inference during play; serialized state alone does not validate a WH3 tactic signature |
 | [SMACv2](https://arxiv.org/abs/2212.07489) | Try a fixed schedule before claiming feedback or recovery is required | Randomized teams in StarCraft do not establish useful or reproducible WH3 variants |
 | [LatencySensitiveBench](https://arxiv.org/html/2505.19481v1) | Faster calls can stop helping once action execution is the bottleneck | Its Street Fighter timing threshold is not a WH3 threshold |
+| [Gaia2, §B.2.4](https://arxiv.org/html/2602.11964v1), February 2026 | Check the scorer with both known-validity perturbations and labeled real agent trajectories | Its 450-trajectory verifier study is not validation of WH3 signatures; uncertain labels and independent review here are our proposals |
+| [Statistical Precipice](https://arxiv.org/html/2108.13264v4), NeurIPS 2021 | Match uncertainty to the comparison: repeated runs on fixed tasks differ from sampling more tasks | Neither bootstrap nor an aggregate score automatically makes a small, selected WH3 suite representative |
 
 WH3's opportunity is the combination of inspectable tactics, morale, persistent orders
 and units whose support can fail during inference. Live clocks and hierarchical control
@@ -215,6 +247,10 @@ wait after acknowledgement; it is not an exact decision period. For a timing com
 change one of these at a time and report achieved age and gaps, including retries and
 unfinished calls. Adding a wait to a fresh reply, or delaying only a planner above a
 fresh-state executor, needs a different mechanism. Neither is implemented by the age flag.
+The buffer also delays the first order: the present contrast includes the opening.
+Isolating reactions after contact would need a shared opening and a declared activation
+point, a proposed capability. Do not select battles by their observed latency to claim
+causation: difficult states, retries and long replies can cause both delay and losses.
 
 ## Scenarios
 
@@ -274,158 +310,40 @@ different questions. Existing labels such as `prototype_not_admitted` are legacy
 
 ## Scenario design
 
-Owner direction, 2026-10-16: aim for a compact core of **6–8 distinct decision
-problems**. A different faction, map, army size, role or difficulty is a variant unless
-it introduces a different consequential choice. Keep historical evidence, but do not
-count variants or native-mode smoke tests as extra benchmark coverage.
+Prefer distinct decisions over different rosters. The owner's current direction is
+mostly small Empire battles, with other factions for a specific challenge and a few
+larger coordination problems. The earlier 6–8-family range was a planning guide, not a
+quota or a settled suite. The [shortlist](tactic-cards.md#which-candidates-to-resolve-next)
+and [Empire evidence](empire.md#results) decide what to inspect next.
 
-Follow-up owner note, 2026-10-16: **less is more**. This benchmark is slow to execute,
-so prioritize a smaller set of high-quality scenarios. Quality means benchmark usefulness:
-does this scenario help us learn something new about the models? The 6–8 range is a
-planning guide, not a quota. Redundant scenarios do not justify their execution time;
-each retained scenario should answer a distinct question. This is planning guidance;
-no scenario selection changes are made by recording it.
-
-**Owner direction after M1, 2026-10-16:** keep the collection provisional until the
-strongest models have been tested. The audit's retain/demote recommendations below are
-development priorities, not a settled core. First improve challenge quality and the
-expected information from expensive runs; the [revised plan](#implementation-plan) is
-planning only, with no implementation or new runs authorized by this revision.
-
-Before adding a core candidate, record its question, scarce resource or commitment,
-at least two credible plays, nearest existing family, reason it adds coverage, public
-information/actions needed and observable evidence. These are analyst hypotheses, never
-tactical advice inserted into a policy prompt. Mechanics and objective rules are public.
-A candidate stays exploratory until the game shows that its choices are feasible.
-
-| Family / candidate | Benchmark question and hard choice | Credible alternatives to inspect | Nearest family; why distinct | Evidence |
-|---|---|---|---|---|
-| Cavalry against anti-large | Can the controller create a safe charge window, then disengage? | Split the line and strike a flank; concentrate charges against an isolated target | Conquest; here contact and disengagement determine success, rather than distributed ticket income | Charge/withdrawal orders, contacts, unit survival and enemy strength |
-| Caster-led force | Which spell opportunity justifies spending shared mana and risking the caster? | Spend early on a useful cluster; screen and wait for a better casting window | Swarm assault; the binding resource is shared mana and spell timing | Mana, accepted casts, target geometry, screen/caster survival |
-| Command a Skaven swarm | How much cheap infantry should be spent to deliver scarce weapons safely? | Pin broadly while weapons concentrate; send successive screens down one approach | Caster; several independent damage units need synchronized access, not one casting budget | Screen contacts/routs, weapon firing and survival; prior attacks exposed this coordination problem |
-| Survive a Skaven swarm | How should a compact gunline preserve firing space under encirclement? | Refuse one flank and concentrate fire; fall back with an intact screen | Swarm assault; the player allocates finite fire lanes/ammunition, rather than expendable screens | Gun movement, ammunition, encirclement and time alive. Standing still beat the model in the existing screen; keep the distinction provisional |
-| `chd-reserve-grn-siege` — territorial defence | When should a point be conceded, and where should the only mobile reserve commit? | Contest outer points with construction support; fall back and concentrate around the decisive point | Defensive swarm; geographically separate victory points and construction supplies make territory itself a resource | Point ownership time, supplies/builds, reserve movement, surviving garrison |
-| `ksl-reserves-survival` — reinforcement budgeting | Buy relief now or preserve supplies for a more expensive reinforcement? | Buy cheap fresh screens; save for a specialist while conserving the starting force | Defensive swarm; purchases change the available army over an unknown future sequence | Supplies, purchases by type/time, fresh units, ammunition, duration and native objectives |
-| `emp-battery-skv-evacuation` — asset evacuation (deferred, low priority) | How much scouting and route-clearing effort can the escort afford before its deadline? | Guard the batteries on a direct route; scout and detour around revealed threats | Ranged protection; moving a designated asset to a public destination under incomplete information is the objective | Batteries in zone, survivors, deadline, sightings, escort separation and engine-confirmed ending |
-
-**Evacuation deferred, 2026-10-16.** Its first live attempt failed the authored-placement check before any model call ([log](log.md#2026-10-16-evacuation-deferred-controller-version-labels-fixed)), and the owner moved the custom scenario to the end of the plan as a low-priority item. It stays specified and offline-tested, outside the active core: six candidate families with live evidence remain.
-
-**Conquest was demoted during the live check.** `sla-detachments-dwf-conquest` has one
-central point, not the separated objectives its original brief assumed. It therefore
-fails its stated novelty criterion and remains reference evidence, outside this seven-family
-candidate core. [Creative Assembly's Conquest description](https://community.creative-assembly.com/total-war/total-war-warhammer/blogs/23-total-war-warhammer-iii-patch-5-1-0)
-confirms a central point. The installed build reports a 600-ticket target, despite its
-older help text saying 500; use the numeric engine state. Distributed control belongs in
-a future Domination candidate (the existing Arnheim pilot exposes three separated points),
-with its reinforcement mechanic explicitly separated from the survival question. Do not
-count it as new coverage before it is designed and screened.
-
-Cavalry pikes/Pegasus/assault, their difficulty revisions and held-out maps are **one
-family**. The caster variants likewise form one family. Older Dwarf/Slaanesh ranged
-protection and the Khorne/Dwarf mode pilots remain historical/reference evidence.
-Both swarm roles provisionally occupy separate slots because they reverse the scarce
-resource: expendable screens versus limited firing space. If new trace evidence shows
-that either collapses to an already-covered decision, demote it to a variant. Do not
-add a ninth family to preserve a theme. Cathay cohesion under bombardment is a reserve
-replacement: proximity support versus dispersal, requiring an actual mechanic check.
-
-The roster inventory is local evidence in
-`runs/twwarhammer3/capability-probes/expansion-20261016/`. Selectable faction menus and
-unit cards are evidence of lobby availability, not a complete ownership audit. Steam
-entitlement presence was checked without retaining authentication-ticket contents.
-The implementation uses playable Chaos Dwarfs and Champions of Chaos units. Wood Elf
-cards appeared in the inventory but were inactive and recruited no units in the live lobby;
-the evacuation pilot therefore uses available base Skaven opposition. Gutter Runners
-have `stalk` in the installed database, preserving the scouting question. This is
-availability evidence, not a claim about the complete DLC purchase history. Mechanics
-research: the [Chaos Dwarfs roster](https://store.steampowered.com/app/2059190/Total_War_WARHAMMER_III__Forge_of_the_Chaos_Dwarfs/),
-[Wood Elves](https://store.steampowered.com/app/534331/?l=english), and
-[Creative Assembly's Cathay update](https://community.creative-assembly.com/total-war/total-war-warhammer/blogs/98).
-Local documentation from the installed build governs the script API.
-
-**New native screens, 2026-10-16.** Siege defence produced a Sol loss at 508 s and a
-Luna win at 688 s from matching starts. Construction, reserve commitment, firing and
-fallback were executable. Survival produced losses at 322/406 s (Luna/Sol): four late
-purchases versus all seven initial reserves purchased earlier, followed by lost spawn
-access with supplies unspent. Keep both as exploratory families. Initial survival pools
-are fixed; later native pool changes are observed, not artificially frozen. These pairs
-establish usable choices, not rankings. See the [b12 log](log.md#2026-10-16-harness-b12-and-distinct-scenario-families).
-
-**Retained caster evidence, reviewed 2026-10-16.** The existing base caster scenario has
-three b4 outcomes (Luna 963 s, hold 613 s, walk-nearest 301 s, all losses) and a b7 Sol
-loss at 1077 s. Both model runs began with 12 available mana and 68 in reserve. Their
-accepted ability orders differed materially: Luna requested 16 ordinary and 3 upgraded
-Blue Fires; Sol requested 3 upgraded and 1 ordinary Firestorm, alongside other spells and
-abilities. Their final available mana was 6 and 35 respectively, with reserve nearly
-exhausted. Accepted orders do not prove spell impact, and the harness versions differ,
-so this is evidence of an available mana-allocation problem, not a model ranking.
-No extra caster screen is needed for this expansion tranche; keep it as a provisional
-core family and audit actual spell value in later controlled work.
-
-**Family audit under "less is more" (2026-10-16, recommendation for the owner).** An
-independent read of the saved battles asked of each live family: which plays were
-executed, whether results moved with the controller's decisions, and whether its decision
-collapses into another family's. [H] marks conclusions that rest on hidden evaluation data.
-The selection itself is the owner's call; nothing has been demoted.
-
-| Family | Evidence | Recommendation |
+| Candidate | Consequential choice | What would make it useful or change its interpretation |
 |---|---|---|
-| Cavalry against anti-large | Sol won by flanking to the guns (382 s, 487 s); Luna charged into the halberds. At ×1.1 Sol 1/6, Luna 0/8, scripted 0 | Retain |
-| Siege defence | Identical starts, opposite outcomes: Sol's lord went alone and its cannon never fired; Luna held the gate, fired the cannon and retook a point. Ownership time (92% both) and the opening build did not discriminate | Retain |
-| Command a Skaven swarm | Luna 457 s against run-nearest 288 s (enemy active 0.71 against 0.92 [H]); the only large-army latency test (20 units, mean order age 9.2 s) | Retain; it needs Sol battles |
-| Caster-led force | All model evidence predates flight orders and the current prompts; as a timer-winning defender, Sol spent its second half evading | Screen the attacker variant `tze-caster-skv-assault` (declared in b8, never run) first |
-| Survive a Skaven swarm | Four losses, 444-593 s; `hold` matched or beat both `llm_rules` battles (0.53 against 0.64/0.84 [H]) | Demote to evidence; siege defence covers the gunline problem with more workable options |
-| Kislev reinforcement budgeting | Income was about 30 supplies/s (trace-checked); Sol bought the whole pool and kept 5165. The binding constraint was holding the spawn point, the siege's question | Demote unless supplies can be made scarce |
+| Existing chariot | Leave melee and return, or keep fighting | A repeated winning route and failed long-melee alternatives; retain it as an execution card even if a robust recipe tolerates delay |
+| Empire rifle lane / Helblaster protection | Move to obtain firing space; spend an escort's strength keeping that space usable | Check firing and protection separately; if abandoning the gun also wins, protection is not established as necessary |
+| Empire line battle | Keep opening jobs, commit the reserve, or replace lost support | Useful coordination first; a recovery claim also needs to beat a relevant fixed-time reserve release |
+| Pin-then-rear | Keep one unit engaged while another reaches the rear, or attack together | Observe continuing support and contact; a fixed schedule that succeeds limits the feedback claim |
+| Empire wizard | Spend shared mana now or preserve it for a better target | A credible win must depend on useful casts; accepted casts alone do not establish their effects |
 
-That leaves a core of three distinct questions (manoeuvre against counters, territory and
-reserve, mass coordination under latency), with the caster as a conditional fourth. The
-overnight matched round (M1, [log](log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan))
-runs the retained three first and the two demotion candidates last, so the decision can
-rest on matched evidence.
+These are candidate questions, not admitted tasks or advice silently added to prompts.
+Before a screen, name the public information needed, two credible plays, simplest
+shortcut, observable effect and nearest existing card. Reject redundancy: a difficulty
+step is usually a variant, and 20 v 20 changes combat balance, pathing and order volume
+as well as context length. Reserve supported map or roster variations before tuning;
+compare controllers within each variation rather than attributing a stronger army's wins
+to generalization. Use the [card gates](#from-a-candidate-to-a-scored-card).
 
-**Skaven swarm prototypes (screened 2026-10-15).** Both pin the Taurox
-map, very hard AI, modifier 1.0, unit scale 0.75, custom funds 12000 and the 1200 s
-timer, and use base Skaven (`wh2_main`) and Dwarf (`wh_main`) units whose keys exist in
-the game's English localisation; both pass `validate_declaration` and build their lobby
-steps offline.
+Keep broader questions available without making them release requirements: territorial
+concession and reserve commitment in siege defence; reinforcement budgeting in survival;
+distributed control in Domination. Their native objectives need declared success rules.
+The old Conquest pilot had one central point, so it did not test distributed control;
+the survival screen did not establish scarce supplies. Custom evacuation remains deferred
+after a placement failure. Those observations do not establish good cards in those modes.
 
-| | `skv-swarm-dwf-line` (command a swarm) | `dwf-line-skv-swarm` (survive a swarm) |
-|---|---|---|
-| Player | 20 Skaven, attacking: Warlord, Warlock Engineer, 6 Skavenslaves, 4 Clanrats, 2 Skavenslave Slingers, 2 Warpfire Throwers, Poisoned Wind Globadiers, Warp Lightning Cannon, Doomwheel, Rat Ogres | 7 Dwarfs, defending: Lord, 2 Ironbreakers, Longbeards, Irondrakes, Thunderers, Organ Gun |
-| Enemy | 9 Dwarfs: Lord, Hammerers, 2 Ironbreakers, Longbeards, 2 Thunderers, Irondrakes, Organ Gun | 20 Skaven: Warlord, Plague Priest, 5 Skavenslaves, 5 Clanrats, 2 Stormvermin, 2 Plague Monks, 2 Skavenslave Slingers, Warp Lightning Cannon, Rat Ogres |
-| Protected | Warlock Engineer, Warp Lightning Cannon | Irondrakes, Organ Gun |
-| Naive risk | one all-in charge into the guns, then a cascade of routs | spreading out and being encircled |
-| A viewer should see | slaves screening and pinning, weapon teams arriving together, the caster kept alive | a refused flank, ammunition saved for clusters, the line holding or folding |
-
-Screened on 2026-10-15 (`llm` v16, harness b10, Luna low), one launch each. The lobby took
-both 20-unit armies at 12000 (decoded costs 8025 and 8200, 6300 and 8350); the AI held its
-line in the first and attacked in the second; no battle ended in seconds or at the timer.
-Every player army was routed:
-
-| Scenario | Controller | Lost at | Enemy active at the end | Order delay (mean) | Engine rejections |
-|---|---|---|---|---|---|
-| `skv-swarm-dwf-line` | `llm_rules`, Luna | 457 s | 0.706 | 9.22 s | 56 (30 to fleeing units, 15 unreachable, 11 abilities) |
-| `skv-swarm-dwf-line` | run-nearest | 288 s | 0.921 | 0.31 s | 3 |
-| `dwf-line-skv-swarm` | `llm_rules`, Luna | 444 s | 0.640 | 8.18 s | 17 |
-| `dwf-line-skv-swarm` | `hold` | 565 s | 0.529 | 0.30 s | 0 |
-
-Both are hard for these controllers and neither is degenerate. In the second, standing
-still outlasted the model and left the swarm weaker (0.561 against 0.640 over the original
-Skaven force; `enemy_active` also counts a unit the Skaven summoned during `hold`'s
-battle). The trace review: between 5 and 168 s the model ordered the Organ Gun 11 times to
-attack the enemy cannon about 670 m away (its range is 300 m); an attack on a target out
-of range moves the unit, so the gun, then the Thunderers and Irondrakes, left the line,
-fought alone and fled first (the gun at 202 s), and at 128 s the reply called the cannon,
-403 m away, "now-in-range". The rejections began after the line broke. Over three
-quarters of every shooter's ammunition went unspent in both battles. The abilities refused in the first match the known causes
-(readiness lag and magic spent by issuance; [integration.md](integration.md)), not
-audited one by one. Keep both scenarios and their existing evidence in the shared
-report; broader scenario coverage now precedes further matched repeats.
-
-A siege attacker needs gate, wall and equipment orders before evaluation. Review traces
-for whether meaningful specialist decisions occurred: a win by an unrelated exploit or a
-grossly superior anchor does not establish the challenge. Keep that review qualitative
-and separate from outcomes; there is no creativity or entertainment score.
+Earlier family audits, rosters and screening tables are history at
+`git show e75cba5:docs/twwarhammer3/benchmark.md`, with runs in the
+[b12 log](log.md#2026-10-16-harness-b12-and-distinct-scenario-families) and later entries.
+Their retain/demote recommendations do not define today's suite. Check content availability
+on the recipient's installation; a visible lobby card is not proof it can be recruited.
 
 ## Outcomes, measures and comparison
 
@@ -440,7 +358,12 @@ Trial statuses (`battle/play.py`):
   failure) and `interrupted` (operator stop).
 
 Every started trial is written to `result.json`, the manifest and the register. Any other
-ending than an engine result stops the job; unplayed controllers stay unpaired.
+ending than an engine result stops the job; unplayed controllers stay unpaired. Show
+planned, started and scored counts per arm with each missing partner's reason. Do not
+discard a failure to balance pairs. Complete-pair comparisons are conditional on both
+controllers finishing, which can select easier instances. If this prevents the planned
+comparison, stop it or freeze a new cohort with one controller per launch, interleaved
+across time; do not repeatedly replace only the incomplete pairs.
 
 `battle/report.py` computes, per evidence group (same resolved scenario, source revision,
 game build, track, recorder and imagery settings, observe/tick/interval, model and

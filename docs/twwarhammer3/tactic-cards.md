@@ -230,6 +230,10 @@ It need not lose at slower settings; a robust recipe is useful evidence. If a fi
 schedule wins the reserved variants, a claim that feedback is essential needs revision.
 Use a plausible partial-tactic foil where it matters (for example, an escort that wins
 after abandoning the gun). Test simpler alternatives before strengthening the opponent.
+The current gates supersede decision 3's older restart/pooling proposal: retain a genuine
+foil win as counterevidence, revise the card before another confirmation, and keep later
+drift checks separate from its frozen admission cohort. Do not keep retrying an unchanged
+gate to obtain a pass.
 
 ## Score
 
@@ -239,6 +243,9 @@ is wins/scored trials, with a 95% Wilson interval; show total starts, exclusions
 terminal forfeits explicitly. For example, 10 starts, 1 setup exclusion, 2 terminal
 controller failures and 3 wins gives 3/9, not 3/7. Within-launch contrasts must retain
 pairing; a per-cell Wilson interval alone is not an interval for the difference.
+Report planned but unstarted trials too; a failure stops the rotation, so complete pairs
+can be a selected subset. A budget-stopped battle needs missing-outcome treatment before
+the cohort can support a ranking.
 Launches are the best available sampling unit, but fresh starts do not establish
 independent engine seeds or provider randomness. Intervals remain conditional on the
 declared setup and sampling protocol.
@@ -250,6 +257,9 @@ stops are excluded and listed with any replacements. A recoverable failed call c
 battle time but is not itself a terminal forfeit: score the final episode. No selective
 reruns for slow or garbled replies. Any backend repair starts a separately labelled cohort.
 Native-objective cards need their own declared success rule before use.
+Construction and post-terminal errors need the proposed
+[phase rule and checks](benchmark.md#correctness-checks-to-agree); current code does not
+implement that proposal. Preserve the frozen historical verdicts.
 
 Show signature evidence, p50/p90 issue age, decision gaps, pending/failed calls, cost and
 failure counts beside each rate. The report's rate over engine-completed trials is a
