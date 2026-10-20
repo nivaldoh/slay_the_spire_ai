@@ -2387,5 +2387,20 @@
       "wh3_main"
     ],
     "calibration_change": "Empire set (2026-10-20 night, delegated; docs/twwarhammer3/empire.md). The Empire cavalry counterpart of the giant card: one unit choosing its target past an anti-large screen. Knights 850; Goblin Spearmen 325, Arrer Boyz cost unread; funds 1,500. Floors attack_nearest and rush_nearest first; a floor win means the screen steps up (Orc Boyz or modifier 1.1)."
+  },
+  "emp-knights-grn-arrers-boyz": {
+    "base": "emp-knights-grn-arrers-spears",
+    "name": "emp-knights-grn-arrers-boyz",
+    "brief": "The knights target-choice battle one step harder: one Empire Knights unit attacks one Orc Arrer Boyz unit and one Orc Boyz unit, with no lords. The Boyz beat the knights in a long melee; the archers hurt them at range and are easy to ride down. Which unit to charge first, from where, and whether to pull out and charge again are the decisions. Hypotheses, not a prescribed solution.",
+    "enemy": {
+      "units": [
+        "wh_main_grn_inf_orc_boyz",
+        "wh_main_grn_inf_orc_arrer_boyz"
+      ]
+    },
+    "expect": {
+      "funds_amount": 1800
+    },
+    "calibration_change": "Empire set step (2026-10-20 night, delegated): against Goblin Spearmen the attack-nearest floor won by contact at 371 s (bench-b43-knights-grn-floor-attack-20261020: the goblins routed at 294 s with 1 of 120 left, 29 of 45 knights alive), so the screen was no screen. One factor: Orc Boyz in place of the goblins (cost unread; funds 1,800). Floors first."
   }
 }
