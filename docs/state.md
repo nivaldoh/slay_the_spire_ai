@@ -100,8 +100,8 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
    achievements (which cannot be undone; a no keeps campaign work to offline drafts).
 6. Team plan ([§12](twwarhammer3/multi-agent-plan.md#12-decisions-for-the-owner)): the first comparison (one card, one `llm_rules`
    controller against two members without messages, about $10); no separate team screen (the card
-   comes from the starting set); the stricter live witness (recount only); is a second WH3
-   account on a second machine possible?
+   comes from the starting set); the stricter live witness (recount only). Native multiplayer is
+   deferred (no second machine).
 
 ## Runtime and ownership
 

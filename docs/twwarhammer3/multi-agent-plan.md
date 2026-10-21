@@ -8,7 +8,8 @@ commitments change which later decisions are possible.
 
 Start with two agents commanding separate groups of one army against the game AI. Then take
 single-client steps (an allied AI army, model against model), then native allied armies and
-2v2, then campaigns. Each stage is its own claim: a split-army result says nothing about
+2v2, then campaigns. Native multiplayer is deferred: there is no second machine for now
+(owner, 2026-10-21). Each stage is its own claim: a split-army result says nothing about
 native multiplayer or campaigns.
 
 Status: a proposal. Of the checks below, only the scripted split-army team's are agreed
@@ -384,11 +385,13 @@ model against model, with the battle script driving both alliances, each with it
 
 ### E Native team battles
 
-Native multiplayer is required for any native-multiplayer claim. First inventory licensed
-clients, machines, accounts, content and compatible builds; the question for the owner is
-whether a second WH3 account on a second machine is possible. Find out whether permitted
-game-side commands are synchronized by the engine; client-local file polling or Lua
-callbacks need not produce identical effects. The community mirror of CA's [UI scripting
+Deferred: there is no second machine for now (owner, 2026-10-21), so this stage and the
+campaign stages with two player factions wait; the single-client steps (§9 D) and
+single-faction campaign stages do not. Native multiplayer is required for any
+native-multiplayer claim. When a second machine exists, first inventory licensed clients,
+accounts, content and compatible builds. Find out whether permitted game-side commands are
+synchronized by the engine; client-local file polling or Lua callbacks need not produce
+identical effects. The community mirror of CA's [UI scripting
 documentation](https://chadvandy.github.io/tw_modding_resources/WH3/ui_scripting.html) warns
 that changing game state from client-specific UI events can desynchronize a match, and its
 [CampaignUI
@@ -539,8 +542,8 @@ never game packs or campaign saves.
 3. The live witness change on the [implementation
    page](multi-agent-implementation.md#checks): require the fast unit to be idle before its
    order (recount only, no game time).
-4. Is a second WH3 account on a second machine possible? Until it is, the native stages stay
-   gates and the single-client steps (§9 D) come first.
+4. Settled (owner, 2026-10-21): no second machine for now, so native stages are deferred and
+   the single-client steps (§9 D) come first.
 5. Native multiplayer setup and the campaign lifecycle remain capability gates. Use a
    provisional campaign and faction for access probes, choose the evaluation campaign and
    factions from that evidence, and freeze a short cooperative task before mixed-interest

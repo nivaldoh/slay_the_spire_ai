@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-21 (evening), verbatim: "We won't have a second machine for now. We'll have to
+  leave that part for the future. You are free to proceed with other work. I won't have time
+  to review decisions carefully now, so continue to follow your best judgement and highlight
+  any meaningful decisions for me to review later". No return time or free PC was named, so
+  this is offline work under the [away proposal](autonomy.md)'s busy rule.
 - 2026-10-21 (evaluation resource): read [Wolfe's subjective-evaluation guide](https://cameronrwolfe.substack.com/p/subjective-evals),
   incorporate useful ideas into the repo's evaluation guidelines, and add it to the
   [reference list](twwarhammer3/evaluation-guidelines.md#sources).

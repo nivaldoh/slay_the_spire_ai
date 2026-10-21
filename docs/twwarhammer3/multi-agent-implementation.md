@@ -184,8 +184,9 @@ with everything else identical; writing messages counts in the team's time and c
 
 ### Beyond one army
 
-Native allied armies and 2v2 need client, player and army identity, a declared multiplayer
-setup, replicated command effects, cross-client result agreement and a revised session
-ownership. Removing the Lua guard does not enable them. Campaigns need their own faction
-observation and action contract, save/load, turn transitions and campaign-to-battle handoff,
-behind the owner's save and achievement decisions. The plan's §9 and §10 give the stages.
+Deferred (no second machine for now; owner, 2026-10-21). Native allied armies and 2v2 need
+client, player and army identity, a declared multiplayer setup, replicated command effects,
+cross-client result agreement and a revised session ownership. Removing the Lua guard does
+not enable them. Campaigns need their own faction observation and action contract,
+save/load, turn transitions and campaign-to-battle handoff, behind the owner's save and
+achievement decisions. The plan's §9 and §10 give the stages.
