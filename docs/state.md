@@ -87,8 +87,8 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
    the ending only, scores unchanged; scoring construction failures needs a later change.
 4. Where to back up `runs/`, which has no copy (23 GB, 6.9 GB without `checkpoints/`). Ready
    on a yes: a sha256-checked copy to `C:` (the same machine, so not off-site).
-5. The chariot card: [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)
-   3-5 and whether witness v2 replaces v1 in the rule (v1 stays the admitted verdict); the
+5. The chariot card: [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions) 3-5; recommended, witness v2 for the
+   next confirmation (4/5 at 5 s/5 s and 8 s/8 s, v1 2/8 and 0/4), c1 staying v1's admitted record. The
    [latency program's](twwarhammer3/latency.md#owner-decisions) three: `c1` as evidence, the scored route, the $20 stop.
 6. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (may they train
    a model? 25,503 rows excluded), GLM-5.3 or rejection-sampled Qwen3.6 ([licenses](posttraining.md#provider-terms)).
