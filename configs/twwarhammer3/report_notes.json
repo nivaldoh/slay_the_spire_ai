@@ -203,7 +203,7 @@
       "challenge": "A Helblaster and one Halberdier escort defend against two Mounted Yeomen units and Men-at-arms. The gun can do damage while the escort buys firing time, but the riders can approach from either side.",
       "family": "protect a fragile gun",
       "core_candidate": false,
-      "footnote": "Development candidate S4. The hold-position floor lost at 160 s, with 59% of its soldiers surviving against 81% of the attackers. Cavalry reached the Helblaster after only 42 of its 594 rounds had been used, then stopped its fire. A disclosed bodyguard diagnostic will test whether escort placement and cavalry-first targeting preserve useful firing time."
+      "footnote": "Development candidate S4. The hold-position floor lost at 160 s, with 59% of its soldiers surviving against 81% of the attackers. Cavalry reached the Helblaster after only 42 of its 594 rounds had been used, then stopped its fire. The disclosed bodyguard diagnostic then won 5 of 8 battles (451–561 s), but in every win the gun's crew routed mid-battle (97–276 s) and the Halberdier escort's melee decided the battle."
     },
     "emp-helblaster-brt-raiders-2": {
       "title": "Keep the volley gun alive, outnumbered",
@@ -233,7 +233,7 @@
       "challenge": "Two Bretonnian Mounted Yeomen Archer units attack one unbreakable Slayer unit whose AI side receives the game's 1.1 stats modifier. Armies, map and deadline stay fixed.",
       "family": "ammunition and kiting",
       "core_candidate": false,
-      "footnote": "S2 second harder step after the Mounted Yeomen floor won narrowly. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+      "footnote": "S2 second harder step after the Mounted Yeomen floor won narrowly. Its attack-nearest floor also won (330 s, 88 of 90 riders left), so the next step returns to modifier 1.0 and adds a shielded Dwarf Warriors decoy."
     },
     "brt-archers-dwf-slayers-decoy": {
       "title": "Horse archers, Slayers and a shield wall",
@@ -253,7 +253,7 @@
       "challenge": "One Empire Spearmen unit and two Handgunner units attack two shielded Dwarf Warrior units. The handguns cannot shoot over friends and the dwarf shields block frontal shots, while the spearmen lose a long melee. The attacker loses at the 20-minute deadline.",
       "family": "lines of fire",
       "core_candidate": false,
-      "footnote": "Development candidate S3 (b18). Defined only: the lordless setup, funds and cards await their live check, then an attack-nearest floor and a disclosed flanking-fire diagnostic at 0 and 5 s observation age."
+      "footnote": "Development candidate S3 (b18). The lordless setup passed its live check, and the attack-nearest floor won at 433 s, too easy under the floor rule, so the next step adds a third Dwarf Warriors unit. GLM-5.3 (low) also won, at 458 s."
     },
     "emp-handgunners-dwf-warriors-3": {
       "title": "Handgunners against three shield walls",
@@ -273,7 +273,7 @@
       "challenge": "A Bright Wizard and one Spearmen unit attack two Empire Swordsmen units. Fire spells can decide a two-to-one infantry fight but also burn friendly troops, and the opening magic pool is small. The attacker loses at the 20-minute deadline.",
       "family": "spell timing with scarce magic",
       "core_candidate": false,
-      "footnote": "Development candidate S5 (b18), overlapping the caster family. Defined only: the hero-led lordless roster, the wizard's spells and the funds await their live check, then ability-probe and attack-nearest floors and a disclosed spell-window diagnostic at 0 and 5 s observation age."
+      "footnote": "Development candidate S5 (b18), overlapping the caster family. The lobby passed at 3,000 funds. The ability-probe, attack-nearest and rush-nearest floors lost; the disclosed spell-window diagnostic lost its first fresh battle on the timer, then won fresh at 440 s and won all four battles at 5 s observation age (479–534 s). GLM-5.3 (low) lost both its battles (314 and 526 s)."
     },
     "emp-knights-emp-swordsmen": {
       "title": "Knights and swordsmen against three units",
@@ -283,7 +283,7 @@
       "challenge": "One Swordsmen unit and one Empire Knights unit attack three Empire Swordsmen units. The infantry cannot hold three units for long, and the knights suffer in a prolonged melee. The attacker loses at the 20-minute deadline.",
       "family": "hammer and anvil",
       "core_candidate": false,
-      "footnote": "Development candidate S6 (b18), partly overlapping S1's rear charges. Defined only: the lordless setup and funds await their live check, then an attack-nearest floor and a disclosed hammer-and-anvil diagnostic at 0 and 5 s observation age."
+      "footnote": "Development candidate S6 (b18), partly overlapping S1's rear charges. The lordless setup passed its live check; the attack-nearest floor lost at 490 s and the disclosed hammer-and-anvil diagnostic lost all four battles at 0 and 5 s observation age (402 and 493 s fresh, the 1205 s timer at 5 s). GLM-5.3 (low) also lost, at 335 s."
     },
     "emp-knights-emp-swordsmen-2": {
       "title": "Knights and swordsmen against two units",
@@ -293,7 +293,7 @@
       "challenge": "One Swordsmen unit and one Empire Knights unit attack two Empire Swordsmen units. The infantry can hold one unit for a while but not both, and the knights suffer in a prolonged melee. The attacker loses at the 20-minute deadline.",
       "family": "hammer and anvil",
       "core_candidate": false,
-      "footnote": "S6 step down: against three Swordsmen the attack-nearest floor and the disclosed hammer-and-anvil diagnostic lost every battle. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+      "footnote": "S6 step down: against three Swordsmen the attack-nearest floor and the disclosed hammer-and-anvil diagnostic lost every battle. At this step the attack-nearest floor won at 461 s, and GLM-5.3 (low) won both its battles (382 and 333 s)."
     },
     "emp-pitched-grn-20": {
       "title": "Twenty against twenty",
@@ -303,7 +303,7 @@
       "challenge": "Twenty Empire units, led by a General with a Bright Wizard, two artillery pieces and a mix of halberds, spears, swords, guns and cavalry, attack twenty Greenskin units of equal cost. The Greenskin AI can call Waaagh army abilities. The attacker loses at the 40-minute deadline.",
       "family": "scale and context",
       "core_candidate": false,
-      "footnote": "Larger development candidate L1 (b19), overlapping swarm command on order volume. Defined only: setup, duration, observation size and decision delay await attack-nearest and skills setup battles; a scripted win is not expected."
+      "footnote": "Larger development candidate L1 (b19), overlapping swarm command on order volume. The setup battle passed: the attack-nearest floor lost at 523 s. Qwen3.6 (reasoning off) lost at 523 s and GLM-5.3 (low) at 732 s; no skills battle has run."
     },
     "ksl-ffa-grn-dwf-12": {
       "title": "A four-way battle",
@@ -323,7 +323,7 @@
       "challenge": "Two Dwarf Longbeard units defend against four faster Empire Swordsmen units that can wrap their flanks and rear in the open. Map edges and restricted terrain are visible; elevation is not.",
       "family": "deny the envelopment",
       "core_candidate": false,
-      "footnote": "Development candidate S7 (b19), the draft's lowest-confidence item. Defined only: the lordless setup and funds await their live check, then a hold floor and a disclosed corner-hold diagnostic at 0 and 5 s observation age."
+      "footnote": "Development candidate S7 (b19), the draft's lowest-confidence item. The lordless setup passed its live check, and the hold floor won easily (469 s, 93% of its soldiers left), so the next step adds two more Swordsmen units."
     },
     "dwf-longbeards-emp-swordsmen-6": {
       "title": "Two Longbeard units against six",
@@ -333,7 +333,7 @@
       "challenge": "Two Dwarf Longbeard units defend against six Empire Swordsmen units. Blocked ground and the map edge limit how many attackers can reach the defenders at once.",
       "family": "deny the envelopment",
       "core_candidate": false,
-      "footnote": "S7 second step: the hold floor won the four-unit version easily. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+      "footnote": "S7 second step: the hold floor won the four-unit version easily. It also won this step (612 s, 65% of its soldiers left), so the next step changes the attackers' quality instead of their number."
     },
     "dwf-longbeards-emp-greatswords-2": {
       "title": "Two Longbeard units against Greatswords",
@@ -343,7 +343,7 @@
       "challenge": "Two Dwarf Longbeard units defend against two Empire Greatswords units and two Swordsmen units. The Greatswords' armour-piercing blades cut through dwarf armour; blocked ground and the map edge limit how many attackers can reach the defenders at once.",
       "family": "deny the envelopment",
       "core_candidate": false,
-      "footnote": "S7 third step: the hold floor won against four and against six Swordsmen, so the attackers change in quality instead of number. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+      "footnote": "S7 third step: the hold floor won against four and against six Swordsmen, so the attackers change in quality instead of number. Here the hold floor lost at 387 s, and the disclosed corner-hold diagnostic held to the 1205 s timer at both 0 and 5 s observation age."
     },
     "dwf-thunderers-grn-trolls": {
       "title": "Thunderers against regenerating Trolls",
@@ -353,7 +353,7 @@
       "challenge": "Two Dwarf Thunderer units and one Dwarf Warriors unit defend against three regenerating Troll units. Damage spread across the trolls regenerates; the guns must break one unit at a time before the clubs reach them.",
       "family": "focus fire against regeneration",
       "core_candidate": false,
-      "footnote": "Development candidate S8 (b20). Defined only: the lordless setup awaits its live check, then a hold floor and a disclosed focus-fire diagnostic at 0 and 5 s observation age."
+      "footnote": "Development candidate S8 (b20). The lordless setup passed its live check; the hold floor lost at 136 s and the disclosed focus-fire diagnostic at 147 s (fresh) and 149 s (5 s observation age), and no Troll died."
     },
     "dwf-thunderers-grn-trolls-2": {
       "title": "Thunderers against two Troll units",
@@ -363,7 +363,7 @@
       "challenge": "Two Dwarf Thunderer units and one Dwarf Warriors unit defend against two regenerating Troll units. Damage spread across the trolls regenerates; the guns must break one unit before the clubs reach them.",
       "family": "focus fire against regeneration",
       "core_candidate": false,
-      "footnote": "S8 step down: against three Trolls the hold floor and the disclosed focus-fire diagnostic lost, and no Troll died. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+      "footnote": "S8 step down: against three Trolls the hold floor and the disclosed focus-fire diagnostic lost, and no Troll died. At this step the hold floor won at 214 s."
     },
     "grn-giant-ksl-streltsi": {
       "title": "A lone Giant against spears and rifles",
@@ -373,7 +373,7 @@
       "challenge": "One Greenskin Giant attacks a braced Kislev Kossar spear unit and a Streltsi rifle unit. The spears fight well against large monsters; the riflemen do not, but they shoot armour-piercing rounds during the approach.",
       "family": "a lone monster's target choice",
       "core_candidate": false,
-      "footnote": "Development candidate S9 (b20). Defined only: the one-unit lordless setup awaits its live check, then an attack-nearest floor and a disclosed target-choice diagnostic at 0 and 5 s observation age."
+      "footnote": "Development candidate S9 (b20). The one-unit lordless setup passed its live check; the attack-nearest floor lost at 542 s and the disclosed target-choice diagnostic at 276 s (fresh) and 242 s (5 s observation age)."
     },
     "grn-giant-ksl-streltsi-trolls": {
       "title": "A Giant and Trolls against spears and rifles",
@@ -383,17 +383,17 @@
       "challenge": "A Greenskin Giant and one Troll unit attack a braced Kislev Kossar spear unit and a Streltsi rifle unit. Both Greenskin units are large; the spears fight well against them, and the riflemen do not, but they shoot armour-piercing rounds during the approach.",
       "family": "monster target choice",
       "core_candidate": false,
-      "footnote": "S9 rebalance: with the Giant alone, the attack-nearest floor and the disclosed target-choice diagnostic lost with either target first. A second, cheaper monster keeps the target question; removing an enemy unit would not. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+      "footnote": "S9 rebalance: with the Giant alone, the attack-nearest floor and the disclosed target-choice diagnostic lost with either target first. A second, cheaper monster keeps the target question; removing an enemy unit would not. The attack-nearest floor won this step at 328 s."
     },
     "skv-spears-sla-hellstriders": {
       "title": "Skaven spears against Hellstriders",
       "short": "Receive the charge",
       "noun": "small anti-cavalry defence",
       "heading": "Fronts toward the riders",
-      "challenge": "Three Skaven Clanrat Spearmen units defend against two fearsome Hellstrider cavalry units that never rout. Braced spear fronts stop charges; open flanks and rears invite them.",
+      "challenge": "Three Skaven Clanrat Spearmen units defend against two fearsome Hellstrider cavalry units. Braced spear fronts stop charges; open flanks and rears invite them.",
       "family": "receiving cavalry: facing and bracing",
       "core_candidate": false,
-      "footnote": "Development candidate S10 (b20). Defined only: the lordless setup awaits its live check, then hold and attack-nearest floors and a disclosed bracing diagnostic at 0 and 5 s observation age."
+      "footnote": "Development candidate S10 (b20). The lordless setup passed its live check, and the hold floor won at 207 s with 86% of its soldiers left, so the next step adds a third Hellstrider unit."
     },
     "skv-spears-sla-hellstriders-3": {
       "title": "Rat spears against three rider units",
@@ -403,7 +403,7 @@
       "challenge": "Three Clanrat Spearmen units defend against three Hellstrider units. Facing, bracing and counter-charges decide whether the block holds.",
       "family": "receiving cavalry: facing and bracing",
       "core_candidate": false,
-      "footnote": "S10 second step: the hold floor won the two-rider version at 207 s. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+      "footnote": "S10 second step: the hold floor won the two-rider version at 207 s, and it won this step too, at 216 s, with all three Hellstrider units routed."
     },
     "dwf-cannon-grn-lobbers": {
       "title": "A Dwarf cannon against two Rock Lobbers",
@@ -413,7 +413,7 @@
       "challenge": "One Dwarf Cannon and one Dwarf Warriors unit attack two Goblin Rock Lobbers screened by two Goblin Spearmen units. Marching under two lobbers' fire is costly; silencing them first takes the cannon's limited rounds.",
       "family": "counter-battery",
       "core_candidate": false,
-      "footnote": "Development candidate S11 (b20), the lowest-confidence item of its batch. Defined only: the lordless setup awaits its live check, then an attack-nearest floor and a disclosed counter-battery diagnostic at 0 and 5 s observation age."
+      "footnote": "Development candidate S11 (b20), the lowest-confidence item of its batch. The lordless setup passed its live check; the attack-nearest floor lost at 509 s and the disclosed counter-battery diagnostic at 346 s (fresh) and 564 s (5 s observation age)."
     },
     "dwf-cannon-grn-lobbers-1": {
       "title": "A Dwarf cannon against one Rock Lobber",
@@ -423,7 +423,7 @@
       "challenge": "One Dwarf Cannon and one Dwarf Warriors unit attack one Goblin Rock Lobber screened by two large Goblin Spearmen units. Silencing the lobber first costs rounds and time the cannon also needs against the spearmen.",
       "family": "counter-battery",
       "core_candidate": false,
-      "footnote": "S11 step down: against two lobbers the attack-nearest floor and the disclosed counter-battery diagnostic lost. Scripted checks come before a model screen; this step is not yet demonstrated winnable."
+      "footnote": "S11 step down: against two lobbers the attack-nearest floor and the disclosed counter-battery diagnostic lost. The attack-nearest floor won this step at 469 s."
     }
   },
   "units": {
@@ -466,7 +466,7 @@
       "name": "General of the Empire",
       "short": "Gen",
       "role": "General on foot",
-      "about": "The enemy's leader: one character on foot who steadies nearby units, as slow as its infantry.",
+      "about": "The army's leader: one character on foot who steadies nearby units, about as slow as its infantry.",
       "glyph": "general"
     },
     "wh_main_emp_inf_halberdiers": {
@@ -820,10 +820,10 @@
         },
         {
           "time_ms": 23200,
-          "end_ms": 121300,
+          "end_ms": 127600,
           "lead_in_s": 6,
           "title": "The reserve commits outside the gate",
-          "text": "The Bull Centaurs intercepted the trolls. Sol first ordered them back at 121.3 s, after heavy losses; the reserve eventually routed. This demonstrates a consequential commitment, not evidence that an alternative would win.",
+          "text": "The Bull Centaurs met the trolls at 40 s and began fleeing at 70 s with 8 of their 12 centaurs left. Sol first ordered them back at 127.6 s, after they had rallied with 3 left; they fled again at 145 s and were wiped out by 276 s. This demonstrates a consequential commitment, not evidence that an alternative would win.",
           "kind": "maneuver",
           "units": [
             "f8",
@@ -893,7 +893,7 @@
           "end_ms": 352800,
           "lead_in_s": 8,
           "title": "A ticket lead does not save the army",
-          "text": "Sol held the single point and earned 238 tickets toward the 600-ticket target. The Dwarfs retook it, then routed the remaining Slaanesh army. The engine loss is retained alongside ticket progress.",
+          "text": "Sol held the single point and earned 238 tickets toward the 600-ticket target. The Dwarfs took it at 313 s, then routed the remaining Slaanesh army. The engine loss is retained alongside ticket progress.",
           "kind": "outcome",
           "units": [
             "f7"
@@ -950,7 +950,7 @@
           "end_ms": 147200,
           "lead_in_s": 8,
           "title": "The magic display has not caught up with a cast",
-          "text": "Just after Blue Fire was issued, the snapshot still displayed 7 magic. GLM requested Harmonic Convergence for 5; that order was refused, and the next snapshot showed 2 magic. All seven special-ability refusals in this battle followed the same pattern: a just-issued spell, an apparently affordable second spell, then a lower pool reading.",
+          "text": "Just after Blue Fire was issued, the snapshot still displayed 7 magic. GLM requested Harmonic Convergence for 5; that order was refused, and the next snapshot showed 2 magic. All seven refusals with the game's “does not support this special ability” error followed the same pattern: a just-issued spell, an apparently affordable second spell, then a lower pool reading; the battle's two other refusals, at 278.6 s, named a dead target.",
           "kind": "trouble",
           "units": [
             "f1"
