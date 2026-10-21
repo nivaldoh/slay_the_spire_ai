@@ -405,12 +405,14 @@ between units. A literature review does not establish that this combination is u
 No set is agreed yet. This proposes the battles to take to confirmation first, by a rule
 that can be checked against the record. Counts are episodes in `results.csv` (rematches
 included, mostly single launches, all unverified), recounted by
-`runs/twwarhammer3/away-20261021/evidence.py`; `markers/markers.py` beside it reads each
-card's marker on every recorded episode (42; proposed readers, not agreed checks). Success
+`runs/twwarhammer3/away-20261021/evidence.py`; `markers/markers.py` beside it reads the
+line, expendables and probe markers on all 42 recorded episodes of those battles (proposed
+readers, not agreed checks), and `twwarhammer3 card chariot` reads the chariot's. Success
 is a contact win: every enemy unit routed or destroyed before the timer. A defender's timer
-win is recorded beside it, not counted ([Empire decision 7](empire.md#decisions-taken-for-the-owners-review)).
-The floors are the naive scripts `hold`, `attack_nearest` and `rush_nearest`; a witness is
-a disclosed script that plays the tactic.
+win is recorded beside it, not counted ([Empire decision
+7](empire.md#decisions-taken-for-the-owners-review)). The floors are the naive scripts
+`hold`, `attack_nearest` and `rush_nearest`; a witness is a disclosed script that plays the
+tactic.
 
 **What a card needs before confirmation.** All five must hold:
 1. It tests a decision no other card in the set tests. New cards play Empire unless the
@@ -444,11 +446,11 @@ evidence for its reinstatement, and a witness for two threats.
 Not in the starting set:
 - **Rifle lane**, `emp-handgunners-grn-savage-orcs-hard` (defends): fire past one's own
   Spearmen through a clear lane. Its family took two steps (Big 'Uns, then Savage Orcs at
-  1.0, where `attack_nearest` won, then 1.1) and `hold` never played against Savage Orcs. FlankLane won 1/2 at
-  5 s, and its lane marker (most rounds fired with the gun-to-target line clear of the
-  Spearmen, FlankLane's own test) reads 90% and 100% against `attack_nearest`'s 12%; GLM-5.3
-  low lost 2/2 at 0%. Its floors and witness are in the screen, for the owner to reinstate
-  it on that evidence.
+  1.0, where `attack_nearest` won, then 1.1) and `hold` never played against Savage Orcs.
+  FlankLane won 1/2 at 5 s, and its lane marker (most rounds fired with the gun-to-target
+  line clear of the Spearmen, FlankLane's own test) reads 90% and 100% against
+  `attack_nearest`'s 12%; GLM-5.3 low lost 2/2 at 0%. Its floors and witness are in the
+  screen, for the owner to reinstate it on that evidence.
 - **Two threats**, `emp-handgunners-grn-wolves-boyz`: the Spearmen meet the fast Wolf
   Riders, the guns shoot with skirmish off and then turn to the Orc Boyz. Floors 0/2; no
   witness. The marker (the guns never in melee before the riders are shattered or gone)
