@@ -419,10 +419,12 @@ jobs; the Skaven expendables test spending cheap units to hold the enemy's anti-
 infantry. They were chosen by the five-part rule below. The line and the expendables go
 through three stages: a $0 scripted screen (39 launches with two probes, about 5.1 h),
 where the naive scripts must lose and a disclosed script must win 2 of 3 showing the
-tactic's marker; a confirmation (each foil 0 of 14, the witness at least 10 of 14); then a
-model screen (about $10 for GLM and Qwen on all three cards). The screen waits for [inbox
-item 1](../state.md#owner-decisions-waiting); the chariot, admitted under c1's rule, waits
-for the agreed checks.
+tactic's marker; a confirmation (each foil 0 of 14, the witness at least 10 of 14), once
+the card's named shortcut is scripted and has lost; then a model screen (about $10 for GLM
+and Qwen on all three cards). The screen waits for [inbox item
+1](../state.md#owner-decisions-waiting); the chariot, admitted under c1's rule, waits for
+the agreed checks, failure rule and witness version
+([state](../state.md#total-war-warhammer-iii), next step 1).
 
 This proposes the battles to take to confirmation first, by a rule that can be checked
 against the record. Counts are episodes in `results.csv` (rematches included, mostly single
@@ -518,14 +520,18 @@ jobs follow each other within seconds):
   step instead). A card goes to confirmation when no floor won by contact, its witness won
   at least 2 of 3 with the marker on each win, and the rest of its Missing column is done,
   so a screen alone admits no card; any other result goes back to the owner, as do the two
-  probes. The line card's marker is agreed with the go-ahead, before its screen is read. A
-  floor's timer win is noted, not counted. A failed launch is not replaced: a cell with
-  fewer than 3 scored launches is re-planned before it is read. Three launches are a cheap
-  filter: a floor that wins 20% of its battles loses all 3 half the time (51%), and a
-  witness that wins half passes 2 of 3 half the time, and one that wins 80% passes 90% of
-  the time; confirmation does the rest. `read_screen.py` beside the plan prints the rule's
-  verdict per card and every planned job without a scored episode; on every recorded launch
-  (`--all`) it reproduces the line and expendables floor and witness counts.
+  probes. Both cards' markers, the line's and the expendables', are agreed with the
+  go-ahead, before the screen is read. A floor's timer win is noted, not counted. A failed
+  launch is not replaced: a cell with fewer than 3 scored launches is re-planned before it
+  is read. Three launches are a cheap filter: a floor that wins 20% of its battles loses
+  all 3 half the time (51%), and a witness that wins half passes 2 of 3 half the time, and
+  one that wins 80% passes 90% of the time; confirmation does the rest. `read_screen.py`
+  beside the plan prints the rule's verdict per card and every planned job without a scored
+  episode; on every recorded launch (`--all`) it reproduces the line and expendables floor
+  and witness counts.
+- Shortcut screen, $0, not yet planned: 3 launches of each card's named shortcut once it is
+  scripted (a code change; the line's knights held back, the expendables' ogres at the guns
+  at once), about 50 minutes, before confirmation.
 - Confirmation at the [proposed gate](benchmark.md#from-a-candidate-to-a-scored-card) (each
   foil 0/14, witness at least 10/14): 56 launches for a card with three floors (the line
   and the expendables; 42 with two) plus 14 per shortcut foil: about 140 launches over two
@@ -548,5 +554,6 @@ guideline 3.2; proposed: the same card on `battle_preset_wh3_nur_wastes_01_04`, 
 the six earlier `-heldout-wastes` entries, listed in the lobby and used by one random
 battle but by no card, checked by its witness and floors only), and the two defending cards
 need the [defender-prompt decision](../state.md#owner-decisions-waiting): the model prompt
-promises a defender the timer win these cards do not count. The scripted screen does not
-depend on either.
+promises a defender the timer win these cards do not count. The scripted screen can run
+before either; if the defender-prompt decision counts timer wins, a floor's timer win in it
+parks that card.

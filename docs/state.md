@@ -76,12 +76,12 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 
 ## Owner decisions waiting
 
-1. **The [starting set](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21)'s screen**:
-   recommended, a yes to run its $0 scripted plan (39 launches, about 5.1 h) on the next night the
-   PC is free (a yes here needs no item 9), with the line's marker: the knights first fight cavalry.
-2. **The defender prompt** promises a timer win the cards do not count ([16 of 17](twwarhammer3/empire.md#decisions-taken-for-the-owners-review)
-   model episodes on five defending battles restate it). Recommended: state the card's rule in the
-   `llm` and `commander` prompts (a new version once a change slot frees); or count timer wins.
+1. **The [starting set's screen](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21)**: recommended, a yes runs its
+   $0 scripted plan (39 launches, about 5.1 h) on a free night (no item 9 needed) and agrees its reading rule and markers:
+   the knights first fight cavalry; the slaves meet the halberds before the ogres' first melee, which is not with them.
+2. **The defender prompt** of every model controller says "if time runs out, you win"; the cards count only contact wins
+   ([Empire decision 7](twwarhammer3/empire.md#decisions-taken-for-the-owners-review), for your review; 16 of 17 `llm_rules` episodes on five
+   defending battles restate it). Recommended: a contact-scoring scenario field that says so instead (a prompt version once fewer than 3 changes wait); or count timer wins.
 3. **The [failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)**: recommended, agree it
    (rescores no recorded episode) and merge `wh3-keep-engine-ending` (`git show 98b3013`), which keeps
    the ending only, scores unchanged; scoring that ending and construction failures needs a later change.
