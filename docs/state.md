@@ -32,12 +32,12 @@ Priorities (2026-10-18): WH3 first, then Spire; post-training secondary. [Traces
 
 Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-to-the-first-release)):
 0. Read the night's [results](twwarhammer3/empire.md#results) and its six
-   [owner items](twwarhammer3/empire.md#for-the-owner-to-decide) (rank-5 line card to export).
+   [owner items](twwarhammer3/empire.md#for-the-owner-to-decide) (from the rank-5 line card to the export).
 1. Agree the [correctness checks and failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)
    and chariot version decisions; preserve c1's rule. The c1 [recount/rerun](twwarhammer3/benchmark-run.md#independent-rerun-acceptance-proposal)
-   handoff is in `runs/twwarhammer3/away-20261021/handoff-c1/` (not shared).
+   handoff is in `runs/twwarhammer3/away-20261021/handoff-c1/` (not shared off this machine).
 2. Breadth: the [starting set](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21) (chariot,
-   rank-5 line, expendables) and its $0 screen with two probes; the chariot waits on 1.
+   rank-5 line, expendables) and its $0 screen with two probes; the chariot waits on step 1.
 3. P5's Kimi plans remain unplayed; choose their question before scheduling more chariot
    cells. A stronger model at modifier 1.1 remains untested (the OpenAI cap).
 4. [Robot team plan](twwarhammer3/robot-team-plan.md) ([research guide](twwarhammer3/robot-team-research.md)):
@@ -77,14 +77,14 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 ## Owner decisions waiting
 
 1. **The [starting set](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21)'s screen**:
-   recommended, a yes to run its $0 scripted plan (36 launches, about 4.6 h) on the next away
-   night, with the line card's proposed marker (the knights first fight enemy cavalry).
-2. **The defender prompt** promises a timer win the cards do not count; 16 of 17 model episodes on
-   [five defending battles](twwarhammer3/empire.md#decisions-taken-for-the-owners-review) restate it.
-   Recommended: state the card's rule (a new prompt version); or count timer wins.
+   recommended, a yes to run its $0 scripted plan (39 launches, about 5.1 h) on the next night the
+   PC is free (a yes here needs no item 9), with the line's marker: the knights first fight cavalry.
+2. **The defender prompt** promises a timer win the cards do not count ([16 of 17](twwarhammer3/empire.md#decisions-taken-for-the-owners-review)
+   model episodes on five defending battles restate it). Recommended: state the card's rule in the
+   `llm` and `commander` prompts (a new version once a change slot frees); or count timer wins.
 3. **The [failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)**: recommended, agree it
-   as written (no recorded episode changes) and merge `wh3-keep-engine-ending` (`git show 98b3013`;
-   scores unchanged). Deferring leaves the next evaluator's failure count undefined.
+   (rescores no recorded episode) and merge `wh3-keep-engine-ending` (`git show 98b3013`), which keeps
+   the ending only, scores unchanged; scoring construction failures needs a later change.
 4. Where to back up `runs/`, which has no copy (23 GB, 6.9 GB without `checkpoints/`). Ready
    on a yes: a sha256-checked copy to `C:` (the same machine, so not off-site).
 5. The chariot card: [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)
