@@ -9,17 +9,12 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
-No benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md)
-([owner decisions](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need)), the
-[scope](twwarhammer3/benchmark.md#scope-and-first-release), suite membership, new checks and card gates
-remain proposals. The [Empire night](twwarhammer3/empire.md) finished at 09:00 (45 launches, $8.84;
-[owner items](twwarhammer3/empire.md#for-the-owner-to-decide) pending); the b46 LineTeam arms are
-unplayed; the chariot b40 round stays stopped.
-
-Away window 2026-10-21 02:20 to about 12:00 (Claude Code; offline, $0, no game: no plan was
-named): [log entry](twwarhammer3/log.md#2026-10-21-a-proposed-starting-set-the-failure-rule-recount-and-a-blind-c1-recount),
-files in `runs/twwarhammer3/away-20261021/`. Waiting changes: 3 of 3 (`v11-keys`,
-`wh3-rules-v21-attack-path`, `wh3-keep-engine-ending`), so no new change starts before review.
+No benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md),
+[scope](twwarhammer3/benchmark.md#scope-and-first-release), suite, new checks and card gates remain
+proposals; the [Empire night's](twwarhammer3/empire.md) owner items are pending. Away window
+2026-10-21 02:20 to about 12:00 (Claude Code; offline, $0, no game: no plan was named):
+[log entry](twwarhammer3/log.md#2026-10-21-a-proposed-starting-set-the-failure-rule-recount-and-a-blind-c1-recount),
+files in `runs/twwarhammer3/away-20261021/`. Waiting changes: 3 of 3 ([branches](#branches)).
 
 Priorities (2026-10-18): WH3 first, then Spire; post-training secondary. [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
 
@@ -42,8 +37,8 @@ Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-t
 1. Agree the [correctness checks and failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)
    and chariot version decisions; preserve c1's rule. The c1 [recount/rerun](twwarhammer3/benchmark-run.md#independent-rerun-acceptance-proposal)
    handoff is in `runs/twwarhammer3/away-20261021/handoff-c1/` (not shared).
-2. Breadth: screen the [starting set](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21)
-   (chariot, rank-5 line, Skaven expendables, rifle lane; the rest parked with reasons).
+2. Breadth: the [starting set](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21)'s $0
+   screen (rank-5 line, expendables, rifle lane, two-threats floors; the chariot waits on 1).
 3. P5's Kimi plans remain unplayed; choose their question before scheduling more chariot
    cells. A stronger model at modifier 1.1 remains untested (the OpenAI cap).
 4. [Robot team plan](twwarhammer3/robot-team-plan.md) ([research guide](twwarhammer3/robot-team-research.md)):
@@ -83,11 +78,13 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 ## Owner decisions waiting
 
 1. **The [starting set](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21)'s screen**:
-   recommended, a yes to run its $0 scripted plan (36 launches, about 4.6 h) on the next away night.
+   recommended, a yes to run its $0 scripted plan (36 launches, about 4.6 h) on the next away
+   night, with the line card's proposed marker (the knights first fight enemy cavalry).
 2. **The defender prompt** promises a timer win the cards do not count ([16 of 29 model launches](twwarhammer3/empire.md#decisions-taken-for-the-owners-review)).
-   Recommended: state the card's rule (one new prompt version with item 8's sentence); or count timer wins.
-3. **The [failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)** (rescores none of 595
-   episodes) and the unmerged branch `wh3-keep-engine-ending` (`b527584`, scores unchanged).
+   Recommended: state the card's rule (a new prompt version); or count timer wins.
+3. **The [failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)**: recommended, agree it
+   as written (no recorded episode changes) and merge `wh3-keep-engine-ending` (`git show b527584`;
+   scores unchanged). Deferring leaves the next evaluator's failure count undefined.
 4. Where to back up `runs/`, which has no copy (23 GB, 6.9 GB without `checkpoints/`). Ready
    on a yes: a sha256-checked copy to `C:` (the same machine, so not off-site).
 5. The chariot card: [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)
@@ -99,7 +96,7 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
    a sampler seed or explicit GLM/Kimi sampling before the next model screens
    ([gaps](posttraining.md#beyond-supervised-fine-tuning)).
 8. `wh3-rules-v21-attack-path` (one rules sentence: attacks take the engine's route; move first
-   and queue the attack): recommended, fold it into item 2's version and drop the branch.
+   and queue the attack): recommended, its own `llm_rules` version after item 2's, or drop it.
    Whether to keep `commander` (unplayed since v4); more OpenAI budget (the $52 cap refuses Sol).
 9. Yes/no on the [away guidelines](autonomy.md); before any campaign launch, yes/no on
    harness saves in the WH3 profile and on Steam achievements (which cannot be undone).
@@ -122,4 +119,6 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` attack-route draft, labelled
   v21 before main's v21 (`18dabdd`); renumber before any merge.
+- `wh3-keep-engine-ending` (`b527584`, worktree `../slay_the_spire_ai-wh3-ending`): keeps the
+  engine's ending through a late acknowledge or `close()` failure (inbox item 3).
 - Archived drafts are tags (`git tag --list 'archive/*'`).

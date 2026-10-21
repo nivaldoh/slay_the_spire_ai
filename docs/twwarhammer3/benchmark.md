@@ -214,15 +214,17 @@ check. Deliberately misleading trace edits test the reader, not live game effect
 This proposed check does not redefine cycles v1.
 
 Labelled examples (2026-10-21, `runs/twwarhammer3/away-20261021/chariot-labels/`, proposed):
-one agent picked 16 engagements from 16 chariot battles, aiming at edge cases; two others
-labelled them without the reader, first against a rule whose gaps they exposed (`v1/`),
-then against rule v2 (`rule.md`); each round agreed on all 16 labels. On v2's labels cycles
+one agent picked 16 engagements from 16 chariot battles, aiming at edge cases; two labellers
+labelled them without the reader against a rule whose gaps they exposed (`v1/`), then two
+new labellers against rule v2 (`rule.md`); each pair agreed on all 16 labels. On v2's labels cycles
 v1 was right on 9: it counted all 4 locked-in attempts (a pull-out order while the chariot
 stayed in melee) as cycles and missed 3 pull-outs ordered up to 5 s before contact, which
 v2 counts and v1's window does not. Counting every engagement but the last was right on 10.
 Hand-picked edge cases give no rate; they show that v1 counts attempts, as its definition
 says, and v2's choices (the 5 s window, 60 m of separation) need the owner's view before
-the examples are frozen.
+the examples are frozen. The 16 hold no engine exit and no recording gap and one countermand
+(in a final engagement), so those kinds still need examples. All agents are one model
+family: this checks the written rule, not independent judgment.
 
 **Proposed failure rule for the next evaluator.** Count a controller that fails to
 construct on its assigned attempt as unsuccessful, separately from proven game/setup

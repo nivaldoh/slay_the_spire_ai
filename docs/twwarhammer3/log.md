@@ -42,8 +42,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 ## 2026-10-21: A proposed starting set, the failure-rule recount and a blind c1 recount
 
-Away window from 02:20, offline, $0, no game (no plan was named); task note, readers and
-outputs in `runs/twwarhammer3/away-20261021/`.
+Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3/away-20261021/`.
 - [Starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21) (proposal): a five-part
   rule, four cards (chariot, rank-5 line, Skaven expendables, rifle lane), the rest parked,
   and a $0 screen of 36 scripted launches (about 4.6 h). Two review rounds (12 agents)
@@ -57,9 +56,10 @@ outputs in `runs/twwarhammer3/away-20261021/`.
   version caught two changed readings, now avoided. Regression fails on the parent, passes
   here; full suite 1342 passed, 28 skipped; Ruff clean.
 - c1: a blind recount from docs and raw files matched every outcome and the verdict, and the
-  written rule now states the scorer's 1 s tolerance and zero interval. Two labellers agreed
-  on 16 hand-picked chariot engagements; cycles v1 was right on 9, no better than counting
-  every engagement (10), since it counts attempts, not exits.
+  written rule now states the scorer's 1 s tolerance and zero interval. On 16 hand-picked
+  chariot engagements labelled under the proposed rule v2, cycles v1 was right on 9 and
+  counting every engagement but the last on 10 (12 and 7 under rule v1). One model family
+  throughout: these check the documents, not judgment.
 - Unverified: every gameplay count (1-33 episodes a cell), markers and labels (proposed).
 
 ## 2026-10-21: Autonomous-work strategy refined (proposal)
