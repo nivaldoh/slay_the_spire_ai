@@ -70,7 +70,7 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
   shows in `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
 - WH3 register and `stats`: blank version on benchmark rows, grouping by commit, API failures
   as `policy_failure` (`card` classifies failures, keys by setup); a defender's timer stalemate
-  counts as won (`stats` ignores `ended_by`; the card and the Empire review script do not).
+  counts as won (3 rows; `stats` ignores `ended_by`; the card and the Empire review do not).
 - No automated checks for report JavaScript or several Spire play-loop stop paths. Spire's
   Workshop mod pins still block a run when a mod updates.
 
