@@ -40,7 +40,8 @@ input would create a separate perception and information-boundary experiment.
 The latest chariot round ([b40](log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40))
 gives a reason to investigate execution. The revised scripted chariot controller won 4/5
 battles at 5 s added observation age / 5 s decision interval, and 4/5 at 8 s / 8 s.
-GLM-5.3 low with the corrected prompt won 0/10 at younger information ages. These small, unverified samples
+GLM-5.3 low with the corrected prompt won 0/10 at younger information ages. These small,
+unverified samples
 weaken a latency-only explanation. Withdrawal geometry and repeated changes of orders are
 hypotheses suggested by the traces; their causal effects have not been isolated.
 
