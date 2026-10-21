@@ -238,17 +238,19 @@ gate to obtain a pass.
 ## Score
 
 The sampling unit is the launch; count at most one trial per controller/condition within
-it. Rematches share the instance and are not extra independent samples. The primary rate
-is wins/scored trials, with a 95% Wilson interval; show total starts, exclusions and
-terminal forfeits explicitly. For example, 10 starts, 1 setup exclusion, 2 terminal
-controller failures and 3 wins gives 3/9, not 3/7. Within-launch contrasts must retain
-pairing; a per-cell Wilson interval alone is not an interval for the difference.
-Report planned but unstarted trials too; a failure stops the rotation, so complete pairs
-can be a selected subset. A budget-stopped battle needs missing-outcome treatment before
-the cohort can support a ranking.
-Launches are the best available sampling unit, but fresh starts do not establish
-independent engine seeds or provider randomness. Intervals remain conditional on the
-declared setup and sampling protocol.
+it. Rematches share the instance and are not extra independent samples. The primary rate is
+wins/scored trials, with a 95% Wilson interval; show total starts, exclusions and terminal
+forfeits explicitly. For example, 10 starts, 1 setup exclusion, 2 terminal controller
+failures and 3 wins gives 3/9, not 3/7. Within-launch contrasts must retain pairing; a
+per-cell Wilson interval alone is not an interval for the difference. Report planned but
+unstarted trials too; a failure stops the rotation, so complete pairs can be a selected
+subset. A budget-stopped battle needs missing-outcome treatment before the cohort can
+support a ranking. Launches are the best available sampling unit, but fresh starts do not
+establish independent engine seeds or provider randomness. Intervals remain conditional on
+the declared setup and sampling protocol. Fresh launches start from the same layout: 5 s
+in, every unit stood within 6 m of its place in the first launch (93 chariot, 6 rank-5 line
+and 12 expendables launches, 2026-10-21), so results vary through what happens in the
+battle.
 
 Current classic cards use an engine win before the timer as success. Timer wins and
 draws count as unsuccessful attempts and remain labelled. `cards.outcome` counts terminal
