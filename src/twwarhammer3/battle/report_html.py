@@ -1,9 +1,9 @@
 """Offline presentation of report.collect output; no statistical recomputation.
 
-The page shows one row per commander (model, reasoning effort, prompt or scripted rule)
+The page shows one row per commander (model, effort, prompt or rule, gateway, added age)
 within each scenario. A row can hold battles from several harness versions; it counts
 them instead of splitting the row, and every battle keeps its own version. A harness is
-the code and settings that shape play: presentation-only files are left out of it. The
+the job's source files and settings, less the presentation files in PRESENTATION. The
 collector's JSON and text keep the strict, never-pooled groups and paired statistics.
 
 The page shows the core scenarios (`core_candidate` in the notes, one per decision family)
@@ -33,7 +33,8 @@ from twwarhammer3.battle.controllers import MODEL_POLICIES, policy_parts
 ASSETS = Path(__file__).with_name("report_assets")
 NOTES_PATH = REPO_ROOT / "configs/twwarhammer3/report_notes.json"
 MAX_STILL_BYTES = 256 * 1024
-# Files that only describe or present battles; the scenario declaration is compared itself.
+# Files left out of the harness (offline export.py, cards.py and gameai/sft.py still count);
+# the scenario declaration is compared itself.
 PRESENTATION = ("src/twwarhammer3/battle/report", "src/twwarhammer3/battle/replay.py",
                 "src/twwarhammer3/battle/digest.py", "src/twwarhammer3/battle/watch.py",
                 "src/twwarhammer3/battle/stats.py", "configs/twwarhammer3/report_notes.json",
@@ -84,7 +85,8 @@ SCRIPTED = {"attack_nearest": ("Attack nearest", "every unit walks to the neares
                 "Monster target", "scenario diagnostic: go round the spears onto the other unit"),
             "twwarhammer3.battle.calibration:CounterBattery": (
                 "Counter-battery", "scenario diagnostic: shoot enemy artillery before advancing")}
-# Unit fields and frame fields the page draws; the job directory keeps the rest.
+# Unit and frame-mode fields the replay keeps (the page draws all but supplies and tickets);
+# the job directory keeps the rest.
 UNIT_KEEP = ("id", "x", "z", "bearing", "men", "men0", "hp", "state", "target", "ammo", "ammo0")
 MODE_KEEP = ("role", "capture_points", "supplies", "tickets", "tickets_goal", "custom")
 TRACK_STEP_MS = 5000  # an army track keeps one centroid per this much battle time
@@ -93,7 +95,7 @@ ORDER_KINDS = ("move", "attack", "ability", "build", "reinforce")  # the rest co
 # The game's custom battle modes in page order (land battles first, then the objective modes,
 # sieges and settlements before survival and the points modes, the rarer layouts last), each
 # with its section title and its name for one battle. Sieges split by the player's role, as
-# their objectives differ. A mode without scenarios yet keeps its place on the page.
+# their objectives differ. The page leaves out a mode that has no scenarios yet.
 MODES = [("land", "Land battles", "land battle"),
          ("siege_defence", "Siege defence", "siege defence"),
          ("siege_attack", "Siege attack", "siege attack"),
@@ -183,8 +185,9 @@ def _portable(report: dict) -> dict:
 
 def harness(definition: dict, job: dict | None) -> str:
     """A short fingerprint of what shapes play: code outside PRESENTATION, the scenario
-    declaration without its prose, game build, interface track and timing, and whether the
-    recorder or stills ran. A job without file hashes falls back to its source revision."""
+    declaration without brief, status and family (calibration_change prose still counts),
+    game build, interface track and timing, and whether the recorder or stills ran. A job
+    without file hashes falls back to its source revision."""
     files = ((job or {}).get("provenance") or {}).get("source_files")
     code = ({path: digest for path, digest in files.items() if not path.startswith(PRESENTATION)}
             if files else definition.get("source"))
@@ -215,7 +218,7 @@ def commander(trial: dict, definition: dict) -> dict:
         return ", ".join(filter(None, [*parts, extra]))
 
     # `short` tells rows of one name apart in tight spaces: effort, prompt variant (none for
-    # rules only) and added age.
+    # rules only), gateway ("via OpenRouter") and added age.
     if base in MODEL_POLICIES or card.get("kind") in ("model", "hybrid", "demo"):
         name = model or definition.get("model") or base
         display = {"z-ai/glm-5.3": "GLM-5.3", "moonshotai/kimi-k3": "Kimi K3",
@@ -260,7 +263,7 @@ def webp(path: Path) -> dict:
 
 
 def stills(episode: Path, entries: list[dict], *, embed: bool) -> list[dict]:
-    """Retain failed captures and metadata, even when only featured images are embedded."""
+    """Retain failed captures and metadata, even for battles whose images are not embedded."""
     output = []
     for entry in entries:
         item = {**entry, "policy_input": False}
@@ -334,7 +337,8 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             "harness": harness(definition, jobs.get(trial["instance"])),
             "date": (jobs.get(trial["instance"]) or {}).get("created_at"),
             # Progress: the share of the enemy's registered soldiers dead or no longer
-            # fighting (fleeing, shattered, leaving or undeployed) when the battle ended.
+            # fighting (routing or shattered; leaving or undeployed alone does not count)
+            # when the battle ended.
             "progress": None if None in (standing, enemy.get("registered")) else
             _share(enemy["registered"] - standing, enemy["registered"]),
             "progress_basis": basis,

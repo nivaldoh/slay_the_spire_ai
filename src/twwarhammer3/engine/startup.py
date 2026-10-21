@@ -28,7 +28,7 @@ def movie_files() -> dict[str, bytes]:
 
 
 def disable_cinematic(path: Path) -> None:
-    """Change only the setting's value, preserving comments, other bytes and newlines."""
+    """Set the setting to false, appending it when absent; other bytes and newlines stay."""
     original = path.read_bytes()
     updated, count = SETTING.subn(rb"\g<1>false", original)
     if not count:

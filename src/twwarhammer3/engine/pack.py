@@ -1,11 +1,11 @@
 """PFH5 pack files: build the mod pack, list and extract vanilla packs.
 
-Layout (little-endian): ``PFH5``, u32 type (3 = mod, 4 = movie), u32 dependency count, u32
-dependency index bytes, u32 file count, u32 file index bytes, u32 timestamp; the
+Layout (little-endian): ``PFH5``, u32 type (1 = vanilla, 3 = mod, 4 = movie), u32 dependency
+count, u32 dependency index bytes, u32 file count, u32 file index bytes, u32 timestamp; the
 dependency index (NUL-terminated pack names); the file index, one ``u32 size, u8
 compressed, path, NUL`` entry per file with backslash paths; then the file data in
-index order. Patch 9.0 vanilla entries are zstd frames prefixed by their u32
-uncompressed size; the mod pack is written uncompressed (flag 0).
+index order. Compressed vanilla entries (patch 9.0) are a u32 uncompressed size, then a zstd
+or LZ4 frame; the packs written here are uncompressed (flag 0).
 """
 
 import os

@@ -1,9 +1,9 @@
 """Public, recorded battle frames and factual events for the offline report.
 
 No interpolation, hidden evaluation state, model narration, or outcome-based selection.
-Every derived event identifies the observation or acknowledgement that supports it.
+Every derived event cites the observation, acknowledgement or result.json supporting it.
 Readable unit identities come from the curated report notes, then the recorded names;
-order summaries and "what happened next" facts restate recorded orders and frames only.
+order summaries and "what happened next" facts restate recorded orders, acks and frames only.
 """
 
 import json
@@ -234,7 +234,7 @@ def order_events(decisions: list[dict], frames: list[dict],
                                "caption": f"{name} used {ability_name(order.get('ability'))} "
                                           "(acknowledged)"})
             elif order.get("type") == "attack" and not ack.get("queued"):
-                # Stop at another issued order: it may have superseded this attack.
+                # Stop at the unit's next accepted order: it may have superseded this attack.
                 stop = min((other["applied_ms"] for other in decisions[index + 1:]
                             if other.get("applied_ms") is not None
                             and any(o["order"].get("unit") == order.get("unit")
