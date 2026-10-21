@@ -896,9 +896,11 @@ its effect, or that a claim is fair; those need agreed live checks and reading.
    battle or only flags it. Recorded ratios (2026-10-21, 427 engine-ended episodes,
    `runs/twwarhammer3/away-20261021/clock_ratio.txt`): median 0.999, p5 0.985, p95 1.005;
    10 fall outside 0.95-1.05, 9 of them model battles whose long calls distort today's
-   ratio (6.2) and one unexplained scripted floor at 0.878
-   (`bench-b19-s2-decoy-floor-20261017`). Invalidating on today's measure would discard
-   battles for call latency, not game speed.
+   ratio (6.2). The tenth, a scripted floor at 0.878 (`bench-b19-s2-decoy-floor-20261017`),
+   went 22 s and then 43 s of system time between consecutive observations 0.3 s of battle
+   time apart, time the monotonic clock also missed: consistent with a whole-machine stall,
+   the accidental pause the band should catch. On today's measure, invalidating would also
+   discard 9 battles for call latency, not game speed.
 3. Which witness timing cell makes a card "demonstrably winnable", and witness v2 (already
    [pending](../state.md#owner-decisions-waiting)).
 4. Whether the chariot card is also a training environment, which variant to reserve first,
