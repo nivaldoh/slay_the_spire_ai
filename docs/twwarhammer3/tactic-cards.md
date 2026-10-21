@@ -421,8 +421,9 @@ through three stages: a $0 scripted screen (39 launches with two probes, about 5
 where the naive scripts must lose and a disclosed script must win 2 of 3 showing the
 tactic's marker; a confirmation (each foil 0 of 14, the witness at least 10 of 14), once
 the card's named shortcut is scripted and has lost; then, with a held-out variant reserved,
-a model screen (about $10 for GLM and Qwen on all three cards). The screen waits for [inbox
-item 1](../state.md#owner-decisions-waiting); the chariot, admitted under c1's rule, waits for
+a model screen (about $10 for GLM and Qwen on all three cards). The owner agreed the
+screen, its reading rule and both markers on 2026-10-21; it runs on the next free night;
+the chariot, admitted under c1's rule, waits for
 the agreed checks, failure rule and witness version
 ([state](../state.md#total-war-warhammer-iii), next step 1).
 
@@ -462,7 +463,7 @@ section, each chose the three cards below (`runs/twwarhammer3/away-20261021/rede
 | Card and battle | What it tests, and its marker | So far | Missing before confirmation |
 |---|---|---|---|
 | Chariot, `grn-chariot-emp-swordsmen-hard` (attacks) | Charge, pull out and charge again instead of grinding. Marker: at least one pull-out attempt during melee (cycles v1) | `attack_nearest` 0/11, `rush_nearest` 0/12; SnapHitAndRun 4/5 in c1's admission launches at 5 s added age (5/6 with an earlier b33 launch the board pools; 21/33 over all ages), HitAndRunV2 11/13; admitted under c1's rule | The agreed checks, failure rule and witness version ([state](../state.md#total-war-warhammer-iii), next step 1); no more delay sweeps without a new question |
-| Line at rank 5, `emp-line-grn-raid-xp5` (7 v 7, defends) | Seven units keep their jobs: the line holds in guard mode, the guns stay behind it, the knights take the enemy cavalry. Proposed marker: the knights' first melee is against enemy cavalry. On this battle it fails both floors and passes both wins (LineTeam, GLM) and both other rank-5 losses (Kimi, LineTeamReserve); at rank 0 both floors pass it too, so it marks the knights' job, not the whole team's | `hold` 0/1, `attack_nearest` 0/1; LineTeam 1/1 at 0 s (b45; b46 unplayed); LineTeamReserve 0/1 | The rush floor; floors and LineTeam b46 at 3 launches; agreeing the marker ([Empire item 2](empire.md#for-the-owner-to-decide)); a decision on the commander flag, which sits on the Spearmen reserve in all 17 recorded battles (design rule 8); and a named shortcut (proposed: LineTeam with the knights held back, which tests whether their job decides it). Whether replacement helps stays a [team-plan](robot-team-plan.md#a-small-sequence-of-experiments) question |
+| Line at rank 5, `emp-line-grn-raid-xp5` (7 v 7, defends) | Seven units keep their jobs: the line holds in guard mode, the guns stay behind it, the knights take the enemy cavalry. Marker (agreed 2026-10-21): the knights' first melee is against enemy cavalry. On this battle it fails both floors and passes both wins (LineTeam, GLM) and both other rank-5 losses (Kimi, LineTeamReserve); at rank 0 both floors pass it too, so it marks the knights' job, not the whole team's | `hold` 0/1, `attack_nearest` 0/1; LineTeam 1/1 at 0 s (b45; b46 unplayed); LineTeamReserve 0/1 | The rush floor; floors and LineTeam b46 at 3 launches; a decision on the commander flag, which sits on the Spearmen reserve in all 17 recorded battles (design rule 8); and a named shortcut (proposed: LineTeam with the knights held back, which tests whether their job decides it). Whether replacement helps stays a [team-plan](robot-team-plan.md#a-small-sequence-of-experiments) question |
 | Expendables, `skv-ogres-slaves-emp-halberds-1` (defends) | Spend the Skavenslaves to hold the Halberdiers while the Rat Ogres kill the guns. Marker: the ogres fight, and the slaves fight the halberds before the ogres' first melee, which is not with the halberds. Over both versions of the battle (one or two Halberdiers units), SlaveTarpit's 5 episodes all pass it and the 3 floor episodes all fail it | `hold` 0/1, `attack_nearest` 0/1; SlaveTarpit 3/4 at 5 s. Kimi K3 played a shortcut twice, ogres on the guns before slaves on the halberds: low won (87 s, then 127 s), high lost (179 s, then 334 s) | The rush floor; 3 launches per floor and witness; a foil for Kimi's shortcut (ogres at the guns at once); a decision on the commander flag, which sits on a Skavenslaves unit, one the tactic spends (design rule 8; it broke in 2 of SlaveTarpit's 3 wins, which still won) |
 
 Witness texts: a check of the code against each witness's disclosed `knowledge` text
@@ -530,11 +531,12 @@ jobs follow each other within seconds):
   argument, controller and scenario checks offline (`preflight.py`), and the real queue
   runs a copy of the plan at HEAD end to end, in order, with a no-op command in place of
   `play`.
-- Reading rule, fixed now: a floor's contact win parks that card (two threats would get one
+- Reading rule, agreed by the owner with the screen (2026-10-21): a floor's contact win
+  parks that card (two threats would get one
   step instead). A card goes to confirmation when no floor won by contact, its witness won
   at least 2 of 3 with the marker on each win, and the rest of its Missing column is done,
   so a screen alone admits no card; any other result goes back to the owner, as do the two
-  probes. Both cards' markers, the line's and the expendables', are agreed with the
+  probes. Both cards' markers, the line's and the expendables', were agreed with the
   go-ahead, before the screen is read. Each reads a unit's first melee at its first frame
   with the engine's melee flag (`markers.py`'s header gives the partner rule). A blind
   re-implementation from the one-line definitions agreed with it on all 17 line episodes
@@ -560,7 +562,7 @@ jobs follow each other within seconds):
   13.5](evaluation-guidelines.md#13-owner-decisions-these-rules-need)); the line's launches
   add about 90 s, so there it saves about 5-7% (no line launch has been paired). A
   10-launch gate (foil bound 0.26 instead of 0.19) needs about 30% fewer. The chariot's
-  next confirmation waits for its witness and timing decision (state item 5); at this gate
+  next confirmation waits for its witness and timing decision (state item 2); at this gate
   one witness cell and its two floors are 42 launches (14 each), about 5.8 h at 8.3 minutes
   a launch (the mean of its 83 one-battle launches; its 10 two-battle c1 foil launches,
   10.4-12.4 minutes each, are left out).
@@ -577,7 +579,6 @@ Before more model launches on a card, a held-out variant of it is reserved (eval
 guideline 3.2; proposed: the same card on `battle_preset_wh3_nur_wastes_01_04`, the map of
 the six earlier `-heldout-wastes` entries, listed in the lobby and used by one random
 battle but by no card, checked by its witness and floors only), and the two defending cards
-need the [defender-prompt decision](../state.md#owner-decisions-waiting): the model prompt
-promises a defender the timer win these cards do not count. The scripted screen can run
-before either; if the defender-prompt decision counts timer wins, a floor's timer win in it
-parks that card.
+need the contact-scoring prompt version the owner approved on 2026-10-21 (timer wins stay
+uncounted; the model prompt still promises a defender the timer win). The scripted screen
+does not depend on either.

@@ -245,15 +245,16 @@ to 6, so a gap inside melee reads as an exit and nothing flags it (`gap-edit/`).
 of separation) need the owner's view before the examples are frozen. All agents are one
 model family: this checks the written rule, not independent judgment.
 
-**Proposed failure rule for the next evaluator.** Count a controller that fails to
-construct on its assigned attempt as unsuccessful, separately from proven game/setup
-failure. During a valid battle, terminal controller failure is a forfeit; a retried
-decision consumes time. Once an engine ending is observed, preserve that result and
-record later acknowledgement or cleanup errors as reliability failures. List unstarted
-planned trials separately, never as losses. Agree and test this rule before adoption.
-Current code differs: construction precedes recording a battle id, so the card reader
-excludes that failure; acknowledgement or `close()` can fail before the final status is
-stored or preserved. Historical c1 scoring stays fixed.
+**Failure rule for the next evaluator (agreed by the owner, 2026-10-21).** Count a
+controller that fails to construct on its assigned attempt as unsuccessful, separately from
+proven game/setup failure. During a valid battle, terminal controller failure is a forfeit;
+a retried decision consumes time. Once an engine ending is observed, preserve that result
+and record later acknowledgement or cleanup errors as reliability failures. List unstarted
+planned trials separately, never as losses. Since harness b47 (`b536ae6`) a late
+acknowledgement or `close()` failure keeps the engine's ending (`engine_ending`), but such
+an episode still scores as a policy failure, and construction precedes recording a battle
+id, so the card reader excludes that failure; scoring both by this rule is a later
+evaluator change. Historical c1 scoring stays fixed.
 
 How often (recount 2026-10-21, `runs/twwarhammer3/away-20261021/failures.txt`): of 595
 recorded episodes, none failed at construction, at the acknowledgement of an ending or at
@@ -262,14 +263,13 @@ so the proposed rule scores them as today's reader does: it forfeits 8 and exclu
 HTTP 402 credit stop at b30 as an operator stop. The register still lists that stop and a
 harness-probe `KeyError` at b2 as policy failures; correcting those rows stays a separate
 decision. 18 jobs ended before any episode (10 setup failures), none of them in the c1
-cohort. The local branch `wh3-keep-engine-ending` stores the engine's ending before the
-acknowledgement and keeps it through a `close()` failure, without changing which result
-counts.
+cohort. Harness b47 stores the engine's ending before the acknowledgement and keeps it
+through a `close()` failure, without changing which result counts.
 
 Check row to add to AGENTS.md on the owner's yes (proposed): "WH3 engine ending kept after
 a late controller failure: `uv run --locked pytest -ra
 tests/twwarhammer3/test_wh3_play.py::test_a_controller_failure_after_the_ending_keeps_the_engine_result`
-(fails on the parent of `98b3013`); no game execution claim." The recount behind the rule
+(fails on the parent of `b536ae6`); no game execution claim." The recount behind the rule
 reruns with `uv run --locked python runs/twwarhammer3/away-20261021/failures.py`.
 
 ## Research that changes the design

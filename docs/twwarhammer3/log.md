@@ -35,10 +35,26 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | Latest (2026-10-20, as card floors): `bench-b45-line-xp5-floor-hold-20261020` lost at 327 s, `bench-b45-line-xp5-floor-attack-20261020` at 449 s, `bench-b44-knights-boyz-floor-rush-20261020` at 130 s; first: `bench-g1-cavalry-ai10-01-20261014` |
-| benchmark harness | b46 (2026-10-20: LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
+| benchmark harness | b47 (2026-10-21: the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
+
+## 2026-10-21: Harness b47, the agreed failure rule and the starting set's go-ahead
+
+The owner, on return, agreed the three inbox recommendations
+([directions](../owner-direction.md)). b47 (`b536ae6`, the reviewed branch commit `98b3013`
+applied to `main`): `play.py` stores the engine's ending as `engine_ending` before the
+acknowledgement and keeps it through a `close()` failure; which result counts, report
+readings and interrupt handling are unchanged, so such an episode is still a
+`policy_failure`. Regression
+`test_a_controller_failure_after_the_ending_keeps_the_engine_result` fails on the parent
+and passes; WH3 suite 633 passed, ruff clean. No recorded episode took either path (0 of
+595). The [failure rule](benchmark.md#correctness-checks-to-agree) is agreed; scoring
+construction failures and the kept ending by it is a later evaluator change. The starting
+set's screen is agreed with its reading rule and markers and runs on the next free night;
+the defender prompt change is approved as its own prompt version. Unverified: no live
+battle has run on b47.
 
 ## 2026-10-21: A proposed starting set, the failure-rule recount and a blind c1 recount
 

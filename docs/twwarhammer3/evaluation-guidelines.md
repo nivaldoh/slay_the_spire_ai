@@ -893,9 +893,11 @@ its effect, or that a claim is fair; those need agreed live checks and reading.
 ## 13. Owner decisions these rules need
 
 1. The defender prompt's "if time runs out, you win" (every defending battle, the line and
-   expendables cards among them): change the prompt or credit timer wins.
+   expendables cards among them): decided 2026-10-21, change the prompt (a contact-scoring
+   scenario field); timer wins stay uncounted.
 2. The open failure-table rows ([5.2](#52-freeze-how-every-trial-is-scored)), construction
-   failure, whether draws count per card, and whether the battle-to-wall band invalidates a
+   failure (the failure rule was agreed 2026-10-21; its scoring is not implemented yet),
+   whether draws count per card, and whether the battle-to-wall band invalidates a
    battle or only flags it. Recorded ratios (2026-10-21, 427 engine-ended episodes,
    `runs/twwarhammer3/away-20261021/clock_ratio.txt`): median 0.999, p5 0.985, p95 1.005;
    10 fall outside 0.95-1.05, all recorded before b39. Nine are model battles whose final

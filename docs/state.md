@@ -11,9 +11,9 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 No benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need),
 [scope](twwarhammer3/benchmark.md#scope-and-first-release), suite, checks and gates remain proposals;
-[Empire items](twwarhammer3/empire.md) pending. Away window 2026-10-21 02:20 to about 12:00 (Claude
-Code; offline, $0, no game): [log](twwarhammer3/log.md#2026-10-21-a-proposed-starting-set-the-failure-rule-recount-and-a-blind-c1-recount),
-`runs/twwarhammer3/away-20261021/`. Waiting changes: 3 of 3 ([branches](#branches)).
+[Empire items](twwarhammer3/empire.md) pending. The 2026-10-21 away window (02:20-12:20, offline, $0)
+is in the [log](twwarhammer3/log.md#2026-10-21-a-proposed-starting-set-the-failure-rule-recount-and-a-blind-c1-recount),
+`runs/twwarhammer3/away-20261021/`. Waiting changes: 2 of 3 ([branches](#branches)).
 
 Priorities (2026-10-18): WH3 first, then Spire; post-training secondary. [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
 
@@ -23,7 +23,7 @@ Priorities (2026-10-18): WH3 first, then Spire; post-training secondary. [Traces
 [benchmark definition](twwarhammer3/benchmark.md), [tactic cards](twwarhammer3/tactic-cards.md),
 [latency program](twwarhammer3/latency.md) (plan), [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v21, `commander` v7, skills v1.2, harness b46, evaluator v2,
+- On `main`: `llm`/`llm_rules` v21, `commander` v7, skills v1.2, harness b47, evaluator v2,
   track `obs-v4+terrain/act-v2/live-1x` ([definitions](twwarhammer3/log.md#on-main)).
 - Benchmark: [the chariot card](twwarhammer3/tactic-cards.md#the-chariot-card-the-first-benchmark-card);
   results in the [b40 round](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40).
@@ -33,16 +33,17 @@ Priorities (2026-10-18): WH3 first, then Spire; post-training secondary. [Traces
 Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-to-the-first-release)):
 0. Read the night's [results](twwarhammer3/empire.md#results) and its six
    [owner items](twwarhammer3/empire.md#for-the-owner-to-decide) (from the rank-5 line card to the export).
-1. Agree the [correctness checks and failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)
-   and chariot version decisions; preserve c1's rule. The c1 [recount/rerun](twwarhammer3/benchmark-run.md#independent-rerun-acceptance-proposal)
+1. Agree the remaining [correctness checks](twwarhammer3/benchmark.md#correctness-checks-to-agree) (the
+   failure rule was agreed 2026-10-21) and the chariot version decisions; preserve c1's rule. The c1 [recount/rerun](twwarhammer3/benchmark-run.md#independent-rerun-acceptance-proposal)
    handoff is in `runs/twwarhammer3/away-20261021/handoff-c1/` (not shared off this machine).
-2. Breadth: the [starting set](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21) (chariot,
-   rank-5 line, expendables) and its $0 screen with two probes; the chariot waits on step 1.
+2. Breadth: run the agreed $0 screen of the [starting set](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21)
+   on the next free night (steps in `runs/twwarhammer3/away-20261021/TASK.md`); make the approved
+   contact-scoring prompt version before any paid screen of a defending card.
 3. P5's Kimi plans remain unplayed; choose their question before scheduling more chariot
    cells. A stronger model at modifier 1.1 remains untested (the OpenAI cap).
 4. [Robot team plan](twwarhammer3/robot-team-plan.md) ([research guide](twwarhammer3/robot-team-research.md)):
    does the Empire line battle offer useful recovery? 1 of 17 recorded battles had a replacement
-   opportunity ([review](twwarhammer3/robot-team-plan.md#1-establish-a-recoverable-coordination-problem)); b46 is unplayed.
+   opportunity ([review](twwarhammer3/robot-team-plan.md#1-establish-a-recoverable-coordination-problem)); b46 and b47 are unplayed.
 
 ## Slay the Spire
 
@@ -76,31 +77,22 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 
 ## Owner decisions waiting
 
-1. **The [starting set's screen](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21)**: recommended, a yes runs its $0 scripted plan
-   (39 launches, about 5.1 h) on a free night (no item 9 needed) and agrees its reading rule and the two markers as the card table words them,
-   each read at its first melee frame. Alternative: change the set or the rule first; deferring keeps breadth at the chariot alone.
-2. **The defender prompt** of every model controller says "if time runs out, you win"; the cards count only contact wins
-   ([Empire decision 7](twwarhammer3/empire.md#decisions-taken-for-the-owners-review), for your review; 16 of 17 `llm_rules` episodes on five
-   defending battles restate it). Recommended: a contact-scoring scenario field that says so instead (a prompt version once fewer than 3 changes wait); or count timer wins.
-3. **The [failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)**: recommended, agree it (rescores none of 595 episodes) and merge
-   `wh3-keep-engine-ending` (`git show 98b3013`, harness b47), which keeps the ending only, scores unchanged; scoring that ending and construction failures is a later change.
-   Alternative: keep today's code, where a late acknowledge or `close()` failure loses the ending (none of 595 did).
-4. Where to back up `runs/` (no copy; 23 GB, 7.1 GB without `checkpoints/`, 2026-10-21). Recommended: copy it without `checkpoints/`
+1. Where to back up `runs/` (no copy; 23 GB, 7.1 GB without `checkpoints/`, 2026-10-21). Recommended: copy it without `checkpoints/`
    to a `C:` folder you name and check a sha256 manifest after (same machine, so not off-site; no script exists yet); or an external
    or cloud copy. Deferring leaves the evidence in one place.
-5. The chariot card: [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions) 3-5; recommended, witness v2 for the next confirmation at
+2. The chariot card: [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions) 3-5; recommended, witness v2 for the next confirmation at
    decision 3's 2 s/2 s cell (v2 3/3 there, 4/5 at 5 s/5 s and at 8 s/8 s; v1 2/8 and 0/4), c1 staying v1's admitted record. [Latency
    program](twwarhammer3/latency.md#owner-decisions), your call: `c1` as evidence (recommended there), the $20 P5 cap; b36's backend pins await review.
-6. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (may they train a model? 25,503 rows
+3. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (may they train a model? 25,503 rows
    excluded: 11,099 in the Spire export `luna-v1-v10-20261017`, 14,404 in WH3's `trace-v2-20261017`), GLM-5.3 or
    rejection-sampled Qwen3.6 ([licenses](posttraining.md#provider-terms)); your call, secondary.
-7. Token log-probabilities, a sampler seed or explicit GLM/Kimi sampling before the next model screens
+4. Token log-probabilities, a sampler seed or explicit GLM/Kimi sampling before the next model screens
    ([gaps](posttraining.md#beyond-supervised-fine-tuning))? Recommended: ask where the pinned backend lists them (log-probabilities: Qwen's,
    one of Kimi's two endpoints, not GLM's Decart; all list a seed and sampling; listing rechecked 2026-10-21). Step 5's weights are [public](posttraining.md#provider-terms).
-8. `wh3-rules-v21-attack-path` (one rules sentence: attacks take the engine's route; move first
-   and queue the attack): recommended, its own `llm_rules` version after item 2's, or drop it.
+5. `wh3-rules-v21-attack-path` (one rules sentence: attacks take the engine's route; move first
+   and queue the attack): recommended, its own `llm_rules` version after the contact-scoring one, or drop it.
    Your call: keep `commander` (unplayed since v4)? More OpenAI budget (the $52 cap refuses Sol; gpt-6.1-sol low cost a median $0.84 a battle over 22)?
-9. Your call: yes/no on the [away guidelines](autonomy.md) (tonight ran under the proposal, not as its agreed trial; reviews caught 114
+6. Your call: yes/no on the [away guidelines](autonomy.md) (the 2026-10-21 away window ran under the proposal, not as its agreed trial; reviews caught 114
    errors in my drafts and commits, 113 fixed); before any campaign launch, yes/no on harness saves in the WH3 profile and on Steam
    achievements (which cannot be undone; a no keeps campaign work to offline drafts).
 
@@ -122,6 +114,4 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` attack-route draft, labelled
   v21 before main's v21 (`18dabdd`); renumber before any merge.
-- `wh3-keep-engine-ending` (`98b3013`, worktree `../slay_the_spire_ai-wh3-ending`): inbox item 3; merges
-  cleanly onto `main` (rechecked 2026-10-21; merged WH3 suite and ruff pass at `66d2d20`).
 - Archived drafts are tags (`git tag --list 'archive/*'`).
