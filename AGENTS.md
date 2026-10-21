@@ -46,20 +46,20 @@ revision):
   exit, other modes, reinforcement XP and policy strength remain unverified.
 - WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime:
   real Python/Lua component checks, with simulated game APIs/play-loop observations:
-  `uv run --locked pytest -ra tests/twwarhammer3`. Agreed 2026-10-19; passed at `264a852`.
+  `uv run --locked pytest -ra tests/twwarhammer3`. Agreed 2026-10-19; passed at `6291377`.
   These checks establish component contracts, not live order effects or policy strength.
 - Play commands refuse a missing ledger file: `uv run pytest
   tests/fullrun/test_spire_cli.py::test_play_refuses_a_missing_ledger_before_any_job
   tests/twwarhammer3/test_wh3_controllers.py::test_each_model_controller_gets_its_own_prompt_and_the_shared_budget`;
-  agreed 2026-10-18; passed at `264a852`.
+  agreed 2026-10-18; passed at `6291377`.
 - WH3 replacement mailbox requests reach Lua's pending state; duplicate delivery is rejected:
   `uv run --locked pytest -ra
   tests/twwarhammer3/test_wh3_mailbox.py::test_new_mailbox_requests_reach_lua_without_disabling_duplicate_rejection`;
-  agreed 2026-10-19; passed at `264a852`. No game execution claim.
+  agreed 2026-10-19; passed at `6291377`. No game execution claim.
 - WH3 non-finite order fields are rejected before transmission, with invalid-batch feedback:
   `uv run --locked pytest -ra tests/twwarhammer3/test_wh3_protocol.py
   tests/twwarhammer3/test_wh3_play.py::test_illegal_scripted_orders_are_counted_and_not_sent`;
-  agreed 2026-10-19; passed at `264a852`. Play-loop observations are simulated.
+  agreed 2026-10-19; passed at `6291377`. Play-loop observations are simulated.
 
 ## Working habits
 
