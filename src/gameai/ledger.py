@@ -41,7 +41,9 @@ class Ledger:
             raise ValueError("Reservation must be finite and nonnegative")
         with self._lock:
             if self.spent + self.held + usd > self.budget:
-                held = f" (${self.held:.4f} held by calls in flight)" if self.held else ""
+                # Overlapping releases can leave a float residue of about 1e-18.
+                held = (f" (${self.held:.4f} held by calls in flight)"
+                        if abs(self.held) > 1e-9 else "")
                 raise BudgetExhausted(f"Spent ${self.spent:.4f} of ${self.budget:.2f}{held};"
                                       f" next call may cost ${usd:.4f}")
             self.held += usd
