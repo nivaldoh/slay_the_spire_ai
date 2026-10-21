@@ -151,6 +151,11 @@ comparison between models.
    launches (Qwen on the 20 v 20: 18.7 s, from its 20-order replies); its longest reply
    took 178.5 s, the longest anywhere else 52.6 s. The digest's delay mean (56.8 s)
    misses the call still in flight at the end; the Results entry has the cut-off retry.
+   Over every recorded model episode (296, 6,819 completed replies; 2026-10-21,
+   `runs/twwarhammer3/away-20261021/garbled_all.txt`), a reason over 300 characters marks 9
+   replies in 5 episodes: 8 garbled Decart replies in 4 GLM launches of this night, two of
+   them wins (the knights and wolves battles), and one coherent 314-character Qwen reason.
+   Rerunning flagged launches would discard those two wins.
 5. **The 20 v 20.** One launch each of Qwen and GLM worked technically; order age (Qwen
    18 s) and per-decision cost (GLM) both argue for a planner-executor harness before more
    large battles; the owner's harness-comparison direction (2026-10-18) fits here.
