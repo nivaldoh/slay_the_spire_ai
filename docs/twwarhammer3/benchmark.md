@@ -204,6 +204,16 @@ signature evidence unknown; do not discard an otherwise scored battle because it
 is missing. A patch or provider change creates a new declared condition, not silent
 evidence that the old rates still apply.
 
+For the information row, existing component tests cover the offline half: the play loop
+strips `evaluation`, `final` and `setup` before any policy call
+(`test_wh3_play.py::test_delayed_policy_gets_old_public_state_but_results_use_current_evaluation`),
+the Lua side keeps hidden enemies out of the public state and never queries their
+positions for stills (`test_wh3_battle_lua.py::test_hidden_arrivals_and_deaths_do_not_update_public_enemy_state`,
+`::test_lua_presentation_never_queries_hidden_enemy_positions_or_policy_memory`), and every
+scripted witness ignores hidden enemies
+(`test_wh3_calibration.py::test_small_diagnostics_do_not_use_hidden_enemies_or_order_routers`).
+They are not an agreed boundary check, and nothing checks visibility in game.
+
 For the next chariot signature, independently label a small set of real cases before
 looking at the reader's verdict: a move followed by observed separation and renewed
 contact; a move countermanded while still in melee; separation without a move order;
