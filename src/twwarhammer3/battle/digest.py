@@ -40,7 +40,7 @@ def strength(observation: dict) -> str:
 
 
 def objectives(observation: dict) -> str:
-    """Tickets and the holders of capture points, for battle types that have them."""
+    """Tickets, capture point holders and supplies, for battle types that have them."""
     mode = observation.get("mode") or {}
     parts = []
     if mode.get("tickets"):

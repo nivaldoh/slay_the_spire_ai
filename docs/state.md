@@ -99,7 +99,8 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
    and queue the attack): recommended, its own `llm_rules` version after item 2's, or drop it.
    Your call: keep `commander` (unplayed since v4)? More OpenAI budget (the $52 cap refuses Sol)?
 9. Your call: yes/no on the [away guidelines](autonomy.md) (tonight's offline trial: reviews caught
-   110 errors in my drafts and commits, all fixed); before any campaign launch, yes/no on harness
+   110 errors in my drafts and commits, 109 fixed, one a commit-message miscount); before any
+   campaign launch, yes/no on harness
    saves in the WH3 profile and on Steam achievements (which cannot be undone).
 
 ## Runtime and ownership
@@ -122,5 +123,5 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
   v21 before main's v21 (`18dabdd`); renumber before any merge.
 - `wh3-keep-engine-ending` (`98b3013`, worktree `../slay_the_spire_ai-wh3-ending`): keeps the
   engine's ending through a late acknowledge or `close()` failure (inbox item 3); merges cleanly
-  onto `main` (rechecked 2026-10-21 10:30; merged WH3 suite and ruff pass at `66d2d20`).
+  onto `main` (rechecked 2026-10-21; merged WH3 suite and ruff pass at `66d2d20`).
 - Archived drafts are tags (`git tag --list 'archive/*'`).

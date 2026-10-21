@@ -184,7 +184,7 @@ def _portable(report: dict) -> dict:
 
 
 def harness(definition: dict, job: dict | None) -> str:
-    """A short fingerprint of what shapes play: code outside PRESENTATION, the scenario
+    """A short fingerprint of the harness: code outside PRESENTATION, the scenario
     declaration without brief, status and family (calibration_change prose still counts),
     game build, interface track and timing, and whether the recorder or stills ran. A job
     without file hashes falls back to its source revision."""

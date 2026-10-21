@@ -44,9 +44,9 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3/away-20261021/`.
 - [Starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21) (proposal): a
-  five-part rule, three cards (chariot, rank-5 line, Skaven expendables; two blind
-  re-derivations agreed), a $0 screen of 39 launches (5.1 h, balanced rounds, two probes),
-  a held-out map. Fixed: 110 review errors, 132 stale facts; 18 policy-file texts parked.
+  five-part rule, three cards (chariot, rank-5 line, Skaven expendables; chosen alike by
+  two blind agents), a $0 screen of 39 launches, a held-out map. Fixed: 109 of 110 review
+  errors (1 in a commit message), 132 stale facts; 18 texts parked.
 - Failure rule: none of 595 episodes failed at construction, a late acknowledgement or
   `close()`, so the [proposed rule](benchmark.md#correctness-checks-to-agree) rescores
   nothing; unmerged branch `wh3-keep-engine-ending` (`98b3013`) keeps that ending.
