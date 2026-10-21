@@ -428,7 +428,7 @@ a disclosed script that plays the tactic.
 A battle that still fails 2 or 3 after one difficulty step is parked with its reason, not
 hardened or softened further. The line, expendables and Helblaster battles have had theirs;
 the rifle lane has had two. Two agents given this rule and the evidence, but not this
-section, each chose these three cards (`runs/twwarhammer3/away-20261021/rederive.txt`).
+section, each chose the three cards below (`runs/twwarhammer3/away-20261021/rederive.txt`).
 
 | Card and battle | What it tests, and its marker | So far | Missing before confirmation |
 |---|---|---|---|
@@ -439,11 +439,11 @@ section, each chose these three cards (`runs/twwarhammer3/away-20261021/rederive
 Not in the starting set:
 - **Rifle lane**, `emp-handgunners-grn-savage-orcs-hard` (defends): fire past one's own
   Spearmen through a clear lane. Its family took two steps (Big 'Uns, then Savage Orcs at
-  1.0, where `attack_nearest` won, then 1.1) and `hold` never played. FlankLane won 1/2 at
+  1.0, where `attack_nearest` won, then 1.1) and `hold` never played against Savage Orcs. FlankLane won 1/2 at
   5 s, and its lane marker (most rounds fired with the gun-to-target line clear of the
   Spearmen, FlankLane's own test) reads 90% and 100% against `attack_nearest`'s 12%; GLM-5.3
-  low lost 2/2 at 0%. The strongest Empire candidate after the line: its floors and witness
-  are in the screen, for the owner to reinstate it on that evidence.
+  low lost 2/2 at 0%. Its floors and witness are in the screen, for the owner to reinstate
+  it on that evidence.
 - **Two threats**, `emp-handgunners-grn-wolves-boyz`: the Spearmen meet the fast Wolf
   Riders, the guns shoot with skirmish off and then turn to the Orc Boyz. Floors 0/2; no
   witness. The marker (the guns never in melee before the riders are shattered or gone)
@@ -484,7 +484,7 @@ jobs follow each other within seconds):
   its battles loses all 3 half the time (51%), and a witness that wins half passes 2 of 3
   half the time (80%: 90%); confirmation does the rest. `read_screen.py` beside the plan
   prints the rule's verdict per card; on every recorded launch (`--all`) it reproduces the
-  So far column.
+  line and expendables floor and witness counts.
 - Confirmation at the [proposed gate](benchmark.md#from-a-candidate-to-a-scored-card)
   (each foil 0/14, witness at least 10/14): 42 launches for a card with two floors (56 for
   the expendables' three) plus 14 per shortcut foil, so about two nights for the line and

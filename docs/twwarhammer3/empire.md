@@ -124,7 +124,8 @@ comparison between models.
    the battle, but this benchmark counts only routing or destroying every enemy unit
    before the timer" in place of "if time runs out, you win"; prompt fixtures regenerate,
    a logged prompt version. Recount the same day (`runs/twwarhammer3/away-20261021/timer_mentions.txt`):
-   on the five defending candidate battles 16 of 17 model episodes restate the timer win in
+   on five defending battles (the line at ranks 0 and 5, expendables, rifle lane, two
+   threats) 16 of 17 model episodes restate the timer win in
    their replies (7 of 8 on the two defending starting cards), in 11-97% of their decisions
    (GLM's rank-5 line win in 82%). Stated
    reasons are leads, not evidence of an effect on the outcome (evaluation guideline 8.3).

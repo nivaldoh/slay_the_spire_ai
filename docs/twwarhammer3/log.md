@@ -56,7 +56,7 @@ Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3
 - c1: a blind recount from docs and raw files matched every outcome and the verdict. On 21
   hand-picked engagements labelled under a proposed rule, cycles v1 was right on 13 and
   counting every engagement on 10. One model family: a check of the documents only.
-- Evidence for open decisions: 16 of 17 model episodes on the defending candidates restate
+- Evidence for open decisions: 16 of 17 model episodes on five defending battles restate
   the timer win; a 300-character reason rule flags exactly the 7 known garbled
   replies (9 of 6,819 overall); 10 of 427 battles leave a 0.95-1.05 clock band, 9 from slow
   calls; Step 5, GLM-5.3, Qwen3.6 and Kimi K3 licenses ([terms](../posttraining.md#provider-terms)).
