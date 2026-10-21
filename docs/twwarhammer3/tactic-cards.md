@@ -426,17 +426,24 @@ a disclosed script that plays the tactic.
 5. A battle lasts under about 10 minutes, so one card's confirmation fits in a night.
 
 A battle that still fails 2 or 3 after one difficulty step is parked with its reason, not
-hardened or softened further. The line, expendables, rifle-lane and Helblaster battles have
-had theirs.
+hardened or softened further. The line, expendables and Helblaster battles have had theirs;
+the rifle lane has had two. Two agents given this rule and the evidence, but not this
+section, each chose these three cards (`runs/twwarhammer3/away-20261021/rederive.txt`).
 
 | Card and battle | What it tests, and its marker | So far | Missing before confirmation |
 |---|---|---|---|
 | Chariot, `grn-chariot-emp-swordsmen-hard` (attacks) | Charge, pull out and charge again instead of grinding. Marker: at least one pull-out attempt during melee (cycles v1) | `attack_nearest` 0/11, `rush_nearest` 0/12; SnapHitAndRun 21/33 and HitAndRunV2 11/13 over several ages; admitted under c1's rule | The agreed checks, failure rule and witness version ([state](../state.md#total-war-warhammer-iii), next step 1); no more delay sweeps without a new question |
 | Line at rank 5, `emp-line-grn-raid-xp5` (7 v 7, defends) | Seven units keep their jobs: the line holds in guard mode, the guns stay behind it, the knights take the enemy cavalry. Proposed marker: the knights' first melee is against enemy cavalry. On this battle it fails both floors and passes both wins (LineTeam, GLM) and both other losses; at rank 0 both floors pass it too, so it marks the knights' job, not the whole team's. No gun in melee before the first line rout fails all 4 floors but also GLM's win | `hold` 0/1, `attack_nearest` 0/1; LineTeam 1/1 at 0 s (b45; b46 unplayed); LineTeamReserve 0/1 | Floors and LineTeam b46 at 3 launches; agreeing the marker ([Empire item 2](empire.md#for-the-owner-to-decide)) and a named shortcut (proposed: LineTeam with the knights held back, which tests whether their job decides it). Whether replacement helps stays a [team-plan](robot-team-plan.md#a-small-sequence-of-experiments) question |
 | Expendables, `skv-ogres-slaves-emp-halberds-1` (defends) | Spend the Skavenslaves to hold the Halberdiers while the Rat Ogres kill the guns. Marker: the ogres fight, and the slaves fight the halberds before the ogres' first melee, which is not with the halberds. SlaveTarpit passes all 5 of its episodes (both variants); all 3 floor episodes fail | `hold` 0/1, `attack_nearest` 0/1; SlaveTarpit 3/4 at 5 s. Kimi K3 low won its scored launch by a shortcut: the ogres hit the guns at 87 s, the slaves the halberds at 127 s | The rush floor; 3 launches per floor and witness; a foil for Kimi's shortcut (ogres at the guns at once) |
-| Rifle lane, `emp-handgunners-grn-savage-orcs-hard` (defends) | Fire past one's own Spearmen through a clear lane. Marker: most rounds fired with the gun-to-target line clear of the Spearmen (FlankLane's own lane test): FlankLane 90% and 100%, `attack_nearest` 12% | `attack_nearest` 0/1, the blocked-lane shortcut (12% clear); FlankLane 1/2 at 5 s (its 100% launch lost); GLM-5.3 low 0/2, both at 0% | `hold` and 3 launches per floor and witness: whether the lane decides the battle is still open |
 
 Not in the starting set:
+- **Rifle lane**, `emp-handgunners-grn-savage-orcs-hard` (defends): fire past one's own
+  Spearmen through a clear lane. Its family took two steps (Big 'Uns, then Savage Orcs at
+  1.0, where `attack_nearest` won, then 1.1) and `hold` never played. FlankLane won 1/2 at
+  5 s, and its lane marker (most rounds fired with the gun-to-target line clear of the
+  Spearmen, FlankLane's own test) reads 90% and 100% against `attack_nearest`'s 12%; GLM-5.3
+  low lost 2/2 at 0%. The strongest Empire candidate after the line: its floors and witness
+  are in the screen, for the owner to reinstate it on that evidence.
 - **Two threats**, `emp-handgunners-grn-wolves-boyz`: the Spearmen meet the fast Wolf
   Riders, the guns shoot with skirmish off and then turn to the Orc Boyz. Floors 0/2; no
   witness. The marker (the guns never in melee before the riders are shattered or gone)
@@ -465,32 +472,33 @@ jobs follow each other within seconds):
   two-threats battles, then of each witness at its recorded age with no added interval
   (LineTeam 0 s, SlaveTarpit and FlankLane 5 s): 36 launches in about 4.6 h. The jobs are
   fixed in `runs/twwarhammer3/away-20261021/screen-plan.json`; its revision and start
-  cutoff are set on the go-ahead. The queue cannot stop a card early.
-- Reading rule, fixed now: a floor's contact win parks that card (two threats would get
-  one step instead). A card goes to confirmation when no floor won by contact, its witness
-  won at least 2 of 3 with the marker on each win, and the rest of its Missing column is
-  done; any other result goes back to the owner, as does two threats if its floors all
-  lose. The line card's marker is agreed with the go-ahead, before its screen is read. A
-  floor's timer win is noted, not counted. A failed launch is not replaced: a cell with
-  fewer than 3 scored launches is re-planned before it is read. Three launches are a cheap
-  filter: a floor that wins 20% of its battles loses all 3 half the time (51%), and a
-  witness that wins half passes 2 of 3 half the time (80%: 90%); confirmation does the rest.
-  `read_screen.py` beside the plan prints the rule's verdict per card; on every recorded
-  launch (`--all`) it reproduces the So far column.
+  cutoff are set on the go-ahead. The queue cannot stop a card early. The rifle and
+  two-threats jobs are probes for the owner, not set cards.
+- Reading rule, fixed now: a floor's contact win parks that card (two threats would get one
+  step instead). A card goes to confirmation when no floor won by contact, its witness won
+  at least 2 of 3 with the marker on each win, and the rest of its Missing column is done;
+  any other result goes back to the owner, as do the two probes. The line card's marker is
+  agreed with the go-ahead, before its screen is read. A floor's timer win is noted, not
+  counted. A failed launch is not replaced: a cell with fewer than 3 scored launches is
+  re-planned before it is read. Three launches are a cheap filter: a floor that wins 20% of
+  its battles loses all 3 half the time (51%), and a witness that wins half passes 2 of 3
+  half the time (80%: 90%); confirmation does the rest. `read_screen.py` beside the plan
+  prints the rule's verdict per card; on every recorded launch (`--all`) it reproduces the
+  So far column.
 - Confirmation at the [proposed gate](benchmark.md#from-a-candidate-to-a-scored-card)
   (each foil 0/14, witness at least 10/14): 42 launches for a card with two floors (56 for
-  the expendables' three) plus 14 per shortcut foil, so about three nights for the line,
-  expendables and rifle lane. A 10-launch gate (foil bound 0.26 instead of 0.19) needs
+  the expendables' three) plus 14 per shortcut foil, so about two nights for the line and
+  the expendables. A 10-launch gate (foil bound 0.26 instead of 0.19) needs
   about 30% fewer.
 - First model screen, 10 launches per card and model (a screen, not a ranking): GLM-5.3 low
   cost a median $0.19 a launch (45 since 10-19), Kimi K3 low $0.63 (its 3 line battles),
   Qwen3.6 $0.02 (6). About $26-28 of the $50 OpenRouter allowance is left (the ledgers
-  missed $2.69 before), so GLM and Qwen on the four cards (about $12; a line battle costs
-  GLM $0.23-0.58) fit and Kimi on all four does not; OpenAI is at its cap.
+  missed $2.69 before), so GLM and Qwen on the three cards (about $10; a line battle costs
+  GLM $0.23-0.58) fit and Kimi on all three does not; OpenAI is at its cap.
 
 Before more model launches on a card, a held-out variant of it is reserved (evaluation
 guideline 3.2; proposed: the same card on `battle_preset_wh3_nur_wastes_01_04`, the map of
 the six earlier held-out entries, listed in the lobby and used by one random battle but by
-no card, checked by its witness and floors only), and the three defending cards need the [defender-prompt decision](../state.md#owner-decisions-waiting):
+no card, checked by its witness and floors only), and the two defending cards need the [defender-prompt decision](../state.md#owner-decisions-waiting):
 the model prompt promises a defender the timer win these cards do not count. The scripted
 screen does not depend on either.

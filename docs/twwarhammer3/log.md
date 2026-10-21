@@ -44,9 +44,10 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3/away-20261021/`.
 - [Starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21) (proposal): a five-part
-  rule, four cards (chariot, rank-5 line, Skaven expendables, rifle lane), the rest parked,
-  a $0 screen of 36 scripted launches (about 4.6 h) and a proposed held-out map. Three review
-  rounds confirmed 58 findings, all fixed. On 42 recorded episodes each marker separates its
+  rule, three cards (chariot, rank-5 line, Skaven expendables; two blind re-derivations chose
+  the same), the rest parked, a $0 screen of 36 scripted launches (about 4.6 h, the rifle lane
+  and two threats as probes) and a proposed held-out map. Three review rounds confirmed 58
+  findings, all fixed. On 42 recorded episodes each marker separates its
   witness from its floors (the line's only at rank 5).
 - Failure rule: none of 595 episodes failed at construction, a late acknowledgement or
   `close()`; the [proposed rule](benchmark.md#correctness-checks-to-agree) rescores nothing.
@@ -55,8 +56,8 @@ Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3
 - c1: a blind recount from docs and raw files matched every outcome and the verdict. On 21
   hand-picked engagements labelled under a proposed rule, cycles v1 was right on 13 and
   counting every engagement on 10. One model family: a check of the documents only.
-- Evidence for open decisions: 14 of 15 model episodes on the defending starting cards
-  restate the timer win; a 300-character reason rule flags exactly the 7 known garbled
+- Evidence for open decisions: 16 of 17 model episodes on the defending candidates restate
+  the timer win; a 300-character reason rule flags exactly the 7 known garbled
   replies (9 of 6,819 overall); 10 of 427 battles leave a 0.95-1.05 clock band, 9 from slow
   calls; Step 5, GLM-5.3, Qwen3.6 and Kimi K3 licenses ([terms](../posttraining.md#provider-terms)).
 - Unverified: every gameplay count (1-33 episodes a cell), markers and labels (proposed).
