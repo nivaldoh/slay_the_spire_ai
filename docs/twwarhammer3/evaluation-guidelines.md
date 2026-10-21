@@ -908,14 +908,17 @@ its effect, or that a claim is fair; those need agreed live checks and reading.
    whether reserved variants stay unpushed until played, and how existing chariot model
    cohorts are staged (training-eligible or not).
 5. Pairing within launches (the default) or one controller per launch; refuse or warn on
-   unbalanced plans.
+   unbalanced plans. Cost (2026-10-21, 307 completed jobs): a fresh launch adds a median
+   117 s around its battles and each rematch about 30 s, so pairing three controllers per
+   launch saves about 40 minutes of a 42-trial confirmation (about 13%).
 6. An allow list that drops and records unknown fields, removing `job`, and aging
    acknowledgements under added age.
 7. The method set in [7.2](#72-use-the-named-method-for-each-situation) as an agreed check;
    first episode per launch or a declared fixed number of rematches.
 8. Whether a non-designer reviewer will exist, and keeping LLM labels out of scores.
 9. Whether c1 keeps its verdict, printing one line that notes its b34/b36 harness mix and
-   the later scorer changes.
+   the later scorer changes. A blind recount from the docs and raw files reproduced its
+   counts and verdict (2026-10-21, `runs/twwarhammer3/away-20261021/handoff-c1/`).
 10. What a drift job must show to pass after a build or harness change.
 11. Which providers' text and which stills may be published; where `runs/` is backed up.
 12. Whether benchmark.md's Terms adopt this page's "controller", and whether
