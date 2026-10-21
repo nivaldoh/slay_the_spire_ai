@@ -898,9 +898,9 @@ its effect, or that a claim is fair; those need agreed live checks and reading.
    10 fall outside 0.95-1.05, 9 of them model battles whose long calls distort today's
    ratio (6.2). The tenth, a scripted floor at 0.878 (`bench-b19-s2-decoy-floor-20261017`),
    went 22 s and then 43 s of system time between consecutive observations 0.3 s of battle
-   time apart, time the monotonic clock also missed: consistent with a whole-machine stall,
-   the accidental pause the band should catch. On today's measure, invalidating would also
-   discard 9 battles for call latency, not game speed.
+   time apart: a game stall, the accidental pause the band should catch, or a step of the
+   WSL clock (its monotonic clock trails by a median 6.5%, so it cannot tell which). On
+   today's measure, invalidating would also discard 9 battles for call latency.
 3. Which witness timing cell makes a card "demonstrably winnable", and witness v2 (already
    [pending](../state.md#owner-decisions-waiting)).
 4. Whether the chariot card is also a training environment, which variant to reserve first,
