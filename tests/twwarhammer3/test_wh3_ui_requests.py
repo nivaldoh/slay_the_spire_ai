@@ -90,6 +90,35 @@ class MenuDriver:
         return (self.directory / name).read_text()
 
 
+
+@pytest.mark.parametrize("session, polls", [
+    (None, False),
+    ({"enabled": True, "menu": False}, False),
+    ({"enabled": True, "menu": True}, True),
+])
+def test_frontend_polls_for_menus_only_when_a_job_asks(tmp_path, session, polls):
+    # Every ordinary game launch loads the frontend script; only a job's menu session may
+    # make it poll for menu requests.
+    if session:
+        Mailbox(tmp_path, job="current").write_session({**session, "autostart": False})
+    lua = runtime()
+    lua.globals().test_bridge = str(tmp_path) + "/"
+    lua.execute('''
+        local open, prefix = io.open, "C:/wh3-agent/bridge/"
+        io.open = function(name, mode)
+            if string.sub(name, 1, #prefix) == prefix then
+                name = test_bridge .. string.sub(name, #prefix + 1)
+            end
+            return open(name, mode)
+        end
+        callbacks = {}
+        tm = {repeat_real_callback = function(_, fn, _, name) callbacks[name] = fn end}
+    ''')
+    for name in ("twwarhammer3_json.lua", "twwarhammer3_ui.lua"):
+        lua.execute((MOD / "script/_lib/mod" / name).read_text())
+    lua.execute((MOD / "script/frontend/mod/twwarhammer3_frontend.lua").read_text())
+    assert list(lua.globals().callbacks.keys()) == (["twwarhammer3_menu"] if polls else [])
+
 def command(name, **fields):
     return {"context": "CcoFrontendRoot", "command": name, **fields}
 
