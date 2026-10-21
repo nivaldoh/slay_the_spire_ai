@@ -34,7 +34,7 @@ Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-t
 0. Read the night's [results](twwarhammer3/empire.md#results) and its six
    [owner items](twwarhammer3/empire.md#for-the-owner-to-decide) (from the rank-5 line card to the export).
 1. Agree the remaining [correctness checks](twwarhammer3/benchmark.md#correctness-checks-to-agree) (the
-   failure rule was agreed 2026-10-21) and the chariot version decisions; preserve c1's rule. The c1 [recount/rerun](twwarhammer3/benchmark-run.md#independent-rerun-acceptance-proposal)
+   failure rule was agreed 2026-10-21) and the chariot's remaining second-pass decisions (witness v2 at 2 s/2 s agreed); preserve c1's rule. The c1 [recount/rerun](twwarhammer3/benchmark-run.md#independent-rerun-acceptance-proposal)
    handoff is in `runs/twwarhammer3/away-20261021/handoff-c1/` (not shared off this machine).
 2. Breadth: run the agreed $0 screen of the [starting set](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21)
    on the next free night (steps in `runs/twwarhammer3/away-20261021/TASK.md`); prompt v22 now
@@ -64,6 +64,7 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 
 ## Known issues
 
+- `runs/` has no backup (23 GB, 7.1 GB without `checkpoints/`); the owner said not now (2026-10-21).
 - Check OpenRouter credits before paid jobs: on 2026-10-21 the account showed $24.26 used of
   $60, the ledgers $2.68 less. OpenAI caps and the shared OpenRouter allowance are kept by hand.
 - Pinned OpenRouter backend outages count against the model; Step 5 preview is unpinned.
@@ -77,22 +78,19 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 
 ## Owner decisions waiting
 
-1. Where to back up `runs/` (no copy; 23 GB, 7.1 GB without `checkpoints/`, 2026-10-21). Recommended: copy it without `checkpoints/`
-   to a `C:` folder you name and check a sha256 manifest after (same machine, so not off-site; no script exists yet); or an external
-   or cloud copy. Deferring leaves the evidence in one place.
-2. The chariot card: [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions) 3-5; recommended, witness v2 for the next confirmation at
-   decision 3's 2 s/2 s cell (v2 3/3 there, 4/5 at 5 s/5 s and at 8 s/8 s; v1 2/8 and 0/4), c1 staying v1's admitted record. [Latency
-   program](twwarhammer3/latency.md#owner-decisions), your call: `c1` as evidence (recommended there), the $20 P5 cap; b36's backend pins await review.
-3. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (may they train a model? 25,503 rows
+1. The chariot card: the rest of the [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions) 3-5 (gate sizes, reporting, drops;
+   witness v2 at 2 s/2 s was agreed 2026-10-21). [Latency program](twwarhammer3/latency.md#owner-decisions), your call: `c1` as evidence
+   (recommended there), the $20 P5 cap; b36's backend pins await review.
+2. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (may they train a model? 25,503 rows
    excluded: 11,099 in the Spire export `luna-v1-v10-20261017`, 14,404 in WH3's `trace-v2-20261017`), GLM-5.3 or
    rejection-sampled Qwen3.6 ([licenses](posttraining.md#provider-terms)); your call, secondary.
-4. Token log-probabilities, a sampler seed or explicit GLM/Kimi sampling before the next model screens
+3. Token log-probabilities, a sampler seed or explicit GLM/Kimi sampling before the next model screens
    ([gaps](posttraining.md#beyond-supervised-fine-tuning))? Recommended: ask where the pinned backend lists them (log-probabilities: Qwen's,
    one of Kimi's two endpoints, not GLM's Decart; all list a seed and sampling; listing rechecked 2026-10-21). Step 5's weights are [public](posttraining.md#provider-terms).
-5. `wh3-rules-v21-attack-path` (one rules sentence: attacks take the engine's route; move first
+4. `wh3-rules-v21-attack-path` (one rules sentence: attacks take the engine's route; move first
    and queue the attack): recommended, its own `llm_rules` version after the contact-scoring one, or drop it.
    Your call: keep `commander` (unplayed since v4)? More OpenAI budget (the $52 cap refuses Sol; gpt-6.1-sol low cost a median $0.84 a battle over 22)?
-6. Your call: yes/no on the [away guidelines](autonomy.md) (the 2026-10-21 away window ran under the proposal, not as its agreed trial; reviews caught 114
+5. Your call: yes/no on the [away guidelines](autonomy.md) (the 2026-10-21 away window ran under the proposal, not as its agreed trial; reviews caught 114
    errors in my drafts and commits, 113 fixed); before any campaign launch, yes/no on harness saves in the WH3 profile and on Steam
    achievements (which cannot be undone; a no keeps campaign work to offline drafts).
 

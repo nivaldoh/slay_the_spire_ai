@@ -909,8 +909,8 @@ its effect, or that a claim is fair; those need agreed live checks and reading.
    WSL clock (its monotonic clock trails by a median 6.5%, so it cannot tell which). Gaps
    over 10 s mid-battle are rare: 2 in 286 scripted episodes (`stalls.txt`). Invalidating
    by the stored ratios would also discard those 9 for call latency; today's would not.
-3. Which witness timing cell makes a card "demonstrably winnable", and witness v2 (already
-   [pending](../state.md#owner-decisions-waiting)).
+3. Which witness timing cell makes a card "demonstrably winnable" (for the chariot the owner
+   chose witness v2 at 2 s/2 s on 2026-10-21; the general rule is still open).
 4. Whether the chariot card is also a training environment, which variant to reserve first,
    whether reserved variants stay unpushed until played, and how existing chariot model
    cohorts are staged (training-eligible or not).

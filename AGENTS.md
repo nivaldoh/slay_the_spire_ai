@@ -60,6 +60,11 @@ revision):
   `uv run --locked pytest -ra tests/twwarhammer3/test_wh3_protocol.py
   tests/twwarhammer3/test_wh3_play.py::test_illegal_scripted_orders_are_counted_and_not_sent`;
   agreed 2026-10-19; passed at `6291377`. Play-loop observations are simulated.
+- WH3 engine ending kept after a late controller failure (acknowledge or `close()`):
+  `uv run --locked pytest -ra
+  tests/twwarhammer3/test_wh3_play.py::test_a_controller_failure_after_the_ending_keeps_the_engine_result`
+  (fails on the parent of `b536ae6`); agreed 2026-10-21; passed at `080be70`. No game
+  execution claim; which result counts is unchanged.
 
 ## Working habits
 

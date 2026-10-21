@@ -63,6 +63,10 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-21 (12:45, four more answers): the starting-set screen runs "Tonight"; add the
+  engine-ending regression as an agreed check in AGENTS.md ("Yes, add it"); back up `runs/`
+  "Not now"; the chariot card uses witness v2 (HitAndRunV2) for its next confirmation at
+  decision 3's 2 s/2 s cell, c1 staying v1's admitted record ("Yes, v2 at 2 s/2 s").
 - 2026-10-21 (on return, 12:20, answering the three inbox questions): (1) the starting
   set's screen: "Yes, run it", which also agrees its reading rule and the two markers as
   [tactic-cards.md](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21)

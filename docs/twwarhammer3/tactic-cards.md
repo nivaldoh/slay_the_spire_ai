@@ -144,8 +144,8 @@ postdiction over recorded files and unverified under the hard rule. It replaces 
 owner's "battles allowed" direction, [b40 log](log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40):
 witness v2 won 4 of 5 at both 5/5 and 8/8, so the curve was the recipe's; GLM-5.3 low on the
 amended prompt won 0 of 10, with fewer in-melee re-attacks and more damage, every loss a
-leadership rout after 4-45 m pull-outs; decisions 3-5 remain, plus whether v2 becomes the
-card's witness and at which cell):
+leadership rout after 4-45 m pull-outs; decisions 3-5 remain; the owner made v2 the witness
+for the next confirmation at the 2 s/2 s cell on 2026-10-21):
 1. **Witness v2**: compute the retreat point once per withdrawal, measure the retreat and the
    re-charge from the same reference, and try a queued re-attack in the pull-out batch (a few
    lines of `calibration.py`, a new disclosed control beside the admitted one); rerun 5/5 and
@@ -423,9 +423,9 @@ tactic's marker; a confirmation (each foil 0 of 14, the witness at least 10 of 1
 the card's named shortcut is scripted and has lost; then, with a held-out variant reserved,
 a model screen (about $10 for GLM and Qwen on all three cards). The owner agreed the
 screen, its reading rule and both markers on 2026-10-21; it runs on the next free night;
-the chariot, admitted under c1's rule, waits for
-the agreed checks, failure rule and witness version
-([state](../state.md#total-war-warhammer-iii), next step 1).
+the chariot, admitted under c1's rule, waits for the agreed checks
+([state](../state.md#total-war-warhammer-iii), next step 1), then confirms witness v2 at 2
+s/2 s.
 
 This proposes the battles to take to confirmation first, by a rule that can be checked
 against the record. Counts are episodes in `results.csv` (rematches included, mostly single
@@ -462,7 +462,7 @@ section, each chose the three cards below (`runs/twwarhammer3/away-20261021/rede
 
 | Card and battle | What it tests, and its marker | So far | Missing before confirmation |
 |---|---|---|---|
-| Chariot, `grn-chariot-emp-swordsmen-hard` (attacks) | Charge, pull out and charge again instead of grinding. Marker: at least one pull-out attempt during melee (cycles v1) | `attack_nearest` 0/11, `rush_nearest` 0/12; SnapHitAndRun 4/5 in c1's admission launches at 5 s added age (5/6 with an earlier b33 launch the board pools; 21/33 over all ages), HitAndRunV2 11/13; admitted under c1's rule | The agreed checks, failure rule and witness version ([state](../state.md#total-war-warhammer-iii), next step 1); no more delay sweeps without a new question |
+| Chariot, `grn-chariot-emp-swordsmen-hard` (attacks) | Charge, pull out and charge again instead of grinding. Marker: at least one pull-out attempt during melee (cycles v1) | `attack_nearest` 0/11, `rush_nearest` 0/12; SnapHitAndRun 4/5 in c1's admission launches at 5 s added age (5/6 with an earlier b33 launch the board pools; 21/33 over all ages), HitAndRunV2 11/13; admitted under c1's rule | The agreed checks ([state](../state.md#total-war-warhammer-iii), next step 1); witness v2 at 2 s/2 s for the next confirmation (owner, 2026-10-21); no more delay sweeps without a new question |
 | Line at rank 5, `emp-line-grn-raid-xp5` (7 v 7, defends) | Seven units keep their jobs: the line holds in guard mode, the guns stay behind it, the knights take the enemy cavalry. Marker (agreed 2026-10-21): the knights' first melee is against enemy cavalry. On this battle it fails both floors and passes both wins (LineTeam, GLM) and both other rank-5 losses (Kimi, LineTeamReserve); at rank 0 both floors pass it too, so it marks the knights' job, not the whole team's | `hold` 0/1, `attack_nearest` 0/1; LineTeam 1/1 at 0 s (b45; b46 unplayed); LineTeamReserve 0/1 | The rush floor; floors and LineTeam b46 at 3 launches; a decision on the commander flag, which sits on the Spearmen reserve in all 17 recorded battles (design rule 8); and a named shortcut (proposed: LineTeam with the knights held back, which tests whether their job decides it). Whether replacement helps stays a [team-plan](robot-team-plan.md#a-small-sequence-of-experiments) question |
 | Expendables, `skv-ogres-slaves-emp-halberds-1` (defends) | Spend the Skavenslaves to hold the Halberdiers while the Rat Ogres kill the guns. Marker: the ogres fight, and the slaves fight the halberds before the ogres' first melee, which is not with the halberds. Over both versions of the battle (one or two Halberdiers units), SlaveTarpit's 5 episodes all pass it and the 3 floor episodes all fail it | `hold` 0/1, `attack_nearest` 0/1; SlaveTarpit 3/4 at 5 s. Kimi K3 played a shortcut twice, ogres on the guns before slaves on the halberds: low won (87 s, then 127 s), high lost (179 s, then 334 s) | The rush floor; 3 launches per floor and witness; a foil for Kimi's shortcut (ogres at the guns at once); a decision on the commander flag, which sits on a Skavenslaves unit, one the tactic spends (design rule 8; it broke in 2 of SlaveTarpit's 3 wins, which still won) |
 
@@ -562,7 +562,7 @@ jobs follow each other within seconds):
   13.5](evaluation-guidelines.md#13-owner-decisions-these-rules-need)); the line's launches
   add about 90 s, so there it saves about 5-7% (no line launch has been paired). A
   10-launch gate (foil bound 0.26 instead of 0.19) needs about 30% fewer. The chariot's
-  next confirmation waits for its witness and timing decision (state item 2); at this gate
+  next confirmation uses witness v2 at 2 s/2 s (owner, 2026-10-21); at this gate
   one witness cell and its two floors are 42 launches (14 each), about 5.8 h at 8.3 minutes
   a launch (the mean of its 83 one-battle launches; its 10 two-battle c1 foil launches,
   10.4-12.4 minutes each, are left out).

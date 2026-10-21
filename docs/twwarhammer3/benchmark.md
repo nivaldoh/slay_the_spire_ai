@@ -266,7 +266,7 @@ decision. 18 jobs ended before any episode (10 setup failures), none of them in 
 cohort. Harness b47 stores the engine's ending before the acknowledgement and keeps it
 through a `close()` failure, without changing which result counts.
 
-Check row to add to AGENTS.md on the owner's yes (proposed): "WH3 engine ending kept after
+Check row agreed by the owner on 2026-10-21 and added to AGENTS.md: "WH3 engine ending kept after
 a late controller failure: `uv run --locked pytest -ra
 tests/twwarhammer3/test_wh3_play.py::test_a_controller_failure_after_the_ending_keeps_the_engine_result`
 (fails on the parent of `b536ae6`); no game execution claim." The recount behind the rule
