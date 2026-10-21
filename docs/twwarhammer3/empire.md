@@ -124,7 +124,9 @@ comparison between models.
    the battle, but this benchmark counts only routing or destroying every enemy unit
    before the timer" in place of "if time runs out, you win"; prompt fixtures regenerate, a
    logged prompt version. `render_mode` builds the state line of `llm`, `llm_rules` and
-   `commander` alike, so one version covers all three. The alternative, counting timer
+   `commander` alike, so one logged change covers all three and bumps both the `llm` and
+   the `commander` label in `controllers.VERSIONS`, as `llm` v20 / `commander` v7 did. The
+   alternative, counting timer
    wins, changes `cards.outcome`, which now scores a timer win as lost, and would count the
    3 timer wins already in the register. Recount the same day
    (`runs/twwarhammer3/away-20261021/timer_mentions.txt`):

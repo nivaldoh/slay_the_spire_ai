@@ -83,7 +83,7 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
    ([Empire decision 7](twwarhammer3/empire.md#decisions-taken-for-the-owners-review), for your review; 16 of 17 `llm_rules` episodes on five
    defending battles restate it). Recommended: a contact-scoring scenario field that says so instead (a prompt version once fewer than 3 changes wait); or count timer wins.
 3. **The [failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)**: recommended, agree it (rescores none of 595 episodes) and merge
-   `wh3-keep-engine-ending` (`git show 98b3013`, harness b47), which keeps the ending only, scores unchanged; scoring it is a later change.
+   `wh3-keep-engine-ending` (`git show 98b3013`, harness b47), which keeps the ending only, scores unchanged; scoring that ending and construction failures is a later change.
    Alternative: keep today's code, where a late acknowledge or `close()` failure loses the ending (none of 595 did).
 4. Where to back up `runs/` (no copy; 23 GB, 7.1 GB without `checkpoints/`, 2026-10-21). Recommended: copy it without `checkpoints/`
    to a `C:` folder you name and check a sha256 manifest after (same machine, so not off-site; no script exists yet); or an external
@@ -123,5 +123,5 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` attack-route draft, labelled
   v21 before main's v21 (`18dabdd`); renumber before any merge.
 - `wh3-keep-engine-ending` (`98b3013`, worktree `../slay_the_spire_ai-wh3-ending`): inbox item 3; merges
-  cleanly onto `main` (rechecked 2026-10-21; merged suite and ruff pass at `66d2d20`).
+  cleanly onto `main` (rechecked 2026-10-21; merged WH3 suite and ruff pass at `66d2d20`).
 - Archived drafts are tags (`git tag --list 'archive/*'`).

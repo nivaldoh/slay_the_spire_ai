@@ -561,7 +561,9 @@ jobs follow each other within seconds):
   add about 90 s, so there it saves about 5-7% (no line launch has been paired). A
   10-launch gate (foil bound 0.26 instead of 0.19) needs about 30% fewer. The chariot's
   next confirmation waits for its witness and timing decision (state item 5); at this gate
-  one cell is 42 launches, about 5.8 h at its recorded 8.3 minutes a launch (83 launches).
+  one witness cell and its two floors are 42 launches (14 each), about 5.8 h at 8.3 minutes
+  a launch (the mean of its 83 one-battle launches; its 10 two-battle c1 foil launches,
+  10.4-12.4 minutes each, are left out).
 - First model screen, 10 launches per card and model (a screen, not a ranking): GLM-5.3 low
   cost a median $0.19 a launch (45 since 10-19, `results.csv` usd), Kimi K3 low $0.63 (its
   3 line battles), Qwen3.6 $0.02 (6). About $26 of the $50 OpenRouter allowance is left
