@@ -106,7 +106,8 @@ def episode_digest(episode: Path, decisions: bool = True) -> str:
         f" ${llm.get('usd', 0):.4f}{policy}{_measures(result)}{error}",
     ]
     if "members" in (result.get("card", {}).get("disclosure") or {}):
-        lines.append("team: header decisions/delay describe dispatcher polls; member timings below")
+        lines.append("team: header decisions/delay count member batches (dispatcher requests in"
+                     " result.json polls); member timings below")
     observation, last, notes, refused = None, None, None, False
     items, pending = [], {}
     for raw in (episode / "trace.jsonl").open():

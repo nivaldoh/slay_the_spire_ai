@@ -14,8 +14,8 @@ from test_wh3_team import Script, Workers, ack, move, state
 from wh3_fixtures import USAGE, FakeSend
 
 from gameai.ledger import BudgetExhausted, Ledger
-from gameai.llm import APIError
-from twwarhammer3.battle import controllers, llm, play, team
+from gameai.llm import APIError, usage_cost
+from twwarhammer3.battle import controllers, digest, llm, play, team
 from twwarhammer3.protocol import PolicyFailure
 
 GUNS = "wh_main_emp_inf_handgunners"
@@ -197,3 +197,50 @@ def test_the_team_policy_shares_the_job_ledger_and_plays_the_rules_prompt(tmp_pa
     assert card["disclosure"]["max_age_ms"] is None
     assert card["disclosure"]["army_owner"] == "line" and card["disclosure"]["paid_calls"]
     policy.close()
+
+
+def test_each_member_is_charged_its_own_calls_and_every_exchange_is_kept(tmp_path):
+    usage = {"cavalry": dict(USAGE, input_tokens=100), "line": dict(USAGE, input_tokens=1000)}
+    bodies = []
+
+    def send(body):  # the cavalry member owns f1, the line member f2
+        bodies.append(body)
+        prompt = body["input"][0]["content"]
+        member = "cavalry" if "Your units:\n- f1 " in prompt else "line"
+        text = reply([ADVANCE] if member == "line" and len(bodies) <= 2 else [])
+        return {"id": f"r{len(bodies)}", "usage": usage[member], "output": [
+            {"type": "message", "content": [{"type": "output_text", "text": text}]}]}
+
+    workers = Workers()
+    policy = model_team(tmp_path, send, executor=workers)
+
+    class Mailbox(FakeMailbox):
+        def wait_observation(self, **kwargs):
+            # Both first calls end before seq 2, both second calls before the result.
+            for index in {2: (0, 1), 5: (2, 3)}.get(self.queue[0]["seq"], ()):
+                workers.finish(index)
+            return super().wait_observation(**kwargs)
+
+    mailbox = Mailbox([battle(0, 0), battle(1, 1000), battle(2, 2000, ack=True),
+                       battle(3, 3000, ack=True), battle(4, 4000, ack=True),
+                       battle(5, 5000, result="won")])
+    result = play.play_episode(tmp_path / "e", {**CONFIG, "policy": "team_llm_rules",
+                                                "model": "gpt-6-luna", "effort": "low",
+                                                "interval_ms": 0},
+                               lambda: policy, mailbox, not_battle=None)
+    assert result["status"] == "won" and [r[2] for r in mailbox.requests] == [
+        [], [], [ADVANCE], []]
+    cost = {name: 2 * usage_cost("gpt-6-luna", usage[name]) for name in usage}
+    assert {name: (row["calls"], row["usd"]) for name, row in result["members"].items()} == {
+        name: (2, pytest.approx(cost[name])) for name in usage}
+    assert result["llm"]["usd"] == pytest.approx(sum(cost.values()))
+    assert len((tmp_path / "spend.jsonl").read_text().splitlines()) == 4
+    assert (result["decisions"], result["delays_ms"]) == (2, [1500, 2500])
+    assert result["polls"]["decisions"] == 4 and result["polls"]["delays_ms"] == [500] * 3
+    events = [json.loads(line) for line in (tmp_path / "e/trace.jsonl").open()]
+    exchanges = sorted((e["member"], e["prompt"]) for e in events
+                       if e["kind"] == "model_exchange")
+    assert exchanges == sorted(
+        ("cavalry" if "Your units:\n- f1 " in b["input"][0]["content"] else "line",
+         b["input"][0]["content"]) for b in bodies)
+    assert "2 decisions, 0 invalid" in digest.digest(tmp_path / "e")

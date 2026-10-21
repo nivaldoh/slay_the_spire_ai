@@ -11,10 +11,11 @@ credit or budget stop, ends the episode), and a battle that ended during a decid
 its result unless the call stopped for a key, credit or budget reason. Each acknowledged
 decision records the think time and the battle-time delay between the state it saw and the
 orders being issued (or queued); one still unacknowledged when the episode ends records
-neither. A fast policy decides at the mod's tick rate, so the trace
-keeps every decision with orders, an error or new metadata, and quiet ones once per
-``observe_ms``. Only an engine-reported result is a gameplay outcome. ``setup`` turns the
-scenario into lobby steps and checks.
+neither. A team (a policy with ``records``) records its members' batches instead, and
+the dispatcher's requests under ``polls``. A fast policy decides at the mod's tick rate, so
+the trace keeps every decision with orders, an error or new metadata, and quiet ones once
+per ``observe_ms``. Only an engine-reported result is a gameplay outcome. ``setup`` turns
+the scenario into lobby steps and checks.
 """
 
 import json
@@ -277,7 +278,7 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
             raise PolicyFailure(f"controller construction: {exc}") from exc
         result["card"] = card(config["policy"], policy, config)
         if isinstance(policy, TeamPolicy) and (config.get("delay_ms") or config.get("interval_ms")):
-            raise TeamHarnessError("scripted teams require delay_ms=0 and interval_ms=0")
+            raise TeamHarnessError("teams require delay_ms=0 and interval_ms=0")
         _drive(config, policy, mailbox, not_battle, result, event, started, scenario or {})
     except MailboxTimeout as exc:
         past = time.time() - started > config["episode_timeout"]
@@ -300,6 +301,11 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
             except Exception as exc:
                 result.update(status="policy_failure", error=f"controller close: {exc}")
         record_exchanges(policy, event)
+        if hasattr(policy, "records"):  # a team: member batches, not dispatcher polls
+            records = policy.records()
+            result["polls"] = {key: result[key] for key in ("decisions", "delays_ms", "think_s")}
+            result["invalid"] += records.pop("local_refusals")
+            result.update(records)
         result["elapsed_seconds"] = round(time.time() - wall_started, 3)
         result["monotonic_seconds"] = round(time.monotonic() - monotonic_started, 3)
         result["llm"] = dict(getattr(policy, "totals", {}))
@@ -408,7 +414,7 @@ def record_exchanges(policy, event) -> None:
     if hasattr(policy, "drain_events"):
         for record in policy.drain_events():
             event("team", **record)
-    api = getattr(policy, "api", None)
+    api = getattr(policy, "api", policy)  # a team drains its members' exchanges itself
     if hasattr(api, "drain_exchanges"):
         for exchange in api.drain_exchanges():
             event("model_exchange", **exchange)
