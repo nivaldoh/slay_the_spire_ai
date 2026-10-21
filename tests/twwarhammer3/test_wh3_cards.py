@@ -191,9 +191,11 @@ def test_the_board_lists_unrun_plans_and_judges_only_named_directories(tmp_path,
     assert "attack_nearest" in board("chariot") and "Verdict" not in board("chariot")
 
 
-def test_the_rules_prompt_withholds_the_chariot_tactic():
-    # The chariot card's knowledge row: the rules prompt (llm_rules) states neither charge
-    # bonuses nor cycle charging; a prompt that tells them changes what the card measures.
+def test_the_rules_prompt_withholds_the_card_tactics():
+    # The rules prompt (llm_rules) gives objectives and interface, no tactics (empire.md
+    # decision 5); the chariot card's knowledge row says it states neither charge bonuses nor
+    # cycle charging. A prompt that tells a tactic changes what its card measures.
     text = (REPO_ROOT / "configs/twwarhammer3/rules_prompt.md").read_text().lower()
-    for phrase in ("charge", "charging", "cycle", "pull out", "pull-out", "withdraw", "disengage"):
+    for phrase in ("charge", "charging", "cycle", "pull out", "pull-out", "withdraw", "disengage",
+                   "sacrifice", "expendable", "tarpit", "flank", "kite", "kiting"):
         assert not re.search(rf"\b{phrase}\b", text), phrase  # "recharge" is an ability state
