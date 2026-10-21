@@ -900,8 +900,9 @@ its effect, or that a claim is fair; those need agreed live checks and reading.
    ratio (6.2). The tenth, a scripted floor at 0.878 (`bench-b19-s2-decoy-floor-20261017`),
    went 22 s and then 43 s of system time between consecutive observations 0.3 s of battle
    time apart: a game stall, the accidental pause the band should catch, or a step of the
-   WSL clock (its monotonic clock trails by a median 6.5%, so it cannot tell which). On
-   today's measure, invalidating would also discard 9 battles for call latency.
+   WSL clock (its monotonic clock trails by a median 6.5%, so it cannot tell which). Gaps
+   over 10 s mid-battle are rare: 2 in 286 scripted episodes (`stalls.txt`). On today's
+   measure, invalidating would also discard 9 battles for call latency.
 3. Which witness timing cell makes a card "demonstrably winnable", and witness v2 (already
    [pending](../state.md#owner-decisions-waiting)).
 4. Whether the chariot card is also a training environment, which variant to reserve first,
