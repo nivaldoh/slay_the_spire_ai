@@ -81,7 +81,7 @@ def test_cli_rejects_an_unknown_model_or_effort_before_launch(tmp_path, monkeypa
 
 
 @pytest.mark.parametrize("policy,error", [
-    ("hold@gpt-6-luna", "only commander, llm, llm_rules take @MODEL"),
+    ("hold@gpt-6-luna", "only commander, llm, llm_rules, team_llm_rules take @MODEL"),
     ("llm_rules@gpt-6-luna/minimal", "an effort in none, low, medium, high"),
     ("llm_rules,llm_rules@gpt-6-luna", "duplicate controller"),
 ])

@@ -3,8 +3,9 @@
 ``prompts/llm.txt`` is the second decision of ``llm`` (after notes, a salvaged reply and
 an acknowledgement), ``prompts/llm_opening.txt`` the opening decision (``llm`` and
 ``llm_rules`` send the same input; they differ only in the system prompt) and
-``prompts/commander.txt`` the commander's request after it adopted its first plan. The
-system prompts are the files in ``configs/twwarhammer3/``. A refactor must leave these
+``prompts/commander.txt`` the commander's request after it adopted its first plan and
+``prompts/team_member.txt`` the opening input of a ``team_llm_rules`` member that owns the
+lord. The system prompts are the files in ``configs/twwarhammer3/``. A refactor must leave these
 bytes unchanged; after a deliberate prompt change, regenerate and review the diff:
 ``WH3_WRITE_PROMPTS=1 uv run --locked pytest tests/twwarhammer3/test_wh3_prompts.py``.
 That command authors expectations; it does not verify them. Then rerun with
@@ -19,6 +20,7 @@ from pathlib import Path
 from wh3_fixtures import FakeSend
 
 from gameai.ledger import Ledger
+from twwarhammer3.battle import team
 from twwarhammer3.battle.commander import CommanderPolicy
 from twwarhammer3.battle.llm import LLMPolicy
 
@@ -166,6 +168,15 @@ def test_llm_opening_prompt(tmp_path):
                       send=FakeSend(json.dumps({"orders": [], "reason": "wait", "notes": None})))
     agent.decide(opening())
     check("llm_opening", agent.metadata()["prompt"])
+
+
+def test_team_member_prompt(tmp_path):
+    send = FakeSend(json.dumps({"orders": [], "reason": "wait", "notes": None}))
+    member = team.TeamLLM("gpt-6-luna", "low", Ledger(tmp_path / "ledger.jsonl", 1.0), send=send)
+    member.decide(team.project(opening(), {"f1"}))
+    prompt = member.metadata()["prompt"]
+    assert send.bodies[0]["input"][0]["content"] == prompt
+    check("team_member", prompt)
 
 
 def test_commander_prompt_after_its_first_plan(tmp_path):

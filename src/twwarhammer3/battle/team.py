@@ -8,18 +8,23 @@ Members have bounded decide/close calls and short acknowledge/metadata callbacks
 adapter is not a sandbox. One whole member batch is selected per request; the play loop
 remains the only mailbox writer. A failed member call follows the single controller's
 rule: no valid reply or a provider error is a forfeit and the member is asked again; a key,
-credit or budget stop or any other exception ends the episode.
+credit or budget stop or any other exception ends the episode. ``ModelTeam`` (the policy
+``team_llm_rules``) has two model members sharing the job's ledger.
 """
+import hashlib
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, wait
 from copy import deepcopy
 from dataclasses import dataclass
 from math import cos, radians, sin
+from pathlib import Path
 from threading import Event
 from time import monotonic
 
 from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError
+from gameai.provenance import sha256
+from twwarhammer3.battle import llm
 from twwarhammer3.protocol import IllegalActionError, PolicyFailure, ProtocolError, validate_orders
 
 INPUT_VERSION = "team-v2"
@@ -31,6 +36,11 @@ UNIT_FIELDS = ("id", "type", "alliance", "class", "x", "z", "bearing", "men", "m
                "morale", "flight", "width", "attack_mode", "behaviours", "abilities",
                "command_queue", "navigation", "dest", "state")
 ARMY_MODE = ("slots", "reinforcements", "spawn_zones", "supplies")  # the army owner's
+# The model team (``team_llm_rules``): the Knights, and every other unit with the army orders.
+PARTITION = {"cavalry": (KNIGHT,), "line": None}
+ARMY_OWNER = "line"
+TEAM_NOTE = ("Team: a teammate model commands the allied units below at the same time; you"
+             " order only Your units and do not see its orders, feedback or notes.")
 
 
 class TeamHarnessError(ProtocolError):
@@ -348,6 +358,61 @@ class TeamPolicy:
                 failures.append(exc)
         if failures:
             raise PolicyFailure(f"team cleanup: {failures[0]}") from failures[0]
+
+
+def team_section(view):
+    """The prompt's last section for a model member: its teammate's units."""
+    allies = [f"- {unit['id']} {llm.short_type(unit.get('type'))}: destroyed"
+              if not unit.get("men") else "- " + llm.render_unit(unit, False)
+              for unit in view["allies"]]
+    return f"\n\n{TEAM_NOTE}\nAllied units:\n" + ("\n".join(allies) or "- none")
+
+
+class TeamLLM(llm.LLMPolicy):
+    """The ``llm`` controller on a member's view, with its teammate's units appended."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.section = ""
+        ask = self.api.ask
+        # Per instance, so every attempt (retries too) sends exactly the recorded prompt.
+        self.api.ask = lambda prompt, *rest: ask(prompt + self.section, *rest)
+
+    def decide(self, observation):
+        self.section = team_section(observation)
+        return super().decide(observation)
+
+    def acknowledge(self, ack, latency):
+        # A local or outer refusal never reached the engine, so it has no delay to show.
+        super().acknowledge(ack, latency if "delay_ms" in latency else None)
+
+    def metadata(self):
+        metadata = dict(super().metadata())
+        metadata["prompt"] += self.section
+        metadata["prompt_sha256"] = hashlib.sha256(metadata["prompt"].encode()).hexdigest()
+        return metadata
+
+
+class ModelTeam(TeamPolicy):
+    """Two model members on one army (``PARTITION``), one model, effort and ledger. Each
+    plays the rules prompt on its own view; no age limit, like the single controller."""
+
+    def __init__(self, model, effort, ledger, *, send, system_prompt, provider="openai",
+                 **options):
+        stop = Event()
+
+        def guarded(body):  # no new paid call once cleanup starts
+            if stop.is_set():
+                raise APIError("team closed; request not sent")
+            return send(body)
+
+        super().__init__({name: (kinds, TeamLLM(model, effort, ledger, send=guarded,
+                                                provider=provider, system_prompt=system_prompt))
+                          for name, kinds in PARTITION.items()},
+                         stop=stop, max_age_ms=None, army_owner=ARMY_OWNER, **options)
+        self.card.update(paid_calls=True, model=model, effort=effort,
+                         member_source_sha256=sha256(Path(llm.__file__)),
+                         system_prompt_sha256=hashlib.sha256(system_prompt.encode()).hexdigest())
 
 
 class _MoveOnce:

@@ -3,19 +3,40 @@
 Real Python components with fake workers or fake transports; no game and no paid call.
 """
 import json
+import time
+from functools import partial
+from threading import Event
 
 import pytest
 from test_wh3_play import CONFIG, FakeMailbox
 from test_wh3_prompts import opening
 from test_wh3_team import Script, Workers, ack, move, state
+from wh3_fixtures import USAGE, FakeSend
 
-from gameai.ledger import BudgetExhausted
+from gameai.ledger import BudgetExhausted, Ledger
 from gameai.llm import APIError
-from twwarhammer3.battle import llm, play, team
+from twwarhammer3.battle import controllers, llm, play, team
 from twwarhammer3.protocol import PolicyFailure
 
 GUNS = "wh_main_emp_inf_handgunners"
 HORN = {"unit": "army", "type": "ability", "ability": "horn", "target": None, "x": 0, "z": 0}
+ADVANCE = {"unit": "f2", "type": "move", "x": 10, "z": 20}
+
+
+def reply(orders=(), notes=None):
+    return json.dumps({"orders": list(orders), "reason": "plan", "notes": notes})
+
+
+def battle(seq, time_ms, **changes):
+    """Swordsmen f2 (the line member's) and Knights f1 (the cavalry member's) against e1."""
+    observation = state(seq, time_ms, **changes)
+    del observation["terrain"]  # the scripted fixture's grid lacks the renderer's fields
+    return observation
+
+
+def model_team(tmp_path, send, **options):
+    return team.ModelTeam("gpt-6-luna", "low", Ledger(tmp_path / "spend.jsonl", 1.0),
+                          send=send, system_prompt="rules", **options)
 
 
 def test_a_view_of_every_unit_renders_the_single_controller_prompt():
@@ -96,3 +117,83 @@ def test_a_member_failure_is_a_forfeit_or_ends_the_episode_like_the_single_contr
     events = [json.loads(line) for line in (tmp_path / "e/trace.jsonl").open()]
     failed, = [e for e in events if e.get("event") == "failed"]
     assert failed["member"] == "infantry" and failed["decision"] == "infantry-1"
+
+
+def test_a_member_never_sees_its_teammate_feedback_notes_or_the_global_ack(tmp_path):
+    send = FakeSend(reply([ADVANCE], notes="QQ"),
+                    reply([{"unit": "f1", "type": "attack", "target": "e1"}]), reply(), reply())
+    workers = Workers()
+    policy = model_team(tmp_path, send, executor=workers)
+    cavalry, line = policy.members["cavalry"].policy, policy.members["line"].policy
+    policy.decide(battle(1, 10000))
+    workers.finish(1)
+    assert policy.decide(battle(2, 11000)) == [ADVANCE]
+    rejected = {"request": "r1", "applied_ms": 11500,
+                "results": [{"index": 1, "unit": "f2", "ok": False, "error": "XYZZY"}]}
+    policy.acknowledge(rejected, {"delay_ms": 500, "think_s": .1})
+    workers.finish(0)  # cavalry attacks e1, out of sight when its batch is checked
+    policy.decide({**battle(3, 12000, enemy=False), "orders": rejected})
+    workers.finish(2)
+    workers.finish(3)
+    seen = cavalry.metadata()["prompt"]
+    assert "Last orders: f1 #1 rejected: f1: target 'e1' is not visible." in seen
+    assert "XYZZY" not in seen and "QQ" not in seen
+    assert "f2 #1 rejected: XYZZY" in line.metadata()["prompt"]
+    assert "QQ" in line.metadata()["prompt"]
+    inputs = [e["observation"] for e in policy.drain_events()
+              if e["event"] == "input" and e["member"] == "cavalry"]
+    assert len(inputs) == 2 and "XYZZY" not in json.dumps(inputs)
+
+
+def test_cleanup_is_bounded_sends_nothing_new_and_leaves_a_running_member_open(
+        tmp_path, monkeypatch):
+    monkeypatch.setattr(team, "CLOSE_WAIT_S", .2)
+    entered, release, bodies, closed = Event(), Event(), [], []
+
+    def send(body):
+        bodies.append(body)
+        text = reply()
+        if "Your units:\n- f1 " in body["input"][0]["content"]:
+            entered.set()
+            assert release.wait(5)
+            text = "not json"  # rejected: the member would ask again
+        return {"id": "r", "usage": USAGE, "output": [
+            {"type": "message", "content": [{"type": "output_text", "text": text}]}]}
+
+    policy = model_team(tmp_path, send)
+    for name, member in policy.members.items():
+        member.policy.close = partial(closed.append, name)
+    try:
+        policy.decide(battle(1, 10000))
+        assert entered.wait(5)
+        policy.members["line"].future.result(timeout=5)
+        started = time.monotonic()
+        policy.close()
+        assert time.monotonic() - started < 1
+    finally:
+        release.set()
+    assert isinstance(policy.members["cavalry"].future.exception(timeout=5), PolicyFailure)
+    assert len(bodies) == 2 and closed == ["line"]
+    assert policy.members["line"].policy.api.ledger.held == 0
+    discarded = {e["member"]: e for e in policy.drain_events() if e["event"] == "discarded"}
+    assert discarded["cavalry"]["running"] is True and discarded["line"]["running"] is False
+
+
+def test_the_team_policy_shares_the_job_ledger_and_plays_the_rules_prompt(tmp_path,
+                                                                          monkeypatch):
+    monkeypatch.setattr(controllers, "api_key", lambda provider="openai": "test-only")
+    (tmp_path / "spend.jsonl").touch()
+    config = {"policy": "llm_rules,team_llm_rules", "model": "gpt-6-luna", "effort": "low",
+              "ledger": str(tmp_path / "spend.jsonl"), "budget_usd": 1}
+    makers = controllers.factories(config)
+    single, policy = makers["llm_rules"](), makers["team_llm_rules"]()
+    cavalry, line = (member.policy for member in policy.members.values())
+    assert cavalry.api.ledger is line.api.ledger is single.api.ledger
+    assert cavalry.api is not line.api
+    assert cavalry.api.instructions == line.api.instructions == llm.RULES_PROMPT_PATH.read_text()
+    card = controllers.card("team_llm_rules", policy, config)
+    assert (card["kind"], card["cost_source"], card["timing"], card["model"]) == (
+        "model", "WH3 ledger", "asynchronous", "gpt-6-luna")
+    assert card["disclosure"]["max_age_ms"] is None
+    assert card["disclosure"]["army_owner"] == "line" and card["disclosure"]["paid_calls"]
+    policy.close()

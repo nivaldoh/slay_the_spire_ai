@@ -41,9 +41,10 @@ def test_importable_controller_and_fresh_instances():
 
 def test_each_model_controller_gets_its_own_prompt_and_the_shared_budget(tmp_path, monkeypatch):
     monkeypatch.setattr(controllers, "api_key", lambda provider="openai": "test-only")
-    assert controllers.MODEL_POLICIES == frozenset({"llm", "llm_rules", "commander"})
-    config = {"policy": "llm,llm_rules,commander", "model": "gpt-6-luna", "effort": "low",
-              "ledger": str(tmp_path / "spend.jsonl"), "budget_usd": 1}
+    assert controllers.MODEL_POLICIES == frozenset({"llm", "llm_rules", "commander",
+                                                    "team_llm_rules"})
+    config = {"policy": "llm,llm_rules,commander,team_llm_rules", "model": "gpt-6-luna",
+              "effort": "low", "ledger": str(tmp_path / "spend.jsonl"), "budget_usd": 1}
     with pytest.raises(FileNotFoundError, match="No spend ledger"):
         controllers.factories(config)  # a missing file would count as $0 spent
     (tmp_path / "spend.jsonl").touch()
@@ -80,7 +81,7 @@ def test_a_model_policy_name_can_carry_its_own_model_and_effort(name, parts):
 
 
 @pytest.mark.parametrize("policy,error", [
-    ("hold@gpt-6-luna", "only commander, llm, llm_rules take @MODEL"),
+    ("hold@gpt-6-luna", "only commander, llm, llm_rules, team_llm_rules take @MODEL"),
     ("twwarhammer3.battle.scripted:AttackNearest@gpt-6-luna", "only commander"),
     ("llm_rules@gpt-6-lunar", "with a model in"), ("llm_rules@", "with a model in"),
     ("llm_rules@gpt-6-luna/minimal", "an effort in none, low"),

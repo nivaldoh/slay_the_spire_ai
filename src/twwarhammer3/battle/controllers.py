@@ -18,16 +18,17 @@ from gameai.ledger import Ledger
 from gameai.llm import api_key, post
 from gameai.provenance import sha256
 from gameai.providers import get_provider, routing, validate
-from twwarhammer3.battle import commander, llm
+from twwarhammer3.battle import commander, llm, team
 from twwarhammer3.battle.scripted import POLICIES
 from twwarhammer3.battle.skills import ProbeAbilities, Skills
 
 BUILTINS = {**POLICIES, "skills": Skills, "probe_abilities": ProbeAbilities}
 # The paid model controllers and their system prompts, which play snapshots per job.
 MODEL_PROMPTS = {"llm": llm.SYSTEM_PROMPT_PATH, "llm_rules": llm.RULES_PROMPT_PATH,
-                 "commander": commander.PROMPT_PATH}
+                 "commander": commander.PROMPT_PATH, "team_llm_rules": llm.RULES_PROMPT_PATH}
 MODEL_POLICIES = frozenset(MODEL_PROMPTS)
-VERSIONS = {"llm": "v22", "llm_rules": "v22", "commander": "v8", "skills": "v1.2"}
+VERSIONS = {"llm": "v22", "llm_rules": "v22", "commander": "v8", "skills": "v1.2",
+            "team_llm_rules": "v22+t1"}
 
 
 def policy_parts(name: str, config: dict) -> tuple[str, str | None, str | None]:
@@ -140,7 +141,8 @@ def factories(config: dict) -> dict:
         send = partial(post, api_key(provider), provider=provider, record_transport=True)
         for name in models:
             base, model, effort = parts[name]
-            kind = commander.CommanderPolicy if base == "commander" else llm.LLMPolicy
+            kind = {"commander": commander.CommanderPolicy,
+                    "team_llm_rules": team.ModelTeam}.get(base, llm.LLMPolicy)
             makers[name] = partial(kind, model, effort, ledger, send=send, provider=provider,
                                    system_prompt=MODEL_PROMPTS[base].read_text())
     for name in parts.keys() - models:
