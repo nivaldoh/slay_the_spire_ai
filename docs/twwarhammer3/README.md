@@ -29,6 +29,8 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [robotics.md](robotics.md) | robotics ideas and concrete comparison designs: parameterized/generated policies, learned micro, controller boundaries and codebase fit |
 | [robot-team-research.md](robot-team-research.md) | research guide: capability allocation, recovery, delayed plans, evaluation and learning; what each source suggests for WH3 and where it does not transfer |
 | [robot-team-plan.md](robot-team-plan.md) | staged Empire experiment plan: establish useful recovery, compare allocation, then test delayed plans or learning; evidence, measures and stop conditions |
+| [multi-agent-plan.md](multi-agent-plan.md) | proposed evaluation of independent teammates: split-army pilot, native team battles and multiplayer campaigns; contracts, controls, verification and staged experiments |
+| [multi-agent-implementation.md](multi-agent-implementation.md) | small implementation slices: two scripted members, ownership and feedback, asynchronous dispatch and live checks, then model agents and messages |
 | [empire.md](empire.md) | the Empire set (2026-10-20): why one faction, the Empire scenarios from one unit to 20 v 20, the line battle for the robot-team question, the night's decisions and risks |
 | [small-scenarios-2.md](small-scenarios-2.md) | second batch of small scenario candidates (S8-S13): rosters, database facts, hypotheses |
 | [benchmark-run.md](benchmark-run.md) | running paired benchmark trials, outside controllers |

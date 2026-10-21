@@ -9,6 +9,10 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
+Implementing the [first scripted team](twwarhammer3/multi-agent-implementation.md):
+ownership, independent decisions and attributable feedback. Component checks and four
+$0 live probes agreed (30-minute cap); native multiplayer/campaign remain unverified.
+
 No benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need),
 [scope](twwarhammer3/benchmark.md#scope-and-first-release), suite, checks and gates remain proposals;
 [Empire items](twwarhammer3/empire.md) pending. The 2026-10-21 away window (02:20-12:20, offline, $0)

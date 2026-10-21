@@ -40,6 +40,57 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-21: Small multi-agent implementation plan
+
+Added [the implementation plan](multi-agent-implementation.md). First change: one
+split-army adapter and focused component checks; then independent scripted workers,
+one member batch per mailbox request, source-aware feedback and events, and a bounded
+four-launch probe using the existing Knights/Swordsmen scenario. Later slices add one
+model, bounded messages and parallel model calls. No Lua or mailbox change is needed
+for the proposed initial path. Source audit found that `Ledger.reserve()` checks spending
+without holding funds in flight, so parallel paid calls require real reservations first.
+Independent review corrected selection versus transmission, member latency feedback,
+dispatch-only expiry, error propagation and the two zero-argument probe variants.
+Checks: documentation links 57 passed; `uv run --locked ruff check .` passed;
+`git diff --check` passed. Evidence: `runs/twwarhammer3/multi-agent-plan-20261021/`
+(`pytest.txt`, `ruff.txt`; the earlier 56-check log is `evaluation-plan-pytest.txt`).
+These check documentation/lint only. No runtime implementation, new tests, game sessions
+or paid calls; all new checks and live capabilities remain proposed and unverified.
+
+## 2026-10-21: Multi-agent evaluation plan
+
+Added [the plan](multi-agent-plan.md): split-army development, native allied armies and
+2v2, then cooperative, mixed-interest and full multiplayer campaigns. Defines authority,
+views, asynchronous orders, messages, team budgets, baselines, held-out partners, outcomes,
+failure accounting and proposed checks. The 18-launch scripted screen and 36-launch model
+pilot are proposals, not scheduled experiments. Source audit at `c2a7ae7`: multiplayer and
+campaign battle guards, skipped initial allies and single-controller transport are explicit
+capability limits. Independent source/design reviews led to corrections on reset state,
+sampling independence, balanced run order, censoring, initial mode and reinforcement scanning.
+Evidence: `uv run --locked pytest -ra tests/test_doc_links.py
+--basetemp=runs/twwarhammer3/multi-agent-plan-20261021/pytest-tmp`: 56 passed;
+`uv run --locked ruff check .`: passed. Logs in `runs/twwarhammer3/multi-agent-plan-20261021/`.
+Both checks initially could not start with the sandbox's read-only uv cache; approved
+reruns passed. These establish links/lint, not scientific validity or game capability.
+Documentation only; no game sessions, paid calls, adopted scoring or new agreed checks.
+All proposed multiplayer/campaign capabilities and gameplay comparisons remain unverified.
+
+## 2026-10-21: Subjective-evaluation resource review
+
+Read [Wolfe's guide](https://cameronrwolfe.substack.com/p/subjective-evals) and added it to
+the [evaluation sources](evaluation-guidelines.md#sources), with links to its uses and
+WH3 limits. The guidelines now cover audits of false successes and failures, continued
+reviewer calibration, new reference labels when criteria change, and judge repeats kept
+separate from battle counts and tactic coverage. Product monitoring translates here to
+finding development scenarios from live-job faults. Independent review caught and resolved
+the need to replace reference labels after a criterion changes.
+Evidence: `uv run --locked pytest -ra tests/test_doc_links.py
+--basetemp=runs/subjective-evals-review-20261021/pytest-tmp` passed all 55 checks after
+creating the missing scratch parent (first attempt: 54 passed, 1 setup error);
+`uv run --locked ruff check .` passed. These check links and lint, not evaluation validity.
+Documentation only; no battles, paid calls or scoring changes. New methods remain
+proposed and unverified under the owner's hard rule.
+
 ## 2026-10-21: Prompt v22 / commander v8 and harness b48: contact scoring told to defenders
 
 The owner's ruling ([directions](../owner-direction.md)): the cards count only contact

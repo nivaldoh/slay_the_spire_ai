@@ -5,6 +5,9 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-21 (evaluation resource): read [Wolfe's subjective-evaluation guide](https://cameronrwolfe.substack.com/p/subjective-evals),
+  incorporate useful ideas into the repo's evaluation guidelines, and add it to the
+  [reference list](twwarhammer3/evaluation-guidelines.md#sources).
 - 2026-10-21 (autonomy strategy), verbatim: "Read docs/autonomy.md. We've been trying to
   come up with a strategy that we can use to keep you making at least some progress
   autonomously while I haven't had the time to review progress and make decisions, in order
@@ -63,6 +66,24 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-21 (multi-agent implementation and verification): "Proceed with the implementation
+  for the multi-agent battles. Keep it simple at the start, make it verifiable, no slop."
+  Agreed component checks for ownership, hidden-state filtering, independent progress,
+  feedback identity, timing and cleanup; also four script-only live probes on the existing
+  Knights/Swordsmen battle, alternating the delayed member, unpaused at 1x, $0 model
+  spend, capped at 30 minutes total. Live success requires the correct unit to move while
+  its teammate is still thinking. This authorizes the first scripted split-army adapter;
+  paid model teams, native multiplayer and campaigns remain later work.
+- 2026-10-21 (multi-agent implementation plan): "Plan the implementation (starting small)
+  for the multi-agent implementation". [Implementation plan](twwarhammer3/multi-agent-implementation.md):
+  begin with a split-army adapter for two scripted members and propose concrete checks;
+  this requests the plan, not implementation or new game sessions.
+- 2026-10-21 (multi-agent evaluation plan), verbatim: "Let's write a detailed, careful
+  plan on how we might evaluate Total War Warhammer 3 as a multi-agent problem (initially
+  just team battles, but eventually the multi-player campaign too)". Plan:
+  [multi-agent-plan.md](twwarhammer3/multi-agent-plan.md). This requests campaign evaluation
+  design as well as team-battle design; it does not adopt scoring/checks or authorize new
+  game sessions, multiplayer clients, campaign saves or achievements.
 - 2026-10-21 (12:45, four more answers): the starting-set screen runs "Tonight"; add the
   engine-ending regression as an agreed check in AGENTS.md ("Yes, add it"); back up `runs/`
   "Not now"; the chariot card uses witness v2 (HitAndRunV2) for its next confirmation at

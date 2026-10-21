@@ -13,7 +13,8 @@ planning a study and for an outside researcher deciding whether to trust a resul
 benchmark is defined in [benchmark.md](benchmark.md), the cards in
 [tactic-cards.md](tactic-cards.md), the commands in [benchmark-run.md](benchmark-run.md).
 
-**Status (revised 2026-10-20).** Proposals. Nothing here is verified under the
+**Status (guidance revised 2026-10-21; implementation notes from 2026-10-20).** Proposals.
+Nothing here is verified under the
 [hard rule](../../AGENTS.md#verification-hard-rule): a check counts only once the owner
 agrees it and it passes at a named revision. Most rules end with a **Check**: *exists*
 (the code is there, but it is verified only if AGENTS.md lists it), *proposed* (not built,
@@ -641,10 +642,19 @@ launches). It stays GLM's loss, since serving belongs to the controller
 the owner can decide whether that backend's later battles form a separately labelled
 cohort.
 
+For the sample, apply the written card rule to raw records before opening scorer output.
+Investigate both false successes and false failures; a review never overrides an engine
+ending or adds a required tactic. This applies the audit idea in
+[Wolfe's subjective-evaluation guide](https://cameronrwolfe.substack.com/p/subjective-evals)
+to our frozen card contract.
+
 - *Check:* proposed (small): `digest` prints failed decisions (today it skips them), and a
   `faults()` list flags failed decisions, invalid batches, refusals, cut-off replies, calls
   slower than a stated multiple of the arm's median, dropped or stale requests, `mod.log`
   errors, missing files and flagged starts.
+  Manual: save the sampled episode paths, expected card results, scorer results and
+  mismatch explanations; use [9.2](#92-version-the-scorer-correct-in-the-open-and-keep-releases-frozen)
+  for corrections.
 
 ### 8.2 Label failures from one short list, and find where a loss went wrong
 
@@ -807,6 +817,16 @@ its cause; tactical opinions stay notes, never majority facts. The owner's label
 "designer, single reviewer", and agent reviews are not human labels. Batches picked to find
 failures support no rates; a rate needs a recorded random sample.
 
+During development, revise the sheet from disagreements; split, simplify or drop questions
+that remain unreliable. After freezing, double-label a predeclared overlap each batch,
+including after reviewer changes. Hold affected labels if agreement deteriorates.
+Recalibrate a revised sheet on development items; changed criteria need fresh held-out
+human labels before any automatic label is revalidated (10.4).
+
+- *Check:* manual, when review is needed: record the overlap selection rule, reviewer and
+  sheet versions, counts and disagreements in the label file under `runs/`. Preserve
+  original answers; released corrections follow [9.2](#92-version-the-scorer-correct-in-the-open-and-keep-releases-frozen).
+
 ### 10.4 Validate any automatic label against held-out human labels
 
 Compare a code check or judge with human labels from distinct launches made without seeing
@@ -821,6 +841,15 @@ across arms, and choose the judge model first (it mattered most in Autorubric). 
 judge-counted rate as (observed + TNR − 1) / (TPR + TNR − 1), clipped to 0-100% and
 carrying the uncertainty of TPR and TNR: 20% observed with TPR 0.8 and TNR 0.9 becomes
 14%.
+
+Repeated judge calls on one saved item measure judge inconsistency. Fix the repeat count
+and aggregation beforehand; save every answer and count the item once. More launches test
+this card again; other tactics require other cards. Repetition cannot repair systematic
+mislabeling.
+
+- *Check:* proposed (small, only if a study needs judge labels): the label script checks
+  one aggregate per item and reports judge disagreement separately from launch counts.
+  Recounts use saved answers ([9.1](#91-rebuild-every-reported-number-from-a-hashed-evidence-index)).
 
 ### 10.5 Keep rubric items narrow and out of the score; a training signal cannot judge training
 
@@ -866,6 +895,7 @@ but never block). The authors are one owner and AI agents in a public repository
 | Evaluate every commit, in parallel | One game at a time, on the owner's PC | `pytest` per change; drift jobs after a build or harness change |
 | Freeze the environment | Steam updates; pins warn but never block | Record the build; drift jobs |
 | A human baseline | A person plays through a different interface | Not planned; if added, a labelled reference row |
+| Product engagement and user ratings | No deployed user-facing agent here | Live-job faults suggest development scenarios; scored evidence follows [3.1](#31-mark-each-jobs-stage-and-tune-only-on-development-evidence), releases stay frozen |
 
 ## 12. Where to enforce first
 
@@ -939,8 +969,13 @@ LLM-as-a-Judge through section summaries; most cited and related work in part (m
 sections or abstracts); MMLU-Redux only through Wolfe. The rules apply these sources; the
 studies do not show the rules work for WH3.
 
+Added 2026-10-21: Wolfe's *Evaluating Agents on Highly Subjective Tasks*, read in full.
+These additions are our WH3 adaptations; the existing small-sample methods, card
+admission rules and engine-based scoring still apply.
+
 | Source | Used for | Limit |
 |---|---|---|
+| [Wolfe, Evaluating Agents on Highly Subjective Tasks](https://cameronrwolfe.substack.com/p/subjective-evals) (2026-10-21) | [Scorer audits](#81-scan-every-battle-then-read-a-fixed-sample-before-counting-a-cell), [ongoing reviewer calibration](#103-label-independently-and-report-agreement-in-full), [judge repeats](#104-validate-any-automatic-label-against-held-out-human-labels) | Subjective/product tasks; [WH3 exceptions](#11-common-advice-that-does-not-apply-or-works-differently-here) |
 | [Weng, High-Quality Human Data](https://lilianweng.github.io/posts/2024-02-05-human-data-quality/) | Reviewer training, agreement limits, rule versus opinion labels | Crowd scale |
 | [Yan, Labeling Guidelines](https://eugeneyan.com/writing/labeling-guidelines/), with the Google and Bing rater guides it uses | The sheet layout in 10.2, an "unsure" option, revision while tracking agreement | Search-rating tie-breaks do not transfer |
 | [Wolfe, LLM-as-a-Judge](https://cameronrwolfe.substack.com/p/llm-as-a-judge), [Zheng et al.](https://arxiv.org/html/2306.05685v4) | Judge setups; position, length and self-preference bias | Text tasks |
