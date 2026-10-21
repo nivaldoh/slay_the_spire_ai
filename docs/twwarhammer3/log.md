@@ -45,23 +45,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3/away-20261021/`.
 - [Starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21) (proposal): a
   five-part rule, three cards (chariot, rank-5 line, Skaven expendables; two blind
-  re-derivations agreed), a $0 screen of 36 scripted launches (4.6 h, two probes), a
-  held-out map. Independent reviews confirmed 83 errors in tonight's drafts and commits (81
-  in documents, 2 in the branch), all fixed.
+  re-derivations agreed), a $0 screen of 36 scripted launches (4.6 h, two probes) with a
+  reader, a held-out map. Independent reviews confirmed 83 errors in tonight's drafts and
+  commits (81 in documents, 2 in the branch), all fixed.
 - Failure rule: none of 595 episodes failed at construction, a late acknowledgement or
   `close()`, so the [proposed rule](benchmark.md#correctness-checks-to-agree) rescores
-  nothing. Branch `wh3-keep-engine-ending` (`98b3013`, unmerged, independently reviewed)
-  keeps that ending, scores unchanged; its regression fails on the parent; suite 1342
-  passed.
+  nothing. Branch `wh3-keep-engine-ending` (`98b3013`, unmerged, reviewed twice) keeps that
+  ending, scores unchanged.
 - c1: a blind recount from docs and raw files matched every outcome and the verdict. On 21
   hand-picked engagements under a proposed rule, cycles v1 was right on 13, counting every
-  engagement but the last on 10. One model family: a check of the documents only.
+  engagement but the last on 10.
 - Evidence for open decisions: 16 of 17 model episodes on five defending battles restate
   the timer win; a 300-character reason rule catches 8 of 15 garbled attempts an
-  independent hunt found (all 7 of the Empire export); all 10 battles outside a 0.95-1.05
-  clock band predate b39; 1 of 17 line battles offered a replacement opportunity; model
+  independent hunt found; all 10 battles outside a 0.95-1.05 clock band predate b39; 1 of
+  17 line battles offered a replacement opportunity; campaigns call the imagery script's
+  same-named function ([integration](integration.md)); four campaign-safety tests; model
   licenses ([terms](../posttraining.md#provider-terms)).
-- Unverified: every gameplay count (1-33 episodes a cell), markers and labels (proposed).
+- Unverified: every gameplay count (1-33 episodes a cell), markers and labels (proposed);
+  agents are one model family, so their checks test documents, not judgment.
 
 ## 2026-10-21: Autonomous-work strategy refined (proposal)
 

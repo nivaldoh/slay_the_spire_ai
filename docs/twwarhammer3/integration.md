@@ -74,7 +74,10 @@ declared scenario sets its own AI stats modifier in the lobby
   our mod list runs it with the campaign context. A simulation under Lua 5.1 stops in
   `save()` on a nil battle id before any file opens; the game would log the error in
   `lua_mod_log.txt` and go on (2026-10-21; unverified live). Renaming that global so it no
-  longer matches its file would keep the call out of campaigns.
+  longer matches its file would keep the call out of campaigns. Component tests cover the
+  rest of that path: loading `_lib/mod` touches no file; the battle script hooks nothing
+  without an enabled session, or with one in campaign, quest, replay, multiplayer and
+  tutorial battles; the frontend polls only for a menu session (proposed checks).
 - Lua 5.1 environment: `io.open` on absolute Windows paths, `os.remove` and `os.rename`
   work in both scripts, as do `tm:repeat_real_callback(fn, ms, name)` in the frontend and
   `bm:repeat_real_callback` in battle. There is no `math.huge`. `loadstring` chunks run in
