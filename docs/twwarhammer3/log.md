@@ -57,10 +57,10 @@ Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3
   hand-picked engagements under a proposed rule, cycles v1 was right on 13, counting every
   engagement on 10. One model family: a check of the documents only.
 - Evidence for open decisions: 16 of 17 model episodes on five defending battles restate
-  the timer win; a 300-character reason rule catches the 7 Empire-night garbled replies but
-  misses 6 of 15 found by an independent hunt; all 10 battles outside a 0.95-1.05 clock
-  band predate b39; 1 of 17 line battles offered a replacement opportunity; model licenses
-  ([terms](../posttraining.md#provider-terms)).
+  the timer win; a 300-character reason rule catches 8 of 15 garbled attempts an
+  independent hunt found (all 7 of the Empire export); all 10 battles outside a 0.95-1.05
+  clock band predate b39; 1 of 17 line battles offered a replacement opportunity; model
+  licenses ([terms](../posttraining.md#provider-terms)).
 - Unverified: every gameplay count (1-33 episodes a cell), markers and labels (proposed).
 
 ## 2026-10-21: Autonomous-work strategy refined (proposal)
