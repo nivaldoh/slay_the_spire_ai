@@ -170,7 +170,8 @@ If the cap expires without a useful separation, defer it. Another revision needs
 failure and a new bounded plan, rather than indefinite calibration.
 
 The immediate unresolved decisions are the chariot rule/version, the proposed checks
-and failure rule, and which distinct Empire card earns confirmation. Exact suite
+and failure rule, and which starting-set cards (the rank-5 line, the Skaven expendables) go
+to confirmation. Exact suite
 membership, a useful effect size and affordable launch count follow from those screens;
 they are not settled by this scope review. The
 [state page](../state.md#total-war-warhammer-iii) holds the current next actions.
@@ -420,14 +421,14 @@ card admission nor verification. `validate_declaration` requires a pinned map,
 pinned factions and explicit rosters and every required `expect` key. Timed modes need a
 finite timer (1200, 2400 or 3600 s) and an episode cap at least 120 s above it; native
 timerless survival/domination require `time_limit_s: null` and `timer_enabled: false`.
-Declared reinforcement pools must be explicit. All declarations refuse `--attach`. A declaration
-error or a realism preference that differs from `expect.realism` stops play before the
-job directory exists. Setup then checks, and any mismatch stops the job before a trial is
+Declared reinforcement pools must be explicit. All declarations refuse `--attach`. A
+declaration error stops play before the job directory exists. Setup then checks, and any
+mismatch stops the job before a trial is
 scored:
 - the lobby: every menu step found its component, the selected map key, and read-backs of
   battle type, difficulty, unit scale, realism, funds (and amount), timer and AI stats
   modifier. Since b42 the steps apply these declared settings, difficulty before the
-  explicit AI modifier; the pre-launch realism preference check still applies;
+  explicit AI modifier;
 - the first battle observation: unit scale, realism, player role, every army's AI
   modifier, both rosters and experience ranks as multisets, both factions and the terrain grid.
 
@@ -503,7 +504,8 @@ Trial statuses (`battle/play.py`):
   [integration.md](integration.md)); the report shows `time_limit` and keeps the engine
   result, so a defender's timeout win is not hidden.
 - `truncated` (episode wall cap), `policy_failure` (terminal controller, construction or
-  close failure), `budget_exhausted` (the WH3 ledger cap),
+  close failure), `budget_exhausted` (the job's ledger cap or its safety stop, or the
+  account's key or credit: HTTP 401/402),
   `infrastructure_failure`, `unsupported_or_invalid` (a protocol or battle setup check
   failure) and `interrupted` (operator stop).
 
@@ -774,8 +776,8 @@ The completed work and earlier decisions are recorded in the log:
 [b11 shared measures and report](log.md#2026-10-15-harness-b11-common-measures-and-one-report),
 [b12 scenario expansion](log.md#2026-10-16-harness-b12-and-distinct-scenario-families),
 and [M1](log.md#2026-10-16-matched-round-m1-on-the-retained-core-plan).
-The superseded implementation instructions remain in Git history; the active sequence
-is the [calibration proposal](#implementation-plan). Measurement definitions are above;
+The superseded implementation instructions remain in Git history; the active sequence is
+the [release route](#route-to-the-first-release). Measurement definitions are above;
 report behavior is in [reports.md](reports.md).
 
 ## Calibration (stopped 2026-10-14)

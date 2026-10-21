@@ -35,8 +35,8 @@ folder and the cards' outcome separate contact wins from timer wins).
 | 2 units | `emp-handgunners-grn-savage-orcs`, `-hard` (1.1) | keep a firing lane past the spearmen (the riflemen card) | at 1.0 attack-nearest won (1); at 1.1 attack-nearest lost (1), FlankLane 1 of 2 |
 | 2 units | `emp-handgunners-grn-wolves-boyz`, new | which unit meets which of a fast and a slow threat | none |
 | 2 units | `emp-helblaster-brt-raiders` | protect a Helblaster from riders | hold lost (1); Bodyguard 5 of 8; GLM 0 of 1 and one policy failure |
-| 2 units | `emp-knights-emp-swordsmen-2` | hammer and anvil against two Swordsmen | attack-nearest won (1): too easy at two, too hard at three |
-| 2 units | `emp-wizard-emp-swordsmen`, `-hard` | spell timing with scarce magic | attack-nearest lost (2); SpellWindow 5 of 6; FireballSpam won (2) |
+| 2 units | `emp-knights-emp-swordsmen-2` (attacks) | hammer and anvil against two Swordsmen | attack-nearest won (1): too easy at two, too hard at three |
+| 2 units | `emp-wizard-emp-swordsmen` (attacks), `-hard` (attacks, 1.1) | spell timing with scarce magic | attack-nearest lost (2); SpellWindow 5 of 6; FireballSpam won (2) |
 | 3 units | `emp-handgunners-dwf-warriors-3` (attacks) | two gun units and a spear unit against shielded Dwarfs | attack-nearest lost (1); Crossfire 0 of 6 |
 | 7 v 7 | `emp-line-grn-raid`, new | the robot-team question: who guards what, who fills a gap, when the knights commit | none |
 | 20 v 20 | `emp-pitched-grn-20` (attacks, 2400 s) | do the small skills survive forty units and a long history | attack-nearest lost at 523 s (1) |
@@ -133,8 +133,10 @@ comparison between models.
 ## For the owner to decide
 
 1. **The rank-5 line battle as the first team card.** Its floors lost and the fixed plan
-   won by contact once; the replacement-rule arm nearly won. Proposed next: foils at 3+
-   launches each, the fixed plan at 3+ (and at 5 s added age), then model screens; and
+   won by contact once; the replacement-rule arm nearly won. Proposed next (2026-10-21):
+   the [starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21)'s $0 screen
+   (every floor including `rush_nearest`, and LineTeam b46 at 0 s, 3 launches each), then
+   its named shortcut and confirmation before any model screen; and
    whether to keep the rank-5 step or to drop the Boar Boyz instead.
 2. **What the line battle measures.** A contact win is the outcome of record (decision
    7); the handover reading (first order after the first friendly rout, rounds before a
@@ -156,7 +158,8 @@ comparison between models.
    Over every recorded model episode (296, 6,819 completed replies; 2026-10-21,
    `runs/twwarhammer3/away-20261021/garbled_all.txt`), a reason over 300 characters marks 9
    replies in 5 episodes: 8 garbled Decart replies in 4 GLM launches of this night, two of
-   them wins (the knights and wolves battles), and one coherent 314-character Qwen reason.
+   them wins (the second hammer-and-anvil and wolves launches), and one coherent
+   314-character Qwen reason.
    Rerunning flagged launches would discard those two wins. An independent hunt by other
    signals (script mix, junk words, word salad, symbols, whitespace runs;
    `runs/twwarhammer3/away-20261021/garbled-hunt/`) found 15 garbled attempts in 6 jobs. The
@@ -415,8 +418,8 @@ Second queue (b44, from 05:02):
   moves at x -470 to -511, inside the -512 edge; of the 58 refusals, 31 were unreachable
   points inside the map, 16 out-of-bounds runs east to x 520-620 at 657-813 s, 6 into
   the blocked south-west corner and 5 to routing units), until the guns were caught at
-  387 s and 536 s. Enemy 43% left. $1.47 for 925 s and 245 decisions (decision 3
-  compares the cost per decision); the ledger read $16.78 after this one.
+  387 s and 536 s. Enemy 43% left. $1.47 for 925 s and 245 decisions (owner item 3 compares
+  the cost per decision); the ledger read $16.78 after this one.
 - **20 v 20, GLM-5.3 low, launch 1: lost at 732 s** ($0.88, 167 decisions, order age
   p50 3.6 s, 10 refusals). GLM replies in about 2 s with a few orders per reply (unlike
   Qwen's 20), so it decided every 3-4 s on a 40-unit prompt; the first 84 s cost $0.13 and
@@ -446,7 +449,7 @@ Second queue (b44, from 05:02):
   in all, never in melee, 68 of 68 men), and the Boyz routed at 295 s with 46 of 90 while
   the Spearmen kept 47 of 90. The same plan GLM played in launch 1 (lost at 367 s), so
   the scenario sits near this plan's edge: GLM 1 of 2, floors 0 of 2 (all unverified).
-- **Riflemen card at 1.1, GLM-5.3 low, launch 2: lost at 237 s** ($0.20, 118 decisions,
+- **Riflemen card at 1.1, GLM-5.3 low, launch 2: lost at 237 s** ($0.19, 118 decisions,
   age p50 1.8 s). This time it left skirmish on (it even re-enabled it at 5 s) and only
   moved the Spearmen; the guns fired 119 rounds before the orcs reached them, the
   Spearmen routed at 204 s, the guns at 237 s with the orcs at 76 of 90. GLM 0 of 2 on
@@ -462,9 +465,9 @@ Second queue (b44, from 05:02):
   attempts). Counted as a loss by the harness rule (the battle never waits), flagged
   here as a served-backend anomaly for the owner's "pinned backend outages count
   against the model" issue; the same backend garbled seven accepted replies in four
-  launches of the night (decision 6).
+  launches of the night (owner item 6).
 - **Hammer and anvil (two Swordsmen), GLM-5.3 low, launch 2: won by contact at 333 s**
-  ($0.24, 126 decisions, age p50 2.1 s): the Swordsmen pinned one enemy unit, the knights
+  ($0.23, 126 decisions, age p50 2.1 s): the Swordsmen pinned one enemy unit, the knights
   charged the other and pulled out three times (82, 118, 151 s) before it routed at 246 s,
   then the pinned unit at 333 s; 19 of 45 knights, 56 of 90 swordsmen left. GLM 2 of 2
   on this step (the walking floor also wins it).
@@ -474,7 +477,8 @@ Second queue (b44, from 05:02):
   the gun in guard mode at 5 s; the gun shot one Yeomen unit from 60 s and the other from
   63 s, both reached the gun at 74 s and both routed (84 and 114 s) with 17 and 19 of 45
   left; the gun then shot the Men-at-arms, which routed at 168 s with 47 of 90 without
-  ever reaching melee. GLM 1 of 2 on this scenario; the `Bodyguard` script won 5 of 8 but
+  ever reaching melee. GLM 1 of 2 tonight (1 of 4 episodes with the 2026-10-17 launch); the
+  `Bodyguard` script won 5 of 8 but
   always lost the gun.
 - **Lines of fire (three Dwarf Warriors), GLM-5.3 low, launch 2: lost at 399 s** ($0.27,
   107 decisions, 7 refusals). Skirmish off and halts at 71 s, both guns on targets from

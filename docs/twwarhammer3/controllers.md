@@ -37,7 +37,7 @@ records a card per trial (kind, class, source file and hash, model, effort, timi
 | `attack_nearest` (walk-nearest) | scripted | every able unit attacks its nearest visible enemy, again when the engine drops the attack | | `scripted.py` |
 | `rush_nearest` (run-nearest) | scripted | `attack_nearest`, running | | `scripted.py` |
 | `skills` | scripted | the executor, every unit on its class default | executor v1.2 (`55ab6b3`) | `skills.py` |
-| `probe_abilities` | scripted diagnostic | `skills`, plus every ability as soon as it is ready, the cheapest build on each usable slot and the cheapest affordable unit every 10 s | | `skills.py` |
+| `probe_abilities` | scripted diagnostic | `skills`, plus, once ready, the self abilities of units in melee and the army abilities (at our largest unit in melee), the cheapest build on each usable slot and the cheapest affordable unit every 10 s | | `skills.py` |
 | `llm` | model, blocking | the model, raw orders every decision | v21 | `llm.py`, `configs/twwarhammer3/system_prompt.md` |
 | `llm_rules` | model, blocking | as `llm`, with a prompt that states objectives and interface without tactics (`51c1796`, b3) | | `llm.py`, `configs/twwarhammer3/rules_prompt.md` |
 | `commander` | hybrid, asynchronous | the model sets standing skills; the executor acts on every observation | v7 | `commander.py` over `skills.py`, `configs/twwarhammer3/commander_prompt.md` |
@@ -49,7 +49,7 @@ entry. The benchmark harness revisions then extended the rendered state and prom
 under their own labels (terrain in b2, morale and flight in b8), so benchmark jobs carry
 `bN`, not `vN`. Comma-separated `--policy` names rotate within one job; `--delay-seconds` gives each
 trial the newest observation at least that old (an added-age arm; the track label gains
-`+age-<ms>`).
+`+age-<ms>ms`, e.g. `+age-5000ms`).
 
 `tests/twwarhammer3/test_wh3_prompts.py` holds the exact rendered input of `llm` (whose
 input `llm_rules` shares; only the system prompt differs) and `commander` for one compact
@@ -91,7 +91,8 @@ ability, build, reinforcement or flight change is dropped. Drops and engine reje
 into the next prompt. Units the plan omits keep their assignment; until the first plan
 arrives, units follow their class defaults. A reply off the schema (not a JSON object, a
 missing or wrong-typed field, a malformed assignment or an unknown skill) is retried once
-(`INVALID_RETRIES`), then ends the episode as a `policy_failure` of kind `invalid_reply`;
+(`INVALID_RETRIES`), then that decision fails: no orders are sent, a `forfeit` event of
+kind `invalid_reply` is traced and the next state asks again (since b35);
 the direct controller retries an invalid reply twice, then keeps the last reply's valid
 orders.
 
@@ -141,8 +142,9 @@ Commander v7 remains tested offline only.
   (raw reply text, token usage, seconds); per direct decision, the prompt, reason, notes
   and attempts. Historical traces retain reasoning-token counts only. Since b14,
   [model-exchange capture](traces.md#capture-for-future-battles) also stores exact request
-  bodies and returned output items, including reasoning text when supplied. The new
-  summary-capture request setting awaits its first paid call.
+  bodies and returned output items, including reasoning text when supplied. The
+  summary-capture request setting has been sent with OpenAI reasoning calls since the
+  2026-10-18 b30 jobs.
 
 Commands: [README](README.md#commands).
 
@@ -156,7 +158,7 @@ comparison should use:
   battle), or an in-job rotation on a declared scenario (`--policy a,b,c
   --rotation-seed N`, [benchmark-run.md](benchmark-run.md));
 - repeats allocated to the question and observed variability; the
-  [calibration proposal](benchmark.md#implementation-plan) starts with small screens,
+  [card gates](benchmark.md#from-a-candidate-to-a-scored-card) start with cheap screens,
   which are development evidence rather than stable rankings;
 - the same information boundary: enemies only while visible, no privileged state;
 - the AI's stats modifier as declared per scenario (`expect.ai_stats_modifier`); at 1.1
@@ -221,7 +223,8 @@ catalogue lists no effort levels, and both of its modes played S1 in
 two paragraphs are about the first three models.
 
 Efforts are declared per model (2026-10-16 evening, for the owner's all-modes coverage),
-from the catalogue's `supported_efforts`; `low` is the only one played so far. All seven
+from the catalogue's `supported_efforts`; `low` and `high` have been played (high: GLM 3,
+Kimi 4, Step 2 episodes); `max`, Kimi `none` and Step `medium` have not. All seven
 other modes passed one WH3 reply-schema call each on 2026-10-16 ($0.0061 in total;
 `capability-probes/openrouter-modes-20261016/`). Reported reasoning tokens on that
 trivial prompt: GLM `high` 47, `max` 83; Kimi `none` 0, `high` 67, `max` 66; Step
@@ -238,8 +241,9 @@ ranking inferred from our tests. Catalogue metadata was checked on 2026-10-16. A
 passed live WH3 schema/parser checks at low effort. GLM subsequently completed caster
 battles under v19 and v20, including a v20 anchor win; Kimi completed one harder-siege
 battle in [ladder V1](log.md#2026-10-16-difficulty-ladder-first-step-v1), losing at 659 s.
-Step and modes beyond `low` remain unplayed in battle. Step first returned an empty,
-token-limited response on DeepInfra, then passed with the normal 4,000-token allowance
+Step has since played 4 battles (low 2, high 2) and `high` 9 across the three models (b23
+and b30); `max`, Kimi `none` and Step `medium` remain unplayed. Step first returned an
+empty, token-limited response on DeepInfra, then passed with the normal 4,000-token allowance
 on InferenceNet; both
 the backend and allowance changed, so the cause is unresolved.
 The job default is GLM-5.3 at low effort. Rotations preserve the full vendor/model ID:
@@ -294,9 +298,10 @@ before spending again. Subsequent calibration follows the
 The GLM battle used 105 calls across 16 serving backends, reporting snapshot
 `z-ai/glm-5.3-20260816`. Seventeen replies failed validation before retry or order
 salvage; nine issued orders were refused by the engine. Those are separate counts.
-Total OpenRouter ledger spend is $0.43000489 after the smoke checks and battle, below
-that battle's $3 cumulative cap and the owner's $50 account allowance. No further
-paid run is queued; [review](log.md#2026-10-16-first-openrouter-battle-and-shared-magic-feedback).
+On 2026-10-16, after the smoke checks and this battle, the OpenRouter ledger held
+$0.43000489, below that battle's $3 cumulative cap (current totals:
+[state](../state.md#total-war-warhammer-iii));
+[review](log.md#2026-10-16-first-openrouter-battle-and-shared-magic-feedback).
 
 ## Candidate changes for the next version
 

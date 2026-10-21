@@ -31,8 +31,7 @@ uv run python -m twwarhammer3 doctor
 `play` refuses uncommitted changes in its source scope (`src/gameai`, `src/twwarhammer3`,
 `configs/twwarhammer3`, `pyproject.toml`, `uv.lock`, `.python-version`) and stops before
 its next episode if one changes, so commit first and draft in a git worktree while a job
-runs. The game's realism preference must match `expect.realism` before play creates the
-job. Since b42 setup also applies declared difficulty, unit scale and realism, then the
+runs. Since b42 setup also applies declared difficulty, unit scale and realism, then the
 explicit AI modifier, and reads them back; difficulty is no longer a manual setup step.
 
 ## Declaring a scenario
@@ -102,9 +101,11 @@ uv run python -m twwarhammer3 play --scenario brt-cavalry-emp-assault \
   120 s, and `--run-timeout` to 8 hours or setup plus every episode if that is longer.
   `--start-timeout` (900 s) bounds the launch, the lobby setup and each battle load.
 - **Models**: `llm`, `llm_rules` and `commander` need `--budget-usd`, which caps the
-  cumulative WH3 ledger (`runs/twwarhammer3/llm-spend.jsonl`), earlier jobs included.
-  Never reset or move it; on a fresh clone create it first (`touch` the file), since
-  `play` refuses a missing ledger. `uv run python -m twwarhammer3 spend` prints its total. A
+  selected provider's cumulative WH3 ledger (`runs/twwarhammer3/llm-spend.jsonl`, or
+  `openrouter-spend.jsonl` with `--provider openrouter`, at most $50), earlier jobs
+  included. Never reset or move it; on a fresh clone create it first (`touch` the file), since
+  `play` refuses a missing ledger. `uv run python -m twwarhammer3 spend [--provider
+  openrouter]` prints its total. A
   job in a plan may carry a lower `--budget-usd` than the night's cap to leave room for the
   paid jobs after it; it then stops as `budget_exhausted` and a `keep_going` queue moves on.
   To stop a job from outside, signal only its Python process, never also the `uv` wrapper
@@ -219,8 +220,8 @@ do not require a new scoring rule per scenario.
   process (`uv run` forwards it). Play records the running episode and the manifest as
   `interrupted`, appends the register row, and the supervisor closes the game. An
   interrupted trial is a failure in the report, never a loss.
-- **A queue after its current battle**: create `my-plan-stop` beside the plan; the running
-  job ends normally and the plan ends `stopped`.
+- **A queue after its current job**: create `my-plan-stop` beside the plan; the running job
+  plays its remaining episodes and the plan ends `stopped`.
 - **A queue now**: send SIGINT or SIGTERM to the pid in the state file, or press Ctrl+C in
   its terminal. The running job gets one SIGINT, later jobs never start and the plan ends
   `interrupted`.
@@ -242,11 +243,10 @@ It prints the text report and writes `my-cavalry.txt`, `.json` and the offline
 and limitations: a matched formation alone does not show a matched caster's resources or
 spell loadout. Everything else is in [reports.md](reports.md).
 
-For the planned suite, pass the explicit input jobs for all scenarios to this same
-command and use the canonical output stem `runs/twwarhammer3/reports/benchmark`.
-Different scenarios and controller versions can share one HTML file while their
-comparison conditions remain distinct. The overview and shared measures are planned;
-no consolidated report was generated during preparation.
+The suite report is rebuilt from the versioned list: `report --jobs-file
+configs/twwarhammer3/benchmark_jobs.json --output runs/twwarhammer3/reports/benchmark`
+([reports.md](reports.md)); last built 2026-10-17. Different scenarios and controller
+versions can share one HTML file while their comparison conditions remain distinct.
 
 ## Independent rerun acceptance (proposal)
 

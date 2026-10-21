@@ -135,9 +135,10 @@ An empty reasoning list means the response was captured but contained no visible
 null means it was unavailable. Raw encrypted items remain opaque. Reasoning is never
 fed back into prompts. Capture is off by default in shared `gameai.Model`; Spire full runs
 opted in on 2026-10-17 (`87b370b`), so their traces gain the same events and their OpenAI
-requests ask for summaries too. Controller prompts remain v20/v7;
-`manifest.model_exchange_version: 1` and source revisions identify the capture change.
-The capture request setting is offline-tested; no new paid API call was used to validate it.
+requests ask for summaries too. The capture change (b14) left the controller prompts at
+v20/v7; `manifest.model_exchange_version: 1` and source revisions identify the capture change.
+Paid OpenAI jobs since 2026-10-18 (`bench-b30-*`) sent the summary request, and 144 of 458
+attempts returned summary text; no agreed check covers it.
 
 Before training or redistribution, review the source provider/model terms for the actual
 intended use, including restrictions on training competing models. Until the owner decides,

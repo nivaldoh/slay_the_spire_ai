@@ -49,7 +49,8 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
   `bench-g1-cavalry-ai10-01-20261014`.
 - **vN**: a version of the `llm` or `commander` prompt and harness; `v1.N` the `skills`
   executor. Each has a log.md entry. The register's `harness` column is the `-vN-` segment
-  of the job name (`stats.harness_version`), blank for `bench-*` jobs.
+  of the job name (`stats.harness_version`), blank when the name has none (most `bench-*`
+  jobs).
 - **bN**: benchmark harness revisions, each logged in log.md; current revision in state.md.
 - **G1, G2, C1**: historical calibration designs in [benchmark.md](benchmark.md).
   G1 is incomplete, C1 finished and G2 never ran. The 2026-10-15 plan retires win-rate
@@ -112,13 +113,14 @@ through it, and every order enters through it.
 ## Commands
 
 ```bash
-# Play: a new --output, a clean source scope; model policies need --budget-usd
-uv run python -m twwarhammer3 play --policy llm --budget-usd 25 --scenario random --seed N \
+# Play: a new --output, a clean source scope; model policies need --budget-usd, the
+# ledger's cumulative cap ($52 OpenAI; the OpenRouter allowance is $50 across both games)
+uv run python -m twwarhammer3 play --policy llm --budget-usd USD --scenario random --seed N \
     --output runs/twwarhammer3/battle/llm-luna-vN-rand-N-YYYYMMDD
-uv run python -m twwarhammer3 play --policy commander --budget-usd 25 --scenario kho5-dwf5 \
+uv run python -m twwarhammer3 play --policy commander --budget-usd USD --scenario kho5-dwf5 \
     --episodes 3 --output runs/twwarhammer3/battle/commander-luna-vN-kho-YYYYMMDD
 uv run python -m twwarhammer3 play --scenario brt-cavalry-emp-assault \
-    --policy llm_rules,attack_nearest,rush_nearest --model gpt-6-sol --budget-usd 25 \
+    --policy llm_rules,attack_nearest,rush_nearest --model gpt-6-sol --budget-usd USD \
     --rotation-seed N --output runs/twwarhammer3/battle/bench-bN-<purpose>-YYYYMMDD
 uv run python scripts/wh3_queue.py PLAN.json      # a frozen plan of play jobs, one at a time
 # Follow and review
@@ -193,8 +195,9 @@ is separate from Spire's, with its own cap: $25, raised to $52 on 2026-10-16.
 ## Next
 
 Status, priorities and next steps are on [state.md](../state.md#total-war-warhammer-iii);
-each small candidate's status is on the
-[board](benchmark.md#small-scenario-status-after-the-overnight-tranche-2026-10-17). This
+each candidate's status is in
+[tactic-cards.md](tactic-cards.md#the-starting-set-proposal-2026-10-21) and
+[empire.md](empire.md). This
 section keeps only what is deferred.
 
 Deferred: the custom `emp-battery-skv-evacuation` pilot (its

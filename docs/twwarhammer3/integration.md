@@ -205,7 +205,8 @@ First observed in `runs/twwarhammer3/battle/attack-m3-20261013` (Khorne against 
   `Deployed` phase callback fires right after.
 - `bm:modify_battle_speed(0, true)` stops model time: the `repeat_callback` tick stops
   while `repeat_real_callback` polling continues. The owner's rule is unpaused 1x, so the
-  mod sets speed 1 at load and never pauses (the removed pause mode is in log.md, "Unpaused
+  mod sets speed 1 when deployment ends (its `Deployed` callback) and never pauses (the
+  removed pause mode is in log.md, "Unpaused
   1x battles only").
 - One `unitcontroller` per friendly unit (`army:create_unit_controller()`, `add_units`,
   `take_control`) applies the orders.
@@ -263,7 +264,8 @@ First observed in `runs/twwarhammer3/battle/attack-m3-20261013` (Khorne against 
 
 ### Acknowledgements
 
-Each acknowledgement result has a one-based `index`, `unit`, `ok` and `queued`. A failed
+Each acknowledgement result has a one-based `index`, `unit` and `ok`; a refusal adds
+`error`, and an accepted unit order adds `queued`. A failed
 move rejects its queued successors (observed with an unreachable first point). An
 acknowledgement reports a call issued to the engine, not visible execution; for native
 queues `applied_ms` is the submission time, not the start of each step, and
@@ -430,8 +432,8 @@ Evidence: `probe-battle-types-20261014/` (all ten lobby types), `battle/smoke-*`
 `common.advice(text)` from the battle script opens the advisor (`advice_interface` turns
 visible) and shows the text as is, in a custom battle unpaused at 1x; each call replaces
 the previous text. `play --show` sends each model reply as `say` with the orders; in
-`commander-luna-v2-rand-2028855463` the advisor's `Text` component read "23 s: gpt-6-luna
-plan from the state at 15 s / Keep the infantry advancing together, ... / f8 shoot e3".
+`commander-luna-v2-rand-2028855463-20261013` the advisor's `Text` component read "23 s:
+gpt-6-luna plan from the state at 15 s / Keep the infantry advancing together, ... / f8 shoot e3".
 The debug `bm:queue_advisor` is not needed.
 
 ## Visual recording and presentation (probed 2026-10-15)
