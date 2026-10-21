@@ -479,15 +479,16 @@ Not in the starting set:
 **Cost of the first round**, at recorded job wall times (manifests' `wall_seconds`, each
 battle's mean over its recorded launches, model ones included: 6.4-9.7 minutes a launch;
 jobs follow each other within seconds):
-- Screen, $0: 3 fresh launches of each floor of the line, expendables, rifle-lane and
-  two-threats battles (`rush_nearest` on the line and the expendables, where a charge could
-  win), then of each witness at its recorded age with no added interval (LineTeam 0 s,
-  SlaveTarpit and FlankLane 5 s): 39 launches in about 5.1 h. The jobs are fixed in
-  `runs/twwarhammer3/away-20261021/screen-plan.json`; its revision and start cutoff are set
-  on the go-ahead. The queue cannot stop a card early. Offline, the three witnesses
-  (LineTeam's b46 code included) decided on 9,674 recorded observations (the line at both
-  ranks, both rifle variants, the expendables battle) without an exception or an invalid
-  batch (`witness-dryrun.txt`; open loop, decisions only).
+- Screen, $0: 3 fresh launches of each floor and witness of the line, expendables,
+  rifle-lane and two-threats battles (`rush_nearest` on the line and the expendables, where
+  a charge could win; witnesses at their recorded age with no added interval: LineTeam 0 s,
+  SlaveTarpit and FlankLane 5 s), in three rounds that each hold every arm, so a stop
+  leaves the arms equal (evaluation guideline 4.2): 39 launches in about 5.1 h. The jobs
+  are fixed in `runs/twwarhammer3/away-20261021/screen-plan.json`; its revision and start
+  cutoff are set on the go-ahead. The queue cannot stop a card early. Offline, the three
+  witnesses (LineTeam's b46 code included) decided on 9,674 recorded observations (the line
+  at both ranks, both rifle variants, the expendables battle) without an exception or an
+  invalid batch (`witness-dryrun.txt`; open loop, decisions only).
 - Reading rule, fixed now: a floor's contact win parks that card (two threats would get one
   step instead). A card goes to confirmation when no floor won by contact, its witness won
   at least 2 of 3 with the marker on each win, and the rest of its Missing column is done,
