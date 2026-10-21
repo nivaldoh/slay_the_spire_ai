@@ -85,6 +85,17 @@ token use):
 - When `doctor` or a job warns that a game build differs from its pin, tell the owner;
   re-pin only with their approval.
 
+## Working while the owner is away
+
+Proposed 2026-10-21, in force once the owner says yes: when the owner says they cannot
+review or are leaving, follow [docs/autonomy.md](docs/autonomy.md). Stop at anything outside
+git or beyond what the owner gave (money, their game profile, Steam achievements, anything
+public) and at any harness refusal. Park, as tested options plus one inbox item, anything
+that changes what the benchmark measures, claims or trains on. Otherwise decide, write the
+check first and move on. Game time only while away, for named plans, agreed checks and
+launch/menu probes; play-scope code waits on local branches; a passed check stays
+"proposed, not yet agreed".
+
 ## Layout
 
 ```
@@ -159,6 +170,7 @@ tests/             One directory per package; tests/fixtures holds Spire engine 
 docs/
   state.md         The session page for both games: status only
   owner-direction.md  Every dated owner direction, newest first; superseded ones marked
+  autonomy.md      What agents may do alone while the owner is away
   posttraining.md  Traces to fine-tuning datasets for both games: roles, contract, splits
   spire/           integration.md (engine and protocol facts), approaches.md (survey),
                    fullrun/, first-combat/, open-weight/ (one folder per track)

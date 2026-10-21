@@ -113,6 +113,12 @@ comparison between models.
    surviving a stalemate (attack_nearest did). For the team question the outcome of
    record is the contact win (every enemy unit routed or destroyed before the timer), as
    the chariot card already reads it (`cards.outcome`); timer wins are reported beside it.
+   Found afterwards (2026-10-20, recounted from the traces): the model prompt still tells a
+   defender "if time runs out, you win" (`battle/llm.py:300`). 16 of the night's 29 model
+   launches had that line, all seven line-battle launches among them, and models acted on
+   it (Kimi, line launch 2: "Defender, timeout wins. Hold defensive line."). Those rows
+   were told one goal and scored on another; paid screens on defender cards wait for the
+   owner's ruling ([state.md](../state.md#owner-decisions-waiting), item 6).
 
 ## For the owner to decide
 

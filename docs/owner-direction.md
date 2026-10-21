@@ -5,6 +5,21 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-20 (late, working while away), verbatim: "Let's take note of that, but more than
+  that, let's actually try to come up with guidelines for you to follow when trying to make
+  progress while I'm not around without keeping me as a bottleneck unless critical. You can
+  also do additional things towards features on our roadmap if it's safer than other
+  options, such as starting to test the infrastructure for WH3's campaign mode. Note that
+  I'm not telling you to design the benchmark for the campaign, as that would be an example
+  of situation where I have to be the bottleneck (although you can try different options,
+  test some things ahead of time, give me pre-tested suggestions, etc), but instead to first
+  build and test the features that can be counted as objective, easier to verify."
+  Proposed as [autonomy.md](autonomy.md), pending the owner's yes.
+- 2026-10-20 (late, review bottleneck), verbatim: "For sure my review time has been a
+  bottleneck, it's true. But there has to be more than you can do to help us continue to
+  make reliable progress. Let's think more deeply about that and try to come up with ideas
+  to keep making legitimate progress while I'm still not able to proceeed with reviews and
+  decisions". Ideas and their review: `runs/autonomy-20261020/`.
 - 2026-10-20 (writing): use simpler, more concrete and intuitive language from now on;
   avoid inflated wording and unnecessary jargon. Record the preference in shared guidance.
 - 2026-10-19 (artifact locations): put task-created files only inside the repository;

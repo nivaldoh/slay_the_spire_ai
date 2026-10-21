@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-20: what runs, where each game stands, what comes next. Status only:
+Updated 2026-10-21: what runs, where each game stands, what comes next. Status only:
 history goes to the logs ([WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md),
 [first combat](spire/first-combat/README.md)), owner directions to
 [owner-direction.md](owner-direction.md). Under the
@@ -10,12 +10,18 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 ## Active work
 
 No benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md)
-(rewritten 2026-10-20; [its owner decisions](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need))
-cover design, scoring, statistics, review and proposed checks; the [scope](twwarhammer3/benchmark.md#scope-and-first-release)
-defines the release boundary. Suite membership, new checks and card gates remain proposals.
-The [Empire night](twwarhammer3/empire.md)
-finished at 09:00 (45 launches, $8.84); its [owner items](twwarhammer3/empire.md#for-the-owner-to-decide)
-remain pending. The revised b46 LineTeam arms are unplayed; the chariot b40 round stays stopped.
+([owner decisions](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need)), the
+[scope](twwarhammer3/benchmark.md#scope-and-first-release), suite membership, new checks and card gates
+remain proposals. The [Empire night](twwarhammer3/empire.md) finished at 09:00 (45 launches, $8.84;
+[owner items](twwarhammer3/empire.md#for-the-owner-to-decide) pending); the b46 LineTeam arms are
+unplayed; the chariot b40 round stays stopped.
+
+While the owner cannot review: the [away guidelines](autonomy.md) (pending a yes; until then
+offline work only). Queue from the 2026-10-20 review (`runs/autonomy-20261020/`): one scan of
+all recorded battles (endings agree across sources, what each pending option would change, the
+garbled-reply count); an offline review of the 14 line-battle launches; the chariot scorer
+against deliberately wrong versions; a keep-the-engine-ending fix and campaign steps 1-2 (save
+guard, inert scripts) on branches; unpushed held-out drafts; a cleanup list.
 
 Priorities (2026-10-18): WH3 first, then Spire; post-training secondary. [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
 
@@ -25,9 +31,8 @@ Priorities (2026-10-18): WH3 first, then Spire; post-training secondary. [Traces
 [benchmark definition](twwarhammer3/benchmark.md), [tactic cards](twwarhammer3/tactic-cards.md),
 [latency program](twwarhammer3/latency.md) (plan), [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v21, `commander` v7, skills v1.2, harness b46,
-  evaluator v2, track `obs-v4+terrain/act-v2/live-1x`. Definitions and earlier changes:
-  [log](twwarhammer3/log.md#on-main).
+- On `main`: `llm`/`llm_rules` v21, `commander` v7, skills v1.2, harness b46, evaluator v2,
+  track `obs-v4+terrain/act-v2/live-1x` ([definitions](twwarhammer3/log.md#on-main)).
 - Benchmark: [the chariot card](twwarhammer3/tactic-cards.md#the-chariot-card-the-first-benchmark-card);
   results in the [b40 round](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40).
   No model has won above its foils' bound (an unverified gameplay finding).
@@ -35,8 +40,7 @@ Priorities (2026-10-18): WH3 first, then Spire; post-training secondary. [Traces
 
 Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-to-the-first-release)):
 0. Read the night's [results](twwarhammer3/empire.md#results) and its six
-   [owner items](twwarhammer3/empire.md#for-the-owner-to-decide), from the rank-5 line
-   battle as the first team card to the first Empire export (29 model episodes).
+   [owner items](twwarhammer3/empire.md#for-the-owner-to-decide) (rank-5 line card to export).
 1. Agree the [correctness checks and failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)
    and chariot version decisions; preserve c1's rule. Prepare the
    [independent recount/rerun](twwarhammer3/benchmark-run.md#independent-rerun-acceptance-proposal).
@@ -44,23 +48,20 @@ Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-t
    Empire rifle lane/protection, then pin-then-rear. The Skaven expendables candidate stays deferred.
 3. P5's Kimi plans remain unplayed; choose their question before scheduling more chariot
    cells. A stronger model at modifier 1.1 remains untested (the OpenAI cap).
-4. [Robot team plan](twwarhammer3/robot-team-plan.md): review whether the Empire line
-   battle offers useful recovery, then compare fixed jobs, early commitment and replacement.
-   The small existing screen does not establish a handover benefit; b46 remains unplayed.
-   [Research guide](twwarhammer3/robot-team-research.md): sources, comparisons and limits.
+4. [Robot team plan](twwarhammer3/robot-team-plan.md) ([research guide](twwarhammer3/robot-team-research.md)):
+   does the Empire line battle offer useful recovery; then fixed jobs, early commitment and
+   replacement. The small screen shows no handover benefit; b46 is unplayed.
 
 ## Slay the Spire
 
 [README](spire/fullrun/README.md), [log](spire/fullrun/log.md),
 [results.csv](spire/fullrun/results.csv). v10 on `main`. No run has won; the furthest
-reached Act 4 (v8, floor 54). Version differences sit within run-to-run variation (about
-11 floors per run on one seed; replays of one harness differed by 13-26 floors), measured
-only on the three tuning seeds, so harness progress is not shown. `HELDOUT01`-`HELDOUT10`
-are reserved and unplayed. Spend: OpenAI $2.52 of $25, OpenRouter $0.25.
-
-Next, after WH3: one decisive comparison (current scaffolding against an ablated one, 20-30
-fresh seeds per arm, about $5 and three nights) or a freeze; `v11-keys` waits on it. Open
-decisions: [fullrun README](spire/fullrun/README.md#open-owner-decisions); paused:
+reached Act 4 (v8, floor 54). Version differences sit within run-to-run variation (about 11
+floors per run on one seed; replays of one harness differed by 13-26 floors), measured only
+on the three tuning seeds. `HELDOUT01`-`HELDOUT10` are unplayed. Spend: OpenAI $2.52 of
+$25, OpenRouter $0.25. Next, after WH3: one decisive comparison (current against ablated
+scaffolding, 20-30 fresh seeds per arm, about $5 and three nights) or a freeze; `v11-keys`
+waits on it. [Open decisions](spire/fullrun/README.md#open-owner-decisions); paused:
 [first combat](spire/first-combat/README.md); planned: [open-weight](spire/open-weight/README.md).
 
 ## Post-training
@@ -70,29 +71,25 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 
 ## Known issues
 
-- Check OpenRouter credits before paid jobs: ledgers missed $2.69 by 2026-10-18.
+- Check OpenRouter credits before paid jobs: ledgers missed $2.69 by 2026-10-18. OpenAI
+  caps and the OpenRouter allowance shared by both games are kept by hand.
 - Pinned OpenRouter backend outages count against the model; Step 5 preview is unpinned.
 - No test yet shows whether a game patch changes results (owner: later). A build warning
   shows in `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
-- OpenAI caps and the OpenRouter allowance shared by both games are kept by hand.
-- WH3 register and `stats`: blank version on benchmark rows, grouping by commit, API
-  failures as `policy_failure` (`twwarhammer3 card` classifies failures and keys by setup);
-  a defender's timer stalemate counts as won (`stats` ignores `ended_by`; the card outcome
-  and the Empire review script separate contact wins).
-- No automated checks for report JavaScript or several Spire play-loop stop paths.
-- Spire's Workshop mod pins still block a run when a mod updates.
-- `runs/` has no off-machine copy: 23 GB, 6.9 GB without the `checkpoints/` directories
-  (16 GB of them in the two SFT jobs; `du -sh --exclude=checkpoints runs/`, 2026-10-20).
+- WH3 register and `stats`: blank version on benchmark rows, grouping by commit, API failures
+  as `policy_failure` (`card` classifies failures, keys by setup); a defender's timer stalemate
+  counts as won (`stats` ignores `ended_by`; the card and the Empire review script do not).
+- No automated checks for report JavaScript or several Spire play-loop stop paths. Spire's
+  Workshop mod pins still block a run when a mod updates.
 
 ## Owner decisions waiting
 
-1. Where to back up `runs/`.
-2. The chariot card: second-pass decisions 3-5 (1-2 ran in b40;
-   [list](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions))
-   and whether witness v2 replaces v1 in the rule (the v1 rule stays as the admitted
-   pre-registered verdict; the proposals they replace are in git at `5c01b93`); the
-   [latency program's](twwarhammer3/latency.md#owner-decisions) three left: `c1` as
-   evidence, the scored route, the $20 stop.
+1. Where to back up `runs/`, which has no copy (23 GB, 6.9 GB without `checkpoints/`). Ready
+   on a yes: a sha256-checked copy to `C:` (the same machine, so not off-site).
+2. The chariot card: [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)
+   3-5 and whether witness v2 replaces v1 in the rule (v1 stays the admitted verdict; the
+   replaced proposals are at `5c01b93`); the [latency program's](twwarhammer3/latency.md#owner-decisions)
+   three left: `c1` as evidence, the scored route, the $20 stop.
 3. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (whether
    they may train a model; 25,503 rows excluded), GLM-5.3, or rejection-sampled Qwen3.6.
 4. Whether Step 5 preview has open weights, and whether to request token log-probabilities,
@@ -100,6 +97,11 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
    ([gaps](posttraining.md#beyond-supervised-fine-tuning)).
 5. `wh3-rules-v21-attack-path` (unmerged); whether to keep `commander` (unplayed since v4);
    more OpenAI budget (the $52 cap refuses Sol calls now).
+6. The defender prompt promises a timer win while the Empire set scores contact wins
+   ([16 of 29 launches](twwarhammer3/empire.md#decisions-taken-for-the-owners-review)):
+   change the prompt for contact-scored cards (a new version), score timer wins, or keep both.
+7. Yes/no on the [away guidelines](autonomy.md); before any campaign launch, yes/no on
+   harness saves in the WH3 profile and on Steam achievements (which cannot be undone).
 
 ## Runtime and ownership
 
