@@ -132,17 +132,22 @@ def test_a_member_never_sees_its_teammate_feedback_notes_or_the_global_ack(tmp_p
                 "results": [{"index": 1, "unit": "f2", "ok": False, "error": "XYZZY"}]}
     policy.acknowledge(rejected, {"delay_ms": 500, "think_s": .1})
     workers.finish(0)  # cavalry attacks e1, out of sight when its batch is checked
-    policy.decide({**battle(3, 12000, enemy=False), "orders": rejected})
+    later = battle(3, 12000, enemy=False)
+    later["friendly"][0].update(  # f2's order state, which only its owner may see
+        dest=[-20, 90], command_queue=[ADVANCE], attack_mode="melee",
+        navigation={"rejected": {"x": 400, "z": 400}, "alternatives": [], "sampled_ms": 11000})
+    policy.decide({**later, "orders": rejected})
     workers.finish(2)
     workers.finish(3)
     seen = cavalry.metadata()["prompt"]
     assert "Last orders: f1 #1 rejected: f1: target 'e1' is not visible." in seen
-    assert "XYZZY" not in seen and "QQ" not in seen
+    assert "XYZZY" not in seen and "QQ" not in seen and "heading to" not in seen
     assert "f2 #1 rejected: XYZZY" in line.metadata()["prompt"]
-    assert "QQ" in line.metadata()["prompt"]
+    assert "QQ" in line.metadata()["prompt"] and "heading to (-20, 90)" in line.metadata()["prompt"]
     inputs = [e["observation"] for e in policy.drain_events()
               if e["event"] == "input" and e["member"] == "cavalry"]
     assert len(inputs) == 2 and "XYZZY" not in json.dumps(inputs)
+    assert not inputs[1]["allies"][0].keys() & {"dest", "command_queue", "navigation"}
 
 
 def test_cleanup_is_bounded_sends_nothing_new_and_leaves_a_running_member_open(

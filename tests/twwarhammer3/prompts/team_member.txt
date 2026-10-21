@@ -30,6 +30,6 @@ Visible enemies:
 
 Team: a teammate model commands the allied units below at the same time; you order only Your units and do not see its orders, feedback or notes.
 Allied units:
-- f2 chaos_warriors_0 (infantry) at (-20, 30) facing 180, 110/120 men, hp 92%, walk 1.9 run 3.6, moving, heading to (-20, 0)
+- f2 chaos_warriors_0 (infantry) at (-20, 30) facing 180, 110/120 men, hp 92%, walk 1.9 run 3.6, moving
 - f3 skullcannon_0 (missile_chariot) at (20, 50) facing 180, 7/7 men, hp 100%, range 200, walk 4.0 run 6.0
 - f4 khornataurs_0: destroyed

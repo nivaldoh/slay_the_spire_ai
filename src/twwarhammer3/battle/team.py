@@ -35,6 +35,9 @@ UNIT_FIELDS = ("id", "type", "alliance", "class", "x", "z", "bearing", "men", "m
                "barrier", "can_fly", "flying", "ammo", "ammo0", "range", "speed", "fatigue",
                "morale", "flight", "width", "attack_mode", "behaviours", "abilities",
                "command_queue", "navigation", "dest", "state")
+# A teammate's unit shows only what an enemy's shows: never its orders, queue or navigation.
+ALLY_FIELDS = ("id", "type", "class", "alliance", "x", "z", "bearing", "men", "men0", "hp",
+               "barrier", "can_fly", "flying", "range", "speed", "state")
 ARMY_MODE = ("slots", "reinforcements", "spawn_zones", "supplies")  # the army owner's
 # The model team (``team_llm_rules``): the Knights, and every other unit with the army orders.
 PARTITION = {"cavalry": (KNIGHT,), "line": None}
@@ -59,8 +62,8 @@ def project(observation, owned, *, army=False):
 
     visible = {unit["id"] for unit in observation.get("enemy", [])}
 
-    def unit(row):
-        result = fields(row, UNIT_FIELDS)
+    def unit(row, keys=UNIT_FIELDS):
+        result = fields(row, keys)
         if row.get("target") in visible:
             result["target"] = row["target"]
         return result
@@ -69,7 +72,8 @@ def project(observation, owned, *, army=False):
                                   "remaining_ms", "enemy_roster", "magic"))
     result["input_version"] = INPUT_VERSION
     result["friendly"] = [unit(row) for row in observation["friendly"] if row["id"] in owned]
-    result["allies"] = [unit(row) for row in observation["friendly"] if row["id"] not in owned]
+    result["allies"] = [unit(row, ALLY_FIELDS) for row in observation["friendly"]
+                        if row["id"] not in owned]
     result["enemy"] = [unit(row) for row in observation.get("enemy", [])]
     mode = observation.get("mode") or {}
     result["mode"] = fields(mode, [key for key in mode if army or key not in ARMY_MODE])
