@@ -54,8 +54,8 @@ Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3
   scorer's 1 s tolerance, now written); of 21 hand-picked engagements cycles v1 got 13,
   "all but the last" 10.
 - For decisions: 16 of 17 model battles on five defending scenarios repeat the timer win;
-  reasons over 300 characters flag 8 of 15 garbled replies; all 10 battles with game time
-  off by over 5% predate b39; 1 of 17 line battles had a fresh reserve for a broken unit.
+  reasons over 300 characters flag 8 of 15 garbled replies; the 10 battles off wall time by
+  over 5% predate b39; 1 of 17 line battles met the criteria for using the reserve.
 - Checks: four campaign-safety tests, one that the rules prompt withholds card tactics; no
   new harness error in 411 episode logs; blind rebuilds of two markers matched 29 of 31
   verdicts; risk: campaigns run the stills script ([integration](integration.md)).
