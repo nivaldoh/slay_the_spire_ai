@@ -93,8 +93,8 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 6. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (may they train
    a model? 25,503 rows excluded), GLM-5.3 or rejection-sampled Qwen3.6 ([licenses](posttraining.md#provider-terms)); your call, secondary.
 7. Token log-probabilities, a sampler seed or explicit GLM/Kimi sampling before the next model screens
-   ([gaps](posttraining.md#beyond-supervised-fine-tuning))? Recommended: ask where the pinned backend lists them (Qwen, one of
-   Kimi's two endpoints; GLM's Decart lists only a seed). Step 5's weights are [public](posttraining.md#provider-terms).
+   ([gaps](posttraining.md#beyond-supervised-fine-tuning))? Recommended: ask where the pinned backend lists them (log-probabilities: Qwen's,
+   one of Kimi's two endpoints, not GLM's Decart; all list a seed and sampling; 2026-10-18 listing). Step 5's weights are [public](posttraining.md#provider-terms).
 8. `wh3-rules-v21-attack-path` (one rules sentence: attacks take the engine's route; move first
    and queue the attack): recommended, its own `llm_rules` version after item 2's, or drop it.
    Your call: keep `commander` (unplayed since v4)? More OpenAI budget (the $52 cap refuses Sol)?

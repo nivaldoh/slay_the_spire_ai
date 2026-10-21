@@ -196,6 +196,6 @@ def test_the_rules_prompt_withholds_the_card_tactics():
     # decision 5); the chariot card's knowledge row says it states neither charge bonuses nor
     # cycle charging. A prompt that tells a tactic changes what its card measures.
     text = (REPO_ROOT / "configs/twwarhammer3/rules_prompt.md").read_text().lower()
-    for phrase in ("charge", "charging", "cycle", "pull out", "pull-out", "withdraw", "disengage",
-                   "sacrifice", "expendable", "tarpit", "flank", "kite", "kiting"):
-        assert not re.search(rf"\b{phrase}\b", text), phrase  # "recharge" is an ability state
+    for stem in ("charg", "cycl", "pull out", "pulls out", "pull-out", "pull back", "withdr",
+                 "disengag", "sacrific", "expendab", "tarpit", "flank", "kite", "kiting"):
+        assert not re.search(rf"\b{stem}", text), stem  # word starts; "recharge" is ability state

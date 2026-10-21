@@ -324,10 +324,15 @@ new card (from the 2026-10-17 board and traces; each rests on 1-6 battles):
    captain's death cuts every unit's morale (S3); an "army losses" shock can rout a unit at
    full strength (S2). The flag does not always follow the first card: in the expendables
    card it went to a Skavenslaves unit although the Rat Ogres were listed first (b28). In
-   all 38 recorded lordless rosters it sat on the battle's first unit (`f1`), which differs
-   from the declared first in 11 (2026-10-21, replay `commander` field). The battle's order
-   looks cheapest first where costs are known (line battle: Spearmen 350, then Swordsmen
-   375), so an added cheaper unit would likely take the flag (unverified).
+   all 40 recorded lordless scenarios (19 distinct rosters, 284 episodes) it sat on the
+   battle's first unit (`f1`) in every frame; `f1` differs from the declared first card in
+   11 of them (6 rosters; 2026-10-21, replay `commander` field). The battle's order is not
+   simply cheapest first: the line's enemy puts Goblin Spearmen (325, its flag) before Wolf
+   Riders (300). All 80 recorded lordless sides fit a grouping by class (a character, then
+   infantry and monsters, missile infantry, cavalry and flyers, artillery), cheaper first
+   within a class where costs are known (line: Spearmen 350, Swordsmen 375, Halberdiers
+   550). So an added infantry unit cheaper than the Spearmen might take the line's flag
+   (unverified).
 9. **Sufficiency, not only necessity**: once the tactic succeeds, the rest of the battle
    must be winnable. On 2026-10-18 the two-halberd expendables witness routed the guns at
    160 s and the halberd giant witness at 171 s, and both still lost to the anti-large unit
@@ -434,7 +439,8 @@ screened for the owner, not a set card.
    battle can be won but is not a witness.
 4. The card has a marker: something in the replay and trace that the witness's wins show
    and the losing floors do not. A win without it stays a win and questions the card.
-5. A battle lasts under about 10 minutes, so one card's confirmation fits in a night.
+5. A battle lasts under about 10 minutes, so a card's screen fits in a night and its
+   confirmation in one or two (the line's 70 launches take about 11 h).
 
 A battle that still fails 2 or 3 after one difficulty step is parked with its reason, not
 hardened or softened further. The line, expendables and Helblaster battles have had theirs;
@@ -489,12 +495,14 @@ jobs follow each other within seconds):
   rifle-lane and two-threats battles (`rush_nearest` on the line and the expendables, where
   a charge could win; witnesses at their recorded age with no added interval: LineTeam 0 s,
   SlaveTarpit and FlankLane 5 s), in three rounds that each hold every arm, so a stop
-  leaves the arms equal (evaluation guideline 4.2): 39 launches in about 5.1 h. The jobs
-  are fixed in `runs/twwarhammer3/away-20261021/screen-plan.json`; its revision and start
-  cutoff are set on the go-ahead. The queue cannot stop a card early. Offline, the three
-  witnesses (LineTeam's b46 code included) decided on 9,674 recorded observations (the line
-  at both ranks, both rifle variants, the expendables battle) without an exception or an
-  invalid batch (`witness-dryrun.txt`; open loop, decisions only).
+  between rounds leaves the arms equal and one inside a round leaves later arms at most one
+  launch short (evaluation guideline 4.2; such a cell is re-planned under the reading
+  rule): 39 launches in about 5.1 h. The jobs are fixed in
+  `runs/twwarhammer3/away-20261021/screen-plan.json`; its revision and start cutoff are set
+  on the go-ahead. The queue cannot stop a card early. Offline, the three witnesses
+  (LineTeam's b46 code included) decided on 9,674 recorded observations (the line at both
+  ranks, both rifle variants, the expendables battle) without an exception or an invalid
+  batch (`witness-dryrun.txt`; open loop, decisions only).
 - Reading rule, fixed now: a floor's contact win parks that card (two threats would get one
   step instead). A card goes to confirmation when no floor won by contact, its witness won
   at least 2 of 3 with the marker on each win, and the rest of its Missing column is done,
@@ -510,9 +518,11 @@ jobs follow each other within seconds):
 - Confirmation at the [proposed gate](benchmark.md#from-a-candidate-to-a-scored-card) (each
   foil 0/14, witness at least 10/14): 56 launches for a card with three floors (the line
   and the expendables; 42 with two) plus 14 per shortcut foil: about 140 launches over two
-  long nights, the line about 11 h, more than a night (pairing controllers in a launch
-  saves about 13%). A 10-launch gate (foil bound 0.26 instead of 0.19) needs about 30%
-  fewer.
+  long nights, the line about 11 h, more than a night. Pairing three controllers in a
+  launch saves about 13% at the median launch cost ([decision
+  13.5](evaluation-guidelines.md#13-owner-decisions-these-rules-need)); the line's launches
+  add about 90 s, so there it saves about 5-7% (no line launch has been paired). A
+  10-launch gate (foil bound 0.26 instead of 0.19) needs about 30% fewer.
 - First model screen, 10 launches per card and model (a screen, not a ranking): GLM-5.3 low
   cost a median $0.19 a launch (45 since 10-19, `results.csv` usd), Kimi K3 low $0.63 (its
   3 line battles), Qwen3.6 $0.02 (6). About $26 of the $50 OpenRouter allowance is left
