@@ -40,6 +40,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
 
+## 2026-10-21: Autonomous-work strategy refined (proposal)
+
+Revised [autonomy.md](../autonomy.md) around useful outcomes, existing evidence and bounded
+work: three independently reviewable changes across sessions, no speculative dependency
+stacks, one recommendation per decision, and a stop when no useful permitted step remains.
+Aligned AGENTS/state and recorded the owner's request; standing delegation remains proposed.
+Corrected queue deadline semantics, ordinary launch writes, new regressions within agreed
+suites, source scopes/report grouping, save-file ownership and multi-launch check cleanup.
+Two independent readers reviewed the strategy and source contracts; all 12 tabletop cases
+matched the expected actions. This is document reasoning, not an agreed operational check.
+Checks: 55 documentation tests passed, none failed or skipped; Ruff and diff whitespace
+checks passed. Initial sandbox refusals of uv cache writes and subsequent passing outputs
+are retained in `runs/autonomy-20261021/`, with the cases and review notes.
+No runtime code, scores, agreed verification methods, game runs or paid model jobs changed.
+Whether this reduces errors and owner review effort remains unverified; next is a bounded
+offline trial after agreement, using existing recount/mutation evidence before new work.
+
 ## 2026-10-20: Evaluation guidelines rewritten after review
 
 - Rewrote [evaluation-guidelines.md](evaluation-guidelines.md): 45 rules in 10 sections,

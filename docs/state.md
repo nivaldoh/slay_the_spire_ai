@@ -16,12 +16,12 @@ remain proposals. The [Empire night](twwarhammer3/empire.md) finished at 09:00 (
 [owner items](twwarhammer3/empire.md#for-the-owner-to-decide) pending); the b46 LineTeam arms are
 unplayed; the chariot b40 round stays stopped.
 
-While the owner cannot review: the [away guidelines](autonomy.md) (pending a yes; until then
-offline work only). Queue from the 2026-10-20 review (`runs/autonomy-20261020/`): one scan of
-all recorded battles (endings agree across sources, what each pending option would change, the
-garbled-reply count); an offline review of the 14 line-battle launches; the chariot scorer
-against deliberately wrong versions; a keep-the-engine-ending fix and campaign steps 1-2 (save
-guard, inert scripts) on branches; unpushed held-out drafts; a cleanup list.
+The [away strategy](autonomy.md) is refined but still proposed; no new game window is open.
+First trial: reuse `runs/autonomy-20261020/` recount and mutation evidence to prepare the
+failure-rule/check decision. Inspect what is already done before repeating it. Count existing
+drafts against the proposed three-change limit before starting another. Remaining candidates
+(line-battle review, engine-ending fix, campaign save guard/inert scripts, held-out drafts,
+cleanup inventory) stay in that review; none is a new game or benchmark authorization.
 
 Priorities (2026-10-18): WH3 first, then Spire; post-training secondary. [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
 

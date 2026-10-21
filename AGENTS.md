@@ -88,13 +88,15 @@ token use):
 ## Working while the owner is away
 
 Proposed 2026-10-21, in force once the owner says yes: when the owner says they cannot
-review or are leaving, follow [docs/autonomy.md](docs/autonomy.md). Stop at anything outside
-git or beyond what the owner gave (money, their game profile, Steam achievements, anything
-public) and at any harness refusal. Park, as tested options plus one inbox item, anything
-that changes what the benchmark measures, claims or trains on. Otherwise decide, write the
-check first and move on. Game time only while away, for named plans, agreed checks and
-launch/menu probes; play-scope code waits on local branches; a passed check stays
-"proposed, not yet agreed".
+review or are leaving, follow [docs/autonomy.md](docs/autonomy.md). Each task must finish
+useful work or reduce a named uncertainty, with a reference and stopping point. Reuse
+existing evidence; keep at most three independently reviewable changes waiting across
+agents and sessions. Stop unapproved external effects and respect harness refusals. Park
+adoption of changes to benchmark meaning; prepare only evidence that helps the choice.
+Runtime/experiment code stays on local branches; new checks remain "proposed, not yet
+agreed", and dependencies cannot outrun their evidence. Game time needs an away window and
+the page's named-plan/check/probe rules. At capacity, finish or simplify pending work; if
+no useful permitted step remains, record the resume condition and stop.
 
 ## Layout
 

@@ -5,6 +5,14 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-21 (autonomy strategy), verbatim: "Read docs/autonomy.md. We've been trying to
+  come up with a strategy that we can use to keep you making at least some progress
+  autonomously while I haven't had the time to review progress and make decisions, in order
+  to minimize the situations where I would be a bottleneck. I will have to review things,
+  don't get me wrong, but we should be able to find a way to make the most of your time until
+  I'm able to review something new. We need to be careful to not simply add errors or
+  bloat/garbage/slop, which is very easy to do. Let's refine our strategy for that as much as
+  we can." Refinement is not approval of the proposed standing rules or a new game window.
 - 2026-10-20 (late, working while away), verbatim: "Let's take note of that, but more than
   that, let's actually try to come up with guidelines for you to follow when trying to make
   progress while I'm not around without keeping me as a bottleneck unless critical. You can

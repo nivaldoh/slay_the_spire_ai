@@ -1,120 +1,189 @@
 # Working while the owner is away
 
 What Claude Code and Codex may do alone when the owner cannot review or decide. Proposed
-2026-10-21; in force once the owner says yes. [AGENTS.md](../AGENTS.md) still applies in
-full. The owner ([2026-10-20](owner-direction.md)) wants progress "without keeping me as a
-bottleneck unless critical", first on "features that can be counted as objective, easier to
-verify", such as WH3 campaign infrastructure; designing the campaign benchmark stays theirs.
+2026-10-21; this revision is not approval to start games or adopt benchmark changes.
+[AGENTS.md](../AGENTS.md) still applies. The [owner's direction](owner-direction.md) is to
+reduce their bottleneck through objective, testable work, without accumulating errors or
+unused features. Success is a useful finished change or evidence that makes an existing
+decision easier. Time occupied, tests added and branches produced are not success measures.
 
 ## When it applies
 
-- **Busy**: the owner says they cannot review but may be using the PC. Offline work only.
-- **Away**: the owner says they are leaving and gives a return time; the PC is free until
-  then, under [game time](#game-time).
-- Both end at the return time or at any owner message to either agent. The [limits](#limits)
-  are shared by Claude and Codex and reset only after the owner answers the away report.
+- Once accepted, these are standing guidelines until the owner changes them; each task
+  within them does not need another yes. Until then, use existing authorization for offline
+  work. Refining this proposal does not activate it.
+- **Busy**, or no clear game window: offline work only; the owner may be using the PC.
+- **Away**: the owner gives a return time and frees the PC, subject to [game time](#game-time).
+  At the cutoff or an owner message, stop game work through the existing stop procedure
+  unless they explicitly keep the window open. A status question does not cancel authorized
+  offline work. New directions supersede conflicting work.
+- The [limits](#limits) are shared across agents and sessions. A new day, message or session
+  does not clear pending review. Check [Active work](state.md#active-work) and live process
+  handles before claiming a task or the game; an old status line alone proves neither idle
+  nor running. Record the task, responsible agent and artifact there; one writer per task.
 
 ## The test
 
-Ask this of every choice; the first yes decides.
+Classify by the action's effects, including the code it calls, not its filename.
 
-1. **Stop** if it acts outside git or beyond what the owner gave: money over the cap, game
-   time outside the rules below, the owner's WH3 saves, preferences, mod list or Steam
-   achievements, a ledger or account credit, deleting evidence, a re-pin, or making anything
-   new public (pushing a branch counts).
-2. **Stop that action** if the harness refused it (a permission prompt, the auto-mode
-   classifier): do not rephrase it, route around it or write docs that pre-authorize it.
-   Log one line and carry on with other work.
-3. **Park** if it changes what the benchmark measures, claims or trains on: scenarios,
-   suites, scores, gates, card verdicts, the failure rule, held-out sets, prompt text a model
-   sees, what a policy observes, agreed checks and their tests, benchmark-defining docs,
-   register rows, data and teacher use (local training too), campaign benchmark design.
-   Parking is not waiting: build and test the options on a branch or in `runs/`, add one
-   inbox item, take the next work. A bug found in a score, prompt or recorded result is
-   parked the same way, with a count of the recorded rows the fix changes.
-4. **Read only** once a [limit](#limits) is reached.
-5. Otherwise **decide**: build the smallest version, write its check first, move on. A
-   choice that answers a written question or sets a default goes in the away report with
-   its undo command; ordinary engineering choices go in commit messages.
+1. **Stop that action** if it exceeds authorization: spending or game time, new external
+   writes, profile changes, achievements, deleting evidence, re-pinning, changing/resetting
+   ledgers or credit, or making anything public (including pushes). An allowed game plan
+   includes the existing documented pack/mod-list/startup writes and normal ledger appends
+   within its cap; it does not authorize new side effects. Campaign access has a separate gate.
+2. **Respect harness refusals** and pending permission requests. Use the required approval
+   route; never rephrase, switch tools or edit instructions to evade a refusal. Record it
+   once and continue independent work. These guidelines do not change sandbox permissions
+   ([Codex permission controls](https://learn.chatgpt.com/docs/agent-approvals-security)).
+3. **Park adoption** if it changes benchmark meaning: scenarios, suites, scores, gates,
+   verdicts, failure rules, held-out sets, model prompts/observations, agreed check criteria,
+   benchmark definitions, historical register rows, or training/data/teacher use. The same
+   applies to a bug fix with those effects. Prepare the smallest comparison that could
+   settle the choice, with affected-row counts where relevant; preserve the original data.
+   Do not implement every alternative. Attach it to the existing inbox item, or add one.
+4. **Otherwise decide locally**, within the limits below: use the smallest implementation
+   and relevant check. Ordinary engineering choices need no ratification. Record a meaningful
+   default with its reason and undo step; put routine details in the commit message.
 
 ## Choosing work
 
-In this order: end running work before the return
-([stopping](twwarhammer3/benchmark-run.md#stopping)); work the owner named for this absence;
-turning inbox items into yes/no questions backed by counts from `runs/`; objective roadmap
-features, where a command or a game readback decides pass or fail against a value written
-before the run (campaign infrastructure, [below](#wh3-campaign-infrastructure)); merging
-exact duplicate questions and listing cleanup candidates (deleting none). Not without the
-owner: battles for a question the owner did not name, paid model screens, new suite
-scenarios, new doc pages, CI on the public repository.
+First finish or stop running work safely ([stopping](twwarhammer3/benchmark-run.md#stopping)).
+Then prioritize work the owner named, evidence for the decision blocking the next milestone,
+and objective roadmap features useful across the unresolved choices. Inspect existing
+artifacts first. Prefer finishing or simplifying a draft over opening another line of work.
+
+Before starting, write a few lines in the existing task note or `runs/` folder:
+**what this unblocks; what already exists; the next observable result and its reference;
+what will be retained; the time/attempt bound and stop condition.** Reuse a command or test
+before adding one. A new script or abstraction needs a named consumer in the current plan.
+If work is useful only after an owner choice, limit it to the cheapest discriminating probe.
+
+At the bound, keep the result, narrow the task, or park it with the reason. Repeat a scan,
+experiment or review only for changed inputs or a specific unanswered question. A negative
+result can finish a task. If no permitted next step will change a decision or finish useful
+work, leave one resume condition and stop; do not fill time with more audits, research,
+documentation, speculative features or a workflow framework. No new doc pages or public CI.
 
 ## Checks
 
-Before a check runs, write what it compares against, its command and its pass value, and
-show once that it can fail (before the fix, or on one plausible wrong version). Report
-"proposed check `<name>` passed at `<rev>` (n=...), not yet agreed", never "verified"; only
-the owner adds an [agreed row](../AGENTS.md#verification-hard-rule), without a rerun. Build
-on a feature only after its check passed at the same revision, and never feed a score from
-an unagreed check. A chain stops at its first failed check.
+Write the expected behavior and independent reference before implementing it; a check-first
+approach does not require a new test for every edit. Reuse focused checks. For a bug, retain
+the failing-before evidence where feasible; for important new checks, show they reject a
+plausible wrong implementation. Snapshots and agreement between readers of the same source
+do not independently establish correctness. Run the relevant AGENTS.md commands.
+
+Record command, source revision (and diff if uncommitted), inputs, passed/failed/skipped or
+unavailable checks, and the narrow conclusion. New checks stay **proposed, not yet agreed**;
+only explicit owner agreement changes that status. An agreed method is verified only where
+it passed, and only for its stated scope. Do not feed official scores from proposed checks.
+
+A passing component check permits further draft work only within the same bounded change
+and the behavior actually exercised. Rerun relevant dependency checks at the resulting tip.
+Stop at the first missing live readback, failed dependency or owner design choice; do not
+stack another feature on an assumed result. Do not weaken agreed assertions or criteria.
+New branch-local regressions are allowed even in a suite used by an agreed method; they
+remain proposed. Any changed expectation is a separate, visible review decision.
 
 ## Code and main
 
-- Play-scope code (`src/`, `configs/`, `pyproject.toml`, `uv.lock`, `.python-version`) stays
-  on local, unpushed branches in worktrees outside `/tmp`: a merge changes the revision and
-  the harness fingerprint `report` groups battles by. At most 3 branches wait; one line of
-  work (the campaign) is one branch. On return, ask one batched merge question.
-- `main` gets only other docs, tests and scripts outside the park list: whole diffs that are
-  yours, the AGENTS.md test and ruff commands passing, no job running or planned.
-- During an absence no agent edits this page, its AGENTS.md section, the agreed-check rows,
-  the stop logic of `scripts/wh3_queue.py`, or the tests and scripts behind agreed checks.
-  `owner-direction.md` takes the owner's words verbatim.
-- Before a launch, commit an [Active work](state.md#active-work) line naming the agent, the
-  purpose and the end time; the other agent commits nothing to `main` until it clears.
+- Runtime and experiment code stays on local, unpushed branches in worktrees outside
+  `/tmp`, with its tests. Check the actual command's source scope in AGENTS.md: first-combat
+  tools include `scripts/`. A diagnostic filename does not exempt experiment behavior.
+- `main` may receive small factual docs and independent offline checks outside the park
+  list, with whole diffs that are yours and relevant checks passing. No commits while a
+  queue runs or owns a frozen revision for an imminent start. WH3 `report` groups by full
+  source revision, so even docs commits can split later groups; prepare named batches
+  against one fixed revision. Do not rewrite historical revisions to combine them.
+- Before a launch, commit the Active work line with responsible agent, purpose and cutoff,
+  then freeze the plan at that revision. Other agents do not commit to that checkout until
+  its owner confirms the process ended. Draft elsewhere while it runs.
+- These guidelines, their AGENTS.md summary, agreed-check rows and queue stop logic are
+  not self-editable during an absence. `owner-direction.md` records owner words verbatim.
 
 ## Game time
 
-Only while **away**, and only for: plans the owner named for this absence (a plan stopped
-earlier, or arms named earlier but unplayed, need a new yes); re-runs of the agreed checks;
-and `twwarhammer3 launch` + `menu` infrastructure probes whose check is written in the
-probe's `runs/` folder first. Probes never use `play` or a queue and never write a register
-row, score, prompt or dataset input. Every launch sets `--timeout` (a plan, `start_before`)
-to end at least 60 minutes before the return, writes to an absolute path in the main
-checkout's `runs/`, and, from a branch, records the branch commit and the pack's sha256.
+Only while **away**, for plans the owner named for that window; agreed-check reruns; and
+`twwarhammer3 launch` + `menu` infrastructure probes with their check written first. Earlier
+stopped plans or unplayed arms need a new go-ahead. A proposal is not a named plan. Paid
+model screens and new battle questions need explicit scope and budget. Probes never use
+`play`/queues or produce benchmark register rows, scores or training inputs. Authorized play
+plans retain their normal evidence/register writes; historical corrections stay parked.
+
+Set the cutoff at least 60 minutes before return. `launch --timeout` and each play job's
+explicit `--run-timeout` must fit before it, allowing for preparation and shutdown. Queue
+`start_before` only prevents the next job: set it early enough that the longest remaining
+job plus preparation/shutdown fits. Do not launch if that bound is unknown or cannot fit;
+use the existing stop procedure if running work threatens the cutoff. Write to absolute
+paths in the main checkout's `runs/`; branch probes record their commit and pack sha256.
+For a multi-launch agreed check, budget the whole procedure including restoration. Its
+safe stop ends test phases and completes already-authorized restoration (which may launch
+again); an explicit immediate-shutdown request takes precedence, with unfinished restoration
+reported. Defer a check whose cleanup cannot fit the window or be safely interrupted.
 
 ## WH3 campaign infrastructure
 
-The agent may build and test, in order: a save guard (a sha256 manifest of the profile's
-`save_games` and `preferences.script.txt` before a campaign launch, compared after: earlier
-files byte-identical, only files absent from the manifest removed); tests that every mod
-script stays inert in a campaign unless the session asks; then, in the game, an unattended
-campaign start, a heartbeat, a state readback, one action each (end turn, move, recruit)
-with its readback, save-reload-compare, autoresolve, and handing a campaign battle to the
-battle controller. Before anything loads a campaign map (the built-in campaign benchmark
-too), the owner answers yes or no on harness saves and on Steam achievements, which cannot
-be undone. Harness campaigns use a faction the owner has no saves for, check that cloud
-saves are off, never use "continue" (it loads the newest save, maybe the owner's), change no
-campaign setting and skip no AI turn; readbacks never reach a policy. Which campaign, what a
-controller sees, the turn-time rule and scoring are the owner's; measured options (load and
-end-turn times) go to the inbox; confirmed facts go in [integration.md](twwarhammer3/integration.md).
+The first two independent drafts are a save guard tested on synthetic files, then checks
+that mod scripts stay inert in a campaign unless the session asks. The guard compares a
+sha256 manifest of `save_games` and `preferences.script.txt` before/after: earlier files
+must be byte-identical. A newly appearing file is not proof of harness ownership. Cleanup
+requires an exact recorded harness-created path and authorization; unexpected files stay
+untouched. Do not automatically restore an owner file that changed.
+
+Before loading any campaign map (including the built-in campaign benchmark), the owner
+decides separately on harness saves and irreversible Steam achievements. Until then, stop
+at those offline drafts. Once authorized, proceed one live capability at a time: start,
+heartbeat/state readback, end turn, move, recruit, save/reload/compare, autoresolve, battle
+handoff. Each needs its own observed readback before the next depends on it.
+
+Use a faction with no owner saves, check cloud saves are off, never use "continue", change
+no campaign setting and skip no AI turn. Readbacks do not reach a policy. Campaign choice,
+policy information, turn-time rules and scoring stay owner decisions. Put measured options
+in the existing inbox and facts with evidence limits in [integration.md](twwarhammer3/integration.md).
 
 ## Limits
 
-Defaults per absence, for the owner to change: $0 unless the owner names a cap (counting
-the ledger or the OpenRouter account use, whichever is larger); 10 reported choices; 3
-waiting branches; 10 inbox items. No local training, large copy or heavy CPU/GPU job while
-WH3 runs or the owner may be using the PC. Stop game work when the owner writes or the
-return margin arrives; when the game closes without the harness (treat it as the owner's
-return); when spend moves at a $0 cap; when the save manifest shows a changed owner file;
-after two failed launches in a row; after a WSL restart (nothing resumes by itself). A new
-game build is reported, never a stop, and never re-pinned alone (owner, 2026-10-18).
+Defaults until review: **3 waiting changes**, each with one outcome the owner can accept or
+discard separately; at most 3 branches, 10 reported choices and 10 inbox items. One large
+campaign branch does not count as one change. Count carried-over drafts too; do not hide
+overflow in `runs/`, another agent or a catch-all question. At capacity, finish, correct or
+simplify existing work; do not start another change. Preserve rejected evidence and record
+why a draft was dropped. Branch capacity reopens when a change is accepted or discarded,
+not when its code is copied elsewhere. Do not exceed the remaining choice/inbox limits.
+
+Spending defaults to $0 per window unless the owner names a cap, within existing ledger
+caps and the shared allowance; count ledger/account use conservatively. No training, large
+copies or heavy CPU/GPU work while WH3 runs or the owner may be using the PC. Stop game work
+on unexpected closure, spend at a $0 cap, changed owner files, two consecutive failed
+launches, or WSL restart (no automatic resume). Report a new game build; it does not itself
+stop play and is never re-pinned alone (owner, 2026-10-18).
+
+## Applying the rules
+
+| Current work | Useful stopping point |
+|---|---|
+| Failure-rule decision | Reuse the existing recount; compare only unresolved options against raw cases. Keep official scores unchanged. |
+| Preserve the engine ending | A local regression and minimal fix retaining the raw ending; changing which result counts is a separate decision. |
+| Chariot scorer check | Inspect the existing mutation results; an unchanged verdict alone is insufficient. Add only a demonstrated missing check. |
+| Campaign infrastructure | Synthetic save-guard check and inert-script check; no speculative campaign controller beyond the live-access gate. |
+| Prompt/held-out/training choice | One measured recommendation and relevant alternative; do not build a family of versions or consume held-out evidence. |
+| All useful next steps blocked | Record what would unblock them and stop. More artifacts are not a substitute for that decision. |
 
 ## On return
 
-- **One away report**, at most 20 lines in the game's log: commits and branches, proposed
-  checks with revision and n, game hours against the window, spend per ledger and account
-  before and after, reported choices with undo commands, refusals. Counts are recounted
-  from the register or traces and appear nowhere else.
+- **One report**, at most 20 lines in the game's log, linking evidence instead of copying
+  it: completed outcomes, ready drafts, rejected approaches, checks with revision and n,
+  spend/game time if used, meaningful defaults with undo steps, and refusals. Separate
+  completed delegated work from proposals needing a decision; no blanket ratification.
 - **One inbox**, [Owner decisions waiting](state.md#owner-decisions-waiting), at most 10
-  items of at most 3 lines: the question, options with evidence and n, what stays as it is
-  until answered, the one-line approval. Other pages' owner lists are linked, not copied.
-  Never drop or rewrite an owner item. Silence approves nothing.
+  items of at most 3 lines. Each gives the recommendation, relevant alternative, evidence
+  link, consequence of deferring, and exact scope of approval. Surface at most three that
+  unblock the most work. Keep the rest linked. Consolidate duplicates without losing the
+  owner's wording or unresolved choices; only their answer settles a decision.
+- For a ready code change, show its final diff, check evidence and remaining uncertainty
+  before asking to merge. For a check, agreement on its method is distinct from accepting
+  code or a benchmark conclusion. Silence approves nothing; partial answers release only
+  the relevant work.
+- Try this first on one offline batch within these limits. At review, assess useful work
+  retained, corrections/discards, remaining decisions and the owner's actual review effort.
+  Broaden delegation only by explicit agreement after that evidence; a tabletop review of
+  these rules cannot establish that the workflow reduces errors or review time in practice.
