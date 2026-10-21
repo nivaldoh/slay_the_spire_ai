@@ -374,6 +374,24 @@ Found in the M1 matched round (2026-10-16), addressed in v19 / commander v6:
    `#` cells for 50 of 51 refusals inside the map), the commander flag on a unit (one
    rider's death on a single-unit roster is a "lord died" morale shock), and a sentence
    in `rules_prompt.md` that re-sending an unchanged order changes nothing.
+10. **Commander prompt lines that misstate the code** (2026-10-21 check,
+    `runs/twwarhammer3/away-20261021/core-findings.txt`): "Orders being submitted now"
+    lists only one-shot orders, not the executor's moves in the same batch (792 of 2,651
+    recorded prompts had unlisted ones); "Recent plans" calls dropped assignments adopted
+    (25 of 2,627 plans); "Your last plan reached the units" measures adoption, about 0.3 s
+    before the batch applies; a refusal by the harness's own validation is reported as
+    "engine rejected" (never observed); and the executor's "waiting for melee (X out of
+    sight)" also covers a routing target.
+
+Text-only fixes held back for the same reason: a policy class's docstring is recorded as
+its description, and any edit to its file changes the `source_sha256` that the card board
+keys a controller on, so a later launch would no longer pool with recorded ones (a mixed
+cell fails the verdict). The 2026-10-21 checks found four such texts in `scripted.py` (for
+example, `hold` leaves missile units on their default skirmish, so they run away without
+orders), three in `skills.py`, a comment in `commander.py` (`floor-findings.txt`,
+`core-findings.txt`) and the witness texts in
+[tactic-cards.md](tactic-cards.md#the-starting-set-proposal-2026-10-21). They belong in the
+next real change to each file.
 
 ## Designs not built yet
 
