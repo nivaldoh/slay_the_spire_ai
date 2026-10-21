@@ -122,8 +122,12 @@ comparison between models.
    version of the recommended change (2026-10-21, not made): a scenario field naming
    contact scoring, and for it `render_mode` writes "if time runs out, the game gives you
    the battle, but this benchmark counts only routing or destroying every enemy unit
-   before the timer" in place of "if time runs out, you win"; prompt fixtures regenerate,
-   a logged prompt version. Recount the same day (`runs/twwarhammer3/away-20261021/timer_mentions.txt`):
+   before the timer" in place of "if time runs out, you win"; prompt fixtures regenerate, a
+   logged prompt version. `render_mode` builds the state line of `llm`, `llm_rules` and
+   `commander` alike, so one version covers all three. The alternative, counting timer
+   wins, changes `cards.outcome`, which now scores a timer win as lost, and would count the
+   3 timer wins already in the register. Recount the same day
+   (`runs/twwarhammer3/away-20261021/timer_mentions.txt`):
    on five defending battles (the line at ranks 0 and 5, expendables, rifle lane, two
    threats) 16 of 17 model episodes restate the timer win in
    their replies (7 of 8 on the two defending starting cards), in 11-97% of their decisions
