@@ -540,8 +540,8 @@ Estimate resources from measured pilots:
   bounded feasibility allowance; single-client throughput does not predict multi-client or
   campaign throughput.
 - Model cost: every agent's calls, messages, coordination, retries and memory work, under a
-  team cap and a study cap. Concurrent workers need real shared reservations
-  ([implementation page](multi-agent-implementation.md#next-a-model-team), item 4).
+  team cap and a study cap. Concurrent workers need real shared reservations (the ledger
+  hold on the [implementation page](multi-agent-implementation.md#what-teampy-does)).
 - Native hosting: client count, licenses and content, machine and network capacity; measure
   lag with the intended client count.
 - Human time: agreeing checks, fixed-sample review, resolving disagreements and independent
