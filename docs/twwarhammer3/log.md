@@ -43,25 +43,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 ## 2026-10-21: A proposed starting set, the failure-rule recount and a blind c1 recount
 
 Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3/away-20261021/`.
-- [Starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21) (proposal): a five-part
-  rule, three cards (chariot, rank-5 line, Skaven expendables; two blind re-derivations chose
-  the same), the rest parked, a $0 screen of 36 scripted launches (about 4.6 h, the rifle lane
-  and two threats as probes) and a proposed held-out map. Three review rounds confirmed 58
-  findings, all fixed. On 42 recorded episodes each marker separates its
-  witness from its floors (the line's only at rank 5).
+- [Starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21) (proposal): a
+  five-part rule, three cards (chariot, rank-5 line, Skaven expendables; two blind
+  re-derivations chose the same), the rest parked, a $0 screen of 36 scripted launches
+  (about 4.6 h, the rifle lane and two threats as probes) and a held-out map. Reviews
+  confirmed 58 findings, all fixed.
 - Failure rule: none of 595 episodes failed at construction, a late acknowledgement or
-  `close()`; the [proposed rule](benchmark.md#correctness-checks-to-agree) rescores nothing.
-  Branch `wh3-keep-engine-ending` (`b527584`, unmerged) keeps that ending, scores unchanged,
-  revised after an independent review; regression fails on the parent; suite 1342 passed.
+  `close()`, so the [proposed rule](benchmark.md#correctness-checks-to-agree) rescores
+  nothing. Branch `wh3-keep-engine-ending` (`b527584`, unmerged, independently reviewed)
+  keeps that ending, scores unchanged; its regression fails on the parent; suite 1342
+  passed.
 - c1: a blind recount from docs and raw files matched every outcome and the verdict. On 21
-  hand-picked engagements labelled under a proposed rule, cycles v1 was right on 13 and
-  counting every engagement on 10. One model family: a check of the documents only.
+  hand-picked engagements under a proposed rule, cycles v1 was right on 13, counting every
+  engagement on 10. One model family: a check of the documents only.
 - Evidence for open decisions: 16 of 17 model episodes on five defending battles restate
-  the timer win; a 300-character reason rule catches the 7 known garbled Empire-night
-  replies, an independent hunt 15 garbled attempts (6 missed by the rule); 10 of 427
-  battles leave a 0.95-1.05 clock band, all before b39 fixed the call distortion; 1 of 17
-  line battles offered a replacement opportunity; Step 5, GLM-5.3, Qwen3.6 and Kimi K3
-  licenses ([terms](../posttraining.md#provider-terms)).
+  the timer win; a 300-character reason rule catches the 7 Empire-night garbled replies but
+  misses 6 of 15 found by an independent hunt; all 10 battles outside a 0.95-1.05 clock
+  band predate b39; 1 of 17 line battles offered a replacement opportunity; model licenses
+  ([terms](../posttraining.md#provider-terms)).
 - Unverified: every gameplay count (1-33 episodes a cell), markers and labels (proposed).
 
 ## 2026-10-21: Autonomous-work strategy refined (proposal)
