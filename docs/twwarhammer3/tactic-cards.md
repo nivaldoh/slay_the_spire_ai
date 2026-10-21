@@ -521,14 +521,20 @@ jobs follow each other within seconds):
   at least 2 of 3 with the marker on each win, and the rest of its Missing column is done,
   so a screen alone admits no card; any other result goes back to the owner, as do the two
   probes. Both cards' markers, the line's and the expendables', are agreed with the
-  go-ahead, before the screen is read. A floor's timer win is noted, not counted. A failed
-  launch is not replaced: a cell with fewer than 3 scored launches is re-planned before it
-  is read. Three launches are a cheap filter: a floor that wins 20% of its battles loses
-  all 3 half the time (51%), and a witness that wins half passes 2 of 3 half the time, and
-  one that wins 80% passes 90% of the time; confirmation does the rest. `read_screen.py`
-  beside the plan prints the rule's verdict per card and every planned job without a scored
-  episode; on every recorded launch (`--all`) it reproduces the line and expendables floor
-  and witness counts.
+  go-ahead, before the screen is read. Each reads a unit's first melee at its first frame
+  with the engine's melee flag (`markers.py`'s header gives the partner rule). A blind
+  re-implementation from the one-line definitions agreed with it on all 17 line episodes
+  and 12 of 14 expendables episodes; the other two ended in a policy failure before the
+  ogres fought, which it called undecidable and `markers.py` a fail (`blind-markers.txt`).
+  Reading the line's first melee as the whole first fight would turn up to 5 of its 15
+  passes into fails, GLM's rank-5 win among them but not LineTeam's. A floor's timer win is
+  noted, not counted. A failed launch is not replaced: a cell with fewer than 3 scored
+  launches is re-planned before it is read. Three launches are a cheap filter: a floor that
+  wins 20% of its battles loses all 3 half the time (51%), and a witness that wins half
+  passes 2 of 3 half the time, and one that wins 80% passes 90% of the time; confirmation
+  does the rest. `read_screen.py` beside the plan prints the rule's verdict per card and
+  every planned job without a scored episode; on every recorded launch (`--all`) it
+  reproduces the line and expendables floor and witness counts.
 - Shortcut screen, $0, not yet planned: 3 launches of each card's named shortcut once it is
   scripted (a code change; the line's knights held back, the expendables' ogres at the guns
   at once), about 50 minutes, before confirmation.

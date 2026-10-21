@@ -78,7 +78,7 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 
 1. **The [starting set's screen](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21)**: recommended, a yes runs its
    $0 scripted plan (39 launches, about 5.1 h) on a free night (no item 9 needed) and agrees its reading rule and markers:
-   the knights first fight cavalry; the slaves meet the halberds before the ogres' first melee, which is not with them.
+   the knights first fight cavalry; the slaves meet the halberds before the ogres' first melee, which is not with them (each at its first melee frame).
 2. **The defender prompt** of every model controller says "if time runs out, you win"; the cards count only contact wins
    ([Empire decision 7](twwarhammer3/empire.md#decisions-taken-for-the-owners-review), for your review; 16 of 17 `llm_rules` episodes on five
    defending battles restate it). Recommended: a contact-scoring scenario field that says so instead (a prompt version once fewer than 3 changes wait); or count timer wins.
