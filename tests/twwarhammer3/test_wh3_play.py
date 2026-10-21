@@ -325,6 +325,32 @@ def test_a_passed_episode_deadline_does_not_hide_a_result_that_is_there(tmp_path
     assert result["status"] == "lost"
 
 
+@pytest.mark.parametrize("method", ["acknowledge", "close"])
+def test_a_controller_failure_after_the_ending_keeps_the_engine_result(tmp_path, method):
+    class Late(AttackNearest):
+        def acknowledge(self, ack, latency):
+            if method == "acknowledge":
+                raise ValueError("late bug")
+
+        def close(self):
+            if method == "close":
+                raise ValueError("late bug")
+
+    # The last observation both ends the battle and acknowledges the decision's orders.
+    timer = {"expired": True, "source": "countdown_deadline"}
+    mailbox = FakeMailbox([bridge_observation(0, 0), bridge_observation(1, 1000),
+                           {**bridge_observation(2, 2000, ack=True, result="won"),
+                            "timer": timer}])
+    play.play_episode(tmp_path / "e", CONFIG, Late, mailbox, not_battle=None)
+    result = json.loads((tmp_path / "e/result.json").read_text())
+    assert len(mailbox.requests) == 1
+    assert result["status"] == "policy_failure" and "late bug" in result["error"]
+    assert result["engine_ending"] == {"result": "won", "ended_by": "time_limit",
+                                       "battle_ms": 2000, "timer": timer}
+    # The scored fields are still set only after the acknowledgement, as before.
+    assert ("ended_by" in result) == (method == "close")
+
+
 def test_delayed_policy_gets_old_public_state_but_results_use_current_evaluation(tmp_path):
     class Reader(Hold):
         def __init__(self):

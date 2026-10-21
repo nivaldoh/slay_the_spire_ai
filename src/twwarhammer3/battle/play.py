@@ -487,21 +487,26 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
             result["active_wall_s"] = duration
             result["clock_ratio"] = ((observation["time_ms"] - result["start_time_ms"]) / 1000
                                      / duration if duration > 0 else None)
+        if observation.get("result"):
+            # Kept before the acknowledgement below, which can fail; a controller failure
+            # from here on still sets the status, and engine_ending keeps what ended.
+            timer = observation.get("timer") or {}
+            ended_by = ("time_limit" if observation.get("remaining_ms") == 0
+                        or timer.get("expired") is True else "engine_result")
+            if (observation.get("mode") or {}).get("custom", {}).get("ending") == "scripted":
+                ended_by = "custom_objective"
+            result["engine_ending"] = {"result": observation["result"], "ended_by": ended_by,
+                                       "battle_ms": observation.get("time_ms"),
+                                       "timer": timer or None}
         ack = observation.get("orders")
         if outstanding and ack and ack.get("request") == outstanding["request"]:
             applied_ms = _acknowledge(result, outstanding, ack, policy, event)
             outstanding = None
         if observation.get("result"):
-            timer = observation.get("timer") or {}
             result.update(status=observation["result"], battle_ms=observation.get("time_ms"),
                           battle_s=round(observation.get("time_ms", 0) / 1000),
                           final=observation.get("final") or result.get("final"),
-                          timer=timer or None,
-                          ended_by="time_limit" if observation.get("remaining_ms") == 0
-                          or timer.get("expired") is True
-                          else "engine_result")
-            if (observation.get("mode") or {}).get("custom", {}).get("ending") == "scripted":
-                result["ended_by"] = "custom_objective"
+                          timer=timer or None, ended_by=ended_by)
             event("result", observation=observation)
             return
         if time.time() > deadline:
