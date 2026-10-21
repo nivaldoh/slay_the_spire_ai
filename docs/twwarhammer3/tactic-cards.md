@@ -436,6 +436,11 @@ section, each chose the three cards below (`runs/twwarhammer3/away-20261021/rede
 | Line at rank 5, `emp-line-grn-raid-xp5` (7 v 7, defends) | Seven units keep their jobs: the line holds in guard mode, the guns stay behind it, the knights take the enemy cavalry. Proposed marker: the knights' first melee is against enemy cavalry. On this battle it fails both floors and passes both wins (LineTeam, GLM) and both other losses; at rank 0 both floors pass it too, so it marks the knights' job, not the whole team's. No gun in melee before the first line rout fails all 4 floors but also GLM's win | `hold` 0/1, `attack_nearest` 0/1; LineTeam 1/1 at 0 s (b45; b46 unplayed); LineTeamReserve 0/1 | Floors and LineTeam b46 at 3 launches; agreeing the marker ([Empire item 2](empire.md#for-the-owner-to-decide)) and a named shortcut (proposed: LineTeam with the knights held back, which tests whether their job decides it). Whether replacement helps stays a [team-plan](robot-team-plan.md#a-small-sequence-of-experiments) question |
 | Expendables, `skv-ogres-slaves-emp-halberds-1` (defends) | Spend the Skavenslaves to hold the Halberdiers while the Rat Ogres kill the guns. Marker: the ogres fight, and the slaves fight the halberds before the ogres' first melee, which is not with the halberds. SlaveTarpit passes all 5 of its episodes (both variants); all 3 floor episodes fail | `hold` 0/1, `attack_nearest` 0/1; SlaveTarpit 3/4 at 5 s. Kimi K3 low won its scored launch by a shortcut: the ogres hit the guns at 87 s, the slaves the halberds at 127 s | The rush floor; 3 launches per floor and witness; a foil for Kimi's shortcut (ogres at the guns at once) |
 
+Only the line plays Empire. The owner asked for mostly Empire units, other factions for
+specific challenges such as the Orc chariot ([2026-10-20](../owner-direction.md)); the
+cheapest routes to more Empire cards are the two probes below: the rifle lane's screen
+evidence for its reinstatement, and a witness for two threats.
+
 Not in the starting set:
 - **Rifle lane**, `emp-handgunners-grn-savage-orcs-hard` (defends): fire past one's own
   Spearmen through a clear lane. Its family took two steps (Big 'Uns, then Savage Orcs at
