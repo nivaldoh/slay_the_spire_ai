@@ -63,6 +63,17 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-21 (away window from 02:20, about 10 hours), verbatim: "Continue to make progress
+  on the WH3 benchmark until I return in like 10 hours. Check our relevant documentations
+  before starting like autonomy.md. Remember that progress could count as many different
+  things such as improving our definitions, documentations, tests, infrastructure,
+  research, data collection, etc. Let's make the most of this time. For instance, have we
+  decided on a set with a least a few battles that we should start with for our
+  benchmarking? Do we have a strategy on how to decide that? Do we know what we're trying
+  to achieve from each battle and how we're going to test them? There's no shortage of
+  useful things that we can do until I return, so I'll leave you to it. Don't add slop,
+  don't accumulate garbage. Keep our code and docs clean." Proposed answer: the
+  [starting set](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21).
 - 2026-10-20 (guideline review): review evaluation-guidelines.md against the twelve
   readings and their cited work; improve it, say how each rule could be enforced in code,
   use simple language, and note common eval practices that do not apply or must differ for
