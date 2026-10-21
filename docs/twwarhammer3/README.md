@@ -5,7 +5,8 @@ tasks against the game AI. Scripts, models and hybrids receive structured state 
 a Lua mod while the battle runs unpaused at 1x; their results include their actual delay,
 cost and failures. Start with the [scope and first release](benchmark.md#scope-and-first-release):
 one repeatable card, then a small suite of distinct tasks. The suite and its gameplay
-checks remain unsettled; current results are not a verified benchmark release.
+checks remain unsettled (a [proposed starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21)
+names three cards); current results are not a verified benchmark release.
 Controller research, team recovery and training are related work with separate evidence
 requirements. What is running and the versions on `main`: [../state.md](../state.md);
 every version, job and finding: [log.md](log.md).
