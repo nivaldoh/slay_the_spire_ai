@@ -893,7 +893,12 @@ its effect, or that a claim is fair; those need agreed live checks and reading.
 1. The line battle's "if time runs out, you win": change the prompt or credit timer wins.
 2. The open failure-table rows ([5.2](#52-freeze-how-every-trial-is-scored)), construction
    failure, whether draws count per card, and whether the battle-to-wall band invalidates a
-   battle or only flags it.
+   battle or only flags it. Recorded ratios (2026-10-21, 427 engine-ended episodes,
+   `runs/twwarhammer3/away-20261021/clock_ratio.txt`): median 0.999, p5 0.985, p95 1.005;
+   10 fall outside 0.95-1.05, 9 of them model battles whose long calls distort today's
+   ratio (6.2) and one unexplained scripted floor at 0.878
+   (`bench-b19-s2-decoy-floor-20261017`). Invalidating on today's measure would discard
+   battles for call latency, not game speed.
 3. Which witness timing cell makes a card "demonstrably winnable", and witness v2 (already
    [pending](../state.md#owner-decisions-waiting)).
 4. Whether the chariot card is also a training environment, which variant to reserve first,
