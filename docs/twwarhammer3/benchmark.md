@@ -222,7 +222,8 @@ ignored all 3 engine exits but counted 5 attempts that never got clear (a pull-o
 while the chariot stayed in melee, or one it countermanded) and missed 3 pull-outs ordered
 up to 5 s before contact, which v2 counts and v1's window does not. Hand-picked cases give
 no rate. No chariot replay has a recording gap of 3 s or more (0 of 123; the largest is
-1.2 s), so that case needs a deliberately edited replay. v2's choices (the 5 s window, 60 m
+1.2 s); in an edited copy, 5 s cut from one engagement split it and raised cycles v1 from 5
+to 6, so a gap inside melee reads as an exit and nothing flags it (`gap-edit/`). v2's choices (the 5 s window, 60 m
 of separation) need the owner's view before the examples are frozen. All agents are one
 model family: this checks the written rule, not independent judgment.
 
