@@ -57,9 +57,9 @@ Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3
   the timer win; a 300-character reason rule catches 8 of 15 garbled attempts; all 10
   battles outside a 0.95-1.05 clock band predate b39; 1 of 17 line battles offered a
   replacement opportunity; model licenses ([terms](../posttraining.md#provider-terms)).
-- Checks: four campaign-safety tests, one that the rules prompt withholds card tactics; 411
-  episode logs hold no new harness error; campaigns call the imagery script
-  ([integration](integration.md)).
+- Checks: four campaign-safety tests, one that the rules prompt withholds card tactics; no
+  new harness error in 411 episode logs; blind rebuilds of two markers matched 29 of 31
+  verdicts; campaigns call the imagery script ([integration](integration.md)).
 - Unverified: every gameplay count (1-33 episodes a cell), markers and labels (proposed);
   agents are one model family, so their checks test documents, not judgment.
 
