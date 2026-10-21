@@ -1,10 +1,12 @@
 """The file mailbox between the controller (WSL) and the in-game Lua scripts (Windows).
 
 The directory is ``C:/wh3-agent/bridge``, reached from WSL through ``/mnt/c``. Writers
-publish whole files (a temporary file, then a rename); readers treat a missing, locked or
-half-parsed file as "not yet". In messages from the game, a key marked ``?`` below is absent
-when unset (Lua nil), and an empty Lua table arrives as ``[]``, even where a filled one is an
-object (``evaluation.objectives`` in a battle without capture points, an empty ``magic``).
+publish whole files (a temporary file, then a rename); the controller treats a missing,
+locked or half-parsed observation as "not yet"; the Lua scripts delete ``orders.json`` and
+``menu.json`` before parsing and drop one that does not parse. In messages from the game, a
+key marked ``?`` below is absent when unset (Lua nil), and an empty Lua table arrives as
+``[]``, even where a filled one is an object (``evaluation.objectives`` in a battle without
+capture points, an empty ``magic``).
 
 Files, by writer:
 - controller: ``session.json``, read at each script load (``job``, ``enabled``, ``menu``,
@@ -21,9 +23,10 @@ Files, by writer:
   ``failed`` marker; setup can instead hand off to the first battle observation.
 - game: ``observation.json`` (below), rewritten every ``observe_ms`` of battle time and
   after each applied request; the append-only ``mod.log`` (``[battle ms] text``) and
-  ``menu.log`` (step results, then ``done``); UI dumps named by ``dump`` steps; per battle,
-  ``replay-<battle>.jsonl`` (a presentation frame per second, with ``record_replay``) and
-  ``imagery-<battle>.json`` (still requests and unit names, with ``stills``).
+  ``menu.log`` (step results, then ``done`` or ``failed``); UI dumps named by ``dump``
+  steps; per battle, ``replay-<battle>.jsonl`` (a presentation frame per second, with
+  ``record_replay``) and ``imagery-<battle>.json`` (still requests and unit names, with
+  ``stills``).
 - ``battle/capture.py`` (PassiveCapture): ``still-<battle>-<trigger>.png`` and
   ``capture-<battle>-<trigger>.json``.
 An episode copies its battle's files when it ends. ``reset`` (``play`` without ``--attach``,
@@ -54,7 +57,8 @@ Observation (``observation``, ``unit_record`` and ``mode_section`` in the battle
               "reinforcements"?, "spawn_zones"?, "slots"?, "supplies"?,
               "custom"?: {"kind", "version", "rules", "zone": {"x", "z", "radius"},
                           "deadline_ms", "remaining_ms"?, "assets": [{"id", "alive", "in_zone"}],
-                          "extracted", "status", "reason"?, "ending"?, "completed_ms"?}},
+                          "extracted", "status", "reason"?, "ending"?, "completed_ms"?,
+                          "ending_error"?}},
      "terrain"?: {"x0", "z0", "cell_m", "rows" ("." clear, "#" blocked), "sample_width_m",
                   "sampled_ms", "bounds"},
      "orders"?: {"request", "based_on", "applied_ms",
@@ -63,22 +67,23 @@ Observation (``observation``, ``unit_record`` and ``mode_section`` in the battle
      "setup"?: {...}, "evaluation": {...}, "final"?: {...}}
 
 A battle's first observation is a ``Loading`` placeholder with ``seq`` 0 and no units; then
-``phase`` is the engine's (``Deployment``, ``Deployed``, ``VictoryCountdown``, ``Complete``).
-The obs-v4 ``mode.custom`` extension contains only public objective rules and friendly
-progress. Authored enemy placements stay in ``setup.custom``. A scripted objective
-requests an engine ending, but ``result`` still requires engine confirmation. Its objective
-status is recorded separately: a native victory can fail an asset-preservation objective.
+``phase`` is the engine's from ``Deployed`` on (``Deployed``, ``VictoryCountdown``,
+``Complete``); no observation is published during ``Deployment``. The obs-v4
+``mode.custom`` extension contains only public objective rules and friendly progress.
+Authored enemy placements stay in ``setup.custom``. A scripted objective requests an engine
+ending, but ``result`` still requires engine confirmation. Its objective status is recorded
+separately: a native victory can fail an asset-preservation objective.
 
 A unit has ``id`` (f1..., e1...), ``type``, ``class``, ``commander``, ``can_fly``,
 ``flying``, ``x``, ``z``, ``bearing``, ``men``, ``men0``, ``hp`` (0-1), ``barrier``?,
 ``state`` (flags such as routing, shattered, wavering, melee, under_fire, moving, running),
 ``range``, ``speed`` ([walk, run]), and ``alliance`` for a free-for-all enemy. Friendlies
-add ``morale``? (``fraction`` of best leadership, possibly negative, and the UI's largest
-``effect``), ``flight``? (flyers: ``can_toggle``, ``cooldown_s``), ``ammo``, ``ammo0``,
-``fatigue``, ``width``, ``attack_mode`` and ``command_queue`` (as last requested),
-``navigation``? (an unreachable move's reachable alternatives), ``behaviours`` (toggle key
-to state), ``abilities`` ({``key``, ``can_use`` (the engine's permission), ``ready``,
-``active``, ``recharge_s``?, ``uses``?, ``target``, ``mana``, ``cooldown_s``,
+add ``morale``? (the UI's leadership ``fraction``, possibly negative or above 1, and the
+UI's largest ``effect``), ``flight``? (flyers: ``can_toggle``, ``cooldown_s``), ``ammo``,
+``ammo0``, ``fatigue``, ``width``, ``attack_mode``? and ``command_queue``? (as last
+requested), ``navigation``? (an unreachable move's reachable alternatives), ``behaviours``
+(toggle key to state), ``abilities`` ({``key``, ``can_use`` (the engine's permission),
+``ready``, ``active``, ``recharge_s``?, ``uses``?, ``target``, ``mana``, ``cooldown_s``,
 ``cast_range``, ``radius``, ``duration_s``, ``last_issued_ms``?}), ``target``? and
 ``dest``?. A unit that failed to read is ``{"id", "error"}``.
 

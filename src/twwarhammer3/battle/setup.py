@@ -5,20 +5,20 @@ entry, and what reads them:
 
 - ``base``: another entry this one copies. Dicts merge key by key; lists and other values
   replace (``scenarios``).
-- ``player`` and ``enemy``: the armies. ``enemy`` is one army, a list of them (free-for-all)
-  or null (survival, whose waves the game brings) (``sides``). Each army has:
-  ``subculture`` (the race); ``faction`` (pins banner and recruitment cards; without it the
-  game picks one); ``units`` (recruitment cards, the lord first, or null for the
-  Autogenerate army button); ``lord`` (false: a lordless roster whose first card is an
-  ordinary unit; it relies on the profile's "allow no lord" lobby setting); ``mounts``
-  (zero-based recruitment index to mounted unit key, selected and verified in the lobby);
-  ``experience`` (zero-based recruitment index to rank 0–9; omitted ranks are zero);
-  ``recruitment_faction`` (card namespace when it differs from the selected banner);
-  ``reinforcements`` (null for autogeneration, or an explicit list of non-lord unit
-  cards, selected and read back in the lobby).
+- ``player`` and ``enemy``: the armies. ``enemy`` is one army, a list of them
+  (free-for-all) or null (survival, whose waves the game brings) (``sides``). Each army
+  has: ``subculture`` (the race); ``faction`` (pins banner and recruitment cards; required
+  with explicit ``units``, else the game picks one); ``units`` (recruitment cards, the lord
+  first, or null for the Autogenerate army button); ``lord`` (false: a lordless roster
+  whose first card is an ordinary unit; it relies on the profile's "allow no lord" lobby
+  setting); ``mounts`` (zero-based recruitment index to mounted unit key, selected and
+  verified in the lobby); ``experience`` (zero-based recruitment index to rank 0–9; omitted
+  ranks are zero); ``recruitment_faction`` (card namespace when it differs from the
+  selected banner); ``reinforcements`` (null for autogeneration, or an explicit list of
+  non-lord unit cards, selected and read back in the lobby).
 - ``map``: without it the lobby keeps the last map of the battle type.
-- ``battle_type``: the lobby battle type, classic by default; the first observation must
-  show its engine type (``expected_mode``).
+- ``battle_type``: the lobby battle type, classic by default; when set, the first
+  observation must show its engine type (``expected_mode``).
 - ``attacker``: ``"player"`` or ``"enemy"``; the lobby swaps the teams to match, and the
   first observation must show the player's role.
 - ``random``: ``load_scenario`` draws a map and each side's race and autogenerates the
@@ -26,19 +26,25 @@ entry, and what reads them:
   default) and ``reinforcements`` (true: every side gets a reinforcing army).
 - ``expect``: declares a benchmark, which must pin its map, factions and rosters
   (``validate_declaration``). The lobby sets ``funds``, ``funds_amount`` (with
-  funds_custom), ``time_limit_s`` (1200, 2400 or 3600; null for survival/domination,
-  whose hidden lobby timer is not a battle deadline), ``ai_stats_modifier``, ``difficulty``,
-  ``unit_scale`` and ``realism`` (``menu_checks``), and reads them back with ``battle_type``.
-  These lobby settings can persist into ordinary play. The battle independently checks
-  ``unit_scale``, ``realism`` and ``player_defends`` (``check_battle``).
+  funds_custom), ``time_limit_s`` (1200, 2400 or 3600; null, with ``timer_enabled`` false,
+  for survival/domination, whose hidden lobby timer is not a battle deadline),
+  ``ai_stats_modifier``, ``difficulty``, ``unit_scale`` and ``realism`` (``menu_checks``),
+  and reads them back with the lobby ``battle_type``; ``expect.battle_type`` must be that
+  mode's engine type (``ENGINE_TYPES``). These lobby settings can persist into ordinary
+  play. The battle independently checks ``unit_scale``, ``realism``, ``player_defends``,
+  every army's ``ai_stats_modifier`` and, for a null ``time_limit_s``, that no countdown
+  runs (``check_battle``).
 - ``protected``: unit types whose survival the report and replay measure.
 - ``custom``: the versioned battery-evacuation rules, asset ids, extraction zone and
   deadline; optional ``deployment`` maps friendly/enemy ids to authored positions.
   Only public rules/progress enter ``mode.custom``; deployment remains private setup.
 - ``name``, ``family``, ``brief``, ``split``, ``status``: report labels (the HTML report
-  shows only scenarios with started trials; its reader text is in report_notes.json).
-- ``content``, ``frozen_from``, ``substitutions``, ``calibration_change``, ``loadouts``:
-  provenance that no code reads; it reaches reports through the manifest's scenario.
+  shows only scenarios with started trials; its reader text is in report_notes.json);
+  ``export.py`` also groups rows by ``family`` and holds out rows whose ``split`` is
+  held_out.
+- ``content``, ``frozen_from``, ``substitutions``, ``calibration_change``, ``loadouts``,
+  ``scenario_version``: provenance that no code reads; it reaches reports through the
+  manifest's scenario.
 """
 
 import hashlib
