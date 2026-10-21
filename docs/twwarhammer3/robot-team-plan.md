@@ -162,7 +162,7 @@ criteria fixed before reading): at the first line break the reserve was fresh, t
 break came at least 20 s later and the visible enemy held fewer men in 1 of 17 battles (the
 rank-5 LineTeamReserve launch, which still lost). Floors and models had already spent the
 reserve (11 of 11), a second line unit broke within 20 s in 7, the side was outnumbered in
-10, and the first unit to break later rallied in 12. The Spearmen reserve carries the
+11, and the first unit to break later rallied in 12. The Spearmen reserve carries the
 commander flag in all 17, so committing it risks the captain's death shock (design rule 8
 of the tactic cards); it broke before the first line unit in only 2 (`flag_order.txt`), and
 the one scripted win never committed it. On 6 scripted battles this leans toward "revise the
