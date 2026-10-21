@@ -180,6 +180,39 @@ def test_ownership_integrates_time_across_changes_and_ignores_duplicate_samples(
     assert totals["c1"]["held_ms"] / totals["c1"]["observed_ms"] == .25
 
 
+
+@pytest.mark.parametrize("kind", [None, "is_multiplayer", "is_replay", "is_from_campaign",
+                                  "is_quest_battle", "is_tutorial"])
+def test_an_enabled_session_hooks_only_custom_battles(kind):
+    # The mod list persists for ordinary launches, so an owner's own campaign battle loads
+    # this script too, possibly beside a session file a stopped job left enabled.
+    lua = runtime()
+    lua.execute("""
+        BRIDGE = "bridge/"
+        function read_json(path)
+            return {schema = 1, job = "j", enabled = true, autostart = true}
+        end
+        logged, hooked, published = {}, {}, {}
+        function log(text) logged[#logged + 1] = text end
+        function publish(name) published[#published + 1] = name end
+        function guarded(name, fn) return fn end
+        state = {}
+        battle = {}
+        bm = {battle = battle,
+              register_phase_change_callback = function(_, phase) hooked[#hooked + 1] = phase end,
+              repeat_real_callback = function(_, _, _, name) hooked[#hooked + 1] = name end}
+    """)
+    if kind:
+        lua.execute(f"function battle:{kind}() return true end")
+    _, load = load_battle(lua, "get", "load")
+    load()
+    hooked, published = list(lua.globals().hooked.values()), list(lua.globals().published.values())
+    if kind:
+        assert hooked == [] and published == []
+        assert list(lua.globals().logged.values()) == [f"inactive: {kind}"]
+    else:
+        assert "Deployed" in hooked and published == ["observation.json"]
+
 def test_hidden_arrivals_and_deaths_do_not_update_public_enemy_state():
     lua = runtime()
     lua.execute("""
