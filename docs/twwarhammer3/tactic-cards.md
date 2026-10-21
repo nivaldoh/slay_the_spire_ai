@@ -472,7 +472,9 @@ jobs follow each other within seconds):
   done; any other result goes back to the owner, as does two threats if its floors all
   lose. The line card's marker is agreed with the go-ahead, before its screen is read. A
   floor's timer win is noted, not counted. A failed launch is not replaced: a cell with
-  fewer than 3 scored launches is re-planned before it is read.
+  fewer than 3 scored launches is re-planned before it is read. Three launches are a cheap
+  filter: a floor that wins 20% of its battles loses all 3 half the time (51%), and a
+  witness that wins half passes 2 of 3 half the time (80%: 90%); confirmation does the rest.
 - Confirmation at the [proposed gate](benchmark.md#from-a-candidate-to-a-scored-card)
   (each foil 0/14, witness at least 10/14): 42 launches for a card with two floors (56 for
   the expendables' three) plus 14 per shortcut foil, so about three nights for the line,
