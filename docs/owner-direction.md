@@ -63,6 +63,13 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-21 (on return, 12:20, answering the three inbox questions): (1) the starting
+  set's screen: "Yes, run it", which also agrees its reading rule and the two markers as
+  [tactic-cards.md](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21)
+  words them; run on the next free night; (2) the defender prompt: "Tell models", a
+  contact-scoring scenario field and one logged prompt version for `llm`, `llm_rules` and
+  `commander`; (3) the failure rule: "Agree and merge" `wh3-keep-engine-ending` as harness
+  b47.
 - 2026-10-21 (away window from 02:20, about 10 hours), verbatim: "Continue to make progress
   on the WH3 benchmark until I return in like 10 hours. Check our relevant documentations
   before starting like autonomy.md. Remember that progress could count as many different
