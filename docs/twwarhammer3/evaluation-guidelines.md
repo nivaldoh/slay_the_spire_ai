@@ -1,843 +1,943 @@
 # Guidelines for evaluating WH3 battle controllers
 
-Evaluate whether a declared controller can achieve a declared tactical objective while
-Total War: WARHAMMER III keeps running at 1x. Report how often it succeeds, what it costs,
-how reliably it runs and what the evidence says about its behavior. A useful evaluation
-lets another developer make a concrete choice and inspect the reasons for that choice.
+Each battle runs in real time (1x, never paused) against the game's own AI. A controller,
+often an LLM with helper code, receives snapshots of the units it can see through a Lua
+mod and sends move and attack orders while the battle continues; the battle ends when one
+side breaks or the timer runs out. A card is a small frozen battle that tests one tactical
+choice. The project has one human owner, who works with AI agents. An evaluation here
+measures, for a declared controller on a frozen card under declared conditions, how often
+it meets the card's success rule, how quickly and reliably it acts, what it costs, and
+what the records show it did. It is useful when it lets someone make a named decision and
+check why. These rules cover designing, running, scoring and reporting one, for us when
+planning a study and for an outside researcher deciding whether to trust a result. The
+benchmark is defined in [benchmark.md](benchmark.md), the cards in
+[tactic-cards.md](tactic-cards.md), the commands in [benchmark-run.md](benchmark-run.md).
 
-These guidelines accompany the [benchmark definition](benchmark.md),
-[tactic cards](tactic-cards.md) and [run protocol](benchmark-run.md). The research basis is
-the [twelve supplied readings and selected cited work](#sources-and-their-use), reviewed
-2026-10-20. The WH3 procedures and examples below are our application of those ideas;
-the cited studies do not establish that they work in this game.
+**Status (revised 2026-10-20).** Proposals. Nothing here is verified under the
+[hard rule](../../AGENTS.md#verification-hard-rule): a check counts only once the owner
+agrees it and it passes at a named revision. Most rules end with a **Check**: *exists*
+(the code is there, but it is verified only if AGENTS.md lists it), *proposed* (not built,
+with a rough size) or *manual* (a person does it).
 
-**Status:** design guidance, with proposed code enforcement. This document changes no
-code, frozen score or historical result. New verification methods still require owner
-agreement under [AGENTS.md](../../AGENTS.md#verification-hard-rule), followed by passing
-evidence at a named revision. Existing component checks do not verify live tactics.
+## Before you start
 
-Use this guide in order for a new study, or jump to the relevant decision:
+**Before a scored run** (a confirmation or final study), fill the plan's `study` block
+(proposed). Each key answers one question:
 
-- [Define the question and controller](#define-the-question-and-controller).
-- [Build tasks that test the intended skill](#build-tasks-that-test-the-intended-skill).
-- [Protect development and final evaluation](#protect-development-and-final-evaluation).
-- [Plan trials and comparisons](#plan-trials-and-comparisons).
-- [Make the game and scorer trustworthy](#make-the-game-and-scorer-trustworthy).
-- [Account for every attempt](#account-for-every-attempt).
-- [Measure success timing and cost](#measure-success-timing-and-cost).
-- [Use statistics that match the experiment](#use-statistics-that-match-the-experiment).
-- [Collect useful human judgments](#collect-useful-human-judgments).
-- [Use LLM judges only after calibration](#use-llm-judges-only-after-calibration).
-- [Design rubrics and training rewards separately](#design-rubrics-and-training-rewards-separately).
-- [Interpret results and investigate failures](#interpret-results-and-investigate-failures).
-- [Make results reproducible and publishable](#make-results-reproducible-and-publishable).
-- [Enforce the guidelines through code](#enforce-the-guidelines-through-code).
-- [Adapt common evaluation advice to WH3](#adapt-common-evaluation-advice-to-wh3).
-- [Use a short study declaration](#use-a-short-study-declaration).
-
-## Define the question and controller
-
-**G1. Write the decision before choosing the score.** For example: does supplying
-withdrawal advice improve this controller's contact-win rate on this frozen chariot
-card? State the population the answer concerns: this card on this installation, the
-released suite, reserved map variants, or a declared collection of tactical families.
-These are different claims. An Empire-focused suite cannot establish general WH3 mastery,
-campaign ability, human-level play or transfer to robots.
-
-**G2. Treat the complete controller as the evaluated system.** Record the model,
-provider/backend, prompt, memory, tools, executor, sampling settings, retries and resource
-limits. A helper that chooses routes or targets supplies tactical ability. A model with
-that helper is a different controller. This follows the distinction between the model
-and the agent system in [Anthropic's evaluation guide](https://www.anthropic.com/research/demystifying-evals-for-ai-agents).
-
-For WH3, freeze this contract before the comparison:
-
-| Part | Declare precisely |
-|---|---|
-| Task | Card version, map, sides, rosters, experience, difficulty, AI modifier, timer, unit size, objective and supported content |
-| Information | Public observation fields, precision, visibility, roster knowledge, history, terrain and any supplied tactical advice |
-| Actions | Order vocabulary, queue/replacement rules, limits, legal targets and built-in behaviors such as fire-at-will |
-| Controller | Model/served identity, prompt and executor hashes, memory/reset policy, sampling, token limits, dependencies and external access |
-| Time and resources | Live 1x, observation/tick/decision intervals, actual serving latency, added-delay arm, retry policy, battle and spending limits |
-| Evaluation | Success predicate, failure handling, sampling unit, comparison, scoring/rubric version and exclusions |
-
-**G3. Separate kinds of claim.** An end-to-end model comparison measures the model and
-its serving conditions together. A same-model prompt comparison estimates the effect of
-that prompt change. An executor comparison changes the help given to the model. A latency
-intervention tests the assigned delay. Do not attribute a gain to reasoning, coordination
-or memory when several of these changed together.
-
-Possible enforcement: require these fields in a study manifest; compute compatibility
-keys from resolved content, not filenames; refuse silent pooling across incompatible
-conditions. Require a plain-language claim and the contrast that could support it.
-
-## Build tasks that test the intended skill
-
-**G4. Design around a consequential choice.** For each card, describe the situation,
-the choice the controller must make, the intended effect, the success rule and a plausible
-wrong play. Include the simplest alternative that could win without making the choice.
-For a rifle-protection task, test whether abandoning the rifles still wins. For a recovery
-task, test whether a fixed early reserve order is enough. More units alone do not establish
-a coordination or long-context task.
-
-Provide the controller with the objective, deadlines and constraints that determine
-success. Private test cases may stay hidden; additional behavioral requirements may not.
-A witness's preferred tactic and a diagnostic signature need not be prescribed unless
-performing that behavior is itself the stated task.
-
-Use a **witness**, a disclosed reference controller showing that the whole task is
-achievable, and **foils**, working controllers that test simpler explanations. They must
-obey the same information and timing contract as the comparison unless explicitly marked
-as privileged diagnostics. Check that a losing foil actually executes its intended play;
-a broken controller is not evidence that a shortcut fails.
-
-**G5. Test alternative explanations before making a skill claim.** Inspect automatic
-skirmishing, fire-at-will, pathfinding, pursuit, morale, terrain and timer rules. A model
-can win after making a poor decision; it can also use an effective tactic other than the
-author's preferred one. Preserve legitimate wins. If such wins undermine the card's
-interpretation, revise its description or create a new card version. Do not add a hidden
-requirement after seeing the winning behavior.
-
-**G6. Keep the task collection meaningful.** Use a small coverage table: tactical choice,
-unit roles, information demands, timing window, terrain, opposing behavior and reset
-requirements. Identify omissions explicitly. Retain easy controls for harness regressions,
-diagnostic tasks for specific failures, and tasks that can distinguish the compared
-controllers. An all-losing screen needs investigation of feasibility, interface and
-timing; it does not establish that all models lack tactics.
-
-The benchmark literature distinguishes construction, quality review and difficulty.
-Changing difficulty does not repair a flawed question. This is a useful lesson from
-[Wolfe's benchmark survey](https://cameronrwolfe.substack.com/p/llm-bench). For WH3, roster
-strength and experience are difficulty knobs, but changing them may also change which
-tactic is useful. Recheck the choice instead of assuming the card stayed equivalent.
-
-**G7. Separate screening from confirmation.** Use cheap exploratory trials to find broken
-setups and shortcuts. Freeze the retained card, witness, foils, signature and confirmation
-rule before collecting new confirmation evidence. Keep rejected candidates and their
-reasons in the design record; disclose which models helped select them. Do not repeatedly
-retry an unchanged admission gate until it passes. Preserve the chariot's historical rule;
-the [proposed future admission counts](benchmark.md#from-a-candidate-to-a-scored-card)
-are not universal sample-size requirements.
-
-Possible enforcement: card metadata with choice/witness/foil fields, candidate history,
-explicit phase labels and a fixed confirmation cohort. A schema can require an explanation;
-only inspected game evidence can establish that the task tests the stated choice.
-
-## Protect development and final evaluation
-
-**G8. Split by related situations, not trace rows.** Keep training/prompt development,
-revision selection and final evaluation distinct. All views of a battle, rematches,
-near-duplicate setups and examples derived from the same tactical template must stay
-together when the claim requires unseen templates. A new launch of a tuned card measures
-repeatability on that card; it is not an unseen task.
-
-Reserve supported map, roster or placement variations before tuning. Declare what is
-held out: a parameter change within a familiar tactic is a narrower test than a new
-tactical family. Check that each variation is valid and achievable without exposing its
-results to the people choosing controller revisions. If the same person must do both,
-record the exposure and narrow the claim.
-
-**G9. Track every route by which test evidence can influence a controller.** Examples
-include prompts, rules notes, skills, code-generated policies, training exports, judge
-examples and manual replay reviews. A public benchmark cannot promise absence from a
-provider's pretraining. State what is known, when the tasks were published, and what
-access the controller authors had. Private tests require controlled access and limited
-feedback; they still do not guarantee absence of related training data.
-
-Once final results guide a change, those cases become development evidence for the new
-claim. Retain the original evaluation, freeze the revised controller, and use new reserved
-cases for confirmation. A scorer bug can justify a documented correction across all
-affected controllers; it does not justify quietly selecting a more favorable test subset.
-
-Possible enforcement: stable family/variant/episode IDs, content hashes, an exposure log,
-split checks in exports and a test-use register. Reject direct and derived test episodes
-from training exports. Similarity checks flag likely duplicates for review; hashes alone
-cannot detect all semantic overlap.
-
-## Plan trials and comparisons
-
-**G10. Use a launch as the minimum grouping unit for current WH3 evidence.** Record
-card, variant, game launch, episode, controller and repeat IDs. Rematches share a launch
-and may replay the same internal situation. Preserve them as repeated observations within
-that launch. Decision ticks, units, screenshots and model calls are not extra independent
-battles. A launch ID is necessary bookkeeping, not proof that launches are independent.
-
-**G11. Match the comparison and randomize its order.** Where supported, run the compared
-controllers in the same declared setup and launch, with preassigned, balanced/randomized
-order. Repeat across fresh launches and time blocks. Check for rematch carryover, reset
-differences and first-episode effects. If the pairing is invalid, use separately launched
-controllers interleaved across time and analyze them as such. Do not manufacture pairs
-after seeing outcomes or claim a seeded game reset that has not been established.
-
-Reset controller memory and executor state between episodes, including shared/module
-state, queued orders and pending calls. Persistent learning would require a separate
-track with a revised contract; the current track prohibits cross-trial state.
-Declare cache use, precomputed plans and warmup.
-Preparatory work is part of the controller's cost and knowledge. Run one game controller
-at a time, as the repository requires, and avoid competing jobs that change its timing.
-
-**G12. Make budgets and stopping rules part of the design.** Before final trials,
-declare the primary comparison, meaningful effect, launch count or precision target,
-randomization, exclusions, replacements and time/API ceilings. Use pilot evidence to
-estimate what the budget can resolve. A budget too small for the question calls for a
-narrower claim or an exploratory result, not a guaranteed ranking.
-
-Do not rerun bad model replies for free: retries consume real time and money. Separate
-an allowed retry within a battle from a replacement battle. Handle demonstrable setup
-failures by a rule fixed before outcomes, retain their records, and apply that rule equally.
-Stop for a serious harness fault or resource cap; disclose that the planned study was
-incomplete. A cap reached after expensive failures can select which outcomes are observed.
-
-Possible enforcement: immutable trial schedule and attempt IDs, recorded randomization
-seed, fresh policy instances, explicit replacement links, and a stop record. Check the
-planned cohort against actual starts before computing a comparison.
-
-## Make the game and scorer trustworthy
-
-**G13. Check the full chain against independent evidence.** The chain is:
-
-`declared setup → observed start → delivered observation → chosen order → acknowledgement → observed effect → ending → score`
-
-Each arrow can fail. An acknowledgement establishes what the bridge/game accepted or
-queued under its contract; it does not establish that a unit reached the destination,
-escaped melee, hit the intended target or received a charge bonus. Compare actual movement,
-contact and resources with the intended effect in live, unpaused checks. Use the
-[proposed correctness checks](benchmark.md#correctness-checks-to-agree), including
-plausible wrong cases, before claiming those links verified.
-
-**G14. Keep controller information separate from evaluation information.** Current
-policy inputs omit `evaluation`, `final` and `setup`; friendly units and visible enemies
-have the documented public representation. Hidden totals may support offline scoring.
-They must not reach prompts, helpers, memory, tools or training inputs intended to use
-the public contract. Restrict outside controllers to the declared files/interfaces; the
-current convention is not proof of isolation against a controller that reads arbitrary
-local files. A broader untrusted-submission service would need an isolation design.
-
-For a proposed boundary check, vary hidden fields while keeping public state fixed and
-compare every delivered policy input. Also inspect in-game visibility: a serializer test
-cannot establish whether Lua gathered the right units. Observation allowlists and
-controller input snapshots make accidental leakage easier to detect.
-
-**G15. Audit the scorer independently of the runner.** Hand-classify a small real evidence
-set using the written rule, then compare code. Include engine wins/losses/draws, timer
-endings, rejected orders, missing frames, terminal failures and failures after an ending.
-Where feasible, show a check rejects a deliberately wrong implementation: counting every
-`won` as a contact win, treating missing frames as no tactic, or counting an acknowledged
-move as a completed withdrawal. Manufactured traces test readers; live checks test game
-effects. Neither substitutes for the other.
-
-Possible enforcement: separate raw facts from derived labels; preserve scorer version
-and input hashes; use read-only rescoring and a small set of independently labeled cases.
-Reuse agreed component checks instead of adding many tests of incidental implementation.
-
-## Account for every attempt
-
-**G16. Freeze the success rule and its denominator together.** A card score should answer
-the declared task. For a contact-victory card, timer survival is not contact victory;
-for a point-holding card, reaching the time limit may be the intended success. Keep the
-engine result and the card result as separate fields. Draws are a separate engine outcome;
-whether they earn credit must be specified rather than silently worth half a win.
-
-The following applies the [proposed next-evaluator failure rule](benchmark.md#correctness-checks-to-agree).
-It requires agreement and implementation before use; historical scores retain their rules.
-
-| Event | Proposed treatment | What remains visible |
+| Key | Question | Rule |
 |---|---|---|
-| Planned trial never attempted | Unstarted; outside the success denominator | Assignment and reason it was not run |
-| Proven game/setup fault before a valid task | Invalid attempt; use the declared replacement rule | Original attempt, cause, evidence and replacement link |
-| Proven game/harness failure during battle, before an ending | Apply the frozen invalidation/replacement rule; include missing-outcome sensitivity when it could affect the comparison | Evidence for attribution, original attempt and any replacement; do not infer a gameplay loss |
-| Controller cannot construct on its assigned attempt | Unsuccessful controller attempt | Construction failure, separate from game setup failure |
-| Engine ending observed | Apply the card predicate to the engine result | Won/lost/draw, ending cause and task facts |
-| Controller fails terminally during a valid battle | Unsuccessful attempt or forfeit | Provider/controller error and retries; do not invent an engine loss |
-| Invalid order or retried call, battle continues | Keep the eventual result | Lost time, refusals, retry count and cost |
-| Acknowledgement or cleanup fails after observed ending | Preserve the ending and score | Additional reliability failure |
-| Operator stop, global budget exhaustion or uncertain truncation | Incomplete, with the predeclared rule; no automatic complete-case ranking | Phase, cause and missing-outcome sensitivity |
+| `claim`, `decision` | What decision does it inform; what is the one-sentence claim? | [1.1](#11-write-the-claim-before-the-run) |
+| `contrast`, `arms` | Which one part differs between the arms? | [1.3](#13-change-one-part-per-comparison-and-claim-only-that-part) |
+| `cards` | Which card versions, checked by witness and foils on this build? | [2.7](#27-admit-a-card-only-from-a-frozen-confirmation-round), [4.4](#44-compare-only-matching-cells-and-recheck-references-after-a-change) |
+| `stage` | Is this evaluation evidence, kept out of tuning? | [3.1](#31-mark-each-jobs-stage-and-tune-only-on-development-evidence) |
+| `launches`, `order` | How many launches per arm; which rotation seed and first-slot balance? | [4.1](#41-count-launches-not-rematches), [4.2](#42-balance-who-plays-first-and-when) |
+| `stop`, `replace`, `budget` | When does it stop, what gets a replacement, what may it spend? | [4.3](#43-freeze-the-whole-study-in-one-plan-file) |
+| `primary`, `secondary` | Which success rule and scorer version decide it; which diagnostics sit beside it? | [5.1](#51-one-success-rule-per-card-in-one-function-told-to-the-controller) |
+| `gain` | What gain would matter, and how likely is the plan to detect it? | [7.4](#74-decide-before-you-look) |
+| `depends_on` | Which agreed checks (with revisions) does it rest on; what is unverified or open? | [1.1](#11-write-the-claim-before-the-run) |
+| `exposure` | Which models tuned or designed each card and prompt version? | [3.3](#33-record-who-tuned-on-what) |
 
-Define controller-specific deadlines separately from an experiment-wide emergency stop.
-If violating a declared controller resource limit is a forfeit, say so before the run.
-Do not disguise a slow or unreliable controller as an infrastructure exclusion. Unknown
-causes stay unknown until investigated without reference to which controller benefits.
+**Before a claim**, the saved files answer: what was compared, under which conditions;
+whether the setup and information boundary held; where every planned trial went; whether
+the interval method fits how the launches were run (paired or separate, one episode per
+launch); and whether someone else could recount it. If not, narrow the claim or finish
+the work.
 
-**G17. Show all denominators.** Report planned assignments, attempted trials, valid
-starts, scored attempts, engine completions, exclusions, forfeits and unstarted assignments
-per arm. A wins/completed-battles rate describes survivors and can favor a controller
-that crashes often. Present it only as a labeled diagnostic beside the primary score.
-An outcome missing its partner is not automatically disposable; complete-pair analysis
-can be biased when failures decide which pairs survive.
+## Words used here
 
-For illustration, among 20 assigned opportunities, 8 observed successes, 10 known
-unsuccessful attempts and 2 unresolved outcomes imply a full-cohort success rate between
-8/20 and 10/20, without guessing those two outcomes. These bounds do not fix a flawed
-design, but show how much missing evidence could change the conclusion.
+[benchmark.md](benchmark.md#terms) defines scenario, variant, instance and track (its
+"controller" means only the code); [README](README.md#terms) defines labels such as `v21`
+(a model controller's prompt version) and `b36` (a harness revision).
 
-Possible enforcement: a phase-aware result record with immutable observed endings and
-separate failure events; reconciliation of every assignment to one disposition; reports
-that display the numerator, denominator and unresolved counts rather than a bare rate.
+| Word | Meaning |
+|---|---|
+| controller | Everything between an observation and an order: model and served backend, reasoning effort, reply token cap, prompt, memory, executor or skills, re-asks, salvage (keeping the valid orders of a partly invalid reply), retries and timeouts |
+| harness | The benchmark's own code around the controller (play loop, mailbox, Lua mod, scorers). `bN` labels a repository revision and can also change controllers (b40 brought witness v2 and prompt v21). The register's column named `harness` is instead the `-vN-` number from the job name, blank for `bench-*` jobs |
+| card | A small frozen battle built around one tactical choice, with a success rule, a witness and foils ([fields](tactic-cards.md#a-card)) |
+| contact win | An engine-reported win before the timer ([score](tactic-cards.md#score)) |
+| witness | A disclosed controller, usually a script, showing the card can be won at a named added age and decision interval |
+| foil, floor | A simple working controller testing a shortcut; floors are naive scripts that should lose, such as `hold` and `attack_nearest` |
+| signature | A code check that the tactic was tried or happened; the chariot's, cycles v1, counts melee engagements other than the last in which a move order was applied |
+| family | Cards and variants testing the same kind of tactical choice |
+| launch | One game start; each benchmark `play` job makes exactly one, so job and launch name the same unit. The unit we count |
+| rematch | A later episode of a launch; it restarts the launch's instance, so it is not an independent battle |
+| trial, slot | One controller playing one episode; its position in the launch (slot 0 is the fresh start) |
+| arm, cell | One condition in a comparison; one card, controller, added age and decision interval |
+| board, reader | The table `twwarhammer3 card` prints, one row per cell; code that reads saved job files and prints counts (`card`, `report`, the HTML report, `stats`) |
+| round, gate, c1 | Launches planned together to screen or admit a card; a pass/fail admission test ("foils lose 10 of 10"); c1 is the chariot card's confirmation round (`calibration/c1`, harness b34 and b36), not the older cavalry design C1 |
+| stage | A job's purpose (proposed; not the scenario's `split`): `explore`; `confirm` (an admission round or planned comparison); `final` (frozen controllers on held-out variants or a released suite); `drift` (scripted reruns after a change). Confirm and final jobs are evaluation evidence |
+| engine result, card result | `won`/`lost`/`draw` and how the battle ended; the card's success rule applied to it |
+| failed decision | A model call that failed while the battle went on; the trace records it with kind `forfeit`, but it is not a forfeit |
+| forfeit | A battle lost to a terminal controller failure; a loss |
+| order age, added age | Battle time from the observation an order answered to its application; extra age a diagnostic arm adds to every observation |
+| decision interval, gap | How often a controller is asked, as configured; the measured time between its decisions |
+| manifest, ledger, register | A job's record of its setup and episodes; the append-only file of each API call's cost; `results.csv`, one row per episode |
+| readback, wall cap, rotation | The game's report of the settings and army actually set up; the real-time limit on one episode; the order in which a job's controllers take turns over its episodes |
+| unresolved | A comparison whose named test does not pass its declared threshold (p < 0.05 for one planned contrast; Holm-corrected when several pairs are compared) |
 
-## Measure success timing and cost
+## 1. Define the question
 
-**G18. Keep a small set of measures with distinct jobs.**
+### 1.1 Write the claim before the run
 
-| Measure | Use | Avoid |
+Write one sentence naming the decision, the one part that differs between arms, the card
+versions and the conditions. Below it, list what the claim depends on: agreed checks with
+their passing revisions, and every unverified or undecided part. Results cover the named
+cards and conditions only, not general WH3 skill, campaigns, human-level play or robots.
+Example: "On chariot card version X at natural latency on the pinned build, does adding
+the cycle-charge paragraph to the rules prompt raise GLM-5.3 low's contact-win rate?
+Depends on: the army check (agreed; passed at `e32b1b5`); cycles v1 (unverified); witness
+v2 (open)."
+
+- *Check:* proposed (small): `scripts/wh3_queue.py` refuses a confirm or final plan
+  without `claim`, `contrast`, `cards` and `depends_on`; `card` and `report` print them
+  once manifests record the plan ([4.3](#43-freeze-the-whole-study-in-one-plan-file)).
+  Manual: the owner reads the claim first.
+
+### 1.2 The controller is everything that acts in the battle; identify it by content
+
+Identify every controller and every run's conditions by hashes of what actually ran, never
+by labels such as `v21`. Every part of the controller sees only public inputs, its time
+counts at 1x and its spend counts in the ledger, and changing any part makes a different
+controller: `llm_rules` with two re-asks and salvage differs from the same prompt with
+none, and in `commander` the skills executor picks targets and timing. A **condition key**
+covers the harness files that act in every battle, the card's resolved scenario entry, the
+Steam build and executable hash, the mod pack, track, timing, recorder settings, host
+machine and network. A **controller identity** covers the controller's own files, prompt
+hash, request settings, routing pin (the provider a request is pinned to) and served
+model. Rows with different keys stay apart; a merge needs a written reason logged with the
+result and never crosses game builds.
+
+- *Why:* labels drift from content, and a pooled mix cannot be undone. Today the board
+  misses harness code and the executable hash (a `skills.py` change keeps the commander's
+  identity), `report` splits by whole commit, and `stats` by the job name's version or, for
+  `bench-*` jobs, by commit.
+- *Check:* proposed (medium): `condition_key()` and `controller_identity()` written into
+  `results.csv` and used by every reader; a test that editing `report.py` or another
+  scenario's entry keeps the key and editing `play.py` changes it. Proposed (small): a
+  test pairing each `VERSIONS` label with the hashes of its system prompt and golden
+  prompt files.
+
+### 1.3 Change one part per comparison, and claim only that part
+
+Check that every other part matched before reading a result.
+
+| What changed | The result shows | It does not show |
 |---|---|---|
-| Card success and failure rate | Primary task performance under the frozen rule | Replacing it with a judge's impression |
-| Tactical signature | Evidence that a named behavior occurred | Assuming the signature caused victory or is the only winning tactic |
-| State measures | Diagnose survival, objectives, damage or resource use | Treating routing as death, raw men as unit value, or shaped progress as victory |
-| Timing | Diagnose whether useful orders arrived while the opportunity existed | Treating API response time as total action delay |
-| Cost and throughput | Compare operational usefulness | Omitting retries, failed attempts, setup or controller preparation |
+| Model, all else the same | This model on this backend with these prompts and helpers | General intelligence |
+| Prompt or advice | The effect of that text, length included | That the model lacked the knowledge |
+| Executor or skills | The effect of the help | That the model chose the tactic |
+| Reasoning effort | The effect of that mode, slower orders included | "Better reasoning", unless the faster mode is also run with added age equal to the slower mode's extra order age |
+| Added age | Harm from that delay | That faster serving would rescue a loss |
+| Told arm (witness recipe in words) | Whether losses are choice or execution | Anything about choice, if it also loses |
+| One fine-tune per arm | That checkpoint's effect | A dataset's or reward's effect |
 
-Specify formulas, units, aggregation and missing-data rules. A survival measure needs a
-rule for routed units, summons and reinforcements. A time-to-event measure must retain
-battles where the event never happened or was still unobserved when recording ended;
-averaging only fast successful arrivals would mislead. Keep exact task outcomes primary
-when a partial-credit measure could be increased without completing the task.
+Each reasoning mode is its own controller (owner, 2026-10-16). Without a told arm, write
+"tactic not shown", not "did not choose it".
 
-**G19. Measure time at the point it matters.** Record both monotonic wall time and game
-time without subtracting one clock from the other. Follow the observation sequence/battle
-ID through snapshot, decision start, model completion, dispatch and acknowledgement.
-Separate snapshot age, model-call time, queue/transport time, age when the order is issued,
-plan age in a hierarchical controller and observed effect time where measurable. The
-[timing contract](benchmark.md#timing-and-latency) specifies current fields.
+- *Check:* proposed (small, after 1.2 and 4.3): `report` prints the identity parts that
+  differ between arms and, given a study plan, refuses when a part outside `contrast`
+  differs.
 
-Show distributions and long gaps as well as typical latency. Report missing/dropped
-measurements and counts. A controller issuing no orders must remain visible even though
-it has no order-age median. Summarize within episodes and launches before across-trial
-comparison; pooling all orders overweights long, chatty battles. If reporting tail
-percentiles, show the sample size and avoid precision unsupported by a handful of calls.
-Track game-time/wall-time ratio and recording settings; nominal 1x does not guarantee
-identical wall-time progression under different machine load.
+## 2. Build cards that test one choice
 
-**G20. Preserve natural latency in the primary result.** Network delay, provider retries
-and executor behavior are part of deployment performance. Added delay is a separately
-assigned intervention: specify whether it ages observations, delays dispatch or changes
-decision cadence. These are not interchangeable. Analyze assigned arms first and report
-achieved delay. Filtering to fast responses or adjusting away actual latency changes the
-question and may select easier battle states. Never pause or slow WH3 for reasoning.
+### 2.1 Write down the choice, and cover each tactic from both sides
 
-Report total USD/tokens and wall time for all attempts, plus cost per scored attempt and
-per success where defined. Separate development, execution and offline judging costs.
-If there are no successes, cost per success is undefined, not zero. With similar task
-performance, present the success/cost/latency tradeoff instead of forcing a single winner.
+Before any battle, write the situation, the choice, why it should change the result, the
+success rule, a plausible wrong play and the simplest shortcut. Chariot: a chariot hits
+hardest on the charge, so the right play is to leave melee and charge again rather than
+keep grinding; wrong play `attack_nearest` (walk at the nearest visible enemy); shortcut
+`rush_nearest` (the same at a run). Drop
+or redesign a battle without credible alternative plays; more units alone do not make a
+coordination card. Keep a coverage table listing what no card tests, and for each rewarded
+tactic plan a card where it is the wrong play (cavalry against braced spears catches a
+controller that always pulls out and charges). Variants add no coverage.
 
-Possible enforcement: linked clock events, latency completeness checks, per-episode
-aggregation, and ledger reconciliation. Add no new metric without naming the decision
-or failure diagnosis it serves.
+- *Check:* manual: the text lives in tactic-cards.md; code gets a field only with the check
+  that reads it.
 
-## Use statistics that match the experiment
+### 2.2 Tell the controller everything the scorer checks
 
-[Miller's error-bar paper](https://arxiv.org/html/2411.00640v1) motivates paired comparisons,
-grouping related observations and planning sample size around a useful effect.
-[Wolfe's statistics guide](https://cameronrwolfe.substack.com/p/stats-llm-evals) also distinguishes
-variation across tasks from repeated answers to one task. WH3 adds shared rematch state,
-real-time serving variation and a deliberately selected small task collection. The
-analysis must represent those sources of dependence and the actual scope of inference.
+The prompt states the objective, the deadline, what a timer ending counts as and any unit
+that must survive. A variant may stay unseen; the success rule may not. Record whether each
+prompt argues for, against or nothing about the tactic. Two live mismatches: the candidate
+Empire line battle's prompt says on its `Battle:` line "if time runs out, you win", while
+its outcome of record (empire.md decision 7, pending owner review) is the contact win; and
+`system_prompt.md` says "a withdrawal only delays defeat" while `rules_prompt.md` is
+silent, so an `llm` against `llm_rules` gap on the chariot card also measures that sentence.
 
-### Choose what the average describes
+- *Check:* proposed (small): each card lists `told` and `withheld` phrases; a test renders
+  the card's opening prompt from a first observation recorded at its live start (the
+  `Battle:` line comes from the game, not `scenarios.json`) and fails on a missing or
+  leaked phrase.
 
-**G21. Define the quantity being estimated.** For one fixed card, estimate success over
-new comparable launches under the declared conditions. For a fixed suite, first estimate
-each card's result, then combine only if a suite summary serves a stated purpose. Freeze
-card weights in advance. Equal weight per card answers a different question from weight
-per battle or per tactical family. More chariot trials must not silently give chariots
-more influence.
+### 2.3 Show the card can be won, at a named timing
 
-For broader generalization, specify a process for choosing new variants/families and
-collect evidence from them. Repeating one card many times cannot reveal variation between
-families. A hand-selected suite supports claims about its coverage, not a random sample
-of all WH3 tactics. Report each card and reserved variation even if a summary is shown.
-Missing suite cells mean incomplete coverage; do not silently renormalize weights.
+Every "winnable" claim names the witness's added age, decision interval and launch count.
+A witness sees only the public observation, uses the same orders and plays live at 1x.
+When no witness has won at an order age and decision interval like a model's, that model's
+loss says little about tactics; a witness losing at some timing shows only that this
+script fails there. Example (unverified): in c1, chariot witness v1 won 4 of 5 at 5 s
+added age deciding every tick (the admitting cell) but 0 of 5 at 5 s age with a 5 s
+interval; it won 0 of 4 at 8 s age with an 8 s interval in the 2026-10-19 timing cells,
+and witness v2 won 4 of 5 at both 5 s/5 s and 8 s/8 s (b40 round). Label a card
+"single-author witness" until someone without the author's code reproduces a win. A person
+playing through the game's interface sees more than the observation: a demonstration, not
+a witness.
 
-### Respect the grouping and pairing
+- *Check:* exists: the board keys witness cells by age and interval, prints each row's age
+  p50/p90 and info age (median order age plus half the mean decision gap), and sorts by it.
+  Proposed (small): a decision-gap column.
 
-**G22. Calculate uncertainty using independent groups.** On a fixed card, the current
-card reader counts the first recorded episode per controller and added-delay arm per
-launch. A study that instead averages repeats within launches must predeclare that rule.
-Never select the best repeat.
-For a paired comparison define each launch's difference as A's score minus B's score;
-analyze those differences while preserving the pairing.
+### 2.4 Attack each card with shortcuts, and keep wins by other tactics
 
-For repeated-launch uncertainty on a fixed suite, keep its cards fixed and resample whole
-launch groups within each card. Keep all controllers and repeats from a sampled launch
-together. For an explicitly sampled-family claim, a hierarchical analysis can also
-represent family/variant sampling. State each level and its count. If launches share
-strong session/day effects, block the design and account for that higher grouping or
-qualify the estimate. Bootstrap software cannot create independent information absent
-from the study.
+Collect shortcut ideas from several sources (the designer, critic agents without the
+witness code) and record each as lost, won or untested. Test, in order: the game's own
+automation with no or naive orders (fire-at-will, skirmish, pursuit, pathing, morale); the
+floors; a foil doing only part of the tactic; and, when reacting is claimed to matter, a
+fixed-schedule foil replaying a witness win's orders on fresh launches. When a compared
+controller uses an executor or skills, also run a foil through that helper with a trivial
+plan, since the helper alone may win. Count a foil battle only if the foil carried out its
+play: `attack_nearest` gives no order while no enemy is visible, so it can lose standing
+still. Score the outcome, not the path: a win by another tactic stays a win. If such wins
+show the card tests the wrong thing, make a new version; never add a requirement after
+seeing them.
 
-**G23. Match the interval to the outcome and sample size.** For independent binary
-attempts on one card, use a stated binomial interval such as Wilson, rather than a normal
-interval that collapses at zero or one. For paired binary outcomes, retain the joint
-counts: both succeed, only A, only B, neither. An exact McNemar test can test equal success
-probabilities using the pairs where only one controller succeeds; it is not an effect-size
-interval. Choose a paired proportion-difference interval separately. For continuous
-launch differences, a Student-t interval is an approximation whose plausibility depends on the distribution
-and number of independent launches. Inspect the observations and disclose those limits.
+- *Check:* proposed (small): `verdict()` counts a foil launch only after an accepted attack
+  and a melee engagement; a test that a model win with 0 cycles is a success while a
+  witness win with 0 cycles fails the gate. Proposed (medium): a `fixed_schedule` policy.
 
-Few groups, all equal outcomes and rare failures need special care. A plain bootstrap of
-ten losses only resamples losses; a zero-width interval would be false certainty about
-future battles. Use an appropriate finite-sample method or label the evidence descriptive.
-If using a Bayesian interval, disclose the prior and its influence; it does not remove
-dependence or sampling bias. Small-sample concerns are developed in
-[Bowyer and colleagues](https://arxiv.org/abs/2503.01747), cited by Wolfe.
+### 2.5 Audit each card against known flaws
 
-**G24. Show uncertainty in the difference.** Report A, B, A minus B, interval method,
-confidence level, and independent counts. Overlap between separate A/B intervals is not
-a test of their difference. A 95% confidence interval describes a method's coverage over
-repeated studies under its assumptions; it does not assign 95% probability to this fixed
-unknown value. Distinguish uncertainty in the mean from the variability of individual
-battles. Neither interval accounts automatically for a wrong scorer, leaked information
-or unrepresentative tasks.
+Before admission, answer each of tactic-cards.md's [design
+rules](tactic-cards.md#design-rules-from-s1-s11) with evidence or "not checked", and check
+that the start, difficulty and unit size match the declaration, that abandoning the
+protected unit cannot win, and that the prompt and scorer agree. Label each surprising
+screening result a card defect, harness fault, controller failure or unknown. When
+different controllers fail at the same point, suspect the card: refused moves at one rock
+on the Taurox map broke three earlier small scenarios (S2, S3, S6).
 
-Illustrative calculations, not benchmark evidence:
+- *Check:* manual, on the card page. The start (readbacks, 4.6) and default behaviour
+  (foils, 2.4) have code checks; prompt against scorer has a proposed one (2.2).
 
-- Zero successes in 10 independent trials still gives a one-sided exact 95% upper
-  bound of `1 - 0.05**(1/10)`, about 26%. It does not establish impossibility.
-- Ten successes in 14 independent trials has a two-sided 95% Wilson interval of about
-  45–88%. A point estimate of 71% is not precise evidence of dependable success.
-- For 20 matched launches where only A succeeds in 6 and only B in 2, the observed
-  difference is `(6 - 2) / 20 = 20` percentage points. Uncertainty depends on those
-  paired outcomes, not on treating 40 episodes as unrelated samples.
+### 2.6 Set difficulty with the witness and foils, never with the compared models
 
-### Plan precision and limit selection effects
+Change one knob at a time from a witness win (experience ranks are finer than unit counts)
+and rerun the foils after each step, since a knob can change which tactic works. Never keep
+a card or pick a step because it separates the models you will compare, and never harden a
+card until current models lose. A card every model loses while the witness wins stays in,
+reported as unsolved (owner: as hard as possible while still demonstrably winnable).
 
-**G25. Choose an effect worth detecting before the study.** State the smallest gain that
-would change the engineering decision, desired precision or statistical power, and
-plausible pilot rates/paired variation. Estimate the required launches with the intended
-analysis, including failed attempts and grouping. Show sensitivity to uncertain pilot
-values. At independent binary probability near 0.5, roughly 385 trials are needed for
-a normal-approximation 95% half-width of five percentage points. This is an illustration
-of precision cost, not a WH3 requirement or a sample-size calculation for paired gains.
+- *Check:* manual; record design models ([3.3](#33-record-who-tuned-on-what)).
 
-Distinguish an exploratory screen, card admission and a model comparison. Their questions
-and acceptable errors differ. No fixed number such as 5, 10 or 30 is enough for every
-one. At a fixed budget, balance new situations against repeats according to the claim
-and pilot variability; account for launch cost. Do not lower sampling temperature just
-to obtain tidier error bars if that changes the controller users will run.
+### 2.7 Admit a card only from a frozen confirmation round
 
-**G26. Prevent selection from masquerading as evidence.** Choose one primary contrast
-and outcome. Label extra metrics, subgroup findings and unplanned comparisons exploratory.
-For a planned family of confirmatory comparisons, specify a multiple-testing method
-such as Holm adjustment or simultaneous intervals. Keep all tried prompt/controller
-versions in the development record; choosing the best of many noisy estimates inflates
-its apparent performance. Confirm the selected version on fresh reserved evidence.
+Admission comes from new launches under a rule written beforehand: card version, witness
+and foil cells, counts, stop rule and signature. Screening before that only finds broken
+setups and shortcuts. Name the round's directories on the card, count only launches on code
+containing the rule, keep failed rounds, and never rerun an unchanged gate until it passes.
+An admission holds only for its scenario, build, pack and witness. Choose gate counts from
+how often they err (the chance of the wrong verdict for a controller with that true rate):
 
-Use a fixed stopping rule unless a valid sequential method was specified before peeking.
-Repeatedly checking ordinary intervals and stopping when one favors A invalidates their
-nominal interpretation. Operational monitoring for crashes or budget is still necessary;
-an interrupted study must be reported as interrupted. A non-significant result does not
-establish equivalence. To claim practically similar performance, predeclare an equivalence
-margin and use an analysis that can support that claim.
-
-Possible enforcement: explicit analysis unit, frozen contrast/weights/stopping metadata,
-cluster-aware resampling, refusal of unsupported intervals, paired-count tables and
-independent recalculation examples. Challenge the analysis with all-wins/all-losses,
-unequal repeat counts, correlated rematches and missing partners. Label intervals by
-method; never print one merely
-because a plotting library accepts the rows.
-
-## Collect useful human judgments
-
-**G27. Give reviewers a bounded question and a usable evidence view.** Human review is
-valuable for checking whether a card tests its claimed choice and whether a tactical
-label matches observable behavior. Recruit people who understand the relevant WH3
-mechanics; record their experience and relationship to the controller. The owner can
-define the desired benchmark, while an independent reviewer tests whether someone else
-can apply that definition.
-
-Weng emphasizes task design, reviewer training and continuing quality checks;
-Yan's annotation guide makes purpose, definitions, decisions, examples and task logistics
-explicit. Use those principles to write short instructions for each review task, with
-positive, negative and ambiguous examples. Include how to inspect evidence, when to stop,
-and how to mark insufficient evidence. Give reviewers enough time and, if recruiting
-paid reviewers, document compensation and handling of their contributions.
-Sources: [Weng](https://lilianweng.github.io/posts/2024-02-05-human-data-quality/),
-[Yan](https://eugeneyan.com/writing/labeling-guidelines/).
-
-For WH3, provide two separate views:
-
-| Review question | Evidence allowed |
-|---|---|
-| Was the decision defensible when made? | Delivered observation, its age, legal actions, preceding public history, current orders and available resources; conceal future outcome on the first pass |
-| What happened after the order? | Time-aligned orders, acknowledgements, subsequent state and permitted evaluation evidence; reveal the outcome only for the retrospective question |
-
-Hide controller/model identity where possible. Do not label “should have attacked the
-hidden unit” as a decision error. Do not treat a later loss as proof that a reasonable
-choice was wrong. Presentation replays can help inspect effects, but their sampling
-rate or camera may not resolve a brief event. Missing evidence is a reason to abstain.
-
-**G28. Keep disagreement informative.** Have reviewers label a shared subset independently
-before discussion, then adjudicate against the written rule and evidence. Retain original
-labels, revised labels and reasons. Distinguish mistakes, unclear instructions, missing
-observations and legitimate disagreement over strategy. Recheck a small repeated subset
-to detect inconsistent application. Report raw agreement, label frequencies, sample size
-and a suitable chance-adjusted measure where useful; high agreement on a dominant label
-alone is weak evidence.
-
-This distinction is supported by
-[Röttger and colleagues](https://arxiv.org/html/2112.07475v2) and the
-[rater-disagreement taxonomy](https://arxiv.org/html/2311.04345v1). For WH3, use a common
-rule for observable event labels, but preserve multiple defensible tactical opinions.
-Majority vote should not turn a debate about the best route into a false fact about which
-route was necessary. A lone expert can create a useful first reference set; that is not
-independent agreement or a measured human-performance baseline.
-
-**G29. Separate finding errors from measuring their prevalence.** Deliberately collect
-rare failures, close calls, wins without the named tactic, losses despite it, scripts,
-models and delayed controllers for rubric development. Also retain a representative
-sample with known selection rules for measuring ordinary error rates. A collection chosen
-because every replay looked suspicious cannot estimate how often normal play fails.
-Keep related clips/decisions in one split and use untouched examples for final validation.
-
-Possible enforcement: review packets with recorded information permissions, anonymized
-controller IDs, independent annotation fields, evidence timestamps, rubric versions,
-sampling reasons and an adjudication history. Keep reviews under `runs/` until selecting
-a small, shareable reference set; do not scatter per-example documents through the repo.
-
-## Use LLM judges only after calibration
-
-**G30. Start with the cheapest adequate grader.** Use code for engine endings and explicit
-state predicates, human inspection for ambiguous game behavior, and an LLM only where
-its additional coverage is useful. A judge can flag likely mistakes or propose trace
-segments for review. It must not invent missing observations, override a recorded ending,
-or certify hidden tactical understanding.
-
-[Wolfe's judge overview](https://cameronrwolfe.substack.com/p/llm-as-a-judge) distinguishes
-single-response, pairwise and reference-guided judgments. Use a direct criterion for
-“did withdrawal occur?” Pairwise preference answers “which looks better?”, which does
-not show that either passed. A reference battle illustrates a possible successful tactic;
-its wording or exact order sequence is not the only acceptable answer.
-
-**G31. Calibrate on human-labeled WH3 evidence before using judge labels in claims.**
-Follow the useful sequence in [Hamel's guide](https://hamel.dev/blog/posts/llm-judge/index.html):
-inspect real examples, write concrete critiques, refine criteria, then evaluate automation
-against expert labels. Keep separate discovery, judge-tuning and untouched judge-validation
-sets. A few dozen examples may reveal failure categories; they do not automatically
-establish a dependable error rate. If a judge cannot meet the intended use, keep the
-human check or narrow its role to triage.
-
-Define the positive label, then report the confusion matrix for each consequential
-criterion: correct detections, misses, false alarms and correct negatives. Include
-uncertainty, class frequencies, abstention and coverage. Report precision and recall for
-failure detection; ranking correlation does not establish that individual judgments are
-correct. This choice of validation measure follows
-[Yan's evaluator review](https://eugeneyan.com/writing/llm-evaluators/). Choose acceptance
-thresholds from what the label will be used for, not a borrowed agreement percentage.
-
-For example, a judge that marks every decision acceptable can be 95% accurate in a set
-with 5% errors while detecting none. A balanced challenge set tests both classes, but
-its precision does not automatically transfer to the natural, rarer error frequency.
-Validate important scenario and controller groups separately; pooled agreement can hide
-systematic mistakes on a small family. Separate judge-label uncertainty from battle
-sampling uncertainty in reports that use both.
-
-**G32. Test judge biases and evidence handling.** The primary
-[MT-Bench judge study](https://arxiv.org/html/2306.05685v4) investigates position, verbosity
-and self-preference biases, and distinguishes consistency from accuracy. Apply that
-lesson through WH3 challenge cases:
-
-- Reverse A/B presentation order and rename controllers without changing battle evidence.
-- Compare terse correct execution with confident tactical commentary unsupported by orders.
-- Include a sensible decision followed by loss, and a poor decision followed by victory.
-- Include no-order behavior, a blocked acknowledged move, a countermanded withdrawal and
-  incomplete replay. Require the correct distinction or an explicit abstention.
-- Put instructions to the judge inside quoted controller text; they are evidence to
-  assess, not instructions to obey. Keep scoring instructions outside that text.
-
-These checks should preserve genuinely relevant timing and state. Removing a crucial
-acknowledgement may properly change a label to unknown; that is not undesirable sensitivity.
-Use evidence references and short explanations so mistakes can be audited. Neither an
-eloquent explanation nor the judge's self-reported confidence establishes correctness.
-If pairwise judgments contribute to a reported score, predeclare the presentation-order
-procedure and treatment of ties, order-dependent disagreement and abstention. Balanced
-or swapped presentation is a candidate method to validate locally, not a guaranteed fix.
-
-**G33. Version judges like any other measurement tool.** Pin the judge model/served
-identity, prompt, rubric, examples, evidence representation, sampling, retries and
-aggregation. Save raw replies and validate their schema. Keep `not_applicable`,
-`insufficient_evidence` and `judge_error` separate; none is a silent pass. Grade offline
-so judging does not consume the controller's live decision window. Revalidate after a
-material change or a shift in task/controller distribution.
-
-An ensemble or repeated judging is a candidate intervention, not automatic reliability.
-Judges may share errors. Compare proposed improvements against held-out human labels and
-their cost, criterion by criterion. [Autorubric v3](https://arxiv.org/html/2603.00077v3)
-reports configuration-specific failures rather than a universally best combination of
-calibration, shuffling and ensembling. Preserve unresolved disagreement and report
-coverage; do not quietly remove difficult cases from the score.
-
-Possible enforcement: separate judge artifacts from engine results, validation gates for
-each intended use, schema-checked labels and evidence pointers, versioned caches, and a
-regression set of judge challenge cases. A cache key must include the entire measurement
-configuration and evidence; an old cached grade is not a fresh drift check.
-
-## Design rubrics and training rewards separately
-
-**G34. Make each rubric item observable and narrow.** Specify one condition, its purpose,
-applicability, required evidence, time window, label meanings and missing-evidence rule.
-Use binary conditions when a defensible threshold exists; use measured quantities or
-anchored levels when they convey real distinctions. Avoid “good tactics: 4/5” and items
-that combine several independent behaviors. Set numeric thresholds from mechanics and
-development evidence before final evaluation, not to agree with a preferred result.
-
-An illustrative withdrawal rubric, to develop and verify before adoption:
-
-| Item | Evidence needed | What does not establish it |
+| Gate | Passes by mistake | Fails by mistake |
 |---|---|---|
-| Withdrawal was attempted | A submitted move order whose destination/direction meets the declared withdrawal rule for the identified engagement; record rejection, queuing and actual issuance separately | Text saying the unit will withdraw, or a move toward the enemy |
-| Separation occurred | Subsequent positions/contact evidence meeting the frozen separation rule | The order being accepted |
-| Contact resumed | Later evidence of the identified unit re-entering contact within the declared window | An attack order alone |
-| A charge bonus applied | An independently validated game signal for that mechanic | A melee flag, a replay impression or a judge's inference |
+| Foils lose 10 of 10 (c1) | A foil winning 20%: 11% | — |
+| Witness wins 4 of 5 (c1) | A 50% witness: 19% | An 80% witness: 26% |
+| Foils lose 14 of 14 (proposed) | A 10% foil: 23%; a 5% foil: 49% | — |
+| Witness wins 10 of 14 (proposed) | A 50% witness: 9% | A 70% witness: 42% |
 
-Distinguish “event absent with adequate evidence” from “event cannot be assessed.” This
-example does not redefine the chariot's existing cycles v1. Include counterexamples where
-withdrawing would be harmful; rewarding the same maneuver in every situation tests
-habit rather than situational choice. Test for redundant criteria that count one event
-several times.
+Rows assume independent launches; c1's two foils shared launches, so their joint pass
+chance is not the product of their rows, and each played some rematches.
 
-**G35. Publish aggregation rules and keep critical conditions separate.** If a score
-combines rubric items, publish weights, direction, thresholds and handling of inapplicable
-items. Compute aggregation in code, retaining individual labels. Check whether reasonable
-weight choices change the conclusion. A breached information boundary cannot be offset
-by many minor tactical positives. Missing evidence cannot silently improve a controller's
-average by removing difficult items. Show both performance among assessable cases and
-the fraction assessable; neither replaces the battle outcome.
+- *Check:* exists: `verdict()` judges the witness on its first launches in start order.
+  Proposed (small): `gate_pass()` from exact binomial sums, printed by `verdict()`;
+  `card NAME --round R` reads the round's declared directories and is the only way to print
+  a verdict, while plain `card NAME` stays the all-jobs view, labelled exploratory.
 
-**G36. Keep training rewards distinct from evaluation criteria.**
-[Wolfe's rubric-RL survey](https://cameronrwolfe.substack.com/p/rubric-rl) describes criteria
-used as reward signals, including changing them during training.
-[Rubrics as Rewards](https://arxiv.org/html/2507.17746v2) studies expert-grounded criteria
-and reward construction in medicine and science. Those results motivate experiments;
-they do not show that a rubric reward improves real-time control.
+## 3. Keep evaluation evidence apart from development
 
-WH3 already has engine outcomes. If adding dense rewards later, test how a controller
-could maximize them without winning: repeated harmless withdrawals, damage farming,
-waiting indefinitely or verbose self-praise. Optimize on development data and preserve
-frozen engine-based final evaluation. Report training-judge improvement separately from
-held-out battle improvement. Use a separate validation judge or human audit where judge
-scores matter, and test for shared errors; a different model name alone is not independence.
-Keep test battles, final labels and derived critiques out of training, following
-[post-training provenance](../posttraining.md).
+### 3.1 Mark each job's stage, and tune only on development evidence
 
-Possible enforcement: criterion schemas, explicit gates and denominators, a frozen
-evaluation-rubric hash separate from reward versions, reward-exploit checks and split
-checks on every training export. No reward model or judge framework is required for the
-first benchmark release.
+Explore battles may be read, tuned on and exported for training. Confirm and final battles
+are scored. Reading one to diagnose a fault is fine, but if it leads to a change, those
+battles become development evidence and the changed version needs new evaluation
+launches. Drift
+jobs never enter admission or comparison counts. The `wh3-version-review` workflow, judges
+that shape a controller, and training datasets use only explore jobs on non-held-out
+scenarios: automated trace review is controller authoring.
 
-## Interpret results and investigate failures
+- *Why:* today the chariot card is both tuned on and scored, its scored cohorts export as
+  development rows, and the review workflow accepts any episode path.
+- *Check:* proposed (small): `play` records the stage (default `explore`) and accepts
+  `confirm` or `final` only with the plan hash the queue passes; `export` labels rows by
+  stage and `gameai.sft` drops confirm, final and drift rows as it drops `held_out` ones (a
+  fixture `final` job yields no training rows). Manual: workflow scripts cannot read files.
+  Proposed (small): a command run before the workflow (such as
+  `twwarhammer3 digest --review-check`) that refuses evaluation or held-out episodes.
 
-**G37. State exactly what was observed.** A useful result names the card/controller
-versions, counts, success/failure rule, comparison interval, timing and scope. Write
-“A had a higher observed success rate on these cards; the interval also allows a small
-disadvantage” when that is what the data show. Avoid declaring a winner from decimal
-rankings, claiming no difference from a wide interval, or calling a single success reliable.
-Use the repository's word **unverified** for features without an agreed passing check.
+### 3.2 Reserve held-out variants before tuning, and say what was held out
 
-**G38. Diagnose through evidence and interventions.** Trace the earliest supported
-failure and its later consequences. Use a small taxonomy: setup/interface fault,
-information unavailable, poor decision, delayed decision, rejected/overwritten order,
-execution blocked, scorer/recording fault, and unexplained outcome. Permit multiple
-contributing causes and unknowns. Count affected battles as well as decisions so one
-long failure does not dominate the summary.
+Before more model runs, prompt changes or training on a card, commit a variant that keeps
+the same choice on another map or roster as its own `split: held_out` entry, checked with
+the witness and foils only. Label each result by what the controller was not tuned on: a
+tuned card (repeatability), a held-out variant (variant transfer) or an untouched family
+(family transfer). "Held out" means not played by a model before its first evaluation round
+and never used for a change. It is not secret: the repository is public and its authors
+read every file.
 
-“The order arrived after the target moved” is an observation when the timestamps support
-it. “Latency caused the loss” is a causal claim requiring a suitable intervention and
-comparison. Likewise, better results with tactical advice show the effect of supplying
-advice; they do not fully separate knowledge from execution. An offline answer test can
-assess stated knowledge, but cannot replay how that answer would change a live battle.
-The existing [latency program](latency.md) keeps these questions separate.
+- *Check:* proposed (small): `play` refuses a model policy on a `held_out` scenario unless
+  the stage is confirm or final, and prints earlier model rounds on it; `setup.scenarios()`
+  stops inheriting `split` and `status` through `base` (today the admitted chariot card
+  resolves to `prototype_not_admitted`).
 
-Inspect success cases too: they can expose automatic behavior, scoring loopholes and
-unnecessary helpers. Choose showcased replays with a stated rule and retain access to
-the full cohort. Label post-hoc explanations as hypotheses. A follow-up experiment should
-name the competing explanations and the result that would favor each, including “no
-change.” Negative or inconclusive results are useful when the task and checks are sound.
+### 3.3 Record who tuned on what
 
-Possible enforcement: report templates requiring counts, scope and evidence links;
-separate observation and hypothesis fields; a failure taxonomy with unknowns; and a
-link from each claimed improvement to its frozen comparison. Code cannot establish
-causation by requiring a field called `cause`.
+A card counts as tuned on by every model with development rows on it. For each compared
+model, report those rows and whether its battles shaped the prompt or controller version:
+`llm_rules` v21 was written from GLM's chariot traces, so GLM is a tuning model under v21.
+Record who authored each card, witness, foil set and prompt (the owner, or which agent
+model), flag compared controllers from the same model family, and record when each card
+version was first pushed. Do not headline each model at its best prompt version as one
+ranking.
 
-## Make results reproducible and publishable
+- *Check:* proposed (small): counts from `results.csv` once it has a stage column. Manual:
+  each version's log entry names the jobs behind it.
 
-**G39. Make recounting possible before asking others to rerun battles.** Release or
-otherwise provide accessible raw evidence sufficient to reconstruct every included
-result, exclusion and sampled tactical label. Preserve manifests, resolved scenarios,
-controller inputs, actions, acknowledgements, endings, API exchanges where permitted,
-cost/timing records and scoring configuration. Hash artifacts and record missing files.
-Keep raw records immutable; write rescored outputs separately with a change history.
-Do not expose credentials or redistribute proprietary game files.
+## 4. Plan and run trials
 
-An independent developer should be able to recompute counts and example labels without
-trusting a screenshot of the report. Then follow the supported installation/runbook and
-complete the [independent rerun procedure](benchmark-run.md#independent-rerun-acceptance-proposal).
-An exact recount checks analysis reproducibility. A fresh game run checks whether the
-procedure works elsewhere. Matching trajectories or recovering the exact same win rate
-is a stronger claim and is not a requirement established by two launches.
+### 4.1 Count launches, not rematches
 
-**G40. Publish the experiment, including its constraints.** Provide:
+Count one episode per controller per launch, the first, as `card` does; another rule (a
+fixed number of rematches, averaged) must be declared. Never count rematches, decisions or
+model calls as extra battles, or pick which repeat counts after seeing results. Rematches
+may pair different controllers (the default, pending [decision
+5](#13-owner-decisions-these-rules-need)); never use them to repeat one.
 
-- A benchmark/task card describing intended uses, coverage, omissions, selection,
-  witnesses/foils, exposure, success rules and supported controller contract.
-- Versioned code/configs, dependencies, exact commands, game build/content, supported
-  Windows/WSL setup, hardware, observation/recording settings, provider/backend, prompt,
-  memory, sampling and executor details.
-- The frozen plan, development search budget, independent counts, all attempt dispositions,
-  per-card outcomes and differences, intervals, timing/cost distributions and limitations.
-- Scoring/rubric definitions, human review instructions and agreement evidence, judge
-  calibration results if used, and the independent recount/rerun record.
-- An accessible artifact index, provenance, storage/backup location and retention policy;
-  permissions for released code, traces, model outputs and reviewer contributions.
+- *Why:* a rematch restarts the launch's instance (all 10 c1 rematch starts matched to
+  0.0 m), and identical order timing has replayed long stretches exactly (3 of 6
+  episodes of one skills job matched to 530 s; a Bodyguard pair matched through the
+  gun's rout at 97 s, then diverged).
+- *Check:* exists: `cards.battles` keeps one row per job, controller and added age.
+  Proposed (small): the board prints launches apart from rows (c1 shows "30 launches" for
+  20 jobs).
 
-Purchased game content and a supported machine remain prerequisites. Hosted models and
-game patches can change or disappear. Document those limits rather than promising
-permanent byte-for-byte reproduction. State who designed tasks, tuned controllers,
-reviewed outcomes and adjudicated disagreements; disclose relevant affiliations and
-selection involvement. A paper needs a completed contribution and an honest comparison
-with related work, not just a large leaderboard. Use the
-[existing closest-work questions](benchmark.md#research-that-changes-the-design) and
-refresh that review before submission.
+### 4.2 Balance who plays first, and when
 
-**G41. Maintain frozen releases alongside development.** Add newly discovered failures
-to development regression checks. Keep saturated cards useful for regression or publish
-a new suite version; do not silently harden a release and compare new scores with old.
-When a scorer or task is wrong, document the defect, affected cohorts and corrected
-results for every affected controller. Preserve the original output and explain which
-claims are withdrawn or narrowed.
+Give each arm the fresh-start slot equally often, assigned at random, and put every arm in
+every time block (a night, or one pass of the plan through every arm) so a stop leaves the
+arms equal. Runs while the owner uses the PC are their own time block.
 
-Game-build warnings must be reported to the owner; re-pinning needs their approval.
-Run declared reference checks after material game, harness or provider changes and keep
-conditions separate until a comparability check supports pooling. A stable model alias
-does not prove a stable backend. Monitor judge drift using saved calibration evidence,
-without treating a changing judge as a changing controller. Assign a maintainer for
-task disputes, scorer corrections and versioned releases.
+- *Why:* later slots are rematches, possibly on a warm provider cache. Shuffling each
+  launch alone does not balance: with 10 launches there is a 34% chance one arm starts 7 or
+  more times (c1's `rush_nearest` had 7 of 10). Provider speed and patches vary by night.
+- *Check:* exists: a per-launch shuffle and a recorded slot. Proposed (small): the queue
+  requires `--rotation-seed` in confirm jobs, computes first slots with `rotation()`,
+  prints first-slot and time-block tables, and refuses or warns (decision 5) when
+  first-slot counts differ by more than one.
 
-Possible enforcement: an artifact index and independent recount command, compatibility
-checks, versioned correction records, required release fields and a small reference
-cohort for drift checks. Local `runs/` paths alone are not a public evidence package;
-the current backup/access gap remains recorded in [state.md](../state.md#known-issues).
+### 4.3 Freeze the whole study in one plan file
 
-## Enforce the guidelines through code
+Commit one queue plan listing every job, with its `study` block ([keys](#before-you-start)).
+Each manifest records the plan's path and hash; only jobs in that plan, or in a replacement
+plan naming its hash and the trial it replaces, count. Replacements follow a rule written
+before any outcome; a retry inside a battle belongs to the controller and is not one. Plan
+in game hours as well as dollars (about 8 episodes an hour), stop between jobs, and list
+jobs a stop left unstarted: when money runs out mid-study, the costly model arms are left
+short, so size the budget for the whole plan.
 
-**G42. Implement small checks at existing boundaries.** The table maps guidance to
-likely homes in this repo. It describes inspected current behavior and proposals,
-not a claim that every safeguard already exists or is verified. Apply the cheapest
-relevant check, agree important methods with the owner, and test against independent
-references and plausible wrong behavior before relying on it.
+- *Check:* exists: the queue runs only at the plan's commit with `play`'s source scope
+  clean, never retries a job and records stop causes. Proposed (small): it refuses a
+  confirm or final plan without the keys named in 1.1, passes the plan hash to `play`, and,
+  given a declared `usd_per_job`, stops before a job when the ledger total plus that amount
+  would exceed the job's `--budget-usd`.
 
-| Boundary and guidelines | Existing starting point | Proposed enforcement and evidence |
+### 4.4 Compare only matching cells, and recheck references after a change
+
+Pool cells only when their condition keys and controller identities match (or under a
+logged written reason, never across builds), and compare cells only when their condition
+keys match
+([1.2](#12-the-controller-is-everything-that-acts-in-the-battle-identify-it-by-content)).
+Never pool across game builds. The game AI is every card's opponent and Steam can change
+it, so after a Steam build change, or a change to the play loop, mailbox, Lua mod or
+scorer, run the foils and witness in a small drift job (scripts only, no API cost) before
+new model comparisons; what counts as passing is an owner decision. A model reference cell
+can catch large provider drift, never prove its absence.
+
+- *Check:* exists: build warnings in `doctor`; stars on cells with mixed builds. Proposed
+  (small): the shared key (c1 pools b34 and b36 jobs today); "unconfirmed on build X" until
+  a drift job passes.
+
+### 4.5 Give controllers only listed public fields, and test by changing hidden data
+
+Build controller inputs from a nested allow list of public fields, unit records included;
+an unknown field is dropped and recorded, and the queue stops before the next job, never
+mid-battle. Test the boundary by changing only hidden data (`evaluation`, `final`,
+`setup`, hidden enemies) and asserting every controller input stays the same, and check in
+the game that Lua hides what the game hides (an enemy behind a hill). Declare or fix the
+known leaks: a friendly unit's `target` can name an unseen enemy, `target_dead` reveals an
+unseen death, and under an added-age arm acknowledgements arrive without the added delay.
+
+- *Why:* today the boundary is a deny list of three keys, so new mod fields and the
+  observation's `job` (the operator's job name) reach controllers.
+- *Check:* proposed (small): the allow list and a two-run hidden-data test of
+  `play_episode`. Proposed (medium): the same for the Lua observation builder, which also
+  fails on a field the list does not name. Outside controllers are trusted by convention,
+  not sandboxed.
+
+### 4.6 Say what carries over between episodes, and measure it by slot
+
+WH3 cannot rebuild a clean environment per trial, so isolation means reading back the
+declared settings and starts. Reset: a new controller object per episode. Not reset: the
+game process and profile, the engine instance, provider caches, an outside controller's
+module state. Declare caching and warmup as controller parts, and report outcome, cached
+tokens and call time by slot.
+
+- *Check:* exists: failed lobby, army and battle readbacks end the job (the plan stops
+  unless `keep_going`). A changed rematch start stops the plan only after its job ends,
+  geometry flags never stop it, and the board still counts flagged rematches (which compare
+  only enemies visible at first). Proposed (small): slot tables.
+
+### 4.7 Check order effects live
+
+An acknowledgement means the game accepted or queued an order, not that the unit moved,
+left melee or got a charge bonus. Before a signature, milestone or "foil executed" check
+backs a claim, run an agreed live check following a known order to its observed effect,
+including an accepted order the game then blocks.
+
+- *Check:* manual first (benchmark.md's [correctness row](benchmark.md#correctness-checks-to-agree)).
+
+## 5. Score every planned trial
+
+### 5.1 One success rule per card, in one function, told to the controller
+
+Each card names its success rule, which reads only the engine result, how the battle ended
+and declared task facts; the prompt states it
+([2.2](#22-tell-the-controller-everything-the-scorer-checks)). Each card declares how
+draws and timer endings count (a timer ending may be the success on a point-holding card).
+Every reader printing a success rate calls one function or labels its number a diagnostic.
+Today four readers use four rules: `cards.outcome` (timer wins and forfeits are losses;
+the primary rate), `report` (timer wins are not wins; forfeits are dropped), the HTML
+report (timer wins are wins; forfeits are dropped) and `stats` (raw counts, no rate).
+
+- *Check:* proposed (medium): a `success` field per card and one `card_result()` in
+  `cards.py`, whose value `report` writes into the page data and `results.csv` stores for
+  `stats`. A fixture job (contact win, timer win, draw, forfeit, construction failure,
+  rematch) gives one count in the board, the report and `stats`.
+
+### 5.2 Freeze how every trial is scored
+
+An observed engine result is stored once and never overwritten. Every trial without one
+gets a single rule from a frozen table, applied alike to every arm. A slow or crashing
+controller is not an infrastructure exclusion, and an unknown cause stays unknown until
+investigated with controller names hidden. "Today" means current code and
+[tactic-cards.md](tactic-cards.md#score).
+
+| Event | Counts as today | Proposed or open |
 |---|---|---|
-| Task and study definition, G1–G12 | `battle/setup.py`, scenarios, queue plan and source fingerprints | Validate resolved task/controller/scorer versions, splits, contrast, cohort and stopping rule; reject a deliberately mixed plan |
-| Setup and isolation, G10–G15 | Lobby/start checks, rematch checks, per-episode controllers | Extend agreed live checks to rematch and cross-episode state; perturb hidden data and confirm public inputs stay unchanged; do not claim an external-controller sandbox |
-| Outcomes and failures, G15–G17 | `battle/play.py`, `battle/cards.py`, raw result files | Phase-aware immutable endings, assignment reconciliation and agreed failure table; independently classify edge cases before testing |
-| Timing and costs, G18–G20 | Trace/ack timing, `battle/report.py`, provider ledgers | Check event linkage, clock domains, silent/no-order cases and all-attempt costs; exercise a known delayed order and inspect the actual effect |
-| Statistical reporting, G21–G26 | Card launch deduplication; report launch-level margin differences and Wilson intervals in limited cases | Name the quantity being estimated; add binary paired counts, approved grouping/interval choices and missing-data bounds; compare with independently calculated examples |
-| Human labels and judges, G27–G35 | Trace exports, replay and manual review | Versioned evidence packets, preserved independent labels, judge-validation splits, confusion/coverage tables and challenge cases; no calibrated WH3 LLM judge is established here |
-| Training separation, G8–G9 and G36 | `battle/export.py`, `gameai/sft.py`, post-training provenance | Check task-family and derived-label exposure; reject deliberately leaked final-test examples |
-| Release and maintenance, G37–G41 | Reports, manifests, logs and the proposed outside rerun | Rebuild scores from accessible raw evidence, detect missing artifacts/mixed versions, archive corrections and record outside execution |
+| Engine ending | The card rule applied to it | — |
+| Error after the ending (acknowledgement, `close()`, budget stop) | Can overwrite the ending | Keep the ending; log a reliability failure |
+| Failed decision, battle continues | The eventual ending; lost time and cost count | — |
+| Terminal controller failure; wall cap reached; game silent after the cap | Forfeit (a loss); a foil's forfeit does not count toward its admission launches | Owner: is silence after the cap in a timed battle a game fault? |
+| Controller fails to construct | Excluded (no battle id yet) | Unsuccessful attempt |
+| Failed setup check; game silent before the wall cap (no new battle state for 60 s, such as a frozen or accidentally paused game); operator stop; HTTP 401/402 | Invalid: excluded and rerun; the witness verdict takes the next scored launch | Replacement by a rule in the plan ([4.3](#43-freeze-the-whole-study-in-one-plan-file)) |
+| Spend cap reached during a battle | Excluded, like an operator stop | Not yet scored, inside the 5.3 range; size budgets so it cannot happen |
+| Missing provider cost (ledger safety stop) | Excluded as a budget stop | Owner decision |
+| Request the game dropped | The eventual ending (the army keeps its last orders) | Owner decision |
+| Provider outage across a launch | The eventual ending, or a forfeit on terminal failure | Owner decision |
+| Leak, undeclared helper, a short accidental pause or wrong game speed | Not detected (the mod always reports speed 1, unpaused) | Invalid even if won; the battle-to-wall ratio ([6.2](#62-count-every-decision-per-battle-on-the-right-clock)) catches speed, its band an owner decision |
+| Planned trial never started | Listed only when a plan's job has no manifest | Listed per arm with its reason |
 
-Prioritize outcome accounting and public-information checks, then trustworthy timing,
-grouped analysis and recounting. Add judge automation only if manual review volume
-justifies it. Do not build a framework merely to satisfy this table.
+- *Check:* proposed (small): an `engine_result` field set only from the observed result,
+  with a regression test that fails before the fix. Manual, then a test: hand-label about
+  ten real episodes before reading the code's answers (a verification method once agreed).
 
-Known current differences matter: the card and generic report use different denominators;
-the proposed constructor/post-ending failure handling is not yet implemented; generic
-`stats` grouping is insufficient for these comparisons; and gameplay signature checks
-and outside reruns remain pending. See the
-[scoring contract](benchmark.md#outcomes-measures-and-comparison) and
-[correctness proposals](benchmark.md#correctness-checks-to-agree). A new guide does not
-retroactively verify those features.
+### 5.3 Give every planned trial one visible disposition
 
-## Adapt common evaluation advice to WH3
+For each arm print planned, started, scored (forfeits included as losses, also shown
+separately), excluded (with rule and replacement) and unstarted. The primary rate is
+successes over scored launches; other rates are labelled diagnostics. With trials not yet
+scored, print the range from all-lost to all-won (8 wins, 10 losses, 2 not yet scored:
+8/20 to 10/20). Never drop a failed trial's partner to keep pairs: when failures decide
+which pairs survive, the rest are easier.
 
-| Common advice | WH3 adaptation and reason |
+- *Check:* exists: the board lists a plan's jobs that never started. Proposed (small):
+  `battles()` reports unreadable manifests instead of skipping them and counts per arm the
+  trials a stopped job never played; a fixture with a corrupt manifest and a stopped
+  rotation shows both.
+
+### 5.4 Missing evidence is unknown, and success stays primary
+
+Every measure reports present, absent or unknown, with its evidence and its unknown share
+per arm; if one arm has more unknowns, its known battles are a selected subset and the arms
+no longer compare fairly. A controller with no orders stays in the timing table; cost per
+success at 0 wins is undefined; a movement is credited to the model only after a model-made
+order. Continuous measures (margin, objective share, survivors) are secondary, with written
+formulas, and guide development only after past paired jobs show they pick the same winner
+as success (the old raw margin, which counted routing men as alive, contradicted the outcome
+in 16 of 108 battles).
+
+- *Check:* proposed (small): `cycles()` returns unknown for a frame gap inside an engagement
+  (today a gap of 3 s or more silently miscounts: it can hide a pull-out or add a cycle),
+  with a regression test; each applied order records its origin (reply, executor rule,
+  script).
+
+## 6. Measure time and cost
+
+### 6.1 Keep natural latency and declared limits in the result
+
+The primary result includes real serving delay, retries and executor behaviour: a
+controller that loses because it is slow has lost (owner, 2026-10-14). Never pause or slow
+the game. An added-age arm is a diagnostic that only ages observations: report the age
+achieved, and count each battle under its assigned arm. Declare the token cap, timeout,
+retries, effort, wall cap and spend cap, and report per arm how often each was hit: Step 5
+Preview (a hosted reasoning model) at high effort had 2 of 4 replies cut off at the
+16,000-token cap, so call that arm cap-bound before calling the mode weak.
+
+- *Check:* proposed (small): `report` shows per arm the share of calls ending at a limit
+  and episodes truncated before the timer.
+
+### 6.2 Count every decision, per battle, on the right clock
+
+Latency covers every decision: applied, refused, failed, and in flight at the end (listed
+separately); report gaps without fresh orders too. Summarise each battle first (median, 90th
+percentile, longest gap without fresh orders), then compare across battles, so a long busy
+battle does not dominate. Measure wall durations with the system clock (WSL's
+monotonic clock ran slow) and order ages with the battle clock, and never subtract a time
+on one clock from a time on the other. Each episode's battle-to-wall ratio stays in a
+declared band. Orders apply on 0.3 s ticks and frames are 1 Hz, so smaller differences
+mean nothing. For `commander`, model latency is in call times and plan age, not `think_s`.
+
+- *Why:* today only acknowledged requests enter `delays_ms` (a 178.5 s call returning after
+  the ending was missed), and `clock_ratio`, measured when an observation is read, is
+  distorted by long blocking calls.
+- *Check:* proposed (small): `result.json` lists every decision (for `commander`, every
+  model call) with its time and fate: applied, refused, failed, never acknowledged,
+  returned after the ending, or running at close; a test whose simulated call returns after
+  the result shows it there and in the median. The ratio comes from battle and wall time at
+  the first and last acknowledgements; the HTML report uses per-battle medians.
+
+### 6.3 Count all cost, and check it against the ledger
+
+Cost covers every attempt (failed, excluded, retried), split by token type, with its source
+(pinned price table, provider report or outside controller) and price date. Show cost per
+success only with its win count, beside the $0 scripted rows. A study's ceiling is "ledger
+total at start plus allowance", since `--budget-usd` caps the whole ledger; on OpenRouter
+it must also leave room for the Spire ledger (the $50 covers both games).
+
+- *Check:* proposed (small, read-only): each traced response appears once in the ledger
+  with the same cost, and the ledger total over the job's window matches its recorded cost.
+
+## 7. Use statistics that fit small live studies
+
+WH3 studies run tens of launches, the cards were picked by hand, and rematches share their
+launch. So count launches, report each card on its own, use small-sample methods and aim at
+large effects. The numbers below were recomputed with a local script not in Git
+(`runs/twwarhammer3/eval-guidelines-review-20261020/numbers/check_numbers.py`) and
+independently by a reviewer; standard exact-binomial tools reproduce them.
+
+### 7.1 Say what each number covers
+
+A card rate estimates the chance this controller wins its counted episode of a launch of
+this card version (fresh start or rematch, in the plan's mix) under these conditions:
+build, host, timing, provider and period. Report every card and variant separately; the
+interval covers repeat launches of these cards, not other tactics. Do not divide by the
+witness rate: it is noisy and no ceiling (on S1 a model won its one battle at about 3.6 s
+order age; the witness won 1 of 2 fresh and 0 of 2 at 5 s). A suite summary needs frozen
+weights, and a missing card makes it missing.
+
+- *Check:* exists: `report` never pools across its groups. Proposed (small, later): a
+  suite function that refuses a missing card.
+
+### 7.2 Use the named method for each situation
+
+| Situation | Method | Example |
+|---|---|---|
+| One controller, one card | Wilson 95% | 4 of 5: 38-96%; 10 of 14: 45-88% |
+| No wins, or a "rarely wins" gate | Exact one-sided 95% bound (for 0 of n: 1 − 0.05^(1/n)) | 0 of 10: below 26%; 0 of 14: below 20%; 1 of 10: below 39% |
+| A and B on the same launches | Both / only A / only B / neither; exact McNemar; Newcombe paired interval with his corrected correlation | Both 0, only A 6, only B 2, neither 12: +20 points (−8 to +45), p = 0.29 |
+| A and B on separate launches | Fisher exact; Newcombe interval for two rates | 0 of 10 against 5 of 10: p = 0.03 |
+| One continuous value per launch (paired differences when arms share launches) | t interval; for skewed values such as latency, a sign-test interval for the median | — |
+
+McNemar's test uses only the launches exactly one arm won; Newcombe's intervals bound a
+difference of two rates and stay sensible at small counts; Fisher's test compares rates
+from separate launches. Tests are two-sided at 5% with classic exact p-values, which are
+cautious here (with no real difference, Fisher at 10 per arm rejects at most about 1.3% of
+the time, far less when both rates are near 0); gate bounds are one-sided 95%. These
+methods are our choice: Bowyer et al. recommend Bayesian intervals for A − B and find
+Fisher too conservative at small n, and a Bayesian interval is allowed if its prior is
+stated. Never report a normal (Wald) interval or a bootstrap at these sizes: Wald gives
+0-0% for 0 of 10 and covers the truth only 51% of the time at 14 launches and a 5% rate; a
+bootstrap of ten losses resamples only losses. Wilson averages about 95% coverage but can
+fall to about 84% for true rates near 0 or 1, and it assumes one episode per launch. Print
+the method with every interval; no interval covers a wrong scorer or leaked information.
+
+- *Check:* exists: `report.wilson`, a t interval. Proposed (small): exact-bound, McNemar and
+  Newcombe helpers tested against worked examples published with each method or a second
+  implementation, not only this page's numbers; method names in board headers.
+
+### 7.3 Compare A and B on shared launches, and say "unresolved" when it is
+
+Report A, B and A − B with its interval and launch count, the four joint counts, unpaired
+launches and why, and the correlation between arms. A comparison is resolved only when its
+named two-sided test passes its declared threshold (p < 0.05 for the one primary
+contrast); the interval beside it shows the size. They can disagree: 0 of 10 against 4 of
+10 gives Newcombe +4 to +69 points but Fisher p = 0.09, so it is unresolved. Overlapping
+separate intervals are not a test. Never write that two controllers perform the same: 20
+launches cannot show two rates lie within a useful distance. Pairing mainly protects
+against drift between nights; it gains precision only when both arms tend to win or lose
+the same launches, and even then exact McNemar on 10 shared launches can be weaker than
+Fisher on 10 per arm (20% against 70%, with A winning only where B wins: 38% against 43%).
+A comparison with an older period is unpaired: say so, and run a reference controller in
+both periods.
+
+- *Check:* exists: `report` pairs the margin per launch and lists unpaired launches.
+  Proposed (small): the 2×2 table and paired interval from the card outcome. Proposed (no
+  API cost, if agreed): an A/A run (the witness as both arms, which should show no
+  difference) on separate launches, since within one launch a fixed-age script may simply
+  replay the battle.
+
+### 7.4 Decide before you look
+
+Before the first launch, fix n, the stop rule and one primary contrast; label the rest
+exploratory or name a correction (such as Holm's, which lowers the p-value each contrast
+must reach as more are tested). A run of many controllers on frozen cards reports each
+controller's rate per card with its interval (28 to 53 points wide at 10 launches, widest
+near 5 of 10) and orders two controllers only when their test passes after Holm's
+correction over every pair shown. Print the chance the plan detects the gain you care
+about, not only the smallest clear split: with 10 separate launches per arm (Fisher,
+two-sided 5%), a true rise from 0% to 50% is found 62% of the time, 20% to 70% only 43%,
+and finding a gap 8 times in 10 takes about 60-70 points (10% against 80%: 84%). Away from
+zero a 5-win gap is not clear (3 of 10 against 8 of 10: p = 0.07). On 20 shared launches a
+true net gain of 20 points is found only 12-20% of the time, and at least 6 launches won
+by one arm only, with none by the other, are needed to pass. So confirm large changes and
+treat 10-point prompt tweaks as exploratory. A gate may stop once no remaining launch can
+change its verdict (the first foil win; the witness's fourth win, or its second loss, of
+five); report the counts, not a rate interval. Never stop a comparison early because it
+looks clear. Picking the best of many screens inflates it: 20 prompt versions each truly
+winning 20%, with 5 launches each, show at least one with 3 or more wins of 5 with 70%
+probability, so confirm a chosen version on fresh launches and report how many were
+screened.
+
+- *Check:* proposed (small): an exact `plan_power()` printed by the queue (gates use
+  `gate_pass()`, 2.7); `report --primary` labels the primary row; "verdict incomplete"
+  while planned launches are unfinished.
+
+## 8. Read battles and interpret results
+
+### 8.1 Scan every battle, then read a fixed sample, before counting a cell
+
+Run a fault scan on every battle, wins included, then read at least one win and one loss
+chosen by a fixed rule. The scan also looks for signs that the harness stopped play: a
+request the game dropped (Lua only logs it; `play` keeps waiting for its acknowledgement
+and never asks the controller again, so the army keeps its last orders and looks passive),
+`mod.log` errors, repeated infrastructure failures in a launch. A flagged battle is
+inspected, not dropped, and excluded only under the failure table; if reading shows a
+problem with the evaluation itself, hold the result. Example: a wizard launch on the
+Empire night (an overnight run of Empire battles) lost on garbled replies from its pinned
+backend (7 calls averaging 88.9 s, against 1.6-5.8 s in the other 27 GLM and Kimi
+launches). It stays GLM's loss, since serving belongs to the controller
+([6.1](#61-keep-natural-latency-and-declared-limits-in-the-result)); the scan flags it so
+the owner can decide whether that backend's later battles form a separately labelled
+cohort.
+
+- *Check:* proposed (small): `digest` prints failed decisions (today it skips them), and a
+  `faults()` list flags failed decisions, invalid batches, refusals, cut-off replies, calls
+  slower than a stated multiple of the arm's median, dropped or stale requests, `mod.log`
+  errors, missing files and flagged starts.
+
+### 8.2 Label failures from one short list, and find where a loss went wrong
+
+Give each lost or flagged battle one or more labels, per battle and not per decision, each
+decided by its record:
+
+| Label | Decided by |
 |---|---|
-| Use human preference as ground truth | Use trusted engine/state evidence for outcomes. Humans define and audit tactical labels; preference does not change a battle ending. |
-| Match the reference answer or trajectory | Accept alternate legal tactics. A witness shows feasibility; exact imitation would penalize useful adaptation. |
-| Make evaluation deterministic | Check/reset declared conditions and preserve variability. Game RNG seeding and deterministic replay are not established. Pausing would remove the real-time problem. |
-| Count many examples cheaply | Calls, units and frames share a battle. Rematches share a launch. Count independent groups and task coverage, not rows. |
-| Report the best of several attempts | Primary performance concerns one assigned live attempt. `pass@k` measures at least one success in k attempts; `pass^k` measures all k succeeding. Use only for an explicitly declared repeated-attempt question with all costs, a valid estimator and dependence assumptions; do not exponentiate a pooled heterogeneous win rate. See [τ-bench](https://arxiv.org/html/2406.12045v1). |
-| Remove infrastructure/API problems | Proven setup failures may be invalid experiments. Provider outages and retries can be part of the controller's deployment reliability; follow the declared failure rule. |
-| Use answer probabilities to reduce score noise | Probability of a reference order is not probability of winning. Multiple actions can be valid and outcomes depend on their timing and later control. |
-| Lower temperature to stabilize scores | That changes the controller. Evaluate the declared deployment settings and report actual stochasticity. |
-| Generate many synthetic examples | Use synthetic records for parser/scorer challenge cases. Validate generated scenarios in the game; imagined battles cannot establish feasibility or policy strength. |
-| Filter difficult data as probable mislabels | Investigate against the engine and task rule. [Dataset Cartography](https://arxiv.org/html/2009.10795v2) studies model-dependent training dynamics, not a license to delete hard tactical losses. |
-| Use adaptive subsets or predict a full-suite score | Such methods need validated historical structure. [tinyBenchmarks](https://arxiv.org/html/2402.14992v1) discusses distribution-shift limits. A small directly measured WH3 suite is more defensible today. |
-| Normalize all graders into one leaderboard | Keep per-card success, reliability, timing, cost and tactical evidence distinct. Any aggregate needs frozen weights and sensitivity analysis. |
-| Compare with a human playing normally | A GUI player and a structured-state controller have different information/actions. Disclose the mismatch or build a matched-interface study before claiming human parity. |
-| Judge every step or require an LLM judge | A complete battle is the outcome unit. Selective trace review is diagnostic; reliable code can score much of the task without another model. |
-| Evolve rubrics as the agent improves | Useful in development or training; freeze the evaluation rubric and version any later changes. |
+| Harness fault | Logs |
+| Serving fault (an error, cut-off or garbled reply) | Call attempts |
+| Missing information | The prompt |
+| Misread interface (a fact shown but never explained) | Prompt and reply |
+| Poor choice | The prompt, its age, the orders |
+| Late order | Acknowledgement time against the replay |
+| Order not carried out | Acknowledgement and replay |
+| Card defect; unknown | Any record |
 
-## Use a short study declaration
+Judge decisions against the snapshot the reply answered (`digest --at`), not the later
+replay. GLM's v20 re-attacks were mostly a misread interface: by their stated reasons, 10 of
+14 believed the chariot clear while its melee flag was on (the prompt never said positions
+are unit centres), and 3-4 chose to grind, a poor choice (an unverified reading). Give each
+card two to five ordered milestones code can detect, and read a loss by the first one
+missed; milestones never give partial credit.
 
-Keep this with a planned experiment, not as a new hierarchy of bookkeeping files.
-Fill every unresolved field before running a confirmatory comparison. Values below are
-examples of the kind of statement needed, not authorization or a new frozen protocol.
+- *Check:* proposed (small): the fault scan proposes the first two labels; a review file
+  under `runs/`. Proposed (medium): milestone predicates reusing `engagements()`.
 
-| Field | Example for an advice comparison |
-|---|---|
-| Question and scope | Does adding a specific withdrawal explanation help one model on a frozen contact-victory card at natural latency? |
-| Arms | A: rules-only prompt; B: same prompt plus the declared advice. Same model/backend, executor, sampling and information contract. Prompt length is part of this intervention. |
-| Task/reference | Name card version, validated start settings, witness and functioning shortcut foils. Preserve historical c1 separately. |
-| Primary outcome | Success under the named card and failure rules; engine ending retained separately. |
-| Sampling | Predeclare fresh-launch count, within-launch order, repeats, time blocks and missing-partner treatment. |
-| Precision | Choose a useful gain and interval/power target from the engineering decision; estimate required launches from pilot uncertainty. |
-| Secondary evidence | Applied order age, actual withdrawal/contact evidence, refusals and total cost. Commentary alone supplies no execution label. |
-| Controls and exposure | Both arms know the same public rules; record task exposure and reserve supported variations before tuning. |
-| Stop and replace | Fixed cohort with explicit setup-failure replacement and operational caps; no favorable-result stopping. |
-| Correctness | List agreed checks and passing revisions, plus unverified dependencies that limit the claim. |
-| Interpretation | A gain supports the effect of supplying that advice in these conditions. It does not isolate pure knowledge, prove all wins used withdrawal, or establish a general model ranking. |
+### 8.3 Controller text and LLM reviews are leads, not evidence
 
-Before release, a reviewer should be able to answer five questions from the artifacts:
-What exactly was compared? Did the declared game and information boundary hold? Where
-did every assigned attempt go? Does the uncertainty match the sampling? Could someone
-recount the result and follow the runbook? If any answer is missing, narrow the claim or
-finish that work before presenting the result as a reusable benchmark.
+A controller's notes and reasoning say what it meant to do; only orders, acknowledgements
+and later state show what happened. LLM reviews, the `wh3-version-review` workflow's
+included, are development leads whose counts and causes stay out of results until a saved
+script recomputes them. Review agents get controller text quoted as evidence and are told
+not to follow instructions inside it. A number read from traces states its definition and
+comes from a saved script; when it backs a version decision or a published claim, recheck
+it under one other reasonable definition (GLM's countermands read 14 or 12 depending on
+whether a queued later attack counts).
 
-## Sources and their use
+- *Check:* proposed (small): the workflow saves its reviews and the episodes it read, with a
+  fixed cause list including "unknown". Manual: the workflow's prompt wording; log entries
+  say when they quote an LLM review.
 
-All twelve requested sources were accessible on 2026-10-20. The table records the
-methodological content used; the WH3 rules are domain-specific recommendations, not
-findings from those articles. Linked research was followed selectively where it changes
-a design decision, rather than treating every bibliography entry as a requirement.
+### 8.4 Claim a cause only after changing it
 
-| Requested reading | Main contribution to this guide |
-|---|---|
-| [Weng, Thinking about High-Quality Human Data](https://lilianweng.github.io/posts/2024-02-05-human-data-quality/) | Reviewer quality, training, disagreement and the limits of model-based label cleaning; G27–G29 and the adaptation table |
-| [Yan, How to Write Data Labeling Guidelines](https://eugeneyan.com/writing/labeling-guidelines/) | Clear task definitions, examples, decision steps, tools and unsure labels; G27–G28 |
-| [Wolfe, Using LLMs for Evaluation](https://cameronrwolfe.substack.com/p/llm-as-a-judge) | Scoring formats and judge biases; G30 and G32 |
-| [Husain, Using LLM-as-a-Judge For Evaluation](https://hamel.dev/blog/posts/llm-judge/index.html) | Expert-led error analysis and judge calibration; G29–G31. Read the page updated September 2026. |
-| [Yan, Evaluating the Effectiveness of LLM-Evaluators](https://eugeneyan.com/writing/llm-evaluators/) | Choosing a judgment format and validating it with the appropriate metrics; G30–G33 |
-| [Wolfe, Rubric-Based Rewards for RL](https://cameronrwolfe.substack.com/p/rubric-rl) | Criteria, reward construction and evolving training rubrics; G34–G36 |
-| [Rao and Callison-Burch, Autorubric](https://arxiv.org/abs/2603.00077) | Criterion-level evaluation, abstention and configuration-specific reliability; G33–G35. Inspected v3, 2026-08-07. |
-| [Wolfe, Applying Statistics to LLM Evaluations](https://cameronrwolfe.substack.com/p/stats-llm-evals) | Sources of variation, small samples, paired inference and study planning; G21–G26 |
-| [Miller, Adding Error Bars to Evals](https://arxiv.org/abs/2411.00640) | Clustered observations, paired differences, variance and power; G21–G26. Its large-sample/task-sampling assumptions need the WH3 qualifications above. |
-| [Wolfe, The Anatomy of an LLM Benchmark](https://cameronrwolfe.substack.com/p/llm-bench) | Task sourcing, quality audits, coverage and maintenance; G4–G9 and G41 |
-| [Wolfe, Agent Evaluation](https://cameronrwolfe.substack.com/p/agent-evals) | Distinct tasks, trials, traces, outcomes, graders and controller scaffolding; G1–G3, G13–G20 and G39–G41 |
-| [Anthropic, Demystifying evals for AI agents](https://anthropic.com/engineering/demystifying-evals-for-ai-agents) | Outcome checks, trial isolation, trace inspection and complementary review methods; G2, G13–G15 and G30. The supplied URL redirects to the research page. |
+Write observations as observations ("the order applied 9 s after its snapshot"). Say
+"caused" only after an assigned change, judged by the card outcome on launches started
+after it, and treat a first small-study gain as an overestimate. After prompt v21, attack
+orders issued with the melee flag on fell from 56 to 38 over 10 battles, yet wins went from
+1 of 10 to 0 of 10; the cohorts ran on different nights and harness versions, so neither
+change is shown to come from the prompt.
 
-Selected primary work followed from these readings and their cited research:
+- *Check:* manual: a change's log entry names the diagnostics behind it and the later jobs
+  that confirm it.
 
-| Source | What it adds and where its scope stops |
-|---|---|
-| [Röttger et al., Two Contrasting Data Annotation Paradigms](https://arxiv.org/html/2112.07475v2) | Distinguishes applying a common rule from collecting different opinions; its subjective NLP setting informs human review, not WH3 outcome scoring |
-| [Zhang et al., A Taxonomy of Rater Disagreements](https://arxiv.org/html/2311.04345v1) | Investigate reasons for disagreement rather than collapsing every label to a majority; taxonomy comes from toxicity annotation |
-| [Swayamdipta et al., Dataset Cartography](https://arxiv.org/html/2009.10795v2) | Hard/ambiguous training examples can be useful; model difficulty is not independent proof of a wrong benchmark label |
-| [Zheng et al., Judging LLM-as-a-Judge](https://arxiv.org/html/2306.05685v4) | Direct evidence of judge biases and mitigation limits in dialogue; no measured WH3 judge accuracy |
-| [Shankar et al., Who Validates the Validators](https://arxiv.org/html/2404.12272v1) | Criteria can change as people inspect examples; refine during development, then freeze and audit implementation |
-| [Gunjal et al., Rubrics as Rewards](https://arxiv.org/html/2507.17746v2) | Expert-grounded reward criteria and aggregation choices; medical/scientific experiments do not establish battle-control gains |
-| [Bowyer et al., Position: Don't Use the CLT in LLM Evals With Fewer Than a Few Hundred Datapoints](https://arxiv.org/html/2503.01747v2) | Small-sample uncertainty and limitations of familiar large-sample estimates; no cure for unrepresentative tasks or dependent trials |
-| [Abadie et al., When Should You Adjust Standard Errors for Clustering](https://arxiv.org/html/1710.02926v4) | Clustering follows the sampling/assignment design and inference target; choose WH3 groups from the experiment |
-| [Terminal-Bench](https://arxiv.org/html/2601.11868v1) | Concrete task packages, reference solutions and integrity review; containerized terminal tasks differ from a live proprietary game |
-| [Agentic Benchmark Checklist](https://arxiv.org/html/2507.02825v1) | Separate task validity, outcome validity and reporting; checklist completion is not empirical verification |
-| [τ-bench](https://arxiv.org/html/2406.12045v1) | State-based outcomes and repeated-attempt reliability measures; its independence assumptions cannot be copied onto rematches |
-| [OSWorld](https://arxiv.org/html/2404.07972v1) | Initial-state setup, task-specific outcome checks and independent review; GUI/VM reset conditions differ from our interface |
-| [MMLU-Redux](https://arxiv.org/html/2406.04127v3) | Auditing and correcting evaluation data can change conclusions; its error rates are not estimates for WH3 |
-| [tinyBenchmarks](https://arxiv.org/html/2402.14992v1) | Efficient subset selection depends on historical performance structure; validate before using it to estimate an unplayed suite |
+### 8.5 Write results as counts beside reference rows
 
-The sources differ in useful ways. Product-oriented judge guidance starts with one expert
-and simple pass/fail labels; publication-quality claims also need independent review and
-uncertainty. Rubric frameworks permit richer scales, but their reliability must be shown
-per criterion. Statistical variance-reduction advice can change the evaluated policy or
-assume task sampling we do not have. Agent benchmarks may omit failed API runs, whereas
-our natural-latency track deliberately measures serving reliability. The governing choice
-is the declared WH3 question and contract, not a technique's popularity.
+Print "won k of n" with interval and method, forfeits and exclusions, beside the foil and
+witness rows for the same card version and build. With no wins write "0 of n, probably
+below b", and say what that does not show (that the model cannot learn the tactic). Do not
+rank unresolved pairs; use no verdict word the cell size cannot carry ("better", "solves",
+"significant" without the test); show known confounds such as fresh start against rematch;
+mark unagreed checks **unverified**. Example: "GLM-5.3 low, v20: won 1 of 10 (Wilson 95%:
+2-40%); each foil 0 of 10 (exact one-sided 95%: below 26%); witness v1 won 4 of 4 at 2 s
+added age with a 2 s interval and 3 of 4 at 3 s and 3 s, the cells nearest GLM's median
+order age of 2.1 s (unverified)."
+
+- *Check:* exists: the board lists foils first, with Wilson intervals. Proposed (small):
+  mark a model cell whose setup differs from its reference rows; print fresh-start counts.
+
+## 9. Recount, release and maintain
+
+### 9.1 Rebuild every reported number from a hashed evidence index
+
+A released result names an index of the job directories and label files it used, each with
+its sha256. One command rebuilds every table from it and fails on a missing or changed file;
+labels come from saved replies, never from asking a judge again. The index goes in Git, the
+files stay in `runs/`. Before citing a round as admitted or confirmed, copy it and its index
+to a second place, log the location and hash, and recount once from the copy.
+
+- *Why:* a recount is the only exact outside check, `runs/` has no off-machine copy, and
+  today a missing replay changes the verdict.
+- *Check:* proposed (small): `card` and `report` accept an index and hash what they read, as
+  `export.py` already does; a test that deleting one replay makes the recount fail.
+
+### 9.2 Version the scorer, correct in the open, and keep releases frozen
+
+A frozen verdict names its rule and its scorer code version; the code applying the chariot
+rule changed in five commits after registration (b35, b38, b39, b40 and `fab56b0`). When a
+scorer, card or label proves wrong, keep the old output, publish the corrected one for
+every affected controller and export, and say which claims change. New rules apply to
+rounds started after them; older verdicts keep their rule and print one line naming the
+rules they predate. A released suite is a fixed list of card versions plus a scorer
+version; a harder card is a new version. Move cards to a regression pack once every
+compared controller wins nearly every launch (the owner sets the number).
+
+- *Check:* proposed (small): `scorer_version` per card, and a test hashing the syntax trees
+  of `outcome` (later `card_result`), `jobs`, `battles`, `engagements`, `cycles`, `mixes`
+  and `verdict`, with `MERGE_S` and the card's `CARDS` entry (the pattern that keeps
+  `spire/protocol.py` stable).
+
+### 9.3 Offer outside checks in three steps, and claim only what each shows
+
+A **recount** from released evidence checks the analysis. An **interface check** (later,
+once an outside controller is expected) feeds recorded public observations through the
+simulated game API and checks order format and timing. A **rerun**
+([proposal](benchmark-run.md#independent-rerun-acceptance-proposal)) on an owned copy checks
+that the procedure works elsewhere. None reproduces trajectories or the exact win rate. The
+prerequisites are in [benchmark-run.md](benchmark-run.md#before-a-run).
+
+- *Check:* manual: log each completed step with date, revision and who ran it.
+
+### 9.4 Publish a short summary page and a clean bundle
+
+The summary page links rather than repeats. It covers intended use and what the cards leave
+out; how cards were chosen; the controller contract; the plan; per-launch rows with every
+disposition; every controller version run on final cards; per-card results with intervals,
+timing and cost; how labels were made; the authorship and tuning records of
+[3.3](#33-record-who-tuned-on-what) and who reviewed outcomes; limits (a bought game,
+patches, hosted models, no seeds, few cards); and related work on the
+[five closest-work points](benchmark.md#research-that-changes-the-design). One bundle step
+builds public evidence: indexed files only, no game files or credentials, no model text from
+providers the owner has not cleared, policy-visible fields marked, and a failure on
+identifying data. Check the publisher's screenshot policy before sharing stills.
+
+- *Check:* proposed (small, at the first public release): the bundle step with a deny-list
+  scan, tested with a planted fake key.
+
+## 10. Later: human review, LLM judges, rubrics and training rewards
+
+None exists for the first release. Recommended: no LLM-derived label in a reported score.
+
+### 10.1 Let code decide what records can decide
+
+If recorded state answers a check, code decides; nobody overrides or averages it. People
+answer what code cannot (whether a win used the card's choice, whether a loss was a harness
+fault), never whether a battle was won. An LLM gets only questions that need reading text
+("does the stated plan match the orders?"), never a tactical-quality score.
+
+### 10.2 Give reviewers one question, one sheet and a fixed evidence packet
+
+Each question gets a short versioned sheet (purpose, options, terms tied to recorded
+fields, ordered yes / no / cannot-tell steps, things to ignore, worked examples and
+near-misses), piloted on development battles and then frozen. Cut battles into fixed items
+(one unit, question and time window). The first pass hides the outcome, verdicts, the
+controller's stated reasons and arm names; reviewers can often still tell who played, so
+ask them to guess and report how often they were right. Every answer cites its record or
+gives a reason for "cannot tell" ("in melee" is the 1 Hz melee flag, which shows neither the
+enemy fought nor a charge bonus).
+
+- *Check:* exists: `digest --at` shows a decision without the ending. Proposed (small, when
+  needed): a `--blind` flag and one label script.
+
+### 10.3 Label independently, and report agreement in full
+
+Two reviewers label a shared set alone, locked before anyone sees a code check's or judge's
+output. Report the 2×2 counts, n, raw agreement and agreement on "yes" and on "no"; put
+Cohen's kappa or Krippendorff's alpha only beside them (two reviewers each saying "yes" on 2
+different items of 30 agree 87% overall and 0 of 4 on "yes"). List every disagreement with
+its cause; tactical opinions stay notes, never majority facts. The owner's labels alone are
+"designer, single reviewer", and agent reviews are not human labels. Batches picked to find
+failures support no rates; a rate needs a recorded random sample.
+
+### 10.4 Validate any automatic label against held-out human labels
+
+Compare a code check or judge with human labels from distinct launches made without seeing
+its output. Report with counts its true positive rate (TPR, real cases flagged) and true
+negative rate (TNR, the share of non-cases it passed), per controller and card, beside
+human-human agreement and an always-majority baseline: a judge calling everything
+acceptable is 95% accurate when 5% are errors. Split example, tuning and test sets by
+launch. Before use, test swapped order and renamed controllers, confident text without
+matching orders, a good decision then a loss, a blocked acknowledged move, a recording
+gap, and an instruction hidden in controller text. Version the judge, pin its sampling
+across arms, and choose the judge model first (it mattered most in Autorubric). Correct a
+judge-counted rate as (observed + TNR − 1) / (TPR + TNR − 1), clipped to 0-100% and
+carrying the uncertainty of TPR and TNR: 20% observed with TPR 0.8 and TNR 0.9 becomes
+14%.
+
+### 10.5 Keep rubric items narrow and out of the score; a training signal cannot judge training
+
+Each check says what happened, which fields show it, when it applies and what is recorded
+when evidence is missing (pass, fail, not applicable or unknown, each rate counting only
+battles where the item applies). Keep one to three items per card, check assumed mechanics
+against game data rather than an LLM's game knowledge, and add no weighted rubric total to
+an evaluation; a leak invalidates the trial rather than costing points. Anything used to
+train or select data (items, judges, signatures, outcome filters such as
+`--require outcome.gameplay_outcome=won`, which keeps timer wins) cannot show that training
+worked: show gains on engine outcomes on frozen unseen cards, against the untrained model
+and an outcome-only reward. Plan training and evaluation variants per family first, label
+in-family scores "in-distribution", fix the checkpoint rule in advance, and look for reward
+hacking (repeated harmless withdrawals, a bonus per cycle).
+
+- *Check:* exists: `gameai.sft` drops `held_out` rows. Proposed (small, later): a
+  reward-spec hash in the dataset manifest.
+
+## 11. Common advice that does not apply, or works differently here
+
+Six facts drive most differences. Battles run at 1x and never pause. No seed controls a
+battle, and rematches restart their launch's instance. One game runs at a time on the
+owner's PC, about 8 episodes an hour, mostly overnight. The cards are few and hand-built.
+The game, its AI opponent and the hosted models change under us (Steam updates; pins warn
+but never block). The authors are one owner and AI agents in a public repository.
+
+| Common advice | Why not here | Instead |
+|---|---|---|
+| Start with 20-50 tasks; turn every failure into a task | Each card needs live screening and confirmation | A few cards; other failures become development scenarios or tests |
+| Fresh container, fixed seed, exact replay | One Windows install keeps state; no seed controls a battle | Readbacks; pairing within launches; count launches |
+| Pause while the model thinks | Thinking time is under test | Natural latency; added-age diagnostics |
+| Equal compute across reasoning modes | At 1x, compute costs game time | Each mode is its own controller |
+| Best of k (pass@k); many samples per task | One try per battle; rematches are not independent | First episode of each launch; pass^k (the chance that k fresh launches all win, estimated as C(c,k)/C(n,k) from c wins in n launches) only for a declared reliability question |
+| Mean ± standard error for win rates, CLT, bootstrap, clustered errors | 5-20 launches, often all wins or all losses | The methods in [7.2](#72-use-the-named-method-for-each-situation) |
+| Tasks as a random sample; domain averages; normalised scores | Hand-picked cards; the witness is no ceiling | Per-card counts beside reference rows |
+| Keep items that separate models; harden until they fail | It tunes the suite to the compared models | Difficulty from witness and foils |
+| Drop infrastructure and API errors as noise | Serving reliability is part of deployment | A frozen failure table |
+| Hidden test sets, canaries, submission limits, text-overlap tests | The repository is public, so a variant is secret only while unpushed (decision 4); outputs are timed orders, not answer strings | "Not played by a model"; exposure records; push dates against model release dates; fresh variants; optionally a canary string at release |
+| Lower temperature for tidy error bars | It changes the controller | Evaluate declared settings; a judge pins one setting across arms |
+| LLM judges, pairwise preference, Elo | Code scores outcomes; the opponent is fixed; battles diverge | Code first; per-card rates |
+| Crowd label models, kappa bands | One owner, few reviewers | Small double-labelled sets with every disagreement |
+| Small subsets chosen from past results (tinyBenchmarks); filtering hard items as mislabels | They need many models and items; outcomes come from the engine | Run every card; audit scorer, setup and recording |
+| Evaluate every commit, in parallel | One game at a time, on the owner's PC | `pytest` per change; drift jobs after a build or harness change |
+| Freeze the environment | Steam updates; pins warn but never block | Record the build; drift jobs |
+| A human baseline | A person plays through a different interface | Not planned; if added, a labelled reference row |
+
+## 12. Where to enforce first
+
+In order of how much a wrong result would cost; build each only when a planned study needs
+it, and rely on one only after the owner agrees its check.
+
+1. Observed endings never lost or overwritten ([5.2](#52-freeze-how-every-trial-is-scored)).
+2. One `card_result()` for every reader ([5.1](#51-one-success-rule-per-card-in-one-function-told-to-the-controller)).
+3. Every planned trial accounted for ([5.3](#53-give-every-planned-trial-one-visible-disposition), [4.1](#41-count-launches-not-rematches)).
+4. A foil launch counts only after the foil acted ([2.4](#24-attack-each-card-with-shortcuts-and-keep-wins-by-other-tactics)).
+5. The `study` block, stage, plan hash and first-slot tables ([4.2](#42-balance-who-plays-first-and-when), [4.3](#43-freeze-the-whole-study-in-one-plan-file), [3.1](#31-mark-each-jobs-stage-and-tune-only-on-development-evidence)).
+6. The held-out guard ([3.2](#32-reserve-held-out-variants-before-tuning-and-say-what-was-held-out)) and the review check ([3.1](#31-mark-each-jobs-stage-and-tune-only-on-development-evidence)).
+7. Condition key and controller identity ([1.2](#12-the-controller-is-everything-that-acts-in-the-battle-identify-it-by-content)).
+8. Every model call in latency ([6.2](#62-count-every-decision-per-battle-on-the-right-clock)).
+9. The public-field allow list and hidden-data test ([4.5](#45-give-controllers-only-listed-public-fields-and-test-by-changing-hidden-data)).
+10. `scorer_version` ([9.2](#92-version-the-scorer-correct-in-the-open-and-keep-releases-frozen)).
+11. The small-sample methods and paired table ([7.2](#72-use-the-named-method-for-each-situation), [7.3](#73-compare-a-and-b-on-shared-launches-and-say-unresolved-when-it-is)).
+12. Failed decisions in `digest`, then the fault scan ([8.1](#81-scan-every-battle-then-read-a-fixed-sample-before-counting-a-cell)).
+13. The `told` / `withheld` prompt test ([2.2](#22-tell-the-controller-everything-the-scorer-checks)).
+
+Once built and agreed, code can catch missing fields, mixed versions, lost endings and leaks
+of the fields its tests vary. It cannot show that a card tests its tactic, that an order had
+its effect, or that a claim is fair; those need agreed live checks and reading.
+
+## 13. Owner decisions these rules need
+
+1. The line battle's "if time runs out, you win": change the prompt or credit timer wins.
+2. The open failure-table rows ([5.2](#52-freeze-how-every-trial-is-scored)), construction
+   failure, whether draws count per card, and whether the battle-to-wall band invalidates a
+   battle or only flags it.
+3. Which witness timing cell makes a card "demonstrably winnable", and witness v2 (already
+   [pending](../state.md#owner-decisions-waiting)).
+4. Whether the chariot card is also a training environment, which variant to reserve first,
+   whether reserved variants stay unpushed until played, and how existing chariot model
+   cohorts are staged (training-eligible or not).
+5. Pairing within launches (the default) or one controller per launch; refuse or warn on
+   unbalanced plans.
+6. An allow list that drops and records unknown fields, removing `job`, and aging
+   acknowledgements under added age.
+7. The method set in [7.2](#72-use-the-named-method-for-each-situation) as an agreed check;
+   first episode per launch or a declared fixed number of rematches.
+8. Whether a non-designer reviewer will exist, and keeping LLM labels out of scores.
+9. Whether c1 keeps its verdict, printing one line that notes its b34/b36 harness mix and
+   the later scorer changes.
+10. What a drift job must show to pass after a build or harness change.
+11. Which providers' text and which stills may be published; where `runs/` is backed up.
+12. Whether benchmark.md's Terms adopt this page's "controller", and whether
+    tactic-cards.md's witness row drops "a person's win" (a demonstration, 2.3).
+
+## Sources
+
+Read on 2026-10-20: eleven of the twelve readings the owner assigned (all listed below) in
+full text, Wolfe's
+LLM-as-a-Judge through section summaries; most cited and related work in part (main
+sections or abstracts); MMLU-Redux only through Wolfe. The rules apply these sources; the
+studies do not show the rules work for WH3.
+
+| Source | Used for | Limit |
+|---|---|---|
+| [Weng, High-Quality Human Data](https://lilianweng.github.io/posts/2024-02-05-human-data-quality/) | Reviewer training, agreement limits, rule versus opinion labels | Crowd scale |
+| [Yan, Labeling Guidelines](https://eugeneyan.com/writing/labeling-guidelines/), with the Google and Bing rater guides it uses | The sheet layout in 10.2, an "unsure" option, revision while tracking agreement | Search-rating tie-breaks do not transfer |
+| [Wolfe, LLM-as-a-Judge](https://cameronrwolfe.substack.com/p/llm-as-a-judge), [Zheng et al.](https://arxiv.org/html/2306.05685v4) | Judge setups; position, length and self-preference bias | Text tasks |
+| [Husain, LLM-as-a-Judge](https://hamel.dev/blog/posts/llm-judge/index.html) (updated 2026-09) | Expert pass/fail labels, error analysis, true positive and negative rates, 20/40/40 judge splits | Product setting |
+| [Yan, LLM-Evaluators](https://eugeneyan.com/writing/llm-evaluators/) (2024), [Shankar et al.](https://arxiv.org/html/2404.12272) | Classification metrics over correlations; criteria drift while grading | Older text judges; freezing is our rule |
+| [Wolfe, Rubric-Based Rewards](https://cameronrwolfe.substack.com/p/rubric-rl), [Rubrics as Rewards](https://arxiv.org/html/2507.17746v2) | Rubric rewards, reward hacking, not judging with the training judge | Rewards; LLM-written rubrics |
+| [Autorubric](https://arxiv.org/html/2603.00077v3) (v3) | Narrow criteria, "cannot assess", judge model choice | No WH3 judge accuracy |
+| [Wolfe, Statistics for LLM Evals](https://cameronrwolfe.substack.com/p/stats-llm-evals), [Miller, Error Bars](https://arxiv.org/html/2411.00640v1) | Paired differences, planning n | Large question pools |
+| [Bowyer et al.](https://arxiv.org/html/2503.01747v3), [Card et al.](https://arxiv.org/abs/2010.06595), [Abadie et al.](https://arxiv.org/abs/1710.02926), [List et al.](https://www.nber.org/papers/w15701) | Small-sample intervals; power before the study; the design sets the unit; order effects | General statistics |
+| [Wolfe, Anatomy of a Benchmark](https://cameronrwolfe.substack.com/p/llm-bench), [MMLU-Redux](https://arxiv.org/html/2406.04127v3), [BBEH](https://arxiv.org/abs/2502.19187), [GPQA](https://arxiv.org/abs/2311.12022), [IFBench](https://arxiv.org/abs/2507.02833) | Harder, fixed and broader items as new versions; item audits; saturation; reference-model bias; overfitting to a public test | Static question sets |
+| [Wolfe, Agent Evaluation](https://cameronrwolfe.substack.com/p/agent-evals), [τ-bench](https://arxiv.org/html/2406.12045v1), [τ²-bench](https://arxiv.org/html/2506.07982), [Terminal-Bench 2.0](https://arxiv.org/html/2601.11868v1) | Model and scaffold judged together; pass^k; instructions matching tests; deliberate cheating | Containers with resets |
+| [Anthropic, Demystifying evals for AI agents](https://www.anthropic.com/research/demystifying-evals-for-ai-agents), [infrastructure noise](https://www.anthropic.com/research/infrastructure-noise) | Reference solutions, regression sets, reading transcripts, outcome grading, resource limits | Clean resets |
+| [Agentic Benchmark Checklist](https://arxiv.org/html/2507.02825v1), [BetterBench](https://arxiv.org/html/2411.12990v1), [Bean et al.](https://arxiv.org/html/2511.04703v1), [Leaderboard Illusion](https://arxiv.org/html/2504.20879), [HAL](https://arxiv.org/html/2510.11977v1) | Task and outcome validity, floor and ceiling rows, measuring one skill, selective disclosure, cost beside accuracy | A checklist is not verification |
+| [Röttger et al.](https://arxiv.org/html/2112.07475v2), [Zhang et al.](https://arxiv.org/html/2311.04345v1) | Rule versus opinion labels; reasons for disagreement | Subjective NLP labels |
+| [BALROG](https://arxiv.org/html/2411.13543), [VideoGameBench](https://arxiv.org/html/2505.18134), [TextStarCraft II](https://arxiv.org/html/2312.11865v3), [LLM-PySC2](https://arxiv.org/html/2411.05348v2), [Real-Time Reasoning Agents](https://arxiv.org/html/2511.04898v1) | How game benchmarks handle pausing, seeds and timeouts | Most pause, count tokens as time or seed; VideoGameBench's main setting runs live |
+| [tinyBenchmarks](https://arxiv.org/html/2402.14992v1), [Dataset Cartography](https://arxiv.org/html/2009.10795v2) | Why subset selection and label-noise filters do not apply | Need many models or a classifier |
+
+Project research that changed the design: [benchmark.md](benchmark.md#research-that-changes-the-design).

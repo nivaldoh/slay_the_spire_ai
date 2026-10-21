@@ -9,7 +9,7 @@ game. Battles always run unpaused at 1x.
 ## Before a run
 
 Use the [evaluation guidelines](evaluation-guidelines.md) to define the question,
-sampling, scoring and failure rules; its [study declaration](evaluation-guidelines.md#use-a-short-study-declaration)
+sampling, scoring and failure rules; its [study plan checklist](evaluation-guidelines.md#before-you-start)
 is a short planning template. New checks and score changes there remain proposals.
 
 The supported setup:

@@ -10,6 +10,7 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 ## Active work
 
 No benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md)
+(rewritten 2026-10-20; [its owner decisions](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need))
 cover design, scoring, statistics, review and proposed checks; the [scope](twwarhammer3/benchmark.md#scope-and-first-release)
 defines the release boundary. Suite membership, new checks and card gates remain proposals.
 The [Empire night](twwarhammer3/empire.md)

@@ -40,6 +40,26 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | 100 input jobs after the small-scenario checkpoint; six new jobs / seven scripted battles remain development evidence outside the core page. Separate small-calibration report includes them all |
 
+## 2026-10-20: Evaluation guidelines rewritten after review
+
+- Rewrote [evaluation-guidelines.md](evaluation-guidelines.md): 45 rules in 10 sections,
+  each with a Check (exists / proposed with size / manual); a glossary; a study-plan key
+  table; a failure table with today's and proposed treatment; a method table; common advice
+  that does not apply; a ranked enforcement list; 12 owner decisions. Rules are numbered
+  1.1-10.5; G1-G42 are retired (G1/G2 name calibration plans).
+- Research: 18 readers (the 12 readings, related game benchmarks, three code maps, design
+  docs, language) gave 537 findings, merged per topic. Eleven readings were read in full,
+  Wolfe's LLM-as-a-Judge through section summaries (corrects the entry below).
+- Review: 7 lenses gave 145 findings, 140 kept after a refuting pass; a final 3-agent check
+  found 1 high and about 30 smaller issues, all fixed. Corrected errors include a paused
+  battle marked as detected today (the mod always reports speed 1), detection chance
+  confused with the smallest significant split, pooled witness cells, Wilson coverage
+  (down to about 84%, not 85%), and a serving-fault loss the old example would have set aside.
+- Checks: every statistic recomputed twice (`runs/twwarhammer3/eval-guidelines-review-20261020/numbers/`);
+  `tests/test_doc_links.py` 54 passed; ruff passed. No code, score or agreed check changed;
+  every proposed check and gameplay finding stays unverified. 10.1k words against 8.4k: the
+  extra is per-rule checks, the failure table and the glossary.
+
 ## 2026-10-20: Evaluation guidelines from the research readings
 
 - Added [evaluation-guidelines.md](evaluation-guidelines.md): 42 guidelines covering

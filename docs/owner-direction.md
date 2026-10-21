@@ -40,6 +40,10 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-20 (guideline review): review evaluation-guidelines.md against the twelve
+  readings and their cited work; improve it, say how each rule could be enforced in code,
+  use simple language, and note common eval practices that do not apply or must differ for
+  WH3. Guidelines only, no code changes; summarise every change at the end.
 - 2026-10-20 (evaluation guidelines): read the twelve supplied evaluation resources and
   relevant cited work; write comprehensive, concrete benchmark guidelines covering
   definition, methods, reliability, interpretation, possible code enforcement and WH3
