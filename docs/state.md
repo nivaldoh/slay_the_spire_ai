@@ -85,8 +85,9 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 3. **The [failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)**: recommended, agree it
    (rescores no recorded episode) and merge `wh3-keep-engine-ending` (`git show 98b3013`), which keeps
    the ending only, scores unchanged; scoring that ending and construction failures needs a later change.
-4. Where to back up `runs/`, which has no copy (23 GB, 6.9 GB without `checkpoints/`). Recommended:
-   yes to the ready sha256-checked copy to `C:` (the same machine, so not off-site).
+4. Where to back up `runs/`, which has no copy (23 GB, 7.1 GB without `checkpoints/` on
+   2026-10-21). Recommended: yes to the ready sha256-checked copy to `C:` (the same machine,
+   so not off-site).
 5. The chariot card: [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions) 3-5; recommended, witness v2 for the
    next confirmation (4/5 at 5 s/5 s and 8 s/8 s, v1 2/8 and 0/4), c1 staying v1's admitted record. The
    [latency program's](twwarhammer3/latency.md#owner-decisions) three (your call): `c1` as evidence, the scored route, the $20 stop.
