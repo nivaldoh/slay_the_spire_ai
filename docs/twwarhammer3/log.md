@@ -45,9 +45,9 @@ benchmark harness revision, G1 and G2 the calibration stages.
 Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3/away-20261021/`.
 - [Starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21) (proposal): a
   five-part rule, three cards (chariot, rank-5 line, Skaven expendables; two blind
-  re-derivations chose the same), the rest parked, a $0 screen of 36 scripted launches
-  (about 4.6 h, the rifle lane and two threats as probes) and a held-out map. Reviews
-  confirmed 58 findings, all fixed.
+  re-derivations agreed), a $0 screen of 36 scripted launches (4.6 h, two probes), a
+  held-out map. Independent reviews confirmed 76 errors in tonight's drafts and commits,
+  all fixed.
 - Failure rule: none of 595 episodes failed at construction, a late acknowledgement or
   `close()`, so the [proposed rule](benchmark.md#correctness-checks-to-agree) rescores
   nothing. Branch `wh3-keep-engine-ending` (`b527584`, unmerged, independently reviewed)

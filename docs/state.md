@@ -10,11 +10,10 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 ## Active work
 
 No benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need),
-[scope](twwarhammer3/benchmark.md#scope-and-first-release), suite, new checks and card gates remain
-proposals; the [Empire night's](twwarhammer3/empire.md) owner items are pending. Away window
-2026-10-21 02:20 to about 12:00 (Claude Code; offline, $0, no game: no plan was named):
-[log entry](twwarhammer3/log.md#2026-10-21-a-proposed-starting-set-the-failure-rule-recount-and-a-blind-c1-recount),
-files in `runs/twwarhammer3/away-20261021/`. Waiting changes: 3 of 3 ([branches](#branches)).
+[scope](twwarhammer3/benchmark.md#scope-and-first-release), suite, checks and gates remain proposals;
+[Empire items](twwarhammer3/empire.md) pending. Away window 2026-10-21 02:20 to about 12:00 (Claude
+Code; offline, $0, no game): [log](twwarhammer3/log.md#2026-10-21-a-proposed-starting-set-the-failure-rule-recount-and-a-blind-c1-recount),
+`runs/twwarhammer3/away-20261021/`. Waiting changes: 3 of 3 ([branches](#branches)).
 
 Priorities (2026-10-18): WH3 first, then Spire; post-training secondary. [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
 
@@ -99,8 +98,9 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 8. `wh3-rules-v21-attack-path` (one rules sentence: attacks take the engine's route; move first
    and queue the attack): recommended, its own `llm_rules` version after item 2's, or drop it.
    Whether to keep `commander` (unplayed since v4); more OpenAI budget (the $52 cap refuses Sol).
-9. Yes/no on the [away guidelines](autonomy.md); before any campaign launch, yes/no on
-   harness saves in the WH3 profile and on Steam achievements (which cannot be undone).
+9. Yes/no on the [away guidelines](autonomy.md) (tonight's offline trial: independent reviews
+   caught 76 errors in my drafts and commits, all fixed); before any campaign launch, yes/no
+   on harness saves in the WH3 profile and on Steam achievements (which cannot be undone).
 
 ## Runtime and ownership
 
