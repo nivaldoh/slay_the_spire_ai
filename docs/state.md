@@ -87,7 +87,7 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 2. **The defender prompt** promises a timer win the cards do not count ([16 of 29 model launches](twwarhammer3/empire.md#decisions-taken-for-the-owners-review)).
    Recommended: state the card's success rule (a new prompt version); or count timer wins.
 3. **The [failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)** (rescores none of 595
-   episodes) and the unmerged branch `wh3-keep-engine-ending` (`f6ddec7`, scores unchanged).
+   episodes) and the unmerged branch `wh3-keep-engine-ending` (`b527584`, scores unchanged).
 4. Where to back up `runs/`, which has no copy (23 GB, 6.9 GB without `checkpoints/`). Ready
    on a yes: a sha256-checked copy to `C:` (the same machine, so not off-site).
 5. The chariot card: [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)

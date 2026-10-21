@@ -45,22 +45,21 @@ benchmark harness revision, G1 and G2 the calibration stages.
 Away window from 02:20, offline, $0, no game (no plan was named); task note, readers and
 outputs in `runs/twwarhammer3/away-20261021/`.
 - [Starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21) (proposal): a five-part
-  rule, four cards (chariot, rank-5 line, Skaven expendables, rifle lane), the rest parked
-  with reasons, and a $0 screen of 36 scripted launches (about 4.6 h; jobs fixed, revision
-  set on the go-ahead). Two review rounds (12 agents) confirmed 38 and then 11 findings, among
-  them win markers that losing floors also met, two witnesses planned at the wrong age and an
-  already-stepped Helblaster; all fixed. Markers read on all 42 recorded episodes separate
-  the expendables and rifle-lane witnesses from their floors; the line has none yet.
+  rule, four cards (chariot, rank-5 line, Skaven expendables, rifle lane), the rest parked,
+  and a $0 screen of 36 scripted launches (about 4.6 h). Two review rounds (12 agents)
+  confirmed 49 findings, among them win markers that losing floors also met; all fixed. On
+  the 42 recorded episodes the markers separate each witness from its floors (the line's
+  only at rank 5, the expendables' once its ogres must fight).
 - Failure rule: none of 595 recorded episodes failed at construction, a late acknowledgement
   or `close()`, so the [proposed rule](benchmark.md#correctness-checks-to-agree) rescores nothing.
-- Local branch `wh3-keep-engine-ending` (`f6ddec7`, unmerged): the engine's ending survives a
-  late acknowledge or `close()` failure, scores unchanged. Its regression fails before the fix
-  and passes after; full suite 1342 passed, 28 skipped; Ruff clean.
-- c1 handoff: a hashed index (341 files) and the sealed board. A blind agent recount from the
-  docs and raw files matched every outcome and the verdict, and found the written cycles v1
-  rule left out the scorer's 1 s tolerance (frozen at `5396182`) and the gate's zero interval;
-  both are now stated. Same model family, so it checks the documents, not judgment.
-- Unverified: every gameplay count (1-33 episodes a cell) and the markers (proposed readers).
+- Local branch `wh3-keep-engine-ending` (`b527584`, unmerged): the engine's ending survives a
+  late acknowledge or `close()` failure, scores unchanged; an independent review of the first
+  version caught two changed readings, now avoided. Regression fails on the parent, passes
+  here; full suite 1342 passed, 28 skipped; Ruff clean.
+- c1: a blind recount from docs and raw files matched every outcome and the verdict, and the
+  written rule now states the scorer's 1 s tolerance and zero interval. Two labellers agreed
+  on 16 chariot engagements; cycles v1 counted all 4 locked-in attempts as cycles.
+- Unverified: every gameplay count (1-33 episodes a cell), markers and labels (proposed).
 
 ## 2026-10-21: Autonomous-work strategy refined (proposal)
 

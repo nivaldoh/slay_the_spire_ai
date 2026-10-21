@@ -213,6 +213,14 @@ applied. Review disagreements against the evidence, then freeze examples for the
 check. Deliberately misleading trace edits test the reader, not live game effects.
 This proposed check does not redefine cycles v1.
 
+First try (2026-10-21, `runs/twwarhammer3/away-20261021/chariot-labels/`): one agent picked
+16 engagements from 16 chariot battles and two others labelled them against a written rule
+without the reader; they agreed on all 16 labels. Cycles v1 counted all 4 locked-in
+attempts (a pull-out order while the chariot stayed in melee) as cycles; the wrong reading
+"every engagement but the last" erred on 9. The rule needs three fixes before the examples
+are frozen: its window missed 3 pull-outs ordered just before contact, the new charge has no
+lower time limit, and "no attempt, no separation" has no label. Proposed, not agreed.
+
 **Proposed failure rule for the next evaluator.** Count a controller that fails to
 construct on its assigned attempt as unsuccessful, separately from proven game/setup
 failure. During a valid battle, terminal controller failure is a forfeit; a retried
