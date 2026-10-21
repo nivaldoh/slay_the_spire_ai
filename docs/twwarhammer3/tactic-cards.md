@@ -420,9 +420,9 @@ infantry. They were chosen by the five-part rule below. The line and the expenda
 through three stages: a $0 scripted screen (39 launches with two probes, about 5.1 h),
 where the naive scripts must lose and a disclosed script must win 2 of 3 showing the
 tactic's marker; a confirmation (each foil 0 of 14, the witness at least 10 of 14), once
-the card's named shortcut is scripted and has lost; then a model screen (about $10 for GLM
-and Qwen on all three cards). The screen waits for [inbox item
-1](../state.md#owner-decisions-waiting); the chariot, admitted under c1's rule, waits for
+the card's named shortcut is scripted and has lost; then, with a held-out variant reserved,
+a model screen (about $10 for GLM and Qwen on all three cards). The screen waits for [inbox
+item 1](../state.md#owner-decisions-waiting); the chariot, admitted under c1's rule, waits for
 the agreed checks, failure rule and witness version
 ([state](../state.md#total-war-warhammer-iii), next step 1).
 
@@ -461,9 +461,9 @@ section, each chose the three cards below (`runs/twwarhammer3/away-20261021/rede
 
 | Card and battle | What it tests, and its marker | So far | Missing before confirmation |
 |---|---|---|---|
-| Chariot, `grn-chariot-emp-swordsmen-hard` (attacks) | Charge, pull out and charge again instead of grinding. Marker: at least one pull-out attempt during melee (cycles v1) | `attack_nearest` 0/11, `rush_nearest` 0/12; SnapHitAndRun 5/6 in its admitted cell (5 s added age, 21/33 over all ages), HitAndRunV2 11/13; admitted under c1's rule | The agreed checks, failure rule and witness version ([state](../state.md#total-war-warhammer-iii), next step 1); no more delay sweeps without a new question |
+| Chariot, `grn-chariot-emp-swordsmen-hard` (attacks) | Charge, pull out and charge again instead of grinding. Marker: at least one pull-out attempt during melee (cycles v1) | `attack_nearest` 0/11, `rush_nearest` 0/12; SnapHitAndRun 4/5 in c1's admission launches at 5 s added age (5/6 with an earlier b33 launch the board pools; 21/33 over all ages), HitAndRunV2 11/13; admitted under c1's rule | The agreed checks, failure rule and witness version ([state](../state.md#total-war-warhammer-iii), next step 1); no more delay sweeps without a new question |
 | Line at rank 5, `emp-line-grn-raid-xp5` (7 v 7, defends) | Seven units keep their jobs: the line holds in guard mode, the guns stay behind it, the knights take the enemy cavalry. Proposed marker: the knights' first melee is against enemy cavalry. On this battle it fails both floors and passes both wins (LineTeam, GLM) and both other rank-5 losses (Kimi, LineTeamReserve); at rank 0 both floors pass it too, so it marks the knights' job, not the whole team's | `hold` 0/1, `attack_nearest` 0/1; LineTeam 1/1 at 0 s (b45; b46 unplayed); LineTeamReserve 0/1 | The rush floor; floors and LineTeam b46 at 3 launches; agreeing the marker ([Empire item 2](empire.md#for-the-owner-to-decide)); a decision on the commander flag, which sits on the Spearmen reserve in all 17 recorded battles (design rule 8); and a named shortcut (proposed: LineTeam with the knights held back, which tests whether their job decides it). Whether replacement helps stays a [team-plan](robot-team-plan.md#a-small-sequence-of-experiments) question |
-| Expendables, `skv-ogres-slaves-emp-halberds-1` (defends) | Spend the Skavenslaves to hold the Halberdiers while the Rat Ogres kill the guns. Marker: the ogres fight, and the slaves fight the halberds before the ogres' first melee, which is not with the halberds. SlaveTarpit passes all 5 of its episodes and all 3 floor episodes fail, with one or two Halberdiers units | `hold` 0/1, `attack_nearest` 0/1; SlaveTarpit 3/4 at 5 s. Kimi K3 played a shortcut twice, ogres on the guns before slaves on the halberds: low won (87 s, then 127 s), high lost (179 s, then 334 s) | The rush floor; 3 launches per floor and witness; a foil for Kimi's shortcut (ogres at the guns at once); a decision on the commander flag, which sits on a Skavenslaves unit, one the tactic spends (design rule 8; it broke in 2 of SlaveTarpit's 3 wins, which still won) |
+| Expendables, `skv-ogres-slaves-emp-halberds-1` (defends) | Spend the Skavenslaves to hold the Halberdiers while the Rat Ogres kill the guns. Marker: the ogres fight, and the slaves fight the halberds before the ogres' first melee, which is not with the halberds. Over both versions of the battle (one or two Halberdiers units), SlaveTarpit's 5 episodes all pass it and the 3 floor episodes all fail it | `hold` 0/1, `attack_nearest` 0/1; SlaveTarpit 3/4 at 5 s. Kimi K3 played a shortcut twice, ogres on the guns before slaves on the halberds: low won (87 s, then 127 s), high lost (179 s, then 334 s) | The rush floor; 3 launches per floor and witness; a foil for Kimi's shortcut (ogres at the guns at once); a decision on the commander flag, which sits on a Skavenslaves unit, one the tactic spends (design rule 8; it broke in 2 of SlaveTarpit's 3 wins, which still won) |
 
 Witness texts: a check of the code against each witness's disclosed `knowledge` text
 (2026-10-21, `runs/twwarhammer3/away-20261021/witness-findings.txt`) found three that
@@ -522,7 +522,8 @@ jobs follow each other within seconds):
   launch short (evaluation guideline 4.2; such a cell is re-planned under the reading
   rule): 39 launches in about 5.1 h. The jobs are fixed in
   `runs/twwarhammer3/away-20261021/screen-plan.json`; its revision and start cutoff are set
-  on the go-ahead. The queue cannot stop a card early. Offline, the three witnesses
+  on the go-ahead. The queue cannot stop a card early, so this screen runs all its launches
+  instead of the release route's early stop on a shortcut win. Offline, the three witnesses
   (LineTeam's b46 code included) decided on 9,674 recorded observations (the line at both
   ranks, both rifle variants, the expendables battle) without an exception or an invalid
   batch (`witness-dryrun.txt`; open loop, decisions only). All 39 jobs pass `play`'s own
@@ -558,7 +559,9 @@ jobs follow each other within seconds):
   launch saves about 13% at the median launch cost ([decision
   13.5](evaluation-guidelines.md#13-owner-decisions-these-rules-need)); the line's launches
   add about 90 s, so there it saves about 5-7% (no line launch has been paired). A
-  10-launch gate (foil bound 0.26 instead of 0.19) needs about 30% fewer.
+  10-launch gate (foil bound 0.26 instead of 0.19) needs about 30% fewer. The chariot's
+  next confirmation waits for its witness and timing decision (state item 5); at this gate
+  one cell is 42 launches, about 5.8 h at its recorded 8.3 minutes a launch (83 launches).
 - First model screen, 10 launches per card and model (a screen, not a ranking): GLM-5.3 low
   cost a median $0.19 a launch (45 since 10-19, `results.csv` usd), Kimi K3 low $0.63 (its
   3 line battles), Qwen3.6 $0.02 (6). About $26 of the $50 OpenRouter allowance is left
