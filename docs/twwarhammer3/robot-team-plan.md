@@ -164,7 +164,9 @@ rank-5 LineTeamReserve launch, which still lost). Floors and models had already 
 reserve (11 of 11), a second line unit broke within 20 s in 7, the side was outnumbered in
 10, and the first unit to break later rallied in 12. The Spearmen reserve carries the
 commander flag in all 17, so committing it risks the captain's death shock (design rule 8
-of the tactic cards). On 6 scripted battles this leans toward "revise the setup or stop".
+of the tactic cards); it broke before the first line unit in only 2 (`flag_order.txt`), and
+the one scripted win never committed it. On 6 scripted battles this leans toward "revise the
+setup or stop".
 
 ### 2 Test one allocation change
 
