@@ -55,8 +55,10 @@ first waits 3 s on a stop event that cleanup can wake.
   each decide and acknowledgement and after cleanup. The `decision` record ties a member's
   decision ID to its mailbox request; its wire `based_on` is the observation the dispatcher
   checked against, not the member's source, so member ages come from the feedback events.
-  The card says `asynchronous`; `digest` labels its header counts as dispatcher polls and
-  prints member feedback with member ages.
+  The card says `asynchronous`. Since `team-v2` the result's decisions and delays count
+  member batches and `polls` keeps the dispatcher's; `digest` labels its header counts
+  either way (dispatcher polls for earlier evidence, which has no `polls`), prints member
+  feedback with member ages and each member's notes.
 - `play.py` refuses a team with `delay_ms` or `interval_ms` other than 0.
 
 Members are trusted in-process code; separate Python dictionaries are not a sandbox.

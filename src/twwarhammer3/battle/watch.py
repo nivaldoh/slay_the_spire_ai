@@ -12,6 +12,8 @@ each episode's ``trace.jsonl`` as the job writes it and prints:
   direct controller's orders and reason, and the notes whenever they change;
 - each episode's armies, engine rejections, invalid batches, a strength line with the spend
   so far every 30 s of battle time, and each result.
+A team member's requests and replies carry its name, and its locally refused batches and
+their spend are shown too.
 A finished job or a finished episode is printed once.
 
 ``--next`` (only with a job directory) is for an agent running it in the background: it
@@ -68,6 +70,11 @@ class Feed:
                     if not r.get("ok") and 0 < (r.get("index") or 0) <= len(orders)]
         if kind == "invalid":
             return [f"        invalid orders: {record['error']}"]
+        if kind == "team" and record["event"] == "feedback" and record["source"] == "local":
+            return [f"        {record['decision']} refused: {record['ack']['validation_error']}"]
+        if kind == "model_exchange" and record.get("member"):
+            # A team member's spend, refused batches included; its decisions skip the tally.
+            self.usd += sum(attempt.get("usd", 0) for attempt in record["attempts"])
         if kind == "result":
             final = record["observation"].get("final") or {}
             left = ", ".join(f"{side} {final[side]['men'] / final[side]['men0']:.0%} left"
@@ -94,7 +101,9 @@ class Feed:
         if record["orders"]:
             self.pending[record["request"]] = record["orders"]
         attempts = behavior.get("attempts") or []
-        self.usd += sum(attempt.get("usd", 0) for attempt in attempts)
+        if not behavior.get("member"):
+            self.usd += sum(attempt.get("usd", 0) for attempt in attempts)
+        who = f"[{behavior['member']}] " if behavior.get("member") else ""
         think = sum(attempt.get("seconds", 0) for attempt in attempts)
         if behavior.get("type") == "llm" and "prompt" in behavior:
             lines += self._request(seconds, behavior)  # the direct controller blocks
@@ -107,7 +116,7 @@ class Feed:
             lines.append("         " + plan)
             lines += [f"         dropped {item}" for item in behavior.get("dropped", [])]
         elif behavior.get("reason"):
-            lines.append(f"{seconds:5.0f}s <- {describe_orders(record['orders'])}"
+            lines.append(f"{seconds:5.0f}s <- {who}{describe_orders(record['orders'])}"
                          f" ({think:.1f} s think): {behavior['reason']}")
         if behavior.get("notes") and behavior["notes"] != self.notes:
             self.notes = behavior["notes"]
@@ -118,7 +127,8 @@ class Feed:
 
     def _request(self, seconds: float, behavior: dict) -> list[str]:
         prompt = behavior["prompt"]
-        lines = [f"{seconds:5.0f}s -> {behavior.get('model', 'model')}:"
+        who = f"[{behavior['member']}] " if behavior.get("member") else ""
+        lines = [f"{seconds:5.0f}s -> {who}{behavior.get('model', 'model')}:"
                  f" {strength(self.observation)}; {len(prompt)} chars"]
         if self.prompts:
             return lines + ["         " + line for line in prompt.splitlines()]

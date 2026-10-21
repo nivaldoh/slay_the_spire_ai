@@ -15,7 +15,7 @@ from wh3_fixtures import USAGE, FakeSend
 
 from gameai.ledger import BudgetExhausted, Ledger
 from gameai.llm import APIError, usage_cost
-from twwarhammer3.battle import controllers, digest, llm, play, team
+from twwarhammer3.battle import controllers, digest, llm, play, team, watch
 from twwarhammer3.protocol import PolicyFailure
 
 GUNS = "wh_main_emp_inf_handgunners"
@@ -204,15 +204,16 @@ def test_the_team_policy_shares_the_job_ledger_and_plays_the_rules_prompt(tmp_pa
     policy.close()
 
 
-def test_each_member_is_charged_its_own_calls_and_every_exchange_is_kept(tmp_path):
+def test_each_member_is_charged_counted_and_labelled_as_itself(tmp_path):
     usage = {"cavalry": dict(USAGE, input_tokens=100), "line": dict(USAGE, input_tokens=1000)}
+    first = {"cavalry": [{"unit": "f1", "type": "attack", "target": "e1"}], "line": [ADVANCE]}
     bodies = []
 
     def send(body):  # the cavalry member owns f1, the line member f2
         bodies.append(body)
         prompt = body["input"][0]["content"]
         member = "cavalry" if "Your units:\n- f1 " in prompt else "line"
-        text = reply([ADVANCE] if member == "line" and len(bodies) <= 2 else [])
+        text = reply(first[member] if len(bodies) <= 2 else [], notes=f"{member} NOTES")
         return {"id": f"r{len(bodies)}", "usage": usage[member], "output": [
             {"type": "message", "content": [{"type": "output_text", "text": text}]}]}
 
@@ -221,31 +222,44 @@ def test_each_member_is_charged_its_own_calls_and_every_exchange_is_kept(tmp_pat
 
     class Mailbox(FakeMailbox):
         def wait_observation(self, **kwargs):
-            # Both first calls end before seq 2, both second calls before the result.
-            for index in {2: (0, 1), 5: (2, 3)}.get(self.queue[0]["seq"], ()):
+            # Both first calls end before seq 2, where e1 is hidden, so the cavalry's attack
+            # is refused locally; its second call ends before seq 3, the line's before 4.
+            for index in {2: (0, 1), 3: (2,), 4: (3,)}.get(self.queue[0]["seq"], ()):
                 workers.finish(index)
             return super().wait_observation(**kwargs)
 
-    mailbox = Mailbox([battle(0, 0), battle(1, 1000), battle(2, 2000, ack=True),
-                       battle(3, 3000, ack=True), battle(4, 4000, ack=True),
-                       battle(5, 5000, result="won")])
+    mailbox = Mailbox([battle(0, 0), battle(1, 1000), battle(2, 2000, ack=True, enemy=False),
+                       battle(3, 3000, ack=True), battle(4, 4000, result="won")])
     result = play.play_episode(tmp_path / "e", {**CONFIG, "policy": "team_llm_rules",
                                                 "model": "gpt-6-luna", "effort": "low",
                                                 "interval_ms": 0},
                                lambda: policy, mailbox, not_battle=None)
     assert result["status"] == "won" and [r[2] for r in mailbox.requests] == [
-        [], [], [ADVANCE], []]
+        [], [ADVANCE], []]
     cost = {name: 2 * usage_cost("gpt-6-luna", usage[name]) for name in usage}
-    assert {name: (row["calls"], row["usd"]) for name, row in result["members"].items()} == {
-        name: (2, pytest.approx(cost[name])) for name in usage}
+    refused = {"cavalry": 1, "line": 0}  # the cavalry's first batch
+    assert {name: (row["calls"], row["usd"], row["local_refusals"])
+            for name, row in result["members"].items()} == {
+        name: (2, pytest.approx(cost[name]), refused[name]) for name in usage}
     assert result["llm"]["usd"] == pytest.approx(sum(cost.values()))
     assert len((tmp_path / "spend.jsonl").read_text().splitlines()) == 4
-    assert (result["decisions"], result["delays_ms"]) == (2, [1500, 2500])
-    assert result["polls"]["decisions"] == 4 and result["polls"]["delays_ms"] == [500] * 3
+    assert (result["decisions"], result["invalid"], result["delays_ms"]) == (2, 1, [1500])
+    assert result["polls"]["decisions"] == 3 and result["polls"]["delays_ms"] == [500] * 2
     events = [json.loads(line) for line in (tmp_path / "e/trace.jsonl").open()]
     exchanges = sorted((e["member"], e["prompt"]) for e in events
                        if e["kind"] == "model_exchange")
     assert exchanges == sorted(
         ("cavalry" if "Your units:\n- f1 " in b["input"][0]["content"] else "line",
          b["input"][0]["content"]) for b in bodies)
-    assert "2 decisions, 0 invalid" in digest.digest(tmp_path / "e")
+    text = digest.digest(tmp_path / "e")
+    assert "2 decisions, 1 invalid" in text and "count member batches" in text
+    assert text.splitlines()[-2:] == ["notes (line): line NOTES", "notes (cavalry): cavalry NOTES"]
+    feed = watch.Feed("e")
+    lines = [line for event in events for line in feed.lines(event)]
+    assert "        cavalry-1 refused: f1: target 'e1' is not visible" in lines
+    assert any(line.startswith("    3s -> [cavalry] gpt-6-luna:") for line in lines)
+    assert feed.usd == pytest.approx(result["llm"]["usd"])
+    path = tmp_path / "e/result.json"  # team evidence from before polls were recorded
+    path.write_text(json.dumps({k: v for k, v in json.loads(path.read_text()).items()
+                                if k != "polls"}))
+    assert "describe dispatcher polls" in digest.digest(tmp_path / "e")

@@ -106,9 +106,11 @@ def episode_digest(episode: Path, decisions: bool = True) -> str:
         f" ${llm.get('usd', 0):.4f}{policy}{_measures(result)}{error}",
     ]
     if "members" in (result.get("card", {}).get("disclosure") or {}):
+        # Team evidence recorded before ``polls`` counts the dispatcher's requests.
         lines.append("team: header decisions/delay count member batches (dispatcher requests in"
-                     " result.json polls); member timings below")
-    observation, last, notes, refused = None, None, None, False
+                     " result.json polls); member timings below" if "polls" in result else
+                     "team: header decisions/delay describe dispatcher polls; member timings below")
+    observation, last, notes, refused = None, None, {}, False
     items, pending = [], {}
     for raw in (episode / "trace.jsonl").open():
         record = json.loads(raw)
@@ -119,7 +121,8 @@ def episode_digest(episode: Path, decisions: bool = True) -> str:
                 observation = last
         elif kind == "decision":
             behavior = record.get("behavior") or {}
-            notes = behavior.get("notes", notes)
+            if "notes" in behavior:  # a team member's notes are its own
+                notes[behavior.get("member")] = behavior["notes"]
             quiet = not record["orders"] and "plan" not in behavior and not refused
             refused = False
             if not record["orders"] and not behavior.get("reason"):
@@ -162,8 +165,8 @@ def episode_digest(episode: Path, decisions: bool = True) -> str:
         lines.append(f"final at {last.get('time_ms', 0) / 1000:.0f} s: {strength(last)}"
                      f"{objectives(last)}")
         lines += _units(last)
-    if notes:
-        lines.append("notes: " + notes.replace("\n", " / "))
+    lines += [f"notes{f' ({member})' if member else ''}: " + text.replace("\n", " / ")
+              for member, text in notes.items() if text]
     return "\n".join(lines)
 
 
