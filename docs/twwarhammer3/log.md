@@ -56,10 +56,10 @@ Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3
   version caught two changed readings, now avoided. Regression fails on the parent, passes
   here; full suite 1342 passed, 28 skipped; Ruff clean.
 - c1: a blind recount from docs and raw files matched every outcome and the verdict, and the
-  written rule now states the scorer's 1 s tolerance and zero interval. On 16 hand-picked
-  chariot engagements labelled under the proposed rule v2, cycles v1 was right on 9 and
-  counting every engagement but the last on 10 (12 and 7 under rule v1). One model family
-  throughout: these check the documents, not judgment.
+  written rule now states the scorer's 1 s tolerance and zero interval. On 21 hand-picked
+  chariot engagements labelled under the proposed rule v2, cycles v1 was right on 13 and
+  counting every engagement but the last on 10: v1 counts attempts that never got clear and
+  misses pull-outs ordered before contact. One model family: a check of the documents only.
 - Unverified: every gameplay count (1-33 episodes a cell), markers and labels (proposed).
 
 ## 2026-10-21: Autonomous-work strategy refined (proposal)
