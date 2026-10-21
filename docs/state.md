@@ -85,9 +85,8 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 3. **The [failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)**: recommended, agree it
    (rescores no recorded episode) and merge `wh3-keep-engine-ending` (`git show 98b3013`), which keeps
    the ending only, scores unchanged; scoring that ending and construction failures needs a later change.
-4. Where to back up `runs/`, which has no copy (23 GB, 7.1 GB without `checkpoints/` on
-   2026-10-21). Recommended: yes to the ready sha256-checked copy to `C:` (the same machine,
-   so not off-site).
+4. Where to back up `runs/` (no copy; 23 GB, 7.1 GB without `checkpoints/`, 2026-10-21). Recommended:
+   yes to the ready sha256-checked copy to `C:` (the same machine, so not off-site).
 5. The chariot card: [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions) 3-5; recommended, witness v2 for the
    next confirmation (4/5 at 5 s/5 s and 8 s/8 s, v1 2/8 and 0/4), c1 staying v1's admitted record. The
    [latency program's](twwarhammer3/latency.md#owner-decisions) three (your call): `c1` as evidence, the scored route, the $20 stop.
@@ -122,6 +121,6 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` attack-route draft, labelled
   v21 before main's v21 (`18dabdd`); renumber before any merge.
 - `wh3-keep-engine-ending` (`98b3013`, worktree `../slay_the_spire_ai-wh3-ending`): keeps the
-  engine's ending through a late acknowledge or `close()` failure (inbox item 3). Merged onto
-  `66d2d20` it is clean; WH3 suite, doc links and ruff pass (687, 1 skipped: no local runs/).
+  engine's ending through a late acknowledge or `close()` failure (inbox item 3); merges cleanly
+  onto `main` (rechecked 2026-10-21 10:30; merged WH3 suite and ruff pass at `66d2d20`).
 - Archived drafts are tags (`git tag --list 'archive/*'`).
