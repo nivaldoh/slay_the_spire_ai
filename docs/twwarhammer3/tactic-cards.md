@@ -502,7 +502,8 @@ jobs follow each other within seconds):
   on the go-ahead. The queue cannot stop a card early. Offline, the three witnesses
   (LineTeam's b46 code included) decided on 9,674 recorded observations (the line at both
   ranks, both rifle variants, the expendables battle) without an exception or an invalid
-  batch (`witness-dryrun.txt`; open loop, decisions only).
+  batch (`witness-dryrun.txt`; open loop, decisions only). All 39 jobs pass `play`'s own
+  argument, controller and scenario checks offline (`preflight.py`).
 - Reading rule, fixed now: a floor's contact win parks that card (two threats would get one
   step instead). A card goes to confirmation when no floor won by contact, its witness won
   at least 2 of 3 with the marker on each win, and the rest of its Missing column is done,
