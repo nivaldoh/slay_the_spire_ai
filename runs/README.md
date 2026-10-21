@@ -54,6 +54,11 @@ runs/
                       and the first battle jobs from before battle/ existed
     vanilla/          Scripts and scripting docs extracted from the game's packs, read when
                       probing the engine. Proprietary: never commit or copy them into Git.
+    <topic>-<date>/   Agents' review, research and away-window folders (e.g.
+                      eval-guidelines-review-20261020, army-controls-20261019,
+                      away-20261021): findings, check outputs and the scratch scripts
+                      that the pages and log entries citing them rest on
+  autonomy-<date>/    Reviews and checks behind docs/autonomy.md
 ```
 
 New tracks get their own folder: `runs/<track>/<job>` for Slay the Spire,
