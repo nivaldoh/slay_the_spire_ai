@@ -165,7 +165,9 @@ comparison between models.
    and four incomplete attempts (two of them in that battle's episode 1 "no valid reply"
    forfeit, one in the wizard battle, one a Step 5 whitespace flood). It also lists 26 GLM
    repetition loops: 16 completed replies repeating one order 5-151 times and 10 incomplete
-   attempts whose text repeats.
+   attempts whose text repeats. Since GLM-5.3 was pinned to Decart (b36, 2026-10-19), 4 of
+   its 45 episodes had a garbled reply, all on 2026-10-20 (0 of 18 the night before); the
+   first GLM screen inherits that backend unless it is re-pinned.
 5. **The 20 v 20.** One launch each of Qwen and GLM worked technically; order age (Qwen
    18 s) and per-decision cost (GLM) both argue for a planner-executor harness before more
    large battles; the owner's harness-comparison direction (2026-10-18) fits here.
