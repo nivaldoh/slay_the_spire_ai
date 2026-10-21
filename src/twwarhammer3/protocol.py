@@ -3,7 +3,7 @@
 Observations are the dicts the Lua side publishes (``engine/mailbox.py`` has the
 shape). Orders have a unit, type and command-specific fields for movement, attacks,
 toggles or abilities; move/attack sequences use ``queue``. The unit ``"army"`` gives the
-army's own orders: an ``ability`` (Khorne's kill unlocks), and, paid with supplies, a
+army's own orders: an ``ability`` (a faction's point unlocks), and, paid with supplies, a
 ``build`` (a tower or barricade on a slot) or a ``reinforce`` (a unit from the
 reinforcement pool, entering at a spawn zone). Only an engine-reported battle result is a
 gameplay outcome; everything below is an infrastructure, protocol or policy failure.
@@ -13,7 +13,7 @@ import math
 
 
 class ProtocolError(RuntimeError):
-    """The in-game side or the policy broke the message contract."""
+    """The game's messages or setup (against the scenario), or the policy, broke the contract."""
 
 
 class IllegalActionError(ProtocolError):
@@ -29,7 +29,7 @@ class PolicyFailure(RuntimeError):
 
 
 class MailboxTimeout(RuntimeError):
-    """The game stopped publishing, or never consumed a request."""
+    """The game did not publish what was awaited in time, or never consumed a request."""
 
 
 class BattleRestarted(RuntimeError):
@@ -221,7 +221,7 @@ def _finite(value) -> bool:
 
 
 def scenario_key(observation: dict) -> str:
-    """Factions and unit counts of the first observation, to check a job's episodes match."""
+    """Factions and unit counts of the first observation with units: an episode's ``scenario``."""
     armies = observation.get("armies", {})
     player = armies.get("player", {}).get("faction", "?")
     enemy = armies.get("enemy", {}).get("faction", "?")

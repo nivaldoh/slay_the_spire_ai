@@ -5,15 +5,18 @@
     python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>/episode-0000 --at 95
     python -m twwarhammer3 digest runs/twwarhammer3/battle/<job> --units         unit fates
 
-An episode prints one line per decision that sent orders or carries a model's reason:
-battle time, both sides' strength in the state the policy saw (units still fighting / men;
-enemies as seen of the roster), the measured delay, the orders, the engine's rejections,
-a commander's adopted plan with its age and the model's reason. A run of decisions that
-sent no new orders becomes one line with the last reason. Then the final state and the
-model's last notes. ``--at`` prints the one decision nearest a battle time in full: the
-prompt, the raw reply, the orders and the engine's verdicts. ``--units`` prints, per
-episode, each unit's first and last observed men and ammunition, when it was first seen
-in melee and routing, and the engine's refusals by error. It only reads evidence.
+An episode prints its result line, then one line per decision that sent orders or carries a
+model's reason: battle time, both sides' strength in the state the policy saw (units still
+fighting / men; enemies as seen of the roster), tickets, point holders and supplies where
+the battle type has them, the measured delay, the orders, the engine's rejections, a
+commander's adopted plan with its age and the model's reason. A batch that failed
+validation adds an ``invalid:`` line. A run of decisions that sent no new orders becomes
+one line with the last reason. Then the final state and the model's last notes. ``--at``
+prints the one decision nearest a battle time in full: the prompt, the raw reply, a
+commander's plan, dropped items, the orders, a validation error and the engine's verdicts.
+``--units`` prints, per episode, each unit's first and last observed men and ammunition,
+when it was first seen in melee and routing, and the engine's refusals by error. It only
+reads evidence.
 """
 
 import json
@@ -152,7 +155,8 @@ def episode_digest(episode: Path, decisions: bool = True) -> str:
 
 def decision_at(episode: Path, seconds: float) -> str:
     """The logged decision nearest a battle time, whole: the prompt its reply answers, the
-    raw reply, the orders, a validation error and the engine's verdict on each order.
+    raw reply, a commander's plan, dropped items, the orders, a validation error and the
+    engine's verdict on each order.
 
     Of a model controller's decisions only those that carry a reply count. A commander's
     reply answers the prompt of its previous request; the direct controller's, the prompt

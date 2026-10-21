@@ -6,11 +6,13 @@
 Without a path the live feed follows the job named in the bridge's ``session.json``. It tails
 each episode's ``trace.jsonl`` as the job writes it and prints:
 - each model request (``->``): the battle time and both sides' strength in the state it was
-  built from, and what it reports as dropped or rejected (``--prompts`` prints it whole);
-- each reply (``<-``): a commander's plan with its age, think time, cost and reason, or the
+  built from, and a commander prompt's dropped or rejected report (``--prompts`` prints it
+  whole);
+- each reply (``<-``): a commander's plan with its age, think time and reason, or the
   direct controller's orders and reason, and the notes whenever they change;
-- engine rejections, a strength line every 30 s of battle time, and each result.
-A finished job or a single episode is printed once.
+- each episode's armies, engine rejections, invalid batches, a strength line with the spend
+  so far every 30 s of battle time, and each result.
+A finished job or a finished episode is printed once.
 
 ``--next`` (only with a job directory) is for an agent running it in the background: it
 prints once and exits, when an episode finishes (its digest's first line, final state and

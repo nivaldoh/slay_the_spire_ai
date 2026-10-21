@@ -115,7 +115,7 @@ def summary(path: Path) -> str:
             model = item["model"]
             if item.get("provider") == "openrouter":
                 model += " (OpenRouter)"
-            # Scripted policies have no harness version: their source tells revisions apart.
+            # Jobs named without -vN- have no harness version: their source tells them apart.
             groups[(item["scenario"], item["policy"], model, item["effort"],
                     item["harness"] or item["source"], item["mode"])].append(item)
     lines = ["| Scenario | Policy | Model | Effort | Harness | Mode | Episodes | Won | Lost | "
