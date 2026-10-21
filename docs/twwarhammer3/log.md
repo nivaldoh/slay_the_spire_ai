@@ -45,9 +45,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
 Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3/away-20261021/`.
 - [Starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21) (proposal): a
   five-part rule, three cards (chariot, rank-5 line, Skaven expendables; two blind
-  re-derivations agreed), a $0 screen of 39 scripted launches (5.1 h, three balanced
-  rounds, two probes) with a reader, a held-out map. Reviews found 104 errors (2 in the
-  branch), all fixed; sweeps fixed 65 stale facts on 14 pages and two reference docstrings.
+  re-derivations agreed), a $0 screen of 39 launches (5.1 h, balanced rounds, two probes),
+  a held-out map. Reviews: 104 errors (2 in the branch), 70 stale facts; all fixed.
 - Failure rule: none of 595 episodes failed at construction, a late acknowledgement or
   `close()`, so the [proposed rule](benchmark.md#correctness-checks-to-agree) rescores
   nothing; unmerged branch `wh3-keep-engine-ending` (`98b3013`) keeps that ending.
@@ -61,7 +60,8 @@ Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3
   new harness error in 411 episode logs; blind rebuilds of two markers matched 29 of 31
   verdicts; campaigns call the imagery script ([integration](integration.md)).
 - Unverified: every gameplay count (1-33 episodes a cell), markers and labels (proposed);
-  agents are one model family, so their checks test documents, not judgment.
+  three witness texts misstate their code (parked); agents are one model family, so their
+  checks test documents, not judgment.
 
 ## 2026-10-21: Autonomous-work strategy refined (proposal)
 
