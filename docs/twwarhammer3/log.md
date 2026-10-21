@@ -58,8 +58,8 @@ Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3
   counting every engagement on 10. One model family: a check of the documents only.
 - Evidence for open decisions: 16 of 17 model episodes on five defending battles restate
   the timer win; a 300-character reason rule flags exactly the 7 known garbled
-  Empire-night replies, but an independent hunt found 15 garbled attempts, 6 of them missed; 10 of 427 battles leave a 0.95-1.05 clock band, 9 from slow
-  calls; Step 5, GLM-5.3, Qwen3.6 and Kimi K3 licenses ([terms](../posttraining.md#provider-terms)).
+  Empire-night replies, but an independent hunt found 15 garbled attempts, 6 of them missed; 10 of 427 battles leave a 0.95-1.05 clock band, all before
+  b39 fixed the call distortion; Step 5, GLM-5.3, Qwen3.6 and Kimi K3 licenses ([terms](../posttraining.md#provider-terms)).
 - Unverified: every gameplay count (1-33 episodes a cell), markers and labels (proposed).
 
 ## 2026-10-21: Autonomous-work strategy refined (proposal)
