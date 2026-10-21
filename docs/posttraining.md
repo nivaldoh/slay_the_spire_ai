@@ -75,10 +75,15 @@ game. Not captured:
 - WH3 hidden state between the start and the end of a battle, so decision rewards cannot
   use the enemy's true losses.
 
-- Token log-probabilities of the model that played. They are not requested (provider
-  support is unverified), and GLM/Kimi sampling defaults are not recorded. This prevents
-  reconstructing the behavior probabilities needed by some importance-weighted updates;
-  it does not rule out all offline RL. For example,
+- Token log-probabilities of the model that played. They are not requested, and GLM/Kimi
+  sampling defaults are not recorded. The pinned backends' public listing (2026-10-18,
+  rechecked 2026-10-21) offers them on Qwen's Parasail and on Kimi's `sail-research/fp4/us`
+  endpoint, not on GLM's Decart; it offers a seed, temperature and top_p on all three.
+  Requesting any of them is a `providers.py` change, so a new harness revision and declared
+  condition, and Kimi's pin covers both its endpoints, so getting log-probabilities there
+  may need a narrower route (untried). Without them, the behavior probabilities that some
+  importance-weighted updates need cannot be reconstructed; that does not rule out all
+  offline RL. For example,
   [IQL](https://arxiv.org/html/2110.06169v1) uses recorded transitions and
   advantage-weighted imitation without saved behavior probabilities.
   Suitability still depends on state/action coverage,
