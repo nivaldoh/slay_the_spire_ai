@@ -465,6 +465,17 @@ section, each chose the three cards below (`runs/twwarhammer3/away-20261021/rede
 | Line at rank 5, `emp-line-grn-raid-xp5` (7 v 7, defends) | Seven units keep their jobs: the line holds in guard mode, the guns stay behind it, the knights take the enemy cavalry. Proposed marker: the knights' first melee is against enemy cavalry. On this battle it fails both floors and passes both wins (LineTeam, GLM) and both other rank-5 losses (Kimi, LineTeamReserve); at rank 0 both floors pass it too, so it marks the knights' job, not the whole team's | `hold` 0/1, `attack_nearest` 0/1; LineTeam 1/1 at 0 s (b45; b46 unplayed); LineTeamReserve 0/1 | The rush floor; floors and LineTeam b46 at 3 launches; agreeing the marker ([Empire item 2](empire.md#for-the-owner-to-decide)); a decision on the commander flag, which sits on the Spearmen reserve in all 17 recorded battles (design rule 8); and a named shortcut (proposed: LineTeam with the knights held back, which tests whether their job decides it). Whether replacement helps stays a [team-plan](robot-team-plan.md#a-small-sequence-of-experiments) question |
 | Expendables, `skv-ogres-slaves-emp-halberds-1` (defends) | Spend the Skavenslaves to hold the Halberdiers while the Rat Ogres kill the guns. Marker: the ogres fight, and the slaves fight the halberds before the ogres' first melee, which is not with the halberds. SlaveTarpit passes all 5 of its episodes and all 3 floor episodes fail, with one or two Halberdiers units | `hold` 0/1, `attack_nearest` 0/1; SlaveTarpit 3/4 at 5 s. Kimi K3 played a shortcut twice, ogres on the guns before slaves on the halberds: low won (87 s, then 127 s), high lost (179 s, then 334 s) | The rush floor; 3 launches per floor and witness; a foil for Kimi's shortcut (ogres at the guns at once); a decision on the commander flag, which sits on a Skavenslaves unit, one the tactic spends (design rule 8; it broke in 2 of SlaveTarpit's 3 wins, which still won) |
 
+Witness texts: a check of the code against each witness's disclosed `knowledge` text
+(2026-10-21, `runs/twwarhammer3/away-20261021/witness-findings.txt`) found three that
+misstate what the code does. SlaveTarpit's omits that leftover slaves double up on the
+nearest anti-large enemy, and that with none visible a slave attacks the nearest enemy;
+that happened in a recorded launch, pinning both slaves to the Handgunners. FlankLane's gun
+retreat tests whether the enemy nearest the gun is in melee, not the gun. HitAndRunV2's
+omits re-arming an idle unit, a path none of its 79 recorded re-arms took. The texts are
+recorded in every result as the witness's disclosure. Correcting them changes what the card
+discloses, so it waits for a change slot and the owner, before confirmation; the code, and
+so the screen's play, is unaffected.
+
 Only the line plays Empire. The owner asked for mostly Empire units, other factions for
 specific challenges such as the Orc chariot ([2026-10-20](../owner-direction.md)); the
 cheapest routes to more Empire cards are the two probes below: the rifle lane's screen
