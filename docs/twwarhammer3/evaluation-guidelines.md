@@ -508,8 +508,9 @@ frames are 1 Hz, so smaller differences mean nothing. For `commander`, model lat
 call times and plan age, not `think_s`.
 
 - *Why:* today only acknowledged requests enter `delays_ms` (a 178.5 s call returning after
-  the ending was missed), and `clock_ratio`, measured when an observation is read, is
-  distorted by long blocking calls.
+  the ending was missed), and `clock_ratio` stops at the last observation read before the
+  final call (since b39, `e2777f4`), so it misses a stall during that call; before b39 a call
+  returning after the ending lowered it.
 - *Check:* proposed (small): `result.json` lists every decision (for `commander`, every
   model call) with its time and fate: applied, refused, failed, never acknowledged,
   returned after the ending, or running at close; a test whose simulated call returns after
@@ -896,13 +897,15 @@ its effect, or that a claim is fair; those need agreed live checks and reading.
    failure, whether draws count per card, and whether the battle-to-wall band invalidates a
    battle or only flags it. Recorded ratios (2026-10-21, 427 engine-ended episodes,
    `runs/twwarhammer3/away-20261021/clock_ratio.txt`): median 0.999, p5 0.985, p95 1.005;
-   10 fall outside 0.95-1.05, 9 of them model battles whose long calls distort today's
-   ratio (6.2). The tenth, a scripted floor at 0.878 (`bench-b19-s2-decoy-floor-20261017`),
+   10 fall outside 0.95-1.05, all recorded before b39. Nine are model battles whose final
+   call (29-760 s) returned after the ending, which the ratio then still counted; since
+   b39 it stops at the last observation of the running battle (68 later episodes, 39 of
+   them model battles, 0.981-1.009). The tenth, a scripted floor at 0.878 (`bench-b19-s2-decoy-floor-20261017`),
    went 22 s and then 43 s of system time between consecutive observations 0.3 s of battle
    time apart: a game stall, the accidental pause the band should catch, or a step of the
    WSL clock (its monotonic clock trails by a median 6.5%, so it cannot tell which). Gaps
-   over 10 s mid-battle are rare: 2 in 286 scripted episodes (`stalls.txt`). On today's
-   measure, invalidating would also discard 9 battles for call latency.
+   over 10 s mid-battle are rare: 2 in 286 scripted episodes (`stalls.txt`). Invalidating
+   by the stored ratios would also discard those 9 for call latency; today's would not.
 3. Which witness timing cell makes a card "demonstrably winnable", and witness v2 (already
    [pending](../state.md#owner-decisions-waiting)).
 4. Whether the chariot card is also a training environment, which variant to reserve first,
