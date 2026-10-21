@@ -225,7 +225,7 @@ two paragraphs are about the first three models.
 Efforts are declared per model (2026-10-16 evening, for the owner's all-modes coverage),
 from the catalogue's `supported_efforts`; `low` and `high` have been played (high: GLM 3,
 Kimi 4, Step 2 episodes); `max`, Kimi `none` and Step `medium` have not. All seven
-other modes passed one WH3 reply-schema call each on 2026-10-16 ($0.0061 in total;
+modes other than `low` passed one WH3 reply-schema call each on 2026-10-16 ($0.0061 in total;
 `capability-probes/openrouter-modes-20261016/`). Reported reasoning tokens on that
 trivial prompt: GLM `high` 47, `max` 83; Kimi `none` 0, `high` 67, `max` 66; Step
 `medium` and `high` 0 (the backend may not report them). That shows the modes are
@@ -241,11 +241,11 @@ ranking inferred from our tests. Catalogue metadata was checked on 2026-10-16. A
 passed live WH3 schema/parser checks at low effort. GLM subsequently completed caster
 battles under v19 and v20, including a v20 anchor win; Kimi completed one harder-siege
 battle in [ladder V1](log.md#2026-10-16-difficulty-ladder-first-step-v1), losing at 659 s.
-Step has since played 4 battles (low 2, high 2) and `high` 9 across the three models (b23
-and b30); `max`, Kimi `none` and Step `medium` remain unplayed. Step first returned an
-empty, token-limited response on DeepInfra, then passed with the normal 4,000-token allowance
-on InferenceNet; both
-the backend and allowance changed, so the cause is unresolved.
+In that schema check Step first returned an empty, token-limited response on DeepInfra,
+then passed with the normal 4,000-token allowance on InferenceNet; both the backend and
+allowance changed, so the cause is unresolved. Step has since played 4 battles (low 2,
+high 2), and `high` has been played 9 times across the three models (b23 and b30); `max`,
+Kimi `none` and Step `medium` remain unplayed.
 The job default is GLM-5.3 at low effort. Rotations preserve the full vendor/model ID:
 `llm_rules@z-ai/glm-5.3, llm_rules@moonshotai/kimi-k3/high` (omit the space in the CLI).
 Unsupported models/efforts fail before game launch; historical readers do not consult
@@ -355,7 +355,8 @@ Integration (2026-10-15): `llm`/`llm_rules` v17 and commander v4 share the two f
 above. All 349 WH3 tests and lint passed on current main; golden prompts are unchanged.
 See the [version log](log.md#2026-10-15-integrate-llm-v17-and-commander-v4).
 
-Found in the M1 matched round (2026-10-16), addressed in v19 / commander v6:
+Found in the M1 matched round (2026-10-16) and addressed in v19 / commander v6 (7-8), or
+found later and not made yet, since a prompt change is a new version (9-10):
 
 7. **Abilities just cast still read ready.** In M1a (2026-10-16) 70 of Luna's 87 refused
    ability orders re-cast an ability issued no more than 2 s before the observation, which
@@ -376,8 +377,9 @@ Found in the M1 matched round (2026-10-16), addressed in v19 / commander v6:
    in `rules_prompt.md` that re-sending an unchanged order changes nothing.
 10. **Commander prompt lines that misstate the code** (2026-10-21 check,
     `runs/twwarhammer3/away-20261021/core-findings.txt`): "Orders being submitted now"
-    lists only one-shot orders, not the executor's moves in the same batch (792 of 2,651
-    recorded prompts had unlisted ones); "Recent plans" calls dropped assignments adopted
+    lists only one-shot orders, not the executor's moves in the same batch (the heading came
+    with commander v6, after the last live commander battle; in 792 of the 2,651 earlier
+    recorded prompts the batch carried executor orders); "Recent plans" calls dropped assignments adopted
     (25 of 2,627 plans); "Your last plan reached the units" measures adoption, about 0.3 s
     before the batch applies; a refusal by the harness's own validation is reported as
     "engine rejected" (never observed); and the executor's "waiting for melee (X out of

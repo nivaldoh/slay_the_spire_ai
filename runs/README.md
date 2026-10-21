@@ -65,8 +65,8 @@ included, wrote `system_prompt.md`); and one subdirectory per
 run or episode with the raw trace and result. A Spire `run-NNNN/` is one game launch and
 holds its game logs. A WH3 `episode-NNNN/` is one battle (its `mod.log` beside the trace);
 the game is launched once per job, so `game.log`, `menu.log`, `map_list.txt`,
-`army_player.txt` and, in jobs before `e32b1b5` (2026-10-20) that listed their units,
-`cards_slot<N>.txt` (the recruitment cards each army's race offered)
+`army_player.txt` and, in jobs from `8434cd3` (2026-10-15) to before `e32b1b5` (2026-10-20)
+that listed their units, `cards_slot<N>.txt` (the recruitment cards each army's race offered)
 sit in the job directory,
 and later episodes are rematches of the same battle. WH3 episodes can also contain
 `replay.jsonl` (public 1 Hz frames), `unit_names.json`, `imagery.json`, `stills.json`
