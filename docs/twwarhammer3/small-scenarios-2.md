@@ -86,8 +86,9 @@ Slaanesh attack: 2 x `wh3_main_sla_cav_hellstriders_0` (675, 45 each).
 
 Database facts: Clanrat Spearmen MA 18, MD 24, morale 45, `charge_defense_vs_large`,
 `charge_reflection`, spear 18 + 5 with +9 against large, can brace. Hellstriders charge
-bonus 40, MA 24, MD 26, 35% shield, `causes_fear`, `immune_to_psychology` (they never
-rout), spear-claw 20 + 8 with +10 against large.
+bonus 40, MA 24, MD 26, 35% shield, `causes_fear`, `immune_to_psychology` (read here as
+never routing; live battles showed they rout, [log](log.md#2026-10-17-overnight-tranche-harness-b18-b23)), spear-claw 20 + 8 with +10
+against large.
 
 Hypotheses. Naive: holding in the deployment line leaves flanks open; the riders circle
 and charge rears, and fear plus rear charges rout morale-45 rats. Chasing riders
