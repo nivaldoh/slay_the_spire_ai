@@ -174,15 +174,15 @@ class TeamPolicy:
 
     def records(self):
         """The episode's decisions, engine delays and think times, counted per member batch."""
-        members = self.members.values()
-        return {"decisions": sum(member.decisions for member in members),
+        rows = {}
+        for name, member in self.members.items():
+            totals = self._totals(member)  # one snapshot, so usd and calls agree
+            rows[name] = {"decisions": member.decisions, "local_refusals": member.local_refusals,
+                          "usd": totals["usd"], "calls": totals["calls"]}
+        return {"decisions": sum(row["decisions"] for row in rows.values()),
                 "delays_ms": list(self.delays_ms), "think_s": list(self.think_s),
-                "local_refusals": sum(member.local_refusals for member in members),
-                "members": {name: {"decisions": member.decisions,
-                                   "local_refusals": member.local_refusals,
-                                   "usd": self._totals(member)["usd"],
-                                   "calls": self._totals(member)["calls"]}
-                            for name, member in self.members.items()}}
+                "local_refusals": sum(row["local_refusals"] for row in rows.values()),
+                "members": rows}
 
     def _fault(self, message):
         self._event("fault", error=message)
@@ -399,13 +399,19 @@ class TeamLLM(llm.LLMPolicy):
 
 class ModelTeam(TeamPolicy):
     """Two model members on one army (``PARTITION``), one model, effort and ledger. Each
-    plays the rules prompt on its own view; no age limit, like the single controller."""
+    plays the rules prompt on its own view; no age limit, like the single controller.
+
+    Once cleanup starts no new model call or reply retry is sent, but a request already
+    sent may still retry its transport (up to ``TRANSPORT_ATTEMPTS`` times), and the job
+    process, so the next queued job, waits for it at exit. A call abandoned at cleanup
+    reaches only the ledger (its cost and response id): its exchange, cost and call count
+    reach no trace or result."""
 
     def __init__(self, model, effort, ledger, *, send, system_prompt, provider="openai",
                  **options):
         stop = Event()
 
-        def guarded(body):  # no new paid call once cleanup starts
+        def guarded(body):  # no new call or reply retry once cleanup starts
             if stop.is_set():
                 raise APIError("team closed; request not sent")
             return send(body)
@@ -414,9 +420,7 @@ class ModelTeam(TeamPolicy):
                                                 provider=provider, system_prompt=system_prompt))
                           for name, kinds in PARTITION.items()},
                          stop=stop, max_age_ms=None, army_owner=ARMY_OWNER, **options)
-        self.card.update(paid_calls=True, model=model, effort=effort,
-                         member_source_sha256=sha256(Path(llm.__file__)),
-                         system_prompt_sha256=hashlib.sha256(system_prompt.encode()).hexdigest())
+        self.card.update(paid_calls=True, member_source_sha256=sha256(Path(llm.__file__)))
 
 
 class _MoveOnce:
