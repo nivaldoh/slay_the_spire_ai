@@ -4,6 +4,20 @@ import pytest
 from wh3_lua import MOD, runtime
 
 
+def test_loading_the_shared_mod_scripts_touches_no_file():
+    # Battle, frontend and campaign loads all run _lib/mod at top level (integration.md),
+    # including the owner's own campaigns while the mod list is active.
+    lua = runtime()
+    lua.execute("""
+        touched = {}
+        io.open = function(path) touched[#touched + 1] = "open " .. path; return nil, "blocked" end
+        os.remove = function(path) touched[#touched + 1] = "remove " .. path end
+        os.rename = function(path) touched[#touched + 1] = "rename " .. path end
+    """)
+    for path in sorted((MOD / "script/_lib/mod").glob("*.lua")):
+        lua.execute(path.read_text())
+    assert list(lua.globals().touched.values()) == []
+
 @pytest.fixture
 def imagery_lua():
     lua = runtime()
