@@ -41,6 +41,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-21 evening: a model team on a branch, offline
+
+The owner was busy (18:47: "follow your best judgement and highlight any meaningful
+decisions"), so offline work only, $0, no push. The starting-set screen's preflight passes at
+HEAD (39 jobs, 0 problems) and `doctor` is ready (build 25961564); it waits for a free PC.
+Branch `wh3-model-team` (`9689185`, nine commits) adds `team_llm_rules`: two `llm_rules`
+members, the Knights against every other unit, sharing one ledger; the ledger holds each
+call's reservation until it returns. Members get the single controller's fields and orders
+for their own units, the teammate's units as public rows, its forfeit and budget rules, a
+30 s bounded cleanup and per-member records. Built from a code map and design, then
+reviewed (three reviewers, each verified): 9 findings fixed, one a leak of the teammate's
+pending orders. Checks at the tip: full suite 1399 passed, 28 skipped; the four agreed team
+files 121 passed; new tests fail on 31 deliberate mutations; existing goldens and policy
+files unchanged. Decisions I took (undo: say so): no age limit for model members, like the
+single controller; the Knights-versus-rest split; a 30 s cleanup wait; the agreed ledger test
+now also covers `team_llm_rules`. Not done: report, export and card-board support for team
+rows, and the live-check rerun the trace change needs. Unverified: everything live.
+
 ## 2026-10-21: Team plan and implementation review
 
 The owner asked for a review that simplifies the team work and cuts slop. Four independent

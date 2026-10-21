@@ -10,11 +10,10 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 ## Active work
 
 Scripted split-army [team](twwarhammer3/multi-agent-implementation.md) (b49): agreed checks
-passed (component at `e8d1eda`, live at `45fe7b0`). Next: a model team once the starting-set screen picks the card ([plan §9](twwarhammer3/multi-agent-plan.md#9-stages)).
-
-Offline (Claude Code, 2026-10-21 evening, owner busy): model-team branch `wh3-model-team`,
-task note `runs/twwarhammer3/model-team-20261021/TASK.md`; $0. No game, benchmark or paid
-job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need),
+passed (component at `e8d1eda`, live at `45fe7b0`). A model team is ready on branch
+`wh3-model-team` (offline checks only; [log](twwarhammer3/log.md#2026-10-21-evening-a-model-team-on-a-branch-offline));
+it waits for the starting-set screen, which is ready to run on a free night. No game,
+benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need),
 [scope](twwarhammer3/benchmark.md#scope-and-first-release), suite, checks and gates remain proposals;
 [Empire items](twwarhammer3/empire.md) pending. The 2026-10-21 away window (02:20-12:20, offline, $0)
 is in the [log](twwarhammer3/log.md#2026-10-21-a-proposed-starting-set-the-failure-rule-recount-and-a-blind-c1-recount),
@@ -101,10 +100,9 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 5. Your call: yes/no on the [away guidelines](autonomy.md) (the 2026-10-21 away window ran under the proposal, not as its agreed trial; reviews caught 114
    errors in my drafts and commits, 113 fixed); before any campaign launch, yes/no on harness saves in the WH3 profile and on Steam
    achievements (which cannot be undone; a no keeps campaign work to offline drafts).
-6. Team plan ([§12](twwarhammer3/multi-agent-plan.md#12-decisions-for-the-owner)): the first comparison (one card, one `llm_rules`
-   controller against two members without messages, about $10); no separate team screen (the card
-   comes from the starting set); the stricter live witness (recount only). Native multiplayer is
-   deferred (no second machine).
+6. Team ([§12](twwarhammer3/multi-agent-plan.md#12-decisions-for-the-owner), [log](twwarhammer3/log.md#2026-10-21-evening-a-model-team-on-a-branch-offline)): I adopted the first comparison (one card, `llm_rules` against
+   two members, no messages, about $10) and no separate team screen; reverse either if you disagree.
+   Yours: merge `wh3-model-team` after a $0 live-check rerun (about 12 min)? The stricter live witness?
 
 ## Runtime and ownership
 
@@ -124,6 +122,6 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` attack-route draft, labelled
   v21 before main's v21 (`18dabdd`); renumber before any merge.
-- `wh3-model-team` (worktree `../slay_the_spire_ai-wh3-model-team`, from `9e43143`): two model
-  members on one army (`team_llm_rules`), offline checks only; in progress.
+- `wh3-model-team` (`9689185`, worktree `../slay_the_spire_ai-wh3-model-team`, from `9e43143`):
+  two model members on one army (`team_llm_rules`); offline checks pass; live check not rerun.
 - Archived drafts are tags (`git tag --list 'archive/*'`).
