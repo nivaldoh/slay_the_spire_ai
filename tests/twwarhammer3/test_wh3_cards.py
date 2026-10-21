@@ -1,5 +1,7 @@
 import json
+import re
 
+from gameai.provenance import REPO_ROOT
 from twwarhammer3.battle.cards import CARDS, battles, board, cycles, jobs, outcome, verdict
 
 
@@ -187,3 +189,11 @@ def test_the_board_lists_unrun_plans_and_judges_only_named_directories(tmp_path,
     # is a reading of the evidence, never the pre-registered verdict.
     monkeypatch.setattr("twwarhammer3.battle.cards.JOBS_ROOT", tmp_path)
     assert "attack_nearest" in board("chariot") and "Verdict" not in board("chariot")
+
+
+def test_the_rules_prompt_withholds_the_chariot_tactic():
+    # The chariot card's knowledge row: the rules prompt (llm_rules) states neither charge
+    # bonuses nor cycle charging; a prompt that tells them changes what the card measures.
+    text = (REPO_ROOT / "configs/twwarhammer3/rules_prompt.md").read_text().lower()
+    for phrase in ("charge", "charging", "cycle", "pull out", "pull-out", "withdraw", "disengage"):
+        assert not re.search(rf"\b{phrase}\b", text), phrase  # "recharge" is an ability state
