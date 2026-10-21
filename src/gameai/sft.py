@@ -33,7 +33,8 @@ DEFAULT_PROVIDERS = ("openrouter",)
 
 
 def target(row: dict) -> tuple[int, dict] | str:
-    """The last attempt and its index when it is an accepted reply, else the drop reason."""
+    """The last attempt's index and the attempt when it is an accepted reply with both
+    prompts recorded, else the drop reason."""
     attempts = row.get("attempts") or []
     if not attempts:
         return "no_attempts"

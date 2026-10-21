@@ -4,11 +4,11 @@ A card ([tactic-cards.md](../../../docs/twwarhammer3/tactic-cards.md)) is a mini
 that only one tactic should win. Its foils (naive plays) must lose and its witness (a
 disclosed scripted bot) must win. Both are declared here with the admission rule before
 a confirmation round, so the board and the verdict come from the job evidence alone.
-The launch is the sampling unit: one episode per controller counts in each launch, and a
-rematch of the same controller in that launch (the same instance again) is skipped. A cell
-mixing setups (scenario, game build, pack, mod cadence) or controller sources (policy file,
-prompt, routing pin, the model strings the provider reported serving) is starred, so a drift
-in any of them never pools silently.
+The launch is the sampling unit: one episode per controller and added age counts in each
+launch, and a rematch of the same controller at the same added age in that launch (the same
+instance again) is skipped. A cell mixing setups (scenario, game build, pack, mod cadence)
+or controller sources (policy file, prompt, routing pin, the model strings the provider
+reported serving) is starred, so a drift in any of them never pools silently.
 """
 
 import json
@@ -79,7 +79,8 @@ def outcome(episode: dict) -> str:
 
 
 def engagements(frames: list[dict], unit_id: str) -> list[list[float]]:
-    """[start, end] battle seconds of each run of the unit's melee flag."""
+    """[start, end] battle seconds of each engagement: runs of the unit's melee flag, with
+    gaps under MERGE_S merged."""
     spans = []
     for frame in frames:
         unit = next((u for u in frame.get("friendly", []) if u.get("id") == unit_id), None)
@@ -94,10 +95,12 @@ def engagements(frames: list[dict], unit_id: str) -> list[list[float]]:
 
 
 def cycles(episode_dir: Path) -> int | None:
-    """Engagements, other than the last, in which the controller's own move order took effect.
+    """Engagements, other than the unit's last, with an accepted move order of that unit
+    applied from the first melee frame to 1 s after the last.
 
-    A cycle is a deliberate pull-out followed by a new charge: an attack-only play scores 0
-    even when the engine carries its unit out of melee and it charges again.
+    It counts pull-out attempts, not achieved separation or a proven new charge: an
+    attack-only play scores 0 even when the engine carries its unit out of melee and it
+    charges again.
     """
     replay, trace = episode_dir / "replay.jsonl", episode_dir / "trace.jsonl"
     if not replay.exists() or not trace.exists():
@@ -134,8 +137,8 @@ def jobs(paths: list[Path]) -> list[Path]:
 
 
 def battles(card: dict, directories: list[Path]) -> tuple[list[dict], int]:
-    """One row per launch and controller, and how many rematch rows of a controller already
-    counted in its launch were skipped."""
+    """One row per launch, controller and added age, and how many rematch rows of a
+    controller at an added age already counted in its launch were skipped."""
     rows, seen, skipped = [], set(), 0
     for job in directories:
         try:
