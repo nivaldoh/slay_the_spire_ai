@@ -213,6 +213,24 @@ def test_an_enabled_session_hooks_only_custom_battles(kind):
     else:
         assert "Deployed" in hooked and published == ["observation.json"]
 
+
+@pytest.mark.parametrize("session", ["nil", "{schema = 1, job = 'j', enabled = false}"])
+def test_without_an_enabled_session_the_battle_script_hooks_nothing(session):
+    # The owner's own custom battles: no session file, or one a job switched off.
+    lua = runtime()
+    lua.execute(f"""
+        BRIDGE = "bridge/"
+        function read_json(path) return {session} end
+        hooked, published = {{}}, {{}}
+        function publish(name) published[#published + 1] = name end
+        bm = {{battle = {{}},
+              register_phase_change_callback = function(_, phase) hooked[#hooked + 1] = phase end,
+              repeat_real_callback = function(_, _, _, name) hooked[#hooked + 1] = name end}}
+    """)
+    _, load = load_battle(lua, "get", "load")
+    load()
+    assert list(lua.globals().hooked.values()) == list(lua.globals().published.values()) == []
+
 def test_hidden_arrivals_and_deaths_do_not_update_public_enemy_state():
     lua = runtime()
     lua.execute("""
