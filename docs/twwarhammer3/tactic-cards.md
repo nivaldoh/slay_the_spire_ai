@@ -493,8 +493,9 @@ jobs follow each other within seconds):
   re-planned before it is read. Three launches are a cheap filter: a floor that wins 20% of
   its battles loses all 3 half the time (51%), and a witness that wins half passes 2 of 3
   half the time (80%: 90%); confirmation does the rest. `read_screen.py` beside the plan
-  prints the rule's verdict per card; on every recorded launch (`--all`) it reproduces the
-  line and expendables floor and witness counts.
+  prints the rule's verdict per card and every planned job without a scored episode; on
+  every recorded launch (`--all`) it reproduces the line and expendables floor and witness
+  counts.
 - Confirmation at the [proposed gate](benchmark.md#from-a-candidate-to-a-scored-card)
   (each foil 0/14, witness at least 10/14): 42 launches for a card with two floors (56 for
   the expendables' three) plus 14 per shortcut foil, so about two nights for the line and
