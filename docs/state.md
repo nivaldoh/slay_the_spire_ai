@@ -80,7 +80,8 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 1. **The [starting set](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21)'s screen**:
    recommended, a yes to run its $0 scripted plan (36 launches, about 4.6 h) on the next away
    night, with the line card's proposed marker (the knights first fight enemy cavalry).
-2. **The defender prompt** promises a timer win the cards do not count ([16 of 29 model launches](twwarhammer3/empire.md#decisions-taken-for-the-owners-review)).
+2. **The defender prompt** promises a timer win the cards do not count, and 14 of 15 model episodes on the
+   [defending starting cards](twwarhammer3/empire.md#decisions-taken-for-the-owners-review) restate it.
    Recommended: state the card's rule (a new prompt version); or count timer wins.
 3. **The [failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)**: recommended, agree it
    as written (no recorded episode changes) and merge `wh3-keep-engine-ending` (`git show b527584`;

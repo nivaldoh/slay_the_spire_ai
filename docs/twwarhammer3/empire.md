@@ -123,7 +123,10 @@ comparison between models.
    contact scoring, and for it `render_mode` writes "if time runs out, the game gives you
    the battle, but this benchmark counts only routing or destroying every enemy unit
    before the timer" in place of "if time runs out, you win"; prompt fixtures regenerate,
-   a logged prompt version.
+   a logged prompt version. Recount the same day (`runs/twwarhammer3/away-20261021/timer_mentions.txt`):
+   on the starting set's defending battles 14 of 15 model episodes restate the timer win in
+   their replies, in 11-97% of their decisions (GLM's rank-5 line win in 82%). Stated
+   reasons are leads, not evidence of an effect on the outcome (evaluation guideline 8.3).
 
 ## For the owner to decide
 
