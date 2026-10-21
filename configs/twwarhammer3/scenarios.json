@@ -1906,7 +1906,7 @@
     "base": "ksl-raiders-emp-halberds",
     "name": "skv-spears-sla-hellstriders",
     "family": "receiving cavalry: facing and bracing",
-    "brief": "Three Skaven Clanrat Spearmen units defend against two fearsome Hellstrider cavalry units that never rout, with no lords. Braced spear fronts stop charges; open flanks and rears invite them. Formation and facing decide whether the rats can wear the riders down.",
+    "brief": "Three Skaven Clanrat Spearmen units defend against two fearsome Hellstrider cavalry units, with no lords. Braced spear fronts stop charges; open flanks and rears invite them. Formation and facing decide whether the rats can wear the riders down.",
     "attacker": "enemy",
     "player": {
       "subculture": "wh2_main_sc_skv_skaven",
