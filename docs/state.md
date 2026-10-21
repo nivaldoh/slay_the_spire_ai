@@ -99,7 +99,7 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
    and queue the attack): recommended, its own `llm_rules` version after item 2's, or drop it.
    Whether to keep `commander` (unplayed since v4); more OpenAI budget (the $52 cap refuses Sol).
 9. Yes/no on the [away guidelines](autonomy.md) (tonight's offline trial: independent reviews
-   caught 76 errors in my drafts and commits, all fixed); before any campaign launch, yes/no
+   caught 83 errors in my drafts and commits, all fixed); before any campaign launch, yes/no
    on harness saves in the WH3 profile and on Steam achievements (which cannot be undone).
 
 ## Runtime and ownership

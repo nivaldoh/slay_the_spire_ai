@@ -161,10 +161,11 @@ comparison between models.
    signals (script mix, junk words, word salad, symbols, whitespace runs;
    `runs/twwarhammer3/away-20261021/garbled-hunt/`) found 15 garbled attempts in 6 jobs. The
    300-character rule catches 8 and misses 7: three completed replies in
-   `bench-b19-s4-glm-20261017` (Decart and Baidu, with short or unreadable reasons) and four
-   incomplete attempts that were retried (two of them in that battle's episode 1 "no valid
-   reply" forfeit, one in the wizard battle, one a Step 5 whitespace flood). It also lists 26
-   GLM replies repeating one order 5-151 times.
+   `bench-b19-s4-glm-20261017` (Decart and Baidu, with short, unreadable or missing reasons)
+   and four incomplete attempts (two of them in that battle's episode 1 "no valid reply"
+   forfeit, one in the wizard battle, one a Step 5 whitespace flood). It also lists 26 GLM
+   repetition loops: 16 completed replies repeating one order 5-151 times and 10 incomplete
+   attempts whose text repeats.
 5. **The 20 v 20.** One launch each of Qwen and GLM worked technically; order age (Qwen
    18 s) and per-decision cost (GLM) both argue for a planner-executor harness before more
    large battles; the owner's harness-comparison direction (2026-10-18) fits here.

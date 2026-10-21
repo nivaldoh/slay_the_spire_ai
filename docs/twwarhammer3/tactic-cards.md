@@ -481,9 +481,9 @@ jobs follow each other within seconds):
   fixed in `runs/twwarhammer3/away-20261021/screen-plan.json`; its revision and start
   cutoff are set on the go-ahead. The queue cannot stop a card early. The rifle and
   two-threats jobs are probes for the owner, not set cards. Offline, the three witnesses
-  (LineTeam's b46 code included) decided on all 9,674 recorded observations of their
-  battles without an exception or an invalid batch (`witness-dryrun.txt`; open loop,
-  decisions only).
+  (LineTeam's b46 code included) decided on 9,674 recorded observations (the line at both
+  ranks, both rifle variants, the expendables battle) without an exception or an invalid
+  batch (`witness-dryrun.txt`; open loop, decisions only).
 - Reading rule, fixed now: a floor's contact win parks that card (two threats would get one
   step instead). A card goes to confirmation when no floor won by contact, its witness won
   at least 2 of 3 with the marker on each win, and the rest of its Missing column is done;
