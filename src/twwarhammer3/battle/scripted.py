@@ -1,7 +1,8 @@
 """Scripted battle policies: the no-model round trip and the fixed baselines.
 
 Each policy has ``decide(observation) -> orders``, ``acknowledge(ack, latency)`` and
-``metadata() -> dict`` (recorded with every decision).
+``metadata() -> dict`` (recorded with each logged decision; quiet ones are logged once per
+``observe_ms``).
 """
 
 import math
@@ -10,7 +11,8 @@ from twwarhammer3.protocol import friendly_units, visible_enemies
 
 
 class Hold:
-    """Never issues an order: the game AI's opponent fights a standing army."""
+    """Never issues an order: the game AI fights an army left on the game's defaults
+    (missile units still fire at will and skirmish away by themselves)."""
 
     def decide(self, observation: dict) -> list[dict]:
         return []
@@ -25,8 +27,9 @@ class Hold:
 class AttackNearest:
     """Every able unit attacks its nearest visible enemy.
 
-    An order repeats on a new nearest enemy, or when the engine dropped the old one (the
-    unit shows no target, or idle): attacks end when the target dies or leaves sight.
+    An order repeats on a new nearest enemy, after a refused order, or when the unit shows
+    no target or is idle: attacks end when the target dies or leaves sight, and sometimes
+    while it is still in sight.
     """
 
     def __init__(self):

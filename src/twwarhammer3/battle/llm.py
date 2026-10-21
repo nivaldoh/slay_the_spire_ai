@@ -1,9 +1,11 @@
 """API language-model commander over battle observations: the prompt, memory and replies.
 
 This file and ``configs/twwarhammer3/`` are the autoresearch loop's editable surface;
-transport, prices and spend live in ``gameai.llm``. Memory is bounded: model-written
-notes (rewritten through the reply's ``notes`` field), the last few decisions with the
-engine's verdict on them, and where enemies were last seen. No transcript accumulates.
+transport and spend live in ``gameai.llm``, model prices in ``gameai.providers``. Memory
+is bounded: model-written notes (rewritten through the reply's ``notes`` field), the last
+few decisions (orders, any dropped as invalid, and the reason), the engine's verdict on the
+last batch, the move or attack order each unit still holds, unit strengths at the previous
+decision, and where enemies were last seen. No transcript accumulates.
 """
 
 import hashlib
@@ -27,7 +29,8 @@ from twwarhammer3.protocol import (
 
 SYSTEM_PROMPT_PATH = REPO_ROOT / "configs/twwarhammer3/system_prompt.md"
 RULES_PROMPT_PATH = SYSTEM_PROMPT_PATH.with_name("rules_prompt.md")
-# Every WH3 job shares this spend file, and so one budget; Spire keeps its own.
+# Every WH3 OpenAI job shares this spend file, and so one budget; OpenRouter jobs use the
+# file below, and Spire keeps its own.
 LEDGER_PATH = REPO_ROOT / "runs/twwarhammer3/llm-spend.jsonl"
 OPENROUTER_LEDGER_PATH = LEDGER_PATH.with_name("openrouter-spend.jsonl")
 MAX_OUTPUT_TOKENS = 16000  # room for reasoning-on modes (owner, 2026-10-18)
@@ -288,8 +291,9 @@ def _side(side: str | None) -> str:
 
 
 def render_mode(mode: dict | None) -> str | None:
-    """The battle type and what wins it: role, objectives in the game's words, tickets,
-    capture points, gates and supplies, as far as the type has them."""
+    """The battle type and what wins it: role, timeout winner, objectives in the game's
+    words, a scenario objective, tickets, capture points, gates, supplies, the reinforcement
+    pool and spawn zones, and building slots, as far as the type has them."""
     if not mode or not mode.get("type"):
         return None
     head = f"Battle: {mode['type']}"
@@ -529,8 +533,8 @@ def describe_dropped(order) -> str:
 
 def salvage(attempts: list[dict], observation: dict) -> tuple[dict, list[str]] | None:
     """The last attempt's reply without the orders that are still invalid, so one order
-    the model keeps repeating (a cast on cooldown, say) does not end the battle; None if
-    that reply is not even a JSON object with the reply's fields."""
+    the model keeps repeating (a cast on cooldown, say) does not forfeit the whole decision
+    (no orders sent); None if that reply is not even a JSON object with the reply's fields."""
     try:
         reply = check_fields(json.loads(attempts[-1]["text"]), REPLY_SCHEMA)
     except (ValueError, RecursionError):

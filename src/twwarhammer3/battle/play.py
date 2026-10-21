@@ -5,10 +5,13 @@ the mailbox (the first one after the frontend steps start a custom battle, later
 after a ``restart`` control), then alternates observations and decisions: one request
 in flight at a time. By default the acknowledgement observation starts the next
 decision immediately; ``interval_ms`` optionally adds a wait after orders apply. The
-battle never waits for a controller: a decision whose controller fails sends no orders and
-the controller is asked again, and a battle that ended during a call keeps its result. Each
+battle never waits for a controller: a decide call with no valid reply or a provider error
+sends no orders and the controller is asked again (any other controller exception, or a key,
+credit or budget stop, ends the episode), and a battle that ended during a decide call keeps
+its result unless the call stopped for a key, credit or budget reason. Each acknowledged
 decision records the think time and the battle-time delay between the state it saw and the
-orders being issued (or queued). A fast policy decides at the mod's tick rate, so the trace
+orders being issued (or queued); one still unacknowledged when the episode ends records
+neither. A fast policy decides at the mod's tick rate, so the trace
 keeps every decision with orders, an error or new metadata, and quiet ones once per
 ``observe_ms``. Only an engine-reported result is a gameplay outcome. ``setup`` turns the
 scenario into lobby steps and checks.
@@ -245,7 +248,7 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
                  not_battle: str | None, scenario: dict | None = None,
                  start_reference: dict | None = None) -> dict:
     """One episode with a fresh controller from ``make_policy``. The job's ``scenario``
-    sets what the first observation must show; ``start_reference`` is the first episode's
+    sets what the first observation with units must show; ``start_reference`` is the first episode's
     starting fingerprint, compared with this one's."""
     require_realtime(config)
     directory.mkdir()
