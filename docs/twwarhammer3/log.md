@@ -45,7 +45,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
 Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3/away-20261021/`.
 - [Starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21) (proposal): a
   five-part rule, three cards (chariot, rank-5 line, Skaven expendables; chosen alike by
-  two blind agents), a $0 screen of 39 launches, a held-out map. Fixed: 109 of 110 review
+  two blind agents), a $0 screen of 39 launches, a held-out map. Fixed: 113 of 114 review
   errors (1 in a commit message), 132 stale facts; 18 texts parked.
 - Failure rule: none of 595 episodes failed at construction, a late acknowledgement or
   `close()`, so the [proposed rule](benchmark.md#correctness-checks-to-agree) rescores

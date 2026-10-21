@@ -100,8 +100,8 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 8. `wh3-rules-v21-attack-path` (one rules sentence: attacks take the engine's route; move first
    and queue the attack): recommended, its own `llm_rules` version after item 2's, or drop it.
    Your call: keep `commander` (unplayed since v4)? More OpenAI budget (the $52 cap refuses Sol)?
-9. Your call: yes/no on the [away guidelines](autonomy.md) (tonight ran under the proposal, not as its agreed trial; reviews caught 110
-   errors in my drafts and commits, 109 fixed); before any campaign launch, yes/no on harness saves in the WH3 profile and on Steam
+9. Your call: yes/no on the [away guidelines](autonomy.md) (tonight ran under the proposal, not as its agreed trial; reviews caught 114
+   errors in my drafts and commits, 113 fixed); before any campaign launch, yes/no on harness saves in the WH3 profile and on Steam
    achievements (which cannot be undone; a no keeps campaign work to offline drafts).
 
 ## Runtime and ownership
