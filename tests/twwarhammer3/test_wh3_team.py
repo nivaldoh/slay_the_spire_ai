@@ -75,22 +75,12 @@ class Workers:
                 self.finish(index)
 
 
-@pytest.fixture
-def make_team():
-    policies = []
-
-    def make(a=None, b=None, **kwargs):
-        a, b = a or Script(), b or Script()
-        workers = Workers()
-        policy = team.TeamPolicy({"infantry": (team.SWORD, a), "cavalry": (team.KNIGHT, b)},
-                                 executor=workers, **kwargs)
-        policies.append(policy)
-        return policy, workers, a, b
-
-    yield make
-    for policy in policies:
-        if not policy.closed:
-            policy.close()
+def make_team(a=None, b=None, **kwargs):
+    a, b = a or Script(), b or Script()
+    workers = Workers()
+    policy = team.TeamPolicy({"infantry": (team.SWORD, a), "cavalry": (team.KNIGHT, b)},
+                             executor=workers, **kwargs)
+    return policy, workers, a, b
 
 
 def ack(policy, *, applied=13400, results=None):
@@ -99,7 +89,7 @@ def ack(policy, *, applied=13400, results=None):
                        {"delay_ms": 400, "think_s": .001, "roundtrip_s": .5})
 
 
-def test_partition_and_deep_public_inputs_use_types_not_positions(make_team):
+def test_partition_and_deep_public_inputs_use_types_not_positions():
     policy, workers, a, b = make_team()
     raw = state()
     raw.update(orders={"secret": "teammate feedback"}, evaluation={"hidden": 20}, setup={"x": 1})
@@ -129,7 +119,7 @@ def test_partition_and_deep_public_inputs_use_types_not_positions(make_team):
 
 @pytest.mark.parametrize("roster", [[], [team.SWORD], [team.SWORD, team.SWORD],
                                     [team.SWORD, team.KNIGHT, team.SWORD]])
-def test_ambiguous_or_unexpected_rosters_refuse_before_workers(make_team, roster):
+def test_ambiguous_or_unexpected_rosters_refuse_before_workers(roster):
     policy, workers, _, _ = make_team()
     observation = state()
     observation["friendly"] = [{"id": f"f{i}", "type": kind} for i, kind in enumerate(roster)]
@@ -140,7 +130,7 @@ def test_ambiguous_or_unexpected_rosters_refuse_before_workers(make_team, roster
 
 @pytest.mark.parametrize("bad", [[move("f1")], [{**move("f2"), "queue": True}],
                                   [{"unit": "army", "type": "ability", "ability": "x"}]])
-def test_local_refusal_does_not_suppress_peer_or_invent_engine_time(make_team, bad):
+def test_local_refusal_does_not_suppress_peer_or_invent_engine_time(bad):
     policy, workers, a, b = make_team(Script(bad))
     policy.decide(state())
     workers.finish(0)
@@ -156,7 +146,7 @@ def test_local_refusal_does_not_suppress_peer_or_invent_engine_time(make_team, b
     assert b.feedback[0][0]["request"] == "r1"
 
 
-def test_indices_recipient_original_age_fairness_and_transport_overage(make_team):
+def test_indices_recipient_original_age_and_transport_overage():
     now = [0.0]
     orders = [move("f2"), {"unit": "f2", "type": "attack", "target": "e1", "queue": True}]
     policy, workers, a, b = make_team(Script(orders), clock=lambda: now[0])
@@ -178,11 +168,20 @@ def test_indices_recipient_original_age_fairness_and_transport_overage(make_team
     assert policy.decide(state(3, 14000)) == [move("f1")]
     ack(policy, applied=15000)
     assert b.feedback[0][1]["transport_overage"] is True
-    workers.finish(2)  # A is ready again, but cannot overtake B above
-    assert policy.decide(state(4, 14500)) == orders
 
 
-def test_expiry_boundary_and_outer_validation_feedback(make_team):
+def test_the_oldest_completed_batch_goes_first():
+    now = [1.0]
+    policy, workers, _, _ = make_team(clock=lambda: now[0])
+    policy.decide(state())
+    workers.finish(1)  # cavalry completes first, infantry 0.1 s later
+    now[0] = 1.1
+    workers.finish(0)
+    policy.decide(state(2, 10100))
+    assert policy.metadata()["member"] == "cavalry"
+
+
+def test_expiry_boundary_and_outer_validation_feedback():
     policy, workers, a, _ = make_team()
     policy.decide(state())
     workers.finish(0)
@@ -197,7 +196,7 @@ def test_expiry_boundary_and_outer_validation_feedback(make_team):
     assert "applied_ms" not in a.feedback[1][0] and "delay_ms" not in a.feedback[1][1]
 
 
-def test_idle_poll_and_member_noop_have_different_feedback(make_team):
+def test_idle_poll_and_member_noop_have_different_feedback():
     policy, workers, a, b = make_team(Script([]))
     assert policy.decide(state()) == []
     ack(policy)
@@ -213,7 +212,7 @@ def test_idle_poll_and_member_noop_have_different_feedback(make_team):
 
 
 @pytest.mark.parametrize("change", ["battle", "id", "read_error"])
-def test_partition_never_rebinds_or_accepts_incomplete_engine_units(make_team, change):
+def test_partition_never_rebinds_or_accepts_incomplete_engine_units(change):
     policy, _, _, _ = make_team()
     policy.decide(state())
     observation = state(2, 11000)
@@ -228,7 +227,7 @@ def test_partition_never_rebinds_or_accepts_incomplete_engine_units(make_team, c
     assert policy.members["infantry"].unit == "f2"
 
 
-def test_equal_completion_times_do_not_keep_favoring_one_member(make_team):
+def test_equal_completion_times_do_not_keep_favoring_one_member():
     policy, workers, _, _ = make_team(clock=lambda: 1.0)
     policy.decide(state())
     workers.finish(0)
@@ -295,7 +294,7 @@ def test_real_workers_dispatch_and_ack_fast_member_before_slow_release(tmp_path,
 
 
 @pytest.mark.parametrize("fault", ["member", "partition"])
-def test_worker_exception_stops_once_and_harness_fault_is_distinct(tmp_path, make_team, fault):
+def test_worker_exception_stops_once_and_harness_fault_is_distinct(tmp_path, fault):
     class Broken(Script):
         def decide(self, observation):
             self.inputs.append(observation)
@@ -326,7 +325,7 @@ def test_worker_exception_stops_once_and_harness_fault_is_distinct(tmp_path, mak
 
 @pytest.mark.parametrize("before_send", [True, False])
 def test_terminal_disposes_unsent_or_unacknowledged_selection_and_closes_both(
-        tmp_path, make_team, before_send):
+        tmp_path, before_send):
     class BadClose(Script):
         def close(self):
             self.closed = True
