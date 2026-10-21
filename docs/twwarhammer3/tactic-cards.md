@@ -526,7 +526,9 @@ jobs follow each other within seconds):
   (LineTeam's b46 code included) decided on 9,674 recorded observations (the line at both
   ranks, both rifle variants, the expendables battle) without an exception or an invalid
   batch (`witness-dryrun.txt`; open loop, decisions only). All 39 jobs pass `play`'s own
-  argument, controller and scenario checks offline (`preflight.py`).
+  argument, controller and scenario checks offline (`preflight.py`), and the real queue
+  runs a copy of the plan at HEAD end to end, in order, with a no-op command in place of
+  `play`.
 - Reading rule, fixed now: a floor's contact win parks that card (two threats would get one
   step instead). A card goes to confirmation when no floor won by contact, its witness won
   at least 2 of 3 with the marker on each win, and the rest of its Missing column is done,
