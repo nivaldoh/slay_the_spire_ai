@@ -413,20 +413,30 @@ between units. A literature review does not establish that this combination is u
 
 ## The starting set (proposal, 2026-10-21)
 
-No set is agreed yet. This proposes the battles to take to confirmation first, by a rule
-that can be checked against the record. Counts are episodes in `results.csv` (rematches
-included, mostly single launches, all unverified), recounted by
-`runs/twwarhammer3/away-20261021/evidence.py`; `markers/markers.py` beside it reads the
-line, expendables and probe markers on all 42 recorded episodes of those battles (proposed
-readers, not agreed checks), and `twwarhammer3 card chariot` reads the chariot's. Success
-is a contact win: every enemy unit routed or destroyed before the timer. A defender's timer
-win is recorded beside it, not counted ([Empire decision
-7](empire.md#decisions-taken-for-the-owners-review)). Words: the floors are the naive
-scripts `hold`, `attack_nearest` and `rush_nearest`; a shortcut is a named wrong play that
-might still win; floors and scripted shortcuts are the foils that must lose. A witness is a
-disclosed script that plays the tactic. Added age is the delay the harness adds to each
-observation (`--delay-seconds`). A screen is a few cheap launches; a probe is a battle
-screened for the owner, not a set card.
+In short (no set is agreed yet): three cards, each testing one decision. The chariot tests
+charging, pulling out and charging again; the rank-5 line tests seven units keeping their
+jobs; the Skaven expendables test spending cheap units to hold the enemy's anti-large
+infantry. They were chosen by the five-part rule below. The line and the expendables go
+through three stages: a $0 scripted screen (39 launches with two probes, about 5.1 h),
+where the naive scripts must lose and a disclosed script must win 2 of 3 showing the
+tactic's marker; a confirmation (each foil 0 of 14, the witness at least 10 of 14); then a
+model screen (about $10 for GLM and Qwen on all three cards). The screen waits for [inbox
+item 1](../state.md#owner-decisions-waiting); the chariot, admitted under c1's rule, waits
+for the agreed checks.
+
+This proposes the battles to take to confirmation first, by a rule that can be checked
+against the record. Counts are episodes in `results.csv` (rematches included, mostly single
+launches, all unverified), recounted by `runs/twwarhammer3/away-20261021/evidence.py`;
+`markers/markers.py` beside it reads the line, expendables and probe markers on all 42
+recorded episodes of those battles (proposed readers, not agreed checks), and `twwarhammer3
+card chariot` reads the chariot's. Success is a contact win: every enemy unit routed or
+destroyed before the timer. A defender's timer win is recorded beside it, not counted
+([Empire decision 7](empire.md#decisions-taken-for-the-owners-review)). Words: the floors
+are the naive scripts `hold`, `attack_nearest` and `rush_nearest`; a shortcut is a named
+wrong play that might still win; floors and scripted shortcuts are the foils that must
+lose. A witness is a disclosed script that plays the tactic. Added age is the delay the
+harness adds to each observation (`--delay-seconds`). A screen is a few cheap launches; a
+probe is a battle screened for the owner, not a set card.
 
 **What a card needs before confirmation.** All five must hold:
 1. It tests a decision no other card in the set tests. New cards play Empire unless the
@@ -535,7 +545,8 @@ jobs follow each other within seconds):
 
 Before more model launches on a card, a held-out variant of it is reserved (evaluation
 guideline 3.2; proposed: the same card on `battle_preset_wh3_nur_wastes_01_04`, the map of
-the six earlier `-heldout-wastes` entries, listed in the lobby and used by one random battle but by
-no card, checked by its witness and floors only), and the two defending cards need the [defender-prompt decision](../state.md#owner-decisions-waiting):
-the model prompt promises a defender the timer win these cards do not count. The scripted
-screen does not depend on either.
+the six earlier `-heldout-wastes` entries, listed in the lobby and used by one random
+battle but by no card, checked by its witness and floors only), and the two defending cards
+need the [defender-prompt decision](../state.md#owner-decisions-waiting): the model prompt
+promises a defender the timer win these cards do not count. The scripted screen does not
+depend on either.
