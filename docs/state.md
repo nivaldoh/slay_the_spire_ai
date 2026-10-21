@@ -83,7 +83,7 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
    [five defending battles](twwarhammer3/empire.md#decisions-taken-for-the-owners-review) restate it.
    Recommended: state the card's rule (a new prompt version); or count timer wins.
 3. **The [failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)**: recommended, agree it
-   as written (no recorded episode changes) and merge `wh3-keep-engine-ending` (`git show b527584`;
+   as written (no recorded episode changes) and merge `wh3-keep-engine-ending` (`git show 98b3013`;
    scores unchanged). Deferring leaves the next evaluator's failure count undefined.
 4. Where to back up `runs/`, which has no copy (23 GB, 6.9 GB without `checkpoints/`). Ready
    on a yes: a sha256-checked copy to `C:` (the same machine, so not off-site).
@@ -120,6 +120,6 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` attack-route draft, labelled
   v21 before main's v21 (`18dabdd`); renumber before any merge.
-- `wh3-keep-engine-ending` (`b527584`, worktree `../slay_the_spire_ai-wh3-ending`): keeps the
+- `wh3-keep-engine-ending` (`98b3013`, worktree `../slay_the_spire_ai-wh3-ending`): keeps the
   engine's ending through a late acknowledge or `close()` failure (inbox item 3).
 - Archived drafts are tags (`git tag --list 'archive/*'`).

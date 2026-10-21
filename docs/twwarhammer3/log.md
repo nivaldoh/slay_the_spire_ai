@@ -50,7 +50,7 @@ Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3
   all fixed.
 - Failure rule: none of 595 episodes failed at construction, a late acknowledgement or
   `close()`, so the [proposed rule](benchmark.md#correctness-checks-to-agree) rescores
-  nothing. Branch `wh3-keep-engine-ending` (`b527584`, unmerged, independently reviewed)
+  nothing. Branch `wh3-keep-engine-ending` (`98b3013`, unmerged, independently reviewed)
   keeps that ending, scores unchanged; its regression fails on the parent; suite 1342
   passed.
 - c1: a blind recount from docs and raw files matched every outcome and the verdict. On 21

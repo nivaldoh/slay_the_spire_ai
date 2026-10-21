@@ -263,7 +263,7 @@ counts.
 Check row to add to AGENTS.md on the owner's yes (proposed): "WH3 engine ending kept after
 a late controller failure: `uv run --locked pytest -ra
 tests/twwarhammer3/test_wh3_play.py::test_a_controller_failure_after_the_ending_keeps_the_engine_result`
-(fails on the parent of `b527584`); no game execution claim." The recount behind the rule
+(fails on the parent of `98b3013`); no game execution claim." The recount behind the rule
 reruns with `uv run --locked python runs/twwarhammer3/away-20261021/failures.py`.
 
 ## Research that changes the design
