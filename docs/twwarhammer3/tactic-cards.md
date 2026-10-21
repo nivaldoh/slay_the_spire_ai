@@ -413,10 +413,9 @@ win is recorded beside it, not counted ([Empire decision
 7](empire.md#decisions-taken-for-the-owners-review)). Words: the floors are the naive
 scripts `hold`, `attack_nearest` and `rush_nearest`; a shortcut is a named wrong play that
 might still win; floors and scripted shortcuts are the foils that must lose. A witness is a
-disclosed script that plays the tactic; a marker is what its wins show in the replay and
-the losing floors do not. Added age is the delay the harness adds to each observation
-(`--delay-seconds`). A screen is a few cheap launches; a probe is a battle screened for the
-owner, not a set card.
+disclosed script that plays the tactic. Added age is the delay the harness adds to each
+observation (`--delay-seconds`). A screen is a few cheap launches; a probe is a battle
+screened for the owner, not a set card.
 
 **What a card needs before confirmation.** All five must hold:
 1. It tests a decision no other card in the set tests. New cards play Empire unless the
@@ -477,18 +476,18 @@ Not in the starting set:
   9); knights against Orc Boyz (nothing won, and the commander flag on the only unit is a
   built-in morale shock); the Giant and the Screamers (no witness won).
 
-**Cost of the first round**, at recorded job wall times (manifests' `wall_seconds`: a mean 4.7-9.7 minutes a launch;
+**Cost of the first round**, at recorded job wall times (manifests' `wall_seconds`, each
+battle's mean over its recorded launches, model ones included: 6.4-9.7 minutes a launch;
 jobs follow each other within seconds):
 - Screen, $0: 3 fresh launches of each floor of the line, expendables, rifle-lane and
   two-threats battles (`rush_nearest` on the line and the expendables, where a charge could
   win), then of each witness at its recorded age with no added interval (LineTeam 0 s,
   SlaveTarpit and FlankLane 5 s): 39 launches in about 5.1 h. The jobs are fixed in
   `runs/twwarhammer3/away-20261021/screen-plan.json`; its revision and start cutoff are set
-  on the go-ahead. The queue cannot stop a card early. The rifle and two-threats jobs are
-  probes for the owner, not set cards. Offline, the three witnesses (LineTeam's b46 code
-  included) decided on 9,674 recorded observations (the line at both ranks, both rifle
-  variants, the expendables battle) without an exception or an invalid batch
-  (`witness-dryrun.txt`; open loop, decisions only).
+  on the go-ahead. The queue cannot stop a card early. Offline, the three witnesses
+  (LineTeam's b46 code included) decided on 9,674 recorded observations (the line at both
+  ranks, both rifle variants, the expendables battle) without an exception or an invalid
+  batch (`witness-dryrun.txt`; open loop, decisions only).
 - Reading rule, fixed now: a floor's contact win parks that card (two threats would get one
   step instead). A card goes to confirmation when no floor won by contact, its witness won
   at least 2 of 3 with the marker on each win, and the rest of its Missing column is done,
@@ -501,11 +500,12 @@ jobs follow each other within seconds):
   the time; confirmation does the rest. `read_screen.py` beside the plan prints the rule's
   verdict per card and every planned job without a scored episode; on every recorded launch
   (`--all`) it reproduces the line and expendables floor and witness counts.
-- Confirmation at the [proposed gate](benchmark.md#from-a-candidate-to-a-scored-card)
-  (each foil 0/14, witness at least 10/14): 42 launches for a card with two floors (56 for
-  the expendables' three) plus 14 per shortcut foil, so about two nights for the line and
-  the expendables. A 10-launch gate (foil bound 0.26 instead of 0.19) needs
-  about 30% fewer.
+- Confirmation at the [proposed gate](benchmark.md#from-a-candidate-to-a-scored-card) (each
+  foil 0/14, witness at least 10/14): 56 launches for a card with three floors (the line
+  and the expendables; 42 with two) plus 14 per shortcut foil: about 140 launches over two
+  long nights, the line about 11 h, more than a night (pairing controllers in a launch
+  saves about 13%). A 10-launch gate (foil bound 0.26 instead of 0.19) needs about 30%
+  fewer.
 - First model screen, 10 launches per card and model (a screen, not a ranking): GLM-5.3 low
   cost a median $0.19 a launch (45 since 10-19, `results.csv` usd), Kimi K3 low $0.63 (its
   3 line battles), Qwen3.6 $0.02 (6). About $26-28 of the $50 OpenRouter allowance is left

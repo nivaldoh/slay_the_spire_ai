@@ -46,8 +46,8 @@ Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3
 - [Starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21) (proposal): a
   five-part rule, three cards (chariot, rank-5 line, Skaven expendables; two blind
   re-derivations agreed), a $0 screen of 39 scripted launches (5.1 h, two probes) with a
-  reader, a held-out map. Independent reviews confirmed 83 errors in tonight's drafts and
-  commits (81 in documents, 2 in the branch), all fixed.
+  reader, a held-out map. Independent reviews confirmed 89 errors in tonight's drafts and
+  commits (87 in documents, 2 in the branch), all fixed.
 - Failure rule: none of 595 episodes failed at construction, a late acknowledgement or
   `close()`, so the [proposed rule](benchmark.md#correctness-checks-to-agree) rescores
   nothing. Branch `wh3-keep-engine-ending` (`98b3013`, unmerged, reviewed twice) keeps that

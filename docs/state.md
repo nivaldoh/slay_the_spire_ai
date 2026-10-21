@@ -84,23 +84,23 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
    `llm` and `commander` prompts (a new version once a change slot frees); or count timer wins.
 3. **The [failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)**: recommended, agree it
    (rescores no recorded episode) and merge `wh3-keep-engine-ending` (`git show 98b3013`), which keeps
-   the ending only, scores unchanged; scoring construction failures needs a later change.
-4. Where to back up `runs/`, which has no copy (23 GB, 6.9 GB without `checkpoints/`). Ready
-   on a yes: a sha256-checked copy to `C:` (the same machine, so not off-site).
+   the ending only, scores unchanged; scoring that ending and construction failures needs a later change.
+4. Where to back up `runs/`, which has no copy (23 GB, 6.9 GB without `checkpoints/`). Recommended:
+   yes to the ready sha256-checked copy to `C:` (the same machine, so not off-site).
 5. The chariot card: [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions) 3-5; recommended, witness v2 for the
    next confirmation (4/5 at 5 s/5 s and 8 s/8 s, v1 2/8 and 0/4), c1 staying v1's admitted record. The
-   [latency program's](twwarhammer3/latency.md#owner-decisions) three: `c1` as evidence, the scored route, the $20 stop.
+   [latency program's](twwarhammer3/latency.md#owner-decisions) three (your call): `c1` as evidence, the scored route, the $20 stop.
 6. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (may they train
-   a model? 25,503 rows excluded), GLM-5.3 or rejection-sampled Qwen3.6 ([licenses](posttraining.md#provider-terms)).
-7. Whether to request token log-probabilities, a sampler seed or explicit GLM/Kimi sampling
-   before the next model screens ([gaps](posttraining.md#beyond-supervised-fine-tuning)); Step 5
-   preview's weights are public ([terms](posttraining.md#provider-terms)).
+   a model? 25,503 rows excluded), GLM-5.3 or rejection-sampled Qwen3.6 ([licenses](posttraining.md#provider-terms)); your call, secondary.
+7. Token log-probabilities, a sampler seed or explicit GLM/Kimi sampling before the next model screens
+   ([gaps](posttraining.md#beyond-supervised-fine-tuning))? Recommended: ask where the pinned backend lists them (Qwen, one of
+   Kimi's two endpoints; GLM's Decart lists only a seed). Step 5's weights are [public](posttraining.md#provider-terms).
 8. `wh3-rules-v21-attack-path` (one rules sentence: attacks take the engine's route; move first
    and queue the attack): recommended, its own `llm_rules` version after item 2's, or drop it.
-   Whether to keep `commander` (unplayed since v4); more OpenAI budget (the $52 cap refuses Sol).
-9. Yes/no on the [away guidelines](autonomy.md) (tonight's offline trial: independent reviews
-   caught 83 errors in my drafts and commits, all fixed); before any campaign launch, yes/no
-   on harness saves in the WH3 profile and on Steam achievements (which cannot be undone).
+   Your call: keep `commander` (unplayed since v4)? More OpenAI budget (the $52 cap refuses Sol)?
+9. Your call: yes/no on the [away guidelines](autonomy.md) (tonight's offline trial: reviews caught
+   89 errors in my drafts and commits, all fixed); before any campaign launch, yes/no on harness
+   saves in the WH3 profile and on Steam achievements (which cannot be undone).
 
 ## Runtime and ownership
 
