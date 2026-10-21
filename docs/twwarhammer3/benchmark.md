@@ -159,7 +159,7 @@ those proposed numbers still need agreement.
 |---|---|---|
 | 1. Settle the contract | Agree the failure/denominator rule and correctness checks; select the next chariot witness/signature version without rewriting c1 | A well-defined next evaluation, not yet a verified card |
 | 2. Close one reusable path | Freeze one card/controller/scorer package, pass its agreed checks, recount accessible evidence and complete the outside rerun | A usable single-card evaluation with explicit limits |
-| 3. Earn breadth | Screen the Empire rifle lane/protection candidates for a decision distinct from the chariot; test the line battle's fixed jobs/early commitment/replacement comparison before calling it recovery | A justified small card list; neither Empire nor team framing grants admission |
+| 3. Earn breadth | Screen the [starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21) (floors, then witnesses) for decisions distinct from the chariot; test the line battle's fixed jobs/early commitment/replacement comparison before calling it recovery | A justified small card list; neither Empire nor team framing grants admission |
 | 4. Demonstrate usefulness | Freeze that list and one primary contrast, run the bounded confirmation/comparison and reserved variations, report uncertainty, failures, timing and cost | Reference results supporting a specific conclusion, or a clearly inconclusive study |
 | 5. Release, then assess contribution | Package commands, versions, controller dependencies, reference evidence and rerun records; for a research claim, also complete the closest-work comparison below | A reusable suite; any further research claim is only as broad as the study supports |
 
@@ -221,8 +221,18 @@ record later acknowledgement or cleanup errors as reliability failures. List uns
 planned trials separately, never as losses. Agree and test this rule before adoption.
 Current code differs: construction precedes recording a battle id, so the card reader
 excludes that failure; acknowledgement or `close()` can fail before the final status is
-stored or preserved. This code inspection does not establish how often either occurs.
-Historical c1 scoring stays fixed.
+stored or preserved. Historical c1 scoring stays fixed.
+
+How often (recount 2026-10-21, `runs/twwarhammer3/away-20261021/failures.txt`): of 595
+recorded episodes, none failed at construction, at the acknowledgement of an ending or at
+`close()`, so the rule rescores no recorded episode. All 9 policy failures were in battle,
+so the proposed rule scores them as today's reader does: it forfeits 8 and excludes an
+HTTP 402 credit stop at b30 as an operator stop. The register still lists that stop and a
+harness-probe `KeyError` at b2 as policy failures; correcting those rows stays a separate
+decision. 18 jobs ended before any episode (10 setup failures), none of them in the c1
+cohort. The local branch `wh3-keep-engine-ending` stores the engine's ending before the
+acknowledgement and keeps it through a `close()` failure, without changing which result
+counts.
 
 ## Research that changes the design
 
@@ -424,18 +434,10 @@ different questions. Existing labels such as `prototype_not_admitted` are legacy
 Prefer distinct decisions over different rosters. The owner's current direction is
 mostly small Empire battles, with other factions for a specific challenge and a few
 larger coordination problems. The earlier 6–8-family range was a planning guide, not a
-quota or a settled suite. The [shortlist](tactic-cards.md#which-candidates-to-resolve-next)
+quota or a settled suite. The [starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21)
 and [Empire evidence](empire.md#results) decide what to inspect next.
 
-| Candidate | Consequential choice | What would make it useful or change its interpretation |
-|---|---|---|
-| Existing chariot | Leave melee and return, or keep fighting | A repeated winning route and failed long-melee alternatives; retain it as an execution card even if a robust recipe tolerates delay |
-| Empire rifle lane / Helblaster protection | Move to obtain firing space; spend an escort's strength keeping that space usable | Check firing and protection separately; if abandoning the gun also wins, protection is not established as necessary |
-| Empire line battle | Keep opening jobs, commit the reserve, or replace lost support | Useful coordination first; a recovery claim also needs to beat a relevant fixed-time reserve release |
-| Pin-then-rear | Keep one unit engaged while another reaches the rear, or attack together | Observe continuing support and contact; a fixed schedule that succeeds limits the feedback claim |
-| Empire wizard | Spend shared mana now or preserve it for a better target | A credible win must depend on useful casts; accepted casts alone do not establish their effects |
-
-These are candidate questions, not admitted tasks or advice silently added to prompts.
+Candidates are questions, not admitted tasks or advice silently added to prompts.
 Before a screen, name the public information needed, two credible plays, simplest
 shortcut, observable effect and nearest existing card. Reject redundancy: a difficulty
 step is usually a variant, and 20 v 20 changes combat balance, pathing and order volume

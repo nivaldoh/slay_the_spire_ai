@@ -22,23 +22,23 @@ prints the board from manifests and replays, and the verdict for given jobs.
 | mechanism hypothesis | repeated charges can rout the Swordsmen; the tested long-melee foils lost, mostly with every chariot alive. This does not exclude every other winning play |
 | foils | `attack_nearest` and `rush_nearest` at 0 s added age. `hold` is no foil: the AI defends, so standing still loses on the timer by the mode's rule (1205 s) |
 | witness | `SnapHitAndRun` (rule disclosed in its card): attack the nearest enemy and keep it; on the first observation showing melee ride to 120 m from the enemies' centre, on its own side; charge again once 80 m from the target and 10 s after leaving |
-| signature | **cycles v1**: non-final melee engagements containing an accepted move order (1 Hz melee frames, gaps under 3 s merged). It counts pull-out attempts, not achieved separation or a proven new charge. Witness wins read 4-21 and losses 1-15; the count does not separate winning from losing |
+| signature | **cycles v1**: non-final melee engagements containing an accepted move order (1 Hz melee frames, gaps under 3 s merged; an order applied up to 1 s after an engagement's last melee frame counts, as the code frozen at `5396182` does). It counts pull-out attempts, not achieved separation or a proven new charge. Witness wins read 4-21 and losses 1-15; the count does not separate winning from losing |
 | knowledge | withheld: the rules prompt states neither charge bonuses nor cycle charging |
 | tolerance | The [b40 round](log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40) found witness v2 won 3/3 at configured 2 s age / 2 s interval, 4/5 at 5/5 and 4/5 at 8/8. V1 won 2/8 at 5/5 and 0/4 at 8/8. These are recipe-specific results, not a tactic-wide deadline. Actual timing rounds to the engine cadence; queued attacks execute later than their acknowledgement. The board's roughly 13 s `info age` at 8/8 is a summary proxy, not a measured reaction window ([timing](latency.md#measurements)). No causal attribution of model losses to latency follows |
 
-**Admission rule** (committed at `5396182` before the round; the model-pace gate was dropped
-at 17:45 UTC, against E2's own rule): in fresh launches,
-`attack_nearest` and `rush_nearest` each lose all of 10 (one win fails the card), and the
-witness at 5 s added age wins at least 4 of 5, each win with at least one cycle. Operating
-characteristics: a foil that wins 20% of its battles passes 10 straight losses 11% of the
-time (10 losses bound a foil below 0.26, one-sided 95%); a witness that wins half its
-battles passes 4 of 5 19% of the time, and one that wins 80% fails it 26% of the time. The
-gate witness decides about three times a second on 5 s-old information, a regime no model
-is in; the tolerance row above is the evidence at model-like cadences. Each c1 foil launch
-rotated both foils, so each foil's 10 battles are on 10 instances shared with the other foil
-(`attack_nearest` played the fresh start in 3, `rush_nearest` in 7; the rest were rematches
-of the instance the other foil had just played). `cards.outcome` changed after
-pre-registration (b35, forfeits) with no effect on c1, which has no forfeit.
+**Admission rule** (committed at `5396182` before the round; the model-pace gate was
+dropped at 17:45 UTC, against E2's own rule): in fresh launches, `attack_nearest` and
+`rush_nearest` each lose all of 10 (one win fails the card), and the witness at 5 s added
+age and no added interval wins at least 4 of its first 5, each win with at least one cycle.
+Operating characteristics: a foil that wins 20% of its battles passes 10 straight losses
+11% of the time (10 losses bound a foil below 0.26, one-sided 95%); a witness that wins
+half its battles passes 4 of 5 19% of the time, and one that wins 80% fails it 26% of the
+time. The gate witness decides about three times a second on 5 s-old information, a regime
+no model is in; the tolerance row above is the evidence at model-like cadences. Each c1
+foil launch rotated both foils, so each foil's 10 battles are on 10 instances shared with
+the other foil (`attack_nearest` played the fresh start in 3, `rush_nearest` in 7; the rest
+were rematches of the instance the other foil had just played). `cards.outcome` changed
+after pre-registration (b35, forfeits) with no effect on c1, which has no forfeit.
 
 **Score** per model and mode: wins over scored launches with a 95% Wilson interval, beside
 the median cycles and order age. The battle never waits (`cards.outcome`, harness b35): a
@@ -398,22 +398,91 @@ replaces this page's October 18 novelty survey (kept in git at `f5af096`). WH3's
 combination is tactical manoeuvre, morale, continuing orders, magic and changing support
 between units. A literature review does not establish that this combination is unique.
 
-## Which candidates to resolve next
+## The starting set (proposal, 2026-10-21)
 
-Recommended order for the owner's next live plan, not authorization to run it now:
+No set is agreed yet. This proposes the battles to take to confirmation first, by a rule
+that can be checked against the record. Counts are episodes in `results.csv` (rematches
+included, mostly single launches, all unverified), recounted by
+`runs/twwarhammer3/away-20261021/evidence.py`; `markers/markers.py` beside it reads each
+card's marker on every recorded episode (42; proposed readers, not agreed checks). Success
+is a contact win: every enemy unit routed or destroyed before the timer. A defender's timer
+win is recorded beside it, not counted ([Empire decision 7](empire.md#decisions-taken-for-the-owners-review)).
+The floors are the naive scripts `hold`, `attack_nearest` and `rush_nearest`; a witness is
+a disclosed script that plays the tactic.
 
-| Candidate | Concrete question and first shortcut to test | Stop or change the claim when |
-|---|---|---|
-| Existing chariot card | Finish the definition/reader checks; preserve c1 as its original cohort and decide separately whether v2 is the future reference | Another delay sweep merely repeats a recipe comparison; no further sweep without a distinct question |
-| Empire rifle lane, then Helblaster protection | Does clearing a lane matter, and does the escort actually preserve the gun? Compare a blocked-lane or abandon-the-gun play with the witness, not just nearest attack | The substitute wins without firing space/protection, or the signature cannot identify the claimed effect |
-| Empire rank-5 line battle | Can replacement improve on fixed jobs and early reserve commitment with the same executor? Review the existing fixed-plan win first | Simple coordination suffices: retain it as coordination evidence and do not label it recovery |
-| Pin-then-rear | Does a continuing pin keep the rear-charge opportunity useful? Compare a frontal/fixed-schedule play and inspect actual contacts before any timing sweep | Only a narrow lucky opening is winnable, or the reference's failure is being called a universal deadline |
+**What a card needs before confirmation.** All five must hold:
+1. It tests a decision no other card in the set tests. New cards play Empire unless the
+   decision needs another faction; the chariot and expendables cards keep theirs.
+2. Every floor that applies has lost (`rush_nearest` where a charge could win by itself),
+   and so has the card's named shortcut, scripted before confirmation (a floor counts where
+   it is that shortcut).
+3. A disclosed scripted witness, seeing only the public observation, has won at least half
+   its launches at one declared added age and decision interval. A model's win shows the
+   battle can be won but is not a witness.
+4. The card has a marker: something in the replay and trace that the witness's wins show
+   and the losing floors do not. A win without it stays a win and questions the card.
+5. A battle lasts under about 10 minutes, so one card's confirmation fits in a night.
 
-The [Empire record](empire.md) supplies the screens; the
-[team plan](robot-team-plan.md#a-small-sequence-of-experiments) supplies the recovery gates.
-Broader mode and scale cards remain candidates in the list above. Promote only distinct
-choices with a credible winning route. A 20 v 20 tests whole-system scaling, including
-pathing, action volume and combat balance; prompt length alone needs its own comparison.
-Post-training follows a useful card, a reserved variant, a serving route and a data
-contract ([plan](../posttraining.md#beyond-supervised-fine-tuning)). Do not make training
-or a new controller architecture a prerequisite for releasing the benchmark.
+A battle that still fails 2 or 3 after one difficulty step is parked with its reason, not
+hardened or softened further. The line, expendables, rifle-lane and Helblaster battles have
+had theirs.
+
+| Card and battle | What it tests, and its marker | So far | Missing before confirmation |
+|---|---|---|---|
+| Chariot, `grn-chariot-emp-swordsmen-hard` (attacks) | Charge, pull out and charge again instead of grinding. Marker: at least one pull-out attempt during melee (cycles v1) | `attack_nearest` 0/11, `rush_nearest` 0/12; SnapHitAndRun 21/33 and HitAndRunV2 11/13 over several ages; admitted under c1's rule | The agreed checks, failure rule and witness version ([state](../state.md#total-war-warhammer-iii), next step 1); no more delay sweeps without a new question |
+| Line at rank 5, `emp-line-grn-raid-xp5` (7 v 7, defends) | Seven units keep their jobs: the line holds in guard mode, the guns stay behind it, the knights take the enemy cavalry. Marker: none separates at both ranks. The knights' first melee against cavalry fails both rank-5 floors and passes both rank-5 wins (LineTeam, GLM), but also passes both rank-0 floors; no gun in melee before the first line rout fails all 4 floors, passes LineTeam's win by 2 s and fails GLM's | `hold` 0/1, `attack_nearest` 0/1; LineTeam 1/1 at 0 s (b45; b46 unplayed); LineTeamReserve 0/1 | Floors and LineTeam b46 at 3 launches; a marker ([Empire item 2](empire.md#for-the-owner-to-decide)) and a named shortcut. Whether replacement helps stays a [team-plan](robot-team-plan.md#a-small-sequence-of-experiments) question |
+| Expendables, `skv-ogres-slaves-emp-halberds-1` (defends) | Spend the Skavenslaves to hold the Halberdiers while the Rat Ogres kill the guns. Marker: the slaves fight the halberds before the ogres' first melee, which is not with the halberds. SlaveTarpit passes all 5 of its episodes (both variants), `attack_nearest` fails both; `hold` passes only because its ogres never fought | `hold` 0/1, `attack_nearest` 0/1; SlaveTarpit 3/4 at 5 s. Kimi K3 low won its scored launch by a shortcut: the ogres hit the guns at 87 s, the slaves the halberds at 127 s | The rush floor; 3 launches per floor and witness; a foil for Kimi's shortcut (ogres at the guns at once); "the ogres fought" in the marker |
+| Rifle lane, `emp-handgunners-grn-savage-orcs-hard` (defends) | Fire past one's own Spearmen through a clear lane. Marker: most rounds fired with the gun-to-target line clear of the Spearmen (FlankLane's own lane test): FlankLane 90% and 100%, `attack_nearest` 12% | `attack_nearest` 0/1, the blocked-lane shortcut (12% clear); FlankLane 1/2 at 5 s (its 100% launch lost); GLM-5.3 low 0/2, both at 0% | `hold` and 3 launches per floor and witness: whether the lane decides the battle is still open |
+
+Not in the starting set:
+- **Two threats**, `emp-handgunners-grn-wolves-boyz`: the Spearmen meet the fast Wolf
+  Riders, the guns shoot with skirmish off and then turn to the Orc Boyz. Floors 0/2; no
+  witness. The marker (the guns never in melee before the riders are shattered or gone)
+  fails both floors and GLM-5.3's loss and passes its win (1/2). Its floors are in the
+  screen; a witness written from GLM's winning plan would make GLM a designer of this card
+  (evaluation guideline 3.3), so it waits for the owner.
+- **Protect the gun**, `emp-helblaster-brt-raiders`: Bodyguard won 5/8, every win with
+  the Helblaster at 0 crew, so a contact win does not test protection, and "win with the
+  gun alive" has no witness win (GLM-5.3 low did it once in 4). Its step (`-2`, a second
+  Men-at-arms) lost every launch: Bodyguard 0/2, `hold` 0/1, GLM 0/1. Parked.
+- **Pin-then-rear**, `ksl-raiders-emp-halberds` (attacks): floors 0/2, but the current
+  PinThenRear (tightened at b29) lost both its launches; its first version won 1 of 2 and
+  FeintFlank 1 of 3, each win a single launch at 0 s.
+- **Siege**, `chd-reserve-grn-siege` (the type-of-situation kind): Sol-class models won
+  6/7 and Luna 1/4, but no script has won (CentralDefence 0/1).
+- **20 v 20**, `emp-pitched-grn-20` (scale): every controller lost (3); a planner and
+  executor harness comes first ([Empire item 5](empire.md#for-the-owner-to-decide)).
+- **Parked**: the wizard (its wrong-play foil FireballSpam won 2/2); hammer and anvil (two
+  Swordsmen: `attack_nearest` won; three: all 6 lost); three Dwarf Warriors (nothing won in
+  9); knights against Orc Boyz (nothing won, and the commander flag on the only unit is a
+  built-in morale shock); the Giant and the Screamers (no witness won).
+
+**Cost of the first round**, at recorded job wall times (a mean 4.7-9.7 minutes a launch;
+jobs follow each other within seconds):
+- Screen, $0: 3 fresh launches of each floor of the line, expendables, rifle-lane and
+  two-threats battles, then of each witness at its recorded age with no added interval
+  (LineTeam 0 s, SlaveTarpit and FlankLane 5 s): 36 launches in about 4.6 h. The jobs are
+  fixed in `runs/twwarhammer3/away-20261021/screen-plan.json`; its revision and start
+  cutoff are set on the go-ahead. The queue cannot stop a card early.
+- Reading rule, fixed now: a floor's contact win parks that card (two threats would get
+  one step instead). A card goes to confirmation when no floor won by contact, its witness
+  won at least 2 of 3 with the marker on each win, and the rest of its Missing column is
+  done; any other result goes back to the owner, as does two threats if its floors all
+  lose. The line card's marker is fixed with the go-ahead, before its screen is read. A
+  floor's timer win is noted, not counted. A failed launch is not replaced: a cell with
+  fewer than 3 scored launches is re-planned before it is read.
+- Confirmation at the [proposed gate](benchmark.md#from-a-candidate-to-a-scored-card)
+  (each foil 0/14, witness at least 10/14): 42 launches for a card with two floors (56 for
+  the expendables' three) plus 14 per shortcut foil, so about three nights for the line,
+  expendables and rifle lane. A 10-launch gate (foil bound 0.26 instead of 0.19) needs
+  about 30% fewer.
+- First model screen, 10 launches per card and model (a screen, not a ranking): GLM-5.3 low
+  cost a median $0.19 a launch (45 since 10-19), Kimi K3 low $0.63 (its 3 line battles),
+  Qwen3.6 $0.02 (6). About $26-28 of the $50 OpenRouter allowance is left (the ledgers
+  missed $2.69 before), so GLM and Qwen on the four cards (about $12; a line battle costs
+  GLM $0.23-0.58) fit and Kimi on all four does not; OpenAI is at its cap.
+
+Before more model launches on a card, a held-out variant of it is reserved (evaluation
+guideline 3.2), and the three defending cards need the [defender-prompt decision](../state.md#owner-decisions-waiting):
+the model prompt promises a defender the timer win these cards do not count. The scripted
+screen does not depend on either.
