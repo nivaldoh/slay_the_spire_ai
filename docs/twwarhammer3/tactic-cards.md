@@ -331,12 +331,14 @@ new card (from the 2026-10-17 board and traces; each rests on 1-6 battles):
 
 ## The card list (draft 1, 2026-10-18)
 
-Drafted by four agents (one per kind) and attacked by four adversarial critics, each trying
-to win every card without its tactic (read-only: traces, the game database, the
-observation reference; the full panel output is not kept in the repository). Status:
-*declared* (a scenario entry exists), *draft* (defined only) or *dropped*. The critic's
-main objection is the risk to check first; "foils first" means the naive floors run before
-any witness is written or counted.
+The statuses below are from that night; the [starting
+set](#the-starting-set-proposal-2026-10-21) holds the current evidence and verdict for each
+battle it names. Drafted by four agents (one per kind) and attacked by four adversarial
+critics, each trying to win every card without its tactic (read-only: traces, the game
+database, the observation reference; the full panel output is not kept in the repository).
+Status: *declared* (a scenario entry exists), *draft* (defined only) or *dropped*. The
+critic's main objection is the risk to check first; "foils first" means the naive floors
+run before any witness is written or counted.
 
 **Battle tactics**
 
