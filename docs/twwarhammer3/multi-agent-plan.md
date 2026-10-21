@@ -1,648 +1,549 @@
 # Evaluating WH3 as a multi-agent problem
 
-Proposed plan, 2026-10-21. The first question is whether independently acting teammates
-can coordinate a battle better, more cheaply, or more reliably than a single controller
-given comparable resources. The eventual question is whether factions can cooperate and
-compete over a multiplayer campaign, where battles, diplomacy and earlier commitments
-change what later decisions are possible.
+Proposed plan, 2026-10-21, revised the same day after review. The first question is whether
+independently acting teammates command a battle better, more cheaply or more reliably than
+one controller with comparable resources. The eventual question is whether factions can
+cooperate and compete over a multiplayer campaign, where battles, diplomacy and earlier
+commitments change which later decisions are possible.
 
-Start with two agents commanding separate groups in one army against the game AI. This
-is a controlled development environment for team battles. Then establish native allied
-armies and native 2v2 play as separate milestones. A split-army result does not establish
-multiplayer support. Campaign evaluation follows a further set of gates; it is part of
-this plan, rather than an assumed consequence of getting custom battles working.
+Start with two agents commanding separate groups of one army against the game AI. Then take
+single-client steps (an allied AI army, model against model), then native allied armies and
+2v2, then campaigns. Each stage is its own claim: a split-army result says nothing about
+native multiplayer or campaigns.
 
-The requested deliverable is a plan. The designs, counts and checks below are proposals,
-not adopted benchmark rules or authorization for game runs. No new method is an agreed
-verification method under [AGENTS.md](../../AGENTS.md#verification-hard-rule).
-The existing [battle benchmark](benchmark.md#scope-and-first-release) keeps its scope.
-This extension reuses its [evaluation guidelines](evaluation-guidelines.md) and the
-[robot-team plan](robot-team-plan.md) where their assumptions apply.
-The [implementation plan](multi-agent-implementation.md) turns the first stage into
-small coding slices, beginning with ownership and dispatch for two scripted members.
+Status: a proposal. Of the checks below, only the scripted split-army team's are agreed
+([AGENTS.md](../../AGENTS.md#verification-hard-rule)); no scoring, counts, spending or game
+sessions are adopted. The [implementation page](multi-agent-implementation.md) describes the
+team as built and its next code. The [evaluation guidelines](evaluation-guidelines.md) apply
+throughout, and this page adds only what teams change. Related designs: the [robot-team
+plan](robot-team-plan.md) (recovery inside one controller), a specialist that owns fixed
+units ([controllers.md item 4](controllers.md#designs-not-built-yet)), a planner over a fast
+executor ([latency rung 5](latency.md#harnesses)) and model against model on one client
+(owner idea, 2026-10-14, [benchmark.md](benchmark.md#later)).
 
 ## 1 Questions and claims
 
-An agent has its own observations, persistent state during the episode, decision process
-and authority to issue actions. Sharing model weights does not merge two agents; sharing
-all their private memory and choosing all their actions centrally does. Several model
-calls advising one final decision maker are a controller architecture, not evidence of
-decentralized execution. Game-controlled soldiers and pathfinding are the environment's
-local execution, not additional evaluated agents.
+An agent has its own observations, memory within the episode, decision process and authority
+to issue actions. Sharing model weights does not merge two agents; sharing all private
+memory and choosing all actions centrally does. Several model calls advising one decision
+maker are a controller architecture, not decentralized execution. Game-controlled soldiers
+and pathfinding are the environment, not evaluated agents.
 
 | Question | Comparison that could answer it | What a win alone cannot establish |
 |---|---|---|
-| Does division of control help? | One commander versus two independent commanders, same units, information regime, helpers and total budget | That the gain comes from coordination rather than parallel calls or shorter prompts |
-| Does communication help? | The same two agents with and without the explicit message channel | That messages are truthful, necessary, or the cause of a particular maneuver |
+| Does division of control help? | One controller against two independent agents: same units, information, helpers and total budget | That the gain comes from coordination rather than parallel calls or shorter prompts |
+| Does communication help? | The same two agents with and without the message channel | That messages are truthful, necessary or the cause of a particular maneuver |
 | Can an agent work with an unfamiliar teammate? | Frozen agents paired with partners withheld from development, in both roles | That two copies of one jointly tuned controller generalize to new partners |
-| Can the team recover? | Fixed roles and simple recovery rules versus adaptive assignment, on cases with useful alternatives | That a rout created a recoverable situation or a replacement order restored protection |
+| Can the team recover? | Fixed roles and simple recovery rules against adaptive assignment, on cases with useful alternatives; the [robot-team plan](robot-team-plan.md#1-establish-a-recoverable-coordination-problem) first checks that such cases occur | That a rout created a recoverable situation or a replacement order restored protection |
 | Can a team adapt to an opponent? | A frozen population of opposing teams, with held-out opponents and side swaps | That beating the built-in AI transfers to model opponents |
-| Can factions cooperate over time? | Campaign policies with declared objectives and partner variations, controlling tactical battle resolution | That territorial growth reflects cooperation or that promises caused compliance |
+| Can factions cooperate over time? | Campaign policies with declared objectives and partner variations, battle resolution held fixed | That territorial growth reflects cooperation or that promises caused compliance |
 
-Keep these claims separate. A useful first result can be that a simple coordinated script
-matches a model team, or that communication costs more time than it saves. WH3's potential
-value is the combination of heterogeneous units, formation and morale dependencies,
-continued execution during inference, and eventually persistent strategic consequences.
-It is not established as uniquely difficult, a robotics benchmark, or a measure of general
-intelligence.
+Keep these claims separate. A useful first result can be negative: a simple coordinated
+script matching a model team, or messages costing more time than they save. The project's
+[survey](../spire/approaches.md#7-multi-agent-systems-and-swarms-breadth-helps-depth-does-not)
+found that every multi-agent variant hurt a sequential planning task by 39-70%, while
+centralized coordination helped a parallelizable one by 80.9%. A split army acts in parallel
+but has no central coordinator, so neither result is assumed.
 
-## 2 What the current project actually supports
+## 2 Starting point
 
-Code inspection at `c2a7ae7` gives the following starting point. These are implementation
-facts, not new live verification results.
+Source audit at `c2a7ae7`, before the team was built:
 
-| Area | Current boundary | Needed for this plan |
+| Area | Boundary at `c2a7ae7` | Needed |
 |---|---|---|
-| Game access | The battle mod's `load()` refuses multiplayer and campaign battles | A separately gated path with an agreed live check; deleting the guard is insufficient |
-| Army enumeration | `scan()` initially skips other armies in the local alliance; its separate reinforcement loop lacks that filter. State is organized as friendly versus enemy | Explicit alliance, army, player and agent ownership; allied units without action authority |
-| Controllers | Comma-separated policies rotate over episodes; `commander` is one planner over a skills executor | Concurrent independent agents in one episode, with separate histories and queues |
-| Observations | One player's alliance visibility, friendly state and custom-battle enemy roster; one army/magic context | A per-agent information contract and resource ownership; campaign-specific disclosure |
-| Transport | One battle mailbox and one policy action/acknowledgement loop | Multiplexed requests that cannot overwrite each other, with per-agent provenance |
-| Evaluation | Engine outcome and existing card measures for one controlled side | One team outcome, per-agent reliability, opponent identity and client agreement |
-| Campaign | No campaign policy loop in the WH3 package | Read-only state, legal actions, turn and battle transitions, save/reload and multiplayer synchronization |
+| Game access | The battle mod's `load()` refuses multiplayer, replay, campaign, quest and tutorial battles | A separately gated path with an agreed live check; deleting the guard is not enough |
+| Army enumeration | `scan()` registers only the local alliance's first army, but its reinforcement loop has no such filter; state is friendly against enemy | Alliance, army, player and agent ownership; allied units without action authority |
+| Controllers | Comma-separated policies rotate over episodes; `commander` is one planner over a skills executor | Several independent agents in one episode, with separate histories |
+| Observations | One alliance's view, friendly state and the custom-battle enemy roster; one army and magic context | A per-agent information contract and resource ownership; campaign disclosure |
+| Transport | One battle mailbox with one request in flight | Requests from several agents that cannot overwrite each other, each traceable to its agent |
+| Evaluation | Engine outcome and card measures for one controlled side | One team outcome, per-agent reliability, opponent identity and client agreement |
+| Campaign | No campaign policy loop | Read-only state, legal actions, turn and battle transitions, save/reload and multiplayer sync |
 
-References: [battle Lua](../../src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua)
-(`load`, `scan`, `visible_to_player`, `observation`),
-[play loop](../../src/twwarhammer3/battle/play.py),
-[controllers](../../src/twwarhammer3/battle/controllers.py),
-[mailbox contract](../../src/twwarhammer3/engine/mailbox.py) and
-[integration facts](integration.md).
-Current boundary weaknesses, including target/death information and unsandboxed outside
-controllers, are recorded in the [information rule](evaluation-guidelines.md#45-give-controllers-only-listed-public-fields-and-test-by-changing-hidden-data).
-They must be resolved or explicitly restrict the affected evaluation before it is scored.
+Since `45fe7b0`, `team.py` covers the controller and transport rows for a scripted split
+army: two members, one mailbox writer, one member batch per request and per-member events.
+Sources: [battle Lua](../../src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua)
+(`load`, `scan`, `visible_to_player`, `observation`), [play
+loop](../../src/twwarhammer3/battle/play.py),
+[controllers](../../src/twwarhammer3/battle/controllers.py), [mailbox
+contract](../../src/twwarhammer3/engine/mailbox.py) and [integration facts](integration.md).
+Known boundary weaknesses (target and death fields, unsandboxed outside controllers) are in
+the [information
+rule](evaluation-guidelines.md#45-give-controllers-only-listed-public-fields-and-test-by-changing-hidden-data);
+a scored evaluation resolves them or states the restriction.
 
-SEGA's launch FAQ documents battle scenarios for 2–8 players and multiplayer campaigns
-with simultaneous turns, with campaign-specific player limits. It also describes battle
-side selection and gifting units to teammates during campaign battles. This establishes
-a game feature to investigate, not control through our mod on the installed build.
-[SEGA FAQ](https://support.sega.com/hc/en-gb/articles/4417717186833-TOTAL-WAR-WARHAMMER-III-FAQ).
+SEGA's [launch
+FAQ](https://support.sega.com/hc/en-gb/articles/4417717186833-TOTAL-WAR-WARHAMMER-III-FAQ)
+lists battles for 2-8 players, simultaneous-turn multiplayer campaigns (with their own
+player limits), battle side selection and gifting units to teammates in campaign battles.
+These are game features to probe; our mod cannot yet control them.
 
 ## 3 Environments and agent boundaries
 
-Keep the following conditions separately named in manifests and results. Agent count,
-army count and client count are different quantities.
-
-| Stage | Evaluated agents and authority | Opponent | Interpretation |
+| Stage | Agents and authority | Opponent | What it adds |
 |---|---|---|---|
-| Split army | Two agents own disjoint unit groups in one army on one client | Built-in AI | Division of control and communication; engineered ownership boundary |
-| Native allied armies | Two agents each own one allied player army | Fixed built-in AI armies | Team battles with real army boundaries and their resource/morale effects |
-| Native 2v2 | Four agents, one per player army, two teams | Frozen opposing agent teams | Cooperation within each team and competition between teams |
-| Larger teams | Three or four agents per team, only where the mode supports it | Fixed population | Scaling after a two-agent mechanism is understood |
-| Multiplayer campaign | One agent per player faction initially | Built-in factions, then other evaluated factions | Persistent cooperation, competition and diplomacy |
+| Split army | Two agents own disjoint unit groups of one army, one client | Built-in AI | Division of control and communication, with an engineered ownership boundary |
+| Allied AI army, one client | Agents also command an allied AI army's units, if the script can hold them | Built-in AI | Real army boundaries: which resources and morale effects are per army |
+| Model against model, one client | The battle script drives both alliances, each side with its own view | Another evaluated team | Competition without multiplayer clients |
+| Native allied armies | Two agents, each owning one allied player army | Fixed built-in AI armies | Team battles between players' armies |
+| Native 2v2 | Four agents, one per player army, two teams | Frozen opposing teams | Cooperation within and competition between teams |
+| Larger teams | Three or four agents per team, where the mode allows | Fixed population | Scaling after two agents are understood |
+| Multiplayer campaign | One agent per player faction at first | Built-in factions, then evaluated factions | Persistent cooperation, competition and diplomacy |
 
-Use groups of units as the initial battle agents: for example, a holding group and a
-mobile support group. One agent per regiment is a later scaling experiment, not the
-default; it adds inference work and many action conflicts before demonstrating a useful
-coordination problem. At every scale keep the total roster fixed when testing the effect
-of agent count. Adding both agents and units measures a different change.
+Agent, army and client counts are different quantities; record each. The two single-client
+stages need Lua work: `scan()` skips allied AI armies (none in our scenarios) and puts every
+other alliance into `enemy` with no controller. The mod takes control of a non-player army's
+units only briefly, to place them for custom deployment; holding them for a whole battle is
+untested.
 
-For the split-army pilot, assign ownership before deployment and keep it fixed. A routed
-unit remains its owner's unit if it rallies. Dynamic reassignment, gifting and commander
-replacement are separate conditions with explicit transfer rules. Give every group a
-consequential choice; a team where one agent always waits is a useful foil, not compelling
-evidence that multiple decision makers are needed.
+Use groups of units as the first agents, such as a holding group and a mobile group; one
+agent per regiment is a later scaling experiment. Keep the total roster fixed when varying
+the number of agents, since adding both agents and units measures a different change.
 
-Default to the information a player would legitimately get under the declared structured
-interface. If native teammates share alliance sight, preserve that behavior. A deliberately
-restricted local view is an additional experimental condition; do not call it native fog
-of war. Begin with a common public battle view and independent intentions/memory, which
-isolates coordination of actions. Add private scouting information only after its
-collection and filtering have a live reference.
+Fix ownership before deployment. A routed unit stays its owner's if it rallies. Dynamic
+reassignment, gifting and commander replacement are separate conditions with explicit
+transfer rules. Give every group a consequential choice: a team where one agent always waits
+is a useful foil, not evidence that several decision makers are needed.
 
-## 4 The proposed battle execution contract
+Default to the information a player gets through the declared structured interface; if
+native teammates share alliance sight, keep that. A deliberately restricted local view is a
+separate condition, never called native fog of war. Start with a common public battle view
+and independent memory, which isolates coordination of actions; add private scouting only
+after its collection and filtering have a live reference.
 
-The game continues unpaused at 1x. A teammate's slow inference must not stop the game or
-prevent another teammate's ready order from being sent. Use one trusted session owner
-and a simple dispatcher around independent agent workers. The dispatcher checks authority,
-records events and routes orders; any tactical choice it makes becomes a disclosed part
-of the controller.
+## 4 The battle execution contract
+
+The game runs unpaused at 1x, and a slow teammate must not stop the game or delay another
+teammate's ready order. One trusted session owner runs a simple dispatcher around
+independent workers. Any tactical choice the dispatcher makes, such as picking the best
+spell, is part of the controller and is disclosed ([guideline
+1.2](evaluation-guidelines.md#12-the-controller-is-everything-that-acts-in-the-battle-identify-it-by-content)).
 
 ### Observations and authority
 
-Each observation identifies the session, episode, agent, alliance, army, ownership version,
-snapshot sequence and battle time. It contains only allowlisted fields for that agent:
-owned units, permitted allied state, currently visible enemies, legitimately known roster
-information, public objectives, relevant resource pools and messages actually delivered.
-Remembered enemy positions retain their observation time and an explicit stale status.
-Do not broadcast evaluator totals, unseen movement/deaths, private teammate plans, another
-team's messages, or campaign-wide rosters from the raw game state.
+An observation names its battle, sequence and battle time, and, when a stage needs them, the
+agent (from the first model member), alliance, army and client (native play) and an
+ownership version (once transfers exist). It holds only that agent's allowlisted fields:
+owned units, permitted allied state, visible enemies, legitimately known roster information,
+public objectives, its resource pools and delivered messages. Remembered enemy positions
+keep their time and are marked stale. Never pass on evaluator totals, unseen movement or
+deaths, a teammate's private plans, another team's messages or campaign-wide rosters.
 
-Each command names the observation and owned entity it acts on. Validate authority at
-application time, not just when inference begins. A later transfer or new battle must
-invalidate the old authority. IDs need army/client namespaces and cannot be reused across
-episodes without an episode key. Reinforcements, summons, death, rout and rally need
-declared identity and ownership rules before a scenario using them is admitted.
-
-For the pilot, make shared army abilities and spending pools the responsibility of one
-named agent, or omit them from the first scenario. Do not invent a global magic pool
-across native armies: probe which resources the game actually shares. Later, compare a
-fixed shared-resource rule with negotiated allocation. A hidden dispatcher that picks
-the best spell is extra intelligence and cannot masquerade as neutral plumbing.
+Each command is traceable to the observation and owned unit it acts on. Check authority when
+an order is applied wherever the game allows (the mod's `apply_order` already rejects orders
+for dead or routing units then). The scripted team checks ownership and a 5 s age at Python
+dispatch and reports a late engine application as transport overage. A transfer or a new
+battle invalidates old authority; IDs carry army and client namespaces and an episode key.
+Reinforcements, summons, death, rout and rally need declared ownership rules before a
+scenario uses them. In the pilot, shared army abilities and spending pools belong to one
+named agent or stay out; probe which resources native armies actually share rather than
+inventing a global pool, and later compare a fixed rule with negotiated allocation.
 
 ### Scheduling and failures
 
-Start with at most one pending decision per agent. On completion, validate and send its
-orders without a team-wide reasoning barrier. Serializing writes through the existing
-mailbox is acceptable if other agents need wait only for transport, not for inference;
-measure that queue delay. An agent continues with its standing orders while thinking.
-Use a declared stable tie rule for requests ready together, balance agent identities
-across trials, and record the actual order. A synchronous team-round controller can be a
-separate comparison, with its waiting cost included.
+Each agent has at most one pending decision, sent when it completes, with no team-wide
+barrier. One mailbox is fine if agents wait only for transport, not for each other's
+inference; measure that wait. Standing orders continue while an agent thinks. Use a declared
+stable tie rule, balance agent identities across trials and record the actual order; a
+synchronous round-based team is a separate comparison that includes its waiting.
 
-Specify maximum reply age, per-agent queue size, order persistence, retry policy and the
-response to an invalid or late reply. Initial recommendation: reject stale/unauthorized
-commands, keep existing legal orders, return a reason, and let the agent reconsider from
-a fresh snapshot. Fixed executors may continue only their disclosed behavior. A dead
-worker does not silently gain an intelligent replacement. Deliberate failover is its own
-controller configuration. Continue to an engine outcome where possible; otherwise apply
-the declared failure rule.
+Declare the maximum reply age, queue size, order persistence, retries and the response to an
+invalid or late reply. Default: reject stale or unauthorized commands with a reason, keep
+existing legal orders and let the agent reconsider from a fresh snapshot. A dead worker gets
+no silent intelligent replacement (failover is its own controller). Continue to an engine
+outcome where possible, otherwise apply the failure rule.
 
-At every episode boundary, reset agent memory, message inboxes, pending actions and
-ownership/resource reservations. Cancel or quarantine unfinished calls, record their cost,
-and reject late replies or acknowledgements from the previous episode. Only a named
-adaptation condition may carry learned partner information across episodes. Record other
-carryover, including provider caches and game state; read back the new battle's setup.
-
-Record observation publication, delivery, request start, reply completion, validation,
-dispatch, game acknowledgement and observed effect separately. Use battle time for game
-events and a monotonic clock for local durations. In native multiplayer, measure client
-clock offsets and timestamp uncertainty; never subtract unaligned wall clocks as if they
-were one clock. Network lag and synchronized stalls remain in performance measurements;
-record battle-to-wall-time progress. The harness never requests a pause or slower speed.
+At each episode boundary, reset memory, inboxes, pending actions and reservations; record
+unfinished calls' cost and reject late replies. Only a named adaptation condition carries
+partner information across episodes; record other carryover (provider caches, game state).
+Timestamp publication, delivery, request start, reply, validation, dispatch, acknowledgement
+and observed effect separately, in battle time for game events and a monotonic clock for
+local durations. In native play, measure client clock offsets and never subtract unaligned
+wall clocks; lag and synchronized stalls stay in the measurements.
 
 ### Communication
 
-All explicit inter-agent communication goes through a logged channel. Specify recipients,
-message size, send rate, queue limit, delivery time, expiry and whether delivery can occur
-while a recipient is thinking. With the initial single pending request, newly arrived
-messages enter its next request; the trace distinguishes transport delivery from when the
-model could use the message. Do not claim immediate reaction to a delivered message.
+Explicit messages go through a logged channel with declared recipients, size, send rate,
+queue limit, delivery time, expiry and whether delivery can happen while the recipient
+thinks. A message reaches the recipient's next request; log delivery and first use
+separately. Start with bounded text and a small optional structure (target, intended action,
+intended time); fixed vocabularies can be compared later. Both arms have the same view and
+executor, writing and reading messages count in the team's budget and time, and a supplied
+message interpreter or task allocator is disclosed.
 
-Start with bounded text messages and a small optional structure such as target, intended
-action and intended time. No-message and message-enabled arms have the same battle view
-and executor. Message generation, reading, summaries and retries all consume the team's
-budget and time. A supplied message interpreter or task allocator must be disclosed.
-Natural-language and fixed-vocabulary channels can be compared later.
-
-No-message means no explicit messages, not an absence of all communication: agents may
-infer intentions from visible movement and shared pre-battle instructions. Record the
-coordination conventions provided in prompts. For a communication claim, use message
-removal or declared delay/loss with the same controller and budget; an unrelated stronger
-controller is not a communication ablation. Distinguish removing the channel at inference
-time from separately training an agent to operate without it.
+No-message means no explicit messages: agents can still read intentions from visible
+movement and shared instructions, so record the conventions prompts provide. A communication
+claim needs message removal, or declared delay or loss, with the same controller and budget;
+removing the channel at inference differs from training without it.
 
 ### Isolation and evidence
 
-Agent workers receive only their own inputs and cannot read the evaluator's files, other
-workers' memory or opponent channels. Passing separate Python dictionaries is a useful
-component boundary, but not a security boundary for arbitrary submitted code. Begin with
-trusted audited controllers and state that restriction; require process/file/network
-isolation before claiming an adversarial or open-submission benchmark.
-
-Keep the existing raw game and terminal evidence, plus one event stream keyed by session,
-team, agent, request and message. Log ownership changes, message contents and deliveries,
-rejections, resource decisions, model/executor order origins and all costs. Record the
-versions and hashes of every agent, prompt, helper, backend, scenario, engine and scorer.
-Export per-agent trajectories and the joint episode mapping. Privileged training data,
-if later permitted for a central critic, stays marked and separate from execution inputs.
+Workers see only their own inputs, not evaluator files, other workers' memory or opponent
+channels. Separate Python dictionaries are not a security boundary: use trusted, audited
+controllers, and require process, file and network isolation before an open-submission or
+adversarial benchmark. Keep the raw evidence plus one event stream keyed by session, team,
+agent, request and message (ownership changes, messages, rejections, resource decisions,
+order origins, costs). Record versions and hashes of every agent, prompt, helper, backend,
+scenario, engine and scorer, since the team adapter's class hash does not describe a model
+team, and export per-agent trajectories with the joint episode mapping. Privileged data for
+a central critic, if allowed later, stays marked and apart from execution inputs.
 
 ## 5 Tasks that make cooperation measurable
 
-Start with two small land-battle families, then expand only when each adds a distinct
-decision.
-Freeze rosters, ranks, loadouts, legal deployment, funds, unit size, difficulty, map,
-timer, sides, ownership and opponent. Change only named variables in each comparison.
-Roster drafting and dynamic deployment become separate later tasks; they must not give
-one evaluation arm a hidden pre-battle advantage.
-Domination, survival and sieges are later conditions with their own objectives, resource
-rules and checks; do not pool them with the initial land battles.
+Freeze rosters, ranks, loadouts, deployment, funds, unit size, difficulty, map, timer,
+sides, ownership and opponent, and change only named variables. Roster drafting and dynamic
+deployment are later tasks that must not give one arm a hidden pre-battle advantage.
+Domination, survival and sieges are later conditions with their own rules, not pooled with
+the first land battles.
 
-| Candidate | What teammates must coordinate | Credible alternatives and failure cases | Evidence to inspect |
+| Candidate | What teammates must coordinate | Alternatives and failure cases | Evidence to inspect |
 |---|---|---|---|
-| Hold and flank | One group fixes a threat while the other attacks an exposed side or waits | Both rush independently; flank commits before support; a fixed timed flank succeeds without messages | Order timing, actual contact/separation and team outcome; do not infer a charge bonus from a move order |
-| Protect and relocate | One group protects ranged units while the other covers a threatened lane or withdrawal | Fixed roles; commit reserve early; move the guns instead; abandon a lost position | Exposure, replacement arrival or completed withdrawal, with unknown when recordings cannot decide |
-| Two simultaneous threats | Groups allocate attention between threats competing for the same support | Both chase the same threat; fixed left/right roles; prioritize one and accept the other | Which threats were observed, commitments and resulting objective/team outcome |
-| Joint resource choice | Agents coordinate scarce abilities, reinforcements or spending where actually shared | Fixed designated spender; first valid request; scripted reservation | Legal resource transitions and effect, not just duplicate requests avoided |
-| Information sharing | A scout sees a consequential threat before a teammate can see it | A robust fixed plan works without scouting; information arrives too late | Sender's legitimate observation, message use and receiver's action; only under a verified visibility contract |
+| Hold and flank | One group fixes a threat while the other attacks an exposed side or waits | Both rush independently; the flank commits before support; a fixed timed flank succeeds without messages | Order timing, actual contact and separation, team outcome; do not infer a charge bonus from a move order |
+| Two simultaneous threats | Groups divide attention between threats competing for the same support | Both chase one threat; fixed left/right roles; prioritize one and accept the other | Which threats were seen, the commitments and the outcome |
+| Protect and relocate | One group protects ranged units while the other covers a threatened lane or withdrawal | Fixed roles; commit the reserve early; move the guns; abandon a lost position | Exposure, replacement arrival or completed withdrawal, unknown when recordings cannot decide |
+| Joint resource choice | Agents coordinate scarce abilities, reinforcements or spending where actually shared | A fixed designated spender; first valid request; scripted reservation | Legal resource transitions and their effect, not just duplicate requests avoided |
+| Information sharing | A scout sees a consequential threat before a teammate can | A robust fixed plan works without scouting; information arrives too late | The sender's legitimate observation, message use and the receiver's action, under a verified visibility contract |
 
-Use the first two as candidates, not assumed valid cards. The existing Empire line can
-inform protect-and-relocate design, but the earlier review found a plausible replacement
-opportunity in only **1 of 17 recorded battles**, using its declared criteria; it does
-not establish a ready recovery test. See the [review and caveats](robot-team-plan.md#1-establish-a-recoverable-coordination-problem).
-Do not discard trials with no disruption after seeing the outcome: earlier policy choices
-affect whether a disruption occurs.
+The proposed first candidate (§12, decision 2) is the rank-5 line (`emp-line-grn-raid-xp5`,
+seven units keeping their jobs), split as the Knights against the line and guns: a
+hold-and-flank and two-threats case already in the [starting
+set](tactic-cards.md#the-starting-set-proposal-2026-10-21). Not first: Knights/Swordsmen has
+two units, so one call already orders both (it stays for offline and setup checks; hammer
+and anvil is parked). Protect-and-relocate waits for the robot-team plan: a replacement
+opportunity appeared in only 1 of 17 recorded line battles, and Bodyguard's 5/8 Helblaster
+wins all ended with the gun at 0 crew, so a contact win does not test protection. Do not
+discard trials without a disruption after seeing the outcome; earlier choices affect whether
+one happens.
 
-Each card needs a successful disclosed joint policy, meaningful weaker alternatives and
-an independent outcome rule. Include a timed or fixed-assignment script to check whether
-the scenario can be solved without responding to teammates. SMACv2 found that open-loop
-policies could obtain non-trivial results in many original SMAC scenarios; our proposed
-response is to test those shortcuts and reserve meaningful starting-state variations.
-This is a design lesson, not a transfer result about WH3.
-[SMACv2](https://proceedings.neurips.cc/paper_files/paper/2023/hash/764c18ad230f9e7bf6a77ffc2312c55e-Abstract-Datasets_and_Benchmarks.html).
-
-Reserve legal map/geometry, role, roster and opponent variations before tuning. Introduce
-only supported variation and record actual starting readbacks; a configuration seed is
-not proof of a seeded engine or deterministic reset. Keep labels such as development,
-confirmation and held-out in the evidence index. A test set repeatedly inspected for
-improvements becomes development evidence.
+A team card meets the [five-part card
+rule](tactic-cards.md#the-starting-set-proposal-2026-10-21) plus one team foil: a timed or
+fixed-assignment script that never responds to its teammate, to see whether the battle can
+be won without coordinating.
+[SMACv2](https://proceedings.neurips.cc/paper_files/paper/2023/hash/764c18ad230f9e7bf6a77ffc2312c55e-Abstract-Datasets_and_Benchmarks.html)
+found open-loop policies did well on many original SMAC scenarios. Reserve map, role, roster
+and opponent variations before tuning
+([3.1](evaluation-guidelines.md#31-mark-each-jobs-stage-and-tune-only-on-development-evidence),
+[3.2](evaluation-guidelines.md#32-reserve-held-out-variants-before-tuning-and-say-what-was-held-out));
+a configuration seed is not proof of a seeded engine or deterministic reset.
 
 ## 6 Controllers and comparisons
 
-The basic reference set should be small enough to understand. All arms use the same legal
-orders and comparable disclosed local execution. Parameterize the same executor where
-possible so that changing the planner does not also improve targeting or micro-control.
+All arms use the same legal orders and comparable disclosed local execution. Parameterize
+one executor where possible, so that changing the planner does not also improve targeting.
 
 | Arm | Decision process | Purpose |
 |---|---|---|
-| Coordinated script | Fixed roles with a small declared conditional plan | Strong, cheap reference and feasibility witness |
-| Independent simple scripts | Each group follows its own local rule | Measures whether any coordination beyond local competence is useful |
-| Single commander | One policy controls all permitted units | Tests whether dividing decisions is worthwhile |
-| Two agents without messages | Separate policies, histories and owned units | Tests division of control and implicit coordination |
-| Two agents with messages | Same ownership and policies, bounded channel enabled | Primary candidate for explicit communication benefit |
-| Hierarchical team, later | One planner delegates; workers execute under named authority | Tests hierarchy only after independent execution works |
+| Coordinated script | Fixed roles with a small declared conditional plan, such as `LineTeam` on the line | Strong cheap reference and witness |
+| Independent simple scripts | Each group follows its own local rule | Whether coordination beyond local competence is useful |
+| Single controller | One policy controls every permitted unit (`llm_rules`; `commander` if kept) | Whether dividing decisions is worthwhile |
+| Two agents without messages | Separate policies, histories and owned units | Division of control and implicit coordination |
+| Two agents with messages | The same, with the bounded channel | Explicit communication benefit |
+| Hierarchical team, later | One planner delegates; workers act under named authority ([latency rung 5](latency.md#harnesses)) | Hierarchy, once independent execution works |
 
-For architecture claims, equalize a **total team** budget, not a per-agent budget. Fix the
-model/backend, available information, total call/token or monetary cap, action-rate cap,
-helpers and maximum concurrent requests. Count communication and coordinator calls.
-Show actual usage and latency: equal caps do not guarantee equal work. Permit a central
-controller a parallel-call helper with the same total resources when testing whether the
-benefit is merely parallel inference. It remains a central controller and gets its own
-disclosed identity. A central policy is a reference, not a mathematical upper bound.
-
-Also report a practical comparison allowing each architecture its natural concurrency,
-with success, dollars and elapsed time side by side. This asks which complete system is
-useful, not which architecture is stronger at equal computation. Do not force slower
-models to equal speed by pausing the game. Artificial delay studies are separately named
-and applied to the intended channel only, keeping other observations fresh.
+Compare complete systems first: each architecture at its natural concurrency, with success,
+dollars, calls and elapsed time side by side. Architecture claims need equal total team
+resources: the same model and backend, information, total call, token or dollar cap,
+action-rate cap, helpers and maximum concurrent requests, counting communication and
+coordinator calls and showing actual use. A central controller may get a parallel-call
+helper with the same total resources, under its own identity, to test whether the benefit is
+only parallel inference. The natural split uses at least as many resources, so run the
+equal-budget and helper arms only if the split wins. A central policy is a reference, not an
+upper bound. Artificial delay studies are named separately and delay only the intended
+channel.
 
 After the first comparison, freeze a small partner population: a fixed-role script, a
-reactive script and separately developed model controllers. Evaluate a focal agent in
-both roles with each partner, including combinations withheld from tuning. First-episode
-performance tests unfamiliar-partner coordination; an explicitly permitted adaptation
-sequence tests learning a partner. Reset cross-episode memory in the former and log it in
-the latter. Two clones of one model are not independent evidence of broad compatibility.
-Other-Play motivates this distinction because conventions learned together can fail with
-new partners; its Hanabi results do not guarantee that its algorithm fits WH3.
-[Other-Play](https://proceedings.mlr.press/v119/hu20a.html).
+reactive script and separately developed model controllers. Evaluate a focal agent in both
+roles with each partner, including pairs withheld from tuning. First-episode results test
+unfamiliar partners; a permitted adaptation sequence tests learning a partner (reset memory
+in the former, log it in the latter). Two clones of one model are not evidence of broad
+compatibility: [Other-Play](https://proceedings.mlr.press/v119/hu20a.html) shows conventions
+learned together can fail with new partners.
 
-For native competition, freeze opponent versions and evaluate a matchup matrix with team
-and map-side swaps. Include built-in AI references where legal. Do not update an opponent
-during a scored evaluation or use opponents' private states for adaptation. Report
-matchups directly; a single Elo-style ranking can conceal cycles where A beats B, B beats
-C and C beats A. Best responses to a small opponent pool are evidence against that pool,
-not proof of low exploitability or equilibrium play.
+Against opponents, freeze their versions and evaluate a matchup matrix with team and side
+swaps, with built-in AI references where legal. Never update an opponent during scoring or
+adapt from its private state. Report matchups directly: a single rating can hide cycles
+where A beats B, B beats C and C beats A. Results against a small pool show strength against
+that pool, not against unseen opponents.
 
-## 7 Outcomes and statistical design
+## 7 Outcomes and statistics
 
-For a cooperative battle, the primary observation is **one team outcome per match**.
-Both agents winning is not two independent wins. Preserve the engine's result and ending
-reason, then apply the card's declared rule. A contact card can require a win before the
-timer; an objective-holding card may legitimately count a timer result. Tell every agent
-the actual rule. Preserve valid engine endings through later worker or logging errors.
+The primary observation is one team outcome per match; both agents winning is not two wins.
+Keep the engine's result and ending reason, apply the card's declared rule and tell every
+agent that rule. A valid engine ending survives later worker or logging errors.
 
-Use secondary measures to explain outcomes, not to replace them with an arbitrary
-cooperation score:
-
+Secondary measures explain an outcome; they do not replace it with a cooperation score. Each
+has a written event definition and an unknown category:
 - Coordination: duplicate commitments, conflicting orders, abandoned responsibilities,
-  completed joint actions and successful or failed recoveries, each with a written event
-  definition and an unknown category. Include purposeful retreat as a possible success.
-- Communication: messages sent/delivered/available to a decision, useful response delay,
-  bytes/tokens and cost. More messages or mutually agreeable text are not better teamwork.
-- Timing: per-agent observation age at order application, time between useful orders,
-  transport waiting, model latency, local executor cadence and battle-to-wall-time ratio.
-- Reliability: invalid/stale/unauthorized orders, worker failures, provider failures,
-  desynchronization and unfinished matches, with denominators for each agent and team.
-- Efficiency: team cost per attempted match and cost per success, undefined at zero
-  successes; show the individual agents' shares as diagnostics.
+  completed joint actions and successful or failed recoveries (a purposeful retreat can be a
+  success).
+- Communication: messages sent, delivered and available to a decision, useful response
+  delay, tokens and cost. More messages or agreeable text are not better teamwork.
+- Timing: per-agent order age at application, time between useful orders, transport wait,
+  model latency, executor cadence and battle-to-wall-time ratio. For a team these come from
+  member feedback events; the outer loop's delay and decision count measure dispatcher polls
+  (0.3 s in the scripted probes, against member ages up to 3.9 s).
+- Reliability: invalid, stale or unauthorized orders, worker and provider failures,
+  desynchronization and unfinished matches, with per-agent and team denominators.
+- Efficiency: team cost per attempted match and per success (undefined at zero successes),
+  with each agent's share as a diagnostic.
 
-Individual kills, damage and survival are not default rewards: a holding unit can make
-the winning contribution while losing most of its soldiers. Attribute contribution by
-predeclared policy substitutions with matched conditions and complete outcome accounting.
-These estimate effects of replacing that policy in that team, not an intrinsic value of
-the agent. Exact Shapley values, counterfactual battle branches and causal judgments from
-one replay are not available by assumption.
+Individual kills, damage and survival are not rewards: a holding unit can make the winning
+contribution while losing most of its men. Estimate contribution only by predeclared policy
+substitutions under matched conditions; that gives the effect of replacing a policy in that
+team, not an agent's intrinsic value.
 
-Plan one primary comparison at a time. Freeze controller identities, conditions, sample
-size, minimum useful effect, analysis and stop rule before confirmation. Select the size
-using pilot variability and power for that effect; do not promise that ten launches can
-detect a modest advantage. Report counts, effect sizes and intervals, including negative
-or unresolved findings. Multiple comparisons require a declared correction or exploratory
-labels. Follow the [small-sample methods](evaluation-guidelines.md#7-use-statistics-that-fit-small-live-studies)
-when their assumptions hold.
+Plan one primary comparison at a time. Freeze arms, sample size, minimum useful effect,
+analysis and stop rule before confirmation, sized from pilot variability
+([7](evaluation-guidelines.md#7-use-statistics-that-fit-small-live-studies),
+[7.4](evaluation-guidelines.md#74-decide-before-you-look)). Count fresh launches with their
+rematches and interleave arms in balanced time blocks
+([4.1](evaluation-guidelines.md#41-count-launches-not-rematches),
+[4.2](evaluation-guidelines.md#42-balance-who-plays-first-and-when)); a build or mod change
+starts a new condition. What teams add: native clients in one session are one sample, so
+define the sample unit again for the native runner; side swaps stay paired within their
+session; a suite average needs fixed weights and uncertainty that respects repeated partners
+and shared scenarios.
 
-Use fresh launches as sampling clusters, keeping rematches together because they share an
-engine instance. Independence across launches remains an assumption to justify from the
-reset and sampling design. If arms share a launch, preserve the planned pairing and
-balance fresh versus rematch slots. Same configuration on separate launches does not imply
-shared RNG.
-Native multiplayer adds several clients to **one session**, not independent samples;
-paired side swaps remain clustered by the planned session/block. Define this unit again
-for the native runner before using a binomial or paired test. When variants, teammates
-and opponents vary, report them separately first; a suite average needs fixed weights and
-uncertainty that respects repeated partners and shared scenarios.
-
-Randomize and interleave arms in balanced time blocks, including the 18- and 36-launch
-screens below; do not finish one arm on one night and another on the next. Record host
-load, backend and time block. A build/mod change starts a separate condition and needs
-reference checks before comparisons resume; never pool it silently into the earlier one.
-
-Every planned trial has a disposition: unstarted, scored outcome, controller forfeit,
-excluded infrastructure/setup fault, or unresolved cause. Frozen exclusions apply to all
-arms. Controller slowness or a bad teammate is part of team performance, not an exclusion.
-A worker failure that leaves the match running retains the eventual outcome and its
-failure flag. Missing or conflicting client results are unresolved until reconciled;
-never infer a win from the surviving client's silence. Record replacements without
-erasing original attempts. Show bounds for incomplete planned comparisons, rather than
-silently selecting complete pairs. These extensions need an agreed implementation of the
-[failure rules](benchmark.md#correctness-checks-to-agree), not reuse of inconsistent current readers.
+Every planned trial gets one disposition
+([5.3](evaluation-guidelines.md#53-give-every-planned-trial-one-visible-disposition)). What
+teams add: controller slowness or a bad teammate is team performance, not an exclusion; a
+worker failure that leaves the match running keeps the eventual outcome with a flag; missing
+or conflicting client results stay unresolved and are never inferred from a client's
+silence. The failure rule is agreed
+([benchmark.md](benchmark.md#correctness-checks-to-agree)); these team cases are proposed
+additions, to be agreed before the evaluator implements it.
 
 ## 8 Verification before evaluation
 
-Each row is a proposed repeatable check, with an independent reference and a plausible
-wrong implementation it must detect. Agree the method before calling the capability
-verified, then record its passing revision. Component checks establish routing and
-filtering; live checks establish engine behavior. Neither alone establishes policy skill.
+Each row is a repeatable check with an independent reference and the wrong behavior it must
+catch. A check counts only once the owner agrees it and it passes at a named revision.
 
-| Capability | Repeatable check and reference | Wrong behavior the check must catch |
-|---|---|---|
-| Ownership and identity | Two visibly distinct groups receive opposite commands; compare declared ownership, game/UI readback and observed movement. Repeat with swapped identities, rout/rally and a fresh episode | Agent A controls B's unit, or an old request controls a newly reused ID |
-| Information boundary | Change only hidden state and private messages in component inputs; emitted policy inputs must be unchanged. In game compare a revealed/hidden enemy against each client's view | Hidden coordinates, death, target identity, another team's message or a new unlisted field leaks |
-| Concurrent scheduling | Fast scripted worker and delayed worker act in the same 1x battle; check independent dispatch and observed motion. Swap identities and delay the other worker | Slowest worker becomes a team barrier, mailbox overwrite, duplicate execution or fixed identity priority |
-| Message delivery | Send numbered messages with declared expiry/delay/drop; compare sender, router and recipient-input records | A dropped message arrives, an expired message looks current, or a message reaches the wrong team |
-| Shared resources | Issue conflicting legal requests for one real pool; compare independent game/UI before/after values and effects | Double spending, wrong army charged or a hidden tactical arbiter |
-| Reset and scoring | Known win/loss/timer/draw cases where the mode permits them; swapped sides; changed rematch; failure before and after ending. Compare engine/UI and all client logs | A surviving unit is mistaken for team victory, a failure erases a win, or a client is counted as another match |
-| Native multiplayer | Identical declared builds/mods, two real clients first; one local order on each, observed on both; repeated fresh sessions and role/host swaps | Host-only control, divergent simulation, missing allied armies or duplicate script effects |
-| Campaign transition | Save/reload a known state, perform one legal action, end a turn and enter/leave a battle; compare semantic fields and game UI on each client | Duplicate action, stale legal action, lost ownership, incorrect treasury/turn or wrong battle result application |
+| Capability | Check and reference | Wrong behavior it must catch | Status |
+|---|---|---|---|
+| Ownership and identity | Two visibly distinct groups receive opposite commands; compare declared ownership, game/UI readback and observed movement. Repeat with swapped identities, rout/rally and a fresh episode | Agent A controls B's unit, or an old request controls a newly reused ID | Partly covered: the scripted-team check at `45fe7b0` (binding by type, correct-unit orders and movement, 4 launches); opposite commands, swaps, UI readback, rout/rally and ID reuse not covered |
+| Information boundary | Change only hidden state and private messages in component inputs; emitted policy inputs must be unchanged. In game, compare a revealed and a hidden enemy against each client's view | Hidden coordinates, death, target identity, another team's message or a new unlisted field leaks | Component filtering agreed, passed at `e8d1eda`; in-game comparison proposed |
+| Concurrent scheduling | A fast scripted worker and a delayed worker act in the same 1x battle; check independent dispatch and observed motion. Swap identities and delay the other worker | The slowest worker becomes a team barrier, mailbox overwrite, duplicate execution or fixed identity priority | Agreed for scripted members: component checks passed at `e8d1eda` (with oldest-first selection), live at `45fe7b0` |
+| Message delivery | Send numbered messages with declared expiry, delay and drop; compare sender, router and recipient-input records | A dropped message arrives, an expired message looks current, or a message reaches the wrong team | Proposed |
+| Shared resources | Issue conflicting legal requests for one real pool; compare independent game/UI before and after values and effects | Double spending, the wrong army charged or a hidden tactical arbiter | Proposed |
+| Reset and scoring | Known win, loss, timer and draw cases where the mode permits them; swapped sides; changed rematch; failure before and after the ending. Compare engine/UI and all client logs | A surviving unit mistaken for team victory, a failure erasing a win, or a client counted as another match | Component ending and cleanup agreed for the team; the rest proposed |
+| Native multiplayer | Identical declared builds and mods, two real clients first; one local order on each, observed on both; repeated fresh sessions and role/host swaps | Host-only control, divergent simulation, missing allied armies or duplicate script effects | Proposed |
+| Campaign transition | Save and reload a known state, perform one legal action, end a turn and enter and leave a battle; compare semantic fields and game UI on each client | Duplicate action, stale legal action, lost ownership, wrong treasury or turn, or a wrong battle result applied | Proposed |
 
-Use cheap component cases first, then a bounded script-only live probe for the named
-behavior. Choose enough repeats to exercise the failure mode; a successful first launch
-is only feasibility evidence. Include a deliberately broken filter/router or a known
-bad recorded case to show that the check detects the specified error. Keep this work in
-the existing Python/Lua test structure and ignored run evidence; avoid a generic new
-framework before a concrete check needs it.
+Use cheap component cases first, then a bounded script-only live probe of the named
+behavior, with enough repeats to exercise the failure. A deliberately broken filter or
+router, or a known bad recording, must make the check fail. Human review uses agreed
+success, failure and ambiguous examples, hidden controller labels and a fixed sample. A
+teammate saying "flank complete" is a claim to check against game events, and LLM reviews
+are
+[leads](evaluation-guidelines.md#83-controller-text-and-llm-reviews-are-leads-not-evidence).
 
-Human review, where needed, uses agreed success/failure/ambiguous examples, hidden
-controller labels and a fixed sample across outcomes. A teammate saying "flank complete"
-is a claim to check against game events. LLM reviews can locate evidence; they do not
-certify execution or replace the owner's agreement on correctness.
+## 9 Stages
 
-## 9 Stages and concrete deliverables
+### A Feasibility: scripted ownership and scheduling checked
 
-### A Establish feasibility and the smallest contract
+The ownership, scheduling, feedback and cleanup checks passed for two scripted members
+(component at `e8d1eda`, live at `45fe7b0`) ([implementation
+page](multi-agent-implementation.md#checks)). Still open: the in-game visibility comparison,
+and an inventory of the actions the chosen card needs from the installed scripting
+references (do not widen the API just because methods exist). Stop before scoring if control
+crosses ownership, hidden state leaks, one worker's inference blocks another or the game
+cannot keep the required timing.
 
-Choose the split-army ownership, observation and messaging rules. Inspect the installed
-scripting references for the exact actions needed by the first two cards. Write one
-bounded probe plan per uncertainty, naming expected readbacks, observed effects, maximum
-game time and a stop condition. Do not widen the API merely because methods exist.
+### B Choose the card
 
-Deliverable: an agreed contract and check sheet, then recorded ownership, visibility and
-scheduling probes. Stop before scoring if control crosses ownership, hidden state leaks,
-another worker is blocked by inference, or the game cannot maintain the required timing.
-The current single-agent path remains available as its own condition.
+Proposed (§12, decision 2): use the tactic-card process rather than a separate team screen.
+On the rank-5 line, the agreed starting-set screen runs the floors and the `LineTeam`
+witness (12 of its 39 launches); the card is chosen from it. Before any confirmation, the
+card's named shortcut (`LineTeam` with the Knights held back, the not-yet-planned shortcut
+screen) and the §5 team foil (a script whose groups never respond to each other, not yet
+written) must also lose. Advance when legal joint action changes the outcome and the
+evidence separates the intended coordination from the strongest simple alternative. Do not
+tune difficulty until the models all fail; confirmation uses fresh evidence after the card
+and its rule are frozen.
 
-### B Establish that a team problem exists
+### C First comparison
 
-Use the hold-and-flank and protect-and-relocate candidates. A concrete initial screen is
-three scripted arms per family: coordinated conditional plan, independent local rules,
-and fixed timed/role plan. Three fresh launches per arm per family give **18 launches**.
-Use this to find broken scenarios, shortcuts and relevant event definitions, not to rank
-controllers or certify rare failure rates. Record every attempted setup, including
-excluded or unstarted ones, and limit changes to development cases.
+Reserve a held-out variant of the card first, as the tactic-card process does before a model
+screen. Pilot on one card: a single `llm_rules` controller against two `llm_rules` members
+without messages, each at natural concurrency. Six fresh launches per arm, interleaved in
+one night, plus a few same-night witness launches. Declare the stop rule first: if the split
+wins no more battles than the single controller, report "no benefit observed at n=6 per arm"
+and size no confirmation of divided control; otherwise freeze an unfamiliar partner and size
+a confirmation for a named effect. Rough cost from the one GLM-5.3 low register row on the
+rank-5 line (won, $0.58), assuming the split makes about twice the calls at that price:
+about $10 and 2.5-3 hours (the line's two model launches took 10.4 and 12.9 minutes). A
+message arm follows only if the split is at least even or loses through visible coordination
+failures; equal-budget and helper arms only if it wins (§6). Stop expanding if the interface
+or scenario, rather than a controller choice, explains most failures.
 
-Deliverable: two inspectable cards, or an explicit reason one was rejected. Advance only
-when legal joint action can affect the outcome and the evidence can distinguish the
-intended coordination from the strongest simple alternative. Do not tune difficulty
-until the models all fail. Confirmation uses fresh evidence after the card and its
-acceptance rule are frozen.
+### D Single-client steps
 
-### C Compare two-agent behavior
+Before multiplayer clients, and under the one-controller rule: a custom battle with one
+allied AI army, probing whether the script can keep control of its units for a whole battle
+and which resources (winds of magic, army abilities, commander morale) are per army; then
+model against model, with the battle script driving both alliances, each with its own view.
 
-First run a budgeted pilot with single commander, two agents without messages and two
-agents with messages. Six fresh launches per arm per admitted family, for two families,
-would be **36 launches**. This count sizes the pilot; it is not a powered final study.
-Use its measured time, cost, variance and failure modes to propose a separate confirmation
-size. Keep the strongest relevant scripts as contemporaneous references; their additional
-launches must appear in the budget, rather than be hidden in the 36.
+### E Native team battles
 
-The recommended first primary contrast is messages enabled versus disabled for the same
-two-agent controller. Central versus divided control is a separate comparison with the
-resource controls in section 6. Freeze a held-out variant and at least one unfamiliar
-partner before tuning. Deliverable: per-card outcomes, timings, costs, communication
-ablation and inspected failures. Stop expansion if the interface or scenario, rather
-than a controller choice, explains most failures.
+Native multiplayer is required for any native-multiplayer claim. First inventory licensed
+clients, machines, accounts, content and compatible builds; the question for the owner is
+whether a second WH3 account on a second machine is possible. Find out whether permitted
+game-side commands are synchronized by the engine; client-local file polling or Lua
+callbacks need not produce identical effects. The community mirror of CA's [UI scripting
+documentation](https://chadvandy.github.io/tw_modding_resources/WH3/ui_scripting.html) warns
+that changing game state from client-specific UI events can desynchronize a match, and its
+[CampaignUI
+reference](https://chadvandy.github.io/tw_modding_resources/WH3/campaign/campaignui.html)
+documents a script event sent to all clients, a candidate to inspect. The probe separates
+local UI actions from replicated game actions. Never replace missing support with one
+omniscient host and call it equivalent.
 
-### D Establish native team battles
+Order: two clients with one tiny interaction, then allied player armies against fixed AI,
+then four player slots for 2v2, each step with ownership, visibility, outcome and
+synchronization checks. Freeze army resources, reinforcements, deployment and disconnect
+handling; swap roles, host and sides; grow the opponent matrix only after whole sessions can
+be recounted and rerun. The one-controller rule then needs a revised arrangement: one
+supervised session with child clients, per-client bridges and coordinated cleanup. Nothing
+here authorizes concurrent launches or buying accounts or hardware. If engine control fails,
+record why, estimate a player-UI adapter and keep the split-army findings under their own
+name.
 
-Native multiplayer is a required milestone for claims about native multiplayer, even if
-the split-army experiment is successful. Inventory available licensed clients, machines,
-accounts, content/DLC and compatible builds. Determine whether permitted game-side
-commands are synchronized through the engine. Client-local file polling or Lua callbacks
-must not be assumed to produce identical multiplayer effects. Do not replace missing
-multiplayer support with a single omniscient host and label it equivalent.
+### F Campaigns
 
-The community mirror of CA's generated [UI scripting documentation](https://chadvandy.github.io/tw_modding_resources/WH3/ui_scripting.html)
-warns that changing game state from client-specific UI events can desynchronize a match.
-Its [CampaignUI reference](https://chadvandy.github.io/tw_modding_resources/WH3/campaign/campaignui.html)
-documents a campaign script event sent to all clients. That is a candidate to inspect in
-the installed build, not evidence for a synchronized battle-order transport. The
-feasibility probe must distinguish local UI actions from replicated game actions.
-
-Start with two clients and one tiny interaction; then allied player armies against fixed
-AI; then four controlled player slots for native 2v2. Each transition requires ownership,
-visibility, outcome and synchronization checks. Freeze army-level resources, reinforcement
-rules, deployment and disconnect behavior. Run role/host and side swaps. Scale the
-opponent matrix only after complete sessions can be repeatedly recounted and rerun.
-
-The current repository permits one game controller at a time across both games. A native
-multi-client runner needs an explicit revised ownership arrangement: one supervised
-experiment session, with child clients, per-client bridges and coordinated cleanup.
-This plan does not authorize concurrent launches or purchase accounts/hardware. If the
-engine control route fails, record the limiting evidence and estimate the separate cost
-of a player-UI adapter; retain split-army findings under their narrower name.
-
-### E Build campaign capability and then evaluate it
-
-Use the campaign stages below. Passing custom-battle checks does not establish campaign
-visibility, multiplayer turn behavior or save correctness. Deliver a small reproducible
-multiplayer campaign task before a full-campaign comparison, and keep both in scope.
+Follow §10. Deliver a small reproducible multiplayer campaign task before a full-campaign
+comparison; both stay in scope.
 
 ## 10 Multiplayer campaign evaluation
 
-A campaign is a game between factions with partially shared interests and persistent
-consequences. For fixed allies with a shared objective, use a common team result. For
-independent factions, retain each faction's objective and outcome; do not collapse every
-player into one cooperative reward. The interesting questions include resource aid,
-division of fronts, coordinating reinforcements, negotiating commitments, responding to
-an ally's loss and choosing when cooperation is no longer beneficial.
-
-The first campaign agent should control one faction. Splitting economy, diplomacy and
-battles among specialists inside a faction is a later architecture comparison. Otherwise
-it becomes impossible to tell whether performance changed because of internal delegation
-or interaction with other factions.
-
-### Campaign progression
+A campaign is a game between factions with partly shared interests and lasting consequences.
+Fixed allies with a shared objective share one team result; independent factions keep their
+own objectives and outcomes, never collapsed into one cooperative reward. The questions
+include resource aid, dividing fronts, coordinating reinforcements, negotiating commitments,
+responding to an ally's loss and deciding when cooperation stops paying. The first campaign
+agent controls one faction; splitting economy, diplomacy and battles among specialists
+inside a faction is a later architecture comparison.
 
 | Stage | Task and fixed conditions | Completion evidence |
 |---|---|---|
-| Read-only access and lifecycle | One chosen campaign and faction; inspect player-visible state, save/reload and loader behavior | Semantic readbacks match the UI; no hidden-faction leakage; instrumentation remains inactive outside its explicit session |
-| One-faction action loop | Narrow legal actions, one turn boundary, one battle transition; scripted controller | Actions affect the intended faction once; stale/illegal requests are rejected; outcome and return-to-map agree |
-| Two allied player factions | A short cooperative objective from a declared starting state; built-in opposition | Both real clients act, complete turns, resolve battles and reload consistently; shared victory/defeat rule is explicit |
-| Bounded strategic tasks | Fixed turn horizon, several starts and roles, frozen battle resolver | Recountable objective results and comparison against strong simple faction scripts |
-| Mixed interests | Independent objectives, negotiation and changing alliances where the selected campaign permits them | Per-faction outcomes and recorded commitments/actions; no shared private state or hidden objective leakage |
-| Full multiplayer campaigns | Frozen campaign, factions, victory rules, crisis/endgame settings, turn/real-time caps and partner/opponent population | Complete campaign outcomes or explicitly censored attempts, with all interruptions and budgets accounted for |
+| Read-only access and lifecycle | One chosen campaign and faction; inspect player-visible state, save/reload and loader behavior | Semantic readbacks match the UI; no hidden-faction leakage; instrumentation stays inactive outside its explicit session |
+| One-faction action loop | Narrow legal actions, one turn boundary, one battle transition; scripted controller | Actions affect the intended faction once; stale or illegal requests are rejected; outcome and return to the map agree |
+| Two allied player factions | A short cooperative objective from a declared starting state; built-in opposition | Both real clients act, complete turns, resolve battles and reload consistently; the shared victory/defeat rule is explicit |
+| Bounded strategic tasks | Fixed turn horizon, several starts and roles, frozen battle resolver | Recountable objective results, compared with strong simple faction scripts |
+| Mixed interests | Independent objectives, negotiation and changing alliances where the campaign permits them | Per-faction outcomes and recorded commitments and actions; no shared private state or hidden objective leakage |
+| Full multiplayer campaigns | Frozen campaign, factions, victory rules, crisis/endgame settings, turn and real-time caps and partner/opponent population | Complete campaign outcomes or explicitly censored attempts, with every interruption and budget accounted for |
 
-Suitable bounded tasks might ask two allied factions to protect a vulnerable settlement
-while preparing a joint attack, reinforce an ally without losing their own frontier, or
-allocate an affordable transfer that enables a shared objective. Choose starts from the
-actual supported campaign, with a disclosed setup procedure and readable game objectives.
-Use multiple strategic situations, not dozens of branches from one favorable save.
-Do not create speculative saves or scenarios until a specific test needs them.
+Example bounded tasks: two allied factions protect a vulnerable settlement while preparing a
+joint attack, reinforce an ally without losing their own frontier, or make an affordable
+transfer that enables a shared objective. Choose starts from the actual campaign with a
+disclosed setup and readable game objectives; use several strategic situations rather than
+dozens of branches from one favorable save, and create saves only when a test needs them.
 
 ### Information and legal actions
 
-Campaign views must specify what is known about settlements, armies, treasury, income,
-recruitment, movement, diplomacy, treaties, objectives and agent messages. Visibility and
-alliance intelligence can differ from battles. A script's ability to query every faction
-is not permission to show it to an agent. Remembered information needs timestamps/turns;
-unseen armies and enemy finances stay hidden unless exposed by a legitimate game mechanic.
+A campaign view lists what is known about settlements, armies, treasury, income,
+recruitment, movement, diplomacy, treaties, objectives and messages. A script that can query
+every faction is not permission to show it; remembered information carries its turn, and
+unseen armies and enemy finances stay hidden unless a game mechanic exposes them. Actions
+come from the faction's legal choices (movement, recruitment, buildings and research,
+diplomacy, ending the turn), starting with what the first task needs, and are rechecked
+(target, cost, prerequisites, state version) when applied. Record proposal, acceptance and
+effect separately: a promise of aid is not a transfer, and a treaty the game accepts differs
+from an unenforced promise.
 
-Build actions from the legal choices actually available to the faction: movement,
-recruitment, building/research choices, diplomacy and turn completion, starting with the
-small subset needed by the first task. Validate target identity, cost, prerequisites and
-the state version again when applying the action. Record proposals separately from game
-acceptance and eventual effect. A diplomatic message promising aid is not a money
-transfer; a treaty accepted by the game is different from an unenforced promise.
-
-Native simultaneous turns make ordering consequential. Probe which actions are allowed
-while another player moves, negotiates or enters battle. Observe the game's readiness
-and transition rules rather than inventing a serial turn loop and calling it native
-simultaneous play. Record conflicts, rejected stale actions, turn locks and battle
-interruptions. A deliberately serialized research condition can be useful if separately
-labelled. Use a declared per-turn wall budget and timeout behavior; keep tactical battles
-unpaused at 1x. A player refusing to end a turn must have a predeclared disposition.
+Simultaneous turns make ordering matter. Probe which actions are allowed while another
+player moves, negotiates or fights, rather than inventing a serial turn loop and calling it
+native (a deliberately serialized condition is labelled). Record conflicts, rejected stale
+actions, turn locks and battle interruptions; declare a per-turn wall budget, timeout
+behavior and a disposition for a player that never ends its turn. Tactical battles stay at
+1x.
 
 ### Separating campaign decisions from battle skill
 
-Run two distinct tracks. For **strategic evaluation**, freeze the battle resolution
-procedure across all agents: either the same tactical controller at the same settings or
-a declared auto-resolve rule where supported. Auto-resolve can favor particular rosters,
-so those results concern strategy under that resolver. Do not let one policy manually
-fight only the battles it would lose under auto-resolve unless that choice is itself the
-declared action space for every policy.
-
-For **end-to-end evaluation**, let faction agents choose or invoke their battle team
-under a common contract. Map campaign armies, reinforcements and gifted units to battle
-ownership, then map casualties and results back. Recheck authority after every transfer
-and transition. Preserve faction identity and permitted long-term memory. Report both
-strategic and tactical failures; improvements in one cannot be attributed to the other
-without a controlled substitution. Native campaign battle participation must be tested
-on the selected campaign and build, not inferred from the custom-battle adapter.
+A strategic track holds battle resolution fixed for every agent: the same tactical
+controller and settings, or a declared auto-resolve rule. Auto-resolve favors some rosters,
+so those results concern strategy under that resolver, and no policy may fight by hand only
+the battles it would lose on auto-resolve unless every policy may. An end-to-end track lets
+faction agents invoke their battle team under a common contract: armies, reinforcements and
+gifted units map to battle ownership, casualties map back, and authority is rechecked after
+every transfer. Report strategic and tactical failures separately, and credit one for the
+other only through a controlled substitution.
 
 ### Campaign outcomes and social behavior
 
-Primary results depend on the task: completion of a named cooperative objective by turn
-H, or engine-confirmed faction/team victory in a full campaign. For a by-H objective,
-reaching H without completion is non-success. For time to full-campaign victory, an
-administrative horizon can be right-censoring: the victory time is still unknown. Also
-report success by that cap, retaining unfinished campaigns in its denominator. Controller
-failures, refusal to end a turn and controller-caused budget/time exhaustion follow the
-frozen failure rule; they cannot disappear as benign censoring. Do not assume interruptions
-are unrelated to policy strength. Report completion/defeat/failure/censored counts and
-turns plus wall time. Territorial growth, income, army value and ally survival can be
-useful diagnostics, but none is a universal
-score across factions. Freeze any proxy's definition and weights before comparison and
-keep it distinct from the actual objective.
+The primary result is a named cooperative objective completed by turn H (reaching H without
+it is non-success), or engine-confirmed victory in a full campaign. A campaign stopped at an
+administrative cap has an unknown victory time (it is censored), so also report success by
+the cap with unfinished campaigns in the denominator. Controller failures, refusing to end a
+turn and controller-caused budget or time exhaustion follow the failure rule, not harmless
+censoring. Report completion, defeat, failure and censored counts with turns and wall time.
+Territory, income, army value and ally survival are diagnostics, frozen before a comparison.
 
-For mixed-interest play, show each faction's result and the distribution across partners,
-opponents and starting roles. Record offered agreements, acceptances, actual transfers,
-joint operations and broken promises with precise conditions and unknowns. Negotiation
-quality is not the eloquence or friendliness of the chat. Test dependence on communication
-and partner behavior using interventions and partner swaps. Cooperation can be rational,
-and declining an unfavorable deal need not be failure.
+With mixed interests, show each faction's result across partners, opponents and starting
+roles, and record offers, acceptances, actual transfers, joint operations and broken
+promises with their conditions. Negotiation quality is not eloquence or friendliness, and
+declining an unfavorable deal need not be failure. Test dependence on communication and
+partners with interventions and partner swaps; hold out partner policies and strategic
+starts as well as maps and factions, as [Melting Pot](https://arxiv.org/abs/2107.06857) does
+for social situations.
 
-Hold out partner policies and strategic starting situations, as well as maps or factions.
-Melting Pot treats other agents' behavior as part of the environment and evaluates
-generalization across social situations; that motivates a population of allies and
-opponents here. It does not prescribe a WH3 campaign reward.
-[Melting Pot](https://arxiv.org/abs/2107.06857).
-
-The sampling cluster is a campaign start/session under the declared design, not each
-turn, army or battle; independence between starts also needs justification. Branches from
-the same save share history and must be grouped or used as explicitly paired comparisons,
-not counted as independent campaigns. Reloading
-the same save does not establish deterministic continuation. Record campaign provenance,
-turn, semantic state, RNG availability, agent memory, build/mod hashes and restore
-behavior. Distinguish resuming an interrupted trial from retrying a failed decision or
-starting another evaluation. No selective rollback after bad moves in a scored campaign.
+The sample unit is a campaign start or session, not a turn, army or battle. Branches of one
+save share history and are grouped or paired, and reloading a save does not prove a
+deterministic continuation. Record provenance, turn, semantic state, RNG availability, agent
+memory, build and mod hashes and restore behavior. Resuming an interrupted trial differs
+from retrying a decision; no selective rollback after bad moves.
 
 ### Campaign access conditions
 
-Before a campaign launch, resolve the existing owner decisions on harness-created saves
-and irreversible Steam achievements, as recorded in
-[state](../state.md#owner-decisions-waiting) and the
-[campaign infrastructure rules](../autonomy.md#wh3-campaign-infrastructure).
-Use a dedicated test profile/save namespace if supported, protect existing saves, and
-check loaders in both campaign and campaign-battle contexts. The known shared imagery
-loader issue is documented in [integration](integration.md#packs-and-loading); a battle
-guard alone does not make the whole mod inert in campaigns. New live access requires
-that objective lifecycle work first. The request for a plan does not settle these effects.
+Before any campaign launch: the owner's decisions on harness-created saves and irreversible
+Steam achievements ([state](../state.md#owner-decisions-waiting), [campaign
+rules](../autonomy.md#wh3-campaign-infrastructure)); a dedicated test profile or save
+namespace if supported, with existing saves protected; and loaders checked in campaign and
+campaign-battle contexts. Because of the shared imagery loader issue
+([integration](integration.md#packs-and-loading)), the battle guard alone does not make the
+mod inert in campaigns.
 
 ## 11 Cost and implementation boundaries
 
-Keep engineering feasibility, benchmark design and policy experiments as separate work
-items with named stopping points. The first implementation should reuse `battle/play.py`,
-the mailbox, protocol validation, controller interface and existing evidence readers.
-Add per-agent ownership and dispatch only where the pilot needs them. Native clients need
-their own bridge directories and identities; campaign state/actions should have a separate
-contract within `twwarhammer3`, rather than overload battle unit orders. Do not move code
-into `gameai` merely to anticipate another consumer.
+Native clients need their own bridge directories and identities; campaign state and actions
+get their own contract in `twwarhammer3` rather than overloading battle unit orders.
 
 Estimate resources from measured pilots:
+- Game hours: planned sessions times measured setup, battle and recovery time, plus a
+  bounded feasibility allowance; single-client throughput does not predict multi-client or
+  campaign throughput.
+- Model cost: every agent's calls, messages, coordination, retries and memory work, under a
+  team cap and a study cap. Concurrent workers need real shared reservations
+  ([implementation page](multi-agent-implementation.md#next-a-model-team), item 4).
+- Native hosting: client count, licenses and content, machine and network capacity; measure
+  lag with the intended client count.
+- Human time: agreeing checks, fixed-sample review, resolving disagreements and independent
+  recount and rerun.
 
-- Game hours = planned sessions × measured setup/battle/recovery time, plus separately
-  bounded feasibility and failure allowance. The old single-client throughput does not
-  predict multi-client or campaign throughput.
-- Model cost = all agents' calls, communication, coordination, retries and memory work,
-  with a team cap and a study cap. Concurrent workers require atomic shared reservations;
-  independent caps must not each spend the full remaining ledger allowance.
-- Native hosting cost includes actual client count, compatible licenses/content and
-  machine/network capacity. Measure contention and lag with the intended client count.
-- Human time includes check agreement, fixed-sample trajectory review, disagreement
-  resolution and independent recount/rerun, not just coding time.
+No new spending is adopted. The shared ledgers and caps apply, and the near-exhausted OpenAI
+allowance is no basis for scheduling a paid study. Freeze a bounded job plan once costs are
+known, and stop between sessions before a cap rather than leaving the expensive arm
+unfinished. A campaign needs a resume policy and budget for its declared horizon. Releases
+follow guidelines
+[9.3](evaluation-guidelines.md#93-offer-outside-checks-in-three-steps-and-claim-only-what-each-shows)
+and [9.4](evaluation-guidelines.md#94-publish-a-short-summary-page-and-a-clean-bundle),
+adding per-agent traces and the joint mapping; share code and permitted derived evidence,
+never game packs or campaign saves.
 
-No new spending amount is adopted here. The current shared ledgers/caps still apply, and
-the reported near-exhausted OpenAI allowance is not a basis for scheduling a new paid
-study. Freeze a complete bounded job plan after costs are known. Stop between sessions
-before a cap; do not run the cheap arm to completion and silently leave the expensive arm
-unfinished. A campaign needs a resume policy and enough budget for its declared horizon.
+## 12 Decisions for the owner
 
-The release artifact should contain the condition definitions, agents and disclosed
-helpers, scenario/setup recipes, agreed checks with revisions, frozen study plan, raw
-attempt dispositions, outcome reader, per-card/matchup report and inspectable event traces.
-Recount a sample independently, then rerun a named condition on another permitted setup
-before claiming reproducibility beyond this machine. Share code and permitted derived
-evidence, not proprietary game packs or campaign saves. No universal leaderboard is
-needed for a useful first release.
+1. The first model comparison (§9 C): one card, a single `llm_rules` controller against two
+   `llm_rules` members without messages, 6 + 6 launches, about $10, after the starting-set
+   screen. Messages, equal-budget and helper arms depend on its result.
+2. No separate team screen (§9 B): the card comes from the starting-set screen, and its
+   named shortcut and the team foil must lose before confirmation; protect-and-relocate and
+   Knights/Swordsmen are not first cards.
+3. The live witness change on the [implementation
+   page](multi-agent-implementation.md#checks): require the fast unit to be idle before its
+   order (recount only, no game time).
+4. Is a second WH3 account on a second machine possible? Until it is, the native stages stay
+   gates and the single-client steps (§9 D) come first.
+5. Native multiplayer setup and the campaign lifecycle remain capability gates. Use a
+   provisional campaign and faction for access probes, choose the evaluation campaign and
+   factions from that evidence, and freeze a short cooperative task before mixed-interest
+   and full campaigns.
 
-## 12 Recommended first decisions
-
-The concrete proposal to discuss is:
-
-1. Use two agents with fixed unit ownership and the same public battle view for the
-   split-army pilot, then native allied armies and native 2v2 as separate required steps.
-2. Develop hold-and-flank and protect-and-relocate candidates; use the 18-launch scripted
-   screen only after the ownership, visibility and scheduling checks are agreed and pass.
-3. Make the first model question the benefit of a bounded message channel, with fixed
-   total team resources and a central-controller reference. Set the dollar/game-time cap
-   from observed feasibility costs before scheduling the proposed 36-launch pilot.
-4. Reserve unfamiliar partners and at least one legal scenario variation before tuning;
-   size a fresh confirmation study for a named useful effect after the pilot.
-5. Treat native multiplayer setup and campaign lifecycle as capability gates. Use a
-   provisional campaign/faction for access probes, then choose the evaluation campaign
-   and factions from that evidence. Freeze a short cooperative task before mixed-interest
-   and full-campaign evaluation.
-
-The next implementable unit is the smallest split-army ownership/dispatch contract and
-its proposed check sheet, together with a read-only inventory of native multiplayer
-requirements. That work should settle whether two independent agents can act and be
-measured correctly before any claim about superior teamwork.
+Until the starting-set screen has run, the team needs no new code.

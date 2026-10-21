@@ -9,11 +9,10 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
-The first [scripted team](twwarhammer3/multi-agent-implementation.md) is implemented:
-agreed component and four $0 live checks passed at `45fe7b0`; all game processes stopped.
-Next: one model plus one script; native multiplayer/campaign remain unsupported.
+Scripted split-army [team](twwarhammer3/multi-agent-implementation.md) (b49): agreed checks
+passed (component at `e8d1eda`, live at `45fe7b0`). Next: a model team once the starting-set screen picks the card ([plan §9](twwarhammer3/multi-agent-plan.md#9-stages)).
 
-No benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need),
+No game, benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need),
 [scope](twwarhammer3/benchmark.md#scope-and-first-release), suite, checks and gates remain proposals;
 [Empire items](twwarhammer3/empire.md) pending. The 2026-10-21 away window (02:20-12:20, offline, $0)
 is in the [log](twwarhammer3/log.md#2026-10-21-a-proposed-starting-set-the-failure-rule-recount-and-a-blind-c1-recount),
@@ -77,6 +76,8 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 - WH3 register and `stats`: blank version on benchmark rows, grouping by commit, API failures
   as `policy_failure` (`card` classifies failures, keys by setup); a defender's timer stalemate
   counts as won (3 rows; `stats` ignores `ended_by`; the card and the Empire review do not).
+- The mod writes `speed` 1 and `awaiting_orders` false as constants, so `play.py`'s and the team
+  check's paused/slowed tests cannot fail; only a clock ratio (the team check's) detects slowdown.
 - No automated checks for report JavaScript or several Spire play-loop stop paths. Spire's
   Workshop mod pins still block a run when a mod updates.
 
@@ -97,6 +98,10 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 5. Your call: yes/no on the [away guidelines](autonomy.md) (the 2026-10-21 away window ran under the proposal, not as its agreed trial; reviews caught 114
    errors in my drafts and commits, 113 fixed); before any campaign launch, yes/no on harness saves in the WH3 profile and on Steam
    achievements (which cannot be undone; a no keeps campaign work to offline drafts).
+6. Team plan ([§12](twwarhammer3/multi-agent-plan.md#12-decisions-for-the-owner)): the first comparison (one card, one `llm_rules`
+   controller against two members without messages, about $10); no separate team screen (the card
+   comes from the starting set); the stricter live witness (recount only); is a second WH3
+   account on a second machine possible?
 
 ## Runtime and ownership
 

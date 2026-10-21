@@ -428,7 +428,9 @@ implemented controller, one change at a time.
    Two forms fit here: before contact, two or three parallel advisers propose deployment
    plans that the commander resolves into one allocation; in battle, a specialist owns a
    fixed set of units (the mounted units, or ability use) and never shares one. Only
-   after items 1-2 show what the executor and commander still get wrong.
+   after items 1-2 show what the executor and commander still get wrong. Fixed unit
+   ownership for two independent scripted members is built in `team.py`
+   ([agent team](multi-agent-implementation.md)); no commander-plus-specialist form is.
 5. **A between-battle coach and code-as-policies skill development.** Code as Policies
    (arXiv 2209.07753) has a language model write programs that compose control
    primitives; STRATA distils matches into experience cards. Here the autoresearch loop

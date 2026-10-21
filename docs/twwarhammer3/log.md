@@ -41,63 +41,58 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-21: Team plan and implementation review
+
+The owner asked for a review that simplifies the team work and cuts slop. Four independent
+reviews (code bugs, code and test simplification, doc slop, plan substance), each with an
+adversarial verifier, a completeness critic, and two checks of the rewrite (facts, lost
+content); scripts in `runs/twwarhammer3/review-team-20261021/`. No agreed test checked
+oldest-first selection: selectors that ignore or reverse completion order passed all 120
+tests at `45fe7b0`. `test_the_oldest_completed_batch_goes_first` (`e8d1eda`) fails on both
+(`selector_mutation.txt` there); a no-op fixture teardown and a redundant dispatch check are
+gone. Runtime code is unchanged, so the live check at `45fe7b0` still covers it; five small
+code cleanups wait for the model-team change, which needs a live rerun anyway. Found: the
+live check's per-sample speed test cannot fail (the mod writes `speed` 1 as a constant; the
+clock ratio still catches gross slowdown), and its 0.25 m threshold is below the Knights'
+idle jitter, so a stricter witness (idle before the order) is proposed, recount only. The
+revised plan proposes divided against single control first (one card, 6 + 6 launches, about
+$10), no separate 18-launch screen, and single-client steps before native multiplayer; team
+timings must come from member events, as the outer loop measures polls. Implementation page
+368 to 191 lines, plan 648 to 549. Checks: four agreed files 121 passed, WH3 plus doc links 718, ruff
+clean. The plan's proposals and the model-team items remain unverified.
+
 ## 2026-10-21: First scripted team, harness b49
 
 Added `battle/team.py`: two fixed unit owners, copied allowlisted inputs, independent
-bounded script workers, one member batch per request, original-source latency and local
-refusals. Play drains member events through cleanup; cards and digest identify asynchronous
-team dispatch. `DelayInfantry`/`DelayCavalry` use a 3 s first-decision delay and a 20 m
-forward move on the existing Knights/Swordsmen scenario; no Lua, prompt or mailbox change.
-Owner agreed component checks and four $0 live probes, capped at 30 minutes total.
-Checks: 120 focused tests passed; WH3 plus doc links 717 passed; lint passed. Evidence:
-`runs/twwarhammer3/team-check-20261021/`. Independent mutations of ownership, concurrency
-and source age each failed the intended check. Review fixed incomplete-roster and constructor
-fault classification, and strengthened the live detector against formation settling,
-self-reported ownership/acks, unfinished workers and gross clock slowdown.
-At `45fe7b0`, all four fresh live probes passed in about 12 minutes, $0: two delayed
-infantry and two delayed cavalry. Fast units moved 0.424–1.761 m toward their points
-after acknowledgement, 1.738–1.842 s before peer completion; 8/8 first-move raw acks
-matched. Fast source age 600 ms, delayed age 3300–3900 ms; clock ratios 0.9998–1.0006.
-All four ended by diagnostic truncation, with no remaining game process; no scored rows.
-Live evidence: `runs/twwarhammer3/team-live-20261021/`; independent raw recount in the
-component evidence directory: 1,132 samples, all 1,112 member calls ended once. Build
-25961564 matched the pin. No failed/skipped final checks; intentional mutations failed.
-Models, messages, native multiplayer, campaigns and teamwork quality remain unverified.
+bounded script workers, one member batch per request, latency from each member's own source
+and local refusals. Play drains member events through cleanup; card and digest mark
+asynchronous team dispatch. `DelayInfantry`/`DelayCavalry` delay one member's first decision
+by 3 s and move each unit 20 m forward on the existing Knights/Swordsmen scenario; no Lua,
+prompt or mailbox change. Checks: 120 focused tests, WH3 plus doc links 717 passed, lint
+passed; deliberately broken ownership, concurrency and source-age code each failed its test
+(`runs/twwarhammer3/team-check-20261021/`). Review fixed incomplete-roster and constructor
+fault classification and hardened the live witness against formation settling, self-reported
+ownership or acks, unfinished workers and gross clock slowdown. Live at `45fe7b0`: 4/4 fresh
+launches passed in about 12 minutes at $0, two with delayed infantry and two with delayed
+cavalry. First qualifying samples were 0.42-1.76 m closer, 1.74-1.84 s before peer
+completion (a later recount: 4.6-10.8 m and running at the last sample before it); 8/8
+first-move raw acks matched; member age 600 ms fast, 3300-3900 ms delayed; clock ratios
+0.9998-1.0006. All ended by diagnostic truncation, no game process left, no register rows;
+a raw-sample recount found each of the 1,112 member calls ended exactly once. Build 25961564
+matched the pin. Evidence: `runs/twwarhammer3/team-live-20261021/`. Unverified: models,
+messages, native multiplayer, campaigns and teamwork quality.
 
-## 2026-10-21: Small multi-agent implementation plan
+## 2026-10-21: Multi-agent evaluation and implementation plans
 
-Added [the implementation plan](multi-agent-implementation.md). First change: one
-split-army adapter and focused component checks; then independent scripted workers,
-one member batch per mailbox request, source-aware feedback and events, and a bounded
-four-launch probe using the existing Knights/Swordsmen scenario. Later slices add one
-model, bounded messages and parallel model calls. No Lua or mailbox change is needed
-for the proposed initial path. Source audit found that `Ledger.reserve()` checks spending
-without holding funds in flight, so parallel paid calls require real reservations first.
-Independent review corrected selection versus transmission, member latency feedback,
-dispatch-only expiry, error propagation and the two zero-argument probe variants.
-Checks: documentation links 57 passed; `uv run --locked ruff check .` passed;
-`git diff --check` passed. Evidence: `runs/twwarhammer3/multi-agent-plan-20261021/`
-(`pytest.txt`, `ruff.txt`; the earlier 56-check log is `evaluation-plan-pytest.txt`).
-These check documentation/lint only. No runtime implementation, new tests, game sessions
-or paid calls; all new checks and live capabilities remain proposed and unverified.
-
-## 2026-10-21: Multi-agent evaluation plan
-
-Added [the plan](multi-agent-plan.md): split-army development, native allied armies and
-2v2, then cooperative, mixed-interest and full multiplayer campaigns. Defines authority,
-views, asynchronous orders, messages, team budgets, baselines, held-out partners, outcomes,
-failure accounting and proposed checks. The 18-launch scripted screen and 36-launch model
-pilot are proposals, not scheduled experiments. Source audit at `c2a7ae7`: multiplayer and
-campaign battle guards, skipped initial allies and single-controller transport are explicit
-capability limits. Independent source/design reviews led to corrections on reset state,
-sampling independence, balanced run order, censoring, initial mode and reinforcement scanning.
-Evidence: `uv run --locked pytest -ra tests/test_doc_links.py
---basetemp=runs/twwarhammer3/multi-agent-plan-20261021/pytest-tmp`: 56 passed;
-`uv run --locked ruff check .`: passed. Logs in `runs/twwarhammer3/multi-agent-plan-20261021/`.
-Both checks initially could not start with the sandbox's read-only uv cache; approved
-reruns passed. These establish links/lint, not scientific validity or game capability.
-Documentation only; no game sessions, paid calls, adopted scoring or new agreed checks.
-All proposed multiplayer/campaign capabilities and gameplay comparisons remain unverified.
+Added [the evaluation plan](multi-agent-plan.md) (split army, native allied armies and 2v2,
+then cooperative, mixed-interest and full multiplayer campaigns) and
+[the implementation plan](multi-agent-implementation.md) (two scripted members first).
+Source audit at `c2a7ae7`: the battle Lua refuses multiplayer and campaign battles; `scan()`
+skips other local-alliance armies but its reinforcement loop does not; one mailbox request
+is in flight; `Ledger.reserve()` holds no in-flight reservation, so parallel paid calls need
+real reservations. Its 18-launch screen and 36-launch pilot were later replaced (review
+entry above). Checks: doc links and ruff passed (logs in
+`runs/twwarhammer3/multi-agent-plan-20261021/`). Documentation only.
 
 ## 2026-10-21: Subjective-evaluation resource review
 

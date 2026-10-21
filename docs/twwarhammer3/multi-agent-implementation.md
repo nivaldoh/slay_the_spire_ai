@@ -1,245 +1,71 @@
-# Implementing the first WH3 agent team
+# The WH3 agent team: what is built and what comes next
 
-Implementation path, 2026-10-21. Build a small split-army controller on top of
-the existing custom-battle runner: two trusted scripted members, fixed unit ownership,
-one mailbox writer, and independent decisions. The first live result should demonstrate
-that one member can issue an effective order while the other is still thinking, with
-correct ownership, feedback and timing records. It need not win the battle.
+Updated 2026-10-21. [team.py](../../src/twwarhammer3/battle/team.py) runs two trusted
+scripted members on one army. Each owns one unit, decides on its own copy of the public
+state and gets its orders sent while the other is still thinking. The agreed component
+checks passed at `e8d1eda` (121 tests) and the live check at `45fe7b0`
+([AGENTS.md](../../AGENTS.md#verification-hard-rule)). They cover ownership, independent
+progress, feedback and cleanup for two scripts; model teams, messages and teamwork quality
+are unverified. The [evaluation plan](multi-agent-plan.md) says what a team is for; this
+page covers the code.
 
-The first coding slice is an offline ownership and dispatch adapter. The next adds
-independent workers and the trace needed to inspect them. Only then run a bounded live
-probe. Model calls and communication follow in separate changes. Native team multiplayer
-and campaign support remain later capability gates in the
-[evaluation plan](multi-agent-plan.md); this implementation path does not replace them.
+## What team.py does
 
-The owner authorized implementation and agreed the component checks and four $0 live
-probes on 2026-10-21. Slices 1–2 are implemented in [team.py](../../src/twwarhammer3/battle/team.py);
-the [component tests](../../tests/twwarhammer3/test_wh3_team.py) pass. Slice 3's
-[diagnostic check](../../tests/twwarhammer3/check_wh3_team.py) passed at `45fe7b0`:
-four fresh launches, all showing the correct unit moving while its peer was thinking,
-with matching feedback and supervised cleanup. Evidence: `runs/twwarhammer3/team-live-20261021/`.
-This is a capability check; teamwork quality remains unverified.
-Slices 4–6 and multiplayer/campaign support remain future work. Revision-specific
-verification belongs in [AGENTS.md](../../AGENTS.md#verification-hard-rule).
+The probe battle is `emp-knights-emp-swordsmen` (one Swordsmen, one Empire Knights unit).
+`DelayInfantry` and `DelayCavalry` are zero-argument controllers, so they load through the
+usual `package.module:Class` syntax. Each member (`_MoveOnce`) sends one running move 20 m
+ahead along its unit's bearing on its first decision and `[]` after that; the delayed member
+first waits 3 s on a stop event that cleanup can wake.
 
-## What the existing code lets us reuse
+- **Ownership.** On the first `decide` (the first Deployed observation), `_partition` binds
+  `infantry` to the one Swordsmen unit and `cavalry` to the one Knights unit, by type, not
+  ID order. Any other roster, a changed unit ID or a different battle raises
+  `TeamHarnessError`, a `ProtocolError`, so the episode ends as `unsupported_or_invalid`,
+  not as a loss. Dead units stay in the roster, but a new friendly unit (a reinforcement or
+  summon) ends the episode. Behaviour through rout or rally is untested live.
+- **Member input.** `project()` copies an allowlist: battle, sequence, phase, time,
+  remaining time (`remaining_ms`; the end-of-battle `timer` record is dropped), speed, mode,
+  terrain, the member's unit in `friendly`, the other in `allies` and the visible enemies;
+  per unit only ID, type, position, bearing, men, state and a target if that enemy is
+  visible. It drops `job`, the global `orders` acknowledgement (the teammate's results) and
+  private fields, but also fields single-agent controllers get (`enemy_roster`, `armies`,
+  `hp`, `class`, `men0`, abilities, behaviours).
+- **Dispatch.** Each member has at most one decision running, on a two-thread pool. Each
+  outer `decide` collects finished work without waiting, checks it, starts idle members on
+  fresh copies and returns one member's whole batch, so engine feedback indices need no
+  remapping. The earliest completed batch goes first; on a tie, not the member chosen last.
+  With nothing ready it returns `[]` and no member is charged with a decision; a member's
+  own `[]` is a decision and gets feedback.
+- **Checks before dispatch.** A batch must be under 5 s old on the battle clock
+  (`max_age_ms`, a probe constant), use only `move`, `attack` and `halt`, and pass
+  `validate_orders` on the member's own view, which holds only its unit. A failing batch
+  gets local feedback with no engine time and the peer's ready batch is still sent. The play
+  loop's validation runs after this as before.
+- **Feedback.** `acknowledge` routes results to the selected member with their original
+  indices, tagged `engine`, `outer_validation` or `local`. Latency comes from the member's
+  own times: `think_s` from the worker, `roundtrip_s` from input delivery, `delay_ms` as
+  engine `applied_ms` minus the member's source time (for a queued order, `applied_ms` is
+  queue submission), and `transport_overage` when that reaches the age limit.
+- **Failure and cleanup.** A member exception becomes a `PolicyFailure` that keeps its
+  cause, so `_drive` does not retry it. `close()` sets the stop event, waits for the
+  workers, records every unsent or unacknowledged call as `discarded` and closes both
+  members even if one fails. Each episode builds a fresh `TeamPolicy`.
+- **Trace.** Member events (partition, input, completed, selected, feedback, discarded,
+  failures) reach the episode trace through `drain_events()`, which `play.py` calls after
+  each decide and acknowledgement and after cleanup. The `decision` record ties a member's
+  decision ID to its mailbox request; its wire `based_on` is the observation the dispatcher
+  checked against, not the member's source, so member ages come from the feedback events.
+  The card says `asynchronous`; `digest` labels its header counts as dispatcher polls and
+  prints member feedback with member ages.
+- `play.py` refuses a team with `delay_ms` or `interval_ms` other than 0.
 
-Source inspection at `c2a7ae7` supports a small adapter rather than a second game runner:
+Members are trusted in-process code; separate Python dictionaries are not a sandbox.
 
-| Existing behavior | Implementation consequence |
-|---|---|
-| [Controller loading](../../src/twwarhammer3/battle/controllers.py) accepts a zero-argument class with `decide`, `acknowledge` and `metadata` | Expose fixed scripted probe variants through the existing `package.module:Class` syntax; no new command grammar is needed initially |
-| [The play loop](../../src/twwarhammer3/battle/play.py) owns the mailbox and allows one request in flight | Keep that single writer; members return orders to the adapter and never access bridge files |
-| Even an empty decision becomes a mailbox request | An idle adapter can return `[]`, but those polls must not be counted as completed member decisions |
-| [Validation](../../src/twwarhammer3/protocol.py) permits orders for every unit in `friendly` | Give a member only its owned units in `friendly`, expose teammates separately, and enforce ownership independently |
-| Feedback indices are one-based positions in a request | Initially send one member's complete batch per request; indices and queued move/attack sequences need no remapping |
-| The outer timing starts at the adapter's latest input | Record the member's original input time; outer timing alone understates asynchronous decision age |
-| Fresh controllers are constructed for each episode | Keep all member state, workers and ownership on that episode's instance |
-| [The ledger](../../src/gameai/ledger.py) checks `spent + proposed_cost` but retains no outstanding reservation | Two concurrent model calls are a separate prerequisite; sharing one Ledger object does not make them budget-safe |
+## Checks
 
-The existing multiplayer/campaign activation guards, Lua order format and single-agent
-controllers need no change for the initial scripted prototype. The adapter is trusted
-in-process code, like existing outside controllers; this does not provide isolation from
-arbitrary submitted code.
-
-## The first working configuration
-
-Use the existing declared land battle `emp-knights-emp-swordsmen` from
-[scenarios.json](../../configs/twwarhammer3/scenarios.json). Its player roster contains
-one Swordsmen unit and one Empire Knights unit, giving two distinct unit types to bind.
-This choice avoids inventing a new scenario just to test dispatch. Its value as a
-coordination benchmark is a separate question.
-
-Bind `infantry` to the single observed Swordsmen unit and `cavalry` to the single observed
-Knights unit when the first complete deployed observation arrives. Check the expected
-types and counts, save the resulting battle-scoped IDs, and refuse an ambiguous or
-incomplete roster before issuing an order. Do not assume that `f1` means infantry in
-every battle. Ownership stays fixed through rout/rally and ends with the episode.
-
-The probe members issue a small, declared sequence of move/halt or attack commands.
-Use distinct open waypoints chosen from the public terrain and initial positions; record
-the exact points before judging movement. Reuse `Hold`/`AttackNearest` for component
-cases where they fit, and add only the bounded movement/delay behavior the live check
-needs. The two members have separate objects and histories.
-
-Initial supported actions are `move`, `attack` and `halt`, including a queued move/attack
-sequence. The probe has no shared spending, spells, summons, reinforcements or ownership
-transfers. Reject unsupported actions and unexpected new friendly units explicitly;
-never silently assign a new unit to whichever member happens to act next. Fix
-`--interval-ms 0` and `--delay-seconds 0`; the existing global delay/interval are not
-per-member settings. Battles and diagnostic probes remain unpaused at 1x.
-
-## The adapter contract
-
-Put the implementation in one new module, `src/twwarhammer3/battle/team.py`. A small
-`TeamPolicy` can accept injected members and a partition rule for tests. Two thin
-zero-argument probe classes fix the live variants: delayed infantry and delayed cavalry,
-sharing every other setting. Keep configuration in those explicit classes until
-another real experiment needs a configuration file. Record its members, supported actions,
-timing, partition rule and resolved ownership in its disclosure and trace.
-
-### Member inputs and action authority
-
-Build a fresh nested copy for each member from a narrow, versioned allowlist. Include
-battle/sequence/time/phase, relevant timer and terrain information, owned units in
-`friendly`, other friendly units in `allies`, and visible enemies in `enemy`. Start with
-the unit fields the scripted actions actually use: identity/type, position, men, state
-and a target only if that enemy is currently visible. Expand the list deliberately when
-the model stage needs more fields. This is a restricted prototype input contract, not a
-claim of parity with every field in the existing benchmark.
-
-Drop the global `orders` acknowledgement, operator job name and all private/evaluator
-fields. Do not forward arbitrary nested fields or a hidden target's identity/death.
-Both members get the same permitted battlefield information apart from which units they
-may command. They do not receive each other's pending replies, private memory or refusal
-feedback. Visible movement and public unit state can still reveal intentions.
-
-Maintain authority in a separate ownership map keyed by battle and member. On receipt
-and again before dispatch, require every ordered unit to belong to that member and to
-remain legal in the current projected observation. Call the existing `validate_orders`
-on that restricted view. Keep its aggregate check in `play.py` as a final guard. A member
-must not gain authority by returning an order for a unit it can see under `allies`.
-
-Reject a whole invalid member batch with explicit local feedback; do not salvage a
-move/queued-attack sequence into a different maneuver. Leave the other member's valid
-ready batch available. Local refusal is marked as local, with no invented engine
-application time. Record it separately from a game acknowledgement and count it in
-member diagnostics. An invalid ownership map or dispatcher invariant ends the probe;
-it is a harness fault rather than a gameplay loss.
-
-### One member batch per request
-
-For each member retain only its input, one running decision or completed batch, and the
-feedback state. The lifecycle is idle → running → ready → selected → idle after feedback.
-For the first offline slice, deterministic completed workers can exercise these states;
-independent workers are the next slice.
-
-At each outer `decide(current_public_state)`:
-
-1. Bind/check the battle and ownership; collect any finished member decisions without
-   waiting for unfinished ones. Capture their orders and metadata together.
-2. Reject expired, foreign-battle or currently illegal batches with member-local
-   feedback. Keep their original input and rejection reason in the trace.
-3. Start eligible idle members on separate copied current inputs. Never start a second
-   decision before that member's preceding decision has received feedback.
-4. Select one ready valid batch, using oldest-ready first and alternating equal-time
-   ties. Save its selection/member/decision identity until feedback or terminal cleanup.
-5. Return that batch unchanged. If no member is ready, return `[]` with no member assigned.
-
-A member that deliberately returns `[]` has completed a decision and gets its own no-op
-feedback; an idle dispatcher poll has not completed a member decision. Preserve that
-distinction in the event record. A constantly ready member must not starve a peer whose
-reply has finished. Do not merge batches initially: each engine acknowledgement belongs
-to one member and its existing indices remain correct.
-
-Selection is not transmission: the outer loop can observe an ending or reject the batch
-before writing it. Record `selected` in the adapter and include its selection ID in
-cached metadata; the outer `decision` event binds that ID to the actual mailbox request.
-An unsent selection is discarded on cleanup. If outer validation substitutes an empty
-batch and synthetic refusal, route that refusal to the selected member and mark it as
-validation feedback, not a game execution failure. Process at most one completed result
-per member per poll so repeated local refusals cannot trap the dispatcher.
-
-`acknowledge(ack, latency)` routes only the selected member's results and then releases
-that member for another decision. Recompute its latency from its own timestamps: worker
-duration for `think_s`, input delivery to acknowledgement for `roundtrip_s`, and source
-battle time to engine submission for `delay_ms`. Do not pass the outer adapter latency
-unchanged. Local refusals carry no engine-application latency; the model stage must render
-that distinction rather than invent a zero-age game acknowledgement.
-`metadata()` returns a cached snapshot and never waits
-for a worker. Member `decide`, `metadata` and `acknowledge` calls must be serialized for
-that member; two different members can run concurrently. The first trusted scripted
-callbacks must be short and bounded. Arbitrary slow acknowledgement callbacks need their
-own scheduling before those controllers are supported.
-
-The outer loop still waits for mailbox acknowledgement, including empty requests. That
-is shared transport delay, not a teammate-inference barrier. Measure it. If it becomes a
-demonstrated bottleneck, consider a later change to the runner; do not redesign the
-transport before the probe shows why it is needed.
-
-### Timing and trace records
-
-An illustrative sequence, not a measured result: both members receive the state at
-10 s; infantry finishes at 10.2 s and applies an order at 10.5 s; cavalry finishes at
-13 s and applies at 13.4 s. Infantry must not wait for cavalry. Its order age is 0.5 s;
-cavalry's is 3.4 s, even if the adapter saw a fresh state just before dispatching cavalry.
-
-Retain member ID, decision ID, source sequence/battle time, the actual projected input,
-worker start/completion on a monotonic clock, dispatch basis, outer request ID, engine
-application time and final disposition. The current wire `based_on` still identifies the
-adapter's dispatch validation basis; it does not become the child's original inference
-basis. Compute member order age from engine `applied_ms - member_source_time_ms` and
-worker duration from its monotonic timestamps. Report scheduler waiting separately.
-The reply-age limit is checked against the latest available battle observation at Python
-dispatch; the unchanged wire cannot enforce an expiry at actual game application. Report
-any transport overage separately. For queued orders, `applied_ms` means submission to the
-engine queue, not the later execution of that order. Observed movement is separate evidence.
-
-Add a narrow optional `drain_events()` hook to the existing play-loop event writer before
-the asynchronous live probe. Drain after decision/feedback handling, on exceptions and
-after cleanup, including when a terminal observation skips the next decision. Workers
-never write the trace themselves. Events cover member input, completion, local refusal,
-dispatch, feedback and unfinished/cancelled work. The play loop supplies the actual outer
-request ID when writing dispatch, so an order unacknowledged at termination is still
-attributable. Keep all of this in the existing episode trace.
-
-Extend `digest` only enough to show the two members' order origins, refusals and timings.
-Ordinary decision counts and `think_s` remain adapter/transport measures; label them as
-such for team controllers. The controller card must say asynchronous when workers are
-introduced; today's imported-class card otherwise says blocking. Do not pool prototype
-results or timings into single-controller benchmark conclusions.
-
-### Failure and shutdown
-
-For the first prototype, an unexpected member exception ends the diagnostic episode
-through the existing policy-failure path, with member/decision identity attached. Preserve
-its non-API exception as the cause: a directly raised `PolicyFailure` with no cause can
-currently be treated as a failed decision and retried by `_drive`. Invalid
-actions use the local-refusal path above. There is no automatic replacement of a failed
-member. Continuing after a crashed member is a later resilience experiment with a
-separately declared rule.
-
-Give dispatcher invariant/setup faults a narrow `TeamHarnessError` derived from
-`ProtocolError`, and pass that exact type through `policy_call` in slice 2. Otherwise
-the current wrapper converts even protocol errors to policy failures. The episode then
-records the existing `unsupported_or_invalid` disposition plus a team fault event;
-it is not a gameplay loss. Preserve all other controllers' exception handling, mailbox
-faults and budget-stop behavior. Test member failure and dispatcher failure separately.
-
-On terminal result or stop, prevent new decisions, discard unsubmitted results and record
-every pending decision's disposition. Do not wait for a game acknowledgement that can no
-longer arrive. Close every member even if another close fails, preserve the recorded
-engine ending and then construct entirely fresh state for the next episode.
-
-Use only bounded, cooperative scripted workers in the first threaded version. A delay
-probe should wait on a stop-aware event so cleanup can wake it. A running Python thread
-cannot be assumed cancelled by cancelling its Future or using non-waiting shutdown. Do
-not begin another episode while an old worker can still modify state. General external
-controllers and network calls need an explicit bounded termination design before use;
-the current commander waits for its worker and model transport can wait much longer
-than the intended probe delay.
-
-## Implementation sequence and stopping points
-
-| Slice | Small change | Done when | Evidence limit |
-|---|---|---|---|
-| 1 Ownership and routing | `team.py` plus `tests/twwarhammer3/test_wh3_team.py`; injected members and deterministic worker completions | Partition/input checks, one-batch selection, local refusal and feedback identity pass against hand-specified cases | No claim of real concurrency or live control |
-| 2 Independent scripted decisions | Bounded workers; narrow event/card/digest and fault-propagation changes; integration with the existing fake mailbox | Fast member dispatches before slow member completes; all lifecycles, timing and terminal traces are attributable | Simulated loop evidence; game effect still unverified |
-| 3 Bounded live probe | Two fixed probe variants and a frozen run plan using the existing scenario | Repeated live motion/acknowledgement agrees with ownership and one member acts during the other's delay | Capability evidence only, no teamwork or win-rate claim |
-| 4 First model member | One model plus one scripted teammate, guarded construction, team-aware prompt and exchange capture | Offline transport tests and bounded live use preserve inputs, feedback, costs and cleanup | One model call stream; no claim about parallel paid inference |
-| 5 Bounded messages | One logged inbox per member, initially exercised by scripts and then one model plus a script | Recipient, expiry, delivery and consumption checks pass with the same action/ownership contract | A working channel does not establish communication benefit |
-| 6 Parallel model calls | Actual outstanding budget reservations, worker cleanup and complete member exchange/export accounting | Simultaneous call/retry/failure tests respect the cap; a complete two-model comparison plan is costed | Enables a model-team study; policy strength remains to be measured |
-
-Implement and review each slice before depending on it. Slice 1 is the recommended next
-change. Source edits belong in an isolated worktree if a game queue is active; no live
-job should run against changing source. No new scenario catalogue, generic workflow
-engine, new game launcher or expanded Lua API is needed for slices 1–3.
-
-### The checks that decide slices 1 and 2
-
-Use existing fake observations and the play-loop fake mailbox, with a manually completed
-future or explicit event barriers rather than timing-sensitive sleep assertions. These
-are the checks agreed with the owner on 2026-10-21:
+The component checks agreed with the owner on 2026-10-21 are in
+[test_wh3_team.py](../../tests/twwarhammer3/test_wh3_team.py), with the play-loop,
+controller and digest files AGENTS.md names:
 
 | Check | Independent reference and pass condition | Plausible error it detects |
 |---|---|---|
@@ -252,117 +78,114 @@ are the checks agreed with the owner on 2026-10-21:
 | Ending and reset | End during a worker call, before an ack and with one close failure; record pending work and engine ending, close both members, then start a clean instance | Lost last events/results, wait for impossible ack, old result or inbox leaks into a new episode |
 | Failure disposition | Inject an unexpected worker exception and a dispatcher invariant fault; the first stops as member-attributed policy failure, the second as a protocol/harness fault | Infinite retry of a causeless failure; scoring a dispatcher bug as controller weakness |
 
-Use a deliberately broken ownership check, sequential worker implementation or timing
-calculation to demonstrate that the corresponding important check fails. Avoid tests
-that merely copy the adapter's own computed answer as the reference.
+Deliberately broken ownership, concurrency and source-age code each failed the matching test
+(log, b49). The review on 2026-10-21 found that no test checked oldest-first selection: a
+selector that ignores or reverses completion order passed all 120 tests at `45fe7b0`.
+`test_the_oldest_completed_batch_goes_first` now fails on both
+(`runs/twwarhammer3/review-team-20261021/selector_mutation.txt`;
+`runs/twwarhammer3/review-team-20261021/doc-verify/selector_all_files.txt` for all four
+files).
 
-Once those test files exist, focused verification is:
+The live check, [check_wh3_team.py](../../tests/twwarhammer3/check_wh3_team.py), makes four
+fresh launches alternating `DelayInfantry` and `DelayCavalry`, at $0 and within 30 minutes
+(360 s per process, 240 s for setup, 90 s per episode including the wait for the battle). A
+launch passes when:
+- every dispatched order names its member's unit (checked against raw unit types);
+- both first moves get matching successful raw engine acknowledgements, every member
+  feedback comes from the engine (no local or outer-validation refusal), and each member's
+  age equals engine `applied_ms` minus its source time;
+- after its acknowledgement, while the delayed worker still runs, the fast unit is moving or
+  running and at least 0.25 m closer to its point;
+- the delayed worker took 3-4.5 s;
+- a clock sample of at least 10 s runs within 15% of 1x. This catches gross slowdown, not a
+  brief stall; the per-sample speed check cannot fail, because the mod writes `speed` 1 and
+  `awaiting_orders` false as constants;
+- the episode ended `truncated` or with an engine result, the manifest is closed and no game
+  process is left.
 
-```bash
-uv run --locked pytest -ra tests/twwarhammer3/test_wh3_team.py \
-  tests/twwarhammer3/test_wh3_play.py tests/twwarhammer3/test_wh3_controllers.py \
-  tests/twwarhammer3/test_wh3_digest.py
-uv run --locked ruff check .
-```
+A failure or unknown stands; do not keep rerunning until it passes. `--recount OUTPUT`
+reassesses saved evidence without a game, and `plan.json` records the run settings.
+Mid-battle rematch is not used and remains unverified.
 
-Keep test scratch under an ignored `runs/twwarhammer3/` check directory. Add digest and
-export tests only when their behavior changes; run the WH3 suite when the play-loop
-integration is ready because terminal handling and ordinary controllers share that code.
-No new Lua test is needed unless Lua actually changes.
+Result at `45fe7b0`: 4/4 launches passed in about 12 minutes. The check's first qualifying
+samples were 0.42-1.76 m closer, 1.74-1.84 s before the peer completed; at the last sample
+before it completed, the fast units were 4.6-10.8 m closer, moving and running (review
+recount of `observations.jsonl`). Member order age was 0.6 s for the fast member and 3.3-3.9
+s for the delayed one; clock ratio 0.9998-1.0006. Evidence:
+`runs/twwarhammer3/team-live-20261021/`.
 
-### The agreed first live probe
+Proposed, not agreed (owner's call): the 0.25 m threshold is below the Knights' idle jitter
+(one 5.16 m jump between the two idle samples before any order, probe 3). So when the
+Knights are the fast unit, the pass rests on the moving flag, and a unit already moving
+before its order would pass. Require the fast unit to be idle in every sample before its
+acknowledgement and report that as a failed probe, not an assertion error. Every unit was
+idle before its order in all four probes, so the strict recount of the saved evidence still
+passes 4/4 (`runs/twwarhammer3/review-team-20261021/correctness/recount/checks.json`); no
+game time is needed.
 
-Run four fresh launches of the named two-unit scenario: two delaying infantry and
-two delaying cavalry, interleaved. Use a three-second cooperative delay on the selected
-member's first decision and a five-second dispatch reply-age limit for the probe. Record these
-constants; they are diagnostic choices, not recommended model deadlines. Keep the other
-member ready to issue a simple visible move, then inspect its actual displacement as
-well as its acknowledgement before the delayed member completes. If contact or terrain
-makes the motion ambiguous, report unknown and revise the development probe.
+## Next: a model team
 
-The pass conditions are: correct unit authority on every request; fast-member dispatch
-and observed movement during the other's delay in both role assignments; correct source
-age and feedback; clean termination; and no evidence of a paused/slowed battle. An
-acknowledgement alone does not establish movement. Preserve a failure or unknown instead
-of extending the run until it passes. These four launches assess repeatable capability,
-not a rate of successful teamwork.
+Proposed order (plan [§9](multi-agent-plan.md#9-stages)): once the [starting-set
+screen](tactic-cards.md#the-starting-set-proposal-2026-10-21) has picked the comparison card
+and a held-out variant is reserved, build one set of focused commits that lets two model
+members play it. Run the component checks after each commit and the live check once at the
+end. Then, with the owner's go-ahead, play one paid smoke battle. There is no separate
+milestone for one model plus one script, and messages wait for the first comparison.
 
-Bound each diagnostic with an explicit setup/episode/process cap in the run plan. The
-current episode timeout starts before waiting for the battle, so it is not a pure
-active-combat duration: include measured startup allowance rather than promising exactly
-90 seconds of battle from `--episode-timeout 90`. Stop at the named cap and retain any
-truncated outcome as diagnostic evidence. Do not request a mid-battle rematch: that reset
-route is unverified. Rematch/reset live checking can follow a naturally completed battle
-in a separately bounded check; component reset tests are not a live rematch claim.
+1. **Partition.** Declared unit lists per member for the chosen card; for the rank-5 line,
+   the Knights against the line and guns. The card needs no reinforcements or summons,
+   unless the partition says who gets a new unit. Army-level orders (spells, purchases)
+   belong to one named member or are left out.
+2. **The single controller's information and orders.** Widen `project()` to the public
+   fields the `llm` renderer reads, still dropping `job`, the global `orders`
+   acknowledgement and hidden targets (the agreed input test). Allow every order type on the
+   member's own units. Render the teammate's units as allies, plus one ownership sentence,
+   as a logged `llm`/`llm_rules` prompt version that only team members get; the golden
+   prompts of the existing controllers stay byte-identical.
+3. **One staleness rule for both arms.** The single controller has no age limit. In six
+   GLM-5.3 low battles from b43-b45 (`emp-line-grn-raid` three times, Knights/Swordsmen
+   three times), 123 of 632 acknowledged requests were at least 5 s old; in the one rank-5
+   line battle, 22 of 224 (`runs/twwarhammer3/review-team-20261021/doc-verify/ages.py`).
+   Pass the rule to the model team explicitly: none, or one rule both arms share.
+4. **Two calls at once within the cap.** `Ledger.reserve()` checks `spent + cost` but holds
+   nothing, so two concurrent calls could both pass against the same remainder. Add a held
+   total under a lock: `reserve` admits a call only if spent + held + cost fits and adds the
+   cost to held; `Model.call` releases it in a `finally` after charging. About ten lines and
+   a two-thread test, in its own commit, since `gameai` is in both games' play scope. A
+   crash already loses an in-flight charge today, so no restart reconciliation. Build the
+   team as a named model policy in `controllers.factories()`, so it shares the job's one
+   `Ledger`: a `package.module:Class` import, like `DelayInfantry`, skips `--budget-usd`,
+   the ledger-file check, model validation and the OpenRouter $50 cap, and its card reports
+   a self-reported cost.
+5. **Records.** `record_exchanges()` drains team events and `policy.api`, not member APIs:
+   drain each member's exchanges under its name, record member prompts, sources and backends
+   in the card, and keep member identity in `export`. The register's `delay_s` and the
+   report's order age read the outer loop, which for a team measures dispatcher polls (0.3 s
+   in every probe against member ages up to 3.9 s): take member ages and decision counts
+   from the team feedback events before a team job writes register rows.
+6. **Bounded shutdown.** `close()` waits for running workers, and a model call can take far
+   longer than the probe's 3 s. Before a paid live job, decide how long cleanup waits and
+   how an abandoned call is charged and recorded.
 
-The owner agreed four launches at $0 within 30 minutes. Each process is capped at 360 s,
-frontend setup at 240 s, and the diagnostic episode (including its initial battle wait)
-at 90 s. This uses the usual menu/battle checks and process supervisor, with diagnostic
-truncation outside the benchmark register. It does not relax scored `play` deadlines.
-Require at least 0.25 m progress toward the declared point from the acknowledgement-time
-position, with engine `moving`/`running` state, received while the delayed worker runs.
-Both first moves must receive matching successful raw engine acknowledgements. Check
-unit types independently against raw observations; require the 3 s worker delay and a
-minimum 10 s clock sample within 15% of 1x. The clock check detects gross slowdown, not
-every brief stall. `--recount OUTPUT` repeats the assessment without launching a game.
-Check the installed build and active controller ownership; report any pin warning.
-The run plan includes source revision, projected-input version, scenario, probe variant,
-expected ownership, recording settings and output paths. All four jobs cost $0 in model
-calls. Run the agreed check with a fresh output directory:
+This change needs the live rerun anyway, so fold in the small cleanups the 2026-10-21 review
+found: drop `play.py`'s unread `received_monotonic`; drop the `selected` event (the
+`decision` record and `discarded` already carry it); share one refusal builder between
+`team.py` and `play.py`; let `digest` recognize a team by its card's `members` rather than
+the literal `script-team-v1`; test or drop `play.py`'s delay/interval guard.
 
-```bash
-uv run --locked python tests/twwarhammer3/check_wh3_team.py \
-  --output runs/twwarhammer3/team-live-<new-name>
-```
+### Messages, later
 
-## Adding models and messages after the probe
+Only if the first comparison shows the split team at least even with the single controller,
+or losing through visible coordination failures (plan §9 C). Then: one bounded inbox per
+member (size and count limits, expiry), delivered in the recipient's next input; send,
+delivery and first use logged separately; scripts show recipient isolation and delayed or
+dropped messages before a model uses the channel; the no-message arm gets an empty inbox
+with everything else identical; writing messages counts in the team's time and cost.
 
-One model with one scripted teammate is the smallest next step. Use a dedicated team
-factory that validates model settings, the existing ledger and cap before launch; an
-importable class must not hide paid calls from these guards. Keep one paid call in flight
-at this stage. Extend the model's rendered state to distinguish owned units from allies;
-the current renderer does not consume the proposed `allies` field. Give it a versioned
-team prompt and the same supported actions. Existing single-agent golden prompts should
-stay unchanged unless their own version is intentionally revised.
+### Beyond one army
 
-The current `record_exchanges()` drains only `policy.api`. Add explicit aggregation for
-member APIs, namespaced by episode/member/decision/exchange, and a team total taken after
-workers settle. Record all member prompts, sources and backend identities; the adapter's
-class hash alone does not describe a model team. Make the exporter retain member identity
-before using these data for training. Pending and failed calls, including calls that
-finish after the engine result, still need cost and exchange records. Agree a bounded
-network-worker shutdown policy before the first paid live job.
-
-For two simultaneous paid members, first implement and test a reservation held across
-the entire reserve/send/settle interval. Admission must use charged spending **plus all
-outstanding reservations**. Release unused reservation only after actual or conservative
-uncertain-attempt charges are recorded. Retry and shutdown paths must settle exactly
-once; restart must reconcile unresolved spending before admitting more calls. A lock
-around the current `reserve()` check alone is insufficient. This changes `gameai`, so
-check both games' model/ledger callers and keep the existing append-only ledgers intact.
-
-For messages, begin with the existing two members and one bounded inbox each. Specify
-size/count limits, expiry and delivery at the recipient's next decision; include messages
-only in the recipient's copied input. Log send, delivery and first consumption separately.
-Use simple scripts to prove recipient isolation and delayed/dropped message behavior
-before asking a model to use the channel. A messages-disabled condition receives an empty
-inbox with otherwise identical ownership and information. Add language-message generation
-to the team reply format only at this stage, including its time and cost. Dynamic
-ownership and shared resources remain separate extensions.
-
-## When to expand beyond one army
-
-After the adapter and evidence are usable, return to the evaluation plan's coordination
-cards and budgeted comparisons. Add a configuration file only when a second concrete team
-needs it; add shared resources or transfer authority only for a named task with its check.
-
-Native allied armies and 2v2 need client/player/army identity, declared multiplayer setup,
-replicated command effects, cross-client result agreement and revised session ownership.
-They cannot be enabled by removing today's Lua guard. Reuse the member event/authority
-contract, but inspect native control and visibility before designing the client transport.
-
-Campaign work then adds a distinct faction observation/action contract, save/load and
-turn transitions, synchronized actions and campaign-to-battle handoff. The existing
-save/achievement decisions and loader issue remain gates. The evaluation plan supplies
-the route through bounded cooperative tasks to full multiplayer campaigns; no campaign
-adapter is part of the first implementation change.
+Native allied armies and 2v2 need client, player and army identity, a declared multiplayer
+setup, replicated command effects, cross-client result agreement and a revised session
+ownership. Removing the Lua guard does not enable them. Campaigns need their own faction
+observation and action contract, save/load, turn transitions and campaign-to-battle handoff,
+behind the owner's save and achievement decisions. The plan's §9 and §10 give the stages.

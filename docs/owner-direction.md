@@ -66,6 +66,9 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-21 (goal), verbatim: "Review the WH3 multi-agent plan and implementation. Look for
+  opportunities to make it better. See if you can simplify it and reduce slop." Done:
+  [log](twwarhammer3/log.md#2026-10-21-team-plan-and-implementation-review).
 - 2026-10-21 (multi-agent implementation and verification): "Proceed with the implementation
   for the multi-agent battles. Keep it simple at the start, make it verifiable, no slop."
   Agreed component checks for ownership, hidden-state filtering, independent progress,
