@@ -171,10 +171,13 @@ OpenRouter also serves closed models, so `openrouter` means open-weight only whi
 Kimi K3, Step 5 preview and Qwen3.6). The builder does not check licenses: each data card
 lists its kept models, and each one's terms must be checked before training. Step 5
 preview's weights are public (checked 2026-10-21: `huggingface.co/stepfun-ai/Step-5-Preview`,
-604B parameters, BF16 and FP8, "StepFun Model License 1.0"). That license counts a model
+604B parameters, BF16 and FP8, "StepFun Model License 1.0"), and it counts a model
 trained to a material extent on its outputs as a derivative work, allowed with its notice
 and attribution terms; a separate license is needed only for device features or a model
-service over US$20M a year. A reading of the license page, not legal advice.
+service over US$20M a year. The teacher candidates, same day: `zai-org/GLM-5.3` (753B) uses
+the "glm-5.3" license, MIT-style, with a Z.ai security review only for model services over
+US$10B a year and nothing on training from outputs; `Qwen/Qwen3.6-35B-A3B` is Apache-2.0.
+Readings of the license pages, not legal advice.
 
 ## Reasoning
 

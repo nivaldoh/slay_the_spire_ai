@@ -90,8 +90,8 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 5. The chariot card: [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions)
    3-5 and whether witness v2 replaces v1 in the rule (v1 stays the admitted verdict); the
    [latency program's](twwarhammer3/latency.md#owner-decisions) three: `c1` as evidence, the scored route, the $20 stop.
-6. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (whether
-   they may train a model; 25,503 rows excluded), GLM-5.3, or rejection-sampled Qwen3.6.
+6. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (may they train
+   a model? 25,503 rows excluded), GLM-5.3 or rejection-sampled Qwen3.6 ([licenses](posttraining.md#provider-terms)).
 7. Whether to request token log-probabilities, a sampler seed or explicit GLM/Kimi sampling
    before the next model screens ([gaps](posttraining.md#beyond-supervised-fine-tuning)); Step 5
    preview's weights are public ([terms](posttraining.md#provider-terms)).
