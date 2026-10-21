@@ -321,7 +321,11 @@ new card (from the 2026-10-17 board and traces; each rests on 1-6 battles):
 8. **Control confounds**: a lordless army's commander flag sits on its first card and that
    captain's death cuts every unit's morale (S3); an "army losses" shock can rout a unit at
    full strength (S2). The flag does not always follow the first card: in the expendables
-   card it went to a Skavenslaves unit although the Rat Ogres were listed first (b28).
+   card it went to a Skavenslaves unit although the Rat Ogres were listed first (b28). In
+   all 38 recorded lordless rosters it sat on the battle's first unit (`f1`), which differs
+   from the declared first in 11 (2026-10-21, replay `commander` field). The battle's order
+   looks cheapest first where costs are known (line battle: Spearmen 350, then Swordsmen
+   375), so an added cheaper unit would likely take the flag (unverified).
 9. **Sufficiency, not only necessity**: once the tactic succeeds, the rest of the battle
    must be winnable. On 2026-10-18 the two-halberd expendables witness routed the guns at
    160 s and the halberd giant witness at 171 s, and both still lost to the anti-large unit
