@@ -483,6 +483,8 @@ jobs follow each other within seconds):
   GLM $0.23-0.58) fit and Kimi on all four does not; OpenAI is at its cap.
 
 Before more model launches on a card, a held-out variant of it is reserved (evaluation
-guideline 3.2), and the three defending cards need the [defender-prompt decision](../state.md#owner-decisions-waiting):
+guideline 3.2; proposed: the same card on `battle_preset_wh3_nur_wastes_01_04`, the map of
+the six earlier held-out entries, listed in the lobby and used by one random battle but by
+no card, checked by its witness and floors only), and the three defending cards need the [defender-prompt decision](../state.md#owner-decisions-waiting):
 the model prompt promises a defender the timer win these cards do not count. The scripted
 screen does not depend on either.

@@ -9,7 +9,7 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
-No benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md),
+No benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need),
 [scope](twwarhammer3/benchmark.md#scope-and-first-release), suite, new checks and card gates remain
 proposals; the [Empire night's](twwarhammer3/empire.md) owner items are pending. Away window
 2026-10-21 02:20 to about 12:00 (Claude Code; offline, $0, no game: no plan was named):
