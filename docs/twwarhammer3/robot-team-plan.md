@@ -157,6 +157,15 @@ If replacement helps, compare a reserve release whose time and job were fixed fr
 development battles before claiming that reacting to a rout is needed. Otherwise the
 benefit may be a better arrival time. Add this arm only when the initial screen warrants it.
 
+Review of the recorded battles (2026-10-21, `runs/twwarhammer3/away-20261021/recovery-review/`,
+criteria fixed before reading): at the first line break the reserve was fresh, the next
+break came at least 20 s later and the visible enemy held fewer men in 1 of 17 battles (the
+rank-5 LineTeamReserve launch, which still lost). Floors and models had already spent the
+reserve (11 of 11), a second line unit broke within 20 s in 7, the side was outnumbered in
+10, and the first unit to break later rallied in 12. The Spearmen reserve carries the
+commander flag in all 17, so committing it risks the captain's death shock (design rule 8
+of the tactic cards). On 6 scripted battles this leans toward "revise the setup or stop".
+
 ### 2 Test one allocation change
 
 Freeze the shared executor and the best relevant simple rules, then compare model

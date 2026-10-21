@@ -42,8 +42,8 @@ Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-t
 3. P5's Kimi plans remain unplayed; choose their question before scheduling more chariot
    cells. A stronger model at modifier 1.1 remains untested (the OpenAI cap).
 4. [Robot team plan](twwarhammer3/robot-team-plan.md) ([research guide](twwarhammer3/robot-team-research.md)):
-   does the Empire line battle offer useful recovery; then fixed jobs, early commitment and
-   replacement. The small screen shows no handover benefit; b46 is unplayed.
+   does the Empire line battle offer useful recovery? 1 of 17 recorded battles had a replacement
+   opportunity ([review](twwarhammer3/robot-team-plan.md#1-establish-a-recoverable-coordination-problem)); b46 is unplayed.
 
 ## Slay the Spire
 
