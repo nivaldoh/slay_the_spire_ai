@@ -105,7 +105,7 @@ def episode_digest(episode: Path, decisions: bool = True) -> str:
         f" delay mean {result.get('delay_s')} s max {max(delays, default=0) / 1000:.1f} s;"
         f" ${llm.get('usd', 0):.4f}{policy}{_measures(result)}{error}",
     ]
-    if (result.get("card", {}).get("disclosure") or {}).get("input_version") == "script-team-v1":
+    if "members" in (result.get("card", {}).get("disclosure") or {}):
         lines.append("team: header decisions/delay describe dispatcher polls; member timings below")
     observation, last, notes, refused = None, None, None, False
     items, pending = [], {}
@@ -124,7 +124,7 @@ def episode_digest(episode: Path, decisions: bool = True) -> str:
             if not record["orders"] and not behavior.get("reason"):
                 continue
             reason = f" | {behavior['reason']}" if behavior.get("reason") else ""
-            if behavior.get("type") == "team":
+            if behavior.get("member"):
                 reason += (f" | {behavior['decision']} from {behavior['source_ms'] / 1000:.1f}s")
             plan = (f"  plan ({behavior['plan_age_s']:.1f} s old): "
                     f"{describe_plan(behavior['plan'])}" if "plan" in behavior else "")

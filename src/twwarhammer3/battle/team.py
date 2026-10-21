@@ -1,88 +1,133 @@
-"""Two independent, trusted scripted members sharing one army and one mailbox.
+"""Two independent members sharing one army and one mailbox, each owning declared units.
 
-Members have bounded decide/close calls and short acknowledge/metadata callbacks.
-This adapter is not a sandbox or a factory for paid model controllers. One whole
-member batch is selected per request; the play loop remains the only mailbox writer.
+A member is declared by one unit type (exactly one unit of it), a tuple of types (one or
+more units) or None (every unit nobody else declares). Each sees ``project``: its own units,
+its teammate's as allies and the public battle state, never the teammate's feedback. It
+may give any order to its own units; only the named army owner gives army-level orders.
+Members have bounded decide/close calls and short acknowledge/metadata callbacks; this
+adapter is not a sandbox. One whole member batch is selected per request; the play loop
+remains the only mailbox writer. A failed member call follows the single controller's
+rule: no valid reply or a provider error is a forfeit and the member is asked again; a key,
+credit or budget stop or any other exception ends the episode.
 """
-from concurrent.futures import ThreadPoolExecutor
+from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, wait
 from copy import deepcopy
 from dataclasses import dataclass
 from math import cos, radians, sin
 from threading import Event
 from time import monotonic
 
+from gameai.ledger import BudgetExhausted
+from gameai.llm import APIError
 from twwarhammer3.protocol import IllegalActionError, PolicyFailure, ProtocolError, validate_orders
 
-INPUT_VERSION = "script-team-v1"
+INPUT_VERSION = "team-v2"
 SWORD = "wh_main_emp_inf_swordsmen"
 KNIGHT = "wh_main_emp_cav_empire_knights"
+CLOSE_WAIT_S = 30  # cleanup waits this long for a running member call, then abandons it
+UNIT_FIELDS = ("id", "type", "alliance", "class", "x", "z", "bearing", "men", "men0", "hp",
+               "barrier", "can_fly", "flying", "ammo", "ammo0", "range", "speed", "fatigue",
+               "morale", "flight", "width", "attack_mode", "behaviours", "abilities",
+               "command_queue", "navigation", "dest", "state")
+ARMY_MODE = ("slots", "reinforcements", "spawn_zones", "supplies")  # the army owner's
 
 
 class TeamHarnessError(ProtocolError):
     """A partition or dispatcher fault, distinct from a member's bad decision."""
 
 
-def project(observation, owned):
-    """Explicit public contract, including only currently visible target identities."""
+def project(observation, owned, *, army=False):
+    """Explicit public contract, including only currently visible target identities.
+
+    ``owned`` (a unit id or a set of them) is ``friendly``, the other friendly units are
+    ``allies``; ``army`` adds the army's abilities and the purchase parts of ``mode``."""
+    owned = {owned} if isinstance(owned, str) else owned
+
     def fields(value, keys):
         return {key: deepcopy(value[key]) for key in keys if key in value}
 
     visible = {unit["id"] for unit in observation.get("enemy", [])}
 
     def unit(row):
-        result = fields(row, ("id", "type", "x", "z", "bearing", "men", "state"))
+        result = fields(row, UNIT_FIELDS)
         if row.get("target") in visible:
             result["target"] = row["target"]
         return result
 
     result = fields(observation, ("schema", "battle", "seq", "phase", "time_ms", "speed",
-                                  "remaining_ms"))
+                                  "remaining_ms", "enemy_roster", "magic"))
     result["input_version"] = INPUT_VERSION
-    result["friendly"] = [unit(row) for row in observation["friendly"] if row["id"] == owned]
-    result["allies"] = [unit(row) for row in observation["friendly"] if row["id"] != owned]
+    result["friendly"] = [unit(row) for row in observation["friendly"] if row["id"] in owned]
+    result["allies"] = [unit(row) for row in observation["friendly"] if row["id"] not in owned]
     result["enemy"] = [unit(row) for row in observation.get("enemy", [])]
-    result["mode"] = fields(observation.get("mode") or {}, ("type", "role", "scoring"))
-    terrain = observation.get("terrain") or {}
-    result["terrain"] = fields(terrain, ("x0", "z0", "cell_m", "rows", "sample_width_m",
-                                         "sampled_ms"))
-    result["terrain"]["bounds"] = fields(terrain.get("bounds") or {},
-                                          ("min_x", "max_x", "min_z", "max_z"))
+    mode = observation.get("mode") or {}
+    result["mode"] = fields(mode, [key for key in mode if army or key not in ARMY_MODE])
+    if army and "army" in observation:
+        result["army"] = deepcopy(observation["army"])
+    if observation.get("terrain"):
+        terrain = observation["terrain"]
+        result["terrain"] = fields(terrain, ("x0", "z0", "cell_m", "rows", "sample_width_m",
+                                             "sampled_ms"))
+        result["terrain"]["bounds"] = fields(terrain.get("bounds") or {},
+                                              ("min_x", "max_x", "min_z", "max_z"))
     return result
+
+
+def _types(kinds):
+    return (kinds,) if isinstance(kinds, str) else tuple(kinds or ())
 
 
 @dataclass
 class Member:
-    unit_type: str
+    kinds: object  # a unit type, a tuple of types, or None for every undeclared unit
     policy: object
-    unit: str | None = None
+    units: frozenset = frozenset()
     future: object = None
     call: dict | None = None
     ready: dict | None = None
     count: int = 0
+    decisions: int = 0
+    local_refusals: int = 0
+
+    @property
+    def unit(self):
+        """The partition record: a one-type member's unit id, else its sorted unit ids."""
+        return next(iter(self.units)) if isinstance(self.kinds, str) else sorted(self.units)
 
 
 class TeamPolicy:
-    """One unit per member; oldest completed batch first, no teammate barrier."""
+    """Units partitioned by declared type; oldest completed batch first, no teammate barrier."""
 
     timing = "asynchronous"
 
-    def __init__(self, members, *, stop=None, max_age_ms=5000, executor=None, clock=monotonic):
-        if len(members) != 2 or len({kind for kind, _ in members.values()}) != 2:
-            raise TeamHarnessError("the scripted team needs two distinct unit types")
-        self.members = {name: Member(kind, policy) for name, (kind, policy) in members.items()}
+    def __init__(self, members, *, stop=None, max_age_ms=5000, army_owner=None, executor=None,
+                 clock=monotonic):
+        declared = [kind for kinds, _ in members.values() for kind in _types(kinds)]
+        rest = [name for name, (kinds, _) in members.items() if kinds is None]
+        if (len(members) != 2 or len(declared) != len(set(declared)) or len(rest) > 1
+                or army_owner not in (None, *members)):
+            raise TeamHarnessError("a team needs two members with distinct unit types,"
+                                   " at most one of them owning the rest")
+        self.members = {name: Member(kinds, policy) for name, (kinds, policy) in members.items()}
+        self.declared = set(declared)
         self.stop = stop if stop is not None else Event()
         self.pool = executor if executor is not None else ThreadPoolExecutor(max_workers=2)
-        self.clock, self.max_age_ms = clock, max_age_ms
+        self.clock, self.max_age_ms, self.army_owner = clock, max_age_ms, army_owner
         self.battle = self.selected = None
         self.events = []
         self.closed = False
         self.last_selected = None
         self.behavior = {"type": "team", "member": None}
+        self.delays_ms, self.think_s = [], []
         self.card = {"input_version": INPUT_VERSION, "members": {
-            name: {"unit_type": kind, "class": f"{type(policy).__module__}:{type(policy).__name__}"}
-            for name, (kind, policy) in members.items()}, "actions": ["move", "attack", "halt"],
-            "max_age_ms": max_age_ms, "batching": "one member per request",
-            "partition": "one unit of each declared type", "paid_calls": False}
+            name: {"unit_types": kinds,
+                   "class": f"{type(policy).__module__}:{type(policy).__name__}"}
+            for name, (kinds, policy) in members.items()},
+            "actions": "every order for its own units; army orders only for army_owner",
+            "army_owner": army_owner, "max_age_ms": max_age_ms, "close_wait_s": CLOSE_WAIT_S,
+            "batching": "one member per request",
+            "partition": "declared unit types; a None member owns the rest", "paid_calls": False}
 
     def _event(self, event, name=None, **fields):
         call = self.members[name].call if name else None
@@ -92,6 +137,38 @@ class TeamPolicy:
     def drain_events(self):
         events, self.events = self.events, []
         return events
+
+    def drain_exchanges(self):
+        """Each member's model exchanges, tagged with the member."""
+        for name, member in self.members.items():
+            api = getattr(member.policy, "api", None)
+            if hasattr(api, "drain_exchanges"):
+                for exchange in api.drain_exchanges():
+                    yield {**exchange, "member": name}
+
+    def _totals(self, member):
+        # A copy: a call abandoned at cleanup may still add to the member's totals.
+        return Counter(getattr(member.policy, "totals", {}))
+
+    @property
+    def totals(self):
+        """Both members' model call totals (calls, usd, tokens)."""
+        total = Counter()
+        for member in self.members.values():
+            total.update(self._totals(member))
+        return total
+
+    def records(self):
+        """The episode's decisions, engine delays and think times, counted per member batch."""
+        members = self.members.values()
+        return {"decisions": sum(member.decisions for member in members),
+                "delays_ms": list(self.delays_ms), "think_s": list(self.think_s),
+                "local_refusals": sum(member.local_refusals for member in members),
+                "members": {name: {"decisions": member.decisions,
+                                   "local_refusals": member.local_refusals,
+                                   "usd": self._totals(member)["usd"],
+                                   "calls": self._totals(member)["calls"]}
+                            for name, member in self.members.items()}}
 
     def _fault(self, message):
         self._event("fault", error=message)
@@ -106,50 +183,65 @@ class TeamPolicy:
             self._fault("team received an incomplete friendly roster")
         if self.battle is not None and observation["battle"] != self.battle:
             self._fault("team received a different battle")
-        if len(roster) != 2 or len({row["id"] for row in roster}) != 2:
-            self._fault("team requires exactly two distinct friendly units")
+        if len({row["id"] for row in roster}) != len(roster):
+            self._fault("team received duplicate friendly unit ids")
+        owned = 0
         for name, member in self.members.items():
-            matches = [row["id"] for row in roster if row["type"] == member.unit_type]
-            if len(matches) != 1 or (member.unit is not None and matches[0] != member.unit):
-                self._fault(f"{name}: expected one stable {member.unit_type} unit")
+            units = frozenset(row["id"] for row in roster if (
+                row["type"] in _types(member.kinds) if member.kinds is not None
+                else row["type"] not in self.declared))
+            if not units or (isinstance(member.kinds, str) and len(units) != 1) or (
+                    self.battle is not None and units != member.units):
+                self._fault(f"{name}: expected stable units of {member.kinds or 'the rest'}")
+            owned += len(units)
+            member.units = units
+        if owned != len(roster):
+            self._fault("team leaves friendly units unowned")
         if self.battle is None:
             self.battle = observation["battle"]
-            for name, member in self.members.items():
-                member.unit = next(row["id"] for row in roster if row["type"] == member.unit_type)
             self._event("partition", battle=self.battle, ownership={
                 name: member.unit for name, member in self.members.items()})
 
     def _work(self, member, observation):
+        from twwarhammer3.battle.play import policy_call  # play imports this module
+
         started = self.clock()
-        orders = member.policy.decide(observation)
+        orders = policy_call(member.policy, "decide", observation)
         behavior = member.policy.metadata()
         return {"orders": deepcopy(orders), "behavior": deepcopy(behavior),
                 "started": started, "completed": self.clock()}
 
     def _collect(self, name, member):
+        """Take a finished call. A forfeit (no valid reply, a provider error) clears it, so
+        the member is asked again; a budget stop or any other failure is raised."""
         try:
             member.ready = member.future.result()
         except Exception as exc:
-            self._event("failed", name, error=f"{type(exc).__name__}: {exc}")
             member.future = None
+            self._event("failed", name, error=f"{type(exc).__name__}: {exc}",
+                        **({"failure": exc.failure} if isinstance(exc, PolicyFailure) else {}))
+            if isinstance(exc, BudgetExhausted):
+                raise
+            if isinstance(exc, PolicyFailure) and (
+                    exc.__cause__ is None or isinstance(exc.__cause__, APIError)):
+                member.call = None
+                return
             raise PolicyFailure(f"team {name}/{member.call['decision']}: {exc}",
                                 failure={"member": name, "decision": member.call["decision"],
-                                         "error_type": type(exc).__name__}) from exc
+                                         "error_type": type(exc.__cause__ or exc).__name__}
+                                ) from exc
         member.future = None
-        self._event("completed", name, **member.ready)
+        self._event("completed", name, orders=member.ready["orders"],
+                    started=member.ready["started"], completed=member.ready["completed"])
 
     def _validate(self, name, member, observation):
-        orders = member.ready["orders"]
-        if observation["time_ms"] - member.call["source_ms"] >= self.max_age_ms:
+        if (self.max_age_ms is not None
+                and observation["time_ms"] - member.call["source_ms"] >= self.max_age_ms):
             raise IllegalActionError("member reply expired before dispatch")
-        if isinstance(orders, list):
-            for order in orders:
-                if isinstance(order, dict) and (
-                    order.get("unit") != member.unit
-                    or order.get("type") not in ("move", "attack", "halt")
-                ):
-                    raise IllegalActionError(f"{name} may only move, attack or halt {member.unit}")
-        validate_orders(orders, project(observation, member.unit))
+        # The member's own view decides what it may order: its units, and the army only
+        # for the army owner (elsewhere a teammate's unit and the army abilities are unknown).
+        validate_orders(member.ready["orders"],
+                        project(observation, member.units, army=name == self.army_owner))
 
     def _feedback(self, name, ack, source):
         member = self.members[name]
@@ -158,7 +250,12 @@ class TeamPolicy:
                    "roundtrip_s": self.clock() - call["delivered"], "source": source}
         if source == "engine":
             latency["delay_ms"] = ack["applied_ms"] - call["source_ms"]
-            latency["transport_overage"] = latency["delay_ms"] >= self.max_age_ms
+            if self.max_age_ms is not None:
+                latency["transport_overage"] = latency["delay_ms"] >= self.max_age_ms
+            self.delays_ms.append(latency["delay_ms"])
+        member.decisions += 1
+        member.local_refusals += source == "local"
+        self.think_s.append(round(latency["think_s"], 3))
         self._event("feedback", name, source=source, ack=deepcopy(ack), latency=latency)
         try:
             member.policy.acknowledge(deepcopy(ack), dict(latency))
@@ -186,7 +283,7 @@ class TeamPolicy:
                     ] if isinstance(orders, list) else []}
                     self._feedback(name, ack, "local")
             if member.call is None:
-                view = project(observation, member.unit)
+                view = project(observation, member.units, army=name == self.army_owner)
                 member.count += 1
                 member.call = {"decision": f"{name}-{member.count}", "source_seq": view["seq"],
                                "source_ms": view["time_ms"], "delivered": self.clock()}
@@ -199,8 +296,8 @@ class TeamPolicy:
         name, member = min(ready, key=lambda pair: (pair[1].ready["completed"],
                                                    pair[0] == self.last_selected))
         self.selected = self.last_selected = name
-        self.behavior = {"type": "team", "member": name, **member.call,
-                         "worker": member.ready["behavior"]}
+        # Flat, so readers of a single controller's behaviour find the member's prompt.
+        self.behavior = {**member.ready["behavior"], "member": name, **member.call}
         self._event("selected", name, dispatch_seq=observation["seq"],
                     dispatch_ms=observation["time_ms"], selected_at=self.clock())
         return deepcopy(member.ready["orders"])
@@ -218,19 +315,30 @@ class TeamPolicy:
         return deepcopy(self.behavior)
 
     def close(self):
+        """Stop new work, wait up to CLOSE_WAIT_S for running calls, record what was never
+        sent or acknowledged, and close every member whose call is not still running."""
         self.closed = True
         self.stop.set()
-        self.pool.shutdown(wait=True)
+        self.pool.shutdown(wait=False)
+        started = self.clock()
+        wait([member.future for member in self.members.values() if member.future is not None],
+             timeout=CLOSE_WAIT_S)
         failures = []
         for name, member in self.members.items():
-            if member.future is not None:
+            running = member.future is not None and not member.future.done()
+            if member.future is not None and not running:
                 try:
                     self._collect(name, member)
+                except BudgetExhausted:
+                    pass  # recorded as failed; the episode is over anyway
                 except PolicyFailure as exc:
                     failures.append(exc)
             if member.call is not None:
                 self._event("discarded", name, selected=name == self.selected,
-                            reason="episode_closed", closed_at=self.clock())
+                            reason="episode_closed", closed_at=self.clock(), running=running,
+                            **({"waited_s": self.clock() - started} if running else {}))
+            if running:
+                continue  # its worker still uses it
             try:
                 close = getattr(member.policy, "close", None)
                 if close:
