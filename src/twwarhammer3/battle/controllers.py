@@ -33,7 +33,7 @@ VERSIONS = {"llm": "v21", "llm_rules": "v21", "commander": "v7", "skills": "v1.2
 def policy_parts(name: str, config: dict) -> tuple[str, str | None, str | None]:
     """A policy name's base name and the model and effort it plays with: a model policy's
     ``@MODEL[/EFFORT]`` suffix, else the job's; None for other policies. Readers of recorded
-    jobs use it too, so only rotation checks the suffix against today's prices."""
+    jobs use it too, so only rotation and factories check the suffix against today's prices."""
     base, separator, suffix = name.partition("@")
     if base not in MODEL_POLICIES:
         if separator:

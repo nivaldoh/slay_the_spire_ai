@@ -1,7 +1,7 @@
 """Where the game and the harness live on Windows, and how a launch is prepared.
 
 A launch builds the mod pack from ``src/twwarhammer3/mod`` into ``C:/wh3-agent/mods``,
-writes a mod list into the game folder, copies the Windows supervisor, and starts
+writes a mod list into the game folder, copies the supervisor and stills script, and starts
 ``Warhammer3.exe <mod list>;`` the way third-party mod managers do. The in-game
 scripts stay inert unless ``C:/wh3-agent/bridge/session.json`` enables them.
 Preparation also installs a separate startup movie pack and disables the profile's
@@ -88,9 +88,9 @@ def mod_list_text(working_directory: str) -> str:
 
 
 def prepare_runtime() -> dict:
-    """While stopped and locked, install the mod, startup skip and supervisor. Steam may
-    update the game (owner, 2026-10-18): an unpinned build warns and is recorded, and the
-    owner decides whether to re-pin it."""
+    """While stopped and locked, install the mod, startup skip, supervisor and capture
+    script. Steam may update the game (owner, 2026-10-18): an unpinned build warns and is
+    recorded, and the owner decides whether to re-pin it."""
     build = steam_build_id()
     if build != PINS["steam_build_id"]:
         print(f"WARNING: Steam build {build} is not the pinned {PINS['steam_build_id']}; the"
