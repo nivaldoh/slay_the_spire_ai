@@ -29,8 +29,9 @@ end.*
   input and $1.00 output per million tokens.
 - Sampling made explicit: temperature 1.0, top_p 0.95.
 - Thinking-on replies often exhausted both harnesses' 4,000-token output cap, so the first
-  datasets come from effort `none`. The cap is 16,000 tokens since 2026-10-18; no
-  thinking-on battle or run has been played at it yet.
+  datasets come from effort `none`. The cap is 16,000 tokens since 2026-10-18; at it the
+  student has played one thinking-on battle (`bench-b30-chariot-qwen-medium-20261018`: 2
+  decisions, lost) and no Spire run.
 
 ## Data flow
 
@@ -284,8 +285,9 @@ configuration, a 0.6B stand-in for the student, and 60 steps.
 - Spire's content changes with the Ironclad unlock level: every run so far is level 3, and
   the profile was 81 points short of level 4 on 2026-10-17. Exports record the level per
   run; compare like with like.
-- Thinking datasets from the student need effort `medium` play at the 16,000-token cap
-  (unplayed). Teacher reasoning rows exist: with `--reasoning`, the Empire night gives
+- Thinking datasets from the student need effort `medium` play at the 16,000-token cap (so
+  far one WH3 battle, `bench-b30-chariot-qwen-medium-20261018`, 2 decisions; no Spire run).
+  Teacher reasoning rows exist: with `--reasoning`, the Empire night gives
   2,519 GLM-5.3 and 507 Kimi K3 rows with `reasoning_content` (63 rows have none: 62
   GLM, 1 Kimi).
 - Target selection: which replies to learn from (a teacher's, rejection-sampled wins, or

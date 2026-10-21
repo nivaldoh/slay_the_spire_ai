@@ -1,6 +1,6 @@
 # Robot team research plan
 
-Updated 2026-10-20. **Can a controller keep an army working when one unit can no longer
+Updated 2026-10-21. **Can a controller keep an army working when one unit can no longer
 perform the job that other units depend on?** The first candidate is the Empire line
 battle. The next decision is whether it actually requires recovery, before adding a new
 controller or training a model.
@@ -241,6 +241,7 @@ returns, compare those simpler choices before developing a handover controller.
 - **A narrow game result may be all we obtain.** Broader claims need another task family
   and eventually a robot-team setting where the same mechanism can be tested.
 
-The immediate next step is the Empire feasibility review in gate 1. The
+Gate 1's review is done (2026-10-21: 1 of 17 battles had an opportunity); next is proposing
+its script-only screen. The
 [Empire owner decisions](empire.md#for-the-owner-to-decide) remain pending; this research
 update does not admit a card, authorize a new run plan or change benchmark priorities.

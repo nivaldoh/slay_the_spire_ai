@@ -52,7 +52,7 @@ the work.
 | Word | Meaning |
 |---|---|
 | controller | Everything between an observation and an order: model and served backend, reasoning effort, reply token cap, prompt, memory, executor or skills, re-asks, salvage (keeping the valid orders of a partly invalid reply), retries and timeouts |
-| harness | The benchmark's own code around the controller (play loop, mailbox, Lua mod, scorers). `bN` labels a repository revision and can also change controllers (b40 brought witness v2 and prompt v21). The register's column named `harness` is instead the `-vN-` number from the job name, blank for `bench-*` jobs |
+| harness | The benchmark's own code around the controller (play loop, mailbox, Lua mod, scorers). `bN` labels a repository revision and can also change controllers (b40 brought witness v2 and prompt v21). The register's column named `harness` is instead the `-vN-` number from the job name, blank when the name has none (most `bench-*` jobs) |
 | card | A small frozen battle built around one tactical choice, with a success rule, a witness and foils ([fields](tactic-cards.md#a-card)) |
 | contact win | An engine-reported win before the timer ([score](tactic-cards.md#score)) |
 | witness | A disclosed controller, usually a script, showing the card can be won at a named added age and decision interval |
@@ -109,8 +109,8 @@ result and never crosses game builds.
 
 - *Why:* labels drift from content, and a pooled mix cannot be undone. Today the board
   misses harness code and the executable hash (a `skills.py` change keeps the commander's
-  identity), `report` splits by whole commit, and `stats` by the job name's version or, for
-  `bench-*` jobs, by commit.
+  identity), `report` splits by whole commit, and `stats` by the job name's `-vN-` version
+  or, when the name has none (most `bench-*` jobs), by commit.
 - *Check:* proposed (medium): `condition_key()` and `controller_identity()` written into
   `results.csv` and used by every reader; a test that editing `report.py` or another
   scenario's entry keeps the key and editing `play.py` changes it. Proposed (small): a
@@ -892,7 +892,8 @@ its effect, or that a claim is fair; those need agreed live checks and reading.
 
 ## 13. Owner decisions these rules need
 
-1. The line battle's "if time runs out, you win": change the prompt or credit timer wins.
+1. The defender prompt's "if time runs out, you win" (every defending battle, the line and
+   expendables cards among them): change the prompt or credit timer wins.
 2. The open failure-table rows ([5.2](#52-freeze-how-every-trial-is-scored)), construction
    failure, whether draws count per card, and whether the battle-to-wall band invalidates a
    battle or only flags it. Recorded ratios (2026-10-21, 427 engine-ended episodes,

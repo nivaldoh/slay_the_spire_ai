@@ -53,8 +53,10 @@ The provider-support request (owner note 11) is complete:
 [OpenRouter transport and model selection](controllers.md#openrouter), gateway/routing
 metadata, readable model names, backend snapshots and limits in Run settings. GLM's
 caster battles appear on the core page; Kimi's harder-siege trial remains in JSON/text
-as a scenario variant. Step has schema checks only. The other implemented notes of
-2026-10-16 are described below.
+as a scenario variant. Step 5 Preview has two S1 launches in the suite report (2026-10-17:
+a loss and a policy failure), in the JSON/text only because S1 is not core; its two chariot
+losses (2026-10-18) are outside the report. The other implemented notes of 2026-10-16 are
+described below.
 
 Remaining presentation notes:
 
@@ -263,7 +265,8 @@ age) in a scenario. When battles ran under different harnesses its name carries 
 tooltip says how many versions, a footnote explains it once), and Run settings names each
 battle's. A harness fingerprint covers the source
 files in the job's scope except presentation (`report*`, `replay.py`, `digest.py`,
-`watch.py`, `stats.py`, the notes and the scenario catalogue), the scenario declaration
+`watch.py`, `stats.py`, the notes, the suite's job list and the scenario catalogue), the
+scenario declaration
 without its prose, the game build, interface track and timing, and whether the recorder or
 stills ran; jobs without file hashes use their source revision. The collector's JSON and
 text keep the strict groups that never pool across any of these. Diagnostic probes
@@ -373,7 +376,7 @@ a worktree while one runs. Three maps:
   | `title`, `text` | a short title and one sentence on why the moment matters |
   | `units` | roster ids (`f1`..., `e1`...), shown as chips |
   | `kind` | `plan`, `maneuver`, `turning_point`, `trouble` or `outcome` |
-  | `feature` | true for the moment "Watch the featured maneuver" plays (else the first note) |
+  | `feature` | true for the moment "Play key moment" plays (else the first note, "Play note 1") |
   | `refs` | backing records (`trace.jsonl:LINE`, `replay.jsonl:LINE`), never printed |
 
 Analyst notes are curated after reviewing the records and labelled so (the current ones
@@ -469,9 +472,10 @@ NODE_PATH=~/.cache/wh3-playwright/node_modules node tests/twwarhammer3/check_wh3
   OUTPUT_DIR runs/twwarhammer3/battle/JOB [JOB ...]
 ```
 
-With the three jobs of `visual-report` it builds `recorded.{html,json,txt}` and `demo.html`
-in OUTPUT_DIR (outside the evidence directories), checks both offline in headless Chromium
-against the collector's JSON and the demo's values, and leaves screenshots there.
+With the three jobs of `visual-report` it builds `recorded.{html,json,txt}`, `demo.html`
+and `pair.html` in OUTPUT_DIR (outside the evidence directories), checks all three offline
+in headless Chromium against the collector's JSON and the generator's invented values, and
+leaves screenshots there.
 
 ## Known limits
 

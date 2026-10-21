@@ -157,10 +157,12 @@ each set up and ended on an engine result; they are in log.md.
 
 ## Next
 
-The owner prioritizes variety now: more visibly different armies and objectives, with
-2-3 exploratory battles total per new scenario and deeper testing later. All the modes
-above already have working examples; most reused the same five-unit armies. The
-[implementation plan](benchmark.md#implementation-plan) builds on them.
+On 2026-10-15 the owner prioritized variety: more visibly different armies and objectives,
+with 2-3 exploratory battles total per new scenario and deeper testing later. Items 1, 2
+and 4 below were done in b11-b12 ([b11
+log](log.md#2026-10-15-harness-b11-common-measures-and-one-report),
+[below](#distinct-scenario-tranche-2026-10-16)); the rest remain candidates. Current next
+steps are in [state.md](../state.md).
 
 Every scenario must offer credible playmaking: useful strengths to exploit, disadvantages
 to mitigate and choices that can materially change progress through the available
