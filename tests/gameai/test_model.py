@@ -2,6 +2,7 @@
 
 import io
 import json
+import threading
 import urllib.error
 
 import pytest
@@ -366,3 +367,40 @@ def test_failed_exchanges_keep_all_available_attempts_and_errors(tmp_path, failu
                    and a["request"]["input"][0]["content"] == "user"
                    for a in exchange["attempts"])
         assert error.value.attempt is exchange["attempts"][-1]
+
+
+def test_a_call_in_flight_holds_its_reservation_against_a_concurrent_call(tmp_path):
+    ledger = Ledger(tmp_path / "spend.jsonl", 1.0)
+    entered, release, sent = threading.Event(), threading.Event(), []
+
+    def slow(body):
+        entered.set()
+        assert release.wait(5)
+        return {"id": "slow", "usage": USAGE, "output": []}
+
+    def model(send):
+        return api.Model("gpt-6-luna", "low", ledger, send=send, instructions="system",
+                         max_output_tokens=200)
+
+    first = model(slow)
+    thread = threading.Thread(target=first.call, args=("user", {}))
+    thread.start()
+    assert entered.wait(5)
+    held = ledger.held
+    ledger.budget = 1.5 * held  # room for the call in flight, not for a second one
+    try:
+        with pytest.raises(BudgetExhausted, match="held by calls in flight"):
+            model(sent.append).call("user", {})
+        assert not sent and ledger.held == held  # a refused reservation releases nothing
+    finally:
+        release.set()
+        thread.join(5)
+    assert ledger.held == 0 and ledger.spent == first.totals["usd"] > 0
+
+    def broken(body):
+        raise api.APIError("HTTP 500: busy")
+
+    with pytest.raises(api.APIError):
+        model(broken).call("user", {})
+    assert ledger.held == 0 and ledger.spent == first.totals["usd"]
+    assert len((tmp_path / "spend.jsonl").read_text().splitlines()) == 1

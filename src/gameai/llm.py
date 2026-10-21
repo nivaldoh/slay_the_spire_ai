@@ -217,7 +217,8 @@ class Model:
         self.exchange_count = 0
 
     def call(self, prompt: str, schema: dict) -> dict:
-        """Send one prompt and return the attempt record: id, status, usage, cost, text."""
+        """Send one prompt and return the attempt record: id, status, usage, cost, text.
+        The worst-case cost stays reserved in the ledger until the call returns or raises."""
         body = {
             "model": self.name,
             "instructions": self.instructions,
@@ -236,7 +237,14 @@ class Model:
         tokens = len(json.dumps(body).encode()) + 1024
         price_in, _, price_out = get_provider(self.provider).prices[self.name]
         reservation = (tokens * price_in + self.max_output_tokens * price_out) / 1e6
-        self.ledger.reserve(reservation * TRANSPORT_ATTEMPTS)
+        held = reservation * TRANSPORT_ATTEMPTS
+        self.ledger.reserve(held)
+        try:
+            return self._call_reserved(body, tokens, reservation)
+        finally:
+            self.ledger.release(held)
+
+    def _call_reserved(self, body: dict, tokens: int, reservation: float) -> dict:
         started = time.monotonic()
         try:
             response = self.send(body)
