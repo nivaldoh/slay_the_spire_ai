@@ -163,7 +163,11 @@ comparison between models.
    `runs/twwarhammer3/review-20261020/` kept all seven among 3,110 rows, and three (from
    the two won launches) among the 965 rows of a won-only build. A content screen on the
    reply, not a reply-time cutoff (four of the seven came back in 11-53 s), must be
-   agreed before any dataset is built.
+   agreed before any dataset is built. Measured 2026-10-21
+   (`runs/twwarhammer3/away-20261021/reply_screen.py`): "the reply's reason is over 300
+   characters", the harness's own reason cap, flags exactly the seven among the export's
+   3,113 replies; 40 spaces in a row flags six of them. The same rule could flag serving
+   faults in a report (item 4). Another backend's garbage may look different.
 
 ## Risks
 
