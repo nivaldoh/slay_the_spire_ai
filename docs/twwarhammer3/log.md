@@ -44,24 +44,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3/away-20261021/`.
 - [Starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21) (proposal): a
-  five-part rule, three cards (chariot, rank-5 line, Skaven expendables; chosen alike by
-  two blind agents), a $0 screen of 39 launches, a held-out map. Fixed: 113 of 114 review
-  errors (1 in a commit message), 132 stale facts; 18 texts parked.
+  five-part rule, three cards (chariot, rank-5 line, Skaven expendables; two blind agents
+  chose them), a 39-launch $0 screen plan, a held-out map. Fixed 113 of 114 review finds
+  and 132 stale facts; 18 policy-file texts kept (edits change recorded hashes).
 - Failure rule: none of 595 episodes failed at construction, a late acknowledgement or
   `close()`, so the [proposed rule](benchmark.md#correctness-checks-to-agree) rescores
-  nothing; unmerged branch `wh3-keep-engine-ending` (`98b3013`) keeps that ending.
-- c1: a blind recount matched every outcome and the verdict; on 21 hand-picked engagements
-  under a proposed rule, cycles v1 was right on 13, every engagement but the last on 10.
-- Evidence for open decisions: 16 of 17 model episodes on five defending battles restate
-  the timer win; a 300-character reason rule catches 8 of 15 garbled attempts; all 10
-  battles outside a 0.95-1.05 clock band predate b39; 1 of 17 line battles offered a
-  replacement opportunity; model licenses ([terms](../posttraining.md#provider-terms)).
+  nothing; unmerged branch `wh3-keep-engine-ending` (`98b3013`) keeps the engine's result.
+- c1: a blind recount matched every outcome and the verdict (its cycle counts lacked the
+  scorer's 1 s tolerance, now written); of 21 hand-picked engagements cycles v1 got 13,
+  "all but the last" 10.
+- For decisions: 16 of 17 model battles on five defending scenarios repeat the timer win;
+  reasons over 300 characters flag 8 of 15 garbled replies; all 10 battles with game time
+  off by over 5% predate b39; 1 of 17 line battles had a fresh reserve for a broken unit.
 - Checks: four campaign-safety tests, one that the rules prompt withholds card tactics; no
   new harness error in 411 episode logs; blind rebuilds of two markers matched 29 of 31
-  verdicts; campaigns call the imagery script ([integration](integration.md)).
-- Unverified: every gameplay count (1-33 episodes a cell), markers and labels (proposed);
-  three witness texts misstate their code (parked); agents are one model family, so their
-  checks test documents, not judgment.
+  verdicts; risk: campaigns run the stills script ([integration](integration.md)).
+- Unverified: all gameplay counts (1-33 episodes a cell), markers and labels; three witness
+  texts misstate their code (parked); the checking agents share one model family, so they
+  test documents, not judgment.
 
 ## 2026-10-21: Autonomous-work strategy refined (proposal)
 
