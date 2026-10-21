@@ -508,11 +508,12 @@ jobs follow each other within seconds):
   fewer.
 - First model screen, 10 launches per card and model (a screen, not a ranking): GLM-5.3 low
   cost a median $0.19 a launch (45 since 10-19, `results.csv` usd), Kimi K3 low $0.63 (its
-  3 line battles), Qwen3.6 $0.02 (6). About $26-28 of the $50 OpenRouter allowance is left
-  (the ledgers missed $2.69 before), so GLM and Qwen on the three cards (about $10; a line
-  battle costs GLM $0.23-0.58) fit and Kimi on all three does not; OpenAI is at its cap.
-  Every supported reasoning mode of each model follows on the retained cards ([owner,
-  2026-10-16](../owner-direction.md)), not as the first matrix.
+  3 line battles), Qwen3.6 $0.02 (6). About $26 of the $50 OpenRouter allowance is left
+  (the account showed $24.26 used of $60 credit on 2026-10-21; the ledgers hold $2.68
+  less), so GLM and Qwen on the three cards (about $10; a line battle costs GLM $0.23-0.58)
+  fit and Kimi on all three does not; OpenAI is at its cap. Every supported reasoning mode
+  of each model follows on the retained cards ([owner, 2026-10-16](../owner-direction.md)),
+  not as the first matrix.
 
 Before more model launches on a card, a held-out variant of it is reserved (evaluation
 guideline 3.2; proposed: the same card on `battle_preset_wh3_nur_wastes_01_04`, the map of

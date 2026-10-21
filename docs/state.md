@@ -63,8 +63,8 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 
 ## Known issues
 
-- Check OpenRouter credits before paid jobs: ledgers missed $2.69 by 2026-10-18. OpenAI
-  caps and the OpenRouter allowance shared by both games are kept by hand.
+- Check OpenRouter credits before paid jobs: on 2026-10-21 the account showed $24.26 used of
+  $60, the ledgers $2.68 less. OpenAI caps and the shared OpenRouter allowance are kept by hand.
 - Pinned OpenRouter backend outages count against the model; Step 5 preview is unpinned.
 - No test yet shows whether a game patch changes results (owner: later). A build warning
   shows in `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
