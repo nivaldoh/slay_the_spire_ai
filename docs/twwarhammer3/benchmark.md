@@ -212,7 +212,9 @@ positions for stills (`test_wh3_battle_lua.py::test_hidden_arrivals_and_deaths_d
 `::test_lua_presentation_never_queries_hidden_enemy_positions_or_policy_memory`), and every
 scripted witness ignores hidden enemies
 (`test_wh3_calibration.py::test_small_diagnostics_do_not_use_hidden_enemies_or_order_routers`).
-They are not an agreed boundary check, and nothing checks visibility in game.
+They are not an agreed boundary check, and nothing checks visibility in game. Check row to
+add on the owner's yes (proposed): "WH3 information boundary, component half: `uv run
+--locked pytest -ra` on those four tests; in-game visibility unchecked."
 
 For the next chariot signature, independently label a small set of real cases before
 looking at the reader's verdict: a move followed by observed separation and renewed
