@@ -213,13 +213,16 @@ applied. Review disagreements against the evidence, then freeze examples for the
 check. Deliberately misleading trace edits test the reader, not live game effects.
 This proposed check does not redefine cycles v1.
 
-First try (2026-10-21, `runs/twwarhammer3/away-20261021/chariot-labels/`): one agent picked
-16 engagements from 16 chariot battles and two others labelled them against a written rule
-without the reader; they agreed on all 16 labels. Cycles v1 counted all 4 locked-in
-attempts (a pull-out order while the chariot stayed in melee) as cycles; the wrong reading
-"every engagement but the last" erred on 9. The rule needs three fixes before the examples
-are frozen: its window missed 3 pull-outs ordered just before contact, the new charge has no
-lower time limit, and "no attempt, no separation" has no label. Proposed, not agreed.
+Labelled examples (2026-10-21, `runs/twwarhammer3/away-20261021/chariot-labels/`, proposed):
+one agent picked 16 engagements from 16 chariot battles, aiming at edge cases; two others
+labelled them without the reader, first against a rule whose gaps they exposed (`v1/`),
+then against rule v2 (`rule.md`); each round agreed on all 16 labels. On v2's labels cycles
+v1 was right on 9: it counted all 4 locked-in attempts (a pull-out order while the chariot
+stayed in melee) as cycles and missed 3 pull-outs ordered up to 5 s before contact, which
+v2 counts and v1's window does not. Counting every engagement but the last was right on 10.
+Hand-picked edge cases give no rate; they show that v1 counts attempts, as its definition
+says, and v2's choices (the 5 s window, 60 m of separation) need the owner's view before
+the examples are frozen.
 
 **Proposed failure rule for the next evaluator.** Count a controller that fails to
 construct on its assigned attempt as unsuccessful, separately from proven game/setup

@@ -85,7 +85,7 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 1. **The [starting set](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21)'s screen**:
    recommended, a yes to run its $0 scripted plan (36 launches, about 4.6 h) on the next away night.
 2. **The defender prompt** promises a timer win the cards do not count ([16 of 29 model launches](twwarhammer3/empire.md#decisions-taken-for-the-owners-review)).
-   Recommended: state the card's success rule (a new prompt version); or count timer wins.
+   Recommended: state the card's rule (one new prompt version with item 8's sentence); or count timer wins.
 3. **The [failure rule](twwarhammer3/benchmark.md#correctness-checks-to-agree)** (rescores none of 595
    episodes) and the unmerged branch `wh3-keep-engine-ending` (`b527584`, scores unchanged).
 4. Where to back up `runs/`, which has no copy (23 GB, 6.9 GB without `checkpoints/`). Ready
@@ -98,8 +98,9 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 7. Whether Step 5 preview has open weights, and whether to request token log-probabilities,
    a sampler seed or explicit GLM/Kimi sampling before the next model screens
    ([gaps](posttraining.md#beyond-supervised-fine-tuning)).
-8. `wh3-rules-v21-attack-path` (unmerged); whether to keep `commander` (unplayed since v4);
-   more OpenAI budget (the $52 cap refuses Sol calls now).
+8. `wh3-rules-v21-attack-path` (one rules sentence: attacks take the engine's route; move first
+   and queue the attack): recommended, fold it into item 2's version and drop the branch.
+   Whether to keep `commander` (unplayed since v4); more OpenAI budget (the $52 cap refuses Sol).
 9. Yes/no on the [away guidelines](autonomy.md); before any campaign launch, yes/no on
    harness saves in the WH3 profile and on Steam achievements (which cannot be undone).
 
