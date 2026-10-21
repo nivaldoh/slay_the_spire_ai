@@ -23,7 +23,7 @@ Priorities (2026-10-18): WH3 first, then Spire; post-training secondary. [Traces
 [benchmark definition](twwarhammer3/benchmark.md), [tactic cards](twwarhammer3/tactic-cards.md),
 [latency program](twwarhammer3/latency.md) (plan), [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v21, `commander` v7, skills v1.2, harness b47, evaluator v2,
+- On `main`: `llm`/`llm_rules` v22, `commander` v8, skills v1.2, harness b48, evaluator v2,
   track `obs-v4+terrain/act-v2/live-1x` ([definitions](twwarhammer3/log.md#on-main)).
 - Benchmark: [the chariot card](twwarhammer3/tactic-cards.md#the-chariot-card-the-first-benchmark-card);
   results in the [b40 round](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40).
@@ -37,13 +37,13 @@ Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-t
    failure rule was agreed 2026-10-21) and the chariot version decisions; preserve c1's rule. The c1 [recount/rerun](twwarhammer3/benchmark-run.md#independent-rerun-acceptance-proposal)
    handoff is in `runs/twwarhammer3/away-20261021/handoff-c1/` (not shared off this machine).
 2. Breadth: run the agreed $0 screen of the [starting set](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21)
-   on the next free night (steps in `runs/twwarhammer3/away-20261021/TASK.md`); make the approved
-   contact-scoring prompt version before any paid screen of a defending card.
+   on the next free night (steps in `runs/twwarhammer3/away-20261021/TASK.md`); prompt v22 now
+   tells defenders on these cards that only contact wins count (unplayed).
 3. P5's Kimi plans remain unplayed; choose their question before scheduling more chariot
    cells. A stronger model at modifier 1.1 remains untested (the OpenAI cap).
 4. [Robot team plan](twwarhammer3/robot-team-plan.md) ([research guide](twwarhammer3/robot-team-research.md)):
    does the Empire line battle offer useful recovery? 1 of 17 recorded battles had a replacement
-   opportunity ([review](twwarhammer3/robot-team-plan.md#1-establish-a-recoverable-coordination-problem)); b46 and b47 are unplayed.
+   opportunity ([review](twwarhammer3/robot-team-plan.md#1-establish-a-recoverable-coordination-problem)); b46-b48 are unplayed.
 
 ## Slay the Spire
 

@@ -30,15 +30,29 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 | Piece | Version | Defined in | Latest results |
 |---|---|---|---|
-| `llm` | v21 (2026-10-19) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | v21 states that positions are unit centres and the melee flag decides contact (unplayed by `llm`). v20 shared-magic warning played once (GLM, `llm_rules`): over-spend after a pending spell halved. Tactical prompt's last mode campaign was v15 |
-| `llm_rules` | shares `llm` v21 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | v21 chariot cohort: [b40 round](#2026-10-19-witness-v2-and-prompt-v21-harness-b40). v20 GLM/OpenRouter caster check won at 575 s; spell refusals after a pending spell 7 → 3 (v19 lost). M1 used v18 |
-| `commander` | v7 (2026-10-16) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
+| `llm` | v22 (2026-10-21) | `configs/twwarhammer3/system_prompt.md`, `battle/llm.py` | v22 tells a defender on a contact-scored card that the timer does not count (unplayed). v21 states that positions are unit centres and the melee flag decides contact (unplayed by `llm`). v20 shared-magic warning played once (GLM, `llm_rules`): over-spend after a pending spell halved. Tactical prompt's last mode campaign was v15 |
+| `llm_rules` | shares `llm` v22 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | v21 chariot cohort: [b40 round](#2026-10-19-witness-v2-and-prompt-v21-harness-b40). v20 GLM/OpenRouter caster check won at 575 s; spell refusals after a pending spell 7 → 3 (v19 lost). M1 used v18 |
+| `commander` | v8 (2026-10-21) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v8 the contact-scoring state line (unplayed); v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | Latest (2026-10-20, as card floors): `bench-b45-line-xp5-floor-hold-20261020` lost at 327 s, `bench-b45-line-xp5-floor-attack-20261020` at 449 s, `bench-b44-knights-boyz-floor-rush-20261020` at 130 s; first: `bench-g1-cavalry-ai10-01-20261014` |
-| benchmark harness | b47 (2026-10-21: the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
+| benchmark harness | b48 (2026-10-21: a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
+
+## 2026-10-21: Prompt v22 / commander v8 and harness b48: contact scoring told to defenders
+
+The owner's ruling ([directions](../owner-direction.md)): the cards count only contact
+wins, so the model prompt now says so instead of promising a defender the timer win
+([Empire decision 7](empire.md#decisions-taken-for-the-owners-review)). A scenario's new
+top-level `scoring: "contact"` (set on the line and expendables cards and the rifle-lane
+and two-threats probes) is copied by `play.py` into the policy's `mode` (b48);
+`render_mode`, shared by `llm`, `llm_rules` and `commander`, then writes "if time runs out,
+the game gives you the battle, but this benchmark counts only routing or destroying every
+enemy unit before the timer". Every other scenario's prompt is unchanged, so the golden
+prompts stay as they are; the card board's setup key leaves the field out, so scripted
+floors still pool with recorded ones. Two regressions fail without the change and pass with
+it; WH3 suite passed, ruff clean. Unverified: no live battle has run on v22 or b48.
 
 ## 2026-10-21: Harness b47, the agreed failure rule and the starting set's go-ahead
 

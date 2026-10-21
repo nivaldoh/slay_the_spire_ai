@@ -119,7 +119,7 @@ comparison between models.
    it (Kimi, line launch 2: "Defender, timeout wins. Hold defensive line."). Those rows
    were told one goal and scored on another. The owner ruled on 2026-10-21 ([directions](../owner-direction.md)):
    tell the models, and paid screens on defender cards wait for that version. The smallest
-   version of the change (approved, not made yet): a scenario field naming
+   version of the change, made as `llm` v22 / `commander` v8 (2026-10-21): a scenario field naming
    contact scoring, and for it `render_mode` writes "if time runs out, the game gives you
    the battle, but this benchmark counts only routing or destroying every enemy unit
    before the timer" in place of "if time runs out, you win"; prompt fixtures regenerate, a

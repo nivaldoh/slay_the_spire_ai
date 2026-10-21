@@ -484,6 +484,16 @@ def test_the_mode_section_states_role_objectives_tickets_and_points():
         "Battle: land_normal; you are the attacker; if time runs out, enemy wins.")
 
 
+def test_a_contact_scored_defender_is_told_the_timer_does_not_count():
+    mode = {"type": "land_normal", "role": "defender", "timeout_winner": "us"}
+    assert llm.render_mode(mode) == (
+        "Battle: land_normal; you are the defender; if time runs out, you win.")
+    assert llm.render_mode({**mode, "scoring": "contact"}) == (
+        "Battle: land_normal; you are the defender; if time runs out, the game gives you the"
+        " battle, but this benchmark counts only routing or destroying every enemy unit before"
+        " the timer.")
+
+
 def test_a_siege_shows_the_defenders_tickets_without_a_goal_and_the_gate():
     mode = {"type": "settlement_standard", "role": "defender", "timeout_winner": "us",
             "tickets": [{"side": "us", "tickets": 1000, "per_s": 5, "score": 728}],

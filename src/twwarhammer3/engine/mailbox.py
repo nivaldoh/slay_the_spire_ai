@@ -72,7 +72,8 @@ A battle's first observation is a ``Loading`` placeholder with ``seq`` 0 and no 
 ``mode.custom`` extension contains only public objective rules and friendly progress.
 Authored enemy placements stay in ``setup.custom``. A scripted objective requests an engine
 ending, but ``result`` still requires engine confirmation. Its objective status is recorded
-separately: a native victory can fail an asset-preservation objective.
+separately: a native victory can fail an asset-preservation objective. The play loop, not
+the game, adds ``mode.scoring`` (``"contact"``) for a scenario that declares it.
 
 A unit has ``id`` (f1..., e1...), ``type``, ``class``, ``commander``, ``can_fly``,
 ``flying``, ``x``, ``z``, ``bearing``, ``men``, ``men0``, ``hp`` (0-1), ``barrier``?,

@@ -35,6 +35,8 @@ entry, and what reads them:
   every army's ``ai_stats_modifier`` and, for a null ``time_limit_s``, that no countdown
   runs (``check_battle``).
 - ``protected``: unit types whose survival the report and replay measure.
+- ``scoring``: ``"contact"`` for a card that counts only contact wins; the play loop adds
+  it to the controller's ``mode`` and the model prompt says a timer win does not count.
 - ``custom``: the versioned battery-evacuation rules, asset ids, extraction zone and
   deadline; optional ``deployment`` maps friendly/enemy ids to authored positions.
   Only public rules/progress enter ``mode.custom``; deployment remains private setup.

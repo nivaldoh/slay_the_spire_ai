@@ -2196,6 +2196,7 @@
     "calibration_change": "Tactic-card step (2026-10-18 night, delegated): with two Stormvermin units, PriorityStrike routed the cannon crew at 100.7 s but then lost both Screamers units to the screen and the battle at 300 s (bench-b29-flyers-priority-5s-l1-20261018), while both foils lost (253 s, 144 s): killing the target was necessary but not sufficient. One factor: one Stormvermin unit instead of two, so the cannon decides. Foils first again, since a smaller screen may let attack-nearest win."
   },
   "skv-ogres-slaves-emp-halberds-1": {
+    "scoring": "contact",
     "base": "skv-ogres-slaves-emp-halberds",
     "name": "skv-ogres-slaves-emp-halberds-1",
     "brief": "The expendables card with one halberd unit: one Rat Ogres unit and two Skavenslaves units receive an attack by one Empire Halberdiers unit and one Handgunners unit, with no lords. The ogres are the only real damage and the halberds counter large units; the slaves are cheap. Hypotheses, not a prescribed solution.",
@@ -2208,6 +2209,7 @@
     "calibration_change": "Tactic-card step (2026-10-18 night, delegated): with two Halberdiers units, SlaveTarpit pinned both with the slaves at about 90 s and the ogres routed the Handgunners by 160 s, but the slaves broke after 34-55 s and the lone ogres then routed against two halberd units (bench-b29-slaves-tarpit-5s-l1-20261018, lost 235 s), while the attack-nearest foil also lost (244 s): the tactic was necessary but not sufficient. One factor: one Halberdiers unit instead of two. Foils first again."
   },
   "emp-handgunners-grn-savage-orcs-hard": {
+    "scoring": "contact",
     "base": "emp-handgunners-grn-savage-orcs",
     "name": "emp-handgunners-grn-savage-orcs-hard",
     "brief": "The riflemen card against Savage Orcs with the AI stats modifier at 1.1 (about +10% melee stats and +8 leadership). One Handgunners unit and one shielded Spearmen unit receive the attack, with no lords. Hypotheses, not a prescribed solution.",
@@ -2296,6 +2298,7 @@
     "calibration_change": "Empire set, first medium battle (2026-10-20 night, delegated; docs/twwarhammer3/empire.md). The robot-team question at seven units a side: whether a controller reassigns units as teammates break and threats move. Database costs: player 3,700 (550 + 2 x 375 + 350 + 2 x 600 + 850); enemy Goblin Spearmen 325 and Wolf Riders 300 known, the rest unread, so funds 6,000 leave headroom. Lordless both sides to match the small cards (the commander flag sits on the first card). Floors hold and attack_nearest first, then model screens; a floor win means the enemy steps up."
   },
   "emp-handgunners-grn-wolves-boyz": {
+    "scoring": "contact",
     "name": "emp-handgunners-grn-wolves-boyz",
     "family": "two threats",
     "scenario_version": 1,
@@ -2404,6 +2407,7 @@
     "calibration_change": "Empire set step (2026-10-20 night, delegated): against Goblin Spearmen the attack-nearest floor won by contact at 371 s (bench-b43-knights-grn-floor-attack-20261020: the goblins routed at 294 s with 1 of 120 left, 29 of 45 knights alive), so the screen was no screen. One factor: Orc Boyz in place of the goblins (cost unread; funds 1,800). Floors first."
   },
   "emp-line-grn-raid-xp5": {
+    "scoring": "contact",
     "base": "emp-line-grn-raid",
     "name": "emp-line-grn-raid-xp5",
     "brief": "The Empire line battle with every player unit at experience rank 5 (the lobby's per-unit experience control; ranks raise melee attack, defence and leadership). Same rosters, map and settings: seven Empire units receive seven Greenskin units, with no lords. Hypotheses, not a prescribed solution.",

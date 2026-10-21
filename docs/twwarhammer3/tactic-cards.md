@@ -579,6 +579,6 @@ Before more model launches on a card, a held-out variant of it is reserved (eval
 guideline 3.2; proposed: the same card on `battle_preset_wh3_nur_wastes_01_04`, the map of
 the six earlier `-heldout-wastes` entries, listed in the lobby and used by one random
 battle but by no card, checked by its witness and floors only), and the two defending cards
-need the contact-scoring prompt version the owner approved on 2026-10-21 (timer wins stay
-uncounted; the model prompt still promises a defender the timer win). The scripted screen
+are played with prompt v22 or later, which tells a defender that only contact wins count
+(the owner's ruling, 2026-10-21). The scripted screen
 does not depend on either.

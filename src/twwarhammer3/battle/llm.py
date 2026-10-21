@@ -291,16 +291,20 @@ def _side(side: str | None) -> str:
 
 
 def render_mode(mode: dict | None) -> str | None:
-    """The battle type and what wins it: role, timeout winner, objectives in the game's
-    words, a scenario objective, tickets, capture points, gates, supplies, the reinforcement
-    pool and spawn zones, and building slots, as far as the type has them."""
+    """The battle type and what wins it: role, timeout winner (or, for a contact-scored
+    scenario, the benchmark's own rule), objectives in the game's words, a scenario
+    objective, tickets, capture points, gates, supplies, the reinforcement pool and spawn
+    zones, and building slots, as far as the type has them."""
     if not mode or not mode.get("type"):
         return None
     head = f"Battle: {mode['type']}"
     if mode.get("role"):
         head += f"; you are the {mode['role']}"
     winner = mode.get("timeout_winner")
-    if winner:
+    if winner == "us" and mode.get("scoring") == "contact":
+        head += ("; if time runs out, the game gives you the battle, but this benchmark counts"
+                 " only routing or destroying every enemy unit before the timer")
+    elif winner:
         head += "; if time runs out, " + {"us": "you win", "none": "it is a draw"}.get(
             winner, f"{winner} wins")
     lines = [head + "."]

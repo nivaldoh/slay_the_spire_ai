@@ -516,6 +516,9 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
         # its delayed input queue, even on a non-gameplay ending.
         public = {key: value for key, value in observation.items()
                   if key not in ("evaluation", "final", "setup")}
+        if scenario.get("scoring") and public.get("mode"):
+            # The scorer's rule is public: a contact-scored card says so to the controller.
+            public["mode"] = {**public["mode"], "scoring": scenario["scoring"]}
         if observation.get("phase") == "Deployed":
             history.append(public)
         if outstanding or observation.get("phase") != "Deployed":

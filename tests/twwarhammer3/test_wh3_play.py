@@ -382,6 +382,29 @@ def test_delayed_policy_gets_old_public_state_but_results_use_current_evaluation
     assert result["final"]["enemy"]["units"]["destroyed"] == 2
 
 
+def test_a_contact_scored_scenario_tells_the_controller_its_scoring(tmp_path):
+    class Reader(Hold):
+        def __init__(self):
+            self.modes = []
+
+        def decide(self, observation):
+            self.modes.append(observation.get("mode"))
+            return []
+
+    def states():
+        out = [bridge_observation(0, 0)] + [bridge_observation(1, 1000, ack=True)]
+        for state in out:
+            state["mode"] = {"type": "land_normal", "role": "defender", "timeout_winner": "us"}
+        return out
+
+    for scenario, expected in (({"scoring": "contact"}, "contact"), ({}, None)):
+        reader, observations = Reader(), states()
+        play.play_episode(tmp_path / str(expected), CONFIG, lambda: reader,
+                          FakeMailbox(observations), not_battle=None, scenario=scenario)
+        assert reader.modes and all(mode.get("scoring") == expected for mode in reader.modes)
+        assert all("scoring" not in state["mode"] for state in observations)  # a copy only
+
+
 def test_controller_exception_stops_rotation_and_is_recorded(tmp_path, harness):
     class Broken(Hold):
         def decide(self, observation):
