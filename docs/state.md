@@ -121,5 +121,6 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` attack-route draft, labelled
   v21 before main's v21 (`18dabdd`); renumber before any merge.
 - `wh3-keep-engine-ending` (`98b3013`, worktree `../slay_the_spire_ai-wh3-ending`): keeps the
-  engine's ending through a late acknowledge or `close()` failure (inbox item 3).
+  engine's ending through a late acknowledge or `close()` failure (inbox item 3). Merged onto
+  `66d2d20` it is clean; WH3 suite, doc links and ruff pass (687, 1 skipped: no local runs/).
 - Archived drafts are tags (`git tag --list 'archive/*'`).
