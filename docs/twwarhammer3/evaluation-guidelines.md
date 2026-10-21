@@ -498,13 +498,14 @@ Preview (a hosted reasoning model) at high effort had 2 of 4 replies cut off at 
 ### 6.2 Count every decision, per battle, on the right clock
 
 Latency covers every decision: applied, refused, failed, and in flight at the end (listed
-separately); report gaps without fresh orders too. Summarise each battle first (median, 90th
-percentile, longest gap without fresh orders), then compare across battles, so a long busy
-battle does not dominate. Measure wall durations with the system clock (WSL's
-monotonic clock ran slow) and order ages with the battle clock, and never subtract a time
-on one clock from a time on the other. Each episode's battle-to-wall ratio stays in a
-declared band. Orders apply on 0.3 s ticks and frames are 1 Hz, so smaller differences
-mean nothing. For `commander`, model latency is in call times and plan age, not `think_s`.
+separately); report gaps without fresh orders too. Summarise each battle first (median,
+90th percentile, longest gap without fresh orders), then compare across battles, so a long
+busy battle does not dominate. Measure wall durations with the system clock (WSL's
+monotonic clock trails it by a median 6.5% over recorded episodes) and order ages with the
+battle clock, and never subtract a time on one clock from a time on the other. Each
+episode's battle-to-wall ratio stays in a declared band. Orders apply on 0.3 s ticks and
+frames are 1 Hz, so smaller differences mean nothing. For `commander`, model latency is in
+call times and plan age, not `think_s`.
 
 - *Why:* today only acknowledged requests enter `delays_ms` (a 178.5 s call returning after
   the ending was missed), and `clock_ratio`, measured when an observation is read, is
