@@ -35,7 +35,8 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `commander` | v8 (2026-10-21) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v8 the contact-scoring state line (unplayed); v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
 | scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | Latest (2026-10-20, as card floors): `bench-b45-line-xp5-floor-hold-20261020` lost at 327 s, `bench-b45-line-xp5-floor-attack-20261020` at 449 s, `bench-b44-knights-boyz-floor-rush-20261020` at 130 s; first: `bench-g1-cavalry-ai10-01-20261014` |
-| benchmark harness | b48 (2026-10-21: a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
+| scripted team | v1 (`45fe7b0`, b49) | `battle/team.py` | Four agreed $0 movement/cleanup probes passed; models, messages and native multiplayer unimplemented |
+| benchmark harness | b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
@@ -53,7 +54,14 @@ Checks: 120 focused tests passed; WH3 plus doc links 717 passed; lint passed. Ev
 and source age each failed the intended check. Review fixed incomplete-roster and constructor
 fault classification, and strengthened the live detector against formation settling,
 self-reported ownership/acks, unfinished workers and gross clock slowdown.
-Doctor: ready, build 25961564 matches the pin. Live probes pending at source commit.
+At `45fe7b0`, all four fresh live probes passed in about 12 minutes, $0: two delayed
+infantry and two delayed cavalry. Fast units moved 0.424–1.761 m toward their points
+after acknowledgement, 1.738–1.842 s before peer completion; 8/8 first-move raw acks
+matched. Fast source age 600 ms, delayed age 3300–3900 ms; clock ratios 0.9998–1.0006.
+All four ended by diagnostic truncation, with no remaining game process; no scored rows.
+Live evidence: `runs/twwarhammer3/team-live-20261021/`; independent raw recount in the
+component evidence directory: 1,132 samples, all 1,112 member calls ended once. Build
+25961564 matched the pin. No failed/skipped final checks; intentional mutations failed.
 Models, messages, native multiplayer, campaigns and teamwork quality remain unverified.
 
 ## 2026-10-21: Small multi-agent implementation plan

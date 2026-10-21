@@ -9,9 +9,9 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 ## Active work
 
-Implementing the [first scripted team](twwarhammer3/multi-agent-implementation.md):
-ownership, independent decisions and attributable feedback. Component checks and four
-$0 live probes agreed (30-minute cap); native multiplayer/campaign remain unverified.
+The first [scripted team](twwarhammer3/multi-agent-implementation.md) is implemented:
+agreed component and four $0 live checks passed at `45fe7b0`; all game processes stopped.
+Next: one model plus one script; native multiplayer/campaign remain unsupported.
 
 No benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need),
 [scope](twwarhammer3/benchmark.md#scope-and-first-release), suite, checks and gates remain proposals;
@@ -27,7 +27,7 @@ Priorities (2026-10-18): WH3 first, then Spire; post-training secondary. [Traces
 [benchmark definition](twwarhammer3/benchmark.md), [tactic cards](twwarhammer3/tactic-cards.md),
 [latency program](twwarhammer3/latency.md) (plan), [results.csv](twwarhammer3/results.csv).
 
-- On `main`: `llm`/`llm_rules` v22, `commander` v8, skills v1.2, harness b48, evaluator v2,
+- On `main`: `llm`/`llm_rules` v22, `commander` v8, skills v1.2, harness b49, evaluator v2,
   track `obs-v4+terrain/act-v2/live-1x` ([definitions](twwarhammer3/log.md#on-main)).
 - Benchmark: [the chariot card](twwarhammer3/tactic-cards.md#the-chariot-card-the-first-benchmark-card);
   results in the [b40 round](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40).

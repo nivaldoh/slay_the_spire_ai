@@ -14,8 +14,11 @@ and campaign support remain later capability gates in the
 
 The owner authorized implementation and agreed the component checks and four $0 live
 probes on 2026-10-21. Slices 1–2 are implemented in [team.py](../../src/twwarhammer3/battle/team.py);
-the [component tests](../../tests/twwarhammer3/test_wh3_team.py) pass. Live capability is
-still unverified, pending [the diagnostic check](../../tests/twwarhammer3/check_wh3_team.py).
+the [component tests](../../tests/twwarhammer3/test_wh3_team.py) pass. Slice 3's
+[diagnostic check](../../tests/twwarhammer3/check_wh3_team.py) passed at `45fe7b0`:
+four fresh launches, all showing the correct unit moving while its peer was thinking,
+with matching feedback and supervised cleanup. Evidence: `runs/twwarhammer3/team-live-20261021/`.
+This is a capability check; teamwork quality remains unverified.
 Slices 4–6 and multiplayer/campaign support remain future work. Revision-specific
 verification belongs in [AGENTS.md](../../AGENTS.md#verification-hard-rule).
 
