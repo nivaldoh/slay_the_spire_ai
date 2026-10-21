@@ -122,7 +122,6 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` attack-route draft, labelled
   v21 before main's v21 (`18dabdd`); renumber before any merge.
-- `wh3-keep-engine-ending` (`98b3013`, worktree `../slay_the_spire_ai-wh3-ending`): keeps the engine's
-  ending through a late acknowledge or `close()` failure (inbox item 3); merges cleanly onto `main`
-  (rechecked 2026-10-21; merged suite and ruff pass at `66d2d20`); merging is harness b47, to log.
+- `wh3-keep-engine-ending` (`98b3013`, worktree `../slay_the_spire_ai-wh3-ending`): inbox item 3; merges
+  cleanly onto `main` (rechecked 2026-10-21; merged suite and ruff pass at `66d2d20`).
 - Archived drafts are tags (`git tag --list 'archive/*'`).
