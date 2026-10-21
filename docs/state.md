@@ -91,8 +91,9 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 5. The chariot card: [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions) 3-5; recommended, witness v2 for the next confirmation at
    decision 3's 2 s/2 s cell (v2 3/3 there, 4/5 at 5 s/5 s and at 8 s/8 s; v1 2/8 and 0/4), c1 staying v1's admitted record. [Latency
    program](twwarhammer3/latency.md#owner-decisions), your call: `c1` as evidence (recommended there), the $20 P5 cap; b36's backend pins await review.
-6. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (may they train
-   a model? 25,503 rows excluded), GLM-5.3 or rejection-sampled Qwen3.6 ([licenses](posttraining.md#provider-terms)); your call, secondary.
+6. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (may they train a model? 25,503 rows
+   excluded: 11,099 in the Spire export `luna-v1-v10-20261017`, 14,404 in WH3's `trace-v2-20261017`), GLM-5.3 or
+   rejection-sampled Qwen3.6 ([licenses](posttraining.md#provider-terms)); your call, secondary.
 7. Token log-probabilities, a sampler seed or explicit GLM/Kimi sampling before the next model screens
    ([gaps](posttraining.md#beyond-supervised-fine-tuning))? Recommended: ask where the pinned backend lists them (log-probabilities: Qwen's,
    one of Kimi's two endpoints, not GLM's Decart; all list a seed and sampling; listing rechecked 2026-10-21). Step 5's weights are [public](posttraining.md#provider-terms).
