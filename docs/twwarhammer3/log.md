@@ -40,6 +40,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-21: First scripted team, harness b49
+
+Added `battle/team.py`: two fixed unit owners, copied allowlisted inputs, independent
+bounded script workers, one member batch per request, original-source latency and local
+refusals. Play drains member events through cleanup; cards and digest identify asynchronous
+team dispatch. `DelayInfantry`/`DelayCavalry` use a 3 s first-decision delay and a 20 m
+forward move on the existing Knights/Swordsmen scenario; no Lua, prompt or mailbox change.
+Owner agreed component checks and four $0 live probes, capped at 30 minutes total.
+Checks: 120 focused tests passed; WH3 plus doc links 717 passed; lint passed. Evidence:
+`runs/twwarhammer3/team-check-20261021/`. Independent mutations of ownership, concurrency
+and source age each failed the intended check. Review fixed incomplete-roster and constructor
+fault classification, and strengthened the live detector against formation settling,
+self-reported ownership/acks, unfinished workers and gross clock slowdown.
+Doctor: ready, build 25961564 matches the pin. Live probes pending at source commit.
+Models, messages, native multiplayer, campaigns and teamwork quality remain unverified.
+
 ## 2026-10-21: Small multi-agent implementation plan
 
 Added [the implementation plan](multi-agent-implementation.md). First change: one

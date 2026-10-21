@@ -105,7 +105,7 @@ def card(name: str, policy, config: dict) -> dict:
         "class": f"{type(policy).__module__}:{type(policy).__qualname__}",
         "source_file": path, "source_sha256": sha256(Path(path)) if path else None,
         "model": model, "effort": effort,
-        "timing": "asynchronous" if base == "commander" else "blocking",
+        "timing": getattr(policy, "timing", "asynchronous" if base == "commander" else "blocking"),
         "disclosure": getattr(policy, "card", None),
         "description": inspect.getdoc(type(policy)),
         "cost_source": "WH3 ledger" if base in MODEL_POLICIES else "self-reported",

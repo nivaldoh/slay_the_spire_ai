@@ -35,6 +35,14 @@ For each change:
 
 Agreed verification methods (feature, check and command, date agreed, last passing
 revision):
+- WH3 scripted two-member team: ownership, public inputs, independent progress, feedback,
+  timing and cleanup: `uv run --locked pytest -ra tests/twwarhammer3/test_wh3_team.py
+  tests/twwarhammer3/test_wh3_play.py tests/twwarhammer3/test_wh3_controllers.py
+  tests/twwarhammer3/test_wh3_digest.py`; agreed 2026-10-21. Passing sources awaiting commit.
+  Live method: `uv run --locked python tests/twwarhammer3/check_wh3_team.py --output
+  runs/twwarhammer3/team-live-<new-name>`: four fresh launches, alternate the delayed
+  member, correct acknowledged unit moves while its peer thinks, unpaused at 1x, $0,
+  total cap 30 minutes. Live check pending. No model-team or multiplayer claim.
 - WH3 saved armies and experience: save a known army, change it, restart WH3 and reload;
   compare unit types, counts and ranks. Set several ranks using both increase and decrease,
   comparing lobby readback and battle-start ranks/stats: `uv run --locked python

@@ -59,6 +59,7 @@ from twwarhammer3.battle.setup import (
     validate_declaration,
 )
 from twwarhammer3.battle.stats import record
+from twwarhammer3.battle.team import TeamHarnessError, TeamPolicy
 from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox, require_realtime
 from twwarhammer3.engine.runtime import BRIDGE_DIR, OwnedGame, RuntimeLock, prepare_runtime
@@ -270,9 +271,13 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
     try:
         try:
             policy = make_policy()
+        except TeamHarnessError:
+            raise
         except Exception as exc:
             raise PolicyFailure(f"controller construction: {exc}") from exc
         result["card"] = card(config["policy"], policy, config)
+        if isinstance(policy, TeamPolicy) and (config.get("delay_ms") or config.get("interval_ms")):
+            raise TeamHarnessError("scripted teams require delay_ms=0 and interval_ms=0")
         _drive(config, policy, mailbox, not_battle, result, event, started, scenario or {})
     except MailboxTimeout as exc:
         past = time.time() - started > config["episode_timeout"]
@@ -318,7 +323,7 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
 def policy_call(policy, method: str, *args):
     try:
         return getattr(policy, method)(*args)
-    except (PolicyFailure, BudgetExhausted):
+    except (PolicyFailure, BudgetExhausted, TeamHarnessError):
         raise
     except Exception as exc:
         message = f"{method}: {type(exc).__name__}: {exc}"
@@ -400,6 +405,9 @@ def _start(result: dict, observation: dict, scenario: dict, event) -> None:
 
 
 def record_exchanges(policy, event) -> None:
+    if hasattr(policy, "drain_events"):
+        for record in policy.drain_events():
+            event("team", **record)
     api = getattr(policy, "api", None)
     if hasattr(api, "drain_exchanges"):
         for exchange in api.drain_exchanges():
@@ -427,7 +435,10 @@ def _acknowledge(result: dict, outstanding: dict, ack: dict, policy, event) -> i
     if outstanding["logged"]:
         event("ack", request=ack["request"], ack=ack, latency=latency)
     feedback = {**ack, **outstanding["refusal"]} if outstanding["refusal"] else ack
-    policy_call(policy, "acknowledge", feedback, latency)
+    try:
+        policy_call(policy, "acknowledge", feedback, latency)
+    finally:
+        record_exchanges(policy, event)
     return ack["applied_ms"]
 
 
@@ -450,6 +461,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
         remaining = max(deadline - time.time(), 0)
         observation = mailbox.wait_observation(
             battle=battle, after_seq=seq, timeout=min(config["observation_timeout"], remaining))
+        received_monotonic = time.monotonic()
         if observation.get("awaiting_orders") or observation.get("speed", 1) != 1:
             raise ProtocolError("WH3 observation is not from an unpaused 1x battle")
         seq = observation["seq"]
@@ -574,7 +586,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
                   or observation["time_ms"] - logged_ms >= config["observe_ms"])
         if logged:
             event("observation", observation=basis, since_previous_applied_ms=since,
-                  decision_time_ms=observation["time_ms"])
+                  decision_time_ms=observation["time_ms"], received_monotonic=received_monotonic)
             if invalid:
                 event("invalid", **invalid)
         say = caption(basis, behavior, orders) if config.get("show") else None

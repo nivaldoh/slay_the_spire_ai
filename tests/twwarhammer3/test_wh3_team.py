@@ -1,0 +1,405 @@
+"""Agreed scripted-team contract: hand-declared ownership and controlled worker order.
+
+These checks exercise real Python components, not live movement or policy strength.
+"""
+import json
+from concurrent.futures import Future
+from copy import deepcopy
+from threading import Event
+
+import pytest
+from check_wh3_team import assess
+from test_wh3_play import CONFIG, FakeMailbox
+from wh3_fixtures import bridge_observation
+
+from twwarhammer3.battle import digest, play, team
+
+
+def state(seq=1, time_ms=10000, **changes):
+    observation = bridge_observation(seq, time_ms, **changes)
+    observation["friendly"] = [
+        {"id": "f2", "type": team.SWORD, "x": 0, "z": 0, "bearing": 0, "men": 100,
+         "state": ["idle"], "target": "hidden", "target_dead": True},
+        {"id": "f1", "type": team.KNIGHT, "x": 20, "z": 0, "bearing": 0, "men": 60,
+         "state": ["idle"], "target": "e1"},
+    ]
+    observation["terrain"] = {"rows": ["...", "..."], "cell_m": 32, "x0": 0, "z0": 0,
+                              "bounds": {"min_x": -50, "max_x": 50, "private": 99}}
+    return observation
+
+
+def move(unit):
+    return {"unit": unit, "type": "move", "x": 10, "z": 20, "run": True}
+
+
+class Script:
+    def __init__(self, orders=None):
+        self.orders = orders
+        self.inputs, self.feedback = [], []
+        self.closed = False
+
+    def decide(self, observation):
+        self.inputs.append(observation)
+        return self.orders if self.orders is not None else [move(observation["friendly"][0]["id"])]
+
+    def metadata(self):
+        return {"type": "test_script"}
+
+    def acknowledge(self, ack, latency):
+        self.feedback.append((ack, latency))
+
+    def close(self):
+        self.closed = True
+
+
+class Workers:
+    """Complete chosen real member calls without relying on thread timing."""
+    def __init__(self):
+        self.tasks = []
+
+    def submit(self, fn, *args):
+        future = Future()
+        self.tasks.append((future, fn, args))
+        return future
+
+    def finish(self, index):
+        future, fn, args = self.tasks[index]
+        try:
+            future.set_result(fn(*args))
+        except Exception as exc:
+            future.set_exception(exc)
+
+    def shutdown(self, wait):
+        for index, (future, _, _) in enumerate(self.tasks):
+            if not future.done():
+                self.finish(index)
+
+
+@pytest.fixture
+def make_team():
+    policies = []
+
+    def make(a=None, b=None, **kwargs):
+        a, b = a or Script(), b or Script()
+        workers = Workers()
+        policy = team.TeamPolicy({"infantry": (team.SWORD, a), "cavalry": (team.KNIGHT, b)},
+                                 executor=workers, **kwargs)
+        policies.append(policy)
+        return policy, workers, a, b
+
+    yield make
+    for policy in policies:
+        if not policy.closed:
+            policy.close()
+
+
+def ack(policy, *, applied=13400, results=None):
+    policy.acknowledge({"request": "r1", "applied_ms": applied,
+                        "results": results if results is not None else []},
+                       {"delay_ms": 400, "think_s": .001, "roundtrip_s": .5})
+
+
+def test_partition_and_deep_public_inputs_use_types_not_positions(make_team):
+    policy, workers, a, b = make_team()
+    raw = state()
+    raw.update(orders={"secret": "teammate feedback"}, evaluation={"hidden": 20}, setup={"x": 1})
+    policy.decide(raw)
+    workers.finish(0)
+    workers.finish(1)
+    assert policy.members["infantry"].unit == "f2"
+    assert policy.members["cavalry"].unit == "f1"
+    assert a.inputs[0]["friendly"][0]["id"] == "f2"
+    assert a.inputs[0]["allies"][0]["id"] == "f1"
+    assert "target" not in a.inputs[0]["friendly"][0]
+    assert a.inputs[0]["allies"][0]["target"] == "e1"
+    hidden = deepcopy(raw)
+    hidden.update(job="different", orders={"other": 1}, evaluation={"hidden": 200}, final={"x": 1})
+    hidden["friendly"][0].update(target="another_unseen", target_dead=False)
+    hidden["terrain"]["bounds"]["private"] = 0
+    assert team.project(hidden, "f2") == a.inputs[0]
+    original_b = deepcopy(b.inputs[0])
+    a.inputs[0]["allies"][0]["state"].append("routed")
+    a.inputs[0]["terrain"]["rows"][0] = "xxx"
+    assert b.inputs[0] == original_b
+    assert raw["friendly"][1]["state"] == ["idle"]
+    assert raw["terrain"]["rows"] == ["...", "..."]
+    event = next(e for e in policy.drain_events() if e["event"] == "input")
+    assert event["observation"]["terrain"]["rows"] == ["...", "..."]
+
+
+@pytest.mark.parametrize("roster", [[], [team.SWORD], [team.SWORD, team.SWORD],
+                                    [team.SWORD, team.KNIGHT, team.SWORD]])
+def test_ambiguous_or_unexpected_rosters_refuse_before_workers(make_team, roster):
+    policy, workers, _, _ = make_team()
+    observation = state()
+    observation["friendly"] = [{"id": f"f{i}", "type": kind} for i, kind in enumerate(roster)]
+    with pytest.raises(team.TeamHarnessError):
+        policy.decide(observation)
+    assert not workers.tasks
+
+
+@pytest.mark.parametrize("bad", [[move("f1")], [{**move("f2"), "queue": True}],
+                                  [{"unit": "army", "type": "ability", "ability": "x"}]])
+def test_local_refusal_does_not_suppress_peer_or_invent_engine_time(make_team, bad):
+    policy, workers, a, b = make_team(Script(bad))
+    policy.decide(state())
+    workers.finish(0)
+    workers.finish(1)
+    assert policy.decide(state(2, 11000)) == [move("f1")]
+    assert policy.metadata()["member"] == "cavalry"
+    assert len(a.feedback) == 1
+    refusal, timing = a.feedback[0]
+    assert refusal["results"][0]["ok"] is False
+    assert "applied_ms" not in refusal and "delay_ms" not in timing
+    assert timing["source"] == "local" and not b.feedback
+    ack(policy)
+    assert b.feedback[0][0]["request"] == "r1"
+
+
+def test_indices_recipient_original_age_fairness_and_transport_overage(make_team):
+    now = [0.0]
+    orders = [move("f2"), {"unit": "f2", "type": "attack", "target": "e1", "queue": True}]
+    policy, workers, a, b = make_team(Script(orders), clock=lambda: now[0])
+    policy.decide(state())
+    now[0] = .2
+    workers.finish(0)
+    assert policy.decide(state(2, 13000)) == orders
+    workers.finish(1)  # completes while A awaits feedback
+    results = [{"index": 1, "unit": "f2", "ok": True},
+               {"index": 2, "unit": "f2", "ok": False, "error": "blocked"}]
+    now[0] = 3.5
+    ack(policy, results=results)
+    assert a.feedback[0][0]["results"] == results and not b.feedback
+    assert a.feedback[0][1]["delay_ms"] == 3400  # not the dispatcher's 400
+    assert a.feedback[0][1]["roundtrip_s"] == 3.5
+    assert a.feedback[0][1]["transport_overage"] is False
+    feedback = next(e for e in policy.drain_events() if e["event"] == "feedback")
+    assert feedback["latency"]["delay_ms"] == 3400
+    assert policy.decide(state(3, 14000)) == [move("f1")]
+    ack(policy, applied=15000)
+    assert b.feedback[0][1]["transport_overage"] is True
+    workers.finish(2)  # A is ready again, but cannot overtake B above
+    assert policy.decide(state(4, 14500)) == orders
+
+
+def test_expiry_boundary_and_outer_validation_feedback(make_team):
+    policy, workers, a, _ = make_team()
+    policy.decide(state())
+    workers.finish(0)
+    assert policy.decide(state(2, 15000)) == []
+    assert "expired" in a.feedback[0][0]["validation_error"]
+    assert "applied_ms" not in a.feedback[0][0]
+    workers.finish(2)
+    policy.decide(state(3, 15100))
+    policy.acknowledge({"request": "r", "applied_ms": 15200,
+                        "validation_error": "outer guard", "results": []}, {})
+    assert a.feedback[1][1]["source"] == "outer_validation"
+    assert "applied_ms" not in a.feedback[1][0] and "delay_ms" not in a.feedback[1][1]
+
+
+def test_idle_poll_and_member_noop_have_different_feedback(make_team):
+    policy, workers, a, b = make_team(Script([]))
+    assert policy.decide(state()) == []
+    ack(policy)
+    assert not a.feedback and not b.feedback
+    workers.finish(0)
+    assert policy.decide(state(2, 11000)) == []
+    assert policy.metadata()["member"] == "infantry"
+    assert len(workers.tasks) == 2
+    with pytest.raises(team.TeamHarnessError, match="awaiting"):
+        policy.decide(state(3, 12000))
+    ack(policy)
+    assert len(a.feedback) == 1 and not b.feedback
+
+
+@pytest.mark.parametrize("change", ["battle", "id", "read_error"])
+def test_partition_never_rebinds_or_accepts_incomplete_engine_units(make_team, change):
+    policy, _, _, _ = make_team()
+    policy.decide(state())
+    observation = state(2, 11000)
+    if change == "battle":
+        observation["battle"] = "new_battle"
+    elif change == "id":
+        observation["friendly"][0]["id"] = "replacement"
+    else:
+        observation["friendly"][0] = {"id": "f2", "error": "read failed"}
+    with pytest.raises(team.TeamHarnessError):
+        play.policy_call(policy, "decide", observation)
+    assert policy.members["infantry"].unit == "f2"
+
+
+def test_equal_completion_times_do_not_keep_favoring_one_member(make_team):
+    policy, workers, _, _ = make_team(clock=lambda: 1.0)
+    policy.decide(state())
+    workers.finish(0)
+    workers.finish(1)
+    policy.decide(state(2, 10100))
+    assert policy.metadata()["member"] == "infantry"
+    ack(policy)
+    # B expires locally while A restarts; both receive the new snapshot.
+    assert policy.decide(state(3, 15000)) == []
+    workers.finish(2)
+    workers.finish(3)
+    policy.decide(state(4, 15100))
+    assert policy.metadata()["member"] == "cavalry"
+
+
+@pytest.mark.parametrize("slow_name", ["infantry", "cavalry"])
+def test_real_workers_dispatch_and_ack_fast_member_before_slow_release(tmp_path, slow_name):
+    stop, started = Event(), Event()
+    fast = Script()
+
+    class Slow(Script):
+        def decide(self, observation):
+            started.set()
+            assert stop.wait(5), "test failed to clean up its worker"
+            return super().decide(observation)
+
+    slow = Slow()
+    fast_name = "cavalry" if slow_name == "infantry" else "infantry"
+    policy = team.TeamPolicy({"infantry": (team.SWORD, slow if slow_name == "infantry" else fast),
+                              "cavalry": (team.KNIGHT, slow if slow_name == "cavalry" else fast)},
+                             stop=stop)
+
+    class Mailbox(FakeMailbox):
+        def wait_observation(self, **kwargs):
+            seq = self.queue[0]["seq"]
+            if seq == 2:
+                assert started.wait(2)
+                policy.members[fast_name].future.result(timeout=2)
+            if seq == 3:
+                assert self.requests[-1][2] == [move("f1" if fast_name == "cavalry" else "f2")]
+                assert not policy.members[slow_name].future.done()
+            if seq == 4:
+                assert fast.feedback and not stop.is_set()
+                assert not slow.feedback
+            return super().wait_observation(**kwargs)
+
+    mailbox = Mailbox([state(0, 0), state(1, 1000), state(2, 2000, ack=True),
+                       state(3, 3000, ack=True), state(4, 4000, result="won")])
+    try:
+        result = play.play_episode(tmp_path / "e", {**CONFIG, "interval_ms": 0},
+                                   lambda: policy, mailbox, not_battle=None)
+    finally:
+        stop.set()
+    assert result["status"] == "won", result
+    assert fast.closed and slow.closed and policy.closed
+    assert result["card"]["timing"] == "asynchronous"
+    records = [json.loads(line) for line in (tmp_path / "e/trace.jsonl").read_text().splitlines()]
+    dispatch = next(e for e in records if e["kind"] == "decision" and e["orders"])
+    feedback = next(e for e in records if e["kind"] == "team" and e["event"] == "feedback")
+    assert dispatch["behavior"]["decision"] == feedback["decision"]
+    assert dispatch["request"] == feedback["ack"]["request"]
+    assert any(e.get("event") == "discarded" and e["member"] == slow_name for e in records)
+    assert "member age 1.5s" in digest.digest(tmp_path / "e")
+
+
+@pytest.mark.parametrize("fault", ["member", "partition"])
+def test_worker_exception_stops_once_and_harness_fault_is_distinct(tmp_path, make_team, fault):
+    class Broken(Script):
+        def decide(self, observation):
+            self.inputs.append(observation)
+            raise ValueError("broken member")
+
+    policy, workers, a, _ = make_team(Broken())
+
+    class Mailbox(FakeMailbox):
+        def wait_observation(self, **kwargs):
+            if self.queue[0]["seq"] == 2:
+                workers.finish(0)
+            return super().wait_observation(**kwargs)
+
+    first = state(1, 1000)
+    if fault == "partition":
+        first["friendly"].pop()
+    mailbox = Mailbox([state(0, 0), first, state(2, 2000, ack=True)])
+    result = play.play_episode(tmp_path / "e", {**CONFIG, "interval_ms": 0},
+                               lambda: policy, mailbox, not_battle=None)
+    if fault == "member":
+        assert result["status"] == "policy_failure" and len(a.inputs) == 1
+        assert result["failure"]["member"] == "infantry"
+        assert "broken member" in result["error"]
+    else:
+        assert result["status"] == "unsupported_or_invalid" and not a.inputs
+    assert a.closed
+
+
+@pytest.mark.parametrize("before_send", [True, False])
+def test_terminal_disposes_unsent_or_unacknowledged_selection_and_closes_both(
+        tmp_path, make_team, before_send):
+    class BadClose(Script):
+        def close(self):
+            self.closed = True
+            raise ValueError("close failed")
+
+    policy, workers, a, b = make_team(BadClose())
+
+    class Mailbox(FakeMailbox):
+        def wait_observation(self, **kwargs):
+            if self.queue[0]["seq"] == 2:
+                workers.finish(0)
+            return super().wait_observation(**kwargs)
+
+        def read_observation(self):
+            return {"result": "won"} if before_send and policy.selected else None
+
+    mailbox = Mailbox([state(0, 0), state(1, 1000), state(2, 2000, ack=True),
+                       state(3, 3000, result="won")])
+    result = play.play_episode(tmp_path / "e", {**CONFIG, "interval_ms": 0},
+                               lambda: policy, mailbox, not_battle=None)
+    assert result["engine_ending"]["result"] == "won"
+    assert result["status"] == "policy_failure" and a.closed and b.closed
+    assert not a.feedback and not b.feedback
+    assert len(mailbox.requests) == (1 if before_send else 2)
+    events = [json.loads(line) for line in (tmp_path / "e/trace.jsonl").read_text().splitlines()]
+    discarded = [e for e in events if e.get("event") == "discarded"]
+    assert {e["member"] for e in discarded} == {"infantry", "cavalry"}
+    assert any(e["selected"] for e in discarded)
+    fresh, _, _, _ = make_team()
+    assert fresh.battle is None and fresh.selected is None and not fresh.events
+
+
+@pytest.mark.parametrize("motion,received,passed", [(["moving"], 12, True),
+                                                    (["idle"], 12, False),
+                                                    (["moving"], 13, False)])
+def test_live_witness_rejects_formation_settling_and_late_motion(motion, received, passed):
+    fast_ack = {"request": "r2", "applied_ms": 10500,
+                "results": [{"index": 1, "unit": "f1", "ok": True}]}
+    slow_ack = {"request": "r3", "applied_ms": 13500,
+                "results": [{"index": 1, "unit": "f2", "ok": True}]}
+    events = [
+        {"kind": "team", "event": "partition", "ownership": {"infantry": "f2", "cavalry": "f1"}},
+        {"kind": "team", "event": "completed", "decision": "infantry-1",
+         "started": 10, "completed": 13},
+        {"kind": "decision", "request": "r2", "orders": [move("f1")],
+         "behavior": {"member": "cavalry", "decision": "cavalry-1", "source_ms": 10000}},
+        {"kind": "team", "event": "feedback", "decision": "cavalry-1", "source": "engine",
+         "ack": fast_ack,
+         "latency": {"delay_ms": 500}},
+        {"kind": "decision", "request": "r3", "orders": [move("f2")],
+         "behavior": {"member": "infantry", "decision": "infantry-1", "source_ms": 10000}},
+        {"kind": "team", "event": "feedback", "decision": "infantry-1", "source": "engine",
+         "ack": slow_ack, "latency": {"delay_ms": 3500}},
+    ]
+    samples = [
+        {"received": 11, "observation": {"orders": fast_ack,
+         "friendly": [{"id": "f1", "type": team.KNIGHT, "x": 10, "z": 0, "state": ["idle"]},
+                      {"id": "f2", "type": team.SWORD, "x": 0, "z": 0, "state": ["idle"]}]}},
+        {"received": received, "observation": {
+         "friendly": [{"id": "f1", "x": 10, "z": 1, "state": motion}]}},
+        {"received": 30, "observation": {"orders": slow_ack,
+         "friendly": [{"id": "f1", "x": 10, "z": 1, "state": ["idle"]}]}},
+    ]
+    for sample in samples:
+        sample["observation"].update(phase="Deployed", time_ms=sample["received"] * 1000)
+    assert assess(events, samples, "infantry")["passed"] is passed
+    # A self-consistent swapped adapter partition must fail against raw unit types.
+    events[0]["ownership"] = {"infantry": "f1", "cavalry": "f2"}
+    with pytest.raises(AssertionError):
+        assess(events, samples, "infantry")
+
+
+def test_bad_team_configuration_is_a_harness_failure_before_game_wait(tmp_path):
+    result = play.play_episode(tmp_path / "e", CONFIG, lambda: team.TeamPolicy({}),
+                               FakeMailbox([]), not_battle=None)
+    assert result["status"] == "unsupported_or_invalid"

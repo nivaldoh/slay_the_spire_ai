@@ -105,6 +105,8 @@ def episode_digest(episode: Path, decisions: bool = True) -> str:
         f" delay mean {result.get('delay_s')} s max {max(delays, default=0) / 1000:.1f} s;"
         f" ${llm.get('usd', 0):.4f}{policy}{_measures(result)}{error}",
     ]
+    if (result.get("card", {}).get("disclosure") or {}).get("input_version") == "script-team-v1":
+        lines.append("team: header decisions/delay describe dispatcher polls; member timings below")
     observation, last, notes, refused = None, None, None, False
     items, pending = [], {}
     for raw in (episode / "trace.jsonl").open():
@@ -122,6 +124,8 @@ def episode_digest(episode: Path, decisions: bool = True) -> str:
             if not record["orders"] and not behavior.get("reason"):
                 continue
             reason = f" | {behavior['reason']}" if behavior.get("reason") else ""
+            if behavior.get("type") == "team":
+                reason += (f" | {behavior['decision']} from {behavior['source_ms'] / 1000:.1f}s")
             plan = (f"  plan ({behavior['plan_age_s']:.1f} s old): "
                     f"{describe_plan(behavior['plan'])}" if "plan" in behavior else "")
             state = strength(observation) + objectives(observation)
@@ -142,6 +146,15 @@ def episode_digest(episode: Path, decisions: bool = True) -> str:
         elif kind == "invalid":
             items.append(f"        invalid: {record['error']}")
             refused = True  # its decision sent no orders, but not by choice
+        elif kind == "team" and record["event"] == "feedback":
+            latency = record["latency"]
+            # Quiet member no-ops are still in the trace, but do not crowd the digest.
+            if record["ack"].get("results") or record["source"] != "engine":
+                age = (f"; member age {latency['delay_ms'] / 1000:.1f}s"
+                       if "delay_ms" in latency else "")
+                items.append(f"        {record['decision']}: {record['source']} feedback{age}"
+                             f"; worker {latency['think_s']:.3f}s"
+                             f"; {record['ack'].get('validation_error', '')}".rstrip("; "))
     if decisions:
         lines += _decision_lines(items)
     if last:
