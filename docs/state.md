@@ -92,9 +92,9 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
    [latency program's](twwarhammer3/latency.md#owner-decisions) three: `c1` as evidence, the scored route, the $20 stop.
 6. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (whether
    they may train a model; 25,503 rows excluded), GLM-5.3, or rejection-sampled Qwen3.6.
-7. Whether Step 5 preview has open weights, and whether to request token log-probabilities,
-   a sampler seed or explicit GLM/Kimi sampling before the next model screens
-   ([gaps](posttraining.md#beyond-supervised-fine-tuning)).
+7. Whether to request token log-probabilities, a sampler seed or explicit GLM/Kimi sampling
+   before the next model screens ([gaps](posttraining.md#beyond-supervised-fine-tuning)); Step 5
+   preview's weights are public ([terms](posttraining.md#provider-terms)).
 8. `wh3-rules-v21-attack-path` (one rules sentence: attacks take the engine's route; move first
    and queue the attack): recommended, its own `llm_rules` version after item 2's, or drop it.
    Whether to keep `commander` (unplayed since v4); more OpenAI budget (the $52 cap refuses Sol).
