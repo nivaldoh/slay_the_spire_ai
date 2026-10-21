@@ -258,6 +258,12 @@ cohort. The local branch `wh3-keep-engine-ending` stores the engine's ending bef
 acknowledgement and keeps it through a `close()` failure, without changing which result
 counts.
 
+Check row to add to AGENTS.md on the owner's yes (proposed): "WH3 engine ending kept after
+a late controller failure: `uv run --locked pytest -ra
+tests/twwarhammer3/test_wh3_play.py::test_a_controller_failure_after_the_ending_keeps_the_engine_result`
+(fails on the parent of `b527584`); no game execution claim." The recount behind the rule
+reruns with `uv run --locked python runs/twwarhammer3/away-20261021/failures.py`.
+
 ## Research that changes the design
 
 Selective primary-source review, 2026-10-20; WH3 uses here are proposals:
