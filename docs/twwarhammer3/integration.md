@@ -67,6 +67,14 @@ declared scenario sets its own AI stats modifier in the lobby
   `*.lua` runs at top level under `pcall` (no `execute_mods` outside campaign), once per
   frontend or battle load, and each load is logged in `<game>/lua_mod_log.txt` ("Mod
   [...] loaded successfully" or the error).
+- In a campaign the loader also loads `/script/_lib/mod/` and, on the first tick, calls
+  under `pcall` every global function named after a loaded file
+  (`script/_lib/lib_mod_loader.lua`, `core_object:execute_mods` in `lib_core.lua`, read from
+  the extracted game scripts). `twwarhammer3_imagery` is one, so an owner's campaign with
+  our mod list runs it with the campaign context. A simulation under Lua 5.1 stops in
+  `save()` on a nil battle id before any file opens; the game would log the error in
+  `lua_mod_log.txt` and go on (2026-10-21; unverified live). Renaming that global so it no
+  longer matches its file would keep the call out of campaigns.
 - Lua 5.1 environment: `io.open` on absolute Windows paths, `os.remove` and `os.rename`
   work in both scripts, as do `tm:repeat_real_callback(fn, ms, name)` in the frontend and
   `bm:repeat_real_callback` in battle. There is no `math.huge`. `loadstring` chunks run in
