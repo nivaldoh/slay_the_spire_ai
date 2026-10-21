@@ -157,7 +157,12 @@ comparison between models.
    `runs/twwarhammer3/away-20261021/garbled_all.txt`), a reason over 300 characters marks 9
    replies in 5 episodes: 8 garbled Decart replies in 4 GLM launches of this night, two of
    them wins (the knights and wolves battles), and one coherent 314-character Qwen reason.
-   Rerunning flagged launches would discard those two wins.
+   Rerunning flagged launches would discard those two wins. An independent hunt by other
+   signals (script mix, junk words, word salad, symbols, whitespace runs;
+   `runs/twwarhammer3/away-20261021/garbled-hunt/`) found 15 garbled attempts in 6 jobs. The
+   300-character rule misses six: Decart and Baidu attempts in `bench-b19-s4-glm-20261017`
+   (the three Decart ones are its episode 1 "no valid reply" forfeit) and a Step 5 whitespace
+   flood. It also lists 26 GLM replies repeating one order 5-151 times.
 5. **The 20 v 20.** One launch each of Qwen and GLM worked technically; order age (Qwen
    18 s) and per-decision cost (GLM) both argue for a planner-executor harness before more
    large battles; the owner's harness-comparison direction (2026-10-18) fits here.
@@ -174,7 +179,8 @@ comparison between models.
    (`runs/twwarhammer3/away-20261021/reply_screen.py`): "the reply's reason is over 300
    characters", the harness's own reason cap, flags exactly the seven among the export's
    3,113 replies; 40 spaces in a row flags six of them. The same rule could flag serving
-   faults in a report (item 4). Another backend's garbage may look different.
+   faults in a report (item 4). It is not general: on other nights it misses garbage with
+   short reasons (item 4's hunt).
 
 ## Risks
 
