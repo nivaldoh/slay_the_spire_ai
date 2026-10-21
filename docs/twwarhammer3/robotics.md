@@ -37,10 +37,10 @@ and [engine facts](integration.md#battle). A useful robotics benchmark need not 
 the current structured-state interface already isolates several control problems. Screenshot
 input would create a separate perception and information-boundary experiment.
 
-The latest [b40 round](log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40) gives a reason
-to investigate execution. The revised scripted chariot controller won 4/5 battles at
-5 s added observation age / 5 s decision interval, and 4/5 at 8 s / 8 s. GLM-5.3 low with
-the corrected prompt won 0/10 at younger information ages. These small, unverified samples
+The latest chariot round ([b40](log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40))
+gives a reason to investigate execution. The revised scripted chariot controller won 4/5
+battles at 5 s added observation age / 5 s decision interval, and 4/5 at 8 s / 8 s.
+GLM-5.3 low with the corrected prompt won 0/10 at younger information ages. These small, unverified samples
 weaken a latency-only explanation. Withdrawal geometry and repeated changes of orders are
 hypotheses suggested by the traces; their causal effects have not been isolated.
 
@@ -119,9 +119,9 @@ execution, but if the executor already knows cycle charging, a win says little a
 planning. Add a later task where targets compete or the tactic must change. A fixed-plan
 baseline should fail for a stated reason before calling that task a planning test.
 Also compare the fields each component actually receives: a sanitized observation and a
-rendered model prompt need not expose the same information. The
-[design rules](tactic-cards.md#design-rules-from-s1-s11) already
-flags the commander field available to scripted controllers but absent from model inputs.
+rendered model prompt need not expose the same information. [Candidate change
+9](controllers.md#candidate-changes-for-the-next-version) already flags the commander flag
+that scripts read and model prompts omit.
 
 ## 3 Treat stale plans and action commitment as control problems
 

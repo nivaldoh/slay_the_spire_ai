@@ -24,14 +24,18 @@ runs/
   twwarhammer3/       Total War: WARHAMMER III
     llm-spend.jsonl   WH3 OpenAI spend ledger
     openrouter-spend.jsonl  WH3 OpenRouter spend ledger; independent of the OpenAI cap
-    battle/           One directory per `twwarhammer3 play` job, with <job>.log beside it.
+    battle/           One directory per `twwarhammer3 play` job. A job started by hand has
+                      <job>.log beside it; a queued job (scripts/wh3_queue.py) usually logs
+                      to its plan's .log under calibration/ instead.
                       Version jobs are <policy>[-<model>]-v<version>-<scenario>-<date>
                       (e.g. commander-luna-v2-rand-322117462-20261013); the version after
-                      -v (15, 1.2) fills the results register's harness column. Other
-                      names leave it blank, and `stats` groups them by source revision:
-                      attack-... (the first scripted baselines), bench-b<N>-... and
-                      bench-g1-... (benchmark screens and calibration), smoke-... (battle
-                      types), probe-... (engine checks), visual-sol-low-20261015.
+                      -v (15, 1.2) fills the results register's harness column. Names
+                      without a -v<N>- part leave it blank (bench-b13-glm-v20-... and
+                      bench-b40-...-v21-... record 20 and 21), and `stats` groups those by
+                      source revision: attack-... (the first scripted baselines),
+                      bench-b<N>-..., bench-c1-... and bench-g1-... (benchmark screens and
+                      calibration), smoke-... (battle types), probe-... (engine checks),
+                      visual-sol-low-20261015.
     visual-probes/    Scripted recorder, camera and capture checks (play jobs) and their
                       audits
     calibration/      Benchmark queue plans and their state files, logs, stop and
@@ -61,7 +65,8 @@ included, wrote `system_prompt.md`); and one subdirectory per
 run or episode with the raw trace and result. A Spire `run-NNNN/` is one game launch and
 holds its game logs. A WH3 `episode-NNNN/` is one battle (its `mod.log` beside the trace);
 the game is launched once per job, so `game.log`, `menu.log`, `map_list.txt`,
-`army_player.txt` and `cards_slot<N>.txt` (the recruitment cards each army's race offered)
+`army_player.txt` and, in jobs before `e32b1b5` (2026-10-20) that listed their units,
+`cards_slot<N>.txt` (the recruitment cards each army's race offered)
 sit in the job directory,
 and later episodes are rematches of the same battle. WH3 episodes can also contain
 `replay.jsonl` (public 1 Hz frames), `unit_names.json`, `imagery.json`, `stills.json`
