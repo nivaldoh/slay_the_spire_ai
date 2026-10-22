@@ -216,16 +216,21 @@ def test_a_member_never_sees_its_teammate_feedback_notes_or_the_global_ack(tmp_p
     rejected = {"request": "r1", "applied_ms": 11500,
                 "results": [{"index": 1, "unit": "f2", "ok": False, "error": "XYZZY"}]}
     policy.acknowledge(rejected, {"delay_ms": 500, "think_s": .1})
-    workers.finish(0)  # cavalry attacks e1, out of sight when its batch is checked
+    workers.finish(0)  # cavalry attacks e1, out of sight by dispatch: the engine refuses it
     later = battle(3, 12000, enemy=False)
     later["friendly"][0].update(  # f2's order state, which only its owner may see
         dest=[-20, 90], command_queue=[ADVANCE], attack_mode="melee",
         navigation={"rejected": {"x": 400, "z": 400}, "alternatives": [], "sampled_ms": 11000})
-    policy.decide({**later, "orders": rejected})
+    assert policy.decide({**later, "orders": rejected}) == [
+        {"unit": "f1", "type": "attack", "target": "e1"}]
+    policy.acknowledge({"request": "r2", "applied_ms": 12100, "results": [
+        {"index": 1, "unit": "f1", "ok": False, "error": "target_not_visible"}]},
+        {"delay_ms": 2100, "think_s": .1})
+    policy.decide({**later, "seq": 4, "time_ms": 12200, "orders": rejected})
     workers.finish(2)
     workers.finish(3)
     seen = cavalry.metadata()["prompt"]
-    assert "Last orders: f1 #1 rejected: f1: target 'e1' is not visible." in seen
+    assert "Last orders: f1 #1 rejected: target_not_visible." in seen
     assert "XYZZY" not in seen and "QQ" not in seen and "heading to" not in seen
     assert "f2 #1 rejected: XYZZY" in line.metadata()["prompt"]
     assert "QQ" in line.metadata()["prompt"] and "heading to (-20, 90)" in line.metadata()["prompt"]
@@ -233,6 +238,39 @@ def test_a_member_never_sees_its_teammate_feedback_notes_or_the_global_ack(tmp_p
               if e["event"] == "input" and e["member"] == "cavalry"]
     assert len(inputs) == 2 and "XYZZY" not in json.dumps(inputs)
     assert not inputs[1]["allies"][0].keys() & {"dest", "command_queue", "navigation"}
+
+
+def test_a_batch_is_checked_on_its_members_source_not_the_dispatch_state(tmp_path):
+    """As the single controller's: an enemy gone from sight by dispatch is the engine's to
+    refuse, so the member's other orders still go."""
+    orders = [move("f2"), {"unit": "f2", "type": "attack", "target": "e1", "queue": True}]
+    policy, workers, infantry, _ = make_team(Script(orders), Script([]))
+
+    class Mailbox(FakeMailbox):
+        def wait_observation(self, **kwargs):
+            if self.queue[0]["seq"] == 2:
+                workers.finish(0)  # decided while e1 was in sight
+            return super().wait_observation(**kwargs)
+
+    mailbox = Mailbox([state(0, 0), state(1, 1000), state(2, 2000, ack=True, enemy=False),
+                       state(3, 3000, ack=True, enemy=False), state(4, 4000, result="won")])
+    result = play.play_episode(tmp_path / "e", {**CONFIG, "interval_ms": 0},
+                               lambda: policy, mailbox, not_battle=None)
+    assert result["status"] == "won", result
+    assert [request[2] for request in mailbox.requests if request[2]] == [orders]
+    assert infantry.feedback[0][1]["source"] == "engine"
+
+
+@pytest.mark.parametrize("owner", [None, "cavalry"])
+def test_only_a_member_without_the_army_and_with_every_unit_destroyed_is_not_asked(owner):
+    policy, workers, _, _ = make_team(army_owner=owner)
+    raw = state()
+    raw["friendly"][1]["men"] = 0  # the Knights
+    policy.decide(raw)
+    assert len(workers.tasks) == (2 if owner else 1)
+    raw["friendly"][1]["men"] = 30  # a living unit gives it something to order again
+    policy.decide({**raw, "seq": 2, "time_ms": 11000})
+    assert len(workers.tasks) == 2
 
 
 def test_cleanup_is_bounded_sends_nothing_new_and_leaves_a_running_member_open(
@@ -307,29 +345,30 @@ def test_each_member_is_charged_counted_and_labelled_as_itself(tmp_path):
 
     class Mailbox(FakeMailbox):
         def wait_observation(self, **kwargs):
-            # Both first calls end before seq 2, where e1 is hidden, so the cavalry's attack
-            # is refused locally; its second call ends before seq 3, the line's before 4.
-            for index in {2: (0, 1), 3: (2,), 4: (3,)}.get(self.queue[0]["seq"], ()):
+            # Both first calls end before seq 2, where e1 is hidden: the cavalry's attack is
+            # still sent, decided while e1 was in sight. Its second call ends before seq 4.
+            for index in {2: (0, 1), 4: (2,), 5: (3,)}.get(self.queue[0]["seq"], ()):
                 workers.finish(index)
             return super().wait_observation(**kwargs)
 
     mailbox = Mailbox([battle(0, 0), battle(1, 1000), battle(2, 2000, ack=True, enemy=False),
-                       battle(3, 3000, ack=True), battle(4, 4000, result="won")])
+                       battle(3, 3000, ack=True), battle(4, 4000, ack=True),
+                       battle(5, 5000, result="won")])
     result = play.play_episode(tmp_path / "e", {**CONFIG, "policy": "team_llm_rules",
                                                 "model": "gpt-6-luna", "effort": "low",
                                                 "interval_ms": 0},
                                lambda: policy, mailbox, not_battle=None)
     assert result["status"] == "won" and [r[2] for r in mailbox.requests] == [
-        [], [ADVANCE], []]
+        [], first["cavalry"], [ADVANCE], []]
     cost = {name: 2 * usage_cost("gpt-6-luna", usage[name]) for name in usage}
-    refused = {"cavalry": 1, "line": 0}  # the cavalry's first batch
     assert {name: (row["calls"], row["usd"], row["local_refusals"])
             for name, row in result["members"].items()} == {
-        name: (2, pytest.approx(cost[name]), refused[name]) for name in usage}
+        name: (2, pytest.approx(cost[name]), 0) for name in usage}
     assert result["llm"]["usd"] == pytest.approx(sum(cost.values()))
     assert len((tmp_path / "spend.jsonl").read_text().splitlines()) == 4
-    assert (result["decisions"], result["invalid"], result["delays_ms"]) == (2, 1, [1500])
-    assert result["polls"]["decisions"] == 3 and result["polls"]["delays_ms"] == [500] * 2
+    # Both first batches came from the 1 s state; acknowledged at 2.5 s and 3.5 s.
+    assert (result["decisions"], result["invalid"], result["delays_ms"]) == (2, 0, [1500, 2500])
+    assert result["polls"]["decisions"] == 4 and result["polls"]["delays_ms"] == [500] * 3
     events = [json.loads(line) for line in (tmp_path / "e/trace.jsonl").open()]
     exchanges = sorted((e["member"], e["prompt"]) for e in events
                        if e["kind"] == "model_exchange")
@@ -337,13 +376,12 @@ def test_each_member_is_charged_counted_and_labelled_as_itself(tmp_path):
         ("cavalry" if "Your units:\n- f1 " in b["input"][0]["content"] else "line",
          b["input"][0]["content"]) for b in bodies)
     text = digest.digest(tmp_path / "e")
-    assert "2 decisions, 1 invalid" in text and "count member batches" in text
-    assert text.splitlines()[-2:] == ["notes (line): line NOTES", "notes (cavalry): cavalry NOTES"]
+    assert "2 decisions" in text and "count member batches" in text
+    assert text.splitlines()[-2:] == ["notes (cavalry): cavalry NOTES", "notes (line): line NOTES"]
     feed = watch.Feed("e")
     lines = [line for event in events for line in feed.lines(event)]
-    assert "        cavalry-1 refused: f1: target 'e1' is not visible" in lines
-    # Its second request was built from the 2 s state and dispatched at 3 s.
-    assert any(line.startswith("    2s -> [cavalry] gpt-6-luna:") for line in lines)
+    # Its second request was built from the 3 s state and dispatched at 4 s.
+    assert any(line.startswith("    3s -> [cavalry] gpt-6-luna:") for line in lines)
     assert feed.usd == pytest.approx(result["llm"]["usd"])
     job = tmp_path / "job"  # report and export do not read member records yet
     job.mkdir()

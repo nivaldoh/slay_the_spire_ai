@@ -42,15 +42,17 @@ first waits 3 s on a stop event that cleanup can wake.
   fresh copies and returns one member's whole batch, so engine feedback indices need no
   remapping. The earliest completed batch goes first; on a tie, not the member chosen last.
   With nothing ready it returns `[]` and no member is charged with a decision; a member's
-  own `[]` is a decision and gets feedback.
-- **Checks before dispatch.** A batch must pass `validate_orders` on the member's own view,
-  so it may give any order to its own units, aim abilities at its teammate's (`allies`) and
-  give army orders only as the army owner, and,
+  own `[]` is a decision and gets feedback. A member other than the army owner whose units
+  are all destroyed is not asked until one of its units has men again.
+- **Checks before dispatch.** A batch must pass `validate_orders` on the view the member
+  decided on, as the single controller's batch is checked on its basis, so it may give any
+  order to its own units, aim abilities at its teammate's (`allies`) and give army orders
+  only as the army owner; the engine refuses each order the battle has made stale since. And,
   when `max_age_ms` is set (5 s for the probes, a probe constant), be younger than that on
   the battle clock. A failing batch gets local feedback with no engine time and the peer's
-  ready batch is still sent. The play loop's validation runs after this as before.
+  ready batch is still sent. The play loop does not check a team's batch again.
 - **Feedback.** `acknowledge` routes results to the selected member with their original
-  indices, tagged `engine`, `outer_validation` or `local`. Latency comes from the member's
+  indices, tagged `engine` or `local`. Latency comes from the member's
   own times: `think_s` from the worker, `roundtrip_s` from input delivery, `delay_ms` as
   engine `applied_ms` minus the member's source time (for a queued order, `applied_ms` is
   queue submission), and `transport_overage` when an age limit is set and reached.
@@ -71,7 +73,7 @@ first waits 3 s on a stop event that cleanup can wake.
   exchanges, tagged with the member, through `drain_exchanges()`; `play.py` drains both
   after each decide and acknowledgement and after cleanup. The `decision` record carries the
   member's own behaviour (its prompt for a model) plus its name and decision ID; its wire
-  `based_on` is the observation the dispatcher checked against, not the member's source, so
+  `based_on` is the observation at dispatch, not the member's source, so
   member ages come from the feedback events. The result's decisions, delays, think times,
   invalid count, spend and calls count member batches (with per-member rows under
   `members`), and `polls` keeps the dispatcher's own. The card says `asynchronous`; `digest`
@@ -133,7 +135,7 @@ fresh launches alternating `DelayInfantry` and `DelayCavalry`, at $0 and within 
 launch passes when:
 - every dispatched order names its member's unit (checked against raw unit types);
 - both first moves get matching successful raw engine acknowledgements, every member
-  feedback comes from the engine (no local or outer-validation refusal), and each member's
+  feedback comes from the engine (no local refusal), and each member's
   age equals the raw engine `applied_ms` minus the time of the raw observation with the
   sequence number the adapter recorded, so a source time that disagrees with it fails;
 - after its acknowledgement, while the delayed worker still runs, the fast unit is moving or

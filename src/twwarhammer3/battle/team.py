@@ -229,7 +229,7 @@ class TeamPolicy:
         orders = policy_call(member.policy, "decide", observation)
         behavior = member.policy.metadata()
         return {"orders": deepcopy(orders), "behavior": deepcopy(behavior),
-                "started": started, "completed": self.clock()}
+                "started": started, "completed": self.clock(), "view": observation}
 
     def _collect(self, name, member):
         """Take a finished call. A forfeit (no valid reply, a provider error) clears it, so
@@ -257,14 +257,14 @@ class TeamPolicy:
         self._event("completed", name, orders=member.ready["orders"],
                     started=member.ready["started"], completed=member.ready["completed"])
 
-    def _validate(self, name, member, observation):
+    def _validate(self, member, observation):
         if (self.max_age_ms is not None
                 and observation["time_ms"] - member.call["source_ms"] >= self.max_age_ms):
             raise IllegalActionError("member reply expired before dispatch")
-        # The member's own view decides what it may order: its units, and the army only
-        # for the army owner (elsewhere a teammate's unit and the army abilities are unknown).
-        validate_orders(member.ready["orders"],
-                        project(observation, member.units, army=name == self.army_owner))
+        # The view the member decided on, as the single controller's batch is checked on its
+        # basis: its units, and the army only for the army owner. The engine refuses each
+        # order the battle has made stale since.
+        validate_orders(member.ready["orders"], member.ready["view"])
 
     def _feedback(self, name, ack, source):
         member = self.members[name]
@@ -298,7 +298,7 @@ class TeamPolicy:
         for name, member in self.members.items():
             if member.ready is not None:
                 try:
-                    self._validate(name, member, observation)
+                    self._validate(member, observation)
                 except IllegalActionError as exc:
                     orders = member.ready["orders"]
                     ack = {"validation_error": str(exc), "results": [
@@ -308,6 +308,8 @@ class TeamPolicy:
                     self._feedback(name, ack, "local")
             if member.call is None:
                 view = project(observation, member.units, army=name == self.army_owner)
+                if name != self.army_owner and all(u.get("men") == 0 for u in view["friendly"]):
+                    continue  # its units are all destroyed: nothing to order, so no call
                 member.count += 1
                 member.call = {"decision": f"{name}-{member.count}", "source_seq": view["seq"],
                                "source_ms": view["time_ms"], "delivered": self.clock()}
@@ -329,10 +331,7 @@ class TeamPolicy:
     def acknowledge(self, ack, latency):
         if self.selected is None:  # an idle adapter poll, not a completed member call
             return
-        source = "outer_validation" if ack.get("validation_error") else "engine"
-        if source != "engine":
-            ack = {key: value for key, value in ack.items() if key != "applied_ms"}
-        self._feedback(self.selected, ack, source)
+        self._feedback(self.selected, ack, "engine")
         self.selected = None
 
     def metadata(self):

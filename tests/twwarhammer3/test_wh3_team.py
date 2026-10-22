@@ -184,19 +184,13 @@ def test_the_oldest_completed_batch_goes_first():
     assert b.feedback and not a.feedback
 
 
-def test_expiry_boundary_and_outer_validation_feedback():
+def test_expiry_boundary():
     policy, workers, a, _ = make_team()
     policy.decide(state())
     workers.finish(0)
     assert policy.decide(state(2, 15000)) == []
     assert "expired" in a.feedback[0][0]["validation_error"]
     assert "applied_ms" not in a.feedback[0][0]
-    workers.finish(2)
-    policy.decide(state(3, 15100))
-    policy.acknowledge({"request": "r", "applied_ms": 15200,
-                        "validation_error": "outer guard", "results": []}, {})
-    assert a.feedback[1][1]["source"] == "outer_validation"
-    assert "applied_ms" not in a.feedback[1][0] and "delay_ms" not in a.feedback[1][1]
 
 
 def test_idle_poll_and_member_noop_have_different_feedback():

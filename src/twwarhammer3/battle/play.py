@@ -577,7 +577,8 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
             continue
         invalid = refusal = None
         try:
-            validate_orders(orders, basis)
+            if not isinstance(policy, TeamPolicy):  # a team checks each batch on its source
+                validate_orders(orders, basis)
         except IllegalActionError as exc:
             invalid = {"error": str(exc), "orders": orders}
             result["invalid"] += 1
