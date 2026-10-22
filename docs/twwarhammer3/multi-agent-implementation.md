@@ -1,9 +1,10 @@
 # The WH3 agent team: what is built and what comes next
 
-Updated 2026-10-21. [team.py](../../src/twwarhammer3/battle/team.py) runs two trusted
-scripted members on one army. Each owns one unit, decides on its own copy of the public
-state and gets its orders sent while the other is still thinking. The agreed component
-checks passed at `e8d1eda` (121 tests) and the live check at `45fe7b0`
+Updated 2026-10-21. [team.py](../../src/twwarhammer3/battle/team.py) runs two members on
+one army: the scripted probes, each owning one unit, and on this branch the model team
+(`team_llm_rules`). Each member decides on its own copy of the public state and gets its
+orders sent while the other is still thinking. The agreed component checks passed at
+`e8d1eda` (121 tests) and the live check at `45fe7b0` on `main`
 ([AGENTS.md](../../AGENTS.md#verification-hard-rule)). They cover ownership, independent
 progress, feedback and cleanup for two scripts; model teams, messages and teamwork quality
 are unverified. The [evaluation plan](multi-agent-plan.md) says what a team is for; this
@@ -20,18 +21,22 @@ first waits 3 s on a stop event that cleanup can wake.
 - **Ownership.** A member is declared by one unit type (exactly one unit of it), a tuple of
   types (one or more units) or `None` (every unit nobody else declares). On the first
   `decide` (the first Deployed observation), `_partition` binds each member's units by type,
-  not ID order; the probes declare one Swordsmen and one Knights unit. A unit left unowned,
-  a changed unit ID, a new friendly unit (a reinforcement or summon) or a different battle
-  raises `TeamHarnessError`, a `ProtocolError`, so the episode ends as
-  `unsupported_or_invalid`, not as a loss. Dead units stay in the roster. Behaviour through
-  rout or rally is untested live.
+  not ID order; the probes declare one Swordsmen and one Knights unit. A new friendly unit
+  (a reinforcement or summon) joins the member declaring its type or the one owning the
+  rest. A unit left unowned (or a second unit for a one-unit member), a vanished unit ID or a
+  different battle raises `TeamHarnessError`, a `ProtocolError`, so the episode ends as
+  `unsupported_or_invalid`, not as a loss. Dead units stay in the roster. Reinforcements and
+  behaviour through rout or rally are untested live.
 - **Member input** (`team-v2`). `project()` copies an allowlist: battle, sequence, phase,
   time, remaining time, speed, the enemy roster, magic, `mode` (its purchase parts only for
   the army owner), terrain when present, the member's units in `friendly` with every field
-  the `llm` renderer reads, the teammate's units in `allies` with only the fields an enemy
-  row has (never their orders, queue or navigation), visible enemies, and a target only if
-  that enemy is visible. The army owner also gets `army`. It drops `job`, the global
-  `orders` acknowledgement (the teammate's results) and private fields.
+  the `llm` renderer reads, the teammate's units in `allies` with the fields an enemy row
+  has (never their orders, queue or navigation), visible enemies, and on any unit a target
+  only if that enemy is visible. The army owner also gets `army`. It drops `job`, the global
+  `orders` acknowledgement (the teammate's results) and private fields. One difference from
+  the single controller, which sees its units' targets even out of sight: in the b43-b45
+  traces 11 of 24,248 friendly targets (7 of 10,293 observations, 45 episodes) were hidden
+  enemies; which rule both arms should use is the owner's call.
 - **Dispatch.** Each member has at most one decision running, on a two-thread pool. Each
   outer `decide` collects finished work without waiting, checks it, starts idle members on
   fresh copies and returns one member's whole batch, so engine feedback indices need no
@@ -39,7 +44,8 @@ first waits 3 s on a stop event that cleanup can wake.
   With nothing ready it returns `[]` and no member is charged with a decision; a member's
   own `[]` is a decision and gets feedback.
 - **Checks before dispatch.** A batch must pass `validate_orders` on the member's own view,
-  so it may give any order to its own units and army orders only as the army owner, and,
+  so it may give any order to its own units, aim abilities at its teammate's (`allies`) and
+  give army orders only as the army owner, and,
   when `max_age_ms` is set (5 s for the probes, a probe constant), be younger than that on
   the battle clock. A failing batch gets local feedback with no engine time and the peer's
   ready batch is still sent. The play loop's validation runs after this as before.
@@ -54,8 +60,12 @@ first waits 3 s on a stop event that cleanup can wake.
   episode as `budget_exhausted`; any other exception ends it as a `PolicyFailure` that keeps
   its cause. `close()` sets the stop event, waits up to `CLOSE_WAIT_S` (30 s) for running
   calls, records every unsent or unacknowledged call as `discarded` (with `running` for one
-  still in flight) and closes every member whose call has finished, even if one close fails.
-  Each episode builds a fresh team.
+  still in flight; a forfeit collected there is only discarded) and closes every member
+  whose call has finished, even if one close fails. A stop from a call collected there still
+  ends the episode as `budget_exhausted`. A member bug collected there is a policy failure
+  even after the battle ended, where a single controller's call that straddles the end keeps
+  the result (the agreed close-failure rule; changing it is the owner's call). Each episode
+  builds a fresh team.
 - **Trace and records.** Member events (partition, input, completed, failed, selected,
   feedback, discarded) reach the episode trace through `drain_events()`, and member model
   exchanges, tagged with the member, through `drain_exchanges()`; `play.py` drains both
@@ -65,8 +75,14 @@ first waits 3 s on a stop event that cleanup can wake.
   member ages come from the feedback events. The result's decisions, delays, think times,
   invalid count, spend and calls count member batches (with per-member rows under
   `members`), and `polls` keeps the dispatcher's own. The card says `asynchronous`; `digest`
-  and `watch` label member lines, and `digest` labels evidence recorded before `team-v2` (no
-  `polls`) as dispatcher polls.
+  and `watch` label member lines and show a member's prompt at its source time, and `digest`
+  labels evidence recorded before `team-v2` (no `polls`) as dispatcher polls. `report`
+  refuses team episodes and `export` excludes them until they read member records.
+- **Clock.** Team times use the wall clock, as `play.py`'s think times do: WSL's monotonic
+  clock ran 0-11% slow ([benchmark](benchmark.md)), the wall clock is stepped about 1 s every
+  32 s, and this Python's thread timeouts follow the wall clock: 15 timed 3 s waits
+  took 3.0-4.1 s by the wall clock and 2.2-3.0 s by the monotonic one
+  (`runs/twwarhammer3/review-multiagent-20261021/lead-check/probe_wait.txt`).
 - **The model team.** `--policy team_llm_rules@MODEL/EFFORT` builds `ModelTeam` through
   `controllers.factories()`, so it gets `--budget-usd`, the ledger-file check, model
   validation and the OpenRouter cap like `llm_rules`. Both members (`TeamLLM`, the
@@ -75,9 +91,10 @@ first waits 3 s on a stop event that cleanup can wake.
   Each member's prompt is the `llm_rules` input plus a last section listing the teammate's
   units ([golden](../../tests/twwarhammer3/prompts/team_member.txt)). There is no age limit,
   like the single controller. `Ledger` holds each call's reservation until it returns, so
-  two calls at once cannot overspend the cap. After cleanup starts no new call or reply
-  retry is sent, but a request already in flight may still retry its transport, and its cost
-  then reaches only the ledger.
+  two calls at once cannot overspend the cap; near the cap a team therefore stops one
+  reservation earlier than `llm_rules`. After cleanup starts no new call or reply retry is
+  sent, but a request already in flight may still retry its transport; if it outlasts the
+  30 s wait, its cost reaches only the ledger and its hold lasts into the next episode.
 - `play.py` refuses a team with `delay_ms` or `interval_ms` other than 0.
 
 Members are trusted in-process code; separate Python dictionaries are not a sandbox.
@@ -105,7 +122,10 @@ selector that ignores or reverses completion order passed all 120 tests at `45fe
 `test_the_oldest_completed_batch_goes_first` now fails on both
 (`runs/twwarhammer3/review-team-20261021/selector_mutation.txt`;
 `runs/twwarhammer3/review-team-20261021/doc-verify/selector_all_files.txt` for all four
-files).
+files). A second review that day found three more edits that passed every test: an ally row
+showing a hidden target, feedback sent to the first member holding a batch, and a third unit
+type accepted. The agreed file now fails each
+(`runs/twwarhammer3/review-multiagent-20261021/lead-check/mutants.txt`).
 
 The live check, [check_wh3_team.py](../../tests/twwarhammer3/check_wh3_team.py), makes four
 fresh launches alternating `DelayInfantry` and `DelayCavalry`, at $0 and within 30 minutes
@@ -114,10 +134,12 @@ launch passes when:
 - every dispatched order names its member's unit (checked against raw unit types);
 - both first moves get matching successful raw engine acknowledgements, every member
   feedback comes from the engine (no local or outer-validation refusal), and each member's
-  age equals engine `applied_ms` minus its source time;
+  age equals the raw engine `applied_ms` minus the time of the raw observation with the
+  sequence number the adapter recorded, so a source time that disagrees with it fails;
 - after its acknowledgement, while the delayed worker still runs, the fast unit is moving or
   running and at least 0.25 m closer to its point;
-- the delayed worker took 3-4.5 s;
+- the delayed worker took 3-4.5 s (wall clock, like the observation samples; a wall step
+  over 1.5 s in a wait's last moments could still exceed 4.5 s, rarely);
 - a clock sample of at least 10 s runs within 15% of 1x. This catches gross slowdown, not a
   brief stall; the per-sample speed check cannot fail, because the mod writes `speed` 1 and
   `awaiting_orders` false as constants;
@@ -125,7 +147,9 @@ launch passes when:
   process is left.
 
 A failure or unknown stands; do not keep rerunning until it passes. `--recount OUTPUT`
-reassesses saved evidence without a game, and `plan.json` records the run settings.
+reassesses saved evidence without a game and without rewriting its `checks.json`, and
+`plan.json` records the run settings. The saved evidence recounts 4/4 with the stricter age
+check.
 Mid-battle rematch is not used and remains unverified.
 
 Result at `45fe7b0`: 4/4 launches passed in about 12 minutes. The check's first qualifying
@@ -152,9 +176,9 @@ no age limit, the ledger hold, member records and exchanges, and a 30 s bounded 
 Still to do before a comparison:
 1. Rerun the agreed live check at the branch's tip: the scripted team's trace shape and
    input version changed.
-2. `report.py` (order ages and forfeits from team events), `export.py` (member exchange IDs
-   collide: export of a team job fails with "ambiguous model exchange") and the card board's
-   identity (`member_source_sha256` is recorded but not grouped on).
+2. Make `report.py` read order ages, calls and forfeits from team events and label teams,
+   make `export.py` keep member identity (member exchange IDs collide), and group the card
+   board on `member_source_sha256`.
 3. The card: once the [starting-set
    screen](tactic-cards.md#the-starting-set-proposal-2026-10-21) keeps it, check that
    `PARTITION` fits it; then one paid smoke battle with the owner's go-ahead.
