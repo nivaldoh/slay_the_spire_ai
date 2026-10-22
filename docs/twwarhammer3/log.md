@@ -41,6 +41,29 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-21 night: team code review and fixes on the branch
+
+The owner asked for a careful review of the multi-agent code, then, with no time to review,
+for fixes on my judgement ([directions](../owner-direction.md)). Offline, $0, no push. Five
+reviewers, each finding checked by a skeptic: 28 findings (about 21 distinct), none refuted;
+a review of the fixes (three reviewers, three skeptics) found one regression in them, fixed.
+Evidence: `runs/twwarhammer3/review-multiagent-20261021/`. `wh3-model-team` is now `73e2ccd`
+(two commits on `9689185`); main's code is unchanged. Fixed: a member's key, credit or
+budget stop collected at cleanup was swallowed and the job went on; members could not aim
+Ally abilities at the teammate's units; a forfeit at cleanup was recorded as one; the team
+note denied the visible ally targets members do see; a bought or summoned unit ended the
+episode (it now joins its member); team times used the monotonic clock, which WSL runs slow
+(2 of 15 timed 3 s waits measured under 3 s on it, a false live-check failure); the live
+check's age test compared the adapter with itself and `--recount` overwrote `checks.json`;
+`report` and `export` now refuse or exclude team episodes; `watch` and `digest --at` show a
+member's prompt at its source time. Three edits that passed every agreed test now fail
+`test_wh3_team.py`. Checks at `73e2ccd`: full suite 1408 passed, 28 skipped; the four agreed
+team files 122 passed; every new test fails on `9689185` or on my first draft; the saved
+live evidence recounts 4/4. Parked for the owner
+([state](../state.md#owner-decisions-waiting), item 6): two team rules. Not fixed: `watch`'s
+spend omits uncertain-transport charges (not team code). Unverified: everything live; the
+live check needs a rerun at the tip.
+
 ## 2026-10-21 evening: a plan for team structures
 
 The owner asked for a careful plan of other team structures than the arbitrary two-model

@@ -11,7 +11,7 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 
 Scripted split-army [team](twwarhammer3/multi-agent-implementation.md) (b49): agreed checks
 passed (component at `e8d1eda`, live at `45fe7b0`). A model team is ready on branch
-`wh3-model-team` (offline checks only; [log](twwarhammer3/log.md#2026-10-21-evening-a-model-team-on-a-branch-offline));
+`wh3-model-team` (offline checks only; [review fixes](twwarhammer3/log.md#2026-10-21-night-team-code-review-and-fixes-on-the-branch));
 it waits for the starting-set screen, which is ready to run on a free night. No game,
 benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need),
 [scope](twwarhammer3/benchmark.md#scope-and-first-release), suite, checks and gates remain proposals;
@@ -103,7 +103,9 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 6. Team ([structures §8](twwarhammer3/team-structures.md#8-choices-made-for-the-owners-review), [log](twwarhammer3/log.md#2026-10-21-evening-a-model-team-on-a-branch-offline)): I chose a structure screen first (single, two, per class,
    per unit, planner groups; round-robin, 3 each, about $10, up to $17) over a two-member 6 + 6; reverse if
    you disagree. Yours: the money (with the model screen it fits only at central estimates); merge
-   `wh3-model-team` after a $0 live-check rerun? The stricter witness?
+   `wh3-model-team` after a $0 live-check rerun? The stricter witness? Parked: members never see an
+   out-of-sight enemy as a target (the single controller does, 11 of 24,248); a member bug at cleanup
+   is a policy failure even after the battle ended (a single controller keeps the result).
 
 ## Runtime and ownership
 
@@ -123,6 +125,6 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` attack-route draft, labelled
   v21 before main's v21 (`18dabdd`); renumber before any merge.
-- `wh3-model-team` (`9689185`, worktree `../slay_the_spire_ai-wh3-model-team`, from `9e43143`):
-  two model members on one army (`team_llm_rules`); offline checks pass; live check not rerun.
+- `wh3-model-team` (`73e2ccd`, worktree `../slay_the_spire_ai-wh3-model-team`, from `9e43143`):
+  two model members on one army (`team_llm_rules`), reviewed; offline checks pass; live check not rerun.
 - Archived drafts are tags (`git tag --list 'archive/*'`).

@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-21 (night, after the multi-agent review), verbatim: "I have no time to review
+  this. I'll trust your judgement. Fix any issues you find. Test things carefully. Try to
+  keep the code simple and lean as much as possible. Avoid overengineering/bloat/garbage/slop."
+  Applied as offline fixes on `wh3-model-team`; choices that change benchmark meaning stay
+  parked for the owner ([autonomy](autonomy.md#the-test), rule 3).
 - 2026-10-21 (evening), verbatim: "We won't have a second machine for now. We'll have to
   leave that part for the future. You are free to proceed with other work. I won't have time
   to review decisions carefully now, so continue to follow your best judgement and highlight
