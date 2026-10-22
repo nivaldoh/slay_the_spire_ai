@@ -5,7 +5,9 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
-- 2026-10-22 (visual project overview): implement the overview as an intuitive guide to
+- 2026-10-22 (overview removal): remove the project overview to keep the project lean;
+  the owner found it useless. Supersedes both overview requests below.
+- 2026-10-22 (visual project overview; superseded by removal): implement the overview as an intuitive guide to
   all major parts of the codebase, with concise explanations and details available when
   needed. Keep it simple and lean. On checks: "We don't need to worry too much about
   that. FOcus on getting the most important points right instead".
@@ -13,7 +15,7 @@ Both games:
   this overnight run. I'll be back tomorrow. I'll delegate decisions to you until I'm able
   to review them." Read as a free night (the agreed starting-set screen ran) with decisions
   delegated; choices that change benchmark meaning stay parked ([log](twwarhammer3/log.md)).
-- 2026-10-22 (owner overview), verbatim: "I just need an easy way to know what's the current state of the project and what decisions are pending on my end." Start implementing the simple local overview; diffs and PR review are outside this first version.
+- 2026-10-22 (owner overview; superseded by removal), verbatim: "I just need an easy way to know what's the current state of the project and what decisions are pending on my end." Start implementing the simple local overview; diffs and PR review are outside this first version.
 - 2026-10-21 (night, after the multi-agent review), verbatim: "I have no time to review
   this. I'll trust your judgement. Fix any issues you find. Test things carefully. Try to
   keep the code simple and lean as much as possible. Avoid overengineering/bloat/garbage/slop."

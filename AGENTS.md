@@ -83,9 +83,6 @@ token use):
   steps (other pages keep candidates and deferred items). New owner directions go in
   `docs/owner-direction.md`. A log entry stays within about 20 lines: what changed, its
   evidence with counts, and what is unverified.
-- After changing `docs/state.md`, run `uv run --locked python scripts/project_overview.py`
-  to refresh the local owner overview (`runs/project-overview/index.html`). State and
-  pending decisions live only in `state.md`; the page is a generated snapshot.
 - Read docs by section; do not reload full guidance already present in the session.
   Use multi-agent workflows only for independent verification, the WH3 loop's review step,
   or when the owner asks.
