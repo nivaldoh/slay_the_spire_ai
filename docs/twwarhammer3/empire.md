@@ -143,7 +143,10 @@ comparison between models.
    the [starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21)'s $0 screen
    (every floor including `rush_nearest`, and LineTeam b46 at 0 s, 3 launches each), then
    its named shortcut and confirmation before any model screen; and
-   whether to keep the rank-5 step or to drop the Boar Boyz instead.
+   whether to keep the rank-5 step or to drop the Boar Boyz instead. Screen result
+   (2026-10-22, [log](log.md#2026-10-22-the-starting-set-screen)): `rush_nearest` won 2
+   of 3 and `attack_nearest` 1 of 3 by contact, LineTeam 2 of 3, so the reading rule parks
+   the battle; as a team card it would need a new design, not a further difficulty step.
 2. **What the line battle measures.** A contact win is the outcome of record (decision
    7); the handover reading (first order after the first friendly rout, rounds before a
    gun's first melee, who the knights charged) is printed by the review script but not

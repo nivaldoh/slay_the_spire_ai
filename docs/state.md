@@ -8,15 +8,13 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 WH3 first; Spire waits behind it; post-training is secondary. Three changes await review.
 
-Running (Claude Code, owner away overnight from 2026-10-22 02:35, $0, game cutoff 08:30):
-the team live check (passed 4/4) and the starting-set screen (39 jobs, completed 07:09) are
-done; now a 3-launch expendables shortcut screen from branch `wh3-expendables-shortcut`
-(`runs/twwarhammer3/away-20261022/shortcut-plan.json`, start_before 07:50). Task note
-`runs/twwarhammer3/away-20261022/TASK.md`.
+No game, benchmark or paid job is running. The 2026-10-22 night ($0, game 02:37-07:28) ran
+the starting-set screen and a shortcut screen ([log](twwarhammer3/log.md#2026-10-22-the-starting-set-screen)):
+neither new card (line, expendables) nor either probe goes to confirmation.
 
 Scripted split-army [team](twwarhammer3/multi-agent-implementation.md) (b49): agreed checks passed
-(component at `e8d1eda`, live at `45fe7b0`). The model team is on `wh3-model-team` ([review fixes](twwarhammer3/log.md#2026-10-21-night-team-code-review-and-fixes-on-the-branch)); offline evidence only, live rerun pending.
-It waits for the starting-set screen on a free night. [Scope](twwarhammer3/benchmark.md#scope-and-first-release), [evaluation guidelines](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need), suite, remaining checks and gates are proposals; [Empire items](twwarhammer3/empire.md) pending.
+(component at `e8d1eda`, live at `45fe7b0`). The model team is on `wh3-model-team` ([review fixes](twwarhammer3/log.md#2026-10-21-night-team-code-review-and-fixes-on-the-branch)); the agreed live check passed 4/4 at its tip on 2026-10-22; model members have not played live.
+[Scope](twwarhammer3/benchmark.md#scope-and-first-release), [evaluation guidelines](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need), suite, remaining checks and gates are proposals; [Empire items](twwarhammer3/empire.md) pending.
 The October 21 offline window's evidence is in the [log](twwarhammer3/log.md#2026-10-21-a-proposed-starting-set-the-failure-rule-recount-and-a-blind-c1-recount) and `runs/twwarhammer3/away-20261021/`. Waiting changes: 3 of 3 ([branches](#branches)).
 
 The local owner overview is available at `runs/project-overview/index.html` ([build instructions](../README.md#project-overview)). [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
@@ -24,7 +22,7 @@ The local owner overview is available at `runs/project-overview/index.html` ([bu
 ## Total War: WARHAMMER III
 
 Current priority: establish a small, repeatable battle benchmark. Scripted-team checks passed
-at the recorded revisions; the model team has offline evidence only. The next game step is the $0 starting-set screen on a free night.
+at the recorded revisions; the model team has offline evidence and a passing live check at its tip. The chariot is still the only card: no battle in the starting-set screen goes to confirmation.
 
 [README](twwarhammer3/README.md), [log](twwarhammer3/log.md) ("On main" at the top), [benchmark](twwarhammer3/benchmark.md), [tactic cards](twwarhammer3/tactic-cards.md), [latency plan](twwarhammer3/latency.md), [results](twwarhammer3/results.csv).
 
@@ -38,7 +36,7 @@ at the recorded revisions; the model team has offline evidence only. The next ga
 Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-to-the-first-release)):
 0. Read the Empire [results](twwarhammer3/empire.md#results) and [owner items](twwarhammer3/empire.md#for-the-owner-to-decide); screen/readout and line marker agreed October 21.
 1. Agree remaining [correctness checks](twwarhammer3/benchmark.md#correctness-checks-to-agree) and chariot choices; failure rule, witness v2 at 2 s/2 s and c1 preservation already agreed. The c1 [rerun handoff](twwarhammer3/benchmark-run.md#independent-rerun-acceptance-proposal) stays local in `runs/twwarhammer3/away-20261021/handoff-c1/`.
-2. Run the agreed $0 [starting-set screen](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21) on the next free night (`runs/twwarhammer3/away-20261021/TASK.md`). Prompt v22 says only contact wins count on these cards (unplayed).
+2. Breadth: the [starting set](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21) ran 2026-10-22: floors won the line and the rifle lane, and the expendables' named shortcut won 3 of 3. New cards need your choice of battles or redesigns (the expendables would need a battle where waiting for the pin matters; two threats would get one step). Prompt v22 says only contact wins count on these cards (unplayed).
 3. Choose P5's question before more chariot cells; its Kimi plans are unplayed. A stronger model at modifier 1.1 remains untested (OpenAI cap).
 4. [Robot team plan](twwarhammer3/robot-team-plan.md), [research guide](twwarhammer3/robot-team-research.md): useful recovery? Only 1 of 17 recorded line battles had a replacement opportunity ([review](twwarhammer3/robot-team-plan.md#1-establish-a-recoverable-coordination-problem)); b46–b48 unplayed.
 
@@ -80,13 +78,13 @@ claim. A training host, a way to play fine-tuned models, and useful targets are 
    Still proposed: [scope, suite and gates](twwarhammer3/benchmark.md#scope-and-first-release), [correctness checks](twwarhammer3/benchmark.md#correctness-checks-to-agree), [evaluation choices](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need) and chariot [decisions 3–5](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions) on gate sizes, reporting and drops. The failure rule, c1 preservation and witness v2 at 2 s/2 s are already agreed. Until the rest is settled, there is no verified benchmark release.
 2. **Next experiments and spending.** Choose the next free game night and how to divide the remaining allowance.
 
-   Recommended next: the agreed $0 [starting-set screen](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21); its October 21 window was missed. Model and team screens together fit only their central cost estimates. Choose P5's question and [$20 cap](twwarhammer3/latency.md#owner-decisions), [Kimi's role](twwarhammer3/empire.md#for-the-owner-to-decide), and whether to raise OpenAI's $52 cap (Sol is refused; gpt-6.1-sol low cost a median $0.84 over 22 battles). No new paid plan is authorized by these estimates.
+   The $0 [starting-set screen](twwarhammer3/log.md#2026-10-22-the-starting-set-screen) ran 2026-10-22 and admitted no card to confirmation; choose which battles to screen next (the chariot remains the only card). Model and team screens together fit only their central cost estimates. Choose P5's question and [$20 cap](twwarhammer3/latency.md#owner-decisions), [Kimi's role](twwarhammer3/empire.md#for-the-owner-to-decide), and whether to raise OpenAI's $52 cap (Sol is refused; gpt-6.1-sol low cost a median $0.84 over 22 battles). No new paid plan is authorized by these estimates.
 3. **Standing autonomy rules.** Accept or revise the proposed rules for work while you cannot review.
 
    [Away guidelines](autonomy.md): the October 21 window used the proposal, not its agreed trial. Reviews caught 114 errors in drafts and commits, 113 fixed. Existing offline delegation continues; it does not settle the standing rules.
 4. **Model-team behavior and readiness.** Decide the remaining behavior and check changes before adopting the model team.
 
-   Pending: a $0 live rerun before merging; the stricter movement witness; members cannot target out-of-sight enemies while the single controller can (11 of 24,248); member cleanup bugs replace an engine ending with policy failure while a single controller keeps it. The agreed ledger test now includes `team_llm_rules`; outer-validation assertions were dropped from the agreed team test ([review](twwarhammer3/log.md#2026-10-22-second-review-two-team-fixes-and-the-screen-reader)); keep these changes? Cut-off member calls reach the ledger but not register costs. Already chosen under delegation, reversible: a round-robin structure screen first (single, two, per class, per unit, planner groups; 3 each; about $10, up to $17), instead of two-member 6 + 6; Stage D's selection rule still needs care ([defaults](twwarhammer3/team-structures.md#8-choices-made-for-the-owners-review)). Live behavior remains unverified at the branch tip.
+   The $0 live rerun passed 4/4 at the tip `31823f3` (2026-10-22); merging needs your yes on the rest. Pending: the stricter movement witness; members cannot target out-of-sight enemies while the single controller can (11 of 24,248); member cleanup bugs replace an engine ending with policy failure while a single controller keeps it. The agreed ledger test now includes `team_llm_rules`; outer-validation assertions were dropped from the agreed team test ([review](twwarhammer3/log.md#2026-10-22-second-review-two-team-fixes-and-the-screen-reader)); keep these changes? Cut-off member calls reach the ledger but not register costs. Already chosen under delegation, reversible: a round-robin structure screen first (single, two, per class, per unit, planner groups; 3 each; about $10, up to $17), instead of two-member 6 + 6; Stage D's selection rule still needs care ([defaults](twwarhammer3/team-structures.md#8-choices-made-for-the-owners-review)). Model members have not played live.
 5. **Campaign permissions.** Separately allow or refuse harness saves and irreversible Steam achievements.
 
    These choices are required before any campaign launch. Deferring keeps campaign work to [offline drafts](autonomy.md#wh3-campaign-infrastructure).
@@ -120,5 +118,5 @@ claim. A training host, a way to play fine-tuned models, and useful targets are 
   v21 before main's v21 (`18dabdd`); renumber before any merge.
 - `wh3-model-team` (`31823f3`, worktree `../slay_the_spire_ai-wh3-model-team`, from `9e43143`):
   two model members on one army (`team_llm_rules`), reviewed at `73e2ccd`, its 2026-10-22 fixes by
-  one skeptic; offline checks pass; live check not rerun.
+  one skeptic; offline checks pass; the agreed live check passed 4/4 at the tip (2026-10-22).
 - Archived drafts are tags (`git tag --list 'archive/*'`).

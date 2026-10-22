@@ -34,12 +34,35 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `llm_rules` | shares `llm` v22 input; added in b3 (`51c1796`) | `configs/twwarhammer3/rules_prompt.md`, `battle/llm.py` | v21 chariot cohort: [b40 round](#2026-10-19-witness-v2-and-prompt-v21-harness-b40). v20 GLM/OpenRouter caster check won at 575 s; spell refusals after a pending spell 7 → 3 (v19 lost). M1 used v18 |
 | `commander` | v8 (2026-10-21) | `configs/twwarhammer3/commander_prompt.md`, `battle/commander.py` | v8 the contact-scoring state line (unplayed); v7 shared-magic warning tested offline; latest live smoke remains b11 (Luna low, lost at 593 s) |
 | `skills` executor | v1.2 (`55ab6b3`, 2026-10-13) | `battle/skills.py` (also `probe_abilities`) | `bench-b2-screen-ai10-20261014` won at 382 s; `bench-b2-screen-ai11-20261014` lost at 265 s |
-| scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | Latest (2026-10-20, as card floors): `bench-b45-line-xp5-floor-hold-20261020` lost at 327 s, `bench-b45-line-xp5-floor-attack-20261020` at 449 s, `bench-b44-knights-boyz-floor-rush-20261020` at 130 s; first: `bench-g1-cavalry-ai10-01-20261014` |
+| scripted baselines | `attack_nearest`, `rush_nearest` (b9), `hold` | `battle/scripted.py` | Latest: the [starting-set screen](#2026-10-22-the-starting-set-screen) (30 floor launches, 2026-10-22); first: `bench-g1-cavalry-ai10-01-20261014` |
 | scripted team | v1 (`45fe7b0`, b49) | `battle/team.py` | Four agreed $0 movement/cleanup probes passed; models, messages and native multiplayer unimplemented |
 | benchmark harness | b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
+
+## 2026-10-22: the starting-set screen
+
+Overnight, decisions delegated ([direction](../owner-direction.md)); $0, game 02:37-07:28,
+all scripted; evidence in `runs/twwarhammer3/away-20261022/` (TASK.md). Team live check
+(agreed method) at the `wh3-model-team` tip `31823f3`: passed 4/4
+(`runs/twwarhammer3/team-live-20261022-tip/`); main's checker recounts the same evidence
+4/4. The agreed [starting-set screen](tactic-cards.md#the-starting-set-proposal-2026-10-21)
+at `a6e3c0b`: 39 of 39 launches, every one ended by the engine (none by the timer), clock
+ratio 0.99-1.01, 6 single orders refused by the engine. Contact wins of 3 launches per
+arm (`read_screen.txt`): line `hold` 0, `attack_nearest` 1, `rush_nearest` 2, LineTeam 2;
+expendables `hold` 0, `attack_nearest` 0, `rush_nearest` 0, SlaveTarpit 3 (all 3 with the
+marker); rifle lane `hold` 1, `attack_nearest` 1, FlankLane 2; two threats `hold` 0,
+`attack_nearest` 1. By the agreed reading rule the line and the rifle lane are parked, two
+threats would get one step, and only the expendables card went on. The line's marker
+shows in 7 of its 9 floor launches (criterion 4 flag). Delegated: the expendables shortcut OgresFirst
+(SlaveTarpit's pins without its wait, a new `battle/shortcuts.py`; its test rejects two
+mutants, dry run on 18 recorded episodes clean), played 3 launches from its branch at
+`2d12f27`: won 3 of 3 by contact (139, 256, 298 s), none with the marker
+(`shortcut_markers.txt`: ogres at the guns at 82-87 s, slaves on the halberds at 114-118 s;
+in SlaveTarpit's wins, slaves at 90-91 s, ogres at 133-134 s). The card fails criterion
+2, so no battle in the screen goes to confirmation. The branch is archived as
+`archive/wh3-expendables-shortcut`; its 3 register rows are on main. Unverified: every gameplay outcome (3 launches per arm).
 
 ## 2026-10-22: second review, two team fixes and the screen reader
 

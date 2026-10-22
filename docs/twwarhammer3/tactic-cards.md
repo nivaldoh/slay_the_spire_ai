@@ -422,8 +422,13 @@ where the naive scripts must lose and a disclosed script must win 2 of 3 showing
 tactic's marker; a confirmation (each foil 0 of 14, the witness at least 10 of 14), once
 the card's named shortcut is scripted and has lost; then, with a held-out variant reserved,
 a model screen (about $10 for GLM and Qwen on all three cards). The owner agreed the
-screen, its reading rule and both markers on 2026-10-21; it runs on the next free night;
-the chariot, admitted under c1's rule, waits for the agreed checks
+screen, its reading rule and both markers on 2026-10-21. The screen ran on 2026-10-22
+([log](log.md#2026-10-22-the-starting-set-screen)): on the expendables battle the floors
+won 0 of 9 and SlaveTarpit 3 of 3 with the marker, but its named shortcut (OgresFirst, the
+ogres at the guns at once) then won 3 of 3 without the marker, so the card fails criterion
+2; floors won by contact on the line (3 of 9) and the rifle lane (2 of 6), and two threats
+(1 of 6) would get one step. Neither card nor either probe goes to confirmation. The table below
+shows the evidence before the screen. The chariot, admitted under c1's rule, waits for the agreed checks
 ([state](../state.md#total-war-warhammer-iii), next step 1), then confirms witness v2 at 2
 s/2 s.
 
