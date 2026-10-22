@@ -6,8 +6,12 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-WH3 first; Spire waits behind it; post-training is secondary. No game, benchmark or paid
-job is recorded as running. Three changes await review.
+WH3 first; Spire waits behind it; post-training is secondary. Three changes await review.
+
+Running (Claude Code, owner away overnight from 2026-10-22 02:35, $0, game cutoff 08:30):
+the team live check at the `wh3-model-team` tip, then the agreed starting-set screen queue
+frozen at this commit (`runs/twwarhammer3/away-20261021/screen-plan.json`, start_before 07:45).
+Commit nothing to `main` until it ends; task note `runs/twwarhammer3/away-20261022/TASK.md`.
 
 Scripted split-army [team](twwarhammer3/multi-agent-implementation.md) (b49): agreed checks passed
 (component at `e8d1eda`, live at `45fe7b0`). The model team is on `wh3-model-team` ([review fixes](twwarhammer3/log.md#2026-10-21-night-team-code-review-and-fixes-on-the-branch)); offline evidence only, live rerun pending.
