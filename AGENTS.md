@@ -179,7 +179,7 @@ configs/
                    report_notes.json (the report's scenario, unit and highlight text),
                    benchmark_jobs.json (the jobs the report and export read)
 scripts/           Spire first-combat tools (inventory, audits, dataset export, training
-                   drivers, plots); wh3_queue.py runs a frozen plan of WH3 play jobs;
+                   drivers, offline agreement, plots); wh3_queue.py runs a frozen plan of WH3 play jobs;
                    wh3_db.py reads WH3 unit costs and attributes from the game database;
                    sft_smoke.py, a local LoRA smoke test of a built dataset
 tests/             One directory per package; tests/fixtures holds Spire engine transitions;
