@@ -21,6 +21,17 @@ saw. Actual battles always run unpaused at 1×. [Still image](docs/images/wh3-re
 [Slay the Spire full runs](docs/spire/fullrun/README.md) ·
 [Current work](docs/state.md) · [Setup](#setup)
 
+## Project overview
+
+For a short view of the current state and decisions waiting on the owner, run:
+
+```bash
+uv run --locked python scripts/project_overview.py
+```
+
+Open `runs/project-overview/index.html` in a browser. It reads [docs/state.md](docs/state.md),
+works offline, and shows its source date. Rebuild after the state changes; this is a snapshot.
+
 ## Two games, two kinds of decisions
 
 | | Slay the Spire 1 | Total War: WARHAMMER III |

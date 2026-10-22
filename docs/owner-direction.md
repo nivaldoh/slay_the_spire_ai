@@ -5,6 +5,7 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-22 (owner overview), verbatim: "I just need an easy way to know what's the current state of the project and what decisions are pending on my end." Start implementing the simple local overview; diffs and PR review are outside this first version.
 - 2026-10-21 (night, after the multi-agent review), verbatim: "I have no time to review
   this. I'll trust your judgement. Fix any issues you find. Test things carefully. Try to
   keep the code simple and lean as much as possible. Avoid overengineering/bloat/garbage/slop."
