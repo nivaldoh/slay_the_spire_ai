@@ -244,6 +244,8 @@ def collect(jobs: list[Path]) -> dict:
             delay = result.get("delay_ms", declared.get("delay_ms", 0))
             label = f"{policy} / +{delay / 1000:g}s"
             card = result.get("card") or {}
+            if "members" in (card.get("disclosure") or {}):  # its ages and calls are members'
+                raise ValueError(f"{directory}: team episodes are not reported yet")
             if card.get("kind") == "external":
                 label += " / " + str(card.get("source_sha256", "unknown"))[:12]
             # JUDGEMENT?: Report denominator — legacy reader, 2026-10-14 (author intent

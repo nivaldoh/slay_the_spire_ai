@@ -12,8 +12,8 @@ each episode's ``trace.jsonl`` as the job writes it and prints:
   direct controller's orders and reason, and the notes whenever they change;
 - each episode's armies, engine rejections, invalid batches, a strength line with the spend
   so far every 30 s of battle time, and each result.
-A team member's requests and replies carry its name, and its locally refused batches and
-their spend are shown too.
+A team member's requests and replies carry its name (a request shows its source time and
+the strength at dispatch), and its locally refused batches and their spend are shown too.
 A finished job or a finished episode is printed once.
 
 ``--next`` (only with a job directory) is for an agent running it in the background: it
@@ -45,7 +45,7 @@ class Feed:
         self.observation: dict = {}
         self.status_s = 0.0
         self.usd = 0.0
-        self.notes = None
+        self.notes = {}  # by team member; None for a single controller
         self.pending: dict[str, list[dict]] = {}
 
     def lines(self, record: dict) -> list[str]:
@@ -106,7 +106,8 @@ class Feed:
         who = f"[{behavior['member']}] " if behavior.get("member") else ""
         think = sum(attempt.get("seconds", 0) for attempt in attempts)
         if behavior.get("type") == "llm" and "prompt" in behavior:
-            lines += self._request(seconds, behavior)  # the direct controller blocks
+            # The direct controller blocks; a team member's request left at its source time.
+            lines += self._request(behavior.get("source_ms", record["time_ms"]) / 1000, behavior)
         if "plan" in behavior:
             lines.append(f"{seconds:5.0f}s <- plan {behavior['plan_age_s']:.1f} s old"
                          f" ({think:.1f} s think): {behavior['reason']}")
@@ -118,9 +119,11 @@ class Feed:
         elif behavior.get("reason"):
             lines.append(f"{seconds:5.0f}s <- {who}{describe_orders(record['orders'])}"
                          f" ({think:.1f} s think): {behavior['reason']}")
-        if behavior.get("notes") and behavior["notes"] != self.notes:
-            self.notes = behavior["notes"]
-            lines.append("         notes: " + self.notes.replace("\n", " / "))
+        member = behavior.get("member")
+        if behavior.get("notes") and behavior["notes"] != self.notes.get(member):
+            self.notes[member] = behavior["notes"]
+            lines.append(f"         notes{f' ({member})' if member else ''}: "
+                         + behavior["notes"].replace("\n", " / "))
         if behavior.get("type") == "commander" and "prompt" in behavior:
             lines += self._request(seconds, behavior)  # sent after adopting the last plan
         return lines

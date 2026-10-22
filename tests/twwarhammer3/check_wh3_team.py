@@ -63,11 +63,13 @@ def assess(events, samples, slow):
         assert feedback["source"] == "engine" and feedback["ack"]["results"]
         assert feedback["ack"]["request"] == dispatch["request"]
         assert all(row["ok"] for row in feedback["ack"]["results"])
-        assert feedback["latency"]["delay_ms"] == (
-            feedback["ack"]["applied_ms"] - dispatch["behavior"]["source_ms"])
         raw = next(s["observation"]["orders"] for s in samples
                    if (s["observation"].get("orders") or {}).get("request") == dispatch["request"])
         assert raw == feedback["ack"]
+        # The member's age from raw evidence: the engine ack and the observation it was given.
+        source = next(s["observation"] for s in samples
+                      if s["observation"].get("seq") == dispatch["behavior"]["source_seq"])
+        assert feedback["latency"]["delay_ms"] == raw["applied_ms"] - source["time_ms"]
         result, = raw["results"]
         assert result["index"] == 1 and result["unit"] == ownership[member] and result["ok"] is True
     dispatch = next(e for e in dispatches if e["behavior"]["decision"] == f"{fast}-1")
@@ -196,7 +198,7 @@ def run(output):
             class RecordingMailbox(Mailbox):
                 def wait_observation(self, **kwargs):
                     observation = super().wait_observation(**kwargs)
-                    samples.write(json.dumps({"received": time.monotonic(),
+                    samples.write(json.dumps({"received": time.time(),  # the team's clock
                                               "observation": observation}) + "\n")
                     return observation
 

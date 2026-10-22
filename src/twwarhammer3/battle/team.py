@@ -1,15 +1,19 @@
 """Two independent members sharing one army and one mailbox, each owning declared units.
 
 A member is declared by one unit type (exactly one unit of it), a tuple of types (one or
-more units) or None (every unit nobody else declares). Each sees ``project``: its own units,
-its teammate's as allies and the public battle state, never the teammate's feedback. It
-may give any order to its own units; only the named army owner gives army-level orders.
+more units) or None (every unit nobody else declares); a new friendly unit joins the member
+declaring its type or the one owning the rest, else the episode ends. Each sees ``project``:
+its own units, its teammate's as allies and the public battle state, never the teammate's
+feedback. It may give any order to its own units and aim abilities at its teammate's; only
+the named army owner gives army-level orders.
 Members have bounded decide/close calls and short acknowledge/metadata callbacks; this
 adapter is not a sandbox. One whole member batch is selected per request; the play loop
 remains the only mailbox writer. A failed member call follows the single controller's
 rule: no valid reply or a provider error is a forfeit and the member is asked again; a key,
-credit or budget stop or any other exception ends the episode. ``ModelTeam`` (the policy
-``team_llm_rules``) has two model members sharing the job's ledger.
+credit or budget stop or any other exception ends the episode. At cleanup a forfeit is
+only discarded, a stop still ends the job, and a member bug is a policy failure even after
+the battle ended (a single controller's call that straddles the end keeps the result).
+``ModelTeam`` (the policy ``team_llm_rules``) has two model members sharing the job's ledger.
 """
 import hashlib
 from collections import Counter
@@ -19,7 +23,7 @@ from dataclasses import dataclass
 from math import cos, radians, sin
 from pathlib import Path
 from threading import Event
-from time import monotonic
+from time import time
 
 from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError
@@ -34,16 +38,18 @@ CLOSE_WAIT_S = 30  # cleanup waits this long for a running member call, then aba
 UNIT_FIELDS = ("id", "type", "alliance", "class", "x", "z", "bearing", "men", "men0", "hp",
                "barrier", "can_fly", "flying", "ammo", "ammo0", "range", "speed", "fatigue",
                "morale", "flight", "width", "attack_mode", "behaviours", "abilities",
-               "command_queue", "navigation", "dest", "state")
-# A teammate's unit shows only what an enemy's shows: never its orders, queue or navigation.
+               "command_queue", "navigation", "dest", "state", "error")
+# A teammate's unit shows what an enemy's shows, and a visible target: never its orders,
+# queue or navigation.
 ALLY_FIELDS = ("id", "type", "class", "alliance", "x", "z", "bearing", "men", "men0", "hp",
                "barrier", "can_fly", "flying", "range", "speed", "state")
 ARMY_MODE = ("slots", "reinforcements", "spawn_zones", "supplies")  # the army owner's
 # The model team (``team_llm_rules``): the Knights, and every other unit with the army orders.
 PARTITION = {"cavalry": (KNIGHT,), "line": None}
 ARMY_OWNER = "line"
-TEAM_NOTE = ("Team: a teammate model commands the allied units below at the same time; you"
-             " order only Your units and do not see its orders, feedback or notes.")
+TEAM_NOTE = ("Team: a teammate model commands the allied units below at the same time. You"
+             " order only Your units; Ally abilities may target allied units. You see allied"
+             " units' state and visible targets, not the teammate's orders, feedback or notes.")
 
 
 class TeamHarnessError(ProtocolError):
@@ -116,7 +122,7 @@ class TeamPolicy:
     timing = "asynchronous"
 
     def __init__(self, members, *, stop=None, max_age_ms=5000, army_owner=None, executor=None,
-                 clock=monotonic):
+                 clock=time):  # play.py's clock; WSL's monotonic clock drifts from it
         declared = [kind for kinds, _ in members.values() for kind in _types(kinds)]
         rest = [name for name, (kinds, _) in members.items() if kinds is None]
         if (len(members) != 2 or len(declared) != len(set(declared)) or len(rest) > 1
@@ -205,7 +211,7 @@ class TeamPolicy:
                 row["type"] in _types(member.kinds) if member.kinds is not None
                 else row["type"] not in self.declared))
             if not units or (isinstance(member.kinds, str) and len(units) != 1) or (
-                    self.battle is not None and units != member.units):
+                    self.battle is not None and not units >= member.units):
                 self._fault(f"{name}: expected stable units of {member.kinds or 'the rest'}")
             owned += len(units)
             member.units = units
@@ -232,12 +238,15 @@ class TeamPolicy:
             member.ready = member.future.result()
         except Exception as exc:
             member.future = None
+            forfeit = isinstance(exc, PolicyFailure) and (
+                exc.__cause__ is None or isinstance(exc.__cause__, APIError))
+            if forfeit and self.closed:
+                return  # after the episode a forfeit is only an unsent call: close() discards it
             self._event("failed", name, error=f"{type(exc).__name__}: {exc}",
                         **({"failure": exc.failure} if isinstance(exc, PolicyFailure) else {}))
             if isinstance(exc, BudgetExhausted):
                 raise
-            if isinstance(exc, PolicyFailure) and (
-                    exc.__cause__ is None or isinstance(exc.__cause__, APIError)):
+            if forfeit:
                 member.call = None
                 return
             raise PolicyFailure(f"team {name}/{member.call['decision']}: {exc}",
@@ -271,21 +280,22 @@ class TeamPolicy:
         member.local_refusals += source == "local"
         self.think_s.append(round(latency["think_s"], 3))
         self._event("feedback", name, source=source, ack=deepcopy(ack), latency=latency)
+        member.ready = member.call = None
         try:
             member.policy.acknowledge(deepcopy(ack), dict(latency))
         except Exception as exc:
             raise PolicyFailure(f"team {name} acknowledge: {exc}",
                                 failure={"member": name, "method": "acknowledge"}) from exc
-        member.ready = member.call = None
 
     def decide(self, observation):
         if self.closed or self.selected is not None:
             self._fault("team decision while closed or awaiting selected-member feedback")
         self._partition(observation)
         self.behavior = {"type": "team", "member": None}
-        for name, member in self.members.items():
+        for name, member in self.members.items():  # a stop ends the episode before any new call
             if member.future is not None and member.future.done():
                 self._collect(name, member)
+        for name, member in self.members.items():
             if member.ready is not None:
                 try:
                     self._validate(name, member, observation)
@@ -330,7 +340,8 @@ class TeamPolicy:
 
     def close(self):
         """Stop new work, wait up to CLOSE_WAIT_S for running calls, record what was never
-        sent or acknowledged, and close every member whose call is not still running."""
+        sent or acknowledged, and close every member whose call is not still running. A key,
+        credit or budget stop from a collected call is raised after that."""
         self.closed = True
         self.stop.set()
         self.pool.shutdown(wait=False)
@@ -343,9 +354,7 @@ class TeamPolicy:
             if member.future is not None and not running:
                 try:
                     self._collect(name, member)
-                except BudgetExhausted:
-                    pass  # recorded as failed; the episode is over anyway
-                except PolicyFailure as exc:
+                except (BudgetExhausted, PolicyFailure) as exc:
                     failures.append(exc)
             if member.call is not None:
                 self._event("discarded", name, selected=name == self.selected,
@@ -360,6 +369,9 @@ class TeamPolicy:
             except Exception as exc:
                 self._event("close_failed", name, error=str(exc))
                 failures.append(exc)
+        for exc in failures:
+            if isinstance(exc, BudgetExhausted):
+                raise exc
         if failures:
             raise PolicyFailure(f"team cleanup: {failures[0]}") from failures[0]
 

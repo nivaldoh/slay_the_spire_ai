@@ -298,6 +298,9 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
         if hasattr(policy, "close"):
             try:
                 policy_call(policy, "close")  # in-flight calls are waited for and charged
+            except BudgetExhausted as exc:  # a team member's call that ended with a stop
+                if result["status"] in SCORED:  # an earlier failure keeps its status
+                    result.update(status="budget_exhausted", error=f"controller close: {exc}")
             except Exception as exc:
                 result.update(status="policy_failure", error=f"controller close: {exc}")
         record_exchanges(policy, event)

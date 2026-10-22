@@ -189,7 +189,9 @@ def decision_at(episode: Path, seconds: float) -> str:
             acks[record["request"]] = record
         elif record["kind"] == "decision":
             behavior = record.get("behavior") or {}
-            prompt = (behavior["prompt"], record["time_ms"]) if "prompt" in behavior else None
+            # A team member's prompt shows its own source state, not the dispatch state.
+            prompt = ((behavior["prompt"], behavior.get("source_ms", record["time_ms"]))
+                      if "prompt" in behavior else None)
             commander = behavior.get("type") == "commander"
             if prompt and not commander:
                 asked = prompt

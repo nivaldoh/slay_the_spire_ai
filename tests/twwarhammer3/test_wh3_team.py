@@ -106,6 +106,7 @@ def test_partition_and_deep_public_inputs_use_types_not_positions():
     hidden["friendly"][0].update(target="another_unseen", target_dead=False)
     hidden["terrain"]["bounds"]["private"] = 0
     assert team.project(hidden, "f2") == a.inputs[0]
+    assert team.project(hidden, "f1") == b.inputs[0]  # nor an ally's hidden target
     original_b = deepcopy(b.inputs[0])
     a.inputs[0]["allies"][0]["state"].append("routed")
     a.inputs[0]["terrain"]["rows"][0] = "xxx"
@@ -117,7 +118,8 @@ def test_partition_and_deep_public_inputs_use_types_not_positions():
 
 
 @pytest.mark.parametrize("roster", [[], [team.SWORD], [team.SWORD, team.SWORD],
-                                    [team.SWORD, team.KNIGHT, team.SWORD]])
+                                    [team.SWORD, team.KNIGHT, team.SWORD],
+                                    [team.SWORD, team.KNIGHT, "wh_main_emp_inf_spearmen_0"]])
 def test_ambiguous_or_unexpected_rosters_refuse_before_workers(roster):
     policy, workers, _, _ = make_team()
     observation = state()
@@ -171,13 +173,15 @@ def test_indices_recipient_original_age_and_transport_overage():
 
 def test_the_oldest_completed_batch_goes_first():
     now = [1.0]
-    policy, workers, _, _ = make_team(clock=lambda: now[0])
+    policy, workers, a, b = make_team(clock=lambda: now[0])
     policy.decide(state())
     workers.finish(1)  # cavalry completes first, infantry 0.1 s later
     now[0] = 1.1
     workers.finish(0)
     policy.decide(state(2, 10100))
     assert policy.metadata()["member"] == "cavalry"
+    ack(policy)  # while the infantry holds a batch too
+    assert b.feedback and not a.feedback
 
 
 def test_expiry_boundary_and_outer_validation_feedback():
@@ -370,19 +374,20 @@ def test_live_witness_rejects_formation_settling_and_late_motion(motion, receive
         {"kind": "team", "event": "completed", "decision": "infantry-1",
          "started": 10, "completed": 13},
         {"kind": "decision", "request": "r2", "orders": [move("f1")],
-         "behavior": {"member": "cavalry", "decision": "cavalry-1", "source_ms": 10000}},
+         "behavior": {"member": "cavalry", "decision": "cavalry-1", "source_seq": 0}},
         {"kind": "team", "event": "feedback", "decision": "cavalry-1", "source": "engine",
          "ack": fast_ack,
          "latency": {"delay_ms": 500}},
         {"kind": "decision", "request": "r3", "orders": [move("f2")],
-         "behavior": {"member": "infantry", "decision": "infantry-1", "source_ms": 10000}},
+         "behavior": {"member": "infantry", "decision": "infantry-1", "source_seq": 0}},
         {"kind": "team", "event": "feedback", "decision": "infantry-1", "source": "engine",
          "ack": slow_ack, "latency": {"delay_ms": 3500}},
     ]
+    roster = [{"id": "f1", "type": team.KNIGHT, "x": 10, "z": 0, "state": ["idle"]},
+              {"id": "f2", "type": team.SWORD, "x": 0, "z": 0, "state": ["idle"]}]
     samples = [
-        {"received": 11, "observation": {"orders": fast_ack,
-         "friendly": [{"id": "f1", "type": team.KNIGHT, "x": 10, "z": 0, "state": ["idle"]},
-                      {"id": "f2", "type": team.SWORD, "x": 0, "z": 0, "state": ["idle"]}]}},
+        {"received": 10, "observation": {"seq": 0, "friendly": roster}},  # both members' source
+        {"received": 11, "observation": {"orders": fast_ack, "friendly": roster}},
         {"received": received, "observation": {
          "friendly": [{"id": "f1", "x": 10, "z": 1, "state": motion}]}},
         {"received": 30, "observation": {"orders": slow_ack,
@@ -391,6 +396,10 @@ def test_live_witness_rejects_formation_settling_and_late_motion(motion, receive
     for sample in samples:
         sample["observation"].update(phase="Deployed", time_ms=sample["received"] * 1000)
     assert assess(events, samples, "infantry")["passed"] is passed
+    wrong_age = deepcopy(events)
+    wrong_age[3]["latency"]["delay_ms"] = 600  # not the raw ack minus the raw source time
+    with pytest.raises(AssertionError):
+        assess(wrong_age, samples, "infantry")
     # A self-consistent swapped adapter partition must fail against raw unit types.
     events[0]["ownership"] = {"infantry": "f1", "cavalry": "f2"}
     with pytest.raises(AssertionError):

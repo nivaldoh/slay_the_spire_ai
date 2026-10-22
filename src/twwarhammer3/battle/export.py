@@ -267,6 +267,9 @@ def episode_records(episode: Path, manifest: dict, files: dict) -> tuple[list[di
     if base not in MODEL_POLICIES:
         inventory["excluded"] = "not a built-in model controller"
         return [], inventory
+    if base == "team_llm_rules":  # its exchanges need member identity in the export first
+        inventory["excluded"] = "a model team, not exported yet"
+        return [], inventory
     trace = episode / "trace.jsonl"
     files[str(trace)] = sha256(trace)
     system, system_hash = _prompt(job, base, manifest, files)

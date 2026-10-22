@@ -57,6 +57,8 @@ def validate_orders(orders: list, observation: dict) -> None:
     """Reject orders the observation does not allow; the engine re-checks the rest."""
     friendly = friendly_units(observation)
     enemies = visible_enemies(observation)
+    # A team member may aim abilities at its teammate's units (``allies``), not order them.
+    targets = friendly.keys() | enemies.keys() | {u["id"] for u in observation.get("allies", [])}
     if not isinstance(orders, list):
         raise IllegalActionError("orders must be a list")
     movement = {}
@@ -72,7 +74,7 @@ def validate_orders(orders: list, observation: dict) -> None:
                                      " or null")
         unit, kind = order.get("unit"), order.get("type")
         if unit == "army" and kind == "ability":
-            _validate_army_ability(order, observation, friendly, enemies, settings)
+            _validate_army_ability(order, observation, targets, settings)
             continue
         if unit == "army" and kind in ("build", "reinforce"):
             _validate_purchase(order, observation, purchases)
@@ -133,7 +135,7 @@ def validate_orders(orders: list, observation: dict) -> None:
                 raise IllegalActionError(f"{unit}: unavailable ability {ability!r}")
             if available[ability].get("ready") is False:
                 raise IllegalActionError(f"{unit}: ability {ability!r} is not ready")
-            _validate_ability_target(unit, order, friendly, enemies)
+            _validate_ability_target(unit, order, targets)
 
     # Keep command-specific diagnostics above, then check unused fields too: every
     # field crosses the Lua JSON boundary, even when its command ignores it.
@@ -144,7 +146,7 @@ def validate_orders(orders: list, observation: dict) -> None:
                 raise IllegalActionError(f"order field {field!r} must be a finite number")
 
 
-def _validate_army_ability(order, observation, friendly, enemies, settings) -> None:
+def _validate_army_ability(order, observation, targets, settings) -> None:
     """An army ability is cast by the army ("unit": "army"), not by one of its units."""
     ability = order.get("ability")
     army = {a["key"]: a for a in (observation.get("army") or {}).get("abilities", [])}
@@ -157,7 +159,7 @@ def _validate_army_ability(order, observation, friendly, enemies, settings) -> N
     settings.add(("army", ability))
     if order.get("target") is None and order.get("x") is None:
         raise IllegalActionError(f"army: {ability!r} needs a unit target or x/z")
-    _validate_ability_target("army", order, friendly, enemies)
+    _validate_ability_target("army", order, targets)
 
 
 def _validate_purchase(order, observation, purchases) -> None:
@@ -201,10 +203,10 @@ def _validate_purchase(order, observation, purchases) -> None:
     purchases["spent"] += cost
 
 
-def _validate_ability_target(unit, order, friendly, enemies) -> None:
+def _validate_ability_target(unit, order, targets) -> None:
     target = order.get("target")
     ground = order.get("x") is not None or order.get("z") is not None
-    if target is not None and target not in friendly and target not in enemies:
+    if target is not None and target not in targets:
         raise IllegalActionError(f"{unit}: ability target {target!r} not visible/friendly")
     positioned = all(_finite(order.get(axis)) for axis in ("x", "z"))
     if ground and (target is not None or not positioned):

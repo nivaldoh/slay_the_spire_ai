@@ -10,12 +10,12 @@ from threading import Event
 import pytest
 from test_wh3_play import CONFIG, FakeMailbox
 from test_wh3_prompts import opening
-from test_wh3_team import Script, Workers, ack, move, state
+from test_wh3_team import Script, Workers, ack, make_team, move, state
 from wh3_fixtures import USAGE, FakeSend
 
 from gameai.ledger import BudgetExhausted, Ledger
 from gameai.llm import APIError, usage_cost
-from twwarhammer3.battle import controllers, digest, llm, play, team, watch
+from twwarhammer3.battle import controllers, digest, export, llm, play, report, team, watch
 from twwarhammer3.protocol import PolicyFailure
 
 GUNS = "wh_main_emp_inf_handgunners"
@@ -75,8 +75,8 @@ def test_grouped_members_order_their_own_units_and_only_the_owner_the_army():
     reinforced = {**later, "seq": 3, "friendly": raw["friendly"] + [
         {"id": "f4", "type": team.SWORD, "x": 0, "z": 0, "bearing": 0, "men": 100}]}
     ack(policy)
-    with pytest.raises(team.TeamHarnessError):
-        policy.decide(reinforced)
+    policy.decide(reinforced)  # a bought or summoned unit joins the member owning the rest
+    assert policy.members["line"].units == {"f2", "f3", "f4"}
 
 
 @pytest.mark.parametrize("error,status", [
@@ -117,6 +117,91 @@ def test_a_member_failure_is_a_forfeit_or_ends_the_episode_like_the_single_contr
     events = [json.loads(line) for line in (tmp_path / "e/trace.jsonl").open()]
     failed, = [e for e in events if e.get("event") == "failed"]
     assert failed["member"] == "infantry" and failed["decision"] == "infantry-1"
+
+
+class Failing(Script):
+    def __init__(self, error):
+        super().__init__()
+        self.error = error
+
+    def decide(self, observation):
+        raise self.error
+
+
+@pytest.mark.parametrize("error,status,events", [
+    (BudgetExhausted("cap"), "budget_exhausted", ["failed", "discarded"]),
+    (APIError("HTTP 402: no credits"), "budget_exhausted", ["failed", "discarded"]),
+    (APIError("team closed; request not sent"), "won", ["discarded"]),  # cut short, no forfeit
+    (ValueError("member bug"), "policy_failure", ["failed", "discarded"]),
+])
+def test_a_call_collected_at_cleanup_is_discarded_and_a_stop_still_stops_the_job(
+        tmp_path, error, status, events):
+    policy = team.TeamPolicy({"infantry": (team.SWORD, Failing(error)),
+                              "cavalry": (team.KNIGHT, Script())}, executor=Workers())
+    mailbox = FakeMailbox([state(0, 0), state(1, 1000), state(2, 2000, result="won")])
+    result = play.play_episode(tmp_path / "e", {**CONFIG, "interval_ms": 0},
+                               lambda: policy, mailbox, not_battle=None)
+    assert result["status"] == status and result["engine_ending"]["result"] == "won", result
+    records = [json.loads(line) for line in (tmp_path / "e/trace.jsonl").open()]
+    assert [e["event"] for e in records if e.get("member") == "infantry"
+            and e.get("event") in ("failed", "discarded")] == events
+
+
+def play_two(tmp_path, infantry, cavalry):
+    """The infantry's first call ends at seq 2, the cavalry's only at cleanup."""
+    workers = Workers()
+    policy = team.TeamPolicy({"infantry": (team.SWORD, infantry),
+                              "cavalry": (team.KNIGHT, cavalry)}, executor=workers)
+
+    class Mailbox(FakeMailbox):
+        def wait_observation(self, **kwargs):
+            if self.queue[0]["seq"] == 2:
+                workers.finish(0)
+            return super().wait_observation(**kwargs)
+
+    mailbox = Mailbox([state(0, 0), state(1, 1000), state(2, 2000, ack=True),
+                       state(3, 3000, ack=True)])
+    result = play.play_episode(tmp_path / "e", {**CONFIG, "interval_ms": 0},
+                               lambda: policy, mailbox, not_battle=None)
+    return result, [json.loads(line) for line in (tmp_path / "e/trace.jsonl").open()]
+
+
+def test_a_stop_at_cleanup_keeps_an_earlier_failure(tmp_path):
+    result, _ = play_two(tmp_path, Failing(ValueError("member bug")),
+                         Failing(BudgetExhausted("cap")))
+    assert result["status"] == "policy_failure" and "member bug" in result["error"]
+
+
+def test_a_failed_acknowledgement_is_not_also_discarded(tmp_path):
+    class Deaf(Script):
+        def acknowledge(self, ack, latency):
+            raise ValueError("deaf")
+
+    result, records = play_two(tmp_path, Deaf(), Script())
+    assert result["status"] == "policy_failure" and "deaf" in result["error"]
+    assert not [e for e in records if e.get("event") == "discarded" and e["member"] == "infantry"]
+
+
+def test_a_peer_stop_is_collected_before_a_new_call_starts():
+    policy, workers, _, _ = make_team(Script(), Failing(BudgetExhausted("cap")))
+    policy.decide(state())
+    workers.finish(0)
+    policy.decide(state(2, 10100))  # the infantry's batch goes out
+    ack(policy)
+    workers.finish(1)
+    with pytest.raises(BudgetExhausted):
+        policy.decide(state(3, 10200))
+    assert len(workers.tasks) == 2  # no new infantry call
+
+
+def test_a_member_may_aim_an_ability_at_its_teammates_unit():
+    raw = state()
+    raw["friendly"][0]["abilities"] = [{"key": "aura", "can_use": True}]
+    aura = [{"unit": "f2", "type": "ability", "ability": "aura", "target": "f1"}]
+    policy, workers, _, _ = make_team(Script(aura))
+    policy.decide(raw)
+    workers.finish(0)
+    assert policy.decide({**raw, "seq": 2, "time_ms": 10100}) == aura
 
 
 def test_a_member_never_sees_its_teammate_feedback_notes_or_the_global_ack(tmp_path):
@@ -257,9 +342,18 @@ def test_each_member_is_charged_counted_and_labelled_as_itself(tmp_path):
     feed = watch.Feed("e")
     lines = [line for event in events for line in feed.lines(event)]
     assert "        cavalry-1 refused: f1: target 'e1' is not visible" in lines
-    assert any(line.startswith("    3s -> [cavalry] gpt-6-luna:") for line in lines)
+    # Its second request was built from the 2 s state and dispatched at 3 s.
+    assert any(line.startswith("    2s -> [cavalry] gpt-6-luna:") for line in lines)
     assert feed.usd == pytest.approx(result["llm"]["usd"])
-    path = tmp_path / "e/result.json"  # team evidence from before polls were recorded
+    job = tmp_path / "job"  # report and export do not read member records yet
+    job.mkdir()
+    (tmp_path / "e").rename(job / "episode-0000")
+    manifest = {"config": {"policy": "team_llm_rules", "model": "gpt-6-luna", "effort": "low"}}
+    (job / "manifest.json").write_text(json.dumps(manifest))
+    with pytest.raises(ValueError, match="team episodes"):
+        report.collect([job])
+    assert export.episode_records(job / "episode-0000", manifest, {})[1]["excluded"]
+    path = job / "episode-0000/result.json"  # team evidence from before polls were recorded
     path.write_text(json.dumps({k: v for k, v in json.loads(path.read_text()).items()
                                 if k != "polls"}))
-    assert "describe dispatcher polls" in digest.digest(tmp_path / "e")
+    assert "describe dispatcher polls" in digest.digest(job / "episode-0000")
