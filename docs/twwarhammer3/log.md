@@ -41,6 +41,26 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-22: the script commands the AI's army
+
+Owner request: a mode where the owner plays against the controllers ([plan](multi-agent-plan.md#d-single-client-steps)).
+Branch `wh3-human-opponent` at `de37005`: a session switch `control: "enemy"` gives the
+controllers the AI alliance's units and judges sight, role, sides and result from that
+alliance. $0 probe, one launch per arm, nobody playing the player's army, 1x, scenario
+`emp-helblaster-brt-raiders` checked side-swapped (both arms passed it: the AI's three
+Bretonnian units as friendly, role attacker). Evidence and script:
+`runs/twwarhammer3/human-opponent-probe/`. Reference: uncontrolled, this AI ran 30-93 m in
+its first 11 s (`bench-b16-s4-floor-20261017`).
+- `hold`: **failed** its preset rule (every unit within 5 m). At the first battle
+  observation the three units were already running; they stopped within 3.6 s after 4-7 m
+  and then stayed within 0.1 m for 130 s (clock ratio 1.0002).
+- `rush_nearest`: passed. 518 polls, 0 refused results; melee, rout, rally and new attack
+  orders, a new target after the first routed; ended at 158 s as `lost`, matching the final
+  count (0 active units against the player's 2; clock ratio 1.0001).
+Unverified: whether a person can command the player's army in this mode, sight beyond open
+ground, abilities and magic (still read from the player's army), and anything beyond one
+launch per arm.
+
 ## 2026-10-22: the starting-set screen
 
 Overnight, decisions delegated ([direction](../owner-direction.md)); $0, game 02:37-07:28,

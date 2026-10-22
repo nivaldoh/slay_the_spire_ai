@@ -389,6 +389,26 @@ allied AI army, probing whether the script can keep control of its units for a w
 and which resources (winds of magic, army abilities, commander morale) are per army; then
 model against model, with the battle script driving both alliances, each with its own view.
 
+**The owner as the opponent** (owner request, 2026-10-22; manual testing, never a benchmark
+row). The owner plays the player's army with mouse and keyboard and their own camera; the
+controllers command the AI's army through a session switch (`control: "enemy"`, branch
+`wh3-human-opponent`). This shares model against model's prerequisite: holding a non-player
+army and building its view. The $0 probe ([log](log.md#2026-10-22-the-script-commands-the-ais-army))
+showed control through one whole battle but a 3.6 s start gap. Next, each step after the
+one before it:
+1. Take the AI's units over before its opening order, then repeat both probe arms (hold:
+   every unit within 5 m for 120 s; attack: an engine result matching the final counts).
+2. Give the controllers their own army's abilities, magic, reinforcements, supplies and
+   build slots, or refuse such battles in this mode; refuse custom objectives at first.
+3. A `play` option for the human seat: the switch, no autostart (the owner presses Start),
+   no `--show` or stills, the side-swapped setup check, and register rows labelled with the
+   human opponent and kept out of `stats`, `card` and `report`.
+4. The owner's first battles against scripted controllers: they command every unit, a
+   battle they win reads `lost`, and a unit hidden in woods stays out of the controllers'
+   observation. Then model controllers through OpenRouter.
+
+Proposed checks (not agreed): the step 1 probe and the step 4 battle.
+
 ### E Native team battles
 
 Deferred: there is no second machine for now (owner, 2026-10-21), so this stage and the
