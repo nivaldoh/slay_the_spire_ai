@@ -374,7 +374,8 @@ If decentralized communication later becomes the question, distinguish missing t
 messages from slow central planning. Measure duplicate assignments, abandoned jobs,
 messages and end-to-end effects. Our current centralized public-state interface does not
 establish those communication conditions. One language model per unit adds calls without
-creating a useful experiment by itself.
+creating a useful experiment by itself; the [team-structure plan](team-structures.md) uses it
+as one rung of a ladder at equal compute.
 
 ## Which ideas to use first
 

@@ -16,11 +16,13 @@ Status: a proposal. Of the checks below, only the scripted split-army team's are
 ([AGENTS.md](../../AGENTS.md#verification-hard-rule)); no scoring, counts, spending or game
 sessions are adopted. The [implementation page](multi-agent-implementation.md) describes the
 team as built and its next code. The [evaluation guidelines](evaluation-guidelines.md) apply
-throughout, and this page adds only what teams change. Related designs: the [robot-team
-plan](robot-team-plan.md) (recovery inside one controller), a specialist that owns fixed
-units ([controllers.md item 4](controllers.md#designs-not-built-yet)), a planner over a fast
-executor ([latency rung 5](latency.md#harnesses)) and model against model on one client
-(owner idea, 2026-10-14, [benchmark.md](benchmark.md#later)).
+throughout, and this page adds only what teams change. The options for who commands which
+units (per class, per unit, planner-made groups) are in [team
+structures](team-structures.md). Related designs: the [robot-team plan](robot-team-plan.md)
+(recovery inside one controller), a specialist that owns fixed units ([controllers.md item
+4](controllers.md#designs-not-built-yet)), a planner over a fast executor ([latency rung
+5](latency.md#harnesses)) and model against model on one client (owner idea, 2026-10-14,
+[benchmark.md](benchmark.md#later)).
 
 ## 1 Questions and claims
 
@@ -363,18 +365,22 @@ and its rule are frozen.
 
 ### C First comparison
 
-Reserve a held-out variant of the card first, as the tactic-card process does before a model
-screen. Pilot on one card: a single `llm_rules` controller against two `llm_rules` members
-without messages, each at natural concurrency. Six fresh launches per arm, interleaved in
-one night, plus a few same-night witness launches. Declare the stop rule first: if the split
-wins no more battles than the single controller, report "no benefit observed at n=6 per arm"
-and size no confirmation of divided control; otherwise freeze an unfamiliar partner and size
-a confirmation for a named effect. Rough cost from the one GLM-5.3 low register row on the
-rank-5 line (won, $0.58), assuming the split makes about twice the calls at that price:
-about $10 and 2.5-3 hours (the line's two model launches took 10.4 and 12.9 minutes). A
-message arm follows only if the split is at least even or loses through visible coordination
-failures; equal-budget and helper arms only if it wins (§6). Stop expanding if the interface
-or scenario, rather than a controller choice, explains most failures.
+Revised 2026-10-21: first a screen across team structures (the single controller, two
+members, one per class, one per unit and planner-made groups, three launches each, about
+$10), then a 6 + 6 pilot of at most one structure; see [team
+structures](team-structures.md#6-stages). Reserve a held-out variant of the card before the
+screen, as the tactic-card process does before a model screen; the pilot keeps the rules
+below. Pilot on one card: a single `llm_rules` controller against the chosen structure,
+without messages. Six fresh launches per arm, interleaved in one night, plus a few
+same-night witness launches. Declare the stop rule first: if the split wins no more battles
+than the single controller, report "no benefit observed at n=6 per arm" and size no
+confirmation of divided control; otherwise freeze an unfamiliar partner and size a
+confirmation for a named effect. Rough cost: about $7 when the chosen structure runs
+round-robin (about one controller's calls; $0.58 on the one GLM-5.3 low rank-5 row) and
+$10-14 at natural concurrency, and 2.5-3 hours (the line's two rank-5 model launches took
+about 10 and 13 minutes). A message arm follows only if the split is at least even or loses
+through visible coordination failures; the helper arm only if it wins (§6). Stop expanding
+if the interface or scenario, rather than a controller choice, explains most failures.
 
 ### D Single-client steps
 
@@ -533,12 +539,12 @@ never game packs or campaign saves.
 
 ## 12 Decisions for the owner
 
-1. The first model comparison (§9 C): one card, a single `llm_rules` controller against two
-   `llm_rules` members without messages, 6 + 6 launches, about $10, after the starting-set
-   screen. Messages, equal-budget and helper arms depend on its result.
-2. No separate team screen (§9 B): the card comes from the starting-set screen, and its
-   named shortcut and the team foil must lose before confirmation; protect-and-relocate and
-   Knights/Swordsmen are not first cards.
+1. The first model comparison (§9 C): a structure screen, then a 6 + 6 of at most one
+   structure against a single `llm_rules` controller, after the starting-set screen ([team
+   structures](team-structures.md)). Messages and helper arms depend on its result.
+2. No separate team card screen (§9 B; the structure screen of §9 C is not one): the card
+   comes from the starting-set screen, and its named shortcut and the team foil must lose
+   before confirmation; protect-and-relocate and Knights/Swordsmen are not first cards.
 3. The live witness change on the [implementation
    page](multi-agent-implementation.md#checks): require the fast unit to be idle before its
    order (recount only, no game time).

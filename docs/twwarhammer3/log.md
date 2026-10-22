@@ -41,6 +41,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-21 evening: a plan for team structures
+
+The owner asked for a careful plan of other team structures than the arbitrary two-model
+split (one model per unit, per type, per group chosen by another LLM, and more) and of what
+to visualize ([directions](../owner-direction.md)). Added [team-structures.md](team-structures.md):
+six dimensions of variation, eight structures with question, estimated cost and verdict, the
+call schedule (round-robin at equal compute for the screen), the code on top of `team.py`,
+stages, views and risks. Built from three gatherers (16 prior-work sources, repo costs and
+limits, visualization data), three drafts from different angles, a synthesis and an
+adversarial critique of 19 items, most applied (`ts_critique.md`), and a final fact and coverage check; notes and $0 prototypes in
+`runs/twwarhammer3/team-structures-20261021/`. Measured inputs: GLM-5.3 low costs
+$0.0026-0.0030 a call at 10-20 calls a minute on the line (4 battles), 45-80% of its
+decisions change no order, the mailbox takes about 3.3 batches a second (4 probes), unit
+IDs were stable in 17/17 fresh line launches. Every team cost is an estimate. The plan's
+first paid team step is now a structure screen (about $10) instead of a two-member 6 + 6.
+Documentation only: no game, no spend; nothing here is verified.
+
 ## 2026-10-21 evening: a model team on a branch, offline
 
 The owner was busy (18:47: "follow your best judgement and highlight any meaningful

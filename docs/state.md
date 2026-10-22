@@ -100,9 +100,10 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 5. Your call: yes/no on the [away guidelines](autonomy.md) (the 2026-10-21 away window ran under the proposal, not as its agreed trial; reviews caught 114
    errors in my drafts and commits, 113 fixed); before any campaign launch, yes/no on harness saves in the WH3 profile and on Steam
    achievements (which cannot be undone; a no keeps campaign work to offline drafts).
-6. Team ([§12](twwarhammer3/multi-agent-plan.md#12-decisions-for-the-owner), [log](twwarhammer3/log.md#2026-10-21-evening-a-model-team-on-a-branch-offline)): I adopted the first comparison (one card, `llm_rules` against
-   two members, no messages, about $10) and no separate team screen; reverse either if you disagree.
-   Yours: merge `wh3-model-team` after a $0 live-check rerun (about 12 min)? The stricter live witness?
+6. Team ([structures §8](twwarhammer3/team-structures.md#8-choices-made-for-the-owners-review), [log](twwarhammer3/log.md#2026-10-21-evening-a-model-team-on-a-branch-offline)): I chose a structure screen first (single, two, per class,
+   per unit, planner groups; round-robin, 3 each, about $10, up to $17) over a two-member 6 + 6; reverse if
+   you disagree. Yours: the money (with the model screen it fits only at central estimates); merge
+   `wh3-model-team` after a $0 live-check rerun? The stricter witness?
 
 ## Runtime and ownership
 

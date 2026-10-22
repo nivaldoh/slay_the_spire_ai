@@ -457,8 +457,9 @@ JEV-Star (arXiv 2609.27331) puts a fast action selector under persistent GPT-6 p
 StarCraft II, and its micro-combat wins rose only from 3 to 7 of 105 episodes, so the
 architecture alone does not produce skilled micro.
 
-Not planned: per-unit language models, dynamic agent spawning, debates per unit, and
-vision input. The structured state is already cleaner than screenshots.
+Not planned: dynamic agent spawning, debates per unit, and vision input. The structured
+state is already cleaner than screenshots. Per-unit language models are one rung of the
+[team-structure plan](team-structures.md) (owner, 2026-10-21).
 
 ## Sources and caveats
 
