@@ -41,6 +41,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-22: second review, two team fixes and the screen reader
+
+A five-area review with a skeptic per area (16 findings: 6 confirmed, 1 plausible, 9
+refuted): `runs/twwarhammer3/review-20261022/`. Offline, $0. On `wh3-model-team`: a member's
+batch was checked again on the state at dispatch, so one order made stale while it thought (an enemy gone from sight) refused its whole batch, where the single controller's
+batch is checked on the state it decided on and the engine refuses only that order (in 179
+past episodes about 0.4% of batches, 37 of 8,386, held such an attack; a rough count). The
+team now checks each batch on its member's source view and the play loop skips its second
+check for teams. A member other than the army owner whose units are all destroyed is no
+longer asked. The agreed team test lost its outer-validation assertions (that path is
+gone). Checks at `31823f3`: WH3 and gameai tests 781 passed, 2 skipped; ruff clean; 4 of the
+new and changed tests fail on `73e2ccd` (the army-owner case and the trimmed expiry test
+pass there). Two skeptics then reviewed the fixes: a stale comment, lost coverage of
+`watch`'s refusal line (restored; it fails when that line is broken) and doc wording, all
+fixed. `read_screen.py` now counts floor launches showing the card's marker and flags them
+(it fires on the rank-0 line, where both floors show it). Not fixed: a call cut off at
+cleanup is missing from the team's register cost (state item 6); a call interrupted by a
+queue stop is never charged (cents per stop). Unverified: everything live.
+
 ## 2026-10-21 night: team code review and fixes on the branch
 
 The owner asked for a careful review of the multi-agent code, then, with no time to review,

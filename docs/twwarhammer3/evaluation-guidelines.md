@@ -953,8 +953,8 @@ its effect, or that a claim is fair; those need agreed live checks and reading.
 7. The method set in [7.2](#72-use-the-named-method-for-each-situation) as an agreed check;
    first episode per launch or a declared fixed number of rematches.
 8. Whether a non-designer reviewer will exist, and keeping LLM labels out of scores.
-9. Whether c1 keeps its verdict, printing one line that notes its b34/b36 harness mix and
-   the later scorer changes. A blind recount from the docs and raw files reproduced its
+9. Answered 2026-10-21: c1 keeps its verdict as v1's admitted record. Open: printing one
+   line that notes its b34/b36 harness mix and the later scorer changes. A blind recount from the docs and raw files reproduced its
    counts and verdict (2026-10-21, `runs/twwarhammer3/away-20261021/handoff-c1/`).
 10. What a drift job must show to pass after a build or harness change.
 11. Which providers' text and which stills may be published; where `runs/` is backed up.

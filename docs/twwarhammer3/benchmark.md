@@ -169,8 +169,9 @@ question and the result that would retain, relabel or drop it, plus a time/spend
 If the cap expires without a useful separation, defer it. Another revision needs a named
 failure and a new bounded plan, rather than indefinite calibration.
 
-The immediate unresolved decisions are the chariot rule/version, the proposed checks
-and failure rule, and which starting-set cards (the rank-5 line, the Skaven expendables) go
+The immediate unresolved decisions are the proposed checks (the failure rule was agreed
+2026-10-21), the chariot's remaining second-pass decisions 3-5 (witness v2 at 2 s/2 s
+agreed), and which starting-set cards (the rank-5 line, the Skaven expendables) go
 to confirmation. Exact suite
 membership, a useful effect size and affordable launch count follow from those screens;
 they are not settled by this scope review. The

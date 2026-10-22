@@ -164,7 +164,7 @@ drop out as budget stops.
 1. "The battle never waits": merged as b35 (owner, 2026-10-19).
 2. `c1` finished as evidence, then the
    [second-pass decisions](tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions).
-   Recommended.
+   Answered 2026-10-21: c1 stays v1's admitted record; witness v2 at 2 s/2 s is next.
 3. One pinned backend per model for comparisons (checked: Kimi K3 on Sail Research, GLM-5.3 on
    Decart, Qwen3.6 on Parasail): merged as b36 under delegation (2026-10-19), for review.
 4. At most $20 of OpenRouter credit for P5; more OpenAI cap only if gpt-6.1-sol stays the

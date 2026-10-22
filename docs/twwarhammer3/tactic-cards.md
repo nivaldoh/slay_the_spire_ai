@@ -536,7 +536,9 @@ jobs follow each other within seconds):
   step instead). A card goes to confirmation when no floor won by contact, its witness won
   at least 2 of 3 with the marker on each win, and the rest of its Missing column is done,
   so a screen alone admits no card; any other result goes back to the owner, as do the two
-  probes. Both cards' markers, the line's and the expendables', were agreed with the
+  probes. Added 2026-10-22, proposed, not agreed: the reader also counts floor launches
+  showing the marker and flags any (criterion 4); the flag goes to the owner and does not
+  change the verdict. Both cards' markers, the line's and the expendables', were agreed with the
   go-ahead, before the screen is read. Each reads a unit's first melee at its first frame
   with the engine's melee flag (`markers.py`'s header gives the partner rule). A blind
   re-implementation from the one-line definitions agreed with it on all 17 line episodes

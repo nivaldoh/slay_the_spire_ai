@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-21: what runs, where each game stands, what comes next. Status only:
+Updated 2026-10-22: what runs, where each game stands, what comes next. Status only:
 history goes to the logs ([WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md),
 [first combat](spire/first-combat/README.md)), owner directions to
 [owner-direction.md](owner-direction.md). Under the
@@ -12,7 +12,8 @@ verified at their recorded revisions; the gameplay findings below remain unverif
 Scripted split-army [team](twwarhammer3/multi-agent-implementation.md) (b49): agreed checks
 passed (component at `e8d1eda`, live at `45fe7b0`). A model team is ready on branch
 `wh3-model-team` (offline checks only; [review fixes](twwarhammer3/log.md#2026-10-21-night-team-code-review-and-fixes-on-the-branch));
-it waits for the starting-set screen, which is ready to run on a free night. No game,
+it waits for the starting-set screen, which is ready to run on a free night (approved for
+2026-10-21's night, it did not run: the evening message was read as a busy PC). No game,
 benchmark or paid job is running. The [evaluation guidelines](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need),
 [scope](twwarhammer3/benchmark.md#scope-and-first-release), suite, checks and gates remain proposals;
 [Empire items](twwarhammer3/empire.md) pending. The 2026-10-21 away window (02:20-12:20, offline, $0)
@@ -35,8 +36,8 @@ Priorities (2026-10-18): WH3 first, then Spire; post-training secondary. [Traces
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter ledger $21.33 ($8.84 the Empire night).
 
 Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-to-the-first-release)):
-0. Read the night's [results](twwarhammer3/empire.md#results) and its six
-   [owner items](twwarhammer3/empire.md#for-the-owner-to-decide) (from the rank-5 line card to the export).
+0. Read the night's [results](twwarhammer3/empire.md#results) and its
+   [owner items](twwarhammer3/empire.md#for-the-owner-to-decide); the screen and the line marker were agreed 2026-10-21.
 1. Agree the remaining [correctness checks](twwarhammer3/benchmark.md#correctness-checks-to-agree) (the
    failure rule was agreed 2026-10-21) and the chariot's remaining second-pass decisions (witness v2 at 2 s/2 s agreed); preserve c1's rule. The c1 [recount/rerun](twwarhammer3/benchmark-run.md#independent-rerun-acceptance-proposal)
    handoff is in `runs/twwarhammer3/away-20261021/handoff-c1/` (not shared off this machine).
@@ -86,8 +87,8 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 ## Owner decisions waiting
 
 1. The chariot card: the rest of the [second-pass decisions](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions) 3-5 (gate sizes, reporting, drops;
-   witness v2 at 2 s/2 s was agreed 2026-10-21). [Latency program](twwarhammer3/latency.md#owner-decisions), your call: `c1` as evidence
-   (recommended there), the $20 P5 cap; b36's backend pins await review.
+   witness v2 at 2 s/2 s was agreed 2026-10-21, c1 staying v1's record). [Latency program](twwarhammer3/latency.md#owner-decisions), your call:
+   the $20 P5 cap (it no longer fits beside the planned model and team screens); b36's backend pins await review.
 2. A training host and a route to play a fine-tune; the teacher: OpenAI outputs (may they train a model? 25,503 rows
    excluded: 11,099 in the Spire export `luna-v1-v10-20261017`, 14,404 in WH3's `trace-v2-20261017`), GLM-5.3 or
    rejection-sampled Qwen3.6 ([licenses](posttraining.md#provider-terms)); your call, secondary.
@@ -100,12 +101,16 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 5. Your call: yes/no on the [away guidelines](autonomy.md) (the 2026-10-21 away window ran under the proposal, not as its agreed trial; reviews caught 114
    errors in my drafts and commits, 113 fixed); before any campaign launch, yes/no on harness saves in the WH3 profile and on Steam
    achievements (which cannot be undone; a no keeps campaign work to offline drafts).
-6. Team ([structures §8](twwarhammer3/team-structures.md#8-choices-made-for-the-owners-review), [log](twwarhammer3/log.md#2026-10-21-evening-a-model-team-on-a-branch-offline)): I chose a structure screen first (single, two, per class,
+6. Team ([structures §8](twwarhammer3/team-structures.md#8-choices-made-for-the-owners-review), [log](twwarhammer3/log.md#2026-10-21-night-team-code-review-and-fixes-on-the-branch)): I chose a structure screen first (single, two, per class,
    per unit, planner groups; round-robin, 3 each, about $10, up to $17) over a two-member 6 + 6; reverse if
    you disagree. Yours: the money (with the model screen it fits only at central estimates); merge
    `wh3-model-team` after a $0 live-check rerun? The stricter witness? Parked: members never see an
    out-of-sight enemy as a target (the single controller does, 11 of 24,248); a member bug at cleanup
-   is a policy failure even after the battle ended (a single controller keeps the result).
+   is a policy failure even after the battle ended (a single controller keeps the result). Also differs:
+   a member call cut off at cleanup reaches only the ledger, so `stats` under-counts a slow team's cost.
+   The branch extended the agreed ledger check's test to `team_llm_rules` and dropped the agreed team
+   test's outer-validation assertions (that path is gone); keep both? Stage D's process measures mostly
+   follow from its design, so its pick rule needs care.
 
 ## Runtime and ownership
 
@@ -125,6 +130,7 @@ claim. Missing: training host, fine-tune serving for both games and useful targe
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` attack-route draft, labelled
   v21 before main's v21 (`18dabdd`); renumber before any merge.
-- `wh3-model-team` (`73e2ccd`, worktree `../slay_the_spire_ai-wh3-model-team`, from `9e43143`):
-  two model members on one army (`team_llm_rules`), reviewed; offline checks pass; live check not rerun.
+- `wh3-model-team` (`31823f3`, worktree `../slay_the_spire_ai-wh3-model-team`, from `9e43143`):
+  two model members on one army (`team_llm_rules`), reviewed at `73e2ccd`, its 2026-10-22 fixes by
+  one skeptic; offline checks pass; live check not rerun.
 - Archived drafts are tags (`git tag --list 'archive/*'`).
