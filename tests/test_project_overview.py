@@ -7,6 +7,7 @@ import importlib.util
 from datetime import UTC, datetime
 from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 import pytest
 
@@ -133,3 +134,27 @@ def test_missing_or_unrecognized_inbox_is_reported_instead_of_showing_no_decisio
         "## Branches\n\nNone.\n\n## Runtime and ownership\n\nExisting permissions only.")
     assert Page(render(empty)).decisions == 0
     assert "No decisions recorded." in render(empty)
+
+
+def test_built_guide_links_reach_offline_sources_and_existing_anchors(tmp_path):
+    """Use the real state and guide: a moved code file or heading must break this check."""
+    output = tmp_path / "index.html"
+    state = overview.STATE.read_text(encoding="utf-8")
+    output.write_text(overview.render(state, overview.STATE, output,
+                                     datetime(2026, 10, 22, tzinfo=UTC)), encoding="utf-8")
+    overview.source_pages(state, output)
+    page = Page(output.read_text(encoding="utf-8"))
+    assert len(page.ids) == len(set(page.ids))
+    assert "@/" not in output.read_text(encoding="utf-8")
+    for href in page.links:
+        target = urlsplit(href)
+        if target.scheme:
+            continue
+        destination = (output.parent / unquote(target.path)) if target.path else output
+        assert destination.is_file(), href
+        if target.fragment:
+            linked_page = Page(destination.read_text(encoding="utf-8"))
+            assert unquote(target.fragment) in linked_page.ids, href
+    code = tmp_path / "sources/src/spire/engine/bridge.py.html"
+    assert "class BridgeServer" in " ".join(Page(code.read_text(encoding="utf-8")).text)
+    assert "L1" in Page(code.read_text(encoding="utf-8")).ids

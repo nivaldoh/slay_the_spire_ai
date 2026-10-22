@@ -23,14 +23,20 @@ saw. Actual battles always run unpaused at 1×. [Still image](docs/images/wh3-re
 
 ## Project overview
 
-For a short view of the current state and decisions waiting on the owner, run:
+For a visual guide to the codebase, current state and decisions waiting on the owner, run:
 
 ```bash
 uv run --locked python scripts/project_overview.py
 ```
 
-Open `runs/project-overview/index.html` in a browser. It reads [docs/state.md](docs/state.md),
-works offline, and shows its source date. Rebuild after the state changes; this is a snapshot.
+Open `runs/project-overview/index.html` in a browser. Follow each game's decision loop,
+expand the code map for the main files and tracks, or jump to current work and pending
+decisions. Source links open readable local copies. It works offline without a server
+or browser dependencies.
+
+State and decisions come from [docs/state.md](docs/state.md); the architecture guide lives
+in `scripts/project_overview.html`. Rebuild after changing state, code or the guide;
+the page and its source copies are dated snapshots, not a live monitor.
 
 ## Two games, two kinds of decisions
 

@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-22 (visual project overview): implement the overview as an intuitive guide to
+  all major parts of the codebase, with concise explanations and details available when
+  needed. Keep it simple and lean. On checks: "We don't need to worry too much about
+  that. FOcus on getting the most important points right instead".
 - 2026-10-22 (02:35, overnight), verbatim: "Let's continue to implement what we can during
   this overnight run. I'll be back tomorrow. I'll delegate decisions to you until I'm able
   to review them." Read as a free night (the agreed starting-set screen ran) with decisions
