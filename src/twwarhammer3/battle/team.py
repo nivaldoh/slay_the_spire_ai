@@ -398,7 +398,7 @@ class TeamLLM(llm.LLMPolicy):
         return super().decide(observation)
 
     def acknowledge(self, ack, latency):
-        # A local or outer refusal never reached the engine, so it has no delay to show.
+        # A local refusal never reached the engine, so it has no delay to show.
         super().acknowledge(ack, latency if "delay_ms" in latency else None)
 
     def metadata(self):

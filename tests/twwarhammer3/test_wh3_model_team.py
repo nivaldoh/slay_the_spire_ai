@@ -72,6 +72,9 @@ def test_grouped_members_order_their_own_units_and_only_the_owner_the_army():
     later = {**raw, "seq": 2, "time_ms": 70000}  # no age limit
     assert policy.decide(later) == line.orders
     assert "army" in cavalry.feedback[0][0]["validation_error"]
+    refusal = next(e for e in policy.drain_events() if e["event"] == "feedback")
+    assert watch.Feed("e").lines({"kind": "team", **refusal}) == [
+        f"        cavalry-1 refused: {refusal['ack']['validation_error']}"]
     reinforced = {**later, "seq": 3, "friendly": raw["friendly"] + [
         {"id": "f4", "type": team.SWORD, "x": 0, "z": 0, "bearing": 0, "men": 100}]}
     ack(policy)
