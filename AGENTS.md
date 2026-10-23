@@ -220,8 +220,8 @@ New full-run behavior belongs in `fullrun/`.
 
 A new game gets `src/<game>/`, `configs/<game>/`, `docs/<game>/`, `runs/<game>/` and
 `tests/<game>/`. Slay the Spire predates this and keeps `configs/llm/`, `configs/suites/`,
-`tests/{combat,engine,fullrun,language,ppo,openweight}/`, `tests/test_decisions.py`,
-`tests/test_protocol.py`, `tests/fixtures/`, `runs/fullrun/`, `runs/fullrun-exports/`,
+`tests/{combat,engine,fullrun,language,ppo,openweight}/`, `tests/spire/`,
+`tests/fixtures/`, `runs/fullrun/`, `runs/fullrun-exports/`,
 `runs/first-combat/`, `runs/research-notes/`, `runs/llm-spend.jsonl` and
 `runs/spire-openrouter-spend.jsonl`. Move code into `gameai` when a second game would
 otherwise copy it, not before. The job modules (play, digest, watch, stats) stay per game:
@@ -235,7 +235,7 @@ be unique across `tests/`.
 ```bash
 uv sync --locked
 uv run --locked pytest -ra          # everything; or append tests/twwarhammer3 for WH3
-uv run pytest tests/test_protocol.py -k <pattern>
+uv run pytest tests/spire/test_protocol.py -k <pattern>
 uv run ruff check .
 uv run python -m spire doctor      # read-only runtime check
 uv run python -m spire digest runs/fullrun/<job>   # per-seed table; add /run-0000 [--picks | --floor N]
@@ -380,6 +380,10 @@ Aim for simplicity and readability. Avoid overengineering and bloat. This is not
 Keep the codebase clean and lean.
 
 ## Testing
+
+Start with [tests/README.md](tests/README.md) for the current suites and their limits.
+[docs/testing.md](docs/testing.md) contains proposed guidelines and reference projects;
+it does not add agreed verification methods.
 
 Pytest, `tests/<package>/test_*.py`; no coverage threshold. Prioritize action and target
 identity, stale observations, terminal transitions, reproducible resets and bridge

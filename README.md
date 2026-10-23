@@ -126,6 +126,9 @@ paths; check the integration guides for [Spire](docs/spire/integration.md) and
 [WH3](docs/twwarhammer3/integration.md). Game binaries, mod jars, saves and API keys are
 not included. Offline tests and report generation do not launch a game.
 
+See the [test guide](tests/README.md) for suite boundaries and commands, and the
+[draft testing guidelines](docs/testing.md) for practices and reference projects.
+
 ```bash
 uv sync --locked
 uv run pytest

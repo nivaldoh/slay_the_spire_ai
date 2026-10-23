@@ -49,9 +49,8 @@ packages = ["src/gameai", "src/spire", "src/twwarhammer3"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-# Test modules import each other: a module's own directory is always importable, and
-# full-run and language tests also import fixtures from tests/ and tests/combat.
-pythonpath = ["tests", "tests/combat"]
+# Full-run tests share Spire message builders; language tests still import combat helpers.
+pythonpath = ["tests/spire", "tests/combat"]
 
 [tool.ruff]
 line-length = 100

@@ -7,7 +7,7 @@ import shutil
 import sys
 
 import pytest
-from test_decisions import combat_message
+from spire_messages import combat_message
 
 from gameai.ledger import Ledger
 from spire.__main__ import main

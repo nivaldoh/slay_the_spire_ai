@@ -1,9 +1,11 @@
-"""Agreed 2026-10-21: four $0 diagnostic launches, at most 30 minutes total.
+"""Check that a scripted team member can move while its teammate is delayed.
+
+Four game launches, no paid model calls, at most 30 minutes total.
 
 uv run --locked python tests/twwarhammer3/check_wh3_team.py --output runs/twwarhammer3/...
 
-This is deliberately a truncated capability check, not a scored play job. Uses the
-ordinary menu/battle checks, mailbox loop and owned process; no mid-battle rematches.
+Each launch uses the normal battle setup and ends after checking movement, timing and
+cleanup. It does not measure wins or use rematches.
 Recount saved evidence without launching: --recount EXISTING_OUTPUT.
 """
 import argparse

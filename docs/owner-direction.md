@@ -5,6 +5,13 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-23 (initial testing cleanup), verbatim: "Let's write our testing guidelines down
+  and make some initial progress. I'll review a bit later. Remember, no slop!"
+  First batch: Spire's root tests and shared message builders, plus clearer WH3 check headers.
+- 2026-10-23 (tests): review test organization, readability, coverage and correctness;
+  gather testing guidelines and examples from established projects, as for evaluations.
+  [Draft](testing.md), [current test guide](../tests/README.md). This request does not
+  adopt new verification methods or benchmark rules.
 - 2026-10-23 (Spire profile and restore), verbatim: "Let's take note that we might want to
   unlock things normally first in the game before enabling this then". A tentative note on
   the profile decision in [state-restore.md](spire/state-restore.md#owner-decisions), not

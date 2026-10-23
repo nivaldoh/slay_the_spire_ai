@@ -1,6 +1,6 @@
 """Digests read back what a (fake) job saved; no engine is involved."""
 
-from test_decisions import card, combat_message, message
+from spire_messages import card, combat_message, message
 from test_play import CONFIG, DEATH, MENU, NEOW, ScriptedPolicy, harness
 
 from spire.fullrun import digest, play

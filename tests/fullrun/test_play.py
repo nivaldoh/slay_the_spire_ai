@@ -9,7 +9,7 @@ from copy import deepcopy
 from unittest.mock import Mock
 
 import pytest
-from test_decisions import combat_message, message
+from spire_messages import combat_message, message
 
 from gameai.ledger import BudgetExhausted
 from spire.fullrun import play

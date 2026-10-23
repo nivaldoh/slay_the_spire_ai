@@ -1,8 +1,8 @@
-"""Live verification agreed 2026-10-19; no paid model or scored battle.
+"""Check saved armies, experience ranks and lobby settings in WH3.
 
     uv run --locked python tests/twwarhammer3/check_wh3_army_setup.py --output runs/...
 
-Cold-build and save a mounted, mixed-class army with duplicate Swordsmen at ranks 0/3/9.
+Build and save an army with mounted characters and duplicate Swordsmen at ranks 0/3/9.
 Exercise increases and decreases, clear both armies, restart, load the presets and compare
 lobby types/counts/ranks and battle-start ranks/stats. Runs unpaused at 1x. Re-running
 deletes only the two content-addressed presets for this exact diagnostic scenario.

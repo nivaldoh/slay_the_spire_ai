@@ -4,7 +4,7 @@ import json
 from unittest.mock import Mock
 
 import pytest
-from test_decisions import card, combat_message, message
+from spire_messages import card, combat_message, message
 
 from gameai.ledger import BudgetExhausted, Ledger
 from spire import decisions

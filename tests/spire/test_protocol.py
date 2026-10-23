@@ -1,4 +1,4 @@
-"""Contract tests; original-engine validation is recorded separately in runs/."""
+"""First-combat actions and public observations from synthetic game messages."""
 
 import copy
 import json
