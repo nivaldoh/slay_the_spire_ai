@@ -390,7 +390,7 @@ and which resources (winds of magic, army abilities, commander morale) are per a
 model against model, with the battle script driving both alliances, each with its own view.
 
 **The owner as the opponent** (owner request, 2026-10-22; manual testing, never a benchmark
-row). The owner plays the player's army with mouse and keyboard and their own camera; the
+row; parked by the owner the same day, to implement later from step 1). The owner plays the player's army with mouse and keyboard and their own camera; the
 controllers command the AI's army through a session switch (`control: "enemy"`, branch
 `wh3-human-opponent`). This shares model against model's prerequisite: holding a non-player
 army and building its view. The $0 probe ([log](log.md#2026-10-22-the-script-commands-the-ais-army))

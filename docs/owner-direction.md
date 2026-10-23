@@ -87,6 +87,10 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-22 (human opponent): wrap up the mode where the owner plays against the
+  controllers and remember to implement it later. Resume at step 1 of the
+  [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps); keep branch
+  `wh3-human-opponent` (`de37005`) and its worktree until then.
 - 2026-10-22 (checkpoints and RNG): use reproducible battle situations for benchmarking
   and training; first research the available reset/RNG mechanisms and plan a clean,
   small implementation with repeatable checks. [Plan](twwarhammer3/checkpoints.md).

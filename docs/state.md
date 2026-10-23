@@ -122,5 +122,6 @@ claim. A training host, a way to play fine-tuned models, and useful targets are 
   two model members on one army (`team_llm_rules`), reviewed at `73e2ccd`, its 2026-10-22 fixes by
   one skeptic; offline checks pass; the agreed live check passed 4/4 at the tip (2026-10-22).
 - `wh3-human-opponent` (`de37005`, worktree `../slay_the_spire_ai-wh3-human-opponent`): the
-  controllers command the AI's army so the owner can play against them; [probe and next steps](twwarhammer3/multi-agent-plan.md#d-single-client-steps).
+  controllers command the AI's army so the owner can play against them. Parked by the owner
+  (2026-10-22) to implement later, starting at step 1 of the [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps).
 - Archived drafts are tags (`git tag --list 'archive/*'`).
