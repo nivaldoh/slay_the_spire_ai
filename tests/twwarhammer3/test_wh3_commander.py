@@ -20,7 +20,7 @@ class GatedSend:
 
     def __call__(self, body):
         self.bodies.append(body)
-        assert self.gate.acquire(timeout=5)
+        assert self.gate.acquire(timeout=5), "test did not release the model reply"
         return {"id": "resp", "status": "completed", "usage": USAGE,
                 "output": [{"type": "message", "content": [{"type": "output_text",
                                                              "text": self.replies.pop(0)}]}]}
@@ -32,18 +32,25 @@ def plan(assignments=(), abilities=(), reason="go", notes=None):
         for item in assignments], "abilities": list(abilities), "reason": reason, "notes": notes})
 
 
-def commander(tmp_path, *replies, budget=1.0):
-    send = GatedSend(*replies)
-    agent = CommanderPolicy("gpt-6-luna", "low", Ledger(tmp_path / "ledger.jsonl", budget),
-                            send=send, system_prompt="Command well.")
-    agent.fake = send
-    return agent
+@pytest.fixture
+def commander(tmp_path, request):
+    """Release and close every created worker, including after a failed assertion."""
+    def make(*replies, budget=1.0):
+        send = GatedSend(*replies)
+        agent = CommanderPolicy("gpt-6-luna", "low", Ledger(tmp_path / "ledger.jsonl", budget),
+                                send=send, system_prompt="Command well.")
+        agent.fake = send
+        request.addfinalizer(lambda: finish(agent))
+        return agent
+
+    return make
 
 
 def answer(agent):
     """Let the request in flight return, and wait until it has."""
     agent.fake.gate.release()
-    wait([agent.pending], timeout=5)
+    _, unfinished = wait([agent.pending], timeout=5)
+    assert not unfinished, "model worker did not finish after its reply was released"
 
 
 def finish(agent):
@@ -51,8 +58,8 @@ def finish(agent):
     agent.close()
 
 
-def test_decide_never_waits_and_keeps_one_request_in_flight(tmp_path):
-    agent = commander(tmp_path, plan(), plan())
+def test_decide_never_waits_and_keeps_one_request_in_flight(commander):
+    agent = commander(plan(), plan())
     orders = agent.decide(observation(30000))
     assert orders == [{"unit": "f2", "type": "attack", "target": "e1", "mode": "melee",
                        "run": False, "queue": False}]
@@ -73,14 +80,13 @@ def test_decide_never_waits_and_keeps_one_request_in_flight(tmp_path):
     assert body["instructions"] == "Command well."
     assert body["text"]["format"]["strict"] is True
     assert "assignments" in body["text"]["format"]["schema"]["properties"]
-    finish(agent)
 
 
-def test_plans_are_checked_against_the_state_they_arrive_in(tmp_path):
+def test_plans_are_checked_against_the_state_they_arrive_in(commander):
     reply = plan([{"unit": "f9"}, {"unit": "f1", "skill": "move"},
                   {"unit": "f2", "skill": "shoot"}, {"unit": "f1", "target": "e9"},
                   {"unit": "f2", "skill": "charge", "target": "e2", "x": 5, "z": -60}])
-    agent = commander(tmp_path, reply, plan())
+    agent = commander(reply, plan())
     agent.decide(observation(30000))
     answer(agent)
     agent.decide(observation(36000))
@@ -99,37 +105,34 @@ def test_plans_are_checked_against_the_state_they_arrive_in(tmp_path):
     # Units the plan leaves out keep their assignments.
     assert agent.skills.assignments["f2"]["target"] == "e2"
     assert "(none)" in agent.metadata()["prompt"].split("Dropped or rejected")[1][:60]
-    finish(agent)
 
 
-def test_assignments_may_leave_out_target_and_point(tmp_path):
+def test_assignments_may_leave_out_target_and_point(commander):
     reply = json.dumps({"assignments": [{"unit": "f2", "skill": "hold"}], "abilities": [],
                         "reason": "go", "notes": None})
-    agent = commander(tmp_path, reply, plan())
+    agent = commander(reply, plan())
     agent.decide(observation(30000))
     answer(agent)
     agent.decide(observation(33000))
     assert agent.metadata()["dropped"] == []
     assert agent.skills.assignments["f2"]["skill"] == "hold"
-    finish(agent)
 
 
-def test_only_abilities_builds_reinforcements_and_flight_go_in_abilities(tmp_path):
+def test_only_abilities_builds_reinforcements_and_flight_go_in_abilities(commander):
     move = {"unit": "f2", "type": "move", "x": 5, "z": 1}
-    agent = commander(tmp_path, plan(abilities=[move]), plan())
+    agent = commander(plan(abilities=[move]), plan())
     agent.decide(observation(30000))
     answer(agent)
     orders = agent.decide(observation(33000))
     assert move not in orders and agent.metadata()["abilities"] == []
     assert agent.metadata()["dropped"] == [
         "f2 move (5, 1): not an ability, build, reinforce or flight order"]
-    finish(agent)
 
 
-def test_abilities_are_revalidated_and_sent_once(tmp_path):
+def test_abilities_are_revalidated_and_sent_once(commander):
     roar = {"unit": "f1", "type": "ability", "ability": "roar", "target": None, "x": None,
             "z": None, "facing": None, "width": None}
-    agent = commander(tmp_path, plan(abilities=[roar, dict(roar, ability="fly")]), plan())
+    agent = commander(plan(abilities=[roar, dict(roar, ability="fly")]), plan())
     state = observation(30000)
     state["friendly"][0]["abilities"] = [{"key": "roar", "can_use": True}]
     agent.decide(state)
@@ -138,36 +141,41 @@ def test_abilities_are_revalidated_and_sent_once(tmp_path):
     assert orders[-1] == roar and len(orders) == 2
     assert agent.metadata()["dropped"] == ["f1 ability fly at self: f1: unavailable ability 'fly'"]
     assert roar not in agent.decide(dict(state, time_ms=33500))
-    finish(agent)
 
 
-def test_engine_rejections_reach_the_next_prompt(tmp_path):
-    agent = commander(tmp_path, plan(), plan())
+def test_engine_rejections_reach_the_next_prompt(commander):
+    agent = commander(plan(), plan())
     agent.decide(observation(30000))
     agent.acknowledge({"results": [{"index": 1, "unit": "f2", "ok": False,
                                     "error": "unreachable"}]}, {})
     answer(agent)
     agent.decide(observation(35000))
     assert "engine rejected f2 attack e1 melee: unreachable" in agent.metadata()["prompt"]
-    finish(agent)
 
 
-def test_close_waits_for_the_call_in_flight(tmp_path):
-    agent = commander(tmp_path, plan())
+def test_close_waits_for_the_call_in_flight(commander):
+    agent = commander(plan())
     agent.decide(observation(30000))
-    threading.Timer(0.05, agent.fake.gate.release).start()
-    agent.close()
+    # The timer releases the reply; it does not assert a wall-clock latency bound.
+    release = threading.Timer(0.05, agent.fake.gate.release)
+    release.start()
+    try:
+        agent.close()
+    finally:
+        release.cancel()
+        release.join()
     assert agent.totals["calls"] == 1 and "plans" not in agent.totals
 
 
-def test_budget_and_invalid_replies_surface_from_decide(tmp_path):
-    broke = commander(tmp_path, budget=0.0)
+def test_budget_and_invalid_replies_surface_from_decide(commander):
+    broke = commander(budget=0.0)
     broke.decide(observation(30000))
-    wait([broke.pending], timeout=5)
+    _, unfinished = wait([broke.pending], timeout=5)
+    assert not unfinished, "budget refusal did not finish"
     with pytest.raises(BudgetExhausted):
         broke.decide(observation(31000))
     finish(broke)
-    garbled = commander(tmp_path, "not json", "still not json", plan())
+    garbled = commander("not json", "still not json", plan())
     garbled.decide(observation(30000))
     garbled.fake.gate.release()
     answer(garbled)
@@ -177,7 +185,6 @@ def test_budget_and_invalid_replies_surface_from_decide(tmp_path):
     assert len(failure.value.failure["attempts"]) == 2
     garbled.decide(observation(32000))  # it surfaces once; the next tick asks again
     assert "battle time 32 s" in garbled.metadata()["prompt"]
-    finish(garbled)
 
 
 @pytest.mark.parametrize(("bad", "message"), [
@@ -199,10 +206,10 @@ def test_budget_and_invalid_replies_surface_from_decide(tmp_path):
     ({"assignments": [{"unit": "f2", "target": None}], "abilities": [], "reason": "go",
       "notes": None}, "assignment 1 has no 'skill' field"),
 ])
-def test_off_schema_plans_are_retried_then_fail_as_policy_failure(tmp_path, bad, message):
+def test_off_schema_plans_are_retried_then_fail_as_policy_failure(commander, bad, message):
     # Open-weight backends need not enforce the strict schema; a strict one does.
     bad = json.dumps(bad)
-    agent = commander(tmp_path, bad, plan(), plan())
+    agent = commander(bad, plan(), plan())
     agent.decide(observation(30000))
     agent.fake.gate.release()
     answer(agent)
@@ -211,7 +218,7 @@ def test_off_schema_plans_are_retried_then_fail_as_policy_failure(tmp_path, bad,
     assert error.startswith(message) and retried is None
     assert f"previous reply was invalid: {message}" in agent.fake.bodies[1]["input"][0]["content"]
     finish(agent)
-    failing = commander(tmp_path, bad, bad)
+    failing = commander(bad, bad)
     failing.decide(observation(30000))
     failing.fake.gate.release()
     answer(failing)
@@ -219,4 +226,3 @@ def test_off_schema_plans_are_retried_then_fail_as_policy_failure(tmp_path, bad,
         failing.decide(observation(31000))
     assert failure.value.failure["kind"] == "invalid_reply"
     assert [a["error"][:len(message)] for a in failure.value.failure["attempts"]] == [message] * 2
-    finish(failing)

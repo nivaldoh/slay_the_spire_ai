@@ -140,6 +140,55 @@ def test_report_counts_rejected_replies_once_and_keeps_served_snapshots(tmp_path
     assert metrics["rejections"] == {}  # These replies never became engine orders.
 
 
+def test_report_counts_late_exchanges_once_and_keeps_legacy_attempts(tmp_path):
+    # Capture keeps calls completed after the last executor tick. Repeated controller
+    # metadata and the episode's failure are additional references to the same calls.
+    adopted = {"exchange_id": "m1", "response_id": "r1", "seconds": 3}
+    late = {"exchange_id": "m2", "response_id": "r2", "seconds": 7,
+            "backend_model": "late-snapshot", "error": "invalid JSON"}
+    legacy = {"response_id": "old", "seconds": 5}
+    events = [
+        {"kind": "decision", "behavior": {"attempts": [adopted]}},
+        {"kind": "decision", "behavior": {"attempts": [adopted]}},
+        {"kind": "model_exchange", "id": "m1", "attempts": [adopted]},
+        {"kind": "decision", "behavior": {"attempts": [legacy]}},
+        {"kind": "model_exchange", "id": "m2", "attempts": [late]},
+    ]
+    (tmp_path / "trace.jsonl").write_text("".join(json.dumps(event) + "\n" for event in events))
+
+    metrics = report.trial_metrics(tmp_path, {"failure": {"attempts": [adopted]}})
+
+    assert metrics["call_seconds"] == {"n": 3, "mean": 5, "p50": 5, "p90": 7}
+    assert metrics["reply_validation"] == {"attempts": 3, "failed": 1,
+        "errors": {"invalid JSON": 1}, "failed_responses": 0}
+    assert metrics["backend_models"] == ["late-snapshot"]
+
+
+def test_report_counts_transport_failures_without_response_ids_apart_from_replies(tmp_path):
+    # Model.call captures a failed call without response_id or seconds; internal HTTP
+    # retries are not separate entries. Two exchanges with the same error are two failures.
+    transport = {"transport_error": "connection failed", "uncertain_attempts": 0, "request": {}}
+    first = {**transport, "exchange_id": "m1"}
+    second = {**transport, "exchange_id": "m3"}
+    reply = {"exchange_id": "m2", "response_id": "r1", "seconds": 2}
+    events = [
+        {"kind": "forfeit", "failure": {"attempts": [first]}},
+        {"kind": "model_exchange", "id": "m1", "attempts": [first]},
+        {"kind": "decision", "behavior": {"attempts": [reply]}},
+        {"kind": "decision", "behavior": {"attempts": [reply]}},
+        {"kind": "model_exchange", "id": "m2", "attempts": [reply]},
+        {"kind": "model_exchange", "id": "m3", "attempts": [second]},
+    ]
+    (tmp_path / "trace.jsonl").write_text("".join(json.dumps(event) + "\n" for event in events))
+
+    metrics = report.trial_metrics(tmp_path, {"failure": {"attempts": [second]}})
+
+    assert metrics["reply_validation"] == {"attempts": 1, "failed": 0,
+                                          "errors": {}, "failed_responses": 0}
+    assert metrics["transport_failures"] == 2
+    assert metrics["call_seconds"]["n"] == 1  # unknown transport durations stay unknown
+
+
 def test_rollout_throughput_includes_setup_failures_and_unknown_job_duration(tmp_path):
     played = make_job(tmp_path, "played", [("hold", 0, "lost"), ("skills", .2, "won")])
     failed = make_job(tmp_path, "failed", [])

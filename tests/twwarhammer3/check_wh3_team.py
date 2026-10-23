@@ -1,3 +1,6 @@
+# TODO: what is the purpose of this? Is it just for multi-agent testing? If so, it should be in
+# a separate multi-agent test suite, not here.
+
 """Check that a scripted team member can move while its teammate is delayed.
 
 Four game launches, no paid model calls, at most 30 minutes total.
@@ -6,15 +9,17 @@ uv run --locked python tests/twwarhammer3/check_wh3_team.py --output runs/twwarh
 
 Each launch uses the normal battle setup and ends after checking movement, timing and
 cleanup. It does not measure wins or use rematches.
-Recount saved evidence without launching: --recount EXISTING_OUTPUT.
+Recount saved evidence without launching or writing: --recount EXISTING_OUTPUT.
+To save that recount separately, add --recount-output NEW_CHECKS.json (must not exist).
 """
 import argparse
+import hashlib
 import json
 import math
 import time
 from pathlib import Path
 
-from gameai.provenance import committed_revision, sha256, source_fingerprints, write_json
+from gameai.provenance import committed_revision, git, sha256, source_fingerprints, write_json
 from gameai.windows_game import conflicting_games
 from spire.engine import runtime as spire_runtime
 from twwarhammer3.battle import play, setup, team
@@ -33,10 +38,6 @@ CONFIG = {"speed": 1, "pause": False, "observe_ms": 1000, "tick_ms": 250,
           "record_replay": True, "stills": False, "interval_ms": 0, "delay_ms": 0,
           "start_timeout": 240, "observation_timeout": 10, "episode_timeout": 90,
           "run_timeout": 360}
-
-
-def read_lines(path):
-    return [json.loads(line) for line in path.read_text().splitlines()]
 
 
 def assess(events, samples, slow):
@@ -88,6 +89,9 @@ def assess(events, samples, slow):
 
     baseline = samples[acknowledged]
     initial_distance = distance(unit(baseline))
+    # JUDGEMENT: Movement witness — assistant, 2026-10-21: existing motion can qualify.
+    # Requiring idle samples before acknowledgement would change the live pass rule;
+    # agreement is pending in multi-agent-implementation.md. Keep that rule unchanged here.
     witnesses = [sample for sample in samples[acknowledged + 1:]
                  if completed["started"] <= sample["received"] < completed["completed"]
                  and {"moving", "running"} & set(unit(sample).get("state", []))
@@ -110,23 +114,50 @@ def assess(events, samples, slow):
                       else "no qualifying movement observed; capability unverified"}
 
 
-def recount(output):
+def recount(output, *, destination=None):
+    """Assess saved inputs; only an explicit, new destination receives a verdict.
+
+    Hash the bytes actually parsed, so a later recount identifies its evidence and checker
+    independently of the original launch's plan and verdict.
+    """
+    checker = {"revision": git("rev-parse", "HEAD").strip(),
+               "path": str(Path(__file__).resolve()), "sha256": sha256(Path(__file__)),
+               "dependencies": {str(Path(team.__file__).resolve()): sha256(Path(team.__file__))}}
+    evidence = {}
+
+    def read(relative):
+        evidence[relative] = None  # A missing file is evidence of a failed check too.
+        payload = (output / relative).read_bytes()
+        evidence[relative] = hashlib.sha256(payload).hexdigest()
+        return payload
+
+    try:
+        read("plan.json")  # Preserve identity of the launch settings; old runs may lack it.
+    except OSError:
+        pass
     results = []
     for index, variant in enumerate(VARIANTS):
-        directory = output / f"probe-{index + 1}"
+        prefix = f"probe-{index + 1}"
         slow = "infantry" if variant is team.DelayInfantry else "cavalry"
         try:
-            result = assess(read_lines(directory / "episode/trace.jsonl"),
-                            read_lines(directory / "observations.jsonl"), slow)
-            manifest = json.loads((directory / "manifest.json").read_text())
+            events = [json.loads(line)
+                      for line in read(f"{prefix}/episode/trace.jsonl").splitlines()]
+            samples = [json.loads(line)
+                       for line in read(f"{prefix}/observations.jsonl").splitlines()]
+            result = assess(events, samples, slow)
+            manifest = json.loads(read(f"{prefix}/manifest.json"))
             assert manifest["closed"] and not manifest["remaining_pids"]
             assert manifest["result"]["status"] in ("truncated", "won", "lost", "draw")
         except (OSError, KeyError, AssertionError, StopIteration, ValueError) as exc:
             result = {"passed": False,
                       "reason": f"missing or failed evidence: {type(exc).__name__} {exc}"}
         results.append({"probe": index + 1, "delayed": slow, **result})
-    write_json(output / "checks.json", {"passed": all(r["passed"] for r in results),
-                                         "probes": results})
+    if destination is not None:
+        report = {"passed": all(r["passed"] for r in results), "probes": results,
+                  "checker": checker, "evidence": {"directory": str(output.resolve()),
+                                                      "files": evidence}}
+        with destination.open("x") as stream:
+            stream.write(json.dumps(report, indent=2, sort_keys=True) + "\n")
     return results
 
 
@@ -154,7 +185,7 @@ def run(output):
             break
         if source_fingerprints(play.SOURCES) != fingerprints:
             raise RuntimeError("sources changed during verification")
-        if conflicting_games(spire_runtime.GAME_DIR, spire_runtime.CONFLICTS):
+        if conflicting_games(Path(spire_runtime.WINDOWS_GAME_DIR), spire_runtime.CONFLICTS):
             raise RuntimeError("Slay the Spire is running; no concurrent game controllers")
         directory = output / f"probe-{index + 1}"
         directory.mkdir()
@@ -190,7 +221,7 @@ def run(output):
                 manifest["closed"] = True
                 write_json(directory / "manifest.json", manifest)
         print(f"probe {index + 1}: {manifest['result']['status']}", flush=True)
-    return recount(output)
+    return recount(output, destination=output / "checks.json")
 
 
 if __name__ == "__main__":
@@ -198,8 +229,13 @@ if __name__ == "__main__":
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--output", type=Path)
     group.add_argument("--recount", type=Path)
+    parser.add_argument("--recount-output", type=Path,
+                        help="save a recount to this new file; never replace the original verdict")
     args = parser.parse_args()
-    results = recount(args.recount) if args.recount else run(args.output)
+    if args.recount_output and not args.recount:
+        parser.error("--recount-output requires --recount")
+    results = (recount(args.recount, destination=args.recount_output)
+               if args.recount else run(args.output))
     print(json.dumps([{k: row[k] for k in ("probe", "delayed", "passed", "reason")}
                       for row in results], indent=2))
     raise SystemExit(0 if all(row["passed"] for row in results) else 1)

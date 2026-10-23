@@ -408,8 +408,7 @@ def test_source_changed_mid_export_is_detected(tmp_path, monkeypatch):
 
 @pytest.mark.parametrize("policy_name", ["llm_rules", "commander"])
 def test_play_captures_exchanges_for_export_including_unadopted_final_plan(tmp_path, policy_name):
-    from test_wh3_play import CONFIG, FakeMailbox
-    from wh3_fixtures import USAGE, bridge_observation
+    from wh3_fixtures import CONFIG, USAGE, FakeMailbox, bridge_observation
 
     from gameai.ledger import Ledger
     from twwarhammer3.battle.commander import CommanderPolicy

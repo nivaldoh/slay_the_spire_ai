@@ -1,12 +1,99 @@
-"""Builders that several WH3 test files share. A builder only one file uses stays in that file."""
+"""Inputs and test doubles shared by WH3 tests; expected results stay in each test."""
 import json
 import re
+from collections import deque
+from contextlib import nullcontext
 
 from twwarhammer3.engine import runtime
+from twwarhammer3.protocol import BattleRestarted, MailboxTimeout
 
 USAGE = {"input_tokens": 100, "output_tokens": 20,
          "input_tokens_details": {"cached_tokens": 0},
          "output_tokens_details": {"reasoning_tokens": 5}}
+
+CONFIG = {"policy": "attack_nearest", "episodes": 1, "scenario": "kho5-dwf5", "speed": 1.0,
+          "pause": False, "interval_ms": 5000, "observe_ms": 1000, "tick_ms": 250,
+          "record_replay": False, "stills": False, "start_timeout": 5,
+          "observation_timeout": 5, "episode_timeout": 100, "run_timeout": 100,
+          "attach": False, "results": ""}
+
+
+class FakeMailbox:
+    """Feed a declared sequence to the play loop and record its requests.
+
+    This does not implement file polling, sequence filtering or waiting for a new battle.
+    Real mailbox/Lua tests cover those boundaries. ``ack=True`` fabricates feedback for
+    the pending request; explicit ``orders`` observations can supply mismatched feedback.
+    """
+
+    def __init__(self, observations, *, job="job"):
+        self.queue = deque(observations)
+        self.job = job
+        self.requests = []
+        self.controls = []
+        self.pending = None
+        self.menu = None
+        self.directory = None  # no bridge files unless a test makes some
+        self.menu_outcome = "step 1: found button_battle, clicked\ndone"
+
+    def reset(self):
+        pass
+
+    def write_session(self, session):
+        self.session = session
+
+    def owned_session(self, session):
+        self.write_session(session)
+        return nullcontext()
+
+    def write_menu(self, steps):
+        self.menu = steps
+        return "menu-r"
+
+    def wait_new_battle(self, *, not_battle, timeout):
+        if not self.queue:
+            raise MailboxTimeout("no battle")
+        return self.queue.popleft()
+
+    def wait_observation(self, *, battle, after_seq, timeout):
+        if not self.queue:
+            raise MailboxTimeout("no observation")
+        item = dict(self.queue.popleft())
+        if item["battle"] != battle:
+            raise BattleRestarted(item)
+        if self.pending and item.pop("ack", False):
+            request, orders = self.pending
+            self.pending = None
+            item["orders"] = {"request": request, "based_on": 0,
+                              "applied_ms": item["time_ms"] - 500,
+                              "results": [{"unit": o["unit"], "ok": True, "index": i + 1}
+                                          for i, o in enumerate(orders)]}
+        return item
+
+    def write_orders(self, battle, based_on, orders, say=None):
+        request = f"r{len(self.requests) + 1}"
+        self.requests.append((battle, based_on, orders))
+        self.pending = (request, orders)
+        return request
+
+    def write_control(self, battle, control):
+        self.controls.append((battle, control))
+        return "c"
+
+    def read_observation(self):
+        return None
+
+    def log_offset(self, name="mod.log"):
+        return 0
+
+    def log_since(self, offset, name="mod.log"):
+        if name == "menu.log":
+            result = self.menu_outcome + "\n"
+            if self.menu_outcome.endswith("done") or self.menu_outcome.endswith("failed"):
+                status = "failed" if "failed" in self.menu_outcome else "done"
+                result += f"menu menu-r: {status}\n"
+            return "frontend loaded\n" + (result if self.menu else "")
+        return "[0] loaded battle b1\n"
 
 
 class FakeSend:
@@ -58,7 +145,7 @@ def observation(time_ms=30000, visible=("e1",)):
 def bridge_observation(seq, time_ms, *, battle="b1", phase="Deployed", result=None, ack=False,
                        awaiting=False, enemy=True):
     """A small mailbox observation for the job loop: f1 in melee with e1 at (50, 50).
-    ``ack`` makes test_wh3_play's FakeMailbox attach the pending orders' acknowledgement."""
+    ``ack`` makes FakeMailbox attach the pending orders' acknowledgement."""
     final = {"friendly": {"men": 50, "men0": 100}, "enemy": {"men": 9, "men0": 90}}
     return {
         "schema": 1, "job": "job", "battle": battle, "seq": seq, "phase": phase,

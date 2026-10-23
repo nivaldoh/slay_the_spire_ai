@@ -1,3 +1,5 @@
+# TODO: what even is this "synthetic field-report demo"? Do we still need it?
+
 """Invented WH3 jobs for the synthetic field-report demo; no game is run.
 
 Writes job directories for Demo controllers A, B and C (two launches each, 0/6/10 s added

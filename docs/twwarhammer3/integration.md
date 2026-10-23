@@ -216,6 +216,10 @@ First observed in `runs/twwarhammer3/battle/attack-m3-20261013` (Khorne against 
   A required failure stops the sequence; optional failures continue diagnostics but
   still produce a failed request. Both consumers reject another job's requests.
 
+JUDGEMENT?: Runtime speed fields — legacy mod, 2026-10-13/14; decision author unrecorded.
+`twwarhammer3_battle.lua` emits constants for `speed`/`awaiting_orders`; measured readbacks
+would change which timing violations checks detect. Runtime guards rest on these fields.
+
 ### Units and axes
 
 - The unit fields and visibility filter are specified in `engine/mailbox.py`; the

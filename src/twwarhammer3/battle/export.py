@@ -279,6 +279,9 @@ def episode_records(episode: Path, manifest: dict, files: dict) -> tuple[list[di
                "measures": shared_measures(result, scenario), "final": result.get("final"),
                "objectives": result.get("objectives"), "llm": result.get("llm")}
     group = _group(job, manifest)
+    # JUDGEMENT: Training split — the 2026-10-17 exporter treats every non-held-out job as
+    # development (original decision-maker unrecorded; flagged by Codex, 2026-10-23).
+    # Excluding confirmation/final cohorts instead changes training eligibility.
     split = "held_out" if scenario.get("split") == "held_out" else "development"
     for index, record in enumerate(records):
         record["attempts"], recorded_system = _attempts(record, system, manifest)

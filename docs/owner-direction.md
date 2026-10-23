@@ -5,6 +5,18 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-23 (WH3 live checks), verbatim: "focusing on anything that requires a live
+  battle to actually be executed (ideally without cost first. We can talk about cases
+  that might cost money later)"; "You are free to run the game right now as needed".
+- 2026-10-23 (WH3 eval/test comparison), verbatim: "Consider them relative to each other,
+  and whether there are any inconsistencies, gaps and opportunities for improvement in
+  general. Get rid of any slop you find." Also: "Highlight anything that could still require
+  or at least benefit from my personal review and judgement by taking notes and marking
+  these spots in the codebase."
+- 2026-10-23 (WH3 testing review): review and improve tests, focusing on WH3 methodology,
+  guidelines, coverage, correctness and style; larger structural changes are allowed.
+  Remove slop, gather external testing and agentic-verification practices, and document
+  missing or unclear guidance. This does not adopt new verification methods or benchmark rules.
 - 2026-10-23 (testing continued), verbatim: "Continue to make progress on improving our tests".
 - 2026-10-23 (initial testing cleanup), verbatim: "Let's write our testing guidelines down
   and make some initial progress. I'll review a bit later. Remember, no slop!"

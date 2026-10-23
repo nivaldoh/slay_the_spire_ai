@@ -43,6 +43,9 @@ CARDS = {
         "rule_revision": "5396182",  # the commit that pre-registered the rule
     },
 }
+# JUDGEMENT: Cycle signature — assistant, 2026-10-18: v1 merges sub-3 s gaps and counts
+# acknowledged moves through end+1 s. Requiring separation changes admission and tactic
+# attribution; the owner preserved c1, but new uses of this signature remain a choice.
 MERGE_S = 3  # melee-flag gaps shorter than this are one engagement (1 Hz frames flicker)
 
 
@@ -70,6 +73,8 @@ def outcome(episode: dict) -> str:
     """won, lost, forfeit (a loss) or excluded (rerun). The battle never waits: a controller
     failure or a truncation during a battle forfeits. Game and setup failures, interrupts and
     operator stops (budget_exhausted; an HTTP 402 policy_failure before b35) are excluded."""
+    # REVIEW(owner): adopt the agreed next-evaluator phase rule separately from c1:
+    # score constructor failure as unsuccessful and preserve observed engine endings.
     status = episode.get("status")
     if status == "won" and episode.get("ended_by") != "time_limit":
         return "won"
@@ -143,7 +148,12 @@ def battles(card: dict, directories: list[Path]) -> tuple[list[dict], int]:
     """One row per launch, controller and added age, and how many rematch rows of a
     controller at an added age already counted in its launch were skipped."""
     rows, seen, skipped = [], set(), 0
+    seen_jobs = set()
     for job in directories:
+        job = job.resolve()
+        if job in seen_jobs:
+            continue
+        seen_jobs.add(job)
         try:
             manifest = json.loads((job / "manifest.json").read_text())
         except (OSError, ValueError):
@@ -157,10 +167,10 @@ def battles(card: dict, directories: list[Path]) -> tuple[list[dict], int]:
             control = episode.get("card") or {}
             name = episode.get("policy") or control.get("name") or ""
             age_ms = episode.get("delay_ms") or 0
-            if (job.name, name, age_ms) in seen:
+            if (job, name, age_ms) in seen:
                 skipped += 1
                 continue
-            seen.add((job.name, name, age_ms))
+            seen.add((job, name, age_ms))
             base, model, effort = policy_parts(name, config)
             # A model plays a prompt version (its tuning surface): another version is
             # another row, not a starred pool.
@@ -170,7 +180,7 @@ def battles(card: dict, directories: list[Path]) -> tuple[list[dict], int]:
             battle_s, decisions = episode.get("battle_s"), episode.get("decisions")
             directory = job / str(episode.get("episode"))
             rows.append({
-                "job": job.name, "outcome": outcome(episode),
+                "job": job.name, "instance": str(job), "outcome": outcome(episode),
                 "started": episode.get("started_at") or "",
                 "controller": f"{label}@{model}/{effort}" if model else name,
                 "age_ms": age_ms, "interval_ms": config.get("interval_ms") or 0,
@@ -186,8 +196,8 @@ def battles(card: dict, directories: list[Path]) -> tuple[list[dict], int]:
                 "battle_s": battle_s,
                 "age_p50_s": age_p50,
                 "age_p90_s": delays[-(-9 * len(delays) // 10) - 1] / 1000 if delays else None,
-                # The order in force ages from its application until the next one applies,
-                # so its time-average age is the median order age plus half the decision gap.
+                # A timing proxy, not an exact time average: median issue age plus half
+                # the mean decision gap does not account for unequal gaps or missed orders.
                 "info_age_s": (age_p50 + battle_s / decisions / 2
                                if age_p50 is not None and battle_s and decisions else None),
                 "cycles": cycles(directory),
@@ -213,14 +223,16 @@ def board(name: str, paths: list[Path] | None = None) -> str:
     cells = defaultdict(list)
     for row in rows:
         cells[(row["controller"], row["age_ms"], row["interval_ms"])].append(row)
+    launches = len({row["instance"] for row in rows})
     lines = [f"Card {name}: {card['scenario']} ({card['tactic']})",
-             f"{len(rows)} launches"
+             f"{len(rows)} controller/age rows from {launches} "
+             f"launch{'es' if launches != 1 else ''}"
              + (f" ({skipped} rematch rows of an already counted controller skipped)"
                 if skipped else "")
              + "; a cell mixing setups or controller sources is marked *; added age and"
-             " interval round up to the observation cadence, the age columns are measured",
+             " interval round up to the observation cadence; issue ages are measured",
              f"{'controller':36} age pace   n won forf excl  win [95%]        cycles  "
-             "no-cycle wins  battle s  age p50/p90 s  info age s"]
+             "no-cycle wins  battle s  age p50/p90 s  info proxy s"]
 
     def order(key):
         age = _median([r for r in cells[key] if r["outcome"] != "excluded"], "info_age_s")
@@ -246,9 +258,11 @@ def board(name: str, paths: list[Path] | None = None) -> str:
                      f"{forfeits:4} {len(group) - len(scored):4}  {win:18} {median('cycles'):>5}"
                      f"  {bare:13}  {median('battle_s'):>8}  {median('age_p50_s', 1):>6}"
                      f"/{median('age_p90_s', 1):<5}  {median('info_age_s', 1):>10}")
-    lines.append("cycles (median): deliberate pull-outs followed by a new charge; a win without"
-                 " one did not use the tactic. info age: the median order age plus half the mean"
-                 " decision gap, the time-average age of the order in force")
+    lines.append("cycles (median): acknowledged move attempts during an engagement (through"
+                 " 1 s after its last frame), followed by another engagement; this does not"
+                 " establish separation or a new charge. info proxy: median issue age plus"
+                 " half the mean decision gap, not a measured reaction window or exact time"
+                 " average")
     if unrun:
         lines.append("planned, not run: " + ", ".join(unrun))
     controls = [(foil, 0, 0) for foil in card["foils"]] + list(card["witnesses"])

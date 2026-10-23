@@ -13,10 +13,13 @@ planning a study and for an outside researcher deciding whether to trust a resul
 benchmark is defined in [benchmark.md](benchmark.md), the cards in
 [tactic-cards.md](tactic-cards.md), the commands in [benchmark-run.md](benchmark-run.md).
 
-**Status (guidance revised 2026-10-21; implementation notes from 2026-10-20).** Proposals.
-Nothing here is verified under the
-[hard rule](../../AGENTS.md#verification-hard-rule): a check counts only once the owner
-agrees it and it passes at a named revision. Most rules end with a **Check**: *exists*
+**Status (guidance revised 2026-10-21; reader/test audit 2026-10-23).** Proposals except
+where an owner decision is explicitly dated. The audit is in
+[the testing guide](../testing.md#wh3-evaluations-and-tests-2026-10-23).
+Proposals here add no verification method. Under the
+[hard rule](../../AGENTS.md#verification-hard-rule), a check counts only once the owner
+agrees it and it passes at a named revision; AGENTS.md records those methods. Most rules end
+with a **Check**: *exists*
 (the code is there, but it is verified only if AGENTS.md lists it), *proposed* (not built,
 with a rough size) or *manual* (a person does it).
 
@@ -160,9 +163,10 @@ controller that always pulls out and charges). Variants add no coverage.
 
 The prompt states the objective, the deadline, what a timer ending counts as and any unit
 that must survive. A variant may stay unseen; the success rule may not. Record whether each
-prompt argues for, against or nothing about the tactic. Two live mismatches: the candidate
-Empire line battle's prompt says on its `Battle:` line "if time runs out, you win", while
-its outcome of record (empire.md decision 7, pending owner review) is the contact win; and
+prompt argues for, against or nothing about the tactic. The Empire line battle formerly
+said "if time runs out, you win" despite contact scoring. The owner chose the correction
+on 2026-10-21: b48 and prompts v22/commander v8 disclose `scoring: contact`; component and
+render checks cover it, but those prompts remain unplayed. A separate mismatch remains:
 `system_prompt.md` says "a withdrawal only delays defeat" while `rules_prompt.md` is
 silent, so an `llm` against `llm_rules` gap on the chariot card also measures that sentence.
 
@@ -317,9 +321,9 @@ may pair different controllers (the default, pending [decision
   0.0 m), and identical order timing has replayed long stretches exactly (3 of 6
   episodes of one skills job matched to 530 s; a Bodyguard pair matched through the
   gun's rout at 97 s, then diverged).
-- *Check:* exists: `cards.battles` keeps one row per job, controller and added age.
-  Proposed (small): the board prints launches apart from rows (c1 shows "30 launches" for
-  20 jobs).
+- *Check:* exists: `cards.battles` keeps one row per resolved job directory, controller and
+  added age. The board now prints controller/age rows separately from launches (c1 has
+  30 rows from 20 launches). This fixes a label, not the sampling rule.
 
 ### 4.2 Balance who plays first, and when
 
@@ -435,10 +439,10 @@ investigated with controller names hidden. "Today" means current code and
 | Event | Counts as today | Proposed or open |
 |---|---|---|
 | Engine ending | The card rule applied to it | — |
-| Error after the ending (acknowledgement, `close()`, budget stop) | Can overwrite the ending | Keep the ending; log a reliability failure |
+| Error after the ending (acknowledgement or `close()`) | b47 preserves `engine_ending`, but readers still score the failed status | Owner agreed 2026-10-21: next evaluator scores the ending and reports the reliability failure |
 | Failed decision, battle continues | The eventual ending; lost time and cost count | — |
 | Terminal controller failure; wall cap reached; game silent after the cap | Forfeit (a loss); a foil's forfeit does not count toward its admission launches | Owner: is silence after the cap in a timed battle a game fault? |
-| Controller fails to construct | Excluded (no battle id yet) | Unsuccessful attempt |
+| Controller fails to construct | Excluded (no battle id yet) | Owner agreed 2026-10-21: unsuccessful attempt in the next evaluator |
 | Failed setup check; game silent before the wall cap (no new battle state for 60 s, such as a frozen or accidentally paused game); operator stop; HTTP 401/402 | Invalid: excluded and rerun; the witness verdict takes the next scored launch | Replacement by a rule in the plan ([4.3](#43-freeze-the-whole-study-in-one-plan-file)) |
 | Spend cap reached during a battle | Excluded, like an operator stop | Not yet scored, inside the 5.3 range; size budgets so it cannot happen |
 | Missing provider cost (ledger safety stop) | Excluded as a budget stop | Owner decision |
@@ -447,9 +451,10 @@ investigated with controller names hidden. "Today" means current code and
 | Leak, undeclared helper, a short accidental pause or wrong game speed | Not detected (the mod always reports speed 1, unpaused) | Invalid even if won; the battle-to-wall ratio ([6.2](#62-count-every-decision-per-battle-on-the-right-clock)) catches speed, its band an owner decision |
 | Planned trial never started | Listed only when a plan's job has no manifest | Listed per arm with its reason |
 
-- *Check:* proposed (small): an `engine_result` field set only from the observed result,
-  with a regression test that fails before the fix. Manual, then a test: hand-label about
-  ten real episodes before reading the code's answers (a verification method once agreed).
+- *Check:* agreed component check for preserving `engine_ending`: the late-controller-failure
+  regression in AGENTS.md (b47; acknowledgement and cleanup cases). Scoring that field in
+  the next evaluator remains unimplemented. Proposed: hand-label representative failures
+  before reading the scorer's answers; keep rule selection separate from storage correctness.
 
 ### 5.3 Give every planned trial one visible disposition
 
@@ -508,10 +513,12 @@ episode's battle-to-wall ratio stays in a declared band. Orders apply on 0.3 s t
 frames are 1 Hz, so smaller differences mean nothing. For `commander`, model latency is in
 call times and plan age, not `think_s`.
 
-- *Why:* today only acknowledged requests enter `delays_ms` (a 178.5 s call returning after
+- *Why:* only acknowledged requests enter `delays_ms` (a 178.5 s call returning after
   the ending was missed), and `clock_ratio` stops at the last observation read before the
   final call (since b39, `e2777f4`), so it misses a stall during that call; before b39 a call
-  returning after the ending lowered it.
+  returning after the ending lowered it. The report now includes saved `model_exchange`
+  attempts, including late calls, once in call latency; attempts without recorded durations
+  stay outside that distribution. This does not recover missing durations or fix the clock ratio.
 - *Check:* proposed (small): `result.json` lists every decision (for `commander`, every
   model call) with its time and fate: applied, refused, failed, never acknowledged,
   returned after the ending, or running at close; a test whose simulated call returns after
@@ -755,6 +762,14 @@ compared controller wins nearly every launch (the owner sets the number).
   and `verdict`, with `MERGE_S` and the card's `CARDS` entry (the pattern that keeps
   `spire/protocol.py` stable).
 
+JUDGEMENT: Scorer version check — assistant proposal, 2026-10-20: freeze scorer syntax trees.
+A source manifest plus labelled behavior cases would allow equivalent refactors instead;
+the proposed release check rests on this choice (flagged by Codex, 2026-10-23).
+
+A hash identifies code; it does not establish that its answer is correct. Any version
+scheme still needs independently justified cases, including failures and missing evidence,
+as described in [the testing guide](../testing.md#show-that-a-test-can-detect-a-wrong-result).
+
 ### 9.3 Offer outside checks in three steps, and claim only what each shows
 
 A **recount** from released evidence checks the analysis. An **interface check** (later,
@@ -902,7 +917,8 @@ but never block). The authors are one owner and AI agents in a public repository
 In order of how much a wrong result would cost; build each only when a planned study needs
 it, and rely on one only after the owner agrees its check.
 
-1. Observed endings never lost or overwritten ([5.2](#52-freeze-how-every-trial-is-scored)).
+1. Score preserved engine endings under the agreed next-evaluator rule; storage already
+   has its component regression ([5.2](#52-freeze-how-every-trial-is-scored)).
 2. One `card_result()` for every reader ([5.1](#51-one-success-rule-per-card-in-one-function-told-to-the-controller)).
 3. Every planned trial accounted for ([5.3](#53-give-every-planned-trial-one-visible-disposition), [4.1](#41-count-launches-not-rematches)).
 4. A foil launch counts only after the foil acted ([2.4](#24-attack-each-card-with-shortcuts-and-keep-wins-by-other-tactics)).

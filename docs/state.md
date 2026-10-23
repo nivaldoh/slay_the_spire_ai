@@ -8,9 +8,11 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 WH3 first; Spire waits behind it; post-training is secondary. Three changes await review.
 
-Testing cleanup (Codex): full-run shared setup extracted; disconnect, interruption and
-source-change component checks added. [Two batches](testing.md#initial-cleanup),
-[test guide](../tests/README.md). New checks and broader layout remain for review.
+WH3 eval/test review complete: offline evidence fixes and boundary tests, live-check startup
+guards, and a $0 army/settings rerun including restoration.
+[Findings and owner review](testing.md#wh3-evaluations-and-tests-2026-10-23),
+[live-check comparison](testing.md#wh3-live-check-comparison-2026-10-23), [test guide](../tests/README.md).
+Scoring differences, witnesses and timing readbacks remain marked; new methods await review.
 
 No game or paid job is running. The 2026-10-23 Spire collection night ended at 14:43 UTC: 43
 Qwen3.6 runs, $3.18, 5,122 exported rows with token logprobs

@@ -135,6 +135,26 @@ def test_a_launch_counts_each_controller_once_and_names_a_model_row_by_its_model
     assert rows[0]["setup"][-2:] == (1000, 250)
     assert (rows[1]["age_p50_s"], rows[1]["age_p90_s"]) == (0.6, 2.7)
     assert rows[1]["info_age_s"] == 0.6 + 200 / 100 / 2 and rows[0]["info_age_s"] is None
+    assert "2 controller/age rows from 1 launch (1 rematch" in board("chariot", [job])
+
+
+def test_launch_identity_uses_the_directory_not_its_basename_or_alias(tmp_path):
+    # Each directory is a launch, as in report.collect. Two imported evidence roots can
+    # contain the same job name; passing another path to one launch must not add a trial.
+    first_root, second_root = tmp_path / "first", tmp_path / "second"
+    first_root.mkdir()
+    second_root.mkdir()
+    first = _job(first_root, "job", [_episode(0, "attack_nearest", "lost"),
+                                     _episode(1, "attack_nearest", "won")])
+    second = _job(second_root, "job", [_episode(0, "attack_nearest", "won")])
+    alias = tmp_path / "alias"
+    alias.symlink_to(first, target_is_directory=True)
+
+    rows, skipped = battles(CARDS["chariot"], [first, second, first, alias])
+
+    assert [row["outcome"] for row in rows] == ["lost", "won"]
+    assert skipped == 1  # one actual rematch, not duplicate input paths
+    assert {row["instance"] for row in rows} == {str(first.resolve()), str(second.resolve())}
 
 
 def test_a_cell_served_by_two_model_versions_is_starred_but_an_excluded_launch_is_not(tmp_path):

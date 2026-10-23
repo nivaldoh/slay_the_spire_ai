@@ -5,7 +5,8 @@ These exercise the Lua computation only; actual geometry, reachability and engin
 still need game probes.
 """
 import pytest
-from wh3_lua import battle_source, load_battle, runtime
+from lupa.lua51 import LuaError
+from wh3_lua import load_battle, runtime
 
 
 def test_terrain_grid_uses_engine_bounds_without_math_huge():
@@ -349,7 +350,7 @@ def test_flight_checks_live_state_and_refuses_blocked_changes():
     apply(entry, land)
     assert lua.globals().toggles == 1
     lua.globals().allowed = False
-    with pytest.raises(Exception, match="flight_change_unavailable"):
+    with pytest.raises(LuaError, match="flight_change_unavailable"):
         apply(entry, land)
     unit["is_currently_flying"] = False  # subsequent engine observation confirms landing
     apply(entry, land)
@@ -358,7 +359,7 @@ def test_flight_checks_live_state_and_refuses_blocked_changes():
     apply(entry, lua.table_from({"flying": True}))
     assert lua.globals().toggles == 2
     unit["can_fly"] = False
-    with pytest.raises(Exception, match="cannot_fly"):
+    with pytest.raises(LuaError, match="cannot_fly"):
         apply(entry, land)
 
 
@@ -546,10 +547,46 @@ def test_failed_or_missing_move_predecessor_blocks_queued_successors_but_not_oth
     assert len(g.calls) == 0
 
 
+# JUDGEMENT: Terminal recording check — Codex, 2026-10-23, proposes executing finish with
+# recording callbacks instead of source inspection. This tests ordering and repeat calls;
+# actual file flushing and live capture need separate evidence.
 def test_battle_script_flushes_replay_before_result_publication():
-    finish = battle_source("finish")
-    assert finish.index("record_replay(battle_time(), true)") < finish.index(
-        "publish_observation(battle_time())")
+    # Publishing the result releases the Python loop to copy the recording.
+    lua = runtime()
+    lua.execute("""
+        state = {friendly = {}}
+        bm = {battle = {
+            battle_outcome_decided = function() return true end,
+            victorious_alliance = function() return 1 end,
+            local_alliance = function() return 1 end,
+        }, remove_process = function() end}
+        function battle_time() return 1234 end
+        function sample_custom() end
+        function sample_objectives() end
+        function evaluation() return {} end
+        function log() end
+        calls = {}
+        function record_replay(now, terminal)
+            assert(now == 1234 and terminal == true)
+            calls[#calls + 1] = 'replay'
+        end
+        function record_imagery(now, terminal)
+            assert(now == 1234 and terminal == true)
+            calls[#calls + 1] = 'imagery'
+        end
+        function publish_observation(now)
+            assert(now == 1234 and state.finished and state.result == 'won')
+            calls[#calls + 1] = 'result'
+        end
+    """)
+    _, finish = load_battle(lua, "get", "finish")
+
+    finish()
+    calls = list(lua.globals().calls.values())
+    assert calls[-1] == "result"
+    assert sorted(calls[:-1]) == ["imagery", "replay"]
+    finish()
+    assert list(lua.globals().calls.values()) == calls
 
 
 def test_lua_recorder_is_independent_public_throttled_and_failure_isolated():

@@ -41,6 +41,72 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-23: Live-check audit and free army rerun
+
+Compared the army, team and offline recount checks: [scope and gaps](../testing.md#wh3-live-check-comparison-2026-10-23).
+Army startup now refuses doctor blockers, prints warnings and checks for Spire before each
+launch, restoration included. Both live checkers now use Windows paths for process matching.
+Moved army orchestration tests out of Lua tests; renamed the unchecked restart-settings
+observation and removed its persistence claim. Agreed acceptance assertions are unchanged.
+The agreed army `--integration` check passed across four launches: ten saved units, three
+mounts, ranks 0/1/3/9, attack/defence and relative leadership bonuses, recruitment refusals,
+seven reserves, and exact original-settings restoration. Post-run: no WH3/Spire process or
+session file. Build `25961564` matched its pin; $0, no scored battles or register rows.
+Run: `runs/twwarhammer3/army-check-20261023-eval-review/`; sources are `4a6033f` plus the
+recorded review diff. Executed checker SHA starts `0e0e6824709d`; its saved bytes match.
+The later Windows-path correction has component evidence, not another live rerun.
+Checks: 675 WH3 + 64 documentation cases passed, no failures/skips; Ruff passed after fixing
+one import separator. Four guard cases failed before the first fix; three path cases failed
+before the correction. Independent reviews found that path defect; no remaining blocker.
+Evidence, executed checker and diffs: `runs/testing-wh3-live-20261023/`.
+New marker: JUDGEMENT? `integration.md` Runtime speed fields; constant fields cannot detect
+slowdown. Visibility, other order effects, rematches and model strength remain unverified;
+new check methods remain proposed. No scoring choice or historical verdict was changed.
+
+## 2026-10-23: WH3 eval and test consistency review
+
+Offline follow-up on `4a6033f` plus the pending test cleanup. Fixed distinct job directories
+being collapsed by basename; counted late captured model calls once in report latency and
+kept transport failures separate from replies. Card output now distinguishes rows/launches,
+cycle attempts/achieved movement and a timing proxy/measured age. Team recounts read only
+unless given a new output file, which records the running checker and input-byte hashes.
+The delayed-input regression now catches stale scoring totals with a current timestamp.
+A six-case invented-job audit reproduced card/report/HTML/export disagreements;
+[findings](../testing.md#wh3-evaluations-and-tests-2026-10-23). Scoring rules and c1 stay fixed.
+Review markers: `cards.py` Cycle signature, `report.py` Report denominator,
+`report_assets/report.js` Timer wins, `export.py` Training split,
+`check_wh3_team.py` Movement witness, and evaluation-guidelines.md Scorer version check.
+Interpretation rests on those JUDGEMENT sites; none is approval of a new rule or check.
+Checks: 670 WH3 + 64 documentation cases passed, no failures/skips; Ruff passed. Before-fix regressions
+failed for launch identity, late-call accounting and recount overwrite; stale-total mutation
+missed by the old test is now caught. Saved team evidence recounted 4/4 with original hashes
+unchanged; c1 still admits (30 rows, 20 launches). Independent final review resolved its findings.
+Evidence: `runs/testing-wh3-evals-20261023/` and `runs/testing-eval-review-20261023/`.
+No game, paid call or full-browser check ran; new verification methods remain unagreed.
+
+## 2026-10-23: WH3 test review
+
+Test-only work on `4a6033f`: added foreign job/battle delivery and acknowledgement-identity
+cases; execute Lua finish instead of searching its text. Controlled terminal-call timing,
+registered commander-test worker cleanup, named Lua errors, and moved unchanged shared
+mailbox/config out of `test_wh3_play.py`. Prompt writing now requires `WH3_WRITE_PROMPTS=1`;
+a disposable regression reproduced `=0` overwriting expectations before the fix.
+WH3 suite: 661 passed before, 664 after; 64 doc checks passed; zero failures/skips. Ruff passed.
+All original test names remain; shared helper/config syntax is unchanged except its docstring.
+Six deliberate faults were detected: unrelated ack accepted, terminal call charged to battle
+time, replay omitted, result published early, foreign job accepted, old battle accepted.
+The ack fault previously passed 115 cases; after, 1 failed/115 passed. The time fault failed
+both cases. Each Lua fault failed 1/3 cases; baseline and valid swapped recording order passed 3/3.
+A disposable teardown probe deliberately failed with two gated workers; its follow-up
+confirmed both stopped, and an unfinished-wait probe failed as intended (1 failed, 2 passed).
+Evidence/scripts: `runs/testing-wh3-review-20261023/`; [findings and guidance](../testing.md#wh3-follow-up-2026-10-23).
+New checks rest on JUDGEMENT `tests/twwarhammer3/test_wh3_play.py` Acknowledgement identity,
+`tests/twwarhammer3/test_wh3_mailbox.py` Foreign-order check,
+`tests/twwarhammer3/test_wh3_battle_lua.py` Terminal recording check; draft guidance rests on
+JUDGEMENT `docs/testing.md` Agent review workflow (four new markers).
+New verification methods remain unagreed. No runtime/prompt snapshots changed; no games,
+paid calls or browser checks ran. Recount provenance remains a documented gap.
+
 ## 2026-10-23: battle rewind investigation closed
 
 Unsuccessful: no direct intermediate battle-state load or native RNG restoration was

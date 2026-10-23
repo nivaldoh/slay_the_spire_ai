@@ -48,7 +48,8 @@ def trial_metrics(directory: Path, result: dict) -> dict:
     processing, models, backends, seen_calls = [], set(), set(), set()
     backend_models, reply_errors, failed_responses = set(), Counter(), 0
     attempts = list((result.get("failure") or {}).get("attempts") or [])
-    replies = 0
+    exchanges = {}
+    replies = transport_failures = 0
     trace = directory / "trace.jsonl"
     if trace.exists():
         with trace.open() as handle:
@@ -80,12 +81,22 @@ def trial_metrics(directory: Path, result: dict) -> dict:
                     rejections["validation: " + str(event.get("error", "unknown"))] += 1
                 elif kind == "forfeit":  # a failed decision the episode went on after
                     attempts.extend(event["failure"].get("attempts") or [])
+                elif kind == "model_exchange":
+                    exchanges[event["id"]] = event.get("attempts") or []
+    # Complete exchanges also retain calls finished after the last executor tick. Use
+    # their attempts once; controller/failure metadata repeats them, including failed calls
+    # without response IDs. Keep legacy metadata when no complete exchange was captured.
+    attempts = ([attempt for captured in exchanges.values() for attempt in captured]
+                + [attempt for attempt in attempts if attempt.get("exchange_id") not in exchanges])
     for attempt in attempts:
         response_id = attempt.get("response_id")
         if response_id and response_id in seen_calls:
             continue
         if response_id:
             seen_calls.add(response_id)
+        if "transport_error" in attempt:
+            transport_failures += 1
+            continue  # no reply or measured call duration was captured
         replies += 1
         if attempt.get("status") == "failed":  # the provider's failure, resent unchanged
             failed_responses += 1
@@ -112,6 +123,7 @@ def trial_metrics(directory: Path, result: dict) -> dict:
         "actual_backends": sorted(backends), "backend_models": sorted(backend_models),
         "reply_validation": {"attempts": replies, "failed": sum(reply_errors.values()),
                              "errors": dict(reply_errors), "failed_responses": failed_responses},
+        "transport_failures": transport_failures,
         "decisions_per_battle_s": result.get("decisions", 0) / duration if duration > 0 else None,
         "trace": dict(kinds),
     }
@@ -234,6 +246,9 @@ def collect(jobs: list[Path]) -> dict:
             card = result.get("card") or {}
             if card.get("kind") == "external":
                 label += " / " + str(card.get("source_sha256", "unknown"))[:12]
+            # JUDGEMENT?: Report denominator — legacy reader, 2026-10-14 (author intent
+            # unrecorded; flagged by Codex, 2026-10-23): only engine-ended trials count.
+            # Including card forfeits changes the rate; this remains a diagnostic.
             outcome = "time_limit" if result.get("ended_by") == "time_limit" else result["status"]
             metrics = trial_metrics(directory, result)
             protected = scenario.get("protected") or []

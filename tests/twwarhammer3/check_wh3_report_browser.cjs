@@ -1,3 +1,5 @@
+// TODO: was this for the benchmark report? Or is it some deprecated thing that we can remove?
+
 /* Offline browser check of the WH3 report: no server, network or app build.
 
 One-time Playwright install outside the project (it is a validation tool only):

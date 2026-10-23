@@ -6,12 +6,14 @@ an acknowledgement), ``prompts/llm_opening.txt`` the opening decision (``llm`` a
 ``prompts/commander.txt`` the commander's request after it adopted its first plan. The
 system prompts are the files in ``configs/twwarhammer3/``. A refactor must leave these
 bytes unchanged; after a deliberate prompt change, regenerate and review the diff:
-``WH3_WRITE_PROMPTS=1 uv run pytest tests/twwarhammer3/test_wh3_prompts.py``.
+``WH3_WRITE_PROMPTS=1 uv run --locked pytest tests/twwarhammer3/test_wh3_prompts.py``.
+That command authors expectations; it does not verify them. Then rerun with
+``env -u WH3_WRITE_PROMPTS uv run --locked pytest -ra tests/twwarhammer3/test_wh3_prompts.py``.
+Use a disposable ``--basetemp`` under ``runs/`` for both commands.
 """
 
 import json
 import os
-from concurrent.futures import wait
 from pathlib import Path
 
 from wh3_fixtures import FakeSend
@@ -25,7 +27,7 @@ PROMPTS = Path(__file__).with_name("prompts")
 
 def check(name: str, prompt: str) -> None:
     path = PROMPTS / f"{name}.txt"
-    if os.environ.get("WH3_WRITE_PROMPTS"):
+    if os.environ.get("WH3_WRITE_PROMPTS") == "1":
         path.write_text(prompt)
     assert prompt == path.read_text()
 
@@ -180,12 +182,14 @@ def test_commander_prompt_after_its_first_plan(tmp_path):
         "reason": "hold the gate", "notes": "e3 shells the walls"}
     agent = CommanderPolicy("gpt-6-luna", "low", Ledger(tmp_path / "ledger.jsonl", 1.0),
                             send=FakeSend(json.dumps(plan), json.dumps(plan)))
-    agent.decide(opening())
-    wait([agent.pending], timeout=5)
-    agent.acknowledge({"results": [{"index": 1, "unit": "f2", "ok": False,
-                                    "error": "unit_in_melee"}]}, {})
-    agent.decide(later())
-    agent.close()
+    try:
+        agent.decide(opening())
+        agent.pending.result(timeout=5)
+        agent.acknowledge({"results": [{"index": 1, "unit": "f2", "ok": False,
+                                        "error": "unit_in_melee"}]}, {})
+        agent.decide(later())
+    finally:
+        agent.close()
     check("commander", agent.metadata()["prompt"])
 
 

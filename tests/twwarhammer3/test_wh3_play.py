@@ -3,96 +3,16 @@ restarts, failures, objectives and register rows. Some tests end by reading the 
 digest or stats, which checks what play writes for them."""
 import csv
 import json
-import time
-from collections import deque
 from contextlib import nullcontext
 
 import pytest
-from wh3_fixtures import bridge_observation, observation
+from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation, observation
 
 from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError
 from twwarhammer3.battle import commander, digest, llm, play, report, setup, stats
 from twwarhammer3.battle.scripted import AttackNearest, Hold
-from twwarhammer3.protocol import BattleRestarted, MailboxTimeout, PolicyFailure
-
-
-class FakeMailbox:
-    def __init__(self, observations, *, job="job"):
-        self.queue = deque(observations)
-        self.job = job
-        self.requests = []
-        self.controls = []
-        self.pending = None
-        self.menu = None
-        self.directory = None  # no bridge files unless a test makes some
-        self.menu_outcome = "step 1: found button_battle, clicked\ndone"
-
-    def reset(self):
-        pass
-
-    def write_session(self, session):
-        self.session = session
-
-    def owned_session(self, session):
-        self.write_session(session)
-        return nullcontext()
-
-    def write_menu(self, steps):
-        self.menu = steps
-        return "menu-r"
-
-    def wait_new_battle(self, *, not_battle, timeout):
-        if not self.queue:
-            raise MailboxTimeout("no battle")
-        return self.queue.popleft()
-
-    def wait_observation(self, *, battle, after_seq, timeout):
-        if not self.queue:
-            raise MailboxTimeout("no observation")
-        item = dict(self.queue.popleft())
-        if item["battle"] != battle:
-            raise BattleRestarted(item)
-        if self.pending and item.pop("ack", False):
-            request, orders = self.pending
-            self.pending = None
-            item["orders"] = {"request": request, "based_on": 0,
-                              "applied_ms": item["time_ms"] - 500,
-                              "results": [{"unit": o["unit"], "ok": True, "index": i + 1}
-                                          for i, o in enumerate(orders)]}
-        return item
-
-    def write_orders(self, battle, based_on, orders, say=None):
-        request = f"r{len(self.requests) + 1}"
-        self.requests.append((battle, based_on, orders))
-        self.pending = (request, orders)
-        return request
-
-    def write_control(self, battle, control):
-        self.controls.append((battle, control))
-        return "c"
-
-    def read_observation(self):
-        return None
-
-    def log_offset(self, name="mod.log"):
-        return 0
-
-    def log_since(self, offset, name="mod.log"):
-        if name == "menu.log":
-            result = self.menu_outcome + "\n"
-            if self.menu_outcome.endswith("done") or self.menu_outcome.endswith("failed"):
-                status = "failed" if "failed" in self.menu_outcome else "done"
-                result += f"menu menu-r: {status}\n"
-            return "frontend loaded\n" + (result if self.menu else "")
-        return "[0] loaded battle b1\n"
-
-
-CONFIG = {"policy": "attack_nearest", "episodes": 1, "scenario": "kho5-dwf5", "speed": 1.0,
-          "pause": False, "interval_ms": 5000, "observe_ms": 1000, "tick_ms": 250,
-          "record_replay": False, "stills": False, "start_timeout": 5,
-          "observation_timeout": 5, "episode_timeout": 100, "run_timeout": 100,
-          "attach": False, "results": ""}
+from twwarhammer3.protocol import MailboxTimeout, PolicyFailure
 
 
 def test_episode_decides_waits_for_the_ack_and_the_interval_then_records_the_result(tmp_path):
@@ -176,6 +96,48 @@ def test_default_has_no_wait_and_uses_ack_observation_for_next_decision(tmp_path
     assert [e["kind"] for e in events][-2:] == ["ack", "result"]
     observations = [e for e in events if e["kind"] == "observation"]
     assert observations[1]["since_previous_applied_ms"] == 500
+
+
+# JUDGEMENT: Acknowledgement identity — Codex, 2026-10-23: propose wrong/repeated-request checks.
+# Happy-path acknowledgements alone miss premature dispatch across the mailbox identity boundary.
+# This component check does not establish live delivery or order effects.
+def test_unrelated_and_repeated_acks_do_not_complete_the_pending_request(tmp_path):
+    class Reader(Hold):
+        def __init__(self):
+            self.seen, self.feedback = [], []
+
+        def decide(self, observation):
+            self.seen.append(observation["seq"])
+            return [{"unit": "f1", "type": "halt"}]
+
+        def acknowledge(self, ack, latency):
+            self.feedback.append(ack)
+
+    first_ack = {"request": "r1", "based_on": 1, "applied_ms": 2500,
+                 "results": [{"index": 1, "unit": "f1", "ok": True}]}
+    second_ack = {"request": "r2", "based_on": 3, "applied_ms": 4500,
+                  "results": [{"index": 1, "unit": "f1", "ok": True}]}
+    mailbox = FakeMailbox([
+        bridge_observation(0, 0), bridge_observation(1, 1000),
+        {**bridge_observation(2, 2000), "orders": {**first_ack, "request": "unrelated",
+                                                 "applied_ms": 1500}},
+        {**bridge_observation(3, 3000), "orders": first_ack},
+        {**bridge_observation(4, 4000), "orders": first_ack},
+        {**bridge_observation(5, 5000, result="won"), "orders": second_ack},
+    ])
+    reader = Reader()
+
+    result = play.play_episode(tmp_path / "e", {**CONFIG, "interval_ms": 0},
+                               lambda: reader, mailbox, not_battle=None)
+
+    assert result["status"] == "won"
+    assert reader.seen == [1, 3]
+    assert mailbox.requests == [
+        ("b1", 1, [{"unit": "f1", "type": "halt"}]),
+        ("b1", 3, [{"unit": "f1", "type": "halt"}]),
+    ]
+    assert reader.feedback == [first_ack, second_ack]
+    assert result["delays_ms"] == [1500, 1500]
 
 
 def test_silence_is_an_infrastructure_failure_and_a_new_battle_a_restart(tmp_path):
@@ -296,7 +258,9 @@ def test_a_failed_decision_sends_nothing_and_the_controller_is_asked_again(tmp_p
 
 
 @pytest.mark.parametrize("late", [[{"unit": "f1", "type": "halt"}], ValueError("late bug")])
-def test_a_battle_that_ends_during_a_call_keeps_its_result(tmp_path, late):
+def test_a_battle_that_ends_during_a_call_keeps_its_result(tmp_path, monkeypatch, late):
+    now = [100.0]
+    monkeypatch.setattr(play.time, "time", lambda: now[0])
     mailbox = FakeMailbox([bridge_observation(i, 1000 * i) for i in range(3)]
                           + [bridge_observation(3, 3000, result="won")])
     mailbox.read_observation = lambda: mailbox.queue[0]  # what the game shows now
@@ -305,7 +269,7 @@ def test_a_battle_that_ends_during_a_call_keeps_its_result(tmp_path, late):
         def decide(self, observation):
             while not mailbox.queue[0].get("result"):  # the battle goes on meanwhile
                 mailbox.queue.popleft()
-            time.sleep(0.05)  # the result sat unread while the call went on
+            now[0] += 30  # the result sat unread while the call went on
             if isinstance(late, Exception):
                 raise late
             return late
@@ -315,7 +279,8 @@ def test_a_battle_that_ends_during_a_call_keeps_its_result(tmp_path, late):
     assert mailbox.requests == [] and result["decisions"] == 0
     # The clock ratio stops at the last observation of the running battle: the wall time
     # of the straddling call is not charged to the battle clock.
-    assert result["active_wall_s"] < 0.05
+    assert result["active_wall_s"] == 0
+    assert result["elapsed_seconds"] == 30
 
 
 def test_a_passed_episode_deadline_does_not_hide_a_result_that_is_there(tmp_path):
@@ -354,26 +319,30 @@ def test_a_controller_failure_after_the_ending_keeps_the_engine_result(tmp_path,
 def test_delayed_policy_gets_old_public_state_but_results_use_current_evaluation(tmp_path):
     class Reader(Hold):
         def __init__(self):
-            self.times = []
+            self.inputs = []
 
         def decide(self, observation):
             assert "evaluation" not in observation and "final" not in observation
             assert "setup" not in observation
-            self.times.append(observation["time_ms"])
+            self.inputs.append((observation["time_ms"], observation["friendly"][0]["x"]))
             return []
 
     states = [bridge_observation(0, 0)] + [bridge_observation(i, i * 1000, ack=True)
                                          for i in range(1, 6)]
     for state in states:
+        # Different public positions and private totals distinguish an old policy basis
+        # from current scoring evidence. Populate every excluded field, including final.
+        state["friendly"][0]["x"] = state["seq"] * 10
         state["evaluation"] = {"version": 2, "friendly": {"men0": 100, "active_men": 40},
-                               "enemy": {"men0": 100, "active_men": 20,
+                               "enemy": {"men0": 100, "active_men": 100 - 16 * state["seq"],
                                          "units": {"registered": 5, "destroyed": 2}}}
         state["setup"] = {"private": True}
+        state["final"] = {"private": "must not reach a controller"}
     reader = Reader()
     mailbox = FakeMailbox(states)
     result = play.play_episode(tmp_path / "e", {**CONFIG, "delay_ms": 2000, "interval_ms": 0},
                                lambda: reader, mailbox, not_battle=None)
-    assert reader.times == [1000, 2000, 3000]
+    assert reader.inputs == [(1000, 10), (2000, 20), (3000, 30)]
     assert [request[1] for request in mailbox.requests] == [1, 2, 3]
     assert result["delays_ms"] == [2500, 2500]
     assert result["status"] == "infrastructure_failure"

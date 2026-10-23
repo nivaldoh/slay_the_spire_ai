@@ -1,9 +1,8 @@
 """Every script packed into the game must compile as Lua 5.1, the game's Lua version."""
 import json
-import sys
 
-import check_wh3_army_setup as army_check
 import pytest
+from lupa.lua51 import LuaError
 from wh3_lua import MOD, runtime
 
 
@@ -54,7 +53,7 @@ def test_experience_setter_matches_sorted_types_duplicates_and_refuses_game_reje
     run(step([("sword", 0)]), "")
     assert lua.globals().calls == 26
     lua.globals().refused = True
-    with pytest.raises(Exception, match="experience did not change"):
+    with pytest.raises(LuaError, match="experience did not change"):
         run(step([("sword", 1)]), "")
 
 
@@ -131,7 +130,7 @@ def test_recruitment_permission_and_cost_are_separate_checks_before_mutation(
     run, state = recruit_context
     state.update(allowed=allowed, main_funds=remaining)
     before = {pool: list(army) for pool, army in state["pools"].items()}
-    with pytest.raises(Exception, match=error):
+    with pytest.raises(LuaError, match=error):
         run()
     assert state["commands"] == [] and state["pools"] == before
 
@@ -163,7 +162,7 @@ def test_mounts_select_a_matching_duplicate_and_require_both_type_count_changes(
         run(mount="hero_horse")
         assert state["pools"]["UnitList"] == ["hero", "hero_horse", "hero_horse", "lord"]
     else:
-        with pytest.raises(Exception, match="mount did not change"):
+        with pytest.raises(LuaError, match="mount did not change"):
             run(mount="hero_horse")
         assert state["pools"]["UnitList"] == sorted(
             ["hero", mounted_type or "hero", "hero_horse", "lord"])
@@ -175,80 +174,7 @@ def test_mounts_select_a_matching_duplicate_and_require_both_type_count_changes(
 def test_recruitment_requires_the_game_to_add_a_card_before_mounting(recruit_context):
     run, state = recruit_context
     state["accept_recruitment"] = False
-    with pytest.raises(Exception, match="recruitment did not add"):
+    with pytest.raises(LuaError, match="recruitment did not add"):
         run(mount="hero_horse")
     assert len(state["commands"]) == 1
     assert state["pools"]["UnitList"] == ["hero", "hero_horse", "lord"]
-
-
-@pytest.mark.parametrize("failure", [None, KeyboardInterrupt()])
-def test_live_checker_restores_saved_settings_after_teardown_even_on_interruption(
-        tmp_path, monkeypatch, failure):
-    output, events = tmp_path / "check", []
-    original = {"difficulty": "ai_level_normal", "realism": False}
-
-    def checks(args):
-        assert args.integration
-        (args.output / "original-settings.json").write_text(json.dumps(original))
-        events.append("checks")
-        try:
-            if failure is not None:
-                raise failure
-        finally:
-            events.append("game teardown")
-
-    def restore(directory):
-        assert events == ["checks", "game teardown"]
-        assert directory == output
-        assert json.loads((directory / "original-settings.json").read_text()) == original
-        events.append("restored")
-
-    monkeypatch.setattr(sys, "argv", ["army-check", "--integration", "--output", str(output)])
-    monkeypatch.setattr(army_check, "run_checks", checks)
-    monkeypatch.setattr(army_check, "restore_settings", restore)
-    if failure is None:
-        army_check.main()
-    else:
-        with pytest.raises(KeyboardInterrupt) as caught:
-            army_check.main()
-        assert caught.value is failure
-    assert events == ["checks", "game teardown", "restored"]
-
-
-@pytest.mark.parametrize("primary", [None, RuntimeError("battle check failed")])
-def test_live_checker_records_restore_failure_and_preserves_the_primary_exception(
-        tmp_path, monkeypatch, capsys, primary):
-    output = tmp_path / "check"
-    recovery = OSError("settings could not be restored")
-
-    def checks(args):
-        (args.output / "original-settings.json").write_text("{}")
-        if primary is not None:
-            raise primary
-
-    def restore(directory):
-        assert directory == output
-        raise recovery
-
-    monkeypatch.setattr(sys, "argv", ["army-check", "--integration", "--output", str(output)])
-    monkeypatch.setattr(army_check, "run_checks", checks)
-    monkeypatch.setattr(army_check, "restore_settings", restore)
-    with pytest.raises(type(primary or recovery)) as caught:
-        army_check.main()
-    assert caught.value is (primary or recovery)
-    assert json.loads((output / "restore-error.json").read_text()) == {
-        "error": "settings could not be restored", "error_type": "OSError"}
-    assert "setting restoration failed: settings could not be restored" in capsys.readouterr().err
-
-
-def test_live_checker_does_not_restore_without_an_original_snapshot(tmp_path, monkeypatch):
-    def fail_before_snapshot(args):
-        raise RuntimeError("lobby never opened")
-
-    monkeypatch.setattr(sys, "argv", ["army-check", "--integration", "--output",
-                                      str(tmp_path / "check")])
-    monkeypatch.setattr(army_check, "run_checks", fail_before_snapshot)
-    monkeypatch.setattr(army_check, "restore_settings",
-                        lambda output: pytest.fail("no saved settings"))
-    with pytest.raises(RuntimeError, match="lobby never opened"):
-        army_check.main()

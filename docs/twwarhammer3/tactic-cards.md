@@ -259,9 +259,11 @@ stops are excluded and listed with any replacements. A recoverable failed call c
 battle time but is not itself a terminal forfeit: score the final episode. No selective
 reruns for slow or garbled replies. Any backend repair starts a separately labelled cohort.
 Native-objective cards need their own declared success rule before use.
-Construction and post-terminal errors need the proposed
-[phase rule and checks](benchmark.md#correctness-checks-to-agree); current code does not
-implement that proposal. Preserve the frozen historical verdicts.
+The owner agreed the [phase rule](benchmark.md#correctness-checks-to-agree) for the next
+evaluator on 2026-10-21: construction failures are unsuccessful attempts, and an observed
+engine ending survives later controller errors. The loop preserves `engine_ending`, but
+current readers do not yet score those cases by the new rule. Preserve frozen historical
+verdicts when adopting the next evaluator.
 
 Show signature evidence, p50/p90 issue age, decision gaps, pending/failed calls, cost and
 failure counts beside each rate. The report's rate over engine-completed trials is a

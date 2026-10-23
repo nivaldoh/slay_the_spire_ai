@@ -82,7 +82,8 @@ def test_requests_are_distinct_and_wait_for_consumption(mailbox):
     assert not (mailbox.directory / "orders.json.tmp").exists()
 
 
-def test_new_mailbox_requests_reach_lua_without_disabling_duplicate_rejection(mailbox):
+@pytest.fixture
+def order_consumer(mailbox):
     # Real files, JSON decoder and poll; only unrelated game callbacks are stubbed.
     lua = runtime()
     lua.execute((MOD / "script/_lib/mod/twwarhammer3_json.lua").read_text())
@@ -92,6 +93,12 @@ def test_new_mailbox_requests_reach_lua_without_disabling_duplicate_rejection(ma
     globals_.session = lua.table_from({"job": mailbox.job})
     globals_.state = lua.table_from({"battle": "b1"})
     _, poll = load_battle(lua, "read_file", "poll")
+    return globals_, poll
+
+
+def test_new_mailbox_requests_reach_lua_without_disabling_duplicate_rejection(
+        mailbox, order_consumer):
+    globals_, poll = order_consumer
     path = mailbox.directory / "orders.json"
     replacement = Mailbox(mailbox.directory, job=mailbox.job)
     for box in (mailbox, replacement):
@@ -109,6 +116,34 @@ def test_new_mailbox_requests_reach_lua_without_disabling_duplicate_rejection(ma
         poll()
         assert not path.exists()
         assert globals_.state.pending is None, "duplicate delivery must still be rejected"
+
+
+# JUDGEMENT: Foreign-order check — Codex, 2026-10-23, proposes real files and Lua poll to
+# check the documented job/battle boundary and recovery. A live Windows check would also
+# cover cross-process delivery; these cases establish component behavior only.
+@pytest.mark.parametrize("foreign", [{"job": "another-job"}, {"battle": "old-battle"}],
+                         ids=["other-job", "previous-battle"])
+def test_lua_rejects_foreign_orders_without_poisoning_the_next_request(
+        mailbox, order_consumer, foreign):
+    globals_, poll = order_consumer
+    current = mailbox.write_orders("b1", 7, [{"unit": "f1", "type": "halt"}])
+    poll()
+    path = mailbox.directory / "orders.json"
+    following = mailbox.write_orders("b1", 8, [{"unit": "f2", "type": "halt"}])
+    message = json.loads(path.read_text())
+
+    path.write_text(json.dumps({**message, **foreign}))
+    poll()
+
+    assert not path.exists()
+    assert globals_.state.pending.request == current
+    assert globals_.state.last_request == current
+    # Rejection must not reserve the ID and thereby discard its valid delivery later.
+    path.write_text(json.dumps(message))
+    poll()
+    assert not path.exists()
+    assert globals_.state.pending.request == following
+    assert dict(globals_.state.pending.orders[1]) == {"unit": "f2", "type": "halt"}
 
 
 def test_session_and_log_slices(mailbox):

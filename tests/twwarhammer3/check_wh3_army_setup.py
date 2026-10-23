@@ -7,7 +7,8 @@ Exercise increases and decreases, clear both armies, restart, load the presets a
 lobby types/counts/ranks and battle-start ranks/stats. Runs unpaused at 1x. Re-running
 deletes only the two content-addressed presets for this exact diagnostic scenario.
 --integration also tests disturbed settings, permission/funds refusal, a fixed reserve
-pool, persistence across owned shutdown/restart and restoration of the original settings.
+pool and restoration of the original settings. It records settings after owned restart;
+it does not require changed lobby settings to persist through supervised shutdown.
 """
 
 import argparse
@@ -19,6 +20,8 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from gameai.provenance import git, sha256, source_fingerprints, write_json
+from gameai.windows_game import conflicting_games
+from spire.engine import runtime as spire_runtime
 from twwarhammer3.battle import setup
 from twwarhammer3.battle.play import SOURCES, start_frontend
 from twwarhammer3.engine.doctor import collect_diagnostics
@@ -179,6 +182,8 @@ SESSION = {"menu": True, "enabled": True, "autostart": True, "observe_ms": 250,
 def launch_phase(output):
     output.mkdir(exist_ok=True)
     with RuntimeLock():
+        if conflicting_games(Path(spire_runtime.WINDOWS_GAME_DIR), spire_runtime.CONFLICTS):
+            raise RuntimeError("Slay the Spire is running; no concurrent game controllers")
         write_json(output / "deployment.json", prepare_runtime())
         mailbox = Mailbox(BRIDGE_DIR, job=output.parent.name + "-" + output.name)
         mailbox.reset()
@@ -240,9 +245,13 @@ def compare_routes(mailbox, output, baseline_path):
 
 def run_checks(args):
     environment = collect_diagnostics()
+    write_json(args.output / "environment.json", environment)
+    for warning in environment["warnings"]:
+        print("WARNING: " + warning, flush=True)
+    if environment["blockers"]:
+        raise RuntimeError(environment["blockers"])
     spec = scenario()
     build = environment["game"]["steam_build_id"]
-    write_json(args.output / "environment.json", environment)
     write_json(args.output / "scenario.json", spec)
     write_json(args.output / "sources.json", {
         "files": source_fingerprints(SOURCES), "check_sha256": sha256(Path(__file__)),
@@ -273,7 +282,8 @@ def run_checks(args):
                                  "unit_scale": "unit_scale_small", "realism": True}
                     run_steps(mailbox, output, set_settings(disturbed))
             elif phase == "load" and args.integration:
-                checks["persisted_settings"] = snapshot
+                # Observation only: the declared settings are reapplied below.
+                checks["restart_settings_observed"] = snapshot
             if phase in ("save", "reserves"):
                 delete = []
                 for army in setup.sides(current):

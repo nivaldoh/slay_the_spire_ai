@@ -9,8 +9,7 @@ from threading import Event
 
 import pytest
 from check_wh3_team import assess
-from test_wh3_play import CONFIG, FakeMailbox
-from wh3_fixtures import bridge_observation
+from wh3_fixtures import CONFIG, FakeMailbox, bridge_observation
 
 from twwarhammer3.battle import digest, play, team
 

@@ -114,6 +114,9 @@
   }
   // "ai_level_very_hard" -> "very hard": the game's battle AI difficulty, where recorded.
   const level = (item) => item.difficulty?.replace(/^ai_level_/, "").replaceAll("_", " ");
+  // JUDGEMENT?: Timer wins — the 2026-10-16 report uses engine wins (author intent unrecorded).
+  // A contact-card view would exclude timer wins; this choice controls displayed wins and
+  // scores. Codex flagged it 2026-10-23; the completed-battle view itself was owner-directed.
   const won = (entry) => (entry.trial.engine_outcome || entry.trial.outcome) === "won";
   const draw = (entry) => (entry.trial.engine_outcome || entry.trial.outcome) === "draw";
   // A commander's record beside its score: "won 1 of 6", "lost its only battle".
