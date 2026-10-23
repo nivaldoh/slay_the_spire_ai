@@ -75,26 +75,55 @@ game. Not captured:
 - WH3 hidden state between the start and the end of a battle, so decision rewards cannot
   use the enemy's true losses.
 
-- Token log-probabilities of the model that played. They are not requested, and GLM/Kimi
-  sampling defaults are not recorded. The pinned backends' public listing (2026-10-18,
-  rechecked 2026-10-21) offers them on Qwen's Parasail and on Kimi's `sail-research/fp4/us`
-  endpoint, not on GLM's Decart; it offers a seed, temperature and top_p on all three.
-  Requesting any of them is a `providers.py` change, so a new harness revision and declared
-  condition, and Kimi's pin covers both its endpoints, so getting log-probabilities there
-  may need a narrower route (untried). Without them, the behavior probabilities that some
-  importance-weighted updates need cannot be reconstructed; that does not rule out all
-  offline RL. For example,
+- Token log-probabilities of the model that played, except Qwen3.6 in Spire since harness
+  v10.2 (below). WH3 does not request them. GLM's pinned Decart endpoint does not list
+  them, and Kimi's pin covers an endpoint without them (untried). Without them, the
+  behavior probabilities that importance-weighted updates need cannot be reconstructed;
+  that does not rule out all offline RL. For example,
   [IQL](https://arxiv.org/html/2110.06169v1) uses recorded transitions and
   advantage-weighted imitation without saved behavior probabilities.
   Suitability still depends on state/action coverage,
   transitions, rewards and the chosen method; it has not been established for these rows.
 - More than one reply per state, which preference methods such as DPO pair up. Saved
   prompts allow resampling offline later; the outcome of another action needs the game.
-- A sampler seed: none is sent.
+- A reproducible sampler: Parasail accepted a seed on 2026-10-23, but one seed gave two
+  different Qwen3.6 replies (2 calls), so none is sent.
 - Play by a model outside OpenAI and OpenRouter, which online RL needs ([Missing](#missing)).
 
 No RL or preference run has used these data yet, so their fitness is unverified
 ([AGENTS.md](../AGENTS.md#verification-hard-rule)).
+
+**Spire capture since harness v10.2 (2026-10-23).** The owner asked that day to improve
+capture for RL and other methods before any collection run; WH3 capture is unchanged.
+
+- Token logprobs: Spire asks Qwen3.6 for each output token's logprob and its top 10
+  alternatives (`LOGPROBS` in [`providers.py`](../src/gameai/providers.py)). The
+  `model_exchange` event keeps them in the output items, and `spire export` writes them to
+  `logprobs.jsonl`. They are the backend's distribution after the strict schema's mask
+  (masked alternatives read -9999), the same constrained policy that acted. The reply
+  starts with `choice`, so the alternatives at its digit give the probability of every
+  candidate below 10 (99.5% of the 187 model decisions of the 2026-10-17 Qwen3.6 run had at
+  most 10 candidates). In 3 of the 4,759 attempts of 2026-10-23 the backend left out a "<"
+  token after a digit; the export flags those rows `logprobs_incomplete`.
+- Save snapshots: each new version of the game's autosave, copied into `run-NNNN/saves/`
+  with a `save_snapshot` trace event (floor, act, room, seed). The game saves at room
+  transitions, so these are the floor-level states from which branch rollouts or a
+  simulator could restart a run. They hold hidden state and never reach a policy.
+  Restoring one is untested, and so is replaying a run's commands to reach one.
+
+What each method family would read from these traces. "Present" means recorded, not shown
+suitable; no method has been tried on them.
+
+| Method | Needs | In Spire traces since v10.2 |
+|---|---|---|
+| SFT, rejection-sampling fine-tuning | Prompts, replies, outcomes to filter on | Present |
+| Offline RL, value and reward models | States, actions, next states, rewards | Present; rewards computed from the trace |
+| Importance-weighted off-policy RL, KL to the behavior policy | Behavior logprobs | Qwen3.6 only |
+| Unpaired preferences (KTO-style) | Replies labelled good or bad | Present; labels from outcomes |
+| Paired preferences (DPO-style) | Two replies to one state | Resample saved prompts; no outcome for the other reply |
+| Group rollouts from one state (GRPO-style) | Resettable states | Per-floor snapshots; restore untested |
+| On-policy RL and distillation | Sampling from the model in training | Needs a training host ([Missing](#missing)) |
+
 The [robot-team learning notes](twwarhammer3/robot-team-research.md#learning-from-recovery-and-feedback)
 compare ways to collect recovery examples, learn from outcomes and improve guidance
 between battles. They also list additional timing and action-origin fields to audit
@@ -123,7 +152,9 @@ unknown), `text` (raw reply), `status` (provider status: `completed`, `incomplet
 `failed`), `error` (absent or null when the reply was accepted, else the parser's or
 transport's message), `reasoning` (parts from `gameai.llm.reasoning_parts` with
 `type`, `text`, `field`, `item_index`; null when not recorded), `usage`, and when
-recorded `request`, `output` and backend fields. A transport failure's attempt has null
+recorded `request`, `output` and backend fields. A Spire attempt with token logprobs has
+`logprob_tokens`; its logprobs are in the export's `logprobs.jsonl`, keyed by row `id` and
+attempt index. A transport failure's attempt has null
 `text`, `status` and `usage`.
 
 The SFT target of a row is its **last attempt**, used only when that attempt has no error,

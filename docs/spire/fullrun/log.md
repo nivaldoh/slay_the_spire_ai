@@ -664,3 +664,69 @@ relay waits past its connect timeout (it replaces the test of the old exit; the 
 was seen exiting in that case once, by hand). Neither change has run with the game.
 `spire play` refuses a ledger file that does not exist. Prompts and scaffolding are v10's,
 but jobs from now on are labelled v10.1 so they do not pool with 4,000-cap v10 runs.
+
+## 2026-10-23: harness v10.2, capture for RL and other methods (no scaffolding change)
+
+Owner goal (away 10 hours): improve Spire capture for RL and other post-training methods,
+then collect data until they return ([direction](../../owner-direction.md)). On `main` at
+`e0bf6d8`; prompts and scaffolding are v10's
+([what is captured](../../posttraining.md#beyond-supervised-fine-tuning)):
+- Qwen3.6 requests ask for token logprobs with the top 10 alternatives; the exchange keeps
+  them and `spire export` writes them to `logprobs.jsonl`. Decisions keep attempts without
+  request and output items (`model_exchange_version` 2). Each new autosave version is
+  copied to `run-NNNN/saves/` with a `save_snapshot` event.
+- Probes (4 calls, under $0.001): OpenRouter's Responses route refuses OpenAI's logprob
+  `include` value (HTTP 400) and returns logprobs for `logprobs` with `top_logprobs`. One
+  seed gave two different replies, so none is sent.
+- Checks: 1,405 tests passed, 14 skipped (torch extras, one Windows test). The new tests
+  failed on five plausible wrong versions. Repository-wide ruff fails only on four owner
+  TODO lines.
+- Live smoke `llm-qwen36-v10.2-smoke-20261023` (CAPSMOKE1, 60 actions, $0.032): all 44
+  exchanges carry logprobs, and the candidate probabilities at the choice digit sum to 1 in
+  all 44; the chosen candidate's median probability was 0.53. Logprob entries are one fewer
+  than usage's output tokens in 43 replies (no end token) and equal in one. Eight snapshots
+  (Neow, floors 1-5, two after combat) decode with the observations' seed. Export: 44 rows,
+  1.4 MB, logprobs 22.9 MB; the SFT builder kept all 44.
+- Unverified: restoring a snapshot or replaying commands to reach one; whether top_p is
+  reflected in the logprobs; whether asking for logprobs changes sampling. Proposed check,
+  not agreed: `runs/fullrun/collect-20261023/check_capture.py <run>`.
+- Marker added: `JUDGEMENT` on `LOGPROBS` in `src/gameai/providers.py` (10 alternatives).
+
+## 2026-10-23: collection night, Qwen3.6 reasoning off (harness v10.2)
+
+05:10-13:38 UTC, stopped by its cutoff rule. One `spire play` job per fresh seed, `DATA001` to
+`DATA040`, Qwen3.6 at effort none; chain, per-run table (`progress.md`) and capture checks
+(`checks.log`) in `runs/fullrun/collect-20261023/`. Single stochastic runs, not a baseline.
+
+| Runs | Outcome | Floor reached | Calls | Cost | Time per run |
+|---|---|---|---|---|---|
+| 40 | 38 lost in Act 1, 2 infrastructure failures (HTTP 429) | median 8; 7 died at the floor 16 boss | 4,714 | $2.90 | mean 11.6 min |
+
+- Capture: 37 of 40 runs pass `check_capture.py`. In the other 3, one reply each lacks the
+  logprob of a "<" right after a digit (3 of 4,759 attempts); export now flags such rows
+  `logprobs_incomplete` (`c7bbc0a`). 37 replies ran to the 16,000-token cap; each retry
+  was accepted. 635 save snapshots (8.7 MB).
+- Export `runs/fullrun-exports/qwen36-v10.2-night-20261023`: 4,685 rows, 8 of them failed
+  requests; 2.08 million output tokens; `decisions.jsonl` 193 MB, `logprobs.jsonl` 1.9 GB.
+  Every accepted row (4,677) has its choice distribution: the chosen candidate's median
+  probability was 0.58, below 0.5 in 1,963 rows. Fights: 235, of which 197 won, 37 lost, 1 unknown.
+- Traces take 2.2 GB in `runs/fullrun/`, which has no backup. Spire OpenRouter ledger $3.18.
+
+Rate limits: from about 05:34 UTC Parasail's shared pool answered HTTP 429 beyond the
+transport's three tries (about 6 s), ending DATA002 (floor 8) and DATA003 (floor 2) as
+infrastructure failures; the chain stopped after two in a row, as written. Probes at 05:40:
+2 of 6 calls failed after three tries. Fix `6cf0a57` (Spire only): a rate-limited decision is
+asked again after 15 s up to 480 s (marked `JUDGEMENT?`). The chain restarted at 05:43 from
+DATA004 with `chain2.sh`, which also waits 5 minutes after a failed run and stops at three.
+After the fix, 6 rate-limited requests were asked again and no run ended on a 429.
+
+JUDGEMENT: player Qwen3.6, reasoning off (assistant, 2026-10-23): the student's own play, with
+logprobs. GLM-5.3 as teacher: stronger SFT targets, ~10x cost, no logprobs. All rows rest on it.
+JUDGEMENT: fresh seeds, one run each (assistant, 2026-10-23), for coverage. Several runs per seed
+would give same-state groups and natural branches. The night's state coverage rests on it.
+JUDGEMENT: night cap $5 on the Spire OpenRouter ledger (assistant, 2026-10-23); the owner named no
+cap. A larger cap allows a teacher or thinking runs. The night's size rests on it.
+JUDGEMENT: harness frozen at v10.2, no tuning between runs (assistant, 2026-10-23). Loop changes
+would mix prompt versions within the night. Comparability of the night's rows rests on it.
+JUDGEMENT: each run's limit is 3 h or the 13:45 UTC cutoff (assistant, 2026-10-23). Longer limits
+lose fewer late floors as truncations. Which deep runs end as truncated rests on it.

@@ -89,7 +89,8 @@ The version that introduced each piece is in brackets; [log.md](log.md) has the 
 - Invalid replies (bad JSON, a missing or wrong-typed field such as `choice` true or 1.0,
   or an out-of-range choice) are re-asked twice, with the error appended. A third invalid
   reply ends the run as `policy_failure`. Transient HTTP and network errors are retried
-  three times. Every attempt is billed and recorded.
+  three times; an HTTP 429 that outlasts them is asked again after pauses of 15 s up to
+  480 s (since 2026-10-23). Every attempt is billed and recorded.
 
 What the model does not get: card, relic or power text; damage calculators; search; lookup
 tools. Section 3 of [approaches.md](../approaches.md) suggests these matter. They are
@@ -110,7 +111,11 @@ commands sent. `result.json` holds the outcome, the final act, floor, HP, deck a
 and LLM totals. A trace record of kind `decision` holds `decision.observation`,
 `decision.candidates` (each with `id`, `command` and `label`), the `choice_id` taken, and
 `behavior`, whose `type` is `llm` (with `reason` and `notes`) or `forced`;
-`digest._decisions` reads them.
+`digest._decisions` reads them. Since harness v10.2 (2026-10-23, `model_exchange_version`
+2) a decision's attempts omit the request and output items, which its `model_exchange`
+event keeps once, with Qwen3.6's token logprobs; and `run-NNNN/saves/` holds a copy of each
+new version of the game's autosave, each with a `save_snapshot` event
+([posttraining.md](../../posttraining.md#beyond-supervised-fine-tuning)).
 
 ```bash
 uv run python -m spire digest runs/fullrun/<job>                      # per-seed table for log.md
@@ -147,7 +152,8 @@ uv run python -m spire export runs/fullrun/<job> [runs/fullrun/<job>/run-NNNN ..
     --output runs/fullrun-exports/<name>
 ```
 
-It writes `decisions.jsonl` (one row per model request, with every attempt), `sources.json`
+It writes `decisions.jsonl` (one row per model request, with every attempt), `logprobs.jsonl`
+(token logprobs, about 1 kB per output token, keyed by row id and attempt), `sources.json`
 (manifests, environments, each run's result, profile and deployment, input and exporter
 hashes, filters, counts and issues) and `datacard.md`. The output must be a new directory
 outside the jobs; it is built beside it and renamed after every input hash is rechecked.

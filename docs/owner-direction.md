@@ -5,6 +5,17 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-23 (01:53 -03, goal, away 10 hours), verbatim: "Improve trace data collection for
+  Slay The Spire to feed a broader range of frontier post-training methods like RL. After
+  that, proceed to collect game data until I return 10 hours from now. Keep track of the
+  results." Supersedes "no money yet" below for this night; the owner named no cap.
+  Capture: harness v10.2 ([posttraining.md](posttraining.md#beyond-supervised-fine-tuning));
+  the night: [Spire log](spire/fullrun/log.md).
+- 2026-10-23 (post-training data): no money on data-collection runs yet. Before any
+  overnight run that collects post-training data, set up improved capture of what RL and
+  the other methods used at the frontier need from traces; training itself starts with a
+  plain SFT scope. The Spire collection night assessed that day was not launched; the
+  reminder is in [posttraining.md](posttraining.md#beyond-supervised-fine-tuning).
 - 2026-10-23 (judgement calls): coding agents have made judgement-based calls (benchmark
   goals, how to verify, next steps, design decisions) without the owner's awareness or
   approval; from now on agents execute and the owner decides. Mark every such call for

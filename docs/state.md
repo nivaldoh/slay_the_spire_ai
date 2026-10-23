@@ -8,7 +8,10 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 WH3 first; Spire waits behind it; post-training is secondary. Three changes await review.
 
-No game, benchmark or paid job is running. The 2026-10-22 night ($0, game 02:37-07:28) ran
+No game or paid job is running. The 2026-10-23 Spire collection night ended at 13:38 UTC: 40
+Qwen3.6 runs, $2.90, 4,685 exported rows with token logprobs
+([log](spire/fullrun/log.md#2026-10-23-collection-night-qwen36-reasoning-off-harness-v102)).
+The 2026-10-22 WH3 night ($0, game 02:37-07:28) ran
 the starting-set screen and a shortcut screen ([log](twwarhammer3/log.md#2026-10-22-the-starting-set-screen)):
 neither new card (line, expendables) nor either probe goes to confirmation.
 
@@ -47,17 +50,21 @@ Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-t
 
 ## Slay the Spire
 
-Paused behind WH3. No full run has won; the furthest reached Act 4, floor 54.
+Paused behind WH3. No full run has won; the furthest reached Act 4, floor 54. The 2026-10-23
+data night (Qwen3.6, harness v10.2) died in Act 1 in all 38 finished runs (median floor 8).
 Next choice: a meaningful comparison of the current controller, or a freeze.
 
 [README](spire/fullrun/README.md), [log](spire/fullrun/log.md), [results.csv](spire/fullrun/results.csv). v10 on `main`; floor 54 was v8.
 Version differences sit within run-to-run variation (about 11 floors on one seed; same-harness replays differed by 13–26), measured only on three tuning seeds. `HELDOUT01`–`HELDOUT10` unplayed.
-Spend: OpenAI $2.52 of $25, OpenRouter $0.25. The comparison and `v11-keys` wait; [open questions](spire/fullrun/README.md#open-owner-decisions). Paused: [first combat](spire/first-combat/README.md); planned: [open-weight](spire/open-weight/README.md).
+Spend: OpenAI $2.52 of $25, OpenRouter $3.18. The comparison and `v11-keys` wait; [open questions](spire/fullrun/README.md#open-owner-decisions). Paused: [first combat](spire/first-combat/README.md); planned: [open-weight](spire/open-weight/README.md).
 
 ## Post-training
 
 Secondary priority. Capture, export and dataset smoke checks passed; there is no learning
 claim. A training host, a way to play fine-tuned models, and useful targets are still missing.
+Spire capture for RL and other methods is in as harness v10.2 (2026-10-23): Qwen3.6 token
+logprobs and per-floor save snapshots ([what each method can use](posttraining.md#beyond-supervised-fine-tuning));
+restoring a snapshot is untested.
 
 [Plan and data-use choices](posttraining.md).
 
