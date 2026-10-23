@@ -75,6 +75,22 @@ revision):
   (fails on the parent of `b536ae6`); agreed 2026-10-21; passed at `080be70`. No game
   execution claim; which result counts is unchanged.
 
+## Judgement calls
+
+The owner's rule (2026-10-23): agents execute; the owner decides. A judgement call is a
+choice no owner direction made that fixes what a benchmark measures, how something is
+verified, what comes next, a design whose alternatives change results or their meaning, or
+a parameter with benchmark or plan meaning. An agent that makes or finds one marks it in the
+same change at the nearest convenient spot (a comment above the line; a note in the page
+that documents a file that cannot carry one): `JUDGEMENT:`, or `JUDGEMENT?:` when unsure it
+counts, then in one to three lines what was chosen, who and when, the alternative that would
+change results and what rests on it. A marked spot may be wrong: say "rests on JUDGEMENT
+<file> <name>" for anything built on it, copy its value nowhere without the marker, and park
+what [docs/autonomy.md](docs/autonomy.md) parks; a marker is not permission to decide. Only
+the owner removes or weakens a marker (an agent only when quoting the owner's words on that
+spot in the commit); approval is not verification. Placement limits, the listing command and
+the marking pass: [docs/judgement.md](docs/judgement.md).
+
 ## Working habits
 
 The assistant's proposals for the owner's 2026-10-18 goal (less bookkeeping, garbage and
@@ -188,6 +204,7 @@ docs/
   state.md         The session page for both games: status only
   owner-direction.md  Every dated owner direction, newest first; superseded ones marked
   autonomy.md      What agents may do alone while the owner is away
+  judgement.md     Judgement calls: the marker, placement limits and the marking pass
   posttraining.md  Traces to fine-tuning datasets for both games: roles, contract, splits
   spire/           integration.md (engine and protocol facts), approaches.md (survey),
                    fullrun/, first-combat/, open-weight/ (one folder per track)
@@ -236,6 +253,7 @@ uv run python -m twwarhammer3 report <job> [<job> ...] --output runs/twwarhammer
 uv run python -m twwarhammer3 export <job> [<job> ...] --output runs/twwarhammer3/exports/<name>
 uv run python -m twwarhammer3 spend    # WH3 OpenAI ledger total; --provider openrouter for OpenRouter
 uv run python -m gameai.sft <export> [<export> ...] --output runs/sft/<name>   # see docs/posttraining.md
+git grep -n JUDGEMENT -- ':!AGENTS.md' ':!docs/judgement.md'   # marked judgement calls awaiting the owner
 ```
 
 - The dev group includes lupa (Lua 5.1) and Pillow, so `uv run pytest` runs the WH3 Lua and

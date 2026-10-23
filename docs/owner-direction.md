@@ -5,6 +5,13 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-23 (judgement calls): coding agents have made judgement-based calls (benchmark
+  goals, how to verify, next steps, design decisions) without the owner's awareness or
+  approval; from now on agents execute and the owner decides. Mark every such call for
+  review at the nearest convenient location (a code comment, a note in a doc), with a
+  separate mark when unsure it counts; register the goal in [judgement.md](judgement.md)
+  and the rule in AGENTS.md. The format of the two examples was accepted; no decision was
+  made on any marked call.
 - 2026-10-22 (overview removal): remove the project overview to keep the project lean;
   the owner found it useless. Supersedes both overview requests below.
 - 2026-10-22 (visual project overview; superseded by removal): implement the overview as an intuitive guide to

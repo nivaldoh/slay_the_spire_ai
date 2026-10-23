@@ -33,6 +33,9 @@ CARDS = {
         # The gate witness decides at tick rate on 5 s-old information. A model-pace gate
         # (5 s age, one decision per 5 s) was dropped on 2026-10-18 17:45 UTC, during E2;
         # the witness by age and interval is the card's tolerance table (tactic-cards.md).
+        # JUDGEMENT: gate sizes (foils 0 of 10 at 0 s; witness 4 of its first 5 at 5 s, 1 cycle
+        # each) are the assistant's (b33/b34, 2026-10-18), not the owner's: decision 3 proposes
+        # 0/14 and 10/14 at 2 s/2 s. c1's "admitted" and the foils' bound 0.26 rest on them.
         "witnesses": {(WITNESS, 5000, 0): 4},
         "foil_launches": 10,  # a foil that wins 20% of battles passes 10 of 10 losses 11%
         "witness_launches": 5,  # 4 of 5 passes a 0.5 witness 19% and fails a 0.8 one 26%

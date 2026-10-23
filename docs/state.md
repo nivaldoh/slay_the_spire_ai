@@ -17,6 +17,9 @@ Scripted split-army [team](twwarhammer3/multi-agent-implementation.md) (b49): ag
 [Scope](twwarhammer3/benchmark.md#scope-and-first-release), [evaluation guidelines](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need), suite, remaining checks and gates are proposals; [Empire items](twwarhammer3/empire.md) pending.
 The October 21 offline window's evidence is in the [log](twwarhammer3/log.md#2026-10-21-a-proposed-starting-set-the-failure-rule-recount-and-a-blind-c1-recount) and `runs/twwarhammer3/away-20261021/`. Waiting changes: 3 of 3 ([branches](#branches)).
 
+Judgement-call marking ([page](judgement.md)): the rule and two example markers are in; the
+repository pass (225+ candidates listed) continues later in batches the owner can sample.
+
 [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
 
 ## Total War: WARHAMMER III

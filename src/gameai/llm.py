@@ -30,6 +30,9 @@ TRANSPORT_ATTEMPTS = 3
 FAILED_RESENDS = 2  # per ask, apart from the parse retries
 # A non-streaming reply arrives only when finished: room for a 16,000-token reply at about
 # 30 tokens/s. No OpenAI attempt so far took over 32 s; longer ones are untested.
+# JUDGEMENT?: 600 s per read x 3 attempts: one stalled call silences a direct WH3 controller
+# for up to 30 min (card battles end by 22 min) and bills 3 reservations. The 16k cap is the
+# owner's; 600 s itself is the assistant's (b27). Engineering or a benchmark parameter?
 READ_TIMEOUT_S = 600
 TRANSIENT_HTTP = {408, 409, 429, 500, 502, 503, 504}
 CUT_OFF = ("\n\nYour previous reply was cut off at the output limit before the JSON ended."
