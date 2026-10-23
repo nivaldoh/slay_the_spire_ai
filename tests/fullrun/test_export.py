@@ -267,7 +267,7 @@ def test_token_logprobs_are_requested_kept_once_in_the_trace_and_exported_aside(
     # alternatives, on the output_text part.
     tokens = [{"token": t, "logprob": -0.1, "bytes": list(t.encode()),
                "top_logprobs": [{"token": t, "bytes": list(t.encode()), "logprob": -0.1}]}
-              for t in ('{"', "choice", '":', " ", "1")]
+              for t in ('{"', "choice", '":', " ", "1", ', "reason": "safer", "notes": null}')]
     bodies = []
 
     def send(body):
@@ -294,12 +294,16 @@ def test_token_logprobs_are_requested_kept_once_in_the_trace_and_exported_aside(
     [row] = read_export(tmp_path / "export")
     [kept] = row["attempts"]
     assert kept["output"][0]["content"][0].keys() == {"type", "text"}
-    assert kept["logprob_tokens"] == 5 and kept["request"] == bodies[0]
+    assert kept["logprob_tokens"] == 6 and kept["request"] == bodies[0]
     assert row["choice"]["index"] == 1 and row["provider"] == "openrouter"
     [line] = (tmp_path / "export/logprobs.jsonl").read_text().splitlines()
     assert json.loads(line) == {"id": row["id"], "attempt": 0, "item_index": 0,
                                 "part_index": 0, "logprobs": tokens}
-    assert summary["counts"]["attempts_with_logprobs"] == 1
+    assert summary["counts"]["attempts_with_logprobs"] == 1 and row["issues"] == []
+    spelled = [{"token": t, "logprob": 0.0} for t in ('{"choice": 1', ', "x"}', "<|im_end|>")]
+    assert export.logprobs_complete('{"choice": 1, "x"}', [{"logprobs": spelled}])
+    # A dropped token, as the backend once dropped "<" after a digit.
+    assert not export.logprobs_complete('{"choice": 1, "x"}', [{"logprobs": spelled[1:]}])
     assert summary["logprobs_sha256"] == hashlib.sha256(line.encode() + b"\n").hexdigest()
 
 

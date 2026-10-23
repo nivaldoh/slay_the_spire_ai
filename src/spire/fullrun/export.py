@@ -144,6 +144,15 @@ def _split_logprobs(output: list) -> tuple[list, list]:
     return items, logprobs
 
 
+def logprobs_complete(text: str | None, logprobs: list) -> bool:
+    """Whether the logprob tokens spell the reply, allowing one trailing end token. Parasail
+    left out a "<" token right after a digit in 3 of 4,759 attempts on 2026-10-23."""
+    tokens = [token for part in logprobs for token in part["logprobs"] or ()]
+    spelled = "".join(token["token"] for token in tokens)
+    return isinstance(text, str) and (spelled == text or (
+        spelled.startswith(text) and spelled[len(text):] == tokens[-1]["token"]))
+
+
 def _attempts(raw_attempts: list, prompt: str | None, system: str | None, issues: set,
               where: str) -> list[dict]:
     attempts = []
@@ -176,6 +185,8 @@ def _attempts(raw_attempts: list, prompt: str | None, system: str | None, issues
                 # Written to the sidecar with the row id; the row keeps the token count.
                 attempt["_logprobs"] = logprobs
                 attempt["logprob_tokens"] = sum(len(part["logprobs"] or ()) for part in logprobs)
+                if not logprobs_complete(raw.get("text"), logprobs):
+                    issues.add("logprobs_incomplete")
         elif "transport_error" not in raw:
             issues.add("reasoning_not_recorded")
         attempt.update(user_prompt=user, prompt_source=source, reasoning=reasoning)
@@ -436,7 +447,9 @@ Sources are unchanged.
   logprobs}}`, keyed to its row's `id`, the attempt's index and the output item and part
   it was cut from. Each entry is a sampled token with its logprob, bytes and top
   alternatives. Under the strict reply schema they are the backend's constrained
-  distribution: masked alternatives read -9999. The attempt keeps `logprob_tokens`.
+  distribution: masked alternatives read -9999. The attempt keeps `logprob_tokens`. A
+  row has the issue `logprobs_incomplete` when an attempt's tokens do not spell its reply
+  (apart from a trailing end token): the backend left a token out.
 - `sources.json`: full job manifests (configuration, source fingerprints, revision),
   environment snapshots, each run's result, profile and deployment, input file hashes,
   the exporter hash, filters, counts, issues and the hashes of `decisions.jsonl` and
