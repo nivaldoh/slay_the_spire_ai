@@ -177,7 +177,11 @@ above rests on it.
 - **Profile, before any further Spire game time.** Unlock level 4 is 43 points away, and
   a death screen adds the run's score. Freeze the profile at level 3, for example by copying
   `preferences/` aside and back around each job, or let it advance and tag each trace with
-  its unlock state (`profile.json` records the unlock file hash).
+  its unlock state (`profile.json` records the unlock file hash). Owner's note
+  (2026-10-23): "we might want to unlock things normally first in the game before enabling
+  this". That means playing to the last Ironclad unlock (level 3 of 5 now) before restore
+  work, so the pools stop changing. Traces recorded before that point would then not
+  replay, so the restore checks would use runs recorded after it.
 - **Route.** Replay only (A); a new jar in the pinned runtime (B, C or D), which also needs a
   JDK installed; or an offline simulator (E), which needs approval to build third-party
   code and a parity threshold.

@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-23 (Spire profile and restore), verbatim: "Let's take note that we might want to
+  unlock things normally first in the game before enabling this then". A tentative note on
+  the profile decision in [state-restore.md](spire/state-restore.md#owner-decisions), not
+  a decision.
 - 2026-10-23 (after the Spire collection night), answering four questions (push; a teacher
   or reasoning-on night next; agree the capture check; try restoring a snapshot), verbatim:
   "1. Yes, let's push. 2. Let's take note of that to decide later. 3. Not sure what this

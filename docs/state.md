@@ -87,7 +87,8 @@ restoring a snapshot is untested.
   run end (25 of 43 data runs on 2026-10-23); the game recovers it from `.backUp` at the next
   start. `STSDataVagabond` is 0 bytes now and `STSUnlockProgress` has no `.backUp`
   ([details](spire/state-restore.md#risks-found-on-the-way)). Ironclad unlock level 4 is 43
-  points away; decide the profile question before more Spire game time.
+  points away; decide the profile question before more Spire game time (owner's note: maybe
+  unlock things normally first, then enable restore).
 - No automated checks for report JavaScript or several Spire play-loop stop paths. Spire's
   Workshop mod pins still block a run when a mod updates.
 
