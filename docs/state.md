@@ -32,6 +32,8 @@ at the recorded revisions; the model team has offline evidence and a passing liv
   results in the [b40 round](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40).
   No model has won above its foils' bound (an unverified gameplay finding).
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter ledger $21.33 ($8.84 the Empire night).
+- [Checkpoint and RNG plan](twwarhammer3/checkpoints.md): research recorded; next is a
+  bounded reset/takeover probe. Exact restoration and the proposed checks remain unverified.
 
 Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-to-the-first-release)):
 0. Read the Empire [results](twwarhammer3/empire.md#results) and [owner items](twwarhammer3/empire.md#for-the-owner-to-decide); screen/readout and line marker agreed October 21.

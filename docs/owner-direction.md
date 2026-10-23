@@ -87,6 +87,11 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-22 (checkpoints and RNG): use reproducible battle situations for benchmarking
+  and training; first research the available reset/RNG mechanisms and plan a clean,
+  small implementation with repeatable checks. [Plan](twwarhammer3/checkpoints.md).
+  Complete state restoration and fixed engine RNG are not established; the plan's
+  specific checks remain proposed, not agreed.
 - 2026-10-21 (evening goal, team structures), verbatim: "Using two LLMs for one army is
   arbitrary decision, but we can use it to compare with other options later. But we have
   more interesting options, like one model per unit, one model per type of unit, one model
