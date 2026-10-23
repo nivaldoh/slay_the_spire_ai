@@ -8,8 +8,8 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 WH3 first; Spire waits behind it; post-training is secondary. Three changes await review.
 
-No game or paid job is running. The 2026-10-23 Spire collection night ended at 13:38 UTC: 40
-Qwen3.6 runs, $2.90, 4,685 exported rows with token logprobs
+No game or paid job is running. The 2026-10-23 Spire collection night ended at 14:43 UTC: 43
+Qwen3.6 runs, $3.18, 5,122 exported rows with token logprobs
 ([log](spire/fullrun/log.md#2026-10-23-collection-night-qwen36-reasoning-off-harness-v102)).
 The 2026-10-22 WH3 night ($0, game 02:37-07:28) ran
 the starting-set screen and a shortcut screen ([log](twwarhammer3/log.md#2026-10-22-the-starting-set-screen)):
@@ -51,12 +51,12 @@ Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-t
 ## Slay the Spire
 
 Paused behind WH3. No full run has won; the furthest reached Act 4, floor 54. The 2026-10-23
-data night (Qwen3.6, harness v10.2) died in Act 1 in all 38 finished runs (median floor 8).
+data night (Qwen3.6, harness v10.2) died in Act 1 in all 41 finished runs (median floor 8).
 Next choice: a meaningful comparison of the current controller, or a freeze.
 
 [README](spire/fullrun/README.md), [log](spire/fullrun/log.md), [results.csv](spire/fullrun/results.csv). v10 on `main`; floor 54 was v8.
 Version differences sit within run-to-run variation (about 11 floors on one seed; same-harness replays differed by 13–26), measured only on three tuning seeds. `HELDOUT01`–`HELDOUT10` unplayed.
-Spend: OpenAI $2.52 of $25, OpenRouter $3.18. The comparison and `v11-keys` wait; [open questions](spire/fullrun/README.md#open-owner-decisions). Paused: [first combat](spire/first-combat/README.md); planned: [open-weight](spire/open-weight/README.md).
+Spend: OpenAI $2.52 of $25, OpenRouter $3.46. The comparison and `v11-keys` wait; [open questions](spire/fullrun/README.md#open-owner-decisions). Paused: [first combat](spire/first-combat/README.md); planned: [open-weight](spire/open-weight/README.md).
 
 ## Post-training
 

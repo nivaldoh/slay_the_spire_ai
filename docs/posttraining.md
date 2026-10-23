@@ -103,8 +103,8 @@ capture for RL and other methods before any collection run; WH3 capture is uncha
   (masked alternatives read -9999), the same constrained policy that acted. The reply
   starts with `choice`, so the alternatives at its digit give the probability of every
   candidate below 10 (99.5% of the 187 model decisions of the 2026-10-17 Qwen3.6 run had at
-  most 10 candidates). In 3 of the 4,759 attempts of 2026-10-23 the backend left out a "<"
-  token after a digit; the export flags those rows `logprobs_incomplete`.
+  most 10 candidates). In 3 of the 5,157 attempts of the 2026-10-23 night the backend left out
+  a "<" token after a digit; the export flags those rows `logprobs_incomplete`.
 - Save snapshots: each new version of the game's autosave, copied into `run-NNNN/saves/`
   with a `save_snapshot` trace event (floor, act, room, seed). The game saves at room
   transitions, so these are the floor-level states from which branch rollouts or a

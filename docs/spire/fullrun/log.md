@@ -694,23 +694,25 @@ then collect data until they return ([direction](../../owner-direction.md)). On 
 
 ## 2026-10-23: collection night, Qwen3.6 reasoning off (harness v10.2)
 
-05:10-13:38 UTC, stopped by its cutoff rule. One `spire play` job per fresh seed, `DATA001` to
-`DATA040`, Qwen3.6 at effort none; chain, per-run table (`progress.md`) and capture checks
-(`checks.log`) in `runs/fullrun/collect-20261023/`. Single stochastic runs, not a baseline.
+05:10-14:43 UTC. One `spire play` job per fresh seed, `DATA001` to `DATA043`, Qwen3.6 at
+effort none; chain, per-run table (`progress.md`) and capture checks (`checks.log`) in
+`runs/fullrun/collect-20261023/`. Single stochastic runs, not a baseline. The chain first
+stopped at 13:38 on the assistant's own 13:45 cutoff, an hour before the owner's return;
+it resumed at 13:46 (DATA041-DATA043), with the last run timed to end by 14:50.
 
 | Runs | Outcome | Floor reached | Calls | Cost | Time per run |
 |---|---|---|---|---|---|
-| 40 | 38 lost in Act 1, 2 infrastructure failures (HTTP 429) | median 8; 7 died at the floor 16 boss | 4,714 | $2.90 | mean 11.6 min |
+| 43 | 41 lost in Act 1, 2 infrastructure failures (HTTP 429) | median 8; 9 died at the floor 16 boss | 5,157 | $3.18 | mean 12.0 min |
 
-- Capture: 37 of 40 runs pass `check_capture.py`. In the other 3, one reply each lacks the
-  logprob of a "<" right after a digit (3 of 4,759 attempts); export now flags such rows
-  `logprobs_incomplete` (`c7bbc0a`). 37 replies ran to the 16,000-token cap; each retry
-  was accepted. 635 save snapshots (8.7 MB).
-- Export `runs/fullrun-exports/qwen36-v10.2-night-20261023`: 4,685 rows, 8 of them failed
-  requests; 2.08 million output tokens; `decisions.jsonl` 193 MB, `logprobs.jsonl` 1.9 GB.
-  Every accepted row (4,677) has its choice distribution: the chosen candidate's median
-  probability was 0.58, below 0.5 in 1,963 rows. Fights: 235, of which 197 won, 37 lost, 1 unknown.
-- Traces take 2.2 GB in `runs/fullrun/`, which has no backup. Spire OpenRouter ledger $3.18.
+- Capture: 40 of 43 runs pass `check_capture.py`. In the other 3, one reply each lacks the
+  logprob of a "<" right after a digit (3 of 5,157 attempts with logprobs); export now flags
+  such rows `logprobs_incomplete` (`c7bbc0a`). 43 replies ran to the 16,000-token cap; each retry
+  was accepted. 691 save snapshots.
+- Export `runs/fullrun-exports/qwen36-v10.2-night-20261023`: 5,122 rows, 8 of them failed
+  requests; 2.29 million output tokens; `decisions.jsonl` 202 MB, `logprobs.jsonl` 2.0 GB.
+  Every accepted row (5,114) has its choice distribution: the chosen candidate's median
+  probability was 0.59, below 0.5 in 2,117 rows. Fights: 255, of which 214 won, 40 lost, 1 unknown.
+- Traces take 2.4 GB in `runs/fullrun/`, which has no backup. Spire OpenRouter ledger $3.46.
 
 Rate limits: from about 05:34 UTC Parasail's shared pool answered HTTP 429 beyond the
 transport's three tries (about 6 s), ending DATA002 (floor 8) and DATA003 (floor 2) as

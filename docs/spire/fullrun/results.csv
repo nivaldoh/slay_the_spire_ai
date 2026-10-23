@@ -74,3 +74,6 @@ date,job,run,seed,character,ascension,model,effort,harness,source,outcome,act,fl
 2026-10-23,llm-qwen36-v10.2-data-20261023-038,run-0000,DATA038,IRONCLAD,0,qwen/qwen3.6-35b-a3b,none,v10.2,6cf0a57,lost,1,11,67,0.0573
 2026-10-23,llm-qwen36-v10.2-data-20261023-039,run-0000,DATA039,IRONCLAD,0,qwen/qwen3.6-35b-a3b,none,v10.2,6cf0a57,lost,1,10,56,0.0704
 2026-10-23,llm-qwen36-v10.2-data-20261023-040,run-0000,DATA040,IRONCLAD,0,qwen/qwen3.6-35b-a3b,none,v10.2,6cf0a57,lost,1,16,94,0.1150
+2026-10-23,llm-qwen36-v10.2-data-20261023-041,run-0000,DATA041,IRONCLAD,0,qwen/qwen3.6-35b-a3b,none,v10.2,b950d4d,lost,1,16,102,0.1297
+2026-10-23,llm-qwen36-v10.2-data-20261023-042,run-0000,DATA042,IRONCLAD,0,qwen/qwen3.6-35b-a3b,none,v10.2,b950d4d,lost,1,16,102,0.1211
+2026-10-23,llm-qwen36-v10.2-data-20261023-043,run-0000,DATA043,IRONCLAD,0,qwen/qwen3.6-35b-a3b,none,v10.2,b950d4d,lost,1,4,26,0.0353
