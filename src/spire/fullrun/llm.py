@@ -12,10 +12,11 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import time
 from collections import Counter, deque
 
 from gameai.ledger import Ledger
-from gameai.llm import InvalidReply, Model, check_fields
+from gameai.llm import APIError, InvalidReply, Model, check_fields
 from gameai.provenance import REPO_ROOT
 from spire.decisions import Choice, card_text, live_targets
 from spire.protocol import Decision, PolicyFailure
@@ -32,6 +33,12 @@ MAX_OUTPUT_TOKENS = 16000  # room for reasoning-on modes (owner, 2026-10-18)
 NOTES_LIMIT = 2000
 HISTORY_LENGTH = 12
 INVALID_RETRIES = 2
+# Upstream rate limits (HTTP 429) outlast the transport's few seconds of retries (Parasail's
+# shared pool, 2026-10-23, ended two runs). The game waits for a command, so a decision is
+# asked again after each pause before the run fails; every failed request stays recorded.
+# JUDGEMENT?: up to 945 s of waits per decision (assistant, 2026-10-23); without them a 429
+# ends the run. Which rate-limited runs end as infrastructure failures rests on it.
+RATE_LIMIT_WAITS = (15, 30, 60, 120, 240, 480)
 REWARD_SCREENS = ("COMBAT_REWARD", "CARD_REWARD")
 REPLY_SCHEMA = {
     "type": "object",
@@ -268,6 +275,16 @@ class LLMPolicy:
                     "you draw that many."]
         return []
 
+    def _ask(self, prompt: str, count: int):
+        for wait in (*RATE_LIMIT_WAITS, None):
+            try:
+                return self.api.ask(prompt, REPLY_SCHEMA, lambda text: _parse(text, count),
+                                    INVALID_RETRIES)
+            except APIError as error:
+                if wait is None or not str(error).startswith("HTTP 429"):
+                    raise
+                time.sleep(wait)
+
     def choose(self, decision: Decision) -> Choice:
         observation = decision.observation
         floor = observation.get("floor")
@@ -279,9 +296,7 @@ class LLMPolicy:
             "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
         }
         try:
-            reply, attempts = self.api.ask(
-                prompt, REPLY_SCHEMA, lambda text: _parse(text, len(decision.candidates)),
-                INVALID_RETRIES)
+            reply, attempts = self._ask(prompt, len(decision.candidates))
         except InvalidReply as error:
             raise PolicyFailure(str(error), failure={
                 "kind": "invalid_reply", "attempts": error.attempts,

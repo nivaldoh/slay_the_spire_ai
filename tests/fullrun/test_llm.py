@@ -1,6 +1,7 @@
 """Prompt rendering, memory, parsing and accounting with a fake transport; no network."""
 
 import json
+from unittest.mock import Mock
 
 import pytest
 from test_decisions import card, combat_message, message
@@ -236,3 +237,29 @@ def test_the_last_action_skips_hand_selections_and_keeps_floor_and_turn(tmp_path
     prompt = agent.api.send.bodies[1]["input"][0]["content"]
     assert ("Selected: none\nThis selection is for Defend (1 skill), which you just played."
             in prompt)
+
+
+def test_rate_limited_requests_are_asked_again_after_a_pause(tmp_path, monkeypatch):
+    from gameai.llm import APIError
+
+    waits, limited, replies = [], [2], FakeSend(reply(1))
+    monkeypatch.setattr(llm.time, "sleep", waits.append)
+
+    def send(body):  # rate-limited twice, then a reply
+        if limited[0]:
+            limited[0] -= 1
+            raise APIError("HTTP 429: temporarily rate-limited upstream")
+        return replies(body)
+
+    agent = llm.LLMPolicy("gpt-6-luna", "low", Ledger(tmp_path / "spend.jsonl", 1.0),
+                          send=send, system_prompt="Play well.")
+    first = decision()
+    assert agent.choose(first) == first.candidates[1] and waits == [15, 30]
+    failed = [e for e in agent.api.drain_exchanges() if e.get("error")]
+    assert [e["error"]["type"] for e in failed] == ["APIError", "APIError"]
+    other = llm.LLMPolicy("gpt-6-luna", "low", Ledger(tmp_path / "spend.jsonl", 1.0),
+                          send=Mock(side_effect=APIError("HTTP 400: bad request")),
+                          system_prompt="Play well.")
+    with pytest.raises(APIError):
+        other.choose(decision())
+    assert waits == [15, 30]  # other API errors still end the run at once
