@@ -1,11 +1,9 @@
 """Digests read back what a (fake) job saved; no engine is involved."""
 
+from fullrun_support import CONFIG, DEATH, MENU, NEOW, ScriptedPolicy
 from spire_messages import card, combat_message, message
-from test_play import CONFIG, DEATH, MENU, NEOW, ScriptedPolicy, harness
 
 from spire.fullrun import digest, play
-
-__all__ = ["harness"]
 
 
 def test_job_table_reports_each_seed_and_the_last_fight(tmp_path, harness, capsys):

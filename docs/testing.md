@@ -21,7 +21,7 @@ expands parameterized cases and skips unavailable modules, so these are not exec
 |---|---|
 | Useful tests already exist | [Bridge tests](../tests/engine/test_bridge.py) exercise real sockets and the relay subprocess. [Mailbox tests](../tests/twwarhammer3/test_wh3_mailbox.py) exercise files and Lua. They check these boundaries without launching a game. |
 | Game ownership was hard to see | Spire's tests occupied six top-level directories plus two root files. The first cleanup moves those files to `tests/spire/`; the other directories still need organization. |
-| Shared setup is hard to find | Twelve import statements originally pulled helpers or fixtures from other `test_*.py` modules; the first cleanup removes four. [pytest configuration](../pyproject.toml) still supports the remaining cross-directory imports. |
+| Shared setup is hard to find | Twelve import statements originally pulled helpers or fixtures from other `test_*.py` modules; the two cleanups remove six. [pytest configuration](../pyproject.toml) still supports the remaining cross-directory imports. |
 | Some tests ask too many questions | The API-key test in [test_model.py](../tests/gameai/test_model.py) checks key loading, a transient retry and redaction. The first episode test in [test_wh3_play.py](../tests/twwarhammer3/test_wh3_play.py) also checks trace order and formatted digest text. Failures are harder to isolate. |
 | Passing does not settle the rule | [Card tests](../tests/twwarhammer3/test_wh3_cards.py) enforce admission choices that await the owner. Their interpretation rests on JUDGEMENT `src/twwarhammer3/battle/cards.py` chariot gate sizes. They can test implementation consistency without validating the choice. |
 | The default run has important limits | Collection found 1,410 cases and skipped 11 whole modules because PyTorch was absent. The browser script and live-game checks are separate commands. No coverage measurement or CI workflow is configured in this checkout. |
@@ -268,3 +268,18 @@ migration and coverage tooling remain for review.
   test/support modules found unchanged test bodies, helpers, parameters and assertions.
 - Evidence: `runs/testing-cleanup-20261023/`. These are preservation checks, not a new
   correctness verification method. No game, browser or training check ran in this batch.
+
+Second batch: full-run setup and stopping (2026-10-23).
+
+- Moved the shared fixture to `tests/fullrun/conftest.py` and messages/policy to
+  `fullrun_support.py`; removed the digest and watcher's imports from `test_play.py`.
+- Added three component cases for a bridge disconnect, interruption and source change.
+  Their interpretation rests on JUDGEMENT `tests/fullrun/test_play_stops.py` Stop-path checks;
+  they remain proposed, not yet agreed verification. No runtime code changed.
+- Full-run suite: 49 passed before, 52 after; no failures or skips. All 956 existing test
+  definitions and the extracted helpers/constants are unchanged. Collection preserves
+  1,412 existing cases and adds the three new cases; 11 modules still skip without PyTorch.
+  All 64 documentation checks and Ruff passed.
+- All three deliberate in-memory errors failed the intended assertion or missing-exception
+  check: disconnect counted as loss, partial result not saved, source change ignored.
+  Evidence: `runs/testing-cleanup-20261023-r2/`. No live process-cleanup claim.

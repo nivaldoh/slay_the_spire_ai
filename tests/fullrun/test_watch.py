@@ -3,12 +3,10 @@
 import os
 import time
 
-from test_play import CONFIG, DEATH, MENU, NEOW, ScriptedPolicy, harness
+from fullrun_support import CONFIG, DEATH, MENU, NEOW, ScriptedPolicy
 
 from gameai.provenance import write_json
 from spire.fullrun import play, watch
-
-__all__ = ["harness"]
 
 
 def test_each_finished_run_is_one_event_with_its_log_row(tmp_path, harness):

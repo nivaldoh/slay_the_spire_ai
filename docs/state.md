@@ -8,9 +8,9 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 WH3 first; Spire waits behind it; post-training is secondary. Three changes await review.
 
-Testing cleanup (Codex): first batch complete, ready for review — Spire's root tests moved,
-shared message builders extracted, WH3 check headers clarified. [Details](testing.md#initial-cleanup),
-[test guide](../tests/README.md). Broader layout and coverage changes remain proposals.
+Testing cleanup (Codex): full-run shared setup extracted; disconnect, interruption and
+source-change component checks added. [Two batches](testing.md#initial-cleanup),
+[test guide](../tests/README.md). New checks and broader layout remain for review.
 
 No game or paid job is running. The 2026-10-23 Spire collection night ended at 14:43 UTC: 43
 Qwen3.6 runs, $3.18, 5,122 exported rows with token logprobs
@@ -93,8 +93,8 @@ restoring a snapshot is untested.
   ([details](spire/state-restore.md#risks-found-on-the-way)). Ironclad unlock level 4 is 43
   points away; decide the profile question before more Spire game time (owner's note: maybe
   unlock things normally first, then enable restore).
-- The report browser check is separate from pytest; several Spire play-loop stop paths lack
-  tests. Spire's Workshop mod pins still block a run when a mod updates.
+- The report browser check is separate from pytest; Spire's full-run action and time limits
+  still lack loop tests. Spire's Workshop mod pins still block a run when a mod updates.
 
 ## Owner decisions waiting
 

@@ -5,6 +5,7 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-23 (testing continued), verbatim: "Continue to make progress on improving our tests".
 - 2026-10-23 (initial testing cleanup), verbatim: "Let's write our testing guidelines down
   and make some initial progress. I'll review a bit later. Remember, no slop!"
   First batch: Spire's root tests and shared message builders, plus clearer WH3 check headers.
