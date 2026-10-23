@@ -52,7 +52,10 @@ Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-t
 
 Paused behind WH3. No full run has won; the furthest reached Act 4, floor 54. The 2026-10-23
 data night (Qwen3.6, harness v10.2) died in Act 1 in all 41 finished runs (median floor 8).
-Next choice: a meaningful comparison of the current controller, or a freeze.
+Next, highest Spire priority (owner, 2026-10-23): the [state-restore investigation](spire/state-restore.md),
+restoring the game to a recorded state with the same RNG to try other choices. Its first live
+step, a $0 replay check, needs a game window and your profile decision first.
+Then: a meaningful comparison of the current controller, or a freeze.
 
 [README](spire/fullrun/README.md), [log](spire/fullrun/log.md), [results.csv](spire/fullrun/results.csv). v10 on `main`; floor 54 was v8.
 Version differences sit within run-to-run variation (about 11 floors on one seed; same-harness replays differed by 13–26), measured only on three tuning seeds. `HELDOUT01`–`HELDOUT10` unplayed.
@@ -80,6 +83,11 @@ restoring a snapshot is untested.
   as `policy_failure` (`card` classifies failures, keys by setup); a defender's timer stalemate
   counts as won (3 rows; `stats` ignores `ended_by`; the card and the Empire review do not).
 - The mod sets 1x once, then reports constant `speed` 1 and `awaiting_orders` false: per-observation paused/slowed tests cannot fail; only the team check's clock ratio detects slowdown.
+- Spire runs often leave a profile preference file empty, likely when the game is killed at
+  run end (25 of 43 data runs on 2026-10-23); the game recovers it from `.backUp` at the next
+  start. `STSDataVagabond` is 0 bytes now and `STSUnlockProgress` has no `.backUp`
+  ([details](spire/state-restore.md#risks-found-on-the-way)). Ironclad unlock level 4 is 43
+  points away; decide the profile question before more Spire game time.
 - No automated checks for report JavaScript or several Spire play-loop stop paths. Spire's
   Workshop mod pins still block a run when a mod updates.
 
@@ -112,6 +120,10 @@ restoring a snapshot is untested.
 9. **Spire's next step.** After WH3, run one meaningful comparison or freeze this track.
 
    Proposed comparison: current controller against ablated scaffolding, 20–30 fresh seeds per arm, about $5 and three nights. `v11-keys` waits on that choice; [other Spire questions](spire/fullrun/README.md#open-owner-decisions) stay secondary. No held-out seeds have been played.
+   The state-restore investigation comes first (owner, 2026-10-23). To decide later: whether the next data night uses a teacher (GLM-5.3) or Qwen3.6 with reasoning on.
+10. **Spire capture check.** Noted for later (owner, 2026-10-23: "Not sure what this is").
+
+   It is a script that reads one finished run and checks the new capture against facts recorded separately: the logprob tokens spell the reply and match the provider's token count, the choice probabilities sum to 1, and each save snapshot decodes with the run's own seed. It passed on 40 of 43 night runs ([log](spire/fullrun/log.md#2026-10-23-collection-night-qwen36-reasoning-off-harness-v102)). Agreeing it would make it the capture's repeatable test under the verification rule; until then the capture counts as unverified. It lives only in `runs/fullrun/collect-20261023/check_capture.py`, which has no backup.
 
 ## Runtime and ownership
 

@@ -5,6 +5,14 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-23 (after the Spire collection night), answering four questions (push; a teacher
+  or reasoning-on night next; agree the capture check; try restoring a snapshot), verbatim:
+  "1. Yes, let's push. 2. Let's take note of that to decide later. 3. Not sure what this
+  is. Let's write it down for now. 4. Yes, being able to restore the game back to a
+  specific state (ideally with fixed RNG) to try different choices from there would be
+  great for model training and benchmarking. We should write about an investigation for
+  this potential feature as the highest priority within the Slay The Spire work". Pushed
+  `da62f74`; the restore investigation is Spire's first item in [state.md](state.md).
 - 2026-10-23 (01:53 -03, goal, away 10 hours), verbatim: "Improve trace data collection for
   Slay The Spire to feed a broader range of frontier post-training methods like RL. After
   that, proceed to collect game data until I return 10 hours from now. Keep track of the

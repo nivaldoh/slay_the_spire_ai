@@ -121,7 +121,7 @@ suitable; no method has been tried on them.
 | Importance-weighted off-policy RL, KL to the behavior policy | Behavior logprobs | Qwen3.6 only |
 | Unpaired preferences (KTO-style) | Replies labelled good or bad | Present; labels from outcomes |
 | Paired preferences (DPO-style) | Two replies to one state | Resample saved prompts; no outcome for the other reply |
-| Group rollouts from one state (GRPO-style) | Resettable states | Per-floor snapshots; restore untested |
+| Group rollouts from one state (GRPO-style) | Resettable states | Per-floor snapshots; restore untested ([investigation](spire/state-restore.md)) |
 | On-policy RL and distillation | Sampling from the model in training | Needs a training host ([Missing](#missing)) |
 
 The [robot-team learning notes](twwarhammer3/robot-team-research.md#learning-from-recovery-and-feedback)
