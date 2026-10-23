@@ -41,23 +41,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
-## 2026-10-22: checkpoint and RNG research and implementation plan
+## 2026-10-23: battle rewind investigation closed
 
-Owner: use repeatable situations for benchmarking/training; research and plan first,
-keeping implementation small. [Plan](checkpoints.md); checks are proposed, not agreed.
-Installed-reference audit: 49 battle HTML pages, 2,111 documented functions (libraries
-included), 548 UI contexts; no documented complete restore or engine RNG setter found.
-Shipped health save/load under Lua 5.1 with simulated units: save 75, damage to 50,
-load leaves 25; fresh 100 loads to 75. One native replay matched the pinned community
-scanner; conversion calculated seven control-byte changes in memory, original unchanged.
-Evidence: `runs/twwarhammer3/rewind-20261022/` (`findings.json`, `health-roundtrip.json`,
-`native-replay-scan.json`, `api-audit.json`); doctor reported pinned build 25961564 ready.
-Further source/research: model callbacks versus UI polling, native/Lua RNG distinction,
-RNG-inclusive state cloning, Go-Explore and limits of shared-randomness comparisons.
-Next: one chariot situation; native playback/takeover first, scheduled rematch fallback,
-then a narrow implementation only for a passing route. No game or paid call in this
-investigation; complete restore, RNG control, live takeover and repeatability unverified.
-Documentation check: 59 link/anchor tests and `uv run --locked ruff check .` passed.
+Unsuccessful: no direct intermediate battle-state load or native RNG restoration was
+achieved with the current harness. The implemented draft repeated an opening at 1x;
+the owner correctly rejected that as a substitute for jumping into a saved state.
+Ten scripted loads used about 33.5 minutes of ownership and $0. Three same-file loads
+matched 1,100 ticks through contact/damage, but every load started at the beginning.
+API/UI audits and two parsed replay files identified no usable complete-state loader.
+This is a failed implementation attempt, not proof that all possible approaches are
+impossible. The owner ended this session's investigation; decompilers are for another
+session. No further reverse engineering or VM work is active.
+Cleanup removed the unmerged `wh3-rewind` branch, its plan, probe files, test scratch
+and owned runtime leftovers. The installed mod was rebuilt from unchanged `main`
+sources. The detailed local evidence was deliberately removed during cleanup; these
+historical counts do not establish a verified reset feature. No benchmark rows added.
+Cleanup checks: 59 doc tests passed; installed pack contents match all five main mod
+files. Global lint still flags unrelated owner annotation lines; those edits are retained.
 
 ## 2026-10-22: the script commands the AI's army
 

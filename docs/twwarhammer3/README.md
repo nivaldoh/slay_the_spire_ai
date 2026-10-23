@@ -35,7 +35,6 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [empire.md](empire.md) | the Empire set (2026-10-20): why one faction, the Empire scenarios from one unit to 20 v 20, the line battle for the robot-team question, the night's decisions and risks |
 | [small-scenarios-2.md](small-scenarios-2.md) | second batch of small scenario candidates (S8-S13): rosters, database facts, hypotheses |
 | [benchmark-run.md](benchmark-run.md) | running paired benchmark trials, outside controllers |
-| [checkpoints.md](checkpoints.md) | repeatable battle situations, RNG limits, reset probes and proposed implementation checks |
 | [reports.md](reports.md) | the offline HTML report and replay, its curated notes |
 | [traces.md](traces.md) | offline model-decision exports, reasoning capture and data provenance |
 | [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md) | the owner's benchmark brief |

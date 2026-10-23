@@ -87,15 +87,18 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-23 (rewind closed): wrap up the unsuccessful direct battle-state/RNG restore
+  investigation and clean up its leftovers. Decompilers are a topic for another session;
+  no further native reverse engineering or VM investigation now. Repeating the opening
+  did not satisfy the requested direct jump. [Outcome](twwarhammer3/log.md#2026-10-23-battle-rewind-investigation-closed).
 - 2026-10-22 (human opponent): wrap up the mode where the owner plays against the
   controllers and remember to implement it later. Resume at step 1 of the
   [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps); keep branch
   `wh3-human-opponent` (`de37005`) and its worktree until then.
-- 2026-10-22 (checkpoints and RNG): use reproducible battle situations for benchmarking
+- 2026-10-22 (checkpoints and RNG; closed 2026-10-23): use reproducible battle situations for benchmarking
   and training; first research the available reset/RNG mechanisms and plan a clean,
-  small implementation with repeatable checks. [Plan](twwarhammer3/checkpoints.md).
-  Complete state restoration and fixed engine RNG are not established; the plan's
-  specific checks remain proposed, not agreed.
+  small implementation with repeatable checks. Direct restoration and fixed engine RNG
+  were not achieved; the plan and abandoned draft were removed at the owner's request.
 - 2026-10-21 (evening goal, team structures), verbatim: "Using two LLMs for one army is
   arbitrary decision, but we can use it to compare with other options later. But we have
   more interesting options, like one model per unit, one model per type of unit, one model
