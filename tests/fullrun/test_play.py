@@ -1,7 +1,9 @@
 """Full-run lifecycle with a fake bridge and game; these states do not certify the engine."""
 
+import base64
 import csv
 import json
+import os
 from contextlib import nullcontext
 from copy import deepcopy
 from unittest.mock import Mock
@@ -42,7 +44,7 @@ class ScriptedPolicy:
 
 
 @pytest.fixture
-def harness(monkeypatch):
+def harness(monkeypatch, tmp_path):
     sessions, sent = [], []
 
     class FakeBridge:
@@ -56,7 +58,11 @@ def harness(monkeypatch):
             pass
 
         def receive(self):
-            return deepcopy(next(self.messages))
+            item = next(self.messages)
+            while callable(item):  # something the game does between two messages
+                item()
+                item = next(self.messages)
+            return deepcopy(item)
 
         def send(self, command):
             sent.append(command)
@@ -79,6 +85,7 @@ def harness(monkeypatch):
     monkeypatch.setattr(play, "wsl_bridge_host", Mock(return_value="172.18.0.1"))
     monkeypatch.setattr(play, "prepare_runtime", Mock(return_value={"mods": {}}))
     monkeypatch.setattr(play, "collect_profile", Mock(return_value={"slot": 0}))
+    monkeypatch.setattr(play, "GAME_DIR", tmp_path / "game")
     monkeypatch.setattr(play, "collect_diagnostics", lambda: {"schema_version": 1})
     monkeypatch.setattr(play, "committed_revision", lambda purpose, paths: "test")
     monkeypatch.setattr(play, "source_fingerprints", lambda paths: {})
@@ -151,3 +158,36 @@ def test_a_failed_model_decision_keeps_its_prompt_and_attempts_in_the_trace(tmp_
     assert exchange["prompt"].startswith("Run notes:") and len(exchange["attempts"]) == 3
     assert exchange["attempts"][0]["request"]["instructions"] == "Play well."
     assert exchange["error"]["type"] == "InvalidReply"
+
+
+def encode(save):
+    """The game's save obfuscation (SaveFileObfuscator): base64 of the JSON XORed with "key"."""
+    data = json.dumps(save).encode()
+    return base64.b64encode(bytes(byte ^ b"key"[i % 3] for i, byte in enumerate(data)))
+
+
+def test_each_new_autosave_of_the_run_is_copied_once_with_its_floor(tmp_path, harness):
+    sessions, sent = harness
+    autosave = tmp_path / "game/saves/IRONCLAD.autosave"
+    autosave.parent.mkdir(parents=True)
+    stamps = iter(range(1, 10))
+
+    def write(data):
+        def game_saves():
+            autosave.write_bytes(data)
+            stamp = next(stamps) * 10**9  # distinct modification times, as real saves have
+            os.utime(autosave, ns=(stamp, stamp))
+        return game_saves
+
+    floor = encode({"floor_num": 1, "act_num": 1, "seed": 7, "current_room": "MonsterRoom"})
+    write(encode({"floor_num": 30}))()  # left over from an earlier run
+    # A partly written file, the complete one, then the same save written again.
+    sessions.append([MENU, NEOW, write(floor[:12]), combat_message(), write(floor),
+                     combat_message(), write(floor), DEATH])
+    play.play_run(tmp_path / "run", {**CONFIG, "seed": "SEEDA"}, ScriptedPolicy())
+    trace = [json.loads(line) for line in (tmp_path / "run/trace.jsonl").read_text().splitlines()]
+    snapshots = [event for event in trace if event["kind"] == "save_snapshot"]
+    assert [(s["file"], s["floor"], s["act"], s["seed"], s["room"]) for s in snapshots] == [
+        ("saves/0001.autosave", 1, 1, 7, "MonsterRoom")]
+    assert (tmp_path / "run/saves/0001.autosave").read_bytes() == floor
+    assert play.decode_save(floor)["floor_num"] == 1

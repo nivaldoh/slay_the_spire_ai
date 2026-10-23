@@ -8,6 +8,8 @@ victory screen is a gameplay outcome.
 
 from __future__ import annotations
 
+import base64
+import hashlib
 import json
 import shutil
 import sys
@@ -58,6 +60,65 @@ def _summary(state: dict) -> dict:
     }
 
 
+def decode_save(data: bytes) -> dict:
+    """The game's save JSON: plain, or base64 of its text XORed with "key" (the game's
+    SaveFileObfuscator). ValueError for anything else, such as a partly written file."""
+    if b"{" not in data:
+        data = bytes(byte ^ b"key"[i % 3] for i, byte in enumerate(base64.b64decode(data)))
+    save = json.loads(data)
+    if not isinstance(save, dict):
+        raise ValueError("A save file holds a JSON object")
+    return save
+
+
+class SaveSnapshots:
+    """Copies each new version of the game's autosave into the run, with a trace event.
+
+    The game saves at room transitions, so these are the states the run could restart from
+    (the game's Continue, or a simulator that loads saves). They hold hidden state and never
+    reach the policy. Read-only; restoring one is untested. A save that predates the run is
+    not this run's, and a file the game is still writing is read again at the next state.
+    """
+
+    def __init__(self, source: Path, directory: Path, event):
+        self.source, self.directory, self.event = source, directory, event
+        self.seen, self.digest, self.count = self._version(), None, 0
+
+    def _version(self):
+        try:
+            stat = self.source.stat()
+        except OSError:
+            return None
+        return stat.st_mtime_ns, stat.st_size
+
+    def check(self, sequence: int) -> None:
+        version = self._version()
+        if version is None or version == self.seen:
+            return
+        try:
+            data = self.source.read_bytes()
+            save = decode_save(data)
+        except (OSError, ValueError):
+            return
+        self.seen, digest = version, hashlib.sha256(data).hexdigest()
+        if digest == self.digest:
+            return
+        self.digest, self.count = digest, self.count + 1
+        self.directory.mkdir(exist_ok=True)
+        path = self.directory / f"{self.count:04d}.autosave"
+        path.write_bytes(data)
+        self.event("save_snapshot", sequence=sequence, file=f"{self.directory.name}/{path.name}",
+                   sha256=digest, bytes=len(data), seed=save.get("seed"),
+                   floor=save.get("floor_num"), act=save.get("act_num"),
+                   room=save.get("current_room"), post_combat=save.get("post_combat"))
+
+
+def _save_path(profile: dict) -> Path:
+    # Slot zero is unprefixed; the game prefixes slots 1 and 2 with their number.
+    slot = profile.get("slot") or 0
+    return GAME_DIR / "saves" / (("" if slot == 0 else f"{slot}_") + "IRONCLAD.autosave")
+
+
 def _record_exchanges(policy, event) -> None:
     """Finished model requests, failed ones included, each with its prompt and attempts."""
     api = getattr(policy, "api", None)
@@ -85,7 +146,7 @@ def _decide(message: dict, policy, session_id: str, sequence: int, result: dict,
 
 
 def _drive(bridge, policy, config: dict, session_id: str, deadline: float, result: dict,
-           event) -> None:
+           event, saves: SaveSnapshots) -> None:
     """Answer the engine until the run ends or hits a limit, recording into ``result``."""
     sequence = settles = closes = 0
     run_started = False
@@ -98,6 +159,8 @@ def _drive(bridge, policy, config: dict, session_id: str, deadline: float, resul
             raise BridgeCommandError(message["error"])
         if not message.get("ready_for_command"):
             continue
+        if message.get("in_game"):
+            saves.check(sequence)
         if message.get("game_state"):
             state = message["game_state"]
             result.update(_summary(state))
@@ -139,7 +202,8 @@ def play_run(directory: Path, config: dict, policy) -> dict:
     result = {"seed": config["seed"], "session_id": session_id, "status": "interrupted",
               "actions": 0, "decisions": 0, "policy_calls": 0, "settle_waits": 0,
               **_summary({})}
-    write_json(directory / "profile.json", collect_profile(GAME_DIR))
+    profile = collect_profile(GAME_DIR)
+    write_json(directory / "profile.json", profile)
     write_json(directory / "result.json", result)
     with (directory / "trace.jsonl").open("x", buffering=1) as trace:
 
@@ -147,6 +211,7 @@ def play_run(directory: Path, config: dict, policy) -> dict:
             record = {"kind": kind, "elapsed": time.monotonic() - started, **fields}
             trace.write(json.dumps(record, sort_keys=True) + "\n")
 
+        saves = SaveSnapshots(_save_path(profile), directory / "saves", event)
         try:
             with RuntimeLock(), BridgeServer(
                 host=wsl_bridge_host(), port=BRIDGE_PORT, timeout=config["bridge_timeout"]
@@ -155,7 +220,7 @@ def play_run(directory: Path, config: dict, policy) -> dict:
                 write_json(directory / "deployment.json", deployment)
                 with OwnedGame(directory / "game.log", timeout=config["run_timeout"]) as game:
                     event("launch", **game.info)
-                    _drive(bridge, policy, config, session_id, deadline, result, event)
+                    _drive(bridge, policy, config, session_id, deadline, result, event, saves)
         except BridgeError as exc:
             status = "truncated" if time.monotonic() >= deadline else "infrastructure_failure"
             result.update(status=status, error=str(exc), error_type=type(exc).__name__)
@@ -190,7 +255,9 @@ def play(output: Path, config: dict, *, policy_factory) -> dict:
         "scope": "full_run",
         "observation_contract": decisions.OBSERVATION_CONTRACT,
         "system_prompt_sha256": sha256(SYSTEM_PROMPT_PATH),
-        "model_exchange_version": 1,
+        # 2 (2026-10-23): decisions keep attempts without request and output items, which
+        # their model_exchange keeps (with token logprobs where requested); save snapshots.
+        "model_exchange_version": 2,
         "status": "running",
         "runs": [],
     }

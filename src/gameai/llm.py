@@ -22,7 +22,7 @@ from pathlib import Path
 from queue import Empty, SimpleQueue
 
 from gameai.ledger import Ledger
-from gameai.providers import OPENAI, get_provider, routing, validate
+from gameai.providers import OPENAI, get_provider, logprobs, routing, validate
 
 API_URL = OPENAI.url
 PRICES = OPENAI.prices
@@ -199,7 +199,7 @@ class Model:
 
     def __init__(self, name: str, effort: str, ledger: Ledger, *, instructions: str,
                  max_output_tokens: int, send=None, provider: str = "openai",
-                 record_exchanges: bool = False):
+                 record_exchanges: bool = False, record_logprobs: bool = False):
         validate(provider, name, effort)
         if max_output_tokens <= 0:
             raise ValueError("max_output_tokens must be positive")
@@ -210,6 +210,9 @@ class Model:
                                    record_transport=provider == "openrouter")
         self.totals = Counter()
         self.record_exchanges = record_exchanges
+        # Opt-in: token logprobs where providers.LOGPROBS declares them, kept in each
+        # attempt's output items.
+        self.record_logprobs = record_logprobs
         self.exchanges = SimpleQueue()
         self.exchange_count = 0
 
@@ -225,6 +228,7 @@ class Model:
                                 "schema": schema, "strict": True}},
             "store": False,
             **routing(self.provider, self.name),
+            **(logprobs(self.name) if self.record_logprobs else {}),
         }
         if self.record_exchanges and self.provider == "openai" and self.effort != "none":
             body["reasoning"]["summary"] = "auto"

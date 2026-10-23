@@ -262,6 +262,47 @@ def test_new_traces_keep_retry_prompts_reasoning_and_failed_requests(tmp_path):
             assert "runs with exported rows: `{}`" in (output / "datacard.md").read_text()
 
 
+def test_token_logprobs_are_requested_kept_once_in_the_trace_and_exported_aside(tmp_path):
+    # The shape of the 2026-10-23 live probe: per output token, its logprob, bytes and top
+    # alternatives, on the output_text part.
+    tokens = [{"token": t, "logprob": -0.1, "bytes": list(t.encode()),
+               "top_logprobs": [{"token": t, "bytes": list(t.encode()), "logprob": -0.1}]}
+              for t in ('{"', "choice", '":', " ", "1")]
+    bodies = []
+
+    def send(body):
+        bodies.append(body)
+        return {"id": "r", "status": "completed",
+                "usage": {"input_tokens": 10, "output_tokens": 5, "cost": 0.0001},
+                "output": [{"type": "message", "content": [{
+                    "type": "output_text", "logprobs": tokens,
+                    "text": '{"choice": 1, "reason": "safer", "notes": null}'}]}]}
+
+    policy = LLMPolicy("qwen/qwen3.6-35b-a3b", "none", Ledger(tmp_path / "spend.jsonl", 1.0),
+                       send=send, system_prompt=SYSTEM, provider="openrouter")
+    events = []
+    play._decide(combat_message(), policy, "s", 1, {"policy_calls": 0, "decisions": 0},
+                 lambda kind, **fields: events.append({"kind": kind, **fields}))
+    assert (bodies[0]["logprobs"], bodies[0]["top_logprobs"]) == (True, 10)
+    exchange, decided = events
+    assert exchange["attempts"][0]["output"][0]["content"][0]["logprobs"] == tokens
+    assert not {"request", "output"} & set(decided["behavior"]["attempts"][0])
+    job = make_job(tmp_path, [(events, {"seed": "DATA001", "status": "lost"})])
+    manifest = json.loads((job / "manifest.json").read_text())
+    (job / "manifest.json").write_text(json.dumps({**manifest, "model_exchange_version": 2}))
+    summary = export.export_runs([job], tmp_path / "export")
+    [row] = read_export(tmp_path / "export")
+    [kept] = row["attempts"]
+    assert kept["output"][0]["content"][0].keys() == {"type", "text"}
+    assert kept["logprob_tokens"] == 5 and kept["request"] == bodies[0]
+    assert row["choice"]["index"] == 1 and row["provider"] == "openrouter"
+    [line] = (tmp_path / "export/logprobs.jsonl").read_text().splitlines()
+    assert json.loads(line) == {"id": row["id"], "attempt": 0, "item_index": 0,
+                                "part_index": 0, "logprobs": tokens}
+    assert summary["counts"]["attempts_with_logprobs"] == 1
+    assert summary["logprobs_sha256"] == hashlib.sha256(line.encode() + b"\n").hexdigest()
+
+
 def test_new_trace_edge_rows_keep_errors_out_of_training_targets(tmp_path):
     transport = {"request": sent("lost")["request"], "transport_error": "timed out",
                  "uncertain_attempts": 1}

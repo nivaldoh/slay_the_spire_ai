@@ -231,7 +231,8 @@ class LLMPolicy:
                  system_prompt: str | None = None, provider: str = "openai"):
         self.api = Model(model, effort, ledger, send=send, provider=provider,
                          instructions=system_prompt or SYSTEM_PROMPT_PATH.read_text(),
-                         max_output_tokens=MAX_OUTPUT_TOKENS, record_exchanges=True)
+                         max_output_tokens=MAX_OUTPUT_TOKENS, record_exchanges=True,
+                         record_logprobs=True)
         self.totals = self.api.totals
         self.monster_notes = json.loads(MONSTER_NOTES_PATH.read_text())
         self.notes = ""
@@ -278,13 +279,17 @@ class LLMPolicy:
             "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
         }
         try:
-            reply, metadata["attempts"] = self.api.ask(
+            reply, attempts = self.api.ask(
                 prompt, REPLY_SCHEMA, lambda text: _parse(text, len(decision.candidates)),
                 INVALID_RETRIES)
         except InvalidReply as error:
             raise PolicyFailure(str(error), failure={
                 "kind": "invalid_reply", "attempts": error.attempts,
             }) from None
+        # The trace's model_exchange event keeps each attempt's request and output items
+        # (reasoning, token logprobs); the decision keeps the rest, linked by exchange id.
+        metadata["attempts"] = [{key: value for key, value in attempt.items()
+                                 if key not in ("request", "output")} for attempt in attempts]
         choice = decision.candidates[reply["choice"]]
         if reply["notes"] is not None:
             self.notes = reply["notes"][:NOTES_LIMIT]

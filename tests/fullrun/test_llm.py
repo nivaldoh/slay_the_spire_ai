@@ -51,6 +51,7 @@ def test_choice_updates_notes_history_ledger_and_metadata(tmp_path):
     assert "Choices:\n0: play Strike (1 attack) -> Jaw Worm [1]" in metadata["prompt"]
     body = agent.api.send.bodies[0]
     assert body["reasoning"] == {"effort": "low", "summary": "auto"} and body["store"] is False
+    assert "top_logprobs" not in body  # declared only where a backend returns them
     exchange = next(agent.api.drain_exchanges())
     assert exchange["prompt"] == metadata["prompt"]
     assert exchange["attempts"][0]["request"] == body and "output" in exchange["attempts"][0]

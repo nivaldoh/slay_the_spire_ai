@@ -3,7 +3,8 @@
 One row per model request, with every reply attempt, in the export-row contract the WH3
 exporter shares. Old traces logged each request only on its decision; since
 ``model_exchange_version`` 1, ``model_exchange`` events add request bodies, output items
-and failed requests. Labels are public facts from decision observations, never from raw
+and failed requests; since 2, only the exchange keeps them, and token logprobs in output
+items go to ``logprobs.jsonl``. Labels are public facts from decision observations, never from raw
 engine messages. Missing historical data stays missing and is labelled as an issue.
 """
 
@@ -123,6 +124,26 @@ def _fights(labels: list[dict], status: str) -> None:
         fight["won"] = {"lost": False, "won": True}.get(status)
 
 
+def _split_logprobs(output: list) -> tuple[list, list]:
+    """Output items without their token logprobs, and those logprobs with item and part
+    indexes. Logprobs are about 1 kB per output token, so they go to ``logprobs.jsonl``."""
+    items, logprobs = [], []
+    for item_index, item in enumerate(output):
+        content = item.get("content") if isinstance(item, dict) else None
+        if isinstance(content, list) and any(isinstance(p, dict) and "logprobs" in p
+                                             for p in content):
+            parts = []
+            for part_index, part in enumerate(content):
+                if isinstance(part, dict) and "logprobs" in part:
+                    part = dict(part)
+                    logprobs.append({"item_index": item_index, "part_index": part_index,
+                                     "logprobs": part.pop("logprobs")})
+                parts.append(part)
+            item = {**item, "content": parts}
+        items.append(item)
+    return items, logprobs
+
+
 def _attempts(raw_attempts: list, prompt: str | None, system: str | None, issues: set,
               where: str) -> list[dict]:
     attempts = []
@@ -150,6 +171,11 @@ def _attempts(raw_attempts: list, prompt: str | None, system: str | None, issues
         reasoning = None
         if "output" in raw:
             reasoning = reasoning_parts(raw["output"])
+            attempt["output"], logprobs = _split_logprobs(raw["output"])
+            if logprobs:
+                # Written to the sidecar with the row id; the row keeps the token count.
+                attempt["_logprobs"] = logprobs
+                attempt["logprob_tokens"] = sum(len(part["logprobs"] or ()) for part in logprobs)
         elif "transport_error" not in raw:
             issues.add("reasoning_not_recorded")
         attempt.update(user_prompt=user, prompt_source=source, reasoning=reasoning)
@@ -325,10 +351,11 @@ def export_runs(paths: list[Path], output: Path, *, models: tuple[str, ...] = ()
     output.parent.mkdir(parents=True, exist_ok=True)
     files, sources, issues, rows = {}, {}, Counter(), Counter()
     counts = Counter(jobs=0, runs=0, records=0, attempts=0, records_with_error=0,
-                     records_without_decision=0, filtered_out=0)
+                     records_without_decision=0, filtered_out=0, attempts_with_logprobs=0)
     with tempfile.TemporaryDirectory(prefix=".spire-export-", dir=output.parent) as temporary:
         directory = Path(temporary)
-        with (directory / "decisions.jsonl").open("w") as handle:
+        with ((directory / "decisions.jsonl").open("w") as handle,
+              (directory / "logprobs.jsonl").open("w") as sidecar):
             for path, runs in sorted(selected.items(), key=lambda item: (item[0].name, item[0])):
                 job = _job(path, files)
                 if job["source_id"] in sources:
@@ -352,6 +379,12 @@ def export_runs(paths: list[Path], output: Path, *, models: tuple[str, ...] = ()
                                     and record["system_prompt_sha256"] not in prompt_hashes)):
                             counts["filtered_out"] += 1
                             continue
+                        for index, attempt in enumerate(record["attempts"]):
+                            for part in attempt.pop("_logprobs", ()):
+                                sidecar.write(json.dumps({"id": record["id"], "attempt": index,
+                                                          **part}, ensure_ascii=False,
+                                                         sort_keys=True) + "\n")
+                            counts["attempts_with_logprobs"] += "logprob_tokens" in attempt
                         handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
                         counts["records"] += 1
                         counts["attempts"] += len(record["attempts"])
@@ -368,7 +401,8 @@ def export_runs(paths: list[Path], output: Path, *, models: tuple[str, ...] = ()
                    "filters": {"models": list(models), "providers": list(providers),
                                "prompt_hashes": list(prompt_hashes)},
                    "exporter_sha256": sha256(Path(__file__)), "files": files,
-                   "sources": sources, "decisions_sha256": sha256(directory / "decisions.jsonl")}
+                   "sources": sources, "decisions_sha256": sha256(directory / "decisions.jsonl"),
+                   "logprobs_sha256": sha256(directory / "logprobs.jsonl")}
         (directory / "sources.json").write_text(
             json.dumps(summary, indent=2, sort_keys=True) + "\n")
         (directory / "datacard.md").write_text(_data_card(summary))
@@ -397,10 +431,17 @@ Sources are unchanged.
   outcome. Rows follow the export-row contract shared with WH3: `group` is the game seed
   and `split` is `held_out` for the reserved evaluation seeds `HELDOUT01` to `HELDOUT10`
   (in any spelling the game reads as the same seed), otherwise `development`.
+- `logprobs.jsonl`: token logprobs, where the request asked for them (Qwen3.6 since
+  2026-10-23): one line per output part, `{{id, attempt, item_index, part_index,
+  logprobs}}`, keyed to its row's `id`, the attempt's index and the output item and part
+  it was cut from. Each entry is a sampled token with its logprob, bytes and top
+  alternatives. Under the strict reply schema they are the backend's constrained
+  distribution: masked alternatives read -9999. The attempt keeps `logprob_tokens`.
 - `sources.json`: full job manifests (configuration, source fingerprints, revision),
   environment snapshots, each run's result, profile and deployment, input file hashes,
-  the exporter hash, filters, counts, issues and the hash of `decisions.jsonl`. Each row's
-  `provenance.source_id` (job name and manifest hash) references its job.
+  the exporter hash, filters, counts, issues and the hashes of `decisions.jsonl` and
+  `logprobs.jsonl`. Each row's `provenance.source_id` (job name and manifest hash)
+  references its job.
 - `harness` and `prompt_version` are the job-name label (`-vN-`), as in the results
   register, not an authoritative version; the system prompt hash and source revision are.
 

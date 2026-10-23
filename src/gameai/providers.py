@@ -52,6 +52,13 @@ def _pin(slug: str) -> dict:
 ROUTES = {"qwen/qwen3.6-35b-a3b": {"quantizations": ["fp8", "bf16"], **_pin("parasail")},
           "z-ai/glm-5.3": _pin("decart"), "moonshotai/kimi-k3": _pin("sail-research")}
 SAMPLING = {"qwen/qwen3.6-35b-a3b": {"temperature": 1.0, "top_p": 0.95}}
+# Token logprobs, sent only for callers that ask (Spire's play since 2026-10-23). A live probe
+# that day: Parasail returns each output token's logprob, bytes and top alternatives through
+# the Responses route for `logprobs` with `top_logprobs`; under a strict schema they are the
+# constrained distribution (masked alternatives read -9999). A sent seed did not repeat replies.
+# JUDGEMENT: 10 alternatives (assistant, 2026-10-23): every single-digit choice; 5 halves the
+# size, 20 doubles it. The choice distributions in Spire traces rest on it.
+LOGPROBS = {"qwen/qwen3.6-35b-a3b": 10}
 PROVIDERS = {"openai": OPENAI, "openrouter": OPENROUTER}
 
 
@@ -70,6 +77,11 @@ def validate(provider: str, model: str, effort: str) -> None:
     if effort not in spec.efforts[model]:
         raise ValueError(f"invalid choice for {provider} {model}: use an effort in "
                          f"{', '.join(spec.efforts[model])}")
+
+
+def logprobs(model: str) -> dict:
+    """Request fields that return ``model``'s token logprobs, or none where undeclared."""
+    return {"logprobs": True, "top_logprobs": LOGPROBS[model]} if model in LOGPROBS else {}
 
 
 def routing(provider: str, model: str) -> dict:
