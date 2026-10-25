@@ -29,14 +29,15 @@ saw. Actual battles always run unpaused at 1×. [Still image](docs/images/wh3-re
 | Decisions | Cards, targets, potions, rewards, shops, events and map routes | Movement, attacks, formations, spells, abilities and supported battle objectives |
 | Interface | Labeled legal choices through CommunicationMod | Structured observations and orders through a custom Lua mod |
 | Time | Turn-based decisions with memory across a run | Continuous battle; observation-to-order delay is measured |
-| Investigation | Which prompt and memory changes fix observed mistakes? | Can a model find a winning tactic and execute it in time? |
+| Investigation | Which prompt and memory changes fix observed mistakes? | How often does a controller win a declared battle, and what explains its successes and failures? |
 
 ## WARHAMMER III: watch the decisions unfold
 
-The benchmark puts models in deliberately different tactical situations: cavalry facing
-anti-large infantry, a caster-led assault, commanding or surviving a Skaven swarm,
-a siege defence and a reinforcement defence. The aim is a small set of difficult,
-winnable battles with meaningful choices.
+The first benchmark is being defined around **small mixed-army Land Battles**. The engine
+decides the winner, including timer endings; health, leadership, timing and cost explain
+performance. The [definition](docs/twwarhammer3/benchmark.md) and [plan](docs/twwarhammer3/benchmark-implementation.md) remain under review,
+and the current readers do not yet implement the new score. The figures below show earlier
+development studies across cavalry, spellcasting, swarm, siege and reinforcement battles.
 
 [![Six provisional WH3 scenarios, with terrain and starting army positions](docs/images/wh3-scenarios.png)](docs/twwarhammer3/benchmark.md#scenario-design)
 

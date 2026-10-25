@@ -23,7 +23,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
   was admitted under the former rule, G1 is incomplete and G2 never ran. Win-rate admission
   was retired in the 2026-10-15 plan revision below. "Margin" is the active-strength margin
   and "clock ratio" battle time over wall time
-  ([benchmark.md](benchmark.md#outcomes-measures-and-comparison)).
+  ([benchmark.md](benchmark-implementation.md#what-the-current-code-reports)).
 - A new entry goes at the top, and "On main" is updated with it.
 
 ## On main
@@ -40,6 +40,181 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
+
+## 2026-10-25: Battle checkpoints restore exactly through a fast rebuild
+
+- Owner goal: battle checkpoint restoration for modders. $0, no production source/config
+  change; lab tool `~/wh3-checkpoint-lab/ckpt/` (README, `FINDINGS.md` 2026-10-25 entries).
+- A checkpoint is the game's replay file written mid-battle (setup and every input so far)
+  plus the Lua random seed at tick 1. A restore loads it through the replay menu, clears the
+  replay flag once the input session exists (live HUD, countdown clock, live scripts; the
+  `debug_replay` switch covers the interface's own test) and sets the seed. It then rebuilds
+  with inline ticks at about 9× real time: every rebuilt tick's native checksum must equal
+  the saved one. At the checkpoint tick a live input provider replaces the replay one, and the
+  loaded replay keeps recording. From then on the battle runs at 1x.
+- Lab checks (`logs/ckpt-20261025/`): fixed later orders at fixed ticks in source and restores,
+  then per-tick checksums plus Lua readings (position, facing, men, hit points, ammo, morale,
+  abilities, winds of magic, kills, clock). 3-unit battle, checkpoints before contact and in
+  melee; 20-unit battle with spells, AI shaman, artillery and cavalry. 22 completed restores
+  had 0 checksum mismatches over the 200–1,951 ticks each ran after its checkpoint; readings
+  differed only in Lua random draws (before the seed fix, and once from a wrong seed the tool
+  passed). Five method variants failed or were refused by guards (in FINDINGS). Changed
+  orders diverged (small battle from 1304 after an order at 1300; 20-unit battle from 1603
+  after one at 1600). A tick-1 battle script's timers, orders and draws matched. Saves taken
+  in restored battles restore exactly. Restored battles ended like the source.
+- Standalone player tool, not published (`~/wh3-checkpoint-lab/release/wh3-battle-checkpoints/`):
+  `save NAME` while playing; opening NAME from Replays restores it, checking each rebuilt tick
+  against the checksums stored in the file. Lab tests through the harness (no orders, AI
+  attacks): 3-unit battle restored twice, 20-unit battle once plus a chained save restored,
+  each 0 mismatches over 2,200–2,400 ticks; an ordinary replay was left alone (700/700).
+- Agreed check (owner, 2026-10-25) on branch `wh3-checkpoints` (code moved into
+  `battle/checkpoint.py`, `engine/checkpoint_agent.js`): passed at `7b1e2ed`,
+  `runs/twwarhammer3/checkpoint-check-20261025b/` (0 mismatches over 2,000/2,001 ticks, 9/9
+  readings per restore; changed restore diverged at 1303). Not covered: real-time script
+  timers, our bridge mod's state (fresh after a restore), the loading screen (shows the
+  starting armies; parked by the owner), other battle types and builds.
+  Owner, 2026-10-25: the rebuild may run above 1x before the handover; released the tool
+  publicly (github.com/nivaldoh/wh3-battle-checkpoints, v0.1.0); check agreed once in the repo.
+
+## 2026-10-24: Position, health and countdown restore witnesses
+
+- Owner asked for movement, timer and health first, then stopped work for now. All 44
+  continuation launches report closed; Windows process enumeration is empty. $0; no
+  production source/config changes, commits or new agreed verification method.
+- Direct simple01 saved swordsmen 83.419 m from their start at 32.8 s: health
+  0.750080526, 68/90 soldiers. Two further movements displaced them 35.291/45.238 m,
+  with lower health, before public teleport/heal calls in the same running battle.
+- At two-second readback, position errors were 0.452/2.434 m; health was 1.0/0.505475044
+  and soldiers 90/46. Neither attempt restored the saved values exactly. No tolerance
+  adopted; these saved getters are useful failure witnesses, not full-state verification.
+- Native countdown getter reads limit minus a mutable conflict-time field. Candidate
+  direct restore has pointer/byte guards and independent Lua readback, but simple02 was
+  interrupted during menu setup before battle: countdown writes and revised healing
+  remain untested. Elapsed simulation time was not restored or cosmetically overwritten.
+- Resume with countdown readback/advance/restore, then health and unit-centre discrepancies.
+  Private evidence: `~/wh3-checkpoint-lab/REPORT.md`, `logs/resumed-20261024/`; no complete
+  restore or impossibility proof. Broader projectile work waits behind these basic checks.
+- Docs: 65 passed, none failed/skipped; Ruff and diff checks pass. These establish links
+  and style, not checkpoint correctness. Profile scripts match their pre-probe hashes.
+
+## 2026-10-24: Native worker boundary for checkpoint capture
+
+- Direct projectile probes exposed an unsafe capture condition. Three source probes
+  yielded no accepted active-effect pair: first the pending container was read, then
+  duplicate slots and invalid environment headers were caught. Failures remain local.
+- Source02 logged Lua/session work on thread 2680 and 130 primary constructor entries
+  on17568. Its repeated module lookups also added overhead (native/wall ratio 0.767);
+  the next observer caches definition identity. No pause or speed command was sent.
+- Native code shows the session output flag is1 only after its step path joins and
+  destroys the worker job. Phase01: 289 complete returns and 289 post-tick returns had
+  null jobs and equal counters; 2,301 incomplete polls retained jobs. All checked headers
+  looked valid in this cheap probe, so header validity alone cannot decide readiness.
+- Source03 closed at 240.6 s: ready flag1, null worker job, equal counters at capture1900;
+  14 projectile-class objects, all stationary there. Lua graph2,307,416 bytes; all1,900
+  prefix hashes match. Offline mapping:44 permanents/1,579 light-pointer relocations.
+- Source-derived target01 failed a timer metadata guard after graph installation;
+  no accepted combined restore. Moving-projectile restoration remains untested. Evidence:
+  `~/wh3-checkpoint-lab/REPORT.md` and `logs/resumed-20261024/` there.
+
+## 2026-10-24: Checkpoint references and combined installation
+
+- Five new $0 probes use the existing native replay capture and Lua graph, production
+  sources unchanged. Fresh-process mapping covers 52 permanents, 38 native userdata,
+  two threads and 1,587 light pointers. Detached decode retains the pending callback.
+- First combined installation failed its native timer check: 40,350 ms instead of
+  captured 40,250 ms. Corrected installation preserves the captured native deadline;
+  both failure and correction remain in the lab evidence.
+- Corrected run: all four native script-value maps and Lua CRT seed match at the boundary;
+  callback pending at 70 s, fired by 90 s; stable through 180.2 s, 1,005/1,005 shared
+  source hashes equal. Transient keys were restored; persistent maps already agreed.
+- Second corrected installation: 899/899 hashes match before a new order at 90 s.
+  Restored controller moves swordsmen 35.234 m; cavalry peer moves 0 m. Native hashes
+  differ from tick 905; 4.8 m remains to the requested point, no arrival-precision claim.
+- All 36 continuation launches closed, no native faults in these five probes, profile files
+  unchanged. Real timers use a marked relative-clock choice; complete restores remain
+  zero. Direct effects, soldier/order/AI state and full simulation RNG remain unverified.
+- Docs: 65 checks pass after fixing a scratch-directory setup error; Ruff passes.
+  No new agreed method. Next: native projectile lifecycle, then active-effect capture
+  and repeated combined restores. Evidence: `~/wh3-checkpoint-lab/REPORT.md`, resumed logs.
+
+## 2026-10-24: Native checkpoint continuation without deadline
+
+- Owner removed the deadline; zero complete restores, no impossibility proof. Production
+  code/configuration unchanged at `b0ac9e3`; private lab probes only, no paid models.
+- ESF index covers 2,239 known caller regions (2,188 named); no complete codec pair found.
+  Indirect routes remain. Two ownership probes show battle event/mod contexts share one Lua heap.
+- Five movement handoffs: one guard refusal, two UI faults, two provider-only successes.
+  Each success matched 400 prefix hashes and moved swordsmen 35.201 m; 851 shared hashes
+  matched beyond the 600-entry recording. Lua sentinel absent in all 16 samples per success.
+- Combat source/unchanged handoff: 2,403 hashes match, including 804 beyond the saved replay;
+  ranged fire continued into melee, clock ratio 0.999983. Changed branch: fire-at-will off,
+  ammo 1,455 vs 1,369 and changed combat. Native hashes exclude Lua state and are not complete-state proof.
+- Lua graph/C-closure copies retain pending callbacks, shared upvalues and environments.
+  Four isolated Lua RNG restores match the decoded recurrence; corrected handle inventories pass twice.
+  Failures retained: DLL/float ABI, function environments, inline strings and `string.find` misuse.
+- Two live Lua-root installations/refirings passed through 180.2 s after a late GC fault;
+  the incremental-GC reference fails before the registry fix and passes after. Native time stayed advanced.
+- Coherent capture: Lua 40 s/native next tick 401, with all 400 available source hashes matching
+  its 401-entry replay. Native handle and timer rebinding remain; no direct effect-lifetime test.
+- All 30 launches closed, $0, 1x. Evidence: `~/wh3-checkpoint-lab/{FINDINGS,REPORT}.md`,
+  `logs/resumed-20261024/`. These diagnostics remain unverified under the owner's rule.
+
+## 2026-10-24: Native checkpoint investigation
+
+- Reused the committed Lua/harness sources at `b0ac9e3`; targeted Ghidra decompilation and
+  Windows Frida probes on pinned Steam build 25961564. Report, addresses, hashes, scripts
+  and private evidence: `~/wh3-checkpoint-lab/REPORT.md` and `FINDINGS.md`.
+- Native replay writer produced six intermediate files; loading reconstructs tick zero.
+  Two loads of the controlled Lua-witness file matched 591/591 and 593/593 native tick
+  checksums (591 shared ticks equal), while its Lua marker was absent in 5/5 samples each.
+  Source marker/callback control passed; shifted tick indexing produced 138 mismatches per
+  load. These are diagnostic hashes, not full simulation traces or checkpoint verification.
+- Two native XML exports held five unit records/91 elements each; only the moved unit's
+  formation position/facing changed. Inspected multimodel, resync, drop-in and shroud paths
+  did not supply a complete running-world reader/writer. Static coverage is bounded.
+- 19 launches, 12 completed diagnostic windows, seven incomplete/failed; all closed, $0.
+  Ordinary battles requested unpaused 1x; replay startup consumed about 50 native ticks
+  quickly before steady 10 Hz, with no speed command issued. Invalid Lua controls were excluded.
+  Original executable hash and two profile-script/154 save files match their baselines.
+  No production code changed.
+- No complete restore was attempted or verified. The stopping point rests on JUDGEMENT?
+  `~/wh3-checkpoint-lab/FINDINGS.md` Search stopping point; it does not prove nonexistence.
+  Repository documentation/style checks are recorded in the lab report; no agreed check added.
+
+## 2026-10-24: Native checkpoint tool setup
+
+Prepared `~/wh3-checkpoint-lab/SETUP.md`; preserved earlier notes and unrelated edits.
+Reused Ghidra 12.1.4/JDK 25.0.5 and game copies; installed Universal Modder 0.2.0
+(fal disabled), PyGhidra MCP 0.2.7 and Windows Frida 17.24.3. Codex 0.164.0 has goals;
+the owner approved the lab launcher's session-only automatic approval review.
+Static: one exported Lua function decompiled directly and through MCP; project retained.
+Full executable analysis and code indexing remain unfinished. Native: one live attachment,
+143 modules enumerated, detached; no hooks or restoration tested. Scope rests on
+JUDGEMENT `~/wh3-checkpoint-lab/SETUP.md` Static witness.
+Harness: existing `check_wh3_team.py` passed 4/4 fresh launches at `b0ac9e3`, $0, 1x;
+clock ratios 1.054–1.056, all four games closed. Evidence: lab
+`logs/setup-20261023/team-live/`. This rests on JUDGEMENT
+`tests/twwarhammer3/check_wh3_team.py` Movement witness (existing motion can qualify).
+Profile scripts match their backup; no source/runtime change or result-register row.
+Checks: 65 documentation tests passed, Ruff passed, helper syntax checks passed.
+New static/native smoke checks are not agreed verification methods; complete checkpoints
+remain unverified. Restart action and permissions are in SETUP; no overnight goal started.
+
+## 2026-10-23: Land Battle benchmark definition and plan
+
+Owner: small mixed armies first; engine winner decides timer outcomes. Updated
+[benchmark.md](benchmark.md) around battle success, army condition and separate diagnostics;
+card admission and contact-only scoring stay historical. Recorded the direction and
+reconciled the README, runbook, report/evaluation guidance, Empire/card pages and state.
+Proposed first profile: see JUDGEMENT `benchmark.md` Starter armies, Starter settings and
+Role coverage; no scenario/config or runtime change. Other new markers: Primary summary,
+First diagnostics, First comparison, Launch sampling, Pilot size and Land Battle checks
+(nine total). Their use remains proposed; the timer decision and small-army scope are agreed.
+The plan names capture gaps, shared scoring, proposed checks, a free pilot, a bounded
+comparison and evidence handoff; RL shaping is separate. Historical c1 remains untouched.
+Validation: 64 documentation-link cases passed, no failures/skips; Ruff and diff checks
+passed. Readbacks/configs checked against source; no game, API calls or new register rows.
+New verification methods remain unagreed; no gameplay/readiness claim.
 
 ## 2026-10-23: Live-check audit and free army rerun
 
@@ -106,6 +281,26 @@ New checks rest on JUDGEMENT `tests/twwarhammer3/test_wh3_play.py` Acknowledgeme
 JUDGEMENT `docs/testing.md` Agent review workflow (four new markers).
 New verification methods remain unagreed. No runtime/prompt snapshots changed; no games,
 paid calls or browser checks ran. Recount provenance remains a documented gap.
+
+## 2026-10-23: native checkpoint feasibility
+
+Owner requested a fresh assessment of native reverse engineering and tooling. Read-only:
+no game launch, native module installation, executable modification or paid call.
+Installed build `25961564` and executable SHA256 match `runtime.PINS`. PE inspection found
+123 named Lua exports, including `luaL_register` and `lua_pushcclosure`; no root-level PDB
+or COFF symbols. These are integration entry points, not battle-state save/load functions.
+ASCII strings include `constant_random_seed`, `EMPIRE_REPLAY`, `SAVED_TICK` and `QUEUES`;
+their names establish no complete serializer, RNG restoration or live behavior.
+[memreader Plus](https://github.com/PKozdra/memreader_plus/tree/eae853af5b977ee36bc273c8e380745b2783a1f5)
+has Lua registration, native calls and hooks in source. Its Lua hook callbacks skip other
+threads; compatibility and checkpoint use were not tested here. No usable complete-state
+loader was identified. Finding an existing paired serializer/loader remains a hypothesis;
+building one would also require hidden simulation state, RNG streams and coherent timing.
+[Ghidra](https://github.com/NationalSecurityAgency/ghidra) supports scripted/headless analysis;
+not found on PATH or in checked tool directories. Available Java is 8; current upstream
+instructions require JDK 25. Native instrumentation would run on Windows, alongside WH3.
+No repeatable restoration check is agreed, no route adopted, no judgement markers added.
+Documentation checks: 60 passed; lint failed on four pre-existing owner annotation lines.
 
 ## 2026-10-23: battle rewind investigation closed
 
@@ -338,7 +533,7 @@ readings and interrupt handling are unchanged, so such an episode is still a
 `policy_failure`. Regression
 `test_a_controller_failure_after_the_ending_keeps_the_engine_result` fails on the parent
 and passes; WH3 suite 633 passed, ruff clean. No recorded episode took either path (0 of
-595). The [failure rule](benchmark.md#correctness-checks-to-agree) is agreed; scoring
+595). The [failure rule](benchmark-implementation.md#correctness-checks-to-agree) is agreed; scoring
 construction failures and the kept ending by it is a later evaluator change. The starting
 set's screen is agreed with its reading rule and markers and runs on the next free night;
 the defender prompt change is approved as its own prompt version. Unverified: no live
@@ -352,7 +547,7 @@ Away window from 02:20, offline, $0, no game (no plan named); `runs/twwarhammer3
   chose them), a 39-launch $0 screen plan, a held-out map. Fixed 113 of 114 review finds
   and 132 stale facts; 18 policy-file texts kept (edits change recorded hashes).
 - Failure rule: none of 595 episodes failed at construction, a late acknowledgement or
-  `close()`, so the [proposed rule](benchmark.md#correctness-checks-to-agree) rescores
+  `close()`, so the [proposed rule](benchmark-implementation.md#correctness-checks-to-agree) rescores
   nothing; unmerged branch `wh3-keep-engine-ending` (`98b3013`) keeps the engine's result.
 - c1: a blind recount matched every outcome and the verdict (its cycle counts lacked the
   scorer's 1 s tolerance, now written); of 21 hand-picked engagements cycles v1 got 13,
@@ -422,11 +617,11 @@ offline trial after agreement, using existing recount/mutation evidence before n
 
 ## 2026-10-20: Benchmark scope and release criteria
 
-Consolidated the [scope](benchmark.md#scope-and-first-release): complete controllers on
+Consolidated the [scope](benchmark.md#scope): complete controllers on
 declared live tactical tasks, intended users, outputs and explicit initial exclusions.
 Separated a scenario declaration, admitted card, reusable path and frozen suite; aligned
 the README and runbook. Added concrete quality criteria, a
-[release route](benchmark.md#route-to-the-first-release) and bounded candidate decisions.
+[release route](benchmark-implementation.md#phases) and bounded candidate decisions.
 Useful release and novel research are separate milestones; team recovery and training
 are conditional studies. Existing cards and c1's rule are unchanged.
 Independent scope/diff review found no new agreement or scoring conflict; clarified that
@@ -1482,7 +1677,7 @@ costs came from `wh3_db.py`, using an RPFM schema downloaded to the session scra
 notes. No model prompt or observation contract changed on `main`.
 
 Summary, with every candidate's row on the
-[status board](benchmark.md#small-scenario-status-after-the-overnight-tranche-2026-10-17):
+[status board](benchmark-implementation.md#history):
 - Wins shown: S1 (flank, fresh) and S4 (escort melee, mostly at 5 s).
 - Too easy at every step tried: S2 (until the decoy), S7 and S10.
 - No win yet: S3, S5, S6, S8, S9 and S11. For S3 and S6 the diagnostics were defeated by
@@ -1748,7 +1943,7 @@ updated without implementation: try the small scenarios (S1 probe, then scripted
 checks for S1, S2 and S4); continue the ladder with a cheaper reference model for now,
 returning to expensive models later (GLM-5.3 / low proposed); write a trace exporter
 and store reasoning text. Details and order:
-[benchmark.md](benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night).
+[benchmark.md](benchmark-implementation.md#history).
 
 ## 2026-10-16: Difficulty ladder, first step (V1)
 
@@ -1756,7 +1951,7 @@ gpt-6.1-sol / low won all three battles on both anchors, with margin: siege defe
 538-587 s with 58-78% of its strength left, swarm command at 449-497 s with 50-52%.
 gpt-6-sol also won the siege 3/3 and the swarm 2/3. Caster assault followed after the
 v20 check below: gpt-6-sol and gpt-6.1-sol 3/3 each, GLM-5.3 one of two. Step 3 of the
-[plan](benchmark.md#implementation-plan) applies: a clear easy win motivates one harder
+[plan](benchmark-implementation.md#history) applies: a clear easy win motivates one harder
 variant, changing one justified factor that presses on the family's scarce resource
 rather than inflating stats. The anchors stay unchanged.
 
@@ -1790,7 +1985,7 @@ a narrow win, with the trace showing the added units forcing a reserve or protec
 choice, makes the variant a candidate for the small frontier screen. A loss caused by
 an interface failure, or by units the controller could not see or reach, sends it back.
 One battle is not a ceiling estimate. Revised by the owner's difficulty target
-(2026-10-16 evening, [benchmark.md](benchmark.md#current-proposal-calibrate-before-a-broad-model-comparison)):
+(2026-10-16 evening, [benchmark.md](benchmark-implementation.md#owner-goals)):
 a variant won with margin gets a further step; the family keeps its hardest step with a
 demonstrated win, so a lost step needs a win (or is stepped back) before admission.
 
@@ -1976,7 +2171,7 @@ $0.037; OpenAI ledger $50.90 of $52. Tests that used `max` as an invalid effort 
 `minimal`.
 
 **Small focused candidates: S1 defined, not run.** A draft of seven small and two large
-candidates from the game database is in [benchmark.md](benchmark.md#small-focused-candidates-draft-2026-10-16-evening)
+candidates from the game database is in [benchmark.md](benchmark-implementation.md#history)
 (full draft: `calibration/micro-scenarios-draft-20261016.md`). Setup now accepts `lord:
 false` on a side, so a lordless roster recruits its first card as an ordinary unit (the
 lord card id ends in `:1`). S1, the owner's example, is defined as
@@ -2250,7 +2445,7 @@ tests, Ruff and `git diff --check` passed.
 ## 2026-10-16: Two public-state calibration diagnostics
 
 Added two small external controllers in `battle/calibration.py` for the first
-[calibration tranche](benchmark.md#calibration-cards-2026-10-16). `CentralDefence`
+[calibration tranche](benchmark-implementation.md#history). `CentralDefence`
 gathers at the owned victory point nearest the starting garrison, using the existing
 Skills executor for a melee line, shooters and lord. `CoordinatedRush` uses run-nearest
 but holds the Doomwheel and Rat Ogres until their estimated contact time matches the
@@ -2266,7 +2461,7 @@ existing nearest-enemy baselines; Ruff passed.
 
 Reviewed all 54 episodes in M1a–d with a read-only extraction, saved as
 `calibration/calibration-audit-20261016.py` and its JSON. Added six
-[calibration cards](benchmark.md#calibration-cards-2026-10-16) with competing plays,
+[calibration cards](benchmark-implementation.md#history) with competing plays,
 observed evidence, confounds and the smallest useful next check. The first tranche is
 one free scripted siege diagnostic and one free swarm diagnostic on unchanged anchors;
 a repeat is conditional on an unresolved mechanism, not a quota. No frontier matrix
@@ -3016,7 +3211,7 @@ battles that look and play very differently, including varied land armies, siege
 survival and conquest. Start each new scenario with 2-3 exploratory battles total;
 deeper testing can follow later.
 
-Updated the [implementation plan](benchmark.md#implementation-plan), state, root/track
+Updated the [implementation plan](benchmark-implementation.md#history), state, root/track
 READMEs, battle-type next steps, runbook and report plan. The previous ten-battle proposal
 across three scenarios is superseded; it was never launched. Keep the old calibration and
 cavalry/swarm evidence, with no repeat campaign required before adding new modes.
@@ -3042,7 +3237,7 @@ calls. Validation: `uv run pytest tests/test_doc_links.py -q` (43 passed),
 
 The owner requested planning, documentation updates and stale-file cleanup, with no
 implementation of the five discussed changes. The
-[plan](benchmark.md#implementation-plan) now starts with hard cavalry/swarm challenges,
+[plan](benchmark-implementation.md#history) now starts with hard cavalry/swarm challenges,
 partial progress beside engine outcomes, model comparisons under declared conditions,
 natural latency, and one canonical HTML report for the suite. The 30-70% admission gate
 and automatic switch to AI ×1.0 after C1 are retired. Added-delay experiments and broader
@@ -3096,7 +3291,7 @@ or read against the C1 rule yet: that waits for the owner.
 
 The first two of C1's six launches on `brt-cavalry-emp-assault-hard` (AI ×1.1), harness b10
 and `llm` v16 (source `8434cd3`), each rotating the four controllers
-([decisions](benchmark.md#calibration-decided-2026-10-15)); the morning queue ran them after
+([decisions](benchmark-implementation.md#history)); the morning queue ran them after
 the swarm screens, unattended, and completed. Every battle ended on the engine's result;
 none reached the timer.
 
@@ -3183,7 +3378,7 @@ judgement and authorized the swarm screens. Decided and recorded:
 - **Benchmark harness b10**: per-policy models (`NAME@MODEL[/EFFORT]`), the queue's
   start-change stop rule, v16, and the redesigned report. Track unchanged
   (`obs-v3+terrain/act-v2/live-1x`).
-- **Calibration**: the options in [benchmark.md](benchmark.md#calibration-decided-2026-10-15)
+- **Calibration**: the options in [benchmark.md](benchmark-implementation.md#history)
   are adopted as block C1 on `brt-cavalry-emp-assault-hard`: `llm_rules` on Sol low
   (reference) and on Luna low, run-nearest and walk-nearest, rotated in each launch.
   Primary measure: the engine outcome before the timer. Two of the six launches run
@@ -3276,7 +3471,7 @@ The brief asked for its items to be mapped to the repository first:
   2026-10-14), unit attributes that are not recorded (anti-large and armour-piercing live
   in the game's database tables), response-to-visible-effect timing, and the army-size,
   context and delay experiments, now defined in
-  [benchmark.md](benchmark.md#experiments-the-report-should-eventually-present-definitions-only).
+  [benchmark.md](benchmark-implementation.md#experiments-for-later).
 
 What changed:
 - The page leads with the scenario's question, the selected run (outcome, duration,
@@ -3305,7 +3500,7 @@ Findings:
   controller version and part of the calibration discussion.
 - The cavalry assault already separates controllers at ×1.0 on outcomes alone (Sol low
   3 of 3, Luna 0 of 2, scripted 0 of 7, across revisions); options for the owner are in
-  [benchmark.md](benchmark.md#calibration-options-for-the-owners-discussion-2026-10-15).
+  [benchmark.md](benchmark-implementation.md#history).
 
 Validation: `uv run pytest -q` 949 passed, 14 skipped (the `train`/`llm` extras and the opt-in
 Windows test); `uv run ruff check .` and prettier (width 100) clean; the offline browser
@@ -3612,7 +3807,7 @@ three valid of three started battles in two launched jobs, 1438.13 wall seconds 
 the interrupted setup, 7.51 valid battles/hour. No scenario admitted, G1 incomplete, G2
 unstarted, held-out maps untouched. Spend $7.1656 of $25. Further difficulty and latency
 experiments wait for the owner's discussion
-([benchmark.md](benchmark.md#calibration-stopped-2026-10-14)).
+([benchmark.md](benchmark-implementation.md#history)).
 
 ## 2026-10-14: Benchmark harness b9 (timer classification and running baseline)
 

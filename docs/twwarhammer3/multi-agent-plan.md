@@ -22,7 +22,7 @@ structures](team-structures.md). Related designs: the [robot-team plan](robot-te
 (recovery inside one controller), a specialist that owns fixed units ([controllers.md item
 4](controllers.md#designs-not-built-yet)), a planner over a fast executor ([latency rung
 5](latency.md#harnesses)) and model against model on one client (owner idea, 2026-10-14,
-[benchmark.md](benchmark.md#later)).
+[benchmark.md](benchmark-implementation.md#later)).
 
 ## 1 Questions and claims
 
@@ -312,7 +312,7 @@ teams add: controller slowness or a bad teammate is team performance, not an exc
 worker failure that leaves the match running keeps the eventual outcome with a flag; missing
 or conflicting client results stay unresolved and are never inferred from a client's
 silence. The failure rule is agreed
-([benchmark.md](benchmark.md#correctness-checks-to-agree)); these team cases are proposed
+([benchmark.md](benchmark-implementation.md#correctness-checks-to-agree)); these team cases are proposed
 additions, to be agreed before the evaluator implements it.
 
 ## 8 Verification before evaluation

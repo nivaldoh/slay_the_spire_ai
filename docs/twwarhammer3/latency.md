@@ -14,7 +14,7 @@ or act too late, and how much latency does the tactic tolerate? Wins at natural 
 primary score. Battles never pause (AGENTS.md), so knowledge is measured offline and latency
 tolerance with scripted references. Offline knowledge answers remain diagnostics;
 they do not independently identify the cause of a live loss. The
-[current benchmark definition](benchmark.md#the-decisions-the-benchmark-should-support)
+[current benchmark definition](benchmark.md#comparison)
 separates those claims.
 
 ## What the evidence shows so far
@@ -114,7 +114,7 @@ chariot timing cells motivate testing that separation; they do not set a univers
 | [Shared Modular Policies](https://arxiv.org/abs/2007.04976) (2020) | one shared policy per actuator, transfer across bodies | cards that change the body (a lost unit, another army) |
 
 Related live-clock benchmarks and concrete design lessons are in the
-[current source comparison](benchmark.md#research-that-changes-the-design).
+[current source comparison](benchmark-implementation.md#related-research).
 WH3 does not establish novelty merely by running during inference.
 
 ## Harnesses

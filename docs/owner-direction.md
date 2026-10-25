@@ -5,6 +5,45 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-25 (WH3 checkpoint decisions), answering three questions: release the standalone tool
+  as a public GitHub repo with an MIT license (done: github.com/nivaldoh/wh3-battle-checkpoints,
+  v0.1.0); the rebuild may run faster than 1x before the handover (AGENTS.md 1x rule amended);
+  agree the checkpoint check (source, two restores with the same later orders, one changed
+  restore) "but move it into the repo" first.
+- 2026-10-25 (WH3 checkpoint goal), verbatim: "Let's continue working on finding a way to enable
+  battle checkpoint restoration for WH3 to empower the modding community. Keep going until you
+  achieve this." During the session: check notable state first (positions, timer, health and
+  the like), finer details (velocity, charge state, auras) later; the restored battle's clock
+  should count down; the loading screen showing current health was asked for, then parked as
+  "an optional point for later … focus on restoring the battle itself correctly".
+  [Result](twwarhammer3/log.md#2026-10-25-battle-checkpoints-restore-exactly-through-a-fast-rebuild).
+- 2026-10-24 (WH3 checkpoint stop): "Let's wrap it up for now." Stop live probes, save
+  findings and a resume point; no complete-restoration result or impossibility claim.
+- 2026-10-24 (WH3 restore witnesses): first investigate restoring a unit's position after
+  it has moved well away from its start, timer and unit health, as simple checks of battle
+  restoration. Full checkpoint restoration remains the goal; no new route or tolerance
+  is adopted by this request.
+- 2026-10-24 (WH3 checkpoint continuation), verbatim: "Proceed with the investigation.
+  Ignore the previous deadline and continue until you find a result or prove that it's
+  impossible." Supersedes the eight-hour deadline below; the complete-state requirement
+  and local evidence/binary-preservation constraints remain. A bounded negative search
+  alone does not establish impossibility.
+- 2026-10-24 (WH3 native checkpoints): investigate a reusable native serializer/deserializer
+  for the complete running battle, using `~/wh3-checkpoint-lab/SETUP.md`, Universal Modder
+  and the existing Lua integration/harness. Required state includes soldiers, orders,
+  spells/projectiles, cooldowns/timers, AI/pathfinding, RNG and relevant script state.
+  Validate capture/advance/restore with identical subsequent inputs and repeated restores;
+  replay support, aggregate positions/health and untested memory dumps are insufficient.
+  Work autonomously for up to eight hours, stopping earlier on verified success or no
+  productive permitted route; preserve the deadline, journal findings and write a final
+  report in the lab. Preserve unrelated work/original binaries and keep decompilation local.
+- 2026-10-23 (WH3 checkpoint environment): install/configure Universal Modder without fal,
+  PyGhidra MCP and a Windows native-inspection helper; reuse the battle harness and existing
+  tools. Exercise decompilation, battle control and module enumeration separately. Keep
+  binaries, decompiles and setup evidence in `~/wh3-checkpoint-lab/`; preserve unrelated
+  work and global permission policies. This request prepares the overnight investigation.
+  In this session the owner explicitly authorized `--approve-for-me` in the lab's restart
+  launcher, for session-only automatic approval review; global policies stay unchanged.
 - 2026-10-23 (WH3 live checks), verbatim: "focusing on anything that requires a live
   battle to actually be executed (ideally without cost first. We can talk about cases
   that might cost money later)"; "You are free to run the game right now as needed".
@@ -137,6 +176,30 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-23 (benchmark pages): [benchmark.md](twwarhammer3/benchmark.md) holds only the
+  benchmark's definition; [benchmark-implementation.md](twwarhammer3/benchmark-implementation.md)
+  holds how it will be built, each phase and other transient details. The owner judged the
+  page's prose slop and rewrote its Purpose paragraph as the reference for plain writing.
+- 2026-10-23 (Land Battle interview), verbatim: "We will start by focusing on the definition
+  for one Land Battle, ignoring other game modes for now" and "interview me (writing all
+  questions at once in that document)". Compare models on battle performance, testing the
+  knowledge needed to win and execution given API latency; consider objective health and
+  wavering/routing measures and missing game information. The [interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle)
+  leaves scoring formulas, knowledge evidence, profile and checks open for the owner's
+  answers; earlier proposals are not adopted by this request.
+- 2026-10-23 (Land Battle benchmark), verbatim: "Timer outcomes can be whoever the engine
+  decides is the winner. Let's work on the updated, improved benchmark definition and
+  plan, focusing on what our first Land Battle benchmark should look like." On army size:
+  "Small mixed armies first (recommended)". Develop the definition and plan around engine
+  outcomes, with health, leadership and tactical events explaining performance. This
+  supersedes contact-only scoring for the new Land Battle benchmark, not historical card
+  verdicts. Exact rosters, settings, summary, comparisons and new verification methods
+  remain proposals in [benchmark.md](twwarhammer3/benchmark.md); no runtime implementation
+  or new game/API run is requested by this planning direction.
+- 2026-10-23 (native checkpoint feasibility): reopen research into whether native reverse
+  engineering could provide exact battle-state/RNG restoration, possibly through Lua,
+  and which tools the assistant would need. This requests a viability assessment;
+  the earlier failed implementation remains closed. [Findings](twwarhammer3/log.md#2026-10-23-native-checkpoint-feasibility).
 - 2026-10-23 (rewind closed): wrap up the unsuccessful direct battle-state/RNG restore
   investigation and clean up its leftovers. Decompilers are a topic for another session;
   no further native reverse engineering or VM investigation now. Repeating the opening
@@ -188,6 +251,8 @@ WH3:
   contact-scoring scenario field and one logged prompt version for `llm`, `llm_rules` and
   `commander`; (3) the failure rule: "Agree and merge" `wh3-keep-engine-ending` as harness
   b47.
+  The contact-only objective is superseded for the new Land Battle benchmark by the
+  2026-10-23 engine-outcome direction above; the historical screen and prompt remain recorded.
 - 2026-10-21 (away window from 02:20, about 10 hours), verbatim: "Continue to make progress
   on the WH3 benchmark until I return in like 10 hours. Check our relevant documentations
   before starting like autonomy.md. Remember that progress could count as many different
@@ -326,19 +391,19 @@ WH3:
   reference model for now (expensive models later); write a trace exporter and store
   reasoning text. Exporter/capture are complete as b14; the small scripted tranche is
   recorded in b15-b17, while its model checks and the cheaper ladder remain unplayed
-  ([decisions](twwarhammer3/benchmark.md#owner-decisions-and-next-tranche-2026-10-16-night)).
+  ([decisions](twwarhammer3/benchmark-implementation.md#history)).
 - 2026-10-16 (evening, latest): benchmark every reasoning mode of every model in each
   scenario; verify each model's real modes first (some open-weight models are only
-  on/off) ([model coverage](twwarhammer3/benchmark.md#current-proposal-calibrate-before-a-broad-model-comparison)).
+  on/off) ([model coverage](twwarhammer3/benchmark-implementation.md#owner-goals)).
 - 2026-10-16 (evening, later): mostly many small battles that each test one or two
   specific things (e.g. two cheap cavalry units against one braced pikeman unit, if
   winnable: feint and flank), plus a few larger battles for context length and
   scale-only problems; diversity, quality and room for unexpected behaviour
-  ([scenario mix](twwarhammer3/benchmark.md#current-proposal-calibrate-before-a-broad-model-comparison)).
+  ([scenario mix](twwarhammer3/benchmark-implementation.md#owner-goals)).
 - 2026-10-16 (evening): make each scenario maximally difficult while still demonstrably
   winnable; fewer high-quality scenarios beat redundant ones that waste compute. Armies,
   map settings etc. may be modified to calibrate
-  ([difficulty target](twwarhammer3/benchmark.md#current-proposal-calibrate-before-a-broad-model-comparison)).
+  ([difficulty target](twwarhammer3/benchmark-implementation.md#owner-goals)).
 - 2026-10-16 (resume): implement OpenRouter and the three chosen models, then continue
   improving benchmark calibration and the report within the existing budgets.
 - 2026-10-16 (OpenRouter): the owner stored an OpenRouter key and set a separate $50
@@ -347,7 +412,7 @@ WH3:
 - 2026-10-16 (after M1): planning only. Keep the core provisional until the strongest
   models have been tested; current scenarios may be too easy for them. Calibrate
   challenges and extract more useful evidence before spending on another large model
-  comparison ([proposal](twwarhammer3/benchmark.md#implementation-plan)).
+  comparison ([proposal](twwarhammer3/benchmark-implementation.md#history)).
 - 2026-10-16 (03:28 UTC): the WH3 API cap rises to $52 (Spire keeps its own $25). Overnight,
   prioritize work that needs the game running, since a fullscreen battle makes the
   computer awkward to use during the day.
@@ -374,7 +439,7 @@ WH3:
   with deeper testing later. Keep difficult odds, no win-rate admission campaign, and
   one HTML report for the whole benchmark (supporting files allowed). Interface versions
   remain metadata; added-delay experiments wait. See the
-  [plan](twwarhammer3/benchmark.md#implementation-plan).
+  [plan](twwarhammer3/benchmark-implementation.md#history).
 - 2026-10-14 (benchmark steering): specialist anchor units and faction-specific mechanics
   should drive scenario design. Prioritize extreme tactical problems (cavalry against
   anti-large, caster-led forces, difficult sieges, commanding/fighting Skaven swarms),

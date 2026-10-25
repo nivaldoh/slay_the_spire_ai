@@ -114,7 +114,7 @@ The old `persisted_settings` output was an observation, not an assertion. In the
 the previous phase ended with disturbed settings. The new name, `restart_settings_observed`,
 and docstring state that limit. Saved-army persistence has separate roster/rank assertions.
 
-Remaining live work is the [proposed correctness checks](twwarhammer3/benchmark.md#correctness-checks-to-agree):
+Remaining live work is the [proposed correctness checks](twwarhammer3/benchmark-implementation.md#correctness-checks-to-agree):
 visibility needs a game-visible reference, and attack/withdrawal/cast effects need observed
 effects, including an accepted order that fails to achieve them. The existing chariot
 labels are the starting evidence for withdrawal. Changing their thresholds, the team

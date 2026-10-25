@@ -1,9 +1,14 @@
 # WH3 tactic cards
 
+**Historical scope, 2026-10-23:** the new [Land Battle benchmark](benchmark.md) uses
+engine outcomes, including timer wins, and starts with small mixed armies. The card gates,
+contact-only scores and tactic signatures below retain their original meaning for their
+recorded evidence; they do not govern the new benchmark or require another chariot round.
+
 The tactic-card design the owner started on 2026-10-18, with the evolving card list. The
-current plan and proposed verification are in [benchmark.md](benchmark.md). This remains a
-draft: every new gameplay check below is proposed and
-none is agreed, so every result is unverified ([hard rule](../../AGENTS.md#verification-hard-rule)).
+current plan and proposed verification are in [benchmark-implementation.md](benchmark-implementation.md). This remains a
+draft; individual owner decisions are dated below, and gameplay results remain unverified
+under the [hard rule](../../AGENTS.md#verification-hard-rule).
 The contract, timing and outcome rules it builds on are in [benchmark.md](benchmark.md);
 running jobs in [benchmark-run.md](benchmark-run.md).
 
@@ -219,8 +224,8 @@ were better tactics: cycles v1 is not a suitable training reward.
 
 ## Proposed admission checks
 
-Use the [current gates](benchmark.md#from-a-candidate-to-a-scored-card) and
-[correctness checks](benchmark.md#correctness-checks-to-agree). They replace the generic
+Use the [current gates](benchmark-implementation.md#history) and
+[correctness checks](benchmark-implementation.md#correctness-checks-to-agree). They replace the generic
 3-of-4 witness gate and longest-melee-run signature proposed here on October 18; neither
 is the chariot's frozen rule. New gameplay verification methods need owner agreement
 before entering AGENTS.md. Agreement on a component test does not admit a tactic card.
@@ -259,7 +264,7 @@ stops are excluded and listed with any replacements. A recoverable failed call c
 battle time but is not itself a terminal forfeit: score the final episode. No selective
 reruns for slow or garbled replies. Any backend repair starts a separately labelled cohort.
 Native-objective cards need their own declared success rule before use.
-The owner agreed the [phase rule](benchmark.md#correctness-checks-to-agree) for the next
+The owner agreed the [phase rule](benchmark-implementation.md#correctness-checks-to-agree) for the next
 evaluator on 2026-10-21: construction failures are unsuccessful attempts, and an observed
 engine ending survives later controller errors. The loop preserves `engine_ending`, but
 current readers do not yet score those cases by the new rule. Preserve frozen historical
@@ -408,7 +413,7 @@ battles that load the context.
 ## What WH3 adds
 
 Live-clock evaluation, structured game state and slow planners over fast controllers
-already exist. The [primary-source review](benchmark.md#research-that-changes-the-design)
+already exist. The [primary-source review](benchmark-implementation.md#related-research)
 replaces this page's October 18 novelty survey (kept in git at `f5af096`). WH3's useful
 combination is tactical manoeuvre, morale, continuing orders, magic and changing support
 between units. A literature review does not establish that this combination is unique.
@@ -563,7 +568,7 @@ jobs follow each other within seconds):
 - Shortcut screen, $0, not yet planned: 3 launches of each card's named shortcut once it is
   scripted (a code change; the line's knights held back, the expendables' ogres at the guns
   at once), about 50 minutes, before confirmation.
-- Confirmation at the [proposed gate](benchmark.md#from-a-candidate-to-a-scored-card) (each
+- Confirmation at the [proposed gate](benchmark-implementation.md#history) (each
   foil 0/14, witness at least 10/14): 56 launches for a card with three floors (the line
   and the expendables; 42 with two) plus 14 per shortcut foil: about 140 launches over two
   long nights, the line about 11 h, more than a night. Pairing three controllers in a

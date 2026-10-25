@@ -1,5 +1,12 @@
 # Guidelines for evaluating WH3 battle controllers
 
+**Land Battle update, 2026-10-23.** The [current definition](benchmark.md) starts with
+small mixed armies and accepts the engine winner, including timer wins. Its
+[outcome table](benchmark.md#outcome-and-score) and marked proposals govern new work.
+Section 2's tactic-card admission rules, contact-only examples and chariot thresholds
+below apply to the historical card studies, not the new Land Battle benchmark. General
+rules about information, provenance, failures and uncertainty remain relevant proposals.
+
 Each battle runs in real time (1x, never paused) against the game's own AI. A controller,
 often an LLM with helper code, receives snapshots of the units it can see through a Lua
 mod and sends move and attack orders while the battle continues; the battle ends when one
@@ -32,7 +39,7 @@ with a rough size) or *manual* (a person does it).
 |---|---|---|
 | `claim`, `decision` | What decision does it inform; what is the one-sentence claim? | [1.1](#11-write-the-claim-before-the-run) |
 | `contrast`, `arms` | Which one part differs between the arms? | [1.3](#13-change-one-part-per-comparison-and-claim-only-that-part) |
-| `cards` | Which card versions, checked by witness and foils on this build? | [2.7](#27-admit-a-card-only-from-a-frozen-confirmation-round), [4.4](#44-compare-only-matching-cells-and-recheck-references-after-a-change) |
+| `cards` (legacy name) | Which frozen scenarios, roles, settings and versions? | [Land Battle profile](benchmark.md#the-first-battle), [4.4](#44-compare-only-matching-cells-and-recheck-references-after-a-change); [2.7](#27-admit-a-card-only-from-a-frozen-confirmation-round) only for historical cards |
 | `stage` | Is this evaluation evidence, kept out of tuning? | [3.1](#31-mark-each-jobs-stage-and-tune-only-on-development-evidence) |
 | `launches`, `order` | How many launches per arm; which rotation seed and first-slot balance? | [4.1](#41-count-launches-not-rematches), [4.2](#42-balance-who-plays-first-and-when) |
 | `stop`, `replace`, `budget` | When does it stop, what gets a replacement, what may it spend? | [4.3](#43-freeze-the-whole-study-in-one-plan-file) |
@@ -49,8 +56,8 @@ the work.
 
 ## Words used here
 
-[benchmark.md](benchmark.md#terms) defines scenario, variant, instance and track (its
-"controller" means only the code); [README](README.md#terms) defines labels such as `v21`
+[benchmark.md](benchmark.md#terms) defines scenario, variant, instance, track and the whole
+controller; [README](README.md#terms) defines labels such as `v21`
 (a model controller's prompt version) and `b36` (a harness revision).
 
 | Word | Meaning |
@@ -143,6 +150,9 @@ Each reasoning mode is its own controller (owner, 2026-10-16). Without a told ar
   differs.
 
 ## 2. Build cards that test one choice
+
+Historical tactic-card guidance. The new Land Battle scenario need not require a named
+tactic or defeat every simple baseline; use its [release route](benchmark-implementation.md#phases).
 
 ### 2.1 Write down the choice, and cover each tactic from both sides
 
@@ -408,11 +418,16 @@ left melee or got a charge bonus. Before a signature, milestone or "foil execute
 backs a claim, run an agreed live check following a known order to its observed effect,
 including an accepted order the game then blocks.
 
-- *Check:* manual first (benchmark.md's [correctness row](benchmark.md#correctness-checks-to-agree)).
+- *Check:* manual first (benchmark.md's [correctness row](benchmark-implementation.md#correctness-checks-to-agree)).
 
 ## 5. Score every planned trial
 
 ### 5.1 One success rule per card, in one function, told to the controller
+
+For the new Land Battle benchmark, use the engine winner, timer endings included, with
+the [outcome and failure table](benchmark.md#outcome-and-score). Align the new scenario's
+delivered objective and every benchmark reader before collecting scored trials.
+The following describes the existing contact-card code and its proposed refactoring.
 
 Each card names its success rule, which reads only the engine result, how the battle ended
 and declared task facts; the prompt states it
@@ -477,9 +492,10 @@ per arm; if one arm has more unknowns, its known battles are a selected subset a
 no longer compare fairly. A controller with no orders stays in the timing table; cost per
 success at 0 wins is undefined; a movement is credited to the model only after a model-made
 order. Continuous measures (margin, objective share, survivors) are secondary, with written
-formulas, and guide development only after past paired jobs show they pick the same winner
-as success (the old raw margin, which counted routing men as alive, contradicted the outcome
-in 16 of 108 battles).
+formulas. They can explain a different aspect of a battle without agreeing with the win
+ordering; they must not silently replace it. The old raw margin, which counted routing men
+as alive, contradicted the outcome in 16 of 108 battles. The new Land Battle report follows
+JUDGEMENT `benchmark.md` First diagnostics, not an assumed proxy for win probability.
 
 - *Check:* proposed (small): `cycles()` returns unknown for a frame gap inside an engagement
   (today a gap of 3 s or more silently miscounts: it can hide a pull-out or add a cycle),
@@ -789,7 +805,7 @@ disposition; every controller version run on final cards; per-card results with 
 timing and cost; how labels were made; the authorship and tuning records of
 [3.3](#33-record-who-tuned-on-what) and who reviewed outcomes; limits (a bought game,
 patches, hosted models, no seeds, few cards); and related work on the
-[five closest-work points](benchmark.md#research-that-changes-the-design). One bundle step
+[five closest-work points](benchmark-implementation.md#related-research). One bundle step
 builds public evidence: indexed files only, no game files or credentials, no model text from
 providers the owner has not cleared, policy-visible fields marked, and a failure on
 identifying data. Check the publisher's screenshot policy before sharing stills.
@@ -938,9 +954,9 @@ its effect, or that a claim is fair; those need agreed live checks and reading.
 
 ## 13. Owner decisions these rules need
 
-1. The defender prompt's "if time runs out, you win" (every defending battle, the line and
-   expendables cards among them): decided 2026-10-21, change the prompt (a contact-scoring
-   scenario field); timer wins stay uncounted.
+1. Answered for the new Land Battle benchmark, 2026-10-23: the engine decides the winner,
+   timer endings included. The 2026-10-21 contact-scoring prompt/rule stays historical;
+   implement and check the new profile's objective and shared score before new trials.
 2. The open failure-table rows ([5.2](#52-freeze-how-every-trial-is-scored)), construction
    failure (the failure rule was agreed 2026-10-21; its scoring is not implemented yet),
    whether draws count per card, and whether the battle-to-wall band invalidates a
@@ -1009,4 +1025,4 @@ admission rules and engine-based scoring still apply.
 | [BALROG](https://arxiv.org/html/2411.13543), [VideoGameBench](https://arxiv.org/html/2505.18134), [TextStarCraft II](https://arxiv.org/html/2312.11865v3), [LLM-PySC2](https://arxiv.org/html/2411.05348v2), [Real-Time Reasoning Agents](https://arxiv.org/html/2511.04898v1) | How game benchmarks handle pausing, seeds and timeouts | Most pause, count tokens as time or seed; VideoGameBench's main setting runs live |
 | [tinyBenchmarks](https://arxiv.org/html/2402.14992v1), [Dataset Cartography](https://arxiv.org/html/2009.10795v2) | Why subset selection and label-noise filters do not apply | Need many models or a classifier |
 
-Project research that changed the design: [benchmark.md](benchmark.md#research-that-changes-the-design).
+Project research that changed the design: [benchmark.md](benchmark-implementation.md#related-research).

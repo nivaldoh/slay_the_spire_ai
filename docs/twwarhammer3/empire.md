@@ -1,5 +1,10 @@
 # The Empire set
 
+**Historical studies:** the 2026-10-23 [Land Battle plan](benchmark.md) uses small mixed
+armies and the engine winner, timer endings included. The contact-only scores, floor-win
+rejections and team-card decisions below retain their historical meaning; they do not
+admit or reject the new benchmark's proposed armies.
+
 Started on the night of 2026-10-20 under the owner's delegation (away until 11:00):
 explore a larger range of battles instead of perfecting one, use small battles to
 understand units and larger ones to test an army as a robot team, and specialize in

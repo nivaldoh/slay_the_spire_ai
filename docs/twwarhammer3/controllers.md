@@ -158,7 +158,7 @@ comparison should use:
   battle), or an in-job rotation on a declared scenario (`--policy a,b,c
   --rotation-seed N`, [benchmark-run.md](benchmark-run.md));
 - repeats allocated to the question and observed variability; the
-  [card gates](benchmark.md#from-a-candidate-to-a-scored-card) start with cheap screens,
+  [card gates](benchmark-implementation.md#history) start with cheap screens,
   which are development evidence rather than stable rankings;
 - the same information boundary: enemies only while visible, no privileged state;
 - the AI's stats modifier as declared per scenario (`expect.ai_stats_modifier`); at 1.1
@@ -293,7 +293,7 @@ and parser. Four calls including Step's failed first attempt cost $0.00523146 of
 $0.25 test cap; all three models eventually returned valid replies. These
 are API checks, not battles or evidence about tactical ability. Review each failure
 before spending again. Subsequent calibration follows the
-[benchmark plan](benchmark.md#implementation-plan).
+[benchmark plan](benchmark-implementation.md#history).
 
 The GLM battle used 105 calls across 16 serving backends, reporting snapshot
 `z-ai/glm-5.3-20260816`. Seventeen replies failed validation before retry or order

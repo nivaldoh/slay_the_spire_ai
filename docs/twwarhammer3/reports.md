@@ -1,5 +1,10 @@
 # WH3 benchmark reports
 
+**New definition, 2026-10-23:** the [Land Battle report plan](benchmark.md#measurements)
+uses engine outcomes including timer wins, with separate army-condition and timing/cost
+diagnostics. The current report described below is not yet that benchmark view; its
+denominator and contact-only rate need the versioned change in the plan.
+
 `twwarhammer3 report` turns saved job directories into a text report, the collector's full
 JSON and an HTML page that opens offline and holds its own CSS, scripts, evidence and
 images. It runs no game and makes no API call. The page follows the owner's redesign brief
@@ -11,7 +16,7 @@ numbered figures, latency on the map and beside each score, and bookkeeping in R
 and the JSON. The 2026-10-16 revision (the owner's report notes) shows only the core
 scenarios and their completed battles, opens on a visual index of them, gives each model
 one hue and replaces the plans maps with battle development. Statistics come from
-`battle/report.py` ([definitions](benchmark.md#outcomes-measures-and-comparison)), the
+`battle/report.py` ([definitions](benchmark-implementation.md#what-the-current-code-reports)), the
 replay from `battle/replay.py`, the presentation from `battle/report_html.py` and
 `battle/report_assets/`, curated text from `configs/twwarhammer3/report_notes.json`, and
 frames and stills from `battle/capture.py` during play ([integration.md](integration.md)).

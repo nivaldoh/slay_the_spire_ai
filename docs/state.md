@@ -1,58 +1,46 @@
 # Project state
 
-Updated 2026-10-23: what runs, where each game stands, what comes next. Status only:
+Updated 2026-10-24: what runs, where each game stands, what comes next. Status only:
 History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md).
 Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
 
 WH3 first; Spire waits behind it; post-training is secondary. Three changes await review.
-
-WH3 eval/test review complete: offline evidence fixes and boundary tests, live-check startup
-guards, and a $0 army/settings rerun including restoration.
-[Findings and owner review](testing.md#wh3-evaluations-and-tests-2026-10-23),
-[live-check comparison](testing.md#wh3-live-check-comparison-2026-10-23), [test guide](../tests/README.md).
-Scoring differences, witnesses and timing readbacks remain marked; new methods await review.
-
-No game or paid job is running. The 2026-10-23 Spire collection night ended at 14:43 UTC: 43
-Qwen3.6 runs, $3.18, 5,122 exported rows with token logprobs
-([log](spire/fullrun/log.md#2026-10-23-collection-night-qwen36-reasoning-off-harness-v102)).
-The 2026-10-22 WH3 night ($0, game 02:37-07:28) ran
-the starting-set screen and a shortcut screen ([log](twwarhammer3/log.md#2026-10-22-the-starting-set-screen)):
-neither new card (line, expendables) nor either probe goes to confirmation.
-
-Scripted split-army [team](twwarhammer3/multi-agent-implementation.md) (b49): agreed checks passed
-(component at `e8d1eda`, live at `45fe7b0`). The model team is on `wh3-model-team` ([review fixes](twwarhammer3/log.md#2026-10-21-night-team-code-review-and-fixes-on-the-branch)); the agreed live check passed 4/4 at its tip on 2026-10-22; model members have not played live.
-[Scope](twwarhammer3/benchmark.md#scope-and-first-release), [evaluation guidelines](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need), suite, remaining checks and gates are proposals; [Empire items](twwarhammer3/empire.md) pending.
-The October 21 offline window's evidence is in the [log](twwarhammer3/log.md#2026-10-21-a-proposed-starting-set-the-failure-rule-recount-and-a-blind-c1-recount) and `runs/twwarhammer3/away-20261021/`. Waiting changes: 3 of 3 ([branches](#branches)).
-
-Judgement-call marking ([page](judgement.md)): the rule and two example markers are in; the
-repository pass (225+ candidates listed) continues later in batches the owner can sample.
-
+Land Battle definition: the [owner interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle)
+focuses on one battle, model knowledge, API latency and scoring; the earlier profile/checks remain proposals.
+Battle [checkpoints](twwarhammer3/log.md#2026-10-25-battle-checkpoints-restore-exactly-through-a-fast-rebuild)
+restore exactly: agreed check passed at `7b1e2ed` on branch `wh3-checkpoints` (not merged);
+public player tool released as github.com/nivaldoh/wh3-battle-checkpoints v0.1.0.
+Latest testing: [eval review](testing.md#wh3-evaluations-and-tests-2026-10-23),
+[live-check comparison](testing.md#wh3-live-check-comparison-2026-10-23); new methods await review.
+The Spire collection night ended ([log](spire/fullrun/log.md#2026-10-23-collection-night-qwen36-reasoning-off-harness-v102)).
+The WH3 starting-set screen admitted no new tactic card ([log](twwarhammer3/log.md#2026-10-22-the-starting-set-screen));
+that reading remains historical and does not select the new Land Battle benchmark.
+Judgement-call [marking](judgement.md) continues in reviewable batches; waiting changes: 3 of 3 ([branches](#branches)).
 [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
 
 ## Total War: WARHAMMER III
 
-Current priority: establish a small, repeatable battle benchmark. Scripted-team checks passed
-at the recorded revisions; the model team has offline evidence and a passing live check at its tip. The chariot is still the only card: no battle in the starting-set screen goes to confirmation.
+Current priority: define one small mixed-army Land Battle to compare model knowledge and
+execution at API latency. Engine victory includes timer endings; how health, morale and
+knowledge evidence contribute to the score is open in the interview.
+[Definition](twwarhammer3/benchmark.md), [plan](twwarhammer3/benchmark-implementation.md#phases),
+[README](twwarhammer3/README.md), [log](twwarhammer3/log.md), [results](twwarhammer3/results.csv).
 
-[README](twwarhammer3/README.md), [log](twwarhammer3/log.md) ("On main" at the top), [benchmark](twwarhammer3/benchmark.md), [tactic cards](twwarhammer3/tactic-cards.md), [latency plan](twwarhammer3/latency.md), [results](twwarhammer3/results.csv).
+- Runtime unchanged: `llm`/`llm_rules` v22, `commander` v8, skills v1.2, harness b49,
+  evaluator v2, track `obs-v4+terrain/act-v2/live-1x`. The new benchmark is not implemented or verified.
+- [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results;
+  chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
+- Scripted-team agreed checks passed at recorded revisions; `wh3-model-team` has a 4/4 live
+  scripted check at its tip, but model members have not played live ([branch](#branches)).
+- Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33. A new paid cohort needs a bounded plan.
+- Battle checkpoints: verified at `7b1e2ed` (branch `wh3-checkpoints`) by the agreed check; custom land battles, build 25961564.
 
-- On `main`: `llm`/`llm_rules` v22, `commander` v8, skills v1.2, harness b49, evaluator v2,
-  track `obs-v4+terrain/act-v2/live-1x` ([definitions](twwarhammer3/log.md#on-main)).
-- Benchmark: [the chariot card](twwarhammer3/tactic-cards.md#the-chariot-card-the-first-benchmark-card);
-  results in the [b40 round](twwarhammer3/log.md#2026-10-19-witness-v2-and-prompt-v21-harness-b40).
-  No model has won above its foils' bound (an unverified gameplay finding).
-- Spend: OpenAI $51.47 of $52; WH3 OpenRouter ledger $21.33 ($8.84 the Empire night).
-- [Battle rewind investigation closed](twwarhammer3/log.md#2026-10-23-battle-rewind-investigation-closed):
-  direct state/RNG restoration was not achieved; abandoned implementation and probes removed.
-
-Next (proposals for the owner; [release route](twwarhammer3/benchmark.md#route-to-the-first-release)):
-0. Read the Empire [results](twwarhammer3/empire.md#results) and [owner items](twwarhammer3/empire.md#for-the-owner-to-decide); screen/readout and line marker agreed October 21.
-1. Agree remaining [correctness checks](twwarhammer3/benchmark.md#correctness-checks-to-agree) and chariot choices; failure rule, witness v2 at 2 s/2 s and c1 preservation already agreed. The c1 [rerun handoff](twwarhammer3/benchmark-run.md#independent-rerun-acceptance-proposal) stays local in `runs/twwarhammer3/away-20261021/handoff-c1/`.
-2. Breadth: the [starting set](twwarhammer3/tactic-cards.md#the-starting-set-proposal-2026-10-21) ran 2026-10-22: floors won the line and the rifle lane, and the expendables' named shortcut won 3 of 3. New cards need your choice of battles or redesigns (the expendables would need a battle where waiting for the pin matters; two threats would get one step). Prompt v22 says only contact wins count on these cards (unplayed).
-3. Choose P5's question before more chariot cells; its Kimi plans are unplayed. A stronger model at modifier 1.1 remains untested (OpenAI cap).
-4. [Robot team plan](twwarhammer3/robot-team-plan.md), [research guide](twwarhammer3/robot-team-research.md): useful recovery? Only 1 of 17 recorded line battles had a replacement opportunity ([review](twwarhammer3/robot-team-plan.md#1-establish-a-recoverable-coordination-problem)); b46–b48 unplayed.
+Benchmark work waits: answer the [single-battle interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle),
+then revise the proposed profile, score, knowledge evidence and checks from those answers.
+Readback work, implementation and a pilot follow the agreed definition; settings, counts,
+checks and spending remain proposals. No new experiment is authorized by this interview.
 
 ## Slay the Spire
 
@@ -85,9 +73,8 @@ restoring a snapshot is untested.
 - Pinned OpenRouter backend outages count against the model; Step 5 preview is unpinned.
 - No test yet shows whether a game patch changes results (owner: later). A build warning
   shows in `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
-- WH3 register and `stats`: blank version on benchmark rows, grouping by commit, API failures
-  as `policy_failure` (`card` classifies failures, keys by setup); a defender's timer stalemate
-  counts as won (3 rows; `stats` ignores `ended_by`; the card and the Empire review do not).
+- WH3 readers still differ on timer wins and failures; the new engine-outcome definition
+  needs a versioned scorer. Register/`stats` also have blank benchmark versions and commit grouping.
 - The mod sets 1x once, then reports constant `speed` 1 and `awaiting_orders` false: per-observation paused/slowed tests cannot fail; only the team check's clock ratio detects slowdown.
 - Spire runs often leave a profile preference file empty, likely when the game is killed at
   run end (25 of 43 data runs on 2026-10-23); the game recovers it from `.backUp` at the next
@@ -100,37 +87,16 @@ restoring a snapshot is untested.
 
 ## Owner decisions waiting
 
-1. **Benchmark rules and checks.** Agree the remaining checks and the criteria for a first benchmark release.
-
-   Still proposed: [scope, suite and gates](twwarhammer3/benchmark.md#scope-and-first-release), [correctness checks](twwarhammer3/benchmark.md#correctness-checks-to-agree), [evaluation choices](twwarhammer3/evaluation-guidelines.md#13-owner-decisions-these-rules-need) and chariot [decisions 3–5](twwarhammer3/tactic-cards.md#second-pass-2026-10-19-evening-findings-and-the-version-2-decisions) on gate sizes, reporting and drops. The failure rule, c1 preservation and witness v2 at 2 s/2 s are already agreed. Until the rest is settled, there is no verified benchmark release.
-2. **Next experiments and spending.** Choose the next free game night and how to divide the remaining allowance.
-
-   The $0 [starting-set screen](twwarhammer3/log.md#2026-10-22-the-starting-set-screen) ran 2026-10-22 and admitted no card to confirmation; choose which battles to screen next (the chariot remains the only card). Model and team screens together fit only their central cost estimates. Choose P5's question and [$20 cap](twwarhammer3/latency.md#owner-decisions), [Kimi's role](twwarhammer3/empire.md#for-the-owner-to-decide), and whether to raise OpenAI's $52 cap (Sol is refused; gpt-6.1-sol low cost a median $0.84 over 22 battles). No new paid plan is authorized by these estimates.
-3. **Standing autonomy rules.** Accept or revise the proposed rules for work while you cannot review.
-
-   [Away guidelines](autonomy.md): the October 21 window used the proposal, not its agreed trial. Reviews caught 114 errors in drafts and commits, 113 fixed. Existing offline delegation continues; it does not settle the standing rules.
-4. **Model-team behavior and readiness.** Decide the remaining behavior and check changes before adopting the model team.
-
-   The $0 live rerun passed 4/4 at the tip `31823f3` (2026-10-22); merging needs your yes on the rest. Pending: the stricter movement witness; members cannot target out-of-sight enemies while the single controller can (11 of 24,248); member cleanup bugs replace an engine ending with policy failure while a single controller keeps it. The agreed ledger test now includes `team_llm_rules`; outer-validation assertions were dropped from the agreed team test ([review](twwarhammer3/log.md#2026-10-22-second-review-two-team-fixes-and-the-screen-reader)); keep these changes? Cut-off member calls reach the ledger but not register costs. Already chosen under delegation, reversible: a round-robin structure screen first (single, two, per class, per unit, planner groups; 3 each; about $10, up to $17), instead of two-member 6 + 6; Stage D's selection rule still needs care ([defaults](twwarhammer3/team-structures.md#8-choices-made-for-the-owners-review)). Model members have not played live.
-5. **Campaign permissions.** Separately allow or refuse harness saves and irreversible Steam achievements.
-
-   These choices are required before any campaign launch. Deferring keeps campaign work to [offline drafts](autonomy.md#wh3-campaign-infrastructure).
-6. **Controller direction.** Adopt or drop the attack-route prompt change; keep or defer the commander approach.
-
-   Recommended: adopt `wh3-rules-v21-attack-path` as its own renumbered `llm_rules` version after the contact-scoring change. `commander` is unplayed since v4; [controller plans](twwarhammer3/controllers.md) remain proposals.
-7. **Backend and sampling policy.** Review the delegated backend pins and decide sampling capture and serving-fault treatment.
-
-   b36's [backend pins](twwarhammer3/latency.md#owner-decisions) await review. Recommended: request log-probabilities, seed and explicit sampling where the pinned backend advertises them ([gaps](posttraining.md#beyond-supervised-fine-tuning); listings rechecked October 21, not a capture test). Choose how to report or rerun [garbled replies](twwarhammer3/empire.md#for-the-owner-to-decide); current backend failures count against the model.
-8. **Training preparation.** Choose a host, serving route and teacher; decide when and how to build the Empire dataset.
-
-   Secondary priority. [Data-use choices](posttraining.md#provider-terms): OpenAI outputs (25,503 rows excluded: Spire 11,099; WH3 14,404), GLM-5.3 or rejection-sampled Qwen3.6; Step 5 weights are public. An [Empire content screen and dataset timing](twwarhammer3/empire.md#for-the-owner-to-decide) are still needed. Smoke checks establish no learning gain.
-9. **Spire's next step.** After WH3, run one meaningful comparison or freeze this track.
-
-   Proposed comparison: current controller against ablated scaffolding, 20–30 fresh seeds per arm, about $5 and three nights. `v11-keys` waits on that choice; [other Spire questions](spire/fullrun/README.md#open-owner-decisions) stay secondary. No held-out seeds have been played.
-   The state-restore investigation comes first (owner, 2026-10-23). To decide later: whether the next data night uses a teacher (GLM-5.3) or Qwen3.6 with reasoning on.
-10. **Spire capture check.** Noted for later (owner, 2026-10-23: "Not sure what this is").
-
-   It is a script that reads one finished run and checks the new capture against facts recorded separately: the logprob tokens spell the reply and match the provider's token count, the choice probabilities sum to 1, and each save snapshot decodes with the run's own seed. It passed on 40 of 43 night runs ([log](spire/fullrun/log.md#2026-10-23-collection-night-qwen36-reasoning-off-harness-v102)). Agreeing it would make it the capture's repeatable test under the verification rule; until then the capture counts as unverified. It lives only in `runs/fullrun/collect-20261023/check_capture.py`, which has no backup.
+1. **One Land Battle definition.** Answer the [interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle) on model comparison, knowledge, latency, health/morale scoring and required game data. Engine timer outcomes and small mixed armies are agreed; the earlier profile, summary, role coverage and new checks remain proposals. Historical c1 is unchanged.
+2. **Next experiments and spending.** Choose a game window for the new profile's measurement checks/pilot, after its definitions are settled, then the controller comparison and budget. The [plan](twwarhammer3/benchmark-implementation.md#phases) starts with free scripts. Older P5, Kimi and team estimates are deferred; OpenAI's $52 cap still refuses Sol. No new paid plan is authorized by this definition update.
+3. **Standing autonomy rules.** Accept or revise the proposed rules for work while you cannot review. [Away guidelines](autonomy.md): the October 21 window used the proposal, not its agreed trial. Reviews caught 114 errors in drafts and commits, 113 fixed. Existing offline delegation continues; it does not settle the standing rules.
+4. **Model-team behavior and readiness.** Decide the remaining behavior and check changes before adopting the model team. The $0 live rerun passed 4/4 at the tip `31823f3` (2026-10-22); merging needs your yes on the rest. Pending: the stricter movement witness; members cannot target out-of-sight enemies while the single controller can (11 of 24,248); member cleanup bugs replace an engine ending with policy failure while a single controller keeps it. The agreed ledger test now includes `team_llm_rules`; outer-validation assertions were dropped from the agreed team test ([review](twwarhammer3/log.md#2026-10-22-second-review-two-team-fixes-and-the-screen-reader)); keep these changes? Cut-off member calls reach the ledger but not register costs. Already chosen under delegation, reversible: a round-robin structure screen first (single, two, per class, per unit, planner groups; 3 each; about $10, up to $17), instead of two-member 6 + 6; Stage D's selection rule still needs care ([defaults](twwarhammer3/team-structures.md#8-choices-made-for-the-owners-review)). Model members have not played live.
+5. **Campaign permissions.** Separately allow or refuse harness saves and irreversible Steam achievements. These choices are required before any campaign launch. Deferring keeps campaign work to [offline drafts](autonomy.md#wh3-campaign-infrastructure).
+6. **Controller direction.** Adopt or drop the attack-route prompt change; keep or defer the commander approach. The attack-route draft needs its own comparison under the new Land Battle definition and renumbering before adoption. `commander` is unplayed since v4; [controller plans](twwarhammer3/controllers.md) remain proposals.
+7. **Backend and sampling policy.** Review the delegated backend pins and decide sampling capture and serving-fault treatment. b36's [backend pins](twwarhammer3/latency.md#owner-decisions) await review. Recommended: request log-probabilities, seed and explicit sampling where the pinned backend advertises them ([gaps](posttraining.md#beyond-supervised-fine-tuning); listings rechecked October 21, not a capture test). Choose how to report or rerun [garbled replies](twwarhammer3/empire.md#for-the-owner-to-decide); current backend failures count against the model.
+8. **Training preparation.** Choose a host, serving route and teacher; decide when and how to build the Empire dataset. Secondary priority. [Data-use choices](posttraining.md#provider-terms): OpenAI outputs (25,503 rows excluded: Spire 11,099; WH3 14,404), GLM-5.3 or rejection-sampled Qwen3.6; Step 5 weights are public. An [Empire content screen and dataset timing](twwarhammer3/empire.md#for-the-owner-to-decide) are still needed. Smoke checks establish no learning gain.
+9. **Spire's next step.** After WH3, run one meaningful comparison or freeze this track. Proposed comparison: current controller against ablated scaffolding, 20–30 fresh seeds per arm, about $5 and three nights. `v11-keys` waits on that choice; [other Spire questions](spire/fullrun/README.md#open-owner-decisions) stay secondary. No held-out seeds have been played. The state-restore investigation comes first (owner, 2026-10-23). To decide later: whether the next data night uses a teacher (GLM-5.3) or Qwen3.6 with reasoning on.
+10. **Spire capture check.** Noted for later (owner, 2026-10-23: "Not sure what this is"). It is a script that reads one finished run and checks the new capture against facts recorded separately: the logprob tokens spell the reply and match the provider's token count, the choice probabilities sum to 1, and each save snapshot decodes with the run's own seed. It passed on 40 of 43 night runs ([log](spire/fullrun/log.md#2026-10-23-collection-night-qwen36-reasoning-off-harness-v102)). Agreeing it would make it the capture's repeatable test under the verification rule; until then the capture counts as unverified. It lives only in `runs/fullrun/collect-20261023/check_capture.py`, which has no backup.
 
 ## Runtime and ownership
 
@@ -153,4 +119,8 @@ restoring a snapshot is untested.
 - `wh3-human-opponent` (`de37005`, worktree `../slay_the_spire_ai-wh3-human-opponent`): the
   controllers command the AI's army so the owner can play against them. Parked by the owner
   (2026-10-22) to implement later, starting at step 1 of the [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps).
+- `wh3-checkpoints` (`8686807`, worktree `../slay_the_spire_ai-wh3-checkpoints`, from `b0ac9e3`):
+  battle checkpoints in `src/twwarhammer3/`, the agreed live check (passed at `7b1e2ed`), the
+  1x-rule exception and docs page. Merge waits on your yes; main's uncommitted
+  `docs/twwarhammer3/README.md` edits overlap one line.
 - Archived drafts are tags (`git tag --list 'archive/*'`).

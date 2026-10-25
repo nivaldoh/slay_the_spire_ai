@@ -1,12 +1,14 @@
 # Total War: WARHAMMER III battles
 
-The goal is a reusable benchmark of complete battle controllers on specific tactical
-tasks against the game AI. Scripts, models and hybrids receive structured state through
-a Lua mod while the battle runs unpaused at 1x; their results include their actual delay,
-cost and failures. Start with the [scope and first release](benchmark.md#scope-and-first-release):
-one repeatable card, then a small suite of distinct tasks. The suite and its gameplay
-checks remain unsettled (a [proposed starting set](tactic-cards.md#the-starting-set-proposal-2026-10-21)
-names three cards); current results are not a verified benchmark release.
+The first benchmark evaluates complete controllers in small mixed-army **Land Battles**
+against the game AI. The engine decides the winner, including timer endings (owner,
+2026-10-23). Health, leadership and tactical events explain performance; they do not add
+points to a victory. Scripts, models and hybrids use structured state while the battle
+runs unpaused at 1x; actual delay, cost and failures accompany outcomes.
+Start with the [definition and first profile](benchmark.md#the-first-battle)
+and [implementation plan](benchmark-implementation.md#phases). The profile and new
+checks remain proposals; the existing readers do not yet implement this definition.
+The [tactic cards](tactic-cards.md) retain their historical rules and evidence.
 Controller research, team recovery and training are related work with separate evidence
 requirements. What is running and the versions on `main`: [../state.md](../state.md);
 every version, job and finding: [log.md](log.md).
@@ -22,9 +24,10 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [integration.md](integration.md) | engine facts: packs, menus, lobby settings, unit API, context system, battle types, capture |
 | [controllers.md](controllers.md) | the policies and their versions, comparing them, candidate changes, designs not built |
 | [battle-types.md](battle-types.md) | the battle-type scenarios, the `mode` state, the `build` and `reinforce` orders |
-| [benchmark.md](benchmark.md) | scope, release criteria, proposed verification, research comparisons and the recorded contract |
+| [benchmark.md](benchmark.md) | the Land Battle benchmark definition: scope, the proposed first battle, outcome and score, measurements, comparison, observations, orders, timing, scenarios and terms |
+| [benchmark-implementation.md](benchmark-implementation.md) | building it: phases, the owner interview, proposed checks, measurement gaps, what the current report code does, research, later work and earlier plans |
 | [evaluation-guidelines.md](evaluation-guidelines.md) | research-based evaluation guidelines: task design, failure accounting, statistics, human/LLM review, proposed code checks and publication |
-| [tactic-cards.md](tactic-cards.md) | the chariot's frozen rule, card design, candidate list, the proposed starting set and what WH3 adds |
+| [tactic-cards.md](tactic-cards.md) | historical chariot rule, tactic-card design, candidate screens and their evidence |
 | [latency.md](latency.md) | the latency program (2026-10-18 plan): knowing a tactic against executing it in time, measures, robotics framing, harness ladder, fine-tuning path |
 | [robotics.md](robotics.md) | robotics ideas and concrete comparison designs: parameterized/generated policies, learned micro, controller boundaries and codebase fit |
 | [robot-team-research.md](robot-team-research.md) | research guide: capability allocation, recovery, delayed plans, evaluation and learning; what each source suggests for WH3 and where it does not transfer |
@@ -55,7 +58,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
   of the job name (`stats.harness_version`), blank when the name has none (most `bench-*`
   jobs).
 - **bN**: benchmark harness revisions, each logged in log.md; current revision in state.md.
-- **G1, G2, C1**: historical calibration designs in [benchmark.md](benchmark.md).
+- **G1, G2, C1**: historical calibration designs in [benchmark-implementation.md](benchmark-implementation.md#history).
   G1 is incomplete, C1 finished and G2 never ran. The 2026-10-15 plan retires win-rate
   admission; added observation-age experiments (0, 6 and 10 s) remain deferred.
 - **Track** `obs-v4+terrain/act-v2/live-1x`: the observation, action and timing contract
@@ -197,11 +200,10 @@ is separate from Spire's, with its own cap: $25, raised to $52 on 2026-10-16.
 
 ## Next
 
-Status, priorities and next steps are on [state.md](../state.md#total-war-warhammer-iii);
-each candidate's status is in
-[tactic-cards.md](tactic-cards.md#the-starting-set-proposal-2026-10-21) and
-[empire.md](empire.md). This
-section keeps only what is deferred.
+Status and next steps are on [state.md](../state.md#total-war-warhammer-iii); the new
+Land Battle work follows the [release route](benchmark-implementation.md#phases).
+[Tactic-card](tactic-cards.md) and [Empire](empire.md) screens are development history.
+This section keeps only what is deferred.
 
 Deferred: the custom `emp-battery-skv-evacuation` pilot (its
 [placement diagnosis](log.md#2026-10-16-evacuation-deferred-controller-version-labels-fixed)),

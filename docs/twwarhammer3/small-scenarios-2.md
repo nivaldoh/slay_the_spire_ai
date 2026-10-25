@@ -2,8 +2,8 @@
 
 Owner direction: mostly small battles that each test one or two skills, as difficult as
 they can be while staying demonstrably winnable, diverse in armies and mechanics, each
-answering a distinct question ([scenario mix](benchmark.md#current-proposal-calibrate-before-a-broad-model-comparison)).
-S1-S7 ([first draft](benchmark.md#small-focused-candidates-draft-2026-10-16-evening)) cover
+answering a distinct question ([scenario mix](benchmark-implementation.md#owner-goals)).
+S1-S7 ([first draft](benchmark-implementation.md#history)) cover
 feint and flank, kiting, lines of fire, a fragile gun, spell timing, hammer and anvil and
 a corner defence. This batch adds skills none of them test. Written under the owner's
 overnight delegation (2026-10-17); every item is a definition until its live checks run.

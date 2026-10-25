@@ -6,6 +6,10 @@ plan of jobs, stop cleanly and make the report. What the numbers mean is in
 [docs/state.md](../state.md) first: never run two game controllers at once, of either
 game. Battles always run unpaused at 1x.
 
+The 2026-10-23 [Land Battle definition](benchmark.md) accepts engine timer wins. It is a
+plan: the current card/report readers and contact-scored scenario prompts do not yet
+implement it. Commands below describe existing capabilities, not a ready new benchmark job.
+
 ## Before a run
 
 Use the [evaluation guidelines](evaluation-guidelines.md) to define the question,
@@ -60,9 +64,9 @@ uv run pytest tests/twwarhammer3/test_wh3_setup.py
 
 Commit the entry before playing it. Declare held-out variants (`split: held_out`) before
 any tuning, and never use them to choose rosters, settings or controllers. The scenario
-rules and readiness checks are in [benchmark.md](benchmark.md#scenarios). Current
-[card gates](benchmark.md#from-a-candidate-to-a-scored-card) are proposals; a frozen
-card's historical rule remains attached to its own evidence. Earlier integration,
+rules and readiness checks are in [benchmark.md](benchmark.md#scenarios). The new Land
+Battle [release route](benchmark-implementation.md#phases) replaces tactic-card
+admission for this work; each card's historical rule stays with its evidence. Earlier integration,
 expansion and M1 runs are recorded in the log.
 
 ## One launch
@@ -206,8 +210,8 @@ Exit codes: 0 completed or stopped, 1 failed or refused, 130 interrupted. Follow
 with `watch JOB --next`.
 
 The old G1 plans, completed C1/M1 plans and unstarted `swarm-sol-screens-plan.json` are
-historical. The [release route](benchmark.md#route-to-the-first-release) and
-[card gates](benchmark.md#from-a-candidate-to-a-scored-card) schedule no new runs.
+historical. The [release route](benchmark-implementation.md#phases) and
+[card gates](benchmark-implementation.md#history) schedule no new runs.
 For later authorized experiments, each small calibration plan should identify
 the question, scenario/variant, controller, observable evidence, battle count, runtime
 and spend allowance, decision rule and final committed revision. Start with targeted
@@ -249,6 +253,11 @@ configs/twwarhammer3/benchmark_jobs.json --output runs/twwarhammer3/reports/benc
 versions can share one HTML file while their comparison conditions remain distinct.
 
 ## Independent rerun acceptance (proposal)
+
+This procedure was proposed for the historical tactic cards. For Land Battle, use the
+new profile, engine-outcome scorer and [checks](benchmark-implementation.md#correctness-checks-to-agree);
+a foil/signature gate is unnecessary. An outside-machine rerun remains deferred by the
+owner; distinguish a recount or rerun on the current installation from portability evidence.
 
 This is the first reusable-path check, not a new admission rule or a run performed in
 this review. Use one frozen card before attempting a suite. The proposer hands another
