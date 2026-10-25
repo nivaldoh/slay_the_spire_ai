@@ -42,6 +42,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-25: Checkpoint review and siege checks in progress
+
+- Owner requested varied-unit siege restoration, including after spell effects; agreed the
+  source/two identical/one changed restore method with positive state/effect witnesses.
+- Review reproduced false passes for missing ticks/readings; strengthened the pass rule to
+  require the complete planned trace and successful completion. Existing Land evidence
+  `checkpoint-check-20261025c/` still passes the stricter recount.
+- A mocked completed tick reproduced a save during rebuild aborting the restore; reject
+  such a request before queuing it. A second regression reproduced handover despite a wrong
+  Lua RNG seed; the agent now refuses that handover. Both fixes copied to the local public
+  tool checkout; not released. Inline scenario declarations support the planned siege checks.
+- Focused component tests: 16 passed; full Ruff passed. Live siege probes follow; no siege
+  correctness claim yet.
+- Evidence: `runs/twwarhammer3/checkpoint-review-20261025/` and
+  `runs/test-scratch/checkpoint-gaps-{before,after}.txt`; $0. No new judgement markers.
+
 ## 2026-10-25: Battle checkpoints restore exactly through a fast rebuild
 
 - Owner goal: battle checkpoint restoration for modders. $0, no production source/config

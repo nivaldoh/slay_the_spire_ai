@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-25 (checkpoint review): review restoration for errors and gaps, focusing on varied
+  units and situations (including after a spell effect) in Siege maps. "No slop, no
+  overengineering, no bloat." Agreed the expanded check: a source, two identical restores
+  and one changed-order restore, requiring witnessed unit states and a spell taking effect
+  and expiring, alongside per-tick checksums and Lua readings.
 - 2026-10-25 (WH3 checkpoint decisions), answering three questions: release the standalone tool
   as a public GitHub repo with an MIT license (done: github.com/nivaldoh/wh3-battle-checkpoints,
   v0.1.0); the rebuild may run faster than 1x before the handover (AGENTS.md 1x rule amended);

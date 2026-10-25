@@ -7,6 +7,8 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 ## Active work
 
 WH3 first; Spire waits behind it; post-training is secondary. Three changes await review.
+Active: checkpoint review and $0 siege restoration checks, including mixed units and a
+witnessed spell effect/expiry. No paid controllers; one game launch at a time.
 Land Battle definition: the [owner interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle)
 focuses on one battle, model knowledge, API latency and scoring; the earlier profile/checks remain proposals.
 Battle [checkpoints](twwarhammer3/checkpoints.md) restore exactly and are on main; the agreed

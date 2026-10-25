@@ -225,10 +225,12 @@ Interceptor.attach(at('session_step'), {
                 if (want !== b.speed) setSpeed(this.session, want);
                 if (b.tick % 500 === 0) send({event: 'rebuilding', tick: b.tick, of: r.tick});
                 if (b.tick === r.tick) {
+                    if (luaSeedSlot().readU32() !== r.seed_at_tick)
+                        throw new Error('rebuilt Lua random seed differs from the checkpoint');
                     handOver(this.session, env);
                     b.handedOff = true;
                     send({event: 'restored', name: r.name, tick: b.tick,
-                          lua_seed_matches: luaSeedSlot().readU32() === r.seed_at_tick});
+                          lua_seed_matches: true});
                 }
             }
             if (CONFIG) testHooks(env);
@@ -292,6 +294,8 @@ rpc.exports = {
     save(name) {
         if (!/^[A-Za-z0-9_-]{1,64}$/.test(name)) throw new Error('use letters, digits, - and _ only');
         if (!battle || battle.tick === 0) throw new Error('no battle is running');
+        if (battle.failed) throw new Error('checkpoint agent failed; start a new battle');
+        if (battle.restore && !battle.handedOff) throw new Error('wait until the checkpoint has finished restoring');
         pendingSave = name;
         return battle.tick;
     },

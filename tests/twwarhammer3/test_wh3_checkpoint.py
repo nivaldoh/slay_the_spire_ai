@@ -3,6 +3,8 @@ import importlib.util
 import json
 from pathlib import Path
 
+import pytest
+
 from twwarhammer3.battle import checkpoint
 
 spec = importlib.util.spec_from_file_location(
@@ -26,6 +28,7 @@ def battle(seed=0, changed_from=None, restored=True, reading_change=None):
             rows.append({"event": "reading", "tick": tick, "value": value})
     if restored:
         rows.append({"event": "restored", "tick": check.CHECKPOINT, "lua_seed_matches": True})
+    rows.append({"event": "done", "tick": check.STOP})
     return rows
 
 
@@ -34,7 +37,8 @@ def write(output: Path, runs: dict) -> Path:
         (output / name / "native").mkdir(parents=True)
         lines = "\n".join(json.dumps(r) for r in rows) + "\n"
         (output / name / "native/native.jsonl").write_text(lines)
-        (output / name / "manifest.json").write_text(json.dumps({"closed": True}))
+        manifest = {"closed": True, "completed": True}
+        (output / name / "manifest.json").write_text(json.dumps(manifest))
     return output
 
 
@@ -67,3 +71,38 @@ def test_check_fails_on_one_wrong_tick_a_wrong_reading_or_a_change_that_does_not
         runs = {"source": source(), "restore-a": battle(), "restore-b": battle(),
                 "changed": battle(changed_from=1304), **override}
         assert not check.assess(write(tmp_path / name, runs))["pass"], name
+
+
+@pytest.mark.parametrize("run,event,problem", [
+    ("source", "tick", "missing"), ("restore-a", "tick", "missing"),
+    ("source", "reading", "missing"), ("restore-b", "reading", "missing"),
+    ("restore-a", "tick", "duplicate"), ("restore-b", "reading", "duplicate"),
+    ("changed", "done", "missing"),
+    ("source", "error", "insert"), ("restore-a", "frida_error", "insert"),
+    ("restore-b", "detached", "insert"),
+])
+def test_check_rejects_incomplete_or_failed_native_evidence(tmp_path, run, event, problem):
+    runs = {"source": source(), "restore-a": battle(), "restore-b": battle(),
+            "changed": battle(changed_from=1304)}
+    rows = runs[run]
+    if problem == "insert":
+        rows.insert(0, {"event": event, "message": "test failure"})
+    else:
+        item = next(row for row in rows if row["event"] == event
+                    and (event == "done" or row["tick"] == 1700))
+        if problem == "missing":
+            rows.remove(item)
+        else:
+            rows.append(dict(item))
+    assert not check.assess(write(tmp_path, runs))["pass"]
+
+
+def test_check_requires_manifest_completion_and_allows_normal_detach(tmp_path):
+    runs = {"source": source(), "restore-a": battle(), "restore-b": battle(),
+            "changed": battle(changed_from=1304)}
+    for rows in runs.values():
+        rows.append({"event": "detached", "reason": "application-requested"})
+    output = write(tmp_path, runs)
+    assert check.assess(output)["pass"]
+    (output / "source/manifest.json").write_text(json.dumps({"closed": True, "completed": False}))
+    assert not check.assess(output)["pass"]

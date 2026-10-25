@@ -86,6 +86,7 @@ def only_replay(name: str):
 def run(plan: dict, output: Path) -> dict:
     """One source battle (plan["scenario"]) or restore (plan["checkpoint"]); returns the manifest.
 
+    A scenario is a configured name or an inline declaration, recorded with the plan.
     Plan keys: save_at [{tick, name}], lua_at [{tick, label, lua}], readings {every, lua},
     stop_tick. A restore's lua_at may hold only tick-1 setup and orders after the checkpoint:
     earlier inputs come from the replay.
@@ -111,8 +112,10 @@ def run_in_game(plan: dict, output: Path, replay_sha256: str | None) -> dict:
         raise RuntimeError("the checkpoint agent supports Steam build 25961564 only")
     if conflicting_games(Path(spire_runtime.WINDOWS_GAME_DIR), spire_runtime.CONFLICTS):
         raise RuntimeError("Slay the Spire is running")
+    scenario = plan.get("scenario")
     steps = REPLAY_STEPS if restore else setup.scenario_steps(
-        setup.scenarios()[plan["scenario"]], build_id=environment["game"]["steam_build_id"])
+        setup.scenarios()[scenario] if isinstance(scenario, str) else scenario,
+        build_id=environment["game"]["steam_build_id"])
     hooks = ("save_at", "lua_at", "readings", "stop_tick")
     agent_config = {"lua_chunk": "twwarhammer3_battle", "checkpoints": [restore] if restore else [],
                     **{key: plan[key] for key in hooks if key in plan}}
