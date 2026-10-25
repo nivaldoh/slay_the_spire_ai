@@ -75,10 +75,12 @@ revision):
   `uv run --locked python tests/twwarhammer3/check_wh3_checkpoint.py --output
   runs/twwarhammer3/checkpoint-check-<new-name>` (pass rule offline:
   `uv run --locked pytest -ra tests/twwarhammer3/test_wh3_checkpoint.py`); agreed
-  2026-10-25; passed at `7b1e2ed` (4 launches, `runs/twwarhammer3/checkpoint-check-20261025b/`:
-  0 mismatches over 2,000/2,001 ticks and 9/9 readings per restore, the changed one diverged
-  at 1303). Custom land battle, build 25961564; no claim for real-time script timers, our
-  bridge mod's state, the loading screen, other battle types or builds.
+  2026-10-25; passed at `7b1e2ed` (`checkpoint-check-20261025b/`) and at `6fdb271` on main
+  (`runs/twwarhammer3/checkpoint-check-20261025c/`, 4 launches: 0 mismatches over 2,001
+  ticks and 9/9 readings per restore, the changed one diverged at 1303; a bystander replay
+  was set aside and returned unchanged). Custom land battle, build 25961564; no claim for
+  real-time script timers, our bridge mod's state, the loading screen, other battle types
+  or builds.
 - WH3 engine ending kept after a late controller failure (acknowledge or `close()`):
   `uv run --locked pytest -ra
   tests/twwarhammer3/test_wh3_play.py::test_a_controller_failure_after_the_ending_keeps_the_engine_result`

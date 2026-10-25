@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-24: what runs, where each game stands, what comes next. Status only:
+Updated 2026-10-25: what runs, where each game stands, what comes next. Status only:
 History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md).
 Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
@@ -9,9 +9,9 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 WH3 first; Spire waits behind it; post-training is secondary. Three changes await review.
 Land Battle definition: the [owner interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle)
 focuses on one battle, model knowledge, API latency and scoring; the earlier profile/checks remain proposals.
-Battle [checkpoints](twwarhammer3/log.md#2026-10-25-battle-checkpoints-restore-exactly-through-a-fast-rebuild)
-restore exactly: agreed check passed at `7b1e2ed` on branch `wh3-checkpoints` (not merged);
-public player tool released as github.com/nivaldoh/wh3-battle-checkpoints v0.1.0.
+Battle [checkpoints](twwarhammer3/checkpoints.md) restore exactly and are on main; the agreed
+check passed at `6fdb271` ([log](twwarhammer3/log.md#2026-10-25-battle-checkpoints-restore-exactly-through-a-fast-rebuild));
+the player tool is public (github.com/nivaldoh/wh3-battle-checkpoints, v0.1.0).
 Latest testing: [eval review](testing.md#wh3-evaluations-and-tests-2026-10-23),
 [live-check comparison](testing.md#wh3-live-check-comparison-2026-10-23); new methods await review.
 The Spire collection night ended ([log](spire/fullrun/log.md#2026-10-23-collection-night-qwen36-reasoning-off-harness-v102)).
@@ -35,7 +35,7 @@ knowledge evidence contribute to the score is open in the interview.
 - Scripted-team agreed checks passed at recorded revisions; `wh3-model-team` has a 4/4 live
   scripted check at its tip, but model members have not played live ([branch](#branches)).
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33. A new paid cohort needs a bounded plan.
-- Battle checkpoints: verified at `7b1e2ed` (branch `wh3-checkpoints`) by the agreed check; custom land battles, build 25961564.
+- Battle checkpoints: verified at `6fdb271` by the agreed check; custom land battles, build 25961564.
 
 Benchmark work waits: answer the [single-battle interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle),
 then revise the proposed profile, score, knowledge evidence and checks from those answers.
@@ -119,8 +119,4 @@ restoring a snapshot is untested.
 - `wh3-human-opponent` (`de37005`, worktree `../slay_the_spire_ai-wh3-human-opponent`): the
   controllers command the AI's army so the owner can play against them. Parked by the owner
   (2026-10-22) to implement later, starting at step 1 of the [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps).
-- `wh3-checkpoints` (`8686807`, worktree `../slay_the_spire_ai-wh3-checkpoints`, from `b0ac9e3`):
-  battle checkpoints in `src/twwarhammer3/`, the agreed live check (passed at `7b1e2ed`), the
-  1x-rule exception and docs page. Merge waits on your yes; main's uncommitted
-  `docs/twwarhammer3/README.md` edits overlap one line.
 - Archived drafts are tags (`git tag --list 'archive/*'`).
