@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from check_wh3_checkpoint_siege import SPELL, fixture, spell_witnesses
+from check_wh3_checkpoint_siege import SPELL, fixture, restore_spell_witness, spell_witnesses
 from wh3_lua import runtime
 
 
@@ -30,6 +30,38 @@ def test_a_different_unit_at_the_same_index_cannot_witness_the_buff():
     values[350]["battle"]["units"][0]["id"] = "1003"
     values[800]["battle"]["units"][0]["id"] = "1004"
     assert not spell_witnesses(values)["pass"]
+
+
+def test_active_restore_requires_the_target_armour_and_later_expiry():
+    source = spell_history()
+    restored = {t: copy.deepcopy(v) for t, v in source.items() if t >= 350}
+    assert restore_spell_witness(source, restored, 350)["pass"]
+    restored[350]["battle"]["units"][0]["stats"] = "stat_armour=30.00/30.00"
+    assert not restore_spell_witness(source, restored, 350)["pass"]
+
+
+@pytest.mark.parametrize("wrong", ["effect_still_active", "armour_not_returned"])
+def test_identical_active_restore_needs_effect_expiry_and_baseline_armour(wrong):
+    source = spell_history()
+    restored = {t: copy.deepcopy(v) for t, v in source.items() if t >= 350}
+    unit = restored[800]["battle"]["units"][0]
+    if wrong == "effect_still_active":
+        unit["effects"] = SPELL
+    else:
+        unit["stats"] = "stat_armour=90.00/90.00"
+    assert not restore_spell_witness(source, restored, 350)["pass"]
+    # A changed trajectory needs the same checkpoint witness, not a prescribed later fate.
+    assert restore_spell_witness(source, restored, 350, require_expiry=False)["pass"]
+
+
+def test_postspell_target_armour_uses_source_checkpoint_including_fatigue():
+    source = spell_history()
+    source[1100] = copy.deepcopy(source[800])
+    source[1100]["battle"]["units"][0]["stats"] = "stat_armour=27.00/27.00"
+    restored = {1100: copy.deepcopy(source[1100])}
+    assert restore_spell_witness(source, restored, 1100)["pass"]
+    restored[1100]["battle"]["units"][0]["stats"] = "stat_armour=30.00/30.00"
+    assert not restore_spell_witness(source, restored, 1100)["pass"]
 
 
 @pytest.mark.parametrize("wrong", ["other_ability", "no_armour_change", "still_active"])

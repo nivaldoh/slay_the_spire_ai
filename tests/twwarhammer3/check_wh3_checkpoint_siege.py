@@ -6,10 +6,11 @@ uv run --locked python tests/twwarhammer3/check_wh3_checkpoint_siege.py --recoun
 
 For each saved state: two restores receive the source's later inputs; a third receives an
 extra Gelt move 100 ticks after handover. Every planned tick and reading must be present;
-the identical restores must match live readings and armour exactly, and the extra order
+the identical restores must match live readings exactly, and the extra order
 must cause later divergence. Raw cached infocard differences remain separate diagnostics.
 Witnesses require actual spells, unit states, siege equipment and field-state changes.
-Cached infocard text is diagnostic; numeric armour and all other fields compare exactly.
+Cached infocard text is diagnostic. Armour is checked on the tested spell target;
+all other fields compare exactly.
 The field fixture builds towers and transfers ownership through the script API; it does
 not test normal capturing. Recount reads evidence only and never rewrites its verdict.
 Walk/run speed readings are engine capabilities, not instantaneous movement velocity.
@@ -120,6 +121,10 @@ def armour(unit: dict) -> float | None:
     return None
 
 
+def spell_active(unit: dict) -> bool:
+    return any(effect.split("|", 1)[0] == SPELL for effect in unit.get("effects", "").split(";"))
+
+
 def spell_witnesses(values: dict[int, dict]) -> dict:
     """Require the named buff on its target, a stat change, then a return to baseline."""
     first = values[min(values)]["battle"]["units"] if values else []
@@ -128,10 +133,10 @@ def spell_witnesses(values: dict[int, dict]) -> dict:
     target = [(t, next((u for u in v["battle"]["units"]
                        if target_id is not None and u.get("id") == target_id), {}))
               for t, v in sorted(values.items())]
-    active = [(t, u) for t, u in target if SPELL in u.get("effects", "")]
+    active = [(t, u) for t, u in target if spell_active(u)]
     baseline = armour(target[0][1]) if target else None
     expired = [(t, u) for t, u in target if active and t > active[-1][0]
-               and SPELL not in u.get("effects", "") and armour(u) == baseline]
+               and not spell_active(u) and armour(u) == baseline]
     checks = {"active": bool(active),
               "armour_changed": baseline is not None and any(
                   armour(u) is not None and armour(u) > baseline for _, u in active),
@@ -140,6 +145,43 @@ def spell_witnesses(values: dict[int, dict]) -> dict:
             "baseline_armour": baseline,
             "active_ticks": [t for t, _ in active],
             "first_expired_tick": expired[0][0] if expired else None}
+
+
+def restore_spell_witness(source: dict[int, dict], restored: dict[int, dict], tick: int,
+                          require_expiry: bool = True) -> dict:
+    """Match the tested target at handover; witness active-buff expiry on identical restores."""
+    reference = spell_witnesses(source)
+    uid = reference["target_id"]
+
+    def target(values, at):
+        return next((u for u in values.get(at, {}).get("battle", {}).get("units", [])
+                     if uid is not None and u.get("id") == uid), {})
+
+    original, actual = target(source, tick), target(restored, tick)
+    before, after = armour(original), armour(actual)
+    active = spell_active(original)
+    checks = {"source_spell_witness": reference["pass"],
+              "target_present": bool(original and actual),
+              "checkpoint_effects": actual.get("effects") == original.get("effects"),
+              "checkpoint_armour": before is not None and math.isfinite(before) and after == before}
+    expiry_ticks = []
+    if active:
+        checks["active_checkpoint_armour_increased"] = (
+            reference["baseline_armour"] is not None and before is not None
+            and before > reference["baseline_armour"] and spell_active(actual))
+        if require_expiry:
+            first_expired = reference["first_expired_tick"]
+            expiry_ticks = [t for t in sorted(restored) if first_expired is not None
+                            and t >= first_expired and target(restored, t)
+                            and not spell_active(target(restored, t))
+                            and armour(target(restored, t)) == reference["baseline_armour"]]
+            checks["expiry_and_baseline_armour"] = bool(expiry_ticks)
+    else:
+        checks["spell_absent_at_checkpoint"] = not spell_active(actual)
+    return {"checks": checks, "pass": all(checks.values()), "target_id": uid,
+            "checkpoint_effect_active": active, "source_checkpoint_armour": before,
+            "restore_checkpoint_armour": after,
+            "first_expired_witness_tick": expiry_ticks[0] if expiry_ticks else None}
 
 
 def checkpoint_witnesses(values: dict[int, dict], tick: int, case: dict, state: str) -> dict:
@@ -246,12 +288,13 @@ def witnesses(values: dict[int, dict], tick: int, case: dict, state: str) -> dic
 
 
 def compare_runs(source: list[dict], restore: list[dict]) -> dict:
-    """Keep the raw comparison; compare live fields and armour independently of infocard text.
+    """Keep the raw comparison; compare live fields independently of infocard text.
 
     Owner, 2026-10-25: use live engine values, with cached infocard differences reported
-    separately. Only battle.units[*].stats is excluded; numeric armour is extracted from it.
+    separately. Only battle.units[*].stats is excluded. Armour witnesses are checked on the
+    stable spell target, rather than treating cached armour as a live getter for every unit.
     """
-    missing, missing_live = [], []
+    missing_live = []
 
     def observed(rows, label):
         result = []
@@ -270,10 +313,6 @@ def compare_runs(source: list[dict], restore: list[dict]) -> dict:
                     if absent:
                         missing_live.append({"run": label, "tick": row["tick"],
                                              "id": unit["id"], "fields": absent})
-                numeric = armour(unit)
-                if numeric is None or not math.isfinite(numeric):
-                    missing.append({"run": label, "tick": row["tick"], "id": unit["id"]})
-                unit["stat_armour"] = numeric
                 unit.pop("stats", None)
             result.append({**row, "value": value})
         return result
@@ -296,7 +335,6 @@ def compare_runs(source: list[dict], restore: list[dict]) -> dict:
         if differences:
             cached.append({"tick": tick, "units": differences})
     result.update(strict_comparison=checkpoint.compare(source, restore), cached_stats=cached,
-                  armour_readings_complete=not missing, missing_armour=missing,
                   live_getters_complete=not missing_live, missing_live_getters=missing_live)
     return result
 
@@ -348,6 +386,9 @@ def assess_case(source: Path, restores: list[Path], changed: Path, checkpoint_ti
         if index:
             comparison = compare_runs(rows[0], events)
             run["comparison"] = comparison
+            restore_values = {r["tick"]: r["value"] for r in events if r.get("event") == "reading"}
+            run["spell_witness"] = restore_spell_witness(
+                values, restore_values, checkpoint_tick, require_expiry=index != len(paths)-1)
             restored = (comparison["restored_at"] == checkpoint_tick
                         and comparison["seed_matches"] is True)
             if index == len(paths)-1:
@@ -359,7 +400,7 @@ def assess_case(source: Path, restores: list[Path], changed: Path, checkpoint_ti
             else:
                 same = comparison["checksum_mismatches"] == 0 and not comparison["readings_unequal"]
             run["pass"] = (run["pass"] and restored and same
-                           and comparison["armour_readings_complete"]
+                           and run["spell_witness"]["pass"]
                            and comparison["live_getters_complete"])
         result["runs"].append(run)
     result["two_restores"] = len(restores) == 2

@@ -48,7 +48,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
   added equipment counts, roles, field resources/supplies/owners, ladders and gates.
 - Fixed save-during-rebuild and wrong-seed handover (two regressions), incomplete-trace
   false passes, and UTF-8 JSON decoding exposed by the capital siege (failed-before check).
-  Existing Land evidence still passes the stricter recount. All 797 WH3/doc-link tests
+  Existing Land evidence still passes the stricter recount. All 800 WH3/doc-link tests
   and Ruff pass before the live suite; focused regressions reject missing state witnesses.
 - Public CLI draft writes metadata atomically and skips malformed records (3 tests pass);
   agent fixes copied by hand. Independent review found no further issue; not released.
@@ -63,7 +63,9 @@ benchmark harness revision, G1 and G2 the calibration stages.
 - Owner chose live numeric morale/speed and armour/spell witnesses; cached stats reported
   separately. First expanded case (`e666012`) matched native/unit state but failed stale
   capture UI readings; all four launches preserved in `siege-check-20261025/`. Reader now
-  asks updating `FillPercent` first and retains every field; live effect remains unverified.
+  asks updating `FillPercent` first: one restore matches all 27 siege readings
+  (`siege-check-20261025b/`). Removed an extra all-unit cached-armour constraint; armour
+  witnesses apply to the tested spell target, with unrelated infocard stats diagnostic.
   A failed case stops further launches. Interrupt cleanup now returns all replays before
   propagating the signal (four regressions failed before, pass after).
 - The 15-launch rerun is next; capability speeds do not establish fatigue-adjusted speed.

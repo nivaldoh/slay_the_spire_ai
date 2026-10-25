@@ -85,8 +85,10 @@ mixed units, ammunition, damage and a spell's armour effect and expiry require p
 witnesses. Ownership changes use the game's script API; normal capturing is not tested.
 
 The owner agreed numeric live morale/speed readings and armour/spell witnesses on
-2026-10-25, with cached infocard differences reported separately. All other readings and
-every planned native checksum must match exactly. The speed getters describe movement
+2026-10-25, with cached infocard differences reported separately. The spell target's
+armour/effect must match at handover; identical active-effect restores must also witness
+expiry and baseline armour. Other units' cached armour stays diagnostic. All live readings
+and every planned native checksum must match exactly. The speed getters describe movement
 capability; the probe did not establish fatigue-adjusted effective speed. Raw cached
 stats remain in the evidence: an earlier open-gate restore failed the original strict
 comparison at four of 38 readings despite matching every native checksum and every

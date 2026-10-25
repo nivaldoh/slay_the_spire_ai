@@ -26,26 +26,26 @@ def sample():
                 "siege": {"gates": [{"gate_hp": 9000}], "stats": "unrelated field"}}}]
 
 
-def test_only_infocard_text_can_differ_with_the_original_failure_retained():
+@pytest.mark.parametrize("cached_stat", ["speed", "armour"])
+def test_infocard_text_is_diagnostic_with_the_original_failure_retained(cached_stat):
     source, restored = sample(), sample()
     restored[1]["value"]["battle"]["units"][0]["stats"] = (
-        "stat_armour=30.00/30.00;scalar_speed=60.00/60.00")
+        "stat_armour=30.00/30.00;scalar_speed=60.00/60.00" if cached_stat == "speed" else
+        "stat_armour=27.00/27.00;scalar_speed=48.00/48.00")
     original = copy.deepcopy(source)
     result = compare_runs(source, restored)
     assert source == original
-    assert not result["readings_unequal"] and result["armour_readings_complete"]
+    assert not result["readings_unequal"] and result["live_getters_complete"]
     assert result["strict_comparison"]["readings_unequal"] == [1]
     assert [row["tick"] for row in result["cached_stats"]] == [1]
 
 
-@pytest.mark.parametrize("changed", ["armour", "speed", "morale", "gate", "other_stats"])
-def test_live_values_armour_and_every_other_field_still_compare_exactly(changed):
+@pytest.mark.parametrize("changed", ["speed", "morale", "gate", "other_stats"])
+def test_live_values_and_every_other_field_still_compare_exactly(changed):
     restored = sample()
     value = restored[1]["value"]
     unit = value["battle"]["units"][0]
-    if changed == "armour":
-        unit["stats"] = "stat_armour=31.00/31.00;scalar_speed=48.00/48.00"
-    elif changed == "speed":
+    if changed == "speed":
         unit["fast_speed"] = 4.8000006675720
     elif changed == "morale":
         unit["morale_percent"] = 0.12345678912346
@@ -54,13 +54,6 @@ def test_live_values_armour_and_every_other_field_still_compare_exactly(changed)
     else:
         value["siege"]["stats"] = "a stats field outside battle.units"
     assert compare_runs(sample(), restored)["readings_unequal"] == [1]
-
-
-def test_equal_missing_armour_is_unavailable_not_evidence_of_equal_armour():
-    source = sample()
-    source[1]["value"]["battle"]["units"][0]["stats"] = "scalar_speed=48.00/48.00"
-    result = compare_runs(source, source)
-    assert not result["armour_readings_complete"] and len(result["missing_armour"]) == 2
 
 
 @pytest.mark.parametrize("invalid", [None, float("inf")])
