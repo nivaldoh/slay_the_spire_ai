@@ -18,11 +18,13 @@ Recount saved evidence without launching: --recount EXISTING_OUTPUT.
 """
 import argparse
 import json
+import shutil
 import sys
 from pathlib import Path
 
 from gameai.provenance import write_json
 from twwarhammer3.battle import checkpoint
+from twwarhammer3.engine import runtime
 
 SCENARIO = "emp-handgunners-grn-savage-orcs"
 CHECKPOINT, STOP, CHANGED_TICK = 1200, 2000, 1300
@@ -152,9 +154,14 @@ def main() -> int:
         write_json(output / "plans.json", plan)
         checkpoint.run(plan["source"], output / "source")
         record = checkpoint.saved(output / "source", plan["name"])
-        for run, key in (("restore-a", "restore"), ("restore-b", "restore"),
-                         ("changed", "changed")):
-            checkpoint.run({**plan[key], "checkpoint": record}, output / run)
+        try:
+            for run, key in (("restore-a", "restore"), ("restore-b", "restore"),
+                             ("changed", "changed")):
+                checkpoint.run({**plan[key], "checkpoint": record}, output / run)
+        finally:
+            # Keep the checkpoint with the evidence, out of the game's Replays list.
+            replay = runtime.user_dir() / "replays" / (plan["name"] + ".replay")
+            shutil.move(replay, output / replay.name)
         checks = assess(output)
         write_json(output / "checks.json", checks)
     print(json.dumps(checks, indent=1))

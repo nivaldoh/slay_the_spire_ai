@@ -31,7 +31,9 @@ the handover on the battle runs at 1x.
 
 `battle/checkpoint.py` runs a source battle or a restore through the normal harness, with
 saves, Lua (orders, a battle script) and readings at exact completed ticks, and compares a
-restore with its source. Frida runs under a Windows Python with `frida==17.*` installed
+restore with its source. A restore opens the first entry of the Replays list, so for its run
+the other replays wait in `replays/checkpoint-aside/` and are put back afterwards; the
+check then moves its own checkpoint replay into its output folder. Frida runs under a Windows Python with `frida==17.*` installed
 (`checkpoint.FRIDA_PYTHON`, `C:/wh3-agent/checkpoint-frida-venv`).
 
 ## The check

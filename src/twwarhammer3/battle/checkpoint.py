@@ -11,6 +11,7 @@ fast rebuild before the handover (2026-10-25, AGENTS.md).
 optional saves, Lua (orders, a battle script) and readings at exact completed ticks.
 `compare` checks a restore against its source tick by tick. Steam build 25961564 only.
 """
+import contextlib
 import json
 import shutil
 import subprocess
@@ -58,17 +59,28 @@ def saved(run: Path, name: str) -> dict:
     return {key: row[key] for key in ("name", "tick", "checksum", "lua_seed", "seed_at_tick")}
 
 
-def only_replay(name: str, parked: Path) -> str:
-    """Leave the named replay as the only one in the game's list (item0); park the rest."""
+@contextlib.contextmanager
+def only_replay(name: str):
+    """For one run, leave the named replay alone in the game's list (item0); yields its hash.
+
+    The other replays wait in replays/checkpoint-aside/ and return afterwards.
+    """
     replays = runtime.user_dir() / "replays"
-    target = replays / (name + ".replay")
+    target, aside = replays / (name + ".replay"), replays / "checkpoint-aside"
     if not target.exists():
         raise FileNotFoundError(target)
-    for other in replays.glob("*.replay"):
-        if other != target:
-            parked.mkdir(parents=True, exist_ok=True)
-            shutil.move(other, parked / other.name)
-    return sha256(target)
+    aside.mkdir(exist_ok=True)
+    if any(aside.iterdir()):
+        raise RuntimeError(f"replays from an interrupted run are still in {aside}")
+    others = [path for path in replays.glob("*.replay") if path != target]
+    for path in others:
+        shutil.move(path, aside / path.name)
+    try:
+        yield sha256(target)
+    finally:
+        for path in others:
+            shutil.move(aside / path.name, path)
+        aside.rmdir()
 
 
 def run(plan: dict, output: Path) -> dict:
@@ -81,6 +93,12 @@ def run(plan: dict, output: Path) -> dict:
     restore = plan.get("checkpoint")
     if restore and any(1 < item["tick"] <= restore["tick"] for item in plan.get("lua_at", [])):
         raise ValueError("a restore runs Lua only at tick 1 and after its checkpoint")
+    with only_replay(restore["name"]) if restore else contextlib.nullcontext() as replay_sha256:
+        return run_in_game(plan, output, replay_sha256)
+
+
+def run_in_game(plan: dict, output: Path, replay_sha256: str | None) -> dict:
+    restore = plan.get("checkpoint")
     for item in plan.get("save_at", []):
         if (runtime.user_dir() / "replays" / (item["name"] + ".replay")).exists():
             raise FileExistsError(f"replay {item['name']} already exists")
@@ -93,13 +111,8 @@ def run(plan: dict, output: Path) -> dict:
         raise RuntimeError("the checkpoint agent supports Steam build 25961564 only")
     if conflicting_games(Path(spire_runtime.WINDOWS_GAME_DIR), spire_runtime.CONFLICTS):
         raise RuntimeError("Slay the Spire is running")
-    if restore:
-        replay_sha256 = only_replay(restore["name"], output / "parked-replays")
-        steps = REPLAY_STEPS
-    else:
-        replay_sha256 = None
-        steps = setup.scenario_steps(setup.scenarios()[plan["scenario"]],
-                                     build_id=environment["game"]["steam_build_id"])
+    steps = REPLAY_STEPS if restore else setup.scenario_steps(
+        setup.scenarios()[plan["scenario"]], build_id=environment["game"]["steam_build_id"])
     hooks = ("save_at", "lua_at", "readings", "stop_tick")
     agent_config = {"lua_chunk": "twwarhammer3_battle", "checkpoints": [restore] if restore else [],
                     **{key: plan[key] for key in hooks if key in plan}}
@@ -150,6 +163,7 @@ def run(plan: dict, output: Path) -> dict:
                             if (runtime.BRIDGE_DIR / name).exists():
                                 shutil.copy2(runtime.BRIDGE_DIR / name, output / name)
                         shutil.copytree(native, output / "native")
+                        shutil.rmtree(native)
         except BaseException as error:
             manifest["error"] = {"type": type(error).__name__, "message": str(error)}
             raise

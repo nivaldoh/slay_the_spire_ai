@@ -265,6 +265,7 @@ uv run python -m twwarhammer3 card chariot [JOB_OR_PLAN_DIR ...]  # tactic-card 
 uv run python -m twwarhammer3 report <job> [<job> ...] --output runs/twwarhammer3/reports/<name>
 uv run python -m twwarhammer3 export <job> [<job> ...] --output runs/twwarhammer3/exports/<name>
 uv run python -m twwarhammer3 spend    # WH3 OpenAI ledger total; --provider openrouter for OpenRouter
+uv run --locked python tests/twwarhammer3/check_wh3_checkpoint.py --output runs/twwarhammer3/checkpoint-check-<name>   # battle checkpoints, 4 launches
 uv run python -m gameai.sft <export> [<export> ...] --output runs/sft/<name>   # see docs/posttraining.md
 git grep -n JUDGEMENT -- ':!AGENTS.md' ':!docs/judgement.md'   # marked judgement calls awaiting the owner
 ```
@@ -349,7 +350,8 @@ observation → policy → validated orders → acknowledgement with the battle 
 issued at; the battle keeps running meanwhile, and the measured delay goes into the next
 prompt. Later episodes replay the battle through the results popup's rematch button; one
 job can rotate several controllers over them (`--policy a,b`), and `report` compares
-them.
+them. A battle can also be saved at a tick and restored exactly (`battle/checkpoint.py`,
+a Frida agent in `engine/`; [checkpoints.md](docs/twwarhammer3/checkpoints.md)).
 
 Information boundary: friendly units in full; enemy units only while
 `is_visible_to_alliance`, plus the enemy roster the custom battle screen shows; the

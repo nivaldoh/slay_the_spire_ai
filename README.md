@@ -73,7 +73,14 @@ uv run python -m twwarhammer3 report --jobs-file configs/twwarhammer3/benchmark_
 # Open runs/twwarhammer3/reports/benchmark.html in a browser.
 ```
 
+**Battle checkpoints.** A running battle can be saved at any tick and restored exactly, as
+often as needed: the battle is rebuilt from the game's own replay, checked tick by tick, and
+handed back to live control at the saved moment ([how and what is verified](docs/twwarhammer3/checkpoints.md)).
+The same tool is public for players and modders:
+[wh3-battle-checkpoints](https://github.com/nivaldoh/wh3-battle-checkpoints).
+
 [How the mod works](docs/twwarhammer3/README.md#how-it-works) ·
+[Battle checkpoints](docs/twwarhammer3/checkpoints.md) ·
 [Benchmark design](docs/twwarhammer3/benchmark.md) ·
 [Results and experiment log](docs/twwarhammer3/log.md) ·
 [Trace exports for future training](docs/twwarhammer3/traces.md)

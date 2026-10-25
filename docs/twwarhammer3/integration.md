@@ -336,6 +336,9 @@ otherwise not exposed (the chokepoint map has no buildings; its crossings are te
   results popup's `in_battle_results_popup/.../button_rematch` asks "Are you sure you
   want to rematch this battle?", and `dialogue_box/both_group/button_tick` confirms; the
   same battle reloads in about 15 s with a fresh script environment and the same start.
+- [Checkpoints](checkpoints.md) restore a battle at a saved tick instead: the game's replay
+  written mid-battle, rebuilt fast and checked tick by tick, then live input. The replay
+  flag is cleared before scripts start, so our battle mod runs (fresh) in a restored battle.
 
 ## Ability state through the UI context system (probed 2026-10-13)
 

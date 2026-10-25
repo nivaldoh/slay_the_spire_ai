@@ -49,6 +49,9 @@ runs/
     report-checks/    Offline browser validation screenshots, downloads and copied reports
     exports/          Offline model-decision datasets: decisions.jsonl, sources.json and
                       a data card, plus selection lists and verification scripts/reports
+    checkpoint-check-*/ Agreed battle-checkpoint checks: source/, restore-a/, restore-b/,
+                      changed/ (agent log in native/, plan, manifest), checks.json and the
+                      checkpoint replay itself
     launch-*/         `twwarhammer3 launch` logs, deployment records and UI tree dumps
     probe-*/, ...     Frontend probes, the startup-skip evidence, the benchmark setup probe
                       and the first battle jobs from before battle/ existed
