@@ -37,6 +37,7 @@ The owner's initial modding guide (8 October 2026) set the first shape. This pag
 | [benchmark-run.md](benchmark-run.md) | running paired benchmark trials, outside controllers |
 | [reports.md](reports.md) | the offline HTML report and replay, its curated notes |
 | [traces.md](traces.md) | offline model-decision exports, reasoning capture and data provenance |
+| [checkpoints.md](checkpoints.md) | battle checkpoints: save a battle, restore it exactly, the agreed check and limits |
 | [WH3_latency_aware_benchmark_requirements.md](WH3_latency_aware_benchmark_requirements.md) | the owner's benchmark brief |
 | [WH3_report_redesign_guide_for_Codex.md](WH3_report_redesign_guide_for_Codex.md) | the owner's report redesign brief |
 | [log.md](log.md) | dated history: versions, harness revisions, jobs, costs |
