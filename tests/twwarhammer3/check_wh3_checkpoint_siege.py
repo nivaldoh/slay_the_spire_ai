@@ -76,6 +76,9 @@ def source_plan(name: str, case: dict) -> dict:
             {"tick": 1, "label": "gate_exit", "lua": fixture("gate_exit.lua").replace(
                 "ATTACK_SIDE", attack_side)},
             {"tick": 100, "label": "build_field_towers", "lua": fixture("build.lua")}]
+    if case == CASES["capital-attacker"]:
+        lua_at.append({"tick": 200, "label": "cannon_ground_fire",
+                       "lua": fixture("ground_fire.lua")})
     reading = ("local battle = (function()\n" + land.READING + "\nend)()\n"
                + "battle = twwarhammer3_json.decode(battle)\n" + fixture("live_units.lua") + "\n"
                + "local siege = (function()\n" + fixture("reading.lua") + "\nend)()\n"
@@ -433,14 +436,27 @@ def assess_case(source: Path, restores: list[Path], changed: Path, checkpoint_ti
     return result
 
 
+def checkpoint_states(directory: Path, case: dict) -> dict[str, int]:
+    states = {"post-spell": 1100}
+    if case["field"]:
+        record = checkpoint.saved(directory / "source", directory.name + "-gate-open")
+        states = {"gate-open": record["tick"], "late": 2200}
+    return states
+
+
+def source_witnesses(rows: list[dict], case: dict, states: dict[str, int]) -> dict:
+    complete = land.completeness(rows, stop_tick=STOP, reading_every=EVERY)
+    values = {r["tick"]: r["value"] for r in rows if r.get("event") == "reading"}
+    checks = {state: {"tick": tick, **witnesses(values, tick, case, state, rows)}
+              for state, tick in states.items()} if complete["pass"] else {}
+    return {"complete": complete, "states": checks,
+            "pass": complete["pass"] and all(result["pass"] for result in checks.values())}
+
+
 def assess_directory(directory: Path, case: dict) -> dict:
     results = {}
     source = directory / "source"
-    states = {"post-spell": 1100}
-    if case["field"]:
-        record = checkpoint.saved(source, directory.name + "-gate-open")
-        states = {"gate-open": record["tick"], "late": 2200}
-    for state, tick in states.items():
+    for state, tick in checkpoint_states(directory, case).items():
         state_dir = directory / state
         results[directory.name + "/" + state] = assess_case(
             source, [state_dir / "restore-a", state_dir / "restore-b"],
@@ -482,6 +498,12 @@ def run_case(directory: Path, case: dict) -> None:
     checkpoint.AGENT = exact_agent.resolve()
     try:
         checkpoint.run(plan, directory / "source")
+        source_checks = source_witnesses(checkpoint.events(directory / "source"), case,
+                                         checkpoint_states(directory, case))
+        witness_path = directory / "source-witnesses.json"
+        write_json(witness_path, source_checks)
+        if not source_checks["pass"]:
+            raise ProtocolError(f"source siege witnesses failed; see {witness_path}")
         for index, name in enumerate(names):
             record = checkpoint.saved(directory / "source", name)
             state = ("gate-open" if index == 0 else "late") if case["field"] else "post-spell"

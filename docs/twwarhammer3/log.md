@@ -58,6 +58,16 @@ benchmark harness revision, G1 and G2 the calibration stages.
   Evidence: `runs/twwarhammer3/manual-towers-20261025/`. These recreated choices only;
   the remaining broad siege suite is still incomplete.
 
+## 2026-10-25: Capital source needs an ammunition witness
+
+- The first final-suite defender case passed, reusing its clean source. Capital restored
+  exactly in both identical attempts (2,400 ticks/27 readings each); changed order at1200
+  diverged at1203. The source never spent ammunition, so its required witness failed.
+- Preserved `siege-final-20261025/`; this is missing coverage, not a restoration mismatch.
+  Added a source-only cannon ground order and source-witness preflight before restores.
+  Basic/field plans remain byte-identical. All 812 WH3/doc-link tests and Ruff pass;
+  the new firing witness still needs its live check. Ground aim is marked as a judgement.
+
 ## 2026-10-25: Checkpoint review and siege checks in progress
 
 - Agreed source/two identical/one changed restores, with positive unit/spell witnesses;
