@@ -29,6 +29,7 @@ from twwarhammer3.engine.mailbox import Mailbox
 ENGINE = Path(__file__).resolve().parents[1] / "engine"
 AGENT = ENGINE / "checkpoint_agent.js"
 RUNNER = ENGINE / "checkpoint_frida.py"
+WORK = runtime.RUNTIME_DIR / "checkpoint"
 # A Windows Python with frida 17 installed (pip install frida==17.*).
 FRIDA_PYTHON = Path("/mnt/c/wh3-agent/checkpoint-frida-venv/Scripts/python.exe")
 EXE_SHA256 = "9bd58c63bd7fc5c9909b3d3d9b6b7a6ae4eac784369bf91a9e53c3e9f42be496"  # build 25961564
@@ -108,10 +109,15 @@ def run(plan: dict, output: Path) -> dict:
                 "source_revision": committed_revision("battle checkpoints", play.SOURCES),
                 "source_files": source_fingerprints(play.SOURCES), "agent_sha256": sha256(AGENT),
                 "completed": False}
-    native = output / "native"
-    native.mkdir()
+    # Windows Python reads and writes on C:, like the runtime's other scripts; the agent's
+    # log is copied into the run at the end.
+    native = WORK / output.name
     with runtime.RuntimeLock():
         manifest["deployment"] = runtime.prepare_runtime()
+        native.mkdir(parents=True)
+        for path in (AGENT, RUNNER):
+            shutil.copy2(path, WORK / path.name)
+        shutil.copy2(output / "agent-config.json", native / "agent-config.json")
         mailbox = Mailbox(runtime.BRIDGE_DIR, job=output.name)
         mailbox.reset()
         try:
@@ -120,9 +126,9 @@ def run(plan: dict, output: Path) -> dict:
                 manifest["game"] = game.info
                 with (output / "frida.log").open("w") as frida_log:
                     agent = subprocess.Popen(
-                        [str(FRIDA_PYTHON), windows_path(RUNNER), "--pid", str(game.info["pid"]),
-                         "--agent", windows_path(AGENT),
-                         "--config", windows_path(output / "agent-config.json"),
+                        [str(FRIDA_PYTHON), windows_path(WORK / RUNNER.name),
+                         "--pid", str(game.info["pid"]), "--agent", windows_path(WORK / AGENT.name),
+                         "--config", windows_path(native / "agent-config.json"),
                          "--output", windows_path(native)],
                         stdout=frida_log, stderr=subprocess.STDOUT)
                     try:
@@ -143,6 +149,7 @@ def run(plan: dict, output: Path) -> dict:
                         for name in ("mod.log", "menu.log"):
                             if (runtime.BRIDGE_DIR / name).exists():
                                 shutil.copy2(runtime.BRIDGE_DIR / name, output / name)
+                        shutil.copytree(native, output / "native")
         except BaseException as error:
             manifest["error"] = {"type": type(error).__name__, "message": str(error)}
             raise
