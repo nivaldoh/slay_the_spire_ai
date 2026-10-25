@@ -385,21 +385,35 @@ def assess_case(source: Path, restores: list[Path], changed: Path, checkpoint_ti
     return result
 
 
-def assess(output: Path) -> dict:
+def assess_directory(directory: Path, case: dict) -> dict:
     results = {}
+    source = directory / "source"
+    states = {"post-spell": 1100}
+    if case["field"]:
+        record = checkpoint.saved(source, directory.name + "-gate-open")
+        states = {"gate-open": record["tick"], "late": 2200}
+    for state, tick in states.items():
+        state_dir = directory / state
+        results[directory.name + "/" + state] = assess_case(
+            source, [state_dir / "restore-a", state_dir / "restore-b"],
+            state_dir / "changed", tick, tick + 100, case, state)
+    return results
+
+
+def report(results: dict, completed: list[str]) -> dict:
+    return {"states": results, "completed_cases": completed, "all_cases": list(CASES),
+            "pass": len(completed) == len(CASES) and all(r["pass"] for r in results.values())}
+
+
+def assess(output: Path) -> dict:
+    results, completed = {}, []
     for name, case in CASES.items():
-        directory = output / name
-        source = directory / "source"
-        states = {"post-spell": 1100}
-        if case["field"]:
-            record = checkpoint.saved(source, directory.name + "-gate-open")
-            states = {"gate-open": record["tick"], "late": 2200}
-        for state, tick in states.items():
-            state_dir = directory / state
-            results[name + "/" + state] = assess_case(
-                source, [state_dir / "restore-a", state_dir / "restore-b"],
-                state_dir / "changed", tick, tick + 100, case, state)
-    return {"states": results, "pass": all(r["pass"] for r in results.values())}
+        current = assess_directory(output / name, case)
+        results.update(current)
+        completed.append(name)
+        if not all(r["pass"] for r in current.values()):
+            break
+    return report(results, completed)
 
 
 def run_case(directory: Path, case: dict) -> None:
@@ -448,10 +462,16 @@ def main() -> int:
     else:
         output = args.output.resolve()
         output.mkdir(parents=True)
+        results, completed = {}, []
         for name, case in CASES.items():
             run_case(output / name, case)
-        checks = assess(output)
-        write_json(output / "checks.json", checks)
+            current = assess_directory(output / name, case)
+            results.update(current)
+            completed.append(name)
+            checks = report(results, completed)
+            write_json(output / "checks.json", checks)
+            if not all(r["pass"] for r in current.values()):
+                break
     print(json.dumps(checks, indent=1))
     return 0 if checks["pass"] else 1
 

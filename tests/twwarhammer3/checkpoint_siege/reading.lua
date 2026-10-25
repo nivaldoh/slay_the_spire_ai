@@ -43,22 +43,29 @@ local function context_position(expression)
             z = ctx(expression .. '.z', 'number')}
 end
 
-local captures = {}
-for i = 0, count('CapturePointList') - 1 do
+local function read_capture(i)
     local p = 'CapturePointList.At(' .. i .. ')'
-    captures[#captures + 1] = {
+    -- Read the HUD's fill getter first so the snapshot sees any refresh it performs.
+    local fill_percent = ctx(p .. '.FillPercent', 'number')
+    return {
         index = i, key = ctx(p .. '.Key', 'string'), script_id = ctx(p .. '.ScriptId', 'string'),
         name = ctx(p .. '.DisplayName', 'string'), position = context_position(p .. '.Position'),
         holder_alliance = ctx(p .. '.CurrentHolderAlliance', 'number'),
         original_alliance = ctx(p .. '.OriginalOwnerAlliance', 'number'),
         holder_army = optional_context(p .. '.HoldingArmyContext.UniqueID'),
         contesting_army = optional_context(p .. '.ContestingArmycontext.UniqueID'),
+        fill_percent = fill_percent,
         capture_percent = ctx(p .. '.CapturePercent', 'number'),
         contested = ctx(p .. '.IsContested', 'boolean'), locked = ctx(p .. '.IsLocked', 'boolean'),
         enabled = ctx(p .. '.IsEnabled', 'boolean'), neutral = ctx(p .. '.IsNeutral', 'boolean'),
         victory = ctx(p .. '.ContributesToVictory', 'boolean'),
         owner_can_build = ctx(p .. '.CanCurrentOwnerBuild', 'boolean'),
     }
+end
+
+local captures = {}
+for i = 0, count('CapturePointList') - 1 do
+    captures[#captures + 1] = read_capture(i)
 end
 
 local function read_buildings(list, gates)

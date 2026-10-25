@@ -48,7 +48,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
   added equipment counts, roles, field resources/supplies/owners, ladders and gates.
 - Fixed save-during-rebuild and wrong-seed handover (two regressions), incomplete-trace
   false passes, and UTF-8 JSON decoding exposed by the capital siege (failed-before check).
-  Existing Land evidence still passes the stricter recount. All 792 WH3/doc-link tests
+  Existing Land evidence still passes the stricter recount. All 797 WH3/doc-link tests
   and Ruff pass before the live suite; focused regressions reject missing state witnesses.
 - Public CLI draft writes metadata atomically and skips malformed records (3 tests pass);
   agent fixes copied by hand. Independent review found no further issue; not released.
@@ -61,9 +61,13 @@ benchmark harness revision, G1 and G2 the calibration stages.
   Late restore matches 2,400 ticks/5 readings. Open restore matches all checksums, but four
   of 38 readings differ in cached infocard stats only; original strict failure retained.
 - Owner chose live numeric morale/speed and armour/spell witnesses; cached stats reported
-  separately. Capability speeds do not establish fatigue-adjusted effective speed. The
-  complete 15-launch check with these readings is next; no full-suite passing revision yet.
-- Evidence: `runs/twwarhammer3/checkpoint-siege-20261025/`, `checkpoint-review-20261025/`;
+  separately. First expanded case (`e666012`) matched native/unit state but failed stale
+  capture UI readings; all four launches preserved in `siege-check-20261025/`. Reader now
+  asks updating `FillPercent` first and retains every field; live effect remains unverified.
+  A failed case stops further launches. Interrupt cleanup now returns all replays before
+  propagating the signal (four regressions failed before, pass after).
+- The 15-launch rerun is next; capability speeds do not establish fatigue-adjusted speed.
+  Evidence: `runs/twwarhammer3/checkpoint-siege-20261025/`, `checkpoint-review-20261025/`;
   $0. Three declared cases are marked as an agent judgement; no all-sieges claim.
 
 ## 2026-10-25: Battle checkpoints restore exactly through a fast rebuild
