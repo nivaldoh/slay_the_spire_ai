@@ -70,6 +70,9 @@ owner's decision each time.
 - Real-time (wall-clock) script timers are not reproduced; our bridge mod starts fresh
   after a restore. The loading screen shows the starting armies (parked by the owner).
 - Readings through Lua lag the simulation while it runs faster than 1x; compare them at 1x.
+- Native checksums alone do not cover field construction/supplies: manual tower builds
+  changed those readings without changing the checksums. Independent field readings are
+  required alongside them.
 - The Land check has passed at its recorded revision. The expanded siege check is still
   running; its results do not extend to other maps, armies or equipment combinations.
 
@@ -83,7 +86,9 @@ The field case saves an intact open gate during construction and a late state wi
 destroyed gate and changed Key Building/Minor Supply Location owners. Climbing ladders,
 mixed units, ammunition, damage and a spell's armour effect and expiry require positive
 witnesses. Tower builds are source-only inputs and are not reissued during restores.
-Ownership changes use the game's script API; normal capturing is not tested.
+Ownership changes are recreated by the same tick-1 script in source and restores. This
+tests those scripted ownership states, not storage of arbitrary owner changes as separate
+replay inputs or normal capturing.
 
 The owner agreed numeric live morale/speed readings and armour/spell witnesses on
 2026-10-25, with cached infocard differences reported separately. The spell target's
@@ -96,5 +101,21 @@ comparison at four of 38 readings despite matching every native checksum and eve
 other reading field. The native stat-list getter has a refresh cache exceeding two seconds;
 this supports a cache-age explanation without proving every stat difference harmless.
 
-Evidence: `runs/twwarhammer3/checkpoint-siege-20261025/`; [log](log.md). The complete check
-with numeric live readings has no passing revision yet.
+Passed at `2e2acbe`: `runs/twwarhammer3/siege-final-20261025b/`, 15 distinct completed
+logs (11 fresh launches plus four reused logs with identical runtime, agent and input
+bytes). Eight identical restores match all 2,400 planned native ticks each and all 194 live
+readings; four changed-order controls diverge after their orders. The standalone
+`--recount` command also passes. Coverage rests on JUDGEMENT
+`tests/twwarhammer3/check_wh3_checkpoint_siege.py` `CASES` and
+`tests/twwarhammer3/checkpoint_siege/ground_fire.lua` ground aim; this establishes these
+declared cases only.
+
+The owner's manually selected tower options were recreated as source-only inputs and
+saved during construction and after completion: `manual-towers-20261025/`, at `fbdba3b`.
+Seven launches, four identical restores match 3,300 planned ticks each and 66 live
+readings; both changed controls diverge afterward. The restored runs do not reissue the
+builds. The original timed run ended without saving after the owner's clicks; the
+recreated choices, balances and construction timers match its recorded samples.
+
+Earlier evidence and retained failures: `runs/twwarhammer3/checkpoint-siege-20261025/`,
+`siege-check-20261025*/`; [log](log.md). No paid model calls were used.

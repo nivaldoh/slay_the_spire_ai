@@ -93,7 +93,13 @@ revision):
   witnesses, with cached infocard-stat differences reported separately. Command:
   `uv run --locked python tests/twwarhammer3/check_wh3_checkpoint_siege.py --output
   runs/twwarhammer3/siege-<new-name>` (15 launches, three declared cases/four saved states).
-  First complete live check in progress; no passing revision for this full suite yet.
+  Passed at `2e2acbe` (`runs/twwarhammer3/siege-final-20261025b/`): 15 completed logs
+  (11 new, four reused with identical runtime/agent/input bytes), eight identical restores
+  with zero mismatches over 2,400 planned ticks each and 194 live readings total; all four
+  changed controls diverged after their orders. Three declared cases, two maps, build
+  25961564 only. Source-only manual-tower supplement passed at `fbdba3b`: seven launches,
+  construction/completed checkpoints, four exact restores (3,300 ticks each/66 readings).
+  [Scope and limits](docs/twwarhammer3/checkpoints.md#siege-check); other cases unverified.
 
 ## Judgement calls
 

@@ -38,9 +38,32 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | scripted team | v1 (`45fe7b0`, b49) | `battle/team.py` | Four agreed $0 movement/cleanup probes passed; models, messages and native multiplayer unimplemented |
 | benchmark harness | b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
-| battle checkpoints | v1 (2026-10-25) | `battle/checkpoint.py`, `engine/checkpoint_agent.js` | [agreed check](#2026-10-25-battle-checkpoints-restore-exactly-through-a-fast-rebuild) passed at `6fdb271`; public tool v0.1.0 |
+| battle checkpoints | v1 (2026-10-25) | `battle/checkpoint.py`, `engine/checkpoint_agent.js` | Land check at `6fdb271`; [declared siege cases](#2026-10-25-siege-checkpoint-checks-pass-for-declared-cases) at `2e2acbe`; public tool v0.1.0 |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
+
+## 2026-10-25: Siege checkpoint checks pass for declared cases
+
+- `2e2acbe`, `runs/twwarhammer3/siege-final-20261025b/`: 15 distinct completed logs,
+  11 fresh launches and four reused with identical runtime, agent and full input/readings.
+  Every planned tick/reading present; all games closed. All 812 WH3/doc-link tests and
+  Ruff passed before the live check; committed-checker recount also passes.
+- Helmgart defender 1 ram/1 tower, capital attacker 2 rams/0 towers, Helmgart defender
+  1 ram/2 towers plus source-only field construction and scripted ownership changes.
+  Four checkpoints: post-spell twice, open gate during construction at550, late at2200.
+- Eight identical restores: zero mismatches over 2,400 planned native ticks each and
+  194 live readings total. Changed orders at1200/1200/650/2300 first diverge at
+  1207/1203/653/2303; no earlier drift. Raw cached-stat differences remain diagnostic
+  under the owner's agreed method (12 of194 identical-restore readings).
+- Positive witnesses: five living unit types, flying, ammo/damage, armour30→90→30 and
+  expiry; ladder climbing; open/damaged/destroyed gates; equipment counts, construction,
+  supply balances, scripted Key Building/Minor Supply Location owners in both armies.
+- Independent direct-dictionary audit passes: 36,000 planned ticks and all 435 required
+  readings present across 15 logs. Manual supplement below also passes. Eighteen known
+  test replays archived unchanged; no game or replay-aside directory remains. $0.
+- Coverage rests on JUDGEMENT `check_wh3_checkpoint_siege.py` `CASES` and
+  `checkpoint_siege/ground_fire.lua` ground aim; other cases/builds remain unverified.
+  Public-tool fixes are local, unreleased; a new release still needs its CLI smoke check.
 
 ## 2026-10-25: Recreated manual towers restore during construction and after completion
 

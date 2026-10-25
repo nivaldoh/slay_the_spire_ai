@@ -7,11 +7,9 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 ## Active work
 
 WH3 first; Spire waits behind it; post-training is secondary. Three changes await review.
-Active: checkpoint review and $0 siege restoration checks, including mixed units and a
-witnessed spell effect/expiry, equipment counts, both roles, supplies, field construction,
-capture ownership, ladders and gates. No paid controllers; one game launch at a time.
-Next: finish the declared siege cases with the agreed live numeric readings and
-source-only field builds; cached infocard differences stay separate. Manual tower check finished.
+Checkpoint review finished; all game controllers stopped. The declared siege cases and
+manual-tower checks passed; other cases remain unverified ([scope](twwarhammer3/checkpoints.md#siege-check),
+[log](twwarhammer3/log.md#2026-10-25-siege-checkpoint-checks-pass-for-declared-cases)).
 Land Battle definition: the [owner interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle)
 focuses on one battle, model knowledge, API latency and scoring; the earlier profile/checks remain proposals.
 Battle [checkpoints](twwarhammer3/checkpoints.md) restore exactly and are on main; the agreed
@@ -40,7 +38,8 @@ knowledge evidence contribute to the score is open in the interview.
 - Scripted-team agreed checks passed at recorded revisions; `wh3-model-team` has a 4/4 live
   scripted check at its tip, but model members have not played live ([branch](#branches)).
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33. A new paid cohort needs a bounded plan.
-- Battle checkpoints: verified at `6fdb271` by the agreed check; custom land battles, build 25961564.
+- Battle checkpoints: Land check at `6fdb271`, declared siege cases at `2e2acbe`; build
+  25961564 ([limits](twwarhammer3/checkpoints.md#limits)).
 
 Benchmark work waits: answer the [single-battle interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle),
 then revise the proposed profile, score, knowledge evidence and checks from those answers.
