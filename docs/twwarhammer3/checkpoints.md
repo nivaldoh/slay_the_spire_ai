@@ -49,6 +49,22 @@ and the Replays-list fix, at `6fdb271` (`checkpoint-check-20261025c/`): 0 checks
 mismatches over 2,001 ticks and 9/9 equal readings per restore; the changed restore diverged
 from tick 1303; a replay already in the list was set aside and returned unchanged.
 
+## This repository and the public release
+
+The public repository is a separate project with its own history: changes do not flow
+between them through git, and a merge, pull or push between the two does not apply.
+
+| Piece | This repository | Public repository |
+|---|---|---|
+| In-game agent | `engine/checkpoint_agent.js`, with test hooks (off unless a config is passed) | `checkpoint_agent.js`, the same code without the test hooks |
+| Player command line (`save NAME`, restore from Replays) | not here | `wh3_checkpoints.py` |
+| Harness runs, comparison, agreed check | `battle/checkpoint.py`, `check_wh3_checkpoint.py` | not there |
+
+A fix to the agent made here must be copied there by hand, leaving out the test hooks; the
+command-line tool can only be changed there. Before a new public release, run the agreed
+check here and a manual save-and-restore with the command-line tool; publishing is the
+owner's decision each time.
+
 ## Limits
 
 - Real-time (wall-clock) script timers are not reproduced; our bridge mod starts fresh
