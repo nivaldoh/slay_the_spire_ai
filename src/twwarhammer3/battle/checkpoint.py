@@ -88,7 +88,8 @@ def run(plan: dict, output: Path) -> dict:
 
     A scenario is a configured name or an inline declaration, recorded with the plan.
     Plan keys: save_at [{tick, name}], lua_at [{tick, label, lua}], readings {every, lua},
-    stop_tick. A restore's lua_at may hold only tick-1 setup and orders after the checkpoint:
+    stop_tick, lobby_steps (additional UI steps just before starting a source battle).
+    A restore's lua_at may hold only tick-1 setup and orders after the checkpoint:
     earlier inputs come from the replay.
     """
     restore = plan.get("checkpoint")
@@ -116,6 +117,12 @@ def run_in_game(plan: dict, output: Path, replay_sha256: str | None) -> dict:
     steps = REPLAY_STEPS if restore else setup.scenario_steps(
         setup.scenarios()[scenario] if isinstance(scenario, str) else scenario,
         build_id=environment["game"]["steam_build_id"])
+    if plan.get("lobby_steps"):
+        if restore:
+            raise ValueError("lobby_steps apply only to source battles")
+        start = next(i for i, step in enumerate(steps)
+                     if step.get("find") == ["start_button_frame", "button_start_battle"])
+        steps[start:start] = plan["lobby_steps"]
     hooks = ("save_at", "lua_at", "readings", "stop_tick")
     agent_config = {"lua_chunk": "twwarhammer3_battle", "checkpoints": [restore] if restore else [],
                     **{key: plan[key] for key in hooks if key in plan}}

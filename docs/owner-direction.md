@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-25 (siege coverage): also restore different counts of battering rams and siege
+  towers selected in battle setup; both player roles; different field towers/resources and
+  siege-supply amounts; Key Buildings and Minor Supply Locations held by different players;
+  ladder and gate states. These are required parts of the ongoing checkpoint review.
 - 2026-10-25 (checkpoint review): review restoration for errors and gaps, focusing on varied
   units and situations (including after a spell effect) in Siege maps. "No slop, no
   overengineering, no bloat." Agreed the expanded check: a source, two identical restores
