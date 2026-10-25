@@ -1,7 +1,7 @@
--- rxi/json.lua 0.1.2 (MIT, https://github.com/rxi/json.lua), unchanged except that
--- math.huge is spelled (1 / 0) (the game's Lua has no math.huge) and for the global
--- export at the end: the mod loader runs this file as a mod and discards its
--- return value, so the battle and frontend scripts use twwarhammer3_json.
+-- rxi/json.lua 0.1.2 (MIT, https://github.com/rxi/json.lua), with game compatibility changes:
+-- math.huge is spelled (1 / 0) (the game's Lua has no math.huge); decoding uses the original
+-- byte-indexed string.sub_lua instead of the game's UTF-8 string.sub; and the global export
+-- at the end lets battle/frontend scripts use it when the mod loader discards the return.
 
 --
 -- json.lua
@@ -145,6 +145,7 @@ end
 -- Decode
 -------------------------------------------------------------------------------
 
+local sub = string.sub_lua or string.sub
 local parse
 
 local function create_set(...)
@@ -169,7 +170,7 @@ local literal_map = {
 
 local function next_char(str, idx, set, negate)
   for i = idx, #str do
-    if set[str:sub(i, i)] ~= negate then
+    if set[sub(str, i, i)] ~= negate then
       return i
     end
   end
@@ -182,7 +183,7 @@ local function decode_error(str, idx, msg)
   local col_count = 1
   for i = 1, idx - 1 do
     col_count = col_count + 1
-    if str:sub(i, i) == "\n" then
+    if sub(str, i, i) == "\n" then
       line_count = line_count + 1
       col_count = 1
     end
@@ -209,8 +210,8 @@ end
 
 
 local function parse_unicode_escape(s)
-  local n1 = tonumber( s:sub(1, 4),  16 )
-  local n2 = tonumber( s:sub(7, 10), 16 )
+  local n1 = tonumber( sub(s, 1, 4),  16 )
+  local n2 = tonumber( sub(s, 7, 10), 16 )
    -- Surrogate pair?
   if n2 then
     return codepoint_to_utf8((n1 - 0xd800) * 0x400 + (n2 - 0xdc00) + 0x10000)
@@ -232,9 +233,9 @@ local function parse_string(str, i)
       decode_error(str, j, "control character in string")
 
     elseif x == 92 then -- `\`: Escape
-      res = res .. str:sub(k, j - 1)
+      res = res .. sub(str, k, j - 1)
       j = j + 1
-      local c = str:sub(j, j)
+      local c = sub(str, j, j)
       if c == "u" then
         local hex = str:match("^[dD][89aAbB]%x%x\\u%x%x%x%x", j + 1)
                  or str:match("^%x%x%x%x", j + 1)
@@ -250,7 +251,7 @@ local function parse_string(str, i)
       k = j + 1
 
     elseif x == 34 then -- `"`: End of string
-      res = res .. str:sub(k, j - 1)
+      res = res .. sub(str, k, j - 1)
       return res, j + 1
     end
 
@@ -263,7 +264,7 @@ end
 
 local function parse_number(str, i)
   local x = next_char(str, i, delim_chars)
-  local s = str:sub(i, x - 1)
+  local s = sub(str, i, x - 1)
   local n = tonumber(s)
   if not n then
     decode_error(str, i, "invalid number '" .. s .. "'")
@@ -274,7 +275,7 @@ end
 
 local function parse_literal(str, i)
   local x = next_char(str, i, delim_chars)
-  local word = str:sub(i, x - 1)
+  local word = sub(str, i, x - 1)
   if not literals[word] then
     decode_error(str, i, "invalid literal '" .. word .. "'")
   end
@@ -290,7 +291,7 @@ local function parse_array(str, i)
     local x
     i = next_char(str, i, space_chars, true)
     -- Empty / end of array?
-    if str:sub(i, i) == "]" then
+    if sub(str, i, i) == "]" then
       i = i + 1
       break
     end
@@ -300,7 +301,7 @@ local function parse_array(str, i)
     n = n + 1
     -- Next token
     i = next_char(str, i, space_chars, true)
-    local chr = str:sub(i, i)
+    local chr = sub(str, i, i)
     i = i + 1
     if chr == "]" then break end
     if chr ~= "," then decode_error(str, i, "expected ']' or ','") end
@@ -316,18 +317,18 @@ local function parse_object(str, i)
     local key, val
     i = next_char(str, i, space_chars, true)
     -- Empty / end of object?
-    if str:sub(i, i) == "}" then
+    if sub(str, i, i) == "}" then
       i = i + 1
       break
     end
     -- Read key
-    if str:sub(i, i) ~= '"' then
+    if sub(str, i, i) ~= '"' then
       decode_error(str, i, "expected string for key")
     end
     key, i = parse(str, i)
     -- Read ':' delimiter
     i = next_char(str, i, space_chars, true)
-    if str:sub(i, i) ~= ":" then
+    if sub(str, i, i) ~= ":" then
       decode_error(str, i, "expected ':' after key")
     end
     i = next_char(str, i + 1, space_chars, true)
@@ -337,7 +338,7 @@ local function parse_object(str, i)
     res[key] = val
     -- Next token
     i = next_char(str, i, space_chars, true)
-    local chr = str:sub(i, i)
+    local chr = sub(str, i, i)
     i = i + 1
     if chr == "}" then break end
     if chr ~= "," then decode_error(str, i, "expected '}' or ','") end
@@ -368,7 +369,7 @@ local char_func_map = {
 
 
 parse = function(str, idx)
-  local chr = str:sub(idx, idx)
+  local chr = sub(str, idx, idx)
   local f = char_func_map[chr]
   if f then
     return f(str, idx)

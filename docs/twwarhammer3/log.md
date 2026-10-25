@@ -53,10 +53,21 @@ benchmark harness revision, G1 and G2 the calibration stages.
   such a request before queuing it. A second regression reproduced handover despite a wrong
   Lua RNG seed; the agent now refuses that handover. Both fixes copied to the local public
   tool checkout; not released. Inline scenario declarations support the planned siege checks.
-- Focused component tests: 16 passed; full Ruff passed. Live siege probes follow; no siege
-  correctness claim yet.
-- Evidence: `runs/twwarhammer3/checkpoint-review-20261025/` and
-  `runs/test-scratch/checkpoint-gaps-{before,after}.txt`; $0. No new judgement markers.
+- Component tests: 693 WH3 tests and full Ruff pass after fixing the JSON decoder's mixed
+  byte/UTF-8 indices (new regression failed before); the capital siege exposed it live.
+  Public CLI also now writes metadata
+  atomically and skips malformed sidecars (3 regressions pass); draft remains local.
+- Helmgart defender, 1 ram + 1 siege tower (`02347cb`, source03): both exact restores
+  match all 2,400 planned ticks and 27 readings each; changed order at 1200 diverges at
+  1209. CP1100 has four climbing units and gate HP7548/9000; spells, flying, damage,
+  ammunition, supplies and nine capture locations witnessed. Independent `audit-source03.json`.
+- Earlier active-spell pilot: two matching restores (1,201 shared ticks, 15 readings each),
+  one after expiry (3 readings); armour 30→90→30. Construction/alternate equipment sources
+  are being developed. A fixture passed an unsupported fourth argument to CA's string.find;
+  corrected it before retesting. Invalid getters occurred before any restore.
+- Remaining: attacker role, 2-ram/2-tower variations, construction, changed Key/Minor owners
+  and gate-open state. Evidence: `runs/twwarhammer3/checkpoint-siege-20261025/` and
+  `checkpoint-review-20261025/`; $0. Whole siege suite incomplete; no new judgement markers.
 
 ## 2026-10-25: Battle checkpoints restore exactly through a fast rebuild
 

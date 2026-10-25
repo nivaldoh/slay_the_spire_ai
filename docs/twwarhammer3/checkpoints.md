@@ -70,5 +70,10 @@ owner's decision each time.
 - Real-time (wall-clock) script timers are not reproduced; our bridge mod starts fresh
   after a restore. The loading screen shows the starting armies (parked by the owner).
 - Readings through Lua lag the simulation while it runs faster than 1x; compare them at 1x.
-- Tested in custom land battles only; the evidence and its history are in the
-  [log](log.md) (2026-10-25) and `~/wh3-checkpoint-lab/FINDINGS.md`.
+- The complete Land check has passed. One siege case passes the expanded method: Helmgart
+  defender with one ram/one siege tower, saved after spell expiry with climbing units and a
+  damaged gate; both exact restores match 2,400 planned ticks and 27 readings, and the
+  changed control diverges after its order. The full siege suite remains incomplete:
+  alternate equipment counts, attacker role, construction, changed Key/Minor owners and
+  gate-open state remain. Evidence:
+  `runs/twwarhammer3/checkpoint-siege-20261025/`; [log](log.md).
