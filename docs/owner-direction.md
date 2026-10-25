@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-25 (siege readings): chose "Use live engine values (Recommended)" after the
+  field restore matched native checksums but four cached infocard-stat readings differed.
+  Compare numeric live morale/speed readings and retain armour/spell-effect witnesses;
+  report cached infocard differences separately. The speed getters describe movement
+  capability; this choice does not establish fatigue-adjusted effective speed.
 - 2026-10-25 (siege coverage): also restore different counts of battering rams and siege
   towers selected in battle setup; both player roles; different field towers/resources and
   siege-supply amounts; Key Buildings and Minor Supply Locations held by different players;

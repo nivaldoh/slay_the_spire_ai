@@ -70,10 +70,28 @@ owner's decision each time.
 - Real-time (wall-clock) script timers are not reproduced; our bridge mod starts fresh
   after a restore. The loading screen shows the starting armies (parked by the owner).
 - Readings through Lua lag the simulation while it runs faster than 1x; compare them at 1x.
-- The complete Land check has passed. One siege case passes the expanded method: Helmgart
-  defender with one ram/one siege tower, saved after spell expiry with climbing units and a
-  damaged gate; both exact restores match 2,400 planned ticks and 27 readings, and the
-  changed control diverges after its order. The full siege suite remains incomplete:
-  alternate equipment counts, attacker role, construction, changed Key/Minor owners and
-  gate-open state remain. Evidence:
-  `runs/twwarhammer3/checkpoint-siege-20261025/`; [log](log.md).
+- The Land check has passed at its recorded revision. The expanded siege check is still
+  running; its results do not extend to other maps, armies or equipment combinations.
+
+## Siege check
+
+`tests/twwarhammer3/check_wh3_checkpoint_siege.py` runs three declared cases: Helmgart
+defender with one ram/one siege tower, capital attacker with two rams/no towers, and
+Helmgart defender with one ram/two siege towers plus field construction and ownership
+changes. Each saved state receives two identical restores and one changed-order control.
+The field case saves an intact open gate during construction and a late state with a
+destroyed gate and changed Key Building/Minor Supply Location owners. Climbing ladders,
+mixed units, ammunition, damage and a spell's armour effect and expiry require positive
+witnesses. Ownership changes use the game's script API; normal capturing is not tested.
+
+The owner agreed numeric live morale/speed readings and armour/spell witnesses on
+2026-10-25, with cached infocard differences reported separately. All other readings and
+every planned native checksum must match exactly. The speed getters describe movement
+capability; the probe did not establish fatigue-adjusted effective speed. Raw cached
+stats remain in the evidence: an earlier open-gate restore failed the original strict
+comparison at four of 38 readings despite matching every native checksum and every
+other reading field. The native stat-list getter has a refresh cache exceeding two seconds;
+this supports a cache-age explanation without proving every stat difference harmless.
+
+Evidence: `runs/twwarhammer3/checkpoint-siege-20261025/`; [log](log.md). The complete check
+with numeric live readings has no passing revision yet.

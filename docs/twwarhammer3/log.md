@@ -44,30 +44,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 ## 2026-10-25: Checkpoint review and siege checks in progress
 
-- Owner requested varied-unit siege restoration, including after spell effects; agreed the
-  source/two identical/one changed restore method with positive state/effect witnesses.
-- Review reproduced false passes for missing ticks/readings; strengthened the pass rule to
-  require the complete planned trace and successful completion. Existing Land evidence
-  `checkpoint-check-20261025c/` still passes the stricter recount.
-- A mocked completed tick reproduced a save during rebuild aborting the restore; reject
-  such a request before queuing it. A second regression reproduced handover despite a wrong
-  Lua RNG seed; the agent now refuses that handover. Both fixes copied to the local public
-  tool checkout; not released. Inline scenario declarations support the planned siege checks.
-- Component tests: 693 WH3 tests and full Ruff pass after fixing the JSON decoder's mixed
-  byte/UTF-8 indices (new regression failed before); the capital siege exposed it live.
-  Public CLI also now writes metadata
-  atomically and skips malformed sidecars (3 regressions pass); draft remains local.
-- Helmgart defender, 1 ram + 1 siege tower (`02347cb`, source03): both exact restores
-  match all 2,400 planned ticks and 27 readings each; changed order at 1200 diverges at
-  1209. CP1100 has four climbing units and gate HP7548/9000; spells, flying, damage,
-  ammunition, supplies and nine capture locations witnessed. Independent `audit-source03.json`.
-- Earlier active-spell pilot: two matching restores (1,201 shared ticks, 15 readings each),
-  one after expiry (3 readings); armour 30→90→30. Construction/alternate equipment sources
-  are being developed. A fixture passed an unsupported fourth argument to CA's string.find;
-  corrected it before retesting. Invalid getters occurred before any restore.
-- Remaining: attacker role, 2-ram/2-tower variations, construction, changed Key/Minor owners
-  and gate-open state. Evidence: `runs/twwarhammer3/checkpoint-siege-20261025/` and
-  `checkpoint-review-20261025/`; $0. Whole siege suite incomplete; no new judgement markers.
+- Agreed source/two identical/one changed restores, with positive unit/spell witnesses;
+  added equipment counts, roles, field resources/supplies/owners, ladders and gates.
+- Fixed save-during-rebuild and wrong-seed handover (two regressions), incomplete-trace
+  false passes, and UTF-8 JSON decoding exposed by the capital siege (failed-before check).
+  Existing Land evidence still passes the stricter recount. All 792 WH3/doc-link tests
+  and Ruff pass before the live suite; focused regressions reject missing state witnesses.
+- Public CLI draft writes metadata atomically and skips malformed records (3 tests pass);
+  agent fixes copied by hand. Independent review found no further issue; not released.
+- Original strict checks: Helmgart defender 1 ram/1 tower (source03), capital attacker
+  2 rams/0 towers (source10); each exact pair matches all 2,400 planned ticks and 27 readings.
+  Changed orders at 1200 diverge at 1209/1203. Spell armour 30→90→30, flying, damage,
+  ammunition and supplies witnessed; source03CP1100 also has climbing and gate HP7548/9000.
+- Field source11 has 1 ram/2 towers; CP550 has climbing, open intact gate and two towers
+  constructing; CP2200 has climbing, destroyed gate and changed Key/Minor owners.
+  Late restore matches 2,400 ticks/5 readings. Open restore matches all checksums, but four
+  of 38 readings differ in cached infocard stats only; original strict failure retained.
+- Owner chose live numeric morale/speed and armour/spell witnesses; cached stats reported
+  separately. Capability speeds do not establish fatigue-adjusted effective speed. The
+  complete 15-launch check with these readings is next; no full-suite passing revision yet.
+- Evidence: `runs/twwarhammer3/checkpoint-siege-20261025/`, `checkpoint-review-20261025/`;
+  $0. Three declared cases are marked as an agent judgement; no all-sieges claim.
 
 ## 2026-10-25: Battle checkpoints restore exactly through a fast rebuild
 

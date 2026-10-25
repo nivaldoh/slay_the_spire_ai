@@ -87,10 +87,13 @@ revision):
   (fails on the parent of `b536ae6`); agreed 2026-10-21; passed at `080be70`. No game
   execution claim; which result counts is unchanged.
 - WH3 siege checkpoints: a source, two restores with identical later orders and one with a
-  changed order; require every planned native checksum and Lua reading, witnessed tested
-  unit states and a spell taking effect and expiring. Agreed 2026-10-25; implementation and
-  first live check in progress. No passing siege revision yet; command/results will be
-  recorded here when the check is ready.
+  changed order; require every planned native checksum and live reading, witnessed tested
+  unit states and a spell taking effect and expiring. Agreed 2026-10-25; owner then chose
+  "Use live engine values (Recommended)": numeric morale/speed readings, armour and spell
+  witnesses, with cached infocard-stat differences reported separately. Command:
+  `uv run --locked python tests/twwarhammer3/check_wh3_checkpoint_siege.py --output
+  runs/twwarhammer3/siege-<new-name>` (15 launches, three declared cases/four saved states).
+  First complete live check in progress; no passing revision for this full suite yet.
 
 ## Judgement calls
 
