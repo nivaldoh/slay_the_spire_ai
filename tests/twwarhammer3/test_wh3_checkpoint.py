@@ -106,3 +106,41 @@ def test_check_requires_manifest_completion_and_allows_normal_detach(tmp_path):
     assert check.assess(output)["pass"]
     (output / "source/manifest.json").write_text(json.dumps({"closed": True, "completed": False}))
     assert not check.assess(output)["pass"]
+
+
+@pytest.mark.parametrize("interrupt_after_move", [False, True])
+@pytest.mark.parametrize("phase", ["aside", "return"])
+def test_only_replay_finishes_returning_bystanders_after_interrupt(
+        tmp_path, monkeypatch, interrupt_after_move, phase):
+    replays = tmp_path / "replays"
+    replays.mkdir()
+    contents = {"checkpoint.replay": b"checkpoint", **{
+        f"bystander-{i}.replay": f"original replay {i}".encode() for i in range(4)}}
+    for name, data in contents.items():
+        (replays / name).write_bytes(data)
+    monkeypatch.setattr(checkpoint.runtime, "user_dir", lambda: tmp_path)
+    aside = replays / "checkpoint-aside"
+    original_move = checkpoint.shutil.move
+    interruption = KeyboardInterrupt("interrupted returning replays")
+    interrupted = False
+
+    def move(source, destination):
+        nonlocal interrupted
+        in_phase = Path(destination if phase == "aside" else source).parent == aside
+        if in_phase and not interrupted:
+            interrupted = True
+            if interrupt_after_move:
+                original_move(source, destination)
+            raise interruption
+        return original_move(source, destination)
+
+    monkeypatch.setattr(checkpoint.shutil, "move", move)
+    body_entered = False
+    with pytest.raises(KeyboardInterrupt) as raised:
+        with checkpoint.only_replay("checkpoint"):
+            body_entered = True
+            assert list(replays.glob("*.replay")) == [replays / "checkpoint.replay"]
+    assert body_entered is (phase == "return")
+    assert raised.value is interruption
+    assert {p.name: p.read_bytes() for p in replays.glob("*.replay")} == contents
+    assert not aside.exists()

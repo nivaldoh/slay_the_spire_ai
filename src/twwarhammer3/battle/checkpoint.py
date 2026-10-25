@@ -73,14 +73,27 @@ def only_replay(name: str):
     if any(aside.iterdir()):
         raise RuntimeError(f"replays from an interrupted run are still in {aside}")
     others = [path for path in replays.glob("*.replay") if path != target]
-    for path in others:
-        shutil.move(path, aside / path.name)
     try:
+        for path in others:
+            shutil.move(path, aside / path.name)
         yield sha256(target)
     finally:
-        for path in others:
-            shutil.move(aside / path.name, path)
-        aside.rmdir()
+        interrupted = None
+        while True:
+            try:
+                for path in others:
+                    displaced = aside / path.name
+                    if displaced.exists():
+                        shutil.move(displaced, path)
+                    elif not path.exists():
+                        raise FileNotFoundError(displaced)
+                if aside.exists():
+                    aside.rmdir()
+                break
+            except KeyboardInterrupt as error:
+                interrupted = error
+        if interrupted is not None:
+            raise interrupted
 
 
 def run(plan: dict, output: Path) -> dict:
