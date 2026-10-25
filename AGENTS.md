@@ -69,6 +69,16 @@ revision):
   `uv run --locked pytest -ra tests/twwarhammer3/test_wh3_protocol.py
   tests/twwarhammer3/test_wh3_play.py::test_illegal_scripted_orders_are_counted_and_not_sent`;
   agreed 2026-10-19; passed at `6291377`. Play-loop observations are simulated.
+- WH3 battle checkpoints restore exactly: a source battle (tick-1 battle script, orders
+  before and after a checkpoint at tick 1200), two restores with the same later orders and
+  one with a changed order; per-tick native checksums and Lua readings:
+  `uv run --locked python tests/twwarhammer3/check_wh3_checkpoint.py --output
+  runs/twwarhammer3/checkpoint-check-<new-name>` (pass rule offline:
+  `uv run --locked pytest -ra tests/twwarhammer3/test_wh3_checkpoint.py`); agreed
+  2026-10-25; passed at `7b1e2ed` (4 launches, `runs/twwarhammer3/checkpoint-check-20261025b/`:
+  0 mismatches over 2,000/2,001 ticks and 9/9 readings per restore, the changed one diverged
+  at 1303). Custom land battle, build 25961564; no claim for real-time script timers, our
+  bridge mod's state, the loading screen, other battle types or builds.
 - WH3 engine ending kept after a late controller failure (acknowledge or `close()`):
   `uv run --locked pytest -ra
   tests/twwarhammer3/test_wh3_play.py::test_a_controller_failure_after_the_ending_keeps_the_engine_result`
@@ -168,13 +178,16 @@ src/twwarhammer3/  Total War: WARHAMMER III custom battles
   protocol.py      Order types and validation, the error taxonomy; observations stay dicts
   engine/          runtime (pins, pack build, mod list, launch), startup (video skip), pack
                    (PFH5), mailbox (bridge files; its docstring is the observation
-                   reference), doctor, windows_capture.py (passive stills, Windows Python)
+                   reference), doctor, windows_capture.py (passive stills, Windows Python),
+                   checkpoint_agent.js and checkpoint_frida.py (the checkpoint Frida agent)
   mod/             Lua scripts packed into the game: battle, frontend menus, and in _lib/
                    UI steps, JSON and twwarhammer3_imagery.lua (the stills camera)
   assets/          The blank startup clip and its MIT license
   battle/          play.py (job loop: launch, setup, episodes, rematch, register row),
                    setup.py (scenarios with `base` inheritance, lobby steps, benchmark
-                   checks; its docstring is the scenario field reference), controllers.py
+                   checks; its docstring is the scenario field reference), checkpoint.py
+                   (battle checkpoints: save, fast checked rebuild, live handover),
+                   controllers.py
                    (policy names, model prompts, rotation, outside controllers), llm.py
                    (direct API-model controller: llm, llm_rules), commander.py
                    (asynchronous API model over skills), skills.py (per-unit skill
@@ -282,7 +295,9 @@ git grep -n JUDGEMENT -- ':!AGENTS.md' ':!docs/judgement.md'   # marked judgemen
 - `scripts/audit_ppo_training.py` and `scripts/audit_language_training.py` are read-only.
   Run them only on stopped runs, and write their reports outside the run directory.
 - WH3 battles always run unpaused at 1x speed, including diagnostic probes and smoke
-  tests. Never pause or slow the battle to give a policy more thinking time.
+  tests. Never pause or slow the battle to give a policy more thinking time. One exception
+  (owner, 2026-10-25): a checkpoint restore may rebuild the battle faster than 1x before
+  its handover; from the handover on, 1x.
 
 ## Architecture
 
