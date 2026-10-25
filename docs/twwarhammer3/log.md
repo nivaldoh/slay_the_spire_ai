@@ -42,6 +42,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-25: Recreated manual towers restore during construction and after completion
+
+- The owner built two towers during `siege-check-20261025c/`'s first restore. Those new
+  inputs invalidate its identical-order comparison; the timed run ended without saving
+  after the clicks. Recreated the recorded slot/option choices from its tick-1100 parent.
+- Source-only builds: slot1/option2 (2,000 supplies), slot0/option1 (500). The recreated
+  tick-2050 choices, supplies and timers match the manual readings; original click ticks
+  were inferred, not recorded. Saved construction at2050 and completed towers at3000.
+- `fbdba3b`, seven launches: both identical restores at each checkpoint match all 3,300
+  planned native ticks, 26/26 and 7/7 live readings respectively (66 readings total).
+  No build commands were reissued. Changed orders at2150/3100 diverge at2154/3105.
+- Independent `audit-2050.json` and `audit-3000.json` pass; cached stat differences retained
+  separately. All seven games closed, no replay-aside directory remains; $0.
+  Evidence: `runs/twwarhammer3/manual-towers-20261025/`. These recreated choices only;
+  the remaining broad siege suite is still incomplete.
+
 ## 2026-10-25: Checkpoint review and siege checks in progress
 
 - Agreed source/two identical/one changed restores, with positive unit/spell witnesses;

@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-25 (manual towers): built two field towers during a restore and asked to restore
+  that state; then asked whether to build them manually or have the assistant do it.
+  Assistant recreates the recorded choices for the check; the original timed run had
+  ended without a checkpoint after those clicks.
 - 2026-10-25 (siege readings): chose "Use live engine values (Recommended)" after the
   field restore matched native checksums but four cached infocard-stat readings differed.
   Compare numeric live morale/speed readings and retain armour/spell-effect witnesses;

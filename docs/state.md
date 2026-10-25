@@ -10,8 +10,8 @@ WH3 first; Spire waits behind it; post-training is secondary. Three changes awai
 Active: checkpoint review and $0 siege restoration checks, including mixed units and a
 witnessed spell effect/expiry, equipment counts, both roles, supplies, field construction,
 capture ownership, ladders and gates. No paid controllers; one game launch at a time.
-Next: run the complete siege check with the owner's agreed live numeric readings;
-cached infocard differences remain visible separately.
+Next: finish the declared siege cases with the agreed live numeric readings and
+source-only field builds; cached infocard differences stay separate. Manual tower check finished.
 Land Battle definition: the [owner interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle)
 focuses on one battle, model knowledge, API latency and scoring; the earlier profile/checks remain proposals.
 Battle [checkpoints](twwarhammer3/checkpoints.md) restore exactly and are on main; the agreed

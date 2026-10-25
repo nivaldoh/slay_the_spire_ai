@@ -1,4 +1,4 @@
--- Deterministic fixture: two field towers, then script-API ownership transfers.
+-- Deterministic script-API ownership transfers; source-only tower inputs are separate.
 -- Transfers establish held-by-different-armies states, not normal capture mechanics.
 local attack_side = ATTACK_SIDE
 local transfer_ownership = TRANSFER_OWNERSHIP
@@ -7,7 +7,6 @@ assert(type(transfer_ownership) == "boolean", "TRANSFER_OWNERSHIP must be a Lua 
 local local_side = bm:local_alliance()
 local local_defender = local_side ~= attack_side
 local attacker = bm:alliances():item(attack_side):armies():item(1)
-local local_army = bm:alliances():item(local_side):armies():item(1)
 checkpoint_siege_actions = {}
 
 local function context(expression)
@@ -20,37 +19,6 @@ local function action(name, fn)
     local ok, err = pcall(fn, row)
     row.ok = ok
     if not ok then row.error = tostring(err) end
-end
-
-if local_defender then
-    bm:callback(function()
-        for index = 0, 1 do
-            action("build_tower", function(row)
-                local towers = 'ToggleableSlotList(PlayerArmyContext).Filter(TypeString == "tower")'
-                assert(context(towers .. ".Size") >= 2, "two tower slots required")
-                local slot = towers .. ".At(" .. index .. ")"
-                local buildable = slot .. ".BuildablesList.FirstContext(Index == " .. index .. ")"
-                assert(context(slot .. ".BuildablesList.Count(Index == " .. index .. ")") == 1,
-                       "requested tower option missing")
-                row.slot = index
-                row.option = index
-                row.x = context(slot .. ".WorldPosition.x")
-                row.z = context(slot .. ".WorldPosition.z")
-                row.supplies_before = context("PlayerArmyContext.GlobalCurrency")
-                row.index_before = context(slot .. ".CurrentIndex")
-                row.cost = context(buildable .. ".Cost(" .. local_army:unique_id() .. ")")
-                assert(row.index_before == -1, "tower slot already occupied")
-                -- The game's radial-menu PrimaryAction uses an expression with effects.
-                context(buildable .. ".PrimaryAction")
-                row.supplies_after = context("PlayerArmyContext.GlobalCurrency")
-                row.index_after = context(slot .. ".CurrentIndex")
-                row.constructing = context(slot .. ".IsConstructionInProgress")
-                row.remaining_s = context(slot .. ".ConstructionTimeRemainingSeconds")
-            end)
-        end
-    end, 10000, "checkpoint_siege_build_towers")
-
-
 end
 
 local function transfer(name, key_fragment)

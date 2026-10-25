@@ -82,7 +82,8 @@ changes. Each saved state receives two identical restores and one changed-order 
 The field case saves an intact open gate during construction and a late state with a
 destroyed gate and changed Key Building/Minor Supply Location owners. Climbing ladders,
 mixed units, ammunition, damage and a spell's armour effect and expiry require positive
-witnesses. Ownership changes use the game's script API; normal capturing is not tested.
+witnesses. Tower builds are source-only inputs and are not reissued during restores.
+Ownership changes use the game's script API; normal capturing is not tested.
 
 The owner agreed numeric live morale/speed readings and armour/spell witnesses on
 2026-10-25, with cached infocard differences reported separately. The spell target's

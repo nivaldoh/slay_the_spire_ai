@@ -11,8 +11,8 @@ must cause later divergence. Raw cached infocard differences remain separate dia
 Witnesses require actual spells, unit states, siege equipment and field-state changes.
 Cached infocard text is diagnostic. Armour is checked on the tested spell target;
 all other fields compare exactly.
-The field fixture builds towers and transfers ownership through the script API; it does
-not test normal capturing. Recount reads evidence only and never rewrites its verdict.
+Source-only inputs build field towers; tick-1 scripts transfer ownership through the API
+without testing normal capturing. Recount reads evidence only and never rewrites its verdict.
 Walk/run speed readings are engine capabilities, not instantaneous movement velocity.
 """
 import argparse
@@ -74,7 +74,8 @@ def source_plan(name: str, case: dict) -> dict:
         lua_at += [{"tick": 1, "label": "field_setup", "lua": fixture("field.lua").replace(
             "ATTACK_SIDE", attack_side).replace("TRANSFER_OWNERSHIP", "true")},
             {"tick": 1, "label": "gate_exit", "lua": fixture("gate_exit.lua").replace(
-                "ATTACK_SIDE", attack_side)}]
+                "ATTACK_SIDE", attack_side)},
+            {"tick": 100, "label": "build_field_towers", "lua": fixture("build.lua")}]
     reading = ("local battle = (function()\n" + land.READING + "\nend)()\n"
                + "battle = twwarhammer3_json.decode(battle)\n" + fixture("live_units.lua") + "\n"
                + "local siege = (function()\n" + fixture("reading.lua") + "\nend)()\n"
@@ -208,7 +209,8 @@ def checkpoint_witnesses(values: dict[int, dict], tick: int, case: dict, state: 
     return checks
 
 
-def witnesses(values: dict[int, dict], tick: int, case: dict, state: str) -> dict:
+def witnesses(values: dict[int, dict], tick: int, case: dict, state: str,
+              source_events: list[dict] | None = None) -> dict:
     expected_states = ("gate-open", "late") if case["field"] else ("post-spell",)
     if state not in expected_states:
         raise ValueError(f"expected one of {expected_states}, got {state}")
@@ -257,11 +259,16 @@ def witnesses(values: dict[int, dict], tick: int, case: dict, state: str) -> dic
                                  for a in siege["armies"]]}
     if case["field"]:
         actions = [action for v in values.values() for action in v["siege"].get("actions", [])]
-        builds = {a.get("slot"): a for a in actions if a.get("event") == "build_tower"}
+        builds = {a.get("slot"): a for event in source_events or []
+                  if event.get("event") == "lua" and event.get("label") == "build_field_towers"
+                  and event.get("tick") == 100 and event["tick"] <= tick
+                  for a in event["value"].get("actions", [])
+                  if a.get("event") == "build_tower"}
         checks["two_tower_builds_spent_supplies"] = set(builds) == {0, 1} and all(
-            a.get("ok") is True and a.get("cost", 0) > 0
+            a.get("ok") is True and a.get("option") == slot
+            and a.get("cost") == {0: 1400, 1: 500}[slot]
             and a["supplies_before"] - a["supplies_after"] == a["cost"]
-            for a in builds.values())
+            for slot, a in builds.items())
         checks["fixture_actions_succeeded"] = bool(actions) and all(
             a.get("ok") is True for a in actions)
         defender = next(a for a in siege["armies"] if a["alliance"] == 0)
@@ -416,7 +423,7 @@ def assess_case(source: Path, restores: list[Path], changed: Path, checkpoint_ti
     except ProtocolError as error:
         result["source_menu"] = {"pass": False, "error": str(error)}
     if result["runs"][0]["complete"]["pass"]:
-        result["witnesses"] = witnesses(values, checkpoint_tick, declaration, state)
+        result["witnesses"] = witnesses(values, checkpoint_tick, declaration, state, rows[0])
     else:
         result["witnesses"] = {"pass": False, "error": "source trace incomplete"}
     result["pass"] = (result["two_restores"] and result["source_saved"]
