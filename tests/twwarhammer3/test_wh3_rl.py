@@ -619,6 +619,8 @@ def test_synthetic_v2_makes_the_spearmen_distance_uninformative(synthetic):
         assert 0.3 <= sum(disagree) / len(mine) <= 0.7
         # An f1-only reader is right exactly where the classes agree.
         assert sum(not x for x in disagree) / len(mine) <= 0.7
+        near = sum(t["provenance"]["class"] == "near" for t in mine) / len(mine)
+        assert 0.3 <= near <= 0.7
     for task in tasks:
         guns = next(u for u in task["context"]["friendly"] if u["id"] == "f2")
         enemy = task["context"]["enemy"][0]

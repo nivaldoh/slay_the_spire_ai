@@ -311,9 +311,11 @@ def synthetic_tasks(templates: dict[str, list[tuple[str, dict]]], reference: dic
         for index in range(counts[split]):
             rng = random.Random(f"synthetic:{seed}:{split}:{index}")
             disagree = rng.random() < disagree_share if disagree_share else None
+            # v2 draws the class once per task, so rejection cannot skew the class balance.
+            fixed = ("near" if rng.random() < 0.5 else "far") if disagree is not None else None
             for _ in range(200000):
                 job, template = rng.choice(templates[split])
-                label = "near" if rng.random() < 0.5 else "far"
+                label = fixed or ("near" if rng.random() < 0.5 else "far")
                 d = rng.uniform(*(near if label == "near" else far))
                 bearing = rng.uniform(0, 360)
                 context = synthetic_context(reference, play.context_projection(
