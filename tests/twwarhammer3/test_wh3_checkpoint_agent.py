@@ -107,3 +107,33 @@ assert.equal(battle.failed, false);
 assert.equal(battle.handedOff, true);
 assert.equal(messages.find(row => row.event === 'restored').lua_seed_matches, true);
 ''')
+
+
+def test_a_rebuilt_checksum_that_differs_fails_once_and_silences_later_hooks():
+    agent_checks('''
+const postTick = hooks.get(Number(BUILD.post_tick[0]));
+const fieldOf = env.add;
+let current = 5;
+env.add = offset => offset !== ENV.checksums ? fieldOf(offset) : {readPointer: () => ({
+    add: o => { assert.equal(o, 0x48); return {readPointer: () => ({
+        isNull: () => false, add: f => ({readU32: () => f === 0x18 ? 100 : current})})}; }})};
+const checkpointData = {add: () => ({readU32: () => 5})};
+battle = {env, tick: 99, seed: 7, speed: REBUILD_SPEED,
+          restore: {name: 'cp', tick: 1200, data: checkpointData}, handedOff: false,
+          failed: false};
+messages.length = 0;
+postTick.onEnter([env]);
+assert.deepEqual(messages, [{event: 'tick', tick: 100, checksum: 5}]);
+messages.length = 0;
+current = 6;
+postTick.onEnter([env]);
+assert.equal(messages.length, 2);
+assert.equal(messages[1].event, 'error');
+assert.match(messages[1].message, /differs from the checkpoint/);
+assert.equal(battle.failed, true);
+messages.length = 0;
+postTick.onEnter([env]);
+step.onLeave.call({session}, {readU8: () => 1});
+assert.equal(messages.length, 0);
+assert.equal(battle.handedOff, false);
+''')
