@@ -2,8 +2,9 @@
 
 One structure for every method: a task is one public context with its scored candidates and
 a reward per candidate; a task set lists tasks with their splits; a method changes only the
-update rule (``METHODS``); training, evaluation and comparison are shared. The first and only
-method, ``exact_table@1``, maximises the exact expected reward over audited reward tables.
+update rule (``METHODS``); training, evaluation and comparison are shared. ``exact_table@1``
+maximises the exact expected reward over audited reward tables; ``exact_table_log@1``, the
+owner's "simplest fix" for its collapse, maximises the log of the same expected reward.
 The model never runs beside the game. Torch is imported lazily: game phases that import this
 module never initialise CUDA. Nothing here is verified beyond its tests.
 """
@@ -894,13 +895,17 @@ def compare(paths: list[Path], split: str) -> str:
             continue
         if len({json.dumps(e[field], sort_keys=True) for e in evals}) > 1:
             raise ValueError(f"evaluations differ in {field}")
-    lines = [f"split {split}: adapter | method | updates | launches | argmax min/max | mass "
-             f"| uniform | index0 | majority | KL"]
+    lines = [f"split {split}: adapter | method | config | start | training set | updates | "
+             f"launches | train s | argmax min/max | mass | uniform | index0 | majority | KL"]
     for path, e in zip(paths, evals):
         m = e["metrics"]["splits"][split]
-        launches = (e["training"] or {}).get("launches", 0)
+        training = e["training"] or {}
+        start = "/".join(Path(e["start_adapter"]).parts[-2:])
         lines.append(f"{path.parent.name}/{e['adapter'].split('/')[-1]} | {e['method']} | "
-                     f"{e['updates']} | {launches} | {m['argmax_accuracy_min']:.3f}/"
+                     f"{(e['config_hash'] or '-')[:12]} | {start} | "
+                     f"{(training.get('hash') or '-')[:12]} | {e['updates']} | "
+                     f"{training.get('launches', 0)} | {e.get('train_wall_s', 0):.0f} | "
+                     f"{m['argmax_accuracy_min']:.3f}/"
                      f"{m['argmax_accuracy_max']:.3f} | {m['mass']:.3f} | {m['uniform']:.3f} | "
                      f"{m['index0']:.3f} | {m['majority_class']:.3f} | "
                      f"{e['kl_from_start']:.4f}")
@@ -951,10 +956,10 @@ def recount(path: Path, tasks_path: Path | None = None) -> dict:
                               for a, b in zip(records, records[1:]))
         checks["no_held_out"] = not any(set(r["tasks"]) & held_out for r in records)
         checks["ordinals"] = [r["ordinal"] for r in records] == list(range(len(records)))
-        start = json.loads((path / "adapter-0000.json").read_text()) if (
-            path / "adapter-0000.json").exists() else None
-        checks["start"] = start is None or records[0]["adapter_before"] == start["adapter"][
-            "tensors"]
+        start_path = (path / "adapter-0000.json" if plan["start"] == "fresh"
+                      else Path(plan["start"]))
+        start = json.loads(start_path.read_text())
+        checks["start"] = records[0]["adapter_before"] == start["adapter"]["tensors"]
         final = json.loads((path / "adapter-final.json").read_text())
         checks["final"] = records[-1]["adapter_after"] == final["adapter"]["tensors"]
         lines = [f"run {path.name}: {len(records)} updates, "

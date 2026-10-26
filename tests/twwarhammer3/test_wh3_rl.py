@@ -243,6 +243,76 @@ def test_exact_table_log_gradient_and_loss_equal_a_hand_computation(permutations
     assert plain_scorer.model.theta[2].item() - (-5.0) < 1e-4
 
 
+class BiasedScorer(ScalarScorer):
+    """Slot k scores theta[p[k]] + bias[k]: the distribution changes with the ordering, so a
+    mean over orderings of log J differs from the log of their mean."""
+
+    BIAS = [0.7, -0.4, 0.1]
+
+    def slot_log_probs(self, task, permutation):
+        import torch
+
+        scores = torch.stack([self.model.theta[permutation[k]] + self.BIAS[k]
+                              for k in range(len(permutation))])
+        return torch.log_softmax(scores, dim=0)
+
+
+def hand_objective(theta, tasks, permutations, log):
+    """The declared objective and its gradient for BiasedScorer, written out by hand:
+    (1/|S|) Σ_t (1/K) Σ_p f(J_tp), J_tp = Σ_c π_p(c) r_c, f the identity or log."""
+    signal = [t for t in tasks if len(set(t["rewards"])) > 1]
+    value, gradient = 0.0, [0.0] * len(theta)
+    for task in signal:
+        perms = permutations[task["hash"]]
+        for p in perms:
+            scores = [theta[p[k]] + BiasedScorer.BIAS[k] for k in range(len(p))]
+            total = sum(math.exp(s) for s in scores)
+            pi = [0.0] * len(theta)
+            for k, s in enumerate(scores):
+                pi[p[k]] = math.exp(s) / total
+            J = sum(q * r for q, r in zip(pi, task["rewards"]))
+            weight = 1 / (len(perms) * len(signal))
+            value += weight * (math.log(J) if log else J)
+            for c in range(len(theta)):
+                d = pi[c] * (task["rewards"][c] - J)
+                gradient[c] += weight * (d / J if log else d)
+    return value, gradient
+
+
+@pytest.mark.parametrize("name,log", [("exact_table@1", False), ("exact_table_log@1", True)])
+def test_each_method_matches_its_hand_objective_on_several_tasks_and_orderings(name, log):
+    # Two signal tasks and one flat one; orderings change the distribution. Catches a wrong
+    # per-task divisor and a log of the mean over orderings (review, 2026-10-26).
+    torch = pytest.importorskip("torch")
+    theta = [0.3, -0.2, 0.5]
+    tasks = [toy_task(3, [1, 0, 1]), toy_task(4, [0, 1, 0]), toy_task(5, [1, 1, 1])]
+    permutations = {tasks[0]["hash"]: [[1, 2, 0], [0, 2, 1], [1, 0, 2]],
+                    tasks[1]["hash"]: [[2, 0, 1], [0, 1, 2]], tasks[2]["hash"]: [[0, 1, 2]]}
+    value, gradient = hand_objective(theta, tasks, permutations, log)
+    scorer = BiasedScorer(theta)
+    optimizer = torch.optim.SGD(scorer.model.parameters(), lr=1e-3)
+    record = rl.METHODS[name](scorer, optimizer, tasks, permutations, {})
+    change = (scorer.model.theta.detach() - torch.tensor(theta, dtype=torch.float64)).tolist()
+    assert [c / 1e-3 for c in change] == pytest.approx(gradient, rel=1e-9)
+    assert record["loss"] == pytest.approx(-value, rel=1e-12)
+    assert len(record["signal_tasks"]) == 2
+
+
+@pytest.mark.parametrize("name,log", [("exact_table@1", False), ("exact_table_log@1", True)])
+def test_the_first_order_prediction_matches_the_measured_change_in_size(name, log):
+    # The sign alone passes an after-objective computed in the wrong units; the size does not.
+    torch = pytest.importorskip("torch")
+    tasks = [toy_task(3, [1, 0, 1]), toy_task(4, [0, 1, 0])]
+    permutations = {tasks[0]["hash"]: [[1, 2, 0]], tasks[1]["hash"]: [[2, 0, 1]]}
+    scorer = BiasedScorer([0.3, -0.2, 0.5])
+    optimizer = torch.optim.SGD(scorer.model.parameters(), lr=1e-3)
+    record = rl.METHODS[name](scorer, optimizer, tasks, permutations, {})
+    assert record["measured_change"] == pytest.approx(record["predicted_change"], rel=1e-2)
+    _, gradient = hand_objective([0.3, -0.2, 0.5], tasks, permutations, log)
+    assert record["predicted_change"] == pytest.approx(1e-3 * sum(g * g for g in gradient),
+                                                       rel=1e-6)
+
+
 def test_rendering_prints_the_nearest_enemy_and_each_slots_candidate_line():
     context = {"time_ms": 120100, "remaining_ms": 900000, "friendly": [
         {"id": "f1", "type": "spear", "class": "infantry", "men": 90, "men0": 90, "hp": 1,
@@ -323,7 +393,8 @@ def test_compare_refuses_evaluations_that_differ_in_a_listed_field(tmp_path):
     base = {"task_set": "t", "start_adapter": "a/adapter-0000.json", "rendering_version": 1,
             "candidates_version": 1, "temperature": 1.0, "k_eval": {"x": 3},
             "permutation_rule": "r", "token_cap": 1536, "evaluation_version": 1, "updates": 3,
-            "training": {"launches": 0}, "method": "exact_table@1", "kl_from_start": 0.1,
+            "training": {"launches": 0, "hash": "abcdef0123456789"}, "method": "exact_table@1",
+            "kl_from_start": 0.1, "config_hash": "c0ffee0123456789", "train_wall_s": 12.0,
             "adapter": "a/adapter-final.json", "metrics": {"splits": {"held_out": {
                 "argmax_accuracy_min": .9, "argmax_accuracy_max": 1, "mass": .9, "uniform": .2,
                 "index0": .2, "majority_class": .5}}}}
@@ -333,7 +404,9 @@ def test_compare_refuses_evaluations_that_differ_in_a_listed_field(tmp_path):
         path.parent.mkdir()
         path.write_text(json.dumps({**base, **change}))
         paths.append(path)
-    assert "exact_table@1" in rl.compare(paths[:2], "held_out")
+    table = rl.compare(paths[:2], "held_out")
+    assert "exact_table@1" in table and "c0ffee012345" in table and "abcdef012345" in table
+    assert "a/adapter-0000.json" in table
     with pytest.raises(ValueError, match="token_cap"):
         rl.compare(paths, "held_out")
 
@@ -485,7 +558,7 @@ def test_update_records_chain_and_recount_refuses_a_run_that_saw_a_held_out_task
     run = tmp_path / "run"
     run.mkdir()
     plan = {"method": "exact_table@1", "task_set": str(set_path), "batch_size": 2, "K": 2,
-            "order_seed": 0, "max_updates": 4}
+            "order_seed": 0, "max_updates": 4, "start": "fresh"}
     (run / "plan.json").write_text(json.dumps(plan))
     records = rl.run_updates(scorer, optimizer, tasks, plan, run, value["hash"])
     assert [r["ordinal"] for r in records] == [0, 1, 2, 3]
@@ -498,7 +571,15 @@ def test_update_records_chain_and_recount_refuses_a_run_that_saw_a_held_out_task
                                                   for p in permutations)
     (run / "adapter-final.json").write_text(json.dumps(
         {"adapter": {"tensors": records[-1]["adapter_after"]}}))
+    (run / "adapter-0000.json").write_text(json.dumps(
+        {"adapter": {"tensors": records[0]["adapter_before"]}}))
     assert rl.recount(run)["pass"]
+    # A run from a declared adapter is checked against that declaration too.
+    declared = tmp_path / "other-start.json"
+    declared.write_text(json.dumps({"adapter": {"tensors": "not-the-start"}}))
+    (run / "plan.json").write_text(json.dumps({**plan, "start": str(declared)}))
+    assert rl.recount(run)["checks"]["start"] is False
+    (run / "plan.json").write_text(json.dumps(plan))
     leaked = json.loads((run / "update-0002.json").read_text())
     leaked["tasks"].append(held["hash"])
     (run / "update-0002.json").write_text(json.dumps(leaked))
