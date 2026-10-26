@@ -5,6 +5,9 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-26 (checkpoint RL, after the night's run), answering two questions: "Stop here for
+  review" (no remedy or second method yet); agreed the stage 1 step-run check and the stage 4
+  closed loop as verification methods (recorded on branch `wh3-checkpoint-rl`'s AGENTS.md).
 - 2026-10-26 (checkpoint RL plan), verbatim: "Let's add your suggested checks, as well as plan
   a structure that will make it easier to test and compare these different RL post-training
   methods. We will start by implementing the simpler one, moving up gradually, but don't

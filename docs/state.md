@@ -114,8 +114,8 @@ policy collapses onto one action), also after the one allowed re-run. Stopped; d
     maximising each task's log expected reward, whose gradient does not vanish. (b) Review the choices made without you (`runs/twwarhammer3/rl/plans/expansion-declaration.md`):
     the second root, K 1 for the synthetic check, stage 4 before stage 3, the result-collapse
     gap rule, the 1e-6 first-order floor, the 1e-4 reload tolerance, the flat-rung skip rule,
-    the re-run's form (continued from the first run's adapter). (c) Agree or revise the
-    stage 1 and stage 4 checks. (d) Merge the branch: it changes the
+    the re-run's form (continued from the first run's adapter). (c) Agreed 2026-10-26: the
+    stage 1 and stage 4 checks (you chose to stop here for review). (d) Merge the branch: it changes the
     mod pack, so the siege and team checks would read "runtime changed since" (re-run them?).
 
 ## Runtime and ownership
