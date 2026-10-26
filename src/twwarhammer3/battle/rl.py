@@ -446,6 +446,13 @@ def objective(scorer, tasks: list[dict], permutations: dict) -> float:
     return sum(values) / len(values) if values else 0.0
 
 
+def objective_from(logs: dict, tasks: list[dict]) -> float:
+    """The mean expected reward of per-ordering candidate log-probabilities."""
+    values = [sum(sum(math.exp(v) * r for v, r in zip(row, t["rewards"]))
+                  for row in logs[t["hash"]]) / len(logs[t["hash"]]) for t in tasks]
+    return sum(values) / len(values)
+
+
 def distributions(scorer, tasks: list[dict], permutations: dict) -> dict:
     import torch
 
@@ -475,13 +482,19 @@ def exact_table_step(scorer, optimizer, tasks: list[dict], permutations: dict,
     if not signal:
         record["adapter_after"] = record["adapter_before"]
         return record
-    record["distributions_before"] = distributions(scorer, signal, permutations)
+    # One pass with gradients per ordering (it also gives the distribution before) and one
+    # without after the step (it gives the distribution and the objective after).
     optimizer.zero_grad(set_to_none=True)
-    loss_value = 0.0
+    loss_value, before_logs = 0.0, {}
     for task in signal:
         perms = permutations[task["hash"]]
+        before_logs[task["hash"]] = []
         for p in perms:
-            loss = -expected_reward(scorer, task, p) / (len(perms) * len(signal))
+            log_probs = by_candidate(scorer.slot_log_probs(task, p), p)
+            before_logs[task["hash"]].append(log_probs.detach().float().tolist())
+            rewards = torch.tensor(task["rewards"], dtype=log_probs.dtype,
+                                   device=log_probs.device)
+            loss = -(log_probs.exp() * rewards).sum() / (len(perms) * len(signal))
             if not torch.isfinite(loss):
                 raise ValueError("non-finite loss")
             loss.backward()
@@ -497,10 +510,11 @@ def exact_table_step(scorer, optimizer, tasks: list[dict], permutations: dict,
     # The predicted change of the expected reward: −∇loss · Δθ.
     predicted = -float(sum((g.float() * (p.detach() - q).float()).sum()
                            for g, p, q in zip(grads, trainable, params_before)))
-    after_value = -objective(scorer, signal, permutations)
+    after_logs = distributions(scorer, signal, permutations)
+    after_value = -objective_from(after_logs, signal)
     record.update(updated=True, loss=loss_value, loss_after=after_value, gradient_norm=norm,
                   predicted_change=predicted, measured_change=loss_value - after_value,
-                  distributions_after=distributions(scorer, signal, permutations),
+                  distributions_before=before_logs, distributions_after=after_logs,
                   adapter_after=tensor_hash(scorer.adapter_state()))
     record["kl"] = sum(
         sum(math.exp(a) * (a - b) for a, b in zip(old, new))
