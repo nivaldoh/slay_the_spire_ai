@@ -97,6 +97,12 @@ checks are proposals; nothing is verified under the hard rule.
   on 184 unseen training tasks, but followed the spearmen's distance, not the handgunners'.
   The synthetic generator has that confound: an f1-only reader would score 0.90 training and
   0.93 held out, i.e. pass the gate without the intended rule. Stopped there, as declared.
+- Then, still under that delegation, a de-confounded synthetic v2 (branch `5191f91`: half the
+  tasks have the spearmen's distance class disagree with the label; v1 regenerates unchanged):
+  the log method learned the training split (0.955–0.975) but reached 0.75–0.78 held out (bar
+  0.9); its control stayed at 0.46–0.57. Generalisation finding: the plan stops before stage 4,
+  so stages 4 and 5 for the log method were prepared but not run. Held out it is right on 0.99
+  of far (150 m+) tasks but 0.66–0.71 of near ones, and 0.70–0.75 where the two units disagree.
   [Decisions](../state.md#owner-decisions-waiting).
 
 ## 2026-10-26: Checkpoint RL implementation plan
