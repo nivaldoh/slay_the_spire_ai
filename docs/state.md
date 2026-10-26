@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-25: what runs, where each game stands, what comes next. Status only:
+Updated 2026-10-26: what runs, where each game stands, what comes next. Status only:
 History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md).
 Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
@@ -68,10 +68,10 @@ logprobs and per-floor save snapshots ([what each method can use](posttraining.m
 restoring a snapshot is untested.
 
 [Plan and data-use choices](posttraining.md). [Checkpoint RL handoff](twwarhammer3/checkpoint-rl.md) and
-[implementation plan](twwarhammer3/checkpoint-rl-plan.md) written: the first method only, with a shared structure for later ones (owner, 2026-10-26).
-Being implemented on branch `wh3-checkpoint-rl` (owner's goal, 2026-10-26 night); its game
-checks run from `../slay_the_spire_ai-checkpoint-rl-run`, evidence in `runs/twwarhammer3/rl/`.
-Its checks are proposals, not agreed; its [owner decisions](twwarhammer3/checkpoint-rl-plan.md#owner-decisions) stay open.
+[implementation plan](twwarhammer3/checkpoint-rl-plan.md): implemented on branch `wh3-checkpoint-rl`
+and run on the night of 2026-10-26 ([log](twwarhammer3/log.md#2026-10-26-checkpoint-rl-implemented-its-stages-run-until-stage-3-failed)):
+exact-tick injection into restored battles works and is deterministic; the trained choice won
+live on one rung; the synthetic state-dependence check failed (policy collapse). Stopped; decision 11.
 
 ## Known issues
 
@@ -106,6 +106,16 @@ Its checks are proposals, not agreed; its [owner decisions](twwarhammer3/checkpo
 9. **Spire's next step.** After WH3, run one meaningful comparison or freeze this track. Proposed comparison: current controller against ablated scaffolding, 20–30 fresh seeds per arm, about $5 and three nights. `v11-keys` waits on that choice; [other Spire questions](spire/fullrun/README.md#open-owner-decisions) stay secondary. No held-out seeds have been played. The state-restore investigation comes first (owner, 2026-10-23). To decide later: whether the next data night uses a teacher (GLM-5.3) or Qwen3.6 with reasoning on.
 10. **Spire capture check.** Noted for later (owner, 2026-10-23: "Not sure what this is"). It is a script that reads one finished run and checks the new capture against facts recorded separately: the logprob tokens spell the reply and match the provider's token count, the choice probabilities sum to 1, and each save snapshot decodes with the run's own seed. It passed on 40 of 43 night runs ([log](spire/fullrun/log.md#2026-10-23-collection-night-qwen36-reasoning-off-harness-v102)). Agreeing it would make it the capture's repeatable test under the verification rule; until then the capture counts as unverified. It lives only in `runs/fullrun/collect-20261023/check_capture.py`, which has no backup.
 
+11. **Checkpoint RL.** The [night's run](twwarhammer3/log.md#2026-10-26-checkpoint-rl-implemented-its-stages-run-until-stage-3-failed)
+    stopped where the plan needs you. (a) The first method collapses onto one action on the
+    synthetic check: choose a re-run (settings), a remedy (temperature, entropy term) or a
+    second method, such as maximising each task's log expected reward, whose gradient does not
+    vanish. (b) Review the choices made without you (`runs/twwarhammer3/rl/plans/expansion-declaration.md`):
+    the second root, K 1 for the synthetic check, stage 4 before stage 3, the result-collapse
+    gap rule, the 1e-6 first-order floor, the 1e-4 reload tolerance. (c) Agree or revise the
+    stage 1 and stage 4 checks, and a flat-rung skip rule. (d) Merge the branch: it changes the
+    mod pack, so the siege and team checks would read "runtime changed since" (re-run them?).
+
 ## Runtime and ownership
 
 - Slay the Spire ([runtime facts](spire/integration.md#runtime-and-source-pins)): the installed game and personal profile slot 0 are authorized, including stats, unlock progress, history and achievements (Ironclad unlock 3 of 5; runs record profile evidence).
@@ -118,9 +128,9 @@ Its checks are proposals, not agreed; its [owner decisions](twwarhammer3/checkpo
 
 ## Branches
 
-- `wh3-checkpoint-rl` (worktrees `../slay_the_spire_ai-checkpoint-rl`, `-run`): checkpoint RL
-  stages 1–4 (mod export `twwarhammer3_inject`, step runs, candidates, audit, `exact_table@1`,
-  `twwarhammer3 rl`). Changes the mod pack; unmerged.
+- `wh3-checkpoint-rl` (worktrees `../slay_the_spire_ai-checkpoint-rl`, `-run` for game phases):
+  checkpoint RL (mod export `twwarhammer3_inject`, step runs, candidates, audit, `exact_table@1`,
+  `twwarhammer3 rl`); offline tests pass. Changes the mod pack; unmerged (decision 11).
 
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` attack-route draft, labelled

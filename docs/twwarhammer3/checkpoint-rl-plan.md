@@ -8,7 +8,10 @@ through; the later methods themselves are not planned here (owner, 2026-10-26). 
 the research handoff [checkpoint-rl.md](checkpoint-rl.md) (read it first) and corrects it
 where the code says otherwise. The handoff's JUDGEMENT markers stand; where this plan
 proposes a different value for the same call, its marker names the handoff marker it
-competes with, and the owner decides between them. Nothing here is implemented or verified.
+competes with, and the owner decides between them. Implementation (2026-10-26, branch
+`wh3-checkpoint-rl`, under the owner's goal to implement this plan): stages 1–5 are coded and
+run as [logged](log.md#2026-10-26-checkpoint-rl-implemented-its-stages-run-until-stage-3-failed); every
+check here is still a proposal and nothing is verified under the agreed-method rule.
 Every stage ends in a check whose pass rule is written before it runs; a stage starts only
 after the owner has answered the decisions listed for it ([owner decisions](#owner-decisions)).
 
