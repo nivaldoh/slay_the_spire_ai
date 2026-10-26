@@ -35,7 +35,11 @@ def run_rl(args) -> int:
     from gameai.lm import gpu_lease
     from twwarhammer3.battle import audit, checkpoint, confirm, rl
 
-    phase, paths = args.phase, args.paths
+    phase, paths = args.phase, [path.resolve() for path in args.paths]
+    if args.output:
+        args.output = args.output.resolve()
+    if args.tasks:
+        args.tasks = args.tasks.resolve()
     plan = json.loads(paths[0].read_text()) if phase in (
         "checkpoint", "audit", "tasks", "train", "confirm", "confirm-score") else None
     if phase == "checkpoint":
@@ -51,6 +55,8 @@ def run_rl(args) -> int:
         value = rl.build_tasks(plan)
         rl.write_task_set(args.output, value)
         print(f"{args.output}: {len(value['tasks'])} tasks, {value['hash'][:12]}")
+    elif phase == "measure":
+        print(json.dumps(rl.measure(paths[0], args.output), indent=1))
     elif phase == "train":
         print(json.dumps(rl.train(plan, args.output), indent=1))
     elif phase == "evaluate":
@@ -194,8 +200,9 @@ def main() -> int:
 
     rl = commands.add_parser(
         "rl", help="Checkpoint RL phases, one process each (twwarhammer3/checkpoint-rl-plan.md)")
-    rl.add_argument("phase", choices=["checkpoint", "audit", "tasks", "train", "evaluate",
-                                      "compare", "confirm", "confirm-score", "recount"])
+    rl.add_argument("phase", choices=["checkpoint", "audit", "tasks", "measure", "train",
+                                      "evaluate", "compare", "confirm", "confirm-score",
+                                      "recount"])
     rl.add_argument("paths", nargs="+", type=Path,
                     help="a plan (JSON), or: evaluate ADAPTER TASKS, compare EVAL..., recount PATH")
     rl.add_argument("--output", type=Path, help="the phase's new output (directory or file)")

@@ -603,6 +603,73 @@ def train(plan: dict, output: Path) -> dict:
     return summary
 
 
+def measure(task_set_path: Path, output: Path, sample: int = 16) -> dict:
+    """Stage 3's measurement, game stopped: score a sample twice (the repeat deviations of
+    the slot log-probabilities and of the objective), token counts, memory and times, then
+    one update, save, reload and rescore (the reload deviation)."""
+    import resource
+
+    import torch
+
+    refuse_beside_game()
+    tasks = read_task_set(task_set_path)
+    chosen = [t for t in tasks["tasks"] if t["split"] == "train"][:sample]
+    output.mkdir(parents=True)
+    with gpu_lease(GPU_LOCK_PATH):
+        torch.cuda.reset_peak_memory_stats()
+        started = time.time()
+        model, tokenizer = load_base()
+        model = fresh_adapter(model, 0)
+        model.eval()
+        loaded_s = time.time() - started
+        scorer = CandidateScorer(model, tokenizer, temperature=SETTINGS["temperature"],
+                                 token_cap=SETTINGS["token_cap"])
+        orderings = {t["hash"]: t["eval_orderings"] for t in chosen}
+        started = time.time()
+        first = distributions(scorer, chosen, orderings)
+        score_s = (time.time() - started) / sum(len(v) for v in orderings.values())
+        second = distributions(scorer, chosen, orderings)
+        repeat = max(abs(a - b) for h in first for x, y in zip(first[h], second[h])
+                     for a, b in zip(x, y))
+        objective_repeat = abs(objective(scorer, chosen, orderings)
+                               - objective(scorer, chosen, orderings))
+        tokens = [len(scorer.encode(t, t["eval_orderings"][0])[0]) for t in chosen]
+        optimizer = make_optimizer(model, SETTINGS)
+        permutations = {t["hash"]: training_orderings(len(t["candidates"]), t["hash"], 0,
+                                                      SETTINGS["K"], t["eval_orderings"])
+                        for t in chosen}
+        started = time.time()
+        record = exact_table_step(scorer, optimizer, chosen, permutations, {})
+        update_s = time.time() - started
+        after = distributions(scorer, chosen, orderings)
+        save_adapter(model, tokenizer, output / "adapter-measure",
+                     {"temperature": SETTINGS["temperature"], "token_cap": SETTINGS["token_cap"],
+                      "adapter_seed": 0})
+        peak = {"allocated": torch.cuda.max_memory_allocated(),
+                "reserved": torch.cuda.max_memory_reserved()}
+        del model, scorer, optimizer
+        torch.cuda.empty_cache()
+        declaration = json.loads((output / "adapter-measure.json").read_text())
+        model, tokenizer = load_adapter(declaration, trainable=False)
+        model.eval()
+        reloaded = distributions(CandidateScorer(model, tokenizer,
+                                                 temperature=SETTINGS["temperature"],
+                                                 token_cap=SETTINGS["token_cap"]),
+                                 chosen, orderings)
+        reload = max(abs(a - b) for h in after for x, y in zip(after[h], reloaded[h])
+                     for a, b in zip(x, y))
+    result = {"tasks": len(chosen), "repeat_log_prob_deviation": repeat,
+              "objective_repeat_deviation": objective_repeat,
+              "reload_log_prob_deviation": reload, "tokens": [min(tokens), max(tokens)],
+              "token_cap": SETTINGS["token_cap"], "load_s": round(loaded_s, 1),
+              "score_s_per_ordering": round(score_s, 4), "update_s": round(update_s, 2),
+              "update_changed_objective": record["measured_change"], "cuda_peak": peak,
+              "rss_kib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+              "memory_available_kib": checkpoint.memory_available_kib()}
+    write_json(output / "measure.json", result)
+    return result
+
+
 # --- Evaluation and comparison ----------------------------------------------------------------
 
 def score_orderings(scorer, task: dict) -> list[dict]:
