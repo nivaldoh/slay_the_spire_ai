@@ -73,7 +73,8 @@ and run on the night of 2026-10-26 ([log](twwarhammer3/log.md#2026-10-26-checkpo
 exact-tick injection into restored battles works and is deterministic; the trained choice won
 live on one rung; the synthetic check (also after its one allowed re-run) and the ladder's
 second rung failed: the policy collapses (onto one action, or onto one displayed slot). A
-state-loading check found no bug. Stopped; decision 11.
+state-loading check found no bug. The simplest fix (a log objective) stops the collapse but
+reaches only 0.59 held out (bar 0.9). Stopped; decision 11.
 
 ## Known issues
 

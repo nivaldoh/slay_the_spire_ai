@@ -84,6 +84,13 @@ checks are proposals; nothing is verified under the hard rule.
   the expected-reward gradient scales with the winner's probability, so far tasks dragged both
   classes onto `attack_nearest`. A skeptic's replay with −log π(winner) avoided the collapse
   but learned no near/far rule within about 110 updates (one seed).
+- Simplest fix (owner: "Let's try the simplest fix. I'll leave it to your judgement"):
+  `exact_table_log@1`, the log of the same expected reward (branch `887655d`; a 30-agent review
+  confirmed the code and its tests now pin the divisor and the mean of logs, `69fc737`). Same
+  start and settings: held-out 0.59–0.68 (bar 0.9), training 0.60–0.65; no collapse, and it
+  picks `fall_back_f2` on 79% of near and 62% of far held-out tasks, against 62%/64% for its
+  shuffled control (held-out 0.45–0.58, within its bar). Fails the check; a first attempt was
+  killed by WSL's out-of-memory killer at update 86 while review agents ran beside it.
   [Decisions](../state.md#owner-decisions-waiting).
 
 ## 2026-10-26: Checkpoint RL implementation plan
