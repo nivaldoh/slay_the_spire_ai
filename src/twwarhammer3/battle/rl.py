@@ -805,6 +805,18 @@ def evaluation_record(declaration_path, declaration, tasks, scored, start_path, 
         "kl_from_start": kl_from(start["scored"], scored) if start else 0.0}
 
 
+# JUDGEMENT: curriculum_rule — Claude, 2026-10-26: pass a rung at mass on winners θ 0.8 after U
+# updates (U in stage4_check), versus a return-based or adaptive rule or other values. What
+# "learned to win from here" claims rests on this.
+CURRICULUM_THETA = 0.8
+
+
+def curriculum_passed(evaluation: dict, task: dict, theta: float = CURRICULUM_THETA) -> bool:
+    """Stage 5: the adapter's mass on winning candidates at a rung, under that rung's
+    evaluation orderings, is at least theta; training moves one rung earlier only then."""
+    return evaluation["metrics"]["tasks"][task["hash"]]["mass"] >= theta
+
+
 # JUDGEMENT: method_comparison — Claude, 2026-10-26: one frozen task set, start adapter, 8 eval
 # permutations and metric set, by expected reward, argmax accuracy and data used; versus
 # per-method metrics. What a later "method B beats method A" claim means rests on this.

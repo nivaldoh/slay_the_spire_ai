@@ -95,3 +95,12 @@ def test_the_choice_is_the_ordering_averaged_argmax_and_overfit_needs_every_orde
     assert not confirm.overfit_passed(evaluation, {"hash": "t"})
     evaluation["metrics"]["tasks"]["t"].update(hits=[1, 1, 1], mass=0.94)
     assert not confirm.overfit_passed(evaluation, {"hash": "t"})
+
+
+def test_the_curriculum_rule_reads_the_rungs_mass_on_winners():
+    from twwarhammer3.battle import rl
+
+    evaluation = {"metrics": {"tasks": {"t": {"mass": 0.8, "hits": [0, 1]}}}}
+    assert rl.curriculum_passed(evaluation, {"hash": "t"})
+    evaluation["metrics"]["tasks"]["t"]["mass"] = 0.79
+    assert not rl.curriculum_passed(evaluation, {"hash": "t"})
