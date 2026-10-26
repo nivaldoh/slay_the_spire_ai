@@ -42,11 +42,11 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
-## 2026-10-26: Checkpoint RL implemented; its stages run until stage 3 failed
+## 2026-10-26: Checkpoint RL implemented and run: stage 3 fails, the policy collapses
 
 Owner's goal: implement [the plan](checkpoint-rl-plan.md). Branch `wh3-checkpoint-rl` (unmerged;
 changes the mod pack); evidence `runs/twwarhammer3/rl/`; choices made without the owner are in
-`rl/plans/expansion-declaration.md`, each written before its result. 41 launches, $0. All
+`rl/plans/expansion-declaration.md`, each written before its result. 48 launches, $0. All
 checks are proposals; nothing is verified under the hard rule.
 
 - Stage 1 (7 launches): restores of a hold source's late rung matched the source after the
@@ -57,8 +57,12 @@ checks are proposals; nothing is verified under the hard rule.
   mod (`d3ba6aa`, 0 mismatches, changed restore diverged at 1303); siege and team not re-run.
 - Stage 2: the planned root was flat at rungs 2100 and 1200 (all win). Second root
   `emp-handgunners-grn-savage-orcs-hard` (hold lost at 347.3 s): rung 2700 has 3 winners and
-  2 losers (`noop`, `fall_back_f2`), its repeat identical over 4,184 ticks. Its rung 2400 is
-  flat (all lose), which stops the stage 5 ladder (no skip rule decided).
+  2 losers (`noop`, `fall_back_f2`), its repeat identical over 4,184 ticks.
+- Stage 5 (14 launches): rung 2400 flat (all lose), skipped under a declared skip rule; rung
+  2100 has 2 winners (`fall_back_f2`, `charge_f1`). Trained on 2700 and 2100 from the stage 4
+  adapter (300 updates), mass at 2100 reached 0.375 (bar 0.8) and 2700 fell from 1.0 to 0.5:
+  the same single-action collapse. The pre-launch checks refused the closed-loop launch, so the
+  ladder ends there.
 - Stage 4 (2 launches, run before stage 3): from 0.92 at the start, `exact_table@1` reached
   1.0 on the winners; a deranged control (rewarding `noop`) went 0.017 → 1.0 under 8 unseen
   orderings. The trained choice reproduced its audit attempt and won live; the control lost
@@ -66,8 +70,11 @@ checks are proposals; nothing is verified under the hard rule.
   on rounding; with a 1e-6 floor the main run passes and the control fails (6 of 54 updates).
 - Stage 3 failed: the synthetic check (run with K 1, not 4, after measuring 0.41 s per
   ordering) collapsed onto `attack_nearest` within about 12 updates; held-out accuracy 0.42
-  (the far share), training 0.49, bar 0.9. Its gradient vanishes, so the plan's allowed re-run
-  (larger budget or rate) was not spent; the control was not run. [Decisions](../state.md#owner-decisions-waiting).
+  (the far share), training 0.49, bar 0.9. The one allowed re-run (300 more updates from its
+  final adapter with a new optimizer, declared before running) left the policy unchanged (KL
+  0.0000; gradient norm 1e-8): same 0.42/0.49. Both controls were stopped as moot. Stage 3 fails
+  after its re-run, where the plan stops; the next step changes the method or its settings.
+  [Decisions](../state.md#owner-decisions-waiting).
 
 ## 2026-10-26: Checkpoint RL implementation plan
 
