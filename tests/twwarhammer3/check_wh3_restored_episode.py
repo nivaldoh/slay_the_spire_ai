@@ -108,6 +108,17 @@ def load(run_dir: Path) -> dict:
     return json.loads((run_dir / "attempt.json").read_text())
 
 
+def stream_evidence(run_dir: Path) -> dict:
+    """Seq gaps after the handover and off-grid observations, from the raw logs."""
+    rows, logged = checkpoint.read_rows(run_dir), checkpoint.read_observations(run_dir)
+    restored = next((i for i, r in enumerate(rows) if r.get("event") == "restored"), -1)
+    grid = checkpoint.grid_ms(checkpoint.CONFIG["tick_ms"])
+    start = checkpoint.mod_start_ms((run_dir / "mod.log").read_text())
+    return {"gaps_after_handover": checkpoint.seq_gaps(
+                [r for r in logged if r["native_rows"] > restored], grid),
+            "off_grid": checkpoint.off_grid([r["observation"] for r in logged], start, grid)}
+
+
 def assess(output: Path) -> dict:
     root = output.name
     late = Path(json.loads((output / "late-rung.json").read_text())["record"])
@@ -128,7 +139,7 @@ def assess(output: Path) -> dict:
         "saves_before_ending": [t for t in planned if 100 * t < end_ms] == [
             t for t in records if 100 * t < end_ms],
         "saves_not_reached": source["runner_end"].get("not_saved"),
-        "on_grid": source["restore_evidence"].get("off_grid") == [],
+        "on_grid": stream_evidence(source_dir)["off_grid"] == [],
         "replays_unchanged": all(replays[1].get(k) == v for k, v in replays[0].items()),
         "ticks_after_result": sum(1 for r in rows[source["end_row"]:] if r.get("event") == "tick"),
         "late_fault": source.get("late_fault")}}
@@ -137,7 +148,7 @@ def assess(output: Path) -> dict:
     handover, context_ms = 100 * record["tick"], 100 * record["tick"] + 100
     for name in RESTORES + ATTEMPTS:
         attempt = load(output / name)
-        evidence = attempt["restore_evidence"]
+        evidence = {**attempt["restore_evidence"], **stream_evidence(output / name)}
         logged = checkpoint.read_observations(output / name)
         checks[name] = {
             "status": attempt["status"], "reason": attempt.get("reason"),

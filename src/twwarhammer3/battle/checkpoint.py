@@ -402,10 +402,18 @@ def read_observations(run: Path) -> list[dict]:
     return jsonl(run / "observations.jsonl")
 
 
-def seq_gaps(logged: list[dict]) -> list[list[int]]:
-    """[after, before] pairs of seq numbers the reader skipped."""
-    seqs = [row["observation"]["seq"] for row in logged]
-    return [[a, b] for a, b in zip(seqs, seqs[1:]) if b != a + 1]
+def seq_gaps(logged: list[dict], grid: int | None = None) -> list[list[int]]:
+    """[after, before] pairs of seq numbers the reader skipped.
+
+    With ``grid``, one gap is not a reader miss: the mod's tick publishes an observation and
+    the phase-change callback then publishes the result in the same engine tick (finish()),
+    so the result overwrites it at once. That gap is exactly one seq, right before the result,
+    whose time is one grid step after the previous observation (stage 1, 2026-10-26).
+    """
+    rows = [row["observation"] for row in logged]
+    return [[a["seq"], b["seq"]] for a, b in zip(rows, rows[1:]) if b["seq"] != a["seq"] + 1
+            and not (grid and b.get("result") and b["seq"] == a["seq"] + 2
+                     and b["time_ms"] == a["time_ms"] + grid)]
 
 
 def classify(rows: list[dict], logged: list[dict], plan: dict, runner_end: dict | None) -> dict:
@@ -725,7 +733,7 @@ def assess(output: Path, plan: dict, runner_end: dict) -> dict:
     restored = next((i for i, r in enumerate(rows) if r.get("event") == "restored"), None)
     if restore and restored is not None:
         after = [r for r in logged if r["native_rows"] > restored]
-        found["gaps_after_handover"] = seq_gaps(after)
+        found["gaps_after_handover"] = seq_gaps(after, plan.get("grid_ms"))
         found["rebuild_observations"] = len(logged) - len(after)
         found["checksums_after_handover"] = sum(1 for r in rows[restored:]
                                                 if r.get("event") == "tick")

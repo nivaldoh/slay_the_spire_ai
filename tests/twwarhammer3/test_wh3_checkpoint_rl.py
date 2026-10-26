@@ -117,6 +117,21 @@ def test_grid_rule_from_the_start_time_not_the_spacing():
     assert checkpoint.mod_start_ms(log) == 4900
 
 
+def test_a_result_published_in_the_tick_of_a_regular_observation_is_not_a_reader_miss():
+    def logged(*pairs, result_at=None):
+        return [{"observation": {"seq": s, "time_ms": t, **({"result": "won"} if s == result_at
+                                                           else {})}} for s, t in pairs]
+    collapse = logged((978, 298300), (979, 298600), (981, 298900), result_at=981)
+    assert checkpoint.seq_gaps(collapse) == [[979, 981]]
+    assert checkpoint.seq_gaps(collapse, 300) == []
+    missed = logged((977, 298000), (979, 298600), (981, 298900), result_at=981)
+    assert checkpoint.seq_gaps(missed, 300) == [[977, 979]]
+    late = logged((978, 298300), (979, 298600), (981, 299200), result_at=981)
+    assert checkpoint.seq_gaps(late, 300) == [[979, 981]]
+    regular = logged((979, 298600), (981, 298900))
+    assert checkpoint.seq_gaps(regular, 300) == [[979, 981]]
+
+
 def unit(uid, x, z, **fields):
     return {"id": uid, "type": "t", "x": x, "z": z, "men": 60, "state": [], "ammo": 0,
             "abilities": [], **fields}
