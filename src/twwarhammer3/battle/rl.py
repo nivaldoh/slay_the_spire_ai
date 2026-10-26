@@ -62,7 +62,12 @@ def _number(value, digits=1) -> str:
 def render_context(context: dict, listed: list[dict], permutation: list[int]) -> str:
     """The compact public text a model reads: friendly units with their nearest visible enemy
     and its distance in whole metres, the visible enemies, then the candidates as numbered
-    lines in the permutation's order."""
+    lines in the permutation's order.
+
+    JUDGEMENT: rendering — Claude, 2026-10-26: a new compact rendering (its token cap is in
+    training_settings), versus the benchmark's prompt. What the model can read and whether any
+    number compares with the benchmark controllers rest on this.
+    """
     enemies = context.get("enemy", [])
     lines = [f"Battle time {_number(context['time_ms'] / 1000)} s, "
              f"{_number((context.get('remaining_ms') or 0) / 1000, 0)} s left. "
@@ -800,6 +805,9 @@ def evaluation_record(declaration_path, declaration, tasks, scored, start_path, 
         "kl_from_start": kl_from(start["scored"], scored) if start else 0.0}
 
 
+# JUDGEMENT: method_comparison — Claude, 2026-10-26: one frozen task set, start adapter, 8 eval
+# permutations and metric set, by expected reward, argmax accuracy and data used; versus
+# per-method metrics. What a later "method B beats method A" claim means rests on this.
 COMPARE_FIELDS = ("task_set", "start_adapter", "rendering_version", "candidates_version",
                   "temperature", "k_eval", "permutation_rule", "token_cap", "evaluation_version")
 

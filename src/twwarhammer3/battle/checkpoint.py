@@ -380,6 +380,11 @@ def decision_times(start_ms: int, grid: int, save_tick: int, tick: int) -> tuple
     return context, context + grid
 
 
+# After the injected batch nothing is sent: native orders and the game's own unit behaviour
+# continue (hold without its request traffic).
+# JUDGEMENT: continuation — Claude, 2026-10-25: no orders after an injection, versus a
+# scripted continuation; competes with checkpoint-rl.md `candidate_task`. Every branch
+# outcome and therefore every reward rests on this.
 def inject_lua(message: dict) -> str:
     text = json.dumps(message, separators=(",", ":"))
     if "]==]" in text:
@@ -409,6 +414,10 @@ def seq_gaps(logged: list[dict], grid: int | None = None) -> list[list[int]]:
     the phase-change callback then publishes the result in the same engine tick (finish()),
     so the result overwrites it at once. That gap is exactly one seq, right before the result,
     whose time is one grid step after the previous observation (stage 1, 2026-10-26).
+
+    JUDGEMENT?: result_collapse — Claude, 2026-10-26: this gap is named after the stage 1
+    restores failed the plan's "no seq gap" rule only on it; versus keeping the plan's rule
+    (then every restore that ends by a phase change fails). Stage 1's pass rests on this.
     """
     rows = [row["observation"] for row in logged]
     return [[a["seq"], b["seq"]] for a, b in zip(rows, rows[1:]) if b["seq"] != a["seq"] + 1
