@@ -104,3 +104,13 @@ def test_the_curriculum_rule_reads_the_rungs_mass_on_winners():
     assert rl.curriculum_passed(evaluation, {"hash": "t"})
     evaluation["metrics"]["tasks"]["t"]["mass"] = 0.79
     assert not rl.curriculum_passed(evaluation, {"hash": "t"})
+
+
+def test_first_order_disagreements_name_updates_whose_measured_change_has_the_other_sign(tmp_path):
+    rows = [(0, 0.2, 0.04), (1, 3e-6, -2e-5), (2, -1e-3, -2e-3), (3, 0.0, 0.0), (4, 1e-3, -1e-4)]
+    for ordinal, predicted, measured in rows:
+        (tmp_path / f"update-{ordinal:04d}.json").write_text(json.dumps(
+            {"ordinal": ordinal, "updated": True, "predicted_change": predicted,
+             "measured_change": measured}))
+    assert confirm.first_order_disagreements(tmp_path, 0.0) == [1, 4]
+    assert confirm.first_order_disagreements(tmp_path, 1e-5) == [4]

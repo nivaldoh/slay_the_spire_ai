@@ -27,6 +27,15 @@ def overfit_passed(evaluation: dict, task: dict, theta: float = THETA_FIT) -> bo
     return result["mass"] >= theta and all(result["hits"])
 
 
+def first_order_disagreements(run: Path, threshold: float) -> list[int]:
+    """Ordinals of updates whose predicted change of the objective exceeds ``threshold`` in
+    size and whose measured change has the other sign (the overfit check's last clause)."""
+    records = [json.loads(path.read_text()) for path in sorted(run.glob("update-*.json"))]
+    return [r["ordinal"] for r in records if r["updated"]
+            and abs(r["predicted_change"]) > threshold
+            and (r["predicted_change"] > 0) != (r["measured_change"] > 0)]
+
+
 def chosen(rows: list[dict]) -> int:
     """The candidate with the highest ordering-averaged probability."""
     n = len(rows[0]["permutation"])
@@ -73,6 +82,8 @@ def score(plan: dict, output: Path) -> dict:
         "reload": deviation <= plan["tolerance"],
         "same_choice": pick == chosen(recorded),
         "overfit": overfit_passed(evaluation, task, plan.get("theta_fit", THETA_FIT)),
+        "first_order": not first_order_disagreements(Path(plan["adapter"]).parent,
+                                                     plan.get("first_order_threshold", 0.0)),
         "reward": (target and true_rewards[identifier] == 0) if plan.get("control")
         else true_rewards[identifier] == 1}
     result = {"checks": checks, "pass": all(checks.values()), "deviation": deviation,
