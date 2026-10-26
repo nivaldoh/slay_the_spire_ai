@@ -288,10 +288,21 @@ def synthetic_context(reference: dict, template: dict, d: float, bearing: float)
 
 
 def synthetic_tasks(templates: dict[str, list[tuple[str, dict]]], reference: dict,
-                    seed: int, counts: dict | None = None) -> list[dict]:
+                    seed: int, counts: dict | None = None,
+                    disagree_share: float = 0.0) -> list[dict]:
     """Balanced near/far tasks; every draw from a stream keyed by (split, task index).
     ``templates`` maps a split to (job, observation) pairs; held-out draws that repeat a
-    training draw's rounded distance and bearing on a nearby template are redrawn."""
+    training draw's rounded distance and bearing on a nearby template are redrawn.
+
+    With ``disagree_share`` (v2), that share of tasks has the spearmen's (f1) distance class
+    disagree with the handgunners' (f2) one, the rest agree: in v1 they agree in about 90% of
+    tasks, so reading f1's distance passed the check (log, 2026-10-26). 0 leaves v1's stream
+    untouched.
+
+    JUDGEMENT?: synthetic_v2 — Claude, 2026-10-26, under the owner's "use your best judgement":
+    a 0.5 disagreement share, versus v1's unconstrained draw or another share. Whether the
+    synthetic check can tell the intended rule from a shortcut rests on this.
+    """
     reference = play.context_projection(play.public(reference, {}))
     counts = counts or SYNTHETIC["counts"]
     near, far = SYNTHETIC["near_m"], SYNTHETIC["far_m"]
@@ -299,7 +310,8 @@ def synthetic_tasks(templates: dict[str, list[tuple[str, dict]]], reference: dic
     for split in ("train", "held_out"):
         for index in range(counts[split]):
             rng = random.Random(f"synthetic:{seed}:{split}:{index}")
-            while True:
+            disagree = rng.random() < disagree_share if disagree_share else None
+            for _ in range(200000):
                 job, template = rng.choice(templates[split])
                 label = "near" if rng.random() < 0.5 else "far"
                 d = rng.uniform(*(near if label == "near" else far))
@@ -308,16 +320,22 @@ def synthetic_tasks(templates: dict[str, list[tuple[str, dict]]], reference: dic
                     play.public(template, {})), d, bearing)
                 if context is None:
                     continue
+                if disagree is not None and (f1_class(context) != label) != disagree:
+                    continue
                 key = (round(d), round(bearing))
                 if split == "held_out" and any(
                         k == key and _displacement(t, context) < 5 for k, t in train_keys):
                     continue
                 break
+            else:
+                raise ValueError(f"no {split} task {index} satisfies the draw's constraints")
             listed = candidates(context)["candidates"]
+            provenance = {"synthetic": digest(SYNTHETIC), "seed": seed, "index": index,
+                          "template_job": job, "class": label, "d": d, "bearing": bearing}
+            if disagree is not None:
+                provenance.update(disagree_share=disagree_share, f1_disagrees=disagree)
             out.append(make_task(context, listed, synthetic_rewards(listed, label), split,
-                                 {"synthetic": digest(SYNTHETIC), "seed": seed, "index": index,
-                                  "template_job": job, "class": label, "d": d,
-                                  "bearing": bearing}, 0))
+                                 provenance, 0))
             if split == "train":
                 train_keys.append((key, context))
     return out
@@ -325,7 +343,8 @@ def synthetic_tasks(templates: dict[str, list[tuple[str, dict]]], reference: dic
 
 def build_tasks(plan: dict) -> dict:
     """``rl tasks``: a task set from audit tables ({table, splits}) and/or the synthetic
-    generator ({train: [jobs], held_out: [jobs], reference: {job, index}, seed, counts}),
+    generator ({train: [jobs], held_out: [jobs], reference: {job, index}, seed, counts,
+    disagree_share}),
     with an optional training-split label transform ({kind, seed})."""
     tasks = []
     for item in plan.get("tables", []):
@@ -337,9 +356,17 @@ def build_tasks(plan: dict) -> dict:
                      for split in ("train", "held_out")}
         reference = template_observations(Path(spec["reference"]["job"]))[
             spec["reference"]["index"]]
-        tasks += synthetic_tasks(templates, reference, spec["seed"], spec.get("counts"))
+        tasks += synthetic_tasks(templates, reference, spec["seed"], spec.get("counts"),
+                                 spec.get("disagree_share", 0.0))
     change = plan.get("transform") or {}
     return task_set(plan["name"], transform(tasks, change.get("kind"), change.get("seed", 0)))
+
+
+def f1_class(context: dict) -> str:
+    """The class the spearmen's distance to the enemy would give under the 100 m rule."""
+    units = {u["id"]: u for u in context["friendly"] + context["enemy"]}
+    return "near" if distance(units["f1"], units[SYNTHETIC["enemy"]]) < SYNTHETIC[
+        "boundary_m"] else "far"
 
 
 def _displacement(a: dict, b: dict) -> float:

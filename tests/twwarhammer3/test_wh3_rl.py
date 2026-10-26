@@ -595,3 +595,34 @@ def test_a_run_records_the_k_and_batch_size_it_trains_with():
     four = rl.run_plan({}, "rev")
     assert four["settings"]["K"] == 4 == four["K"]
     assert rl.digest(one["settings"]) != rl.digest(four["settings"])
+
+
+STORED_V1 = REPO_ROOT / "runs/twwarhammer3/rl/tasks/synthetic-v1-s1.json"
+
+
+@pytest.mark.skipif(not STORED_V1.exists(), reason="the stored synthetic v1 task set is absent")
+def test_synthetic_v1_still_regenerates_byte_identically(synthetic):
+    templates, reference, _ = synthetic
+    stored = [t["hash"] for t in json.loads(STORED_V1.read_text())["tasks"]]
+    again = [t["hash"] for t in rl.synthetic_tasks(templates, reference, seed=1)]
+    assert again == stored
+
+
+def test_synthetic_v2_makes_the_spearmen_distance_uninformative(synthetic):
+    templates, reference, _ = synthetic
+    tasks = rl.synthetic_tasks(templates, reference, seed=1,
+                               counts={"train": 60, "held_out": 30}, disagree_share=0.5)
+    for split in ("train", "held_out"):
+        mine = [t for t in tasks if t["split"] == split]
+        disagree = [rl.f1_class(t["context"]) != t["provenance"]["class"] for t in mine]
+        assert disagree == [t["provenance"]["f1_disagrees"] for t in mine]
+        assert 0.3 <= sum(disagree) / len(mine) <= 0.7
+        # An f1-only reader is right exactly where the classes agree.
+        assert sum(not x for x in disagree) / len(mine) <= 0.7
+    for task in tasks:
+        guns = next(u for u in task["context"]["friendly"] if u["id"] == "f2")
+        enemy = task["context"]["enemy"][0]
+        near = math.hypot(guns["x"] - enemy["x"], guns["z"] - enemy["z"]) < 100
+        assert near == (task["provenance"]["class"] == "near")
+        assert sum(task["rewards"]) == 1
+    rl.validate_splits(tasks)
