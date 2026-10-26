@@ -18,6 +18,13 @@ from twwarhammer3.battle import checkpoint
 from twwarhammer3.battle.candidates import candidates, describe, slot_to_candidate
 
 THETA_FIT = 0.95
+# The plan sets the first-order threshold to stage 3's measured objective repeat deviation,
+# which was exactly 0: with that, rounding flips signs once the objective saturates at 1.0
+# and every run fails (stage 4, 2026-10-26). 1e-6 is the toy tests' floor.
+# JUDGEMENT?: first_order_floor — Claude, 2026-10-26: threshold max(measured deviation, 1e-6),
+# versus the plan's measured deviation alone. Whether a closed-loop launch is allowed rests
+# on this.
+FIRST_ORDER_FLOOR = 1e-6
 
 
 def overfit_passed(evaluation: dict, task: dict, theta: float = THETA_FIT) -> bool:
@@ -82,8 +89,9 @@ def score(plan: dict, output: Path) -> dict:
         "reload": deviation <= plan["tolerance"],
         "same_choice": pick == chosen(recorded),
         "overfit": overfit_passed(evaluation, task, plan.get("theta_fit", THETA_FIT)),
-        "first_order": not first_order_disagreements(Path(plan["adapter"]).parent,
-                                                     plan.get("first_order_threshold", 0.0)),
+        "first_order": not first_order_disagreements(
+            Path(plan["adapter"]).parent,
+            max(plan.get("first_order_threshold", 0.0), FIRST_ORDER_FLOOR)),
         "reward": (target and true_rewards[identifier] == 0) if plan.get("control")
         else true_rewards[identifier] == 1}
     result = {"checks": checks, "pass": all(checks.values()), "deviation": deviation,
