@@ -578,15 +578,23 @@ def run_updates(scorer, optimizer, tasks: list[dict], plan: dict, output: Path,
     return records
 
 
+def run_plan(plan: dict, revision: str) -> dict:
+    """The plan a run records: SETTINGS, then the plan's settings, then its top-level K and
+    batch_size."""
+    settings = {**SETTINGS, **plan.get("settings", {}),
+                **{k: plan[k] for k in ("K", "batch_size") if k in plan}}
+    return {**plan, "K": settings["K"], "batch_size": settings["batch_size"],
+            "settings": settings, "source_revision": revision}
+
+
 def train(plan: dict, output: Path) -> dict:
     """``rl train``: a method, its config, a training task set (its train split only), a start
     adapter (``fresh`` or a declaration path), seeds, batch size and a budget of updates."""
     import torch
 
     revision = refuse_beside_game()
-    settings = {**SETTINGS, **plan.get("settings", {})}
-    plan = {**plan, **{k: plan.get(k, settings[k]) for k in ("K", "batch_size")},
-            "settings": settings, "source_revision": revision}
+    plan = run_plan(plan, revision)
+    settings = plan["settings"]
     tasks = read_task_set(Path(plan["task_set"]))
     training = [t for t in tasks["tasks"] if t["split"] == "train"]
     output.mkdir(parents=True)

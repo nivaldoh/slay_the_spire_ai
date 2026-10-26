@@ -473,3 +473,14 @@ def test_update_records_chain_and_recount_refuses_a_run_that_saw_a_held_out_task
     leaked["tasks"].append(held["hash"])
     (run / "update-0002.json").write_text(json.dumps(leaked))
     assert rl.recount(run)["checks"]["no_held_out"] is False
+
+
+def test_a_run_records_the_k_and_batch_size_it_trains_with():
+    # Regression (2026-10-26): K 1 at the top level trained with K 1 while plan.json's settings
+    # said K 4, so the evaluation config_hash of K 1 and K 4 runs was the same.
+    one = rl.run_plan({"K": 1, "batch_size": 8}, "rev")
+    assert (one["K"], one["batch_size"]) == (1, 8)
+    assert (one["settings"]["K"], one["settings"]["batch_size"]) == (1, 8)
+    four = rl.run_plan({}, "rev")
+    assert four["settings"]["K"] == 4 == four["K"]
+    assert rl.digest(one["settings"]) != rl.digest(four["settings"])
