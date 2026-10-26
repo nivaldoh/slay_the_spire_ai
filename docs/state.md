@@ -117,12 +117,12 @@ but reads the wrong unit, and that the synthetic gate itself is confounded. Stop
     avoids the collapse but fails the gate, and the gate is confounded (a spearmen-distance
     shortcut would pass it): de-confound the generator (e.g. f1/f2 classes disagreeing in a
     fixed share of tasks, or F2READ as a pass condition) and/or render f2's distance on the
-    fall-back line, then rerun the log method (about 2 h of GPU with its control). Otherwise:
-    choose a remedy (temperature, entropy term, other settings) or a second method, such as
-    maximising each task's log expected reward, whose gradient does not vanish. (b) Review the choices made without you (`runs/twwarhammer3/rl/plans/expansion-declaration.md`):
+    fall-back line, then rerun the log method (about 2 h of GPU with its control). (b) Review
+    the choices made without you (`runs/twwarhammer3/rl/plans/expansion-declaration.md`):
     the second root, K 1 for the synthetic check, stage 4 before stage 3, the result-collapse
     gap rule, the 1e-6 first-order floor, the 1e-4 reload tolerance, the flat-rung skip rule,
-    the re-run's form (continued from the first run's adapter). (c) Agreed 2026-10-26: the
+    the re-run's form (continued from the first run's adapter), stopping each moot control,
+    and the 16-task diagnostic with its reading thresholds. (c) Agreed 2026-10-26: the
     stage 1 and stage 4 checks (you chose to stop here for review). (d) Merge the branch: it changes the
     mod pack, so the siege and team checks would read "runtime changed since" (re-run them?).
 
