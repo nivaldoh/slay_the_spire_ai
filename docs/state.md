@@ -68,7 +68,10 @@ logprobs and per-floor save snapshots ([what each method can use](posttraining.m
 restoring a snapshot is untested.
 
 [Plan and data-use choices](posttraining.md). [Checkpoint RL handoff](twwarhammer3/checkpoint-rl.md) and
-[implementation plan](twwarhammer3/checkpoint-rl-plan.md) written: the first method only, with a shared structure for later ones (owner, 2026-10-26); its stages wait on its [owner decisions](twwarhammer3/checkpoint-rl-plan.md#owner-decisions). Nothing implemented; no training runs.
+[implementation plan](twwarhammer3/checkpoint-rl-plan.md) written: the first method only, with a shared structure for later ones (owner, 2026-10-26).
+Being implemented on branch `wh3-checkpoint-rl` (owner's goal, 2026-10-26 night); its game
+checks run from `../slay_the_spire_ai-checkpoint-rl-run`, evidence in `runs/twwarhammer3/rl/`.
+Its checks are proposals, not agreed; its [owner decisions](twwarhammer3/checkpoint-rl-plan.md#owner-decisions) stay open.
 
 ## Known issues
 
@@ -114,6 +117,10 @@ restoring a snapshot is untested.
   (each game's lock and process check cover only that game); one GPU job at a time.
 
 ## Branches
+
+- `wh3-checkpoint-rl` (worktrees `../slay_the_spire_ai-checkpoint-rl`, `-run`): checkpoint RL
+  stages 1–4 (mod export `twwarhammer3_inject`, step runs, candidates, audit, `exact_table@1`,
+  `twwarhammer3 rl`). Changes the mod pack; unmerged.
 
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` attack-route draft, labelled
