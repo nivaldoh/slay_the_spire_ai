@@ -123,7 +123,7 @@ battle = {env, tick: 99, seed: 7, speed: REBUILD_SPEED,
           failed: false};
 messages.length = 0;
 postTick.onEnter([env]);
-assert.deepEqual(messages, [{event: 'tick', tick: 100, checksum: 5}]);
+assert.equal(JSON.stringify(messages), JSON.stringify([{event: 'tick', tick: 100, checksum: 5}]));
 messages.length = 0;
 current = 6;
 postTick.onEnter([env]);
