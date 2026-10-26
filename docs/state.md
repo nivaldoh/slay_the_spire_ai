@@ -74,7 +74,8 @@ exact-tick injection into restored battles works and is deterministic; the train
 live on one rung; the synthetic check (also after its one allowed re-run) and the ladder's
 second rung failed: the policy collapses (onto one action, or onto one displayed slot). A
 state-loading check found no bug. The simplest fix (a log objective) stops the collapse but
-reaches only 0.59 held out (bar 0.9). Stopped; decision 11.
+reaches only 0.59 held out (bar 0.9; lr 1e-3: 0.10). A diagnostic showed the model fits contexts
+but reads the wrong unit, and that the synthetic gate itself is confounded. Stopped; decision 11.
 
 ## Known issues
 
@@ -112,7 +113,11 @@ reaches only 0.59 held out (bar 0.9). Stopped; decision 11.
 11. **Checkpoint RL.** The [night's run](twwarhammer3/log.md#2026-10-26-checkpoint-rl-implemented-and-run-stage-3-fails-the-policy-collapses)
     stopped where the plan needs you. (a) The first method collapses whenever the right
     choice depends on the state (synthetic check and its re-run: one action; the two-rung
-    ladder: one displayed slot); no state-loading bug was found:
+    ladder: one displayed slot); no state-loading bug was found. The log objective you approved
+    avoids the collapse but fails the gate, and the gate is confounded (a spearmen-distance
+    shortcut would pass it): de-confound the generator (e.g. f1/f2 classes disagreeing in a
+    fixed share of tasks, or F2READ as a pass condition) and/or render f2's distance on the
+    fall-back line, then rerun the log method (about 2 h of GPU with its control). Otherwise:
     choose a remedy (temperature, entropy term, other settings) or a second method, such as
     maximising each task's log expected reward, whose gradient does not vanish. (b) Review the choices made without you (`runs/twwarhammer3/rl/plans/expansion-declaration.md`):
     the second root, K 1 for the synthetic check, stage 4 before stage 3, the result-collapse

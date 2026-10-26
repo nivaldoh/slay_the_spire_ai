@@ -91,6 +91,12 @@ checks are proposals; nothing is verified under the hard rule.
   picks `fall_back_f2` on 79% of near and 62% of far held-out tasks, against 62%/64% for its
   shuffled control (held-out 0.45–0.58, within its bar). Fails the check; a first attempt was
   killed by WSL's out-of-memory killer at update 86 while review agents ran beside it.
+- Owner away ("use your best judgement and take note"): the plan's one re-run for the log
+  method, at lr 1e-3 (owner's pick), went near-uniform (held-out 0.10–0.21). A declared 16-task
+  diagnostic (training split only) fitted all 16 under 8 unseen orderings and reached 0.70–0.73
+  on 184 unseen training tasks, but followed the spearmen's distance, not the handgunners'.
+  The synthetic generator has that confound: an f1-only reader would score 0.90 training and
+  0.93 held out, i.e. pass the gate without the intended rule. Stopped there, as declared.
   [Decisions](../state.md#owner-decisions-waiting).
 
 ## 2026-10-26: Checkpoint RL implementation plan
