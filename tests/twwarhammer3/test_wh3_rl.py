@@ -334,6 +334,11 @@ def test_model_phases_refuse_beside_a_running_game(monkeypatch):
     monkeypatch.setattr(runtime, "running_pids", lambda: "1234")
     with pytest.raises(RuntimeError, match="beside the game"):
         rl.refuse_beside_game()
+    monkeypatch.setattr(runtime, "running_pids", lambda: "")
+    monkeypatch.setattr(rl, "committed_revision", lambda purpose, paths: (_ for _ in ()).throw(
+        ValueError("Commit implementation changes before checkpoint RL")))
+    with pytest.raises(ValueError, match="Commit"):
+        rl.refuse_beside_game()
 
 
 def test_recount_rederives_evaluation_metrics_and_notices_a_changed_record(tmp_path):

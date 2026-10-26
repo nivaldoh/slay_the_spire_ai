@@ -42,7 +42,7 @@ def score(plan: dict, output: Path) -> dict:
     orderings and run every pre-launch check; writes prelaunch.json."""
     from twwarhammer3.battle import rl
 
-    rl.refuse_beside_game()
+    revision = rl.refuse_beside_game()
     declaration = json.loads(Path(plan["adapter"]).read_text())
     evaluation = json.loads(Path(plan["evaluation"]).read_text())
     tasks = rl.read_task_set(Path(plan["task_set"]))
@@ -77,6 +77,7 @@ def score(plan: dict, output: Path) -> dict:
         else true_rewards[identifier] == 1}
     result = {"checks": checks, "pass": all(checks.values()), "deviation": deviation,
               "chosen": identifier, "rows": rows, "task": task["hash"],
+              "source_revision": revision,
               "rung": {"root": rung["root"], "tick": rung["tick"], "record": rung["record"],
                        "reference": rung["reference"]}}
     write_json(output / "prelaunch.json", result)

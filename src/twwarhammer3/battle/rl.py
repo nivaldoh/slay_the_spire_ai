@@ -20,7 +20,7 @@ import time
 from pathlib import Path
 
 from gameai.lm import candidate_log_probs, gpu_lease, tensor_hash, verify_adapter_tensors
-from gameai.provenance import sha256, write_json
+from gameai.provenance import committed_revision, sha256, write_json
 from twwarhammer3.battle import checkpoint, play
 from twwarhammer3.battle.candidates import (
     CANDIDATES_VERSION,
@@ -517,11 +517,13 @@ def make_optimizer(model, settings: dict):
 
 # --- Runs -----------------------------------------------------------------------------------
 
-def refuse_beside_game() -> None:
+def refuse_beside_game() -> str:
+    """Refuse beside a running game or with uncommitted source; returns the revision."""
     from twwarhammer3.engine import runtime
 
     if runtime.running_pids():
         raise RuntimeError("WH3 is running: model phases never run beside the game")
+    return committed_revision("checkpoint RL", play.SOURCES)
 
 
 def batches(tasks: list[dict], batch_size: int, order_seed: int):
@@ -562,10 +564,10 @@ def train(plan: dict, output: Path) -> dict:
     adapter (``fresh`` or a declaration path), seeds, batch size and a budget of updates."""
     import torch
 
-    refuse_beside_game()
+    revision = refuse_beside_game()
     settings = {**SETTINGS, **plan.get("settings", {})}
     plan = {**plan, **{k: plan.get(k, settings[k]) for k in ("K", "batch_size")},
-            "settings": settings}
+            "settings": settings, "source_revision": revision}
     tasks = read_task_set(Path(plan["task_set"]))
     training = [t for t in tasks["tasks"] if t["split"] == "train"]
     output.mkdir(parents=True)
@@ -611,7 +613,7 @@ def measure(task_set_path: Path, output: Path, sample: int = 16) -> dict:
 
     import torch
 
-    refuse_beside_game()
+    revision = refuse_beside_game()
     tasks = read_task_set(task_set_path)
     chosen = [t for t in tasks["tasks"] if t["split"] == "train"][:sample]
     output.mkdir(parents=True)
@@ -665,7 +667,8 @@ def measure(task_set_path: Path, output: Path, sample: int = 16) -> dict:
               "score_s_per_ordering": round(score_s, 4), "update_s": round(update_s, 2),
               "update_changed_objective": record["measured_change"], "cuda_peak": peak,
               "rss_kib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
-              "memory_available_kib": checkpoint.memory_available_kib()}
+              "memory_available_kib": checkpoint.memory_available_kib(),
+              "source_revision": revision}
     write_json(output / "measure.json", result)
     return result
 
@@ -741,7 +744,7 @@ def kl_from(start: dict, scored: dict) -> float:
 def evaluate(declaration_path: Path, task_set_path: Path) -> dict:
     """``rl evaluate``: score an adapter on a task set under each task's evaluation orderings;
     write eval-<adapter>-<task set sha12>.json beside the adapter, once."""
-    refuse_beside_game()
+    revision = refuse_beside_game()
     declaration = json.loads(declaration_path.read_text())
     tasks = read_task_set(task_set_path)
     run = declaration_path.parent
@@ -763,7 +766,7 @@ def evaluate(declaration_path: Path, task_set_path: Path) -> dict:
         wall = time.time() - started
     result = evaluation_record(declaration_path, declaration, tasks, scored, start_path,
                                start_eval)
-    result["wall_s"] = round(wall, 1)
+    result.update(wall_s=round(wall, 1), source_revision=revision)
     write_json(output, result)
     return result
 
