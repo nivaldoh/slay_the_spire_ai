@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-26 evening (checkpoint RL, after synthetic v2: training 0.96, held out 0.76): "Stop
+  here" (options offered: more varied layouts from 18 recorded jobs, not gating stages 4/5 on
+  the check, a larger budget). Earlier the same day: "Let's try the simplest fix. I'll leave it
+  to your judgement"; "Keep working on this ... use your best judgement and take note of any
+  important decisions for me to review later" (decisions: runs/twwarhammer3/rl/plans/expansion-declaration.md).
 - 2026-10-26 (checkpoint RL, after the night's run), answering two questions: "Stop here for
   review" (no remedy or second method yet); agreed the stage 1 step-run check and the stage 4
   closed loop as verification methods (recorded on branch `wh3-checkpoint-rl`'s AGENTS.md).

@@ -120,8 +120,9 @@ v2 it learns the training split (0.96) but generalises to 0.76 held out. Stopped
     fixed share of tasks, or F2READ as a pass condition) and/or render f2's distance on the
     fall-back line, then rerun the log method (about 2 h of GPU with its control). Done for
     the generator (v2, my choice under your delegation): training 0.96, held out 0.76, a
-    generalisation finding. Choose: more varied training layouts, a larger budget, a rendering
-    that states f2's distance next to its choice, or not gating stages 4/5 on this check. (b) Review
+    generalisation finding. Choose: more varied training layouts (18 recorded jobs fit), a larger
+    budget, a rendering that states f2's distance next to its choice, or not gating stages 4/5 on
+    this check (you said "Stop here" for now, 2026-10-26). (b) Review
     the choices made without you (`runs/twwarhammer3/rl/plans/expansion-declaration.md`):
     the second root, K 1 for the synthetic check, stage 4 before stage 3, the result-collapse
     gap rule, the 1e-6 first-order floor, the 1e-4 reload tolerance, the flat-rung skip rule,
