@@ -52,6 +52,12 @@ runs/
     checkpoint-check-*/ Agreed battle-checkpoint checks: source/, restore-a/, restore-b/,
                       changed/ (agent log in native/, plan, manifest), checks.json and the
                       checkpoint replay itself
+    rl/               Checkpoint RL (docs/twwarhammer3/checkpoint-rl-plan.md): plans/ (the
+                      phases' JSON plans), stage1-*/ (the step-run check: checkpoints/<root>/
+                      with source/ and one <tick>/record.json + replay per save, restores,
+                      injected attempts, checks.json), audits/<name>/ (attempt-NNNN/ step runs
+                      and table.json), tasks/ (task sets), runs/<name>/ (update records,
+                      adapters with their declarations, eval-*.json), confirms/<name>/
     launch-*/         `twwarhammer3 launch` logs, deployment records and UI tree dumps
     probe-*/, ...     Frontend probes, the startup-skip evidence, the benchmark setup probe
                       and the first battle jobs from before battle/ existed

@@ -438,3 +438,33 @@ def test_no_held_out_draw_repeats_a_training_draw_on_a_nearby_template(synthetic
     assert [t for t in shuffled if t["split"] == "held_out"] == [
         t for t in tasks if t["split"] == "held_out"]
     assert any(a["rewards"] != b["rewards"] for a, b in zip(shuffled, tasks))
+
+
+def test_update_records_chain_and_recount_refuses_a_run_that_saw_a_held_out_task(toy, tmp_path):
+    scorer, optimizer = toy()
+    tasks = [toy_task(3, [1, 0, 0]), toy_task(4, [0, 1, 0]), toy_task(5, [0, 0, 1])]
+    held = toy_task(6, [1, 0, 0], split="held_out")
+    value = rl.task_set("s", tasks + [held])
+    set_path = tmp_path / "tasks.json"
+    set_path.write_text(json.dumps(value))
+    run = tmp_path / "run"
+    run.mkdir()
+    plan = {"method": "exact_table@1", "task_set": str(set_path), "batch_size": 2, "K": 2,
+            "order_seed": 0, "max_updates": 4}
+    (run / "plan.json").write_text(json.dumps(plan))
+    records = rl.run_updates(scorer, optimizer, tasks, plan, run, value["hash"])
+    assert [r["ordinal"] for r in records] == [0, 1, 2, 3]
+    assert [len(r["tasks"]) for r in records] == [2, 1, 2, 1]
+    assert {h for r in records[:2] for h in r["tasks"]} == {t["hash"] for t in tasks}
+    for record in records:
+        for task_hash, permutations in record["permutations"].items():
+            task = next(t for t in tasks if t["hash"] == task_hash)
+            assert len(permutations) == 2 and all(p not in task["eval_orderings"]
+                                                  for p in permutations)
+    (run / "adapter-final.json").write_text(json.dumps(
+        {"adapter": {"tensors": records[-1]["adapter_after"]}}))
+    assert rl.recount(run)["pass"]
+    leaked = json.loads((run / "update-0002.json").read_text())
+    leaked["tasks"].append(held["hash"])
+    (run / "update-0002.json").write_text(json.dumps(leaked))
+    assert rl.recount(run)["checks"]["no_held_out"] is False
