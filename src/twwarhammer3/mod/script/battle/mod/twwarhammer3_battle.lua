@@ -1363,6 +1363,28 @@ local function start()
                       state.info.alliances, #state.friendly_ids, #state.enemy_ids))
 end
 
+-- Checkpoint RL (battle/checkpoint.py): the checkpoint agent's Lua hook hands one request
+-- ({request, based_on, orders}) to the mod at an exact engine tick, in place of orders.json.
+-- It becomes the pending request, which apply_pending acknowledges on the next tick as usual.
+-- Returns a JSON reply and never raises: an error here would fail the agent.
+local function inject(text)
+    local ok, reply = pcall(function()
+        if not state.started then return {accepted = false, reason = "not started"} end
+        if state.finished then return {accepted = false, reason = "finished"} end
+        if state.pending then return {accepted = false, reason = "a request is pending"} end
+        local decoded, message = pcall(json.decode, text)
+        if not decoded or type(message) ~= "table" or type(message.request) ~= "string"
+                or type(message.based_on) ~= "number" or type(message.orders) ~= "table" then
+            return {accepted = false, reason = "malformed message"}
+        end
+        state.pending = {request = message.request, based_on = message.based_on, orders = message.orders}
+        return {accepted = true}
+    end)
+    if not ok then reply = {accepted = false, reason = clean_error(reply)} end
+    local encoded, value = pcall(json.encode, reply)
+    return encoded and value or '{"accepted": false, "reason": "unencodable reply"}'
+end
+
 local function load()
     session = read_json(BRIDGE .. "session.json")
     if not session or session.enabled == false then return end
@@ -1394,6 +1416,7 @@ local function load()
         time_ms = 0, speed = 1, awaiting_orders = false, friendly = {},
         enemy_roster = {}, enemy = {},
     })
+    twwarhammer3_inject = inject
 end
 
 local ok, err = pcall(load)

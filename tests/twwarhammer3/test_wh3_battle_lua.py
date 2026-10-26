@@ -4,9 +4,11 @@ Lua 5.1 against stubbed engine state.
 These exercise the Lua computation only; actual geometry, reachability and engine values
 still need game probes.
 """
+import json
+
 import pytest
 from lupa.lua51 import LuaError
-from wh3_lua import load_battle, runtime
+from wh3_lua import MOD, load_battle, runtime
 
 
 def test_terrain_grid_uses_engine_bounds_without_math_huge():
@@ -678,3 +680,89 @@ def test_lua_presentation_never_queries_hidden_enemy_positions_or_policy_memory(
     assert len(g.saved.enemy) == 1 and g.saved.enemy[1].id == "e2"
     assert g.saved.friendly[1].state[1] == "under_fire"
     assert g.saved_names.f1 == "f1 readable" and g.saved_names.e1 is None
+
+
+def injector(lua):
+    """The mod's checkpoint-RL entry point with the real JSON codec; returns a caller that
+    decodes its reply."""
+    lua.execute((MOD / "script/_lib/mod/twwarhammer3_json.lua").read_text())
+    lua.execute("json = twwarhammer3_json")
+    inject = load_battle(lua, "inject")
+    return lambda text: json.loads(inject(text))
+
+
+def test_an_injected_request_is_applied_and_acknowledged_like_a_mailbox_request(order_dispatch):
+    lua, _, apply_pending = order_dispatch
+    inject = injector(lua)
+    lua.execute("function clean_error(err) return tostring(err) end")
+    message = {"request": "audit-attack_nearest-0", "based_on": 812,
+               "orders": [{"unit": "f1", "type": "move", "x": 10, "z": 20, "run": False}]}
+    assert inject(json.dumps(message)) == {"accepted": True}
+    g = lua.globals()
+    assert g.state.pending.request == "audit-attack_nearest-0" and g.state.pending.based_on == 812
+    apply_pending(4321)
+    ack = g.state.applied
+    assert (ack.request, ack.based_on, ack.applied_ms) == ("audit-attack_nearest-0", 812, 4321)
+    assert [dict(r) for r in ack.results.values()] == [
+        {"index": 1, "unit": "f1", "ok": True, "queued": False}]
+    assert g.state.pending is None
+    # An empty batch (the no-op candidate) is still a request with an acknowledgement.
+    assert inject(json.dumps({**message, "request": "noop", "orders": []})) == {"accepted": True}
+    apply_pending(4621)
+    assert g.state.applied.request == "noop" and len(g.state.applied.results) == 0
+
+
+@pytest.mark.parametrize("case,reason", [
+    ("not_started", "not started"), ("finished", "finished"), ("pending", "a request is pending"),
+    ("not_json", "malformed message"), ("no_request", "malformed message"),
+    ("text_based_on", "malformed message"), ("no_orders", "malformed message"),
+    ("raises", "boom"),
+])
+def test_injection_refusals_return_a_reason_raise_nothing_and_keep_pending(case, reason):
+    lua = runtime()
+    lua.execute("""
+        state = {started = true, finished = false}
+        function clean_error(err)
+            return string.match(tostring(err), ":%d+: (.*)$") or tostring(err)
+        end
+    """)
+    inject = injector(lua)
+    g = lua.globals()
+    message = {"request": "r", "based_on": 3, "orders": []}
+    if case == "not_started":
+        g.state.started = False
+    elif case == "finished":
+        g.state.finished = True
+    elif case == "pending":
+        lua.execute("state.pending = {request = 'earlier'}")
+    elif case == "raises":
+        lua.execute("setmetatable(state, {__index = function() error('boom') end})")
+        lua.execute("state.started = nil")
+    text = {"not_json": "{orders: [", "no_request": json.dumps({"based_on": 3, "orders": []}),
+            "text_based_on": json.dumps({**message, "based_on": "3"}),
+            "no_orders": json.dumps({"request": "r", "based_on": 3})}.get(case, json.dumps(message))
+    assert inject(text) == {"accepted": False, "reason": reason}
+    pending = lua.eval("rawget(state, 'pending')")
+    assert (pending.request if pending else None) == ("earlier" if case == "pending" else None)
+
+
+def test_the_injection_entry_point_exists_only_after_an_enabled_session_loads():
+    lua = runtime()
+    lua.execute("""
+        BRIDGE = "bridge/"
+        enabled = false
+        function read_json(path) return {schema = 1, job = "j", enabled = enabled} end
+        function log() end
+        function publish() end
+        function guarded(name, fn) return fn end
+        function inject() end
+        state = {}
+        bm = {battle = {}, register_phase_change_callback = function() end,
+              repeat_real_callback = function() end}
+    """)
+    _, load = load_battle(lua, "get", "load")
+    load()
+    assert lua.globals().twwarhammer3_inject is None
+    lua.execute("enabled = true")
+    load()
+    assert lua.eval("twwarhammer3_inject == inject")
