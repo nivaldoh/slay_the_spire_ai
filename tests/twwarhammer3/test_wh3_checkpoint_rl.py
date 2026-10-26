@@ -345,6 +345,9 @@ def test_step_run_refusals_need_no_game(game, monkeypatch):
     checkpoint.limits_for(plan)
     with pytest.raises(ValueError, match="cannot contain"):
         checkpoint.limits_for({**plan, "remaining_ms": 250000})
+    record = {"tick": 2100, "remaining_ms": 994797}
+    checkpoint.limits_for({**plan, "checkpoint": record, "remaining_ms": 994797,
+                           "limits": checkpoint.limits_covering(record)})
     monkeypatch.setattr(checkpoint, "FRIDA_PYTHON", tmp_path / "missing.exe")
     with pytest.raises(FileNotFoundError):
         checkpoint.refuse(plan)

@@ -577,6 +577,14 @@ def limits_for(plan: dict) -> dict:
     return limits
 
 
+def limits_covering(record: dict) -> dict:
+    """Limits that contain a record's timer bound: a restore may run to the timer."""
+    need = (record["remaining_ms"] / 1000 + OVERHEAD_S + REBUILD_S_PER_TICK * record["tick"]
+            + MARGIN_S)
+    return {"episode_timeout_s": round(need + 30), "agent_seconds": round(need + 60),
+            "game_timeout_s": round(need + 120)}
+
+
 def follow(log_path: Path, agent: subprocess.Popen, mailbox: Mailbox, output: Path,
            plan: dict, limits: dict) -> dict:
     """Read the agent's events and every new observation until the battle ends, a fault,

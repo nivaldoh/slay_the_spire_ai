@@ -15,7 +15,8 @@ uv run --locked python tests/twwarhammer3/check_wh3_restored_episode.py \\
 3. Two identical attempts injecting the attack_nearest batch at T = S + 2, and one moving
    the handgunners 60 m directly away from their nearest visible enemy.
 
-Pass rules are in assess(). Recount saved evidence without launching: --recount OUTPUT.
+Pass rules are in assess(). Recount saved evidence without launching: --recount OUTPUT;
+continue an interrupted output, reusing its finished runs: --resume.
 
 JUDGEMENT: stage1_check — Claude, 2026-10-25: these eleven launches and pass rules, versus
 the handoff's live checks; competes with checkpoint-rl.md `verification_plan`. What stages 2
@@ -36,7 +37,6 @@ from twwarhammer3.protocol import visible_enemies
 SCENARIO = "emp-handgunners-grn-savage-orcs"
 GUNS = "f2"
 SOURCE_LIMITS = {"game_timeout_s": 1500, "agent_seconds": 1450, "episode_timeout_s": 1400}
-RESTORE_LIMITS = {"game_timeout_s": 600, "agent_seconds": 560, "episode_timeout_s": 500}
 RESTORES, ATTEMPTS = ("restore-a", "restore-b", "restore-c"), ("attack-a", "attack-b", "move")
 
 
@@ -46,9 +46,9 @@ def declaration(root: str) -> dict:
             "readings_every": 100, "late_margin_s": 60, "limits": SOURCE_LIMITS}
 
 
-def restore_plan() -> dict:
+def restore_plan(record: dict) -> dict:
     return {"observe_ms": 300, "readings": {"every": 100, "lua": checkpoint.READING_LUA},
-            "limits": RESTORE_LIMITS}
+            "limits": checkpoint.limits_covering(record)}
 
 
 def move_away(context: dict, unit_id: str, metres: float = 60) -> list[dict]:
@@ -70,27 +70,37 @@ def replay_hashes() -> dict:
             if path.is_file()}
 
 
-def run(output: Path) -> None:
-    output.mkdir(parents=True)
+def finished(directory: Path) -> bool:
+    """A run of an earlier, interrupted invocation that wrote its attempt; a directory
+    without one stops the check (launched() refuses it) for a look by hand."""
+    return (directory / "attempt.json").exists()
+
+
+def run(output: Path, resume: bool) -> None:
+    output.mkdir(parents=True, exist_ok=resume)
     library = output / "checkpoints"
     root = output.name
-    before = replay_hashes()
-    write_json(output / "replays-before.json", before)
-    checkpoint.checkpoint_root(declaration(root), library)
-    write_json(output / "replays-after.json", replay_hashes())
+    if not finished(library / root / "source"):
+        write_json(output / "replays-before.json", replay_hashes())
+        checkpoint.checkpoint_root(declaration(root), library)
+        write_json(output / "replays-after.json", replay_hashes())
     late = checkpoint.late_rung(library / root)
     write_json(output / "late-rung.json", {"record": str(late)})
+    record = json.loads(late.read_text())
     for name in RESTORES:
-        checkpoint.restore_episode(late, restore_plan(), output / name)
-    record, reference = json.loads(late.read_text()), output / RESTORES[0]
+        if not finished(output / name):
+            checkpoint.restore_episode(late, restore_plan(record), output / name)
+    reference = output / RESTORES[0]
     context = checkpoint.context_of(reference, checkpoint.injection_for(
         reference, record, [], "probe")["context_ms"])
     batches = {"attack-a": AttackNearest().decide(context),
                "attack-b": AttackNearest().decide(context), "move": move_away(context, GUNS)}
     write_json(output / "batches.json", batches)
     for name in ATTEMPTS:
+        if finished(output / name):
+            continue
         injection = checkpoint.injection_for(reference, record, batches[name], f"{root}-{name}")
-        checkpoint.restore_episode(late, {**restore_plan(), "injection": injection,
+        checkpoint.restore_episode(late, {**restore_plan(record), "injection": injection,
                                           "reference": str(reference)}, output / name)
 
 
@@ -181,10 +191,11 @@ def main() -> int:
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--recount", type=Path, help="assess an existing output without launching")
+    parser.add_argument("--resume", action="store_true", help="reuse the output's finished runs")
     args = parser.parse_args()
     output = (args.recount or args.output).resolve()
     if not args.recount:
-        run(output)
+        run(output, args.resume)
     checks = assess(output)
     if not args.recount:
         write_json(output / "checks.json", checks)
