@@ -137,20 +137,21 @@ def test_first_order_predictions_agree_in_sign_with_measured_changes(toy, name):
         (r["predicted_change"] > 0) == (r["measured_change"] > 0) for r in checked)
 
 
+@pytest.mark.parametrize("name", sorted(rl.METHODS))
 @pytest.mark.parametrize("cycle", CYCLES)
 def test_mapping_control_an_index_mistake_credits_another_candidate_and_never_fits(
-        toy, monkeypatch, cycle):
+        toy, monkeypatch, name, cycle):
     mapping_mutant(monkeypatch)
-    n = len(cycle)
+    method, n = rl.METHODS[name], len(cycle)
     task = toy_task(3, [1] + [0] * (n - 1))
     credited = cycle[cycle[0]]  # the p.index(k) error credits p∘p of the rewarded candidate
     scorer, optimizer = toy(lr=1e-2, sgd=True)
     before = true_probs(scorer, task, cycle)
-    steps(rl.exact_table_step, scorer, optimizer, [task], cycle, 1)
+    steps(method, scorer, optimizer, [task], cycle, 1)
     assert true_probs(scorer, task, cycle)[credited] > before[credited]
     scorer, optimizer = toy()
     start = true_probs(scorer, task, cycle)[0]
-    steps(rl.exact_table_step, scorer, optimizer, [task], cycle, 200)
+    steps(method, scorer, optimizer, [task], cycle, 200)
     after = true_probs(scorer, task, cycle)
     assert after[0] < min(0.95, start) and after[credited] > 0.9
 
@@ -211,6 +212,35 @@ def test_exact_table_gradient_and_loss_equal_a_hand_computation(permutations):
     before = scorer.model.theta.detach().clone()
     record = rl.exact_table_step(scorer, optimizer, [flat], {flat["hash"]: permutations}, {})
     assert record["updated"] is False and torch.equal(scorer.model.theta.detach(), before)
+
+
+@pytest.mark.parametrize("permutations", [[[1, 2, 0]], [[1, 2, 0], [0, 2, 1], [1, 0, 2]]])
+def test_exact_table_log_gradient_and_loss_equal_a_hand_computation(permutations):
+    torch = pytest.importorskip("torch")
+    theta, rewards = [0.3, -0.2, 0.5], [1, 0, 1]
+    scorer = ScalarScorer(theta)
+    optimizer = torch.optim.SGD(scorer.model.parameters(), lr=1e-3)
+    task = toy_task(3, rewards)
+    record = rl.exact_table_log_step(scorer, optimizer, [task], {task["hash"]: permutations}, {})
+    total = sum(math.exp(t) for t in theta)
+    pi = [math.exp(t) / total for t in theta]
+    mean = sum(p * r for p, r in zip(pi, rewards))
+    # d/dθ_j of −log Σ π r is −π_j (r_j − J) / J.
+    gradient = [-p * (r - mean) / mean for p, r in zip(pi, rewards)]
+    change = (scorer.model.theta.detach() - torch.tensor(theta, dtype=torch.float64)).tolist()
+    assert [-c / 1e-3 for c in change] == pytest.approx(gradient, rel=1e-9)
+    assert record["loss"] == pytest.approx(-math.log(mean), rel=1e-12)
+    assert record["reward_before"] == pytest.approx(mean, rel=1e-6)  # stored as float32
+    # Where the winners are unlikely, the log objective's gradient stays large while the
+    # expected reward's vanishes.
+    tiny = toy_task(3, [0, 0, 1])
+    log_scorer, plain_scorer = ScalarScorer([5.0, 5.0, -5.0]), ScalarScorer([5.0, 5.0, -5.0])
+    for scorer_, step in ((log_scorer, rl.exact_table_log_step),
+                          (plain_scorer, rl.exact_table_step)):
+        step(scorer_, torch.optim.SGD(scorer_.model.parameters(), lr=1.0), [tiny],
+             {tiny["hash"]: [[0, 1, 2]]}, {})
+    assert log_scorer.model.theta[2].item() - (-5.0) > 0.9
+    assert plain_scorer.model.theta[2].item() - (-5.0) < 1e-4
 
 
 def test_rendering_prints_the_nearest_enemy_and_each_slots_candidate_line():

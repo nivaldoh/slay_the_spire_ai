@@ -446,10 +446,15 @@ def objective(scorer, tasks: list[dict], permutations: dict) -> float:
     return sum(values) / len(values) if values else 0.0
 
 
-def objective_from(logs: dict, tasks: list[dict]) -> float:
-    """The mean expected reward of per-ordering candidate log-probabilities."""
-    values = [sum(sum(math.exp(v) * r for v, r in zip(row, t["rewards"]))
-                  for row in logs[t["hash"]]) / len(logs[t["hash"]]) for t in tasks]
+def objective_from(logs: dict, tasks: list[dict], log: bool = False) -> float:
+    """The mean expected reward (or mean log expected reward) of per-ordering candidate
+    log-probabilities."""
+    def term(row, rewards):
+        value = sum(math.exp(v) * r for v, r in zip(row, rewards))
+        return math.log(max(value, 1e-300)) if log else value
+
+    values = [sum(term(row, t["rewards"]) for row in logs[t["hash"]]) / len(logs[t["hash"]])
+              for t in tasks]
     return sum(values) / len(values)
 
 
@@ -470,6 +475,36 @@ def exact_table_step(scorer, optimizer, tasks: list[dict], permutations: dict,
     tables as the first method, versus a sampled policy-gradient method first (competes with
     checkpoint-rl.md `candidate_reinforce`). Launches per update rest on this.
     """
+    return exact_step(scorer, optimizer, tasks, permutations, log=False)
+
+
+def exact_table_log_step(scorer, optimizer, tasks: list[dict], permutations: dict,
+                         config: dict) -> dict:
+    """exact_table_log@1: one step on −(1/K) Σ_p log Σ_c π_p(c|x) r(c), the same tables. Its
+    gradient is the expected reward's divided by the expected reward, so it does not vanish
+    while the winners are unlikely, which is how exact_table@1 collapsed (log, 2026-10-26).
+
+    Owner, 2026-10-26: "Let's try the simplest fix. I'll leave it to your judgement."
+    JUDGEMENT: log_objective — Claude, 2026-10-26, under that delegation: the log of the exact
+    expected reward as the fix, versus a temperature or an entropy term. The synthetic check's
+    second attempt rests on this.
+    """
+    return exact_step(scorer, optimizer, tasks, permutations, log=True)
+
+
+def ordering_objective(log_probs, rewards, log: bool):
+    """Σ_c π(c) r(c) for one ordering, or its log (computed in log space)."""
+    import torch
+
+    if not log:
+        return (log_probs.exp() * rewards).sum()
+    positive = rewards > 0
+    return torch.logsumexp(log_probs[positive] + rewards[positive].log(), dim=0)
+
+
+def exact_step(scorer, optimizer, tasks: list[dict], permutations: dict, *, log: bool) -> dict:
+    """The exact methods' step: the mean ordering objective over the batch's tasks whose
+    rewards differ; a batch with none left takes no optimizer step."""
     import torch
 
     model = scorer.model
@@ -494,7 +529,7 @@ def exact_table_step(scorer, optimizer, tasks: list[dict], permutations: dict,
             before_logs[task["hash"]].append(log_probs.detach().float().tolist())
             rewards = torch.tensor(task["rewards"], dtype=log_probs.dtype,
                                    device=log_probs.device)
-            loss = -(log_probs.exp() * rewards).sum() / (len(perms) * len(signal))
+            loss = -ordering_objective(log_probs, rewards, log) / (len(perms) * len(signal))
             if not torch.isfinite(loss):
                 raise ValueError("non-finite loss")
             loss.backward()
@@ -507,13 +542,15 @@ def exact_table_step(scorer, optimizer, tasks: list[dict], permutations: dict,
     params_before = [p.detach().clone() for p in trainable]
     optimizer.step()
     optimizer.zero_grad(set_to_none=True)
-    # The predicted change of the expected reward: −∇loss · Δθ.
+    # The predicted change of the objective: −∇loss · Δθ.
     predicted = -float(sum((g.float() * (p.detach() - q).float()).sum()
                            for g, p, q in zip(grads, trainable, params_before)))
     after_logs = distributions(scorer, signal, permutations)
-    after_value = -objective_from(after_logs, signal)
+    after_value = -objective_from(after_logs, signal, log)
     record.update(updated=True, loss=loss_value, loss_after=after_value, gradient_norm=norm,
                   predicted_change=predicted, measured_change=loss_value - after_value,
+                  reward_before=objective_from(before_logs, signal),
+                  reward_after=objective_from(after_logs, signal),
                   distributions_before=before_logs, distributions_after=after_logs,
                   adapter_after=tensor_hash(scorer.adapter_state()))
     record["kl"] = sum(
@@ -524,7 +561,7 @@ def exact_table_step(scorer, optimizer, tasks: list[dict], permutations: dict,
     return record
 
 
-METHODS = {"exact_table@1": exact_table_step}
+METHODS = {"exact_table@1": exact_table_step, "exact_table_log@1": exact_table_log_step}
 
 
 def make_optimizer(model, settings: dict):
