@@ -5,6 +5,10 @@ dataset builder [`gameai.sft`](../src/gameai/sft.py) and a local LoRA smoke test
 ([`scripts/sft_smoke.py`](../scripts/sft_smoke.py)). What is missing is listed at the
 end.*
 
+For checkpoint-based WH3 training, see the [minimal RL research handoff](twwarhammer3/checkpoint-rl.md):
+local hardware, reusable code, a proposed one-decision loop, risks and tests. It does not
+change the student, benchmark or agreed verification methods on this page.
+
 ## Roles
 
 - **OpenRouter serves inference only.** Both games play open-weight models through it

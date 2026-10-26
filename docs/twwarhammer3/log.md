@@ -42,6 +42,48 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-26: Checkpoint RL implementation plan
+
+- Added [checkpoint-rl-plan.md](checkpoint-rl-plan.md), building on the handoff below. Owner
+  (2026-10-26): plan only the first, simplest method, with a structure for testing and
+  comparing later ones. The first method, `exact_table@1`, takes the exact expected reward
+  over audited one-decision reward tables; tasks, task sets, a method registry, evaluation
+  and comparison are shared by every method. Training actions reach the bridge mod at an
+  exact engine tick through the agent's Lua hook and a new mod export, off the mod's 300 ms
+  grid, so identical attempts are tick-identical and restore faults show in checksums.
+- Checks: an eleven-launch live check of the step run; method-agnostic tests with a mapping
+  control; a synthetic state-dependence check from the 338 recorded observations of the Land
+  scenario (no game time) with a shuffled-reward control; an overfit check and a two-launch
+  closed-loop check (the trained choice executed and compared with its audit attempt) with a
+  deranged-table control. Sixteen JUDGEMENT markers; the owner decisions each stage waits on.
+- Corrects the handoff where the code differs: the bridge mod starts during the fast rebuild;
+  the agent's hooks reach the mod only through an export it does not have yet; no restore has
+  reached an ending; the runner's limits are constants.
+- Measured: handover about 50 s after the agent is ready (menu 29 s, load 14 s, rebuild 6 s),
+  131–133 s per restore launch for 80 s of play, tick N = N × 100 ms
+  (`checkpoint-check-20261025c/`); the mailbox apply delay is 300 ms in 34,645 of 35,041
+  acknowledgements of the 33 zero-age `screen1-*` episodes (39 played); the mod's apply grid
+  is 300 ms and, with `observe_ms` 1000 and no requests, it publishes every 1,200 ms.
+- Ten mapping agents and five review rounds (thirty agents, each finding checked by a skeptic)
+  checked the handoff and the drafts against the code. A chain design in an earlier draft and
+  its markers `episode_form`, `descendant_check` and `chain_settings` were removed under the
+  owner's words above. Documentation only, no runtime change, no launch, no training;
+  everything in the plan is unverified.
+
+## 2026-10-25: Checkpoint RL research handoff
+
+- Added [checkpoint-rl.md](checkpoint-rl.md): a proposed local one-decision candidate
+  policy, serial model/game phases, REINFORCE objective, collection contract and tests
+  targeting likely numerical, attribution, timing, resource and split failures.
+- Independent code/document review checked reuse, the objective and scope; clarified
+  no-op evidence, cached-stat comparison and frozen-base tests. Corrected the stale
+  checkpoint-limit sentence saying the completed siege check was still running.
+- Six proposed judgement calls are marked in the handoff: `local_model`, `minimal_task`,
+  `candidate_task`, `terminal_reward`, `candidate_reinforce`, `verification_plan`.
+  None adopts a benchmark or new agreed verification method.
+- Documentation-only checks: 66 document-link tests passed; Ruff and diff checks passed.
+  No runtime change, game launch or training; WH3 RL implementation and learning remain unverified.
+
 ## 2026-10-25: Siege checkpoint checks pass for declared cases
 
 - `2e2acbe`, `runs/twwarhammer3/siege-final-20261025b/`: 15 distinct completed logs,

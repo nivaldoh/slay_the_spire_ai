@@ -5,6 +5,16 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-26 (checkpoint RL plan), verbatim: "Let's add your suggested checks, as well as plan
+  a structure that will make it easier to test and compare these different RL post-training
+  methods. We will start by implementing the simpler one, moving up gradually, but don't
+  worry about planning the other methods now. Let's focus on getting the first one right."
+  Earlier the same session: plan RL with a reverse curriculum from checkpoints, no
+  implementation, strong tests, checkpoint errors exposed. [Plan](twwarhammer3/checkpoint-rl-plan.md).
+- 2026-10-25 (checkpoint RL handoff): write a document from the research to help another
+  agent research and implement short-episode RL; highlight risks and suggest a minimal
+  implementation with unit tests that catch likely issues. [Handoff](twwarhammer3/checkpoint-rl.md).
+  Documentation requested; implementation and the proposed experiment/check choices remain open.
 - 2026-10-25 (manual towers): built two field towers during a restore and asked to restore
   that state; then asked whether to build them manually or have the assistant do it.
   Assistant recreates the recorded choices for the check; the original timed run had

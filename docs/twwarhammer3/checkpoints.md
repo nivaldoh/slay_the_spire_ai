@@ -73,8 +73,8 @@ owner's decision each time.
 - Native checksums alone do not cover field construction/supplies: manual tower builds
   changed those readings without changing the checksums. Independent field readings are
   required alongside them.
-- The Land check has passed at its recorded revision. The expanded siege check is still
-  running; its results do not extend to other maps, armies or equipment combinations.
+- The Land and declared siege checks passed at their recorded revisions; their results
+  do not extend to other maps, armies or equipment combinations.
 
 ## Siege check
 

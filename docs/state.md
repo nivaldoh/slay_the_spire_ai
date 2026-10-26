@@ -67,7 +67,8 @@ Spire capture for RL and other methods is in as harness v10.2 (2026-10-23): Qwen
 logprobs and per-floor save snapshots ([what each method can use](posttraining.md#beyond-supervised-fine-tuning));
 restoring a snapshot is untested.
 
-[Plan and data-use choices](posttraining.md).
+[Plan and data-use choices](posttraining.md). [Checkpoint RL handoff](twwarhammer3/checkpoint-rl.md) and
+[implementation plan](twwarhammer3/checkpoint-rl-plan.md) written: the first method only, with a shared structure for later ones (owner, 2026-10-26); its stages wait on its [owner decisions](twwarhammer3/checkpoint-rl-plan.md#owner-decisions). Nothing implemented; no training runs.
 
 ## Known issues
 
