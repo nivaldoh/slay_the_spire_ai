@@ -286,6 +286,7 @@ uv run python -m twwarhammer3 report <job> [<job> ...] --output runs/twwarhammer
 uv run python -m twwarhammer3 export <job> [<job> ...] --output runs/twwarhammer3/exports/<name>
 uv run python -m twwarhammer3 spend    # WH3 OpenAI ledger total; --provider openrouter for OpenRouter
 uv run --locked python tests/twwarhammer3/check_wh3_checkpoint.py --output runs/twwarhammer3/checkpoint-check-<name>   # battle checkpoints, 4 launches
+uv run --locked --extra llm python -m twwarhammer3 rl <phase> PLAN --output ...   # checkpoint RL phases (docs/twwarhammer3/checkpoint-rl-plan.md)
 uv run python -m gameai.sft <export> [<export> ...] --output runs/sft/<name>   # see docs/posttraining.md
 git grep -n JUDGEMENT -- ':!AGENTS.md' ':!docs/judgement.md'   # marked judgement calls awaiting the owner
 ```
