@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import copy
-import ctypes
 import fcntl
 import gc
 import hashlib
@@ -23,6 +22,7 @@ from pathlib import Path
 
 import torch
 
+from gameai.lm import _json, tensor_hash  # noqa: F401  (re-exported)
 from gameai.provenance import committed_revision, source_fingerprints, write_json
 from spire.language.demonstrations import DemonstrationSource, export_demonstrations
 
@@ -44,10 +44,6 @@ class TrainingDeadline(BaseException):
 def _sha(path: Path) -> str:
     with path.open("rb") as handle:
         return hashlib.file_digest(handle, "sha256").hexdigest()
-
-
-def _json(value) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
 
 
 def _read(path: Path):
@@ -251,15 +247,6 @@ def _finite(value) -> bool:
     if isinstance(value, (tuple, list)):
         return all(_finite(item) for item in value)
     return not isinstance(value, (float, int)) or math.isfinite(value)
-
-
-def tensor_hash(tensors: dict) -> str:
-    result = hashlib.sha256()
-    for name, tensor in sorted(tensors.items()):
-        result.update(_json([name, str(tensor.dtype), list(tensor.shape)]))
-        buffer = tensor.detach().cpu().contiguous()
-        result.update(ctypes.string_at(buffer.data_ptr(), buffer.numel() * buffer.element_size()))
-    return result.hexdigest()
 
 
 def _adapter(model) -> dict:

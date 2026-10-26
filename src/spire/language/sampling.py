@@ -15,32 +15,12 @@ import math
 import random
 import time
 
+from gameai.lm import normalized, sample_index  # noqa: F401  (re-exported)
 from spire.language.demonstrations import FORMAT_VERSION, render_prompt
 from spire.protocol import Action, Decision, ProtocolError
 
 SCORING = "canonical-choice-completion-sum-v1"
 LOG_PROB_TOLERANCE = 1e-4
-
-
-def sample_index(log_probs: list[float], draw: float) -> int:
-    """Inverse-CDF draw over normalized probabilities, in candidate order."""
-    if not log_probs or not 0.0 <= draw < 1.0:
-        raise ValueError("Sampling requires candidates and a draw in [0, 1)")
-    probabilities = [math.exp(value) for value in log_probs]
-    total = sum(probabilities)
-    cumulative = 0.0
-    for index, probability in enumerate(probabilities):
-        cumulative += probability / total
-        if draw < cumulative:
-            return index
-    return len(probabilities) - 1
-
-
-def normalized(scores: list[float], temperature: float) -> list[float]:
-    scaled = [score / temperature for score in scores]
-    peak = max(scaled)
-    log_total = peak + math.log(sum(math.exp(value - peak) for value in scaled))
-    return [value - log_total for value in scaled]
 
 
 class CandidateSampler:
