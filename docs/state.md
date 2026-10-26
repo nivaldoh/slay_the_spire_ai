@@ -71,8 +71,9 @@ restoring a snapshot is untested.
 [implementation plan](twwarhammer3/checkpoint-rl-plan.md): implemented on branch `wh3-checkpoint-rl`
 and run on the night of 2026-10-26 ([log](twwarhammer3/log.md#2026-10-26-checkpoint-rl-implemented-and-run-stage-3-fails-the-policy-collapses)):
 exact-tick injection into restored battles works and is deterministic; the trained choice won
-live on one rung; the synthetic check and the ladder's second rung failed the same way (the
-policy collapses onto one action), also after the one allowed re-run. Stopped; decision 11.
+live on one rung; the synthetic check (also after its one allowed re-run) and the ladder's
+second rung failed: the policy collapses (onto one action, or onto one displayed slot). A
+state-loading check found no bug. Stopped; decision 11.
 
 ## Known issues
 
@@ -108,8 +109,9 @@ policy collapses onto one action), also after the one allowed re-run. Stopped; d
 10. **Spire capture check.** Noted for later (owner, 2026-10-23: "Not sure what this is"). It is a script that reads one finished run and checks the new capture against facts recorded separately: the logprob tokens spell the reply and match the provider's token count, the choice probabilities sum to 1, and each save snapshot decodes with the run's own seed. It passed on 40 of 43 night runs ([log](spire/fullrun/log.md#2026-10-23-collection-night-qwen36-reasoning-off-harness-v102)). Agreeing it would make it the capture's repeatable test under the verification rule; until then the capture counts as unverified. It lives only in `runs/fullrun/collect-20261023/check_capture.py`, which has no backup.
 
 11. **Checkpoint RL.** The [night's run](twwarhammer3/log.md#2026-10-26-checkpoint-rl-implemented-and-run-stage-3-fails-the-policy-collapses)
-    stopped where the plan needs you. (a) The first method collapses onto one action whenever
-    the right choice depends on the state (synthetic check, its re-run, the two-rung ladder):
+    stopped where the plan needs you. (a) The first method collapses whenever the right
+    choice depends on the state (synthetic check and its re-run: one action; the two-rung
+    ladder: one displayed slot); no state-loading bug was found:
     choose a remedy (temperature, entropy term, other settings) or a second method, such as
     maximising each task's log expected reward, whose gradient does not vanish. (b) Review the choices made without you (`runs/twwarhammer3/rl/plans/expansion-declaration.md`):
     the second root, K 1 for the synthetic check, stage 4 before stage 3, the result-collapse

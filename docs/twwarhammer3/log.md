@@ -60,9 +60,10 @@ checks are proposals; nothing is verified under the hard rule.
   2 losers (`noop`, `fall_back_f2`), its repeat identical over 4,184 ticks.
 - Stage 5 (14 launches): rung 2400 flat (all lose), skipped under a declared skip rule; rung
   2100 has 2 winners (`fall_back_f2`, `charge_f1`). Trained on 2700 and 2100 from the stage 4
-  adapter (300 updates), mass at 2100 reached 0.375 (bar 0.8) and 2700 fell from 1.0 to 0.5:
-  the same single-action collapse. The pre-launch checks refused the closed-loop launch, so the
-  ladder ends there.
+  adapter (300 updates), mass at 2100 reached 0.375 (bar 0.8) and 2700 fell from 1.0 to 0.5.
+  Not one action: starting saturated, Adam overshot into always choosing displayed slot 2
+  (16/16 evaluation orderings), whichever candidate is shown there. The pre-launch checks
+  refused the closed-loop launch, so the ladder ends there.
 - Stage 4 (2 launches, run before stage 3): from 0.92 at the start, `exact_table@1` reached
   1.0 on the winners; a deranged control (rewarding `noop`) went 0.017 → 1.0 under 8 unseen
   orderings. The trained choice reproduced its audit attempt and won live; the control lost
@@ -74,6 +75,15 @@ checks are proposals; nothing is verified under the hard rule.
   final adapter with a new optimizer, declared before running) left the policy unchanged (KL
   0.0000; gradient norm 1e-8): same 0.42/0.49. Both controls were stopped as moot. Stage 3 fails
   after its re-run, where the plan stops; the next step changes the method or its settings.
+- Owner asked whether state is loaded wrongly: a 73-agent check (six lenses, three skeptics per
+  claim; `rl/investigation-20261026/`) found no loading bug. Contexts match the Lua readings
+  (0.05 m) and the source run; prompts carry the distance; scoring matches a slow reference
+  (4e-6); adapters, reloads and hash chains are exact; every evaluation recounts. One records
+  bug: `train()` wrote settings.K 4 for K 1 runs (fixed on the branch, `6d33b76`). Cause, by
+  the evidence: the base model ignores the distance (P(fall_back) 0.063 near, 0.065 far) and
+  the expected-reward gradient scales with the winner's probability, so far tasks dragged both
+  classes onto `attack_nearest`. A skeptic's replay with −log π(winner) avoided the collapse
+  but learned no near/far rule within about 110 updates (one seed).
   [Decisions](../state.md#owner-decisions-waiting).
 
 ## 2026-10-26: Checkpoint RL implementation plan
