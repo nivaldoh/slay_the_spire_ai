@@ -26,7 +26,8 @@ AGENTS.md on 2026-10-28 to keep that file lean (owner).
   Extended 2026-10-19: disturb declared settings, check funds/permission refusals and a fixed
   reserve pool, then restore original settings. Passed with `e32b1b5` sources (four launches,
   ten-unit saved roster, three mounts, ranks 0/1/3/9, seven reserves; attack/defence exact,
-  leadership XP bonuses relative to rank zero). Restart uses supervised shutdown; graceful
+  leadership XP bonuses relative to rank zero; that relative reading came after agreement,
+  JUDGEMENT? in the checker). Restart uses supervised shutdown; graceful
   exit, other modes, reinforcement XP and policy strength remain unverified.
 - WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime:
   real Python/Lua component checks, with simulated game APIs/play-loop observations:

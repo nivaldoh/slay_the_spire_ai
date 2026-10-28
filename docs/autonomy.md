@@ -3,8 +3,8 @@
 What Claude Code and Codex may do alone when the owner cannot review or decide. The
 [standing work menu](#standing-work) and small interviews were agreed on 2026-10-28.
 The other general rules below remain the 2026-10-21 proposal unless separately agreed.
-The [next overnight plan](#next-overnight-research-and-checkpoint-timing) is saved only:
-the owner explicitly said not to run it yet. This revision starts no game or goal.
+The [overnight plan](#next-overnight-research-and-checkpoint-timing) ran on 2026-10-28
+(02:39-04:35; [report](twwarhammer3/log.md#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a)).
 [AGENTS.md](../AGENTS.md) still applies. The [owner's direction](owner-direction.md) is to
 reduce their bottleneck through objective, testable work, without accumulating errors or
 unused features. Success is a useful finished change or evidence that makes an existing
@@ -219,8 +219,9 @@ stop play and is never re-pinned alone (owner, 2026-10-18).
 
 ## Next overnight: research and checkpoint timing
 
-Saved 2026-10-28 at the owner's request. **Not started or scheduled.** Start only when the
-owner explicitly asks; record the start, return time and game cutoff then. No clear game
+Saved 2026-10-28 at the owner's request; **ran that night** (02:39-04:35, at the owner's
+explicit start). A rerun needs the owner's explicit start; record the start, return time and
+game cutoff then. No clear game
 window means offline work only. This is the selected mixed research/review plan, with $0
 model spending and the conditional free timing diagnostic the owner selected. It does not
 resume the stopped checkpoint-RL training or choose a thesis topic.

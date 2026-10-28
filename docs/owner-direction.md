@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-28 (on return from the afternoon window), verbatim: "1. No time to check that
+  commit. Use common sense for now. 2. Not sure what you mean 3.Not sure what you need 4.
+  Don't worry about licensing yet." Then: "Let's think about what it would take to turn WH3
+  into an RL env. Write a plan here." Applied: `04e5adb`'s test expectation stays; the
+  army-setup row in agreed-checks.md now names its marker and the autonomy page no longer
+  calls the overnight plan unstarted (plain factual fixes); licensing is deferred.
 - 2026-10-28 (answers to the overnight report's three questions): "1. We'll keep the
   human-AI direction just as a note for now. We'll prioritize other directions. 2. Not sure
   about the differences. We should use whatever clock that helps us stay correct and is
