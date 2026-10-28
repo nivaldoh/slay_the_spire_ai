@@ -76,9 +76,9 @@ Already decided: small mixed armies first; the engine picks the winner, timer wi
 17. **How should health and morale combine?** Keep them separate, combine them with explicit weights, or use one only to break ties? How do we avoid counting a damaged unit's later rout as a second, independent loss? Does a healthy routed unit count as temporarily out, lost, or partly valuable? How are units that don't rout normally treated? End-state flags alone can't show which order caused a collapse, and the flags can overlap.
 
    Evidence for 16-17 (2026-10-28, not an answer; friendly units in 441 recorded battles, older
-   scenarios): 42% of 1,867 routs recovered but only 144 stayed in action; half began with more
-   than half the men; 37% of living units routing at the end were above half strength
-   (`runs/interview-evidence-20261028/`).
+   scenarios): 42% of 1,867 routs recovered (median 43 s out) but only 144 stayed in action; half
+   began with more than half the men; 37% of living units routing at the end were above half
+   strength; units spent 17% of their time routing (`runs/interview-evidence-20261028/`).
 
 18. **How should non-wins and failures count?** A draw as zero, a half point, or its own category? The controller-failure rule is agreed ([outcome table](benchmark.md#outcome-and-score)); decide the rest: provider outage, exhausted credits, wall-time or budget cap, unknown failure and voluntary surrender. Which count against the model as served, which get a replacement battle, and which stay unresolved? Can a failed battle keep partial health or morale credit? The engine timer and the controller's wall-time limit are different endings.
 
