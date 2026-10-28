@@ -65,7 +65,9 @@ marking them for the owner's review; the rule for agents is in
 - Next: mark in batches by area, checking each marker's text at the site first; live values
   and deciding sentences first, history never; docs any time, code and configs only between
   game jobs, in behaviour-neutral commits (a comment-only Python change keeps its syntax
-  tree) whose messages give marker counts per file so the owner can sample.
+  tree) whose messages give marker counts per file so the owner can sample. Date each choice
+  with `git log -S` and check whether a later commit narrowed it (most errors the 2026-10-28
+  reviews found were wrong dates or authors); one skeptical reviewer per batch.
 - Batches done 2026-10-28 (34 markers; the Lua mod, policy files and prompts cannot carry one,
   so their markers sit in the pages that document them): `[loop]` 30-44 (`play.py` 7,
   `capture.py` 1), `[controllers]` 60-74 (`controllers.md` 7), `[scoring]` 15-29 (report code
