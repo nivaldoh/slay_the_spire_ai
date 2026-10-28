@@ -53,15 +53,15 @@ Owner's `/goal` night ([plan](../autonomy.md#next-overnight-research-and-checkpo
   Windows second was 0.9992-1.0002 in all 31 stretches; the unrestored source battle had the
   same steps. The classifier first passed 5 synthetic cases (step, stall, burst, missing,
   none), and 4 plausible wrong versions each failed one.
-- Live, with a passive 10 Hz Windows clock sidecar (no game input): the unchanged agreed Land
-  check passed at `dcb8b5a`, the first run on main since its dependencies changed after
-  `6fdb271`. Restores 0 checksum mismatches over 2,000 ticks with 9/9 readings equal; the
+- Live, with a passive 10 Hz Windows clock sidecar (no game input): the agreed Land check
+  (script as of `6cd5fbe`, stricter than at `6fdb271`; not edited for tonight) passed at
+  `dcb8b5a`, its first run on main since those changes. Restores 0 checksum mismatches over 2,000 ticks with 9/9 readings equal; the
   changed restore diverged at 1303; Replays folder unchanged. 11.6 min.
-  Against Windows `perf_counter` over 699 s, WSL `monotonic` ran 0.936 (no correction) and
-  `time.time` 0.93-0.95 with 20 steps of +1.8-2.5 s. The same rate showed without the game
-  (177 s). No tick gap over 0.134 s. Facts: [clocks](integration.md#clocks-measured-2026-10-28).
-- Unverified: whether these WSL errors changed any recorded result. Think times, the delay
-  sent to the next prompt and short-window clock ratios are timed in WSL; nothing was
+  Against Windows `perf_counter` over 699 s, WSL `monotonic` ran about 0.936 (no correction)
+  and `time.time` 0.93-0.95 with 20 steps of +1.8-2.5 s. The same rate showed without the
+  game (180 s). No tick gap over 0.134 s. Facts: [clocks](integration.md#clocks-measured-2026-10-28).
+- Unverified: whether these WSL errors changed any recorded result. Call times, the think time
+  shown in the next prompt and short-window clock ratios are timed in WSL; nothing was
   rescored. The team check's band is marked `JUDGEMENT?` (`team_clock_band`). Recording the
   new passing revision in `agreed-checks.md` waits for the owner.
 
