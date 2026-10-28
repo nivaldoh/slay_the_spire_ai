@@ -1,10 +1,11 @@
 # Total War: WARHAMMER III battles
 
-The first benchmark evaluates complete controllers in small mixed-army **Land Battles**
-against the game AI. The engine decides the winner, including timer endings (owner,
-2026-10-23). Health, leadership and tactical events explain performance; they do not add
-points to a victory. Scripts, models and hybrids use structured state while the battle
-runs unpaused at 1x; actual delay, cost and failures accompany outcomes.
+The benchmark draft starts with small mixed-army **Land Battles** against the game AI.
+The intended scope also includes Siege, Survival, Ambush and Conquest; other types await
+confirmation (owner, 2026-10-28). Health and morale are the tentative primary measures;
+scoring and checks remain open. The engine decides the winner, including timer endings
+(owner, 2026-10-23). Scripts, models and hybrids use structured state while the benchmark
+battle runs unpaused at 1x; actual delay, cost and failures accompany outcomes.
 Start with the [definition and first profile](benchmark.md#the-first-battle)
 and [implementation plan](benchmark-implementation.md#phases). The profile and new
 checks remain proposals; the existing readers do not yet implement this definition.

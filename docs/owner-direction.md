@@ -317,6 +317,27 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-28 (RL environment, thesis and benchmark, status follow-up): the thesis will
+  likely concern multi-agent systems; multi-agent RL could connect it to the WH3 RL
+  environment, which may also stay separate. "The research question is something we're
+  still figuring out." Tentative environment outline: each agent observes the battle
+  information available to it, perhaps with information about other active agents, and
+  controls its part of the army. Rewards might be sparse win/loss outcomes, using restores
+  to study relevant situations near a battle's end. Reset could return to a battle start
+  or a saved checkpoint; the owner asked what reset means. Explanation: restart the game
+  episode at that state while retaining learned model weights. Observation sharing,
+  control allocation, rewards, reset details and correctness checks remain open; discuss
+  the checks more deeply later. [Candidate connection](thesis/directions.md#6-wh3-as-an-rl-environment-for-high-level-decisions).
+- 2026-10-28 (benchmark scope and measures): "The Land Battle benchmark should probably
+  measure unit health and morale, since other metrics seems secondary to these two."
+  Tentative priority, not a scoring formula. Include several battle types: Siege (existing
+  work), Survival, Ambush and Conquest; the owner will confirm others. Many benchmark
+  definitions remain for later. This broadens the 2026-10-23 Land-only planning scope;
+  mode order, profiles, scoring and checks are not settled. [Definition](twwarhammer3/benchmark.md).
+- 2026-10-28 (local LLM learning experiment): "If it's the simple RL post-training for a
+  local LLM, we can leave it paused for now." It is the checkpoint-based Qwen3-0.6B LoRA
+  candidate chooser; leave that experiment paused. This does not pause discussion of the
+  broader RL environment. [Experiment](twwarhammer3/checkpoint-rl.md#open-owner-choices-decision-11).
 - 2026-10-28 (side quest, verbatim): "one thing that might be outside of thesis scope but that
   I want to do at least as a sidequest is to see if we can turn WH3 into an RL env, maybe even
   using the checkpoint restoration feature for reverse curriculum or so." Recorded only; no
@@ -342,7 +363,8 @@ WH3:
   knowledge needed to win and execution given API latency; consider objective health and
   wavering/routing measures and missing game information. The [interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle)
   leaves scoring formulas, knowledge evidence, profile and checks open for the owner's
-  answers; earlier proposals are not adopted by this request.
+  answers; earlier proposals are not adopted by this request. Land-only planning scope
+  broadened on 2026-10-28 to include the battle types listed above.
 - 2026-10-23 (Land Battle benchmark), verbatim: "Timer outcomes can be whoever the engine
   decides is the winner. Let's work on the updated, improved benchmark definition and
   plan, focusing on what our first Land Battle benchmark should look like." On army size:

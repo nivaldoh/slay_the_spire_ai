@@ -2,6 +2,12 @@
 
 How we get from the [definition](benchmark.md) to a working benchmark: the phases, the open questions, the checks, what the code does today, and the earlier plans. This page changes as the work moves; the definition should not. Status on 2026-10-23: planning only. The owner asked for the definition and plan, not for code changes, game runs or spending.
 
+Update, 2026-10-28: health and morale are the owner's tentative primary measures. The
+intended scope includes Siege, Survival, Ambush and Conquest as well as Land; other types
+await confirmation. The phases below remain the earlier Land proposal. Mode order,
+profiles, scoring and correctness checks need later discussion; the interview need not
+be settled now. No new run is scheduled by this update.
+
 ## Milestones
 
 The first milestone is a working evaluation of one matchup in both roles, with a checked report and commands anyone can rerun. A reusable release also freezes the reference controllers, makes the evidence accessible, lists its limits, and records a recount and a rerun by someone other than the author. A pilot alone gives neither a reliable win rate nor results on other armies or maps. Two roles rest on JUDGEMENT `benchmark.md` Role coverage.
@@ -29,7 +35,7 @@ Build on what exists: the mod and mailbox, the play loop, the reports and the ou
 
 ## Owner interview: one Land Battle
 
-The owner asked for these questions on 2026-10-23, all at once, to settle the definition of one Land Battle; other battle types come later. Answer by number, here or in conversation; a short answer or "undecided" is enough. The options are not defaults, and the JUDGEMENT proposals in the definition stay open until answered.
+The owner asked for these questions on 2026-10-23, all at once, to settle the definition of one Land Battle. They remain useful for that battle within the broader scope named above. Answer by number, here or in conversation; a short answer or "undecided" is enough. The options are not defaults, and the JUDGEMENT proposals in the definition stay open until answered.
 
 Already decided: small mixed armies first; the engine picks the winner, timer wins included; battles run unpaused at 1x. The aim (owner, 2026-10-23): compare models on the knowledge needed to win **and** on acting well despite API latency. Reading health or a routing flag is objective; how much it is worth in a score is a separate choice. A win alone doesn't show which knowledge the model used.
 
@@ -61,7 +67,7 @@ Already decided: small mixed armies first; the engine picks the winner, timer wi
 
 11. **How do we separate knowing, choosing and executing?** Do you want a record of the opportunity the model could see → the order it chose → the engine accepting it → the observed effect? For example, telling apart "never ordered a withdrawal", "ordered it too late" and "ordered it, but the unit stayed stuck". May an explanation stay "cause unknown" when the trace can't tell a bad plan from stale state or game behaviour?
 
-12. **How far should the first version go in attributing causes?** Is an observed effective action enough, or must we show it improved health, morale or the chance of winning compared with another action? That needs its own comparison; damage that follows an order isn't enough. The harness can't restore an exact mid-battle state or the game's randomness. Should credit for specific actions, spell damage included, wait?
+12. **How far should the first version go in attributing causes?** Is an observed effective action enough, or must we show it improved health, morale or the chance of winning compared with another action? That needs its own comparison; damage that follows an order isn't enough. Since this question was written, [checkpoint restoration](checkpoints.md) has passed its agreed checks for declared cases at recorded revisions. Those restores make comparisons possible, but do not by themselves establish credit for an action. Should credit for specific actions, spell damage included, wait?
 
 ### D. Health, wavering/routing and battle scoring
 

@@ -1,5 +1,11 @@
 # WH3 checkpoint RL research and minimal implementation
 
+Current status, 2026-10-28: the local Qwen3-0.6B LoRA experiment is implemented and merged,
+but stays paused at the owner's request ([results and deferred choices](#open-owner-choices-decision-11)).
+The broader [RL environment and possible multi-agent thesis](../thesis/directions.md#6-wh3-as-an-rl-environment-for-high-level-decisions)
+remain a separate discussion. The handoff below describes the original 2026-10-25 baseline;
+its statements about missing code are historical, corrected by the implementation plan.
+
 2026-10-25. Handoff for an agent researching and implementing short-episode language
 model reinforcement learning in WH3. Code inspected at `34f485b`; no WH3 RL trainer or
 learning result exists yet. Read [state](../state.md), [checkpoints](checkpoints.md),
@@ -352,6 +358,11 @@ play, open-ended order generation, SFT from audited winners, KL/entropy regulari
 remote training and full-battle evaluation are later designs with separate tests.
 
 ## Open owner choices (decision 11)
+
+Deferred, owner 2026-10-28: leave the simple local LLM post-training experiment paused.
+No remedy or rerun is needed now. The branch was merged on 2026-10-28; the merge item in
+the historical inbox below is complete. The remaining choices are retained for a future
+review, not prerequisites for discussing the broader RL environment.
 
 Moved verbatim from the [state page](../state.md#owner-decisions-waiting) inbox on 2026-10-28
 to keep the inbox short. The branch's own pages hold the evidence.

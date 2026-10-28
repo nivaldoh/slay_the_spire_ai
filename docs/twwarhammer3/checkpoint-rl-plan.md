@@ -11,8 +11,12 @@ proposes a different value for the same call, its marker names the handoff marke
 competes with, and the owner decides between them. Implementation (2026-10-26, branch
 `wh3-checkpoint-rl`, under the owner's goal to implement this plan): stages 1–5 are coded and
 run as [logged](log.md#2026-10-26-checkpoint-rl-implemented-and-run-stage-3-fails-the-policy-collapses); merged
-to main on 2026-10-28 (Spire's language files kept unchanged for its training audit); every
-check here is still a proposal and nothing is verified under the agreed-method rule.
+to main on 2026-10-28 (Spire's language files kept unchanged for its training audit).
+The owner agreed the stage 1 and stage 4 methods on 2026-10-26; their status is recorded in
+[agreed-checks.md](../agreed-checks.md). Other proposed checks are not agreed by this plan.
+Owner, 2026-10-28: leave this local LLM post-training experiment paused. The broader
+[RL environment](../thesis/directions.md#6-wh3-as-an-rl-environment-for-high-level-decisions)
+and its possible multi-agent thesis connection remain a separate discussion.
 Every stage ends in a check whose pass rule is written before it runs; a stage starts only
 after the owner has answered the decisions listed for it ([owner decisions](#owner-decisions)).
 

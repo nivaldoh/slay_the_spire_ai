@@ -9,12 +9,11 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
-**Nothing runs**: all game controllers are stopped. Last finished: the 2026-10-28 overnight
-plan ([report](twwarhammer3/log.md#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a);
-your answers applied) and the 2026-10-28 afternoon away window ([log](twwarhammer3/log.md#2026-10-28-afternoon-44-judgement-markers-stats-keeps-timing-arms-apart); $0): 44
-judgement markers over 8 areas ([register](judgement.md#status-and-how-to-continue)), the `stats`
-pooling fix, Spire limit tests and thesis checks ([notes](thesis/notes/README.md)).
-Thesis: the [proposal](thesis/proposal.md) is one candidate, not a selected topic
+**Nothing runs**: all game controllers are stopped. The 2026-10-28 long autonomous runs
+and checkpoint-RL merge are finished ([log](twwarhammer3/log.md)); the owner's latest
+[direction](owner-direction.md) is recorded. Local LLM post-training stays paused.
+Thesis: likely multi-agent systems, possibly multi-agent RL linked to the WH3 environment;
+the research question is open. The [proposal](thesis/proposal.md) is one candidate
 ([directions](thesis/directions.md), [papers](thesis/papers.md)). Testing reviews await you:
 [eval review](testing.md#wh3-evaluations-and-tests-2026-10-23),
 [live-check comparison](testing.md#wh3-live-check-comparison-2026-10-23).
@@ -23,9 +22,10 @@ Three unmerged draft branches remain ([list](#branches)); checkpoint RL was merg
 
 ## Total War: WARHAMMER III
 
-Current priority: define one small mixed-army Land Battle to compare model knowledge and
-execution at API latency. Engine victory includes timer endings; how health, morale and
-knowledge evidence contribute to the score is open in the interview.
+Benchmark definition remains open. The Land Battle draft uses small mixed armies; health
+and morale are the owner's tentative primary measures (2026-10-28). Planned scope also
+includes Siege, Survival, Ambush and Conquest, with other types to confirm. Engine victory
+includes timer endings; scoring, mode order and checks remain undecided.
 [Definition](twwarhammer3/benchmark.md), [plan](twwarhammer3/benchmark-implementation.md#phases),
 [README](twwarhammer3/README.md), [log](twwarhammer3/log.md), [results](twwarhammer3/results.csv).
 
@@ -39,10 +39,9 @@ knowledge evidence contribute to the score is open in the interview.
 - Battle checkpoints: Land check at `6fdb271` and `dcb8b5a`, declared siege cases at `2e2acbe`; build
   25961564 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
 
-Benchmark work waits: answer the [single-battle interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle),
-then revise the proposed profile, score, knowledge evidence and checks from those answers.
-Readback work, implementation and a pilot follow the agreed definition; settings, counts,
-checks and spending remain proposals. No new experiment is authorized by this interview.
+Open discussions: the [RL environment and its possible thesis connection](thesis/directions.md#6-wh3-as-an-rl-environment-for-high-level-decisions)
+and remaining [benchmark definitions](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle)
+when the owner is ready. Implementation, checks and new runs await those definitions.
 
 ## Slay the Spire
 
@@ -65,16 +64,11 @@ Spire capture for RL and other methods is in as harness v10.2 (2026-10-23): Qwen
 logprobs and per-floor save snapshots ([what each method can use](posttraining.md#beyond-supervised-fine-tuning));
 restoring a snapshot is untested.
 
-[Plan and data-use choices](posttraining.md). [Checkpoint RL handoff](twwarhammer3/checkpoint-rl.md) and
-[implementation plan](twwarhammer3/checkpoint-rl-plan.md): implemented on branch `wh3-checkpoint-rl`, merged to main on 2026-10-28 (owner's request),
-and run on the night of 2026-10-26 ([log](twwarhammer3/log.md#2026-10-26-checkpoint-rl-implemented-and-run-stage-3-fails-the-policy-collapses)):
-exact-tick injection into restored battles works and is deterministic; the trained choice won
-live on one rung; the synthetic check (also after its one allowed re-run) and the ladder's
-second rung failed: the policy collapses (onto one action, or onto one displayed slot). A
-state-loading check found no bug. The simplest fix (a log objective) stops the collapse but
-reaches only 0.59 held out (bar 0.9; lr 1e-3: 0.10). A diagnostic showed the model fits contexts
-but reads the wrong unit, and that the synthetic gate itself is confounded. On a de-confounded
-v2 it learns the training split (0.96) but generalises to 0.76 held out. Stopped; decision 11.
+[Plan and data-use choices](posttraining.md). The local Qwen3-0.6B checkpoint-RL experiment
+is merged, but stays paused (owner, 2026-10-28; decision 11). The revised learner reached
+0.76 on held-out synthetic tasks against a 0.90 gate; no general learning gain established
+([log](twwarhammer3/log.md#2026-10-26-checkpoint-rl-implemented-and-run-stage-3-fails-the-policy-collapses)).
+The broader RL environment remains a separate discussion, possibly connected to the thesis.
 
 ## Known issues
 
@@ -100,7 +94,7 @@ v2 it learns the training split (0.96) but generalises to 0.76 held out. Stopped
 
 ## Owner decisions waiting
 
-1. **One Land Battle definition.** Answer the [interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle) on model comparison, knowledge, latency, health/morale scoring and required game data. Engine timer outcomes and small mixed armies are agreed; the earlier profile, summary, role coverage and new checks remain proposals. Historical c1 is unchanged. Clock rule (owner, 2026-10-28): measured durations in battle time ([clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)). Evidence from recorded battles now sits under questions 13-17, 23 and 27 (2026-10-28; not answers).
+1. **Benchmark definition, later.** Health and morale are the tentative primary measures; Siege, Survival, Ambush and Conquest join Land in the intended scope (owner, 2026-10-28). Scoring formulas, profiles, mode order, knowledge/latency evidence and checks remain open in the [Land interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle). Engine timer outcomes and small mixed armies remain agreed; historical c1 is unchanged. Durations use battle time ([clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)).
 2. **Next experiments and spending.** Choose a game window for the new profile's measurement checks/pilot, after its definitions are settled, then the controller comparison and budget. The [plan](twwarhammer3/benchmark-implementation.md#phases) starts with free scripts. Older P5, Kimi and team estimates are deferred; OpenAI's $52 cap still refuses Sol. No new paid plan is authorized by this definition update.
 3. **Remaining autonomy rules.** The [standing menu and small interviews](autonomy.md#standing-work) were agreed on 2026-10-28; the saved overnight plan ran that night (02:39-04:35; [report](twwarhammer3/log.md#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a)). Other provisions of the older [away guidelines](autonomy.md) still await review; this was not blanket acceptance.
 4. **Model-team choices to review later.** On 2026-10-28 you let me settle five open items for now; each keeps today's behaviour, stays marked and is listed in [multi-agent-implementation.md](twwarhammer3/multi-agent-implementation.md#choices-settled-for-now-2026-10-28). Before a paid team battle, agree a check for `team_llm_rules` ([next](twwarhammer3/multi-agent-implementation.md#next)); model members have not played live.
@@ -109,9 +103,9 @@ v2 it learns the training split (0.96) but generalises to 0.76 held out. Stopped
 7. **Backend and sampling policy.** Review the delegated backend pins and decide sampling capture and serving-fault treatment. b36's [backend pins](twwarhammer3/latency.md#owner-decisions) await review. Recommended: request log-probabilities, seed and explicit sampling where the pinned backend advertises them ([gaps](posttraining.md#beyond-supervised-fine-tuning); listings rechecked October 21, not a capture test). Choose how to report or rerun [garbled replies](twwarhammer3/empire.md#for-the-owner-to-decide); current backend failures count against the model.
 8. **Training preparation.** Choose a host, serving route and teacher; decide when and how to build the Empire dataset. Secondary priority. [Data-use choices](posttraining.md#provider-terms): OpenAI outputs (25,503 rows excluded: Spire 11,099; WH3 14,404), GLM-5.3 or rejection-sampled Qwen3.6; Step 5 weights are public. An [Empire content screen and dataset timing](twwarhammer3/empire.md#for-the-owner-to-decide) are still needed. Smoke checks establish no learning gain.
 9. **Spire's next step.** After WH3, run one meaningful comparison or freeze this track; the state-restore investigation comes first (owner, 2026-10-23). Also noted for later: the capture check (owner, 2026-10-23: "Not sure what this is"). Both, with the proposed comparison and the data-night choice: [Spire open decisions](spire/fullrun/README.md#open-owner-decisions).
-10. **Thesis direction.** No topic is chosen. The 2026-10-28 notes ([index](thesis/notes/README.md)) favour the decision benchmark (2) with the support question (1) as its first task; direction 10 (human and AI together) stays a note (owner, 2026-10-28). Pick what to explore next; [summary](thesis/directions.md#what-the-2026-10-28-checks-changed). Licensing is deferred (owner, 2026-10-28; [licence reading](thesis/notes/release-terms.md)).
+10. **Thesis and RL environment.** Likely multi-agent systems, possibly multi-agent RL; no research question selected (owner, 2026-10-28). Tentative environment: each agent sees its available battle state, perhaps teammate information, controls its army share and learns from sparse win/loss near restored endings. Reset may use a battle start or checkpoint; details and correctness checks are for later. [Direction 6](thesis/directions.md#6-wh3-as-an-rl-environment-for-high-level-decisions); [research shortlist](thesis/directions.md#what-the-2026-10-28-checks-changed). Human-AI work stays a note; licensing is deferred.
 
-11. **Checkpoint RL.** Stopped where the plan needs you (2026-10-26, "Stop here"): (a) how to continue after the policy collapse and the 0.76 held-out result, (b) review the choices made without you, (c) the stage 1 and 4 checks you agreed on 2026-10-26 (now in agreed-checks.md); (d) merged 2026-10-28. Details: [checkpoint-rl.md](twwarhammer3/checkpoint-rl.md#open-owner-choices-decision-11).
+11. **Local LLM checkpoint RL — deferred.** Leave this post-training experiment paused (owner, 2026-10-28). No recovery choice is needed now; the existing results and choices remain for a future review. Merged on 2026-10-28. [Details](twwarhammer3/checkpoint-rl.md#open-owner-choices-decision-11).
 ## Runtime and ownership
 
 - Slay the Spire ([runtime facts](spire/integration.md#runtime-and-source-pins)): the installed game and personal profile slot 0 are authorized, including stats, unlock progress, history and achievements (Ironclad unlock 3 of 5; runs record profile evidence).

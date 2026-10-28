@@ -6,7 +6,7 @@ Compare the performance of two different controllers on a Total War Warhammer 3 
 
 ## Scope
 
-The first version covers one kind of battle: a Land Battle (`classic` / `land_normal`) against the game's built-in AI, with small mixed armies (owner, 2026-10-23). Other battle types come later.
+The first draft covers a Land Battle (`classic` / `land_normal`) against the game's built-in AI, with small mixed armies (owner, 2026-10-23). The intended benchmark also includes Siege, Survival, Ambush and Conquest, with other battle types for the owner to confirm (2026-10-28). Existing [battle-type scenarios](battle-types.md) and siege checkpoint work are starting points; they do not establish a benchmark for those modes. Their profiles, order of implementation, measurements and checks remain open.
 
 - **Task.** The controller commands a fixed army. It doesn't choose the army or deploy it.
 - **Winner.** The game engine decides who won, lost or drew. A win when the timer runs out is a win (owner, 2026-10-23).
@@ -54,11 +54,16 @@ These battles are for development: we will study them and tune controllers on th
 
 The engine decides win, loss or draw. Keep the raw engine result next to any benchmark score.
 
+Owner direction, 2026-10-28: the benchmark should probably measure unit health and morale,
+with other metrics secondary. This is a tentative measurement priority; their aggregation,
+weights and relation to the engine result remain undecided. The win-rate summary below is
+still the earlier proposal, not an adopted answer to that direction.
+
 JUDGEMENT: Primary summary — Codex, 2026-10-23: propose wins divided by scored attempts,
 with draws as non-wins, not half-points. A points table or preservation tie-break changes
 rankings; the proposed summary and comparison rest on this choice.
 
-The score is the number of wins divided by the number of scored attempts. A draw is not a win.
+Under the proposed Primary summary, the score is the number of wins divided by the number of scored attempts. A draw is not a win.
 
 | What happened | How it counts | Status |
 |---|---|---|
@@ -74,7 +79,7 @@ The score is the number of wins divided by the number of scored attempts. A draw
 
 Still to settle before a run: provider, key and credit failures; budget stops; and what to do when the wall-clock cap hits with no engine result. That cap is not the engine's timer. What the code does today is in the [failure audit](evaluation-guidelines.md#52-freeze-how-every-trial-is-scored). Never drop failed battles to improve the rate.
 
-Report how many battles were planned, started, ended by the engine, forfeited, excluded, unresolved and never started, and define each word (one battle can fall under several). Show the win rate with its denominator and uncertainty. If some outcomes are unresolved, show the range of rates they could produce instead of treating the finished battles as the answer. Own losses, battle length, flanking and API cost don't change the score.
+Report how many battles were planned, started, ended by the engine, forfeited, excluded, unresolved and never started, and define each word (one battle can fall under several). Show the win rate with its denominator and uncertainty. If some outcomes are unresolved, show the range of rates they could produce instead of treating the finished battles as the answer. Under the proposed Primary summary, own losses, battle length, flanking and API cost don't change the score; the broader scoring choice remains open.
 
 ## Measurements
 
