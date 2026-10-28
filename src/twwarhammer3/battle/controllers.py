@@ -28,7 +28,7 @@ MODEL_PROMPTS = {"llm": llm.SYSTEM_PROMPT_PATH, "llm_rules": llm.RULES_PROMPT_PA
                  "commander": commander.PROMPT_PATH, "team_llm_rules": llm.RULES_PROMPT_PATH}
 MODEL_POLICIES = frozenset(MODEL_PROMPTS)
 VERSIONS = {"llm": "v22", "llm_rules": "v22", "commander": "v8", "skills": "v1.2",
-            "team_llm_rules": "v22+t1"}
+            "team_llm_rules": "v22+t2"}
 
 
 def policy_parts(name: str, config: dict) -> tuple[str, str | None, str | None]:

@@ -230,7 +230,8 @@ def test_a_member_never_sees_its_teammate_feedback_notes_or_the_global_ack(tmp_p
     later = battle(3, 12000, enemy=False)
     later["friendly"][0].update(  # f2's order state, which only its owner may see
         dest=[-20, 90], command_queue=[ADVANCE], attack_mode="melee",
-        navigation={"rejected": {"x": 400, "z": 400}, "alternatives": [], "sampled_ms": 11000})
+        navigation={"rejected": {"x": 400, "z": 400}, "alternatives": [], "sampled_ms": 11000},
+        fatigue="tired", morale={"fraction": .42, "effect": "flanked"})  # its teammate's too
     assert policy.decide({**later, "orders": rejected}) == [
         {"unit": "f1", "type": "attack", "target": "e1"}]
     policy.acknowledge({"request": "r2", "applied_ms": 12100, "results": [
@@ -242,6 +243,8 @@ def test_a_member_never_sees_its_teammate_feedback_notes_or_the_global_ack(tmp_p
     seen = cavalry.metadata()["prompt"]
     assert "Last orders: f1 #1 rejected: target_not_visible." in seen
     assert "XYZZY" not in seen and "QQ" not in seen and "heading to" not in seen
+    assert "attack mode" not in seen and "unreachable" not in seen
+    assert "tired, leadership 42%; largest effect: flanked" in seen
     assert "f2 #1 rejected: XYZZY" in line.metadata()["prompt"]
     assert "QQ" in line.metadata()["prompt"] and "heading to (-20, 90)" in line.metadata()["prompt"]
     inputs = [e["observation"] for e in policy.drain_events()

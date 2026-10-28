@@ -37,7 +37,7 @@ from twwarhammer3.protocol import (
     validate_orders,
 )
 
-INPUT_VERSION = "team-v2"
+INPUT_VERSION = "team-v3"
 SWORD = "wh_main_emp_inf_swordsmen"
 KNIGHT = "wh_main_emp_cav_empire_knights"
 CLOSE_WAIT_S = 30  # cleanup waits this long for a running member call, then abandons it
@@ -45,17 +45,19 @@ UNIT_FIELDS = ("id", "type", "alliance", "class", "x", "z", "bearing", "men", "m
                "barrier", "can_fly", "flying", "ammo", "ammo0", "range", "speed", "fatigue",
                "morale", "flight", "width", "attack_mode", "behaviours", "abilities",
                "command_queue", "navigation", "dest", "state", "error")
-# A teammate's unit shows what an enemy's shows, and a visible target: never its orders,
-# queue or navigation.
+# A teammate's unit shows what an enemy's shows, its condition (owner, 2026-10-27) and a
+# visible target: never its orders, queue or navigation.
 ALLY_FIELDS = ("id", "type", "class", "alliance", "x", "z", "bearing", "men", "men0", "hp",
-               "barrier", "can_fly", "flying", "range", "speed", "state")
+               "barrier", "can_fly", "flying", "range", "speed", "state", "ammo", "ammo0",
+               "fatigue", "morale")
 ARMY_MODE = ("slots", "reinforcements", "spawn_zones", "supplies")  # the army owner's
 # The model team (``team_llm_rules``): the Knights, and every other unit with the army orders.
 PARTITION = {"cavalry": (KNIGHT,), "line": None}
 ARMY_OWNER = "line"
 TEAM_NOTE = ("Team: a teammate model commands the allied units below at the same time. You"
-             " order only Your units; Ally abilities may target allied units. You see allied"
-             " units' state and visible targets, not the teammate's orders, feedback or notes.")
+             " order only Your units; Ally abilities may target allied units. You see allied units'"
+             " condition, state and visible targets, not the teammate's orders, feedback or"
+             " notes.")
 
 
 class TeamHarnessError(ProtocolError):
@@ -374,10 +376,21 @@ class TeamPolicy:
                                 failure=getattr(failures[0], "failure", None)) from failures[0]
 
 
+def condition(unit):
+    """An allied unit's ammunition, fatigue and leadership, worded as for one's own units."""
+    parts = [f"ammo {unit['ammo']}/{unit['ammo0']}"] if unit.get("ammo0") else []
+    parts.append(unit.get("fatigue") or "fresh")
+    if morale := unit.get("morale"):
+        fraction = morale.get("fraction")
+        parts.append(f"leadership {f'{fraction:.0%}' if fraction is not None else 'unknown'};"
+                     f" largest effect: {morale.get('effect') or 'unknown'}")
+    return ", ".join(parts)
+
+
 def team_section(view):
     """The prompt's last section for a model member: its teammate's units."""
     allies = [f"- {unit['id']} {llm.short_type(unit.get('type'))}: destroyed"
-              if not unit.get("men") else "- " + llm.render_unit(unit, False)
+              if not unit.get("men") else f"- {llm.render_unit(unit, False)}, {condition(unit)}"
               for unit in view["allies"]]
     return f"\n\n{TEAM_NOTE}\nAllied units:\n" + ("\n".join(allies) or "- none")
 

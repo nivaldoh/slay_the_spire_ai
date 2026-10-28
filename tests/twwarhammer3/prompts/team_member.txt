@@ -28,8 +28,8 @@ Visible enemies:
 - e2 orc_boyz of alliance 3 (infantry) at (150, 0) facing 270, 120/120 men, hp 100%, idle, target e1
 - e3 grudge_thrower (artillery) at (0, -200) facing 0, 4/4 men, hp 100%, range 400
 
-Team: a teammate model commands the allied units below at the same time. You order only Your units; Ally abilities may target allied units. You see allied units' state and visible targets, not the teammate's orders, feedback or notes.
+Team: a teammate model commands the allied units below at the same time. You order only Your units; Ally abilities may target allied units. You see allied units' condition, state and visible targets, not the teammate's orders, feedback or notes.
 Allied units:
-- f2 chaos_warriors_0 (infantry) at (-20, 30) facing 180, 110/120 men, hp 92%, walk 1.9 run 3.6, moving
-- f3 skullcannon_0 (missile_chariot) at (20, 50) facing 180, 7/7 men, hp 100%, range 200, walk 4.0 run 6.0
+- f2 chaos_warriors_0 (infantry) at (-20, 30) facing 180, 110/120 men, hp 92%, walk 1.9 run 3.6, moving, active
+- f3 skullcannon_0 (missile_chariot) at (20, 50) facing 180, 7/7 men, hp 100%, range 200, walk 4.0 run 6.0, ammo 18/20, fresh
 - f4 khornataurs_0: destroyed
