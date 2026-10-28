@@ -20,8 +20,9 @@ How the assistant applies it:
   "unverified" when reporting or building on anything without an agreed method.
 - Every claim carries what it rests on: the number of battles or runs behind a rate, the
   check that decides it and its caveats. A summary never says more than its log entry.
-- When a feature matters, propose a repeatable check; record it as agreed only after the
-  owner agrees. A feature counts as verified only at revisions where its check passed.
+- When a feature matters, propose a repeatable check; add it to
+  [docs/agreed-checks.md](docs/agreed-checks.md) only after the owner agrees. A feature
+  counts as verified only at revisions where its check passed there.
 - Test what matters, and add no slop tests (owner, 2026-10-18): balance verifying
   important behaviour against filling the codebase with low-value tests.
 
@@ -144,6 +145,7 @@ docs/
   owner-direction.md  Every dated owner direction, newest first; superseded ones marked
   autonomy.md      What agents may do alone while the owner is away
   judgement.md     Judgement calls: the marker, placement limits and the marking pass
+  agreed-checks.md The owner's agreed checks and the revisions where each passed
   posttraining.md  Traces to fine-tuning datasets for both games: roles, contract, splits
   thesis/          The proposed master's thesis: proposal, directions, related work
   twwarhammer3/    README.md (track page; its Pages table lists the others), log.md

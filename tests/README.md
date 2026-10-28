@@ -69,5 +69,5 @@ instructions and existing game-window permissions before running a live check.
 | [prompts/](twwarhammer3/prompts/) | Expected controller-input text read by prompt tests. For an intended prompt version change, regenerate using the command in `test_wh3_prompts.py` and review the diff. |
 | [wh3_fixtures.py](twwarhammer3/wh3_fixtures.py), [wh3_lua.py](twwarhammer3/wh3_lua.py) | Reusable inputs, API/mailbox substitutes and a Lua 5.1 loader. `FakeMailbox` feeds a sequence without real file polling or sequence filtering. The loader executes selected production definitions, not the whole game environment. |
 
-Approval history stays in AGENTS.md and logs. Commands and script descriptions explain
+Approval history stays in [docs/agreed-checks.md](../docs/agreed-checks.md) and logs. Commands and script descriptions explain
 what a check does; neither a filename nor a passing local run makes a feature verified.

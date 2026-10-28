@@ -10,7 +10,7 @@ WH3 first; Spire waits behind it; post-training is secondary. Three changes awai
 Thesis proposal on multi-agent coordination, now in [docs/thesis/](thesis/proposal.md) with
 [candidate directions](thesis/directions.md) and [related work](thesis/papers.md) (revised
 2026-10-27), for RPL with Peter Stone as the alternative. Next: the owner's review and its
-[seven decisions](thesis/proposal.md#decisions-for-the-owner); nothing is approved.
+[eight decisions](thesis/proposal.md#decisions-for-the-owner); nothing is approved.
 The [memory investigation](thesis/memory-investigation.md#conclusion-from-the-overnight-investigation-2026-10-27)
 is retained as history; its policy benefit and the new proposal's novelty remain unproven.
 Checkpoint review finished; all game controllers stopped. The declared siege cases and

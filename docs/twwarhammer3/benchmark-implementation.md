@@ -136,7 +136,7 @@ The owner agreed the controller-failure rule on 2026-10-21 (the agreed rows of t
 
 How often it matters (recount 2026-10-21, `runs/twwarhammer3/away-20261021/failures.txt`; rerun with `uv run --locked python runs/twwarhammer3/away-20261021/failures.py`): of 595 recorded episodes, none failed at construction, at the acknowledgement of an ending or at `close()`, so the rule changes no recorded result. All 9 policy failures happened during battle, and the rule scores them as today's reader does: 8 forfeits, plus an HTTP 402 credit stop at b30 excluded as an operator stop. The register still lists that stop and a harness-probe `KeyError` at b2 as policy failures; fixing those rows is a separate decision. 18 jobs ended before any episode (10 of them setup failures), none in the c1 cohort.
 
-The agreed check (AGENTS.md, 2026-10-21): `uv run --locked pytest -ra tests/twwarhammer3/test_wh3_play.py::test_a_controller_failure_after_the_ending_keeps_the_engine_result`, which fails on the parent of `b536ae6`. It makes no claim about the game itself.
+The agreed check ([agreed-checks.md](../agreed-checks.md), 2026-10-21): `uv run --locked pytest -ra tests/twwarhammer3/test_wh3_play.py::test_a_controller_failure_after_the_ending_keeps_the_engine_result`, which fails on the parent of `b536ae6`. It makes no claim about the game itself.
 
 ## Measurement gaps
 

@@ -177,7 +177,7 @@ def test_move_rejects_an_infinite_coordinate():
         protocol.validate_orders([order], observation)
 ```
 
-The reference is the agreed finite-number rule in AGENTS.md. This checks rejection by
+The reference is the agreed finite-number rule in [agreed-checks.md](agreed-checks.md). This checks rejection by
 Python; the separate play-loop check establishes that an invalid batch is not sent. It
 does not show how a unit moves in the game. The example illustrates style, not a request
 to duplicate existing coverage.
@@ -238,7 +238,7 @@ replacement check or tolerance still needs owner agreement.
 The Python controller, mailbox files, Lua mod and Windows game can fail independently.
 Choose the boundary relevant to the claim; an acknowledgement is not evidence that a unit
 reached its destination. The references are the [mailbox contract](../src/twwarhammer3/engine/mailbox.py),
-[game integration notes](twwarhammer3/integration.md) and agreed checks in AGENTS.md.
+[game integration notes](twwarhammer3/integration.md) and [agreed checks](agreed-checks.md).
 
 | Boundary | Useful assertion and its limit |
 |---|---|
@@ -407,7 +407,7 @@ migration and coverage tooling remain for review.
 - Moved the root decision and protocol tests to `tests/spire/`; extracted three unchanged
   message builders into `spire_messages.py` and updated four full-run callers.
 - Replaced approval dates in the army and team check headers with their purpose. Their
-  commands and check criteria are unchanged; approval history remains in AGENTS.md.
+  commands and check criteria are unchanged; approval history remains in agreed-checks.md.
 - Before: 96 focused tests passed. After: the same 96 plus 64 documentation checks passed,
   with no failures or skips. Ruff passed. All 1,412 collected cases match after substituting
   the two paths; the same 11 modules skip without PyTorch. Comparing the 85 existing Python

@@ -467,7 +467,7 @@ investigated with controller names hidden. "Today" means current code and
 | Planned trial never started | Listed only when a plan's job has no manifest | Listed per arm with its reason |
 
 - *Check:* agreed component check for preserving `engine_ending`: the late-controller-failure
-  regression in AGENTS.md (b47; acknowledgement and cleanup cases). Scoring that field in
+  regression in [agreed-checks.md](../agreed-checks.md) (b47; acknowledgement and cleanup cases). Scoring that field in
   the next evaluator remains unimplemented. Proposed: hand-label representative failures
   before reading the scorer's answers; keep rule selection separate from storage correctness.
 

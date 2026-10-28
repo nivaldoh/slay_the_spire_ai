@@ -41,7 +41,7 @@ marking them for the owner's review; the rule for agents is in
 - Only the owner removes or weakens a marker. An agent does so only when quoting the owner's
   words on that spot in the commit; a standing decision also gets a dated line in
   [owner-direction.md](owner-direction.md). Approval is not verification: what is verified
-  is still decided by the agreed checks in AGENTS.md.
+  is still decided by the [agreed checks](agreed-checks.md).
 
 ## Examples (format accepted 2026-10-23; the calls themselves are undecided)
 

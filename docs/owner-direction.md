@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-28 (agent context, continued): the owner had removed the agreed-checks list from
+  AGENTS.md to keep it lean; "If you really think that was important, at least let's move
+  it to a different file that won't automatically pollute your context window." Moved to
+  [agreed-checks.md](agreed-checks.md) with a one-line pointer. "docs/thesis can stay
+  untracked."
 - 2026-10-27 (agent context): move Spire-specific instructions out of the root AGENTS.md
   into a Spire directory, keeping context focused on WH3. Read the
   [Spire guidance](spire/AGENTS.md) only for Spire work; shared rules stay in the root.
