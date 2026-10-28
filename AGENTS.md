@@ -147,7 +147,8 @@ docs/
   judgement.md     Judgement calls: the marker, placement limits and the marking pass
   agreed-checks.md The owner's agreed checks and the revisions where each passed
   posttraining.md  Traces to fine-tuning datasets for both games: roles, contract, splits
-  thesis/          The proposed master's thesis: proposal, directions, related work
+  thesis/          The proposed master's thesis: proposal, directions, related work;
+                   notes/README.md indexes the research notes (untracked: git grep misses it)
   twwarhammer3/    README.md (track page; its Pages table lists the others), log.md
                    (newest first, versions on main at the top), results.csv
 runs/              Local evidence, ignored by Git; see runs/README.md
