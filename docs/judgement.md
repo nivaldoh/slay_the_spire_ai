@@ -76,6 +76,7 @@ marking them for the owner's review; the rule for agents is in
   `[benchmark-docs]`, `[scripts-tests]`, `[plans]` and `[active-branch]` added none. Four independent review
   passes found 5 wrong and 13 weak markers and 8 weak skip reasons, all addressed. Reasons
   for every unmarked candidate, the reviews and the areas left (`[cards]`, `[spire-combat]`):
-  `runs/judgement-batch-20261028/` (`task.md`, `review.md`).
+  `runs/judgement-batch-20261028/` (`task.md`, `review.md`; `markers-added.txt` lists the 44 by
+  file and line for sampling).
 - The owner has decided none of the marked calls (2026-10-23) and has not yet said whether
   the two examples set the right threshold.
