@@ -288,6 +288,11 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-28 (side quest, verbatim): "one thing that might be outside of thesis scope but that
+  I want to do at least as a sidequest is to see if we can turn WH3 into an RL env, maybe even
+  using the checkpoint restoration feature for reverse curriculum or so." Recorded only; no
+  work is scheduled. Related: thesis [direction 6](thesis/directions.md#6-wh3-as-an-rl-environment-for-high-level-decisions),
+  the [restart-curricula note](thesis/notes/restart-curricula.md) and [checkpoint RL](twwarhammer3/checkpoint-rl.md).
 - 2026-10-28 (model-team open items): "I don't know what my pending decisions mean so I'll
   let you decide something reasonable for now just to unblock us. Just keep track of that so
   I can remember to review it at some point later." Each item keeps today's behaviour and
