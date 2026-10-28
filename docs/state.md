@@ -102,7 +102,7 @@ v2 it learns the training split (0.96) but generalises to 0.76 held out. Stopped
   shows in `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
 - WH3 readers still differ on timer wins and failures; the new engine-outcome definition
   needs a versioned scorer. Register/`stats` also have blank benchmark versions and commit
-  grouping. (Fixed 2026-10-28: `stats` pooled arms of different added age or interval.)
+  grouping.
 - The mod sets 1x once, then reports constant `speed` 1 and `awaiting_orders` false: per-observation paused/slowed tests cannot fail; only the team check's clock ratio detects slowdown.
 - WSL clocks run about 6-8% slow against Windows and `time.time()` is stepped 2-3 s every ~35 s (measured 2026-10-28, [clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)): WSL-timed think times, delays and short-window clock ratios are off; the battle itself runs at 1x.
 - Spire runs often leave a profile preference file empty, likely when the game is killed at
@@ -111,8 +111,8 @@ v2 it learns the training split (0.96) but generalises to 0.76 held out. Stopped
   ([details](spire/state-restore.md#risks-found-on-the-way)). Ironclad unlock level 4 is 43
   points away; decide the profile question before more Spire game time (owner's note: maybe
   unlock things normally first, then enable restore).
-- The report browser check is separate from pytest; Spire's full-run action and time limits
-  have loop tests since 2026-10-28 (component checks, proposed). Spire's Workshop mod pins still block a run when a mod updates.
+- The report browser check is separate from pytest. Spire's Workshop mod pins still block a
+  run when a mod updates.
 
 ## Owner decisions waiting
 
