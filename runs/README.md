@@ -62,6 +62,10 @@ runs/
                       away-20261021): findings, check outputs and the scratch scripts
                       that the pages and log entries citing them rest on
   autonomy-<date>/    Reviews and checks behind docs/autonomy.md
+  <topic>-<date>/     Cross-game reviews, research and away-window work (e.g.
+                      judgement-sweep-20261023, overnight-20261028, thesis-forecast-20261028,
+                      interview-evidence-20261028): scripts, outputs and reviews that the
+                      pages citing them rest on
 ```
 
 New tracks get their own folder: `runs/<track>/<job>` for Slay the Spire,
