@@ -25,9 +25,9 @@ where an owner decision is explicitly dated. The audit is in
 [the testing guide](../testing.md#wh3-evaluations-and-tests-2026-10-23).
 Proposals here add no verification method. Under the
 [hard rule](../../AGENTS.md#verification-hard-rule), a check counts only once the owner
-agrees it and it passes at a named revision; AGENTS.md records those methods. Most rules end
+agrees it and it passes at a named revision; [agreed-checks.md](../agreed-checks.md) records those methods. Most rules end
 with a **Check**: *exists*
-(the code is there, but it is verified only if AGENTS.md lists it), *proposed* (not built,
+(the code is there, but it is verified only if agreed-checks.md lists it), *proposed* (not built,
 with a rough size) or *manual* (a person does it).
 
 ## Before you start
