@@ -62,7 +62,8 @@ runs/
                       away-20261021): findings, check outputs and the scratch scripts
                       that the pages and log entries citing them rest on
   test-scratch/       pytest --basetemp scratch (see tests/README.md);
-                      disposable (1.7 GB on 2026-10-28, a cleanup candidate)
+                      disposable (1.7 GB in 121 folders on 2026-10-28, a cleanup candidate;
+                      inventory in judgement-batch-20261028/test-scratch-inventory.txt)
   uv-cache/           uv's package cache
   autonomy-<date>/    Reviews and checks behind docs/autonomy.md
   <topic>-<date>/     Cross-game reviews, research and away-window work (e.g.
