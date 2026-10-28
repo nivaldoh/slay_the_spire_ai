@@ -69,6 +69,10 @@ Already decided: small mixed armies first; the engine picks the winner, timer wi
 
 14. **How should health be valued across units?** Keep each unit separate; sum absolute HP, if we can read it; average each unit's remaining fraction equally; or weight each fraction by a fixed declared value such as recruitment cost? These rank a damaged lord and damaged infantry very differently. Should the summary reward enemy losses, your own preservation, the difference, or show both? Should the denominator be the starting army, or include later summons too? A headcount or a sum of fractions doesn't measure combat strength.
 
+   Evidence (2026-10-28, not an answer; friendly men in 441 recorded battles): pooled and
+   unit-equal losses differ by more than 0.10 in 22% of battles and order 8% of battle pairs
+   differently; cost weighting untested (`runs/interview-evidence-20261028/`).
+
 15. **What should healing and temporary resources mean?** Net remaining health; total damage and healing separately, if observable; or both? How should barriers, resurrection and summoned units count if the roster has them, and should summons stay separate from the original army? Repeated damage and healing could inflate a cumulative score without improving the result. These cases can stay out of the first roster instead of needing general support now.
 
 16. **What is each leadership state worth?** Do wavering, routing, rallied, shattered, leaving the battlefield and destroyed need distinct outcomes? The options are the final state, the time spent in each state, or how often units change state: which matches what you want to reward? Does a rout that recovers keep credit? Repeated routs and time spent routing answer different questions. Numeric leadership is another measure, not automatically a common scale across unit types.
