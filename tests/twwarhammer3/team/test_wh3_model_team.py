@@ -147,6 +147,8 @@ def test_a_call_collected_at_cleanup_is_discarded_and_a_stop_still_stops_the_job
     result = play.play_episode(tmp_path / "e", {**CONFIG, "interval_ms": 0},
                                lambda: policy, mailbox, not_battle=None)
     assert result["status"] == status and result["engine_ending"]["result"] == "won", result
+    if status == "policy_failure":
+        assert result["failure"]["member"] == "infantry"
     records = [json.loads(line) for line in (tmp_path / "e/trace.jsonl").open()]
     assert [e["event"] for e in records if e.get("member") == "infantry"
             and e.get("event") in ("failed", "discarded")] == events
@@ -171,10 +173,13 @@ def play_two(tmp_path, infantry, cavalry):
     return result, [json.loads(line) for line in (tmp_path / "e/trace.jsonl").open()]
 
 
-def test_a_stop_at_cleanup_keeps_an_earlier_failure(tmp_path):
-    result, _ = play_two(tmp_path, Failing(ValueError("member bug")),
-                         Failing(BudgetExhausted("cap")))
-    assert result["status"] == "policy_failure" and "member bug" in result["error"]
+@pytest.mark.parametrize("first,late,status,error", [
+    (ValueError("member bug"), BudgetExhausted("cap"), "policy_failure", "member bug"),
+    (BudgetExhausted("cap"), ValueError("member bug"), "budget_exhausted", "cap"),
+])
+def test_a_failure_at_cleanup_keeps_an_earlier_failure(tmp_path, first, late, status, error):
+    result, _ = play_two(tmp_path, Failing(first), Failing(late))
+    assert result["status"] == status and error in result["error"]
 
 
 def test_a_failed_acknowledgement_is_not_also_discarded(tmp_path):
@@ -383,6 +388,10 @@ def test_each_member_is_charged_counted_and_labelled_as_itself(tmp_path):
     text = digest.digest(tmp_path / "e")
     assert "2 decisions" in text and "count member batches" in text
     assert text.splitlines()[-2:] == ["notes (cavalry): cavalry NOTES", "notes (line): line NOTES"]
+    # A member's delay runs from its own source state, not from the dispatch.
+    assert "[delay 1.5s]" in text and "[delay 2.5s]" in text and "[delay 0.5s]" not in text
+    at = digest.decision_at(tmp_path / "e", 2)
+    assert "state at 1.0 s" in at and "(delay 1.5 s)" in at
     feed = watch.Feed("e")
     lines = [line for event in events for line in feed.lines(event)]
     # Its second request was built from the 3 s state and dispatched at 4 s.
@@ -400,3 +409,10 @@ def test_each_member_is_charged_counted_and_labelled_as_itself(tmp_path):
     path.write_text(json.dumps({k: v for k, v in json.loads(path.read_text()).items()
                                 if k != "polls"}))
     assert "describe dispatcher polls" in digest.digest(job / "episode-0000")
+
+
+def test_a_member_caption_shows_the_state_it_decided_on():
+    behavior = {"type": "llm", "model": "gpt-6-luna", "reason": "Go.", "member": "cavalry",
+                "source_ms": 30000}
+    assert play.caption(battle(5, 36000), behavior, [ADVANCE]) == (
+        "36 s: cavalry (gpt-6-luna) from the state at 30 s\nGo.\nf2 move (10, 20)")

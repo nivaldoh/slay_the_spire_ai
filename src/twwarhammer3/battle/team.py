@@ -372,7 +372,8 @@ class TeamPolicy:
             if isinstance(exc, BudgetExhausted):
                 raise exc
         if failures:
-            raise PolicyFailure(f"team cleanup: {failures[0]}") from failures[0]
+            raise PolicyFailure(f"team cleanup: {failures[0]}",
+                                failure=getattr(failures[0], "failure", None)) from failures[0]
 
 
 def team_section(view):

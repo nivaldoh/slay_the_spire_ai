@@ -136,6 +136,8 @@ def episode_digest(episode: Path, decisions: bool = True) -> str:
             item = {"s": record["time_ms"] / 1000, "state": state,
                     "reason": behavior.get("reason"),
                     "quiet": quiet,
+                    # A team member's delay runs from its own source state.
+                    "source_ms": behavior.get("source_ms", record["time_ms"]),
                     "line": f"{record['time_ms'] / 1000:6.0f}s  {state}"
                             f"  {describe_orders(record['orders'])}{plan}{reason}"}
             pending[record["request"]] = item
@@ -144,7 +146,7 @@ def episode_digest(episode: Path, decisions: bool = True) -> str:
             item = pending.pop(record["request"])
             rejected = [f"{r['unit']} {r.get('error')}" for r in record["ack"].get("results", [])
                         if not r.get("ok")]
-            delay = record["latency"]["delay_ms"] / 1000
+            delay = (record["ack"]["applied_ms"] - item["source_ms"]) / 1000
             item["ack"] = f"  [delay {delay:.1f}s" + (
                 f"; rejected {', '.join(rejected)}]" if rejected else "]")
         elif kind == "invalid":
@@ -206,7 +208,8 @@ def decision_at(episode: Path, seconds: float) -> str:
     record = min(replies or decisions, key=lambda item: abs(item["time_ms"] / 1000 - seconds))
     behavior = record.get("behavior") or {}
     model = f", {behavior['model']}/{behavior.get('effort')}" if behavior.get("model") else ""
-    lines = [f"{episode.name} {record['request']}: state at {record['time_ms'] / 1000:.1f} s,"
+    source_ms = behavior.get("source_ms", record["time_ms"])  # a team member's own state
+    lines = [f"{episode.name} {record['request']}: state at {source_ms / 1000:.1f} s,"
              f" decided at {record.get('decision_time_ms', record['time_ms']) / 1000:.1f} s"
              f"{model}"]
     if record["asked"]:
@@ -227,7 +230,7 @@ def decision_at(episode: Path, seconds: float) -> str:
         lines.append("-- engine: no acknowledgement in the trace")
         return "\n".join(lines)
     lines.append(f"-- engine applied at {ack['ack']['applied_ms'] / 1000:.1f} s"
-                 f" (delay {ack['latency']['delay_ms'] / 1000:.1f} s):")
+                 f" (delay {(ack['ack']['applied_ms'] - source_ms) / 1000:.1f} s):")
     for result in ack["ack"].get("results", []):
         index = result.get("index") or 0
         order = (describe_orders([record["orders"][index - 1]])

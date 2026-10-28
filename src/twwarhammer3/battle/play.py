@@ -301,8 +301,10 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
             except BudgetExhausted as exc:  # a team member's call that ended with a stop
                 if result["status"] in SCORED:  # an earlier failure keeps its status
                     result.update(status="budget_exhausted", error=f"controller close: {exc}")
-            except Exception as exc:
-                result.update(status="policy_failure", error=f"controller close: {exc}")
+            except Exception as exc:  # likewise for a member bug collected there
+                if result["status"] in SCORED:
+                    result.update(status="policy_failure", error=f"controller close: {exc}",
+                                  failure=getattr(exc, "failure", {}))
         record_exchanges(policy, event)
         if hasattr(policy, "records"):  # a team: member batches, not dispatcher polls
             records = policy.records()
@@ -386,6 +388,10 @@ def caption(observation: dict, behavior: dict, orders: list[dict]) -> str | None
         head = (f"{seconds:.0f} s: {behavior['model']} plan from the state at"
                 f" {seconds - behavior['plan_age_s']:.0f} s")
         decided = describe_plan(behavior["plan"])
+    elif "member" in behavior:  # a team member decided on its own, older state
+        head = (f"{seconds:.0f} s: {behavior['member']} ({behavior.get('model', 'model')})"
+                f" from the state at {behavior['source_ms'] / 1000:.0f} s")
+        decided = describe_orders(orders)
     else:
         head = f"{seconds:.0f} s: {behavior.get('model', 'model')} saw {strength(observation)}"
         decided = describe_orders(orders)
