@@ -14,7 +14,7 @@ started 2026-10-28 02:39 by the owner's `/goal`; Claude Code, the only session t
 (commits and pushes). Night plan and evidence: `runs/overnight-20261028/`. $0. Game work
 done; no more game time tonight; owner back after 12:39. Report so far:
 [log](twwarhammer3/log.md#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a)
-(the "pauses" were WSL clock steps; Land check passed at `dcb8b5a`; 11 thesis notes,
+(the "pauses" were WSL clock steps; Land check passed at `dcb8b5a`; 14 reviewed thesis notes,
 [index](thesis/notes/README.md)); three questions there. The plan's work is done; the backlog continues. The thesis [proposal](thesis/proposal.md) is one candidate,
 not a selected topic; [directions](thesis/directions.md), [papers](thesis/papers.md) remain open.
 The [memory investigation](thesis/memory-investigation.md#conclusion-from-the-overnight-investigation-2026-10-27)

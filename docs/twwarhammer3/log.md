@@ -60,14 +60,15 @@ the scripts and checked 14 source facts. Its corrections are applied.
   per Windows second, never corrected, and `time.time` stepped 1.8-2.5 s every ~34 s (no-game
   run: same). [Clocks](integration.md#clocks-measured-2026-10-28) lists the affected measures;
   nothing was rescored. `JUDGEMENT?` `team_clock_band` marks the team check's band.
-- Thesis research (untracked `docs/thesis/notes/`, [index](../thesis/notes/README.md)): 11 notes.
-  Step 0 on 441 recorded battles: wavering warns a median 7 s before a rout; a morale < 0.5
-  rule warns 77% of routs 15-60 s ahead, so precision, not lead time, is the open problem. A
-  small learned model beat that rule overall but not in won battles. In 25% of 8,718 model
-  decisions something that mattered changed before the orders applied (observational).
-  Frontier notes cover restart curricula, open- versus closed-loop scores, teammate
-  populations, delay definitions and all 10 directions. Shortlist:
-  [directions](../thesis/directions.md#what-the-2026-10-28-checks-changed).
+- Thesis research (untracked `docs/thesis/notes/`, [index](../thesis/notes/README.md)): 14 notes,
+  two independent reviews (`review/`, `review-2.md`) with all corrections applied. Step 0 on
+  441 recorded battles: wavering warns a median 7 s before a rout. A morale < 0.5 rule warns
+  77% of routs 15-60 s ahead, so precision, not lead time, is the open problem; whether a
+  small learned model beats it in won battles is undecided. About 12% of 8,614 model
+  decisions met a change they did not cause before their orders applied (observational).
+  Frontier notes cover curricula, decision-point and open- versus closed-loop scores,
+  failure prediction, credit, teammates, delay, build freezing and all 10 directions.
+  Shortlist: [directions](../thesis/directions.md#what-the-2026-10-28-checks-changed).
 - Upkeep: inbox shortened (long items moved verbatim, 11 kept); prompts `TODO.md` answered;
   AGENTS.md points to the research index. No branch, no `JUDGEMENT` batch (sweep candidates
   need site checks).
