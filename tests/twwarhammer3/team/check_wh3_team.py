@@ -103,6 +103,9 @@ def assess(events, samples, slow):
     battle_s = (deployed[-1]["observation"]["time_ms"]
                 - deployed[0]["observation"]["time_ms"]) / 1000
     clock_ratio = battle_s / wall_s if wall_s else 0
+    # JUDGEMENT?: team_clock_band — added 2026-10-21 (45fe7b0), owner agreement of the band
+    # itself unrecorded. `received` is WSL time.time(), which runs ~6-8% slow and steps 2-3 s
+    # every ~35 s (integration.md, Clocks): a window near 10 s holding one step reads ~0.85.
     clock_ok = wall_s >= 10 and .85 <= clock_ratio <= 1.15
     return {"passed": bool(witnesses) and clock_ok, "fast": fast, "unit": order["unit"],
             "request": dispatch["request"], "order": order,

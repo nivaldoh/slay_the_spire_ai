@@ -93,7 +93,9 @@ first waits 3 s on a stop event that cleanup can wake.
   clock ran 0-11% slow ([benchmark](benchmark.md)), the wall clock is stepped about 1 s every
   32 s, and this Python's thread timeouts follow the wall clock: 15 timed 3 s waits
   took 3.0-4.1 s by the wall clock and 2.2-3.0 s by the monotonic one
-  (`runs/twwarhammer3/review-multiagent-20261021/lead-check/probe_wait.txt`).
+  (`runs/twwarhammer3/review-multiagent-20261021/lead-check/probe_wait.txt`). Measured
+  against a Windows clock on 2026-10-28, both WSL clocks run about 6% slow
+  ([clocks](integration.md#clocks-measured-2026-10-28)).
 - **The model team.** `--policy team_llm_rules@MODEL/EFFORT` builds `ModelTeam` through
   `controllers.factories()`, so it gets `--budget-usd`, the ledger-file check, model
   validation and the OpenRouter cap like `llm_rules`. Both members (`TeamLLM`, the

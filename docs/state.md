@@ -12,7 +12,7 @@ correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](aut
 **Running:** the [overnight plan](autonomy.md#next-overnight-research-and-checkpoint-timing),
 started 2026-10-28 02:39 by the owner's `/goal`; Claude Code, the only session tonight
 (commits and pushes). Night plan and evidence: `runs/overnight-20261028/`. $0. Game work
-only before 05:40 (one agreed Land checkpoint check with a clock logger); cutoff 11:39;
+done (the agreed Land checkpoint check passed at `dcb8b5a`, [log](twwarhammer3/log.md#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a)); no more game time tonight;
 owner back after 12:39. The thesis [proposal](thesis/proposal.md) is one candidate,
 not a selected topic; [directions](thesis/directions.md), [papers](thesis/papers.md) remain open.
 The [memory investigation](thesis/memory-investigation.md#conclusion-from-the-overnight-investigation-2026-10-27)
@@ -100,6 +100,7 @@ v2 it learns the training split (0.96) but generalises to 0.76 held out. Stopped
 - WH3 readers still differ on timer wins and failures; the new engine-outcome definition
   needs a versioned scorer. Register/`stats` also have blank benchmark versions and commit grouping.
 - The mod sets 1x once, then reports constant `speed` 1 and `awaiting_orders` false: per-observation paused/slowed tests cannot fail; only the team check's clock ratio detects slowdown.
+- WSL clocks run about 6-8% slow against Windows and `time.time()` is stepped 2-3 s every ~35 s (measured 2026-10-28, [clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)): WSL-timed think times, delays and short-window clock ratios are off; the battle itself runs at 1x.
 - Spire runs often leave a profile preference file empty, likely when the game is killed at
   run end (25 of 43 data runs on 2026-10-23); the game recovers it from `.backUp` at the next
   start. `STSDataVagabond` is 0 bytes now and `STSUnlockProgress` has no `.backUp`

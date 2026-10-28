@@ -39,9 +39,31 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | `team_llm_rules` | v22+t2 (2026-10-27): `llm_rules` per member plus the teammate's units and condition | `battle/team.py` (`ModelTeam`, `TeamLLM`), `battle/llm.py` | Unplayed; no agreed check yet |
 | benchmark harness | b50 (2026-10-28: team cleanup statuses, member delays in digest, watch spend from model exchanges); b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
-| battle checkpoints | v1 (2026-10-25) | `battle/checkpoint.py`, `engine/checkpoint_agent.js` | Land check at `6fdb271`; [declared siege cases](#2026-10-25-siege-checkpoint-checks-pass-for-declared-cases) at `2e2acbe`; public tool v0.1.0 |
+| battle checkpoints | v1 (2026-10-25) | `battle/checkpoint.py`, `engine/checkpoint_agent.js` | Land check at `6fdb271` and [`dcb8b5a`](#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a); [declared siege cases](#2026-10-25-siege-checkpoint-checks-pass-for-declared-cases) at `2e2acbe`; public tool v0.1.0 |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
+
+## 2026-10-28 overnight: restore "pauses" were WSL clock steps; Land check passes at dcb8b5a
+
+Owner's `/goal` night ([plan](../autonomy.md#next-overnight-research-and-checkpoint-timing),
+`runs/overnight-20261028/plan.md`); Claude Code; $0. Evidence: `runs/overnight-20261028/timing/`.
+
+- The 2026-10-26 "pauses" (3 s every 35 s): the recount of the 7 Stage 1 launches classifies
+  all 24 long WSL gaps as WSL wall-clock steps, none as stalls or undetermined. Battle time per
+  Windows second was 0.9992-1.0002 in all 31 stretches; the unrestored source battle had the
+  same steps. The classifier first passed 5 synthetic cases (step, stall, burst, missing,
+  none), and 4 plausible wrong versions each failed one.
+- Live, with a passive 10 Hz Windows clock sidecar (no game input): the unchanged agreed Land
+  check passed at `dcb8b5a`, the first run on main since its dependencies changed after
+  `6fdb271`. Restores 0 checksum mismatches over 2,000 ticks with 9/9 readings equal; the
+  changed restore diverged at 1303; Replays folder unchanged. 11.6 min.
+  Against Windows `perf_counter` over 699 s, WSL `monotonic` ran 0.936 (no correction) and
+  `time.time` 0.93-0.95 with 20 steps of +1.8-2.5 s. The same rate showed without the game
+  (177 s). No tick gap over 0.134 s. Facts: [clocks](integration.md#clocks-measured-2026-10-28).
+- Unverified: whether these WSL errors changed any recorded result. Think times, the delay
+  sent to the next prompt and short-window clock ratios are timed in WSL; nothing was
+  rescored. The team check's band is marked `JUDGEMENT?` (`team_clock_band`). Recording the
+  new passing revision in `agreed-checks.md` waits for the owner.
 
 ## 2026-10-28: Model team reviewed, cleaned and checked live (harness b50)
 
@@ -140,7 +162,8 @@ checks are proposals; nothing is verified under the hard rule.
   handover (2,989 ticks, 297 observations, the ending); an order injected at tick 2102 applied
   at 210,400 ms as the grid rule predicts; identical attempts matched tick for tick. Passed
   after one rule change made on seeing the run (JUDGEMENT? `result_collapse`). Restored battles
-  paused about 3 s every 35 s of battle time. The agreed Land check passed again with the new
+  paused about 3 s every 35 s of battle time (corrected 2026-10-28: steps of the WSL wall
+  clock, not pauses; [clocks](integration.md#clocks-measured-2026-10-28)). The agreed Land check passed again with the new
   mod (`d3ba6aa`, 0 mismatches, changed restore diverged at 1303); siege and team not re-run.
 - Stage 2: the planned root was flat at rungs 2100 and 1200 (all win). Second root
   `emp-handgunners-grn-savage-orcs-hard` (hold lost at 347.3 s): rung 2700 has 3 winners and

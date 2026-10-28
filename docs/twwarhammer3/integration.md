@@ -220,6 +220,28 @@ JUDGEMENT?: Runtime speed fields — legacy mod, 2026-10-13/14; decision author 
 `twwarhammer3_battle.lua` emits constants for `speed`/`awaiting_orders`; measured readbacks
 would change which timing violations checks detect. Runtime guards rest on these fields.
 
+### Clocks (measured 2026-10-28)
+
+- The battle runs at 1x by the Windows clock. The checkpoint agent's per-tick messages,
+  stamped with Windows `time.time()` on receipt, showed no gap over 0.136 s in 25 launches
+  (7 Stage 1 launches on 2026-10-26, 14 saved Land check launches, 4 on 2026-10-28). In
+  Stage 1, battle time per Windows second was 0.9992-1.0002 in all 31 stretches between
+  WSL clock steps.
+- WSL clocks run slow. Against Windows `perf_counter` (the hardware counter), sampled at
+  10 Hz for 699 s during the Land check and for 177 s without the game, WSL
+  `time.monotonic()` ran 0.936 s per Windows second and was never corrected. WSL
+  `time.time()` ran at the same rate and was stepped forward 1.8-2.5 s every ~34 s: 0.999
+  over 699 s, but wrong over a few seconds. Windows `time.time()` stayed within 0.1 ms of
+  `perf_counter`. On 2026-10-26 the WSL wall clock ran 0.92 and stepped 2.6-2.9 s, so the
+  rate changes from day to day.
+- So WSL durations are short: monotonic by about 6-8%, and wall-clock intervals too,
+  except that one containing a step reads 2-3 s long. This affects anything timed in WSL:
+  `play.py` think times and the measured delay sent to the next prompt, and clock ratios
+  over short windows. The "pauses about 3 s every 35 s" logged for restored battles on
+  2026-10-26 were these steps: all 24 long gaps were classified as clock steps, none as
+  stalls; the source battle had them too. The evidence and scripts are in
+  `runs/overnight-20261028/timing/`.
+
 ### Units and axes
 
 - The unit fields and visibility filter are specified in `engine/mailbox.py`; the
