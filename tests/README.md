@@ -35,7 +35,8 @@ requires WSL, Windows Python and `GAMEAI_TEST_WINDOWS=1`; it starts test process
 
 This is an entry-point map from the 2026-10-23 review, not an exhaustive assertion audit.
 For agreed methods and last passing revisions, use
-[AGENTS.md](../AGENTS.md#verification-hard-rule). An existing test is not automatically an
+[agreed-checks.md](../docs/agreed-checks.md) (the rule: [AGENTS.md](../AGENTS.md#verification-hard-rule)).
+An existing test is not automatically an
 agreed verification method.
 
 | Behavior | Where to start | Real dependency and limit |
