@@ -1,12 +1,18 @@
 # Project state
 
-Updated 2026-10-26: what runs, where each game stands, what comes next. Status only:
+Updated 2026-10-27: what runs, where each game stands, what comes next. Status only:
 History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md).
 Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
 
 WH3 first; Spire waits behind it; post-training is secondary. Three changes await review.
+Thesis proposal on multi-agent coordination, now in [docs/thesis/](thesis/proposal.md) with
+[candidate directions](thesis/directions.md) and [related work](thesis/papers.md) (revised
+2026-10-27), for RPL with Peter Stone as the alternative. Next: the owner's review and its
+[seven decisions](thesis/proposal.md#decisions-for-the-owner); nothing is approved.
+The [memory investigation](thesis/memory-investigation.md#conclusion-from-the-overnight-investigation-2026-10-27)
+is retained as history; its policy benefit and the new proposal's novelty remain unproven.
 Checkpoint review finished; all game controllers stopped. The declared siege cases and
 manual-tower checks passed; other cases remain unverified ([scope](twwarhammer3/checkpoints.md#siege-check),
 [log](twwarhammer3/log.md#2026-10-25-siege-checkpoint-checks-pass-for-declared-cases)).

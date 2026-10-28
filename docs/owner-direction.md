@@ -5,6 +5,37 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-27 (agent context): move Spire-specific instructions out of the root AGENTS.md
+  into a Spire directory, keeping context focused on WH3. Read the
+  [Spire guidance](spire/AGENTS.md) only for Spire work; shared rules stay in the root.
+- 2026-10-27 (thesis revision): improve the proposal "to increase our odds of having a strong
+  thesis proposal", using a supplied ChatGPT answer as a reference; learn more about the
+  possible directions and what is unique about WH3 for robotics and robot learning; novelty
+  comes later. "Be careful with hidden assumptions, overconfident claims"; simple, concrete
+  language. In-doc notes: a separate folder for thesis ideas, novelty checks and papers;
+  whether training is required or API models could be benchmarked (WH3 as a benchmark and/or
+  RL environment); what "unfamiliar" means; whether checkpoints help.
+  [Proposal](thesis/proposal.md), [directions](thesis/directions.md), [papers](thesis/papers.md).
+- 2026-10-27 (thesis rewrite): "this time focusing on the multi-agent aspect" of the supplied
+  discussion. Keep the proposal simple, intuitive, concrete and readable; constrain possible
+  collaborators to Prof. Yuke Zhu's RPL lab, with Prof. Peter Stone as the alternative.
+  [Revised proposal](thesis/proposal.md). Supersedes the memory-only thesis focus
+  below; the request is for a proposal, not adoption of its experiment or verification choices.
+- 2026-10-27 (memory overnight; thesis focus superseded above): "Ignore the multi-agent part
+  and focus on the memory topic." Analyze existing runs and launch more as needed;
+  "let's avoid spending money for
+  now. At most, if really needed, we will have a budget of $3 for tonight"; "I'll leave you
+  running for at least ~10 hours." Prepare an overnight plan, investigate deeply, validate
+  claims and append viability, early findings, risks, promising directions and next steps
+  to the proposal. Supersedes the earlier two-topic scope below for this session.
+- 2026-10-27 (thesis exploration, overnight): "Let's append both points for this overnight run
+  in the thesis proposal doc. I'll try to explore both": the memory analysis of recorded battles
+  and the $0 model-team catch-up ([proposal](thesis/memory-investigation.md#overnight-2026-10-27)).
+- 2026-10-26 (thesis exploration): investigate an empirical, robotics-connected master's
+  topic combining WH3 with Rutav Shah's work and potential Yuke Zhu supervision; avoid
+  math-heavy work and distinguish viability, research overlap and willingness to supervise.
+  Then: “Let's write this as a document in the repo.” [Earlier proposal](thesis/memory-investigation.md).
+  This saves the proposal; the research direction, experiments and checks remain open.
 - 2026-10-26 evening (checkpoint RL, after synthetic v2: training 0.96, held out 0.76): "Stop
   here" (options offered: more varied layouts from 18 recorded jobs, not gating stages 4/5 on
   the check, a larger budget). Earlier the same day: "Let's try the simplest fix. I'll leave it

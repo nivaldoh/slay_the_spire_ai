@@ -42,6 +42,64 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-27: Thesis proposal revised; thesis pages moved to docs/thesis/
+
+- Owner's request: improve the proposal, learn the possible directions and what WH3 offers
+  robot learning, avoid hidden assumptions and overclaims. Moved both thesis pages to
+  [docs/thesis/](../thesis/proposal.md) and added [directions](../thesis/directions.md) and
+  [papers](../thesis/papers.md).
+- Research workflow (7 researchers and a critic) and a review workflow (8 lenses: three
+  citation checks, repo facts, assumptions, style, RPL and Stone readers); notes in
+  `runs/thesis-research-20261027/`. Main finds: Barriga et al. 2019 already ran RL in
+  Total War: WARHAMMER (pin-and-flank in a small scenario); Sellner and Simmons 2006 already
+  predicted remaining durations to reassign running teams; robosuite's TwoArmPegInHole has
+  no grippers, so the robot task must be built; RPL has no 2025–2026 multi-robot paper.
+- The proposal now answers the owner's three in-page questions (training levels, senses of
+  "unfamiliar", checkpoint use), adds reactive-repair and rule-ablation arms, a primary
+  comparison, a timeline sketch and eight owner decisions. New markers: learning_level,
+  support_label, heldout_senses, primary_comparison, timeline_gates, direction_ranking.
+- Documentation only; no launches, paid calls or runtime changes. Checks: 72 doc-link tests
+  passed, Ruff passed. These check links, not novelty or any research claim.
+
+## 2026-10-27: Thesis proposal refocused on multi-agent coordination
+
+- At the owner's request, rewrote the [proposal](../thesis/proposal.md) around learning when
+  support between teammates will fail, and using those predictions to reassign work.
+  Proposed collaborators are within RPL, with Peter Stone as the alternative supervisor.
+- Checked primary sources for research overlap and current RPL membership. Adaptive
+  allocation, learned feasibility and team generalization already have precedents;
+  the proposed distinction and performance benefit remain unproven.
+- Preserved the complete earlier proposal, findings and three judgement markers in the
+  [memory investigation](../thesis/memory-investigation.md); updated its incoming links.
+  Four new proposed choices are marked in the current proposal: coordination_question,
+  coordination_method, coordination_experiment and coordination_transfer.
+- Documentation only; no game launches, paid calls, training or runtime changes. New
+  experiments and verification methods remain proposals.
+- Checks: 69 documentation tests passed, zero failures/skips; Ruff and whitespace checks
+  passed. These check links and repository hygiene, not research novelty or policy benefit.
+
+## 2026-10-27: Memory thesis viability from recorded battles
+
+- Memory-only overnight investigation; $0, no launches or runtime/register changes.
+  [Proposal conclusion](../thesis/memory-investigation.md#conclusion-from-the-overnight-investigation-2026-10-27)
+  contains the plan, methods, references, risks and next pilot; source baseline `a938158`.
+- Census: 640 traces, 441 replay episodes/343 jobs, 175,694 frames. There were 767 completed
+  visibility gaps in 159 episodes: median last-visible-to-return time 12.0 s, displacement
+  30.5 m. Another 235 gaps are censored. No hidden-path or concealment-cause claim.
+- 18,259 direct-model acknowledged decisions in 267 unpaused-config episodes: median engine
+  observation age 4.4 s. Two-sighting extrapolation reduced median reappearance error to
+  12.6 m but worsened its 95th percentile (112.5 → 134.1 m). Prediction, not gameplay.
+- 34 sampled visibility bouts in 19 episodes fell wholly within a model request and were
+  absent from policy inputs; 11 span multiple frames without fleeing flags. No harm claim.
+- Evidence: `runs/twwarhammer3/thesis-memory-20261027/`; 2,173 input hashes unchanged;
+  raw recount passed all 767 gaps/34 missed bouts and 100 sampled motion rows. Focused
+  synthetic checks and doc links: 79 passed, none skipped; repo and analysis Ruff passed.
+- New checks remain proposed; findings unverified under the owner's rule. No retrieval,
+  ranking reversal, current commander, robot or policy-strength result. Wider primary-source
+  research found overlap in retrieval latency, fresh-action checks and continuous collection.
+  Recommendation: a memory-dependent decision audit with a motion-aware tracker baseline;
+  rests on the proposal's marked direction/pilot choices and marked exploratory analysis.
+
 ## 2026-10-26: Checkpoint RL implemented and run: stage 3 fails, the policy collapses
 
 Owner's goal: implement [the plan](checkpoint-rl-plan.md). Branch `wh3-checkpoint-rl` (unmerged;

@@ -15,7 +15,7 @@ The first version covers one kind of battle: a Land Battle (`classic` / `land_no
 - **Same conditions.** Every controller plays the same battle, with the same information and the same permitted orders. Results from different roles, maps, game builds, controller versions or scoring versions are kept apart.
 - **Claims.** A result says how a controller did in the declared battles, nothing about general WH3 skill or a model's intelligence.
 
-Training (fine-tuning, RL) can use the benchmark's records, but it isn't part of the benchmark.
+Training (fine-tuning, RL) can use the benchmark's records, but it isn't part of the benchmark (yet?).
 
 A `JUDGEMENT:` line marks an agent's proposal that the owner hasn't decided yet; the [owner interview](benchmark-implementation.md#owner-interview-one-land-battle) collects the open questions. How we will build and check the benchmark: [benchmark-implementation.md](benchmark-implementation.md).
 
