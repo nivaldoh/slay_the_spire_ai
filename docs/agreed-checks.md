@@ -79,3 +79,13 @@ AGENTS.md on 2026-10-28 to keep that file lean (owner).
   25961564 only. Source-only manual-tower supplement passed at `fbdba3b`: seven launches,
   construction/completed checkpoints, four exact restores (3,300 ticks each/66 readings).
   [Scope and limits](twwarhammer3/checkpoints.md#siege-check); other cases unverified.
+- WH3 checkpoint-RL step run (restore to the engine ending, exact-tick injection, attribution,
+  identical attempts): `uv run --locked python tests/twwarhammer3/check_wh3_restored_episode.py
+  --output runs/twwarhammer3/rl/stage1-<new-name>` (7 launches; `--recount`); agreed 2026-10-26.
+  Ran at `9c11bc6`, passed on recount at `d3ba6aa` after the result-collapse gap rule was
+  added on seeing the run (`runs/twwarhammer3/rl/stage1-20261026/`). Land scenario only.
+  Recorded on the branch; moved here with its merge to main (2026-10-28).
+- WH3 checkpoint-RL closed loop (overfit check, then the trained choice executed and compared
+  with its audit attempt, with a deranged control): `twwarhammer3 rl confirm PLAN`; agreed
+  2026-10-26. Passed at `b07ad3b` on one rung (`runs/twwarhammer3/rl/confirms/hard-late*`);
+  the first-order pre-launch gate came later (`c1f7894`), and the control would have failed it.

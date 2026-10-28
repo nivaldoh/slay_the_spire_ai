@@ -477,6 +477,58 @@ def _acknowledge(result: dict, outstanding: dict, ack: dict, policy, event) -> i
     return ack["applied_ms"]
 
 
+def public(observation: dict, scenario: dict) -> dict:
+    """What a controller may read of an observation.
+
+    Evaluation contains hidden enemy totals. It never enters the controller or its delayed
+    input queue, even on a non-gameplay ending.
+    """
+    view = {key: value for key, value in observation.items()
+            if key not in ("evaluation", "final", "setup")}
+    if scenario.get("scoring") and view.get("mode"):
+        # The scorer's rule is public: a contact-scored card says so to the controller.
+        view["mode"] = {**view["mode"], "scoring": scenario["scoring"]}
+    return view
+
+
+def engine_ending(observation: dict) -> dict:
+    """What ended the battle, from its result observation."""
+    timer = observation.get("timer") or {}
+    ended_by = ("time_limit" if observation.get("remaining_ms") == 0
+                or timer.get("expired") is True else "engine_result")
+    if (observation.get("mode") or {}).get("custom", {}).get("ending") == "scripted":
+        ended_by = "custom_objective"
+    return {"result": observation["result"], "ended_by": ended_by,
+            "battle_ms": observation.get("time_ms"), "timer": timer or None}
+
+
+# Launch identifiers and the mod's own memory of its orders: a restore has none of it, so
+# two launches that reach one engine state differ only here (checkpoint-rl-plan.md).
+# JUDGEMENT: context_projection — Claude, 2026-10-25: the context drops launch ids, seq and
+# the mod's memory fields, keeping enemy_roster; versus the full public observation. What
+# the policy reads and whether contexts match across launches rest on this.
+LAUNCH_FIELDS = ("job", "battle", "seq", "orders")
+UNIT_MEMORY = ("dest", "attack_mode", "command_queue", "navigation")
+
+
+def context_projection(view: dict) -> dict:
+    """A public observation without launch identifiers or the mod's order memory."""
+    def unit(record: dict) -> dict:
+        record = {key: value for key, value in record.items() if key not in UNIT_MEMORY}
+        if record.get("abilities"):
+            record["abilities"] = [{key: value for key, value in ability.items()
+                                    if key != "last_issued_ms"} for ability in record["abilities"]]
+        return record
+
+    projected = {key: value for key, value in view.items() if key not in LAUNCH_FIELDS}
+    projected["friendly"] = [unit(record) for record in view.get("friendly", [])]
+    if (view.get("army") or {}).get("abilities"):
+        projected["army"] = {**view["army"], "abilities": [
+            {key: value for key, value in ability.items() if key != "last_issued_ms"}
+            for ability in view["army"]["abilities"]]}
+    return projected
+
+
 def _drive(config, policy, mailbox, not_battle, result, event, started, scenario) -> None:
     deadline = started + config["episode_timeout"]
     first = mailbox.wait_new_battle(not_battle=not_battle, timeout=config["start_timeout"])
@@ -536,14 +588,8 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
         if observation.get("result"):
             # Kept before the acknowledgement below, which can fail; a controller failure
             # from here on still sets the status, and engine_ending keeps what ended.
-            timer = observation.get("timer") or {}
-            ended_by = ("time_limit" if observation.get("remaining_ms") == 0
-                        or timer.get("expired") is True else "engine_result")
-            if (observation.get("mode") or {}).get("custom", {}).get("ending") == "scripted":
-                ended_by = "custom_objective"
-            result["engine_ending"] = {"result": observation["result"], "ended_by": ended_by,
-                                       "battle_ms": observation.get("time_ms"),
-                                       "timer": timer or None}
+            result["engine_ending"] = engine_ending(observation)
+            timer, ended_by = observation.get("timer") or {}, result["engine_ending"]["ended_by"]
         ack = observation.get("orders")
         if outstanding and ack and ack.get("request") == outstanding["request"]:
             applied_ms = _acknowledge(result, outstanding, ack, policy, event)
@@ -561,15 +607,8 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
         if time.time() > deadline:
             result.update(status="truncated", reason="episode_timeout")
             return
-        # Evaluation contains hidden enemy totals. It never enters the controller or
-        # its delayed input queue, even on a non-gameplay ending.
-        public = {key: value for key, value in observation.items()
-                  if key not in ("evaluation", "final", "setup")}
-        if scenario.get("scoring") and public.get("mode"):
-            # The scorer's rule is public: a contact-scored card says so to the controller.
-            public["mode"] = {**public["mode"], "scoring": scenario["scoring"]}
         if observation.get("phase") == "Deployed":
-            history.append(public)
+            history.append(public(observation, scenario))
         if outstanding or observation.get("phase") != "Deployed":
             continue
         if applied_ms is not None and observation["time_ms"] < applied_ms + config["interval_ms"]:

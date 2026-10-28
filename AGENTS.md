@@ -101,6 +101,7 @@ src/gameai/        Game-neutral code both games import; it never imports a game 
   sft.py           Fine-tuning datasets from either game's export (docs/posttraining.md)
   provenance.py    Repository root, scoped source fingerprints, committed-source check,
                    atomic JSON writes
+  lm.py            Local language models: candidate scoring, tensor hashes, the GPU lease
   windows.py       Windows games owned from WSL: runtime lock, supervised launch, probes
   windows_game.py  The Windows-side supervisor (job object, controller EOF and time limit)
 src/twwarhammer3/  Total War: WARHAMMER III custom battles
@@ -117,7 +118,10 @@ src/twwarhammer3/  Total War: WARHAMMER III custom battles
   battle/          play.py (job loop: launch, setup, episodes, rematch, register row),
                    setup.py (scenarios with `base` inheritance, lobby steps, benchmark
                    checks; its docstring is the scenario field reference), checkpoint.py
-                   (battle checkpoints: save, fast checked rebuild, live handover),
+                   (battle checkpoints: save, fast checked rebuild, live handover; the
+                   checkpoint-RL step run, library records and attempt statuses),
+                   candidates.py, audit.py, rl.py, confirm.py (checkpoint RL: the public
+                   candidate set, branch audits, tasks/methods/evaluation, closed loop),
                    controllers.py
                    (policy names, model prompts, rotation, outside controllers), llm.py
                    (direct API-model controller: llm, llm_rules), commander.py
@@ -178,6 +182,7 @@ uv run python -m twwarhammer3 report <job> [<job> ...] --output runs/twwarhammer
 uv run python -m twwarhammer3 export <job> [<job> ...] --output runs/twwarhammer3/exports/<name>
 uv run python -m twwarhammer3 spend    # WH3 OpenAI ledger total; --provider openrouter for OpenRouter
 uv run --locked python tests/twwarhammer3/check_wh3_checkpoint.py --output runs/twwarhammer3/checkpoint-check-<name>   # battle checkpoints, 4 launches
+uv run --locked --extra llm python -m twwarhammer3 rl <phase> PLAN --output ...   # checkpoint RL phases (docs/twwarhammer3/checkpoint-rl-plan.md)
 uv run python -m gameai.sft <export> [<export> ...] --output runs/sft/<name>   # see docs/posttraining.md
 git grep -n JUDGEMENT -- ':!AGENTS.md' ':!docs/judgement.md'   # marked judgement calls awaiting the owner
 ```

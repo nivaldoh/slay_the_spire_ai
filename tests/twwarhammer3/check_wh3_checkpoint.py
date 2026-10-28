@@ -46,54 +46,7 @@ bm:callback(function()
 end, 160000, "checkpoint_script_order")
 return twwarhammer3_json.encode({ms = bm.battle:time_elapsed_ms()})
 '''
-READING = r'''
-local function get(obj, name, ...)
-  local f = obj and obj[name]; if not f then return nil end
-  local ok, value = pcall(f, obj, ...); if ok then return value end
-end
-local function ctx(id, expression, context)
-  local ok, value = pcall(function()
-    return common.get_context_value(context or "CcoBattleUnit", id, expression) end)
-  if ok then return value end
-end
-local ABILITIES = 'BattleAbilityList.JoinString(SetupAbilityContext.RecordKey + "|" + '
-  .. 'CanCurrentlyPerform + "|" + RechargeTimeRemainingSecs + "|" + IsActive, ";")'
-local EFFECTS = 'ActiveEffectList(true).JoinString(AbilityContext.RecordKey + "|" + '
-  .. 'PhaseRecordContext.Key + "|" + StartTimeSeconds + "|" + TimeRemainingSeconds, ";")'
-local STATS = 'UnitDetailsContext.StatList.JoinString(Key + "=" + Value + "/" + ValueBase, ";")'
-local units, armies = {}, {}
-for side = 1, 2 do
-  local army = bm:alliances():item(side):armies():item(1)
-  armies[#armies + 1] = {side = side, winds = get(army, "winds_of_magic_current"),
-    reserve = get(army, "winds_of_magic_reserve")}
-  local list = army:units()
-  for i = 1, list:count() do
-    local u = list:item(i); local id = tostring(get(u, "unique_ui_id"))
-    local p, d = get(u, "position"), get(u, "ordered_position")
-    local target = get(u, "current_target")
-    units[#units + 1] = {side = side, index = i, id = id, type = get(u, "type"),
-      x = p and p:get_x(), y = p and p:get_y(), z = p and p:get_z(), bearing = get(u, "bearing"),
-      width = get(u, "ordered_width"), dest_x = d and d:get_x(), dest_z = d and d:get_z(),
-      men = get(u, "number_of_men_alive"), hp = get(u, "unary_hitpoints"),
-      ammo = get(u, "ammo_left"),
-      kills = get(u, "number_of_enemies_killed"), fatigue = tostring(get(u, "fatigue_state")),
-      target = target and tostring(get(target, "unique_ui_id")) or nil,
-      morale = ctx(id, 'MoralePercent + "|" + MoraleGreatestEffect'),
-      abilities = ctx(id, ABILITIES), effects = ctx(id, EFFECTS), stats = ctx(id, STATS),
-      flying = get(u, "is_currently_flying"),
-      fire_at_will = get(u, "is_behaviour_active", "fire_at_will"), moving = get(u, "is_moving"),
-      melee = get(u, "is_in_melee"), routing = get(u, "is_routing"),
-      wavering = get(u, "is_wavering")}
-  end
-end
-local s = checkpoint_script
-return twwarhammer3_json.encode({time_ms = bm.battle:time_elapsed_ms(),
-  remaining_s = bm.battle:remaining_conflict_time(), phase = bm:get_current_phase_name(),
-  mode = ctx("", "BattleTypeState", "CcoBattleRoot"),
-  attacker = ctx("", "SetupContext.IsPlayerAttacker", "CcoBattleRoot"),
-  units = units, armies = armies,
-  script = s and {fires = s.fires, times = s.times, draws = s.draws, orders = s.orders} or nil})
-'''
+READING = checkpoint.READING_LUA
 
 
 def move(tick, label, index, kind, x, z):
