@@ -168,9 +168,10 @@ the feedback the model was answering. By default outcomes do not select targets:
 from lost battles and runs are kept, and `outcome` and `labels` travel beside the chats
 for filtering or weighting, never into a prompt.
 
-JUDGEMENT: Training target — assistant, 2026-10-17 (flagged by Claude, 2026-10-28): the last
-accepted attempt, lost battles included, no content screen. Won battles only, first attempts
-only or a garbled-reply screen change every dataset ([Empire screen](twwarhammer3/empire.md#for-the-owner-to-decide)).
+JUDGEMENT: Training target — assistant, 2026-10-17 (flagged by Claude, 2026-10-28): by default
+the last accepted attempt, lost battles included, no content screen. Defaulting to won battles,
+first attempts or a garbled-reply screen changes every dataset
+([Empire screen](twwarhammer3/empire.md#for-the-owner-to-decide)).
 
 `--require PATH=VALUE` (repeatable; every one must match) keeps only rows whose value at
 a dotted path into the row equals VALUE, for example `labels.fight.won=true`,
@@ -186,7 +187,7 @@ not a retry.
 
 JUDGEMENT?: Split unit — assistant, 2026-10-17 (flagged by Claude, 2026-10-28): Spire's seed and
 WH3's declared family, else the scenario name. A coarser unit (faction, map) makes held-out
-rows less like training rows; every validation loss rests on this choice.
+rows less like training rows; every validation loss rests on it (see `export.py`'s Training split).
 
 - The group is the unit that must not leak: Spire uses the game seed; WH3 uses the
   scenario's declared `family`, else its name, and for `random` scenarios `NAME/seed-N`
