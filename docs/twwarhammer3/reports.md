@@ -92,6 +92,10 @@ The selection retains the cavalry/G1/C1 and swarm evidence, specialist screens, 
 pilots and their failed/interrupted setup attempts. It excludes unrelated controller
 tuning and presentation-camera probes. Add new jobs to that list as the suite grows;
 never glob all local runs or select by outcome. The report JSON records every input job.
+
+JUDGEMENT?: Report job list — assistant, 2026-10-15 to 10-17 (flagged by Claude, 2026-10-28):
+`benchmark_jobs.json` holds 140 jobs ending at b23; no chariot, Empire or starting-set job was
+added. Which jobs belong changes every figure on the page.
 Existing scenario reports remain historical artifacts.
 
 JUDGEMENT?: Core set — assistant, 2026-10-16 under delegation (flagged by Claude, 2026-10-28):

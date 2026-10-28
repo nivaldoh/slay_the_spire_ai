@@ -94,8 +94,8 @@ def check_stats(log, observation):
         for key in keys:
             assert swords[0][key] < swords[3][key] < swords[9][key], (key, swords)
             # JUDGEMENT?: Relative leadership — assistant, 2026-10-19 (c768460; flagged by Claude,
-            # 2026-10-28): after a -4 offset of unverified cause, rank bonuses are compared over
-            # rank zero; the exact comparison the check first used (until c768460) would fail.
+            # 2026-10-28): after a -4 offset of unverified cause, bonuses are compared over rank
+            # zero, so a constant side-wide change goes unseen. Passes since c768460 rest on it.
             # Leadership has a side-wide battle offset (-4 on the tested player side).
             # XP must preserve the lobby's bonuses over rank zero, independently of that.
             assert [s[key] - deployed[0][key] for s in deployed] == [

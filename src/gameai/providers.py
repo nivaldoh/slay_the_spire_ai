@@ -55,8 +55,8 @@ def _pin(slug: str) -> dict:
 ROUTES = {"qwen/qwen3.6-35b-a3b": {"quantizations": ["fp8", "bf16"], **_pin("parasail")},
           "z-ai/glm-5.3": _pin("decart"), "moonshotai/kimi-k3": _pin("sail-research")}
 # JUDGEMENT?: Student serving — assistant, 2026-10-17 (flagged by Claude, 2026-10-28): Qwen3.6
-# at fp8/bf16 with explicit temperature 1.0 and top_p 0.95; other models get their backends'
-# defaults. Its traces and any dataset from them rest on it (state.md decision 7).
+# at fp8/bf16 with explicit temperature 1.0 and top_p 0.95; others at backend defaults. fp4, or
+# explicit sampling for every model, changes its traces and datasets (state.md decision 7).
 SAMPLING = {"qwen/qwen3.6-35b-a3b": {"temperature": 1.0, "top_p": 0.95}}
 # Token logprobs, sent only for callers that ask (Spire's play since 2026-10-23). A live probe
 # that day: Parasail returns each output token's logprob, bytes and top alternatives through

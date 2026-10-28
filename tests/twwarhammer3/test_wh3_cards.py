@@ -215,6 +215,7 @@ def test_the_rules_prompt_withholds_the_card_tactics():
     # The rules prompt (llm_rules) gives objectives and interface, no tactics (empire.md
     # decision 5); the chariot card's knowledge row says it states neither charge bonuses nor
     # cycle charging. A prompt that tells a tactic changes what its card measures.
+    # Rests on JUDGEMENT docs/twwarhammer3/controllers.md Scored model arm.
     text = (REPO_ROOT / "configs/twwarhammer3/rules_prompt.md").read_text().lower()
     for stem in ("charg", "cycl", "pull out", "pulls out", "pull-out", "pull back", "withdr",
                  "disengag", "sacrific", "expendab", "tarpit", "flank", "kite", "kiting"):
