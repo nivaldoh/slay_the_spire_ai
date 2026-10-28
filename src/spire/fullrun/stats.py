@@ -38,6 +38,9 @@ def _start(run: Path) -> dict:
     return {}
 
 
+# JUDGEMENT?: Harness label — assistant, 2026-10-12 (flagged by Claude, 2026-10-28): the register's
+# harness is the job name's -vN- label, so source or prompt changes without a new label pool with
+# earlier runs (export.py calls the prompt hash and revision authoritative).
 def row(job: Path, run: Path) -> dict:
     manifest = json.loads((job / "manifest.json").read_text())
     result = json.loads((run / "result.json").read_text())

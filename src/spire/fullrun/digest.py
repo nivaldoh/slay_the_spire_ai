@@ -93,6 +93,9 @@ def job_table(job: Path) -> str:
     ])
 
 
+# JUDGEMENT?: Mistake flags — assistant, 2026-10-12 (flagged by Claude, 2026-10-28): the counts
+# below (idle energy with a playable card, exposed turns, skipped rewards, potions, the last turn)
+# are what the tuning loop targets. Other flags would steer each version's change elsewhere.
 def flags(run: Path) -> list[str]:
     """Counts of mistakes that recur across runs, with the floors to look at."""
     idle: Counter = Counter()

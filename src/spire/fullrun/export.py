@@ -102,6 +102,9 @@ def _requests(trace: Path) -> tuple[list[dict], list[dict]]:
     return labels, requests
 
 
+# JUDGEMENT?: Fight labels — assistant, 2026-10-17 (flagged by Claude, 2026-10-28): a fight is won
+# when a later decision is out of combat, so an escape counts as a win. Datasets and any reward
+# built on these labels rest on it.
 def _fights(labels: list[dict], status: str) -> None:
     """A fight is a maximal run of consecutive combat decisions on one floor.
 
