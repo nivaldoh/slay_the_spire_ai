@@ -43,6 +43,22 @@ records a card per trial (kind, class, source file and hash, model, effort, timi
 | `commander` | hybrid, asynchronous | the model sets standing skills; the executor acts on every observation | v8 | `commander.py` over `skills.py`, `configs/twwarhammer3/commander_prompt.md` |
 | `package.module:Class` | outside | any class with `decide`, `acknowledge` and `metadata` | | [benchmark-run.md](benchmark-run.md) |
 
+Markers for files that cannot carry one (a prompt is the model's input; editing a policy file
+changes its recorded hash). All flagged by Claude, 2026-10-28; none is decided.
+
+JUDGEMENT: `llm` tactics — assistant, v3-v15 (2026-10-13/14): `system_prompt.md` teaches a
+fighting doctrine, with kill rates "Measured over earlier battles" stated as general fire rules.
+Every `llm` result measures model plus doctrine ([interview](benchmark-implementation.md#owner-interview-one-land-battle) question 19).
+
+JUDGEMENT: Scored model arm — assistant, b3 (2026-10-14), then every model battle
+([empire.md](empire.md#decisions-taken-for-the-owners-review) item 5): `llm_rules` is the arm
+on cards and screens. Scoring `llm` or both changes what a model result means (question 2).
+
+JUDGEMENT?: `llm` memory — assistant, first loop (2026-10-13): eight one-line past decisions,
+notes of up to 2000 characters, reasons cut at 300 (b46), no transcript. More or less memory
+changes cost, latency and how a forgotten plan plays out; every direct-controller result
+rests on it.
+
 `llm` v15 and `commander` v3 are the log's
 [Battle types, llm v15 and commander v3](log.md#2026-10-14-battle-types-llm-v15-and-commander-v3-overnight)
 entry. The benchmark harness revisions then extended the rendered state and prompts
@@ -80,6 +96,11 @@ not written there:
   for 30 s (`55ab6b3`, after Skaven skirmishers chased chariots without firing).
 - The executor never queues orders and leaves behaviour toggles alone.
 
+JUDGEMENT: Executor rules — assistant, `skills` v1-v1.2 (2026-10-13): class defaults (lords,
+heroes, cavalry and chariots wait to charge), target priorities and fixed distances and
+timers (`RUN_M`, `ENGAGE_M`, `REPEAT_S`, `STALL_S`, `SKIP_S`). `skills` and `commander`
+results rest on them.
+
 ### `commander`: asynchronous API model over the skills
 
 One plan request is in flight at a time, on a worker thread, so `decide` never waits
@@ -95,6 +116,14 @@ missing or wrong-typed field, a malformed assignment or an unknown skill) is ret
 kind `invalid_reply` is traced and the next state asks again (since b35);
 the direct controller retries an invalid reply twice, then keeps the last reply's valid
 orders.
+
+JUDGEMENT: Invalid replies — assistant, first loop (2026-10-13), b35 and 2026-10-15: `llm` retries
+twice and keeps the last reply's valid orders, `commander` retries once and forfeits. One rule
+for both, or no paid retries, changes invalid and forfeit counts and cost per battle.
+
+JUDGEMENT?: Commander plans — assistant, commander v1 (2026-10-13): the next request leaves as
+soon as a plan is adopted (no timer or event trigger), and a partly invalid plan applies in part.
+Either alternative changes cost, plan age and failure counts; `commander` is unplayed since v4.
 
 Both `skills` and `commander` decide at the mod's tick rate (about 3-4 decisions a
 second). The trace keeps every decision with orders, an error or new metadata, and quiet
@@ -163,6 +192,10 @@ comparison should use:
 - the same information boundary: enemies only while visible, no privileged state;
 - the AI's stats modifier as declared per scenario (`expect.ai_stats_modifier`); at 1.1
   it favours the enemy in mirrors.
+
+JUDGEMENT?: Baseline and floor — assistant, 2026-10-13/15: `llm` is the baseline and
+walk/run-nearest the scripted floor, while model cells since b3 mostly use `llm_rules`.
+Interview question 28 asks which references make a score meaningful.
 
 | Variant | What it isolates |
 |---|---|
