@@ -52,3 +52,23 @@ def test_a_rotated_model_is_the_base_policy_with_its_model_and_effort_in_the_reg
     assert digest.job_digest(job).startswith(
         "bench-b1-20261015: done, policy llm_rules gpt-6-sol/low,"
         "llm_rules@gpt-6-luna/medium gpt-6-luna/medium,hold, scenario s")
+
+
+def test_the_summary_keeps_arms_of_different_added_age_and_interval_apart(tmp_path):
+    register = tmp_path / "results.csv"
+    for name, interval_ms, delays in (("bench-b1-20261015", 0, (0, 6000, 0)),
+                                      ("bench-b1-20261016", 2000, (0,))):
+        job = tmp_path / name
+        job.mkdir()
+        (job / "manifest.json").write_text(json.dumps({
+            "created_at": "2026-10-15T00:00:00", "source_revision": "abc1234def",
+            "config": {"policy": "hold", "scenario": "s", "interval_ms": interval_ms}}))
+        for index, delay_ms in enumerate(delays):
+            episode = job / f"episode-{index:04d}"
+            episode.mkdir()
+            (episode / "result.json").write_text(json.dumps(
+                {"status": "won", "policy": "hold", "delay_ms": delay_ms}))
+            stats.record(register, job, episode)
+    header, _, *rows = stats.summary(register).splitlines()
+    column = [cell.strip() for cell in header.split("|")].index("Episodes")
+    assert sorted(row.split("|")[column].strip() for row in rows) == ["1", "1", "2"]

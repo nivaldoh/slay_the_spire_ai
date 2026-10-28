@@ -172,7 +172,7 @@ uv run python -m twwarhammer3 doctor   # read-only: pins, preferences, running g
 uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>   # add /episode-0000 [--at S]; --units
 uv run python -m twwarhammer3 watch    # follow the running job beside the game; --prompts
 uv run python -m twwarhammer3 watch runs/twwarhammer3/battle/<job> --next   # next episode, stall or end
-uv run python -m twwarhammer3 stats    # results by scenario, policy, model, harness and mode
+uv run python -m twwarhammer3 stats    # results by scenario, policy, model, harness, mode, timing
 uv run python -m twwarhammer3 card chariot [JOB_OR_PLAN_DIR ...]  # tactic-card evidence
 uv run python -m twwarhammer3 report <job> [<job> ...] --output runs/twwarhammer3/reports/<name>
 uv run python -m twwarhammer3 export <job> [<job> ...] --output runs/twwarhammer3/exports/<name>

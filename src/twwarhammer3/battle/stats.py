@@ -116,11 +116,14 @@ def summary(path: Path) -> str:
             if item.get("provider") == "openrouter":
                 model += " (OpenRouter)"
             # Jobs named without -vN- have no harness version: their source tells them apart.
+            # Added age and decision interval are conditions (a blank age, before b1, was 0).
+            timing = (f"{float(item.get('added_age_s') or 0):g}/"
+                      f"{float(item.get('interval_s') or 0):g}")
             groups[(item["scenario"], item["policy"], model, item["effort"],
-                    item["harness"] or item["source"], item["mode"])].append(item)
-    lines = ["| Scenario | Policy | Model | Effort | Harness | Mode | Episodes | Won | Lost | "
-             "Draw | Other | Mean battle s | Own left | Enemy left | Mean delay s | USD |",
-             "|" + "---|" * 16]
+                    item["harness"] or item["source"], item["mode"], timing)].append(item)
+    lines = ["| Scenario | Policy | Model | Effort | Harness | Mode | Age/interval s | Episodes | "
+             "Won | Lost | Draw | Other | Mean battle s | Own left | Enemy left | Mean delay s | "
+             "USD |", "|" + "---|" * 17]
     for key, items in sorted(groups.items()):
         outcomes = [item["outcome"] for item in items]
         battle = [float(item["battle_s"]) for item in items if item["battle_s"]]
