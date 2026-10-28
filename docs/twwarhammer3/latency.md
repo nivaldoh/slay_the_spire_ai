@@ -11,8 +11,8 @@ in `runs/twwarhammer3/calibration/latency-review-20261018/`.
 
 When a model loses a [tactic card](tactic-cards.md), did it not know the tactic, choose wrongly
 or act too late, and how much latency does the tactic tolerate? Wins at natural latency stay the
-primary score. Battles never pause (AGENTS.md), so knowledge is measured offline and latency
-tolerance with scripted references. Offline knowledge answers remain diagnostics;
+primary score. Battles never pause (AGENTS.md), so the plan measured knowledge offline (the
+open-loop probes, retired below) and latency tolerance with scripted references. Offline knowledge answers remain diagnostics;
 they do not independently identify the cause of a live loss. The
 [current benchmark definition](benchmark.md#comparison)
 separates those claims.
