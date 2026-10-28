@@ -67,6 +67,9 @@ token use):
 - Write in simple, concrete language (owner, 2026-10-20). Describe what a unit, controller
   or experiment actually does. Avoid inflated wording and unnecessary jargon; explain
   technical terms when they help.
+- For complicated or ambiguous code (benchmarks, evaluation, environments, infrastructure,
+  tests, workflows), start from how well-known research repos do it and name the repo and file
+  followed in a comment or the commit (owner, 2026-10-28).
 - Put task-created scripts, logs, temporary artifacts and diagnostics inside this repository
   (normally ignored `runs/`), never in the environment/home root or unrelated directories.
   Keep test scratch directories there too; inventory earlier garbage for a later cleanup

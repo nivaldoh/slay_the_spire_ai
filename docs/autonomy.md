@@ -15,6 +15,9 @@ decision easier. Time occupied, tests added and branches produced are not succes
 - The standing menu applies to future requests for autonomous progress. Once the remaining
   general rules are accepted, tasks within them need no further yes. Until then, use existing
   authorization for offline work; saving a plan does not activate a run or the whole proposal.
+- **Long autonomous runs** (owner, 2026-10-28; formerly "overnight runs"): a long window of
+  autonomous work while the owner is away, by day or by night. Game time still follows
+  [game time](#game-time) and needs a free PC.
 - **Busy**, or no clear game window: offline work only; the owner may be using the PC.
 - **Away**: the owner gives a return time and frees the PC, subject to [game time](#game-time).
   At the cutoff or an owner message, stop game work through the existing stop procedure
@@ -77,7 +80,7 @@ a bounded task for the window rather than trying to cover everything every night
 | Thesis research | A source-backed research comparison or resolved feasibility uncertainty in the existing [directions](thesis/directions.md) and [papers](thesis/papers.md). Robotics and multi-agent work matter; the exact topic, RL/MARL, post-training and benchmark contribution remain open. |
 | Decisions | Accurate [JUDGEMENT markers](judgement.md) and small owner interviews about consequential choices, before implementation where possible. |
 | Correctness and tests | Evidence about important behavior, a meaningful regression or a stated verification gap; reuse [testing guidance](testing.md) and [agreed checks](agreed-checks.md). |
-| Code and repository upkeep | Simpler, readable code and organization; corrected stale references; justified cleanup proposals with preserved evidence. |
+| Code and repository upkeep | Simpler, readable code and organization; corrected stale references; justified cleanup proposals with preserved evidence. Compare how well-known research repos build benchmarks, evaluations, infrastructure, tests and workflows, and adopt the parts that fit (owner, 2026-10-28). |
 | Agent workflow | Less repeated context reading, duplicated notes, confusing handoffs and unnecessary tool work; keep only improvements whose benefit can be assessed. |
 
 When the owner is available, ask at most three consequential questions at a time. Explain

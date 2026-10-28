@@ -5,6 +5,15 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-28 (two things to write down), verbatim: "1. We can rename these runs more broadly to
+  'long autonomous runs', as they will run during the day as well. 2. Just like we will keep
+  track of research references for the thesis, we should also remember to use existing
+  research repos as inspiration and direct reference for our code, especially for more
+  complicated, ambiguous parts. We should eventually look at code for existing well-known
+  projects and see how they implement benchmarks, evaluations, infrastructure, tests,
+  workflows, etc and incorporate useful parts into our own repo whenever relevant"
+  Applied: the term is defined in [autonomy.md](autonomy.md#when-it-applies); the habit is in
+  AGENTS.md's working habits and the standing work menu's upkeep row.
 - 2026-10-28 (RL environment, answers), verbatim: "1. We can run episodes faster if they stay
   deterministic. Note that this adds complexity and risk, so we should be careful with it.
   Avoid overengineering and bloat. Test carefully. Keep the code clean. 2. We need to discuss
