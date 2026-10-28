@@ -9,9 +9,11 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
-Next [overnight plan](autonomy.md#next-overnight-research-and-checkpoint-timing): research plus
-checkpoint timing, $0, conditional free diagnostic. **Saved only; not started.** Wait for an
-explicit start and game window. The thesis [proposal](thesis/proposal.md) is one candidate,
+**Running:** the [overnight plan](autonomy.md#next-overnight-research-and-checkpoint-timing),
+started 2026-10-28 02:39 by the owner's `/goal`; Claude Code, the only session tonight
+(commits and pushes). Night plan and evidence: `runs/overnight-20261028/`. $0. Game work
+only before 05:40 (one agreed Land checkpoint check with a clock logger); cutoff 11:39;
+owner back after 12:39. The thesis [proposal](thesis/proposal.md) is one candidate,
 not a selected topic; [directions](thesis/directions.md), [papers](thesis/papers.md) remain open.
 The [memory investigation](thesis/memory-investigation.md#conclusion-from-the-overnight-investigation-2026-10-27)
 is retained as history; its policy benefit and the new proposal's novelty remain unproven.
