@@ -11,7 +11,7 @@ Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and sm
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
 **Nothing runs**: all game controllers are stopped. Last finished: the 2026-10-28 overnight
 plan ([report](twwarhammer3/log.md#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a);
-your answers applied) and the 2026-10-28 afternoon away window (Claude, offline, $0): 44
+your answers applied) and the 2026-10-28 afternoon away window ([log](twwarhammer3/log.md#2026-10-28-afternoon-44-judgement-markers-stats-keeps-timing-arms-apart); $0): 44
 judgement markers over 8 areas ([register](judgement.md#status-and-how-to-continue)), the `stats`
 pooling fix, Spire limit tests and thesis checks ([notes](thesis/notes/README.md)).
 Thesis: the [proposal](thesis/proposal.md) is one candidate, not a selected topic

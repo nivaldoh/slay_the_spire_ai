@@ -43,6 +43,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-28 afternoon: 44 judgement markers; stats keeps timing arms apart
+
+Owner's `/goal` away window (13:07, 1-2 h); Claude Code; offline, $0, no game time. One
+independent reviewer agent checked every batch; its findings are applied
+(`runs/judgement-batch-20261028/review.md`).
+- Markers: 44 over the play loop, controllers, report scoring, the mod, shared model code,
+  post-training and Spire full runs ([register](../judgement.md#status-and-how-to-continue);
+  a reason for every unmarked sweep candidate in `runs/judgement-batch-20261028/task.md`).
+  Reviews found 5 wrong and 13 weak markers before they settled. No call decided.
+- `stats` summary: added age and decision interval now split its groups (25 of 360 mixed
+  them; 391 after). A regression failed before the fix. It also broke `test_wh3_play.py`'s
+  exact row until `04e5adb`, a changed expectation in the agreed team suite (for review).
+- Spire: the action and run-time limits have loop tests (each fails a plausible wrong
+  version). Stale references fixed (agreed checks now in `agreed-checks.md`; "verified"
+  wording without an agreed check); `state.md` trimmed to status (153 to 137 lines).
+- Thesis (untracked notes): the EULA allows no data release without SEGA's answer
+  ([note](../thesis/notes/release-terms.md)); a quadratic rout forecast beats the morale rule
+  at matched recall but trades recall for precision at a fixed threshold
+  (`runs/thesis-forecast-20261028/`); "3 of 5 moments flat" recounted and confirmed.
+- Unverified: all of it beyond the tests named; the full suite passes (1,562, 14 skipped).
+
 ## 2026-10-28 overnight: restore "pauses" were WSL clock steps; Land check passes at dcb8b5a
 
 Owner's `/goal` night ([plan](../autonomy.md#next-overnight-research-and-checkpoint-timing));
