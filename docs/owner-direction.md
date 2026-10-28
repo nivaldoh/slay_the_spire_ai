@@ -248,6 +248,10 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-28 (model-team open items): "I don't know what my pending decisions mean so I'll
+  let you decide something reasonable for now just to unblock us. Just keep track of that so
+  I can remember to review it at some point later." Each item keeps today's behaviour and
+  its marker; listed in [state.md](state.md) item 4 for a later review.
 - 2026-10-27 (multi-agent review; chosen from options offered): team work becomes "a later
   controller on the new Land Battle benchmark", and the team-structures stages wait for that
   battle's first team-vs-single result; `wh3-model-team`: "Rebase, clean, merge" after one

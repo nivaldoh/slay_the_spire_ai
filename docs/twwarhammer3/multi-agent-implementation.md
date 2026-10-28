@@ -138,7 +138,7 @@ morale effect the single controller shows; the owner named leadership %, fatigue
 
 The component checks agreed with the owner on 2026-10-21 are in
 [test_wh3_team.py](../../tests/twwarhammer3/team/test_wh3_team.py), with the play-loop,
-controller and digest files AGENTS.md names:
+controller and digest files [agreed-checks.md](../agreed-checks.md) names:
 
 | Check | Independent reference and pass condition | Plausible error it detects |
 |---|---|---|

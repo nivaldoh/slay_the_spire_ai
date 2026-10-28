@@ -67,7 +67,10 @@ of 17 (`runs/twwarhammer3/review-team-20261027/`). Rebased onto `a938158`: one c
 - Markers added: five `JUDGEMENT` and two `JUDGEMENT?` in multi-agent-implementation.md,
   three in team-structures.md, one in the checker. Unverified: model members (never played
   live) and teamwork quality; the agreed files' moved paths and `project({...})` call sites
-  await the owner's yes.
+  await the owner's yes; on 2026-10-28 the owner let the assistant keep them and the other
+  open items for now (state item 4). Merged after a second rebase onto `92ca8e2`, which
+  changed docs only: the play-scope files are identical to `3adbaa4`'s.
+
 ## 2026-10-27: Thesis proposal revised; thesis pages moved to docs/thesis/
 
 - Owner's request: improve the proposal, learn the possible directions and what WH3 offers

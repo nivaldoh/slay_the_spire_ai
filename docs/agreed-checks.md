@@ -7,14 +7,18 @@ date agreed and the last passing revision. Only the owner agrees a new entry. Mo
 AGENTS.md on 2026-10-28 to keep that file lean (owner).
 
 - WH3 scripted two-member team: ownership, public inputs, independent progress, feedback,
-  timing and cleanup: `uv run --locked pytest -ra tests/twwarhammer3/test_wh3_team.py
+  timing and cleanup: `uv run --locked pytest -ra tests/twwarhammer3/team/test_wh3_team.py
   tests/twwarhammer3/test_wh3_play.py tests/twwarhammer3/test_wh3_controllers.py
-  tests/twwarhammer3/test_wh3_digest.py`; agreed 2026-10-21; passed at `e8d1eda` (121 tests).
-  Live: `uv run --locked python tests/twwarhammer3/check_wh3_team.py --output
+  tests/twwarhammer3/test_wh3_digest.py`; agreed 2026-10-21; passed at `e8d1eda` (121 tests)
+  and at the merged model team (123 tests).
+  Live: `uv run --locked python tests/twwarhammer3/team/check_wh3_team.py --output
   runs/twwarhammer3/team-live-<new-name>`: four fresh launches alternating the delayed
   member; the correct unit moves after its acknowledgement while its peer thinks; 1x, $0,
-  30-minute cap. Passed at `45fe7b0` (4/4, `runs/twwarhammer3/team-live-20261021/`;
-  runtime sources unchanged since); no model-team, strength or multiplayer claim.
+  30-minute cap. Passed 4/4 at `45fe7b0` (`runs/twwarhammer3/team-live-20261021/`),
+  `b0ac9e3`, `31823f3` and `3adbaa4` (`runs/twwarhammer3/team-live-20261027-rebased/`; the
+  merged revision's play-scope files are identical). Its age rule changed after agreement
+  (JUDGEMENT in the checker), kept for now (owner, 2026-10-28). No model-team, strength or
+  multiplayer claim.
 - WH3 saved armies and experience: save a known army, change it, restart WH3 and reload;
   compare unit types, counts and ranks. Set several ranks using both increase and decrease,
   comparing lobby readback and battle-start ranks/stats: `uv run --locked python
