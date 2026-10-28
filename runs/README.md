@@ -61,7 +61,7 @@ runs/
                       eval-guidelines-review-20261020, army-controls-20261019,
                       away-20261021): findings, check outputs and the scratch scripts
                       that the pages and log entries citing them rest on
-  test-scratch/       pytest --basetemp scratch ([tests/README.md](../tests/README.md));
+  test-scratch/       pytest --basetemp scratch (see tests/README.md);
                       disposable (1.7 GB on 2026-10-28, a cleanup candidate)
   uv-cache/           uv's package cache
   autonomy-<date>/    Reviews and checks behind docs/autonomy.md
