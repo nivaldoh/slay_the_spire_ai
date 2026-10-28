@@ -9,32 +9,16 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
-**Finished:** the [overnight plan](autonomy.md#next-overnight-research-and-checkpoint-timing)
-and its backlog (2026-10-28 02:39 to 04:35; Claude Code, the only session; commits and
-pushes). Your answers of 2026-10-28 are applied ([direction](owner-direction.md)). Night plan and evidence: `runs/overnight-20261028/`. $0. Game work
-done (12 min). Report:
-[log](twwarhammer3/log.md#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a)
-(the "pauses" were WSL clock steps; Land check passed at `dcb8b5a`; 15 thesis notes,
-[index](thesis/notes/README.md)). The thesis [proposal](thesis/proposal.md) is one candidate,
-not a selected topic; [directions](thesis/directions.md), [papers](thesis/papers.md) remain open.
-The [memory investigation](thesis/memory-investigation.md#conclusion-from-the-overnight-investigation-2026-10-27)
-is retained as history; its policy benefit and the new proposal's novelty remain unproven.
-Checkpoint review finished; all game controllers stopped. The declared siege cases and
-manual-tower checks passed; other cases remain unverified ([scope](twwarhammer3/checkpoints.md#siege-check),
-[log](twwarhammer3/log.md#2026-10-25-siege-checkpoint-checks-pass-for-declared-cases)).
-Land Battle definition: the [owner interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle)
-focuses on one battle, model knowledge, API latency and scoring; the earlier profile/checks remain proposals.
-Battle [checkpoints](twwarhammer3/checkpoints.md) restore exactly and are on main; the agreed
-check passed at `6fdb271` ([log](twwarhammer3/log.md#2026-10-25-battle-checkpoints-restore-exactly-through-a-fast-rebuild));
-the player tool is public (github.com/nivaldoh/wh3-battle-checkpoints, v0.1.0).
-Latest testing: [eval review](testing.md#wh3-evaluations-and-tests-2026-10-23),
-[live-check comparison](testing.md#wh3-live-check-comparison-2026-10-23); new methods await review.
-The Spire collection night ended ([log](spire/fullrun/log.md#2026-10-23-collection-night-qwen36-reasoning-off-harness-v102)).
-The WH3 starting-set screen admitted no new tactic card ([log](twwarhammer3/log.md#2026-10-22-the-starting-set-screen));
-that reading remains historical and does not select the new Land Battle benchmark.
-Judgement-call [marking](judgement.md) continues in reviewable batches; 2026-10-28 (Claude,
-away window): 41 markers over 8 areas, independently reviewed; `stats` pooling fixed. Four unmerged draft
-branches remain ([list](#branches)), above the proposed three-branch cap; no new runtime branch in the next plan.
+**Nothing runs**: all game controllers are stopped. Last finished: the 2026-10-28 overnight
+plan ([report](twwarhammer3/log.md#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a);
+your answers applied) and the 2026-10-28 afternoon away window (Claude, offline, $0): 41
+judgement markers over 8 areas ([register](judgement.md#status-and-how-to-continue)), the `stats`
+pooling fix, Spire limit tests and thesis checks ([notes](thesis/notes/README.md)).
+Thesis: the [proposal](thesis/proposal.md) is one candidate, not a selected topic
+([directions](thesis/directions.md), [papers](thesis/papers.md)). Testing reviews await you:
+[eval review](testing.md#wh3-evaluations-and-tests-2026-10-23),
+[live-check comparison](testing.md#wh3-live-check-comparison-2026-10-23).
+Four unmerged draft branches remain ([list](#branches)), above the proposed three-branch cap.
 [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
 
 ## Total War: WARHAMMER III
@@ -53,7 +37,7 @@ knowledge evidence contribute to the score is open in the interview.
   team is on `main`, but its members have not played live and it has no agreed check.
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33. A new paid cohort needs a bounded plan.
 - Battle checkpoints: Land check at `6fdb271` and `dcb8b5a`, declared siege cases at `2e2acbe`; build
-  25961564 ([limits](twwarhammer3/checkpoints.md#limits)).
+  25961564 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
 
 Benchmark work waits: answer the [single-battle interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle),
 then revise the proposed profile, score, knowledge evidence and checks from those answers.
