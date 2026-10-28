@@ -47,17 +47,16 @@ Markers for files that cannot carry one (a prompt is the model's input; editing 
 changes its recorded hash). All flagged by Claude, 2026-10-28; none is decided.
 
 JUDGEMENT: `llm` tactics — assistant, v3-v15 (2026-10-13/14): `system_prompt.md` teaches a
-fighting doctrine, with kill rates "Measured over earlier battles" stated as general fire rules.
-Every `llm` result measures model plus doctrine ([interview](benchmark-implementation.md#owner-interview-one-land-battle) question 19).
+fighting doctrine, with kill rates "Measured over earlier battles" stated as general fire
+rules. Every `llm` result measures model plus doctrine ([interview](benchmark-implementation.md#owner-interview-one-land-battle) question 19).
 
-JUDGEMENT: Scored model arm — assistant, b3 (2026-10-14), then every model battle
-([empire.md](empire.md#decisions-taken-for-the-owners-review) item 5): `llm_rules` is the arm
-on cards and screens. Scoring `llm` or both changes what a model result means (question 2).
+JUDGEMENT: Scored model arm — assistant, b3 (2026-10-14), then every model battle ([empire.md](empire.md#decisions-taken-for-the-owners-review)
+item 5): `llm_rules` is the arm on cards and screens, and benchmark.md's First comparison
+proposes it for the Land Battle. Scoring `llm` or both changes what a result means (question 19).
 
 JUDGEMENT?: `llm` memory — assistant, first loop (2026-10-13): eight one-line past decisions,
-notes of up to 2000 characters, reasons cut at 300 (b46), no transcript. More or less memory
-changes cost, latency and how a forgotten plan plays out; every direct-controller result
-rests on it.
+a last-seen enemy map, notes up to 2000 characters, reasons cut at 300 (b46), no transcript.
+More or less memory changes cost, latency and forgotten plans; direct-controller results rest on it.
 
 `llm` v15 and `commander` v3 are the log's
 [Battle types, llm v15 and commander v3](log.md#2026-10-14-battle-types-llm-v15-and-commander-v3-overnight)
@@ -96,10 +95,9 @@ not written there:
   for 30 s (`55ab6b3`, after Skaven skirmishers chased chariots without firing).
 - The executor never queues orders and leaves behaviour toggles alone.
 
-JUDGEMENT: Executor rules — assistant, `skills` v1-v1.2 (2026-10-13): class defaults (lords,
-heroes, cavalry and chariots wait to charge), target priorities and fixed distances and
-timers (`RUN_M`, `ENGAGE_M`, `REPEAT_S`, `STALL_S`, `SKIP_S`). `skills` and `commander`
-results rest on them.
+JUDGEMENT: Executor rules — assistant, `skills` v1-v1.2 (2026-10-13): class defaults (`CHARGERS`
+wait to charge), target priorities, and the fixed distances and timers (`RUN_M`, `ENGAGE_M`,
+`REPEAT_S`, `STALL_S`, `STALL_ARTILLERY_S`, `SKIP_S`). `skills`/`commander` results rest on them.
 
 ### `commander`: asynchronous API model over the skills
 
@@ -117,9 +115,9 @@ kind `invalid_reply` is traced and the next state asks again (since b35);
 the direct controller retries an invalid reply twice, then keeps the last reply's valid
 orders.
 
-JUDGEMENT: Invalid replies — assistant, first loop (2026-10-13), b35 and 2026-10-15: `llm` retries
-twice and keeps the last reply's valid orders, `commander` retries once and forfeits. One rule
-for both, or no paid retries, changes invalid and forfeit counts and cost per battle.
+JUDGEMENT: Invalid replies — assistant, 2026-10-13/14 (forfeit since b35, off-schema since
+2026-10-17): `llm` retries twice and keeps the last reply's valid orders, `commander` retries once
+and forfeits. One rule for both, or no paid retries, changes invalid and forfeit counts and cost.
 
 JUDGEMENT?: Commander plans — assistant, commander v1 (2026-10-13): the next request leaves as
 soon as a plan is adopted (no timer or event trigger), and a partly invalid plan applies in part.

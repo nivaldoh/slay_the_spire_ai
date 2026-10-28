@@ -154,7 +154,7 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
             print(json.dumps({key: result.get(key) for key in (
                 "episode", "status", "battle_s", "decisions", "invalid", "delay_s", "error",
             )}, sort_keys=True), flush=True)
-            # JUDGEMENT: Job stop — first play loop, 2026-10-13 (flagged by Claude, 2026-10-28):
+            # JUDGEMENT: Job stop — assistant, b1 (2026-10-14; flagged by Claude, 2026-10-28):
             # any ending but won/lost/draw stops the job. Going on to the next trial would play
             # the rotation's later controllers and change which battles are paired.
             if result["status"] not in SCORED:
@@ -343,9 +343,9 @@ def policy_call(policy, method: str, *args):
         raise
     except Exception as exc:
         message = f"{method}: {type(exc).__name__}: {exc}"
-        # JUDGEMENT: Operator errors — b35, 2026-10-18 (flagged by Claude, 2026-10-28): HTTP
-        # 401/402 and a ledger stop end the battle unscored; other API errors are the model's
-        # forfeit. benchmark.md lists key, credit and budget failures as still to settle.
+        # JUDGEMENT: Operator errors — assistant, b35 (2026-10-18; "merged on the owner's word"
+        # per the log, no owner-direction entry): HTTP 401/402 and a ledger stop end the battle
+        # unscored, other API errors are the model's forfeit. Interview question 18 still asks.
         # The account's key or credit, or a ledger safety stop: the operator's, no forfeit.
         if isinstance(exc, APIError) and (str(exc).startswith(("HTTP 401", "HTTP 402"))
                                           or str(exc).endswith("and stopped")):
@@ -356,9 +356,9 @@ def policy_call(policy, method: str, *args):
         raise PolicyFailure(message, failure=failure) from exc
 
 
-# JUDGEMENT?: Forfeit split — b35, 2026-10-18 (flagged by Claude, 2026-10-28): an invalid reply
-# or provider error costs one decision; any other controller exception ends the battle. The
-# owner agreed how each case counts (b47, 2026-10-21), perhaps not which errors fall where.
+# JUDGEMENT?: Forfeit split — assistant, b35 (2026-10-18; "merged on the owner's word" per the
+# log): an invalid reply or provider error costs one decision; any other controller exception
+# ends the battle. The owner agreed how each case counts (b47), perhaps not which errors fall where.
 def is_forfeit(failure: PolicyFailure) -> bool:
     """No valid reply or a provider error: no orders, and the next state asks again. Any
     other cause is an exception in the controller's own code and ends the episode."""
@@ -448,9 +448,9 @@ def record_exchanges(policy, event) -> None:
 
 def _acknowledge(result: dict, outstanding: dict, ack: dict, policy, event) -> int:
     """Count an acknowledged request, pass it to the policy; returns when it applied."""
-    # JUDGEMENT: Delay — first play loop, 2026-10-13 (flagged by Claude, 2026-10-28): delay_ms is
-    # the basis snapshot's age when the engine applied the orders, in battle time; delay_s is the
-    # mean. Model call time, or a median or p90, would rank latency differently.
+    # JUDGEMENT: Delay — assistant, first play loop (2026-10-13; flagged by Claude, 2026-10-28):
+    # delay_ms is the basis snapshot's age when the engine applied the orders, in battle time;
+    # delay_s is its mean (`report` uses medians). Model call time would rank latency differently.
     latency = {
         "think_s": round(outstanding["sent"] - outstanding["read"], 3),
         "roundtrip_s": round(time.time() - outstanding["read"], 3),
@@ -555,9 +555,9 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
                           timer=timer or None, ended_by=ended_by)
             event("result", observation=observation)
             return
-        # JUDGEMENT: Wall cap — first play loop, 2026-10-13 (flagged by Claude, 2026-10-28): a
-        # battle still running at the episode timeout (setup.py: timer + 120 s, else 3900 s) is
-        # truncated, unscored and stops the job; benchmark.md lists this case as still to settle.
+        # JUDGEMENT: Wall cap — assistant, b1 (2026-10-14; timer + 120 s since 2026-10-15): a battle
+        # still running at the episode timeout is truncated, not an engine result (cards score it as
+        # a forfeit), and stops the job. Interview question 18 still asks. Flagged by Claude, 10-28.
         if time.time() > deadline:
             result.update(status="truncated", reason="episode_timeout")
             return
@@ -574,9 +574,9 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
             continue
         if applied_ms is not None and observation["time_ms"] < applied_ms + config["interval_ms"]:
             continue
-        # JUDGEMENT?: Added age — 2026-10-14 (flagged by Claude, 2026-10-28): --delay-seconds D
-        # shows the newest snapshot at least D s old and no decision in the first D s. Delaying
-        # fresh orders instead simulates other latency; the chariot's aged witness rests on it.
+        # JUDGEMENT?: Added age — assistant, b1 (2026-10-14; flagged by Claude, 2026-10-28):
+        # --delay-seconds D shows the newest snapshot at least D s old, no decision in the first
+        # D s. Delaying fresh orders instead simulates other latency; the aged witness rests on it.
         cutoff = observation["time_ms"] - delay_ms
         while len(history) > 1 and history[1]["time_ms"] <= cutoff:
             history.popleft()
@@ -606,9 +606,9 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
             event("forfeit", seq=basis["seq"], error=str(failure), failure=failure.failure)
             continue
         invalid = refusal = None
-        # JUDGEMENT?: Whole-batch refusal — first play loop, 2026-10-13 (flagged by Claude,
-        # 2026-10-28): one illegal order voids the batch. Sending the valid ones changes what a
-        # turn achieves; it had not fired in 640 episodes by 2026-10-23 (docs/judgement.md).
+        # JUDGEMENT?: Whole-batch refusal — assistant, first play loop (2026-10-13; flagged by
+        # Claude, 2026-10-28): one illegal order voids the batch. Sending the valid ones changes
+        # what a turn achieves. 0 of 640 recorded episode traces had one (recounted 2026-10-28).
         try:
             if not isinstance(policy, TeamPolicy):  # a team checks each batch on its source
                 validate_orders(orders, basis)
