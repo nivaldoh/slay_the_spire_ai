@@ -94,6 +94,10 @@ tuning and presentation-camera probes. Add new jobs to that list as the suite gr
 never glob all local runs or select by outcome. The report JSON records every input job.
 Existing scenario reports remain historical artifacts.
 
+JUDGEMENT?: Core set — assistant, 2026-10-16 under delegation (flagged by Claude, 2026-10-28):
+the owner approved a compact core of distinct decision problems; which scenarios are core, and
+the caster swap and Conquest demotion, are the assistant's. The whole page shows only these.
+
 **The page shows the core scenarios** (`core_candidate: true` in the notes, one per
 decision family, [scenario design](benchmark.md#scenario-design)) and only their
 completed battles (an engine-reported win, loss or draw). Variants, historical pilots,

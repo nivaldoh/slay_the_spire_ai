@@ -21,8 +21,8 @@ T95 = (0, 12.706, 4.303, 3.182, 2.776, 2.571, 2.447, 2.365, 2.306, 2.262,
 
 
 # JUDGEMENT?: Pair statistics — assistant, 2026-10-14 (flagged by Claude, 2026-10-28): one mean
-# per launch, a Student-t 95% interval and an 80%-power detectable difference. Another unit of
-# independence (per battle) or method (bootstrap) changes which pairs "separate".
+# per launch, a Student-t 95% interval and an 80%-power detectable difference. A bootstrap or
+# permutation test, or no interval at small n, changes which pairs "separate".
 def mean_interval(values: list[float]) -> dict:
     n = len(values)
     result = {"n": n, "mean": statistics.mean(values) if n else None, "ci95": None,
@@ -74,9 +74,9 @@ def trial_metrics(directory: Path, result: dict) -> dict:
                         plan_ages.append(meta["plan_age_s"])
                     attempts.extend(meta.get("attempts") or [])
                 elif kind == "ack":
-                    # JUDGEMENT: Report order age — assistant, 2026-10-14 (flagged by Claude,
-                    # 2026-10-28): medians over non-empty batches, then over battles; the
-                    # register's delay_s is a mean over all. Rests on play.py's Delay marker.
+                    # JUDGEMENT: Order age population — assistant, 2026-10-14/15 (flagged by
+                    # Claude, 2026-10-28): non-empty batches only; the text report takes a median
+                    # of battle medians, the page pools them all. The brief asks only for a median.
                     # Empty batches do not count as action latency.
                     if (event.get("ack") or {}).get("results"):
                         ages.append(event["latency"]["delay_ms"] / 1000)

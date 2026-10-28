@@ -33,9 +33,9 @@ from twwarhammer3.battle.controllers import MODEL_POLICIES, policy_parts
 ASSETS = Path(__file__).with_name("report_assets")
 NOTES_PATH = REPO_ROOT / "configs/twwarhammer3/report_notes.json"
 MAX_STILL_BYTES = 256 * 1024
-# JUDGEMENT?: Test setup — assistant, 2026-10-15 (flagged by Claude, 2026-10-28): a change to
-# these files never splits a page row; any other source change does. Another list changes
-# which battles pool into one bar.
+# JUDGEMENT?: Test setup — assistant, 2026-10-15 (flagged by Claude, 2026-10-28): changes to these
+# files never make a new test setup; any other source change does. Another list changes Figure
+# 1's controlled comparison, the finding's per-setup groups and where the † appears.
 # Files left out of the harness (offline export.py, cards.py and gameai/sft.py still count);
 # the scenario declaration is compared itself.
 PRESENTATION = ("src/twwarhammer3/battle/report", "src/twwarhammer3/battle/replay.py",
@@ -340,8 +340,8 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             "harness": harness(definition, jobs.get(trial["instance"])),
             "date": (jobs.get(trial["instance"]) or {}).get("created_at"),
             # JUDGEMENT: Broken share — assistant, 2026-10-15 (flagged by Claude, 2026-10-28):
-            # routing and shattered men count as out of the fight at the end, unweighted by
-            # unit value. Killed-only or value-weighted shares change every non-win score.
+            # routing and shattered men count as out of the fight at the end, unweighted by unit
+            # value. Killed-only or value-weighted shares change land and siege-defence losses.
             # Progress: the share of the enemy's registered soldiers dead or no longer
             # fighting (routing or shattered; leaving or undeployed alone does not count)
             # when the battle ended.
