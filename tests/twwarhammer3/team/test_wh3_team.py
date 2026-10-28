@@ -35,8 +35,8 @@ def test_partition_and_deep_public_inputs_use_types_not_positions():
     hidden.update(job="different", orders={"other": 1}, evaluation={"hidden": 200}, final={"x": 1})
     hidden["friendly"][0].update(target="another_unseen", target_dead=False)
     hidden["terrain"]["bounds"]["private"] = 0
-    assert team.project(hidden, "f2") == a.inputs[0]
-    assert team.project(hidden, "f1") == b.inputs[0]  # nor an ally's hidden target
+    assert team.project(hidden, {"f2"}) == a.inputs[0]
+    assert team.project(hidden, {"f1"}) == b.inputs[0]  # nor an ally's hidden target
     original_b = deepcopy(b.inputs[0])
     a.inputs[0]["allies"][0]["state"].append("routed")
     a.inputs[0]["terrain"]["rows"][0] = "xxx"

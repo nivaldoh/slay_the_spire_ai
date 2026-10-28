@@ -25,6 +25,7 @@ def records():
                       "abilities": [ability], "reason": "Hold the line.", "notes": "e2 hides",
                       "dropped": [], "plan_age_s": 6.0, "attempts": [attempt],
                       "prompt": PROMPT}},
+        {"kind": "model_exchange", "id": "m1", "prompt": PROMPT, "attempts": [attempt]},
         {"kind": "ack", "request": "r7", "latency": {"delay_ms": 300}, "ack": {
             "applied_ms": 30300,
             "results": [{"index": 1, "unit": "f1", "ok": False, "error": "unavailable_ability"}]}},

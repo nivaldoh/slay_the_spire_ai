@@ -53,6 +53,14 @@ def visible_enemies(observation: dict) -> dict[str, dict]:
     return {unit["id"]: unit for unit in observation.get("enemy", [])}
 
 
+def refused(orders, error: str) -> dict:
+    """The acknowledgement of a batch refused before the engine: every order failed."""
+    return {"validation_error": error,
+            "results": [{"index": index + 1, "unit": order.get("unit"), "ok": False,
+                         "error": error} for index, order in enumerate(orders)
+                        if isinstance(order, dict)] if isinstance(orders, list) else []}
+
+
 def validate_orders(orders: list, observation: dict) -> None:
     """Reject orders the observation does not allow; the engine re-checks the rest."""
     friendly = friendly_units(observation)

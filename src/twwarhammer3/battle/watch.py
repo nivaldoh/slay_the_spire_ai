@@ -72,8 +72,7 @@ class Feed:
             return [f"        invalid orders: {record['error']}"]
         if kind == "team" and record["event"] == "feedback" and record["source"] == "local":
             return [f"        {record['decision']} refused: {record['ack']['validation_error']}"]
-        if kind == "model_exchange" and record.get("member"):
-            # A team member's spend, refused batches included; its decisions skip the tally.
+        if kind == "model_exchange":  # every call's spend, forfeited and refused ones too
             self.usd += sum(attempt.get("usd", 0) for attempt in record["attempts"])
         if kind == "result":
             final = record["observation"].get("final") or {}
@@ -101,8 +100,6 @@ class Feed:
         if record["orders"]:
             self.pending[record["request"]] = record["orders"]
         attempts = behavior.get("attempts") or []
-        if not behavior.get("member"):
-            self.usd += sum(attempt.get("usd", 0) for attempt in attempts)
         who = f"[{behavior['member']}] " if behavior.get("member") else ""
         think = sum(attempt.get("seconds", 0) for attempt in attempts)
         if behavior.get("type") == "llm" and "prompt" in behavior:

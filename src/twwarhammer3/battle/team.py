@@ -29,7 +29,13 @@ from gameai.ledger import BudgetExhausted
 from gameai.llm import APIError
 from gameai.provenance import sha256
 from twwarhammer3.battle import llm
-from twwarhammer3.protocol import IllegalActionError, PolicyFailure, ProtocolError, validate_orders
+from twwarhammer3.protocol import (
+    IllegalActionError,
+    PolicyFailure,
+    ProtocolError,
+    refused,
+    validate_orders,
+)
 
 INPUT_VERSION = "team-v2"
 SWORD = "wh_main_emp_inf_swordsmen"
@@ -59,10 +65,8 @@ class TeamHarnessError(ProtocolError):
 def project(observation, owned, *, army=False):
     """Explicit public contract, including only currently visible target identities.
 
-    ``owned`` (a unit id or a set of them) is ``friendly``, the other friendly units are
-    ``allies``; ``army`` adds the army's abilities and the purchase parts of ``mode``."""
-    owned = {owned} if isinstance(owned, str) else owned
-
+    ``owned`` (a set of unit ids) is ``friendly``, the other friendly units are ``allies``;
+    ``army`` adds the army's abilities and the purchase parts of ``mode``."""
     def fields(value, keys):
         return {key: deepcopy(value[key]) for key in keys if key in value}
 
@@ -234,12 +238,13 @@ class TeamPolicy:
     def _collect(self, name, member):
         """Take a finished call. A forfeit (no valid reply, a provider error) clears it, so
         the member is asked again; a budget stop or any other failure is raised."""
+        from twwarhammer3.battle.play import is_forfeit  # play imports this module
+
         try:
             member.ready = member.future.result()
         except Exception as exc:
             member.future = None
-            forfeit = isinstance(exc, PolicyFailure) and (
-                exc.__cause__ is None or isinstance(exc.__cause__, APIError))
+            forfeit = isinstance(exc, PolicyFailure) and is_forfeit(exc)
             if forfeit and self.closed:
                 return  # after the episode a forfeit is only an unsent call: close() discards it
             self._event("failed", name, error=f"{type(exc).__name__}: {exc}",
@@ -300,12 +305,7 @@ class TeamPolicy:
                 try:
                     self._validate(member, observation)
                 except IllegalActionError as exc:
-                    orders = member.ready["orders"]
-                    ack = {"validation_error": str(exc), "results": [
-                        {"index": i + 1, "unit": order.get("unit"), "ok": False, "error": str(exc)}
-                        for i, order in enumerate(orders) if isinstance(order, dict)
-                    ] if isinstance(orders, list) else []}
-                    self._feedback(name, ack, "local")
+                    self._feedback(name, refused(member.ready["orders"], str(exc)), "local")
             if member.call is None:
                 view = project(observation, member.units, army=name == self.army_owner)
                 if name != self.army_owner and all(u.get("men") == 0 for u in view["friendly"]):
@@ -324,8 +324,6 @@ class TeamPolicy:
         self.selected = self.last_selected = name
         # Flat, so readers of a single controller's behaviour find the member's prompt.
         self.behavior = {**member.ready["behavior"], "member": name, **member.call}
-        self._event("selected", name, dispatch_seq=observation["seq"],
-                    dispatch_ms=observation["time_ms"], selected_at=self.clock())
         return deepcopy(member.ready["orders"])
 
     def acknowledge(self, ack, latency):
@@ -397,10 +395,6 @@ class TeamLLM(llm.LLMPolicy):
     def decide(self, observation):
         self.section = team_section(observation)
         return super().decide(observation)
-
-    def acknowledge(self, ack, latency):
-        # A local refusal never reached the engine, so it has no delay to show.
-        super().acknowledge(ack, latency if "delay_ms" in latency else None)
 
     def metadata(self):
         metadata = dict(super().metadata())

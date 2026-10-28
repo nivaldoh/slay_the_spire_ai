@@ -70,6 +70,7 @@ from twwarhammer3.protocol import (
     MailboxTimeout,
     PolicyFailure,
     ProtocolError,
+    refused,
     scenario_key,
     validate_orders,
 )
@@ -348,6 +349,12 @@ def policy_call(policy, method: str, *args):
         raise PolicyFailure(message, failure=failure) from exc
 
 
+def is_forfeit(failure: PolicyFailure) -> bool:
+    """No valid reply or a provider error: no orders, and the next state asks again. Any
+    other cause is an exception in the controller's own code and ends the episode."""
+    return failure.__cause__ is None or isinstance(failure.__cause__, APIError)
+
+
 def track_objectives(result: dict, observation: dict) -> None:
     """Share of time each victory point and key building was held, from the mod's
     per-tick integrals, plus final supplies and tickets. Acknowledgements separately count
@@ -476,7 +483,6 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
         remaining = max(deadline - time.time(), 0)
         observation = mailbox.wait_observation(
             battle=battle, after_seq=seq, timeout=min(config["observation_timeout"], remaining))
-        received_monotonic = time.monotonic()
         if observation.get("awaiting_orders") or observation.get("speed", 1) != 1:
             raise ProtocolError("WH3 observation is not from an unpaused 1x battle")
         seq = observation["seq"]
@@ -576,9 +582,8 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
             continue
         if failure:
             event("observation", observation=basis, since_previous_applied_ms=since)
-            if failure.__cause__ is not None and not isinstance(failure.__cause__, APIError):
+            if not is_forfeit(failure):
                 raise failure  # an exception in the controller's own code ends the episode
-            # No valid reply or a provider error: no orders, and the next state asks again.
             event("forfeit", seq=basis["seq"], error=str(failure), failure=failure.failure)
             continue
         invalid = refusal = None
@@ -588,12 +593,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
         except IllegalActionError as exc:
             invalid = {"error": str(exc), "orders": orders}
             result["invalid"] += 1
-            refusal = {
-                "validation_error": str(exc),
-                "results": [{"index": index + 1, "unit": order.get("unit"), "ok": False,
-                             "error": str(exc)} for index, order in enumerate(orders)
-                            if isinstance(order, dict)] if isinstance(orders, list) else [],
-            }
+            refusal = refused(orders, str(exc))
             orders = []
         behavior = policy_call(policy, "metadata")
         # A fast policy decides at the tick rate: quiet decisions are logged once per
@@ -602,7 +602,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
                   or observation["time_ms"] - logged_ms >= config["observe_ms"])
         if logged:
             event("observation", observation=basis, since_previous_applied_ms=since,
-                  decision_time_ms=observation["time_ms"], received_monotonic=received_monotonic)
+                  decision_time_ms=observation["time_ms"])
             if invalid:
                 event("invalid", **invalid)
         say = caption(basis, behavior, orders) if config.get("show") else None
