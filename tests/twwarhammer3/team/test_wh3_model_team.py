@@ -416,3 +416,38 @@ def test_a_member_caption_shows_the_state_it_decided_on():
                 "source_ms": 30000}
     assert play.caption(battle(5, 36000), behavior, [ADVANCE]) == (
         "36 s: cavalry (gpt-6-luna) from the state at 30 s\nGo.\nf2 move (10, 20)")
+
+
+def test_think_time_runs_from_the_members_own_start():
+    now = [10.0]
+
+    class Slow(Script):
+        def decide(self, observation):
+            now[0] += .3
+            return super().decide(observation)
+
+    slow = Slow()
+    policy, workers, _, _ = make_team(slow, Script([]), clock=lambda: now[0])
+    policy.decide(state())
+    now[0] += 1  # waiting to be run is not thinking
+    workers.finish(0)
+    policy.decide(state(2, 10100))
+    ack(policy)
+    assert slow.feedback[0][1]["think_s"] == pytest.approx(.3)
+    assert policy.records()["think_s"] == [.3]
+
+
+def test_a_local_refusal_counts_as_invalid(tmp_path):
+    result, _ = play_two(tmp_path, Script([move("f1")]), Script())  # the infantry orders f1
+    assert result["invalid"] == 1 and result["members"]["infantry"]["local_refusals"] == 1
+
+
+def test_a_team_refuses_an_interval_or_aged_track(tmp_path):
+    result = play.play_episode(tmp_path / "e", CONFIG, team.DelayInfantry, FakeMailbox([]),
+                               not_battle=None)  # CONFIG asks for a 5 s interval
+    assert result["status"] == "unsupported_or_invalid" and "teams require" in result["error"]
+
+
+def test_the_team_version_follows_the_rules_prompt():
+    rules = controllers.VERSIONS["llm_rules"]
+    assert controllers.VERSIONS["team_llm_rules"].startswith(rules + "+t")
