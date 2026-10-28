@@ -86,7 +86,9 @@ Against the milestones in section 10 of the owner's original brief (`docs/agent-
 removed 2026-10-12; it is in Git history before that date): A (a working
 original-engine loop) and B (a fixed-encounter diagnostic with baselines) are verified, C
 (a learning loop) is verified computationally without a gameplay improvement, E (language
-weight training) is verified narrowly, and D and F are incomplete.
+weight training) is verified narrowly, and D and F are incomplete. These words predate the
+owner's 2026-10-18 verification rule: no first-combat check is agreed in
+[agreed-checks.md](../../agreed-checks.md), so under that rule A, B, C and E are unverified.
 
 ## Open threads, if this track resumes
 
