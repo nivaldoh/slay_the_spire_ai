@@ -40,8 +40,21 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | benchmark harness | b50 (2026-10-28: team cleanup statuses, member delays in digest, watch spend from model exchanges); b49 (2026-10-21: scripted-team timing, events and fault handling; b48 a scenario's `scoring` reaches the controller's `mode`; b47 the engine's ending kept through a late controller failure; b46 LineTeam kept targets and the reason cap; b45 the rank-5 line step; b44 LineTeam arms and the Orc Boyz knights step; b43 three Empire scenarios; b42 context setup, declared settings, correlated UI requests and session cleanup; b41 saved armies/XP), evaluator v2, track `obs-v4+terrain/act-v2/live-1x`, export schema 2 | `engine/mailbox.py`, `protocol.py`, `battle/play.py`, `setup.py`, `controllers.py`, `calibration.py`, `cards.py`, `report.py`, `export.py` | [The Empire set](#2026-10-20-the-empire-set-harness-b43) (45 launches; the rank-5 line battle is the first candidate team card); [integration verification](#2026-10-20-ui-and-lobby-integration-harness-b42) |
 | replay recorder | v1, on by default (`--no-record-replay`) | `battle/capture.py` | `visual-sol-low-20261015` |
 | battle checkpoints | v1 (2026-10-25) | `battle/checkpoint.py`, `engine/checkpoint_agent.js` | Land check at `6fdb271` and [`dcb8b5a`](#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a); [declared siege cases](#2026-10-25-siege-checkpoint-checks-pass-for-declared-cases) at `2e2acbe`; public tool v0.1.0 |
+| checkpoint RL | merged 2026-10-28 (`6b942a3`) | `battle/rl.py`, `candidates.py`, `audit.py`, `confirm.py`, `checkpoint.py`, `gameai/lm.py`, mod export `twwarhammer3_inject` | Stage 1 and closed-loop checks agreed 2026-10-26 ([agreed-checks.md](../agreed-checks.md)); learning collapsed, held-out 0.76 ([2026-10-26](#2026-10-26-checkpoint-rl-implemented-and-run-stage-3-fails-the-policy-collapses); decision 11) |
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
+
+## 2026-10-28: checkpoint RL merged into main
+
+Owner, 2026-10-28: "could we merge it now?" `wh3-checkpoint-rl` (22 commits) merged as
+`6b942a3`; branch and worktrees removed (their `runs/` entries were links into the main
+checkout's evidence, left intact). One conflict: AGENTS.md's old agreed-checks list; the two
+owner-agreed checkpoint-RL checks moved to [agreed-checks.md](../agreed-checks.md). Spire's
+`language/{policy,sampling,training}.py` stay as they were: its training audit requires them
+byte-identical to recorded jobs, and the branch's move broke 11 audit tests; `gameai/lm.py`
+keeps its own copies. The mod pack changes (injection export). Checks: main checkout full suite
+1,633 passed, 41 skipped (torch); RL, checkpoint and language tests with the `llm` extra and
+run evidence 348 passed; ruff passes. Decision 11's results and open choices are unchanged.
 
 ## 2026-10-28 afternoon: 44 judgement markers; stats keeps timing arms apart
 

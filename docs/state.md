@@ -18,7 +18,7 @@ Thesis: the [proposal](thesis/proposal.md) is one candidate, not a selected topi
 ([directions](thesis/directions.md), [papers](thesis/papers.md)). Testing reviews await you:
 [eval review](testing.md#wh3-evaluations-and-tests-2026-10-23),
 [live-check comparison](testing.md#wh3-live-check-comparison-2026-10-23).
-Four unmerged draft branches remain ([list](#branches)), above the proposed three-branch cap.
+Three unmerged draft branches remain ([list](#branches)); checkpoint RL was merged on 2026-10-28.
 [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
 
 ## Total War: WARHAMMER III
@@ -66,7 +66,7 @@ logprobs and per-floor save snapshots ([what each method can use](posttraining.m
 restoring a snapshot is untested.
 
 [Plan and data-use choices](posttraining.md). [Checkpoint RL handoff](twwarhammer3/checkpoint-rl.md) and
-[implementation plan](twwarhammer3/checkpoint-rl-plan.md): implemented on branch `wh3-checkpoint-rl`
+[implementation plan](twwarhammer3/checkpoint-rl-plan.md): implemented on branch `wh3-checkpoint-rl`, merged to main on 2026-10-28 (owner's request),
 and run on the night of 2026-10-26 ([log](twwarhammer3/log.md#2026-10-26-checkpoint-rl-implemented-and-run-stage-3-fails-the-policy-collapses)):
 exact-tick injection into restored battles works and is deterministic; the trained choice won
 live on one rung; the synthetic check (also after its one allowed re-run) and the ladder's
@@ -111,7 +111,7 @@ v2 it learns the training split (0.96) but generalises to 0.76 held out. Stopped
 9. **Spire's next step.** After WH3, run one meaningful comparison or freeze this track; the state-restore investigation comes first (owner, 2026-10-23). Also noted for later: the capture check (owner, 2026-10-23: "Not sure what this is"). Both, with the proposed comparison and the data-night choice: [Spire open decisions](spire/fullrun/README.md#open-owner-decisions).
 10. **Thesis direction.** No topic is chosen. The 2026-10-28 notes ([index](thesis/notes/README.md)) favour the decision benchmark (2) with the support question (1) as its first task; direction 10 (human and AI together) stays a note (owner, 2026-10-28). Pick what to explore next; [summary](thesis/directions.md#what-the-2026-10-28-checks-changed). Licensing is deferred (owner, 2026-10-28; [licence reading](thesis/notes/release-terms.md)).
 
-11. **Checkpoint RL.** Stopped where the plan needs you (2026-10-26, "Stop here"): (a) how to continue after the policy collapse and the 0.76 held-out result, (b) review the choices made without you, (c) the stage 1 and 4 checks you agreed on 2026-10-26, (d) merging the branch. Details: [checkpoint-rl.md](twwarhammer3/checkpoint-rl.md#open-owner-choices-decision-11).
+11. **Checkpoint RL.** Stopped where the plan needs you (2026-10-26, "Stop here"): (a) how to continue after the policy collapse and the 0.76 held-out result, (b) review the choices made without you, (c) the stage 1 and 4 checks you agreed on 2026-10-26 (now in agreed-checks.md); (d) merged 2026-10-28. Details: [checkpoint-rl.md](twwarhammer3/checkpoint-rl.md#open-owner-choices-decision-11).
 ## Runtime and ownership
 
 - Slay the Spire ([runtime facts](spire/integration.md#runtime-and-source-pins)): the installed game and personal profile slot 0 are authorized, including stats, unlock progress, history and achievements (Ironclad unlock 3 of 5; runs record profile evidence).
@@ -123,10 +123,6 @@ v2 it learns the training split (0.96) but generalises to 0.76 held out. Stopped
   (each game's lock and process check cover only that game); one GPU job at a time.
 
 ## Branches
-
-- `wh3-checkpoint-rl` (worktrees `../slay_the_spire_ai-checkpoint-rl`, `-run` for game phases):
-  checkpoint RL (mod export `twwarhammer3_inject`, step runs, candidates, audit, `exact_table@1`,
-  `twwarhammer3 rl`); offline tests pass. Changes the mod pack; unmerged (decision 11).
 
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` attack-route draft, labelled

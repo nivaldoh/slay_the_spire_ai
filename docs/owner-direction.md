@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-28 (RL environment, answers), verbatim: "1. We can run episodes faster if they stay
+  deterministic. Note that this adds complexity and risk, so we should be careful with it.
+  Avoid overengineering and bloat. Test carefully. Keep the code clean. 2. We need to discuss
+  the RL env idea first. 3. Is our checkpoint branch not merged? If so, could we merge it now?
+  4. No limit. We'll see as we go." Applied: `wh3-checkpoint-rl` merged into main (`6b942a3`);
+  the RL environment stays a discussion until the owner settles its scope.
 - 2026-10-28 (on return from the afternoon window), verbatim: "1. No time to check that
   commit. Use common sense for now. 2. Not sure what you mean 3.Not sure what you need 4.
   Don't worry about licensing yet." Then: "Let's think about what it would take to turn WH3
