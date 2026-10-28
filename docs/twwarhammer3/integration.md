@@ -235,9 +235,11 @@ would change which timing violations checks detect. Runtime guards rest on these
   `perf_counter`. On 2026-10-26 the WSL wall clock ran 0.92 and stepped 2.6-2.9 s, so the
   rate changes from day to day.
 - So WSL durations are short: monotonic by about 6-8%, and wall-clock intervals too,
-  except that one containing a step reads 2-3 s long. This affects anything timed in WSL:
-  `play.py` think times and the measured delay sent to the next prompt, and clock ratios
-  over short windows. The "pauses about 3 s every 35 s" logged for restored battles on
+  except that one containing a step reads 2-3 s long. Affected: a model call's `seconds`
+  (`gameai/llm.py`, monotonic; the report's call times), `think_s` (`play.py`, wall; shown
+  to the model as "you took X s to reply"), `roundtrip_s`, and clock ratios over short
+  windows. Not affected: the delay the model is told about, `delay_ms`. That is engine
+  battle time (`applied_ms` minus the observation's time), as are observation ages. The "pauses about 3 s every 35 s" logged for restored battles on
   2026-10-26 were these steps: all 24 long gaps were classified as clock steps, none as
   stalls; the source battle had them too. The evidence and scripts are in
   `runs/overnight-20261028/timing/`.
