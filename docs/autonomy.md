@@ -1,7 +1,10 @@
 # Working while the owner is away
 
-What Claude Code and Codex may do alone when the owner cannot review or decide. Proposed
-2026-10-21; this revision is not approval to start games or adopt benchmark changes.
+What Claude Code and Codex may do alone when the owner cannot review or decide. The
+[standing work menu](#standing-work) and small interviews were agreed on 2026-10-28.
+The other general rules below remain the 2026-10-21 proposal unless separately agreed.
+The [next overnight plan](#next-overnight-research-and-checkpoint-timing) is saved only:
+the owner explicitly said not to run it yet. This revision starts no game or goal.
 [AGENTS.md](../AGENTS.md) still applies. The [owner's direction](owner-direction.md) is to
 reduce their bottleneck through objective, testable work, without accumulating errors or
 unused features. Success is a useful finished change or evidence that makes an existing
@@ -9,9 +12,9 @@ decision easier. Time occupied, tests added and branches produced are not succes
 
 ## When it applies
 
-- Once accepted, these are standing guidelines until the owner changes them; each task
-  within them does not need another yes. Until then, use existing authorization for offline
-  work. Refining this proposal does not activate it.
+- The standing menu applies to future requests for autonomous progress. Once the remaining
+  general rules are accepted, tasks within them need no further yes. Until then, use existing
+  authorization for offline work; saving a plan does not activate a run or the whole proposal.
 - **Busy**, or no clear game window: offline work only; the owner may be using the PC.
 - **Away**: the owner gives a return time and frees the PC, subject to [game time](#game-time).
   At the cutoff or an owner message, stop game work through the existing stop procedure
@@ -63,6 +66,32 @@ experiment or review only for changed inputs or a specific unanswered question. 
 result can finish a task. If no permitted next step will change a decision or finish useful
 work, leave one resume condition and stop; do not fill time with more audits, research,
 documentation, speculative features or a workflow framework. No new doc pages or public CI.
+
+## Standing work
+
+Owner, 2026-10-28: consider all five areas when asked to make autonomous progress; select
+a bounded task for the window rather than trying to cover everything every night.
+
+| Area | Useful outcome and existing home |
+|---|---|
+| Thesis research | A source-backed research comparison or resolved feasibility uncertainty in the existing [directions](thesis/directions.md) and [papers](thesis/papers.md). Robotics and multi-agent work matter; the exact topic, RL/MARL, post-training and benchmark contribution remain open. |
+| Decisions | Accurate [JUDGEMENT markers](judgement.md) and small owner interviews about consequential choices, before implementation where possible. |
+| Correctness and tests | Evidence about important behavior, a meaningful regression or a stated verification gap; reuse [testing guidance](testing.md) and [agreed checks](agreed-checks.md). |
+| Code and repository upkeep | Simpler, readable code and organization; corrected stale references; justified cleanup proposals with preserved evidence. |
+| Agent workflow | Less repeated context reading, duplicated notes, confusing handoffs and unnecessary tool work; keep only improvements whose benefit can be assessed. |
+
+When the owner is available, ask at most three consequential questions at a time. Explain
+current behavior, evidence, alternatives, the recommendation and what each answer changes.
+Keep unanswered choices in the relevant page, with only the next decisions surfaced in
+[state](state.md#owner-decisions-waiting). Deferral does not settle a choice.
+
+Check old marker candidates against the code before copying them. Follow placement exceptions
+and preserve unresolved markers. Include relevant branches and untracked thesis drafts in a
+review: `git grep` alone misses the latter. The owner chose to keep thesis pages untracked.
+
+Use the existing pages, not another dashboard or decision registry. At handoff, assess useful
+work retained, corrections needed and review burden. Look for workflow improvements from
+observed friction; make small changes, and do not claim token savings without measurements.
 
 ## Checks
 
@@ -187,3 +216,133 @@ stop play and is never re-pinned alone (owner, 2026-10-18).
   retained, corrections/discards, remaining decisions and the owner's actual review effort.
   Broaden delegation only by explicit agreement after that evidence; a tabletop review of
   these rules cannot establish that the workflow reduces errors or review time in practice.
+
+## Next overnight: research and checkpoint timing
+
+Saved 2026-10-28 at the owner's request. **Not started or scheduled.** Start only when the
+owner explicitly asks; record the start, return time and game cutoff then. No clear game
+window means offline work only. This is the selected mixed research/review plan, with $0
+model spending and the conditional free timing diagnostic the owner selected. It does not
+resume the stopped checkpoint-RL training or choose a thesis topic.
+
+### Allocation and limits
+
+JUDGEMENT: overnight_allocation — Codex, 2026-10-28, proposes the time split below within
+the owner's roughly ten-hour window. Another split changes research depth versus review;
+these are planning ceilings, not required work counts or verification thresholds.
+
+| Allowance | Work and stopping point |
+|---|---|
+| 30 minutes | Recheck revision, processes, permissions, pending drafts and existing evidence. Record the task, responsible agent, absolute cutoff and one evidence directory under the main checkout's `runs/`. |
+| 4 hours | Extend and challenge the thesis frontier map; retain a concise comparison and source-backed corrections. |
+| 3 hours | Finish the bounded checkpoint timing investigation; at most 45 minutes of conditional live work, including cleanup. |
+| 1 hour | Independent review of consequential research/timing claims, then targeted documentation, readability and workflow cleanup. |
+| 1.5 hours | Consolidate results, run relevant checks, prepare up to three owner questions and leave the next concrete step. |
+
+Ten hours is a maximum, not a target to fill. If timing work finishes early, use the remaining
+research allowance for a named unresolved comparison. Stop when no permitted next step can
+change a decision or finish useful work. Do not repeat unchanged audits to occupy the window.
+
+Four unmerged draft branches were present at planning, above the older proposal's three-branch
+cap. Preserve them; open no new runtime implementation branch in this plan. Attach findings
+to the existing thesis/checkpoint work. No new dashboard, generic test framework, speculative
+infrastructure or exhaustive repository sweep. New scripts need a named use in this plan.
+
+### Thesis frontier
+
+JUDGEMENT: first_frontier_pass — Codex, 2026-10-28, proposes the three areas below for this
+first mixed night. A different emphasis could surface other thesis candidates; this search
+does not rank or select the thesis, and leaves the other documented directions open.
+
+Start with the existing thesis notes and their research evidence; extend these comparisons:
+
+- Checkpoint-based curricula and sample-efficient learning, including MARL and non-LLM
+  policies. Distinguish demonstration-based starts such as
+  [Backplay](https://arxiv.org/abs/1807.06919) from
+  [reverse curriculum generation](https://proceedings.mlr.press/v78/florensa17a/florensa17a.pdf)
+  and critical-state restarts such as [RICE](https://proceedings.mlr.press/v235/cheng24j.html).
+  Restoration alone does not establish that a method's assumptions fit WH3.
+- Heterogeneous teams, changing capabilities, coordination and unfamiliar teammates.
+- Repeatable decision evaluation, counterfactual continuations and coordination under
+  real execution delay. Keep decision-table evaluation distinct from closed-loop battles.
+
+For each promising direction, record the closest primary sources and what they already
+establish; the possible remaining contribution; WH3's useful properties and alternatives;
+the robotics connection and its limits; required capabilities and missing evidence;
+estimated game/data/compute cost; and the cheapest next step that could change the choice.
+Check current literature and relevant methods/results, recording source versions, dates,
+what was actually read and search limits. Abstract-only or inaccessible claims stay qualified.
+
+Keep benchmark-only, learning-only and combined theses open. Distinguish centralized control
+of several units from decentralized multi-agent learning. Treat the current support-prediction
+proposal as one candidate. One failed training method cannot rule out RL, and an unsuccessful
+literature search cannot establish novelty. Do not build an algorithm or collect a new dataset.
+Update existing thesis pages; detailed evidence stays in the named `runs/` directory.
+
+### Checkpoint timing investigation
+
+Question: do the reported periodic pauses reflect simulation stalls, timestamp artifacts,
+or evidence that cannot distinguish them? The planning review found a discrepancy between
+WSL observation timestamps and simultaneous Windows native-tick timestamps in saved Stage 1
+runs. This is a lead to reproduce, not a verified cause or proof of continuous 1x execution.
+
+1. Recount the six completed attempts in `runs/twwarhammer3/rl/stage1-20261026/`, comparing
+   observation battle times/`read_wall` with native ticks/Windows `wall_time`. Use the saved
+   Land check `runs/twwarhammer3/checkpoint-check-20261025c/` as additional existing evidence.
+   Preserve originals; retain a small reproducible recount and report counts, durations,
+   largest gaps, offset changes, missing samples and concrete examples.
+2. Trace timestamp producers and relevant consumers. Both existing wall timestamps use
+   `time.time()`; native log timestamps come from the Windows Frida receiver, not directly
+   from the simulation. Establish which written claims or timing measures depend on them;
+   do not expand into a general timing rewrite or silently rescore old results.
+3. Challenge the analysis with synthetic records: a wall-clock jump with continuous ticks
+   and monotonic time; an elapsed-time gap without tick progress; missing/batched messages.
+   It must distinguish supported cases or say "undetermined". Do not induce pauses in WH3.
+4. If a named uncertainty remains, use the conditional live diagnostic below once. If the
+   existing evidence resolves the question, skip live work.
+5. Correct unsupported current statements and append a dated correction to historical
+   claims, preserving the original evidence. Separate observed discrepancies, inferred
+   causes and unresolved possibilities. Mark consequential choices at their proper sites.
+
+The owner selected this diagnostic method on 2026-10-28:
+
+- Run the unchanged [Land checkpoint check](../tests/twwarhammer3/check_wh3_checkpoint.py)
+  on main: source battle, two identical restores and one changed-order control. Its existing
+  restoration verdict stays separate from the timing diagnostic; no RL branch is needed.
+- Alongside it, a passive sidecar in the evidence directory samples Windows
+  `time.time_ns()`/`time.perf_counter_ns()` at 10 Hz with sequence numbers. WSL records each
+  received pair with `time.time_ns()`/`time.monotonic_ns()`. Keep native logs unchanged.
+  Bound and clean up the sampler with the check; it sends no game controls.
+- Compare within-clock elapsed intervals and offset changes with native tick progression
+  and Lua battle time. Windows elapsed time is an independent clock reference; message
+  arrival includes transport/scheduling delays. Sampling and receiver timestamps cannot
+  establish absence of every simulation stall. Add no timing pass threshold.
+- Allow one four-launch check, at most 45 minutes including cleanup, finished at least one
+  hour before return. Do not start unless the whole bound fits. No automatic repeat.
+  Respect harness refusals, unexpected closure and the existing safe-stop procedure. An
+  unsupported checkpoint build blocks this diagnostic; report it without re-pinning.
+
+If live work is unavailable or inconclusive, retain the offline result and exact remaining
+uncertainty. Do not add a timing entry to agreed verification merely because the diagnostic
+was permitted or passed its synthetic cases. The existing restoration method is unchanged.
+
+### Checks and handoff
+
+Use the behavior and independent references above; add no coverage-percentage target or
+tests that merely mirror the implementation. Run focused checkpoint tests if their analysis
+or checks change, documentation-link tests for documentation changes, and
+`uv run --locked ruff check .`. Keep pytest scratch directories inside `runs/`. Report
+commands, source revision/diff, input counts and passed/failed/skipped/unavailable checks.
+Component tests do not establish live effects; new methods remain proposed unless agreed.
+
+An independent reviewer challenges consequential research claims and timing conclusions.
+Do not change benchmark meaning, scoring, observations, training gates, historical results
+or agreed criteria without an owner decision. Cleanup stays within the touched material.
+Assess workflow friction at handoff; retain only small, justified improvements and state
+their observed benefit or uncertainty. Do not edit autonomy rules during the absence.
+
+The morning handoff gives the research comparison and timing result, checks and limitations,
+any small cleanup/workflow improvement, and up to three questions that unblock further work.
+Keep the log summary within about 20 lines, link evidence, and update status with the next
+step. Success is reduced uncertainty and manageable review effort, not hours occupied,
+paper counts, test counts or newly created branches.

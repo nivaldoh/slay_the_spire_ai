@@ -5,6 +5,38 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-28 (overnight setup, answering the plan's questions): "My return time is in like
+  10+h. Don't worry too much about it. I'll set you on "/goal" and if you finish early, there
+  seems to be no shortage of work to do afterwards and you can just keep going. Only one
+  session for you will run overnight, so you do the commits and pushes." "we will prioritize
+  setting up infrastructure, explore different potential directions to get an idea of what
+  would be the best topic for the thesis, map the frontier for our selected topics, etc. The
+  research we collect should be summarized here and/or indexed or whatever you think is best
+  in order to make it easier for you to retrieve relevant pieces in the future." Then: "Let's
+  wrap up the plan before I start the run (don't start yet)."
+  Night plan: `runs/overnight-20261028/plan.md` (ignored by Git).
+- 2026-10-28 (thesis idea): "researching cooperation between human and AI in a WH3 battle
+  could potentially be one interesting direction that we should consider. We should add that
+  to the list of topics that we want to explore before committing to a thesis topic."
+  Added as direction 10 in [directions.md](thesis/directions.md); not for this overnight run.
+- 2026-10-28 (recurring work and next overnight plan): keep making gradual progress on
+  thesis research, important decisions and `JUDGEMENT` markers, correctness/tests, and
+  code/repository cleanliness. "Let's keep track of these requests as I don't want to keep
+  repeating all this manually every day"; overnight runs may last about ten hours, without
+  accumulating slop. The thesis topic, RL/MARL, post-training and benchmarking remain open.
+  Added: "we should remember to look for potential improvements to your own workflow from
+  time to time", including token efficiency and reducing confusion/error.
+  Selected: "Standing menu (Recommended)", "Small interviews (Recommended)",
+  "Mixed research and review", "Free live checks too", "Checkpoint timing (Recommended)"
+  and "Conditional diagnostic (Recommended)". The diagnostic first reuses saved evidence;
+  if needed, one unchanged four-launch Land checkpoint check with passive 10 Hz wall and
+  monotonic clock sampling, at most 45 minutes including cleanup, ending at least one hour
+  before return. No new timing pass threshold or deliberate game pauses. Other provisions
+  of the older autonomy proposal are not collectively accepted by these choices.
+  Scope now: "Right now we will just write the plan. You won't actually do the overnight
+  run yet." Then: "Let's write the plan." [Standing work](autonomy.md#standing-work)
+  and [saved overnight plan](autonomy.md#next-overnight-research-and-checkpoint-timing);
+  starting it still needs an explicit instruction and game window.
 - 2026-10-28 (agent context, continued): the owner had removed the agreed-checks list from
   AGENTS.md to keep it lean; "If you really think that was important, at least let's move
   it to a different file that won't automatically pollute your context window." Moved to

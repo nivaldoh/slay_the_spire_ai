@@ -1,16 +1,18 @@
 # Project state
 
-Updated 2026-10-27: what runs, where each game stands, what comes next. Status only:
+Updated 2026-10-28: what runs, where each game stands, what comes next. Status only:
 History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md).
 Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
 
-WH3 first; Spire waits behind it; post-training is secondary. Two changes await review.
-Thesis proposal on multi-agent coordination, now in [docs/thesis/](thesis/proposal.md) with
-[candidate directions](thesis/directions.md) and [related work](thesis/papers.md) (revised
-2026-10-27), for RPL with Peter Stone as the alternative. Next: the owner's review and its
-[eight decisions](thesis/proposal.md#decisions-for-the-owner); nothing is approved.
+WH3 first; Spire waits behind it; post-training is secondary.
+Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
+correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
+Next [overnight plan](autonomy.md#next-overnight-research-and-checkpoint-timing): research plus
+checkpoint timing, $0, conditional free diagnostic. **Saved only; not started.** Wait for an
+explicit start and game window. The thesis [proposal](thesis/proposal.md) is one candidate,
+not a selected topic; [directions](thesis/directions.md), [papers](thesis/papers.md) remain open.
 The [memory investigation](thesis/memory-investigation.md#conclusion-from-the-overnight-investigation-2026-10-27)
 is retained as history; its policy benefit and the new proposal's novelty remain unproven.
 Checkpoint review finished; all game controllers stopped. The declared siege cases and
@@ -26,7 +28,8 @@ Latest testing: [eval review](testing.md#wh3-evaluations-and-tests-2026-10-23),
 The Spire collection night ended ([log](spire/fullrun/log.md#2026-10-23-collection-night-qwen36-reasoning-off-harness-v102)).
 The WH3 starting-set screen admitted no new tactic card ([log](twwarhammer3/log.md#2026-10-22-the-starting-set-screen));
 that reading remains historical and does not select the new Land Battle benchmark.
-Judgement-call [marking](judgement.md) continues in reviewable batches; waiting changes: 3 of 3 ([branches](#branches)).
+Judgement-call [marking](judgement.md) continues in reviewable batches. Four unmerged draft
+branches remain ([list](#branches)), above the proposed three-branch cap; no new runtime branch in the next plan.
 [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
 
 ## Total War: WARHAMMER III
@@ -108,7 +111,7 @@ v2 it learns the training split (0.96) but generalises to 0.76 held out. Stopped
 
 1. **One Land Battle definition.** Answer the [interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle) on model comparison, knowledge, latency, health/morale scoring and required game data. Engine timer outcomes and small mixed armies are agreed; the earlier profile, summary, role coverage and new checks remain proposals. Historical c1 is unchanged.
 2. **Next experiments and spending.** Choose a game window for the new profile's measurement checks/pilot, after its definitions are settled, then the controller comparison and budget. The [plan](twwarhammer3/benchmark-implementation.md#phases) starts with free scripts. Older P5, Kimi and team estimates are deferred; OpenAI's $52 cap still refuses Sol. No new paid plan is authorized by this definition update.
-3. **Standing autonomy rules.** Accept or revise the proposed rules for work while you cannot review. [Away guidelines](autonomy.md): the October 21 window used the proposal, not its agreed trial. Reviews caught 114 errors in drafts and commits, 113 fixed. Existing offline delegation continues; it does not settle the standing rules.
+3. **Remaining autonomy rules.** The [standing menu and small interviews](autonomy.md#standing-work) were agreed on 2026-10-28; the next overnight plan is saved, not started. Other provisions of the older [away guidelines](autonomy.md) still await review; this was not blanket acceptance.
 4. **Model-team choices to review later.** Merged with your 2026-10-27 answers (later arm on the Land Battle; teammates' condition shown; live check 4/4 at `3adbaa4`, [log](twwarhammer3/log.md#2026-10-28-model-team-reviewed-cleaned-and-checked-live-harness-b50)). On 2026-10-28 you let me settle the open items for now; each keeps today's behaviour and stays marked: (a) the live check keeps its movement rule and its changed age rule (raw evidence, wall clock), not the stricter idle-before-order witness; (b) a member does not see its own unit's target while that enemy is out of sight, the single controller does (11 of 24,248; neither can order an attack on an unseen enemy), to revisit before the first team-vs-single comparison; (c) a member bug at cleanup still replaces an engine ending, where a single controller keeps it; (d) the agreed team test keeps its 2026-10-22 edits and the 2026-10-28 move to `tests/twwarhammer3/team/`; (e) calls cut off at cleanup reach the ledger only, until `result.json` counts them. The other open calls are the `JUDGEMENT` lines in [multi-agent-implementation.md](twwarhammer3/multi-agent-implementation.md). Before a paid team battle, agree a check for `team_llm_rules` ([next](twwarhammer3/multi-agent-implementation.md#next)); model members have not played live.
 5. **Campaign permissions.** Separately allow or refuse harness saves and irreversible Steam achievements. These choices are required before any campaign launch. Deferring keeps campaign work to [offline drafts](autonomy.md#wh3-campaign-infrastructure).
 6. **Controller direction.** Adopt or drop the attack-route prompt change; keep or defer the commander approach. The attack-route draft needs its own comparison under the new Land Battle definition and renumbering before adoption. `commander` is unplayed since v4; [controller plans](twwarhammer3/controllers.md) remain proposals.
