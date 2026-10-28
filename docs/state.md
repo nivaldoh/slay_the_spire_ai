@@ -12,8 +12,10 @@ correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](aut
 **Running:** the [overnight plan](autonomy.md#next-overnight-research-and-checkpoint-timing),
 started 2026-10-28 02:39 by the owner's `/goal`; Claude Code, the only session tonight
 (commits and pushes). Night plan and evidence: `runs/overnight-20261028/`. $0. Game work
-done (the agreed Land checkpoint check passed at `dcb8b5a`, [log](twwarhammer3/log.md#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a)); no more game time tonight;
-owner back after 12:39. The thesis [proposal](thesis/proposal.md) is one candidate,
+done; no more game time tonight; owner back after 12:39. Report so far:
+[log](twwarhammer3/log.md#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a)
+(the "pauses" were WSL clock steps; Land check passed at `dcb8b5a`; 11 thesis notes,
+[index](thesis/notes/README.md)); three questions there. The plan's work is done; the backlog continues. The thesis [proposal](thesis/proposal.md) is one candidate,
 not a selected topic; [directions](thesis/directions.md), [papers](thesis/papers.md) remain open.
 The [memory investigation](thesis/memory-investigation.md#conclusion-from-the-overnight-investigation-2026-10-27)
 is retained as history; its policy benefit and the new proposal's novelty remain unproven.
@@ -49,7 +51,7 @@ knowledge evidence contribute to the score is open in the interview.
 - Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); the model
   team is on `main`, but its members have not played live and it has no agreed check.
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33. A new paid cohort needs a bounded plan.
-- Battle checkpoints: Land check at `6fdb271`, declared siege cases at `2e2acbe`; build
+- Battle checkpoints: Land check at `6fdb271` (passed again at `dcb8b5a`, not yet in agreed-checks.md), declared siege cases at `2e2acbe`; build
   25961564 ([limits](twwarhammer3/checkpoints.md#limits)).
 
 Benchmark work waits: answer the [single-battle interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle),
@@ -112,7 +114,7 @@ v2 it learns the training split (0.96) but generalises to 0.76 held out. Stopped
 
 ## Owner decisions waiting
 
-1. **One Land Battle definition.** Answer the [interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle) on model comparison, knowledge, latency, health/morale scoring and required game data. Engine timer outcomes and small mixed armies are agreed; the earlier profile, summary, role coverage and new checks remain proposals. Historical c1 is unchanged.
+1. **One Land Battle definition.** Answer the [interview](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle) on model comparison, knowledge, latency, health/morale scoring and required game data. Engine timer outcomes and small mixed armies are agreed; the earlier profile, summary, role coverage and new checks remain proposals. Historical c1 is unchanged. New (2026-10-28): WSL clocks run ~6% slow, so choose which clock times model calls and think times ([clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)).
 2. **Next experiments and spending.** Choose a game window for the new profile's measurement checks/pilot, after its definitions are settled, then the controller comparison and budget. The [plan](twwarhammer3/benchmark-implementation.md#phases) starts with free scripts. Older P5, Kimi and team estimates are deferred; OpenAI's $52 cap still refuses Sol. No new paid plan is authorized by this definition update.
 3. **Remaining autonomy rules.** The [standing menu and small interviews](autonomy.md#standing-work) were agreed on 2026-10-28; the next overnight plan is saved, not started. Other provisions of the older [away guidelines](autonomy.md) still await review; this was not blanket acceptance.
 4. **Model-team choices to review later.** On 2026-10-28 you let me settle five open items for now; each keeps today's behaviour, stays marked and is listed in [multi-agent-implementation.md](twwarhammer3/multi-agent-implementation.md#choices-settled-for-now-2026-10-28). Before a paid team battle, agree a check for `team_llm_rules` ([next](twwarhammer3/multi-agent-implementation.md#next)); model members have not played live.

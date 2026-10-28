@@ -46,24 +46,34 @@ benchmark harness revision, G1 and G2 the calibration stages.
 ## 2026-10-28 overnight: restore "pauses" were WSL clock steps; Land check passes at dcb8b5a
 
 Owner's `/goal` night ([plan](../autonomy.md#next-overnight-research-and-checkpoint-timing),
-`runs/overnight-20261028/plan.md`); Claude Code; $0. Evidence: `runs/overnight-20261028/timing/`.
+`runs/overnight-20261028/plan.md`); Claude Code, the only session; $0, one game window (12
+min). Evidence `runs/overnight-20261028/`; an independent review (`review/review.md`) reran
+the scripts and checked 14 source facts. Its corrections are applied.
 
-- The 2026-10-26 "pauses" (3 s every 35 s): the recount of the 7 Stage 1 launches classifies
-  all 24 long WSL gaps as WSL wall-clock steps, none as stalls or undetermined. Battle time per
-  Windows second was 0.9992-1.0002 in all 31 stretches; the unrestored source battle had the
-  same steps. The classifier first passed 5 synthetic cases (step, stall, burst, missing,
-  none), and 4 plausible wrong versions each failed one.
-- Live, with a passive 10 Hz Windows clock sidecar (no game input): the agreed Land check
-  (script as of `6cd5fbe`, stricter than at `6fdb271`; not edited for tonight) passed at
-  `dcb8b5a`, its first run on main since those changes. Restores 0 checksum mismatches over 2,000 ticks with 9/9 readings equal; the
-  changed restore diverged at 1303; Replays folder unchanged. 11.6 min.
-  Against Windows `perf_counter` over 699 s, WSL `monotonic` ran about 0.936 (no correction)
-  and `time.time` 0.93-0.95 with 20 steps of +1.8-2.5 s. The same rate showed without the
-  game (180 s). No tick gap over 0.134 s. Facts: [clocks](integration.md#clocks-measured-2026-10-28).
-- Unverified: whether these WSL errors changed any recorded result. Call times, the think time
-  shown in the next prompt and short-window clock ratios are timed in WSL; nothing was
-  rescored. The team check's band is marked `JUDGEMENT?` (`team_clock_band`). Recording the
-  new passing revision in `agreed-checks.md` waits for the owner.
+- Pauses: the recount of the 7 Stage 1 launches classifies all 24 long WSL gaps as WSL
+  wall-clock steps (0 stalls). The classifier passed 5 synthetic cases, and 4 plausible wrong
+  versions each failed one. Battle time per Windows second was 0.9992-1.0002; the unrestored
+  source battle had the steps too.
+- Live: the agreed Land check (script as of `6cd5fbe`, stricter than at `6fdb271`) passed at
+  `dcb8b5a`: restores 0 mismatches over 2,000 ticks, 9/9 readings; changed diverged at 1303;
+  Replays unchanged. A passive Windows clock sidecar measured WSL `monotonic` at about 0.936 s
+  per Windows second, never corrected, and `time.time` stepped 1.8-2.5 s every ~34 s (no-game
+  run: same). [Clocks](integration.md#clocks-measured-2026-10-28) lists the affected measures;
+  nothing was rescored. `JUDGEMENT?` `team_clock_band` marks the team check's band.
+- Thesis research (untracked `docs/thesis/notes/`, [index](../thesis/notes/README.md)): 11 notes.
+  Step 0 on 441 recorded battles: wavering warns a median 7 s before a rout; a morale < 0.5
+  rule warns 77% of routs 15-60 s ahead, so precision, not lead time, is the open problem. A
+  small learned model beat that rule overall but not in won battles. In 25% of 8,718 model
+  decisions something that mattered changed before the orders applied (observational).
+  Frontier notes cover restart curricula, open- versus closed-loop scores, teammate
+  populations, delay definitions and all 10 directions. Shortlist:
+  [directions](../thesis/directions.md#what-the-2026-10-28-checks-changed).
+- Upkeep: inbox shortened (long items moved verbatim, 11 kept); prompts `TODO.md` answered;
+  AGENTS.md points to the research index. No branch, no `JUDGEMENT` batch (sweep candidates
+  need site checks).
+- Questions: (1) thesis next step (inbox 10); (2) which clock times the Land Battle's latency
+  measures (inbox 1); (3) record `dcb8b5a` in agreed-checks.md, and is the team check's
+  0.85-1.15 band yours?
 
 ## 2026-10-28: Model team reviewed, cleaned and checked live (harness b50)
 
