@@ -67,8 +67,9 @@ Already decided: small mixed armies first; the engine picks the winner, timer wi
 
 13. **When should army condition be scored?** At the engine ending, at fixed battle times, over the whole battle, or several of these separately? The final state describes the finish; time spent ahead also rewards when it happened, and can reward dragging a battle out. If a battle ends early, what does a later checkpoint mean? Do you also want the state just before the decisive collapse? Does "ending" mean the first engine result or the later results screen? The two can give different readings.
 
-   Evidence (2026-10-28, not an answer; 620 recorded engine endings): at least 1.5% of wins and
-   2.1% of losses ended at the timer; median length 6-7 min. The saved final reading is taken at
+   Evidence (2026-10-28, not an answer; recorded engine endings): of 457 battles with a declared
+   timer, 2.2% of wins and 2.8% of losses ended at it; median length about 6 min (won 6.5, lost
+   5.7). The saved final reading is taken at
    the result tick, so the two endings cannot be compared from records
    (`runs/interview-evidence-20261028/`).
 
