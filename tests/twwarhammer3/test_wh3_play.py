@@ -473,8 +473,8 @@ def test_job_plays_episodes_with_restarts_and_records_rows(tmp_path, harness):
         ("episode-0001", "lost", "attack_nearest", "", "1", "realtime", "0.5", "0.1"),
     ]
     table = stats.summary(results)
-    assert ("| kho5-dwf5 | attack_nearest |  |  | 1 | realtime | 2 | 1 | 1 | 0 | 0 | 4 | 0.50 |"
-            " 0.10 |" in table)
+    assert ("| kho5-dwf5 | attack_nearest |  |  | 1 | realtime | 0/5 | 2 | 1 | 1 | 0 | 0 | 4 |"
+            " 0.50 | 0.10 |" in table)
     assert b"\r" not in results.read_bytes()  # LF like Spire's register, not csv's CRLF
 
 
