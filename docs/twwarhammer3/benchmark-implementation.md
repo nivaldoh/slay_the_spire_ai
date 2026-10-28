@@ -76,6 +76,10 @@ Already decided: small mixed armies first; the engine picks the winner, timer wi
 
 15. **What should healing and temporary resources mean?** Net remaining health; total damage and healing separately, if observable; or both? How should barriers, resurrection and summoned units count if the roster has them, and should summons stay separate from the original army? Repeated damage and healing could inflate a cumulative score without improving the result. These cases can stay out of the first roster instead of needing general support now.
 
+   Evidence (2026-10-28, not an answer; friendly units in 441 recorded battles): 5 of 1,841
+   units gained health between frames and none gained men; the proposed casters are untested
+   (`runs/interview-evidence-20261028/`).
+
 16. **What is each leadership state worth?** Do wavering, routing, rallied, shattered, leaving the battlefield and destroyed need distinct outcomes? The options are the final state, the time spent in each state, or how often units change state: which matches what you want to reward? Does a rout that recovers keep credit? Repeated routs and time spent routing answer different questions. Numeric leadership is another measure, not automatically a common scale across unit types.
 
 17. **How should health and morale combine?** Keep them separate, combine them with explicit weights, or use one only to break ties? How do we avoid counting a damaged unit's later rout as a second, independent loss? Does a healthy routed unit count as temporarily out, lost, or partly valuable? How are units that don't rout normally treated? End-state flags alone can't show which order caused a collapse, and the flags can overlap.
@@ -115,7 +119,8 @@ What the code records today and what is missing: [measurement gaps](#measurement
 
    Evidence (2026-10-28, not an answer; same recorded battles): at 1 Hz, 42% of 3,255 wavering
    episodes last five frames or fewer, most of them three (almost none shorter); no rout
-   that ended during the battle was that short (`runs/interview-evidence-20261028/`).
+   that ended during the battle was that short; none of 806,758 friendly unit records lacked
+   hp, men or morale (`runs/interview-evidence-20261028/`).
 
 ### G. Repetition, checks and when the definition is done
 
