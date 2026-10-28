@@ -20,6 +20,9 @@ RECORDER_VERSION = 1
 NAME = re.compile(r"[\w.-]+", re.ASCII)
 
 
+# JUDGEMENT?: Recorder in scored battles — 2026-10-15 (flagged by Claude, 2026-10-28): the 1 Hz
+# recorder is on by default on one scripted off/on pair, which integration.md says does not
+# establish an exact overhead; every manifest copies the label. Recording off is the alternative.
 def recording_settings(config: dict) -> dict:
     return {"version": RECORDER_VERSION, "enabled": bool(config.get("record_replay")),
             "interval_ms": 1000, "cost_validation": "scripted_off_on_20261015"}

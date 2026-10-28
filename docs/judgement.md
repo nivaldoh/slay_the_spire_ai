@@ -66,5 +66,8 @@ marking them for the owner's review; the rule for agents is in
   and deciding sentences first, history never; docs any time, code and configs only between
   game jobs, in behaviour-neutral commits (a comment-only Python change keeps its syntax
   tree) whose messages give marker counts per file so the owner can sample.
+- Batches done: `[loop]` (2026-10-28, candidates 30-44: 7 markers in `battle/play.py` and
+  `battle/capture.py`; the reason for each unmarked candidate is in
+  `runs/judgement-batch-20261028/task.md`).
 - The owner has decided none of the marked calls (2026-10-23) and has not yet said whether
   the two examples set the right threshold.
