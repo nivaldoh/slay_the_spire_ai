@@ -570,6 +570,10 @@ WH3:
   rosters are not requirements. Start the first specialist prototypes compact.
 - 2026-10-14 (night, sieges): benchmark who holds the victory points over time and the
   supplies left unspent; both are now measured per episode.
+- 2026-10-14 (benchmark spec; added 2026-10-28 from a session memory note written that day):
+  a controller's whole latency, network included, is part of what is measured ("it will
+  also matter in certain real-life settings"), so live 1x with natural latency is the
+  primary result and added-delay tracks are diagnostics. Cited in [benchmark.md](twwarhammer3/benchmark.md).
 - 2026-10-13 (benchmark idea, the owner's words): "Eventually we could turn this game into
   some kind of serious LLM benchmark? For now I'm just registering this here. Could try to
   create certain challenge scenario battles where the opponent side is stronger, and see
