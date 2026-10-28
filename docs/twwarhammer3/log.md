@@ -45,33 +45,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 ## 2026-10-28 overnight: restore "pauses" were WSL clock steps; Land check passes at dcb8b5a
 
-Owner's `/goal` night ([plan](../autonomy.md#next-overnight-research-and-checkpoint-timing),
-`runs/overnight-20261028/plan.md`); Claude Code, the only session; $0, one game window (12
-min). Evidence `runs/overnight-20261028/`; an independent review (`review/review.md`) reran
-the scripts and checked 14 source facts. Its corrections are applied.
+Owner's `/goal` night ([plan](../autonomy.md#next-overnight-research-and-checkpoint-timing));
+Claude Code, the only session; $0; one 12-minute game window. Evidence `runs/overnight-20261028/`;
+two independent reviews (`review/`) reran the analyses and checked sources; corrections applied.
 
-- Pauses: the recount of the 7 Stage 1 launches classifies all 24 long WSL gaps as WSL
-  wall-clock steps (0 stalls). The classifier passed 5 synthetic cases, and 4 plausible wrong
-  versions each failed one. Battle time per Windows second was 0.9992-1.0002; the unrestored
-  source battle had the steps too.
-- Live: the agreed Land check (script as of `6cd5fbe`, stricter than at `6fdb271`) passed at
-  `dcb8b5a`: restores 0 mismatches over 2,000 ticks, 9/9 readings; changed diverged at 1303;
-  Replays unchanged. A passive Windows clock sidecar measured WSL `monotonic` at about 0.936 s
-  per Windows second, never corrected, and `time.time` stepped 1.8-2.5 s every ~34 s (no-game
-  run: same). [Clocks](integration.md#clocks-measured-2026-10-28) lists the affected measures;
-  nothing was rescored. `JUDGEMENT?` `team_clock_band` marks the team check's band.
-- Thesis research (untracked `docs/thesis/notes/`, [index](../thesis/notes/README.md)): 14 notes,
-  two independent reviews (`review/`, `review-2.md`) with all corrections applied. Step 0 on
-  441 recorded battles: wavering warns a median 7 s before a rout. A morale < 0.5 rule warns
-  77% of routs 15-60 s ahead, so precision, not lead time, is the open problem; whether a
-  small learned model beats it in won battles is undecided. About 12% of 8,614 model
-  decisions met a change they did not cause before their orders applied (observational).
-  Frontier notes cover curricula, decision-point and open- versus closed-loop scores,
-  failure prediction, credit, teammates, delay, build freezing and all 10 directions.
-  Shortlist: [directions](../thesis/directions.md#what-the-2026-10-28-checks-changed).
-- Upkeep: inbox shortened (long items moved verbatim, 11 kept); prompts `TODO.md` answered;
-  AGENTS.md points to the research index. No branch, no `JUDGEMENT` batch (sweep candidates
-  need site checks).
+- Pauses: all 24 long WSL gaps in the 7 Stage 1 launches classify as WSL wall-clock steps, 0
+  as stalls (the classifier passed 5 synthetic cases; 4 wrong versions each failed one).
+  Battle time per Windows second was 0.9992-1.0002, and the unrestored source had the steps.
+- Live: the agreed Land check (script as of `6cd5fbe`) passed at `dcb8b5a`: 0 mismatches over
+  2,000 ticks, 9/9 readings, changed diverged at 1303, Replays unchanged. A Windows clock
+  sidecar put WSL `monotonic` at about 0.936 s per Windows second and `time.time` steps at
+  1.8-2.5 s every ~34 s, also without the game. Affected measures:
+  [clocks](integration.md#clocks-measured-2026-10-28); nothing rescored; `JUDGEMENT?`
+  `team_clock_band` marks the team check's band.
+- Thesis ([index](../thesis/notes/README.md), untracked; 14 notes): in 441 recorded battles a
+  morale < 0.5 rule warns 77% of routs 15-60 s ahead, so precision, not lead time, is open;
+  about 12% of 8,614 model decisions met a change they did not cause before applying.
+  Shortlist and evidence: [directions](../thesis/directions.md#what-the-2026-10-28-checks-changed).
+- Upkeep: inbox shortened (long items moved verbatim); prompts `TODO.md` answered; stale
+  controller versions fixed; AGENTS.md points to the index. No branch, no `JUDGEMENT` batch.
 - Questions: (1) thesis next step (inbox 10); (2) which clock times the Land Battle's latency
   measures (inbox 1); (3) record `dcb8b5a` in agreed-checks.md, and is the team check's
   0.85-1.15 band yours?
