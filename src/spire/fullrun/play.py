@@ -35,6 +35,9 @@ from spire.fullrun.llm import SYSTEM_PROMPT_PATH
 from spire.fullrun.stats import record
 from spire.protocol import BridgeCommandError, IllegalActionError, PolicyFailure, ProtocolError
 
+# JUDGEMENT: Scored runs — assistant, 2026-10-12 (flagged by Claude, 2026-10-28): a policy failure
+# (three invalid replies) and a truncation (4,000 actions or 5 h by default) are scored attempts
+# beside wins and deaths. Excluding them changes the register's run counts and act milestones.
 # A run that ends in one of these is a scored attempt; anything else stops the job.
 SCORED = {"won", "lost", "policy_failure", "truncated"}
 # Edits outside this scope (another game's package) do not stop a running job.

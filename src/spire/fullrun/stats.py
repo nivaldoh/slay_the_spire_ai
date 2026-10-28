@@ -82,6 +82,9 @@ def rebuild(root: Path, path: Path) -> None:
                 record(path, job, run)
 
 
+# JUDGEMENT: Milestones — assistant, 2026-10-12 (flagged by Claude, 2026-10-28): acts reached count
+# every scored run however it ended; the mean floor counts only engine-ended runs. Other choices
+# change every version comparison in the register (results.csv, `spire stats`).
 def summary(path: Path) -> str:
     """Milestones per group: runs reaching each act count however they ended, while
     finished runs (and the mean floor) are only engine-confirmed wins and deaths."""

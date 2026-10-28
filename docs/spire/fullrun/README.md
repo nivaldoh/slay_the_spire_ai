@@ -45,6 +45,10 @@ the prompt and memory, not weight training.
 
 ## Information boundary
 
+JUDGEMENT?: Public interface — assistant, 2026-10-12 (flagged by Claude, 2026-10-28): the
+allowlist in `decisions.py` hides card UUIDs, the seed, monster move IDs and base damage, and
+sorts the draw pile (unless Frozen Eye). Showing more or less changes what a model can infer.
+
 `spire/decisions.py` builds each decision from a stable CommunicationMod message.
 The policy sees allowlisted game fields: act, floor, HP, gold, deck, relics,
 potions, keys (allowlisted, but CommunicationMod 1.2.1 never sends them), the map, the
@@ -99,6 +103,10 @@ carries a compendium of the rules, keywords and every card, relic and potion wit
 effect; this harness's checked notes (enemy rules, v9's keywords) are a narrow version of
 that, and v7–v9 deaths from unknown card and power rules (Ethereal, Corruption, Apparition+)
 argue for a broader one. Game text itself must not be committed.
+
+JUDGEMENT: Knowledge boundary — assistant, 2026-10-12 (flagged by Claude, 2026-10-28): no card,
+relic or power text and no tools, only narrow checked notes added when traces show a need. A rules
+compendium, as in SpireBench, changes what a floor measures; every version's result rests on it.
 
 ## Evidence
 
@@ -245,6 +253,10 @@ time is, at roughly two to four iterations a night. Then:
    change, commit it with the new `results.csv` rows and push once, and run the next iteration on the same seeds. Keep a
    change if the targeted mistake stops and outcomes do not get worse. With three
    stochastic runs per version, do not claim more than that.
+
+   JUDGEMENT: Keep rule and seeds — assistant, 2026-10-12 (flagged by Claude, 2026-10-28): one run
+   on each of RUNDEV1-RUNDEV3 per version decides a keep. More seeds or runs (SpireBench uses ten
+   seeds) change which versions are kept; v1-v10 rest on it.
 
 Update "Active work" in [state.md](../../state.md) when the loop starts and when it stops, with
 the time from `date -u`, rather than at every launch. To save context, a session reads
