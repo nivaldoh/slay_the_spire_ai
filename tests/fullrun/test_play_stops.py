@@ -92,8 +92,9 @@ def test_source_change_preserves_the_finished_run_and_prevents_the_next_launch(
     assert not (job / "run-0001").exists()
 
 
-# README "Evidence": a run is truncated at the action limit or the run-time limit (defaults
-# 4,000 actions and 5 h). `truncated` is in SCORED, so the job records it and goes on.
+# play.py truncates a run at the action limit or the run-time limit (defaults 4,000 actions and
+# 5 h) and counts it as scored, so the job goes on. No doc states this: rests on JUDGEMENT
+# src/spire/fullrun/play.py Scored runs. A decision in flight at the deadline is still sent.
 def test_action_limit_truncates_the_run_and_the_job_goes_on(tmp_path, harness):
     sessions, sent = harness
     sessions += [[MENU, combat_message(), combat_message()], [MENU, DEATH]]
