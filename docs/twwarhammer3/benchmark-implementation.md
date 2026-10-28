@@ -112,6 +112,10 @@ Already decided: small mixed armies first; the engine picks the winner, timer wi
 
 23. **Which time measurements should explain performance?** API request and response time, the age of the observed state when an order is issued, gaps between decisions, and time to the observed effect answer different questions. Do you want typical and slowest behaviour, including retries, failed calls and calls still pending at the ending? Is issue time enough at first, with execution time marked unknown for queued orders, or is per-order effect timing needed before this battle can be a benchmark?
 
+   Evidence (2026-10-28, not an answer; recorded battles, battle time): direct model orders
+   applied a median 5.5 s after their snapshot (per-battle means; 3-6 s by model, tails to
+   about 20 s), scripted ones about 0.3 s (`runs/interview-evidence-20261028/`).
+
 24. **What resources are equal, and does efficiency change the rank?** The same money cap, token cap, call limit or effort setting; each model's declared best setting; or several operating points reported separately? What happens at a cap? Should latency and cost lower the score, or be reported beside it? Delay already hurts live play, so an extra latency penalty would count speed twice. Which provider, model version, sampling settings and retry rules must be fixed or disclosed?
 
 ### F. Information gaps and the minimum implementation
