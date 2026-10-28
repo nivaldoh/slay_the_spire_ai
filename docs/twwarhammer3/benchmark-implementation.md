@@ -78,7 +78,8 @@ Already decided: small mixed armies first; the engine picks the winner, timer wi
    Evidence for 16-17 (2026-10-28, not an answer; friendly units in 441 recorded battles, older
    scenarios): 42% of 1,867 routs recovered (median 43 s out) but only 144 stayed in action; half
    began with more than half the men; 37% of living units routing at the end were above half
-   strength; units spent up to 17% of their time routing (`runs/interview-evidence-20261028/`).
+   strength; living units spent about 13% of their recorded time routing
+   (`runs/interview-evidence-20261028/`).
 
 18. **How should non-wins and failures count?** A draw as zero, a half point, or its own category? The controller-failure rule is agreed ([outcome table](benchmark.md#outcome-and-score)); decide the rest: provider outage, exhausted credits, wall-time or budget cap, unknown failure and voluntary surrender. Which count against the model as served, which get a replacement battle, and which stay unresolved? Can a failed battle keep partial health or morale credit? The engine timer and the controller's wall-time limit are different endings.
 
@@ -107,8 +108,8 @@ What the code records today and what is missing: [measurement gaps](#measurement
 27. **What accuracy and missing-data policy is enough?** What is the shortest wavering or routing episode, or the smallest HP change, you care about? That sets the recording interval and precision, independently of how often a model calls. Should a recording gap make only that measure unknown, require bounded estimates, or void the attempt for that comparison? A known engine result can stand even when a diagnostic can't be computed.
 
    Evidence (2026-10-28, not an answer; same recorded battles): at 1 Hz, 42% of 3,255 wavering
-   episodes and 14% of 1,867 routs last five frames or fewer; 6% of routs last one frame
-   (`runs/interview-evidence-20261028/`).
+   episodes last five frames or fewer, most of them three (almost none shorter); no rout
+   that ended during the battle was that short (`runs/interview-evidence-20261028/`).
 
 ### G. Repetition, checks and when the definition is done
 
