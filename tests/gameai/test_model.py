@@ -404,3 +404,14 @@ def test_a_call_in_flight_holds_its_reservation_against_a_concurrent_call(tmp_pa
         model(broken).call("user", {})
     assert ledger.held == 0 and ledger.spent == first.totals["usd"]
     assert len((tmp_path / "spend.jsonl").read_text().splitlines()) == 1
+
+
+def test_a_refusal_mentions_held_spend_only_while_a_call_holds_some(tmp_path):
+    ledger = Ledger(tmp_path / "spend.jsonl", 0.01)
+    for usd in (0.003, 0.006):  # two overlapping calls; their releases leave a float residue
+        ledger.reserve(usd)
+    for usd in (0.003, 0.006):
+        ledger.release(usd)
+    with pytest.raises(BudgetExhausted) as error:
+        ledger.reserve(1)
+    assert "held" not in str(error.value)

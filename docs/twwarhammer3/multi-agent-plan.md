@@ -8,8 +8,9 @@ commitments change which later decisions are possible.
 
 Status 2026-10-27: the [starting-set screen](log.md#2026-10-22-the-starting-set-screen)
 parked the rank-5 line that §9 B and §12 name as the first card, and the owner made team
-work a later arm on the Land Battle benchmark ([direction](../owner-direction.md)). §9 B-C
-wait for that battle's first team-vs-single result.
+work a later arm on the Land Battle benchmark ([direction](../owner-direction.md)). The
+Land Battle replaces §9 B's card; §9 C's structure screen and §12 decision 1 wait for that
+battle's first team-vs-single result.
 
 Start with two agents commanding separate groups of one army against the game AI. Then take
 single-client steps (an allied AI army, model against model), then native allied armies and

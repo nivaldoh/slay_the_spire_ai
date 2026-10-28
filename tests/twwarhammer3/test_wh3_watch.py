@@ -16,7 +16,7 @@ def records():
     state = observation(30000)
     plan = [{"unit": "f2", "skill": "engage", "target": "e1", "x": None, "z": None}]
     ability = {"unit": "f1", "type": "ability", "ability": "roar", "target": None}
-    attempt = {"seconds": 5.5, "usd": 0.0004}
+    attempt = {"seconds": 5.5, "usd": 0.0004, "exchange_id": "m1"}
     return [
         {"kind": "roster", "observation": state},
         {"kind": "observation", "observation": state},
@@ -26,6 +26,8 @@ def records():
                       "dropped": [], "plan_age_s": 6.0, "attempts": [attempt],
                       "prompt": PROMPT}},
         {"kind": "model_exchange", "id": "m1", "prompt": PROMPT, "attempts": [attempt]},
+        {"kind": "model_exchange", "id": "m2", "prompt": PROMPT,  # a forfeited call
+         "attempts": [dict(attempt, exchange_id="m2")], "error": {"type": "InvalidReply"}},
         {"kind": "ack", "request": "r7", "latency": {"delay_ms": 300}, "ack": {
             "applied_ms": 30300,
             "results": [{"index": 1, "unit": "f1", "ok": False, "error": "unavailable_ability"}]}},
@@ -49,9 +51,18 @@ def test_the_feed_summarizes_requests_replies_rejections_and_the_result():
         "   30s -> gpt-6-luna: us 2/2u 111m  seen 1/2u 90m; 136 chars",
         "         reported: engine rejected f1 ability roar at self: unavailable_ability",
         "   30s x engine rejected f1 ability roar at self: unavailable_ability",
-        "   61s   us 2/2u 111m  seen 1/2u 90m  $0.0004",
-        "== episode-0002: won at 90 s; friendly 50% left, enemy 10% left; $0.0004",
+        "   61s   us 2/2u 111m  seen 1/2u 90m  $0.0008",
+        "== episode-0002: won at 90 s; friendly 50% left, enemy 10% left; $0.0008",
     ]
+
+
+def test_a_trace_without_model_exchanges_counts_its_decisions_spend():
+    old = [record for record in records() if record["kind"] != "model_exchange"]
+    for record in old:  # traces before 2026-10-17
+        for attempt in (record.get("behavior") or {}).get("attempts", []):
+            del attempt["exchange_id"]
+    feed = Feed("e")
+    assert [line for record in old for line in feed.lines(record)][-1].endswith("$0.0004")
 
 
 def test_follow_prints_a_finished_job_and_returns(tmp_path):
@@ -67,8 +78,8 @@ def test_follow_prints_a_finished_job_and_returns(tmp_path):
     follow(job, out=lines.append)
     assert [line for line in lines if line.startswith("== episode")] == [
         "== episode-0000", "== episode-0000: won at 90 s; friendly 50% left, enemy 10% left;"
-        " $0.0004", "== episode-0001", "== episode-0001: won at 90 s; friendly 50% left,"
-        " enemy 10% left; $0.0004"]
+        " $0.0008", "== episode-0001", "== episode-0001: won at 90 s; friendly 50% left,"
+        " enemy 10% left; $0.0008"]
     prompts = []
     follow(job / "episode-0001", prompts=True, out=prompts.append)
     assert "         Dropped or rejected since your last plan:" in prompts

@@ -76,6 +76,7 @@ from twwarhammer3.protocol import (
 )
 
 SCORED = {"won", "lost", "draw"}
+ENDED = SCORED | {"truncated"}  # ended without a failure, which a cleanup failure replaces
 SOURCES = ("src/gameai", "src/twwarhammer3", "configs/twwarhammer3", "pyproject.toml",
            "uv.lock", ".python-version")
 TRACK = "obs-v4+terrain/act-v2/live-1x"
@@ -300,10 +301,10 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
             try:
                 policy_call(policy, "close")  # in-flight calls are waited for and charged
             except BudgetExhausted as exc:  # a team member's call that ended with a stop
-                if result["status"] in SCORED:  # an earlier failure keeps its status
+                if result["status"] in ENDED:  # an earlier failure keeps its status
                     result.update(status="budget_exhausted", error=f"controller close: {exc}")
             except Exception as exc:  # likewise for a member bug collected there
-                if result["status"] in SCORED:
+                if result["status"] in ENDED:
                     result.update(status="policy_failure", error=f"controller close: {exc}",
                                   failure=getattr(exc, "failure", {}))
         record_exchanges(policy, event)

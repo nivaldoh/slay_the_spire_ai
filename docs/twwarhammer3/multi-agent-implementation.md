@@ -5,7 +5,7 @@ one army: the scripted probes, each owning one unit, and the model team (`team_l
 Each member decides on its own copy of the public state and gets its orders sent while the
 other is still thinking. The agreed component checks passed at `e8d1eda` (121 tests); the
 live check passed 4/4 at `45fe7b0`, `b0ac9e3` and `31823f3` (the model-team branch before
-its rebase onto `main`) and has not run at the merged revision
+its rebase onto `main`) and has not run at the rebased tip
 ([AGENTS.md](../../AGENTS.md#verification-hard-rule)). They cover ownership, independent
 progress, feedback and cleanup for two scripts; model teams, messages and teamwork quality
 are unverified. The [evaluation plan](multi-agent-plan.md) says what a team is for; this
@@ -32,14 +32,15 @@ first waits 3 s on a stop event that cleanup can wake.
   time, remaining time, speed, the enemy roster, magic, `mode` (its purchase parts only for
   the army owner), terrain when present, the member's units in `friendly` with every field
   the `llm` renderer reads, the teammate's units in `allies` with the fields an enemy row
-  has plus their condition (ammunition, fatigue, leadership; the owner's choice on
-  2026-10-27), never their orders, queue or navigation, visible enemies, and on any unit a
-  target only if that enemy is visible. The army owner also gets `army`. It drops `job`, the
-  global `orders` acknowledgement (the teammate's results) and private fields. One
-  difference from the single controller: a member does not see its own unit's current target
-  while that enemy is out of sight, so its prompt says "no order" for that unit; the single
-  controller sees it. Neither can order an attack on an unseen enemy. In the b43-b45 traces
-  11 of 24,248 friendly targets (7 of 10,293 observations, 45 episodes) were hidden enemies.
+  has plus their condition (ammunition, fatigue, leadership % with its largest effect; the
+  owner chose condition on 2026-10-27), but never their orders, queue or navigation; visible
+  enemies; and on any unit a target only if that enemy is visible. The army owner also gets
+  `army`. It drops `job`, the global `orders` acknowledgement (the teammate's results) and
+  private fields. One difference from the single controller: a member does not see its own
+  unit's current target while that enemy is out of sight, so its prompt says "no order" for
+  that unit; the single controller sees it. Neither can order an attack on an unseen enemy.
+  In the b43-b45 traces 11 of 24,248 friendly targets (7 of 10,293 observations, 45
+  episodes) were hidden enemies.
 - **Dispatch.** Each member has at most one decision running, on a two-thread pool. Each
   outer `decide` collects finished work without waiting, checks it, starts idle members on
   fresh copies and returns one member's whole batch, so engine feedback indices need no
@@ -68,14 +69,15 @@ first waits 3 s on a stop event that cleanup can wake.
   still in flight; a forfeit collected there is only discarded) and closes every member
   whose call has finished, even if one close fails. A stop from a call collected there still
   ends the episode as `budget_exhausted`. A member bug collected there is a policy failure
-  naming its member even after the battle ended, where a single controller's call that
-  straddles the end keeps the result (the agreed close-failure rule; changing it is the
-  owner's call). A failure collected at cleanup never replaces an earlier one. Only declared
+  naming its member even after the battle ended or ran out of time, where a single
+  controller's call that straddles the end keeps the result (the agreed close-failure rule;
+  changing it is the owner's call). A failure collected at cleanup never replaces an earlier
+  failure. Only declared
   faults (`TeamHarnessError`) are harness faults: any other exception in `team.py`'s own
   code ends the episode as a policy failure, as a bug in a single controller does. Each
   episode builds a fresh team.
 - **Trace and records.** Member events (partition, input, completed, failed, feedback,
-  discarded) reach the episode trace through `drain_events()`, and member model
+  discarded, close_failed, fault) reach the episode trace through `drain_events()`, and member model
   exchanges, tagged with the member, through `drain_exchanges()`; `play.py` drains both
   after each decide and acknowledgement and after cleanup. The `decision` record carries the
   member's own behaviour (its prompt for a model) plus its name and decision ID; its wire
@@ -99,11 +101,13 @@ first waits 3 s on a stop event that cleanup can wake.
   `PARTITION` gives `cavalry` the Knights and `line` every other unit and the army orders.
   Each member's prompt is the `llm_rules` input plus a last section listing the teammate's
   units ([golden](../../tests/twwarhammer3/prompts/team_member.txt)). There is no age limit,
-  like the single controller. `Ledger` holds each call's reservation until it returns, so
-  two calls at once cannot overspend the cap; near the cap a team therefore stops one
-  reservation earlier than `llm_rules`. After cleanup starts no new call or reply retry is
-  sent, but a request already in flight may still retry its transport; if it outlasts the
-  30 s wait, its cost reaches only the ledger and its hold lasts into the next episode.
+  like the single controller (a limit would also need `TeamLLM` to drop a local refusal's
+  latency, which has no `delay_ms` for `llm.render_timing`). `Ledger` holds each call's
+  reservation until it returns, so two calls at once cannot overspend the cap; near the cap
+  a team therefore stops one reservation earlier than `llm_rules`. After cleanup starts no
+  new call or reply retry is sent, but a request already in flight may still retry its
+  transport; if it outlasts the 30 s wait, its cost reaches only the ledger and its hold
+  lasts into the next episode.
 - `play.py` refuses a team with `delay_ms` or `interval_ms` other than 0.
 
 Members are trusted in-process code; separate Python dictionaries are not a sandbox.
@@ -125,7 +129,10 @@ it replaces an engine ending, a later call is abandoned and its cost reaches onl
 Results and recorded spend rest on it.
 
 JUDGEMENT?: `team.py` dead-member skip — assistant, 2026-10-22: a member other than the army
-owner whose units are all destroyed is not asked again. Asking it adds calls and cost.
+owner is not asked while all its units are destroyed. Asking it adds calls and cost.
+
+JUDGEMENT?: `team.py` condition() largest effect — assistant, 2026-10-27: ally rows add the
+morale effect the single controller shows; the owner named leadership %, fatigue and ammo.
 
 ## Checks
 
@@ -184,7 +191,9 @@ Mid-battle rematch is not used and remains unverified.
 
 Results: 4/4 at `b0ac9e3` on `main` (2026-10-23) and at `31823f3` on the branch
 (`runs/twwarhammer3/team-live-20261022-tip/`); after the rebase onto `main` the saved runs
-of `45fe7b0` and `31823f3` recount 4/4 with the merged checker. At `45fe7b0`: 4/4 launches
+of `45fe7b0` and `31823f3` recount 4/4 with the merged checker. `31823f3`, these recounts
+and later runs rest on JUDGEMENT `tests/twwarhammer3/team/check_wh3_team.py` member age
+witness; every live pass rests on its Movement witness. At `45fe7b0`: 4/4 launches
 passed in about 12 minutes. The check's first qualifying samples were 0.42-1.76 m closer,
 1.74-1.84 s before the peer completed; at the last sample before it completed, the fast
 units were 4.6-10.8 m closer, moving and running (review recount of `observations.jsonl`).
@@ -205,16 +214,18 @@ game time is needed.
 Team work is a later controller arm on the Land Battle benchmark ([owner,
 2026-10-27](../owner-direction.md)); the structure screen in
 [team-structures.md](team-structures.md) waits for that battle's first team-vs-single
-result. Before the first team battle:
+result. First, rerun the agreed live check at the rebased tip and merge `wh3-model-team` if
+it passes (owner, 2026-10-27). Before the first team battle:
 1. `report` and `export` read member records: order ages from each member's source time,
    calls and forfeits from team events, exchanges keyed by member (both members number theirs
    `m1`, `m2`, ...). The card board uses `member_source_sha256` or skips team rows (today it
-   takes them, halving their information age), and `result.json` counts calls abandoned at
-   cleanup.
+   takes them, and counting both members' decisions roughly halves the decision-gap part of
+   their information age), and `result.json` counts calls abandoned at cleanup.
 2. An agreed check for `team_llm_rules`: proposed, `team/test_wh3_model_team.py` plus a
    written pass list for the first paid battle.
 3. A check that the pinned backend serves two calls at once (it has only served one).
 
-Then one paid `team_llm_rules` battle on the Land Battle, as its own job. Messages and
+Then, with the owner's go-ahead and budget, one paid `team_llm_rules` battle on the Land
+Battle, as its own job. Messages and
 teams beyond one army stay deferred: [plan §4](multi-agent-plan.md#communication) and
 [§9-§10](multi-agent-plan.md#9-stages).

@@ -382,8 +382,8 @@ def condition(unit):
     parts.append(unit.get("fatigue") or "fresh")
     if morale := unit.get("morale"):
         fraction = morale.get("fraction")
-        parts.append(f"leadership {f'{fraction:.0%}' if fraction is not None else 'unknown'};"
-                     f" largest effect: {morale.get('effect') or 'unknown'}")
+        amount = f"{fraction:.0%}" if fraction is not None else "unknown"
+        parts.append(f"leadership {amount}; largest effect: {morale.get('effect') or 'unknown'}")
     return ", ".join(parts)
 
 

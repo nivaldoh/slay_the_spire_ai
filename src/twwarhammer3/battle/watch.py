@@ -100,6 +100,8 @@ class Feed:
         if record["orders"]:
             self.pending[record["request"]] = record["orders"]
         attempts = behavior.get("attempts") or []
+        # Traces before 2026-10-17 have no model exchanges: their decisions carry the spend.
+        self.usd += sum(a.get("usd", 0) for a in attempts if "exchange_id" not in a)
         who = f"[{behavior['member']}] " if behavior.get("member") else ""
         think = sum(attempt.get("seconds", 0) for attempt in attempts)
         if behavior.get("type") == "llm" and "prompt" in behavior:

@@ -240,15 +240,13 @@ messages exist.
 Taken under the owner's 2026-10-21 delegation; each is reversed by editing this page:
 1. Superseded 2026-10-27: the owner made the first team battle a team-vs-single comparison
    on the Land Battle. (Was: the first paid team night is the structure screen D.)
-2. JUDGEMENT: round-robin screen — assistant, 2026-10-21. The screen runs every structure
-   round-robin, at about one controller's call stream, so its arms are plan §6's
-   equal-resource comparison run first; this reverses §6's order (natural concurrency first,
-   equal-budget arms only if a split wins). Continuous per-unit control is one optional
-   demonstration battle.
-3. JUDGEMENT: one model per type — assistant, 2026-10-21. "One model per type" means one per
-   class (3 members); say if the type key (5) was meant.
-4. JUDGEMENT: planner missions — assistant, 2026-10-21. S4's planner gives each group a
-   mission; membership-only and random-group controls come later.
+2. JUDGEMENT: round-robin screen — assistant, 2026-10-21: every structure round-robin at one
+   controller's call stream, not natural concurrency first (plan §6). Every arm's cost and
+   order age rest on it; continuous per-unit control is one optional demonstration.
+3. JUDGEMENT: one model per type — assistant, 2026-10-21: one member per class (3), not per
+   type key (5). S2's member count and cost rest on it.
+4. JUDGEMENT: planner missions — assistant, 2026-10-21: S4's groups also get missions;
+   membership-only and random groups come later. What S4's result means rests on it.
 
 The owner's call: the money (D and the model screen together use about all of what is left
 at their central estimates and more at the high end; F needs more). Answered 2026-10-27:

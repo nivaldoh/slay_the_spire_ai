@@ -182,6 +182,24 @@ def test_a_failure_at_cleanup_keeps_an_earlier_failure(tmp_path, first, late, st
     assert result["status"] == status and error in result["error"]
 
 
+def test_a_member_bug_at_cleanup_still_fails_a_truncated_episode(tmp_path, monkeypatch):
+    clock = [1000.0]
+    monkeypatch.setattr(play.time, "time", lambda: clock[0])
+
+    class Mailbox(FakeMailbox):
+        def wait_observation(self, **kwargs):
+            if not self.queue:
+                clock[0] += 3600  # the episode's time runs out while it waits
+            return super().wait_observation(**kwargs)
+
+    policy = team.TeamPolicy({"infantry": (team.SWORD, Script()),
+                              "cavalry": (team.KNIGHT, Failing(ValueError("member bug")))},
+                             executor=Workers())
+    result = play.play_episode(tmp_path / "e", {**CONFIG, "interval_ms": 0}, lambda: policy,
+                               Mailbox([state(0, 0), state(1, 1000)]), not_battle=None)
+    assert result["status"] == "policy_failure" and result["failure"]["member"] == "cavalry"
+
+
 def test_a_failed_acknowledgement_is_not_also_discarded(tmp_path):
     class Deaf(Script):
         def acknowledge(self, ack, latency):
@@ -243,14 +261,14 @@ def test_a_member_never_sees_its_teammate_feedback_notes_or_the_global_ack(tmp_p
     seen = cavalry.metadata()["prompt"]
     assert "Last orders: f1 #1 rejected: target_not_visible." in seen
     assert "XYZZY" not in seen and "QQ" not in seen and "heading to" not in seen
-    assert "attack mode" not in seen and "unreachable" not in seen
     assert "tired, leadership 42%; largest effect: flanked" in seen
     assert "f2 #1 rejected: XYZZY" in line.metadata()["prompt"]
     assert "QQ" in line.metadata()["prompt"] and "heading to (-20, 90)" in line.metadata()["prompt"]
     inputs = [e["observation"] for e in policy.drain_events()
               if e["event"] == "input" and e["member"] == "cavalry"]
     assert len(inputs) == 2 and "XYZZY" not in json.dumps(inputs)
-    assert not inputs[1]["allies"][0].keys() & {"dest", "command_queue", "navigation"}
+    assert not inputs[1]["allies"][0].keys() & {"dest", "command_queue", "navigation",
+                                                "attack_mode"}
 
 
 def test_a_batch_is_checked_on_its_members_source_not_the_dispatch_state(tmp_path):
@@ -445,9 +463,10 @@ def test_a_local_refusal_counts_as_invalid(tmp_path):
     assert result["invalid"] == 1 and result["members"]["infantry"]["local_refusals"] == 1
 
 
-def test_a_team_refuses_an_interval_or_aged_track(tmp_path):
-    result = play.play_episode(tmp_path / "e", CONFIG, team.DelayInfantry, FakeMailbox([]),
-                               not_battle=None)  # CONFIG asks for a 5 s interval
+@pytest.mark.parametrize("track", [{}, {"interval_ms": 0, "delay_ms": 1000}])  # CONFIG: 5 s
+def test_a_team_refuses_an_interval_or_aged_track(tmp_path, track):
+    result = play.play_episode(tmp_path / "e", {**CONFIG, **track}, team.DelayInfantry,
+                               FakeMailbox([]), not_battle=None)
     assert result["status"] == "unsupported_or_invalid" and "teams require" in result["error"]
 
 
