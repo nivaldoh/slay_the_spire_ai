@@ -45,12 +45,18 @@ OPENROUTER = Provider(
 # Failure rates differ by backend (docs/twwarhammer3/log.md, queue C), so each compared
 # model is served by one backend with no fallback: the endpoints checked live on 2026-10-18
 # (latency.md P3). Step 5 preview is unpinned.
+# JUDGEMENT: Backend pins — assistant under delegation, b36 (2026-10-19; flagged by Claude,
+# 2026-10-28): one backend per compared model, no fallback, its failures the model's. Other
+# backends change latency and failure rates; state.md decision 7 asks the owner to review.
 def _pin(slug: str) -> dict:
     return {"only": [slug], "order": [slug], "allow_fallbacks": False}
 
 
 ROUTES = {"qwen/qwen3.6-35b-a3b": {"quantizations": ["fp8", "bf16"], **_pin("parasail")},
           "z-ai/glm-5.3": _pin("decart"), "moonshotai/kimi-k3": _pin("sail-research")}
+# JUDGEMENT?: Student serving — assistant, 2026-10-17 (flagged by Claude, 2026-10-28): Qwen3.6
+# at fp8/bf16 with explicit temperature 1.0 and top_p 0.95; other models get their backends'
+# defaults. Its traces and any dataset from them rest on it (state.md decision 7).
 SAMPLING = {"qwen/qwen3.6-35b-a3b": {"temperature": 1.0, "top_p": 0.95}}
 # Token logprobs, sent only for callers that ask (Spire's play since 2026-10-23). A live probe
 # that day: Parasail returns each output token's logprob, bytes and top alternatives through

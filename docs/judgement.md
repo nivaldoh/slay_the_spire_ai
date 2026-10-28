@@ -70,7 +70,9 @@ marking them for the owner's review; the rule for agents is in
   `battle/capture.py`), `[controllers]` (60-74: 7 in `twwarhammer3/controllers.md`, since
   policy files and prompts cannot carry one) and `[scoring]` (15-29: 8 in the report's
   `report.py`, `report_html.py` and `report.js`, 1 in `twwarhammer3/reports.md`) and
-  `[verification]` (135-149: 1 in `check_wh3_army_setup.py`; the rest stale or covered). Two
+  `[verification]` (135-149: 1 in `check_wh3_army_setup.py`; the rest stale or covered),
+  `[scenarios]` (45-59: none; the Land Battle markers cover the live ones) and `[gameai]`
+  (75-89: 3 in `gameai/llm.py` and `providers.py`; post-training items left). Two
   independent reviews corrected 4 errors and 8 weak markers. Why each other candidate is
   unmarked, and the reviews: `runs/judgement-batch-20261028/` (`task.md`, `review.md`).
 - The owner has decided none of the marked calls (2026-10-23) and has not yet said whether

@@ -26,6 +26,9 @@ from gameai.providers import OPENAI, get_provider, logprobs, routing, validate
 
 API_URL = OPENAI.url
 PRICES = OPENAI.prices
+# JUDGEMENT?: Resends and retry text — assistant, 2026-10-12 and 10-17 (flagged by Claude,
+# 2026-10-28): a failed provider response is resent up to twice per ask on its own counter; an
+# invalid reply is asked again with the parser's error, in text fixed here, not a prompt file.
 TRANSPORT_ATTEMPTS = 3
 FAILED_RESENDS = 2  # per ask, apart from the parse retries
 # A non-streaming reply arrives only when finished: room for a 16,000-token reply at about
