@@ -33,6 +33,9 @@ from twwarhammer3.battle.controllers import MODEL_POLICIES, policy_parts
 ASSETS = Path(__file__).with_name("report_assets")
 NOTES_PATH = REPO_ROOT / "configs/twwarhammer3/report_notes.json"
 MAX_STILL_BYTES = 256 * 1024
+# JUDGEMENT?: Test setup — assistant, 2026-10-15 (flagged by Claude, 2026-10-28): a change to
+# these files never splits a page row; any other source change does. Another list changes
+# which battles pool into one bar.
 # Files left out of the harness (offline export.py, cards.py and gameai/sft.py still count);
 # the scenario declaration is compared itself.
 PRESENTATION = ("src/twwarhammer3/battle/report", "src/twwarhammer3/battle/replay.py",
@@ -336,6 +339,9 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             "commander": commander(trial, definition),
             "harness": harness(definition, jobs.get(trial["instance"])),
             "date": (jobs.get(trial["instance"]) or {}).get("created_at"),
+            # JUDGEMENT: Broken share — assistant, 2026-10-15 (flagged by Claude, 2026-10-28):
+            # routing and shattered men count as out of the fight at the end, unweighted by
+            # unit value. Killed-only or value-weighted shares change every non-win score.
             # Progress: the share of the enemy's registered soldiers dead or no longer
             # fighting (routing or shattered; leaving or undeployed alone does not count)
             # when the battle ended.
@@ -347,6 +353,9 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
         scenario = definition.get("scenario") or {}
         measures = trial.get("measures") or {}
         custom = measures.get("custom_objective")
+        # JUDGEMENT?: Partial credit by mode — assistant, 2026-10-15: a lost battle scores by
+        # assets extracted, own tickets or points held over time, or not at all (survival).
+        # Another measure per mode changes those battles' scores.
         if scenario.get("custom"):
             battles[key].update(
                 progress=_share((custom or {}).get("extracted"),
@@ -358,6 +367,9 @@ def display_data(report: dict, notes: dict | None = None) -> dict:
             battles[key].update(progress=_share((resources.get("tickets") or {}).get("us"),
                                                 resources.get("tickets_goal")),
                                 progress_basis="tickets")
+        # JUDGEMENT: Siege defence score — assistant under delegation, 2026-10-16: scored as a
+        # land battle; the owner's 2026-10-14 siege measures (points held over time, supplies
+        # left unspent) stay measures. Every siege-defence score on the page rests on it.
         # A siege defence scores like a land battle: holding every point scored 92-99 in
         # lost battles too, so ownership time stays a measure, not the score.
         elif mode_of(scenario) in {"siege_attack", "settlement"}:

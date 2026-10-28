@@ -67,8 +67,9 @@ marking them for the owner's review; the rule for agents is in
   game jobs, in behaviour-neutral commits (a comment-only Python change keeps its syntax
   tree) whose messages give marker counts per file so the owner can sample.
 - Batches done (2026-10-28): `[loop]` (candidates 30-44: 7 markers in `battle/play.py`, 1 in
-  `battle/capture.py`) and `[controllers]` (60-74: 7 in `twwarhammer3/controllers.md`, since
-  policy files and prompts cannot carry one). Why each other candidate is unmarked:
+  `battle/capture.py`), `[controllers]` (60-74: 7 in `twwarhammer3/controllers.md`, since
+  policy files and prompts cannot carry one) and `[scoring]` (15-29: 8 in the report's
+  `report.py`, `report_html.py` and `report.js`). Why each other candidate is unmarked:
   `runs/judgement-batch-20261028/task.md`.
 - The owner has decided none of the marked calls (2026-10-23) and has not yet said whether
   the two examples set the right threshold.

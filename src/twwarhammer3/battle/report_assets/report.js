@@ -142,6 +142,9 @@
     mark.title = pooledNote(rows);
     return mark;
   }
+  // JUDGEMENT: Battle score — assistant, 2026-10-15 (flagged by Claude, 2026-10-28): 100 for a
+  // win, else the share of the enemy broken; a commander's score is the mean. Wins out of
+  // trials, or wins and damage kept apart, can reorder models; every page bar rests on it.
   // A battle's score: 100 for a win, else the share of the enemy army broken at the end (or
   // the scenario's objective measure). A battle without the measure has none.
   const scoreOf = (entry) =>
@@ -386,6 +389,9 @@
   // how many battles the others have; how old the models' information was; that it is in-sample.
   const WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
   const number = (n) => WORDS[n] || String(n);
+  // JUDGEMENT?: Finding threshold — assistant, 2026-10-16: a scenario enters the opening
+  // sentence when every model that played has three battles under one test setup; another
+  // count changes which models and scenarios a reader sees first.
   const MATCHED = 3;
   const list = (items, word = "and") =>
     items.length > 1 ? `${items.slice(0, -1).join(", ")} ${word} ${items.at(-1)}` : items[0];

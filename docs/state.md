@@ -100,7 +100,8 @@ v2 it learns the training split (0.96) but generalises to 0.76 held out. Stopped
 - No test yet shows whether a game patch changes results (owner: later). A build warning
   shows in `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
 - WH3 readers still differ on timer wins and failures; the new engine-outcome definition
-  needs a versioned scorer. Register/`stats` also have blank benchmark versions and commit grouping.
+  needs a versioned scorer. Register/`stats` also have blank benchmark versions and commit grouping, and `stats` pools
+  added-age arms (its summary key omits `added_age_s`; 22 groups of 641 rows mix ages, 2026-10-28).
 - The mod sets 1x once, then reports constant `speed` 1 and `awaiting_orders` false: per-observation paused/slowed tests cannot fail; only the team check's clock ratio detects slowdown.
 - WSL clocks run about 6-8% slow against Windows and `time.time()` is stepped 2-3 s every ~35 s (measured 2026-10-28, [clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)): WSL-timed think times, delays and short-window clock ratios are off; the battle itself runs at 1x.
 - Spire runs often leave a profile preference file empty, likely when the game is killed at
