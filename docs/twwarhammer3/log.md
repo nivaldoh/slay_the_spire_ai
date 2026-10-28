@@ -59,7 +59,8 @@ two independent reviews (`review/`) reran the analyses and checked sources; corr
   [clocks](integration.md#clocks-measured-2026-10-28); nothing rescored; `JUDGEMENT?`
   `team_clock_band` marks the team check's band.
 - Thesis ([index](../thesis/notes/README.md), untracked; 14 notes): in 441 recorded battles a
-  morale < 0.5 rule warns 77% of routs 15-60 s ahead, so precision, not lead time, is open;
+  morale < 0.5 rule warns 77% of routs 15-60 s ahead, so precision, not lead time, is open
+  (a fitted model matched its precision in won battles, 5-fold job cross-validation);
   about 12% of 8,614 model decisions met a change they did not cause before applying.
   Shortlist and evidence: [directions](../thesis/directions.md#what-the-2026-10-28-checks-changed).
 - Upkeep: inbox shortened (long items moved verbatim); prompts `TODO.md` answered; stale
