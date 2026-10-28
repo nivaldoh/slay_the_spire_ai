@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-28 (research references): "Find 3 good papers (ideally from 2026) about
+  multi-agent RL along with their github repos. We will use them for reference to check
+  best practices, correctness, etc" Collected [BenchMARL, MARL-BattleGrounds and MEAL](thesis/papers.md#marl-implementation-references-2026-10-28),
+  with publication status, inspected code paths and limits. No verification method adopted.
 - 2026-10-28 (an idea to keep), verbatim: "Also, let's write the following as some kind of
   general idea that I think could be interesting in some way somehow, maybe at least as
   something that we can use for inspiration or reference for some part of our project:
