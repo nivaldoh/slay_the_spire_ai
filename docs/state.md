@@ -9,13 +9,13 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
-**Running:** the [overnight plan](autonomy.md#next-overnight-research-and-checkpoint-timing),
-started 2026-10-28 02:39 by the owner's `/goal`; Claude Code, the only session tonight
-(commits and pushes). Night plan and evidence: `runs/overnight-20261028/`. $0. Game work
-done; no more game time tonight; owner back after 12:39. Report so far:
+**Finished:** the [overnight plan](autonomy.md#next-overnight-research-and-checkpoint-timing)
+and its backlog (2026-10-28 02:39 to 04:35; Claude Code, the only session; commits and
+pushes). Resume when you answer the three questions in the report. Night plan and evidence: `runs/overnight-20261028/`. $0. Game work
+done (12 min). Report:
 [log](twwarhammer3/log.md#2026-10-28-overnight-restore-pauses-were-wsl-clock-steps-land-check-passes-at-dcb8b5a)
-(the "pauses" were WSL clock steps; Land check passed at `dcb8b5a`; 14 reviewed thesis notes,
-[index](thesis/notes/README.md)); three questions there. The plan's work is done; the backlog continues. The thesis [proposal](thesis/proposal.md) is one candidate,
+(the "pauses" were WSL clock steps; Land check passed at `dcb8b5a`; 15 thesis notes,
+[index](thesis/notes/README.md)); three questions there. The thesis [proposal](thesis/proposal.md) is one candidate,
 not a selected topic; [directions](thesis/directions.md), [papers](thesis/papers.md) remain open.
 The [memory investigation](thesis/memory-investigation.md#conclusion-from-the-overnight-investigation-2026-10-27)
 is retained as history; its policy benefit and the new proposal's novelty remain unproven.
