@@ -6,6 +6,7 @@ These checks exercise the Python loop; they do not test Windows process terminat
 """
 
 import json
+import time
 
 import pytest
 from fullrun_support import CONFIG, DEATH, MENU, ScriptedPolicy
@@ -89,3 +90,51 @@ def test_source_change_preserves_the_finished_run_and_prevents_the_next_launch(
     assert json.loads((job / "run-0000/result.json").read_text()) == finished
     assert sent == ["START IRONCLAD 0 SEEDA"]
     assert not (job / "run-0001").exists()
+
+
+# README "Evidence": a run is truncated at the action limit or the run-time limit (defaults
+# 4,000 actions and 5 h). `truncated` is in SCORED, so the job records it and goes on.
+def test_action_limit_truncates_the_run_and_the_job_goes_on(tmp_path, harness):
+    sessions, sent = harness
+    sessions += [[MENU, combat_message(), combat_message()], [MENU, DEATH]]
+    job = tmp_path / "job"
+    config = {**CONFIG, "max_actions": 2, "results": str(tmp_path / "results.csv")}
+
+    manifest = play.play(job, config, policy_factory=ScriptedPolicy)
+
+    assert manifest["status"] == "completed"
+    truncated, finished = manifest["runs"]
+    assert (truncated["status"], truncated["reason"], truncated["actions"]) == (
+        "truncated", "action_limit", 2)
+    assert (finished["seed"], finished["status"]) == ("SEEDB", "lost")
+    assert sent == ["START IRONCLAD 0 SEEDA", "end", "START IRONCLAD 0 SEEDB"]
+    assert json.loads((job / "run-0000/result.json").read_text()) == truncated
+
+
+def test_run_time_limit_truncates_the_run_and_the_job_goes_on(tmp_path, harness, monkeypatch):
+    sessions, sent = harness
+
+    class Clock:  # play's monotonic clock, moved forward by the game below
+        now = 0.0
+
+        def __getattr__(self, name):
+            return getattr(time, name)
+
+        def monotonic(self):
+            return self.now
+
+    clock = Clock()
+    monkeypatch.setattr(play, "time", clock)
+    sessions += [[MENU, lambda: setattr(clock, "now", CONFIG["run_timeout"] + 1),
+                  combat_message()], [MENU, DEATH]]
+    job = tmp_path / "job"
+    config = {**CONFIG, "results": str(tmp_path / "results.csv")}
+
+    manifest = play.play(job, config, policy_factory=ScriptedPolicy)
+
+    assert manifest["status"] == "completed"
+    truncated, finished = manifest["runs"]
+    assert (truncated["status"], truncated["reason"]) == ("truncated", "run_time_limit")
+    assert (finished["seed"], finished["status"]) == ("SEEDB", "lost")
+    assert sent == ["START IRONCLAD 0 SEEDA", "end", "START IRONCLAD 0 SEEDB"]
+    assert json.loads((job / "run-0000/result.json").read_text()) == truncated

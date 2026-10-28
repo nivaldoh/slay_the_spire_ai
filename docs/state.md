@@ -112,7 +112,7 @@ v2 it learns the training split (0.96) but generalises to 0.76 held out. Stopped
   points away; decide the profile question before more Spire game time (owner's note: maybe
   unlock things normally first, then enable restore).
 - The report browser check is separate from pytest; Spire's full-run action and time limits
-  still lack loop tests. Spire's Workshop mod pins still block a run when a mod updates.
+  have loop tests since 2026-10-28 (component checks, proposed). Spire's Workshop mod pins still block a run when a mod updates.
 
 ## Owner decisions waiting
 
