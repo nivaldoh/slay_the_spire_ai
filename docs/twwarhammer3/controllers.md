@@ -148,7 +148,7 @@ spell was issued in that same snapshot. The prompt lists those spells and their 
 costs, explaining that the pool may precede the spend. No guessed balance is deducted
 and no orders are filtered. Seven GLM refusals showed an apparently affordable spell
 after another spell's issue, followed by an insufficient pool reading. The new warning
-is verified on these recorded states. A subsequent GLM / low caster check won, with
+is checked on these recorded states (no agreed check). A subsequent GLM / low caster check won, with
 refusals after a pending spell falling from seven to three, short of the pre-set bar
 of at most two ([live check](log.md#2026-10-16-live-check-of-the-v20-shared-magic-warning)).
 Commander v7 remains tested offline only.
