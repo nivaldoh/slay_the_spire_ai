@@ -64,6 +64,9 @@ def assess(events, samples, slow):
                    if (s["observation"].get("orders") or {}).get("request") == dispatch["request"])
         assert raw == feedback["ack"]
         # The member's age from raw evidence: the engine ack and the observation it was given.
+        # JUDGEMENT: member age witness — assistant, 2026-10-21: raw ack minus the raw source
+        # sample, samples on the wall clock like team.py; the agreed rule compared the adapter's
+        # own numbers. Live verdicts from 31823f3 on rest on it.
         source = next(s["observation"] for s in samples
                       if s["observation"].get("seq") == dispatch["behavior"]["source_seq"])
         assert feedback["latency"]["delay_ms"] == raw["applied_ms"] - source["time_ms"]

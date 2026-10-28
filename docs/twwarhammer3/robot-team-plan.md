@@ -1,5 +1,8 @@
 # Robot team research plan
 
+Status 2026-10-27: the [starting-set screen](log.md#2026-10-22-the-starting-set-screen)
+parked the Empire line this plan starts from; the page is kept for its evidence.
+
 Updated 2026-10-21. **Can a controller keep an army working when one unit can no longer
 perform the job that other units depend on?** The first candidate is the Empire line
 battle. The next decision is whether it actually requires recovery, before adding a new

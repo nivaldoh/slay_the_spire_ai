@@ -248,6 +248,12 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-27 (multi-agent review; chosen from options offered): team work becomes "a later
+  controller on the new Land Battle benchmark", and the team-structures stages wait for that
+  battle's first team-vs-single result; `wh3-model-team`: "Rebase, clean, merge" after one
+  $0 rerun of the agreed live check; members "see their teammate's condition (leadership %,
+  fatigue, ammo), still not its orders, queue or destination".
+  [Implementation page](twwarhammer3/multi-agent-implementation.md#next).
 - 2026-10-23 (benchmark pages): [benchmark.md](twwarhammer3/benchmark.md) holds only the
   benchmark's definition; [benchmark-implementation.md](twwarhammer3/benchmark-implementation.md)
   holds how it will be built, each phase and other transient details. The owner judged the

@@ -1,5 +1,10 @@
 # WH3 team structures: who commands which units
 
+Status 2026-10-27: the [starting-set screen](log.md#2026-10-22-the-starting-set-screen)
+parked the rank-5 line this page plans on, and the owner made team work a later arm on the
+Land Battle benchmark ([direction](../owner-direction.md)). The stages wait for that
+battle's first team-vs-single result; costs and the card below refer to the parked line.
+
 Proposed plan, 2026-10-21. The owner's request ([directions](../owner-direction.md)): two
 LLMs for one army is an arbitrary split, useful as a comparison point; explore one model per
 unit, one per type of unit, one per custom group chosen ahead of time by another LLM, and
@@ -233,20 +238,21 @@ messages exist.
 ## 8 Choices made, for the owner's review
 
 Taken under the owner's 2026-10-21 delegation; each is reversed by editing this page:
-1. The first paid team night is the structure screen (D), not a 6 + 6 of the two-member
-   split. This reverses the earlier choice for §9 C.
-2. The screen runs every structure round-robin, at about one controller's call stream, so
-   its arms are plan §6's equal-resource comparison run first; this reverses §6's order
-   (natural concurrency first, equal-budget arms only if a split wins). Continuous per-unit
-   control is one optional demonstration battle.
-3. "One model per type" means one per class (3 members); say if the type key (5) was meant.
-4. S4's planner gives each group a mission; membership-only and random-group controls come
-   later.
+1. Superseded 2026-10-27: the owner made the first team battle a team-vs-single comparison
+   on the Land Battle. (Was: the first paid team night is the structure screen D.)
+2. JUDGEMENT: round-robin screen — assistant, 2026-10-21. The screen runs every structure
+   round-robin, at about one controller's call stream, so its arms are plan §6's
+   equal-resource comparison run first; this reverses §6's order (natural concurrency first,
+   equal-budget arms only if a split wins). Continuous per-unit control is one optional
+   demonstration battle.
+3. JUDGEMENT: one model per type — assistant, 2026-10-21. "One model per type" means one per
+   class (3 members); say if the type key (5) was meant.
+4. JUDGEMENT: planner missions — assistant, 2026-10-21. S4's planner gives each group a
+   mission; membership-only and random-group controls come later.
 
 The owner's call: the money (D and the model screen together use about all of what is left
-at their central estimates and more at the high end; F needs more), and whether to merge
-`wh3-model-team` after a live-check rerun at its current tip; code items 1-5 start after
-that answer.
+at their central estimates and more at the high end; F needs more). Answered 2026-10-27:
+merge `wh3-model-team` after one live-check rerun.
 
 ## 9 Risks
 
