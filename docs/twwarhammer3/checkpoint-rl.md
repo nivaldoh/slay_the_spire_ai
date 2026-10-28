@@ -350,3 +350,29 @@ REINFORCE-style alternatives to PPO for language-model alignment. It supports in
 a critic-free first prototype; its RLHF results are not WH3 evidence. Multi-step online
 play, open-ended order generation, SFT from audited winners, KL/entropy regularization,
 remote training and full-battle evaluation are later designs with separate tests.
+
+## Open owner choices (decision 11)
+
+Moved verbatim from the [state page](../state.md#owner-decisions-waiting) inbox on 2026-10-28
+to keep the inbox short. The branch's own pages hold the evidence.
+
+**Checkpoint RL.** The [night's run](log.md#2026-10-26-checkpoint-rl-implemented-and-run-stage-3-fails-the-policy-collapses)
+stopped where the plan needs you. (a) The first method collapses whenever the right
+choice depends on the state (synthetic check and its re-run: one action; the two-rung
+ladder: one displayed slot); no state-loading bug was found. The log objective you approved
+avoids the collapse but fails the gate, and the gate is confounded (a spearmen-distance
+shortcut would pass it): de-confound the generator (e.g. f1/f2 classes disagreeing in a
+fixed share of tasks, or F2READ as a pass condition) and/or render f2's distance on the
+fall-back line, then rerun the log method (about 2 h of GPU with its control). Done for
+the generator (v2, my choice under your delegation): training 0.96, held out 0.76, a
+generalisation finding. Choose: more varied training layouts (18 recorded jobs fit), a larger
+budget, a rendering that states f2's distance next to its choice, or not gating stages 4/5 on
+this check (you said "Stop here" for now, 2026-10-26). (b) Review
+the choices made without you (`runs/twwarhammer3/rl/plans/expansion-declaration.md`):
+the second root, K 1 for the synthetic check, stage 4 before stage 3, the result-collapse
+gap rule, the 1e-6 first-order floor, the 1e-4 reload tolerance, the flat-rung skip rule,
+the re-run's form (continued from the first run's adapter), stopping each moot control,
+the 16-task diagnostic with its reading thresholds, and synthetic v2 (share 0.5, class drawn
+once per task). (c) Agreed 2026-10-26: the
+stage 1 and stage 4 checks (you chose to stop here for review). (d) Merge the branch: it changes the
+mod pack, so the siege and team checks would read "runtime changed since" (re-run them?).

@@ -212,6 +212,13 @@ idle before its order in all four probes, so the strict recount of the saved evi
 passes 4/4 (`runs/twwarhammer3/review-team-20261021/correctness/recount/checks.json`); no
 game time is needed.
 
+## Choices settled for now (2026-10-28)
+
+Moved verbatim from the [state page](../state.md#owner-decisions-waiting) inbox (item 4) on
+2026-10-28 to keep the inbox short; the choices stay open for the owner's review.
+
+**Model-team choices to review later.** Merged with your 2026-10-27 answers (later arm on the Land Battle; teammates' condition shown; live check 4/4 at `3adbaa4`, [log](log.md#2026-10-28-model-team-reviewed-cleaned-and-checked-live-harness-b50)). On 2026-10-28 you let me settle the open items for now; each keeps today's behaviour and stays marked: (a) the live check keeps its movement rule and its changed age rule (raw evidence, wall clock), not the stricter idle-before-order witness; (b) a member does not see its own unit's target while that enemy is out of sight, the single controller does (11 of 24,248; neither can order an attack on an unseen enemy), to revisit before the first team-vs-single comparison; (c) a member bug at cleanup still replaces an engine ending, where a single controller keeps it; (d) the agreed team test keeps its 2026-10-22 edits and the 2026-10-28 move to `tests/twwarhammer3/team/`; (e) calls cut off at cleanup reach the ledger only, until `result.json` counts them. The other open calls are the `JUDGEMENT` lines in [multi-agent-implementation.md](multi-agent-implementation.md). Before a paid team battle, agree a check for `team_llm_rules` ([next](#next)); model members have not played live.
+
 ## Next
 
 Team work is a later controller arm on the Land Battle benchmark ([owner,
