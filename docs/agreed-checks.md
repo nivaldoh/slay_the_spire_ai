@@ -53,7 +53,10 @@ AGENTS.md on 2026-10-28 to keep that file lean (owner).
   2026-10-25; passed at `7b1e2ed` (`checkpoint-check-20261025b/`) and at `6fdb271` on main
   (`runs/twwarhammer3/checkpoint-check-20261025c/`, 4 launches: 0 mismatches over 2,001
   ticks and 9/9 readings per restore, the changed one diverged at 1303; a bystander replay
-  was set aside and returned unchanged). Custom land battle, build 25961564; no claim for
+  was set aside and returned unchanged), and at `dcb8b5a` on main with the script as of
+  `6cd5fbe`, which adds completeness checks (`runs/twwarhammer3/checkpoint-check-20261028/`,
+  same counts; changed diverged at 1303; recorded 2026-10-28 under the owner's "use common
+  sense for now, I'll review later"). Custom land battle, build 25961564; no claim for
   real-time script timers, our bridge mod's state, the loading screen, other battle types
   or builds.
 - WH3 engine ending kept after a late controller failure (acknowledge or `close()`):

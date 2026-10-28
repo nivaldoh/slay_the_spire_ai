@@ -5,6 +5,14 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-28 (answers to the overnight report's three questions): "1. We'll keep the
+  human-AI direction just as a note for now. We'll prioritize other directions. 2. Not sure
+  about the differences. We should use whatever clock that helps us stay correct and is
+  also reproducible ideally in other environments without WSL. 3. I'm not sure what those
+  checks are. Use common sense for now, I'll review later." Applied: direction 10 stays a
+  note; the [clock rule](twwarhammer3/integration.md#clocks-measured-2026-10-28) is battle
+  time for measured durations; the Land check's `dcb8b5a` pass is recorded in
+  [agreed-checks.md](agreed-checks.md); the team check's band stays as it is, marked.
 - 2026-10-28 (overnight setup, answering the plan's questions): "My return time is in like
   10+h. Don't worry too much about it. I'll set you on "/goal" and if you finish early, there
   seems to be no shortage of work to do afterwards and you can just keep going. Only one

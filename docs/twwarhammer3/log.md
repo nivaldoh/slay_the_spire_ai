@@ -65,9 +65,9 @@ two independent reviews (`review/`) reran the analyses and checked sources; corr
   Shortlist and evidence: [directions](../thesis/directions.md#what-the-2026-10-28-checks-changed).
 - Upkeep: inbox shortened (long items moved verbatim); prompts `TODO.md` answered; stale
   controller versions fixed; AGENTS.md points to the index. No branch, no `JUDGEMENT` batch.
-- Questions: (1) thesis next step (inbox 10); (2) which clock times the Land Battle's latency
-  measures (inbox 1); (3) record `dcb8b5a` in agreed-checks.md, and is the team check's
-  0.85-1.15 band yours?
+- Questions, answered the same morning ([direction](../owner-direction.md)): direction 10
+  stays a note; durations are measured in battle time ([clock rule](integration.md#clocks-measured-2026-10-28));
+  `dcb8b5a` is recorded in agreed-checks.md; the team check's band stays, marked.
 
 ## 2026-10-28: Model team reviewed, cleaned and checked live (harness b50)
 

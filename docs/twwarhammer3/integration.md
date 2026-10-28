@@ -243,6 +243,20 @@ would change which timing violations checks detect. Runtime guards rest on these
   ratios over short windows. Not affected: the delay the model is told about, `delay_ms`.
   That is engine battle time (`applied_ms` minus the observation's time), as are
   observation ages.
+- Clock rule (owner, 2026-10-28: the clock "that helps us stay correct and is also
+  reproducible ideally in other environments without WSL"): a duration that enters a score,
+  a prompt, a check or a reported latency is measured in battle time, from the engine's
+  ticks or `time_ms`. Battle time runs at 1x on the host in any environment, and it is the
+  quantity that matters: how much battle passed while the model thought. Host clocks stay
+  for timeouts and bookkeeping. Only a check of the 1x rate itself needs a real clock. That
+  is the Windows clock under WSL (the sidecar method) and `time.monotonic()` on a native host.
+  Today `delay_ms` and observation ages follow the rule. `think_s`, call `seconds` and the
+  team check's clock ratio do not yet: they change, as a logged version, when the Land
+  Battle harness is built.
+
+JUDGEMENT?: clock_rule — Claude, 2026-10-28, choosing battle time under the owner's criteria
+(correct and reproducible without WSL). The alternative is a real host clock for model call
+times, which reports latency in seconds rather than battle time. Land Battle latency figures rest on it.
 - The "pauses about 3 s every 35 s" logged for restored battles on 2026-10-26 were these
   steps: all 24 long gaps were classified as clock steps, none as stalls, and the source
   battle had them too. The evidence and scripts are in `runs/overnight-20261028/timing/`
