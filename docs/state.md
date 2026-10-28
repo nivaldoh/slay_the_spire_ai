@@ -78,7 +78,7 @@ v2 it learns the training split (0.96) but generalises to 0.76 held out. Stopped
 
 ## Known issues
 
-- `runs/` has no backup (23 GB, 7.1 GB without `checkpoints/`); the owner said not now (2026-10-21).
+- `runs/` has no backup (31 GB on 2026-10-28, 16 GB of it in `checkpoints/` folders); the owner said not now (2026-10-21).
 - Check OpenRouter credits before paid jobs: on 2026-10-21 the account showed $24.26 used of
   $60, the ledgers $2.68 less. OpenAI caps and the shared OpenRouter allowance are kept by hand.
 - Pinned OpenRouter backend outages count against the model; Step 5 preview is unpinned.
