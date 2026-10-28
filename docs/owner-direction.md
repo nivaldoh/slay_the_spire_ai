@@ -5,6 +5,14 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-28 (an idea to keep), verbatim: "Also, let's write the following as some kind of
+  general idea that I think could be interesting in some way somehow, maybe at least as
+  something that we can use for inspiration or reference for some part of our project:
+  PostTrainBench-style tasks: - Give an agent n H100-hours + Kaggle access - Ask it to
+  post-train Qwen 2b for (chess, SWE-bench, etc) - Eval the submitted model" Applied: noted
+  with the paper's actual setup in
+  [posttraining.md](posttraining.md#idea-posttrainbench-style-tasks) and listed in the
+  thesis related work.
 - 2026-10-28 (two things to write down), verbatim: "1. We can rename these runs more broadly to
   'long autonomous runs', as they will run during the day as well. 2. Just like we will keep
   track of research references for the thesis, we should also remember to use existing

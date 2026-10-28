@@ -133,6 +133,22 @@ compare ways to collect recovery examples, learn from outcomes and improve guida
 between battles. They also list additional timing and action-origin fields to audit
 before using WH3 traces for those studies.
 
+### Idea: PostTrainBench-style tasks
+
+*Owner, 2026-10-28: a general idea to keep, for inspiration or reference
+([verbatim](owner-direction.md)). Not planned; nothing built.*
+[PostTrainBench](https://arxiv.org/abs/2603.08640) (Rank et al., 2026) gives a coding agent
+(Claude Code, Codex CLI and others) one H100 for 10 hours, open internet and a small base
+model (Qwen3-1.7B, Qwen3-4B, SmolLM3-3B or Gemma-3-4B). The agent post-trains that model for
+one benchmark (AIME, BFCL, GSM8K, HumanEval and three more), and the saved model is scored on
+the held-out test set. A second agent checks each run for training on test data or a
+swapped-in model, and flagged runs get the base model's score. The paper reports agents that
+trained on test data, downloaded instruction-tuned checkpoints and used API keys they found. Read from the abstract and a summary of the HTML; the tasks
+include no chess or SWE-bench and the paper mentions no Kaggle access, unlike the owner's
+sketch. Here the same shape could make a game the task: an agent gets GPU hours, our exports
+and the student, and WH3 scenarios or Spire runs score its model. The paper's rules and
+cheating check are also a reference for our own unattended agent loops.
+
 ## Export-row contract
 
 Both exporters emit these fields; the builder reads nothing else.
