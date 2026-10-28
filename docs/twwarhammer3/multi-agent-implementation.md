@@ -4,8 +4,8 @@ Updated 2026-10-27. [team.py](../../src/twwarhammer3/battle/team.py) runs two me
 one army: the scripted probes, each owning one unit, and the model team (`team_llm_rules`).
 Each member decides on its own copy of the public state and gets its orders sent while the
 other is still thinking. The agreed component checks passed at `e8d1eda` (121 tests); the
-live check passed 4/4 at `45fe7b0`, `b0ac9e3` and `31823f3` (the model-team branch before
-its rebase onto `main`) and has not run at the rebased tip
+live check passed 4/4 at `45fe7b0`, `b0ac9e3`, `31823f3` (the model-team branch before its
+rebase onto `main`) and `3adbaa4` (rebased)
 ([AGENTS.md](../../AGENTS.md#verification-hard-rule)). They cover ownership, independent
 progress, feedback and cleanup for two scripts; model teams, messages and teamwork quality
 are unverified. The [evaluation plan](multi-agent-plan.md) says what a team is for; this
@@ -189,8 +189,9 @@ reassesses saved evidence without a game and without rewriting its `checks.json`
 check.
 Mid-battle rematch is not used and remains unverified.
 
-Results: 4/4 at `b0ac9e3` on `main` (2026-10-23) and at `31823f3` on the branch
-(`runs/twwarhammer3/team-live-20261022-tip/`); after the rebase onto `main` the saved runs
+Results: 4/4 at `3adbaa4` (2026-10-28, `runs/twwarhammer3/team-live-20261027-rebased/`;
+fast members 0.6 s, delayed 3.6-3.9 s, clock ratio 0.991-1.010), at `b0ac9e3` on `main`
+(2026-10-23) and at `31823f3` on the branch (`runs/twwarhammer3/team-live-20261022-tip/`); after the rebase onto `main` the saved runs
 of `45fe7b0` and `31823f3` recount 4/4 with the merged checker. `31823f3`, these recounts
 and later runs rest on JUDGEMENT `tests/twwarhammer3/team/check_wh3_team.py` member age
 witness; every live pass rests on its Movement witness. At `45fe7b0`: 4/4 launches
@@ -214,8 +215,8 @@ game time is needed.
 Team work is a later controller arm on the Land Battle benchmark ([owner,
 2026-10-27](../owner-direction.md)); the structure screen in
 [team-structures.md](team-structures.md) waits for that battle's first team-vs-single
-result. First, rerun the agreed live check at the rebased tip and merge `wh3-model-team` if
-it passes (owner, 2026-10-27). Before the first team battle:
+result. The live check passed at the rebased `3adbaa4`, so `wh3-model-team` merges (owner,
+2026-10-27). Before the first team battle:
 1. `report` and `export` read member records: order ages from each member's source time,
    calls and forfeits from team events, exchanges keyed by member (both members number theirs
    `m1`, `m2`, ...). The card board uses `member_source_sha256` or skips team rows (today it
