@@ -18,7 +18,7 @@ the research question is open. The [proposal](thesis/proposal.md) is one candida
 [eval review](testing.md#wh3-evaluations-and-tests-2026-10-23),
 [live-check comparison](testing.md#wh3-live-check-comparison-2026-10-23).
 Three unmerged draft branches remain ([list](#branches)); checkpoint RL was merged on 2026-10-28.
-MARL code references: [three papers and inspected repositories](thesis/papers.md#marl-implementation-references-2026-10-28), collected 2026-10-28; no external tests or learning results reproduced.
+MARL references: [three papers plus ProgramLab](thesis/papers.md#marl-implementation-references-2026-10-28), inspected 2026-10-28; ProgramLab's training code is pending. No external tests or learning results reproduced.
 [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
 
 ## Total War: WARHAMMER III
