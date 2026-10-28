@@ -62,9 +62,10 @@ independent reviewer agent checked every batch; its findings are applied
   ([note](../thesis/notes/release-terms.md)); a quadratic rout forecast beats the morale rule
   at matched recall but trades recall for precision at a fixed threshold
   (`runs/thesis-forecast-20261028/`); "3 of 5 moments flat" recounted and confirmed.
-- Interview evidence (questions 16-17 and 27, not answers): in 441 recorded battles 42% of
-  friendly routs recovered but few stayed in action; wavering mostly lasts about 3 s
-  (`runs/interview-evidence-20261028/`, rerun by the reviewer, one short-rout claim withdrawn).
+- Interview evidence (questions 13-17 and 27, not answers): in 441 recorded battles 42% of
+  friendly routs recovered but few stayed in action; wavering mostly lasts about 3 s; timer
+  endings are rare (2-3%); no real healing seen (`runs/interview-evidence-20261028/`, every
+  count rerun by the reviewer; a short-rout and a healing claim withdrawn).
 - Unverified: all of it beyond the tests named; the full suite passes (1,562, 14 skipped).
 
 ## 2026-10-28 overnight: restore "pauses" were WSL clock steps; Land check passes at dcb8b5a
