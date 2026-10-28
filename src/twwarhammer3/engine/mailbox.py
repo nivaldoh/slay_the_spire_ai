@@ -118,9 +118,9 @@ for ``flying: true`` (take off) or ``false`` (land), the engine re-checks availa
 and later observations confirm the change.
 """
 
-# JUDGEMENT: Evaluation counts — assistant, b1 (2026-10-14) and evaluator v2 (flagged by Claude,
-# 2026-10-28): active men exclude routing and shattered units; dead means zero living entities.
-# Counting routers as alive, or weighting by unit value, changes margins and land-battle scores.
+# JUDGEMENT: Evaluation counts — assistant, b1 (2026-10-14), evaluator v2 (2026-10-15): the Lua
+# strength() counts active men without routing and shattered units, dead at zero living entities.
+# Counting routers as alive changes margins and scores (also report_html.py's Broken share).
 import json
 import os
 import time

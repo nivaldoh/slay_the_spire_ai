@@ -105,9 +105,10 @@ through it, and every order enters through it.
 - **Information boundary.** A policy gets the observation without its `evaluation`,
   `final` and `setup` sections: friendly units in full, enemy units only while the player
   can see them, and the enemy roster the custom battle screen shows.
+
   JUDGEMENT?: Enemy information — assistant, 2026-10-13/14 (flagged by Claude, 2026-10-28):
-  enemies only while `is_visible_to_alliance` and not `is_hidden`, starting roster public, in
-  exact numbers rather than a player's view. Every policy input rests on it (questions 19, 26).
+  the Lua `visible_to_player` and `enemy_observation` show enemies only while visible and not
+  hidden, the starting roster public, in exact numbers. Interview questions 19 and 26 ask.
 - **Setup.** `battle/setup.py` turns a `--scenario` entry of
   `configs/twwarhammer3/scenarios.json` into custom battle menu steps (no desktop input);
   its docstring is the scenario field reference. `random` entries draw a map and each

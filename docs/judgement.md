@@ -66,15 +66,14 @@ marking them for the owner's review; the rule for agents is in
   and deciding sentences first, history never; docs any time, code and configs only between
   game jobs, in behaviour-neutral commits (a comment-only Python change keeps its syntax
   tree) whose messages give marker counts per file so the owner can sample.
-- Batches done (2026-10-28): `[loop]` (candidates 30-44: 7 markers in `battle/play.py`, 1 in
-  `battle/capture.py`), `[controllers]` (60-74: 7 in `twwarhammer3/controllers.md`, since
-  policy files and prompts cannot carry one) and `[scoring]` (15-29: 8 in the report's
-  `report.py`, `report_html.py` and `report.js`, 1 in `twwarhammer3/reports.md`) and
-  `[verification]` (135-149: 1 in `check_wh3_army_setup.py`; the rest stale or covered),
-  `[scenarios]` (45-59: none; the Land Battle markers cover the live ones) and `[gameai]`
-  (75-89: 3 in `gameai/llm.py` and `providers.py`; post-training items left) and `[mod]`
-  (195-209: 3 in `twwarhammer3/README.md`, `integration.md` and `engine/mailbox.py`). Two
-  independent reviews corrected 4 errors and 8 weak markers. Why each other candidate is
-  unmarked, and the reviews: `runs/judgement-batch-20261028/` (`task.md`, `review.md`).
+- Batches done 2026-10-28 (32 markers; the Lua mod, policy files and prompts cannot carry one,
+  so their markers sit in the pages that document them): `[loop]` 30-44 (`play.py` 7,
+  `capture.py` 1), `[controllers]` 60-74 (`controllers.md` 7), `[scoring]` 15-29 (report code
+  8, `reports.md` 2), `[verification]` 135-149 (1), `[gameai]` 75-89 (3), `[mod]` 195-209 (3);
+  `[scenarios]`, `[benchmark-docs]` and `[scripts-tests]` added none. Four independent review
+  passes found 4 wrong and 11 weak markers and 7 weak skip reasons, all addressed. Reasons
+  for every unmarked candidate, the reviews and the areas left (`[cards]`, `[active-branch]`,
+  `[plans]`, Spire):
+  `runs/judgement-batch-20261028/` (`task.md`, `review.md`).
 - The owner has decided none of the marked calls (2026-10-23) and has not yet said whether
   the two examples set the right threshold.

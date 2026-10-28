@@ -295,8 +295,8 @@ times, which reports latency in seconds rather than battle time. Land Battle lat
   64 m with the unit's own query and reports the reachable ones; the engine itself
   sends no replacement order.
   JUDGEMENT?: Navigation help — assistant, 2026-10-14 (flagged by Claude, 2026-10-28): these
-  alternatives are help the engine does not give; without them a refused move costs a model
-  more. Interview question 20 asks which helpers are allowed.
+  alternatives (`twwarhammer3_battle.lua`'s move handler) are help the engine does not give, beside
+  benchmark.md's "no tactical helpers". Interview question 20 asks which helpers are allowed.
 - The engine drops an attack when the target dies or leaves sight: the unit shows no
   `current_target`, `is_idle()` is true, and it stands until ordered again.
   `ordered_position()` is the unit's own position while it attacks (per the docs).
