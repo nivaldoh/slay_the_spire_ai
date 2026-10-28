@@ -5,9 +5,10 @@ an acknowledgement), ``prompts/llm_opening.txt`` the opening decision (``llm`` a
 ``llm_rules`` send the same input; they differ only in the system prompt) and
 ``prompts/commander.txt`` the commander's request after it adopted its first plan and
 ``prompts/team_member.txt`` the opening input of a team member that owns only the lord,
-without the army orders. The system prompts are the files in ``configs/twwarhammer3/``. A
-refactor must leave these bytes unchanged; after a deliberate prompt change, regenerate and
-review the diff:
+without the army orders, and ``prompts/evacuation_mode.txt`` how a custom battle objective
+is shown to the model (``render_mode``; hidden enemy deployment left out). The system
+prompts are the files in ``configs/twwarhammer3/``. A refactor must leave these bytes
+unchanged; after a deliberate prompt change, regenerate and review the diff:
 ``WH3_WRITE_PROMPTS=1 uv run --locked pytest tests/twwarhammer3/test_wh3_prompts.py``.
 That command authors expectations; it does not verify them. Then rerun with
 ``env -u WH3_WRITE_PROMPTS uv run --locked pytest -ra tests/twwarhammer3/test_wh3_prompts.py``.
