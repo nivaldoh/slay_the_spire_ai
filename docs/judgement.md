@@ -68,13 +68,13 @@ marking them for the owner's review; the rule for agents is in
   tree) whose messages give marker counts per file so the owner can sample. Date each choice
   with `git log -S` and check whether a later commit narrowed it (most errors the 2026-10-28
   reviews found were wrong dates or authors); one skeptical reviewer per batch.
-- Batches done 2026-10-28 (40 markers; the Lua mod, policy files and prompts cannot carry one,
+- Batches done 2026-10-28 (41 markers; the Lua mod, policy files and prompts cannot carry one,
   so their markers sit in the pages that document them): `[loop]` 30-44 (`play.py` 7,
   `capture.py` 1), `[controllers]` 60-74 (`controllers.md` 7), `[scoring]` 15-29 (report code
   8, `reports.md` 2), `[verification]` 135-149 (1), `[gameai]` 75-89 (3, and 2 in
-  `posttraining.md`), `[mod]` 195-209 (3), `[spire-fullrun]` 90-104 (6). `[scenarios]`,
+  `posttraining.md`), `[mod]` 195-209 (3), `[spire-fullrun]` 90-104 (7). `[scenarios]`,
   `[benchmark-docs]`, `[scripts-tests]`, `[plans]` and `[active-branch]` added none. Four independent review
-  passes found 4 wrong and 11 weak markers and 7 weak skip reasons, all addressed. Reasons
+  passes found 5 wrong and 13 weak markers and 8 weak skip reasons, all addressed. Reasons
   for every unmarked candidate, the reviews and the areas left (`[cards]`, `[spire-combat]`):
   `runs/judgement-batch-20261028/` (`task.md`, `review.md`).
 - The owner has decided none of the marked calls (2026-10-23) and has not yet said whether

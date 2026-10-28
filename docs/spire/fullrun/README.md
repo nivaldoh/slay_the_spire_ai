@@ -84,6 +84,10 @@ The version that introduced each piece is in brackets; [log.md](log.md) has the 
 - Enemy rules notes from `configs/llm/monsters.json`, shown only while that enemy is in the
   fight: the Act 1 elites and bosses (v2), the Large slimes (v5) and The Collector (v7).
   Every number is checked against the game.
+
+  JUDGEMENT?: Enemy notes — assistant, v2-v7 (flagged by Claude, 2026-10-28): they mix rules with
+  advice ("Kill an outer Sentry first."), written for enemies the model misplayed; rules-only
+  notes change what a floor measures, like WH3's `llm` tactics.
 - On the reward screens, the card rewards already skipped on that floor and their cards
   (v8).
 - Cards show the engine's `ethereal` and `exhausts` keywords, with one system prompt line
@@ -104,9 +108,9 @@ effect; this harness's checked notes (enemy rules, v9's keywords) are a narrow v
 that, and v7–v9 deaths from unknown card and power rules (Ethereal, Corruption, Apparition+)
 argue for a broader one. Game text itself must not be committed.
 
-JUDGEMENT: Knowledge boundary — assistant, 2026-10-12 (flagged by Claude, 2026-10-28): no card,
-relic or power text and no tools, only narrow checked notes added when traces show a need. A rules
-compendium, as in SpireBench, changes what a floor measures; every version's result rests on it.
+JUDGEMENT: Knowledge boundary — assistant, 2026-10-12 (flagged by Claude, 2026-10-28): starting
+from no card, relic or power text and no tools; notes from observed mistakes follow the owner's
+2026-10-12 direction. A broader start (a rules summary; no game text) changes what a floor measures.
 
 ## Evidence
 
@@ -255,8 +259,8 @@ time is, at roughly two to four iterations a night. Then:
    stochastic runs per version, do not claim more than that.
 
    JUDGEMENT: Keep rule and seeds — assistant, 2026-10-12 (flagged by Claude, 2026-10-28): one run
-   on each of RUNDEV1-RUNDEV3 per version decides a keep. More seeds or runs (SpireBench uses ten
-   seeds) change which versions are kept; v1-v10 rest on it.
+   on each of RUNDEV1-RUNDEV3 decides whether the mistake stopped and outcomes held. More seeds or
+   runs (SpireBench uses ten seeds) change which versions are kept; the v1-v8 keeps rest on it.
 
 Update "Active work" in [state.md](../../state.md) when the loop starts and when it stops, with
 the time from `date -u`, rather than at every launch. To save context, a session reads

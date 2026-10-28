@@ -31,8 +31,8 @@ OPENROUTER_LEDGER_PATH = LEDGER_PATH.with_name("spire-openrouter-spend.jsonl")
 LEDGERS = {"openai": LEDGER_PATH, "openrouter": OPENROUTER_LEDGER_PATH}
 MAX_OUTPUT_TOKENS = 16000  # room for reasoning-on modes (owner, 2026-10-18)
 # JUDGEMENT?: Run memory — assistant, 2026-10-12 (flagged by Claude, 2026-10-28): notes of up to
-# 2,000 characters the model rewrites whole, plus its last 12 decisions with reasons; no
-# transcript. More or less memory changes cost, latency and what a forgotten plan costs.
+# 2,000 characters the model rewrites whole, its last 12 decisions with reasons, declined card
+# offers and its last action; no transcript. More or less memory changes cost and forgotten plans.
 NOTES_LIMIT = 2000
 HISTORY_LENGTH = 12
 INVALID_RETRIES = 2

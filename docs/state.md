@@ -33,7 +33,7 @@ The Spire collection night ended ([log](spire/fullrun/log.md#2026-10-23-collecti
 The WH3 starting-set screen admitted no new tactic card ([log](twwarhammer3/log.md#2026-10-22-the-starting-set-screen));
 that reading remains historical and does not select the new Land Battle benchmark.
 Judgement-call [marking](judgement.md) continues in reviewable batches; 2026-10-28 (Claude,
-away window): 40 markers over 8 areas, independently reviewed; `stats` pooling fixed. Four unmerged draft
+away window): 41 markers over 8 areas, independently reviewed; `stats` pooling fixed. Four unmerged draft
 branches remain ([list](#branches)), above the proposed three-branch cap; no new runtime branch in the next plan.
 [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
 
