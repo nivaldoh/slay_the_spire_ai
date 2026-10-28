@@ -3,15 +3,17 @@
 Real Python components with fake workers or fake transports; no game and no paid call.
 """
 import json
+import sys
 import time
 from functools import partial
+from pathlib import Path
 from threading import Event
 
 import pytest
-from test_wh3_play import CONFIG, FakeMailbox
-from test_wh3_prompts import opening
-from test_wh3_team import Script, Workers, ack, make_team, move, state
-from wh3_fixtures import USAGE, FakeSend
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from wh3_fixtures import CONFIG, USAGE, FakeMailbox, FakeSend, opening
+from wh3_team_fixtures import Script, Workers, ack, make_team, move, state
 
 from gameai.ledger import BudgetExhausted, Ledger
 from gameai.llm import APIError, usage_cost

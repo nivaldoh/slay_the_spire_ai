@@ -101,7 +101,7 @@ game time; a new battle is useful when it can resolve a named uncertainty.
 | Check | Independent reference and what it can establish | What remains outside it |
 |---|---|---|
 | Army/setup `--integration` ($0, four launches) | Declared rosters/ranks versus lobby and battle readbacks; lobby attack/defence versus battle values; original versus restored settings | Order effects, visibility, rematch starts, graceful-exit persistence, real clock speed |
-| Scripted team ($0, four launches) | Unit identity and positions after the matching acknowledgement, before its peer completes; battle-clock progress versus elapsed time | Attack/withdrawal/cast effects, hidden enemies, model-team performance; the movement rule rests on JUDGEMENT `tests/twwarhammer3/check_wh3_team.py` Movement witness |
+| Scripted team ($0, four launches) | Unit identity and positions after the matching acknowledgement, before its peer completes; battle-clock progress versus elapsed time | Attack/withdrawal/cast effects, hidden enemies, model-team performance; the movement rule rests on JUDGEMENT `tests/twwarhammer3/team/check_wh3_team.py` Movement witness |
 | Card/reader recount ($0, no launch) | Recorded outcomes and independently labelled cases versus a declared scoring rule | Whether the original order caused the observed effect; a fresh game build or a changed scenario |
 
 The army checker formerly ignored doctor blockers and hid executable-hash warnings; its

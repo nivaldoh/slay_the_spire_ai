@@ -17,7 +17,7 @@ import json
 import os
 from pathlib import Path
 
-from wh3_fixtures import FakeSend
+from wh3_fixtures import FakeSend, opening
 
 from gameai.ledger import Ledger
 from twwarhammer3.battle import team
@@ -32,79 +32,6 @@ def check(name: str, prompt: str) -> None:
     if os.environ.get("WH3_WRITE_PROMPTS") == "1":
         path.write_text(prompt)
     assert prompt == path.read_text()
-
-
-def opening() -> dict:
-    """A siege defence at 30 s with every section the renderer has."""
-    return {
-        "time_ms": 30000, "speed": 1, "remaining_ms": 870000, "phase": "Deployed",
-        "terrain": {"x0": -48, "z0": -48, "cell_m": 32, "sample_width_m": 8,
-                    "rows": ["..##", "...#", "...."]},
-        "mode": {
-            "type": "settlement_standard", "role": "defender", "timeout_winner": "us",
-            "objectives": "Hold the victory point until the timer runs out.",
-            "tickets": [{"side": "us", "tickets": 600, "per_s": 2},
-                        {"side": "enemy", "tickets": 150, "per_s": 0}],
-            "tickets_goal": 1000,
-            "capture_points": [
-                {"id": "c1", "name": "Victory Point", "x": 0, "z": 64, "holder": "us",
-                 "percent": 100, "victory": True},
-                {"id": "c2", "name": "Key Building", "x": 96, "z": 0, "holder": None,
-                 "percent": 40, "contested": True}],
-            "gates": [{"name": "Gatehouse", "x": 0, "z": -64, "hp": 80, "destroyed": False}],
-            "supplies": 900,
-            "reinforcements": [{"type": "wh3_main_kho_inf_chaos_warriors_0", "cost": 600}],
-            "spawn_zones": [{"id": 3, "x": 0, "z": 96, "usable": True}],
-            "slots": [{"id": "s1", "type": "tower", "x": -32, "z": 0, "usable": True,
-                       "options": [{"name": "tower_arrow_1", "cost": 300}]}],
-        },
-        "army": {"currency": 120, "next_unlock": 200, "abilities": [
-            {"key": "horn_of_khorne", "target": "Ground", "radius": 35, "cooldown_s": 90,
-             "unlocked": True, "ready": True}]},
-        "magic": {"current": 23.5, "reserve": 40},
-        "friendly": [
-            {"id": "f1", "type": "wh3_main_kho_cha_bloodthirster_0", "class": "lord",
-             "commander": True, "x": 0.0, "z": 40.0, "bearing": 180, "men": 1, "men0": 1,
-             "hp": 0.9, "ammo": 0, "ammo0": 0, "range": 0, "speed": [3.0, 5.5],
-             "fatigue": "fresh", "state": ["idle"], "can_fly": True, "flying": False,
-             "flight": {"can_toggle": True, "cooldown_s": 0},
-             "barrier": {"hp": 300, "max_hp": 600},
-             "morale": {"fraction": 0.85, "effect": "Winning combat"},
-             "abilities": [
-                 {"key": "roar", "target": "Self", "cooldown_s": 60, "can_use": True,
-                  "ready": True},
-                 {"key": "blood_rage", "target": "Self", "can_use": True, "ready": False,
-                  "recharge_s": 21.6, "last_issued_ms": 20000}]},
-            {"id": "f2", "type": "wh3_main_kho_inf_chaos_warriors_0", "class": "infantry",
-             "x": -20.0, "z": 30.0, "bearing": 180, "men": 110, "men0": 120, "hp": 0.92,
-             "ammo": 0, "ammo0": 0, "range": 0, "speed": [1.8999999761581, 3.6],
-             "fatigue": "active", "state": ["moving"], "dest": [-20.0, 0.0], "width": 30,
-             "attack_mode": "melee", "behaviours": {"defend": False}},
-            {"id": "f3", "type": "wh3_main_kho_veh_skullcannon_0", "class": "missile_chariot",
-             "x": 20.0, "z": 50.0, "bearing": 180, "men": 7, "men0": 7, "hp": 1.0,
-             "ammo": 18, "ammo0": 20, "range": 200, "speed": [4.0, 6.0], "fatigue": "fresh",
-             "state": []},
-            {"id": "f4", "type": "wh3_main_kho_mon_khornataurs_0", "class": "monster",
-             "men": 0, "men0": 6},
-        ],
-        "enemy": [
-            {"id": "e1", "type": "wh_main_dwf_inf_dwarf_warriors_0", "class": "infantry",
-             "x": 10.0, "z": -40.0, "bearing": 0, "men": 90, "men0": 100, "hp": 0.9,
-             "speed": [1.5, 3.0], "state": ["moving"]},
-            {"id": "e2", "type": "wh_main_grn_inf_orc_boyz", "class": "infantry",
-             "alliance": 3, "x": 150.0, "z": 0.0, "bearing": 270, "men": 120, "men0": 120,
-             "hp": 1.0, "state": ["idle"], "target": "e1"},
-            {"id": "e3", "type": "wh_main_dwf_art_grudge_thrower", "class": "artillery",
-             "x": 0.0, "z": -200.0, "bearing": 0, "men": 4, "men0": 4, "hp": 1.0,
-             "range": 400, "state": []},
-        ],
-        "enemy_roster": [
-            {"id": "e1", "type": "wh_main_dwf_inf_dwarf_warriors_0"},
-            {"id": "e2", "type": "wh_main_grn_inf_orc_boyz", "alliance": 3},
-            {"id": "e3", "type": "wh_main_dwf_art_grudge_thrower"},
-            {"id": "e4", "type": "wh_main_dwf_inf_quarrellers_0", "dead": True},
-        ],
-    }
 
 
 def later() -> dict:

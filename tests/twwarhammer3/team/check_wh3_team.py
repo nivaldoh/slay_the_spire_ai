@@ -1,11 +1,8 @@
-# TODO: what is the purpose of this? Is it just for multi-agent testing? If so, it should be in
-# a separate multi-agent test suite, not here.
-
 """Check that a scripted team member can move while its teammate is delayed.
 
 Four game launches, no paid model calls, at most 30 minutes total.
 
-uv run --locked python tests/twwarhammer3/check_wh3_team.py --output runs/twwarhammer3/...
+uv run --locked python tests/twwarhammer3/team/check_wh3_team.py --output runs/twwarhammer3/...
 
 Each launch uses the normal battle setup and ends after checking movement, timing and
 cleanup. It does not measure wins or use rematches.

@@ -104,7 +104,7 @@ Members are trusted in-process code; separate Python dictionaries are not a sand
 ## Checks
 
 The component checks agreed with the owner on 2026-10-21 are in
-[test_wh3_team.py](../../tests/twwarhammer3/test_wh3_team.py), with the play-loop,
+[test_wh3_team.py](../../tests/twwarhammer3/team/test_wh3_team.py), with the play-loop,
 controller and digest files AGENTS.md names:
 
 | Check | Independent reference and pass condition | Plausible error it detects |
@@ -129,7 +129,7 @@ showing a hidden target, feedback sent to the first member holding a batch, and 
 type accepted. The agreed file now fails each
 (`runs/twwarhammer3/review-multiagent-20261021/lead-check/mutants.txt`).
 
-The live check, [check_wh3_team.py](../../tests/twwarhammer3/check_wh3_team.py), makes four
+The live check, [check_wh3_team.py](../../tests/twwarhammer3/team/check_wh3_team.py), makes four
 fresh launches alternating `DelayInfantry` and `DelayCavalry`, at $0 and within 30 minutes
 (360 s per process, 240 s for setup, 90 s per episode including the wait for the battle). A
 launch passes when:
