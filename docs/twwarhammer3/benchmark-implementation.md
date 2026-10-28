@@ -106,6 +106,10 @@ What the code records today and what is missing: [measurement gaps](#measurement
 
 27. **What accuracy and missing-data policy is enough?** What is the shortest wavering or routing episode, or the smallest HP change, you care about? That sets the recording interval and precision, independently of how often a model calls. Should a recording gap make only that measure unknown, require bounded estimates, or void the attempt for that comparison? A known engine result can stand even when a diagnostic can't be computed.
 
+   Evidence (2026-10-28, not an answer; same recorded battles): at 1 Hz, 42% of 3,255 wavering
+   episodes and 14% of 1,867 routs last five frames or fewer; 6% of routs last one frame
+   (`runs/interview-evidence-20261028/`).
+
 ### G. Repetition, checks and when the definition is done
 
 28. **Which references make the scores meaningful?** Hold, walking or running at the nearest enemy, a stronger script, your own play, or a particular model? What difference would you care about: more wins, fewer own losses for the same outcomes, better use of a tactical opportunity, or lower cost? A human reference would need its different information and controls disclosed.
