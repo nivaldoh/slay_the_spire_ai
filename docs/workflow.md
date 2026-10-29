@@ -176,8 +176,8 @@ Rules against rigged checks ([Anthropic](https://platform.claude.com/docs/en/bui
 | Performance | Only a named question: think time at 1x, restore speed, suite time | On demand, same inputs before and after |
 | State and environment | Game build, running jobs and locks, branch, ledgers, clock source | Session start and before any launch |
 
-The reviewer is [.claude/agents/reviewer.md](../.claude/agents/reviewer.md); Codex runs
-`/review` with that file as custom instructions. Where it is used (owner, decision 2: "Yes"):
+The reviewer is [.claude/agents/reviewer.md](../.claude/agents/reviewer.md); Codex runs the
+same text as its custom agent `reviewer` ([.codex/agents/reviewer.toml](../.codex/agents/reviewer.toml)). Where it is used (owner, decision 2: "Yes"):
 on every normal change, as the rerun reviewer on every number for the owner's pages, and not
 on trivial edits. Its rules (rest on JUDGEMENT `docs/testing.md` Agent review workflow):
 - It gets the card, the diff, the raw output and the code that reads the changed data, never
@@ -311,7 +311,7 @@ until its counts show its findings are mostly noise.
 | `scripts/check.py`, repo rules, risky-edit warnings (stage 1) | Built and planted-tested |
 | Reviewer and its first eval (stage 2), export leak test, review workflow fix | Built |
 | Docs cleanup (stage 3) | Done and reviewed (one reviewer found 6 issues, fixed): AGENTS.md is a map of at most 200 lines; docs/spire/AGENTS.md only gained the `check.py` line (135 lines, loaded only for Spire work) |
-| Hooks, skills, CI (stage 4) | Trigger seen 2026-10-29: a commit made before its `check.py` run (96e6265), and one workflow repeated about twenty times (plant, sweep, recount). Built for Claude Code: `scripts/hooks/stop_check.py` (Stop: runs `check.py` when HEAD, the index, the diff or an untracked file changed since its last pass; exit 2 keeps the turn going, never twice in a row; skipped while a game job runs) and `scripts/hooks/pre_bash.py` (Bash: refuses `ruff format` except `--check`/`--diff`, and git commands that move HEAD while `scripts/wh3_queue.py` runs), tested in `tests/test_hooks.py`, registered in the local `.claude/settings.json` (excluded from git, as before); both seen live on 2026-10-29 (the Bash hook refusing a probe, the Stop hook running `check.py` at a turn's end: `runs/checks/20261029-111240-a2c63b0-988366.log`). Skill: `refusal-sweep` (`.agents/skills/`, symlinked into `.claude/skills/`) for the repeated sweep, with `scripts/refusal_sweep.py` tested in `tests/test_refusal_sweep.py`. Not built: the Codex hooks (a trusted `.codex/` cannot be checked from here), CI (committed pages still link into the untracked `docs/thesis/`; on a fresh clone at 6d3e612 those 8 link tests are `check.py`'s only failures) |
+| Hooks, skills, CI (stage 4) | Trigger seen 2026-10-29: a commit made before its `check.py` run (96e6265), and one workflow repeated about twenty times (plant, sweep, recount). Built: `scripts/hooks/stop_check.py` (Stop: runs `check.py` when HEAD, the index, the diff or an untracked file changed since its last pass; exit 2 keeps the turn going, never twice in a row; skipped while a game job runs) and `scripts/hooks/pre_bash.py` (Bash: refuses `ruff format` except `--check`/`--diff`, and git commands that move HEAD while `scripts/wh3_queue.py` runs), tested in `tests/test_hooks.py`; both seen live in Claude Code on 2026-10-29 (the Bash hook refusing a probe, the Stop hook running `check.py` at a turn's end: `runs/checks/20261029-111240-a2c63b0-988366.log`). Skill: `refusal-sweep` (`.agents/skills/`) for the repeated sweep, with `scripts/refusal_sweep.py` tested in `tests/test_refusal_sweep.py`. Both tools get the same hooks, reviewer and skills (owner, 2026-10-29; [below](#claude-code-and-codex)). CI: `.github/workflows/check.yml` runs `check.py` on each push to `main` (owner's decision 4, 2026-10-29); the link test skips links into the untracked `docs/thesis/` |
 | Experiment loop (stage 5) | Waits for the next planned free experiment (it is done on one). Its new code, per-episode warnings that stop a queue, is not built: of the two warnings `digest` shows, a build mismatch "warns and is recorded but never blocks" (owner, 2026-10-18), and stopping on invalid batches would change what an experiment measures (autonomy.md parks such changes); which warnings stop a queue is the owner's choice |
 
 JUDGEMENT?: Hook details — Claude, 2026-10-29: the HEAD-moving git subcommands (commit, merge,
@@ -319,6 +319,20 @@ rebase, reset, checkout, switch, pull, cherry-pick, revert, am), `ruff format` r
 never two blocks in a row, no check beside a game job, and a stop let through when `check.py`
 cannot run or timed out; a narrower list, more blocks or failing closed would block differently.
 How hard the exit gate is enforced rests on these.
+
+### Claude Code and Codex
+
+The owner alternates between the two (2026-10-29), so each gets the same pieces;
+[test_agent_sync.py](../tests/test_agent_sync.py) fails when a pair differs.
+
+| Piece | Claude Code | Codex |
+|---|---|---|
+| Instructions | `CLAUDE.md`, which imports `AGENTS.md` | `AGENTS.md` |
+| Hooks | `.claude/settings.json` | `.codex/hooks.json`; the owner trusts them once with `/hooks`, and again after each change |
+| Reviewer | `.claude/agents/reviewer.md` | `.codex/agents/reviewer.toml`, the same text |
+| Skills | `.claude/skills/<name>`, a link to `.agents/skills/<name>` | `.agents/skills/` |
+| WH3 version review | `.claude/workflows/wh3-version-review.js` (the Workflow tool) | None: one `reviewer` per episode, by hand |
+| Personal settings | `.claude/settings.local.json` (plugins, permissions; ignored) | `~/.codex/config.toml` |
 
 Hooks must handle: exit code 1 does not block (a wrapper turns a `check.py`
 failure into 2); Claude Code overrides a `Stop` hook after eight blocks in a row with no tool call between them

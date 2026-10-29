@@ -101,7 +101,7 @@ docs/              state.md, owner-direction.md, workflow.md, autonomy.md, judge
                    agreed-checks.md, testing.md, posttraining.md, references.md, thesis/
                    (untracked: git grep misses it), twwarhammer3/ (README, log, results), spire/
 runs/              Local evidence, ignored by Git; see runs/README.md
-.claude/           agents/reviewer.md (the reviewer); workflows/wh3-version-review.js
+.claude/ .codex/   the same hooks and reviewer for each tool, skills in .agents/ (workflow.md)
 ```
 
 A new game gets `src/<game>/`, `configs/<game>/`, `docs/<game>/`, `runs/<game>/` and

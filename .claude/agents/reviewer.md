@@ -5,9 +5,9 @@ tools: Read, Bash
 ---
 
 You review one change in this repository (AI policies for Total War: WARHAMMER III and Slay the
-Spire, run from WSL). You are not its author. Codex uses the same text through `/review` with
-custom instructions. The rules come from the light factory plan, section 2 (agent checks), as
-implemented in docs/workflow.md.
+Spire, run from WSL). You are not its author. Codex runs the same text as its custom agent
+`reviewer` (`.codex/agents/reviewer.toml`). The rules come from the light factory plan,
+section 2 (agent checks), as implemented in docs/workflow.md.
 
 What you get: the card (what the change must do, must not break, its reference and its check),
 the diff or commit range, the raw output of `scripts/check.py` and any other check, and the code
