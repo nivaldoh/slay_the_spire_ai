@@ -21,7 +21,7 @@ the research question is open. The [proposal](thesis/proposal.md) is one candida
 ([directions](thesis/directions.md), [papers](thesis/papers.md)). Testing reviews await you:
 [eval review](twwarhammer3/log.md#wh3-evaluations-and-tests-2026-10-23),
 [live-check comparison](twwarhammer3/log.md#wh3-live-check-comparison-2026-10-23).
-Three unmerged draft branches remain ([list](#branches)); checkpoint RL was merged on 2026-10-28.
+Four unmerged draft branches remain ([list](#branches)); checkpoint RL was merged on 2026-10-28.
 MARL references: [three papers plus ProgramLab](thesis/papers.md#marl-implementation-references-2026-10-28), inspected 2026-10-28; ProgramLab's training code is pending. No external tests or learning results reproduced.
 [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
 
@@ -136,4 +136,7 @@ The broader RL environment remains a separate discussion, possibly connected to 
 - `wh3-human-opponent` (`de37005`, worktree `../slay_the_spire_ai-wh3-human-opponent`): the
   controllers command the AI's army so the owner can play against them. Parked by the owner
   (2026-10-22) to implement later, starting at step 1 of the [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps).
+- `spire-restore-replay` (`765ab2f`, worktree `../slay_the_spire_ai-spire-replay`): the Spire
+  state-restore step 2 replay driver (`spire replay`), tested with a fake game only, never run;
+  waits for step 2's window and your profile decision.
 - Archived drafts are tags (`git tag --list 'archive/*'`).
