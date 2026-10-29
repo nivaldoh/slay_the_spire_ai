@@ -3,43 +3,78 @@ any git command that moves this tree's HEAD while a WH3 queue runs.
 
 AGENTS.md: most files are hand-formatted, so `ruff format` stays manual (`--check` and `--diff`
 change nothing and pass); a running scripts/wh3_queue.py stops before its next job when this
-tree's HEAD moves (a commit in another worktree does not). The command is read line by line
-as shell words; heredoc bodies are text, not commands, and a quoted mention passes. A line
-whose quotes do not close is read as plain text. Exit 2 blocks the call and shows the reason.
-A guardrail, not an enforcement boundary: aliases and scripts are not followed, and games,
-spending and ledgers stay guarded in the CLI.
+tree's HEAD moves (a commit in another worktree does not). The command is split into logical
+lines at newlines outside quotes; comments and heredoc bodies are text, not commands, and a
+quoted mention passes. A line whose quotes never close is read as plain text. Exit 2 blocks
+the call and shows the reason. A guardrail, not an enforcement boundary: aliases, variables
+and scripts are not followed, and games, spending and ledgers stay guarded in the CLI.
 """
 import json
+import os
 import re
 import shlex
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-# git subcommands that move HEAD.
+# git subcommands that can move HEAD (checkout and reset of paths do not; see moves_this_head).
 MOVES_HEAD = {"commit", "merge", "rebase", "reset", "checkout", "switch", "pull", "cherry-pick",
               "revert", "am"}
 SEPARATORS = {";", "&&", "||", "|", "&", "(", ")"}
 # Words that run the next word as a command (`timeout` also takes a duration).
 WRAPPERS = {"time", "nice", "env", "command", "exec", "then", "do", "else", "elif", "if", "while",
             "until", "!", "{", "}", "sudo", "xargs", "timeout"}
-HEREDOC = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1")
+HEREDOC = re.compile(r"<<-?\s*\\?(['\"]?)([A-Za-z0-9_.-]+)\1")
 RUFF_TEXT = re.compile(r"\bruff\s+format\b(?![^\n;&|]*--(?:check|diff)\b)")
 GIT_TEXT = re.compile(r"\bgit\b[^\n;&|]*\b(" + "|".join(sorted(MOVES_HEAD)) + r")\b")
+UNKNOWN = Path("/nonexistent-unknown-tree")
 
 
-def lines(text: str) -> list[str]:
-    """The command lines of a shell text: continuations joined, heredoc bodies dropped."""
-    out, delimiter = [], None
-    for line in text.replace("\\\n", " ").split("\n"):
-        if delimiter is not None:
-            if line.strip() == delimiter:
-                delimiter = None
+def logical_lines(text: str) -> list[str]:
+    """Command lines split at newlines outside quotes; comments and heredoc bodies dropped."""
+    out, buf, quote, waiting, i = [], [], None, [], 0
+    while i < len(text):
+        c = text[i]
+        if quote:
+            if c == "\\" and quote == '"' and i + 1 < len(text):
+                buf.append(text[i:i + 2])
+                i += 2
+                continue
+            quote = None if c == quote else quote
+            buf.append(c)
+        elif c == "\\" and i + 1 < len(text):
+            buf.append(" " if text[i + 1] == "\n" else text[i:i + 2])
+            i += 2
             continue
-        out.append(line)
-        found = HEREDOC.search(line)
-        delimiter = found.group(2) if found else None
-    return out
+        elif c in "'\"":
+            quote = c
+            buf.append(c)
+        elif c == "#" and (not buf or buf[-1][-1:] in " \t;&|("):
+            end = text.find("\n", i)
+            i = len(text) if end < 0 else end
+            continue
+        elif c == "<" and (found := HEREDOC.match(text, i)):
+            waiting.append(found.group(2))
+            buf.append(found.group(0))
+            i = found.end()
+            continue
+        elif c == "\n":
+            out.append("".join(buf))
+            buf = []
+            i += 1
+            while waiting:  # skip each heredoc's body, through its delimiter line
+                end = text.find("\n", i)
+                line, i = (text[i:], len(text)) if end < 0 else (text[i:end], end + 1)
+                if line.strip() == waiting[0]:
+                    waiting.pop(0)
+                elif i >= len(text):
+                    waiting = []
+            continue
+        else:
+            buf.append(c)
+        i += 1
+    out.append("".join(buf))
+    return [line for line in out if line.strip()]
 
 
 def commands(line: str) -> list[list[str]]:
@@ -64,18 +99,38 @@ def program(words: list[str]) -> list[str]:
     return words
 
 
+def place(cwd: Path, path: str) -> Path:
+    """Where `cd path` or `-C path` leads; UNKNOWN for a path through a variable."""
+    return UNKNOWN if "$" in path else (cwd / os.path.expanduser(path)).resolve()
+
+
+def is_this_tree(where: Path) -> bool:
+    """The nearest .git above `where` is this repository's own directory."""
+    for folder in (where, *where.parents):
+        if (folder / ".git").exists():
+            return folder == ROOT and (folder / ".git").is_dir()
+    return False
+
+
 def moves_this_head(words: list[str], cwd: Path) -> str | None:
-    """`git [-C dir] [-c k=v] [--flag] SUB ...` run in this tree -> SUB if it moves HEAD."""
+    """`git [-C dir] [-c k=v] [--flag] SUB ...` in this tree -> SUB if it moves HEAD."""
     if not words or Path(words[0]).name != "git":
         return None
     rest, where = words[1:], cwd
     while rest and rest[0].startswith("-"):
         if rest[0] == "-C" and len(rest) > 1:
-            where = (where / rest[1]).resolve()
+            where = place(where, rest[1])
         rest = rest[2:] if rest[0] in ("-C", "-c") else rest[1:]
-    if not rest or rest[0] not in MOVES_HEAD or not where.is_relative_to(ROOT):
+    if not rest or rest[0] not in MOVES_HEAD or not is_this_tree(where):
         return None
-    return None if Path(where / ".git").is_file() else rest[0]  # a linked worktree's .git is a file
+    sub, args = rest[0], rest[1:]
+    if sub in ("checkout", "reset") and "--" in args:
+        return None  # restores files
+    paths = [a for a in args if not a.startswith("-")]
+    if sub == "reset" and all((where / a).exists() for a in paths) and not (
+            {"--soft", "--hard", "--mixed", "--keep", "--merge"} & set(args) and paths):
+        return None  # unstages paths, or resets the index to HEAD
+    return sub
 
 
 def queue_running(proc: Path = Path("/proc")) -> bool:
@@ -101,19 +156,19 @@ def git_reason(sub: str) -> str:
 
 
 def refusal(text: str, *, queue: bool, cwd: Path = ROOT) -> str | None:
-    for line in lines(text):
+    for line in logical_lines(text):
         try:
             parsed = commands(line)
-        except ValueError:  # unclosed quotes: judge the plain text
+        except ValueError:  # quotes that never close: judge the plain text
             if RUFF_TEXT.search(line):
                 return RUFF_REASON
-            if queue and (found := GIT_TEXT.search(line)):
+            if queue and (found := GIT_TEXT.search(line)) and is_this_tree(cwd):
                 return git_reason(found.group(1))
             continue
         for words in parsed:
             words = program(words)
             if words and words[0] == "cd" and len(words) > 1:
-                cwd = (cwd / words[1]).resolve()
+                cwd = place(cwd, words[1])
                 continue
             for i, word in enumerate(words[:-1]):
                 if Path(word).name == "ruff" and words[i + 1] == "format" and not (

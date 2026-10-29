@@ -51,6 +51,13 @@ NOTE = "cat > note.md <<'EOF'\nNever run ruff format here; git commit only after
     ("{ git merge main; }", True, True),
     ("git -C /tmp/elsewhere commit -m x", True, False),  # another tree's HEAD
     ("git diff 'unclosed", False, False),
+    ('git commit -m "Refuse x\n\n- never ruff format here"', False, False),  # quoted newline
+    ("# it's a note\ncat <<'EOF' > n.md\nruff format\nEOF", False, False),  # a comment's quote
+    ("cat <<'END-NOTE' > n.md\nruff format\nEND-NOTE", False, False),
+    ("git checkout -- src/a.py", True, False),
+    ("git reset", True, False),
+    ("git reset --hard HEAD~1", True, True),
+    ("git checkout main", True, True),
 ])
 def test_bash_hook_refuses_ruff_format_and_head_moves_during_a_queue(command, queue, blocked):
     assert (pre_bash.refusal(command, queue=queue) is not None) is blocked
@@ -58,11 +65,22 @@ def test_bash_hook_refuses_ruff_format_and_head_moves_during_a_queue(command, qu
 
 def test_a_linked_worktree_inside_the_repo_is_another_tree(tmp_path, monkeypatch):
     monkeypatch.setattr(pre_bash, "ROOT", tmp_path)
-    (tmp_path / "runs/scratch").mkdir(parents=True)
+    (tmp_path / ".git").mkdir()
+    (tmp_path / "runs/scratch/src").mkdir(parents=True)
+    (tmp_path / "home/wt").mkdir(parents=True)
+    (tmp_path / "home/wt/.git").write_text("gitdir: elsewhere\n")
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
     (tmp_path / "runs/scratch/.git").write_text("gitdir: ../../.git/worktrees/scratch\n")
     assert pre_bash.refusal("git -C runs/scratch commit -m x", queue=True, cwd=tmp_path) is None
     assert pre_bash.refusal("cd runs/scratch && git commit -m x", queue=True, cwd=tmp_path) is None
+    assert pre_bash.refusal("git -C runs/scratch/src commit -m x", queue=True, cwd=tmp_path) is None
+    assert pre_bash.refusal("cd ~/wt && git commit -m x", queue=True, cwd=tmp_path) is None
+    # Claude Code's own commit form, in another worktree, during a queue
+    claude = 'cd ~/wt && git commit -m "$(cat <<\'EOF\'\nFix it\'s check\n\nEOF\n)"'
+    assert pre_bash.refusal(claude, queue=True, cwd=tmp_path) is None
+    assert pre_bash.refusal(claude.replace("cd ~/wt", "cd ."), queue=True, cwd=tmp_path)
     assert pre_bash.refusal("git commit -m x", queue=True, cwd=tmp_path)
+    assert pre_bash.refusal("git -C runs commit -m x", queue=True, cwd=tmp_path)
 
 
 def test_only_a_python_process_running_the_queue_script_is_a_queue(tmp_path):
@@ -87,6 +105,7 @@ def repo(tmp_path, monkeypatch):
     git("-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "base")
     monkeypatch.setattr(stop_check, "ROOT", tmp_path)
     monkeypatch.setattr(stop_check, "CACHE", tmp_path / "runs/checks/stop-hook.json")
+    monkeypatch.setattr(stop_check, "game_job_running", lambda: False)
     return tmp_path, git
 
 
@@ -120,16 +139,42 @@ def test_stop_hook_checks_a_changed_tree_once_and_reruns_a_failure(repo, capsys)
         assert stop_check.main(recorder(runs, False)) == 2
 
 
-def test_a_stop_after_a_block_on_the_same_failing_tree_goes_through(repo, capsys):
+def test_a_stop_after_a_block_goes_through_once_the_check_has_failed(repo, capsys):
     repo, _ = repo
     runs = []
     (repo / "a.py").write_text("a = 2\n")
     assert stop_check.main(recorder(runs, False), {"stop_hook_active": True}) == 2  # first look
+    (repo / "a.py").write_text("a = 3\n")  # e.g. a play job appending to results.csv
     assert stop_check.main(recorder(runs, False), {"stop_hook_active": True}) == 0
     assert "still fails" in capsys.readouterr().out and runs == [False]
     assert stop_check.main(recorder(runs, False), {}) == 2  # a fresh stop checks again
+
+
+def test_no_check_runs_beside_a_game_job_and_a_timeout_is_not_retried(repo, capsys):
+    repo, _ = repo
+    runs = []
+    (repo / "a.py").write_text("a = 2\n")
+    assert stop_check.main(recorder(runs, False), jobs=lambda: True) == 0
+    assert "game job runs" in capsys.readouterr().out and runs == []
+
+    def hangs():
+        runs.append("hang")
+        raise subprocess.TimeoutExpired("check.py", 600)
+    assert stop_check.main(hangs) == 0 and stop_check.main(hangs) == 0
+    assert runs == ["hang"] and "not rerun" in capsys.readouterr().out
     (repo / "a.py").write_text("a = 3\n")
-    assert stop_check.main(recorder(runs, False), {"stop_hook_active": True}) == 2
+    assert stop_check.main(recorder(runs, False)) == 2  # a new tree is checked again
+
+
+def test_a_game_job_is_a_python_process_running_one(tmp_path):
+    def proc(pid, *argv):
+        (tmp_path / pid).mkdir()
+        (tmp_path / pid / "cmdline").write_bytes("\0".join(argv).encode() + b"\0")
+    proc("21", "/bin/bash", "-c", "uv run python -m twwarhammer3 play --output x")
+    proc("22", "/repo/.venv/bin/python", "-m", "twwarhammer3", "stats")
+    assert not stop_check.game_job_running(tmp_path)
+    proc("23", "/repo/.venv/bin/python3", "-m", "spire", "play", "--seed", "A")
+    assert stop_check.game_job_running(tmp_path)
 
 
 def test_an_unreadable_cache_means_check_again(repo):
@@ -144,7 +189,7 @@ def test_an_unreadable_cache_means_check_again(repo):
 
 def test_stop_hook_lets_the_stop_through_when_the_check_cannot_run(repo, capsys):
     def broken():
-        raise subprocess.TimeoutExpired("check.py", 600)
+        raise FileNotFoundError("uv")
     assert stop_check.main(broken) == 0
     assert "could not run check.py" in json.loads(capsys.readouterr().out)["systemMessage"]
 
