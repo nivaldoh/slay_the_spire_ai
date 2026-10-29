@@ -59,12 +59,16 @@ for the misses. One rerun reviewer checked the counts and found the first play c
   `export.py` 10 → 17 of 17 (`a4a6011`: corrupt traces stop an export); `checkpoint.py` 10 →
   20 of 32 (`ba2a203`: pre-launch refusals with the lock stubbed, replay checks; left: real
   launch paths, bystander replays, step-run library preconditions, a corrupted copy).
+- Spire: the run loop and decisions 2 → 9 of 9 (`82c8487`: a choice the game did not offer is
+  never sent; runs without an outcome end unscored); the Workshop pin and an empty dataset
+  selection (`57a1661`). Fully covered already: provenance (the source-scope refusal), the
+  Spire bridge, the WH3 runtime. Untested: lm.py (needs the llm extra), pack.py's zstd check.
 - Spire's public boundary: 3 → 6 of 7 planted leaks (`d50986f`); the seventh, the seed, is
   also removed by the field allowlist.
 - Decay check: the ten planted versions of 2026-10-20 (b42), rebuilt from their names, are
   all still caught (`runs/decay-check-20261029/`).
-- Tonight's total (`runs/light-factory-20261029/tally.md`): 305 planted versions; the day's
-  tests missed 151 (3 equivalent); new tests closed 126; 22 left, each named.
+- Tonight's total (`runs/light-factory-20261029/tally.md`): 342 planted versions; the day's
+  tests missed 164 (3 equivalent); new tests closed 135; 26 left, each named.
 - Found on the way: a test-order dependence (state.md Known issues) and `[cards]` markers
   ([judgement](../judgement.md#status-and-how-to-continue)).
 Not established: live engine behaviour; that each refusal is the right rule.
