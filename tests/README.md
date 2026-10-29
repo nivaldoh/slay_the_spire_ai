@@ -32,6 +32,9 @@ those tests skip through `importorskip`.
 Use a different scratch path for concurrent invocations: pytest clears its `--basetemp`.
 Only disposable test data belongs there. `uv sync --locked` removes optional extras again.
 Read `-ra` skip reasons: absent training packages or local evidence leave checks unrun.
+Two tests replay agreed checks' saved passing evidence from `runs/` with planted wrong values
+([siege](twwarhammer3/checkpoint_siege/test_wh3_siege_saved_evidence.py),
+[checkpoint-RL step run](twwarhammer3/test_wh3_restored_episode_check.py)); they skip without it.
 The opt-in Windows process test in [test_windows.py](gameai/test_windows.py) additionally
 requires WSL, Windows Python and `GAMEAI_TEST_WINDOWS=1`; it starts test processes, not a game.
 
