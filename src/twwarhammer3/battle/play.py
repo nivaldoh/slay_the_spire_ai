@@ -85,7 +85,10 @@ CAPTION_LIMIT = 400
 # JUDGEMENT?: 1x windows — Claude, 2026-10-29: besides the whole battle (the owner's choice),
 # battle time per Windows second over each stretch of at least 30 s, so a pause of a few
 # seconds is not averaged away (stretches of about 34 s measured 0.9992-1.0002 on 2026-10-26).
-# Shorter stretches would add timer-tick and frame noise, longer ones hide shorter pauses.
+# Shorter stretches would add timer-tick and frame noise, longer ones hide shorter pauses. A
+# stretch ends at a controller read, so a model call longer than 30 s lengthens it (a 150 s
+# call lets a 1.5 s pause pass); the longest is recorded. A reader thread would remove that.
+# Under 30 s the whole battle is not measured either.
 WINDOWS_STRETCH_NS = 30 * 10**9
 # The mod reads observe_ms, tick_ms, record_replay and stills; speed and pause let
 # ``play --attach`` check that the running game keeps the realtime rule.
@@ -431,13 +434,16 @@ def windows_clock(result: dict, marks: dict, time_ms: int, written_ns: int | Non
         return
     def rate(mark):
         return (time_ms - mark[0]) * 10**6 / (written_ns - mark[1])
-    if written_ns > marks["first"][1]:
+    if written_ns - marks["first"][1] >= WINDOWS_STRETCH_NS:
         result["windows_clock_s"] = round((written_ns - marks["first"][1]) / 1e9, 3)
         result["windows_clock_ratio"] = round(rate(marks["first"]), 4)
-    if written_ns - marks["stretch"][1] >= WINDOWS_STRETCH_NS:
+    stretch = written_ns - marks["stretch"][1]
+    if stretch >= WINDOWS_STRETCH_NS:
         low, high = result.get("windows_clock_range") or (float("inf"), float("-inf"))
         ratio = round(rate(marks["stretch"]), 4)
         result["windows_clock_range"] = [min(low, ratio), max(high, ratio)]
+        result["windows_clock_longest_s"] = max(result.get("windows_clock_longest_s", 0),
+                                                round(stretch / 1e9, 1))
         marks["stretch"] = (time_ms, written_ns)
 
 

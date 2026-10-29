@@ -273,7 +273,8 @@ def one_x(result: dict) -> str:
     stretches = result.get("windows_clock_range")
     measure = (f"{result['windows_clock_ratio']:.4f} battle s per s over"
                f" {result['windows_clock_s']:.0f} s"
-               + (f", 30 s stretches {stretches[0]:.4f}-{stretches[1]:.4f}" if stretches else ""))
+               + (f", stretches of at least 30 s (longest {result['windows_clock_longest_s']:.0f}"
+                  f" s) {stretches[0]:.4f}-{stretches[1]:.4f}" if stretches else ""))
     if ran_at_1x(result):
         return f"1x by the Windows clock: {measure} (band {ONE_X[0]}-{ONE_X[1]})"
     return (f"WARNING: not 1x by the Windows clock: {measure}, outside {ONE_X[0]}-{ONE_X[1]};"

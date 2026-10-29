@@ -265,8 +265,10 @@ times, which reports latency in seconds rather than battle time. Land Battle lat
   observation it reads keeps its file's write time, which NTFS stamps from the Windows clock in
   100 ns units (at the system timer tick). `result.json` gets `windows_clock_s`,
   `windows_clock_ratio` (battle s per Windows s from the battle's start to its last running
-  observation) and `windows_clock_range` (its slowest and fastest stretch of at least 30 s);
-  `digest` prints them and warns outside 0.99-1.01 (owner, 2026-10-29). An offline probe gave
+  observation, once 30 s apart) and `windows_clock_range` (its slowest and fastest stretch of
+  at least 30 s; a stretch ends at a controller read, so a long model call lengthens it, and
+  `windows_clock_longest_s` says by how much); `digest` prints them and warns outside 0.99-1.01
+  (owner, 2026-10-29). An offline probe gave
   write-time gaps within 0.01% of the Windows stopwatch over 5 s
   (`runs/light-factory-20261029-evening/ntfs-mtime-probe.txt`); no battle has been measured yet.
 

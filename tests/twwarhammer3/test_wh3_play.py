@@ -880,42 +880,53 @@ def test_a_controller_that_fails_to_construct_is_a_policy_failure(tmp_path):
     assert result["error"] == "controller construction: bad prompt file"
 
 
-@pytest.mark.parametrize("pause_ms,ratio,stretches", [
-    (0, 1.0, [1.0, 1.0]),
+@pytest.mark.parametrize("reads,step_s,pause_ms,line", [
+    (300, 1, 0, "1x by the Windows clock: 1.0000 battle s per s over 298 s, stretches of at"
+                " least 30 s (longest 30 s) 1.0000-1.0000 (band 0.99-1.01)"),
     # 1.5 s paused in a 298 s battle: 0.995 overall, inside the band; its stretch is not.
-    (1500, round(298 / 299.5, 4), [round(29 / 30.5, 4), 1.0]),
-    (None, None, None),  # no observation files, so no write times
+    (300, 1, 1500, "WARNING: not 1x by the Windows clock: 0.9950 battle s per s over 300 s,"
+                   " stretches of at least 30 s (longest 32 s) 0.9524-1.0000, outside 0.99-1.01;"
+                   " tell the owner"),
+    # A policy reading every 150 s: the same pause stays inside the band, and the line says
+    # how long its stretches were (the limit in play.py's 1x windows marker).
+    (4, 150, 1500, "1x by the Windows clock: 0.9950 battle s per s over 302 s, stretches of at"
+                   " least 30 s (longest 152 s) 0.9901-1.0000 (band 0.99-1.01)"),
+    (20, 1, 0, None),  # 18 s from the start: too short to judge
+    (300, 1, None, None),  # no observation files, so no write times
 ])
 def test_battle_time_per_windows_second_is_recorded_and_digest_flags_a_pause(
-        tmp_path, pause_ms, ratio, stretches):
+        tmp_path, reads, step_s, pause_ms, line):
     class Stamped(FakeMailbox):
         def wait_observation(self, **kwargs):
             observation = super().wait_observation(**kwargs)
             if pause_ms is not None:  # the file's NTFS time: battle time, the pause added
-                seq = observation["seq"]
-                self.written_ns = (1000 * seq + (pause_ms if seq >= 150 else 0)) * 10**6
+                ms = observation["time_ms"]
+                self.written_ns = (ms + (pause_ms if ms >= 150000 + step_s * 500 else 0)) * 10**6
             return observation
 
-    mailbox = Stamped([bridge_observation(i, 1000 * i) for i in range(300)]
-                      + [bridge_observation(300, 300000, result="won")])
+    mailbox = Stamped([bridge_observation(i, step_s * 1000 * i) for i in range(reads)]
+                      + [bridge_observation(reads, step_s * 1000 * reads, result="won")])
     job = tmp_path / "job"
     job.mkdir()
     result = play.play_episode(job / "episode-0000", CONFIG, Hold, mailbox, not_battle=None)
-    assert result.get("windows_clock_ratio") == ratio
-    assert result.get("windows_clock_range") == stretches
     (job / "manifest.json").write_text(json.dumps({
         "status": "completed", "created_at": "2026-10-29T00:00:00", "source_revision": "abc1234",
         "config": {"policy": "hold", "scenario": "s", "model": None, "effort": None,
                    "seed": None}}))
     episode, header = digest.digest(job / "episode-0000"), digest.digest(job).splitlines()[0]
-    if pause_ms is None:
-        assert "Windows clock" not in episode and "WARNING" not in header
-    elif pause_ms:
-        assert ("WARNING: not 1x by the Windows clock: 0.9950 battle s per s over 300 s, 30 s"
-                " stretches 0.9508-1.0000, outside 0.99-1.01; tell the owner") in episode
-        assert header == ("WARNING: episode-0000 did not run at 1x by the Windows clock; tell"
-                          " the owner (its digest has the numbers)")
+    if line is None:
+        assert "windows_clock_ratio" not in result and "Windows clock" not in episode
     else:
-        assert ("1x by the Windows clock: 1.0000 battle s per s over 298 s, 30 s stretches"
-                " 1.0000-1.0000 (band 0.99-1.01)") in episode.splitlines()
-        assert not header.startswith("WARNING")
+        assert line in episode.splitlines()
+    assert header.startswith("WARNING") == (line or "").startswith("WARNING")
+
+
+@pytest.mark.parametrize("ratio,stretches,inside", [
+    (0.99, [0.99, 1.01], True), (0.9899, None, False), (1.0101, None, False),
+    (1.0, [0.9899, 1.0], False), (1.0, [1.0, 1.0101], False),
+])
+def test_the_band_includes_its_edges(ratio, stretches, inside):
+    result = {"windows_clock_ratio": ratio, "windows_clock_s": 60}
+    if stretches:
+        result.update(windows_clock_range=stretches, windows_clock_longest_s=30)
+    assert digest.ran_at_1x(result) is inside

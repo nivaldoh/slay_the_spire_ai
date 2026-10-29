@@ -1,6 +1,7 @@
 import json
 import os
 from contextlib import AbstractContextManager
+from pathlib import Path
 
 import pytest
 from wh3_lua import MOD, load_battle, runtime
@@ -51,6 +52,26 @@ def test_an_observation_read_keeps_its_files_write_time_and_a_foreign_one_none(m
     observation(mailbox.directory, job="another-job")
     os.utime(path, ns=(1, 9_000_000_000))
     assert mailbox.read_observation() is None and mailbox.written_ns == 1_234_567_800
+
+
+def test_the_write_time_is_the_read_files_when_the_game_replaces_it_meanwhile(mailbox,
+                                                                             monkeypatch):
+    path = mailbox.directory / "observation.json"
+    observation(mailbox.directory, seq=4)
+    os.utime(path, ns=(1, 1_000_000_000))
+    opened = Path.open
+
+    def open_then_replace(self, *args, **kwargs):
+        file = opened(self, *args, **kwargs)
+        if self == path:  # the game's next publish lands right after the controller opens
+            newer = path.with_name("next.json")
+            newer.write_text(json.dumps({"schema": 1, "job": "job-a", "seq": 5}))
+            os.utime(newer, ns=(1, 2_000_000_000))
+            os.replace(newer, path)
+        return file
+
+    monkeypatch.setattr(Path, "open", open_then_replace)
+    assert mailbox.read_observation()["seq"] == 4 and mailbox.written_ns == 1_000_000_000
 
 
 def test_wait_observation_needs_a_newer_seq_of_the_same_battle(mailbox):
