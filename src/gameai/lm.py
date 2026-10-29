@@ -66,20 +66,6 @@ def candidate_log_probs(model, prompt_ids: list[int], completions: list[list[int
     return (picked * valid).sum(dim=-1)
 
 
-def sample_index(log_probs: list[float], draw: float) -> int:
-    """Inverse-CDF draw over normalized probabilities, in candidate order."""
-    if not log_probs or not 0.0 <= draw < 1.0:
-        raise ValueError("Sampling requires candidates and a draw in [0, 1)")
-    probabilities = [math.exp(value) for value in log_probs]
-    total = sum(probabilities)
-    cumulative = 0.0
-    for index, probability in enumerate(probabilities):
-        cumulative += probability / total
-        if draw < cumulative:
-            return index
-    return len(probabilities) - 1
-
-
 def normalized(scores: list[float], temperature: float) -> list[float]:
     scaled = [score / temperature for score in scores]
     peak = max(scaled)

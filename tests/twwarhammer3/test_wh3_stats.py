@@ -28,8 +28,11 @@ def test_a_row_rounds_the_active_shares_and_takes_the_harness_from_the_name(tmp_
 
 
 def test_a_rotated_model_is_the_base_policy_with_its_model_and_effort_in_the_register(
-        tmp_path, monkeypatch):
-    monkeypatch.delitem(PRICES, "gpt-6-luna")  # retired since: readers never check prices
+        tmp_path, request):
+    # Restore the whole table in its order: monkeypatch.delitem would put the price back last,
+    # and the Spire CLI lists models in this order.
+    request.addfinalizer(lambda saved=dict(PRICES): (PRICES.clear(), PRICES.update(saved)))
+    del PRICES["gpt-6-luna"]  # retired since: readers never check prices
     job = tmp_path / "bench-b1-20261015"
     job.mkdir()
     (job / "manifest.json").write_text(json.dumps({

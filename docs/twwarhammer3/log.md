@@ -188,9 +188,10 @@ resume the stopped checkpoint-RL training or choose a thesis topic.
 
 ### Allocation and limits
 
-JUDGEMENT: overnight_allocation — Codex, 2026-10-28, proposes the time split below within
-the owner's roughly ten-hour window. Another split changes research depth versus review;
-these are planning ceilings, not required work counts or verification thresholds.
+Codex's time split (2026-10-28) within the owner's roughly ten-hour window; it was the marker
+`overnight_allocation`, retired by the owner on 2026-10-29 after the plan ran. Another split
+changes research depth versus review; these are planning ceilings, not required work counts or
+verification thresholds.
 
 | Allowance | Work and stopping point |
 |---|---|
@@ -211,9 +212,10 @@ infrastructure or exhaustive repository sweep. New scripts need a named use in t
 
 ### Thesis frontier
 
-JUDGEMENT: first_frontier_pass — Codex, 2026-10-28, proposes the three areas below for this
-first mixed night. A different emphasis could surface other thesis candidates; this search
-does not rank or select the thesis, and leaves the other documented directions open.
+Codex's three areas (2026-10-28) for this first mixed night; it was the marker
+`first_frontier_pass`, retired by the owner on 2026-10-29 after the night ran. A different
+emphasis could surface other thesis candidates; this search does not rank or select the thesis,
+and leaves the other documented directions open.
 
 Start with the existing thesis notes and their research evidence; extend these comparisons:
 

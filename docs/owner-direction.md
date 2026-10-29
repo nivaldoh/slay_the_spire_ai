@@ -5,6 +5,16 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-29 (evening, light factory decisions in `runs/light-factory-20261029/handoff.md`):
+  1 `check.py` records offline agreed-check passes: "(a)". 2 build the WH3 1x check by
+  Windows file times, band 0.99-1.01 as suggested: "(a)". 3 keep the two hooks: "(a). Note: I
+  keep alternating between Codex and Claude Code. In that case, we'll need to keep their
+  hooks,skills,etc in sync". 4 CI with the link test skipping untracked targets: "(b)".
+  5 `digest` warnings do not stop a WH3 queue: "(a)". 6 narrow Spire step 2's end-turn
+  allowance to two or more different Ethereal cards: "(a). Note that the Warhammer part of the
+  project is our priority". Smaller items (the checkpoint guard, the test-order fix, deleting
+  `gameai.lm.sample_index` and `runs/test-scratch/`, retiring the `overnight_allocation` and
+  `first_frontier_pass` markers): "these are fine".
 - 2026-10-29 (light factory handoff): on keeping the night's work, "(a). Why would I even
   think about rejecting this work?" On the handoff itself: "hard to read ... Make it better:
   more concise, better structure, more concreteness, less slop." Applied: the handoff was
