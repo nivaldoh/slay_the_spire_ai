@@ -310,8 +310,9 @@ until its counts show its findings are mostly noise.
 
 JUDGEMENT?: Hook details — Claude, 2026-10-29: the HEAD-moving git subcommands (commit, merge,
 rebase, reset, checkout, switch, pull, cherry-pick, revert, am), `ruff format` refused everywhere,
-and a stop let through when `check.py` cannot run; a narrower list or failing closed would block
-differently. How hard the exit gate is enforced rests on these.
+one block per failing check, no check beside a game job, and a stop let through when `check.py`
+cannot run or timed out; a narrower list, more blocks or failing closed would block differently.
+How hard the exit gate is enforced rests on these.
 
 Hooks must handle: exit code 1 does not block (a wrapper turns a `check.py`
 failure into 2); Claude Code overrides a `Stop` hook after eight blocks in a row with no tool call between them
