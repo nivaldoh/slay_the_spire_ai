@@ -68,7 +68,7 @@ at their parent commits (`suspects-before.txt`): only that site was wrong.
   2026-10-20 plants, rebuilt, are still caught (`runs/decay-check-20261029/`).
 - Total (`runs/light-factory-20261029/tally.md`): 424 planted; the day's tests missed 215 (4
   equivalent or covered twice); new tests closed 190; 21 left. The 285 llm-extra tests that
-  `check.py` skips pass in a separate environment (2069 passed, 1 skipped, at `d23dccb`).
+  `check.py` skips pass in a separate environment (2140 passed, 1 skipped, at `6d3e612`).
 Not established: live engine behaviour; that each refusal is the right rule.
 
 ## 2026-10-29: planted wrong versions against the agreed checks and results readers
