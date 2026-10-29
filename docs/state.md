@@ -9,10 +9,11 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
-Workflow (2026-10-29, owner away): the light factory plan is now [workflow.md](workflow.md),
-stages 1-4 built (stage 4: Claude Code hooks in the local settings, a sweep skill; CI waits on
-the thesis links; stage 5 on a planned experiment); tests then challenged with 424 planted wrong versions, 190 gaps closed
-([log](twwarhammer3/log.md#2026-10-29-refusal-sweeps-boundary-leaks-and-a-decay-check)); decision 12.
+Workflow: the light factory plan is [workflow.md](workflow.md), stages 1-4 built; stage 5 runs
+on the next planned experiment. After the owner's 2026-10-29 answers ([direction](owner-direction.md)):
+`check.py` records agreed-check passes, harness b51 measures 1x by the Windows clock (offline
+only), CI runs `check.py`, Codex has Claude Code's hooks and reviewer, Spire's end-turn
+allowance is narrowed ([log](twwarhammer3/log.md#2026-10-29-1x-by-the-windows-clock-harness-b51)); decision 12.
 Before each commit: `uv run --locked python scripts/check.py`. Not pushed.
 **Nothing runs**: all game controllers are stopped. The 2026-10-28 long autonomous runs
 and checkpoint-RL merge are finished ([log](twwarhammer3/log.md)); the owner's latest
@@ -35,7 +36,7 @@ includes timer endings; scoring, mode order and checks remain undecided.
 [Definition](twwarhammer3/benchmark.md), [plan](twwarhammer3/benchmark-implementation.md#phases),
 [README](twwarhammer3/README.md), [log](twwarhammer3/log.md), [results](twwarhammer3/results.csv).
 
-- Runtime: `llm`/`llm_rules` v22, `commander` v8, `team_llm_rules` v22+t2, skills v1.2, harness b50,
+- Runtime: `llm`/`llm_rules` v22, `commander` v8, `team_llm_rules` v22+t2, skills v1.2, harness b51,
   evaluator v2, track `obs-v4+terrain/act-v2/live-1x`. The new benchmark is not implemented or verified.
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results;
   chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
@@ -56,7 +57,7 @@ data night (Qwen3.6, harness v10.2) died in Act 1 in all 41 finished runs (media
 Next, highest Spire priority (owner, 2026-10-23): the [state-restore investigation](spire/state-restore.md),
 restoring the game to a recorded state with the same RNG to try other choices. Step 1 ran
 offline on 2026-10-29 ([results](spire/state-restore.md#step-1-results-2026-10-29-offline);
-one pass-rule question for you). Its first live step, a $0 replay check (driver drafted on
+its end-turn allowance narrowed by you on 2026-10-29). Its first live step, a $0 replay check (driver drafted on
 branch `spire-restore-replay`, never run), needs a game window and your profile decision first.
 Then: a meaningful comparison of the current controller, or a freeze.
 
@@ -89,7 +90,7 @@ The broader RL environment remains a separate discussion, possibly connected to 
 - WH3 readers still differ on timer wins and failures; the new engine-outcome definition
   needs a versioned scorer. Register/`stats` also have blank benchmark versions and commit
   grouping.
-- The mod sets 1x once, then reports constant `speed` 1 and `awaiting_orders` false: per-observation paused/slowed tests cannot fail; only the team check's clock ratio detects slowdown.
+- The mod sets 1x once, then reports constant `speed` 1 and `awaiting_orders` false: per-observation paused/slowed tests cannot fail. Since b51 `digest` reads battle time per Windows second from observation write times; no battle has been measured that way yet.
 - WSL clocks run about 6-8% slow against Windows and `time.time()` is stepped 2-3 s every ~35 s (measured 2026-10-28, [clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)): WSL-timed think times, delays and short-window clock ratios are off; the battle itself runs at 1x.
 - Spire runs often leave a profile preference file empty, likely when the game is killed at
   run end (25 of 43 data runs on 2026-10-23); the game recovers it from `.backUp` at the next
@@ -99,8 +100,6 @@ The broader RL environment remains a separate discussion, possibly connected to 
   unlock things normally first, then enable restore).
 - Under parallel load `test_wh3_capture.py`'s passive-capture test (2 s wait) and once
   `test_wh3_checkpoint_rl.py`'s source-run test flaked: rerun before calling a regression.
-- `test_wh3_stats.py` deletes and restores `PRICES["gpt-6-luna"]`, reordering it, so
-  `test_spire_cli.py` fails if WH3 tests run first; a one-line test fix awaits your yes.
 - The report browser check is separate from pytest. Spire's Workshop mod pins still block a
   run when a mod updates.
 
@@ -118,7 +117,7 @@ The broader RL environment remains a separate discussion, possibly connected to 
 10. **Thesis and RL environment.** Likely multi-agent systems, possibly multi-agent RL; no research question selected (owner, 2026-10-28). Tentative environment: each agent sees its available battle state, perhaps teammate information, controls its army share and learns from sparse win/loss near restored endings. Reset may use a battle start or checkpoint; details and correctness checks are for later. [Direction 6](thesis/directions.md#6-wh3-as-an-rl-environment-for-high-level-decisions); [research shortlist](thesis/directions.md#what-the-2026-10-28-checks-changed). Human-AI work stays a note; licensing is deferred.
 
 11. **Local LLM checkpoint RL — deferred.** Leave this post-training experiment paused (owner, 2026-10-28). No recovery choice is needed now; the existing results and choices remain for a future review. Merged on 2026-10-28. [Details](twwarhammer3/checkpoint-rl.md#open-owner-choices-decision-11).
-12. **Light factory decisions (2026-10-29).** Keep the night's work: yes (owner). Open: (1) let `check.py` record offline agreed-check passes; (2) a WH3 1x battle-speed check by Windows file times; (3) keep the two Claude Code hooks; (4) CI: track `docs/thesis/` or skip its links; (5) whether `digest` warnings stop a WH3 queue (stage 5); (6) narrow Spire step 2's end-turn rule. Each is explained in `runs/light-factory-20261029/handoff.md`; [workflow](workflow.md).
+12. **Light factory follow-ups (2026-10-29).** All six answered; for you: a game window for one free scripted battle (b51's 1x check), trusting the Codex hooks once with `/hooks`, and two unanswered process ideas (marker noise from untracked pages; rerunning planted versions for decay) in `runs/light-factory-20261029/handoff.md`.
 ## Runtime and ownership
 
 - Slay the Spire ([runtime facts](spire/integration.md#runtime-and-source-pins)): the installed game and personal profile slot 0 are authorized, including stats, unlock progress, history and achievements (Ironclad unlock 3 of 5; runs record profile evidence).

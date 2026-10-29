@@ -142,8 +142,9 @@ Each step has its check written first; a failed check stops the steps that depen
      floor 36) near 600 s of play time, while the original was far past 800 s.
 
    Pass: no difference, or a first difference where a listed effect can act. That means
-   later in the same room after a Discovery-family pick, an end turn with two or more
-   end-of-turn trigger cards, or the act 3 shrine roll. Any other first difference fails.
+   later in the same room after a Discovery-family pick, an end turn holding two or more
+   different Ethereal cards (owner, 2026-10-29: "(a)"; it read "two or more end-of-turn
+   trigger cards"), or the act 3 shrine roll. Any other first difference fails.
 3. **Branch control, route A.** Three launches, each replaying to one combat state (about
    10 s plus 0.9 s per command). Take the recorded choice once and one fixed alternative
    twice. Each alternative continues with a fixed command list to the end of that combat,
@@ -185,8 +186,8 @@ launch. Scripts, outputs and a skeptic's rerun of every claim are in
   settled observation, and the counts equal the results' `actions`. Where step 2 allows a
   first difference: DATA001 has no Discovery-family use and stays in act 1; RUNDEV2 uses a
   Skill Potion and a Power Potion (commands 143 and 485) and reaches the act 3 shrine roll.
-  Neither run ends a turn holding two Ethereal cards; the end-turn clause as written also
-  allows two Burn end turns, DATA001 205 and RUNDEV2 553.
+  Neither run ends a turn holding two Ethereal cards; the end-turn clause as first written
+  also allowed two Burn end turns, DATA001 205 and RUNDEV2 553 (narrowed on 2026-10-29).
 - **Comparator.** Over the 152 same-seed pairs, no pair differs before its commands split
   (130 differ right after, 22 later). A copy with one state changed inside a 33-command
   prefix is reported at that state. Five single-state cases separate The Library's book text
@@ -204,8 +205,9 @@ launch. Scripts, outputs and a skeptic's rerun of every claim are in
 - **Event texts.** Only The Library's exported text uses `MathUtils`; the other event call
   sites feed effects, the Gremlin wheel's resting angle or Neow's speech bubble.
 - **Correction.** The unseeded end-of-turn shuffle orders only Ethereal exhausts; Burn and
-  the curses trigger in hand order. Whether to narrow step 2's "two or more end-of-turn
-  trigger cards" to two or more different Ethereal cards is the owner's call.
+  the curses trigger in hand order. So step 2's end-turn allowance now names two or more
+  different Ethereal cards (owner, 2026-10-29); a replay that diverges after the two Burn end
+  turns above fails.
 
 ## Owner decisions
 

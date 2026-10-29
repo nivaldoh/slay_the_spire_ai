@@ -224,8 +224,8 @@ Spire uses the same rows with its own commands ([Spire guide](spire/AGENTS.md)).
   signal of a broken task" ([Anthropic](https://www.anthropic.com/research/demystifying-evals-for-ai-agents)).
   Each log entry ends with what the evidence covers, its limits, the interval (unit and
   method) and the spend, failed jobs included
-  ([NeurIPS checklist](https://neurips.cc/public/guides/PaperChecklist)). Per-episode
-  warnings that stop a queue are not built yet.
+  ([NeurIPS checklist](https://neurips.cc/public/guides/PaperChecklist)). `digest`
+  warnings never stop a queue (owner, 2026-10-29); the agent reads them in the report.
 - **RL or environment.** Copy [Gymnasium](https://gymnasium.farama.org/_modules/gymnasium/utils/env_checker/)'s
   checker (two resets with one seed give the same observation; each observation is a fresh
   object; here, two restores of one checkpoint give the same first observation) and
@@ -312,7 +312,7 @@ until its counts show its findings are mostly noise.
 | Reviewer and its first eval (stage 2), export leak test, review workflow fix | Built |
 | Docs cleanup (stage 3) | Done and reviewed (one reviewer found 6 issues, fixed): AGENTS.md is a map of at most 200 lines; docs/spire/AGENTS.md only gained the `check.py` line (135 lines, loaded only for Spire work) |
 | Hooks, skills, CI (stage 4) | Trigger seen 2026-10-29: a commit made before its `check.py` run (96e6265), and one workflow repeated about twenty times (plant, sweep, recount). Built: `scripts/hooks/stop_check.py` (Stop: runs `check.py` when HEAD, the index, the diff or an untracked file changed since its last pass; exit 2 keeps the turn going, never twice in a row; skipped while a game job runs) and `scripts/hooks/pre_bash.py` (Bash: refuses `ruff format` except `--check`/`--diff`, and git commands that move HEAD while `scripts/wh3_queue.py` runs), tested in `tests/test_hooks.py`; both seen live in Claude Code on 2026-10-29 (the Bash hook refusing a probe, the Stop hook running `check.py` at a turn's end: `runs/checks/20261029-111240-a2c63b0-988366.log`). Skill: `refusal-sweep` (`.agents/skills/`) for the repeated sweep, with `scripts/refusal_sweep.py` tested in `tests/test_refusal_sweep.py`. Both tools get the same hooks, reviewer and skills (owner, 2026-10-29; [below](#claude-code-and-codex)). CI: `.github/workflows/check.yml` runs `check.py` on each push to `main` (owner's decision 4, 2026-10-29); the link test skips links into the untracked `docs/thesis/` |
-| Experiment loop (stage 5) | Waits for the next planned free experiment (it is done on one). Its new code, per-episode warnings that stop a queue, is not built: of the two warnings `digest` shows, a build mismatch "warns and is recorded but never blocks" (owner, 2026-10-18), and stopping on invalid batches would change what an experiment measures (autonomy.md parks such changes); which warnings stop a queue is the owner's choice |
+| Experiment loop (stage 5) | Waits for the next planned free experiment (it is done on one). `digest` warnings do not stop a queue (owner, 2026-10-29: "(a)"): a build mismatch only warns (owner, 2026-10-18), and stopping on invalid batches would end weak models' runs early. An episode that is not won, lost or drawn still stops its job. The b51 1x warning came later and does not stop a queue either |
 
 JUDGEMENT?: Hook details — Claude, 2026-10-29: the HEAD-moving git subcommands (commit, merge,
 rebase, reset, checkout, switch, pull, cherry-pick, revert, am), `ruff format` refused everywhere,
