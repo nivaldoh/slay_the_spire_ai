@@ -1,7 +1,8 @@
-"""The checkpoint-RL step-run check's pass rule (check_wh3_restored_episode.assess) on its saved
+"""The checkpoint-RL step-run check's verdict (check_wh3_restored_episode.assess) on its saved
 passing evidence, runs/twwarhammer3/rl/stage1-20261026 (docs/agreed-checks.md), with one wrong
-value planted per case through the check's own readers. runs/ is local, so the test skips
-without that evidence; nothing is written to it."""
+value planted per case through the check's own readers. It covers the clauses planted below,
+not the context-logged rule. runs/ is local, so the test skips without that evidence; nothing
+is written to it."""
 import importlib.util
 from pathlib import Path
 
@@ -52,6 +53,15 @@ def later(attempt):
     attempt["attribution"]["applied_ms"] += 100
 
 
+def all_later(monkeypatch):
+    for name in ("attack-a", "attack-b", "move"):
+        plant_load(monkeypatch, name, later)
+
+
+def diverges_first(attempt):
+    attempt["attribution"]["first_divergence"] = attempt["attribution"]["applied_ms"] // 100 - 10
+
+
 PLANTS = {
     "late_fault": lambda m: plant_load(m, "attack-a", lambda a: a.update(late_fault="close")),
     "gap_after_handover": lambda m: plant_stream(m, "restore-b", gaps_after_handover=[[2101, 2]]),
@@ -64,6 +74,14 @@ PLANTS = {
     "injection_applied_later": lambda m: plant_load(m, "attack-b", later),
     "move_without_witness": lambda m: plant_load(m, "move", lambda a: a["attribution"].update(
         witness={check.GUNS: "missing"})),
+    "injections_equal_but_off_their_tick": all_later,
+    "move_diverges_before_it_applies": lambda m: plant_load(m, "move", diverges_first),
+    "attempt_not_engine_ended": lambda m: plant_load(m, "attack-b", lambda a: a.update(
+        status="policy_failure")),
+    "restore_checksums_differ": lambda m: plant_pair(m, "restore-a", "restore-b",
+                                                     checksum_mismatches=3),
+    "injection_unattributed": lambda m: plant_load(m, "attack-a", lambda a: a["attribution"].update(
+        status="unattributed")),
 }
 
 
