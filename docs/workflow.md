@@ -305,10 +305,15 @@ until its counts show its findings are mostly noise.
 | `scripts/check.py`, repo rules, risky-edit warnings (stage 1) | Built and planted-tested |
 | Reviewer and its first eval (stage 2), export leak test, review workflow fix | Built |
 | Docs cleanup (stage 3) | Done and reviewed (one reviewer found 6 issues, fixed): AGENTS.md is a map of at most 200 lines; docs/spire/AGENTS.md only gained the `check.py` line (135 lines, loaded only for Spire work) |
-| Hooks, skills, CI (stage 4) | Wait until checks are seen being skipped or a workflow repeats. Planned shape: at the end of each turn both agents run `check.py`, skipped if nothing changed; before tool calls, a hook blocks `ruff format` and commits during a queue; one copy of each skill in `.agents/skills/` (Codex), symlinked into `.claude/skills/` (Claude Code); CI runs `check.py` on each push, once committed pages stop linking into the untracked `docs/thesis/` |
+| Hooks, skills, CI (stage 4) | Trigger seen 2026-10-29: a commit made before its `check.py` run (96e6265), and one workflow repeated about twenty times (plant, sweep, recount). Built for Claude Code: `scripts/hooks/stop_check.py` (Stop: runs `check.py` when HEAD, the diff or an untracked file changed since its last pass; exit 2 keeps the turn going) and `scripts/hooks/pre_bash.py` (Bash: refuses `ruff format` except `--check`/`--diff`, and git commands that move HEAD while `scripts/wh3_queue.py` runs), tested in `tests/test_hooks.py`, registered in the local `.claude/settings.json` (excluded from git, as before). Not built: the Codex hooks (a trusted `.codex/` cannot be checked from here), skills (the repeated sweep has no vetted script yet; see the plants proposal in the handoff), CI (committed pages still link into the untracked `docs/thesis/`) |
 | Experiment loop (stage 5) | Waits for the next planned free experiment; per-episode stop warnings not built |
 
-Hooks, when built, must handle: exit code 1 does not block (a wrapper turns a `check.py`
+JUDGEMENT?: Hook details — Claude, 2026-10-29: the HEAD-moving git subcommands (commit, merge,
+rebase, reset, checkout, switch, pull, cherry-pick, revert, am), `ruff format` refused everywhere,
+and a stop let through when `check.py` cannot run; a narrower list or failing closed would block
+differently. How hard the exit gate is enforced rests on these.
+
+Hooks must handle: exit code 1 does not block (a wrapper turns a `check.py`
 failure into 2); Claude Code overrides a `Stop` hook after eight blocks in a row; a Codex
 `Stop` hook that exits 0 must print JSON, and Codex loads project hooks only from a trusted
 `.codex/` ([Claude Code](https://code.claude.com/docs/en/hooks), [Codex](https://learn.chatgpt.com/docs/hooks)).
