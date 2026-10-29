@@ -868,3 +868,13 @@ def test_a_custom_ending_error_invalidates_the_episode_before_any_later_result(t
     result = play.play_episode(tmp_path / "e", CONFIG, Hold, mailbox, not_battle=None)
     assert result["status"] == "unsupported_or_invalid"
     assert result["error"] == "custom ending failed: script crashed"
+
+
+def test_a_controller_that_fails_to_construct_is_a_policy_failure(tmp_path):
+    # Removing this conversion passed every test (runs/refusal-sweep-20261029/play-ast.txt).
+    def broken():
+        raise ValueError("bad prompt file")
+    mailbox = FakeMailbox([bridge_observation(0, 0), bridge_observation(1, 1000)])
+    result = play.play_episode(tmp_path / "e", CONFIG, broken, mailbox, not_battle=None)
+    assert result["status"] == "policy_failure"
+    assert result["error"] == "controller construction: bad prompt file"

@@ -853,3 +853,22 @@ def test_each_army_order_refusal_names_its_reason(order_dispatch, error, setup, 
                             "apply_reinforce", "apply_order")
     result = apply(lua.table_from({"unit": "army", **order}))
     assert dict(result) == {"unit": "army", "ok": False, "error": error}
+
+
+# apply_order also refuses by returning a result, before any order code runs; turning these
+# off one at a time passed the WH3 suite (final review, runs/final-review-20261029/).
+@pytest.mark.parametrize("order,started,error", [
+    ({"unit": "f9", "type": "halt"}, True, "unknown_unit"),
+    ({"unit": "f1", "type": "halt"}, False, "deployment"),
+    ({"unit": "army", "type": "ability", "ability": "aa"}, False, "deployment"),
+    ({"unit": "army", "type": "build", "slot": "s1", "option": "tower"}, False, "deployment"),
+    ({"unit": "army", "type": "reinforce", "zone": 1, "reinforcement": "knights"}, False,
+     "deployment"),
+])
+def test_orders_for_unknown_units_or_before_deployment_ends_are_refused(
+        order_dispatch, order, started, error):
+    lua, apply, _ = order_dispatch
+    lua.globals().state.started = started
+    result = apply(lua.table_from(order))
+    assert dict(result) == {"unit": order["unit"], "ok": False, "error": error}
+    assert len(lua.globals().calls) == 0
