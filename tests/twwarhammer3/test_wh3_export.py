@@ -442,3 +442,26 @@ def test_play_captures_exchanges_for_export_including_unadopted_final_plan(tmp_p
     assert row["attempts"][0]["text"] == json.dumps(reply)
     assert row["issues"] == []
     assert len(row["execution"]) == (0 if policy_name == "commander" else 1)
+
+
+def test_hidden_observation_fields_never_reach_an_export(tmp_path):
+    """AGENTS.md's information boundary, for exports: an observation's evaluation, final and
+    setup reach no exported file; the result's final reaches a row only as its outcome."""
+    seen = {"kind": "observation", "observation": {
+        "seq": 4, "time_ms": 4000, "friendly": [], "enemy": [],
+        "evaluation": {"enemy": "PLANTED-EVALUATION"}, "final": {"enemy": "PLANTED-FINAL"},
+        "setup": {"enemy_army": "PLANTED-SETUP"}}}
+    job = make_job(tmp_path, [seen, decision("r1"), acknowledgement("r1")])
+    result_path = job / "episode-0000" / "result.json"
+    result = json.loads(result_path.read_text())
+    result["final"]["enemy"]["note"] = "PLANTED-RESULT"
+    result_path.write_text(json.dumps(result))
+    output = tmp_path / "export"
+    export.export_traces([job], output)
+    exported = {path.name: path.read_text() for path in output.iterdir()}
+    assert sorted(exported) == ["datacard.md", "decisions.jsonl", "sources.json"]
+    assert not [name for name, text in exported.items() if "PLANTED-" in text.replace(
+        "PLANTED-RESULT", "")]
+    row, = read_export(output)
+    assert "PLANTED-RESULT" in json.dumps(row.pop("outcome"))
+    assert "PLANTED-RESULT" not in json.dumps(row)
