@@ -88,3 +88,24 @@ def test_a_blank_added_age_joins_the_zero_age_arm(tmp_path):
         writer.writerows(rows)
     header, _, *body = stats.summary(register).splitlines()
     assert len(body) == 1 and "| 0/0 | 2 | 2 |" in body[0]
+
+
+def test_the_summary_keeps_draws_providers_and_unrecorded_delays_apart(tmp_path):
+    # Planted wrong versions (runs/readers-planted-20261029/) passed every test above.
+    register = tmp_path / "results.csv"
+    base = {**dict.fromkeys(stats.FIELDS, ""), "scenario": "s", "policy": "llm", "model": "m",
+            "added_age_s": "0", "interval_s": "0"}
+    rows = [{**base, "outcome": "draw", "delay_s": "2.0"}, {**base, "outcome": "won"},
+            {**base, "outcome": "won", "provider": "openrouter"}]
+    with register.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, stats.FIELDS, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    header, _, *body = stats.summary(register).splitlines()
+    names = [cell.strip() for cell in header.split("|")]
+    table = {cells[names.index("Model")]: cells for cells in
+             ([cell.strip() for cell in row.split("|")] for row in body)}
+    assert sorted(table) == ["m", "m (OpenRouter)"]
+    row = {name: table["m"][names.index(name)]
+           for name in ("Episodes", "Won", "Lost", "Draw", "Mean delay s")}
+    assert row == {"Episodes": "2", "Won": "1", "Lost": "0", "Draw": "1", "Mean delay s": "2.0"}

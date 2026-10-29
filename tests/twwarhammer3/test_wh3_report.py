@@ -240,3 +240,22 @@ def test_typical_order_delay_is_the_median_of_per_trial_medians_and_jobs_keep_th
     assert result["jobs"][0]["created_at"] == "2026-10-15T01:00:00Z"
     assert report.collect([make_job(tmp_path, "none", [("hold", 0, "won")])])["groups"][0][
         "controllers"][0]["order_age_median_s"] is None
+
+
+# Planted wrong versions (runs/readers-planted-20261029/) passed every test above. These check
+# the code against its own rules; the rules rest on JUDGEMENT report.py Pair statistics.
+def test_failed_trials_stay_out_of_means_and_pairs_and_cadence_splits_groups(tmp_path):
+    a = make_job(tmp_path, "a", [("hold", -.1, "lost"), ("skills", .1, "won")])
+    b = make_job(tmp_path, "b", [("hold", -.2, "lost"), ("skills", .1, "won")])
+    failed = make_job(tmp_path, "failed", [("hold", .4, "policy_failure"), ("skills", -.4, "won")])
+    group, = report.collect([a, b, failed])["groups"]
+    assert group["controllers"][0]["means"]["margin"] == pytest.approx(-.15)
+    paired = group["paired"][0]
+    assert paired["n"] == 2 and paired["unpaired_instances"] == [str(failed.resolve())]
+    # 80% power: (t 95%, 1 degree of freedom, + z 0.8416) x the differences' standard error.
+    assert paired["detectable_difference_80pct"] == pytest.approx((12.706 + .8416) * .05, abs=1e-3)
+    slower = make_job(tmp_path, "slower", [("hold", -.1, "lost")])
+    manifest = json.loads((slower / "manifest.json").read_text())
+    manifest["config"]["observe_ms"] = 2000
+    (slower / "manifest.json").write_text(json.dumps(manifest))
+    assert len(report.collect([a, slower])["groups"]) == 2
