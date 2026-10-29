@@ -214,7 +214,14 @@ Codex docs (now at learn.chatgpt.com; undated; read 2026-10-28):
   repo root down to the working directory, up to 32 KiB combined by default. *Checked.*
 - [Hooks](https://learn.chatgpt.com/docs/hooks): "a useful guardrail, not a complete enforcement
   boundary"; exit 2 blocks before tool calls; end-of-turn hooks that exit 0 print JSON; project
-  hooks need a trusted `.codex/`. *Checked.*
+  hooks need a trusted `.codex/`. *Checked.* Read again 2026-10-29 for the Codex hooks: the
+  `Bash` matcher covers shell commands and `exec_command`; exit 0 with no output is success;
+  `Stop` accepts `systemMessage`; each hook is trusted with `/hooks` by its hash, so a changed
+  one is skipped until trusted again. *Read.*
+- [Subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents): one TOML file per
+  custom agent in `.codex/agents/`, with `name`, `description` and `developer_instructions`;
+  sandbox and approvals come from the parent session; a prompt names the agent to spawn it.
+  Used for `.codex/agents/reviewer.toml` (2026-10-29). *Read.*
 - [Rules](https://learn.chatgpt.com/docs/agent-configuration/rules): experimental command rules for
   commands outside the sandbox. *Read.*
 - [Build skills](https://learn.chatgpt.com/docs/build-skills): loaded from `.agents/skills`;
@@ -259,6 +266,16 @@ OpenAI posts and cookbook:
   returned 403. *Unread.*
 - [codex-plugin-cc](https://github.com/openai/codex-plugin-cc): Codex's `/codex:review` and
   `/codex:adversarial-review` inside Claude Code; uses Codex quota. *Read.*
+
+## GitHub Actions
+
+For `.github/workflows/check.yml` (2026-10-29):
+
+- [Secure use reference](https://docs.github.com/en/actions/reference/security/secure-use):
+  "Pin references to actions to a commit SHA in your workflow files"; give the `GITHUB_TOKEN`
+  read access to contents only. *Read.*
+- [setup-uv](https://github.com/astral-sh/setup-uv) `action.yml` at v10.2.0: the `version` input
+  pins uv. Releases and tag commits were read through the GitHub API. *Read.*
 
 ## Specs
 
