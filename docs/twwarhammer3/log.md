@@ -57,17 +57,17 @@ at their parent commits (`suspects-before.txt`): only that site was wrong.
   refusals 5/5, `pack.py` 2/3, `engine/runtime.py` 1/1; `gameai` 31 of 31 outside `windows.py`
   (2/5) and `lm.py` (1/4); Spire run loop,
   decisions, bridge and runtime 16/16, export 20/20.
-- Left: Windows-only checks, the llm extra or a real model (`lm.py` 3, `rl.py` 10), the
-  checkpoint agent's start, zstd, a synthetic draw;
-  and from the entry below, the siege spell witness, the step run's context rule, the win rate.
+- Left: Windows-only checks (3), the llm extra or a real model (`lm.py` 3, `rl.py` 9), `rl.py`'s
+  token cap (a stub tokenizer would do), the checkpoint agent's start, zstd, a synthetic draw;
+  from the entry below, the siege spell witness, the step run's context rule, the win rate.
 - Notable: a `None` reply crashed `protocol.py` (`b1aefe7`); corrupt traces stop exports
   (`a4a6011`); a choice the game did not offer is never sent (`82c8487`); the choice check
   behind each Spire training label is tested (`f00e88d`); a first checkpoint save off the
   reading grid is now refused before its source battle (`c358915`, a code fix).
 - Spire's public boundary 3 → 6 of 7 planted leaks (`d50986f`); decay check: the ten
   2026-10-20 plants, rebuilt, are still caught (`runs/decay-check-20261029/`).
-- Total (`runs/light-factory-20261029/tally.md`): 406 planted; the day's tests missed 197 (4
-  equivalent or covered twice); new tests closed 171; 22 left. The 285 llm-extra tests that
+- Total (`runs/light-factory-20261029/tally.md`): 412 planted; the day's tests missed 203 (4
+  equivalent or covered twice); new tests closed 177; 22 left. The 285 llm-extra tests that
   `check.py` skips pass in a separate environment (2069 passed, 1 skipped, at `d23dccb`).
 Not established: live engine behaviour; that each refusal is the right rule.
 
