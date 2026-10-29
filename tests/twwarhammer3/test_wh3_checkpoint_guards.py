@@ -138,3 +138,56 @@ def test_setting_bystander_replays_aside_refuses_unsafe_states(offline):
     with pytest.raises(FileNotFoundError, match="checkpoint-aside"):
         with checkpoint.only_replay("saved"):
             (replays / "checkpoint-aside/mine.replay").unlink()  # lost while set aside
+
+
+def test_a_source_run_without_an_engine_ending_records_no_library(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "attempt.json").write_text(json.dumps({"status": "timeout", "engine_ending": None}))
+    with pytest.raises(ValueError, match="ended timeout, with no engine ending"):
+        checkpoint.source_records(source, tmp_path / "library", root="r", late_margin_s=60)
+    assert not (tmp_path / "library").exists()
+
+
+@pytest.mark.parametrize("change,message", [
+    ({"source_control": {"policy": "llm"}}, "only a hold source"),
+    ({"readings_every": 200}, "save ticks must carry a reading"),
+])
+def test_a_root_its_source_battle_cannot_honour_is_refused_before_playing(offline, change,
+                                                                           message):
+    tmp_path, _, monkeypatch = offline
+
+    def episode(*args, **kwargs):
+        raise LaunchAttempted("the source battle was started")
+    monkeypatch.setattr(checkpoint, "episode", episode)
+    declaration = {"root": "r", "scenario": SOURCE["scenario"],
+                   "saves": {"first": 600, "every": 300, "last": 1200}, "readings_every": 100,
+                   "late_margin_s": 60, "limits": {}, **change}
+    with pytest.raises(ValueError, match=message):
+        checkpoint.checkpoint_root(declaration, tmp_path / "library")
+
+
+def test_a_context_time_the_reference_only_logged_after_its_ending_is_refused(tmp_path):
+    rows = [{"observation": {"time_ms": 900, "phase": "Deployed"}},
+            {"observation": {"time_ms": 1200, "phase": "Deployed", "result": "won"}}]
+    (tmp_path / "observations.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    with pytest.raises(ValueError, match="logged no observation at 1200 ms"):
+        checkpoint.context_of(tmp_path, 1200)
+
+
+def test_a_copy_that_differs_from_its_record_is_refused_and_removed(offline):
+    tmp_path, _, monkeypatch = offline
+    directory = library_record(tmp_path, monkeypatch)
+    record = json.loads((directory / "record.json").read_text())
+    record.update(checksum=1, lua_seed=2, seed_at_tick=3, remaining_ms=60000, mod_start_ms=0,
+                  grid_ms=100, reading={})
+    (directory / "record.json").write_text(json.dumps(record))
+    monkeypatch.setattr(checkpoint.shutil, "copy2",
+                        lambda source, target: target.write_bytes(b"changed in the copy"))
+    # Limits that hold the rung, so without the check the changed copy reaches the launch.
+    limits = {"game_timeout_s": 3600, "agent_seconds": 3600, "episode_timeout_s": 3600}
+    with pytest.raises(ValueError, match="the copied replay differs from its record"):
+        checkpoint.restore_episode(directory / "record.json", {"stop_tick": 2000, "limits": limits},
+                                   tmp_path / "run")
+    assert not (tmp_path / "user/replays/saved.replay").exists()
+    assert not (directory / "SUSPECT").exists()
