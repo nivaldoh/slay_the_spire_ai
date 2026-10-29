@@ -54,7 +54,8 @@ at their parent commits (`suspects-before.txt`): only that site was wrong.
 - Caught now: WH3 `protocol.py` 38/38, `mailbox.py` 5/5 (3 by hanging), `play.py` 13/13,
   `setup.py` 40/40, `export.py` 17/17, `controllers.py` and `team.py` 15/15, `checkpoint.py`
   30/32 (one missed site is equivalent), `rl.py` 13/24, battle mod `error()` 35/39 and returned
-  refusals 5/5; `gameai` 31 of 31 outside `windows.py` (2/5) and `lm.py` (1/4); Spire run loop,
+  refusals 5/5, `pack.py` 2/3, `engine/runtime.py` 1/1; `gameai` 31 of 31 outside `windows.py`
+  (2/5) and `lm.py` (1/4); Spire run loop,
   decisions, bridge and runtime 16/16, export 20/20.
 - Left: Windows-only checks, the llm extra or a real model (`lm.py` 3, `rl.py` 10), the
   checkpoint agent's start, zstd, the recorder's file errors and start button, a synthetic draw;

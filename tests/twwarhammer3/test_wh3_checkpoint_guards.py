@@ -153,7 +153,7 @@ def test_a_source_run_without_an_engine_ending_records_no_library(tmp_path):
 @pytest.mark.parametrize("change,message", [
     ({"source_control": {"policy": "llm"}}, "only a hold source"),
     ({"readings_every": 200}, "save ticks must carry a reading"),
-    ({"saves": {"first": 650, "every": 300, "last": 1250}}, "save ticks must carry a reading"),
+    ({"saves": {"first": 650, "every": 300, "last": 1300}}, "save ticks must carry a reading"),
 ])
 def test_a_root_its_source_battle_cannot_honour_is_refused_before_playing(offline, change,
                                                                            message):
@@ -167,6 +167,13 @@ def test_a_root_its_source_battle_cannot_honour_is_refused_before_playing(offlin
                    "late_margin_s": 60, "limits": {}, **change}
     with pytest.raises(ValueError, match=message):
         checkpoint.checkpoint_root(declaration, tmp_path / "library")
+    with pytest.raises(LaunchAttempted):  # the same root, declared within the rules, plays
+        checkpoint.checkpoint_root({**declaration, **{k: v for k, v in SOURCE_ROOT.items()
+                                                      if k in change}}, tmp_path / "library")
+
+
+SOURCE_ROOT = {"source_control": {"policy": "hold"}, "readings_every": 100,
+               "saves": {"first": 600, "every": 300, "last": 1200}}
 
 
 def test_a_context_time_the_reference_only_logged_after_its_ending_is_refused(tmp_path):
