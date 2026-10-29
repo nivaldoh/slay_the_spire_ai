@@ -28,6 +28,9 @@ HEREDOC = re.compile(r"<<-?\s*\\?(['\"]?)([A-Za-z0-9_.-]+)\1")
 RUFF_TEXT = re.compile(r"\bruff\s+format\b(?![^\n;&|]*--(?:check|diff)\b)")
 GIT_TEXT = re.compile(r"\bgit\b[^\n;&|]*\b(" + "|".join(sorted(MOVES_HEAD)) + r")\b")
 UNKNOWN = Path("/nonexistent-unknown-tree")
+# Programs under which a `ruff` word runs ruff; under any other (grep, echo, git) it is text.
+RUFF_HOSTS = {"ruff", "uv", "uvx", "pipx", "xargs", "find", "parallel", "env", "nice", "time",
+              "timeout", "command", "exec", "sudo"}
 
 
 def logical_lines(text: str) -> list[str]:
@@ -54,7 +57,8 @@ def logical_lines(text: str) -> list[str]:
             i = len(text) if end < 0 else end
             continue
         elif (c == "<" and text[i:i + 3] != "<<<" and (i == 0 or text[i - 1] != "<")
-              and not text[i - 1:i].isdigit() and (found := HEREDOC.match(text, i))):
+              and not text[i - 1:i].isdigit() and not in_arithmetic(text, i)
+              and (found := HEREDOC.match(text, i))):
             waiting.append(found.group(2))
             buf.append(found.group(0))
             i = found.end()
@@ -76,6 +80,12 @@ def logical_lines(text: str) -> list[str]:
         i += 1
     out.append("".join(buf))
     return [line for line in out if line.strip()]
+
+
+def in_arithmetic(text: str, i: int) -> bool:
+    """Position i is inside `((...))` on its line, where `<<` is a shift."""
+    before = text[text.rfind("\n", 0, i) + 1:i]
+    return before.count("((") > before.count("))")
 
 
 def commands(line: str) -> list[list[str]]:
@@ -178,15 +188,17 @@ def refusal(text: str, *, queue: bool, cwd: Path = ROOT) -> str | None:
             if words == [")"]:
                 cwd = outer.pop() if outer else cwd
                 continue
+            host = Path(words[0]).name
             words = program(words)
             if words and words[0] in ("cd", "pushd") and len(words) > 1:
                 cwd = place(cwd, words[1])
                 continue
             for i, word in enumerate(words):
-                # ruff as the program (also after `uv run --flags`, `uvx`, `python -m`), not
-                # as an argument such as a grep pattern; its options may come before `format`.
-                runs_ruff = Path(word).name == "ruff" and (
-                    i == 0 or words[i - 1] in ("run", "uvx", "-m") or words[i - 1].startswith("--"))
+                # ruff run by a host program (uv, python -m, xargs, find ...), not a grep
+                # pattern or echoed text; its options may come before `format`.
+                hosts = {host, Path(words[0]).name}
+                runs_ruff = Path(word).name == "ruff" and bool(
+                    hosts & RUFF_HOSTS or any(h.startswith("python") for h in hosts))
                 if runs_ruff and "format" in words[i + 1:] and not (
                         {"--check", "--diff"} & set(words[i + 1:])):
                     return RUFF_REASON

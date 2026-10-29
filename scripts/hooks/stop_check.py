@@ -80,12 +80,18 @@ def read_cache() -> dict:
         value = json.loads(CACHE.read_text())
     except (OSError, ValueError):
         return {}
-    return value if isinstance(value, dict) else {}
+    if not isinstance(value, dict):
+        return {}
+    if not isinstance(value.get("blocked"), list):  # a cache written before block flags per session
+        value["blocked"] = []
+    return value
 
 
 def remember(cache: dict, session: str, *, block: bool = False, **value) -> None:
     """Write a verdict, keeping other Claude sessions' block flags (they share the tree)."""
-    blocked = [s for s in cache.get("blocked", []) if s != session] + ([session] if block else [])
+    # A pass clears every session's flag: the failure the flags were for is gone.
+    kept = [] if "passed" in value else [s for s in cache.get("blocked", []) if s != session]
+    blocked = kept + ([session] if block else [])
     CACHE.parent.mkdir(parents=True, exist_ok=True)
     CACHE.write_text(json.dumps({**value, "blocked": blocked}))
 

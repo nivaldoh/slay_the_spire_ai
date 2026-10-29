@@ -72,6 +72,11 @@ NOTE = "cat > note.md <<'EOF'\nNever run ruff format here; git commit only after
     ("echo ruff does not format", False, False),
     ("uvx ruff format x.py", False, True),
     ("cat >runs/x.txt<<'EOF'\nruff format is banned\nEOF", False, False),  # heredoc after a word
+    ("uv run --locked --extra llm ruff format src/x.py", False, True),
+    ("uv run --locked -q ruff format x.py", False, True),
+    ("find src -name '*.py' -exec ruff format {} +", False, True),
+    ("ls *.py | xargs -P 4 ruff format", False, True),
+    ("echo $((x<<2))\ngit commit -m y", True, True),  # a shift inside (( )) hides nothing
 ])
 def test_bash_hook_refuses_ruff_format_and_head_moves_during_a_queue(command, queue, blocked):
     assert (pre_bash.refusal(command, queue=queue) is not None) is blocked
@@ -179,6 +184,20 @@ def test_sessions_sharing_the_tree_keep_their_own_block_flags(repo, capsys):
     a_stop = {"session_id": "A", "stop_hook_active": True}
     assert stop_check.main(recorder(runs, False), a_stop) == 0  # A's flag survived B's write
     assert runs == [False, False] and "still failed" in capsys.readouterr().out
+    assert stop_check.main(recorder(runs, True), {"session_id": "B"}) == 0  # B's pass ...
+    (repo / "a.py").write_text("a = 3\n")
+    assert stop_check.main(recorder(runs, False), a_stop) == 2  # ... ends A's old flag too
+
+
+def test_a_pass_by_any_session_ends_the_old_block_flags(repo):
+    repo, _ = repo
+    runs = []
+    (repo / "a.py").write_text("a = 2\n")
+    assert stop_check.main(recorder(runs, False), {"session_id": "A"}) == 2  # A is flagged
+    assert stop_check.main(recorder(runs, True), {"session_id": "B"}) == 0  # B's check passes
+    (repo / "a.py").write_text("a = 3\n")
+    assert stop_check.main(recorder(runs, False),
+                           {"session_id": "A", "stop_hook_active": True}) == 2  # checked again
 
 
 def test_no_check_runs_beside_a_game_job_and_a_timeout_is_not_retried(repo, capsys):
@@ -212,10 +231,11 @@ def test_an_unreadable_cache_means_check_again(repo):
     repo, _ = repo
     runs = []
     (repo / "runs/checks").mkdir(parents=True)
-    for content in ("", "{trunc", "[]"):
+    for content in ("", "{trunc", "[]", '{"failed": "x", "blocked": true}'):  # last: old format
         (repo / "runs/checks/stop-hook.json").write_text(content)
-        assert stop_check.main(recorder(runs, False)) == 2
-    assert runs == [False] * 3
+        assert stop_check.main(recorder(runs, False), {"stop_hook_active": True}) == 2
+        (repo / "runs/checks/stop-hook.json").unlink()
+    assert runs == [False] * 4
 
 
 def test_stop_hook_lets_the_stop_through_when_the_check_cannot_run(repo, capsys):
