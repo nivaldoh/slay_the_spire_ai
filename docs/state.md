@@ -9,6 +9,8 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
+**Running (Claude Code, 2026-10-29 02:17-12:10 -03, owner away):** implementing the
+[light factory plan](light-factory-plan.md) (owner answered its 3 decisions); no game, no spend.
 **Nothing runs**: all game controllers are stopped. The 2026-10-28 long autonomous runs
 and checkpoint-RL merge are finished ([log](twwarhammer3/log.md)); the owner's latest
 [direction](owner-direction.md) is recorded. Local LLM post-training stays paused.

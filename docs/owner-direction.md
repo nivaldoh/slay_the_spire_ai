@@ -5,6 +5,41 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-29 (light factory plan, implement): "Implement docs/light-factory-plan.md. You are
+  free to restructure and reorganize the repo as needed. I won't be around to answer questions
+  and will return in like 10h. If you finish early, continue making good use of this time by
+  working on the next priority item." Answers on the page: decision 1 (one card covers later
+  fixes in its area) "No"; decision 2 (reviewer on normal changes, rerun reviewer on every
+  number for your pages, `check.py` alone for trivial edits) "Yes"; decision 3 (stage 1 first;
+  `check.py` runs the whole offline suite before every commit) "Yes". Notes on the page: what
+  "normal" means; `check.py` explained more concretely; agreed-checks.md and the hard rule
+  not yet reviewed by the owner; how to keep the workflow from decaying and easy to change;
+  whether WH3 needs its own check layer, such as battle timing.
+- 2026-10-29 (sources): "By the way, we should keep track of all these sources for future
+  reference." Applied: [references.md](references.md) lists every source from the light factory
+  research, each with what it says and whether a second agent checked it; AGENTS.md points to it.
+- 2026-10-29 (light factory plan, talk and style): "Actually, the talk I mentioned is "How
+  Anthropic Merges 30,000 Code Changes a Day - Manish Kapur, Sonar & Addy Osmani, Anthropic". See
+  if anything there changes our plan." Then: "deslopify our plan. Simplify the language. Make it
+  more pleasant to read. Make it more concise. Change abstract, ambiguous elements into concrete
+  things that are easier for me to process. Make the text structure flow better." Applied: the
+  page cites that talk, adds a supply chain row and the Claude Code team's review practices, and
+  was rewritten in plainer words.
+- 2026-10-28 (light factory plan, refinement goal): "Refine docs/light-factory-plan.md" with
+  "the latest industry best practices"; "Remember my context as just one person working on AI
+  research, not an entire corporate team on mission-critical work"; "without overwhelming me
+  with details to manually review". "It is critical to discuss specs and verification for
+  probably anything that we implement here." "define the right loops for each run"; Sonar's
+  verification, "zero-trust and multilayered, and in every loop", deterministic then agentic
+  layers. "We are free to refactor and reorganize our repo as needed for this work." Answers:
+  keep Codex's markers "verbatim"; "Leave uncommitted". Applied: the page was rewritten;
+  nothing adopted.
+- 2026-10-28 (light factory plan, current goal): "Write a detailed plan to turn our repo
+  into a reliable light factory." "Remember that for now we won't implement anything:
+  we are just writing the plan." The goal asks for current Codex, Claude Code and other
+  trustworthy guidance, specs and verification discussed before features, and layered
+  deterministic and agentic verification suited to one AI researcher. Draft:
+  [light-factory-plan.md](light-factory-plan.md). No new method or autonomy rule adopted.
 - 2026-10-28 (ProgramLab reference): "This one seems relevant to, and if so, we should add
   it to our list as well: https://programlab.blog/" Added [ProgramLab](thesis/papers.md#programlab-train-single-and-multi-agents-to-rebuild-programs)
   for LLM-team training and reward-test design, with its blog status and unreleased training
