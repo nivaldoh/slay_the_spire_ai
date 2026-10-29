@@ -61,7 +61,8 @@ for the misses. One rerun reviewer checked the counts and found the first play c
   bystander checks; `22df7b4`: step-run library preconditions and a corrupted copy; `5b13e99`:
   the agent follow's faults; left: the agent start inside a real launch); checkpoint RL's
   `rl.py` 3 → 13 of 24 (`ab95b33`: task-set integrity, compare, evaluate, recount; left: 9
-  model-loading and training checks that need a real model, the token cap, a synthetic draw).
+  model-loading and training checks that need a real model, the token cap, a synthetic draw);
+  the Spire export 15 → 20 of 20 (`f00e88d`: the choice check behind each training label).
 - Spire: the run loop and decisions 2 → 9 of 9 (`82c8487`: a choice the game did not offer is
   never sent; runs without an outcome end unscored); the Workshop pin and an empty dataset
   selection (`57a1661`). Fully covered already: provenance (the source-scope refusal), the
@@ -70,8 +71,8 @@ for the misses. One rerun reviewer checked the counts and found the first play c
   also removed by the field allowlist.
 - Decay check: the ten planted versions of 2026-10-20 (b42), rebuilt from their names, are
   all still caught (`runs/decay-check-20261029/`).
-- Tonight's total (`runs/light-factory-20261029/tally.md`): 366 planted versions; the day's
-  tests missed 185 (4 equivalent or covered twice); new tests closed 155; 26 left, each named.
+- Tonight's total (`runs/light-factory-20261029/tally.md`): 386 planted versions; the day's
+  tests missed 190 (4 equivalent or covered twice); new tests closed 160; 26 left, each named.
 - The 285 tests that need the llm extra (torch, transformers, peft), skipped by `check.py`,
   all pass at `2859da7` in a separate environment: 2063 passed, 1 skipped (Windows).
 - Found on the way: a test-order dependence (state.md Known issues) and `[cards]` markers
