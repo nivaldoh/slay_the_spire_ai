@@ -48,6 +48,7 @@ ROOT = Path(__file__).resolve().parents[1]
 AGREED = "docs/agreed-checks.md"
 PASSES = "runs/checks/agreed-passes.jsonl"
 PYTEST_CALL = re.compile(r"`[^`]*\bpytest\b([^`]*)`")
+OTHER_CALL = re.compile(r"`(?![^`]*\bpytest\b)[^`]*\b(?:python|twwarhammer3 \w+|spire \w+)\b[^`]*`")
 SNAPSHOTS = "tests/twwarhammer3/prompts/*.txt"
 # docs/judgement.md, "Files that carry no marker".
 NO_MARKER = ("*.json", "configs/*prompt*.md", "tests/twwarhammer3/prompts/*",
@@ -119,36 +120,53 @@ def agreed_paths(root: Path) -> set[str]:
 
 
 def agreed_pytest(root: Path) -> dict[str, list[str]]:
-    """Each agreed check's pytest targets, by its entry's text before the first colon."""
+    """Each agreed check's pytest targets, by its entry's text before the first colon. An entry
+    that also runs a live or other command (a check_wh3_*.py, `rl confirm`) is named
+    "<entry> (pytest part only)": its line says nothing about that command. Targets only:
+    options such as -k are not applied."""
     text = (root / AGREED).read_text(encoding="utf-8") if (root / AGREED).exists() else ""
     checks = {}
     for entry in re.split(r"\n(?=- )", text):
         targets = [arg for call in PYTEST_CALL.findall(entry) for arg in call.split()
                    if not arg.startswith("-")]
         if entry.startswith("- ") and targets:
-            checks[" ".join(entry[2:].split(":")[0].split())] = targets
+            name = " ".join(entry[2:].split(":")[0].split())
+            checks[name + (" (pytest part only)" if OTHER_CALL.search(entry) else "")] = targets
     return checks
 
 
 def agreed_results(root: Path, junit: Path) -> dict[str, dict]:
-    """Per agreed check, its tests in this run. It passed when at least one ran and none
-    failed, as its own command would exit 0 (all skipped or none found does not pass)."""
+    """Per agreed check, its tests in this run. It passed when every target ran a test (a
+    missing node makes its own command exit 4), none failed or errored, and at least one
+    passed: stricter than pytest, whose exit is 0 when all are skipped. An unreadable or
+    interrupted report (a test case without a name) passes none."""
     cases = []
-    if junit.exists():
+    try:
         for case in ElementTree.parse(junit).getroot().iter("testcase"):
             outcome = ("failed" if case.find("failure") is not None or case.find("error")
                        is not None else "skipped" if case.find("skipped") is not None
                        else "passed")
-            # pytest's junitxml names a test tests.dir.test_file[.Class].test_name[params].
-            cases.append((f"{case.get('classname')}.{case.get('name').split('[')[0]}", outcome))
+            # pytest's junitxml names a test tests.dir.test_file[.Class].test_name[params]; a
+            # collection error has no class and its module as the name.
+            name, classname = (case.get("name") or "").split("[")[0], case.get("classname")
+            cases.append((f"{classname}.{name}" if classname else name,
+                          outcome if name else "failed"))
+    except (OSError, ElementTree.ParseError):
+        cases = [("", "failed")]
+    interrupted = any(not address.strip(".") for address, _ in cases)
     results = {}
     for name, targets in agreed_pytest(root).items():
-        dotted = [".".join([parts[0].rstrip("/").removesuffix(".py").replace("/", "."),
-                            *parts[1:]]) for parts in (t.split("[")[0].split("::")
-                                                       for t in targets)]
-        found = Counter(outcome for address, outcome in cases
-                        if any(address == d or address.startswith(d + ".") for d in dotted))
-        results[name] = {"passed": found["passed"] > 0 and found["failed"] == 0,
+        found, every = Counter(), True
+        for target in targets:
+            parts = target.split("[")[0].split("::")
+            dotted = ".".join([parts[0].rstrip("/").removesuffix(".py").replace("/", "."),
+                               *parts[1:]])
+            mine = [outcome for address, outcome in cases
+                    if address == dotted or address.startswith(dotted + ".")]
+            found.update(mine)
+            every = every and bool(mine)
+        results[name] = {"passed": every and found["passed"] > 0 and found["failed"] == 0
+                         and not interrupted,
                          "tests": sum(found.values()), "skipped": found["skipped"],
                          "failed": found["failed"]}
     return results
@@ -292,6 +310,7 @@ def main() -> int:
     ruff = subprocess.run([sys.executable, "-m", "ruff", "check", "."], cwd=ROOT, env=env,
                           capture_output=True, text=True)
     junit = scratch.with_name(scratch.name + ".xml")  # beside --basetemp, which pytest clears
+    revision, before = git(ROOT, "rev-parse", "HEAD").strip(), at_revision(ROOT)
     tests = subprocess.run([sys.executable, "-m", "pytest", "-q", "-ra", f"--basetemp={scratch}",
                             f"--junitxml={junit}"], cwd=ROOT, env=env, capture_output=True,
                            text=True)
@@ -317,10 +336,13 @@ def main() -> int:
     shown += [f"          {line}" for line in first]
     agreed = agreed_results(ROOT, junit)
     junit.unlink(missing_ok=True)
-    own, changed, untracked = at_revision(ROOT)
+    # The tested files are HEAD's only if they were before the run and still are after it.
+    after = at_revision(ROOT)
+    own = before[0] and after[0] and git(ROOT, "rev-parse", "HEAD").strip() == revision
+    changed, untracked = sorted({*before[1], *after[1]}), sorted({*before[2], *after[2]})
     shown.append(f"agreed    {sum(r['passed'] for r in agreed.values())} of {len(agreed)} "
-                 f"offline agreed checks passed{'' if own else ' (not at HEAD: tree changed)'}; "
-                 f"{PASSES}")
+                 "agreed-check pytest commands passed"
+                 f"{'' if own else ' (not at HEAD: tree changed)'}; {PASSES}")
     yes = warnings(ROOT, base)
     if yes:
         shown.append(f"needs your yes (changes since {base[:9]}):")
@@ -334,7 +356,7 @@ def main() -> int:
     with (ROOT / PASSES).open("a", encoding="utf-8") as passes:
         passes.write(json.dumps({
             "time": datetime.now().isoformat(timespec="seconds"),
-            "revision": git(ROOT, "rev-parse", "HEAD").strip(), "at_revision": own,
+            "revision": revision, "at_revision": own,
             "changed": changed, "untracked": untracked, "log": str(log.relative_to(ROOT)),
             "checks": agreed}) + "\n")
     log.write_text("\n".join([*shown, "", "== marker problems", *problems, "",

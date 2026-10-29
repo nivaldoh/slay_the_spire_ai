@@ -9,9 +9,11 @@ AGENTS.md on 2026-10-28 to keep that file lean (owner).
 Offline passes after 2026-10-29 are recorded by `scripts/check.py` (owner, 2026-10-29: "(a)"):
 each run appends a line to `runs/checks/agreed-passes.jsonl` with the revision and, for every
 entry below that has a pytest command, whether its tests passed in that run. A line counts for
-its revision only when its `at_revision` is true (rests on JUDGEMENT? `scripts/check.py` Pass
-at a revision). It is read from the whole suite, not the command run alone; `runs/` has no
-backup. The "passed at" revisions written below are the earlier passes.
+its revision only when its `at_revision` is true: the files were HEAD's before and after the
+run (rests on JUDGEMENT? `scripts/check.py` Pass at a revision). An entry that also has a live
+command is recorded as "(pytest part only)" and says nothing about the live check. It is read
+from the whole suite, not the command run alone; `runs/` has no backup. The "passed at"
+revisions written below are the earlier passes.
 
 - WH3 scripted two-member team: ownership, public inputs, independent progress, feedback,
   timing and cleanup: `uv run --locked pytest -ra tests/twwarhammer3/team/test_wh3_team.py

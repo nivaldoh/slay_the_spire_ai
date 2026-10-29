@@ -133,6 +133,9 @@ def test_each_agreed_pytest_command_is_read_from_this_runs_junit(repo):
         "  tests/other/test_b.py::test_b`; agreed: twice.\n"
         "- Fails: `pytest -ra tests/other/test_fail.py`.\n"
         "- Renamed: `pytest tests/agreed/test_a.py::test_gone`.\n"
+        "- Half renamed: `pytest tests/agreed/test_a.py::test_a tests/agreed/test_a.py::test_g`.\n"
+        "- Live too: `pytest -ra tests/agreed/test_a.py::test_a`; live: `uv run --locked python\n"
+        "  tests/agreed/check_live.py --output x`.\n"
         "- Skipped: `pytest tests/other/test_skip.py`.\n"
         "- Live only: `uv run --locked python tests/agreed/check_live.py --output x`.\n")
     edit(repo, "tests/agreed/test_a.py", "def test_a", "import pytest\n\n\n"
@@ -153,6 +156,8 @@ def test_each_agreed_pytest_command_is_read_from_this_runs_junit(repo):
         "Nodes": {"passed": True, "tests": 3, "skipped": 0, "failed": 0},
         "Fails": {"passed": False, "tests": 2, "skipped": 0, "failed": 2},
         "Renamed": {"passed": False, "tests": 0, "skipped": 0, "failed": 0},
+        "Half renamed": {"passed": False, "tests": 1, "skipped": 0, "failed": 0},
+        "Live too (pytest part only)": {"passed": True, "tests": 1, "skipped": 0, "failed": 0},
         "Skipped": {"passed": False, "tests": 1, "skipped": 1, "failed": 0},
     }
 
@@ -168,3 +173,18 @@ def test_each_agreed_pytest_command_is_read_from_this_runs_junit(repo):
 def test_a_pass_counts_for_head_only_with_its_files(repo, plant, own):
     plant(repo)
     assert check.at_revision(repo)[0] is own
+
+
+def test_an_interrupted_or_unreadable_run_passes_no_agreed_check(repo):
+    # A KeyboardInterrupt that escapes a test ends the session; pytest's report then holds a
+    # test case without a name.
+    (repo / "tests/other/test_stop.py").write_text(
+        "def test_stop():\n    raise KeyboardInterrupt\n")
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    junit = repo / "junit.xml"
+    subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
+                    f"--junitxml={junit}", "tests"], cwd=repo, capture_output=True)
+    assert not check.agreed_results(repo, junit)["Thing"]["passed"]
+    junit.write_text("<testsuites><testsuite>")
+    assert not check.agreed_results(repo, junit)["Thing"]["passed"]
+    assert not check.agreed_results(repo, repo / "missing.xml")["Thing"]["passed"]
