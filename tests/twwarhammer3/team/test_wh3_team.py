@@ -376,3 +376,17 @@ def test_bad_team_configuration_is_a_harness_failure_before_game_wait(tmp_path):
     result = play.play_episode(tmp_path / "e", CONFIG, lambda: team.TeamPolicy({}),
                                FakeMailbox([]), not_battle=None)
     assert result["status"] == "unsupported_or_invalid"
+
+
+@pytest.mark.parametrize("members,owner", [
+    ({"infantry": (team.SWORD, None)}, None),
+    ({"a": (team.SWORD, None), "b": (team.KNIGHT, None), "c": ("other", None)}, None),
+    ({"a": (team.SWORD, None), "b": ((team.KNIGHT, team.SWORD), None)}, None),
+    ({"a": (None, None), "b": (None, None)}, None),
+    ({"a": (team.SWORD, None), "b": (team.KNIGHT, None)}, "c"),
+])
+def test_a_team_without_two_distinct_members_is_refused_at_construction(members, owner):
+    with pytest.raises(team.TeamHarnessError, match="two members with distinct unit types"):
+        team.TeamPolicy(members, army_owner=owner, executor=object())
+    team.TeamPolicy({"a": (team.SWORD, None), "b": (None, None)}, army_owner="b",
+                    executor=object())
