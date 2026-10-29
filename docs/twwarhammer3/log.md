@@ -66,8 +66,8 @@ at their parent commits (`suspects-before.txt`): only that site was wrong.
   reading grid is now refused before its source battle (`c358915`, a code fix).
 - Spire's public boundary 3 → 6 of 7 planted leaks (`d50986f`); decay check: the ten
   2026-10-20 plants, rebuilt, are still caught (`runs/decay-check-20261029/`).
-- Total (`runs/light-factory-20261029/tally.md`): 404 planted; the day's tests missed 195 (4
-  equivalent or covered twice); new tests closed 165; 26 left. The 285 llm-extra tests that
+- Total (`runs/light-factory-20261029/tally.md`): 406 planted; the day's tests missed 197 (4
+  equivalent or covered twice); new tests closed 167; 26 left. The 285 llm-extra tests that
   `check.py` skips pass in a separate environment (2069 passed, 1 skipped, at `d23dccb`).
 Not established: live engine behaviour; that each refusal is the right rule.
 
