@@ -53,12 +53,12 @@ at `c358915` without caches (`head-summary.txt`), and 22 suspect earlier counts 
 at their parent commits (`suspects-before.txt`): only that site was wrong.
 - Caught now: WH3 `protocol.py` 38/38, `mailbox.py` 5/5 (3 by hanging), `play.py` 13/13,
   `setup.py` 40/40, `export.py` 17/17, `controllers.py` and `team.py` 15/15, `checkpoint.py`
-  30/32 (one missed site is equivalent), `rl.py` 13/24, battle mod `error()` 35/39 and returned
+  30/32 (one missed site is equivalent), `rl.py` 13/24, battle mod `error()` 39/39 and returned
   refusals 5/5, `pack.py` 2/3, `engine/runtime.py` 1/1; `gameai` 31 of 31 outside `windows.py`
   (2/5) and `lm.py` (1/4); Spire run loop,
   decisions, bridge and runtime 16/16, export 20/20.
 - Left: Windows-only checks, the llm extra or a real model (`lm.py` 3, `rl.py` 10), the
-  checkpoint agent's start, zstd, the recorder's file errors and start button, a synthetic draw;
+  checkpoint agent's start, zstd, a synthetic draw;
   and from the entry below, the siege spell witness, the step run's context rule, the win rate.
 - Notable: a `None` reply crashed `protocol.py` (`b1aefe7`); corrupt traces stop exports
   (`a4a6011`); a choice the game did not offer is never sent (`82c8487`); the choice check
@@ -67,7 +67,7 @@ at their parent commits (`suspects-before.txt`): only that site was wrong.
 - Spire's public boundary 3 → 6 of 7 planted leaks (`d50986f`); decay check: the ten
   2026-10-20 plants, rebuilt, are still caught (`runs/decay-check-20261029/`).
 - Total (`runs/light-factory-20261029/tally.md`): 406 planted; the day's tests missed 197 (4
-  equivalent or covered twice); new tests closed 167; 26 left. The 285 llm-extra tests that
+  equivalent or covered twice); new tests closed 171; 22 left. The 285 llm-extra tests that
   `check.py` skips pass in a separate environment (2069 passed, 1 skipped, at `d23dccb`).
 Not established: live engine behaviour; that each refusal is the right rule.
 
