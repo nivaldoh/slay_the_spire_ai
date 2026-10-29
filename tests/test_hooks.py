@@ -68,6 +68,10 @@ NOTE = "cat > note.md <<'EOF'\nNever run ruff format here; git commit only after
     ("nice -n 10 git commit -m x", True, True),
     ("env -u FOO git commit -m x", True, True),
     ("git reset HEAD", True, False),
+    ("git grep -n -e ruff -e format", False, False),  # ruff as a pattern, not the program
+    ("echo ruff does not format", False, False),
+    ("uvx ruff format x.py", False, True),
+    ("cat >runs/x.txt<<'EOF'\nruff format is banned\nEOF", False, False),  # heredoc after a word
 ])
 def test_bash_hook_refuses_ruff_format_and_head_moves_during_a_queue(command, queue, blocked):
     assert (pre_bash.refusal(command, queue=queue) is not None) is blocked
@@ -163,6 +167,18 @@ def test_the_stop_hook_never_blocks_twice_in_a_row_but_keeps_checking(repo, caps
     assert stop_check.main(recorder(runs, False), active) == 2  # a new failure blocks again
     assert stop_check.main(recorder(runs, False), active) == 0  # the next stop goes through
     assert stop_check.main(recorder(runs, False), {}) == 2  # a fresh turn's stop checks again
+
+
+def test_sessions_sharing_the_tree_keep_their_own_block_flags(repo, capsys):
+    repo, _ = repo
+    runs = []
+    (repo / "a.py").write_text("a = 2\n")
+    assert stop_check.main(recorder(runs, False), {"session_id": "A"}) == 2
+    b_stop = {"session_id": "B", "stop_hook_active": True}  # B's /goal hook blocked before
+    assert stop_check.main(recorder(runs, False), b_stop) == 2  # B's own first block
+    a_stop = {"session_id": "A", "stop_hook_active": True}
+    assert stop_check.main(recorder(runs, False), a_stop) == 0  # A's flag survived B's write
+    assert runs == [False, False] and "still failed" in capsys.readouterr().out
 
 
 def test_no_check_runs_beside_a_game_job_and_a_timeout_is_not_retried(repo, capsys):

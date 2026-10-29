@@ -53,8 +53,8 @@ def logical_lines(text: str) -> list[str]:
             end = text.find("\n", i)
             i = len(text) if end < 0 else end
             continue
-        elif (c == "<" and text[i:i + 3] != "<<<" and (i == 0 or text[i - 1] in " \t;&|(")
-              and (found := HEREDOC.match(text, i))):
+        elif (c == "<" and text[i:i + 3] != "<<<" and (i == 0 or text[i - 1] != "<")
+              and not text[i - 1:i].isdigit() and (found := HEREDOC.match(text, i))):
             waiting.append(found.group(2))
             buf.append(found.group(0))
             i = found.end()
@@ -183,7 +183,11 @@ def refusal(text: str, *, queue: bool, cwd: Path = ROOT) -> str | None:
                 cwd = place(cwd, words[1])
                 continue
             for i, word in enumerate(words):
-                if Path(word).name == "ruff" and "format" in words[i + 1:] and not (
+                # ruff as the program (also after `uv run --flags`, `uvx`, `python -m`), not
+                # as an argument such as a grep pattern; its options may come before `format`.
+                runs_ruff = Path(word).name == "ruff" and (
+                    i == 0 or words[i - 1] in ("run", "uvx", "-m") or words[i - 1].startswith("--"))
+                if runs_ruff and "format" in words[i + 1:] and not (
                         {"--check", "--diff"} & set(words[i + 1:])):
                     return RUFF_REASON
             sub = moves_this_head(words, cwd)

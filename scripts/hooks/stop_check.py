@@ -83,9 +83,11 @@ def read_cache() -> dict:
     return value if isinstance(value, dict) else {}
 
 
-def remember(**value) -> None:
+def remember(cache: dict, session: str, *, block: bool = False, **value) -> None:
+    """Write a verdict, keeping other Claude sessions' block flags (they share the tree)."""
+    blocked = [s for s in cache.get("blocked", []) if s != session] + ([session] if block else [])
     CACHE.parent.mkdir(parents=True, exist_ok=True)
-    CACHE.write_text(json.dumps(value))
+    CACHE.write_text(json.dumps({**value, "blocked": blocked}))
 
 
 def say(message: str) -> int:
@@ -100,8 +102,9 @@ def main(check=run_check, event: dict | None = None, jobs=None) -> int:
         cache = read_cache()
         if cache.get("passed") == identity:
             return 0
-        if event.get("stop_hook_active") and cache.get("blocked"):
-            remember(**{k: v for k, v in cache.items() if k != "blocked"})
+        session = str(event.get("session_id", ""))
+        if event.get("stop_hook_active") and session in cache.get("blocked", []):
+            remember(cache, session, **{k: v for k, v in cache.items() if k != "blocked"})
             return say("scripts/check.py still failed at the last stop; stopping anyway "
                        "(see runs/checks/)")
         if cache.get("timed_out") == identity:
@@ -111,9 +114,10 @@ def main(check=run_check, event: dict | None = None, jobs=None) -> int:
         try:
             passed, report = check()
         except subprocess.TimeoutExpired:
-            remember(timed_out=identity)
+            remember(cache, session, timed_out=identity)
             return say(f"scripts/check.py timed out after {TIMEOUT_S} s; not rerun on this tree")
-        remember(**({"passed": identity} if passed else {"failed": identity, "blocked": True}))
+        remember(cache, session, block=not passed,
+                 **({"passed": identity} if passed else {"failed": identity}))
         if passed:
             return 0
     except (OSError, ValueError, subprocess.SubprocessError) as error:
