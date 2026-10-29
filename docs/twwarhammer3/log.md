@@ -44,6 +44,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-29: planted wrong versions against the agreed checks and results readers
+
+The owner noted that agreed-checks.md is unreviewed; a check counts only after it fails on a
+planted wrong version ([workflow](../workflow.md#checks-in-layers)). Plausible wrong versions
+went into a scratch worktree (`runs/agreed-planted-20261029/`, `runs/readers-planted-20261029/`);
+two reviewers reran the counts and planted 11 more.
+- Five of the six offline agreed checks: their own commands caught 11 of 11. The sixth (engine
+  ending kept) fails on its fix's parent `e041213`, as `b536ae6` records.
+- Offline tests of the live checks' pass rules caught 3 of 12 (checkpoint, team, army), 1 of 8
+  (siege) and 0 of 8 (step run, which no test loaded). New tests aimed at those misses and the
+  reviewer's extra plants (`473fc5a`, `79626af`, `4c1fffa`, `24d9cd8`) catch 10 of 12, 12 of
+  13 and 13 of 14: the gaps closed, not proof of strength on errors nobody planted. Two team
+  plants are rejected by a second assertion on any acknowledgement the Lua produces; the
+  siege spell witness and the step run's context rule stay uncovered.
+- Results readers (`report.py`, `stats.py`): 5 of 13 caught, 12 after `dcbc588`; the
+  win-rate denominator is left for the owner's scorer decision.
+- The siege and step-run tests replay local evidence (skip without it) and add about 8 s to
+  `check.py` (now about 27 s). Not established: that the pass rules are the right ones.
+
 ## 2026-10-29: light factory, stages 1-3
 
 Owner, 2026-10-29: "Implement docs/light-factory-plan.md" (decisions 1 No, 2 Yes, 3 Yes); the
