@@ -193,12 +193,14 @@ def marker_problems(root: Path) -> list[str]:
         if name.endswith("log.md"):
             continue  # history keeps the paths of its day
         for target in RESTS_ON.findall(" ".join(lines)):
-            # From the root, or the tail of a path ("team/check_wh3_team.py", "proposal.md").
+            # From the root, or the tail of a path ("team/check_wh3_team.py", "proposal.md");
+            # a bare name may match several files, and any one with a marker will do.
             paths = [root / target, *(root / f for f in every if f.endswith("/" + target))]
-            path = next((p for p in paths if p.is_file()), None)
-            if path is None:
+            paths = [p for p in paths if p.is_file()]
+            if not paths:
                 problems.append(f"{name}: rests on JUDGEMENT {target}, which does not exist")
-            elif not MARKER.search(path.read_text(encoding="utf-8", errors="replace")):
+            elif not any(MARKER.search(p.read_text(encoding="utf-8", errors="replace"))
+                         for p in paths):
                 problems.append(f"{name}: rests on JUDGEMENT {target}, which has no marker")
     return list(dict.fromkeys(problems))
 

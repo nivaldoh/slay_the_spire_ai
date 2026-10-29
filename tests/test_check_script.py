@@ -110,7 +110,11 @@ def test_marker_problems_are_listed(repo):
         f"{MARK} no who or when here.\n\n"
         f"Mentioning `{MARK}` in code is fine. A JUDG" "MENT typo.\n"
         f"This {RESTS} `src/pkg/mod.py` Thing, and {RESTS} `docs/gone.md` X.\n"
-        f"And {RESTS} `page.md` Thing, beside this page.\n")
+        f"And {RESTS} `page.md` Thing, beside this page.\n"
+        f"A bare name matching two files, the second marked: {RESTS} `tool.py` Thing.\n")
+    for folder, text in (("aa", "x = 1\n"), ("zz", f"# {MARK} Thing — Claude, 2026-10-29: X.\n")):
+        (repo / "src" / folder).mkdir()
+        (repo / "src" / folder / "tool.py").write_text(text)
     (repo / "configs.json").write_text(f'{{"note": "{MARK} Thing, 2026-10-29"}}\n')
     assert check.marker_problems(repo) == [
         "configs.json:1: this file cannot carry a marker",
