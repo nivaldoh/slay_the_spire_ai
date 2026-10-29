@@ -376,6 +376,34 @@ def test_inconsistent_new_traces_are_refused_with_their_trace_line(tmp_path):
             export.export_runs([job], tmp_path / f"export-{index}")
 
 
+def test_traces_that_contradict_themselves_are_refused_with_their_trace_line(tmp_path):
+    request = exchanged(1, "p", [sent("p")])
+    split = [{**request[0]}, {**request[1], "behavior": {
+        **request[1]["behavior"],
+        "attempts": [*request[1]["behavior"]["attempts"], dict(attempt(), exchange_id="m2")]}}]
+    other_choice = [request[0], {**request[1], "behavior": {**request[1]["behavior"],
+                                                            "selected_index": 1}}]
+    cases = [
+        (split, ":2: attempts from several model exchanges"),
+        ([request[0], request[0], request[1]], ":2: duplicate model exchange m1"),
+        (other_choice, ":2: choice mismatch"),
+    ]
+    for index, (events, message) in enumerate(cases):
+        job = make_job(tmp_path / f"case-{index}", [(events, {"seed": "S", "status": "lost"})])
+        with pytest.raises(ValueError, match=re.escape("trace.jsonl" + message)):
+            export.export_runs([job], tmp_path / f"export-{index}")
+    job = make_job(tmp_path / "torn", [(request, {"seed": "S", "status": "lost"})])
+    with (job / "run-0000/trace.jsonl").open("a") as trace:
+        trace.write('{"kind": "decis\n')
+    with pytest.raises(ValueError, match=re.escape("trace.jsonl:3: invalid JSON")):
+        export.export_runs([job], tmp_path / "export-torn")
+    combat = make_job(tmp_path / "combat", [(request, {"seed": "S", "status": "lost"})])
+    manifest = json.loads((combat / "manifest.json").read_text())
+    (combat / "manifest.json").write_text(json.dumps({**manifest, "scope": "first_combat"}))
+    with pytest.raises(ValueError, match="not a full-run job$"):
+        export.export_runs([combat], tmp_path / "export-combat")
+
+
 def test_unfinished_changed_or_misplaced_evidence_is_refused(tmp_path, monkeypatch):
     job = old_job(tmp_path)
     with pytest.raises(ValueError, match="outside"):
