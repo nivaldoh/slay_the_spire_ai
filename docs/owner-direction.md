@@ -5,6 +5,11 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-29 (light factory handoff): on keeping the night's work, "(a). Why would I even
+  think about rejecting this work?" On the handoff itself: "hard to read ... Make it better:
+  more concise, better structure, more concreteness, less slop." Applied: the handoff was
+  rewritten around self-contained decisions; work the owner asked for is not put up for
+  rejection.
 - 2026-10-29 (light factory plan, implement): "Implement docs/light-factory-plan.md. You are
   free to restructure and reorganize the repo as needed. I won't be around to answer questions
   and will return in like 10h. If you finish early, continue making good use of this time by
