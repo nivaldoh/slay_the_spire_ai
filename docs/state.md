@@ -11,7 +11,7 @@ Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and sm
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
 **Running (Claude Code, 2026-10-29 02:17-12:10 -03, owner away):** the light factory plan,
 now [workflow.md](workflow.md): stages 1-3 built ([log](twwarhammer3/log.md#2026-10-29-light-factory-stages-1-3));
-agreed checks challenged with planted wrong versions ([log](twwarhammer3/log.md#2026-10-29-planted-wrong-versions-against-the-agreed-checks-and-results-readers));
+agreed checks, readers, refusals and boundaries challenged with planted wrong versions ([log](twwarhammer3/log.md#2026-10-29-planted-wrong-versions-against-the-agreed-checks-and-results-readers), [sweeps](twwarhammer3/log.md#2026-10-29-refusal-sweeps-boundary-leaks-and-a-decay-check));
 no game, no spend. Before each commit: `uv run --locked python scripts/check.py`.
 **Nothing runs**: all game controllers are stopped. The 2026-10-28 long autonomous runs
 and checkpoint-RL merge are finished ([log](twwarhammer3/log.md)); the owner's latest

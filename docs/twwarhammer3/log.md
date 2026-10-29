@@ -44,6 +44,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-29: refusal sweeps, boundary leaks and a decay check
+
+Each refusal in a file was removed in turn (a scratch worktree; `runs/refusal-sweep-20261029/`,
+`runs/protocol-planted-20261029/`) and the WH3 suite rerun; then tests went in for the misses.
+- `protocol.py`: 37 of 38 removals caught; the miss let a `None` reply crash validation, now
+  tested (`b1aefe7`). `mailbox.py`: 5 of 5 (3 by hanging: a removed timeout waits forever).
+- Battle mod (`twwarhammer3_battle.lua`): 5 of 39, now 35 (`4027987`): every unit- and
+  army-order refusal, the last check for what changes while a model thinks. Uncovered: the
+  recorder's file errors and the battle start button.
+- `play.py`: 9 of 13, now 13 (`602f197`): the source-change stop (AGENTS.md), both setup
+  timeouts and the custom ending error had no test.
+- Spire's public boundary: 3 of 7 planted leaks caught, now 6 (`d50986f`); the seventh (the seed)
+  is also removed by the field allowlist.
+- Decay check: the ten planted versions of 2026-10-20 (b42), rebuilt from their names, are
+  all still caught (`runs/decay-check-20261029/`).
+- `[cards]` marking: none added after review ([judgement](../judgement.md#status-and-how-to-continue)).
+Not established: live engine behaviour; that each refusal is the right rule.
+
 ## 2026-10-29: planted wrong versions against the agreed checks and results readers
 
 The owner noted that agreed-checks.md is unreviewed; a check counts only after it fails on a
