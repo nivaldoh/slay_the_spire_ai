@@ -9,10 +9,10 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
-**Running (Claude Code, 2026-10-29 02:17-12:10 -03, owner away):** the light factory plan,
-now [workflow.md](workflow.md): stages 1-3 built ([log](twwarhammer3/log.md#2026-10-29-light-factory-stages-1-3));
-agreed checks, readers, refusals and boundaries challenged with planted wrong versions ([log](twwarhammer3/log.md#2026-10-29-planted-wrong-versions-against-the-agreed-checks-and-results-readers), [sweeps](twwarhammer3/log.md#2026-10-29-refusal-sweeps-boundary-leaks-and-a-decay-check));
-no game, no spend. Before each commit: `uv run --locked python scripts/check.py`.
+Workflow (2026-10-29, owner away): the light factory plan is now [workflow.md](workflow.md),
+stages 1-3 built; tests then challenged with 342 planted wrong versions, 137 gaps closed
+([log](twwarhammer3/log.md#2026-10-29-refusal-sweeps-boundary-leaks-and-a-decay-check)); decision 12.
+Before each commit: `uv run --locked python scripts/check.py`. Not pushed.
 **Nothing runs**: all game controllers are stopped. The 2026-10-28 long autonomous runs
 and checkpoint-RL merge are finished ([log](twwarhammer3/log.md)); the owner's latest
 [direction](owner-direction.md) is recorded. Local LLM post-training stays paused.
@@ -94,12 +94,10 @@ The broader RL environment remains a separate discussion, possibly connected to 
   ([details](spire/state-restore.md#risks-found-on-the-way)). Ironclad unlock level 4 is 43
   points away; decide the profile question before more Spire game time (owner's note: maybe
   unlock things normally first, then enable restore).
-- Timing flakes under parallel load (rerun before reading one as a regression; editing them
-  needs your yes): `test_wh3_capture.py`'s passive-capture test (2 s wait; 2026-10-20, 10-29)
-  and once `test_wh3_checkpoint_rl.py`'s source-run test (2026-10-29).
-- Test order matters once: `test_wh3_stats.py` deletes and restores `PRICES["gpt-6-luna"]`,
-  which moves it last, so `tests/fullrun/test_spire_cli.py` fails when the WH3 tests run
-  first; the default order hides it. A one-line fix to that test awaits your yes.
+- Under parallel load `test_wh3_capture.py`'s passive-capture test (2 s wait) and once
+  `test_wh3_checkpoint_rl.py`'s source-run test flaked: rerun before calling a regression.
+- `test_wh3_stats.py` deletes and restores `PRICES["gpt-6-luna"]`, reordering it, so
+  `test_spire_cli.py` fails if WH3 tests run first; a one-line test fix awaits your yes.
 - The report browser check is separate from pytest. Spire's Workshop mod pins still block a
   run when a mod updates.
 
