@@ -327,3 +327,15 @@ OpenAI posts and cookbook:
 - [Good enough practices in scientific computing](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005510),
   Wilson et al., PLOS Computational Biology, 2017. A minimal set of habits for one researcher.
   *Read.*
+- [CPython `Tools/patchcheck/patchcheck.py`](https://github.com/python/cpython/blob/main/Tools/patchcheck/patchcheck.py)
+  (fetched 2026-10-29). One command reports what a change touched, measured against its base
+  branch (`git diff --name-status <base>`, else `git status`); the model for `scripts/check.py`'s
+  base and warnings. *Read.*
+- [transformers `Makefile`](https://github.com/huggingface/transformers/blob/main/Makefile) and
+  [`utils/check_repo.py`](https://github.com/huggingface/transformers/blob/main/utils/check_repo.py)
+  (fetched 2026-10-29). `make check-repository-consistency` runs repository rules as plain checks
+  in CI; the model for `tests/test_repo_rules.py`. Makefile targets read; check_repo.py skimmed.
+  *Read.*
+- [GitHub CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners):
+  named files need a named reviewer; the idea behind `check.py`'s "needs your yes" for agreed
+  checks' files. Cited from memory, page not fetched. *Unread.*
