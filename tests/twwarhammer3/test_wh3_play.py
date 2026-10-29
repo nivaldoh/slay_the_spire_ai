@@ -444,6 +444,28 @@ def harness(tmp_path, monkeypatch):
     return boxes
 
 
+
+def test_a_job_stops_before_its_next_episode_when_its_source_changes(
+        tmp_path, harness, monkeypatch):
+    # AGENTS.md: a play job stops before its next episode if a file in its scope changes, so
+    # every episode belongs to one revision. Removing the stop passed every test before
+    # (runs/refusal-sweep-20261029/play.txt).
+    mailbox = FakeMailbox([
+        bridge_observation(0, 0), bridge_observation(1, 1000),
+        bridge_observation(2, 2000, ack=True), bridge_observation(3, 3000, result="won"),
+        bridge_observation(0, 0, battle="b2"), bridge_observation(3, 4000, battle="b2",
+                                                                  result="lost")])
+    harness.append(mailbox)
+    calls = []  # the manifest's fingerprints, then one check before each episode
+    monkeypatch.setattr(play, "source_fingerprints", lambda paths: calls.append(1) or (
+        {} if len(calls) <= 2 else {"src/twwarhammer3/battle/play.py": "edited"}))
+    job = tmp_path / "attack-v1-20261013"
+    with pytest.raises(RuntimeError, match="Implementation changed during the job"):
+        play.play(job, {**CONFIG, "episodes": 2, "results": str(tmp_path / "results.csv")},
+                  makers={"attack_nearest": AttackNearest})
+    assert json.loads((job / "episode-0000/result.json").read_text())["status"] == "won"
+    assert not (job / "episode-0001").exists() and mailbox.controls == []
+
 def test_job_plays_episodes_with_restarts_and_records_rows(tmp_path, harness):
     mailbox = FakeMailbox([
         bridge_observation(0, 0), bridge_observation(1, 1000),
@@ -814,3 +836,35 @@ def test_unconfirmed_custom_ending_is_an_infrastructure_condition_not_a_win(tmp_
     assert result['status'] == 'unsupported_or_invalid'
     assert 'custom ending' in result['error']
     assert result['custom_objective']['status'] == 'success'
+
+
+@pytest.mark.parametrize("stuck,message", [("frontend", "frontend script did not report in"),
+                                           ("steps", "custom battle steps did not finish")])
+def test_a_setup_that_never_finishes_times_out(tmp_path, monkeypatch, stuck, message):
+    # Without these timeouts a stuck menu would hold an unattended queue forever; removing
+    # either passed every test before (runs/refusal-sweep-20261029/play.txt).
+    class Stuck(FakeMailbox):
+        def log_since(self, offset, name="mod.log"):
+            return "" if stuck == "frontend" else "frontend loaded\nstep 1: waiting\n"
+
+        def read_observation(self):
+            return None
+    waits = []
+
+    def sleep(seconds):
+        waits.append(seconds)
+        assert len(waits) < 100, "still waiting: no timeout"
+    monkeypatch.setattr(play.time, "sleep", sleep)
+    with pytest.raises(MailboxTimeout, match=message):
+        play.start_frontend(Stuck([]), {**CONFIG, "start_timeout": 0}, tmp_path, [{"log": "x"}])
+
+
+def test_a_custom_ending_error_invalidates_the_episode_before_any_later_result(tmp_path):
+    # Removing this stop passed every test before (runs/refusal-sweep-20261029/play.txt).
+    broken = bridge_observation(1, 1000)
+    broken["mode"] = {**(broken.get("mode") or {}), "custom": {"ending_error": "script crashed"}}
+    mailbox = FakeMailbox([bridge_observation(0, 0), broken,
+                           bridge_observation(2, 2000, result="won")])
+    result = play.play_episode(tmp_path / "e", CONFIG, Hold, mailbox, not_battle=None)
+    assert result["status"] == "unsupported_or_invalid"
+    assert result["error"] == "custom ending failed: script crashed"
