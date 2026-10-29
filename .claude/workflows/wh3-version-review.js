@@ -7,8 +7,9 @@ export const meta = {
 
 // The autoresearch loop's review step (docs/twwarhammer3/README.md#the-loop): one reviewer
 // per episode, three proposers (tactics prompt, state and memory, interface), three judges.
-// The orchestrator implements the returned winner, or nothing when "No change" wins: a
-// few battles often cannot tell a harness flaw from noise.
+// It returns the judges' pick as a proposal for the orchestrator to weigh, or "No change": a
+// few battles often cannot tell a harness flaw from noise. A step that returns nothing makes
+// the run "incomplete" (no answer is not approval), and without a judge there is no proposal.
 
 const ROOT = '/home/niv/repos/slay_the_spire_ai'
 const job = args.job
@@ -104,5 +105,11 @@ const totals = props.map(p => {
 })
 // The judges' picks decide; the mean only breaks ties ("No change" scores low on impact by
 // construction).
-const winner = [...totals].sort((a, b) => b.picks - a.picks || b.mean - a.mean)[0]?.title
-return { winner, reviews: done, proposals: props, totals, comments: valid.map(j => j.scores.map(x => `${x.title}: ${x.comment}`)) }
+const proposal = valid.length
+  ? [...totals].sort((a, b) => b.picks - a.picks || b.mean - a.mean)[0].title : null
+const missing = [
+  ...episodes.filter((ep, i) => !reviews[i]).map(ep => `review:${ep}`),
+  ...ANGLES.filter((angle, i) => !proposals[i]).map(([key]) => `propose:${key}`),
+  ...judges.flatMap((judge, i) => judge ? [] : [`judge:${i + 1}`]),
+]
+return { status: missing.length ? 'incomplete' : 'complete', missing, proposal, reviews: done, proposals: props, totals, comments: valid.map(j => j.scores.map(x => `${x.title}: ${x.comment}`)) }
