@@ -628,3 +628,79 @@ def test_synthetic_v2_makes_the_spearmen_distance_uninformative(synthetic):
         assert near == (task["provenance"]["class"] == "near")
         assert sum(task["rewards"]) == 1
     rl.validate_splits(tasks)
+
+
+def test_a_task_set_refuses_duplicates_overwrites_and_changed_tasks(tmp_path):
+    a, b = toy_task(1, [1, 0]), toy_task(2, [0, 1], split="held_out")
+    with pytest.raises(ValueError, match="a task appears twice"):
+        rl.task_set("s", [a, a])
+    path = tmp_path / "tasks.json"
+    rl.write_task_set(path, rl.task_set("s", [a, b]))
+    with pytest.raises(FileExistsError):
+        rl.write_task_set(path, rl.task_set("s", [a]))
+    assert rl.read_task_set(path)["tasks"] == [a, b]
+    for name, change in (("rewards", lambda v: v["tasks"][0].update(rewards=[0, 1])),
+                         ("split", lambda v: v["tasks"][1].update(split="train"))):
+        value = json.loads(path.read_text())
+        change(value)
+        (tmp_path / name).write_text(json.dumps(value))
+        with pytest.raises(ValueError, match="^task .* differs from its hash"):
+            rl.read_task_set(tmp_path / name)
+    value = json.loads(path.read_text())
+    (tmp_path / "listing").write_text(json.dumps({**value, "hash": "0" * 64}))
+    with pytest.raises(ValueError, match="listing differs from its hash"):
+        rl.read_task_set(tmp_path / "listing")
+
+
+def test_an_unknown_transform_or_a_missing_winner_is_refused():
+    with pytest.raises(ValueError, match="unknown label transform flip"):
+        rl.transform([toy_task(1, [1, 0])], "flip")
+    with pytest.raises(ValueError, match="no attack_nearest candidate"):
+        rl.synthetic_rewards([{"id": "fall_back_f2"}], "far")
+
+
+def test_compare_refuses_runs_from_different_start_adapters(tmp_path):
+    base = {"task_set": "t", "start_adapter": "a/adapter-0000.json", "rendering_version": 1,
+            "candidates_version": 1, "temperature": 1.0, "k_eval": {"x": 3},
+            "permutation_rule": "r", "token_cap": 1536, "evaluation_version": 1, "updates": 3,
+            "training": {"launches": 0, "hash": "abcdef0123456789"}, "method": "exact_table@1",
+            "kl_from_start": 0.1, "config_hash": "c0ffee0123456789", "train_wall_s": 12.0,
+            "adapter": "a/adapter-final.json", "metrics": {"splits": {"held_out": {
+                "argmax_accuracy_min": .9, "argmax_accuracy_max": 1, "mass": .9, "uniform": .2,
+                "index0": .2, "majority_class": .5}}}}
+    paths = []
+    for name, change in (("start", {"start_adapter": "b/adapter-0000.json", "updates": 0}),
+                         ("a", {}), ("b", {"start_adapter": "b/adapter-0000.json"})):
+        paths.append(tmp_path / f"{name}.json")
+        paths[-1].write_text(json.dumps({**base, **change}))
+    assert "a/adapter-0000.json" in rl.compare(paths[:2], "held_out")  # a start's own eval
+    with pytest.raises(ValueError, match="evaluations differ in start_adapter"):
+        rl.compare(paths, "held_out")
+
+
+def test_an_evaluation_is_written_once_and_only_after_its_start_adapters(tmp_path, monkeypatch):
+    class ModelLoaded(Exception):
+        pass
+
+    def lease(path):
+        raise ModelLoaded
+    monkeypatch.setattr(rl, "refuse_beside_game", lambda: "rev")
+    monkeypatch.setattr(rl, "gpu_lease", lease)
+    tasks, value = tmp_path / "tasks.json", rl.task_set("s", [toy_task(1, [1, 0])])
+    rl.write_task_set(tasks, value)
+    run = tmp_path / "run"
+    run.mkdir()
+    declaration = run / "adapter-final.json"
+    declaration.write_text(json.dumps({"start": str(run / "adapter-0000.json")}))
+    with pytest.raises(FileNotFoundError, match="evaluate the start adapter first"):
+        rl.evaluate(declaration, tasks)
+    for name in ("adapter-0000", "adapter-final"):
+        (run / f"eval-{name}-{value['hash'][:12]}.json").write_text("{}")
+    with pytest.raises(FileExistsError):
+        rl.evaluate(declaration, tasks)
+    assert (run / f"eval-adapter-final-{value['hash'][:12]}.json").read_text() == "{}"
+
+
+def test_recount_refuses_a_directory_with_nothing_to_recount(tmp_path):
+    with pytest.raises(ValueError, match="nothing to recount"):
+        rl.recount(tmp_path)
