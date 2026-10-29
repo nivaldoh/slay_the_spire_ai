@@ -710,18 +710,18 @@ def test_recount_refuses_a_directory_with_nothing_to_recount(tmp_path):
 
 
 def test_a_prompt_over_the_token_cap_is_refused_not_truncated():
-    class Tokenizer:  # one token per character
+    class Tokenizer:  # one token per word, and the template adds one
         def apply_chat_template(self, messages, **kwargs):
-            return messages[0]["content"]
+            return "user: " + messages[0]["content"]
 
         def __call__(self, text, add_special_tokens):
-            return {"input_ids": [0] * len(text)}
+            return {"input_ids": [0] * len(text.split())}
     context = {"time_ms": 120100, "remaining_ms": 900000, "friendly": [
         {"id": "f1", "type": "spear", "class": "infantry", "men": 90, "men0": 90, "hp": 1,
          "ammo": 0, "x": 0, "z": 0, "state": []}], "enemy": []}
     listed = [{"id": f"c{i}", "orders": [], "description": f"candidate {i}"} for i in range(2)]
     task = rl.make_task(context, listed, [1, 0], "train", {"root": "r"}, 0)
-    length = len(rl.render_context(context, listed, [0, 1]))
+    length = len(rl.render_context(context, listed, [0, 1]).split()) + 1  # the templated prompt
     ids, _, _ = rl.CandidateScorer(None, Tokenizer(), temperature=1.0,
                                    token_cap=length).encode(task, [0, 1])
     assert len(ids) == length

@@ -659,6 +659,24 @@ def test_lua_recorder_is_independent_public_throttled_and_failure_isolated():
     lua.execute("io.open = function() return fake_file(function() return true end) end")
     record(8000, False)
     assert g.closes == closes + 2  # a frame written normally closes its file too
+    # Frames are appended, one line each, to this battle's own file, before it is closed.
+    lua.execute("""
+        opened, lines, closed = {}, {}, false
+        io.open = function(path, mode)
+            opened[#opened + 1] = path .. ' ' .. mode
+            closed = false
+            return {write = function(self, text)
+                        if closed then return nil, 'closed' end
+                        lines[#lines + 1] = text; return true end,
+                    close = function() closed = true end}
+        end
+        state.recorder_cpu_ms = nil
+    """)
+    logs = g.logs
+    record(9000, False)
+    assert list(g.opened.values()) == ["/unused/replay-b.jsonl a"]
+    assert list(g.lines.values()) == ["frame\n"] and g.closed and g.logs == logs
+    assert g.state.recorder_cpu_ms >= 0
 
 
 def test_lua_start_button_fallback_clicks_only_after_the_phase_call_fails():
@@ -666,9 +684,15 @@ def test_lua_start_button_fallback_clicks_only_after_the_phase_call_fails():
     lua.execute("""
         bm = {battle = {}}
         phase_fails, button, clicks, looked = true, nil, 0, 0
-        function bm.battle:end_current_battle_phase() if phase_fails then error('not yet') end end
-        core = {get_ui_root = function() return {} end}
-        function find_uicomponent(root, name)
+        function bm.battle:end_current_battle_phase()  -- the engine's methods need their self
+            assert(self == bm.battle, 'called without self')
+            if phase_fails then error('not yet') end
+        end
+        root = {}
+        core = {}
+        function core:get_ui_root() assert(self == core, 'called without self'); return root end
+        function find_uicomponent(from, name)
+            assert(from == root, 'not searched from the UI root')
             looked = looked + 1
             return name == 'button_battle_start' and button or nil
         end
@@ -680,7 +704,8 @@ def test_lua_start_button_fallback_clicks_only_after_the_phase_call_fails():
     for setup, clicks, looked, lines in (
             ("button = nil", 0, 1, [("end_current_battle_phase: ", "not yet"),
                                     ("start button click: ", "button_battle_start not found")]),
-            ("button = {SimulateLClick = function() clicks = clicks + 1 end}", 1, 2,
+            ("button = {}; function button:SimulateLClick() assert(self == button); "
+             "clicks = clicks + 1 end", 1, 2,
              [("end_current_battle_phase: ", "not yet"), ("start button click: ", "ok")]),
             ("phase_fails = false", 1, 2, [("end_current_battle_phase: ", "ok")])):
         lua.execute(setup + "; logged = {}")
