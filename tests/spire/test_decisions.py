@@ -37,6 +37,25 @@ def test_observation_hides_order_rng_and_engine_internals():
     assert worm["powers"] == [{"id": "Strength", "name": "Strength", "amount": 3}]
 
 
+def test_observation_drops_unknown_fields_private_power_data_and_unshown_damage():
+    # Planted leaks passed every test above (runs/spire-planted-20261029/): a field a newer
+    # mod adds, private fields upstream reflects into powers, and a non-attack intent's damage,
+    # which the game does not show (an unknown intent can hide an attack).
+    raw = combat_message()
+    state = raw["game_state"]
+    state["future_field"] = "not allowlisted"
+    state["combat_state"]["player"]["powers"] = [
+        {"id": "Vigor", "name": "Vigor", "amount": 8, "just_applied": True, "card": {"id": "x"}}]
+    state["combat_state"]["monsters"][1].update(intent="UNKNOWN", move_adjusted_damage=11)
+    observation = decisions.decision_from_message(
+        raw, session_id="s", sequence=1).to_dict()["observation"]
+    assert "future_field" not in observation
+    combat = observation["combat_state"]
+    assert combat["player"]["powers"] == [{"id": "Vigor", "name": "Vigor", "amount": 8}]
+    assert "move_adjusted_damage" not in combat["monsters"][1]
+    assert "move_hits" not in combat["monsters"][1]
+
+
 def test_frozen_eye_keeps_the_visible_draw_order():
     raw = combat_message()
     raw["game_state"]["relics"] = [{"id": "Frozen Eye", "name": "Frozen Eye", "counter": -1}]
