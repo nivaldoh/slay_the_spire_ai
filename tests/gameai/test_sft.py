@@ -242,3 +242,9 @@ def test_refuses_changed_exports_and_empty_validation_groups(tmp_path):
     with pytest.raises(ValueError, match="decisions_sha256"):
         sft.build([source], tmp_path / "data")
     assert not (tmp_path / "data").exists()
+
+
+def test_a_dataset_needs_an_export(tmp_path):
+    # Removing this refusal passed every test (runs/refusal-sweep-20261029/more-gameai-sft.txt).
+    with pytest.raises(ValueError, match="Select at least one export directory"):
+        sft.build([], tmp_path / "dataset")

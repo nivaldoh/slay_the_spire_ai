@@ -119,3 +119,15 @@ def test_profile_reads_the_active_slot_and_rejects_unknown_slots(tmp_path):
     (preferences / "STSSaveSlots").write_text(json.dumps({"DEFAULT_SLOT": "../x"}))
     assert doctor.collect_profile(tmp_path)["status"] == "unavailable"
     assert doctor.collect_profile(Path(tmp_path / "absent"))["status"] == "unavailable"
+
+
+def test_a_changed_workshop_jar_stops_the_launch_before_the_mod_config(setup, monkeypatch):
+    # ModTheSpire may load a newer Workshop jar, so every launch checks it; removing the check
+    # passed every test (runs/refusal-sweep-20261029/more-spire-engine-runtime.txt). The mod's
+    # config path is a temporary one, so a missing check cannot touch the real file.
+    config = setup / "cm/config.properties"
+    monkeypatch.setattr(runtime, "communication_config", lambda: config)
+    (setup / "workshop/CommunicationMod.jar/CommunicationMod.jar").write_bytes(b"update")
+    with pytest.raises(RuntimeError, match="Workshop hash changed for CommunicationMod.jar"):
+        runtime.prepare_runtime("172.18.0.1", 9000)
+    assert not config.exists()
