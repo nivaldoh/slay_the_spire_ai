@@ -39,6 +39,15 @@ def test_disallowed_orders_are_named(orders, message):
         protocol.validate_orders(orders, OBSERVATION)
 
 
+@pytest.mark.parametrize("orders", [None, {"unit": "f1", "type": "halt"}, "halt"],
+                         ids=["none", "one-order-object", "string"])
+def test_a_reply_that_is_not_a_list_is_an_illegal_batch(orders):
+    # Without the list check, None crashed validation with a TypeError instead of naming an
+    # invalid batch (the one uncaught refusal removal in runs/protocol-planted-20261029/).
+    with pytest.raises(protocol.IllegalActionError, match="must be a list"):
+        protocol.validate_orders(orders, OBSERVATION)
+
+
 @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf"), 10**400],
                          ids=["nan", "infinity", "negative-infinity", "oversized-integer"])
 def test_nonfinite_order_fields_are_rejected(value):
