@@ -637,37 +637,59 @@ def test_lua_recorder_is_independent_public_throttled_and_failure_isolated():
     lua.execute("session.record_replay = false")
     record(4000, False)
     assert g.logs == 1
-    # Each failure is logged with its cause, not as a later nil index or not at all.
+    # Each failure is logged with its cause, not as a later nil index or not at all, and a
+    # file once opened is closed.
     lua.execute("session.record_replay = true; function log(e) logs = logs + 1; logged = e end")
-    for now, failing, cause in (
-            (5000, "io.open = function() return nil, 'permission denied' end", "permission denied"),
-            (6000, """io.open = function() return {write = function() return true end,
-                                                  close = function() end} end
-                      json.encode = function() error('cyclic table') end""", "cyclic table"),
+    lua.execute("closes = 0; function fake_file(write) return {write = write, close = function()"
+                " closes = closes + 1 end} end")
+    for now, failing, cause, closed in (
+            (5000, "io.open = function() return nil, 'permission denied' end",
+             "permission denied", 0),
+            (6000, """io.open = function() return fake_file(function() return true end) end
+                      json.encode = function() error('cyclic table') end""", "cyclic table", 1),
             (7000, """json.encode = function() return 'frame' end
-                      io.open = function() return {write = function() return nil, 'disk full' end,
-                                                  close = function() end} end""", "disk full")):
+                      io.open = function()
+                          return fake_file(function() return nil, 'disk full' end) end""",
+             "disk full", 1)):
         lua.execute(failing)
-        logs = g.logs
+        logs, closes = g.logs, g.closes
         record(now, False)
         assert g.logs == logs + 1 and cause in g.logged
+        assert g.closes == closes + closed
+    lua.execute("io.open = function() return fake_file(function() return true end) end")
+    record(8000, False)
+    assert g.closes == closes + 2  # a frame written normally closes its file too
 
 
-def test_lua_start_button_fallback_names_a_missing_button():
+def test_lua_start_button_fallback_clicks_only_after_the_phase_call_fails():
     lua = runtime()
     lua.execute("""
         bm = {battle = {}}
-        function bm.battle:end_current_battle_phase() error('not yet') end
+        phase_fails, button, clicks, looked = true, nil, 0, 0
+        function bm.battle:end_current_battle_phase() if phase_fails then error('not yet') end end
         core = {get_ui_root = function() return {} end}
-        function find_uicomponent(root, name) return nil end
+        function find_uicomponent(root, name)
+            looked = looked + 1
+            return name == 'button_battle_start' and button or nil
+        end
         function clean_error(e) return tostring(e) end
-        logged = {}
         function log(e) logged[#logged + 1] = e end
     """)
-    load_battle(lua, "try_end_deployment")()
-    logged = list(lua.globals().logged.values())
-    assert logged[0].startswith("end_current_battle_phase: ")
-    assert "button_battle_start not found" in logged[1]
+    end_deployment = load_battle(lua, "try_end_deployment")
+    g = lua.globals()
+    for setup, clicks, looked, lines in (
+            ("button = nil", 0, 1, [("end_current_battle_phase: ", "not yet"),
+                                    ("start button click: ", "button_battle_start not found")]),
+            ("button = {SimulateLClick = function() clicks = clicks + 1 end}", 1, 2,
+             [("end_current_battle_phase: ", "not yet"), ("start button click: ", "ok")]),
+            ("phase_fails = false", 1, 2, [("end_current_battle_phase: ", "ok")])):
+        lua.execute(setup + "; logged = {}")
+        end_deployment()
+        logged = list(g.logged.values())
+        assert (g.clicks, g.looked) == (clicks, looked)
+        assert len(logged) == len(lines)
+        assert all(entry.startswith(prefix) and entry.endswith(cause)
+                   for (prefix, cause), entry in zip(lines, logged))
 
 
 def test_lua_presentation_never_queries_hidden_enemy_positions_or_policy_memory():
