@@ -3,6 +3,12 @@
 Anchors follow GitHub's heading slugs: lowercase, punctuation other than hyphens and
 underscores dropped, each space a hyphen, repeated headings suffixed -1, -2, ...
 Links inside code spans and fenced blocks, and http(s) and mailto links, are not checked.
+Nor are links into the thesis notes, which stay untracked (owner, 2026-10-29: "(b)"), so that
+a fresh clone such as CI's passes; a broken link into them goes unnoticed, locally too.
+
+JUDGEMENT?: Untracked links — Claude, 2026-10-29: the owner's "(b)" said links whose target is
+untracked; on a fresh clone a typo's target is untracked too, so only docs/thesis/ is skipped.
+Skipping every untracked target would let any mistyped link pass in CI.
 """
 
 import re
@@ -19,6 +25,7 @@ LINK = re.compile(r"!?\[(?:[^\[\]]|\[[^\]]*\])*\]\(\s*<?([^)\s>]*)>?(?:\s+\"[^\"
 REFERENCE = re.compile(r"^\s{0,3}\[[^\]]+\]:\s*<?(\S+?)>?(?:\s|$)", re.M)
 HEADING = re.compile(r"^\s{0,3}#{1,6}\s+(.*?)\s*#*\s*$")
 HTML_ANCHOR = re.compile(r"<a\s+(?:name|id)=\"([^\"]+)\"")
+PRIVATE = ROOT / "docs" / "thesis"
 
 
 def markdown_files() -> list[Path]:
@@ -79,6 +86,8 @@ def broken_links(path: Path) -> list[str]:
             resolved = ROOT / file_part.lstrip("/")
         else:
             resolved = (path.parent / file_part).resolve() if file_part else path
+        if resolved.is_relative_to(PRIVATE) and not path.is_relative_to(PRIVATE):
+            continue
         if not resolved.exists():
             broken.append(f"{target}: no such file")
         elif anchor and resolved.suffix == ".md" and unquote(anchor) not in anchors(resolved):
@@ -97,6 +106,14 @@ def test_slugs_follow_github():
     assert slug("`llm_rules` and the [log](log.md): v1.2 – done") == (
         "llm_rules-and-the-log-v12--done")
     assert slug("Jobs in `runs/<job>` <em>now</em>") == "jobs-in-runsjob-now"
+
+
+def test_links_into_the_thesis_notes_are_skipped_and_others_still_fail(tmp_path, monkeypatch):
+    monkeypatch.setitem(globals(), "PRIVATE", tmp_path / "docs" / "thesis")
+    page = tmp_path / "docs" / "page.md"
+    page.parent.mkdir()
+    page.write_text("[notes](thesis/proposal.md#q) and [a typo](thesi/proposal.md).\n")
+    assert broken_links(page) == ["thesi/proposal.md: no such file"]
 
 
 def test_wrapped_links_are_checked(tmp_path):
