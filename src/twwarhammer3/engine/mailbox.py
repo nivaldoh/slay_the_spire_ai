@@ -149,6 +149,7 @@ class Mailbox:
         # A new --attach controller shares the live battle's last-request history.
         self.request_prefix = uuid4().hex
         self.requests = 0
+        self.written_ns = None  # the last observation file's write time (read_observation)
 
     # -- publishing -------------------------------------------------------------------
 
@@ -228,13 +229,20 @@ class Mailbox:
     # -- reading ----------------------------------------------------------------------
 
     def read_observation(self) -> dict | None:
-        """The current observation of this job, or None when there is none yet."""
+        """The current observation of this job, or None when there is none yet.
+
+        ``written_ns`` becomes its file's write time, from the same open file. Under WSL that
+        is the NTFS time the Windows clock stamped (in 100 ns units), which WSL's slow clocks
+        do not touch."""
         try:
-            observation = json.loads((self.directory / "observation.json").read_bytes())
+            with (self.directory / "observation.json").open("rb") as file:
+                data, written_ns = file.read(), os.fstat(file.fileno()).st_mtime_ns
+            observation = json.loads(data)
         except (OSError, ValueError):
             return None
         if not isinstance(observation, dict) or observation.get("job") != self.job:
             return None
+        self.written_ns = written_ns
         return observation
 
     def wait_new_battle(self, *, not_battle: str | None, timeout: float) -> dict:

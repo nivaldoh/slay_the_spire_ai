@@ -878,3 +878,44 @@ def test_a_controller_that_fails_to_construct_is_a_policy_failure(tmp_path):
     result = play.play_episode(tmp_path / "e", CONFIG, broken, mailbox, not_battle=None)
     assert result["status"] == "policy_failure"
     assert result["error"] == "controller construction: bad prompt file"
+
+
+@pytest.mark.parametrize("pause_ms,ratio,stretches", [
+    (0, 1.0, [1.0, 1.0]),
+    # 1.5 s paused in a 298 s battle: 0.995 overall, inside the band; its stretch is not.
+    (1500, round(298 / 299.5, 4), [round(29 / 30.5, 4), 1.0]),
+    (None, None, None),  # no observation files, so no write times
+])
+def test_battle_time_per_windows_second_is_recorded_and_digest_flags_a_pause(
+        tmp_path, pause_ms, ratio, stretches):
+    class Stamped(FakeMailbox):
+        def wait_observation(self, **kwargs):
+            observation = super().wait_observation(**kwargs)
+            if pause_ms is not None:  # the file's NTFS time: battle time, the pause added
+                seq = observation["seq"]
+                self.written_ns = (1000 * seq + (pause_ms if seq >= 150 else 0)) * 10**6
+            return observation
+
+    mailbox = Stamped([bridge_observation(i, 1000 * i) for i in range(300)]
+                      + [bridge_observation(300, 300000, result="won")])
+    job = tmp_path / "job"
+    job.mkdir()
+    result = play.play_episode(job / "episode-0000", CONFIG, Hold, mailbox, not_battle=None)
+    assert result.get("windows_clock_ratio") == ratio
+    assert result.get("windows_clock_range") == stretches
+    (job / "manifest.json").write_text(json.dumps({
+        "status": "completed", "created_at": "2026-10-29T00:00:00", "source_revision": "abc1234",
+        "config": {"policy": "hold", "scenario": "s", "model": None, "effort": None,
+                   "seed": None}}))
+    episode, header = digest.digest(job / "episode-0000"), digest.digest(job).splitlines()[0]
+    if pause_ms is None:
+        assert "Windows clock" not in episode and "WARNING" not in header
+    elif pause_ms:
+        assert ("WARNING: not 1x by the Windows clock: 0.9950 battle s per s over 300 s, 30 s"
+                " stretches 0.9508-1.0000, outside 0.99-1.01; tell the owner") in episode
+        assert header == ("WARNING: episode-0000 did not run at 1x by the Windows clock; tell"
+                          " the owner (its digest has the numbers)")
+    else:
+        assert ("1x by the Windows clock: 1.0000 battle s per s over 298 s, 30 s stretches"
+                " 1.0000-1.0000 (band 0.99-1.01)") in episode.splitlines()
+        assert not header.startswith("WARNING")

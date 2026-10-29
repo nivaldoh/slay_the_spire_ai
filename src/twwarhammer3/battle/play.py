@@ -82,6 +82,11 @@ SOURCES = ("src/gameai", "src/twwarhammer3", "configs/twwarhammer3", "pyproject.
 TRACK = "obs-v4+terrain/act-v2/live-1x"
 EVALUATOR_VERSION = 2
 CAPTION_LIMIT = 400
+# JUDGEMENT?: 1x windows — Claude, 2026-10-29: besides the whole battle (the owner's choice),
+# battle time per Windows second over each stretch of at least 30 s, so a pause of a few
+# seconds is not averaged away (stretches of about 34 s measured 0.9992-1.0002 on 2026-10-26).
+# Shorter stretches would add timer-tick and frame noise, longer ones hide shorter pauses.
+WINDOWS_STRETCH_NS = 30 * 10**9
 # The mod reads observe_ms, tick_ms, record_replay and stills; speed and pause let
 # ``play --attach`` check that the running game keeps the realtime rule.
 SESSION_KEYS = ("speed", "pause", "observe_ms", "tick_ms", "record_replay", "stills")
@@ -415,6 +420,27 @@ def caption(observation: dict, behavior: dict, orders: list[dict]) -> str | None
     return f"{head}\n{behavior['reason']}\n{decided}"[:CAPTION_LIMIT]
 
 
+def windows_clock(result: dict, marks: dict, time_ms: int, written_ns: int | None) -> None:
+    """Battle seconds per Windows second, from observation files' write times (the 1x check
+    by the Windows clock, owner 2026-10-29): over the battle so far and its slowest and
+    fastest stretches. ``marks`` holds the first (battle ms, write ns) and the stretch's."""
+    if written_ns is None:
+        return
+    if not marks:
+        marks.update(first=(time_ms, written_ns), stretch=(time_ms, written_ns))
+        return
+    def rate(mark):
+        return (time_ms - mark[0]) * 10**6 / (written_ns - mark[1])
+    if written_ns > marks["first"][1]:
+        result["windows_clock_s"] = round((written_ns - marks["first"][1]) / 1e9, 3)
+        result["windows_clock_ratio"] = round(rate(marks["first"]), 4)
+    if written_ns - marks["stretch"][1] >= WINDOWS_STRETCH_NS:
+        low, high = result.get("windows_clock_range") or (float("inf"), float("-inf"))
+        ratio = round(rate(marks["stretch"]), 4)
+        result["windows_clock_range"] = [min(low, ratio), max(high, ratio)]
+        marks["stretch"] = (time_ms, written_ns)
+
+
 def _start(result: dict, observation: dict, scenario: dict, event) -> None:
     """Record the first observation with units and check it against the scenario."""
     result["scenario"] = scenario_key(observation)
@@ -541,6 +567,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
     history = deque()
     delay_ms = config.get("delay_ms", 0)
     active_wall_start = None
+    windows_marks = {}
     setup_wait_started_ms = None
     while True:
         # The newest observation is read before the deadline applies: an ended battle is
@@ -585,6 +612,7 @@ def _drive(config, policy, mailbox, not_battle, result, event, started, scenario
             result["active_wall_s"] = duration
             result["clock_ratio"] = ((observation["time_ms"] - result["start_time_ms"]) / 1000
                                      / duration if duration > 0 else None)
+            windows_clock(result, windows_marks, observation["time_ms"], mailbox.written_ns)
         if observation.get("result"):
             # Kept before the acknowledgement below, which can fail; a controller failure
             # from here on still sets the status, and engine_ending keeps what ended.

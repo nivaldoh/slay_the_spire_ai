@@ -261,6 +261,14 @@ times, which reports latency in seconds rather than battle time. Land Battle lat
   steps: all 24 long gaps were classified as clock steps, none as stalls, and the source
   battle had them too. The evidence and scripts are in `runs/overnight-20261028/timing/`
   (an independent review in `review/review.md` reran them).
+- Since harness b51 (2026-10-29) `play` measures the 1x rate by the Windows clock: each
+  observation it reads keeps its file's write time, which NTFS stamps from the Windows clock in
+  100 ns units (at the system timer tick). `result.json` gets `windows_clock_s`,
+  `windows_clock_ratio` (battle s per Windows s from the battle's start to its last running
+  observation) and `windows_clock_range` (its slowest and fastest stretch of at least 30 s);
+  `digest` prints them and warns outside 0.99-1.01 (owner, 2026-10-29). An offline probe gave
+  write-time gaps within 0.01% of the Windows stopwatch over 5 s
+  (`runs/light-factory-20261029-evening/ntfs-mtime-probe.txt`); no battle has been measured yet.
 
 ### Units and axes
 

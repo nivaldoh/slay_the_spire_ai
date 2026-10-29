@@ -1,4 +1,5 @@
 import json
+import os
 from contextlib import AbstractContextManager
 
 import pytest
@@ -40,6 +41,16 @@ def test_missing_partial_or_foreign_observations_read_as_none(mailbox):
     assert mailbox.read_observation() is None
     message = observation(mailbox.directory, seq=4)
     assert mailbox.read_observation() == message
+
+
+def test_an_observation_read_keeps_its_files_write_time_and_a_foreign_one_none(mailbox):
+    path = mailbox.directory / "observation.json"
+    observation(mailbox.directory, seq=4)
+    os.utime(path, ns=(1, 1_234_567_800))  # as NTFS stamps it, in 100 ns units
+    assert mailbox.read_observation()["seq"] == 4 and mailbox.written_ns == 1_234_567_800
+    observation(mailbox.directory, job="another-job")
+    os.utime(path, ns=(1, 9_000_000_000))
+    assert mailbox.read_observation() is None and mailbox.written_ns == 1_234_567_800
 
 
 def test_wait_observation_needs_a_newer_seq_of_the_same_battle(mailbox):

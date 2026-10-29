@@ -150,7 +150,7 @@ covered by any generic layer:
 
 | WH3 layer | Today | Gap |
 |---|---|---|
-| Battle time | Delays, ages and the clock rule use engine battle time ([clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)). The 1x rate by the Windows clock was measured once, offline, from the checkpoint agent's stamps | No check measures 1x against the Windows clock: the team and checkpoint checks' clock ratios use WSL time, and the mod reports a constant `speed` 1. Proposed: record each observation file's NTFS write time (WSL reads it to 100 ns), and `digest` flags battle time per Windows second outside a band the owner sets |
+| Battle time | Delays, ages and the clock rule use engine battle time ([clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)). Since b51 each episode records battle time per Windows second from its observation files' NTFS write times, and `digest` warns outside 0.99-1.01 (owner, 2026-10-29) | Built and tested offline; not yet seen in a battle (one free scripted battle in a game window the owner chooses). The mod still reports a constant `speed` 1 |
 | Order effect | Acknowledgements and engine refusals are recorded; tests cover identity | An accepted order is not an effect. The [proposed correctness checks](twwarhammer3/benchmark-implementation.md#correctness-checks-to-agree) wait on the benchmark definition |
 | Outcome source | Only an engine won, lost or draw is a gameplay outcome; a late failure keeps the engine ending (agreed) | Readers still differ on timer wins and failures (state.md Known issues) |
 

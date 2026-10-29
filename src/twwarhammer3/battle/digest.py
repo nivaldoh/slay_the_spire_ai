@@ -10,7 +10,9 @@ model's reason: battle time, both sides' strength in the state the policy saw (u
 fighting / men; enemies as seen of the roster), tickets, point holders and supplies where
 the battle type has them, the measured delay, the orders, the engine's rejections, a
 commander's adopted plan with its age and the model's reason. A batch that failed
-validation adds an ``invalid:`` line. A run of decisions that sent no new orders becomes
+validation adds an ``invalid:`` line. An episode with observation write times (harness b51)
+says whether it ran at 1x by the Windows clock; one outside the band warns, here and above
+the job's table. A run of decisions that sent no new orders becomes
 one line with the last reason. Then the final state and the model's last notes. ``--at``
 prints the one decision nearest a battle time in full: the prompt, the raw reply, a
 commander's plan, dropped items, the orders, a validation error and the engine's verdicts.
@@ -28,6 +30,8 @@ from twwarhammer3.battle.commander import describe_plan
 from twwarhammer3.battle.controllers import policy_parts
 from twwarhammer3.battle.llm import describe_orders, short_type
 from twwarhammer3.battle.stats import row
+
+ONE_X = (0.99, 1.01)  # battle s per Windows s; the owner's "(a)" on this band, 2026-10-29
 
 
 def strength(observation: dict) -> str:
@@ -105,6 +109,8 @@ def episode_digest(episode: Path, decisions: bool = True) -> str:
         f" delay mean {result.get('delay_s')} s max {max(delays, default=0) / 1000:.1f} s;"
         f" ${llm.get('usd', 0):.4f}{policy}{_measures(result)}{error}",
     ]
+    if "windows_clock_ratio" in result:
+        lines.append(one_x(result))
     if "members" in (result.get("card", {}).get("disclosure") or {}):
         # Team evidence recorded before ``polls`` counts the dispatcher's requests.
         lines.append("team: header decisions/delay count member batches (dispatcher requests in"
@@ -256,6 +262,24 @@ def _draw(manifest: dict) -> str:
             f" on {scenario['map']})")
 
 
+def ran_at_1x(result: dict) -> bool:
+    """Whether the battle and each of its 30 s stretches stayed within ONE_X."""
+    values = [result["windows_clock_ratio"], *(result.get("windows_clock_range") or [])]
+    return all(ONE_X[0] <= value <= ONE_X[1] for value in values)
+
+
+def one_x(result: dict) -> str:
+    """The 1x line of an episode with observation write times (harness b51)."""
+    stretches = result.get("windows_clock_range")
+    measure = (f"{result['windows_clock_ratio']:.4f} battle s per s over"
+               f" {result['windows_clock_s']:.0f} s"
+               + (f", 30 s stretches {stretches[0]:.4f}-{stretches[1]:.4f}" if stretches else ""))
+    if ran_at_1x(result):
+        return f"1x by the Windows clock: {measure} (band {ONE_X[0]}-{ONE_X[1]})"
+    return (f"WARNING: not 1x by the Windows clock: {measure}, outside {ONE_X[0]}-{ONE_X[1]};"
+            " tell the owner")
+
+
 def build_warning(job: Path) -> str | None:
     """The warning a job's game build earns when Steam updated it past the pin."""
     path = job / "manifest.json"
@@ -277,12 +301,16 @@ def job_digest(job: Path) -> str:
              + f", scenario {config['scenario']}" + _draw(manifest)
              + f", source {manifest['source_revision'][:7]}",
              "| " + " | ".join(DIGEST_COLUMNS) + " |", "|" + "---|" * len(DIGEST_COLUMNS)]
-    for result in sorted(job.glob("episode-*/result.json")):
-        item = row(job, result.parent)  # the register's base name; the table names the trial's
-        item["policy"] = json.loads(result.read_text()).get("policy", item["policy"])
+    warnings = [build_warning(job)]
+    for path in sorted(job.glob("episode-*/result.json")):
+        item = row(job, path.parent)  # the register's base name; the table names the trial's
+        result = json.loads(path.read_text())
+        item["policy"] = result.get("policy", item["policy"])
         lines.append("| " + " | ".join(str(item[column]) for column in DIGEST_COLUMNS) + " |")
-    warning = build_warning(job)
-    return "\n".join([warning, *lines] if warning else lines)
+        if "windows_clock_ratio" in result and not ran_at_1x(result):
+            warnings.append(f"WARNING: {path.parent.name} did not run at 1x by the Windows"
+                            " clock; tell the owner (its digest has the numbers)")
+    return "\n".join([*filter(None, warnings), *lines])
 
 
 def unit_fates(episode: Path) -> str:

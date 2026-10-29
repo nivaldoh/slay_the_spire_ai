@@ -34,6 +34,7 @@ class FakeMailbox:
         self.pending = None
         self.menu = None
         self.directory = None  # no bridge files unless a test makes some
+        self.written_ns = None  # no observation file, so no write time
         self.menu_outcome = "step 1: found button_battle, clicked\ndone"
 
     def reset(self):
