@@ -68,7 +68,7 @@ for the misses. One rerun reviewer checked the counts and found the first play c
 - Decay check: the ten planted versions of 2026-10-20 (b42), rebuilt from their names, are
   all still caught (`runs/decay-check-20261029/`).
 - Tonight's total (`runs/light-factory-20261029/tally.md`): 342 planted versions; the day's
-  tests missed 164 (4 equivalent); new tests closed 137; 23 left, each named.
+  tests missed 164 (4 equivalent or covered twice); new tests closed 137; 23 left, each named.
 - Found on the way: a test-order dependence (state.md Known issues) and `[cards]` markers
   ([judgement](../judgement.md#status-and-how-to-continue)).
 Not established: live engine behaviour; that each refusal is the right rule.
