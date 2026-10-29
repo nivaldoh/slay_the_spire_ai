@@ -9,10 +9,11 @@ FILE is relative to it. For Lua, PATTERN is a regex for the refusal's start (e.g
 `(?<![\\w.:])error\\(`), replaced one at a time by REPLACEMENT (e.g. `tostring(`). For Python they
 are ignored: each raised `X(...)` (from the syntax tree) becomes a bare `X(...)`, its `from`
 clause dropped, and a version that does not parse is reported, never scored. "caught" = the
-tests exit nonzero (with -x); a run past 120 s is HANG, counted caught; the baseline must pass
-first. Every run is without bytecode (planted copies share a size, and a cached .pyc of the
-previous plant once ran in a plant's place, 2026-10-29). SWEEP_PYTHON overrides the
-interpreter. Offline only: plant near a launch only after stubbing its first step.
+tests exit nonzero (with -x); a run past SWEEP_TIMEOUT seconds (default 120) is HANG, counted
+caught; the unplanted baseline must pass first, and SCRATCH may not be this tree. Every run is
+without bytecode (planted copies share a size, and a cached .pyc of the previous plant once ran
+in a plant's place, 2026-10-29). SWEEP_PYTHON overrides the interpreter. Offline only: plant
+near a launch only after stubbing its first step.
 """
 import ast
 import os
@@ -24,6 +25,9 @@ from pathlib import Path
 
 S, FILE, PATTERN, REPLACEMENT, *TESTS = sys.argv[1:]
 S = Path(S).resolve()
+if S == Path(__file__).resolve().parents[1]:
+    sys.exit("plant in a scratch checkout (git worktree add --detach), never this tree")
+TIMEOUT = float(os.environ.get("SWEEP_TIMEOUT", "120"))
 PY = os.environ.get("SWEEP_PYTHON", sys.executable)
 # A bare environment: no Windows PATH entries (so no Windows program can start), no bytecode,
 # no model downloads.
@@ -42,9 +46,9 @@ def run():
     try:
         r = subprocess.run([PY, "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "-x",
                             *DESELECT, *TESTS], cwd=S, env=ENV, capture_output=True, text=True,
-                           timeout=120)
+                           timeout=TIMEOUT)
     except subprocess.TimeoutExpired:  # a removed timeout can leave a test waiting forever
-        return "hang", "", "no result within 120 s"
+        return "hang", "", f"no result within {TIMEOUT:g} s"
     first = re.findall(r"^FAILED (.+?)(?: - |$)", r.stdout, re.M)
     return r.returncode, (first or [""])[0], (r.stdout.strip().splitlines() or ["?"])[-1]
 
@@ -53,7 +57,8 @@ path = S / FILE
 original = path.read_text()
 code, _, last = run()
 print(f"baseline: exit {code}: {last}", flush=True)
-assert code == 0
+if code != 0:
+    sys.exit("the unplanted baseline fails; fix it before sweeping")
 
 
 def variants():

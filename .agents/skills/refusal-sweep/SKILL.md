@@ -15,7 +15,10 @@ checkout, never the main tree, and runs every version without bytecode.
    RuntimeLock; Spire: `communication_config`), and afterwards check the Windows-side files'
    modification times (`C:/wh3-agent`, `C:/spire-agent`, CommunicationMod's config).
 4. Run one sweep at a time, and nothing heavy beside it: timing tests flake under load and a
-   flake reads as "caught". Python:
+   flake reads as "caught". The Stop hook runs the whole suite when a turn ends on a changed
+   tree, so keep a sweep in the foreground rather than across a turn's end. Never point a
+   test at this tree to prove the script refuses it: a killed sweep leaves its plant behind
+   (2026-10-29: `src/gameai/llm.py` was restored from git). Python:
    `uv run --locked python -I scripts/refusal_sweep.py runs/<task>/scratch src/x.py x x tests/<dirs>`;
    Lua: pattern `'(?<![\w.:])error\('`, replacement `'tostring('`. Pass test folders in
    alphabetical order (a WH3 stats test reorders a price table the Spire CLI test reads).

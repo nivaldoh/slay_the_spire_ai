@@ -314,7 +314,8 @@ and a stop let through when `check.py` cannot run; a narrower list or failing cl
 differently. How hard the exit gate is enforced rests on these.
 
 Hooks must handle: exit code 1 does not block (a wrapper turns a `check.py`
-failure into 2); Claude Code overrides a `Stop` hook after eight blocks in a row; a Codex
+failure into 2); Claude Code overrides a `Stop` hook after eight blocks in a row with no tool call between them
+(so `stop_check.py` lets an unchanged failing tree through after one block); a Codex
 `Stop` hook that exits 0 must print JSON, and Codex loads project hooks only from a trusted
 `.codex/` ([Claude Code](https://code.claude.com/docs/en/hooks), [Codex](https://learn.chatgpt.com/docs/hooks)).
 Hooks are "a useful guardrail, not a complete enforcement boundary" (OpenAI); games,
