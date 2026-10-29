@@ -884,8 +884,10 @@ def test_a_controller_that_fails_to_construct_is_a_policy_failure(tmp_path):
     (300, 1, 0, "1x by the Windows clock: 1.0000 battle s per s over 298 s, stretches of at"
                 " least 30 s (longest 30 s) 1.0000-1.0000 (band 0.99-1.01)"),
     # 1.5 s paused in a 298 s battle: 0.995 overall, inside the band; its stretch is not.
+    # The pause lands on the read that a stretch closed by Windows time ends with, and one
+    # closed by battle time would not (it would read 0.9524, longest 32 s).
     (300, 1, 1500, "WARNING: not 1x by the Windows clock: 0.9950 battle s per s over 300 s,"
-                   " stretches of at least 30 s (longest 32 s) 0.9524-1.0000, outside 0.99-1.01;"
+                   " stretches of at least 30 s (longest 30 s) 0.9508-1.0000, outside 0.99-1.01;"
                    " tell the owner"),
     # A policy reading every 150 s: the same pause stays inside the band, and the line says
     # how long its stretches were (the limit in play.py's 1x windows marker).
@@ -901,7 +903,8 @@ def test_battle_time_per_windows_second_is_recorded_and_digest_flags_a_pause(
             observation = super().wait_observation(**kwargs)
             if pause_ms is not None:  # the file's NTFS time: battle time, the pause added
                 ms = observation["time_ms"]
-                self.written_ns = (ms + (pause_ms if ms >= 150000 + step_s * 500 else 0)) * 10**6
+                paused = ms >= 150000 if step_s == 1 else ms > 150000  # between two reads
+                self.written_ns = (ms + (pause_ms if paused else 0)) * 10**6
             return observation
 
     mailbox = Stamped([bridge_observation(i, step_s * 1000 * i) for i in range(reads)]

@@ -52,6 +52,8 @@ def test_an_observation_read_keeps_its_files_write_time_and_a_foreign_one_none(m
     observation(mailbox.directory, job="another-job")
     os.utime(path, ns=(1, 9_000_000_000))
     assert mailbox.read_observation() is None and mailbox.written_ns == 1_234_567_800
+    path.write_text('{"schema": 1, "job": "job-a", "se')  # half written: unreadable
+    assert mailbox.read_observation() is None and mailbox.written_ns == 1_234_567_800
 
 
 def test_the_write_time_is_the_read_files_when_the_game_replaces_it_meanwhile(mailbox,

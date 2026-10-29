@@ -188,3 +188,16 @@ def test_an_interrupted_or_unreadable_run_passes_no_agreed_check(repo):
     junit.write_text("<testsuites><testsuite>")
     assert not check.agreed_results(repo, junit)["Thing"]["passed"]
     assert not check.agreed_results(repo, repo / "missing.xml")["Thing"]["passed"]
+
+
+def test_a_run_counts_for_head_only_if_its_files_were_heads_before_and_after(repo):
+    head = check.git(repo, "rev-parse", "HEAD").strip()
+    assert check.still_at_revision(repo, head, check.at_revision(repo))[0]
+    edit(repo, "src/pkg/mod.py", "1", "2")
+    before = check.at_revision(repo)  # dirty when the run starts, restored while it runs
+    edit(repo, "src/pkg/mod.py", "2", "1")
+    assert not check.still_at_revision(repo, head, before)[0]
+    before = check.at_revision(repo)  # clean, then another session commits during the run
+    edit(repo, "docs/page.md", "Intro.", "Intro, again.")
+    git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qam", "meanwhile")
+    assert not check.still_at_revision(repo, head, before)[0]

@@ -57,13 +57,14 @@ time) is unchanged.
 - Offline probe, no game: files written from Windows 5 s apart had write-time gaps within
   0.01% of the Windows stopwatch (2 gaps; the first gap was a cmdlet-load artefact;
   `runs/light-factory-20261029-evening/ntfs-mtime-probe.txt`).
-- Tests: a 298 s battle with a 1.5 s pause reads 0.9950 overall, inside the band, and 0.9524
-  in its stretch, so it warns; steady 1x reads 1.0000; a foreign file keeps the last time; a
-  file the game replaces during the read keeps the read file's time. 11 planted wrong versions
-  failed them (`plant-1x-round2.txt` there).
-- Review (one round, two findings, fixed): a stretch ends at a controller read, so a 150 s
-  model call let the same pause pass (0.9901); the length is now recorded and printed, and the
-  marker says so. A plant reading the time by path passed every test; a new test catches it.
+- Tests: a 298 s battle with a 1.5 s pause reads 0.9950 overall, inside the band, and 0.9508
+  in its stretch, so it warns; steady 1x reads 1.0000; a foreign or half-written file keeps the
+  last time; a file the game replaces during the read keeps the read file's time. 13 planted
+  wrong versions failed them (`plant-1x-round3.txt` there).
+- Reviews (two rounds): a stretch ends at a controller read, so a 150 s model call still lets
+  the same pause pass (0.9901). Not fixed: the line now prints the longest stretch and the
+  marker states the limit. Plants reading the time by path, clearing it on a half-written
+  file or closing stretches by battle time passed the tests then; tests now catch them.
   Battles under 30 s get no 1x reading (stamp and frame noise).
 Not established: any real battle (one free scripted battle waits for a game window the owner
 chooses); how often frame hitches move a 30 s stretch.

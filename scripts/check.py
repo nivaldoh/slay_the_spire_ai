@@ -187,6 +187,16 @@ def at_revision(root: Path) -> tuple[bool, list[str], list[str]]:
     return not changed and not loose, changed, loose
 
 
+def still_at_revision(root: Path, revision: str,
+                      before: tuple[bool, list[str], list[str]]) -> tuple[bool, list, list]:
+    """at_revision for a whole run: the files were HEAD's before it (``before``, at
+    ``revision``) and still are after it, with HEAD unmoved; changed and untracked paths of both
+    reads. An edit made and undone during the run is not seen."""
+    after = at_revision(root)
+    own = before[0] and after[0] and git(root, "rev-parse", "HEAD").strip() == revision
+    return own, sorted({*before[1], *after[1]}), sorted({*before[2], *after[2]})
+
+
 def lock_versions(text: str) -> dict[str, str]:
     versions: dict[str, set[str]] = {}
     for package in tomllib.loads(text).get("package", []):
@@ -336,10 +346,7 @@ def main() -> int:
     shown += [f"          {line}" for line in first]
     agreed = agreed_results(ROOT, junit)
     junit.unlink(missing_ok=True)
-    # The tested files are HEAD's only if they were before the run and still are after it.
-    after = at_revision(ROOT)
-    own = before[0] and after[0] and git(ROOT, "rev-parse", "HEAD").strip() == revision
-    changed, untracked = sorted({*before[1], *after[1]}), sorted({*before[2], *after[2]})
+    own, changed, untracked = still_at_revision(ROOT, revision, before)
     shown.append(f"agreed    {sum(r['passed'] for r in agreed.values())} of {len(agreed)} "
                  "agreed-check pytest commands passed"
                  f"{'' if own else ' (not at HEAD: tree changed)'}; {PASSES}")
