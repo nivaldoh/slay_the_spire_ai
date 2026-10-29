@@ -46,20 +46,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 ## 2026-10-29: refusal sweeps, boundary leaks and a decay check
 
-Each refusal in a file was removed in turn (a scratch worktree; `runs/refusal-sweep-20261029/`,
-`runs/protocol-planted-20261029/`) and the WH3 suite rerun; then tests went in for the misses.
-- `protocol.py`: 37 of 38 removals caught; the miss let a `None` reply crash validation, now
-  tested (`b1aefe7`). `mailbox.py`: 5 of 5 (3 by hanging: a removed timeout waits forever).
-- Battle mod (`twwarhammer3_battle.lua`): 5 of 39, now 35 (`4027987`): every unit- and
-  army-order refusal, the last check for what changes while a model thinks. Uncovered: the
-  recorder's file errors and the battle start button.
-- `play.py`: 9 of 13, now 13 (`602f197`): the source-change stop (AGENTS.md), both setup
-  timeouts and the custom ending error had no test.
-- Spire's public boundary: 3 of 7 planted leaks caught, now 6 (`d50986f`); the seventh (the seed)
-  is also removed by the field allowlist.
+Each refusal in a file was removed in turn (Python through its syntax tree, so the file still
+parses; a scratch worktree; `runs/refusal-sweep-20261029/`), the suite rerun, then tests added
+for the misses. One rerun reviewer checked the counts and found the first play count wrong.
+- Caught before → after: `protocol.py` 37 → 38 of 38 (`b1aefe7`; a `None` reply crashed);
+  `mailbox.py` 5 of 5 (3 by hanging: a removed timeout waits forever); battle mod `error()`
+  refusals 5 → 35 of 39 and its 3 returned refusals 0 → 3 (`4027987`, `3282691`; left: the
+  recorder's file errors, the battle start button); `play.py` 8 → 13 of 13 (`602f197`,
+  `3282691`: the source-change stop, setup timeouts, custom ending, constructor failure);
+  `setup.py` 19 → 40 of 40 (`dac11a7`); `gameai` ledger, llm and providers 14 → 18 of 18
+  (`f21c70e`, the ledger's reservation guard among them); `windows.py` 2 of 5 (needs Windows).
+- Spire's public boundary: 3 → 6 of 7 planted leaks (`d50986f`); the seventh, the seed, is
+  also removed by the field allowlist.
 - Decay check: the ten planted versions of 2026-10-20 (b42), rebuilt from their names, are
   all still caught (`runs/decay-check-20261029/`).
-- `[cards]` marking: none added after review ([judgement](../judgement.md#status-and-how-to-continue)).
+- Found on the way: a test-order dependence (state.md Known issues) and `[cards]` markers
+  ([judgement](../judgement.md#status-and-how-to-continue)).
 Not established: live engine behaviour; that each refusal is the right rule.
 
 ## 2026-10-29: planted wrong versions against the agreed checks and results readers

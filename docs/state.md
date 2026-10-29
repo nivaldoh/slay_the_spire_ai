@@ -97,6 +97,9 @@ The broader RL environment remains a separate discussion, possibly connected to 
 - `test_wh3_capture.py::test_passive_capture_runs_outside_caller_and_joins_evidence` waits 2 s
   and timed out under parallel load twice (2026-10-20 beside a live run; 2026-10-29 beside
   reviewer runs): rerun before reading it as a regression. Unchanged: editing it needs your yes.
+- Test order matters once: `test_wh3_stats.py` deletes and restores `PRICES["gpt-6-luna"]`,
+  which moves it last, so `tests/fullrun/test_spire_cli.py` fails when the WH3 tests run
+  first; the default order hides it. A one-line fix to that test awaits your yes.
 - The report browser check is separate from pytest. Spire's Workshop mod pins still block a
   run when a mod updates.
 
@@ -114,6 +117,7 @@ The broader RL environment remains a separate discussion, possibly connected to 
 10. **Thesis and RL environment.** Likely multi-agent systems, possibly multi-agent RL; no research question selected (owner, 2026-10-28). Tentative environment: each agent sees its available battle state, perhaps teammate information, controls its army share and learns from sparse win/loss near restored endings. Reset may use a battle start or checkpoint; details and correctness checks are for later. [Direction 6](thesis/directions.md#6-wh3-as-an-rl-environment-for-high-level-decisions); [research shortlist](thesis/directions.md#what-the-2026-10-28-checks-changed). Human-AI work stays a note; licensing is deferred.
 
 11. **Local LLM checkpoint RL — deferred.** Leave this post-training experiment paused (owner, 2026-10-28). No recovery choice is needed now; the existing results and choices remain for a future review. Merged on 2026-10-28. [Details](twwarhammer3/checkpoint-rl.md#open-owner-choices-decision-11).
+12. **Light factory review (2026-10-29).** (a) Keep the night's work (recommended), keep the tools but revert the docs cleanup `7e89ab9`, or revert all; (b) let `check.py` record the offline agreed checks it ran as passes; (c) a WH3 battle-time check by Windows file times. Details: `runs/light-factory-20261029/handoff.md`; [workflow](workflow.md).
 ## Runtime and ownership
 
 - Slay the Spire ([runtime facts](spire/integration.md#runtime-and-source-pins)): the installed game and personal profile slot 0 are authorized, including stats, unlock progress, history and achievements (Ironclad unlock 3 of 5; runs record profile evidence).
