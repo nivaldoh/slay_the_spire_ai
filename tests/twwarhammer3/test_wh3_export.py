@@ -465,3 +465,34 @@ def test_hidden_observation_fields_never_reach_an_export(tmp_path):
     row, = read_export(output)
     assert "PLANTED-RESULT" in json.dumps(row.pop("outcome"))
     assert "PLANTED-RESULT" not in json.dumps(row)
+
+
+def exchange(prompt=PROMPT, name="x1"):
+    return {"kind": "model_exchange", "id": name, "prompt": prompt}
+
+
+# A corrupt trace must stop an export rather than enter a training set; removing any of these
+# refusals passed every test before (runs/refusal-sweep-20261029/wh3-export.txt).
+@pytest.mark.parametrize("events,policy,message", [
+    ([decision("r1"), acknowledgement("r1"), acknowledgement("r1")], "llm_rules",
+     "duplicate acknowledgement r1"),
+    ([decision("r1"), decision("r1")], "llm_rules", "duplicate request r1"),
+    ([decision("r1", kind="commander"), decision("r2", kind="commander")], "commander",
+     "overlapping commander requests"),
+    ([decision("r1"), decision("r2"), exchange()], "llm_rules", "ambiguous model exchange x1"),
+    ([decision("r1", attempts=[attempt(request={"input": [{"content": "another prompt"}],
+                                                "instructions": SYSTEM})])],
+     "llm_rules", "differs from the saved user prompt"),
+])
+def test_a_corrupt_trace_stops_the_export(tmp_path, events, policy, message):
+    job = make_job(tmp_path, events, policy=policy)
+    with pytest.raises(ValueError, match=message):
+        export.export_traces([job], tmp_path / "export")
+    assert not (tmp_path / "export").exists()
+
+
+def test_an_export_needs_a_job_or_episode(tmp_path):
+    with pytest.raises(ValueError, match="Select at least one job or episode"):
+        export.export_traces([], tmp_path / "export")
+    with pytest.raises(ValueError, match="not a WH3 job or episode"):
+        export.export_traces([tmp_path / "nothing"], tmp_path / "export")
