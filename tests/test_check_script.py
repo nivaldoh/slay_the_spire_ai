@@ -19,12 +19,14 @@ SPEC.loader.exec_module(check)
 # Split, so check.py finds no marker, reference or skip of this file's own.
 MARK = "JUDGEMENT" + ":"
 RESTS = "rests on " + "JUDGEMENT"
-SKIP, IMPORTORSKIP = "@pytest.mark." + "skip", "pytest." + "importorskip"
+SKIP, XFAIL = "@pytest.mark." + "skipif(True, reason='x')", "@pytest.mark." + "xfail"
+IMPORTORSKIP = "pytest." + "importorskip"
 LOCK = '[[package]]\nname = "{0}"\nversion = "{1}"\n'
 BASE = {
     "docs/agreed-checks.md": "- Thing: `uv run --locked pytest -ra tests/agreed/test_a.py`.\n",
     "tests/agreed/test_a.py": "def test_a():\n    assert 1 == 1\n",
-    "tests/other/test_b.py": "import pytest\n\n\ndef test_b():\n    assert 2 == 2\n",
+    "tests/other/test_b.py": "import pytest\n\n\ndef test_b():\n    assert 2 == 2\n"
+                             "    with pytest.raises(ValueError):\n        int('x')\n",
     "tests/twwarhammer3/prompts/llm.txt": "You command an army.\n",
     "docs/page.md": f"Intro.\n\n{MARK} Thing — Claude, 2026-10-29: X, not Y.\n",
     "src/pkg/mod.py": "def f():\n    return 1\n",
@@ -63,8 +65,16 @@ PLANTED = {
                "JUDGEMENT line removed or edited: docs/page.md"),
     "assert": (lambda r: edit(r, "tests/other/test_b.py", "2 == 2", "True"),
                "1 assertion line(s) removed or changed: tests/other/test_b.py"),
+    "assert indented away": (lambda r: edit(r, "tests/other/test_b.py", "    assert 2",
+                                             "    if False:\n        assert 2"),
+                              "1 assertion line(s) removed or changed: tests/other/test_b.py"),
+    "raises": (lambda r: edit(r, "tests/other/test_b.py", "    with pytest.raises(ValueError):\n"
+                              "        int('x')\n", ""),
+               "1 assertion line(s) removed or changed: tests/other/test_b.py"),
     "skip": (lambda r: edit(r, "tests/other/test_b.py", "def", f"{SKIP}\ndef"),
              "1 skip or xfail added: tests/other/test_b.py"),
+    "xfail": (lambda r: edit(r, "tests/other/test_b.py", "def", f"{XFAIL}\ndef"),
+              "1 skip or xfail added: tests/other/test_b.py"),
     "untracked skip": (lambda r: (r / "tests/other/test_c.py").write_text(
         f"import pytest\n\n{IMPORTORSKIP}('torch')\n"),
         "1 skip or xfail added: tests/other/test_c.py"),

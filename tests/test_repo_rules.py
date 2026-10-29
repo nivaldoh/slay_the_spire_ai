@@ -24,7 +24,11 @@ GAMES = sorted(p.name for p in (ROOT / "src").iterdir()
 # The game, save and weights patterns in .gitignore, and Windows download marks.
 FORBIDDEN = ("*.jar", "*.class", "*.exe", "*.dll", "*.sav", "*.pack", "*.autosave*", "*.pt",
              "*.pth", "*.safetensors", "*:Zone.Identifier")
-KEY = re.compile(rb"sk-(?:or-v1-|proj-)?[A-Za-z0-9_-]{32,}|-----BEGIN [A-Z ]*PRIVATE KEY-----")
+# OpenRouter's hex keys; OpenAI's start a token and mix case and digits, so a slug such as
+# "risk-based-..." or "task-..." is not one; PEM private keys.
+KEY = re.compile(rb"(?<![\w-])sk-or-v1-[0-9a-f]{64}"
+                 rb"|(?<![\w-])sk-(?=[\w-]*[0-9])(?=[\w-]*[A-Z])[\w-]{32,}"
+                 rb"|-----BEGIN [A-Z ]*PRIVATE KEY-----")
 AGENTS_MD_LINES = 305
 
 
@@ -86,12 +90,14 @@ def test_no_run_game_or_key_file_can_be_committed():
 def test_planted_run_game_and_key_files_are_caught(tmp_path):
     (tmp_path / "runs").mkdir()
     files = {"runs/README.md": "ok", "runs/job.log": "x", "mods/BaseMod.jar": "x",
-             "docs/note.md": "key sk-" + "a1" * 20 + "\n", "docs/fine.md": "sk-test-secret"}
+             "docs/note.md": "key sk-" + "Ab1" * 14 + "\n", "docs/or.md": "sk-or-v1-" + "0f" * 32,
+             "docs/fine.md": "sk-test-secret, #risk-based-checks-for-long-autonomous-runs-2"}
     for name, text in files.items():
         (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
         (tmp_path / name).write_text(text)
     assert forbidden_files(tmp_path, sorted(files)) == [
         "docs/note.md: holds what looks like an API or private key",
+        "docs/or.md: holds what looks like an API or private key",
         "mods/BaseMod.jar: game, save or weights file",
         "runs/job.log: run evidence stays out of Git"]
 

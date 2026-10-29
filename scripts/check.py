@@ -57,8 +57,8 @@ SKIPPED = re.compile(r"^SKIPPED \[(\d+)\] \S+?:\d+: (.*)$", re.M)
 
 
 def git(root: Path, *args: str) -> str:
-    return subprocess.run(["git", *args], cwd=root, capture_output=True, text=True,
-                          check=True).stdout
+    return subprocess.run(["git", *args], cwd=root, capture_output=True, encoding="utf-8",
+                          errors="replace", check=True).stdout
 
 
 def changes(root: Path, base: str) -> tuple[dict[str, tuple[list, list]], set[str]]:
@@ -78,17 +78,21 @@ def changes(root: Path, base: str) -> tuple[dict[str, tuple[list, list]], set[st
     for name in git(root, "ls-files", "-z", "--others", "--exclude-standard").split("\0"):
         if name:
             try:
-                found[name] = ([], (root / name).read_text(encoding="utf-8").splitlines())
-            except (OSError, UnicodeDecodeError):
+                found[name] = ([], (root / name).read_text(encoding="utf-8",
+                                                           errors="replace").splitlines())
+            except OSError:
                 found[name] = ([], [])
     deleted = git(root, "diff", "--no-renames", "--name-only", "--diff-filter=D", base, "--")
     return found, set(deleted.split())
 
 
-def net(removed: list[tuple[str, str]], added: list[tuple[str, str]]) -> list[tuple[str, str]]:
-    """(path, line) pairs removed and not added back verbatim anywhere in the same set."""
+def net(removed: list[tuple[str, str]], added: list[tuple[str, str]],
+        marks: bool = False) -> list[tuple[str, str]]:
+    """(path, line) pairs removed and not added back verbatim anywhere in the same set.
+    Indentation counts (in Python it is meaning); with marks, leading comment marks and
+    spaces do not, so a marker can move between a page and a comment."""
     def key(line: str) -> str:
-        return re.sub(r"^[\s#/*-]+", "", line).strip()
+        return re.sub(r"^[\s#/*-]+", "", line).strip() if marks else line.rstrip()
     left = Counter(key(line) for _, line in added)
     kept = []
     for path, line in removed:
@@ -136,7 +140,7 @@ def warnings(root: Path, base: str) -> list[str]:
         files = sorted({p for p, _ in changed} | set(gone))
         out.append(f"an agreed check's files lose or change lines: {', '.join(files)}")
     marked = net(lines(0, lambda p, line: "JUDGEMENT" in line),
-                 lines(1, lambda p, line: "JUDGEMENT" in line))
+                 lines(1, lambda p, line: "JUDGEMENT" in line), marks=True)
     if marked:
         out.append(f"JUDGEMENT line removed or edited: {where(marked)}")
 
@@ -175,7 +179,7 @@ def marker_problems(root: Path) -> list[str]:
     for name in listed.split():
         if name in RULE_PAGES:
             continue
-        lines = (root / name).read_text(encoding="utf-8").splitlines()
+        lines = (root / name).read_text(encoding="utf-8", errors="replace").splitlines()
         for number, line in enumerate(lines, 1):
             if MISSPELT.search(line):
                 problems.append(f"{name}:{number}: spelled without the first E")
