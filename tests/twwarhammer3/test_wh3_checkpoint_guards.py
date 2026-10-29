@@ -117,3 +117,24 @@ def test_a_library_without_a_usable_late_save_is_refused(tmp_path, monkeypatch):
     (directory / "record.json").write_text(json.dumps({**record, "late": False}))
     with pytest.raises(ValueError, match="no usable late save"):
         checkpoint.late_rung(tmp_path / "library")
+
+
+def test_setting_bystander_replays_aside_refuses_unsafe_states(offline):
+    # The owner's other saved replays wait aside during a restore and must all come back.
+    tmp_path, _, _ = offline
+    replays = tmp_path / "user/replays"
+    with pytest.raises(FileNotFoundError):
+        with checkpoint.only_replay("missing"):
+            pass
+    (replays / "saved.replay").write_text("restore me")
+    (replays / "mine.replay").write_text("the owner's")
+    (replays / "checkpoint-aside").mkdir()
+    (replays / "checkpoint-aside/left.replay").write_text("from an interrupted run")
+    with pytest.raises(RuntimeError, match="interrupted run are still in"):
+        with checkpoint.only_replay("saved"):
+            pass
+    assert (replays / "mine.replay").read_text() == "the owner's"
+    (replays / "checkpoint-aside/left.replay").unlink()
+    with pytest.raises(FileNotFoundError, match="checkpoint-aside"):
+        with checkpoint.only_replay("saved"):
+            (replays / "checkpoint-aside/mine.replay").unlink()  # lost while set aside
