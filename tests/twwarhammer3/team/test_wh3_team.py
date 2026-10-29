@@ -330,6 +330,48 @@ def test_live_witness_rejects_formation_settling_and_late_motion(motion, receive
         assess(events, samples, "infantry")
 
 
+
+@pytest.mark.parametrize("change", ["moves_away", "slow_clock"])
+def test_live_witness_rejects_motion_away_from_the_waypoint_and_a_slow_battle_clock(change):
+    # agreed-checks.md: the correct unit moves (toward its order's waypoint) after its
+    # acknowledgement while its peer thinks, at 1x. The cavalry's waypoint is (10, 20).
+    fast_ack = {"request": "r2", "applied_ms": 10500,
+                "results": [{"index": 1, "unit": "f1", "ok": True}]}
+    slow_ack = {"request": "r3", "applied_ms": 13500,
+                "results": [{"index": 1, "unit": "f2", "ok": True}]}
+    events = [
+        {"kind": "team", "event": "partition", "ownership": {"infantry": "f2", "cavalry": "f1"}},
+        {"kind": "team", "event": "completed", "decision": "infantry-1",
+         "started": 10, "completed": 13},
+        {"kind": "decision", "request": "r2", "orders": [move("f1")],
+         "behavior": {"member": "cavalry", "decision": "cavalry-1", "source_seq": 0}},
+        {"kind": "team", "event": "feedback", "decision": "cavalry-1", "source": "engine",
+         "ack": fast_ack, "latency": {"delay_ms": 500}},
+        {"kind": "decision", "request": "r3", "orders": [move("f2")],
+         "behavior": {"member": "infantry", "decision": "infantry-1", "source_seq": 0}},
+        {"kind": "team", "event": "feedback", "decision": "infantry-1", "source": "engine",
+         "ack": slow_ack, "latency": {"delay_ms": 3500}},
+    ]
+    roster = [{"id": "f1", "type": team.KNIGHT, "x": 10, "z": 0, "state": ["idle"]},
+              {"id": "f2", "type": team.SWORD, "x": 0, "z": 0, "state": ["idle"]}]
+    z = -1 if change == "moves_away" else 1
+    samples = [
+        {"received": 10, "observation": {"seq": 0, "friendly": roster}},
+        {"received": 11, "observation": {"orders": fast_ack, "friendly": roster}},
+        {"received": 12, "observation": {
+         "friendly": [{"id": "f1", "x": 10, "z": z, "state": ["moving"]}]}},
+        {"received": 30, "observation": {"orders": slow_ack,
+         "friendly": [{"id": "f1", "x": 10, "z": z, "state": ["idle"]}]}},
+    ]
+    rate = .8 if change == "slow_clock" else 1  # battle seconds per second from 10 s on
+    for sample in samples:
+        battle_ms = 10000 + (sample["received"] - 10) * 1000 * rate
+        sample["observation"].update(phase="Deployed", time_ms=battle_ms)
+    result = assess(events, samples, "infantry")
+    assert not result["passed"] and result["reason"] == {
+        "moves_away": "no qualifying movement observed; capability unverified",
+        "slow_clock": "clock progress inconsistent with 1x"}[change]
+
 def test_bad_team_configuration_is_a_harness_failure_before_game_wait(tmp_path):
     result = play.play_episode(tmp_path / "e", CONFIG, lambda: team.TeamPolicy({}),
                                FakeMailbox([]), not_battle=None)

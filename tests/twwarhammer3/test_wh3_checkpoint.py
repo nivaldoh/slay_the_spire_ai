@@ -108,6 +108,23 @@ def test_check_requires_manifest_completion_and_allows_normal_detach(tmp_path):
     assert not check.assess(output)["pass"]
 
 
+
+@pytest.mark.parametrize("case", ["change_before_its_order", "different_seed", "not_closed"])
+def test_check_fails_on_an_early_change_a_different_seed_or_an_unclosed_run(tmp_path, case):
+    # agreed-checks.md: the changed order must cause the divergence, restores must reproduce
+    # the Lua seed, and every launch must close (the pass rule in check_wh3_checkpoint.assess).
+    runs = {"source": source(), "restore-a": battle(), "restore-b": battle(),
+            "changed": battle(changed_from=1304)}
+    if case == "change_before_its_order":
+        runs["changed"] = battle(changed_from=check.CHANGED_TICK - 100)
+    elif case == "different_seed":
+        next(r for r in runs["restore-b"] if r["event"] == "restored")["lua_seed_matches"] = False
+    output = write(tmp_path, runs)
+    if case == "not_closed":
+        (output / "restore-a/manifest.json").write_text(json.dumps({"closed": False,
+                                                                     "completed": True}))
+    assert not check.assess(output)["pass"]
+
 @pytest.mark.parametrize("interrupt_after_move", [False, True])
 @pytest.mark.parametrize("phase", ["aside", "return"])
 def test_only_replay_finishes_returning_bystanders_after_interrupt(

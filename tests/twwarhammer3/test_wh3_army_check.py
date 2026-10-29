@@ -128,3 +128,33 @@ def test_each_army_launch_checks_spire_before_preparation(tmp_path, monkeypatch,
     assert str(queries[0][0]) == army_check.spire_runtime.WINDOWS_GAME_DIR
     assert queries[0][1]["names"] == ["SlayTheSpire.exe"]
     assert prepared == ([] if spire_running else [True])
+
+
+def stats_case(*, attack_shift=0, flat_ranks=False):
+    """A lobby readback (two armies, swordsmen at ranks 0, 3 and 9) and the battle's stats."""
+    sword = army_check.SWORD
+    ranks = {0: (30, 20, 50), 3: (33, 22, 55), 9: (39, 26, 60)}
+    if flat_ranks:
+        ranks = {rank: ranks[0] for rank in ranks}
+    lobby = ";".join(f"{sword}:{rank}:stat_melee_attack={a}/stat_melee_defence={d}/"
+                     f"stat_morale={m}" for rank, (a, d, m) in ranks.items())
+    log = ('x.UnitList.JoinString(UnitRecordContext.Key + ":" + ExperienceLevel) = '
+           + lobby + "\n") * 2
+    # Battle morale sits 4 below the lobby's (the side-wide offset); attack and defence match.
+    army = ";".join(f"{sword}:stat_melee_attack={a + attack_shift}/stat_melee_defence={d}/"
+                    f"stat_morale={m - 4}" for a, d, m in ranks.values())
+    return log, {"setup": {"unit_base_stats": f"p@{army}@@e@{army}"}}
+
+
+# agreed-checks.md, saved armies and experience: attack and defence exact between lobby and
+# battle start, ranks raise the stats, leadership compared relative to rank zero.
+def test_battle_stats_follow_the_lobby_readback():
+    evidence = army_check.check_stats(*stats_case())
+    assert [e["battle"][9]["stat_morale"] for e in evidence] == [56, 56]
+
+
+@pytest.mark.parametrize("case", [{"attack_shift": 1}, {"flat_ranks": True}],
+                         ids=["attack-off-by-one", "ranks-raise-nothing"])
+def test_battle_stats_reject_a_shifted_attack_and_ranks_without_effect(case):
+    with pytest.raises(AssertionError):
+        army_check.check_stats(*stats_case(**case))
