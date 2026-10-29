@@ -1,7 +1,8 @@
 # Restoring the game to a saved state (investigation)
 
 *Proposed 2026-10-23. The owner made this the highest priority within the Slay the Spire
-work ([direction](../owner-direction.md)). Nothing is built or run yet. Everything below
+work ([direction](../owner-direction.md)). Step 1 was done offline on 2026-10-29
+([results](#step-1-results-2026-10-29-offline)); nothing live is built or run. Everything below
 is unverified until a check the owner agrees has passed
 ([AGENTS.md](../../AGENTS.md#verification-hard-rule)).*
 
@@ -54,7 +55,7 @@ must handle: the availability check before dispatch, `loadingSave` and the menu 
 **Replaying commands looks deterministic so far.** Many runs share seeds: RUNDEV1, RUNDEV2
 and RUNDEV3 were played 13, 10 and 8 times across harness versions, QWENSMOKE1 twice.
 Across 152 same-seed run pairs, observations were identical while the two runs' commands
-agreed: 1,230 compared steps, 150 distinct states, zero differences once card UUIDs are
+agreed: 1,230 compared steps, 150 distinct states (a 2026-10-29 rerun counts 136), zero differences once card UUIDs are
 dropped. The prefixes are short, 2 to 33 commands, and none goes past floor 3. Wider
 evidence agrees: every act map and boss matched per seed, and 331 combat starts with the
 same floor and encounter (88 groups) had the same monster max HP and first intents. Card
@@ -66,7 +67,8 @@ Gameplay uses found so far:
   the card-random stream on every frame until a timer runs out. How many draws that takes
   depends on frame timing. Later draws in the same room can then differ; the next room
   entry rebuilds the stream.
-- In the unmodded game, end-of-turn card triggers run in an unseeded shuffled order. The
+- In the unmodded game, Ethereal cards are exhausted at end of turn in an unseeded shuffled
+  order; Burn and the curses trigger in hand order (corrected on 2026-10-29). The
   pinned BaseMod contains `ConsistentEtherealPatch`, which seeds that shuffle when its
   `basemod-fixes` setting is on. That setting defaults to on and our config file is empty,
   so the order is very likely seeded here; this comes from bytecode and is unchecked live.
@@ -171,6 +173,39 @@ JUDGEMENT: "same state" means identical settled observations with card UUIDs and
 Library's book text removed, plus identical autosave fields apart from timing (assistant,
 2026-10-23). A stricter rule would compare hidden RNG positions mid-floor. Every pass
 above rests on it.
+
+## Step 1 results (2026-10-29, offline)
+
+Done by Claude Code while the owner was away: read-only over the traces and the pinned jar, no
+launch. Scripts, outputs and a skeptic's rerun of every claim are in
+`runs/spire-restore-step1-20261029/` (`results.md`). Unverified: no check is agreed.
+
+- **Replay plans.** DATA001: 212 commands, its 24 snapshots indexed by the commands before
+  each; the long Luna run (RUNDEV2): 881 commands. Each command is followed by exactly one
+  settled observation, and the counts equal the results' `actions`. Where step 2 allows a
+  first difference: DATA001 has no Discovery-family use and stays in act 1; RUNDEV2 uses a
+  Skill Potion and a Power Potion (commands 143 and 485) and reaches the act 3 shrine roll.
+  Neither run ends a turn holding two Ethereal cards; the end-turn clause as written also
+  allows two Burn end turns, DATA001 205 and RUNDEV2 553.
+- **Comparator.** Over the 152 same-seed pairs, no pair differs before its commands split
+  (130 differ right after, 22 later). A copy with one state changed inside a 33-command
+  prefix is reported at that state. Five single-state cases separate The Library's book text
+  (ignored) from its options and other events' text (compared), and card UUIDs (ignored)
+  from card ids (compared).
+- **Shrine list.** `getShrine` adds Secret Portal only at 800 s or more of play time in act
+  3, then takes one event-RNG draw modulo the list's size. A list one shorter uses the same
+  draw but picks the same shrine with probability 1/n (n with the portal), and the pick is
+  removed from the pool, so later act 3 shrines can differ too. Nothing else in gameplay
+  reads play time.
+- **Discovery.** Each `DiscoveryAction` update draws a fresh set of choices; the first set is
+  the one shown, so the choices are reproducible, and waiting at the screen adds no draws.
+  After the pick, each frame of the next 0.25 s draws another set (14 or 15 at 60 fps), so
+  the card-random stream sits a few draws apart until the next room.
+- **Event texts.** Only The Library's exported text uses `MathUtils`; the other event call
+  sites feed effects, the Gremlin wheel's resting angle or Neow's speech bubble.
+- **Correction.** The unseeded end-of-turn shuffle orders only Ethereal exhausts; Burn and
+  the curses trigger in hand order. Whether to narrow step 2's "two or more end-of-turn
+  trigger cards" to two or more different Ethereal cards is the owner's call.
 
 ## Owner decisions
 
