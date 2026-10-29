@@ -58,6 +58,16 @@ NOTE = "cat > note.md <<'EOF'\nNever run ruff format here; git commit only after
     ("git reset", True, False),
     ("git reset --hard HEAD~1", True, True),
     ("git checkout main", True, True),
+    ("uv run ruff -q format src", False, True),  # options before format
+    ("ruff --config pyproject.toml format src", False, True),
+    ("echo a#b; uv run ruff format src", False, True),  # `#` inside a word
+    ("n=${#a[@]}; git commit -m x", True, True),
+    ("wc -c <<< hello\nuv run ruff format src", False, True),  # a here-string
+    ("echo $((1<<2))\ngit commit -m y", True, True),  # a shift
+    ("(cd /tmp && git status) && git commit -m x", True, True),  # a subshell's cd ends
+    ("nice -n 10 git commit -m x", True, True),
+    ("env -u FOO git commit -m x", True, True),
+    ("git reset HEAD", True, False),
 ])
 def test_bash_hook_refuses_ruff_format_and_head_moves_during_a_queue(command, queue, blocked):
     assert (pre_bash.refusal(command, queue=queue) is not None) is blocked
@@ -139,15 +149,20 @@ def test_stop_hook_checks_a_changed_tree_once_and_reruns_a_failure(repo, capsys)
         assert stop_check.main(recorder(runs, False)) == 2
 
 
-def test_a_stop_after_a_block_goes_through_once_the_check_has_failed(repo, capsys):
+def test_the_stop_hook_never_blocks_twice_in_a_row_but_keeps_checking(repo, capsys):
+    # Under /goal every stop after the first carries stop_hook_active, whichever hook blocked.
     repo, _ = repo
-    runs = []
+    runs, active = [], {"stop_hook_active": True}
     (repo / "a.py").write_text("a = 2\n")
-    assert stop_check.main(recorder(runs, False), {"stop_hook_active": True}) == 2  # first look
+    assert stop_check.main(recorder(runs, False), active) == 2
     (repo / "a.py").write_text("a = 3\n")  # e.g. a play job appending to results.csv
-    assert stop_check.main(recorder(runs, False), {"stop_hook_active": True}) == 0
-    assert "still fails" in capsys.readouterr().out and runs == [False]
-    assert stop_check.main(recorder(runs, False), {}) == 2  # a fresh stop checks again
+    assert stop_check.main(recorder(runs, False), active) == 0
+    assert "still failed" in capsys.readouterr().out and runs == [False]
+    assert stop_check.main(recorder(runs, True), active) == 0 and runs == [False, True]
+    (repo / "a.py").write_text("a = 4\n")
+    assert stop_check.main(recorder(runs, False), active) == 2  # a new failure blocks again
+    assert stop_check.main(recorder(runs, False), active) == 0  # the next stop goes through
+    assert stop_check.main(recorder(runs, False), {}) == 2  # a fresh turn's stop checks again
 
 
 def test_no_check_runs_beside_a_game_job_and_a_timeout_is_not_retried(repo, capsys):
@@ -173,7 +188,7 @@ def test_a_game_job_is_a_python_process_running_one(tmp_path):
     proc("21", "/bin/bash", "-c", "uv run python -m twwarhammer3 play --output x")
     proc("22", "/repo/.venv/bin/python", "-m", "twwarhammer3", "stats")
     assert not stop_check.game_job_running(tmp_path)
-    proc("23", "/repo/.venv/bin/python3", "-m", "spire", "play", "--seed", "A")
+    proc("23", "/repo/.venv/bin/python3", "-m", "spire", "rollout", "--output", "x")
     assert stop_check.game_job_running(tmp_path)
 
 

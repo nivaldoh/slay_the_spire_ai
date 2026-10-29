@@ -4,12 +4,14 @@ since its last pass, and keep the turn going while it fails.
 The tree's identity is HEAD, the index, the diff against HEAD and the untracked files'
 contents (ignored files such as runs/ are left out). A pass is remembered per identity in
 runs/checks/, so an unchanged tree is not rechecked; a failure is rerun at the next fresh
-stop, in case it was a timing flake. Exit 2 blocks the stop and shows the failure. A stop that
-follows a block (`stop_hook_active`) goes through with a warning, so a failure Claude cannot
-fix (another session's change, a file a play job keeps writing) holds the turn once, not
-forever. A timed-out check is killed with its tests and not retried on the same tree; a check
-that cannot run warns and lets the stop through. While a game job runs (a WH3 or Spire play,
-launch, menu or RL phase, or the queue), the check is skipped so its load stays off the game.
+stop, in case it was a timing flake. Exit 2 blocks the stop and shows the failure. This hook
+never blocks twice in a row: a stop after its own block (`stop_hook_active`, which another
+Stop hook such as /goal's also sets, so the hook remembers its last answer) goes through with a
+warning, so a failure Claude cannot fix (another session's change, a file a play job keeps
+writing) costs one turn, not the session. A timed-out check is killed with its tests and not
+retried on the same tree; a check that cannot run warns and lets the stop through. While a
+game job runs (a WH3 or Spire play, launch, menu, RL phase, rollout, training, evaluation or
+replay, or the queue), the check is skipped so its load stays off the game.
 """
 import hashlib
 import json
@@ -23,6 +25,9 @@ ROOT = Path(__file__).resolve().parents[2]
 CACHE = ROOT / "runs" / "checks" / "stop-hook.json"
 TIMEOUT_S = 600
 CHECK_COMMAND = ["uv", "run", "--locked", "python", "scripts/check.py"]
+# Commands that start or drive a game (`spire replay` is on the spire-restore-replay branch).
+GAME_COMMANDS = {"twwarhammer3": ("play", "launch", "menu", "rl"),
+                 "spire": ("play", "rollout", "train", "evaluate", "replay")}
 
 
 def git(*args: str) -> bytes:
@@ -40,7 +45,7 @@ def tree_identity() -> str:
 
 
 def game_job_running(proc: Path = Path("/proc")) -> bool:
-    """A Python process running `-m twwarhammer3|spire play|launch|menu|rl` or the queue."""
+    """A Python process running a command of GAME_COMMANDS or the queue."""
     for cmdline in proc.glob("[0-9]*/cmdline"):
         try:
             argv = cmdline.read_bytes().decode(errors="replace").split("\0")
@@ -51,8 +56,7 @@ def game_job_running(proc: Path = Path("/proc")) -> bool:
         if any(Path(arg).name == "wh3_queue.py" for arg in argv[1:]):
             return True
         for i, arg in enumerate(argv[:-2]):
-            if arg == "-m" and argv[i + 1] in ("twwarhammer3", "spire") and argv[i + 2] in (
-                    "play", "launch", "menu", "rl"):
+            if arg == "-m" and argv[i + 2] in GAME_COMMANDS.get(argv[i + 1], ()):
                 return True
     return False
 
@@ -96,8 +100,10 @@ def main(check=run_check, event: dict | None = None, jobs=None) -> int:
         cache = read_cache()
         if cache.get("passed") == identity:
             return 0
-        if event.get("stop_hook_active") and "failed" in cache:
-            return say("scripts/check.py still fails; stopping anyway (see runs/checks/)")
+        if event.get("stop_hook_active") and cache.get("blocked"):
+            remember(**{k: v for k, v in cache.items() if k != "blocked"})
+            return say("scripts/check.py still failed at the last stop; stopping anyway "
+                       "(see runs/checks/)")
         if cache.get("timed_out") == identity:
             return say("scripts/check.py timed out on this tree before; not rerun")
         if jobs():
@@ -107,7 +113,7 @@ def main(check=run_check, event: dict | None = None, jobs=None) -> int:
         except subprocess.TimeoutExpired:
             remember(timed_out=identity)
             return say(f"scripts/check.py timed out after {TIMEOUT_S} s; not rerun on this tree")
-        remember(**{"passed" if passed else "failed": identity})
+        remember(**({"passed": identity} if passed else {"failed": identity, "blocked": True}))
         if passed:
             return 0
     except (OSError, ValueError, subprocess.SubprocessError) as error:

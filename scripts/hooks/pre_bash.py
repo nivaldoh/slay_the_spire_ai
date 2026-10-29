@@ -53,7 +53,8 @@ def logical_lines(text: str) -> list[str]:
             end = text.find("\n", i)
             i = len(text) if end < 0 else end
             continue
-        elif c == "<" and (found := HEREDOC.match(text, i)):
+        elif (c == "<" and text[i:i + 3] != "<<<" and (i == 0 or text[i - 1] in " \t;&|(")
+              and (found := HEREDOC.match(text, i))):
             waiting.append(found.group(2))
             buf.append(found.group(0))
             i = found.end()
@@ -78,13 +79,16 @@ def logical_lines(text: str) -> list[str]:
 
 
 def commands(line: str) -> list[list[str]]:
-    """The simple commands in one line, as word lists; ValueError if its quotes do not close."""
+    """The simple commands in one line, as word lists, with ["("] and [")"] marking subshells;
+    ValueError if its quotes do not close."""
     lexer = shlex.shlex(line, posix=True, punctuation_chars=";&|()")
     lexer.whitespace_split = True
+    lexer.commenters = ""  # logical_lines already dropped comments; `a#b` is one word
     out, current = [], []
     for word in lexer:
         if word in SEPARATORS:
             out.append(current)
+            out.append([word] if word in ("(", ")") else [])
             current = []
         else:
             current.append(word)
@@ -95,7 +99,8 @@ def program(words: list[str]) -> list[str]:
     """The words from the program on: assignments and wrappers skipped."""
     while words and (words[0] in WRAPPERS or re.match(r"[A-Za-z_][A-Za-z0-9_]*=", words[0])
                      or (words[0].startswith("-") and len(words) > 1)):
-        words = words[2:] if words[0] == "timeout" and len(words) > 2 else words[1:]
+        takes_value = words[0] in ("timeout", "-n", "-u", "-s", "-k", "-g", "--unset")
+        words = words[2:] if takes_value and len(words) > 2 else words[1:]
     return words
 
 
@@ -126,7 +131,7 @@ def moves_this_head(words: list[str], cwd: Path) -> str | None:
     sub, args = rest[0], rest[1:]
     if sub in ("checkout", "reset") and "--" in args:
         return None  # restores files
-    paths = [a for a in args if not a.startswith("-")]
+    paths = [a for a in args if not a.startswith("-") and a != "HEAD"]
     if sub == "reset" and all((where / a).exists() for a in paths) and not (
             {"--soft", "--hard", "--mixed", "--keep", "--merge"} & set(args) and paths):
         return None  # unstages paths, or resets the index to HEAD
@@ -165,14 +170,21 @@ def refusal(text: str, *, queue: bool, cwd: Path = ROOT) -> str | None:
             if queue and (found := GIT_TEXT.search(line)) and is_this_tree(cwd):
                 return git_reason(found.group(1))
             continue
+        outer = []
         for words in parsed:
+            if words == ["("]:
+                outer.append(cwd)  # a subshell's cd ends with it
+                continue
+            if words == [")"]:
+                cwd = outer.pop() if outer else cwd
+                continue
             words = program(words)
-            if words and words[0] == "cd" and len(words) > 1:
+            if words and words[0] in ("cd", "pushd") and len(words) > 1:
                 cwd = place(cwd, words[1])
                 continue
-            for i, word in enumerate(words[:-1]):
-                if Path(word).name == "ruff" and words[i + 1] == "format" and not (
-                        {"--check", "--diff"} & set(words[i + 2:])):
+            for i, word in enumerate(words):
+                if Path(word).name == "ruff" and "format" in words[i + 1:] and not (
+                        {"--check", "--diff"} & set(words[i + 1:])):
                     return RUFF_REASON
             sub = moves_this_head(words, cwd)
             if queue and sub:
@@ -186,7 +198,7 @@ def main() -> int:
         text = event["tool_input"]["command"]
     except (ValueError, KeyError, TypeError):
         return 0
-    reason = refusal(text, queue=queue_running(), cwd=Path(event.get("cwd") or ROOT))
+    reason = refusal(text, queue=queue_running(), cwd=Path(event.get("cwd") or ROOT).resolve())
     if reason:
         print(reason, file=sys.stderr)
         return 2
