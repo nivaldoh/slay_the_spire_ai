@@ -92,7 +92,8 @@ needs your yes (changes since HEAD):
 markers   3 problems listed in the log, for the owner
 ```
 
-- It runs `ruff check .` and the whole offline suite (about 20 s), Lua and image tests
+- It runs `ruff check .` and the whole offline suite (about 27 s; 18 s before 2026-10-29's
+  evidence-replay tests), Lua and image tests
   included, the repo rules ([test_repo_rules.py](../tests/test_repo_rules.py)) and the link
   test among them. It exits 1 if anything fails. It never launches a game, spends money or
   commits, and it removes `WH3_WRITE_PROMPTS` so it cannot rewrite prompt snapshots.
@@ -107,7 +108,7 @@ markers   3 problems listed in the log, for the owner
   changes markers, so they never fail the run.
 - Optional extras (`--extra train`, `--extra llm`), the browser check and live game checks
   run only when a change touches what they cover. The full offline suite always runs, since
-  it takes 20 seconds (owner, decision 3: "Yes").
+  it takes well under a minute (owner, decision 3: "Yes", when it took 20 s).
 
 ## Checks in layers
 
@@ -133,7 +134,7 @@ question. Layer names follow Sonar's
 | Structure | Repo rules: `gameai` imports no game; AGENTS.md at most 200 lines; links resolve |
 | Regression | The whole offline suite before every commit |
 | Environment | `doctor`, the build pin, the source-scope refusal, `RuntimeLock`, ledger caps |
-| Checks of checks | Planted wrong versions by hand in a scratch copy; proposed: [mutmut](https://mutmut.readthedocs.io/en/latest/) (not installed) on 2-3 files when an agreed check is made or changed |
+| Checks of checks | Planted wrong versions in a scratch copy, by hand or with the refusal sweep that removes each `raise`/`error()` in turn (`runs/refusal-sweep-20261029/sweep.py`, local only; 2026-10-29 results in the WH3 log); proposed: [mutmut](https://mutmut.readthedocs.io/en/latest/) (not installed) on 2-3 files when an agreed check is made or changed |
 
 A check counts only after it has failed on a planted wrong version (in a scratch copy) and
 passed on the real code: [mutation testing](https://sqlite.org/testing.html#mutation_testing)

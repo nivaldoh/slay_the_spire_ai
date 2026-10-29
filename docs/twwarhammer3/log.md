@@ -51,15 +51,20 @@ parses; a scratch worktree; `runs/refusal-sweep-20261029/`), the suite rerun, th
 for the misses. One rerun reviewer checked the counts and found the first play count wrong.
 - Caught before → after: `protocol.py` 37 → 38 of 38 (`b1aefe7`; a `None` reply crashed);
   `mailbox.py` 5 of 5 (3 by hanging: a removed timeout waits forever); battle mod `error()`
-  refusals 5 → 35 of 39 and its 3 returned refusals 0 → 3 (`4027987`, `3282691`; left: the
+  refusals 5 → 35 of 39 and its 5 returned refusals 0 → 5 (`4027987`, `3282691`; left: the
   recorder's file errors, the battle start button); `play.py` 8 → 13 of 13 (`602f197`,
   `3282691`: the source-change stop, setup timeouts, custom ending, constructor failure);
   `setup.py` 19 → 40 of 40 (`dac11a7`); `gameai` ledger, llm and providers 14 → 18 of 18
-  (`f21c70e`, the ledger's reservation guard among them); `windows.py` 2 of 5 (needs Windows).
+  (`f21c70e`, the ledger's reservation guard among them); `windows.py` 2 of 5 (needs Windows);
+  `export.py` 10 → 17 of 17 (`a4a6011`: corrupt traces stop an export); `checkpoint.py` 10 →
+  20 of 32 (`ba2a203`: pre-launch refusals with the lock stubbed, replay checks; left: real
+  launch paths, bystander replays, step-run library preconditions, a corrupted copy).
 - Spire's public boundary: 3 → 6 of 7 planted leaks (`d50986f`); the seventh, the seed, is
   also removed by the field allowlist.
 - Decay check: the ten planted versions of 2026-10-20 (b42), rebuilt from their names, are
   all still caught (`runs/decay-check-20261029/`).
+- Tonight's total (`runs/light-factory-20261029/tally.md`): 305 planted versions; the day's
+  tests missed 151 (3 equivalent); new tests closed 126; 22 left, each named.
 - Found on the way: a test-order dependence (state.md Known issues) and `[cards]` markers
   ([judgement](../judgement.md#status-and-how-to-continue)).
 Not established: live engine behaviour; that each refusal is the right rule.

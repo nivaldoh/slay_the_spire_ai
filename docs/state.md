@@ -94,9 +94,9 @@ The broader RL environment remains a separate discussion, possibly connected to 
   ([details](spire/state-restore.md#risks-found-on-the-way)). Ironclad unlock level 4 is 43
   points away; decide the profile question before more Spire game time (owner's note: maybe
   unlock things normally first, then enable restore).
-- `test_wh3_capture.py::test_passive_capture_runs_outside_caller_and_joins_evidence` waits 2 s
-  and timed out under parallel load twice (2026-10-20 beside a live run; 2026-10-29 beside
-  reviewer runs): rerun before reading it as a regression. Unchanged: editing it needs your yes.
+- Timing flakes under parallel load (rerun before reading one as a regression; editing them
+  needs your yes): `test_wh3_capture.py`'s passive-capture test (2 s wait; 2026-10-20, 10-29)
+  and once `test_wh3_checkpoint_rl.py`'s source-run test (2026-10-29).
 - Test order matters once: `test_wh3_stats.py` deletes and restores `PRICES["gpt-6-luna"]`,
   which moves it last, so `tests/fullrun/test_spire_cli.py` fails when the WH3 tests run
   first; the default order hides it. A one-line fix to that test awaits your yes.
