@@ -415,3 +415,26 @@ def test_a_refusal_mentions_held_spend_only_while_a_call_holds_some(tmp_path):
     with pytest.raises(BudgetExhausted) as error:
         ledger.reserve(1)
     assert "held" not in str(error.value)
+
+
+@pytest.mark.parametrize("usd", [-0.01, float("nan"), float("inf")])
+def test_a_negative_or_nonfinite_reservation_is_refused(tmp_path, usd):
+    # A negative reservation would loosen the hard budget for every call after it; removing
+    # this refusal passed every test before (runs/refusal-sweep-20261029/gameai-ledger.txt).
+    ledger = Ledger(tmp_path / "spend.jsonl", 1)
+    with pytest.raises(ValueError, match="finite and nonnegative"):
+        ledger.reserve(usd)
+    assert ledger.held == 0
+
+
+def test_a_model_needs_a_key_and_a_positive_output_cap(tmp_path, monkeypatch):
+    # Both refusals passed every test when removed (gameai-llm.txt in the same folder).
+    ledger = Ledger(tmp_path / "spend.jsonl", 1)
+    with pytest.raises(ValueError, match="max_output_tokens must be positive"):
+        api.Model("gpt-6-luna", "low", ledger, instructions="", max_output_tokens=0,
+                  send=lambda body: {})
+    spec = api.get_provider("openai")
+    monkeypatch.delenv(spec.key_env, raising=False)
+    monkeypatch.delenv(spec.key_file_env, raising=False)
+    with pytest.raises(api.APIError, match=f"Set {spec.key_env} or {spec.key_file_env}"):
+        api.api_key("openai")
