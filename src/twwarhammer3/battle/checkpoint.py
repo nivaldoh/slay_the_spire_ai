@@ -858,7 +858,9 @@ def checkpoint_root(declaration: dict, library: Path) -> dict:
     root, saves = declaration["root"], declaration["saves"]
     if declaration.get("source_control", {"policy": "hold"}) != {"policy": "hold"}:
         raise ValueError("only a hold source (no orders) is implemented")
-    if saves["every"] % declaration["readings_every"]:
+    # Readings fall on ticks divisible by readings_every; every save tick must be one.
+    if saves["first"] % declaration["readings_every"] or saves["every"] % declaration[
+            "readings_every"]:
         raise ValueError("save ticks must carry a reading")
     scenario = setup.scenarios()[declaration["scenario"]]
     plan = {"scenario": declaration["scenario"], "source_control": {"policy": "hold"},

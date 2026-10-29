@@ -699,6 +699,9 @@ def test_an_evaluation_is_written_once_and_only_after_its_start_adapters(tmp_pat
     with pytest.raises(FileExistsError):
         rl.evaluate(declaration, tasks)
     assert (run / f"eval-adapter-final-{value['hash'][:12]}.json").read_text() == "{}"
+    (run / f"eval-adapter-final-{value['hash'][:12]}.json").unlink()
+    with pytest.raises(ModelLoaded):  # the start's evaluation exists: this one goes ahead
+        rl.evaluate(declaration, tasks)
 
 
 def test_recount_refuses_a_directory_with_nothing_to_recount(tmp_path):

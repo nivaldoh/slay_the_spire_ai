@@ -402,6 +402,9 @@ def test_traces_that_contradict_themselves_are_refused_with_their_trace_line(tmp
     (combat / "manifest.json").write_text(json.dumps({**manifest, "scope": "first_combat"}))
     with pytest.raises(ValueError, match="not a full-run job$"):
         export.export_runs([combat], tmp_path / "export-combat")
+    with pytest.raises(ValueError, match="Select at least one job or run"):
+        export.export_runs([], tmp_path / "export-none")
+    assert not (tmp_path / "export-none").exists()
 
 
 def test_unfinished_changed_or_misplaced_evidence_is_refused(tmp_path, monkeypatch):

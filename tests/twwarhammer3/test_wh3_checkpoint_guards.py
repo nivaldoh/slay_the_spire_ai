@@ -153,6 +153,7 @@ def test_a_source_run_without_an_engine_ending_records_no_library(tmp_path):
 @pytest.mark.parametrize("change,message", [
     ({"source_control": {"policy": "llm"}}, "only a hold source"),
     ({"readings_every": 200}, "save ticks must carry a reading"),
+    ({"saves": {"first": 650, "every": 300, "last": 1250}}, "save ticks must carry a reading"),
 ])
 def test_a_root_its_source_battle_cannot_honour_is_refused_before_playing(offline, change,
                                                                            message):
@@ -223,5 +224,5 @@ def test_following_the_agent_stops_on_its_faults(tmp_path, monkeypatch, events, 
     with pytest.raises(error, match=message):
         checkpoint.wait(log, Agent(exited), 2000)
     log.write_text("".join(json.dumps(event) + "\n" for event in [*events, {"event": "done"}]))
-    if not exited and error is TimeoutError:
-        assert checkpoint.wait(log, Agent(False), 2000) == {"event": "done"}
+    if error is not RuntimeError:  # an agent that exits after logging done has finished
+        assert checkpoint.wait(log, Agent(True), 2000) == {"event": "done"}
