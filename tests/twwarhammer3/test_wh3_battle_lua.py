@@ -637,6 +637,37 @@ def test_lua_recorder_is_independent_public_throttled_and_failure_isolated():
     lua.execute("session.record_replay = false")
     record(4000, False)
     assert g.logs == 1
+    # Each failure is logged with its cause, not as a later nil index or not at all.
+    lua.execute("session.record_replay = true; function log(e) logs = logs + 1; logged = e end")
+    for now, failing, cause in (
+            (5000, "io.open = function() return nil, 'permission denied' end", "permission denied"),
+            (6000, """io.open = function() return {write = function() return true end,
+                                                  close = function() end} end
+                      json.encode = function() error('cyclic table') end""", "cyclic table"),
+            (7000, """json.encode = function() return 'frame' end
+                      io.open = function() return {write = function() return nil, 'disk full' end,
+                                                  close = function() end} end""", "disk full")):
+        lua.execute(failing)
+        logs = g.logs
+        record(now, False)
+        assert g.logs == logs + 1 and cause in g.logged
+
+
+def test_lua_start_button_fallback_names_a_missing_button():
+    lua = runtime()
+    lua.execute("""
+        bm = {battle = {}}
+        function bm.battle:end_current_battle_phase() error('not yet') end
+        core = {get_ui_root = function() return {} end}
+        function find_uicomponent(root, name) return nil end
+        function clean_error(e) return tostring(e) end
+        logged = {}
+        function log(e) logged[#logged + 1] = e end
+    """)
+    load_battle(lua, "try_end_deployment")()
+    logged = list(lua.globals().logged.values())
+    assert logged[0].startswith("end_current_battle_phase: ")
+    assert "button_battle_start not found" in logged[1]
 
 
 def test_lua_presentation_never_queries_hidden_enemy_positions_or_policy_memory():
