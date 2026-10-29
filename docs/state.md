@@ -94,6 +94,9 @@ The broader RL environment remains a separate discussion, possibly connected to 
   ([details](spire/state-restore.md#risks-found-on-the-way)). Ironclad unlock level 4 is 43
   points away; decide the profile question before more Spire game time (owner's note: maybe
   unlock things normally first, then enable restore).
+- `test_wh3_capture.py::test_passive_capture_runs_outside_caller_and_joins_evidence` waits 2 s
+  and timed out under parallel load twice (2026-10-20 beside a live run; 2026-10-29 beside
+  reviewer runs): rerun before reading it as a regression. Unchanged: editing it needs your yes.
 - The report browser check is separate from pytest. Spire's Workshop mod pins still block a
   run when a mod updates.
 
