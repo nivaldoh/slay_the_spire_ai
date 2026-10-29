@@ -127,6 +127,11 @@ def test_a_changed_workshop_jar_stops_the_launch_before_the_mod_config(setup, mo
     # config path is a temporary one, so a missing check cannot touch the real file.
     config = setup / "cm/config.properties"
     monkeypatch.setattr(runtime, "communication_config", lambda: config)
+    for name in runtime.PINS:  # an earlier launch deployed matching copies
+        workshop, *copies = runtime.mod_paths(name)
+        for copy in copies:
+            copy.parent.mkdir(parents=True, exist_ok=True)
+            copy.write_bytes(workshop.read_bytes())
     (setup / "workshop/CommunicationMod.jar/CommunicationMod.jar").write_bytes(b"update")
     with pytest.raises(RuntimeError, match="Workshop hash changed for CommunicationMod.jar"):
         runtime.prepare_runtime("172.18.0.1", 9000)
