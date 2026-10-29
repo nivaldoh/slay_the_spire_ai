@@ -28,6 +28,9 @@ CARDS = {
         "tactic": "cycle charging: charge, pull out, charge again instead of grinding",
         # hold is no foil here: the AI defends, so standing still loses on the timer by the
         # mode's rule (1205 s, bench-b32-chariothard-floor-hold-20261018).
+        # JUDGEMENT: Foils — assistant, 2026-10-18 (b33): the two naive floors, both grinding in
+        # melee; no foil rides straight through. The owner kept c1's record; another foil set
+        # changes whether a new round's win shows the tactic.
         "foils": ("attack_nearest", "rush_nearest"),
         # (controller, added age ms, decision interval ms) -> wins required in the round.
         # The gate witness decides at tick rate on 5 s-old information. A model-pace gate
@@ -40,6 +43,9 @@ CARDS = {
         "foil_launches": 10,  # a foil that wins 20% of battles passes 10 of 10 losses 11%
         "witness_launches": 5,  # 4 of 5 passes a 0.5 witness 19% and fails a 0.8 one 26%
         "cycles": 1,  # each witness win shows at least this many cycles
+        # JUDGEMENT?: Pre-registration label — assistant, 2026-10-19 (e2777f4): the verdict names
+        # 5396182, though forfeit scoring (b35) and the printed rule text (e2777f4, 1b56ed5) came
+        # later; naming the latest rule revision instead drops c1's "pre-registered" claim.
         "rule_revision": "5396182",  # the commit that pre-registered the rule
     },
 }
@@ -69,6 +75,8 @@ def served(episode_dir: Path) -> tuple:
     return tuple(sorted(name for name in names if name))
 
 
+# Which failures forfeit rests on JUDGEMENT src/twwarhammer3/battle/play.py Operator errors and
+# Forfeit split; a truncation's forfeit on JUDGEMENT src/twwarhammer3/battle/play.py Wall cap.
 def outcome(episode: dict) -> str:
     """won, lost, forfeit (a loss) or excluded (rerun). The battle never waits: a controller
     failure or a truncation during a battle forfeits. Game and setup failures, interrupts and
@@ -161,12 +169,18 @@ def battles(card: dict, directories: list[Path]) -> tuple[list[dict], int]:
         if (manifest.get("scenario") or {}).get("name") != card["scenario"]:
             continue
         config, deployment = manifest["config"], manifest.get("deployment") or {}
+        # JUDGEMENT?: Cell identity — assistant, 2026-10-18 (b33) and later: a cell mixing these
+        # fields, build, pack or cadence is starred and fails admission; the harness revision and
+        # `scoring` are not among them. Adding the revision stars c1 (b34-b36): not admitted.
         setup = json.dumps([manifest["scenario"].get(key) for key in (
             "map", "player", "enemy", "expect", "attacker", "battle_type")], sort_keys=True)
         for episode in manifest.get("episodes", []):
             control = episode.get("card") or {}
             name = episode.get("policy") or control.get("name") or ""
             age_ms = episode.get("delay_ms") or 0
+            # JUDGEMENT?: Sampling unit — assistant, 2026-10-18 (b33; the rematch skip 1b56ed5,
+            # 10-19): one row per launch, controller and age. Counting episodes changes n
+            # wherever a rematch repeats a controller (no such row among today's 103).
             if (job, name, age_ms) in seen:
                 skipped += 1
                 continue
@@ -284,6 +298,9 @@ def verdict(card: dict, cells: dict) -> list[str]:
     need, problems = card["foil_launches"], []
     for foil in card["foils"]:
         # A foil's forfeit shows nothing about how it plays, so it is no launch.
+        # JUDGEMENT?: Foil forfeits — assistant, 2026-10-18 (ca84106; b35 makes every forfeit a
+        # loss, foils excepted only in tactic-cards.md). As a loss, a crashing foil would fill its
+        # launches without playing; 0 of 23 recorded foil rows forfeited.
         scored = [r for r in cells.get((foil, 0, 0), []) if r["outcome"] in ("won", "lost")]
         wins = sum(r["outcome"] == "won" for r in scored)
         if wins:

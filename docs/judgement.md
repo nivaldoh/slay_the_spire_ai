@@ -78,12 +78,13 @@ marking them for the owner's review; the rule for agents is in
   for every unmarked candidate, the reviews and the areas left (`[cards]`, `[spire-combat]`):
   `runs/judgement-batch-20261028/` (`task.md`, `review.md`; `markers-added.txt` lists the 44 by
   file and line for sampling).
-- 2026-10-29: `[cards]` 0-14 added none. Seven drafted markers were all dropped after one
-  skeptical review: the owner decided the forfeit boundary and foil forfeits (b35, merged on
-  the owner's word) and kept c1's record ("Yes, v2 at 2 s/2 s"); the sampling unit and the
-  pre-registration label change no recorded result (0 rows skipped; c1's verdict the same);
-  foils and cell identity matter only for a new card round, none planned. `[spire-combat]`
-  (105-119) is not done: the first-combat track is frozen since 2026-10-11, so its candidates
-  wait until that track reopens. Table and review: `runs/judgement-batch-20261029/`.
+- 2026-10-29: `[cards]` 0-14 added 5 markers in `cards.py` (Foils; `JUDGEMENT?` Pre-registration
+  label, Sampling unit, Cell identity, Foil forfeits) and a "rests on" reference to `play.py`'s
+  Operator errors, Forfeit split and Wall cap. Skipped: witness cadence (the owner chose v2 at
+  2 s/2 s and kept c1), contact wins (the owner's "Tell models"), `tactic-cards.md` (history).
+  Three reviews: the first rejected or rewrote 6 of 7 drafts; the next two found the b35
+  boundary still the assistant's (no owner-direction entry; interview question 18 asks).
+  `[spire-combat]` (105-119) waits until the frozen first-combat track reopens. Tables and
+  reviews: `runs/judgement-batch-20261029/`.
 - The owner has decided none of the marked calls (2026-10-23) and has not yet said whether
   the two examples set the right threshold.
