@@ -32,8 +32,8 @@ For each change:
    trusted example); a recorded output alone is not proof of correctness.
 2. Choose the cheapest relevant checks. For a bug, show the regression fails before the fix
    where feasible; for important verification, check it detects a plausible wrong implementation.
-3. Run focused tests with `uv run --locked pytest -ra <tests>` and `uv run --locked ruff
-   check .`; expand when a concrete risk requires it. Preserve useful failure output.
+3. Iterate with focused tests; before each commit run `scripts/check.py` (below) and quote its
+   five lines. Preserve useful failure output.
 4. Report passed, failed, skipped and unavailable checks, and what each establishes.
    Component tests and recorded cases do not establish live-game effects or policy strength.
 
@@ -154,6 +154,7 @@ docs/
   judgement.md     Judgement calls: the marker, placement limits and the marking pass
   agreed-checks.md The owner's agreed checks and the revisions where each passed
   posttraining.md  Traces to fine-tuning datasets for both games: roles, contract, splits
+  references.md    Outside sources on agent workflow, verification and evaluation, with status
   thesis/          The proposed master's thesis: proposal, directions, related work;
                    notes/README.md indexes the research notes (untracked: git grep misses it)
   twwarhammer3/    README.md (track page; its Pages table lists the others), log.md
@@ -173,8 +174,7 @@ by rematch; its `protocol.py` changes freely. Test files share one namespace (th
 
 ```bash
 uv sync --locked
-uv run --locked pytest -ra          # everything; or append tests/twwarhammer3 for WH3
-uv run ruff check .
+uv run --locked python scripts/check.py   # before each commit: Ruff, whole offline suite, warnings
 uv run python -m twwarhammer3 doctor   # read-only: pins, preferences, running game
 uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>   # add /episode-0000 [--at S]; --units
 uv run python -m twwarhammer3 watch    # follow the running job beside the game; --prompts
