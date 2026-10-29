@@ -46,37 +46,28 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 ## 2026-10-29: refusal sweeps, boundary leaks and a decay check
 
-Each refusal in a file was removed in turn (Python through its syntax tree, so the file still
-parses; a scratch worktree; `runs/refusal-sweep-20261029/`), the suite rerun, then tests added
-for the misses. One rerun reviewer checked the counts and found the first play count wrong.
-- Caught before → after: `protocol.py` 37 → 38 of 38 (`b1aefe7`; a `None` reply crashed);
-  `mailbox.py` 5 of 5 (3 by hanging: a removed timeout waits forever); battle mod `error()`
-  refusals 5 → 35 of 39 and its 5 returned refusals 0 → 5 (`4027987`, `3282691`; left: the
-  recorder's file errors, the battle start button); `play.py` 8 → 13 of 13 (`602f197`,
-  `3282691`: the source-change stop, setup timeouts, custom ending, constructor failure);
-  `setup.py` 19 → 40 of 40 (`dac11a7`); `gameai` ledger, llm and providers 14 → 18 of 18
-  (`f21c70e`, the ledger's reservation guard among them); `windows.py` 2 of 5 (needs Windows);
-  `export.py` 10 → 17 of 17 (`a4a6011`: corrupt traces stop an export); `checkpoint.py` 10 →
-  30 of 32 (`ba2a203`, `71d20bd`: pre-launch refusals with the lock stubbed, replay and
-  bystander checks; `22df7b4`: step-run library preconditions and a corrupted copy; `5b13e99`:
-  the agent follow's faults; left: the agent start inside a real launch); checkpoint RL's
-  `rl.py` 3 → 13 of 24 (`ab95b33`: task-set integrity, compare, evaluate, recount; left: 9
-  model-loading and training checks that need a real model, the token cap, a synthetic draw);
-  the Spire export 15 → 20 of 20 (`f00e88d`: the choice check behind each training label).
-- Spire: the run loop and decisions 2 → 9 of 9 (`82c8487`: a choice the game did not offer is
-  never sent; runs without an outcome end unscored); the Workshop pin and an empty dataset
-  selection (`57a1661`). Fully covered already: provenance (the source-scope refusal), the
-  Spire bridge, the WH3 runtime. Untested: lm.py (needs the llm extra), pack.py's zstd check.
-- Spire's public boundary: 3 → 6 of 7 planted leaks (`d50986f`); the seventh, the seed, is
-  also removed by the field allowlist.
-- Decay check: the ten planted versions of 2026-10-20 (b42), rebuilt from their names, are
-  all still caught (`runs/decay-check-20261029/`).
-- Tonight's total (`runs/light-factory-20261029/tally.md`): 386 planted versions; the day's
-  tests missed 190 (4 equivalent or covered twice); new tests closed 160; 26 left, each named.
-- The 285 tests that need the llm extra (torch, transformers, peft), skipped by `check.py`,
-  all pass at `2859da7` in a separate environment: 2063 passed, 1 skipped (Windows).
-- Found on the way: a test-order dependence (state.md Known issues) and `[cards]` markers
-  ([judgement](../judgement.md#status-and-how-to-continue)).
+Each refusal in a file was removed in turn (through the syntax tree, in a scratch worktree;
+`runs/refusal-sweep-20261029/`), the suite rerun, then tests added for the misses. A skeptic
+found cached bytecode had marked one Spire export site caught; every Python sweep was rerun
+at `c358915` without caches (`head-summary.txt`), and 22 suspect earlier counts were rechecked
+at their parent commits (`suspects-before.txt`): only that site was wrong.
+- Caught now: WH3 `protocol.py` 38/38, `mailbox.py` 5/5 (3 by hanging), `play.py` 13/13,
+  `setup.py` 40/40, `export.py` 17/17, `controllers.py` and `team.py` 15/15, `checkpoint.py`
+  30/32 (one missed site is equivalent), `rl.py` 13/24, battle mod `error()` 35/39 and returned
+  refusals 5/5; `gameai` 31 of 31 outside `windows.py` (2/5) and `lm.py` (1/4); Spire run loop,
+  decisions, bridge and runtime 16/16, export 20/20.
+- Left: Windows-only checks, the llm extra or a real model (`lm.py` 3, `rl.py` 10), the
+  checkpoint agent's start, zstd, the recorder's file errors and start button, a synthetic draw;
+  and from the entry below, the siege spell witness, the step run's context rule, the win rate.
+- Notable: a `None` reply crashed `protocol.py` (`b1aefe7`); corrupt traces stop exports
+  (`a4a6011`); a choice the game did not offer is never sent (`82c8487`); the choice check
+  behind each Spire training label is tested (`f00e88d`); a first checkpoint save off the
+  reading grid is now refused before its source battle (`c358915`, a code fix).
+- Spire's public boundary 3 → 6 of 7 planted leaks (`d50986f`); decay check: the ten
+  2026-10-20 plants, rebuilt, are still caught (`runs/decay-check-20261029/`).
+- Total (`runs/light-factory-20261029/tally.md`): 404 planted; the day's tests missed 195 (4
+  equivalent or covered twice); new tests closed 165; 26 left. The 285 llm-extra tests that
+  `check.py` skips pass in a separate environment (2069 passed, 1 skipped, at `d23dccb`).
 Not established: live engine behaviour; that each refusal is the right rule.
 
 ## 2026-10-29: planted wrong versions against the agreed checks and results readers
