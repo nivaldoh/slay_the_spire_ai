@@ -3,11 +3,12 @@
 AI policies for original Windows games from WSL. Current focus: Total War: WARHAMMER III
 (WH3; real-time custom battles through a Lua mod). Start with [docs/state.md](docs/state.md):
 read "Active work" and the relevant track, then that track's page.
-Codex loads this file; Claude Code imports it through `CLAUDE.md`.
+Codex loads this file; Claude Code imports it through `CLAUDE.md`. It holds hard rules and
+pointers in at most 200 lines (a repo rule): detail goes in the page it governs. How a change
+is made (cards, `scripts/check.py`, the reviewer, reports): [docs/workflow.md](docs/workflow.md).
 
-Keep shared and WH3 guidance here. Before Spire work, read
-[docs/spire/AGENTS.md](docs/spire/AGENTS.md), including work on its source, legacy configs,
-tests, scripts, or shared code affecting Spire. Skip that file for WH3-only work.
+Before Spire work (its source, legacy configs, tests, scripts, or shared code affecting it),
+read [docs/spire/AGENTS.md](docs/spire/AGENTS.md); skip it for WH3-only work.
 
 ## Verification (hard rule)
 
@@ -29,11 +30,12 @@ How the assistant applies it:
 For each change:
 
 1. State the observable behaviour and its independent reference (requirement, contract or
-   trusted example); a recorded output alone is not proof of correctness.
+   trusted example); a recorded output alone is not proof of correctness. A normal change
+   states them in its card ([workflow](docs/workflow.md#before-a-change-the-card)).
 2. Choose the cheapest relevant checks. For a bug, show the regression fails before the fix
    where feasible; for important verification, check it detects a plausible wrong implementation.
-3. Iterate with focused tests; before each commit run `scripts/check.py` (below) and quote its
-   five lines. Preserve useful failure output.
+3. Iterate with focused tests and expand when a concrete risk requires it (extras, live
+   checks); before each commit run `scripts/check.py`. Preserve useful failure output.
 4. Report passed, failed, skipped and unavailable checks, and what each establishes.
    Component tests and recorded cases do not establish live-game effects or policy strength.
 
@@ -57,23 +59,18 @@ the marking pass: [docs/judgement.md](docs/judgement.md).
 
 The assistant's proposals for the owner's 2026-10-18 goal (less bookkeeping, garbage and
 token use):
-- `docs/state.md` stays status only, under about 120 lines, and holds the current next
-  steps (other pages keep candidates and deferred items). New owner directions go in
+- `docs/state.md` stays status only, under about 120 lines, with the current next steps
+  (other pages keep candidates and deferred items). New owner directions go in
   `docs/owner-direction.md`. A log entry stays within about 20 lines: what changed, its
   evidence with counts, and what is unverified.
 - Read docs by section; do not reload full guidance already present in the session.
   Use multi-agent workflows only for independent verification, the WH3 loop's review step,
   or when the owner asks.
-- Write in simple, concrete language (owner, 2026-10-20). Describe what a unit, controller
-  or experiment actually does. Avoid inflated wording and unnecessary jargon; explain
-  technical terms when they help.
 - For complicated or ambiguous code (benchmarks, evaluation, environments, infrastructure,
-  tests, workflows), start from how well-known research repos do it and name the repo and file
-  followed in a comment or the commit (owner, 2026-10-28).
-- Put task-created scripts, logs, temporary artifacts and diagnostics inside this repository
-  (normally ignored `runs/`), never in the environment/home root or unrelated directories.
-  Keep test scratch directories there too; inventory earlier garbage for a later cleanup
-  rather than scattering more files.
+  tests, workflows), follow a well-known research repo and name the repo and file in a comment
+  or the commit (owner, 2026-10-28); outside sources go in [references.md](docs/references.md).
+- Put task-created scripts, logs, temporary artifacts, diagnostics and test scratch in the
+  ignored `runs/`, never in the home root or unrelated directories; inventory old garbage.
 - Delete a branch and its worktree once merged; create worktrees outside `/tmp`, which a
   WSL restart wipes. While a WH3 queue runs, commit nothing: it stops before its next job
   when HEAD moves. Add no file, scenario or diagnostic that no planned experiment uses.
@@ -82,93 +79,35 @@ token use):
 
 ## Working while the owner is away
 
-Proposed 2026-10-21, in force once the owner says yes: when the owner says they cannot
-review or are leaving, follow [docs/autonomy.md](docs/autonomy.md). Each task must finish
-useful work or reduce a named uncertainty, with a reference and stopping point. Reuse
-existing evidence; keep at most three independently reviewable changes waiting across
-agents and sessions. Stop unapproved external effects and respect harness refusals. Park
-adoption of changes to benchmark meaning; prepare only evidence that helps the choice.
-Runtime/experiment code stays on local branches; new checks remain "proposed, not yet
-agreed", and dependencies cannot outrun their evidence. Game time needs an away window and
-the page's named-plan/check/probe rules. At capacity, finish or simplify pending work; if
-no useful permitted step remains, record the resume condition and stop.
+When the owner says they cannot review or are leaving, see [docs/autonomy.md](docs/autonomy.md):
+its standing menu and small interviews were agreed on 2026-10-28; its other rules (at most
+three changes waiting, park changes to benchmark meaning, game time only in an away window)
+are the 2026-10-21 proposal, in force once the owner says yes. A long run gets a brief and a
+handoff note ([workflow](docs/workflow.md#long-runs-while-the-owner-is-away)).
 
 ## Layout
 
 ```
-src/gameai/        Game-neutral code both games import; it never imports a game package
-  llm.py           Responses transport, Model (spend reservation, the
-                   reply-retry loop)
-  providers.py     OpenAI/OpenRouter endpoints, credentials, model settings and price ceilings
-  ledger.py        Append-only spend ledger with a hard budget, for any paid model
-  sft.py           Fine-tuning datasets from either game's export (docs/posttraining.md)
-  provenance.py    Repository root, scoped source fingerprints, committed-source check,
-                   atomic JSON writes
-  lm.py            Local language models: candidate scoring, tensor hashes, the GPU lease
-  windows.py       Windows games owned from WSL: runtime lock, supervised launch, probes
-  windows_game.py  The Windows-side supervisor (job object, controller EOF and time limit)
-src/twwarhammer3/  Total War: WARHAMMER III custom battles
-  __main__.py      CLI: doctor, pack, launch, menu (runtime and UI probes); play, digest,
-                   watch, card, stats, report, export, spend (jobs and offline evidence)
-  protocol.py      Order types and validation, the error taxonomy; observations stay dicts
-  engine/          runtime (pins, pack build, mod list, launch), startup (video skip), pack
-                   (PFH5), mailbox (bridge files; its docstring is the observation
-                   reference), doctor, windows_capture.py (passive stills, Windows Python),
-                   checkpoint_agent.js and checkpoint_frida.py (the checkpoint Frida agent)
-  mod/             Lua scripts packed into the game: battle, frontend menus, and in _lib/
-                   UI steps, JSON and twwarhammer3_imagery.lua (the stills camera)
-  assets/          The blank startup clip and its MIT license
-  battle/          play.py (job loop: launch, setup, episodes, rematch, register row),
-                   setup.py (scenarios with `base` inheritance, lobby steps, benchmark
-                   checks; its docstring is the scenario field reference), checkpoint.py
-                   (battle checkpoints: save, fast checked rebuild, live handover; the
-                   checkpoint-RL step run, library records and attempt statuses),
-                   candidates.py, audit.py, rl.py, confirm.py (checkpoint RL: the public
-                   candidate set, branch audits, tasks/methods/evaluation, closed loop),
-                   controllers.py
-                   (policy names, model prompts, rotation, outside controllers), llm.py
-                   (direct API-model controller: llm, llm_rules), commander.py
-                   (asynchronous API model over skills), skills.py (per-unit skill
-                   executor, probe_abilities), scripted.py (hold, attack_nearest,
-                   rush_nearest), team.py (two scripted members sharing one army),
-                   calibration.py (disclosed scenario diagnostics),
-                   cards.py (tactic cards: foils, witness, admission rule, board and
-                   verdict; backs `card`), capture.py (1 Hz replay recorder and stills),
-                   export.py (offline model decisions, exchanges and provenance),
-                   digest.py (trace summaries), watch.py (follow a job), stats.py
-                   (results register), report.py (paired statistics), report_html.py,
-                   replay.py and report_assets/ (the offline HTML report and its replay)
-configs/
-  twwarhammer3/    WH3: system_prompt.md (llm), rules_prompt.md (llm_rules),
-                   commander_prompt.md, scenarios.json, custom_battle.json (random draws),
-                   report_notes.json (the report's scenario, unit and highlight text),
-                   benchmark_jobs.json (the jobs the report and export read)
-scripts/           wh3_queue.py runs a frozen plan of WH3 play jobs; wh3_db.py reads
-                   WH3 unit costs and attributes from the game database; sft_smoke.py
-                   runs a local LoRA smoke test of a built dataset
-tests/             Tests per package; test_doc_links.py checks Markdown links and anchors
-docs/
-  state.md         The session page for both games: status only
-  owner-direction.md  Every dated owner direction, newest first; superseded ones marked
-  autonomy.md      What agents may do alone while the owner is away
-  judgement.md     Judgement calls: the marker, placement limits and the marking pass
-  agreed-checks.md The owner's agreed checks and the revisions where each passed
-  posttraining.md  Traces to fine-tuning datasets for both games: roles, contract, splits
-  references.md    Outside sources on agent workflow, verification and evaluation, with status
-  thesis/          The proposed master's thesis: proposal, directions, related work;
-                   notes/README.md indexes the research notes (untracked: git grep misses it)
-  twwarhammer3/    README.md (track page; its Pages table lists the others), log.md
-                   (newest first, versions on main at the top), results.csv
+src/gameai/        Game-neutral code both games import; it never imports a game package:
+                   llm (transport, Model), providers, ledger (hard budget), sft, provenance,
+                   lm (local models, GPU lease), windows and windows_game (owned Windows games)
+src/twwarhammer3/  WH3 custom battles; module map in docs/twwarhammer3/README.md (Code map)
+src/spire/         Slay the Spire; its map is in docs/spire/AGENTS.md
+configs/           Per game: twwarhammer3/ (prompts, scenarios, report notes, benchmark jobs)
+scripts/           check.py (the exit gate); wh3_queue.py (a frozen plan of WH3 play jobs);
+                   wh3_db.py (unit data from the game database); sft_smoke.py; Spire tools
+tests/             Per package (tests/README.md); test_repo_rules.py, test_doc_links.py: the repo
+docs/              state.md, owner-direction.md, workflow.md, autonomy.md, judgement.md,
+                   agreed-checks.md, testing.md, posttraining.md, references.md, thesis/
+                   (untracked: git grep misses it), twwarhammer3/ (README, log, results), spire/
 runs/              Local evidence, ignored by Git; see runs/README.md
-.claude/workflows/ wh3-version-review.js, the review step of the WH3 autoresearch loop
+.claude/           agents/reviewer.md (the reviewer); workflows/wh3-version-review.js
 ```
 
 A new game gets `src/<game>/`, `configs/<game>/`, `docs/<game>/`, `runs/<game>/` and
-`tests/<game>/`. Move code into `gameai` when a second game would otherwise copy it,
-not before. The job modules (play, digest, watch, stats) stay per game: launch semantics,
-trace formats, result fields and exceptions differ. WH3 launches once per job and restarts
-by rematch; its `protocol.py` changes freely. Test files share one namespace (there is no
-`tests/__init__.py`), so every test file name must be unique across `tests/`.
+`tests/<game>/`. Move code into `gameai` when a second game would otherwise copy it, not
+before; the job modules (play, digest, watch, stats) stay per game. Test files share one
+namespace (no `tests/__init__.py`): every test file name is unique across `tests/`.
 
 ## Commands
 
@@ -177,23 +116,12 @@ uv sync --locked
 uv run --locked python scripts/check.py   # before each commit: Ruff, whole offline suite, warnings
 uv run python -m twwarhammer3 doctor   # read-only: pins, preferences, running game
 uv run python -m twwarhammer3 digest runs/twwarhammer3/battle/<job>   # add /episode-0000 [--at S]; --units
-uv run python -m twwarhammer3 watch    # follow the running job beside the game; --prompts
-uv run python -m twwarhammer3 watch runs/twwarhammer3/battle/<job> --next   # next episode, stall or end
 uv run python -m twwarhammer3 stats    # results by scenario, policy, model, harness, mode, timing
-uv run python -m twwarhammer3 card chariot [JOB_OR_PLAN_DIR ...]  # tactic-card evidence
-uv run python -m twwarhammer3 report <job> [<job> ...] --output runs/twwarhammer3/reports/<name>
-uv run python -m twwarhammer3 export <job> [<job> ...] --output runs/twwarhammer3/exports/<name>
-uv run python -m twwarhammer3 spend    # WH3 OpenAI ledger total; --provider openrouter for OpenRouter
-uv run --locked python tests/twwarhammer3/check_wh3_checkpoint.py --output runs/twwarhammer3/checkpoint-check-<name>   # battle checkpoints, 4 launches
-uv run --locked --extra llm python -m twwarhammer3 rl <phase> PLAN --output ...   # checkpoint RL phases (docs/twwarhammer3/checkpoint-rl-plan.md)
-uv run python -m gameai.sft <export> [<export> ...] --output runs/sft/<name>   # see docs/posttraining.md
 git grep -n JUDGEMENT -- ':!AGENTS.md' ':!docs/judgement.md'   # marked judgement calls awaiting the owner
 ```
 
-- The dev group includes lupa (Lua 5.1) and Pillow, so `uv run pytest` runs the WH3 Lua and
-  image tests. The `train` (CPU torch) and `llm` (CUDA torch, transformers, peft) extras
-  conflict; use only one per command. Without them, those tests skip through `importorskip`;
-  `uv sync --locked` removes their packages again.
+More: the WH3 [README](docs/twwarhammer3/README.md#commands) (watch, report, export, spend,
+card, checkpoints, RL); [posttraining](docs/posttraining.md); [tests](tests/README.md) (extras).
 - `twwarhammer3 play`, `twwarhammer3 launch` and `scripts/wh3_queue.py` run a real game
   (`menu` and `play --attach` use the game `launch` started). `play` needs a new output
   directory and refuses uncommitted changes in its source scope: `src/gameai/`,
@@ -212,48 +140,27 @@ git grep -n JUDGEMENT -- ':!AGENTS.md' ':!docs/judgement.md'   # marked judgemen
 ## Architecture
 
 Both games run on Windows from their Steam installs under `/mnt/c`; the controller runs in
-WSL and owns the game process through `gameai.windows`.
-
-### Total War: WARHAMMER III
-
-There is no external game API; a Lua mod is the API
-([how it works](docs/twwarhammer3/README.md#how-it-works)). The Steam build and executable
-hash are pinned in `twwarhammer3/engine/runtime.py`; Steam may update the game, and a
-different build warns and is recorded but never blocks (owner, 2026-10-18). Under `RuntimeLock`
-(`C:/wh3-agent/owner.lock`), `runtime.prepare_runtime` packs and installs the mod, and
-`runtime.OwnedGame` starts `Warhammer3.exe` once per job under the same `windows_game.py`
-supervisor. The controller and the Lua scripts exchange JSON files in
-`C:/wh3-agent/bridge/` (`engine/mailbox.py` documents them). `battle/setup.py` turns
-`--scenario` into custom battle menu steps (no desktop input). Each episode repeats
-observation → policy → validated orders → acknowledgement with the battle time they were
-issued at; the battle keeps running meanwhile, and the measured delay goes into the next
-prompt. Later episodes replay the battle through the results popup's rematch button; one
-job can rotate several controllers over them (`--policy a,b`), and `report` compares
-them. A battle can also be saved at a tick and restored exactly (`battle/checkpoint.py`,
-a Frida agent in `engine/`; [checkpoints.md](docs/twwarhammer3/checkpoints.md)).
+WSL and owns the game process through `gameai.windows`. WH3's Lua mod is its API ([how it
+works](docs/twwarhammer3/README.md#how-it-works)); its build is pinned in `engine/runtime.py`,
+and a different build warns and is recorded but never blocks (owner, 2026-10-18).
 
 Information boundary: friendly units in full; enemy units only while
 `is_visible_to_alliance`, plus the enemy roster the custom battle screen shows; the
 observation's `evaluation`, `final` and `setup` never reach a policy, nor do replay
-frames or stills. Failure
-taxonomy (`protocol.py`): `ProtocolError`, `IllegalActionError`, `PolicyFailure`,
-`MailboxTimeout` and `BattleRestarted` are infrastructure, protocol or policy failures; a
-batch that fails validation is recorded as invalid and sent as no orders. Only an
-engine-reported won, lost or draw is a gameplay outcome.
+frames or stills. Failure taxonomy (`protocol.py`): `ProtocolError`, `IllegalActionError`,
+`PolicyFailure`, `MailboxTimeout` and `BattleRestarted` are infrastructure, protocol or
+policy failures; a batch that fails validation is recorded as invalid and sent as no
+orders. Only an engine-reported won, lost or draw is a gameplay outcome.
 
 ## Evidence
 
-Run evidence stays out of Git (layout in `runs/README.md`). WH3 jobs live in
-`runs/twwarhammer3/battle/<job>/`. Its OpenAI ledger is `runs/twwarhammer3/llm-spend.jsonl`;
-OpenRouter uses `runs/twwarhammer3/openrouter-spend.jsonl` (`play --provider openrouter`;
-key from `OPENROUTER_API_KEY` or the file named by `OPENROUTER_API_KEY_FILE`).
-
-A job's `--budget-usd` caps its selected ledger's total, earlier jobs included. The owner's
-$50 OpenRouter allowance covers both games: leave room for the total in
+Run evidence stays out of Git ([runs/README.md](runs/README.md): layout and ledger paths).
+A job's `--budget-usd` caps its selected ledger's total, earlier jobs included. The owner's $50
+OpenRouter allowance covers both games: leave room for the total in
 `runs/spire-openrouter-spend.jsonl` too (`uv run python -m spire spend --provider openrouter`).
-Never move or reset a ledger. A play command refuses a ledger file that does not exist
-(a mistyped path or a job started from a worktree would count from $0): create it
-deliberately for a new ledger.
+Never move or reset a ledger. A play command refuses a ledger file that does not exist (a
+mistyped path or a job started from a worktree would count from $0): create it deliberately for
+a new ledger.
 
 Each WH3 `play` appends one row per episode to `docs/twwarhammer3/results.csv`. Log every
 version in `docs/twwarhammer3/log.md` and commit the register with that entry. Update
@@ -261,45 +168,33 @@ version in `docs/twwarhammer3/log.md` and commit the register with that entry. U
 what is stopped and why, what is next, with links. Results, validation counts and history
 go in the logs.
 
-## Coding Style
+## Coding style and tests
 
 Four-space indentation, `snake_case` functions and modules, `PascalCase` classes,
 `UPPER_SNAKE_CASE` constants. Keep protocol handling separate from policy logic. Reserve
 bridge stdout for protocol traffic; send diagnostics elsewhere. Match the surrounding code.
-`uv run ruff check .` must pass; do not run `ruff format` on hand-formatted files (most
-modules are). The WH3 report JavaScript uses `prettier --print-width 100`.
+Do not run `ruff format` on hand-formatted files (most are); the WH3 report JavaScript uses
+`prettier --print-width 100`. No overengineering, excessive abstractions or overly safe code.
+Write in simple, concrete language (owner, 2026-10-20): say what a unit, controller or
+experiment actually does; no inflated wording; explain technical terms when they help.
 
-Aim for simplicity and readability. Avoid overengineering and bloat. This is not
-"enterprise production-grade" slop, so avoid excessive abstractions, overly safe code, etc.
-Keep the codebase clean and lean. Your writing should be simple, intuitive, well-structured, easy to read. Favor concrete, concise wording over annoying abstract jargon-heavy language.
+Tests: [tests/README.md](tests/README.md); [docs/testing.md](docs/testing.md) holds proposed
+guidelines; no coverage threshold. Prioritize action and target identity, stale observations,
+terminal transitions, reproducible resets and bridge failures; add a regression for every
+observed failure; validate mechanics against the original engine, not fixtures alone.
+Regenerate the prompt snapshots in `tests/twwarhammer3/prompts/` (`WH3_WRITE_PROMPTS=1`) only
+for an intended prompt change, a logged version. Each top-level definition in
+`twwarhammer3_battle.lua` ends with an unindented `end` or `}` (Lua tests load them by name).
 
-## Testing
-
-Start with [tests/README.md](tests/README.md) for the current suites and their limits.
-[docs/testing.md](docs/testing.md) contains proposed guidelines and reference projects;
-it does not add agreed verification methods.
-
-Pytest, `tests/<package>/test_*.py`; no coverage threshold. Prioritize action and target
-identity, stale observations, terminal transitions, reproducible resets and bridge
-failures. Add a regression for every observed failure. Fixtures alone do not demonstrate
-working game integration; validate mechanics against the original engine.
-
-WH3 specifics: `tests/twwarhammer3/test_wh3_prompts.py` compares the exact rendered model
-prompts with `tests/twwarhammer3/prompts/`; regenerate them (`WH3_WRITE_PROMPTS=1`) only
-for an intended prompt change, which is a logged version. The Lua tests run the mod under
-Lua 5.1 and load battle-script definitions by name (`tests/twwarhammer3/wh3_lua.py`), so
-every top-level definition in `twwarhammer3_battle.lua` ends with an unindented `end` or `}`.
-
-## Commits
+## Commits and artifacts
 
 Concise, imperative subjects, such as `Add bridge readiness handshake`. Keep changes
 focused. The owner authorizes commits and pushes to `main`. PRs explain the problem,
 behavior changes, validation commands and results, and limitations.
 
-## Experiment and Artifact Rules
-
-Exclude hidden game state from policy inputs. Record source revision, configuration,
-engine and mod versions, and evaluation output for each experiment; distinguish
-infrastructure failures from gameplay losses. Never commit proprietary game files, mod
-jars, game packs or files extracted from them (`runs/twwarhammer3/vanilla/`), saves, bulky
-trajectories or checkpoints, API keys, or `*:Zone.Identifier` files.
+Exclude hidden game state from policy inputs. Record source revision, configuration, engine
+and mod versions, and evaluation output for each experiment; distinguish infrastructure
+failures from gameplay losses. Never commit proprietary game files, mod jars, game packs or
+files extracted from them (`runs/twwarhammer3/vanilla/`), saves, bulky trajectories or
+checkpoints, API keys, or `*:Zone.Identifier` files (`tests/test_repo_rules.py` checks the
+patterns it can).

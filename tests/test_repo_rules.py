@@ -3,8 +3,7 @@
 - `gameai` never imports a game package (Layout).
 - No run evidence, game, save or weights file, and no API or private key is tracked, or waits
   untracked to be committed (Experiment and Artifact Rules).
-- AGENTS.md stays short: at most 305 lines until the docs cleanup, then 200 (light factory
-  plan, B2).
+- AGENTS.md stays a short map: at most 200 lines (docs/workflow.md, keeping the process working).
 
 The first two rules also run on a planted violation, so a rule that can no longer fail shows up
 here. JUDGEMENT markers are only listed (scripts/check.py): only the owner changes them.
@@ -29,7 +28,7 @@ FORBIDDEN = ("*.jar", "*.class", "*.exe", "*.dll", "*.sav", "*.pack", "*.autosav
 KEY = re.compile(rb"(?<![\w-])sk-or-v1-[0-9a-f]{64}"
                  rb"|(?<![\w-])sk-(?=[\w-]*[0-9])(?=[\w-]*[A-Z])[\w-]{32,}"
                  rb"|-----BEGIN [A-Z ]*PRIVATE KEY-----")
-AGENTS_MD_LINES = 305
+AGENTS_MD_LINES = 200
 
 
 def game_imports(package: Path) -> list[str]:

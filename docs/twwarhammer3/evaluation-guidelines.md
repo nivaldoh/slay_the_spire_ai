@@ -22,7 +22,7 @@ benchmark is defined in [benchmark.md](benchmark.md), the cards in
 
 **Status (guidance revised 2026-10-21; reader/test audit 2026-10-23).** Proposals except
 where an owner decision is explicitly dated. The audit is in
-[the testing guide](../testing.md#wh3-evaluations-and-tests-2026-10-23).
+[the testing guide](log.md#wh3-evaluations-and-tests-2026-10-23).
 Proposals here add no verification method. Under the
 [hard rule](../../AGENTS.md#verification-hard-rule), a check counts only once the owner
 agrees it and it passes at a named revision; [agreed-checks.md](../agreed-checks.md) records those methods. Most rules end

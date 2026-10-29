@@ -12,7 +12,7 @@ Each entry ends with its status:
 - **secondary**: someone else's summary (a recap or a listing), not the author's own words;
 - **unread**: the page could not be fetched.
 
-Collected 2026-10-28 and 2026-10-29 for the [light factory plan](light-factory-plan.md).
+Collected 2026-10-28 and 2026-10-29 for the light factory plan, now [workflow.md](workflow.md).
 Vendor pages (Sonar) are marketing: use their terms, not their numbers.
 
 ## Verification talks and Sonar

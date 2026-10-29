@@ -198,7 +198,7 @@ Full enemy leadership would help. Until we can read it, it stays missing: never 
 
 ## What the current code reports
 
-This is what `battle/play.py` and `battle/report.py` do today, not the new score. The report and the card code disagree on timer wins and failed trials; the [audit](../testing.md#wh3-evaluations-and-tests-2026-10-23) lists the differences. Use the definition's [outcome table](benchmark.md#outcome-and-score) only after its evaluator is built and checked.
+This is what `battle/play.py` and `battle/report.py` do today, not the new score. The report and the card code disagree on timer wins and failed trials; the [audit](log.md#wh3-evaluations-and-tests-2026-10-23) lists the differences. Use the definition's [outcome table](benchmark.md#outcome-and-score) only after its evaluator is built and checked.
 
 Trial statuses (`battle/play.py`):
 - `won`, `lost`, `draw`: the engine's result, the only gameplay outcomes. `ended_by` is `time_limit` when the countdown ran out (inferred from the last ticked deadline; see [integration.md](integration.md)). The report shows `time_limit` and keeps the engine result, so a defender's timer win isn't hidden.

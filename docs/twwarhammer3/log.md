@@ -44,6 +44,30 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-29: light factory, stages 1-3
+
+Owner, 2026-10-29: "Implement docs/light-factory-plan.md" (decisions 1 No, 2 Yes, 3 Yes); the
+owner was away, so no card was agreed. Built: `scripts/check.py` (Ruff, the whole offline
+suite, "needs your yes" warnings, a marker list), `tests/test_repo_rules.py`, an export leak
+test, the review workflow's `incomplete` status, and `.claude/agents/reviewer.md`. The plan
+became [workflow.md](../workflow.md); AGENTS.md went from 305 to 200 lines (its WH3 code map
+moved to the [README](README.md#code-map)); the finished overnight plan and the 10-23 testing
+findings moved into this log. Cards, planted runs and reviews: `runs/light-factory-20261029/`.
+- Planted wrong versions: 7/7 mutations of the new code and 4/4 rule violations failed their
+  tests; check.py exits 1 on a failing test or a Ruff error; an exporter that copies
+  observations into rows fails only the new test (33 export tests passed it).
+- Reviews: stage 1 found 4 real issues (an indented-away assert passed as a move; slugs taken
+  for keys; a non-UTF-8 file crashed the warnings; a dropped "expand" clause); stage 3 found 6
+  (a false claim that the team check times 1x by the Windows clock; a dropped "in force once
+  the owner says yes"; sentences without a home; unmarked size rules); all fixed.
+- Two markers (`overnight_allocation`, `first_frontier_pass`) moved with the finished overnight
+  plan into this log, against judgement.md's "never ... log history"; only the owner retires them.
+- Reviewer eval (n = 3, not told which cases were bugs): caught `b24df11`'s break and the
+  10-23 dropped-ack fault with a failing scratch test; no findings on the clean `f653520`.
+- The plan's "stills (none)" was wrong: a Lua test already feeds the stills director only
+  visible units. Unverified: every new check is proposed, not agreed; hooks, skills and CI
+  wait (stage 4); the experiment loop waits for a planned experiment (stage 5).
+
 ## 2026-10-28: checkpoint RL merged into main
 
 Owner, 2026-10-28: "could we merge it now?" `wh3-checkpoint-rl` (22 commits) merged as
@@ -83,7 +107,7 @@ independent reviewer agent checked every batch; its findings are applied
 
 ## 2026-10-28 overnight: restore "pauses" were WSL clock steps; Land check passes at dcb8b5a
 
-Owner's `/goal` night ([plan](../autonomy.md#next-overnight-research-and-checkpoint-timing));
+Owner's `/goal` night ([plan](#2026-10-28-overnight-the-saved-plan-moved-from-autonomymd-on-2026-10-29));
 Claude Code, the only session; $0; one 12-minute game window. Evidence `runs/overnight-20261028/`;
 two independent reviews (`review/`) reran the analyses and checked sources; corrections applied.
 
@@ -106,6 +130,137 @@ two independent reviews (`review/`) reran the analyses and checked sources; corr
 - Questions, answered the same morning ([direction](../owner-direction.md)): direction 10
   stays a note; durations are measured in battle time ([clock rule](integration.md#clocks-measured-2026-10-28));
   `dcb8b5a` is recorded in agreed-checks.md; the team check's band stays, marked.
+
+## 2026-10-28 overnight: the saved plan (moved from autonomy.md on 2026-10-29)
+
+Saved 2026-10-28 at the owner's request; **ran that night** (02:39-04:35, at the owner's
+explicit start). A rerun needs the owner's explicit start; record the start, return time and
+game cutoff then. No clear game
+window means offline work only. This is the selected mixed research/review plan, with $0
+model spending and the conditional free timing diagnostic the owner selected. It does not
+resume the stopped checkpoint-RL training or choose a thesis topic.
+
+### Allocation and limits
+
+JUDGEMENT: overnight_allocation — Codex, 2026-10-28, proposes the time split below within
+the owner's roughly ten-hour window. Another split changes research depth versus review;
+these are planning ceilings, not required work counts or verification thresholds.
+
+| Allowance | Work and stopping point |
+|---|---|
+| 30 minutes | Recheck revision, processes, permissions, pending drafts and existing evidence. Record the task, responsible agent, absolute cutoff and one evidence directory under the main checkout's `runs/`. |
+| 4 hours | Extend and challenge the thesis frontier map; retain a concise comparison and source-backed corrections. |
+| 3 hours | Finish the bounded checkpoint timing investigation; at most 45 minutes of conditional live work, including cleanup. |
+| 1 hour | Independent review of consequential research/timing claims, then targeted documentation, readability and workflow cleanup. |
+| 1.5 hours | Consolidate results, run relevant checks, prepare up to three owner questions and leave the next concrete step. |
+
+Ten hours is a maximum, not a target to fill. If timing work finishes early, use the remaining
+research allowance for a named unresolved comparison. Stop when no permitted next step can
+change a decision or finish useful work. Do not repeat unchanged audits to occupy the window.
+
+Four unmerged draft branches were present at planning, above the older proposal's three-branch
+cap. Preserve them; open no new runtime implementation branch in this plan. Attach findings
+to the existing thesis/checkpoint work. No new dashboard, generic test framework, speculative
+infrastructure or exhaustive repository sweep. New scripts need a named use in this plan.
+
+### Thesis frontier
+
+JUDGEMENT: first_frontier_pass — Codex, 2026-10-28, proposes the three areas below for this
+first mixed night. A different emphasis could surface other thesis candidates; this search
+does not rank or select the thesis, and leaves the other documented directions open.
+
+Start with the existing thesis notes and their research evidence; extend these comparisons:
+
+- Checkpoint-based curricula and sample-efficient learning, including MARL and non-LLM
+  policies. Distinguish demonstration-based starts such as
+  [Backplay](https://arxiv.org/abs/1807.06919) from
+  [reverse curriculum generation](https://proceedings.mlr.press/v78/florensa17a/florensa17a.pdf)
+  and critical-state restarts such as [RICE](https://proceedings.mlr.press/v235/cheng24j.html).
+  Restoration alone does not establish that a method's assumptions fit WH3.
+- Heterogeneous teams, changing capabilities, coordination and unfamiliar teammates.
+- Repeatable decision evaluation, counterfactual continuations and coordination under
+  real execution delay. Keep decision-table evaluation distinct from closed-loop battles.
+
+For each promising direction, record the closest primary sources and what they already
+establish; the possible remaining contribution; WH3's useful properties and alternatives;
+the robotics connection and its limits; required capabilities and missing evidence;
+estimated game/data/compute cost; and the cheapest next step that could change the choice.
+Check current literature and relevant methods/results, recording source versions, dates,
+what was actually read and search limits. Abstract-only or inaccessible claims stay qualified.
+
+Keep benchmark-only, learning-only and combined theses open. Distinguish centralized control
+of several units from decentralized multi-agent learning. Treat the current support-prediction
+proposal as one candidate. One failed training method cannot rule out RL, and an unsuccessful
+literature search cannot establish novelty. Do not build an algorithm or collect a new dataset.
+Update existing thesis pages; detailed evidence stays in the named `runs/` directory.
+
+### Checkpoint timing investigation
+
+Question: do the reported periodic pauses reflect simulation stalls, timestamp artifacts,
+or evidence that cannot distinguish them? The planning review found a discrepancy between
+WSL observation timestamps and simultaneous Windows native-tick timestamps in saved Stage 1
+runs. This is a lead to reproduce, not a verified cause or proof of continuous 1x execution.
+
+1. Recount the six completed attempts in `runs/twwarhammer3/rl/stage1-20261026/`, comparing
+   observation battle times/`read_wall` with native ticks/Windows `wall_time`. Use the saved
+   Land check `runs/twwarhammer3/checkpoint-check-20261025c/` as additional existing evidence.
+   Preserve originals; retain a small reproducible recount and report counts, durations,
+   largest gaps, offset changes, missing samples and concrete examples.
+2. Trace timestamp producers and relevant consumers. Both existing wall timestamps use
+   `time.time()`; native log timestamps come from the Windows Frida receiver, not directly
+   from the simulation. Establish which written claims or timing measures depend on them;
+   do not expand into a general timing rewrite or silently rescore old results.
+3. Challenge the analysis with synthetic records: a wall-clock jump with continuous ticks
+   and monotonic time; an elapsed-time gap without tick progress; missing/batched messages.
+   It must distinguish supported cases or say "undetermined". Do not induce pauses in WH3.
+4. If a named uncertainty remains, use the conditional live diagnostic below once. If the
+   existing evidence resolves the question, skip live work.
+5. Correct unsupported current statements and append a dated correction to historical
+   claims, preserving the original evidence. Separate observed discrepancies, inferred
+   causes and unresolved possibilities. Mark consequential choices at their proper sites.
+
+The owner selected this diagnostic method on 2026-10-28:
+
+- Run the unchanged [Land checkpoint check](../../tests/twwarhammer3/check_wh3_checkpoint.py)
+  on main: source battle, two identical restores and one changed-order control. Its existing
+  restoration verdict stays separate from the timing diagnostic; no RL branch is needed.
+- Alongside it, a passive sidecar in the evidence directory samples Windows
+  `time.time_ns()`/`time.perf_counter_ns()` at 10 Hz with sequence numbers. WSL records each
+  received pair with `time.time_ns()`/`time.monotonic_ns()`. Keep native logs unchanged.
+  Bound and clean up the sampler with the check; it sends no game controls.
+- Compare within-clock elapsed intervals and offset changes with native tick progression
+  and Lua battle time. Windows elapsed time is an independent clock reference; message
+  arrival includes transport/scheduling delays. Sampling and receiver timestamps cannot
+  establish absence of every simulation stall. Add no timing pass threshold.
+- Allow one four-launch check, at most 45 minutes including cleanup, finished at least one
+  hour before return. Do not start unless the whole bound fits. No automatic repeat.
+  Respect harness refusals, unexpected closure and the existing safe-stop procedure. An
+  unsupported checkpoint build blocks this diagnostic; report it without re-pinning.
+
+If live work is unavailable or inconclusive, retain the offline result and exact remaining
+uncertainty. Do not add a timing entry to agreed verification merely because the diagnostic
+was permitted or passed its synthetic cases. The existing restoration method is unchanged.
+
+### Checks and handoff
+
+Use the behavior and independent references above; add no coverage-percentage target or
+tests that merely mirror the implementation. Run focused checkpoint tests if their analysis
+or checks change, documentation-link tests for documentation changes, and
+`uv run --locked ruff check .`. Keep pytest scratch directories inside `runs/`. Report
+commands, source revision/diff, input counts and passed/failed/skipped/unavailable checks.
+Component tests do not establish live effects; new methods remain proposed unless agreed.
+
+An independent reviewer challenges consequential research claims and timing conclusions.
+Do not change benchmark meaning, scoring, observations, training gates, historical results
+or agreed criteria without an owner decision. Cleanup stays within the touched material.
+Assess workflow friction at handoff; retain only small, justified improvements and state
+their observed benefit or uncertainty. Do not edit autonomy rules during the absence.
+
+The morning handoff gives the research comparison and timing result, checks and limitations,
+any small cleanup/workflow improvement, and up to three questions that unblock further work.
+Keep the log summary within about 20 lines, link evidence, and update status with the next
+step. Success is reduced uncertainty and manageable review effort, not hours occupied,
+paper counts, test counts or newly created branches.
 
 ## 2026-10-28: Model team reviewed, cleaned and checked live (harness b50)
 
@@ -555,7 +710,7 @@ New verification methods remain unagreed; no gameplay/readiness claim.
 
 ## 2026-10-23: Live-check audit and free army rerun
 
-Compared the army, team and offline recount checks: [scope and gaps](../testing.md#wh3-live-check-comparison-2026-10-23).
+Compared the army, team and offline recount checks: [scope and gaps](#wh3-live-check-comparison-2026-10-23).
 Army startup now refuses doctor blockers, prints warnings and checks for Spire before each
 launch, restoration included. Both live checkers now use Windows paths for process matching.
 Moved army orchestration tests out of Lua tests; renamed the unchecked restart-settings
@@ -584,7 +739,7 @@ cycle attempts/achieved movement and a timing proxy/measured age. Team recounts 
 unless given a new output file, which records the running checker and input-byte hashes.
 The delayed-input regression now catches stale scoring totals with a current timestamp.
 A six-case invented-job audit reproduced card/report/HTML/export disagreements;
-[findings](../testing.md#wh3-evaluations-and-tests-2026-10-23). Scoring rules and c1 stay fixed.
+[findings](#wh3-evaluations-and-tests-2026-10-23). Scoring rules and c1 stay fixed.
 Review markers: `cards.py` Cycle signature, `report.py` Report denominator,
 `report_assets/report.js` Timer wins, `export.py` Training split,
 `check_wh3_team.py` Movement witness, and evaluation-guidelines.md Scorer version check.
@@ -611,13 +766,126 @@ The ack fault previously passed 115 cases; after, 1 failed/115 passed. The time 
 both cases. Each Lua fault failed 1/3 cases; baseline and valid swapped recording order passed 3/3.
 A disposable teardown probe deliberately failed with two gated workers; its follow-up
 confirmed both stopped, and an unfinished-wait probe failed as intended (1 failed, 2 passed).
-Evidence/scripts: `runs/testing-wh3-review-20261023/`; [findings and guidance](../testing.md#wh3-follow-up-2026-10-23).
+Evidence/scripts: `runs/testing-wh3-review-20261023/`; [findings and guidance](#wh3-follow-up-2026-10-23).
 New checks rest on JUDGEMENT `tests/twwarhammer3/test_wh3_play.py` Acknowledgement identity,
 `tests/twwarhammer3/test_wh3_mailbox.py` Foreign-order check,
 `tests/twwarhammer3/test_wh3_battle_lua.py` Terminal recording check; draft guidance rests on
 JUDGEMENT `docs/testing.md` Agent review workflow (four new markers).
 New verification methods remain unagreed. No runtime/prompt snapshots changed; no games,
 paid calls or browser checks ran. Recount provenance remains a documented gap.
+
+## 2026-10-23: testing review findings (moved from testing.md on 2026-10-29)
+
+Initial review scope: file inventory and selected tests at `16ed4fe`, including the owner's local
+review comments. There are 80 `test_*.py` files with 956 test function definitions; pytest
+expands parameterized cases and skips unavailable modules, so these are not execution counts.
+
+| Finding | Evidence and consequence |
+|---|---|
+| Useful tests already exist | [Bridge tests](../../tests/engine/test_bridge.py) exercise real sockets and the relay subprocess. [Mailbox tests](../../tests/twwarhammer3/test_wh3_mailbox.py) exercise files and Lua. They check these boundaries without launching a game. |
+| Game ownership was hard to see | Spire's tests occupied six top-level directories plus two root files. The first cleanup moves those files to `tests/spire/`; the other directories still need organization. |
+| Shared setup is hard to find | Twelve import statements originally pulled helpers or fixtures from other `test_*.py` modules; the two cleanups remove six. [pytest configuration](../../pyproject.toml) still supports the remaining cross-directory imports. |
+| Some tests ask too many questions | The API-key test in [test_model.py](../../tests/gameai/test_model.py) checks key loading, a transient retry and redaction. The first episode test in [test_wh3_play.py](../../tests/twwarhammer3/test_wh3_play.py) also checks trace order and formatted digest text. Failures are harder to isolate. |
+| Passing does not settle the rule | [Card tests](../../tests/twwarhammer3/test_wh3_cards.py) enforce admission choices that await the owner. Their interpretation rests on JUDGEMENT `src/twwarhammer3/battle/cards.py` chariot gate sizes. They can test implementation consistency without validating the choice. |
+| The default run has important limits | Collection found 1,410 cases and skipped 11 whole modules because PyTorch was absent. The browser script and live-game checks are separate commands. No coverage measurement or CI workflow is configured in this checkout. |
+
+The five sampled modules for model transport, sockets, mailbox, order validation and WH3
+play passed **179 tests**, with no failures or skips. That establishes those examples pass
+in this environment, not that every test has a sound expected result. Logs and collection:
+`runs/testing-review-20261023/`. Line and branch coverage were not measured. The initial
+lint check found four long lines in the owner's pre-existing TODO comments; wrapping them
+preserved their wording and made lint pass. All 64 documentation checks passed, and the
+Python example below ran successfully. Live-game, browser and optional training checks
+were not run for this review.
+
+### WH3 follow-up, 2026-10-23
+
+The next review sampled WH3 boundary tests at `4a6033f` and ran all 661 WH3 cases before
+changes. Independent reviewers challenged the tests with deliberately wrong implementations.
+These findings concern test quality; no production defect was demonstrated by the mutations.
+
+| Finding | Change or remaining gap |
+|---|---|
+| Dropping acknowledgement request matching still passed all 115 play/team/controller cases | Added a sequence with foreign, repeated and matching acknowledgements; it checks decisions, sent orders, feedback and delay. |
+| Commenting out the terminal replay call still passed its source-text test | Execute production Lua and observe both recordings before publication, allowing either recording order; repeated finishing must not publish again. |
+| Foreign job/battle rejection had no real-file Lua case | Added both identities and a subsequent valid request, checking rejected traffic cannot replace pending orders or reserve the next ID. |
+| Terminal-call timing depended on finishing within 50 ms; commander cleanup followed assertions | Use a controlled clock and register worker finalizers when constructed. Bounded waits now report unfinished work. |
+| `WH3_WRITE_PROMPTS=0` overwrote expectations; shared setup came from another test module | Only `=1` now writes. Verification runs without that flag. Moved the unchanged mailbox/config to the existing support module; no WH3 test imports another test module. |
+| Team recount loses the old verdict without recording the new grader identity | Fixed in the eval/test follow-up below; the live acceptance rule is unchanged. |
+
+Evidence, check counts and limits are in the [WH3 log](log.md#2026-10-23-wh3-test-review).
+The three new cases and executable recording check remain proposed, not newly agreed verification.
+
+### WH3 evaluations and tests, 2026-10-23
+
+Compared the card board, text/JSON report, HTML view, register and model-decision export
+using the same six invented outcomes. The reference is the documented contact-win rule
+and the owner's 2026-10-21 phase rule for the **next** evaluator. The current readers differ:
+
+| Case | Card | Text report | HTML view | Register / export |
+|---|---|---|---|---|
+| Contact win | Win | Win | Win | Raw win |
+| Timer win | Loss | Non-win in denominator | Win | Raw win |
+| Draw | Loss | Draw in denominator | Draw | Raw draw |
+| Terminal failure in battle | Forfeit | Outside denominator | Omitted | Failure / no gameplay outcome |
+| Constructor failure | Excluded | Outside denominator | Omitted | Failure / no decision rows |
+| Cleanup failure after a recorded win | Forfeit | Outside denominator | Omitted | Failure / no gameplay outcome |
+
+The last two cases still need the next evaluator: an unsuccessful construction attempt and
+the preserved engine win, respectively. Export's inventory retains the complete result,
+including `engine_ending`; its raw outcome fields are not card scores. A constructor with
+no decision cannot supply a training row. HTML's completed-battle view was owner-directed;
+adopting a benchmark view is a separate choice. Do not make a consistency test silently
+choose one reader's rule, or freeze known discrepancies into new regression expectations.
+
+Concrete fixes: launch identity now uses resolved directories, not basenames; recounts
+preserve original verdicts and hash their checker and input bytes; late captured model
+calls enter report timing once. The delayed-input test now varies hidden scoring totals,
+so retaining stale totals fails even when the final timestamp is current. Card output
+distinguishes controller/age rows from launches and calls cycles v1 an attempt count.
+
+Owner review remains at the marked sites: the report denominator, HTML timer wins, export
+training eligibility, cycle and movement witnesses, and the proposed scorer hash check.
+The existing gate-size marker remains. Shared scoring needs a versioned adoption that
+preserves c1. Remaining gaps include study/stage provenance, held-out enforcement,
+condition identity, live visibility/order effects and agreed scorer examples; their scope
+is in the [evaluation guide](evaluation-guidelines.md#12-where-to-enforce-first).
+
+Evidence: `runs/testing-wh3-evals-20261023/reader_audit.py` and `reader-audit.json`;
+the HTML predicate ran in Node, not a browser. Component checks and fault challenges are
+recorded in the [log](log.md#2026-10-23-wh3-eval-and-test-consistency-review).
+New checks remain proposed, not newly agreed. No game or policy-strength claim follows.
+
+### WH3 live-check comparison, 2026-10-23
+
+These checks answer different questions. Use the existing evidence before spending more
+game time; a new battle is useful when it can resolve a named uncertainty.
+
+| Check | Independent reference and what it can establish | What remains outside it |
+|---|---|---|
+| Army/setup `--integration` ($0, four launches) | Declared rosters/ranks versus lobby and battle readbacks; lobby attack/defence versus battle values; original versus restored settings | Order effects, visibility, rematch starts, graceful-exit persistence, real clock speed |
+| Scripted team ($0, four launches) | Unit identity and positions after the matching acknowledgement, before its peer completes; battle-clock progress versus elapsed time | Attack/withdrawal/cast effects, hidden enemies, model-team performance; the movement rule rests on JUDGEMENT `tests/twwarhammer3/team/check_wh3_team.py` Movement witness |
+| Card/reader recount ($0, no launch) | Recorded outcomes and independently labelled cases versus a declared scoring rule | Whether the original order caused the observed effect; a fresh game build or a changed scenario |
+
+The army checker formerly ignored doctor blockers and hid executable-hash warnings; its
+launch helper also omitted the Spire conflict check. New regressions reproduce these
+failures and cover both refusal and a usable environment. Its orchestration tests now live
+beside the checker rather than among Lua-script tests. Acceptance criteria are unchanged.
+
+The old `persisted_settings` output was an observation, not an assertion. In the saved
+`integration-review-20261019/live-r8` evidence it equals the original settings, although
+the previous phase ended with disturbed settings. The new name, `restart_settings_observed`,
+and docstring state that limit. Saved-army persistence has separate roster/rank assertions.
+
+Remaining live work is the [proposed correctness checks](benchmark-implementation.md#correctness-checks-to-agree):
+visibility needs a game-visible reference, and attack/withdrawal/cast effects need observed
+effects, including an accepted order that fails to achieve them. The existing chariot
+labels are the starting evidence for withdrawal. Changing their thresholds, the team
+movement witness or the treatment of slow game clocks needs owner judgement. Paid model
+calls are unnecessary for these engine checks; provider behavior and model-team strength
+are separate studies. The current speed assertions rest on JUDGEMENT?
+`docs/twwarhammer3/integration.md` Runtime speed fields. Live rerun evidence is in the
+[log](log.md).
 
 ## 2026-10-23: native checkpoint feasibility
 

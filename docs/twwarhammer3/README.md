@@ -89,7 +89,8 @@ through it, and every order enters through it.
   shared UI steps, presentation capture and a vendored JSON library. `engine/pack.py`
   packs them into `C:/wh3-agent/mods/twwarhammer3.pack`; `engine/runtime.py` writes the
   mod list and starts `Warhammer3.exe` once per job under the `gameai.windows`
-  supervisor. The scripts stay inert without `C:/wh3-agent/bridge/session.json`, so the
+  supervisor, holding `RuntimeLock` (`C:/wh3-agent/owner.lock`). The scripts stay inert
+  without `C:/wh3-agent/bridge/session.json`, so the
   installed pack changes nothing in ordinary play
   ([packs and loading](integration.md#packs-and-loading)).
 - **Bridge.** The controller in WSL and the scripts exchange whole JSON files in
@@ -125,6 +126,50 @@ through it, and every order enters through it.
   episode are listed in [runs/README.md](../../runs/README.md); each episode appends a
   row to [results.csv](results.csv).
 
+## Code map
+
+Moved from AGENTS.md on 2026-10-29 (light factory docs cleanup).
+
+```
+src/twwarhammer3/  Total War: WARHAMMER III custom battles
+  __main__.py      CLI: doctor, pack, launch, menu (runtime and UI probes); play, digest,
+                   watch, card, stats, report, export, spend (jobs and offline evidence)
+  protocol.py      Order types and validation, the error taxonomy; observations stay dicts;
+                   it changes freely (Spire's protocol.py is byte-stable)
+  engine/          runtime (pins, pack build, mod list, launch), startup (video skip), pack
+                   (PFH5), mailbox (bridge files; its docstring is the observation
+                   reference), doctor, windows_capture.py (passive stills, Windows Python),
+                   checkpoint_agent.js and checkpoint_frida.py (the checkpoint Frida agent)
+  mod/             Lua scripts packed into the game: battle, frontend menus, and in _lib/
+                   UI steps, JSON and twwarhammer3_imagery.lua (the stills camera)
+  assets/          The blank startup clip and its MIT license
+  battle/          play.py (job loop: launch, setup, episodes, rematch, register row),
+                   setup.py (scenarios with `base` inheritance, lobby steps, benchmark
+                   checks; its docstring is the scenario field reference), checkpoint.py
+                   (battle checkpoints: save, fast checked rebuild, live handover; the
+                   checkpoint-RL step run, library records and attempt statuses),
+                   candidates.py, audit.py, rl.py, confirm.py (checkpoint RL: the public
+                   candidate set, branch audits, tasks/methods/evaluation, closed loop),
+                   controllers.py
+                   (policy names, model prompts, rotation, outside controllers), llm.py
+                   (direct API-model controller: llm, llm_rules), commander.py
+                   (asynchronous API model over skills), skills.py (per-unit skill
+                   executor, probe_abilities), scripted.py (hold, attack_nearest,
+                   rush_nearest), team.py (two scripted members sharing one army),
+                   calibration.py (disclosed scenario diagnostics),
+                   cards.py (tactic cards: foils, witness, admission rule, board and
+                   verdict; backs `card`), capture.py (1 Hz replay recorder and stills),
+                   export.py (offline model decisions, exchanges and provenance),
+                   digest.py (trace summaries), watch.py (follow a job), stats.py
+                   (results register), report.py (paired statistics), report_html.py,
+                   replay.py and report_assets/ (the offline HTML report and its replay)
+configs/twwarhammer3/
+                   system_prompt.md (llm), rules_prompt.md (llm_rules),
+                   commander_prompt.md, scenarios.json, custom_battle.json (random draws),
+                   report_notes.json (the report's scenario, unit and highlight text),
+                   benchmark_jobs.json (the jobs the report and export read)
+```
+
 ## Commands
 
 ```bash
@@ -156,6 +201,8 @@ uv run python -m twwarhammer3 menu --dump 4               # UI tree of the scree
 uv run python -m twwarhammer3 menu [--battle] --steps steps.json  # tails menu.log or mod.log
 uv run python -m twwarhammer3 pack --list PACK            # --extract PACK NAME; bare: build
 uv run --locked pytest -ra tests/twwarhammer3              # Lua and image tests; show skip reasons
+uv run --locked python tests/twwarhammer3/check_wh3_checkpoint.py --output runs/twwarhammer3/checkpoint-check-NAME  # 4 launches
+uv run --locked --extra llm python -m twwarhammer3 rl PHASE PLAN --output ...  # checkpoint RL (checkpoint-rl-plan.md)
 ```
 
 - `--model` (default `gpt-6-luna`) and `--effort` (default `low`) pick the API model of

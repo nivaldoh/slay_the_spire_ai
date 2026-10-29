@@ -58,6 +58,7 @@ restarts by rematch. Each game has its own result fields and exceptions.
 ## Commands
 
 ```bash
+uv run --locked python scripts/check.py   # before each commit, as for WH3 (docs/workflow.md)
 uv run pytest tests/spire/test_protocol.py -k <pattern>
 uv run python -m spire doctor      # read-only runtime check
 uv run python -m spire digest runs/fullrun/<job>   # per-seed table; add /run-0000 [--picks | --floor N]

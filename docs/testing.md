@@ -5,124 +5,12 @@ mistake would make the check fail. This guide covers the software around both ga
 [Evaluation guidelines](twwarhammer3/evaluation-guidelines.md) cover a different question:
 whether a controller or benchmark supports a research claim.
 
-**Draft for owner review, 2026-10-23.** Cleanup and review evidence are recorded below.
+**Draft for owner review, 2026-10-23.** The review's findings and cleanup evidence are in the
+[WH3 log](twwarhammer3/log.md#2026-10-23-testing-review-findings-moved-from-testingmd-on-2026-10-29).
 The recommendations below do not add agreed
 verification methods or change benchmark rules. The existing
 [verification rule](../AGENTS.md#verification-hard-rule) still decides what may be called
 verified. [The test directory guide](../tests/README.md) explains the current files and commands.
-
-## What the current suite gets right and wrong
-
-Initial review scope: file inventory and selected tests at `16ed4fe`, including the owner's local
-review comments. There are 80 `test_*.py` files with 956 test function definitions; pytest
-expands parameterized cases and skips unavailable modules, so these are not execution counts.
-
-| Finding | Evidence and consequence |
-|---|---|
-| Useful tests already exist | [Bridge tests](../tests/engine/test_bridge.py) exercise real sockets and the relay subprocess. [Mailbox tests](../tests/twwarhammer3/test_wh3_mailbox.py) exercise files and Lua. They check these boundaries without launching a game. |
-| Game ownership was hard to see | Spire's tests occupied six top-level directories plus two root files. The first cleanup moves those files to `tests/spire/`; the other directories still need organization. |
-| Shared setup is hard to find | Twelve import statements originally pulled helpers or fixtures from other `test_*.py` modules; the two cleanups remove six. [pytest configuration](../pyproject.toml) still supports the remaining cross-directory imports. |
-| Some tests ask too many questions | The API-key test in [test_model.py](../tests/gameai/test_model.py) checks key loading, a transient retry and redaction. The first episode test in [test_wh3_play.py](../tests/twwarhammer3/test_wh3_play.py) also checks trace order and formatted digest text. Failures are harder to isolate. |
-| Passing does not settle the rule | [Card tests](../tests/twwarhammer3/test_wh3_cards.py) enforce admission choices that await the owner. Their interpretation rests on JUDGEMENT `src/twwarhammer3/battle/cards.py` chariot gate sizes. They can test implementation consistency without validating the choice. |
-| The default run has important limits | Collection found 1,410 cases and skipped 11 whole modules because PyTorch was absent. The browser script and live-game checks are separate commands. No coverage measurement or CI workflow is configured in this checkout. |
-
-The five sampled modules for model transport, sockets, mailbox, order validation and WH3
-play passed **179 tests**, with no failures or skips. That establishes those examples pass
-in this environment, not that every test has a sound expected result. Logs and collection:
-`runs/testing-review-20261023/`. Line and branch coverage were not measured. The initial
-lint check found four long lines in the owner's pre-existing TODO comments; wrapping them
-preserved their wording and made lint pass. All 64 documentation checks passed, and the
-Python example below ran successfully. Live-game, browser and optional training checks
-were not run for this review.
-
-### WH3 follow-up, 2026-10-23
-
-The next review sampled WH3 boundary tests at `4a6033f` and ran all 661 WH3 cases before
-changes. Independent reviewers challenged the tests with deliberately wrong implementations.
-These findings concern test quality; no production defect was demonstrated by the mutations.
-
-| Finding | Change or remaining gap |
-|---|---|
-| Dropping acknowledgement request matching still passed all 115 play/team/controller cases | Added a sequence with foreign, repeated and matching acknowledgements; it checks decisions, sent orders, feedback and delay. |
-| Commenting out the terminal replay call still passed its source-text test | Execute production Lua and observe both recordings before publication, allowing either recording order; repeated finishing must not publish again. |
-| Foreign job/battle rejection had no real-file Lua case | Added both identities and a subsequent valid request, checking rejected traffic cannot replace pending orders or reserve the next ID. |
-| Terminal-call timing depended on finishing within 50 ms; commander cleanup followed assertions | Use a controlled clock and register worker finalizers when constructed. Bounded waits now report unfinished work. |
-| `WH3_WRITE_PROMPTS=0` overwrote expectations; shared setup came from another test module | Only `=1` now writes. Verification runs without that flag. Moved the unchanged mailbox/config to the existing support module; no WH3 test imports another test module. |
-| Team recount loses the old verdict without recording the new grader identity | Fixed in the eval/test follow-up below; the live acceptance rule is unchanged. |
-
-Evidence, check counts and limits are in the [WH3 log](twwarhammer3/log.md#2026-10-23-wh3-test-review).
-The three new cases and executable recording check remain proposed, not newly agreed verification.
-
-### WH3 evaluations and tests, 2026-10-23
-
-Compared the card board, text/JSON report, HTML view, register and model-decision export
-using the same six invented outcomes. The reference is the documented contact-win rule
-and the owner's 2026-10-21 phase rule for the **next** evaluator. The current readers differ:
-
-| Case | Card | Text report | HTML view | Register / export |
-|---|---|---|---|---|
-| Contact win | Win | Win | Win | Raw win |
-| Timer win | Loss | Non-win in denominator | Win | Raw win |
-| Draw | Loss | Draw in denominator | Draw | Raw draw |
-| Terminal failure in battle | Forfeit | Outside denominator | Omitted | Failure / no gameplay outcome |
-| Constructor failure | Excluded | Outside denominator | Omitted | Failure / no decision rows |
-| Cleanup failure after a recorded win | Forfeit | Outside denominator | Omitted | Failure / no gameplay outcome |
-
-The last two cases still need the next evaluator: an unsuccessful construction attempt and
-the preserved engine win, respectively. Export's inventory retains the complete result,
-including `engine_ending`; its raw outcome fields are not card scores. A constructor with
-no decision cannot supply a training row. HTML's completed-battle view was owner-directed;
-adopting a benchmark view is a separate choice. Do not make a consistency test silently
-choose one reader's rule, or freeze known discrepancies into new regression expectations.
-
-Concrete fixes: launch identity now uses resolved directories, not basenames; recounts
-preserve original verdicts and hash their checker and input bytes; late captured model
-calls enter report timing once. The delayed-input test now varies hidden scoring totals,
-so retaining stale totals fails even when the final timestamp is current. Card output
-distinguishes controller/age rows from launches and calls cycles v1 an attempt count.
-
-Owner review remains at the marked sites: the report denominator, HTML timer wins, export
-training eligibility, cycle and movement witnesses, and the proposed scorer hash check.
-The existing gate-size marker remains. Shared scoring needs a versioned adoption that
-preserves c1. Remaining gaps include study/stage provenance, held-out enforcement,
-condition identity, live visibility/order effects and agreed scorer examples; their scope
-is in the [evaluation guide](twwarhammer3/evaluation-guidelines.md#12-where-to-enforce-first).
-
-Evidence: `runs/testing-wh3-evals-20261023/reader_audit.py` and `reader-audit.json`;
-the HTML predicate ran in Node, not a browser. Component checks and fault challenges are
-recorded in the [log](twwarhammer3/log.md#2026-10-23-wh3-eval-and-test-consistency-review).
-New checks remain proposed, not newly agreed. No game or policy-strength claim follows.
-
-### WH3 live-check comparison, 2026-10-23
-
-These checks answer different questions. Use the existing evidence before spending more
-game time; a new battle is useful when it can resolve a named uncertainty.
-
-| Check | Independent reference and what it can establish | What remains outside it |
-|---|---|---|
-| Army/setup `--integration` ($0, four launches) | Declared rosters/ranks versus lobby and battle readbacks; lobby attack/defence versus battle values; original versus restored settings | Order effects, visibility, rematch starts, graceful-exit persistence, real clock speed |
-| Scripted team ($0, four launches) | Unit identity and positions after the matching acknowledgement, before its peer completes; battle-clock progress versus elapsed time | Attack/withdrawal/cast effects, hidden enemies, model-team performance; the movement rule rests on JUDGEMENT `tests/twwarhammer3/team/check_wh3_team.py` Movement witness |
-| Card/reader recount ($0, no launch) | Recorded outcomes and independently labelled cases versus a declared scoring rule | Whether the original order caused the observed effect; a fresh game build or a changed scenario |
-
-The army checker formerly ignored doctor blockers and hid executable-hash warnings; its
-launch helper also omitted the Spire conflict check. New regressions reproduce these
-failures and cover both refusal and a usable environment. Its orchestration tests now live
-beside the checker rather than among Lua-script tests. Acceptance criteria are unchanged.
-
-The old `persisted_settings` output was an observation, not an assertion. In the saved
-`integration-review-20261019/live-r8` evidence it equals the original settings, although
-the previous phase ended with disturbed settings. The new name, `restart_settings_observed`,
-and docstring state that limit. Saved-army persistence has separate roster/rank assertions.
-
-Remaining live work is the [proposed correctness checks](twwarhammer3/benchmark-implementation.md#correctness-checks-to-agree):
-visibility needs a game-visible reference, and attack/withdrawal/cast effects need observed
-effects, including an accepted order that fails to achieve them. The existing chariot
-labels are the starting evidence for withdrawal. Changing their thresholds, the team
-movement witness or the treatment of slow game clocks needs owner judgement. Paid model
-calls are unnecessary for these engine checks; provider behavior and model-team strength
-are separate studies. The current speed assertions rest on JUDGEMENT?
-`docs/twwarhammer3/integration.md` Runtime speed fields. Live rerun evidence is in the
-[log](twwarhammer3/log.md).
 
 ## References worth using
 

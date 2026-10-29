@@ -39,7 +39,7 @@ Both games:
   we are just writing the plan." The goal asks for current Codex, Claude Code and other
   trustworthy guidance, specs and verification discussed before features, and layered
   deterministic and agentic verification suited to one AI researcher. Draft:
-  [light-factory-plan.md](light-factory-plan.md). No new method or autonomy rule adopted.
+  light-factory-plan.md (since 2026-10-29 [workflow.md](workflow.md)). No new method or autonomy rule adopted.
 - 2026-10-28 (ProgramLab reference): "This one seems relevant to, and if so, we should add
   it to our list as well: https://programlab.blog/" Added [ProgramLab](thesis/papers.md#programlab-train-single-and-multi-agents-to-rebuild-programs)
   for LLM-team training and reward-test design, with its blog status and unreleased training
@@ -115,7 +115,7 @@ Both games:
   of the older autonomy proposal are not collectively accepted by these choices.
   Scope now: "Right now we will just write the plan. You won't actually do the overnight
   run yet." Then: "Let's write the plan." [Standing work](autonomy.md#standing-work)
-  and [saved overnight plan](autonomy.md#next-overnight-research-and-checkpoint-timing);
+  and [saved overnight plan](twwarhammer3/log.md#2026-10-28-overnight-the-saved-plan-moved-from-autonomymd-on-2026-10-29);
   starting it still needs an explicit instruction and game window.
 - 2026-10-28 (agent context, continued): the owner had removed the agreed-checks list from
   AGENTS.md to keep it lean; "If you really think that was important, at least let's move

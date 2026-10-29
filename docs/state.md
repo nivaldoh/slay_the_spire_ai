@@ -9,16 +9,17 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
-**Running (Claude Code, 2026-10-29 02:17-12:10 -03, owner away):** implementing the
-[light factory plan](light-factory-plan.md) (owner answered its 3 decisions); no game, no spend.
+**Running (Claude Code, 2026-10-29 02:17-12:10 -03, owner away):** the light factory plan,
+now [workflow.md](workflow.md): stages 1-3 built ([log](twwarhammer3/log.md#2026-10-29-light-factory-stages-1-3));
+no game, no spend. Before each commit: `uv run --locked python scripts/check.py`.
 **Nothing runs**: all game controllers are stopped. The 2026-10-28 long autonomous runs
 and checkpoint-RL merge are finished ([log](twwarhammer3/log.md)); the owner's latest
 [direction](owner-direction.md) is recorded. Local LLM post-training stays paused.
 Thesis: likely multi-agent systems, possibly multi-agent RL linked to the WH3 environment;
 the research question is open. The [proposal](thesis/proposal.md) is one candidate
 ([directions](thesis/directions.md), [papers](thesis/papers.md)). Testing reviews await you:
-[eval review](testing.md#wh3-evaluations-and-tests-2026-10-23),
-[live-check comparison](testing.md#wh3-live-check-comparison-2026-10-23).
+[eval review](twwarhammer3/log.md#wh3-evaluations-and-tests-2026-10-23),
+[live-check comparison](twwarhammer3/log.md#wh3-live-check-comparison-2026-10-23).
 Three unmerged draft branches remain ([list](#branches)); checkpoint RL was merged on 2026-10-28.
 MARL references: [three papers plus ProgramLab](thesis/papers.md#marl-implementation-references-2026-10-28), inspected 2026-10-28; ProgramLab's training code is pending. No external tests or learning results reproduced.
 [Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).

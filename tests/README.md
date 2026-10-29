@@ -25,6 +25,10 @@ uv run --locked --extra train pytest -ra tests/ppo --basetemp=runs/test-scratch/
 uv run --locked --extra llm pytest -ra tests/language --basetemp=runs/test-scratch/language
 ```
 
+`scripts/check.py` runs the ordinary suite and Ruff before a commit ([workflow](../docs/workflow.md#the-exit-gate-scriptscheckpy)).
+The dev group includes lupa (Lua 5.1) and Pillow; the `train` (CPU torch) and `llm` (CUDA
+torch, transformers, peft) extras conflict, so use only one per command; without them
+those tests skip through `importorskip`.
 Use a different scratch path for concurrent invocations: pytest clears its `--basetemp`.
 Only disposable test data belongs there. `uv sync --locked` removes optional extras again.
 Read `-ra` skip reasons: absent training packages or local evidence leave checks unrun.
