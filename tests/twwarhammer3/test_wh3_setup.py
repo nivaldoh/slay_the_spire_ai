@@ -526,3 +526,104 @@ def test_second_small_batch_declares_lordless_rosters_sides_and_headroom():
         steps = setup.scenario_steps(scenario)
         sizes = [s["expect"] for s in steps if s.get("expression", "").endswith("UnitList.Size")]
         assert sizes == [player, enemy]
+
+
+def declared(name):
+    scenario = setup.load_scenario({"scenario": name})
+    config = {"episodes": 1, "start_timeout": 900, "episode_timeout": 1320,
+              "run_timeout": 8 * 3600}
+    return scenario, config
+
+
+# Removing any one of these declaration checks passed every test before
+# (runs/refusal-sweep-20261029/setup.txt); each case breaks one declared field.
+@pytest.mark.parametrize("name,change,message", [
+    ("brt-cavalry-emp-assault", lambda s, c: s.pop("map"), "must pin its map"),
+    ("brt-cavalry-emp-assault", lambda s, c: s["player"].update(faction=None), "pin factions"),
+    ("brt-cavalry-emp-assault", lambda s, c: s["expect"].update(battle_type="siege_normal"),
+     "battle type does not match"),
+    ("brt-cavalry-emp-assault", lambda s, c: s["expect"].pop("unit_scale"),
+     "missing expect.unit_scale"),
+    ("brt-cavalry-emp-assault",
+     lambda s, c: s["expect"].update(funds="funds_custom", funds_amount=0), "custom funds"),
+    ("brt-cavalry-emp-assault", lambda s, c: c.update(run_timeout=60), "run timeout must cover"),
+    ("ksl-reserves-survival", lambda s, c: s["expect"].update(timer_enabled=True),
+     "timer_enabled false"),
+    ("ksl-reserves-survival", lambda s, c: c.update(episode_timeout=0),
+     "positive episode wall limit"),
+    ("emp-battery-wef-evacuation", lambda s, c: s["custom"].update(version=2),
+     "unsupported custom objective"),
+    ("emp-battery-wef-evacuation", lambda s, c: s["custom"].update(rules=" "),
+     "requires public rules"),
+    ("emp-battery-wef-evacuation", lambda s, c: s["custom"]["deployment"].update(ally=[]),
+     "unknown deployment side"),
+    ("emp-battery-wef-evacuation",
+     lambda s, c: s["custom"]["deployment"]["friendly"][0].update(width=0),
+     "width must be positive"),
+])
+def test_each_broken_declaration_is_refused_before_launch(name, change, message):
+    scenario, config = declared(name)
+    setup.validate_declaration(scenario, config)
+    change(scenario, config)
+    with pytest.raises(ValueError, match=message):
+        setup.validate_declaration(scenario, config)
+
+def test_a_nonpositive_ai_stats_modifier_is_refused():
+    scenario, _ = declared("brt-cavalry-emp-assault")
+    scenario["expect"]["ai_stats_modifier"] = "0"
+    with pytest.raises(ValueError, match="AI stats modifier"):
+        setup.menu_checks(scenario)
+
+
+def started():
+    """A minimal declared scenario with a custom evacuation and the readbacks that pass it."""
+    goal = {"kind": "battery_evacuation", "version": 1, "assets": ["f2", "f3"],
+            "zone": {"x": 0, "z": 0, "radius": 30}, "deadline_s": 600, "rules": "Save them.",
+            "deployment": {"friendly": [{"id": "f2", "x": 10, "z": 10}]}}
+    scenario = {"expect": {"time_limit_s": 1200, "unit_scale": .75, "realism": False,
+                           "player_defends": True, "ai_stats_modifier": "1.1"},
+                "player": {"faction": "p", "units": ["lord", "gun", "gun"],
+                           "reinforcements": ["knights"]},
+                "enemy": {"faction": "e", "units": ["lord"]}, "custom": goal}
+    state = {"setup": {**scenario["expect"], "army_ai_stats_modifiers": [1.1, 1.1],
+                       "custom": {"ok": True, "deployment": {
+                           "friendly": [{"id": "f2", "x": 10.5, "z": 10}]}}},
+             "armies": {"player": {"faction": "p"}, "enemy": {"faction": "e"}},
+             "terrain": {"rows": [".."], "bounds": {"min_x": -99, "max_x": 99,
+                                                    "min_z": -99, "max_z": 99}},
+             "friendly": [{"id": "f1", "type": "lord"},
+                          {"id": "f2", "type": "gun", "class": "artillery"},
+                          {"id": "f3", "type": "gun", "class": "artillery"}],
+             "enemy_roster": [{"type": "lord"}],
+             "mode": {"reinforcements": [{"type": "knights"}],
+                      "custom": {**{k: goal[k] for k in ("kind", "version", "zone", "rules")},
+                                 "deadline_ms": 600000,
+                                 "assets": [{"id": "f2"}, {"id": "f3"}]}}}
+    return scenario, state
+
+
+# Removing any one of these startup checks passed every test before
+# (runs/refusal-sweep-20261029/setup.txt); each case breaks one readback.
+@pytest.mark.parametrize("change,message", [
+    (lambda s, o: (s["expect"].update(time_limit_s=None), o.update(remaining_ms=30000)),
+     "finite battle countdown"),
+    (lambda s, o: o["mode"].update(reinforcements=[{"type": "spearmen"}]), "reinforcement pool"),
+    (lambda s, o: o["setup"]["custom"].update(ok=False), "custom setup failed"),
+    (lambda s, o: o["mode"]["custom"].update(rules="Other."), "does not match its declaration"),
+    (lambda s, o: o["friendly"][1].update({"class": "infantry"}), "not artillery"),
+    (lambda s, o: o["setup"]["custom"]["deployment"]["friendly"][0].update(x=40),
+     "authored deployment failed"),
+    (lambda s, o: o["terrain"]["bounds"].update(min_x=5), "outside the battlefield"),
+])
+def test_each_broken_startup_readback_stops_the_job(change, message):
+    scenario, state = started()
+    setup.check_battle(scenario, state)
+    change(scenario, state)
+    with pytest.raises(ProtocolError, match=message):
+        setup.check_battle(scenario, state)
+
+
+def test_a_failed_menu_step_stops_setup(tmp_path):
+    (tmp_path / "menu.log").write_text("step 3: button_battle not found: lobby changed\n")
+    with pytest.raises(ProtocolError, match="failed menu step"):
+        setup.check_menu({"map": "m"}, tmp_path)
