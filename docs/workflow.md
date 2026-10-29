@@ -87,6 +87,7 @@ tree      dirty: 3 changed, 4 untracked
 result    PASSED: Ruff clean; 1655 passed, 41 skipped in 17.92s
 skipped   40 could not import 'torch'; 1 set GAMEAI_TEST_WINDOWS=1 on WSL to test actual Windows ...
 log       runs/checks/20261029-024523-297a061-545683.log
+agreed    7 of 7 offline agreed checks passed (not at HEAD: tree changed); runs/checks/agreed-passes.jsonl
 needs your yes (changes since HEAD):
   - 1 skip or xfail added: tests/twwarhammer3/test_wh3_version_review.py: pytest.skip("needs Node.js")
 markers   3 problems listed in the log, for the owner
@@ -103,6 +104,10 @@ markers   3 problems listed in the log, for the owner
   assert removed or changed under `tests/`; a skip or xfail added; a changed prompt snapshot;
   a package added or a version changed in `uv.lock`. A line moved verbatim is not flagged.
   Warnings never fail the run: they go in the report for the owner.
+- "agreed" counts the [agreed checks](agreed-checks.md) with a pytest command whose tests
+  passed in this run; each run appends them to `runs/checks/agreed-passes.jsonl` with its
+  revision (owner, 2026-10-29). A line counts for its revision only when `at_revision` is true:
+  no tracked file changed and no untracked file outside `docs/` other than Markdown.
 - "markers" counts format problems in JUDGEMENT markers (misspelt, in a file that cannot
   carry one, no date, a "rests on" pointing nowhere), listed in the log. Only the owner
   changes markers, so they never fail the run.

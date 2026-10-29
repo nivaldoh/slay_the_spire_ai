@@ -7,6 +7,7 @@ hand; see the docstring of scripts/check.py for what each warning means.
 
 import importlib.util
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -123,3 +124,47 @@ def test_marker_problems_are_listed(repo):
         f"docs/bad.md: {RESTS} src/pkg/mod.py, which has no marker",
         f"docs/bad.md: {RESTS} docs/gone.md, which does not exist",
     ]
+
+
+def test_each_agreed_pytest_command_is_read_from_this_runs_junit(repo):
+    (repo / "docs/agreed-checks.md").write_text(
+        "- File: `uv run --locked pytest -ra tests/agreed/test_a.py`; agreed 2026-10-29.\n"
+        "- Nodes: `uv run pytest tests/agreed/test_a.py::TestK::test_k\n"
+        "  tests/other/test_b.py::test_b`; agreed: twice.\n"
+        "- Fails: `pytest -ra tests/other/test_fail.py`.\n"
+        "- Renamed: `pytest tests/agreed/test_a.py::test_gone`.\n"
+        "- Skipped: `pytest tests/other/test_skip.py`.\n"
+        "- Live only: `uv run --locked python tests/agreed/check_live.py --output x`.\n")
+    edit(repo, "tests/agreed/test_a.py", "def test_a", "import pytest\n\n\n"
+         "class TestK:\n    @pytest.mark.parametrize('n', [1, 2])\n"
+         "    def test_k(self, n):\n        assert n\n\n\ndef test_a")
+    (repo / "pytest.ini").write_text("[pytest]\n")  # its own rootdir, wherever tmp_path is
+    (repo / "tests/agreed/test_ab.py").write_text("def test_ab():\n    assert 1 == 1\n")
+    (repo / "tests/other/test_fail.py").write_text("def test_f():\n    assert 1 == 2\n\n\n"
+                                                   "def test_e(no_such_fixture):\n    pass\n")
+    (repo / "tests/other/test_skip.py").write_text(f"import pytest\n\n\n{SKIP}\ndef test_s():\n"
+                                                   "    assert 1 == 1\n")
+    junit = repo / "junit.xml"
+    subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
+                    f"--junitxml={junit}", "tests"], cwd=repo, capture_output=True)
+    result = check.agreed_results(repo, junit)
+    assert result == {
+        "File": {"passed": True, "tests": 3, "skipped": 0, "failed": 0},
+        "Nodes": {"passed": True, "tests": 3, "skipped": 0, "failed": 0},
+        "Fails": {"passed": False, "tests": 2, "skipped": 0, "failed": 2},
+        "Renamed": {"passed": False, "tests": 0, "skipped": 0, "failed": 0},
+        "Skipped": {"passed": False, "tests": 1, "skipped": 1, "failed": 0},
+    }
+
+
+@pytest.mark.parametrize("plant,own", [
+    (lambda r: None, True),
+    (lambda r: [(r / p).write_text("x\n") for p in ("docs/new.md", "docs/a.png", "tests/N.md")],
+     True),
+    (lambda r: (r / "tests/other/test_new.py").write_text("def test_n():\n    pass\n"), False),
+    (lambda r: edit(r, "src/pkg/mod.py", "1", "2"), False),
+    (lambda r: (edit(r, "src/pkg/mod.py", "1", "2"), git(r, "add", "src/pkg/mod.py")), False),
+])
+def test_a_pass_counts_for_head_only_with_its_files(repo, plant, own):
+    plant(repo)
+    assert check.at_revision(repo)[0] is own

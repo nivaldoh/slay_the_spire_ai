@@ -8,6 +8,11 @@ runs/checks/). It exits 1 when Ruff or any test fails or pytest cannot run, othe
 suite runs without WH3_WRITE_PROMPTS, so it never rewrites prompt snapshots, and its scratch
 directory (runs/test-scratch/check-<pid>) is removed after a pass.
 
+Each run also appends one line to runs/checks/agreed-passes.jsonl (owner, 2026-10-29: "(a)"):
+for every entry of docs/agreed-checks.md with a pytest command, whether that command's tests
+passed in this run, read from pytest's JUnit XML. A line counts for its revision only when
+`at_revision` is true. The line comes from the whole suite, not the command run alone.
+
 Warnings follow and never change the exit code. "needs your yes" names an edit only the owner
 approves, found in the changes since --base (default: the merge base with origin/main, so
 unpushed commits, uncommitted and untracked files all count): lines removed or changed in a file
@@ -25,6 +30,7 @@ checks; ours are tests/test_repo_rules.py, which the suite runs).
 """
 
 import argparse
+import json
 import os
 import re
 import shutil
@@ -32,6 +38,7 @@ import subprocess
 import sys
 import textwrap
 import tomllib
+import xml.etree.ElementTree as ElementTree
 from collections import Counter
 from datetime import datetime
 from fnmatch import fnmatch
@@ -39,6 +46,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 AGREED = "docs/agreed-checks.md"
+PASSES = "runs/checks/agreed-passes.jsonl"
+PYTEST_CALL = re.compile(r"`[^`]*\bpytest\b([^`]*)`")
 SNAPSHOTS = "tests/twwarhammer3/prompts/*.txt"
 # docs/judgement.md, "Files that carry no marker".
 NO_MARKER = ("*.json", "configs/*prompt*.md", "tests/twwarhammer3/prompts/*",
@@ -107,6 +116,57 @@ def agreed_paths(root: Path) -> set[str]:
     """Files and directories under tests/, scripts/ or src/ that an agreed check names."""
     text = (root / AGREED).read_text(encoding="utf-8") if (root / AGREED).exists() else ""
     return {p.rstrip(".,;:)") for p in re.findall(r"\b((?:tests|scripts|src)/[\w./-]+)", text)}
+
+
+def agreed_pytest(root: Path) -> dict[str, list[str]]:
+    """Each agreed check's pytest targets, by its entry's text before the first colon."""
+    text = (root / AGREED).read_text(encoding="utf-8") if (root / AGREED).exists() else ""
+    checks = {}
+    for entry in re.split(r"\n(?=- )", text):
+        targets = [arg for call in PYTEST_CALL.findall(entry) for arg in call.split()
+                   if not arg.startswith("-")]
+        if entry.startswith("- ") and targets:
+            checks[" ".join(entry[2:].split(":")[0].split())] = targets
+    return checks
+
+
+def agreed_results(root: Path, junit: Path) -> dict[str, dict]:
+    """Per agreed check, its tests in this run. It passed when at least one ran and none
+    failed, as its own command would exit 0 (all skipped or none found does not pass)."""
+    cases = []
+    if junit.exists():
+        for case in ElementTree.parse(junit).getroot().iter("testcase"):
+            outcome = ("failed" if case.find("failure") is not None or case.find("error")
+                       is not None else "skipped" if case.find("skipped") is not None
+                       else "passed")
+            # pytest's junitxml names a test tests.dir.test_file[.Class].test_name[params].
+            cases.append((f"{case.get('classname')}.{case.get('name').split('[')[0]}", outcome))
+    results = {}
+    for name, targets in agreed_pytest(root).items():
+        dotted = [".".join([parts[0].rstrip("/").removesuffix(".py").replace("/", "."),
+                            *parts[1:]]) for parts in (t.split("[")[0].split("::")
+                                                       for t in targets)]
+        found = Counter(outcome for address, outcome in cases
+                        if any(address == d or address.startswith(d + ".") for d in dotted))
+        results[name] = {"passed": found["passed"] > 0 and found["failed"] == 0,
+                         "tests": sum(found.values()), "skipped": found["skipped"],
+                         "failed": found["failed"]}
+    return results
+
+
+def at_revision(root: Path) -> tuple[bool, list[str], list[str]]:
+    """Whether the tested files are HEAD's, with the changed and the counted untracked paths.
+
+    JUDGEMENT?: Pass at a revision — Claude, 2026-10-29, under the owner's "(a)": untracked
+    Markdown and anything under docs/ may sit beside it (the thesis notes and the owner's TODO
+    always do); any other untracked or changed file makes the pass not HEAD's. Counting every
+    untracked file would credit no revision; ignoring them all would credit untracked tests.
+    """
+    changed = sorted({line[3:] for line in git(root, "status", "--porcelain",
+                                               "--untracked-files=no").splitlines()})
+    untracked = git(root, "ls-files", "--others", "--exclude-standard").splitlines()
+    loose = [p for p in untracked if not (p.startswith("docs/") or p.endswith(".md"))]
+    return not changed and not loose, changed, loose
 
 
 def lock_versions(text: str) -> dict[str, str]:
@@ -231,8 +291,10 @@ def main() -> int:
     scratch.parent.mkdir(parents=True, exist_ok=True)  # pytest makes only the last folder
     ruff = subprocess.run([sys.executable, "-m", "ruff", "check", "."], cwd=ROOT, env=env,
                           capture_output=True, text=True)
-    tests = subprocess.run([sys.executable, "-m", "pytest", "-q", "-ra", f"--basetemp={scratch}"],
-                           cwd=ROOT, env=env, capture_output=True, text=True)
+    junit = scratch.with_name(scratch.name + ".xml")  # beside --basetemp, which pytest clears
+    tests = subprocess.run([sys.executable, "-m", "pytest", "-q", "-ra", f"--basetemp={scratch}",
+                            f"--junitxml={junit}"], cwd=ROOT, env=env, capture_output=True,
+                           text=True)
     output = tests.stdout + tests.stderr
     summary = next((line.strip("= ") for line in reversed(output.splitlines())
                     if SUMMARY.search(line)), f"no pytest summary (exit {tests.returncode})")
@@ -253,6 +315,12 @@ def main() -> int:
         f"log       {log.relative_to(ROOT)}",
     ]
     shown += [f"          {line}" for line in first]
+    agreed = agreed_results(ROOT, junit)
+    junit.unlink(missing_ok=True)
+    own, changed, untracked = at_revision(ROOT)
+    shown.append(f"agreed    {sum(r['passed'] for r in agreed.values())} of {len(agreed)} "
+                 f"offline agreed checks passed{'' if own else ' (not at HEAD: tree changed)'}; "
+                 f"{PASSES}")
     yes = warnings(ROOT, base)
     if yes:
         shown.append(f"needs your yes (changes since {base[:9]}):")
@@ -263,6 +331,12 @@ def main() -> int:
     print("\n".join(shown))
 
     log.parent.mkdir(parents=True, exist_ok=True)
+    with (ROOT / PASSES).open("a", encoding="utf-8") as passes:
+        passes.write(json.dumps({
+            "time": datetime.now().isoformat(timespec="seconds"),
+            "revision": git(ROOT, "rev-parse", "HEAD").strip(), "at_revision": own,
+            "changed": changed, "untracked": untracked, "log": str(log.relative_to(ROOT)),
+            "checks": agreed}) + "\n")
     log.write_text("\n".join([*shown, "", "== marker problems", *problems, "",
                               "== git status --porcelain", *status, "",
                               "== ruff check .", ruff.stdout + ruff.stderr,
