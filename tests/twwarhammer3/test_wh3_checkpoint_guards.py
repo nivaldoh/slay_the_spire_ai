@@ -5,6 +5,7 @@ The runtime lock, the first step of a launch, is stubbed to raise, so a missing 
 test instead of starting the game.
 """
 import json
+from types import SimpleNamespace
 
 import pytest
 
@@ -191,3 +192,36 @@ def test_a_copy_that_differs_from_its_record_is_refused_and_removed(offline):
                                    tmp_path / "run")
     assert not (tmp_path / "user/replays/saved.replay").exists()
     assert not (directory / "SUSPECT").exists()
+
+
+class Agent:
+    def __init__(self, exited):
+        self.exited = exited
+
+    def poll(self):
+        return 0 if self.exited else None
+
+
+@pytest.mark.parametrize("events,exited,error,message", [
+    ([], True, RuntimeError, "checkpoint agent exited early"),
+    ([{"event": "error", "message": "hook failed"}], False, RuntimeError, "checkpoint agent: "),
+    ([{"event": "frida_error"}], False, RuntimeError, "checkpoint agent: "),
+    ([{"event": "detached"}], False, RuntimeError, "checkpoint agent: "),
+    ([{"event": "reading", "tick": 5}], False, TimeoutError, "tick 2000 not reached"),
+])
+def test_following_the_agent_stops_on_its_faults(tmp_path, monkeypatch, events, exited, error,
+                                                 message):
+    now = [0.0]
+
+    def monotonic():  # ten seconds a call, so a missing stop reaches the deadline at once
+        now[0] += 10
+        return now[0]
+    monkeypatch.setattr(checkpoint, "time", SimpleNamespace(monotonic=monotonic,
+                                                            sleep=lambda seconds: None))
+    log = tmp_path / "native.jsonl"
+    log.write_text("".join(json.dumps(event) + "\n" for event in events))
+    with pytest.raises(error, match=message):
+        checkpoint.wait(log, Agent(exited), 2000)
+    log.write_text("".join(json.dumps(event) + "\n" for event in [*events, {"event": "done"}]))
+    if not exited and error is TimeoutError:
+        assert checkpoint.wait(log, Agent(False), 2000) == {"event": "done"}
