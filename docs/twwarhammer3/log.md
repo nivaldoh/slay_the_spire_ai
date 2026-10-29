@@ -57,8 +57,9 @@ for the misses. One rerun reviewer checked the counts and found the first play c
   `setup.py` 19 → 40 of 40 (`dac11a7`); `gameai` ledger, llm and providers 14 → 18 of 18
   (`f21c70e`, the ledger's reservation guard among them); `windows.py` 2 of 5 (needs Windows);
   `export.py` 10 → 17 of 17 (`a4a6011`: corrupt traces stop an export); `checkpoint.py` 10 →
-  22 of 32 (`ba2a203`, `71d20bd`: pre-launch refusals with the lock stubbed, replay and
-  bystander checks; left: real launch paths, step-run library preconditions, a corrupted copy).
+  27 of 32 (`ba2a203`, `71d20bd`: pre-launch refusals with the lock stubbed, replay and
+  bystander checks; `22df7b4`: step-run library preconditions and a corrupted copy; left: the
+  four agent-process refusals of a real launch).
 - Spire: the run loop and decisions 2 → 9 of 9 (`82c8487`: a choice the game did not offer is
   never sent; runs without an outcome end unscored); the Workshop pin and an empty dataset
   selection (`57a1661`). Fully covered already: provenance (the source-scope refusal), the
@@ -68,7 +69,7 @@ for the misses. One rerun reviewer checked the counts and found the first play c
 - Decay check: the ten planted versions of 2026-10-20 (b42), rebuilt from their names, are
   all still caught (`runs/decay-check-20261029/`).
 - Tonight's total (`runs/light-factory-20261029/tally.md`): 342 planted versions; the day's
-  tests missed 164 (4 equivalent or covered twice); new tests closed 137; 23 left, each named.
+  tests missed 164 (4 equivalent or covered twice); new tests closed 142; 18 left, each named.
 - Found on the way: a test-order dependence (state.md Known issues) and `[cards]` markers
   ([judgement](../judgement.md#status-and-how-to-continue)).
 Not established: live engine behaviour; that each refusal is the right rule.
