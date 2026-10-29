@@ -1,3 +1,4 @@
+import csv
 import json
 
 import pytest
@@ -72,3 +73,18 @@ def test_the_summary_keeps_arms_of_different_added_age_and_interval_apart(tmp_pa
     header, _, *rows = stats.summary(register).splitlines()
     column = [cell.strip() for cell in header.split("|")].index("Episodes")
     assert sorted(row.split("|")[column].strip() for row in rows) == ["1", "1", "2"]
+
+
+def test_a_blank_added_age_joins_the_zero_age_arm(tmp_path):
+    # Rows before b1 leave added age blank and their episodes added none (stats.py's summary
+    # comment), so a blank row and a 0 s row of one condition are one group.
+    register = tmp_path / "results.csv"
+    blank = dict.fromkeys(stats.FIELDS, "")
+    rows = [{**blank, "scenario": "s", "policy": "hold", "outcome": "won", "interval_s": "0",
+             "added_age_s": age} for age in ("", "0.0")]
+    with register.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, stats.FIELDS, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    header, _, *body = stats.summary(register).splitlines()
+    assert len(body) == 1 and "| 0/0 | 2 | 2 |" in body[0]
