@@ -766,3 +766,90 @@ def test_the_injection_entry_point_exists_only_after_an_enabled_session_loads():
     lua.execute("enabled = true")
     load()
     assert lua.eval("twwarhammer3_inject == inject")
+
+
+ABILITY = ("u = state.friendly.f1.unit; u.owned_non_passive_special_abilities = function()"
+           " return {'a1'} end; u.can_perform_special_ability = function() return true end; ")
+
+
+# The mod's own refusals are the last check before the engine: units and targets change while
+# a model thinks, after Python validated the batch. Removing any one of these passed the whole
+# WH3 suite before this test (runs/refusal-sweep-20261029/battle-lua.txt).
+@pytest.mark.parametrize("error,setup,order", [
+    ("unit_dead", "state.friendly.f1.unit.alive = 0", {"type": "halt"}),
+    ("unit_routing", "state.friendly.f1.unit.is_routing = function() return true end",
+     {"type": "halt"}),
+    ("bad_position", "", {"type": "move", "x": 10}),
+    ("bad_width", "", {"type": "move", "x": 10, "z": 20, "width": -5}),
+    ("unknown_target", "", {"type": "attack", "target": "e9"}),
+    ("bad_attack_mode", "", {"type": "attack", "target": "e1", "mode": "magic"}),
+    ("no_ammunition", "state.friendly.f1.unit.ammo_left = function() return 0 end",
+     {"type": "attack", "target": "e1", "mode": "ranged"}),
+    ("bad_flying", "", {"type": "flight", "flying": "yes"}),
+    ("cannot_fly", "", {"type": "flight", "flying": True}),
+    ("unavailable_behaviour", "", {"type": "behaviour", "behaviour": "skirmish", "enabled": True}),
+    ("bad_enabled", "state.friendly.f1.unit.can_use_behaviour = function() return true end",
+     {"type": "behaviour", "behaviour": "skirmish", "enabled": "yes"}),
+    ("unavailable_ability", "", {"type": "ability", "ability": "a1"}),
+    ("ambiguous_ability_target", ABILITY,
+     {"type": "ability", "ability": "a1", "x": 1, "z": 2, "target": "e1"}),
+    ("bad_position", ABILITY, {"type": "ability", "ability": "a1", "x": 1}),
+    ("unknown_target", ABILITY, {"type": "ability", "ability": "a1", "target": "e9"}),
+    ("target_dead", ABILITY + "state.enemy.e1.unit.alive = 0",
+     {"type": "ability", "ability": "a1", "target": "e1"}),
+    ("target_not_visible", ABILITY + "state.enemy.e1.unit.visible = false",
+     {"type": "ability", "ability": "a1", "target": "e1"}),
+    ("unknown_type", "", {"type": "dance"}),
+])
+def test_each_mod_refusal_names_its_reason_and_reaches_no_engine_call(
+        order_dispatch, error, setup, order):
+    lua, _, _ = order_dispatch
+    _, _, _, _, apply = load_battle(lua, "BEHAVIOURS", "get", "clean_error", "apply_flight",
+                                    "apply_order")
+    lua.execute(setup)
+    result = apply(lua.table_from({"unit": "f1", **order}))
+    assert dict(result) == {"unit": "f1", "ok": False, "error": error}
+    assert len(lua.globals().calls) == 0
+
+
+ARMY = """
+    state.army_abilities, state.army_issued = {{key = 'aa'}}, {}
+    state.slots = {{id = 's1', names = {[2] = 'tower'}}}
+    SLOT_LIST, POOL, currency, built_index, can_purchase = 'Slots', 'Pool', 100, 0, false
+    function get_context(expression)
+        if expression == 'PlayerArmyContext.GlobalCurrency' then return currency end
+        if expression:find('CurrentIndex') then return built_index end
+        if expression:find('CanPurchaseUnit') then return can_purchase end
+    end
+    function pool_rows() return {{'knights', '300'}} end
+    common = {call_context_command = function() end}
+"""
+
+
+# The army's orders (abilities, siege building, reinforcements) and their refusals, from the
+# same sweep: removing any one of these passed the whole WH3 suite before this test.
+@pytest.mark.parametrize("error,setup,order", [
+    ("unavailable_ability", "", {"type": "ability", "ability": "zz"}),
+    ("ambiguous_ability_target", "", {"type": "ability", "ability": "aa", "target": "e1", "x": 1}),
+    ("unknown_target", "", {"type": "ability", "ability": "aa", "target": "e9"}),
+    ("target_dead", "state.enemy.e1.unit.alive = 0",
+     {"type": "ability", "ability": "aa", "target": "e1"}),
+    ("target_not_visible", "state.enemy.e1.unit.visible = false",
+     {"type": "ability", "ability": "aa", "target": "e1"}),
+    ("bad_position", "", {"type": "ability", "ability": "aa"}),
+    ("unknown_slot", "", {"type": "build", "slot": "s9", "option": "tower"}),
+    ("unknown_option", "", {"type": "build", "slot": "s1", "option": "wall"}),
+    ("not_built", "", {"type": "build", "slot": "s1", "option": "tower"}),
+    ("bad_zone", "", {"type": "reinforce", "zone": "x", "reinforcement": "knights"}),
+    ("not_in_pool", "", {"type": "reinforce", "zone": 1, "reinforcement": "giants"}),
+    ("cannot_purchase_there", "", {"type": "reinforce", "zone": 1, "reinforcement": "knights"}),
+    ("not_purchased", "can_purchase = true",
+     {"type": "reinforce", "zone": 1, "reinforcement": "knights"}),
+])
+def test_each_army_order_refusal_names_its_reason(order_dispatch, error, setup, order):
+    lua, _, _ = order_dispatch
+    lua.execute(ARMY + setup)
+    *_, apply = load_battle(lua, "get", "clean_error", "apply_army_ability", "apply_build",
+                            "apply_reinforce", "apply_order")
+    result = apply(lua.table_from({"unit": "army", **order}))
+    assert dict(result) == {"unit": "army", "ok": False, "error": error}
