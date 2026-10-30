@@ -22,6 +22,7 @@ import getopt
 import hashlib
 import json
 import os
+import runpy
 import signal
 import subprocess
 import sys
@@ -48,8 +49,12 @@ def tree_identity() -> str:
     digest.update(git("diff", "--cached", "--binary"))
     digest.update(git("diff", "HEAD", "--binary"))
     for name in sorted(git("ls-files", "--others", "--exclude-standard", "-z").split(b"\0")):
-        if name and (ROOT / name.decode()).is_file():
-            digest.update(name + b"\0" + (ROOT / name.decode()).read_bytes())
+        if name:
+            path = ROOT / name.decode()
+            if path.is_symlink():
+                digest.update(name + b"\0symlink\0" + os.fsencode(os.readlink(path)))
+            elif path.is_file():
+                digest.update(name + b"\0" + path.read_bytes())
     return digest.hexdigest()
 
 
@@ -110,6 +115,7 @@ def run_check() -> tuple[bool, str]:
         if pending:
             signal.raise_signal(pending[0])
         out, err = process.communicate(timeout=TIMEOUT_S)
+        passed = process.returncode == 0 and completed_check_pass()
     except BaseException:  # timeout, Ctrl-C or SIGTERM: no detached check left running
         if process is not None:
             try:
@@ -119,7 +125,9 @@ def run_check() -> tuple[bool, str]:
             process.communicate()
         raise
     report = out.strip() or err.strip()[-2000:]
-    return process.returncode == 0, report
+    if process.returncode == 0 and not passed:
+        report = "scripts/check.py exited 0 without a matching completed pass record.\n" + report
+    return passed, report
 
 
 def read_cache() -> dict:
@@ -148,6 +156,21 @@ def say(message: str) -> int:
     return 0
 
 
+def completed_check_pass() -> bool:
+    """A completed pass on current contents; rests on JUDGEMENT? scripts/check.py Checked tree
+    and Concurrent passes."""
+    try:
+        gate = runpy.run_path(str(ROOT / "scripts/check.py"))
+        record = json.loads((ROOT / gate["CHECKED"]).read_text())
+        return isinstance(record, dict) and record.get("tree") == gate["tree_content"](ROOT)
+    except SystemExit as error:
+        if error.code == 143:  # also a reader could raise it; preserve the SIGTERM handler
+            raise
+        return False
+    except Exception:
+        return False
+
+
 def main(check=run_check, event: dict | None = None, jobs=None) -> int:
     event, jobs = event or {}, jobs or game_job_running
     try:
@@ -156,6 +179,12 @@ def main(check=run_check, event: dict | None = None, jobs=None) -> int:
         if cache.get("passed") == identity:
             return 0
         session = str(event.get("session_id", ""))
+        proven = completed_check_pass()
+        current = tree_identity()
+        if proven and current == identity:
+            remember(cache, session, passed=identity)
+            return 0
+        identity = current
         if event.get("stop_hook_active") and session in cache.get("blocked", []):
             remember(cache, session, **{k: v for k, v in cache.items() if k != "blocked"})
             return say("scripts/check.py still failed to establish a pass at the last stop; "

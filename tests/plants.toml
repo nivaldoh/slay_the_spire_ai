@@ -812,3 +812,102 @@ old = "    env.pop(\"PYTHONOPTIMIZE\", None)\n"
 new = ""
 tests = ["tests/test_check_script.py::test_normal_check_ignores_caller_selection_and_optimization"]
 source = "2026-10-30 environment audit: PYTHONOPTIMIZE erased the imported helper assertion"
+
+[[plant]]
+id = "stop-hook-ignores-a-completed-normal-pass"
+guards = "A cold Stop reuses a genuine content-matching normal pass"
+file = "scripts/hooks/stop_check.py"
+old = "        if proven and current == identity:\n"
+new = "        if False:\n"
+tests = ["tests/test_hooks.py::test_stop_adopts_a_completed_normal_pass_without_rechecking"]
+source = "2026-10-30 reuse proof: a matching normal pass still invoked the gate callback"
+
+[[plant]]
+id = "stop-hook-trusts-any-readable-normal-record"
+guards = "Malformed or stale normal proof cannot skip the Stop check"
+file = "scripts/hooks/stop_check.py"
+old = "        return isinstance(record, dict) and record.get(\"tree\") == gate[\"tree_content\"](ROOT)\n"
+new = "        return True\n"
+tests = ["tests/test_hooks.py::test_invalid_normal_proofs_and_broken_readers_run_the_check"]
+source = "2026-10-30 reuse card: proof must match the existing current-content definition"
+
+[[plant]]
+id = "stop-hook-adopts-a-pass-across-a-lookup-edit"
+guards = "A change during normal-proof lookup forces a check of the resulting tree"
+file = "scripts/hooks/stop_check.py"
+old = "        if proven and current == identity:\n"
+new = "        if proven:\n"
+tests = ["tests/test_hooks.py::test_a_change_during_normal_proof_lookup_checks_the_resulting_tree"]
+source = "2026-10-30 reuse card: concurrent edits invalidate adoption"
+
+[[plant]]
+id = "stop-hook-checks-against-the-pre-lookup-identity"
+guards = "A fallback check after lookup uses the resulting tree identity"
+file = "scripts/hooks/stop_check.py"
+old = "        identity = current\n"
+new = ""
+tests = ["tests/test_hooks.py::test_a_change_during_normal_proof_lookup_checks_the_resulting_tree"]
+source = "2026-10-30 reuse card: refresh identity before checking a tree changed by lookup"
+
+[[plant]]
+id = "stop-hook-ignores-untracked-link-targets"
+guards = "A link retarget during proof lookup changes the Stop identity"
+file = "scripts/hooks/stop_check.py"
+old = "            if path.is_symlink():\n                digest.update(name + b\"\\0symlink\\0\" + os.fsencode(os.readlink(path)))\n            elif path.is_file():\n"
+new = "            if path.is_file():\n"
+tests = ["tests/test_hooks.py::test_link_retarget_during_normal_proof_lookup_checks_the_resulting_tree"]
+source = "2026-10-30 reuse boundary probe: directory/dangling/file-link retargets were invisible"
+
+[[plant]]
+id = "stop-hook-reader-exit-skips-fallback"
+guards = "A normal-proof reader exit supplies no proof and must run the check"
+file = "scripts/hooks/stop_check.py"
+old = "    except SystemExit as error:\n        if error.code == 143:  # also a reader could raise it; preserve the SIGTERM handler\n            raise\n        return False\n"
+new = ""
+tests = ["tests/test_hooks.py::test_a_normal_proof_reader_exit_runs_the_check"]
+source = "2026-10-30 reuse boundary probe: SystemExit(0/None) escaped the reader"
+
+[[plant]]
+id = "stop-hook-reader-swallows-sigterm"
+guards = "Normal-proof lookup preserves the Stop hook's SIGTERM cancellation"
+file = "scripts/hooks/stop_check.py"
+old = "if error.code == 143:"
+new = "if False:"
+tests = ["tests/test_hooks.py::test_normal_proof_lookup_preserves_cancellation"]
+source = "2026-10-30 reuse card: exit 143 belongs to the existing SIGTERM handler"
+
+[[plant]]
+id = "commit-guard-allows-a-checker-import-exit"
+guards = "A broken checker import cannot authorize a Git commit"
+file = "scripts/githooks/pre-commit"
+old = "except (Exception, SystemExit):"
+new = "except Exception:"
+tests = ["tests/test_hooks.py::test_git_guard_refuses_a_checker_import_that_exits"]
+source = "2026-10-30 reader-exit card: real Git accepted a broken checker import exiting 0/None"
+
+[[plant]]
+id = "stop-hook-accepts-zero-without-a-completed-record"
+guards = "A real Stop check needs both zero status and a matching completed normal pass"
+file = "scripts/hooks/stop_check.py"
+old = "        passed = process.returncode == 0 and completed_check_pass()\n"
+new = "        passed = process.returncode == 0\n"
+tests = ["tests/test_hooks.py::test_real_check_zero_without_a_completed_record_is_not_a_pass"]
+source = "2026-10-30 reuse receipt boundary: broken checker exits 0 without proof"
+
+[[plant]]
+id = "stop-hook-accepts-nonzero-with-an-old-record"
+guards = "An old normal receipt cannot turn a nonzero check into a pass"
+file = "scripts/hooks/stop_check.py"
+old = "        passed = process.returncode == 0 and completed_check_pass()\n"
+new = "        passed = completed_check_pass()\n"
+tests = ["tests/test_hooks.py::test_real_check_nonzero_is_failure_even_with_an_old_completed_pass"]
+source = "2026-10-30 reuse receipt boundary: nonzero status always stays a failure"
+
+[[plant]]
+id = "stop-hook-confuses-a-link-with-regular-target-text"
+guards = "Stop identity distinguishes a link from a regular file containing its target text"
+file = "scripts/hooks/stop_check.py"
+old = "name + b\"\\0symlink\\0\" + os.fsencode(os.readlink(path))"
+new = "name + b\"\\0\" + os.fsencode(os.readlink(path))"
+tests = ["tests/test_hooks.py::test_stop_identity_tracks_link_targets_and_the_warm_cache"]
+source = "2026-10-30 identity-link card: link targets use a distinct tag"

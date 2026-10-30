@@ -363,6 +363,11 @@ subprocess tests cover this; Codex's UI cancellation delivery has not been check
 The game-load guard also recognizes the five direct WH3 live-check scripts, including
 ordinary Python flags. Their help and evidence-recount commands stay offline. This is
 command-line recognition tested with fake processes; live timing effects remain unverified.
+Stop also adopts a completed normal gate pass when its content hash matches and the tree
+identity stays unchanged during lookup (rests on JUDGEMENT? `scripts/check.py` Checked tree
+and Concurrent passes, including that content definition's private-notes exception). Missing,
+stale or broken proof falls back to checking. Exit 0 alone without a matching completed record
+is incomplete; reader `SystemExit(0)` is rejected, while Stop cancellation still propagates.
 
 ### Claude Code and Codex
 

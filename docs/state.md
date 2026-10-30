@@ -15,10 +15,9 @@ Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and sm
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
 Factory: [workflow.md](workflow.md), stages 1-4 built; stage 5 awaits the next experiment.
 CI runs `check.py` on each push (results: `gh run list`).
-**Codex:** hooks active, reviewer available, skill discovered; sync tests pass. Stop-hook
-concurrent-edit, interruption and live-check detection fixes committed; commit guard enabled.
-Bytecode fix committed; caller-setting false-pass fix finishing, exact-revision check next
-(`runs/light-factory-20261030/`). No game window; owner away for a few hours.
+**Codex factory work:** offline fixes and proposed checks are in the [log](twwarhammer3/log.md).
+Git guard enabled in updated checkouts; older worktrees need new main for it. Final checks
+and handoff: `runs/light-factory-20261030/handoff.md`. No game window; stage 5 awaits an experiment.
 **Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; four
 draft branches are unmerged ([list](#branches)).
 Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)).

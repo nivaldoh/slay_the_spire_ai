@@ -44,6 +44,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-30: reuse completed passes and reject broken readers
+
+Stop now adopts a completed normal gate pass on matching contents if lookup leaves its
+identity unchanged, clearing old block flags without rerunning tests. A real current pass
+previously still invoked the gate callback. Missing/stale/broken proof triggers checking;
+an exit-0 checker without a matching record is incomplete. This uses the existing record.
+Review probes found untracked directory/dangling links invisible to identity and reader
+`SystemExit(0)` escaping validation. Identity now hashes tagged link targets; Stop falls
+back on reader exits, preserves cancellation, and Git refuses an exiting checker import.
+Cards: `runs/light-factory-20261030/reuse-card.md`, `identity-link-card.md` and
+`guard-prep/reader-exit-card.md`. New cases failed first; integrated hook/sync tests:154 passed.
+Fresh-context independent review: no findings, 23 new and 15 preserved cases passed; all
+11 new wrong versions rejected at intended assertions. All85 earlier plants caught at `b6e42b0`.
+Final gate: `runs/light-factory-20261030/reuse-check-final.log`; postcommit CLI smoke/handoff
+alongside. Source/record semantics rest on JUDGEMENT? `scripts/check.py` Checked tree and
+Concurrent passes, including private-notes exclusion. These checks remain proposed.
+No game, Windows or paid API calls, $0. Native UI cancellation and deliberate bypasses remain
+outside these component checks; final clean-revision offline proof and push/CI follow.
+
 ## 2026-10-30: exit-gate caller settings
 
 Inherited `PYTEST_ADDOPTS` could select a passing test or file while omitting a failing test;
