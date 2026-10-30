@@ -631,3 +631,21 @@ new = ""
 tests = ["tests/twwarhammer3/checkpoint_siege/test_wh3_siege_saved_spell_witness.py"]
 evidence = ["runs/twwarhammer3/siege-final-20261025b/capital-attacker"]
 source = "2026-10-29 night, agreed-check plants (MISSED until 973d738)"
+
+[[plant]]
+id = "commit-guard-never-asks"
+guards = "The Bash hook refuses a commit before check.py passed on this tree"
+file = "scripts/hooks/pre_bash.py"
+old = "            if sub == \"commit\" and not checked():\n                return CHECK_REASON\n"
+new = ""
+tests = ["tests/test_hooks.py::test_a_commit_waits_for_a_check_of_this_exact_tree"]
+source = "2026-10-30 commit-guard draft"
+
+[[plant]]
+id = "check-records-a-failed-run"
+guards = "The Bash hook refuses a commit before check.py passed on this tree"
+file = "scripts/check.py"
+old = "    if passed and tree_content(ROOT) == content:"
+new = "    if tree_content(ROOT) == content:"
+tests = ["tests/test_check_script.py::test_a_pass_records_the_tree_it_checked_and_a_failure_clears_it"]
+source = "2026-10-30 commit-guard draft"

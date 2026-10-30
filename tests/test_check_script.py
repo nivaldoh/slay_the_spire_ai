@@ -425,3 +425,45 @@ def test_a_plant_replays_on_a_copy_of_the_saved_evidence_it_names(repo, monkeypa
     git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "evidence")
     assert run_main(repo, monkeypatch, "--plants") == 0  # caught on the copy
     assert (repo / "runs/ev/expected.txt").read_text() == "1\n"  # the original is untouched
+
+
+def test_a_pass_records_the_tree_it_checked_and_a_failure_clears_it(repo, monkeypatch):
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
+    # What a run leaves behind is ignored, as in the repository's own .gitignore
+    (repo / ".gitignore").write_text("runs/\n__pycache__/\n.pytest_cache/\n.ruff_cache/\n")
+    (repo / "docs/state.md").write_text("# Project state\n")
+    assert run_main(repo, monkeypatch) == 0
+    record = json.loads((repo / "runs/checks/last-pass.json").read_text())
+    assert record["tree"] == check.tree_content(repo)
+    # A new size: a same-size edit within the same second can rerun the cached bytecode
+    edit(repo, "tests/agreed/test_a.py", "1 == 1", "1 == 1 + 1")
+    assert run_main(repo, monkeypatch) == 1
+    assert not (repo / "runs/checks/last-pass.json").exists()
+
+
+def test_the_checked_tree_ignores_staging_and_commits_but_not_edits(repo):
+    base = check.tree_content(repo)
+    (repo / "new.txt").write_text("x\n")
+    added = check.tree_content(repo)
+    assert added != base  # a new untracked file counts
+    git(repo, "add", "new.txt")
+    assert check.tree_content(repo) == added  # staging changes no file
+    git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "new")
+    assert check.tree_content(repo) == added  # nor does a commit
+    edit(repo, "src/pkg/mod.py", "return 1", "return 3")
+    assert check.tree_content(repo) != added
+    (repo / "new.txt").unlink()
+    assert check.tree_content(repo) not in (base, added)
+
+
+
+def test_a_tree_that_changes_during_the_run_gets_no_record(repo, monkeypatch):
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
+    (repo / ".gitignore").write_text("runs/\n__pycache__/\n.pytest_cache/\n.ruff_cache/\n")
+    (repo / "docs/state.md").write_text("# Project state\n")
+    (repo / "tests/other/test_writes.py").write_text(  # another writer edits the tree meanwhile
+        "from pathlib import Path\n\n\ndef test_w():\n    Path('notes.txt').write_text('new')\n")
+    assert run_main(repo, monkeypatch) == 0
+    assert not (repo / "runs/checks/last-pass.json").exists()

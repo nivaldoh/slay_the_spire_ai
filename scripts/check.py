@@ -8,6 +8,10 @@ runs/checks/). It exits 1 when Ruff or any test fails or pytest cannot run, othe
 suite runs without WH3_WRITE_PROMPTS, so it never rewrites prompt snapshots, and its scratch
 directory (runs/test-scratch/check-<pid>) is removed after a pass.
 
+A passing run whose files did not change while it ran writes runs/checks/last-pass.json with a hash
+of every file not ignored (tree_content); the Bash hook refuses a commit in this tree unless the
+hash still matches, and a failing run deletes it.
+
 Each run also appends one line to runs/checks/agreed-passes.jsonl (owner, 2026-10-29: "(a)"):
 for every entry of docs/agreed-checks.md with a pytest command, whether that command's tests
 passed in this run, read from pytest's JUnit XML. A line counts for its revision only when
@@ -39,6 +43,7 @@ checks; ours are tests/test_repo_rules.py, which the suite runs).
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -57,6 +62,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 AGREED = "docs/agreed-checks.md"
 PASSES = "runs/checks/agreed-passes.jsonl"
+CHECKED = "runs/checks/last-pass.json"  # the tree the last passing run checked
 PLANTS = "tests/plants.toml"
 STATE, STATE_LINES = "docs/state.md", 120
 PLANT_TIMEOUT_S = 300
@@ -499,6 +505,19 @@ def marker_problems(root: Path) -> list[str]:
     return list(dict.fromkeys(problems))
 
 
+def tree_content(root: Path) -> str:
+    """sha256 of the path and content of every file not ignored in the working tree, tracked or
+    not (a deleted tracked file counts by its absence). The index and HEAD are left out, so staging
+    or committing part of a checked tree keeps it; any edit, new file or deletion changes it."""
+    digest = hashlib.sha256()
+    names = git(root, "ls-files", "-z", "--cached", "--others", "--exclude-standard").split("\0")
+    for name in sorted({n for n in names if n}):
+        path = root / name
+        digest.update(name.encode() + b"\0")
+        digest.update(hashlib.sha256(path.read_bytes()).digest() if path.is_file() else b"-")
+    return digest.hexdigest()
+
+
 def long_pages(root: Path) -> list[str]:
     """docs/state.md when it is over its line budget; a warning only."""
     page = root / STATE
@@ -548,6 +567,7 @@ def main() -> int:
                           capture_output=True, text=True)
     junit = scratch.with_name(scratch.name + ".xml")  # beside --basetemp, which pytest clears
     revision, before = git(ROOT, "rev-parse", "HEAD").strip(), at_revision(ROOT)
+    content = tree_content(ROOT)
     tests = subprocess.run([sys.executable, "-m", "pytest", "-q", "-ra", f"--basetemp={scratch}",
                             f"--junitxml={junit}"], cwd=ROOT, env=env, capture_output=True,
                            text=True)
@@ -599,6 +619,12 @@ def main() -> int:
                               "== git status --porcelain", *status, "",
                               "== ruff check .", ruff.stdout + ruff.stderr,
                               "== pytest -q -ra", output]), encoding="utf-8")
+    record = ROOT / CHECKED
+    if passed and tree_content(ROOT) == content:  # the Bash hook lets a commit of this tree through
+        record.write_text(json.dumps({"tree": content, "revision": revision,
+                                      "log": str(log.relative_to(ROOT))}) + "\n")
+    else:
+        record.unlink(missing_ok=True)
     if passed:
         shutil.rmtree(scratch, ignore_errors=True)
     return 0 if passed else 1
