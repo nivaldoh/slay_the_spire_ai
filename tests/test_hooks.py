@@ -78,8 +78,13 @@ NOTE = "cat > note.md <<'EOF'\nNever run ruff format here; git commit only after
     ("ls *.py | xargs -P 4 ruff format", False, True),
     ("echo $((x<<2))\ngit commit -m y", True, True),  # a shift inside (( )) hides nothing
 ])
-def test_bash_hook_refuses_ruff_format_and_head_moves_during_a_queue(command, queue, blocked):
-    assert (pre_bash.refusal(command, queue=queue) is not None) is blocked
+def test_bash_hook_refuses_ruff_format_and_head_moves_during_a_queue(command, queue, blocked,
+                                                                    tmp_path, monkeypatch):
+    # A main checkout of its own: run from a linked worktree, the repository's own root has a
+    # .git file, which the hook rightly treats as another tree.
+    monkeypatch.setattr(pre_bash, "ROOT", tmp_path)
+    (tmp_path / ".git").mkdir()
+    assert (pre_bash.refusal(command, queue=queue, cwd=tmp_path) is not None) is blocked
 
 
 def test_a_linked_worktree_inside_the_repo_is_another_tree(tmp_path, monkeypatch):

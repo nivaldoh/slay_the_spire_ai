@@ -12,8 +12,9 @@ correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](aut
 Workflow: the light factory plan is [workflow.md](workflow.md), stages 1-4 built; stage 5 runs
 on the next planned experiment. After the owner's 2026-10-29 answers ([direction](owner-direction.md)):
 `check.py` records agreed-check passes, harness b51 measures 1x by the Windows clock (offline
-only), CI runs `check.py`, Codex has Claude Code's hooks and reviewer, Spire's end-turn
-allowance is narrowed ([log](twwarhammer3/log.md#2026-10-29-1x-by-the-windows-clock-harness-b51)); decision 12.
+only), a CI workflow runs `check.py` (not yet run on GitHub), Codex gets Claude Code's hooks
+(once you trust them with `/hooks`) and reviewer, Spire's end-turn allowance is narrowed
+([log](twwarhammer3/log.md#2026-10-29-evening-the-owners-light-factory-answers-carried-out)); decision 12.
 Before each commit: `uv run --locked python scripts/check.py`. Not pushed.
 **Nothing runs**: all game controllers are stopped. The 2026-10-28 long autonomous runs
 and checkpoint-RL merge are finished ([log](twwarhammer3/log.md)); the owner's latest

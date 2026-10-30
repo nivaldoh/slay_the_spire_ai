@@ -44,6 +44,28 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-29 (evening): the owner's light-factory answers carried out
+
+Claude Code, after the owner answered the night's six decisions ([direction](../owner-direction.md)).
+- `check.py` appends each run's agreed-check pytest results to `runs/checks/agreed-passes.jsonl`
+  (`f4c2cd8`): the 7 commands run alone gave the record's counts. Entries with a live command
+  are labelled "(pytest part only)"; a pass counts for a revision only if its files were HEAD's
+  before and after the run.
+- CI (`bcb874c`): `.github/workflows/check.yml`; the link test skips only links into
+  `docs/thesis/`. A fresh clone on WSL with no git identity: 1821 passed, 64 skipped; a
+  reviewer's runner-like clone (depth 1, empty HOME, no `/mnt/c`): 1833 passed, 64 skipped. Not
+  yet run on GitHub.
+- Codex (`ae05c38`): `.codex/hooks.json` and `.codex/agents/reviewer.toml` mirror Claude Code's;
+  `tests/test_agent_sync.py` checks the pairs and that each command finds its script without
+  `CLAUDE_PROJECT_DIR`. The hook test now passes in a linked worktree (it failed 16 cases there).
+- Small items (`11a5d6b`): the test-order fix, `gameai.lm.sample_index` deleted, two markers
+  retired. Spire's end-turn allowance narrowed; `digest` warnings do not stop a queue.
+- Reviews: 4 reviewer runs, 13 findings (4, 2, 4, 3), all fixed but one limit (b51, below);
+  the planted wrong versions per area, all caught, are in `runs/light-factory-20261029-evening/`
+  (`plant-*.txt`).
+Not established: CI on GitHub; Codex running the hooks (they wait for the owner's `/hooks`
+trust); b51 in a battle. `runs/test-scratch/` was not deleted (the permission check refused it).
+
 ## 2026-10-29: 1x by the Windows clock (harness b51)
 
 The owner's decision 2 (2026-10-29: "(a)", with the suggested 0.99-1.01 band). The mailbox
@@ -54,9 +76,9 @@ observation) and `windows_clock_range` (slowest and fastest stretch of at least 
 JUDGEMENT? `battle/play.py` 1x windows) to `result.json`. `digest` prints them and warns, on
 the episode and above the job's table, when any of them leaves the band. `clock_ratio` (WSL
 time) is unchanged.
-- Offline probe, no game: files written from Windows 5 s apart had write-time gaps within
-  0.01% of the Windows stopwatch (2 gaps; the first gap was a cmdlet-load artefact;
-  `runs/light-factory-20261029-evening/ntfs-mtime-probe.txt`).
+- Offline probe, no game: four files written from Windows 5 s apart; two of the three gaps
+  were within 0.01% of the Windows stopwatch, and the first was a cmdlet-load artefact
+  (`runs/light-factory-20261029-evening/ntfs-mtime-probe.txt`).
 - Tests: a 298 s battle with a 1.5 s pause reads 0.9950 overall, inside the band, and 0.9508
   in its stretch, so it warns; steady 1x reads 1.0000; a foreign or half-written file keeps the
   last time; a file the game replaces during the read keeps the read file's time. 13 planted

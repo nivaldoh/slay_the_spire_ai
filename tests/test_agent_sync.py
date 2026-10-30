@@ -5,7 +5,9 @@ pair below must match. Claude Code's workflows have no Codex counterpart (docs/w
 "Claude Code and Codex").
 """
 import json
+import os
 import re
+import subprocess
 import tomllib
 from pathlib import Path
 
@@ -26,6 +28,21 @@ def test_both_tools_run_the_same_hook_scripts_on_the_same_events():
     claude = hooks(ROOT / ".claude/settings.json")
     assert claude and claude == hooks(ROOT / ".codex/hooks.json")
     assert all((ROOT / script).is_file() for _, _, script, _ in claude)
+
+
+def test_each_tools_hook_commands_find_their_scripts_from_a_subfolder():
+    # Claude Code sets CLAUDE_PROJECT_DIR; Codex sets no such variable and runs a hook in the
+    # session's folder, so its commands must find the repository by themselves.
+    plain = {key: value for key, value in os.environ.items() if not key.startswith("CLAUDE")}
+    for name, env in ((".claude/settings.json", {**plain, "CLAUDE_PROJECT_DIR": str(ROOT)}),
+                      (".codex/hooks.json", plain)):
+        config = json.loads((ROOT / name).read_text(encoding="utf-8"))["hooks"]
+        for hook in (hook for groups in config.values() for group in groups
+                     for hook in group["hooks"]):
+            program, _, script = hook["command"].partition(" ")
+            shown = subprocess.run(["sh", "-c", f"printf %s {script}"], cwd=ROOT / "docs",
+                                   env=env, capture_output=True, text=True).stdout
+            assert program == "python3" and Path(shown) == ROOT / SCRIPT.search(script).group()
 
 
 def test_each_claude_agent_is_a_codex_agent_with_the_same_text():
