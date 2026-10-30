@@ -381,6 +381,11 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-30 (native multiplayer exploration): assess actual team-versus-team LLM battles
+  on multiple machines, keeping the cloud setup vague. Investigate Lua-only/unattended
+  control and whether reverse engineering could fill missing features; draft a plan,
+  rough costs, main risks and reasons it might fail. Initial assessment requested;
+  [draft](twwarhammer3/native-multiplayer.md). No hosting purchase or new paid cohort chosen.
 - 2026-10-28 (RL environment, thesis and benchmark, status follow-up): the thesis will
   likely concern multi-agent systems; multi-agent RL could connect it to the WH3 RL
   environment, which may also stay separate. "The research question is something we're

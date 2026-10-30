@@ -1,6 +1,6 @@
 # Project state
 
-Updated 2026-10-28: what runs, where each game stands, what comes next. Status only:
+Updated 2026-10-30: what runs, where each game stands, what comes next. Status only:
 History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md).
 Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
@@ -50,6 +50,9 @@ includes timer endings; scoring, mode order and checks remain undecided.
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33. A new paid cohort needs a bounded plan.
 - Battle checkpoints: Land check at `6fdb271` and `dcb8b5a`, declared siege cases at `2e2acbe`; build
   25961564 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
+- Native team multiplayer: [initial assessment](twwarhammer3/native-multiplayer.md) drafted
+  at the owner's request; unattended clients plausible, synchronization unverified. Next
+  proposed evidence: two licensed clients, one-peer Lua order; no deployment or live run yet.
 
 Open discussions: the [RL environment and its possible thesis connection](thesis/directions.md#6-wh3-as-an-rl-environment-for-high-level-decisions)
 and remaining [benchmark definitions](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle)

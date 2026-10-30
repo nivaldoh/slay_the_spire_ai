@@ -6,6 +6,10 @@ one controller with comparable resources. The eventual question is whether facti
 cooperate and compete over a multiplayer campaign, where battles, diplomacy and earlier
 commitments change which later decisions are possible.
 
+2026-10-30: the owner requested an initial native-multiplayer/cloud assessment. The
+[feasibility draft](native-multiplayer.md) updates the source audit, costs and proposed
+two-client probes; it does not adopt this page's checks or authorize a cloud deployment.
+
 Status 2026-10-27: the [starting-set screen](log.md#2026-10-22-the-starting-set-screen)
 parked the rank-5 line that §9 B and §12 name as the first card, and the owner made team
 work a later arm on the Land Battle benchmark ([direction](../owner-direction.md)). The

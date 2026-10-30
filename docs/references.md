@@ -15,6 +15,37 @@ Each entry ends with its status:
 Collected 2026-10-28 and 2026-10-29 for the light factory plan, now [workflow.md](workflow.md).
 Vendor pages (Sonar) are marketing: use their terms, not their numbers.
 
+## WH3 native multiplayer assessment
+
+Checked 2026-10-30 for the [feasibility draft](twwarhammer3/native-multiplayer.md).
+Installed CA documentation and bridge source were independently audited; cost sources and
+arithmetic were independently checked. No live multiplayer or cloud performance result.
+
+- [SEGA WH3 FAQ](https://support.sega.com/hc/en-gb/articles/4417717186833-TOTAL-WAR-WARHAMMER-III-FAQ):
+  advertised 2–8-player battles; not proof of scripted multiplayer control.
+- CA-authored scripting references, community mirrors:
+  [battle](https://chadvandy.github.io/tw_modding_resources/WH3/battle/battle.html),
+  [timers](https://chadvandy.github.io/tw_modding_resources/WH3/battle/timer_manager.html),
+  [UI synchronization warning](https://chadvandy.github.io/tw_modding_resources/WH3/ui_scripting.html).
+  Installed copies under `runs/twwarhammer3/vanilla/` govern this build.
+- [Steam matchmaking](https://partner.steamgames.com/doc/features/multiplayer/matchmaking):
+  lobby discovery/join primitives, not evidence WH3 exposes them to Lua.
+- [Steam WH3 US store](https://store.steampowered.com/app/1142710/Total_War_WARHAMMER_III/?cc=us&l=english)
+  and [multiple-client guidance](https://help.steampowered.com/en/faqs/view/48C1-A297-4839-8BB8):
+  base-game price, Windows storage and separate concurrent accounts/licenses.
+- AWS [Windows workstation cost example](https://docs.aws.amazon.com/solutions/latest/modular-cloud-studio-on-aws/cost.html),
+  [G4 hardware](https://aws.amazon.com/ec2/instance-types/g4/),
+  [graphics drivers](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nvidia-GRID-driver.html),
+  [gp3 storage](https://aws.amazon.com/ebs/volume-types/),
+  [IPv4 pricing](https://aws.amazon.com/vpc/pricing/): approximate infrastructure costs;
+  the workstation rate is a published example, not a live EC2 quote.
+- [Anthropic pricing](https://platform.claude.com/docs/en/about-claude/pricing): illustrative
+  input/output costs, not a choice of game policy or evidence of provider access or latency.
+- Farama-Foundation/PettingZoo
+  [`pettingzoo/test/parallel_test.py`](https://github.com/Farama-Foundation/PettingZoo/blob/main/pettingzoo/test/parallel_test.py):
+  per-agent identity and episode-lifecycle checks. Inspected, not run; its synchronous
+  stepping contract does not establish real-time multiplayer synchronization.
+
 ## Verification talks and Sonar
 
 - [How Anthropic Merges 30,000 Code Changes a Day](https://www.youtube.com/watch?v=AnsXWH2_EBU),

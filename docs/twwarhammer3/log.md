@@ -44,6 +44,18 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-30: native multiplayer assessment
+
+Owner-requested [feasibility draft](native-multiplayer.md): native LLM team battles with
+unattended graphical clients look plausible; no supported headless route found. Read-only
+inventory at `652e35d` matched installed build 25961564 and executable hash to the pin,
+inspected six UI contexts and audited Lua ownership/timers. Current bridge refuses MP,
+assumes army 1 and has no explicit network order path; native replication remains unknown.
+Source audit independently repeated; official cost rates checked and arithmetic reviewed.
+Evidence: `runs/twwarhammer3/multiplayer-assessment-20261030/`. Zero live multiplayer battles,
+zero paid calls or cloud deployments. Proposed two-client checks are not agreed; no gameplay
+result or results-register row. Client layout, probe scope and cost workload stay marked.
+
 ## 2026-10-29 (evening): the owner's light-factory answers carried out
 
 Claude Code, after the owner answered the night's six decisions ([direction](../owner-direction.md)).
