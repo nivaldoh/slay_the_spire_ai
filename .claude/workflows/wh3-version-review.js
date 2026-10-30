@@ -97,7 +97,9 @@ ${JSON.stringify(props, null, 1)}
 
 Score each candidate 1-10 on impact (expected improvement in battle outcomes), evidence (how directly the reviews support it), simplicity (small, lean, low risk), generality (helps across scenarios and armies). Judge ${i + 1} of 3: be independent and skeptical; check claims against the traces where cheap. Count how many battles show each mistake: one or two battles cannot separate a real flaw from noise, so prefer "No change" unless a change is supported by repeated evidence. Then pick the single best candidate by title.`,
   { label: `judge:${i + 1}`, phase: 'Judge', schema: SCORE })))
-const valid = judges.filter(Boolean)
+// A judge whose pick names no candidate has not judged them; it counts as missing.
+const named = judge => judge && props.some(p => p.title === judge.pick)
+const valid = judges.filter(named)
 const totals = props.map(p => {
   const s = valid.flatMap(j => j.scores.filter(x => x.title === p.title))
   const mean = s.length ? s.reduce((a, x) => a + x.impact + x.evidence + x.simplicity + x.generality, 0) / s.length : 0
@@ -110,6 +112,6 @@ const proposal = valid.length
 const missing = [
   ...episodes.filter((ep, i) => !reviews[i]).map(ep => `review:${ep}`),
   ...ANGLES.filter((angle, i) => !proposals[i]).map(([key]) => `propose:${key}`),
-  ...judges.flatMap((judge, i) => judge ? [] : [`judge:${i + 1}`]),
+  ...judges.flatMap((judge, i) => named(judge) ? [] : [`judge:${i + 1}`]),
 ]
 return { status: missing.length ? 'incomplete' : 'complete', missing, proposal, reviews: done, proposals: props, totals, comments: valid.map(j => j.scores.map(x => `${x.title}: ${x.comment}`)) }
