@@ -37,9 +37,9 @@ each part's card without the owner's agreement, so **nothing here is verified** 
 and a fix round; the platform reviewer could not run the native tests; the author ran them,
 and the doc check reran them at `f8ce78a` (the platform code is unchanged since). Authors and
 reviewers planted wrong versions in every part. Each plant a reviewer found uncaught now fails
-a new test, including the two worker plants first left as notes (a session read before hello
-in `--attach` mode, a worker that prints its token): tests added in `047c96d`; the author
-reports each failing on its plant (not stored). Open review notes: check.py never runs the
+a new test, by the authors' reports (commit messages; not stored), including the two worker
+plants first left as notes (a session read before hello in `--attach` mode, a worker that
+prints its token; tests added in `047c96d`). Open review notes: check.py never runs the
 native tests; in multiplayer `evaluation.friendly` counts only the local army while
 `evaluation.enemy` counts every enemy army; `first_difference_ms` ignores missing units; an
 events line without the expected keys gives compare-peers a traceback.
@@ -66,8 +66,8 @@ quote. The worksheet anchors on São Paulo (from the owner's UTC-3 only; its
 `JUDGEMENT?: Region` is in the git-ignored worksheet) and finds no G2 (L4) there, so it prices
 us-east1. For 10 hours of one us-east1 client with the disk deleted (10 h and 250 GB rest on
 JUDGEMENT native-multiplayer.md Cost workload, the g2-standard-4 + L4 vWS + Windows Server
-shape on JUDGEMENT native-multiplayer.md Cloud candidate; before egress, tax and streaming
-licences): $9.30, or $14.90 if the L4 vWS row is billed on top. airgpu at its lowest published
+shape on JUDGEMENT native-multiplayer.md Cloud candidate and Windows Server also on JUDGEMENT
+native-multiplayer.md Worker platform; before egress, tax and streaming licences): $9.30, or $14.90 if the L4 vWS row is billed on top. airgpu at its lowest published
 rates (per-region rates need sign-in): about $9.58–10.17 for an L4, or $7.08–7.67 for a weaker
 T4, for the same 10 hours.
 `lobby-static-audit.md` finds no documented create or join binding: the lobby's component ids
@@ -76,10 +76,11 @@ need owner-approved extraction of the shipped layouts or live UI dumps.
 Running a worker on a Windows host (untested; the native run read this checkout through its
 UNC path): install Windows Python 3.13 and check out the coordinator's exact revision without
 line-ending conversion (`git clone -c core.autocrlf=false`, then `git checkout <revision>`),
-adding no files under the source folders. The coordinator's checkout needs no uncommitted or
-untracked files there either, since `source_sha256` hashes the files on disk. The host's Steam
-build and `Warhammer3.exe` sha256 must equal the pins. Otherwise the coordinator refuses the
-hello. Then run `python -m twwarhammer3 worker ...` with `PYTHONPATH=<repo>\src`; no other
+adding no files under the source folders. The coordinator's checkout needs no other file there
+either (uncommitted, untracked or git-ignored), since `source_sha256` hashes every file on disk
+outside `__pycache__`. The game must be in the default Steam folder (`runtime.GAME_DIR` is
+fixed), with its Steam build and `Warhammer3.exe` sha256 equal to the pins. Otherwise the
+coordinator refuses the hello. Then run `python -m twwarhammer3 worker ...` with `PYTHONPATH=<repo>\src`; no other
 package is needed.
 
 Blocked, and what unblocks each item:

@@ -61,15 +61,14 @@ tests that fail on planted wrong versions. A final integration review and refusa
 
 Evidence, $0, no game, no account: 2 new opt-in tests on real Windows Python 3.13.1 (their two
 files, 35 tests with the 3 opt-in ones, passed with `GAMEAI_TEST_WINDOWS=1`); one native run at
-`b39a03d`, `--attach --mode control` on a fake bridge (move submitted, attack rejected, worker
-exit 13.8 s after the coordinator closed by the WSL clock, about 14.8 s by Windows time; no
-owned launch); WSL `flock` and native `msvcrt` locks on one file do not exclude each other, and
-nothing enforces one kind of controller per PC. Mod pack sha256 changes on merge, so
-single-player card-board setups split from earlier launches. Research (git-ignored, checked by a
-second agent): a list-price worksheet and a static lobby audit (no documented create/join
-binding). check.py at `047c96d` with these docs, in the worktree: PASSED, Ruff clean, 1960
-passed, 69 skipped (40 need torch; the rest local runs/ evidence or the Windows opt-in); it
-lists 3 changes for the owner's yes (an agreed check's test file, a plant, a new skip).
+`b39a03d`, `--attach --mode control` on a fake bridge (move submitted, attack rejected; no
+owned launch; timings in the status); WSL `flock` and native `msvcrt` locks on one file do not
+exclude each other, and nothing enforces one kind of controller per PC. Mod pack sha256 changes
+on merge, so single-player card-board setups split from earlier launches. Research (git-ignored,
+checked by a second agent): price worksheet, lobby audit. check.py on this entry's content
+(logged as `9faf92b` with this commit's 2 files), in the worktree: PASSED, Ruff clean,
+1960 passed, 69 skipped (40 need torch; the rest local runs/ evidence or the Windows opt-in);
+it lists 3 changes for the owner's yes (an agreed check's test file, a plant, a new skip).
 Unverified: everything live (local_army values, ui_id across peers, replication, the cloud, the link).
 
 ## 2026-10-30 (night): the light factory's checks checked
