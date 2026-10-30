@@ -66,7 +66,8 @@ Claude Code, after the owner answered the night's six decisions ([direction](../
   the planted wrong versions per area, all caught, are in `runs/light-factory-20261029-evening/`
   (`plant-*.txt`).
 Not established: Codex running the hooks (they wait for the owner's `/hooks`
-trust); b51 in a battle. `runs/test-scratch/` was not deleted (the permission check refused it).
+trust). `runs/test-scratch/` was emptied by the owner (the permission check
+refused it to the agent).
 
 ## 2026-10-29: 1x by the Windows clock (harness b51)
 
@@ -90,8 +91,14 @@ time) is unchanged.
   marker states the limit. Plants reading the time by path, clearing it on a half-written
   file or closing stretches by battle time passed the tests then; tests now catch them.
   Battles under 30 s get no 1x reading (stamp and frame noise).
-Not established: any real battle (one free scripted battle waits for a game window the owner
-chooses); how often frame hitches move a 30 s stretch.
+- Live, in the owner's window (2026-10-29 21:43, source `6f6b01b`, $0): `attack_nearest` on
+  `emp-handgunners-grn-wolves-boyz`, lost by the engine at 418 s
+  (`b51-1x-check-wolves-20261029`): 1.0000 battle s per Windows s over 413 s, 30 s stretches
+  0.9998-1.0002 (longest 30.3 s), no warning. WSL's `clock_ratio` read 1.00005 over the same
+  span. A first launch on `kho5-dwf5` failed lobby setup before any battle (it declares no
+  funds: "cost 800, remaining 700"; job `b51-1x-check-20261029`).
+Not established: one battle, one scenario, a scripted policy (model calls lengthen stretches);
+no agreed check; that a real slowdown is caught (battles may not be slowed).
 
 ## 2026-10-29: refusal sweeps, boundary leaks and a decay check
 
