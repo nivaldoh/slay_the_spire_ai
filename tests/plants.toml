@@ -631,3 +631,283 @@ new = ""
 tests = ["tests/twwarhammer3/checkpoint_siege/test_wh3_siege_saved_spell_witness.py"]
 evidence = ["runs/twwarhammer3/siege-final-20261025b/capital-attacker"]
 source = "2026-10-29 night, agreed-check plants (MISSED until 973d738)"
+
+[[plant]]
+id = "stop-check-accepts-concurrent-edit"
+guards = "A Stop-hook pass covers the final tree"
+file = "scripts/hooks/stop_check.py"
+old = "if passed and tree_identity() != identity:"
+new = "if False:"
+tests = ["tests/test_hooks.py::test_stop_hook_does_not_accept_a_tree_changed_during_a_passing_check"]
+source = "2026-10-30 Codex hook audit; regression failed before the fix"
+
+[[plant]]
+id = "stop-check-leaves-interrupted-child"
+guards = "An interrupted Stop hook cleans up its detached check"
+file = "scripts/hooks/stop_check.py"
+old = "except BaseException:  # timeout, Ctrl-C or SIGTERM: no detached check left running"
+new = "except subprocess.TimeoutExpired:"
+tests = ["tests/test_hooks.py::test_interrupted_stop_hook_kills_and_reaps_its_check"]
+source = "2026-10-30 Codex hook audit; both signal regressions failed before the fix"
+
+[[plant]]
+id = "stop-check-sigterm-skips-cleanup"
+guards = "SIGTERM runs the Stop hook's process cleanup"
+file = "scripts/hooks/stop_check.py"
+old = "    signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))\n"
+new = ""
+tests = ["tests/test_hooks.py::test_interrupted_stop_hook_kills_and_reaps_its_check"]
+source = "2026-10-30 Codex hook audit; direct SIGTERM left a sleeping check child alive"
+
+[[plant]]
+id = "stop-check-interrupted-before-handle-returned"
+guards = "An interruption during Popen construction does not orphan the check"
+file = "scripts/hooks/stop_check.py"
+old = "signal.signal(sig, defer) for sig in (signal.SIGINT, signal.SIGTERM)"
+new = "signal.getsignal(sig) for sig in (signal.SIGINT, signal.SIGTERM)"
+tests = ["tests/test_hooks.py::test_interrupted_stop_hook_kills_and_reaps_its_check"]
+source = "2026-10-30 independent review; constructor-return SIGINT and SIGTERM both leaked"
+
+
+[[plant]]
+id = "commit-guard-never-asks"
+guards = "The git pre-commit hook refuses a commit before check.py passed on this tree"
+file = "scripts/githooks/pre-commit"
+old = "    if not checked():\n"
+new = "    if False:\n"
+tests = ["tests/test_hooks.py::test_the_git_hook_refuses_a_commit_until_check_py_passed_on_this_tree"]
+source = "2026-10-30 commit-guard draft"
+
+[[plant]]
+id = "check-keeps-a-pass-when-aborted"
+guards = "A failed or interrupted normal check cannot reuse the previous pass"
+file = "scripts/check.py"
+old = "\n    (ROOT / CHECKED).unlink(missing_ok=True)\n"
+new = "\n"
+tests = ["tests/test_check_script.py::test_an_aborted_check_clears_the_previous_pass"]
+source = "2026-10-30 commit-guard review: invalid --base and SIGTERM kept the old pass"
+
+[[plant]]
+id = "check-keeps-a-pass-on-invalid-arguments"
+guards = "Rejected check arguments cannot reuse the previous pass"
+file = "scripts/check.py"
+old = "        if exc.code:  # rejected arguments fail the check; --help is not a run\n"
+new = "        if False:  # rejected arguments fail the check; --help is not a run\n"
+tests = ["tests/test_check_script.py::test_invalid_check_arguments_clear_the_previous_pass"]
+source = "2026-10-30 commit-guard repair review: missing --base argument kept the old pass"
+
+[[plant]]
+id = "check-records-a-failed-run"
+guards = "The git pre-commit hook refuses a commit before check.py passed on this tree"
+file = "scripts/check.py"
+old = "    if passed and unchanged:  # scripts/githooks/pre-commit lets a commit of this tree through"
+new = "    if unchanged:  # scripts/githooks/pre-commit lets a commit of this tree through"
+tests = ["tests/test_check_script.py::test_a_pass_records_the_tree_it_checked_and_a_failure_clears_it"]
+source = "2026-10-30 commit-guard draft"
+
+[[plant]]
+id = "checked-tree-skips-directory-and-dangling-symlinks"
+guards = "The checked-tree hash includes symlink target text"
+file = "scripts/check.py"
+old = "        if path.is_symlink():\n            digest.update(name.encode() + b\"\\0symlink\\0\"\n                          + hashlib.sha256(os.fsencode(os.readlink(path))).digest())\n        elif path.is_file():\n"
+new = "        if path.is_file():\n"
+tests = ["tests/test_check_script.py::test_the_checked_tree_hashes_symlink_targets"]
+source = "2026-10-30 guard adoption: directory-symlink target edit kept the previous hash"
+
+[[plant]]
+id = "checked-tree-confuses-a-symlink-with-target-text"
+guards = "The checked-tree hash distinguishes symlinks from ordinary file contents"
+file = "scripts/check.py"
+old = "            digest.update(name.encode() + b\"\\0symlink\\0\"\n"
+new = "            digest.update(name.encode() + b\"\\0\"\n"
+tests = ["tests/test_check_script.py::test_the_checked_tree_distinguishes_a_symlink_from_its_target_text"]
+source = "2026-10-30 guard adoption: keep symlink identity separate from regular-file bytes"
+
+[[plant]]
+id = "stop-hook-treats-a-reader-argument-as-a-live-check"
+guards = "Only a directly executed checker makes the Stop hook skip its suite"
+file = "scripts/hooks/stop_check.py"
+old = "        if script and Path(script[0]).name in LIVE_CHECKERS:\n"
+new = "        if any(Path(arg).name in LIVE_CHECKERS for arg in argv[1:]):\n"
+tests = ["tests/test_hooks.py::test_a_checker_path_in_python_reader_arguments_is_not_a_game_job"]
+source = "2026-10-30 live-check guard: matching a filename anywhere also matched readers"
+
+[[plant]]
+id = "stop-hook-misses-a-restored-episode-check"
+guards = "Every known direct live WH3 checker is a game job"
+file = "scripts/hooks/stop_check.py"
+old = ", \"check_wh3_restored_episode.py\""
+new = ""
+tests = ["tests/test_hooks.py::test_direct_live_checkers_are_game_jobs_except_help_and_recount"]
+source = "2026-10-30 live-check audit: all five direct scripts were missing"
+
+[[plant]]
+id = "stop-hook-does-not-consume-grouped-warning-arguments"
+guards = "CPython grouped options consume their argument before the live checker path"
+file = "scripts/hooks/stop_check.py"
+old = "bBdEhiIOPqRsSuvVx?W:X:c:m:"
+new = "bBdEhiIOPqRsSuvVx?WX:c:m:"
+tests = ["tests/test_hooks.py::test_live_checkers_follow_python_grouped_options_and_exits"]
+source = "2026-10-30 live-check review: -BuW ignore checker.py was missed"
+
+[[plant]]
+id = "stop-hook-ignores-offline-checker-abbreviations"
+guards = "Accepted help/recount prefixes are offline while resume stays live"
+file = "scripts/hooks/stop_check.py"
+old = "(\"--help\".startswith(option) or \"--recount\".startswith(option))"
+new = "(option in (\"--help\", \"--recount\"))"
+tests = ["tests/test_hooks.py::test_live_checker_argparse_prefixes_keep_resume_live"]
+source = "2026-10-30 live-check review: --rec and --he were treated as live"
+
+[[plant]]
+id = "stop-hook-ignores-grouped-checker-help"
+guards = "Argparse grouped short help is offline"
+file = "scripts/hooks/stop_check.py"
+old = 'option.startswith("-h")'
+new = 'option == "-h"'
+tests = ["tests/test_hooks.py::test_live_checker_argparse_prefixes_keep_resume_live"]
+source = "2026-10-30 live-check review: -hh printed help but was classified live"
+
+[[plant]]
+id = "normal-check-reuses-stale-bytecode"
+guards = "The normal gate checks current source and rewritten tests despite cached timestamps"
+file = "scripts/check.py"
+old = "env={**env, \"PYTHONPYCACHEPREFIX\": pycache}"
+new = "env=env"
+tests = ["tests/test_check_script.py::test_normal_check_reads_same_size_same_timestamp_edits"]
+source = "2026-10-30 bytecode audit: same-size same-timestamp source/test edits falsely passed"
+
+[[plant]]
+id = "normal-check-only-disables-bytecode-writes"
+guards = "Disabling cache writes does not stop reads of old timestamp bytecode"
+file = "scripts/check.py"
+old = "env={**env, \"PYTHONPYCACHEPREFIX\": pycache}"
+new = "env={**env, \"PYTHONDONTWRITEBYTECODE\": \"1\"}"
+tests = ["tests/test_check_script.py::test_normal_check_reads_same_size_same_timestamp_edits"]
+source = "2026-10-30 bytecode audit: PYTHONDONTWRITEBYTECODE still reused stale source/test caches"
+
+[[plant]]
+id = "normal-check-leaves-disposable-bytecode-after-interruption"
+guards = "The normal gate removes its disposable bytecode prefix even on interruption"
+file = "scripts/check.py"
+old = "tempfile.TemporaryDirectory(prefix=\"check-pycache-\", dir=scratch.parent)"
+new = "tempfile.TemporaryDirectory(prefix=\"check-pycache-\", dir=scratch.parent, delete=False)"
+tests = ["tests/test_check_script.py::test_normal_check_cleans_its_bytecode_prefix_after_interruption"]
+source = "2026-10-30 bytecode repair: per-run temporary bytecode must not accumulate"
+
+[[plant]]
+id = "normal-check-inherits-pytest-selection"
+guards = "The normal gate runs the whole suite despite caller PYTEST_ADDOPTS"
+file = "scripts/check.py"
+old = "    env.pop(\"PYTEST_ADDOPTS\", None)\n"
+new = ""
+tests = ["tests/test_check_script.py::test_normal_check_ignores_caller_selection_and_optimization"]
+source = "2026-10-30 environment audit: -k and an explicit passing file hid a failing test"
+
+[[plant]]
+id = "normal-check-inherits-python-optimization"
+guards = "The normal gate retains imported helper assertions despite caller PYTHONOPTIMIZE"
+file = "scripts/check.py"
+old = "    env.pop(\"PYTHONOPTIMIZE\", None)\n"
+new = ""
+tests = ["tests/test_check_script.py::test_normal_check_ignores_caller_selection_and_optimization"]
+source = "2026-10-30 environment audit: PYTHONOPTIMIZE erased the imported helper assertion"
+
+[[plant]]
+id = "stop-hook-ignores-a-completed-normal-pass"
+guards = "A cold Stop reuses a genuine content-matching normal pass"
+file = "scripts/hooks/stop_check.py"
+old = "        if proven and current == identity:\n"
+new = "        if False:\n"
+tests = ["tests/test_hooks.py::test_stop_adopts_a_completed_normal_pass_without_rechecking"]
+source = "2026-10-30 reuse proof: a matching normal pass still invoked the gate callback"
+
+[[plant]]
+id = "stop-hook-trusts-any-readable-normal-record"
+guards = "Malformed or stale normal proof cannot skip the Stop check"
+file = "scripts/hooks/stop_check.py"
+old = "        return isinstance(record, dict) and record.get(\"tree\") == gate[\"tree_content\"](ROOT)\n"
+new = "        return True\n"
+tests = ["tests/test_hooks.py::test_invalid_normal_proofs_and_broken_readers_run_the_check"]
+source = "2026-10-30 reuse card: proof must match the existing current-content definition"
+
+[[plant]]
+id = "stop-hook-adopts-a-pass-across-a-lookup-edit"
+guards = "A change during normal-proof lookup forces a check of the resulting tree"
+file = "scripts/hooks/stop_check.py"
+old = "        if proven and current == identity:\n"
+new = "        if proven:\n"
+tests = ["tests/test_hooks.py::test_a_change_during_normal_proof_lookup_checks_the_resulting_tree"]
+source = "2026-10-30 reuse card: concurrent edits invalidate adoption"
+
+[[plant]]
+id = "stop-hook-checks-against-the-pre-lookup-identity"
+guards = "A fallback check after lookup uses the resulting tree identity"
+file = "scripts/hooks/stop_check.py"
+old = "        identity = current\n"
+new = ""
+tests = ["tests/test_hooks.py::test_a_change_during_normal_proof_lookup_checks_the_resulting_tree"]
+source = "2026-10-30 reuse card: refresh identity before checking a tree changed by lookup"
+
+[[plant]]
+id = "stop-hook-ignores-untracked-link-targets"
+guards = "A link retarget during proof lookup changes the Stop identity"
+file = "scripts/hooks/stop_check.py"
+old = "            if path.is_symlink():\n                digest.update(name + b\"\\0symlink\\0\" + os.fsencode(os.readlink(path)))\n            elif path.is_file():\n"
+new = "            if path.is_file():\n"
+tests = ["tests/test_hooks.py::test_link_retarget_during_normal_proof_lookup_checks_the_resulting_tree"]
+source = "2026-10-30 reuse boundary probe: directory/dangling/file-link retargets were invisible"
+
+[[plant]]
+id = "stop-hook-reader-exit-skips-fallback"
+guards = "A normal-proof reader exit supplies no proof and must run the check"
+file = "scripts/hooks/stop_check.py"
+old = "    except SystemExit as error:\n        if error.code == 143:  # also a reader could raise it; preserve the SIGTERM handler\n            raise\n        return False\n"
+new = ""
+tests = ["tests/test_hooks.py::test_a_normal_proof_reader_exit_runs_the_check"]
+source = "2026-10-30 reuse boundary probe: SystemExit(0/None) escaped the reader"
+
+[[plant]]
+id = "stop-hook-reader-swallows-sigterm"
+guards = "Normal-proof lookup preserves the Stop hook's SIGTERM cancellation"
+file = "scripts/hooks/stop_check.py"
+old = "if error.code == 143:"
+new = "if False:"
+tests = ["tests/test_hooks.py::test_normal_proof_lookup_preserves_cancellation"]
+source = "2026-10-30 reuse card: exit 143 belongs to the existing SIGTERM handler"
+
+[[plant]]
+id = "commit-guard-allows-a-checker-import-exit"
+guards = "A broken checker import cannot authorize a Git commit"
+file = "scripts/githooks/pre-commit"
+old = "except (Exception, SystemExit):"
+new = "except Exception:"
+tests = ["tests/test_hooks.py::test_git_guard_refuses_a_checker_import_that_exits"]
+source = "2026-10-30 reader-exit card: real Git accepted a broken checker import exiting 0/None"
+
+[[plant]]
+id = "stop-hook-accepts-zero-without-a-completed-record"
+guards = "A real Stop check needs both zero status and a matching completed normal pass"
+file = "scripts/hooks/stop_check.py"
+old = "        passed = process.returncode == 0 and completed_check_pass()\n"
+new = "        passed = process.returncode == 0\n"
+tests = ["tests/test_hooks.py::test_real_check_zero_without_a_completed_record_is_not_a_pass"]
+source = "2026-10-30 reuse receipt boundary: broken checker exits 0 without proof"
+
+[[plant]]
+id = "stop-hook-accepts-nonzero-with-an-old-record"
+guards = "An old normal receipt cannot turn a nonzero check into a pass"
+file = "scripts/hooks/stop_check.py"
+old = "        passed = process.returncode == 0 and completed_check_pass()\n"
+new = "        passed = completed_check_pass()\n"
+tests = ["tests/test_hooks.py::test_real_check_nonzero_is_failure_even_with_an_old_completed_pass"]
+source = "2026-10-30 reuse receipt boundary: nonzero status always stays a failure"
+
+[[plant]]
+id = "stop-hook-confuses-a-link-with-regular-target-text"
+guards = "Stop identity distinguishes a link from a regular file containing its target text"
+file = "scripts/hooks/stop_check.py"
+old = "name + b\"\\0symlink\\0\" + os.fsencode(os.readlink(path))"
+new = "name + b\"\\0\" + os.fsencode(os.readlink(path))"
+tests = ["tests/test_hooks.py::test_stop_identity_tracks_link_targets_and_the_warm_cache"]
+source = "2026-10-30 identity-link card: link targets use a distinct tag"

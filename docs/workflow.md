@@ -78,7 +78,19 @@ spending or a change to what a benchmark measures.
 
 ## The exit gate: `scripts/check.py`
 
-Before every commit, both agents run one command and quote its first five lines:
+Before every commit, both agents run one command and quote its first five lines. A passing run
+records a hash of the files it checked (`runs/checks/last-pass.json`); the git hook
+`scripts/githooks/pre-commit` refuses every `git commit`, however typed, until the files match
+it again (owner approved 2026-10-30; enable with `git config core.hooksPath scripts/githooks`
+in checkouts that contain the hook). Merges, cherry-picks, reverts, rebases and `am` run
+other hooks and are not covered; `--no-verify` skips it. Unchecked commits on 10-29 and 10-30
+prompted this guard. It hashes checkout contents and symlink targets (including directory
+and dangling links), not historical versions left in the index.
+
+A normal check invalidates the record it found at startup; rejected arguments clear it too.
+A successful overlapping run on unchanged files can establish a new pass even if this one
+aborts (rests on JUDGEMENT? `scripts/check.py` Concurrent passes). `--help` and `--plants`
+do not replace the normal-run record.
 
 ```text
 $ uv run --locked python scripts/check.py
@@ -93,11 +105,15 @@ needs your yes (changes since HEAD):
 markers   3 problems listed in the log, for the owner
 ```
 
-- It runs `ruff check .` and the whole offline suite (about 40-45 s on 2026-10-30; 18 s before
-  2026-10-29's evidence-replay tests), Lua and image tests
+- It runs `ruff check .` and the whole offline suite, Lua and image tests
   included, the repo rules ([test_repo_rules.py](../tests/test_repo_rules.py)) and the link
   test among them. It exits 1 if anything fails. It never launches a game, spends money or
   commits, and it removes `WH3_WRITE_PROMPTS` so it cannot rewrite prompt snapshots.
+  Pytest gets a fresh disposable bytecode directory for each run, overriding an inherited
+  cache prefix. This catches same-size/same-timestamp source and test edits while preserving
+  shared caches. The directory is removed on return or a Python exception.
+  It also removes caller `PYTEST_ADDOPTS` and `PYTHONOPTIMIZE` settings from subprocesses:
+  the gate runs the whole suite with assertions active. Focused pytest commands remain separate.
 - "needs your yes" lists edits only the owner approves, in everything not yet on
   `origin/main` (or since `--base REV`): lines removed or changed in a file an agreed check
   names or in [agreed-checks.md](agreed-checks.md); an edited or removed JUDGEMENT line; an
@@ -114,8 +130,8 @@ markers   3 problems listed in the log, for the owner
   untracked `docs/thesis/` notes are skipped (owner, 2026-10-29). Only the owner changes
   markers, so they never fail the run.
 - Optional extras (`--extra train`, `--extra llm`), the browser check and live game checks
-  run only when a change touches what they cover. The full offline suite always runs, since
-  it takes well under a minute (owner, decision 3: "Yes", when it took 20 s).
+  run only when a change touches what they cover. The full offline suite always runs
+  (owner, decision 3: "Yes", when it took 20 s); each log records its elapsed time.
 - In a linked worktree, tests that read the main checkout's `runs/` evidence skip (2026-10-30:
   64 skipped against 41), and the "worktree" line says so: run `check.py` in the main checkout,
   after merging, before counting a pass. Do not link `runs/` folders into a worktree: commands
@@ -336,6 +352,22 @@ rebase, reset, checkout, switch, pull, cherry-pick, revert, am), `ruff format` r
 never two blocks in a row, no check beside a game job, and a stop let through when `check.py`
 cannot run or timed out; a narrower list, more blocks or failing closed would block differently.
 How hard the exit gate is enforced rests on these.
+
+A passing Stop check must also leave the checkout unchanged. If its fingerprint changes
+during the run, the final tree is unchecked: no pass is cached, the hook blocks once and a
+fresh stop checks again. The existing escape after one block still reports no established
+pass. Fingerprints cannot detect an edit made and undone between their two reads.
+Timeout, Ctrl-C and SIGTERM clean up the check's process group before the hook exits;
+an interrupted run records no new pass. SIGKILL cannot run this cleanup. Direct-signal
+subprocess tests cover this; Codex's UI cancellation delivery has not been checked.
+The game-load guard also recognizes the five direct WH3 live-check scripts, including
+ordinary Python flags. Their help and evidence-recount commands stay offline. This is
+command-line recognition tested with fake processes; live timing effects remain unverified.
+Stop also adopts a completed normal gate pass when its content hash matches and the tree
+identity stays unchanged during lookup (rests on JUDGEMENT? `scripts/check.py` Checked tree
+and Concurrent passes, including that content definition's private-notes exception). Missing,
+stale or broken proof falls back to checking. Exit 0 alone without a matching completed record
+is incomplete; reader `SystemExit(0)` is rejected, while Stop cancellation still propagates.
 
 ### Claude Code and Codex
 

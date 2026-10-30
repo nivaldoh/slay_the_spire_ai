@@ -71,6 +71,132 @@ checked by a second agent): price worksheet, lobby audit. check.py on this entry
 it lists 3 changes for the owner's yes (an agreed check's test file, a plant, a new skip).
 Unverified: everything live (local_army values, ui_id across peers, replication, the cloud, the link).
 
+## 2026-10-30: reuse completed passes and reject broken readers
+
+Stop now adopts a completed normal gate pass on matching contents if lookup leaves its
+identity unchanged, clearing old block flags without rerunning tests. A real current pass
+previously still invoked the gate callback. Missing/stale/broken proof triggers checking;
+an exit-0 checker without a matching record is incomplete. This uses the existing record.
+Review probes found untracked directory/dangling links invisible to identity and reader
+`SystemExit(0)` escaping validation. Identity now hashes tagged link targets; Stop falls
+back on reader exits, preserves cancellation, and Git refuses an exiting checker import.
+Cards: `runs/light-factory-20261030/reuse-card.md`, `identity-link-card.md` and
+`guard-prep/reader-exit-card.md`. New cases failed first; integrated hook/sync tests:154 passed.
+Fresh-context independent review: no findings, 23 new and 15 preserved cases passed; all
+11 new wrong versions rejected at intended assertions. All85 earlier plants caught at `b6e42b0`.
+Final gate: `runs/light-factory-20261030/reuse-check-final.log`; postcommit CLI smoke/handoff
+alongside. Source/record semantics rest on JUDGEMENT? `scripts/check.py` Checked tree and
+Concurrent passes, including private-notes exclusion. These checks remain proposed.
+No game, Windows or paid API calls, $0. Native UI cancellation and deliberate bypasses remain
+outside these component checks; final clean-revision offline proof and push/CI follow.
+
+## 2026-10-30: exit-gate caller settings
+
+Inherited `PYTEST_ADDOPTS` could select a passing test or file while omitting a failing test;
+`PYTHONOPTIMIZE=1` could erase a failing assertion in an imported helper. Three actual CLI
+fixtures passed, falsely credited an agreed directory check, and wrote records matching the
+unchecked contents. The gate now removes those two settings from its subprocess environment.
+Parent settings remain intact; the existing prompt-write and bytecode protections remain.
+Card/reference: `runs/light-factory-20261030/env-card.md`, owner's full-suite rule, pytest
+`Config._preparse` and local CPython behavior. Before: 3 new regressions failed. After:
+16 focused cases passed; independent review found no issues and rejected both wrong variants
+(2/1 intended failures). Actual CLI probes rejected all 3 cases, with no pass record/credit.
+All 83 committed plants caught at `6955294`; the original prompt-protection plant is unchanged.
+Final exit gate: `runs/light-factory-20261030/env-check-final.log`; raw audits/reviews alongside.
+No game, Windows, paid API or benchmark changes; $0. Checks proposed, not agreed verification.
+Controls cover these reproduced caller settings; deliberate plugin/config overrides are outside
+this check. Next: final exact-revision offline check with saved evidence, then push/CI.
+
+## 2026-10-30: exit-gate bytecode isolation
+
+The ordinary exit gate could pass failing source or test edits when old `.pyc` files matched
+their size and timestamp, then record the edited contents as checked. Two independent tiny
+repositories reproduced the false passes; disabling bytecode writes alone still reused them.
+Normal pytest now uses a fresh disposable `PYTHONPYCACHEPREFIX`, leaves shared caches intact
+and removes its own prefix on return or a Python exception. No import hook or global deletion.
+Card/reference: `runs/light-factory-20261030/bytecode-card.md`, workflow's final-state case,
+CPython `Lib/importlib/_bootstrap_external.py` and local interpreter probes.
+Before: five new regression cases failed. After: 13 focused cases passed; independent review
+found no issues, three planted wrong versions failed their intended assertions (4/4/1).
+All 80 committed plants caught at `94b0b8e`; new plants checked separately.
+Final exit-gate output: `runs/light-factory-20261030/bytecode-check-final.log`; raw evidence
+and reviews alongside. No game, Windows or paid API calls; $0. Checks proposed, not agreed.
+Deliberate cache-setting overrides and plugin caches are outside these tests. Next: repeat
+the offline gate at the final clean revision with saved-evidence copies; no live check claim.
+
+## 2026-10-30: Stop-hook detection of live-check scripts
+
+The Stop hook now recognizes the five direct live-check scripts as game jobs; their help
+and evidence-recount commands stay offline. They directly own the game without a recognized
+`-m` controller child, so the old guard missed all five. Card/reference:
+`runs/light-factory-20261030/live-check-card.md`, agreed-check commands and their callers.
+Before: 10 missed-command cases failed, 7 passed. Review found valid grouped Python flags
+and abbreviated help/recount mismatches, then grouped `-hh`; added failing regressions and
+used Python's standard `getopt` parser. Integrated hook/sync tests: 131 passed; review raw
+outputs and five new plants are under `runs/light-factory-20261030/`.
+All 75 committed plants caught at `77c2c03`; new wrong variants checked separately.
+Final gate, with a fresh bytecode prefix: `runs/light-factory-20261030/live-check-final.log`.
+No game/Windows/paid calls, $0. Component checks proposed, not agreed; actual battle timing
+effects remain unverified. Arbitrary inline/wrapper launches remain outside recognition.
+One invalid Python spelling conservatively overmatches; a second parser was not added.
+Separate next card: stale bytecode can falsely pass the ordinary gate; reproduced on source
+and test edits. A fresh cache directory per pytest run will close that demonstrated gap.
+
+## 2026-10-30: commit guard adopted at the owner's yes
+
+Owner: "Enable it (Recommended)". Adopted `commit-guard-draft` (`6958d6f`), configured
+`core.hooksPath=scripts/githooks`. Git now refuses `git commit` without a current matching
+`check.py` pass. Live no-record probe refused and left HEAD unchanged; raw `guard-live-refusal.log`.
+Card: `runs/light-factory-20261030/guard-card.md`. Review found an old pass survived crashed
+or interrupted runs; the repair clears it before normal work and after rejected arguments.
+Help and plant replay retain the normal-run record. Five new abort/argument cases failed
+before repair; final narrow repair tests: 10 passed; both new repair plants fail as intended.
+Integration: 150 focused tests passed. The first run caught a TOML header lost resolving an
+append conflict (1 failed, 145 passed); restored, retaining every original and added plant.
+Symlink targets now count, including directory/dangling links; three retarget regressions
+failed before repair, four symlink cases pass after. This covers shared skill directory links.
+Concurrent passes rest on JUDGEMENT? `scripts/check.py` Concurrent passes: a genuinely passed
+unchanged tree can retain that newer pass when another overlapping attempt aborts.
+Final exit gate: `runs/light-factory-20261030/guard-check-final-complete.log`; reviews and raw outputs
+are alongside. Checks proposed, not agreed verification; no game or paid API, $0.
+Limits: explicit bypasses and other commit-making Git commands remain uncovered. Older
+worktrees without the hook file need updating; the hash covers checkout contents, not an
+older version left in the index. Draft-check logs archived before removing its merged worktree.
+
+## 2026-10-30: Stop-hook interruption cleanup
+
+The Stop hook kills and reaps its check process group on SIGINT or SIGTERM. Interruptions
+are deferred only during process construction, until the child handle is available; the
+original handlers are then restored and any pending signal delivered. Timeout behavior stays.
+Card: `runs/light-factory-20261030/interrupt-card.md`; reference: check.py's plant-run cleanup.
+Before the fix, both direct-signal tests failed with live children. Review found two more
+startup windows and a leak in the regression's timeout cleanup; all were reproduced and fixed.
+Hook/sync tests: 93 passed; six signal cases cover running checks, assigned handles and
+constructor return. Independent review: real code 6 passed; no cleanup 6 failed; no SIGTERM
+handler 3 passed/3 failed; no deferral 4 passed/2 failed. Every probe child removed.
+Existing plants: 66/66 caught at `60f1eac`; three new plants exercised separately.
+Final exit-gate output: `runs/light-factory-20261030/interrupt-check-final-atomic.log`.
+Raw evidence/reviews in that folder; no game or paid API, $0. Proposed checks, not agreed.
+Codex UI cancellation delivery and SIGKILL cleanup are not established; SIGKILL cannot run
+Python cleanup. The approved commit guard is next; its review found a stale-record bug.
+
+## 2026-10-30: Codex hook audit and concurrent-edit fix
+
+Codex's live Bash hook refused one harmless `ruff format --help` probe. Its reviewer is
+available and the refusal-sweep skill appears in its loaded catalog; agent-sync tests pass.
+The Stop hook now rejects a passing run if the tree changed during it, caches no pass and
+reports the final tree as unchecked. Its existing escape after one block is preserved.
+Card: `runs/light-factory-20261030/card.md` (not separately agreed); reference: workflow's
+final-state pilot case. New regression failed before the fix; hook/sync tests: 87 passed.
+Independent reviewer: no findings; the new plant failed the regression (1 failure), real
+code passed (1 test). Existing plants: 65/65 caught at `9c8e157`; new plant checked separately.
+Offline suite: 1932 passed, 41 skipped (40 torch, 1 Windows opt-in). First exit gate failed
+two Ruff line lengths, fixed; final gate output: `runs/light-factory-20261030/check-final.log`.
+Raw evidence and review: `runs/light-factory-20261030/`. No game or paid API; $0.
+Proposed checks, not agreed verification. Edits made and undone between fingerprints remain
+undetected; this does not prove that every unchecked change is caught. Interruption cleanup
+is the next separate card: direct-signal probes left check children alive, then removed them.
+
 ## 2026-10-30 (night): the light factory's checks checked
 
 Claude Code, owner away ("light factory first ... more trust in these autonomous runs"); no game,

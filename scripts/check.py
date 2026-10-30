@@ -8,6 +8,10 @@ runs/checks/). It exits 1 when Ruff or any test fails or pytest cannot run, othe
 suite runs without WH3_WRITE_PROMPTS, so it never rewrites prompt snapshots, and its scratch
 directory (runs/test-scratch/check-<pid>) is removed after a pass.
 
+A passing run whose files did not change while it ran writes runs/checks/last-pass.json with a hash
+of every file not ignored (tree_content); scripts/githooks/pre-commit refuses a commit unless the
+hash still matches, and a failing run deletes it.
+
 Each run also appends one line to runs/checks/agreed-passes.jsonl (owner, 2026-10-29: "(a)"):
 for every entry of docs/agreed-checks.md with a pytest command, whether that command's tests
 passed in this run, read from pytest's JUnit XML. A line counts for its revision only when
@@ -39,6 +43,7 @@ checks; ours are tests/test_repo_rules.py, which the suite runs).
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -46,6 +51,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import textwrap
 import tomllib
 import xml.etree.ElementTree as ElementTree
@@ -57,6 +63,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 AGREED = "docs/agreed-checks.md"
 PASSES = "runs/checks/agreed-passes.jsonl"
+CHECKED = "runs/checks/last-pass.json"  # the tree the last passing run checked
 PLANTS = "tests/plants.toml"
 STATE, STATE_LINES = "docs/state.md", 120
 PLANT_TIMEOUT_S = 300
@@ -499,6 +506,30 @@ def marker_problems(root: Path) -> list[str]:
     return list(dict.fromkeys(problems))
 
 
+def tree_content(root: Path) -> str:
+    """sha256 of the path and content of every file on disk that git does not ignore, tracked or
+    not. The index and HEAD are left out, so staging (a deletion or rename included) or committing
+    part of a checked tree keeps it; any edit, new file or deletion changes it.
+    Symlinks contribute their target text, including directory and dangling links.
+
+    JUDGEMENT?: Checked tree — Claude, 2026-10-30, for the commit guard draft: only the owner's
+    untracked thesis notes (PRIVATE, docs/thesis/) are left out; everything else counts, prompts
+    and another session's edits included. Counting the notes would block commits whenever the owner
+    edits one; leaving out more (all Markdown) would let an unchecked prompt be committed."""
+    digest = hashlib.sha256()
+    names = git(root, "ls-files", "-z", "--cached", "--others", "--exclude-standard").split("\0")
+    for name in sorted({n for n in names if n}):
+        path = root / name
+        if name.startswith(PRIVATE):
+            continue
+        if path.is_symlink():
+            digest.update(name.encode() + b"\0symlink\0"
+                          + hashlib.sha256(os.fsencode(os.readlink(path))).digest())
+        elif path.is_file():
+            digest.update(name.encode() + b"\0" + hashlib.sha256(path.read_bytes()).digest())
+    return digest.hexdigest()
+
+
 def long_pages(root: Path) -> list[str]:
     """docs/state.md when it is over its line budget; a warning only."""
     page = root / STATE
@@ -529,9 +560,18 @@ def main() -> int:
                         "(default: the merge base with origin/main, else HEAD)")
     parser.add_argument("--plants", action="store_true",
                         help=f"replay {PLANTS} at HEAD instead (a few minutes)")
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except SystemExit as exc:
+        if exc.code:  # rejected arguments fail the check; --help is not a run
+            (ROOT / CHECKED).unlink(missing_ok=True)
+        raise
     if args.plants:
         return plants_main()
+    # JUDGEMENT?: Concurrent passes — Codex, 2026-10-30, owner "Use your best judgement":
+    # a genuine pass on current contents can survive another run's abort. Invalidating it
+    # would force an extra run; this guard's concurrent behavior rests on this.
+    (ROOT / CHECKED).unlink(missing_ok=True)
     head = git(ROOT, "rev-parse", "--short", "HEAD").strip()
     branch = git(ROOT, "branch", "--show-current").strip() or "detached HEAD"
     status = git(ROOT, "status", "--porcelain").splitlines()
@@ -542,15 +582,22 @@ def main() -> int:
         base = "HEAD"
 
     env = {k: v for k, v in os.environ.items() if k != "WH3_WRITE_PROMPTS"}
+    env.pop("PYTEST_ADDOPTS", None)
+    env.pop("PYTHONOPTIMIZE", None)
     scratch = ROOT / "runs" / "test-scratch" / f"check-{os.getpid()}"
     scratch.parent.mkdir(parents=True, exist_ok=True)  # pytest makes only the last folder
+    content = tree_content(ROOT)
     ruff = subprocess.run([sys.executable, "-m", "ruff", "check", "."], cwd=ROOT, env=env,
                           capture_output=True, text=True)
     junit = scratch.with_name(scratch.name + ".xml")  # beside --basetemp, which pytest clears
     revision, before = git(ROOT, "rev-parse", "HEAD").strip(), at_revision(ROOT)
-    tests = subprocess.run([sys.executable, "-m", "pytest", "-q", "-ra", f"--basetemp={scratch}",
-                            f"--junitxml={junit}"], cwd=ROOT, env=env, capture_output=True,
-                           text=True)
+    # CPython Lib/importlib/_bootstrap_external.py: an isolated prefix avoids stale timestamp
+    # bytecode after a same-size edit, without changing shared caches.
+    with tempfile.TemporaryDirectory(prefix="check-pycache-", dir=scratch.parent) as pycache:
+        tests = subprocess.run([sys.executable, "-m", "pytest", "-q", "-ra",
+                                f"--basetemp={scratch}", f"--junitxml={junit}"], cwd=ROOT,
+                               env={**env, "PYTHONPYCACHEPREFIX": pycache}, capture_output=True,
+                               text=True)
     output = tests.stdout + tests.stderr
     summary = next((line.strip("= ") for line in reversed(output.splitlines())
                     if SUMMARY.search(line)), f"no pytest summary (exit {tests.returncode})")
@@ -583,6 +630,10 @@ def main() -> int:
         shown += [f"  - {line}" for line in yes]
     shown += [f"pages     {line} (AGENTS.md Working habits)" for line in long_pages(ROOT)]
     shown += [f"worktree  {line}" for line in linked_worktree(ROOT)]
+    unchanged = tree_content(ROOT) == content
+    if passed and not unchanged:
+        shown.append("record    none: files changed while it ran, so a commit stays refused; "
+                     "run it again")
     problems = marker_problems(ROOT)
     if problems:
         shown.append(f"markers   {len(problems)} problems listed in the log, for the owner")
@@ -599,6 +650,12 @@ def main() -> int:
                               "== git status --porcelain", *status, "",
                               "== ruff check .", ruff.stdout + ruff.stderr,
                               "== pytest -q -ra", output]), encoding="utf-8")
+    record = ROOT / CHECKED
+    if passed and unchanged:  # scripts/githooks/pre-commit lets a commit of this tree through
+        record.write_text(json.dumps({"tree": content, "revision": revision,
+                                      "log": str(log.relative_to(ROOT))}) + "\n")
+    else:
+        record.unlink(missing_ok=True)
     if passed:
         shutil.rmtree(scratch, ignore_errors=True)
     return 0 if passed else 1

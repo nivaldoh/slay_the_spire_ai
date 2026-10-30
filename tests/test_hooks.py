@@ -7,6 +7,7 @@ blocks; `stop_hook_active` marks a stop that follows a block).
 import importlib.util
 import json
 import os
+import signal
 import subprocess
 import sys
 import time
@@ -315,3 +316,512 @@ def test_the_stop_check_gives_up_before_the_tools_stop_the_hook():
         timeouts = [h["timeout"] for group in stop for h in group["hooks"]
                     if "stop_check.py" in h["command"]]
         assert timeouts and all(stop_check.TIMEOUT_S < t for t in timeouts), name
+
+
+def test_stop_hook_does_not_accept_a_tree_changed_during_a_passing_check(repo, capsys):
+    repo, _ = repo
+    before = stop_check.tree_identity()
+    calls = []
+
+    def edited_during_check():
+        calls.append((repo / "a.py").read_text())
+        (repo / "a.py").write_text("a = (\n")  # a concurrent editor, after the test read
+        return True, "result    PASSED"
+
+    session = {"session_id": "editor"}
+    assert stop_check.main(edited_during_check, session) == 2
+    report = capsys.readouterr().err
+    assert "changed" in report and "unchecked" in report
+    cache = stop_check.read_cache()
+    assert "passed" not in cache
+    assert stop_check.tree_identity() != before
+
+    # Preserve the existing single-block escape, without claiming the check passed.
+    assert stop_check.main(edited_during_check, {**session, "stop_hook_active": True}) == 0
+    assert "pass" in json.loads(capsys.readouterr().out)["systemMessage"]
+    assert calls == ["a = 1\n"]
+
+    # A fresh stop must check the edited tree, even if the file has since been repaired.
+    (repo / "a.py").write_text("a = 2\n")
+    assert stop_check.main(recorder(calls, True), session) == 0
+    assert stop_check.read_cache()["passed"] == stop_check.tree_identity()
+    assert stop_check.main(recorder(calls, True), session) == 0
+    assert calls == ["a = 1\n", True]
+
+
+@pytest.mark.parametrize("interruption", [signal.SIGINT, signal.SIGTERM])
+@pytest.mark.parametrize("stage", ["running", "handle", "constructor"])
+def test_interrupted_stop_hook_kills_and_reaps_its_check(repo, interruption, stage):
+    repo, _ = repo
+    script = repo / "scripts/hooks/stop_check.py"
+    script.parent.mkdir(parents=True)
+    script.write_bytes((ROOT / "scripts/hooks/stop_check.py").read_bytes())
+    (repo / "runs").mkdir(exist_ok=True)
+    child_file = repo / "runs/check-child.pid"
+    uv = repo / "bin/uv"
+    uv.parent.mkdir()
+    # Substitute only uv, so the real hook's entry point, signal handling and process
+    # cleanup run without invoking the suite or depending on its duration.
+    uv.write_text(f"#!{sys.executable}\nimport os, time\nfrom pathlib import Path\n"
+                  f"ready = Path({str(child_file)!r})\npending = ready.with_suffix('.tmp')\n"
+                  "pending.write_text(str(os.getpid()))\npending.replace(ready)\ntime.sleep(60)\n")
+    uv.chmod(0o755)
+    event = repo / "event.json"
+    event.write_text("{}")
+    child = None
+    command = [sys.executable, str(script)]
+    if stage != "running":
+        # Pause after construction or signal at its return, before the handle is stored.
+        # Both are real interruption windows; the child must be owned before exit.
+        boundary = script.read_text().splitlines().index(
+            "        out, err = process.communicate(timeout=TIMEOUT_S)") + 1
+        condition = (f"event == 'line' and frame.f_code.co_filename == {str(script)!r} "
+                     f"and frame.f_lineno == {boundary}" if stage == "handle" else
+                     "event == 'return' and frame.f_code.co_name == '__init__' "
+                     "and isinstance(frame.f_locals.get('self'), subprocess.Popen) "
+                     "and frame.f_back.f_code.co_name == 'run_check'")
+        action = ("        while True: time.sleep(0.01)\n" if stage == "handle" else
+                  f"        while not Path({str(child_file)!r}).exists(): time.sleep(0.01)\n"
+                  f"        os.kill(os.getpid(), {int(interruption)})\n")
+        trace = ("import os, runpy, subprocess, sys, time\nfrom pathlib import Path\n"
+                 "def trace(frame, event, arg):\n"
+                 f"    if {condition}:\n" + action +
+                 "    return trace\n"
+                 f"sys.settrace(trace)\nrunpy.run_path({str(script)!r}, run_name='__main__')\n")
+        command = [sys.executable, "-c", trace]
+    with event.open() as stdin:
+        process = subprocess.Popen(command, stdin=stdin,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                   env={**os.environ, "PATH": f"{uv.parent}:{os.environ['PATH']}"})
+    try:
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            try:
+                child = int(child_file.read_text())
+                break
+            except (OSError, ValueError):
+                if process.poll() is not None:
+                    break
+                time.sleep(0.01)
+        assert child is not None, "hook did not start its stub check"
+        if stage != "constructor":
+            process.send_signal(interruption)
+        process.communicate(timeout=5)
+        assert process.returncode != 0
+        with pytest.raises(ProcessLookupError):
+            os.kill(child, 0)
+        assert not (repo / "runs/checks/stop-hook.json").exists()
+    finally:
+        # A broken implementation must fail the test without leaving its stub running.
+        # Find an unpublished child while the hook still owns it (Linux/WSL, like /proc
+        # in the production game-job guard); killing the hook first would orphan it.
+        children = Path(f"/proc/{process.pid}/task/{process.pid}/children")
+        try:
+            owned = [int(pid) for pid in children.read_text().split()]
+        except FileNotFoundError:
+            owned = []
+        if process.poll() is None:
+            process.terminate()
+        for pid in {*owned, *([child] if child is not None else [])}:
+            try:
+                os.killpg(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        try:
+            process.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.communicate(timeout=5)
+
+
+def test_the_git_hook_refuses_a_commit_until_check_py_passed_on_this_tree(tmp_path):
+    (tmp_path / "scripts/githooks").mkdir(parents=True)
+    for name in ("scripts/check.py", "scripts/githooks/pre-commit"):
+        (tmp_path / name).write_bytes((ROOT / name).read_bytes())
+    (tmp_path / "scripts/githooks/pre-commit").chmod(0o755)
+    # as in the repository: the record and bytecode are ignored
+    (tmp_path / ".gitignore").write_text("runs/\n__pycache__/\n")
+    (tmp_path / "a.py").write_text("x = 1\n")
+
+    def git(*args, cwd=tmp_path):
+        return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=cwd,
+                              capture_output=True, text=True)
+    git("init", "-q")
+    git("config", "core.hooksPath", "scripts/githooks")
+    git("add", ".")
+    refused = git("commit", "-qm", "base")
+    assert refused.returncode != 0 and "check.py" in refused.stderr  # no record yet
+    spec = importlib.util.spec_from_file_location("check_copy", tmp_path / "scripts/check.py")
+    check = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(check)
+    (tmp_path / "runs/checks").mkdir(parents=True)
+    record = tmp_path / "runs/checks/last-pass.json"
+    record.write_text(json.dumps({"tree": check.tree_content(tmp_path)}))
+    assert git("commit", "-qm", "base").returncode == 0
+    (tmp_path / "a.py").write_text("x = 2\n")
+    # any spelling: from another directory, with -C and -am
+    assert git("-C", str(tmp_path), "commit", "-qam", "edit", cwd=ROOT).returncode != 0
+    record.write_text(json.dumps({"tree": check.tree_content(tmp_path)}))
+    assert git("commit", "-qam", "edit").returncode == 0
+    with (tmp_path / "scripts/check.py").open("a") as script:
+        script.write("def broken(:\n")
+    record.write_text(json.dumps({"tree": check.tree_content(tmp_path)}))
+    assert git("commit", "-qam", "broken").returncode != 0  # a broken check.py refuses
+    (tmp_path / "scripts/check.py").write_bytes((ROOT / "scripts/check.py").read_bytes())
+    linked = tmp_path.parent / "linked"
+    assert git("worktree", "add", "-q", str(linked)).returncode == 0
+    (linked / "a.py").write_text("x = 3\n")
+    # a linked worktree needs its own record: the main checkout's does not count there
+    assert git("commit", "-qam", "there", cwd=linked).returncode != 0
+    (linked / "runs/checks").mkdir(parents=True)
+    (linked / "runs/checks/last-pass.json").write_text(
+        json.dumps({"tree": check.tree_content(linked)}))
+    assert git("commit", "-qam", "there", cwd=linked).returncode == 0
+
+
+LIVE_CHECKER_SCRIPTS = [
+    "tests/twwarhammer3/check_wh3_army_setup.py",
+    "tests/twwarhammer3/check_wh3_checkpoint.py",
+    "tests/twwarhammer3/check_wh3_checkpoint_siege.py",
+    "tests/twwarhammer3/check_wh3_restored_episode.py",
+    "tests/twwarhammer3/team/check_wh3_team.py",
+]
+
+
+@pytest.mark.parametrize("script", LIVE_CHECKER_SCRIPTS)
+def test_direct_live_checkers_are_game_jobs_except_help_and_recount(tmp_path, script):
+    (tmp_path / "31").mkdir()
+    cmdline = tmp_path / "31/cmdline"
+    for arguments, running in [
+        ([script, "--help"], False),
+        ([script, "-h"], False),
+        ([script, "--recount", "runs/saved"], False),
+        ([script, "--recount=runs/saved"], False),
+        ([script, "--output", "runs/live-check"], True),
+        (["/repo/" + script, "--output", "runs/live-check"], True),
+    ]:
+        cmdline.write_bytes("\0".join(["/repo/.venv/bin/python", *arguments, ""]).encode())
+        assert stop_check.game_job_running(tmp_path) is running
+
+
+@pytest.mark.parametrize("flags", [
+    ["-u", "-B"], ["-W", "ignore"], ["-X", "dev"], ["-Wignore", "-Xdev"], ["--"],
+])
+def test_direct_live_checkers_allow_ordinary_python_flags(tmp_path, flags):
+    (tmp_path / "32").mkdir()
+    arguments = ["/repo/.venv/bin/python3", *flags,
+                 "tests/twwarhammer3/check_wh3_checkpoint.py", "--output", "runs/live-check", ""]
+    (tmp_path / "32/cmdline").write_bytes("\0".join(arguments).encode())
+    assert stop_check.game_job_running(tmp_path)
+
+
+@pytest.mark.parametrize("arguments", [
+    ["reader.py", "tests/twwarhammer3/check_wh3_checkpoint.py"],
+    ["-c", "print('tests/twwarhammer3/check_wh3_checkpoint.py')"],
+    ["-c", "pass", "tests/twwarhammer3/check_wh3_checkpoint.py"],
+    ["-cpass", "tests/twwarhammer3/check_wh3_checkpoint.py"],
+    ["-m", "json.tool", "tests/twwarhammer3/check_wh3_checkpoint.py"],
+    ["-mjson.tool", "tests/twwarhammer3/check_wh3_checkpoint.py"],
+    ["-W", "tests/twwarhammer3/check_wh3_checkpoint.py", "reader.py"],
+    ["-h", "tests/twwarhammer3/check_wh3_checkpoint.py"],
+    ["--help", "tests/twwarhammer3/check_wh3_checkpoint.py"],
+])
+def test_a_checker_path_in_python_reader_arguments_is_not_a_game_job(tmp_path, arguments):
+    (tmp_path / "33").mkdir()
+    (tmp_path / "33/cmdline").write_bytes(
+        "\0".join(["/repo/.venv/bin/python", *arguments, ""]).encode())
+    assert not stop_check.game_job_running(tmp_path)
+
+
+@pytest.mark.parametrize("flags,running", [
+    (["-BuW", "ignore"], True),
+    (["-BuX", "dev"], True),
+    (["-BuWignore", "-Xdev"], True),
+    (["-?"], False),
+    (["-Bh"], False),
+    (["--help-env"], False),
+    (["--help-xoptions"], False),
+    (["--help-all"], False),
+    (["-Bucpass"], False),
+    (["-Bumjson.tool"], False),
+    (["--unknown-python-flag"], False),
+])
+def test_live_checkers_follow_python_grouped_options_and_exits(tmp_path, flags, running):
+    (tmp_path / "34").mkdir()
+    arguments = ["/repo/.venv/bin/python", *flags,
+                 "tests/twwarhammer3/check_wh3_checkpoint.py", "--output", "runs/live-check", ""]
+    (tmp_path / "34/cmdline").write_bytes("\0".join(arguments).encode())
+    assert stop_check.game_job_running(tmp_path) is running
+
+
+@pytest.mark.parametrize("options,running", [
+    (["--rec", "runs/saved"], False),
+    (["--rec=runs/saved"], False),
+    (["--he"], False),
+    (["-hh"], False),
+    (["--re", "runs/saved"], False),  # ambiguous between recount and resume: argparse exits
+    (["--resume", "--output", "runs/live-check"], True),
+    (["--res", "--output", "runs/live-check"], True),
+])
+def test_live_checker_argparse_prefixes_keep_resume_live(tmp_path, options, running):
+    (tmp_path / "35").mkdir()
+    arguments = ["/repo/.venv/bin/python", "tests/twwarhammer3/check_wh3_restored_episode.py",
+                 *options, ""]
+    (tmp_path / "35/cmdline").write_bytes("\0".join(arguments).encode())
+    assert stop_check.game_job_running(tmp_path) is running
+
+
+@pytest.fixture
+def completed_normal_pass(repo):
+    repo, git = repo
+    files = {
+        "scripts/check.py": (ROOT / "scripts/check.py").read_text(),
+        ".gitignore": "runs/\n__pycache__/\n.pytest_cache/\n.ruff_cache/\n",
+        "pytest.ini": "[pytest]\ntestpaths = tests\n",
+        "ruff.toml": '[lint]\nselect = ["F"]\n',
+        "docs/state.md": "# Project state\n",
+        "docs/agreed-checks.md": "- Fixture: `pytest tests`.\n",
+        "tests/test_pass.py": "def test_pass():\n    assert True\n",
+        "a.py": "a = 2\n",
+    }
+    for name, text in files.items():
+        (repo / name).parent.mkdir(parents=True, exist_ok=True)
+        (repo / name).write_text(text)
+    done = subprocess.run([sys.executable, "scripts/check.py"], cwd=repo,
+                          capture_output=True, text=True)
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert (repo / "runs/checks/last-pass.json").exists()
+    return repo, git
+
+
+@pytest.mark.parametrize("change", ["cold", "staged", "committed"])
+def test_stop_adopts_a_completed_normal_pass_without_rechecking(
+        completed_normal_pass, monkeypatch, change):
+    repo, git = completed_normal_pass
+    before = stop_check.tree_identity()
+    if change == "staged":
+        git("add", ".")
+    elif change == "committed":
+        git("-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qam", "contents")
+    identity = stop_check.tree_identity()
+    assert (identity == before) is (change == "cold")
+    calls = []
+    assert stop_check.main(recorder(calls, False)) == 0
+    assert calls == []
+    assert stop_check.read_cache() == {"passed": identity, "blocked": []}
+    stop_check.CACHE.write_text(json.dumps({"failed": identity, "blocked": ["other", "active"]}))
+    assert stop_check.main(recorder(calls, False),
+                           {"session_id": "active", "stop_hook_active": True}) == 0
+    assert calls == []
+    assert stop_check.read_cache() == {"passed": identity, "blocked": []}
+
+    def no_lookup():
+        pytest.fail("a cached Stop identity must not reread the normal proof")
+
+    monkeypatch.setattr(stop_check, "completed_check_pass", no_lookup, raising=False)
+    assert stop_check.main(recorder(calls, False)) == 0 and calls == []
+
+
+def test_invalid_normal_proofs_and_broken_readers_run_the_check(completed_normal_pass):
+    repo, _ = completed_normal_pass
+    script, record = repo / "scripts/check.py", repo / "runs/checks/last-pass.json"
+    reader, proof = script.read_text(), record.read_text()
+    for case in ("missing", "malformed", "nonobject", "stale", "unreadable",
+                 "missing-reader", "syntax-error", "reader-error", "incomplete-reader"):
+        script.write_text(reader)
+        if record.is_dir():
+            record.rmdir()
+        record.write_text(proof)
+        (repo / "a.py").write_text("a = 2\n")
+        if case == "missing":
+            record.unlink()
+        elif case == "malformed":
+            record.write_text("{")
+        elif case == "nonobject":
+            record.write_text("[]")
+        elif case == "stale":
+            (repo / "a.py").write_text("a = 3\n")
+        elif case == "unreadable":
+            record.unlink()
+            record.mkdir()
+        elif case == "missing-reader":
+            script.unlink()
+        elif case == "syntax-error":
+            script.write_text("def broken(:\n")
+        elif case == "reader-error":
+            script.write_text("raise RuntimeError('broken reader')\n")
+        else:
+            script.write_text("CHECKED = 'runs/checks/last-pass.json'\n")
+        calls = []
+        assert stop_check.main(recorder(calls, False)) == 2, case
+        assert calls == [False], case
+        assert "passed" not in stop_check.read_cache(), case
+
+
+@pytest.mark.parametrize("matching", [False, True])
+def test_a_change_during_normal_proof_lookup_checks_the_resulting_tree(
+        completed_normal_pass, monkeypatch, matching):
+    repo, _ = completed_normal_pass
+    if not matching:
+        (repo / "a.py").write_text("a = 3\n")
+    lookup = getattr(stop_check, "completed_check_pass", lambda: matching)
+
+    def changed_lookup():
+        matched = lookup()
+        (repo / "a.py").write_text("a = 4\n")
+        return matched
+
+    monkeypatch.setattr(stop_check, "completed_check_pass", changed_lookup, raising=False)
+    calls = []
+
+    def check_resulting_tree():
+        calls.append((repo / "a.py").read_text())
+        return True, "result    PASSED"
+
+    assert stop_check.main(check_resulting_tree) == 0
+    assert calls == ["a = 4\n"]
+    assert stop_check.read_cache() == {"passed": stop_check.tree_identity(), "blocked": []}
+
+
+@pytest.mark.parametrize("target_kind", ["directory", "dangling", "file"])
+def test_link_retarget_during_normal_proof_lookup_checks_the_resulting_tree(
+        completed_normal_pass, monkeypatch, target_kind):
+    repo, _ = completed_normal_pass
+    if target_kind == "directory":
+        (repo / "first").mkdir()
+        (repo / "second").mkdir()
+    elif target_kind == "file":
+        (repo / "first").write_text("same contents\n")
+        (repo / "second").write_text("same contents\n")
+    link = repo / "pending-link"
+    link.symlink_to("first", target_is_directory=target_kind == "directory")
+    done = subprocess.run([sys.executable, "scripts/check.py"], cwd=repo,
+                          capture_output=True, text=True)
+    assert done.returncode == 0, done.stdout + done.stderr
+    lookup = stop_check.completed_check_pass
+
+    def changed_lookup():
+        matched = lookup()
+        assert matched
+        link.unlink()
+        link.symlink_to("second", target_is_directory=target_kind == "directory")
+        return matched
+
+    monkeypatch.setattr(stop_check, "completed_check_pass", changed_lookup)
+    calls = []
+
+    def check_resulting_tree():
+        calls.append(os.readlink(link))
+        return True, "result    PASSED"
+
+    assert stop_check.main(check_resulting_tree) == 0
+    assert calls == ["second"]
+    assert stop_check.read_cache() == {"passed": stop_check.tree_identity(), "blocked": []}
+
+
+@pytest.mark.parametrize("code", ["0", "None"])
+def test_a_normal_proof_reader_exit_runs_the_check(completed_normal_pass, code):
+    repo, _ = completed_normal_pass
+    (repo / "scripts/check.py").write_text(f"raise SystemExit({code})\n")
+    calls = []
+    assert stop_check.main(recorder(calls, False)) == 2
+    assert calls == [False]
+    assert "passed" not in stop_check.read_cache()
+
+
+@pytest.mark.parametrize("reader,error", [
+    ("raise SystemExit(143)\n", SystemExit),
+    ("raise KeyboardInterrupt\n", KeyboardInterrupt),
+])
+def test_normal_proof_lookup_preserves_cancellation(completed_normal_pass, reader, error):
+    repo, _ = completed_normal_pass
+    (repo / "scripts/check.py").write_text(reader)
+    calls = []
+    with pytest.raises(error) as stopped:
+        stop_check.main(recorder(calls, False))
+    if error is SystemExit:
+        assert stopped.value.code == 143  # the hook entry point's existing SIGTERM handler
+    assert calls == []
+
+
+@pytest.mark.parametrize("code", ["0", "None"])
+def test_git_guard_refuses_a_checker_import_that_exits(completed_normal_pass, code):
+    repo, git = completed_normal_pass
+    hook = repo / "scripts/githooks/pre-commit"
+    hook.parent.mkdir(parents=True)
+    hook.write_bytes((ROOT / "scripts/githooks/pre-commit").read_bytes())
+    hook.chmod(0o755)
+    (repo / "scripts/check.py").write_text(f"raise SystemExit({code})\n")
+    git("add", ".")
+    before = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo,
+                            capture_output=True, text=True, check=True).stdout
+    done = subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t",
+                           "-c", "core.hooksPath=scripts/githooks", "commit", "-qm", "broken"],
+                          cwd=repo, capture_output=True, text=True)
+    assert done.returncode != 0 and "check.py" in done.stderr
+    after = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo,
+                           capture_output=True, text=True, check=True).stdout
+    assert after == before
+
+
+def test_real_check_zero_without_a_completed_record_is_not_a_pass(repo, monkeypatch):
+    monkeypatch.setattr(stop_check, "CHECK_COMMAND", [sys.executable, "-c", "print('PASSED')"])
+    passed, report = stop_check.run_check()
+    assert not passed
+    assert "completed pass record" in report
+
+
+def test_real_normal_check_supplies_a_completed_record(completed_normal_pass, monkeypatch):
+    repo, _ = completed_normal_pass
+    record = repo / "runs/checks/last-pass.json"
+    record.unlink()
+    monkeypatch.setattr(stop_check, "CHECK_COMMAND", [sys.executable, "scripts/check.py"])
+    passed, report = stop_check.run_check()
+    assert passed and "PASSED" in report
+    assert record.exists()
+
+
+def test_real_check_nonzero_is_failure_even_with_an_old_completed_pass(
+        completed_normal_pass, monkeypatch):
+    assert stop_check.completed_check_pass()
+    monkeypatch.setattr(stop_check, "CHECK_COMMAND", [sys.executable, "-c", "raise SystemExit(1)"])
+    passed, _ = stop_check.run_check()
+    assert not passed
+
+
+@pytest.mark.parametrize("kind", ["sigterm", "interrupt"])
+def test_real_check_receipt_lookup_preserves_cancellation(repo, monkeypatch, kind):
+    monkeypatch.setattr(stop_check, "CHECK_COMMAND", [sys.executable, "-c", "pass"])
+    error = SystemExit(143) if kind == "sigterm" else KeyboardInterrupt()
+
+    def cancelled():
+        raise error
+
+    monkeypatch.setattr(stop_check, "completed_check_pass", cancelled)
+    with pytest.raises(type(error)) as stopped:
+        stop_check.run_check()
+    if kind == "sigterm":
+        assert stopped.value.code == 143
+
+
+@pytest.mark.parametrize("target_kind", ["directory", "dangling", "file"])
+def test_stop_identity_tracks_link_targets_and_the_warm_cache(repo, target_kind):
+    repo, _ = repo
+    if target_kind == "directory":
+        (repo / "first").mkdir()
+        (repo / "second").mkdir()
+    elif target_kind == "file":
+        (repo / "first").write_text("same contents\n")
+        (repo / "second").write_text("same contents\n")
+    link = repo / "pending-link"
+    link.symlink_to("first", target_is_directory=target_kind == "directory")
+    before, calls = stop_check.tree_identity(), []
+    assert stop_check.main(recorder(calls, True)) == 0
+    link.unlink()
+    link.symlink_to("second", target_is_directory=target_kind == "directory")
+    after = stop_check.tree_identity()
+    assert after != before
+    assert stop_check.main(recorder(calls, True)) == 0 and calls == [True, True]
+    link.unlink()
+    link.write_text("second")
+    assert stop_check.tree_identity() not in (before, after)
