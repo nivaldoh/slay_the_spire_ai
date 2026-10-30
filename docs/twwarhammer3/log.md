@@ -54,7 +54,9 @@ Claude Code, after the owner answered the night's six decisions ([direction](../
 - CI (`bcb874c`): `.github/workflows/check.yml`; the link test skips only links into
   `docs/thesis/`. A fresh clone on WSL with no git identity: 1821 passed, 64 skipped; a
   reviewer's runner-like clone (depth 1, empty HOME, no `/mnt/c`): 1833 passed, 64 skipped. On
-  GitHub, the first run (`da47cde`, run 40977306942): Ruff clean, 1835 passed, 64 skipped.
+  GitHub, 3 runs: passed at `da47cde` (1835 passed, 64 skipped); failed at `789043d` on a racy
+  relay test (3 of 64 local runs under load failed it too; fixed in `e1d141c`, 0 of 128); passed
+  at `e1d141c`. The capture and checkpoint-RL flakes in state.md's Known issues may hit CI too.
 - Codex (`ae05c38`): `.codex/hooks.json` and `.codex/agents/reviewer.toml` mirror Claude Code's;
   `tests/test_agent_sync.py` checks the pairs and that each command finds its script without
   `CLAUDE_PROJECT_DIR`. The hook test now passes in a linked worktree (it failed 16 cases there).
