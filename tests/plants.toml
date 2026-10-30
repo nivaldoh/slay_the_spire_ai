@@ -601,3 +601,12 @@ old = "runs_ruff = Path(word).name.split(\"@\")[0] == \"ruff\" and bool("
 new = "runs_ruff = Path(word).name == \"ruff\" and bool("
 tests = ["tests/test_hooks.py::test_bash_hook_refuses_ruff_format_and_head_moves_during_a_queue"]
 source = "2026-10-30 night review of the 10-29 run (uvx ruff@0.6.9 format passed)"
+
+[[plant]]
+id = "check-passes-a-collection-error"
+guards = "check.py exits 1 when Ruff or a test fails"
+file = "scripts/check.py"
+old = "passed = ruff.returncode == 0 and tests.returncode == 0"
+new = "passed = ruff.returncode == 0 and tests.returncode != 1"
+tests = ["tests/test_check_script.py::test_check_exits_1_when_ruff_or_a_test_fails"]
+source = "2026-10-30 night review of 1c5c3db (pytest exit 2 passed the new rows)"

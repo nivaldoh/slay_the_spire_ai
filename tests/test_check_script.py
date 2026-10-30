@@ -324,7 +324,7 @@ def test_an_interrupted_plant_run_leaves_no_tests_running(tmp_path, monkeypatch)
     (tmp_path / "tests").mkdir()
     # A bounded sleep: if the kill is ever wrong, the child still ends by itself.
     (tmp_path / "tests/test_hang.py").write_text(
-        "def test_h():\n    import time\n    time.sleep(20)\n")
+        "def test_h():\n    import time\n    time.sleep(5)\n")
     started = []
 
     class Interrupted(subprocess.Popen):
@@ -364,6 +364,8 @@ def run_main(root, monkeypatch, *args):
     (None, 0),
     (("tests/agreed/test_a.py", "1 == 1", "1 == 2"), 1),
     (("src/pkg/mod.py", "def f", "import os\n\n\ndef f"), 1),
+    # pytest cannot collect it (exit 2), and Ruff finds nothing to say
+    (("tests/other/test_b.py", "import pytest", "import pytest\nraise ImportError('x')"), 1),
 ])
 def test_check_exits_1_when_ruff_or_a_test_fails(repo, monkeypatch, capsys, change, code):
     (repo / "pytest.ini").write_text("[pytest]\n")
