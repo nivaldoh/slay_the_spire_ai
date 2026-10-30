@@ -481,7 +481,8 @@ def marker_problems(root: Path) -> list[str]:
 
 def long_pages(root: Path) -> list[str]:
     """docs/state.md when it is over its line budget; a warning only."""
-    lines = len((root / STATE).read_text(encoding="utf-8").splitlines())
+    page = root / STATE
+    lines = len(page.read_text(encoding="utf-8").splitlines()) if page.exists() else 0
     return [f"{STATE} has {lines} lines, over {STATE_LINES}"] if lines > STATE_LINES else []
 
 

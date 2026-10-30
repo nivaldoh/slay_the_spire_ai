@@ -250,10 +250,13 @@ def test_markers_in_the_private_thesis_notes_are_not_listed(repo):
 
 
 def test_state_md_over_120_lines_is_named(tmp_path):
+    assert check.long_pages(tmp_path) == []  # no page: nothing to say, no crash
     (tmp_path / "docs").mkdir()
     (tmp_path / "docs/state.md").write_text("x\n" * 120)
     assert check.long_pages(tmp_path) == []
     (tmp_path / "docs/state.md").write_text("x\n" * 121)
+    assert check.long_pages(tmp_path) == ["docs/state.md has 121 lines, over 120"]
+    (tmp_path / "docs/state.md").write_text("x\n" * 120 + "x")  # no final newline
     assert check.long_pages(tmp_path) == ["docs/state.md has 121 lines, over 120"]
 
 
@@ -354,17 +357,18 @@ def run_main(root, monkeypatch, *args):
     (("tests/agreed/test_a.py", "1 == 1", "1 == 2"), 1),
     (("src/pkg/mod.py", "def f", "import os\n\n\ndef f"), 1),
 ])
-def test_check_exits_1_when_ruff_or_a_test_fails(repo, monkeypatch, change, code):
+def test_check_exits_1_when_ruff_or_a_test_fails(repo, monkeypatch, capsys, change, code):
     (repo / "pytest.ini").write_text("[pytest]\n")
     (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')  # not Ruff's defaults
     (repo / ".gitignore").write_text("runs/\n")
-    (repo / "docs/state.md").write_text("# Project state\n")
+    (repo / "docs/state.md").write_text("x\n" * 121)  # a warning, which never fails the run
     (repo / "tests/other/test_env.py").write_text(
         "import os\n\n\ndef test_env():\n    assert 'WH3_WRITE_PROMPTS' not in os.environ\n")
     monkeypatch.setenv("WH3_WRITE_PROMPTS", "1")
     if change:
         edit(repo, *change)
     assert run_main(repo, monkeypatch) == code
+    assert "\npages     docs/state.md has 121 lines, over 120" in capsys.readouterr().out
 
 
 def test_plants_exits_1_on_a_missed_plant(repo, monkeypatch):
