@@ -277,6 +277,7 @@ def test_a_run_in_a_linked_worktree_says_so_and_keeps_its_exit_code(
     (linked / "pytest.ini").write_text("[pytest]\n")
     (linked / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
     (linked / "docs/state.md").write_text("# Project state\n")
+    (linked / "runs/twwarhammer3").mkdir(parents=True)  # e.g. a pack built here: still less
     assert run_main(linked, monkeypatch) == 0
     assert (f"\nworktree  a linked worktree of {repo.resolve()}: tests that read its runs/ "
             "evidence can skip here") in capsys.readouterr().out

@@ -597,7 +597,7 @@ source = "2026-10-30 night review (passed with the 20 s sleep alone)"
 id = "pre-bash-misses-a-pinned-uvx-ruff"
 guards = "The Bash hook refuses ruff format"
 file = "scripts/hooks/pre_bash.py"
-old = "runs_ruff = Path(word).name.split(\"@\")[0] == \"ruff\" and bool("
+old = "runs_ruff = bool(RUFF_WORD.match(Path(word).name)) and bool("
 new = "runs_ruff = Path(word).name == \"ruff\" and bool("
 tests = ["tests/test_hooks.py::test_bash_hook_refuses_ruff_format_and_head_moves_during_a_queue"]
 source = "2026-10-30 night review of the 10-29 run (uvx ruff@0.6.9 format passed)"

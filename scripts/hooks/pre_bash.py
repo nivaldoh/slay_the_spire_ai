@@ -30,6 +30,8 @@ RUFF_TEXT = re.compile(r"\bruff\s+format\b(?![^\n;&|]*--(?:check|diff)\b)")
 GIT_TEXT = re.compile(r"\bgit\b[^\n;&|]*\b(" + "|".join(sorted(MOVES_HEAD)) + r")\b")
 UNKNOWN = Path("/nonexistent-unknown-tree")
 # Programs under which a `ruff` word runs ruff; under any other (grep, echo, git) it is text.
+# `ruff`, or a pinned one as uvx takes it: ruff@0.6.9, ruff==0.6.9, "ruff>=0.6".
+RUFF_WORD = re.compile(r"ruff($|[@=<>!~])")
 RUFF_HOSTS = {"ruff", "uv", "uvx", "pipx", "xargs", "find", "parallel", "env", "nice", "time",
               "timeout", "command", "exec", "sudo"}
 
@@ -198,7 +200,7 @@ def refusal(text: str, *, queue: bool, cwd: Path = ROOT) -> str | None:
                 # ruff run by a host program (uv, python -m, xargs, find ...), not a grep
                 # pattern or echoed text; its options may come before `format`.
                 hosts = {host, Path(words[0]).name}
-                runs_ruff = Path(word).name.split("@")[0] == "ruff" and bool(
+                runs_ruff = bool(RUFF_WORD.match(Path(word).name)) and bool(
                     hosts & RUFF_HOSTS or any(h.startswith("python") for h in hosts))
                 if runs_ruff and "format" in words[i + 1:] and not (
                         {"--check", "--diff"} & set(words[i + 1:])):
