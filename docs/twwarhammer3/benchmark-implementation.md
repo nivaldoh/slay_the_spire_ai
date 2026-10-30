@@ -131,6 +131,15 @@ What the code records today and what is missing: [measurement gaps](#measurement
 
 25. **Which missing measurements does the first usable version need?** Choose among private per-unit HP and state histories, explicit unknown/read-error values, finer or absolute HP, enemy numeric leadership, unit-card facts, richer terrain and line of fire, and order-effect evidence. Which can be marked unavailable without blocking a useful result? We will find out what the game API allows; you don't need to pick a method.
 
+   Evidence (2026-10-30, not an answer; the checkpoint checks' saved logs): the API already
+   returns enemy morale and unrounded HP over time. All 24 `native.jsonl` logs under
+   `runs/twwarhammer3/checkpoint-check-*` and `rl/stage1-20261026` read every enemy unit
+   through `checkpoint.READING_LUA`: morale as `MoralePercent` with its largest effect, HP as
+   `unary_hitpoints`. In `checkpoint-check-20261028/source`, the Savage Orcs read 1.08 morale
+   and HP 1 at tick 1000, 0.92 and 0.9627 at 1300, 0.70 and 0.6022 at 1900. One scenario, one
+   enemy unit type, and no visibility recorded per reading. Still unknown: values while the
+   enemy is hidden, absolute or maximum HP, and `DamageDealt` against the results screen.
+
 26. **Which new fields reach the model, and which are for scoring only?** Hidden enemy health, for example, could help the evaluator but would leak forbidden information to a controller. Should new visible unit facts go to every controller equally? Scoring data stays out of prompts, memory, helpers and feedback unless the public information rules change.
 
 27. **What accuracy and missing-data policy is enough?** What is the shortest wavering or routing episode, or the smallest HP change, you care about? That sets the recording interval and precision, independently of how often a model calls. Should a recording gap make only that measure unknown, require bounded estimates, or void the attempt for that comparison? A known engine result can stand even when a diagnostic can't be computed.
