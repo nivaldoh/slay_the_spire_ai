@@ -6,6 +6,10 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
+Claude Code built the [native multiplayer plan](twwarhammer3/native-multiplayer.md#implementation-status)
+up to accounts/billing (owner, 2026-10-30 15:01), merged at `5d10e2a`; no game, $0. Decisions
+wait in `runs/wh3-native-mp-20261030/handoff.md`.
+
 Claude Code's night run (2026-10-30, from 02:55 to the owner's return around noon): light
 factory checks and Land interview evidence merged ([log](twwarhammer3/log.md)); three
 decisions wait in `runs/overnight-20261030/handoff.md`. No game, $0.
@@ -36,9 +40,9 @@ Benchmark definition remains open (decision 1): [definition](twwarhammer3/benchm
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33. A new paid cohort needs a bounded plan.
 - Battle checkpoints: Land check at `6fdb271` and `dcb8b5a`, declared siege cases at `2e2acbe`; build
   25961564 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
-- Native team multiplayer: [initial assessment](twwarhammer3/native-multiplayer.md) drafted
-  at the owner's request; unattended clients plausible, synchronization unverified. Next
-  proposed evidence: two licensed clients, one-peer Lua order; no deployment or live run yet.
+- Native team multiplayer: offline parts built (platform detection, `observe`/`control` battle
+  modes, link, worker, `compare-peers`; [status](twwarhammer3/native-multiplayer.md#implementation-status)),
+  all unverified. Next: a $0 local observer smoke (proposed card), then licences/accounts. Zero live MP battles.
 
 ## Slay the Spire
 
