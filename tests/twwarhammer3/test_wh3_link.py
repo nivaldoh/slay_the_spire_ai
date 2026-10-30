@@ -466,3 +466,29 @@ def test_events_too_large_to_send_or_keep_are_refused(coordinator):
         assert call(coordinator, "POST", "/events", generation=link.generation, heartbeat=1,
                     events=big)[0] == 413
     assert not (coordinator.directory / "events-A.jsonl").exists()
+
+
+def test_an_accepted_event_is_sent_even_when_it_fills_a_request(coordinator, monkeypatch):
+    monkeypatch.setattr("twwarhammer3.engine.link.MAX_BODY", 2000)  # the coordinator's too
+    stops = []
+    link = worker(coordinator, stops=stops)
+    link.hello()
+    overhead = len(json.dumps(link.event("observation", {"blob": ""})))
+
+    def spool(*sizes):  # events whose encodings take these many bytes
+        for size in sizes:
+            event = link.event("observation", {"blob": "x" * (size - overhead)})
+            assert len(json.dumps(event)) == size
+
+    def sent():
+        link.beat()
+        return [row["event"]["seq"] for row in stored_events(coordinator)]
+
+    room = link._room
+    spool(room)  # the largest event accepted goes after event 1, in a request of its own
+    assert sent() == [1] and sent() == [1, 2]
+    spool(room // 2, room - room // 2 - 2)  # two events and the ", " between them
+    assert sent() == [1, 2, 3, 4]
+    spool(room // 2, room - room // 2 - 1)  # one byte more: two requests
+    assert sent() == [1, 2, 3, 4, 5]
+    assert sent() == [1, 2, 3, 4, 5, 6] and stops == []

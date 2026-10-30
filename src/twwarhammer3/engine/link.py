@@ -46,11 +46,15 @@ refusal adds ``fields``).
 Followed: PySC2 0df53d38c153972f1e368572ba65b1442a0fd41f, ``pysc2/env/sc2_env.py`` and
 ``pysc2/tests/multi_player_test.py``: one client per player with explicit identity, and every
 owned process closed after a failure (here the worker's ``stop`` and ``Coordinator.close``).
-Kubernetes client-go ``tools/leaderelection/leaderelection.go``, recalled, not fetched this
-session (no commit pinned): the holder times its lease on its own clock, never on the other
-side's timestamps, and gives up through one callback when it cannot renew in time. client-go
-stamps its observed time after the update returns; the worker takes the send time instead,
-so at equal clock rates it stops no later than the coordinator, which renews on receipt.
+Kubernetes client-go 4563439f729012b84179286a88bc9d191bf3d35e,
+``tools/leaderelection/leaderelection.go`` (read 2026-10-30): a client acts only on times from
+its own clock, never on those in the lease record (package comment); ``renew`` ends once its
+``tryAcquireOrRenew`` calls have failed for ``RenewDeadline``, and ``Run`` then calls
+``OnStoppedLeading`` once. ``setObservedRecord`` stamps the time after the update returns;
+the worker takes the send time instead, so at equal clock rates it stops no later than the
+coordinator, which renews on receipt. client-go's holder gives up after ``RenewDeadline``,
+shorter than the ``LeaseDuration`` other clients wait (its margin for clocks running at
+different rates); here both sides use one TTL.
 """
 
 import hashlib
@@ -422,7 +426,7 @@ class WorkerLink:
                 self._heartbeat += 1
             heartbeat, room, events = self._heartbeat, self._room, []
             for event, size in self._spool:
-                room -= size + 2
+                room -= size + 2 * bool(events)  # ", " before every event but the first
                 if room < 0:
                     break
                 events.append(event)
