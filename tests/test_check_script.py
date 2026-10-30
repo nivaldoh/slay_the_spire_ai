@@ -282,7 +282,9 @@ def test_replayed_plants_are_caught_missed_stale_hung_or_lack_a_baseline(tmp_pat
 
 def test_an_interrupted_plant_run_leaves_no_tests_running(tmp_path, monkeypatch):
     (tmp_path / "tests").mkdir()
-    (tmp_path / "tests/test_hang.py").write_text("def test_h():\n    while True:\n        pass\n")
+    # A bounded sleep: if the kill is ever wrong, the child still ends by itself.
+    (tmp_path / "tests/test_hang.py").write_text(
+        "def test_h():\n    import time\n    time.sleep(20)\n")
     started = []
 
     class Interrupted(subprocess.Popen):
@@ -296,6 +298,7 @@ def test_an_interrupted_plant_run_leaves_no_tests_running(tmp_path, monkeypatch)
     with pytest.raises(KeyboardInterrupt):
         check.plant_tests(tmp_path, ["tests/test_hang.py"], tmp_path / "j.xml")
     assert started[0].poll() is not None  # killed and reaped
+    assert started[0].returncode == -check.signal.SIGKILL  # not waited for until it ended
 
 
 def test_each_committed_plant_still_applies_and_names_real_tests():
