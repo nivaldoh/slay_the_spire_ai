@@ -35,6 +35,11 @@ Ask, in this order, only the questions the change raises:
    `export`) or the protocol change: does it break a meaning used elsewhere, such as an
    acknowledgement matched to the wrong request, which outcomes count, battle time versus WSL
    time, or two scripts reading the same files? Find the readers with `git grep`.
+5. Long run, when given its brief, handoff and start revision: take only the run's own commits
+   (its branch, or the commits the prompt names; never another session's). For every path they
+   changed (`git diff --name-status`), say whether the brief's May touch names it, and list
+   each one it does not. List each commit that changes behaviour and names no review, in its
+   own message, a later commit or the log entry.
 
 Each finding gives a file, a line and a concrete failure case (inputs or state, and the wrong
 result). Without all three it is a note, not a finding. Do not pad: "no findings" is a valid
