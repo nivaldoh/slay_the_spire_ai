@@ -95,6 +95,28 @@ def main() -> int:
     doctor = commands.add_parser("doctor", help="Inspect the game and runtime (read-only)")
     doctor.add_argument("--json", action="store_true")
 
+    coordinator = commands.add_parser(
+        "coordinator", help="Serve one native multiplayer match attempt; stdin takes"
+        ' {"client", "body"} commands as JSON lines; EOF or Ctrl-C closes it')
+    coordinator.add_argument("--match", required=True)
+    coordinator.add_argument("--attempt", required=True)
+    coordinator.add_argument("--clients", required=True, help="comma-separated client names")
+    coordinator.add_argument("--port", type=int, default=0, help="loopback port; 0 picks one")
+
+    worker = commands.add_parser("worker", help="Join this game client to a match coordinator")
+    worker.add_argument("--coordinator", required=True, metavar="URL")
+    worker.add_argument("--token-file", type=Path, required=True)
+    worker.add_argument("--match", required=True)
+    worker.add_argument("--attempt", required=True)
+    worker.add_argument("--client", required=True)
+    worker.add_argument("--mode", required=True, choices=("observe", "control"))
+    worker.add_argument("--attach", action="store_true",
+                        help="borrow a running game's bridge and session; launch nothing")
+    worker.add_argument("--bridge", type=Path, help="with --attach: the bridge folder")
+    worker.add_argument("--max-minutes", type=float, default=None,
+                        help="stop the worker and its game after this long"
+                        " (default: MAX_MINUTES in engine/worker.py)")
+
     pack = commands.add_parser("pack", help="Build the mod pack, or list/extract a pack")
     pack.add_argument("--output", type=Path, default=Path("runs/twwarhammer3/twwarhammer3.pack"))
     pack.add_argument("--list", type=Path, metavar="PACK", help="list a pack's entries")
@@ -247,6 +269,32 @@ def main() -> int:
         else:
             print(render_diagnostics(report))
         return 0 if report["status"] == "ready" else 1
+
+    if args.command == "coordinator":
+        from twwarhammer3.engine.worker import serve
+
+        try:
+            return serve(args.match, args.attempt, args.clients.split(","), port=args.port)
+        except (ValueError, FileExistsError) as error:
+            parser.error(str(error))
+
+    if args.command == "worker":
+        from twwarhammer3.engine import runtime
+        from twwarhammer3.engine.worker import MAX_MINUTES, run
+
+        if args.bridge and not args.attach:
+            parser.error("--bridge needs --attach: an owned game's mod reads C:/wh3-agent/bridge")
+        try:
+            return run(args.coordinator, args.token_file.read_text().strip(), match=args.match,
+                       attempt=args.attempt, client=args.client, mode=args.mode,
+                       attach=args.attach, bridge=args.bridge or runtime.BRIDGE_DIR,
+                       max_s=60 * (MAX_MINUTES if args.max_minutes is None else args.max_minutes))
+        except (RuntimeError, OSError, ValueError) as error:
+            print(f"worker: {error}", file=sys.stderr)
+            return 1
+        except KeyboardInterrupt:
+            print("worker: stopped", file=sys.stderr)
+            return 0
 
     if args.command == "pack":
         from twwarhammer3.engine import pack as packs
