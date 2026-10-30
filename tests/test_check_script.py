@@ -260,17 +260,17 @@ def test_state_md_over_120_lines_is_named(tmp_path):
     assert check.long_pages(tmp_path) == ["docs/state.md has 121 lines, over 120"]
 
 
-def test_a_linked_worktree_without_the_saved_evidence_is_named(repo, tmp_path):
-    (repo / "runs/twwarhammer3").mkdir(parents=True)
-    assert check.worktree_gaps(repo) == []  # the main checkout has its evidence
-    linked = tmp_path / "linked"
+def test_a_run_in_a_linked_worktree_says_so_and_keeps_its_exit_code(
+        repo, tmp_path_factory, monkeypatch, capsys):
+    assert check.linked_worktree(repo) == []  # the main checkout
+    linked = tmp_path_factory.mktemp("sibling") / "linked"  # beside it, as worktrees are here
     git(repo, "worktree", "add", "-q", str(linked))
-    assert check.worktree_gaps(linked) == [
-        "runs/twwarhammer3 missing in this linked worktree, so the tests that read them skip; "
-        f"link them from {repo.resolve()}"]
-    (linked / "runs").mkdir()
-    (linked / "runs/twwarhammer3").symlink_to(repo / "runs/twwarhammer3")
-    assert check.worktree_gaps(linked) == []
+    (linked / "pytest.ini").write_text("[pytest]\n")
+    (linked / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
+    (linked / "docs/state.md").write_text("# Project state\n")
+    assert run_main(linked, monkeypatch) == 0
+    assert (f"\nworktree  a linked worktree of {repo.resolve()}: tests that read its runs/ "
+            "evidence can skip here") in capsys.readouterr().out
 
 
 def test_replayed_plants_are_caught_missed_stale_hung_or_lack_a_baseline(tmp_path, monkeypatch):

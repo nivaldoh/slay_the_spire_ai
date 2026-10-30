@@ -116,10 +116,12 @@ markers   3 problems listed in the log, for the owner
 - Optional extras (`--extra train`, `--extra llm`), the browser check and live game checks
   run only when a change touches what they cover. The full offline suite always runs, since
   it takes well under a minute (owner, decision 3: "Yes", when it took 20 s).
-- In a linked worktree, tests that read saved evidence skip unless the main checkout's
-  `runs/twwarhammer3` and `runs/first-combat` are linked there (2026-10-30: 64 skipped against
-  41); the "worktree" line says when they are missing. Give the worktree its own venv
-  (`uv sync --locked`): a linked `.venv` repointed the main checkout's install (2026-10-29).
+- In a linked worktree, tests that read the main checkout's `runs/` evidence skip (2026-10-30:
+  64 skipped against 41), and the "worktree" line says so: run `check.py` in the main checkout,
+  after merging, before counting a pass. Do not link `runs/` folders into a worktree: commands
+  run there (`pack`, `report`, `launch`) would then write into the main checkout's evidence.
+  Give the worktree its own venv (`uv sync --locked`): a linked `.venv` repointed the main
+  checkout's install (2026-10-29).
 
 ## Checks in layers
 
