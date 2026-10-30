@@ -9,6 +9,7 @@ startup cinematic; those changes persist for ordinary Steam launches.
 """
 
 import functools
+import os
 import re
 import shutil
 import subprocess
@@ -20,10 +21,12 @@ from gameai.provenance import sha256
 from gameai.windows_game import conflicting_games
 from twwarhammer3.engine import pack, startup
 
-GAME_DIR = Path("/mnt/c/Program Files (x86)/Steam/steamapps/common/Total War WARHAMMER III")
+# Drive C as this Python spells it: C:/ on a native Windows worker, /mnt/c under WSL.
+DRIVE_C = Path("C:/") if windows.NATIVE else Path("/mnt/c")
+GAME_DIR = DRIVE_C / "Program Files (x86)/Steam/steamapps/common/Total War WARHAMMER III"
 WINDOWS_GAME_DIR = r"C:\Program Files (x86)\Steam\steamapps\common\Total War WARHAMMER III"
 STEAM_MANIFEST = GAME_DIR.parent.parent / "appmanifest_1142710.acf"
-RUNTIME_DIR = Path("/mnt/c/wh3-agent")
+RUNTIME_DIR = DRIVE_C / "wh3-agent"
 BRIDGE_DIR = RUNTIME_DIR / "bridge"
 MOD_SOURCE = Path(__file__).resolve().parents[1] / "mod"
 PACK_NAME = "twwarhammer3.pack"
@@ -49,7 +52,9 @@ def steam_build_id() -> str | None:
 
 @functools.cache
 def user_dir() -> Path:
-    """The game's roaming user folder, resolved once per process through Windows Python."""
+    """The game's roaming user folder under %APPDATA%, read through Windows Python under WSL."""
+    if windows.NATIVE:
+        return Path(os.environ["APPDATA"]) / "The Creative Assembly/Warhammer3"
     output = subprocess.check_output(
         [str(windows.WINDOWS_PYTHON), "-c", "import os; print(os.environ['APPDATA'])"],
         text=True, timeout=30,

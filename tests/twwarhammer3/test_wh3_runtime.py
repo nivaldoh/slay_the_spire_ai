@@ -1,7 +1,13 @@
 """Pinned install checks, pack and mod-list deployment in twwarhammer3/engine/runtime.py."""
+import json
+import os
+import subprocess
+from pathlib import Path
+
 import pytest
 from wh3_fixtures import fake_install
 
+from gameai import windows
 from twwarhammer3.engine import runtime, startup
 
 
@@ -81,3 +87,66 @@ def test_prepare_runtime_checks_game_is_stopped_before_writing(install, monkeypa
     assert not (runtime.GAME_DIR / "data" / startup.PACK_NAME).exists()
     assert not runtime.RUNTIME_DIR.exists()
     assert not (runtime.GAME_DIR / runtime.MOD_LIST).exists()
+
+
+def test_wsl_reaches_windows_through_mnt_c_and_wslpath(monkeypatch):
+    assert windows.WINDOWS_PYTHON == Path("/mnt/c/Python313/python.exe")
+    assert runtime.GAME_DIR == Path(
+        "/mnt/c/Program Files (x86)/Steam/steamapps/common/Total War WARHAMMER III")
+    assert runtime.BRIDGE_DIR == Path("/mnt/c/wh3-agent/bridge")
+    commands = []
+
+    def check_output(command, **kwargs):
+        commands.append(command[0])
+        if command[0] == "wslpath":
+            return "/mnt/c/Users/me/AppData/Roaming\n"
+        return "C:\\Users\\me\\AppData\\Roaming\r\n"
+
+    monkeypatch.setattr(runtime.subprocess, "check_output", check_output)
+    runtime.user_dir.cache_clear()
+    try:
+        assert runtime.user_dir() == Path(
+            "/mnt/c/Users/me/AppData/Roaming/The Creative Assembly/Warhammer3")
+    finally:
+        runtime.user_dir.cache_clear()
+    assert commands == [str(windows.WINDOWS_PYTHON), "wslpath"]
+
+
+# Runs in native Windows Python (a cloud worker) and prints what it saw. The profile folder
+# must come from %APPDATA% without starting a process; doctor reads the install, never writes.
+NATIVE_RUNTIME = r"""
+import json, os, subprocess
+os.environ["APPDATA"] = r"C:\Users\worker\AppData\Roaming"
+from twwarhammer3.engine import doctor, mailbox, runtime
+check_output, subprocess.check_output = subprocess.check_output, None
+user = runtime.user_dir()
+subprocess.check_output = check_output
+report = doctor.collect_diagnostics()
+print(json.dumps({
+    "game": str(runtime.GAME_DIR), "bridge": str(runtime.BRIDGE_DIR), "user": str(user),
+    "doctor": [report["runtime"]["windows_python"]["status"],
+               report["resources"]["memory_bytes"]],
+}))
+"""
+
+
+@pytest.mark.skipif(
+    os.environ.get("GAMEAI_TEST_WINDOWS") != "1" or not windows.WINDOWS_PYTHON.exists(),
+    reason="set GAMEAI_TEST_WINDOWS=1 on WSL to test the runtime under native Windows Python",
+)
+def test_native_windows_runtime_uses_drive_c_and_appdata():
+    # Windows Python reaches this checkout's source through its UNC spelling.
+    source = subprocess.check_output(
+        ["wslpath", "-w", str(Path(runtime.__file__).parents[2])], text=True
+    ).strip()
+    output = subprocess.check_output(
+        [str(windows.WINDOWS_PYTHON), "-B", "-c",
+         "import sys; sys.path.insert(0, sys.argv[1])\n" + NATIVE_RUNTIME, source],
+        text=True, timeout=120,
+    )
+    assert json.loads(output) == {
+        "game": r"C:\Program Files (x86)\Steam\steamapps\common\Total War WARHAMMER III",
+        "bridge": r"C:\wh3-agent\bridge",
+        "user": r"C:\Users\worker\AppData\Roaming\The Creative Assembly\Warhammer3",
+        "doctor": ["ok", None],
+    }

@@ -1,6 +1,7 @@
 """The game-neutral Windows ownership helpers and supervisor, with WH3's conflict rules.
 
-The Windows job-object test runs only with GAMEAI_TEST_WINDOWS=1 on WSL.
+The tests that start Windows Python (the job object, a native-Windows controller) run only
+with GAMEAI_TEST_WINDOWS=1 on WSL.
 """
 
 import json
@@ -220,10 +221,13 @@ def test_supervisor_stops_the_game_on_controller_eof_or_hard_timeout(tmp_path, s
             supervisor.kill()
 
 
-@pytest.mark.skipif(
+ON_WINDOWS = pytest.mark.skipif(
     os.environ.get("GAMEAI_TEST_WINDOWS") != "1" or not windows.WINDOWS_PYTHON.exists(),
     reason="set GAMEAI_TEST_WINDOWS=1 on WSL to test actual Windows process ownership",
 )
+
+
+@ON_WINDOWS
 def test_windows_job_kills_owned_children_when_the_supervisor_dies(tmp_path):
     script = subprocess.check_output(["wslpath", "-w", str(SCRIPT)], text=True).strip()
     child_code = (
@@ -282,3 +286,74 @@ def test_windows_job_kills_owned_children_when_the_supervisor_dies(tmp_path):
                 owner.kill()
                 owner.communicate(timeout=5)
             game.process = None
+
+
+# Runs in native Windows Python (a cloud worker's controller) and prints what it saw.
+NATIVE_CONTROLLER = r"""
+import ctypes, json, shutil, subprocess, sys, tempfile, time
+from pathlib import Path
+from gameai import windows
+
+kernel = ctypes.WinDLL("kernel32")
+kernel.OpenProcess.restype = ctypes.c_void_p
+kernel.WaitForSingleObject.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+report = {
+    "python": str(windows.WINDOWS_PYTHON),
+    "paths": [windows.windows_path(Path(p)) for p in ("C:/wh3-agent", r"D:\Games\Total War")],
+}
+with tempfile.TemporaryDirectory() as root:
+    root = Path(root)
+    with windows.RuntimeLock(root):
+        try:
+            with windows.RuntimeLock(root):
+                report["second_lock"] = "acquired"
+        except RuntimeError:
+            report["second_lock"] = "refused"
+    with windows.RuntimeLock(root):
+        report["relocked"] = True
+    shutil.copy2(Path(windows.__file__).with_name("windows_game.py"), root)
+    game = windows.OwnedGame(
+        root / "out/game.log", runtime_dir=root, game_dir=str(root),
+        command=[sys.executable, "-c", "import time; time.sleep(60)"],
+        rules={"names": ["no-such-game.exe"]}, timeout=120,
+    )
+    with game:
+        pid = game.info["pid"]
+    handle = kernel.OpenProcess(0x100000, False, pid)  # SYNCHRONIZE
+    report["child_stopped"] = not handle or kernel.WaitForSingleObject(handle, 5000) == 0
+    report["log_copied"] = (root / "out/game.log").is_file()
+    with subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"],
+                          stdout=subprocess.PIPE, text=True) as silent:
+        game.process = silent
+        start = time.monotonic()
+        try:
+            game._startup_message(timeout=1)
+        except TimeoutError:
+            report["deadline_s"] = time.monotonic() - start
+        silent.kill()
+        game.process = None
+print(json.dumps(report))
+"""
+
+
+@ON_WINDOWS
+def test_native_windows_controller_locks_and_owns_a_child_without_wsl_tools():
+    # Windows Python reaches this checkout's source through its UNC spelling.
+    source = subprocess.check_output(
+        ["wslpath", "-w", str(Path(windows.__file__).parents[1])], text=True
+    ).strip()
+    output = subprocess.check_output(
+        [str(windows.WINDOWS_PYTHON), "-B", "-c",
+         "import sys; sys.path.insert(0, sys.argv[1])\n" + NATIVE_CONTROLLER, source],
+        text=True, timeout=120,
+    )
+    report = json.loads(output)
+    assert 1 <= report.pop("deadline_s") < 5
+    assert report == {
+        "python": "C:\\Python313\\python.exe",
+        "paths": ["C:/wh3-agent", "D:/Games/Total War"],
+        "second_lock": "refused",
+        "relocked": True,
+        "child_stopped": True,
+        "log_copied": True,
+    }
