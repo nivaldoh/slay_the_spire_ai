@@ -7,7 +7,8 @@ tree's HEAD moves (a commit in another worktree does not). The command is split 
 lines at newlines outside quotes; comments and heredoc bodies are text, not commands, and a
 quoted mention passes. A line whose quotes never close is read as plain text. Exit 2 blocks
 the call and shows the reason. A guardrail, not an enforcement boundary: aliases, variables
-and scripts are not followed, and games, spending and ledgers stay guarded in the CLI.
+and scripts (`bash -c` strings among them) are not followed, and games, spending and ledgers
+stay guarded in the CLI.
 """
 import json
 import os
@@ -197,7 +198,7 @@ def refusal(text: str, *, queue: bool, cwd: Path = ROOT) -> str | None:
                 # ruff run by a host program (uv, python -m, xargs, find ...), not a grep
                 # pattern or echoed text; its options may come before `format`.
                 hosts = {host, Path(words[0]).name}
-                runs_ruff = Path(word).name == "ruff" and bool(
+                runs_ruff = Path(word).name.split("@")[0] == "ruff" and bool(
                     hosts & RUFF_HOSTS or any(h.startswith("python") for h in hosts))
                 if runs_ruff and "format" in words[i + 1:] and not (
                         {"--check", "--diff"} & set(words[i + 1:])):

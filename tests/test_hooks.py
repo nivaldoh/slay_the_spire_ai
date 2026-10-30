@@ -72,6 +72,8 @@ NOTE = "cat > note.md <<'EOF'\nNever run ruff format here; git commit only after
     ("git grep -n -e ruff -e format", False, False),  # ruff as a pattern, not the program
     ("echo ruff does not format", False, False),
     ("uvx ruff format x.py", False, True),
+    ("uvx ruff@0.6.9 format src", False, True),  # uvx's way to pin a version
+    ("uvx ruff@latest format --check .", False, False),
     ("cat >runs/x.txt<<'EOF'\nruff format is banned\nEOF", False, False),  # heredoc after a word
     ("uv run --locked --extra llm ruff format src/x.py", False, True),
     ("uv run --locked -q ruff format x.py", False, True),
