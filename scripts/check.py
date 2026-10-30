@@ -276,8 +276,11 @@ def plant_tests(scratch: Path, targets: list[str], junit: Path) -> tuple[list | 
     env = {"PYTHONPATH": "src", "PATH": "/usr/bin:/bin", "PYTHONDONTWRITEBYTECODE": "1",
            "HOME": os.environ.get("HOME", ""), "HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1"}
     junit.unlink(missing_ok=True)  # a run that writes none must not read the last plant's
+    tmp = scratch / "runs" / "test-scratch" / "plant"  # test scratch in runs/, as AGENTS.md says
+    tmp.parent.mkdir(parents=True, exist_ok=True)  # pytest makes only the last folder
     process = subprocess.Popen([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
-                                f"--junitxml={junit}", f"--deselect={STALE_RULE}", *targets],
+                                f"--basetemp={tmp}", f"--junitxml={junit}",
+                                f"--deselect={STALE_RULE}", *targets],
                                cwd=scratch, env=env, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT, text=True, start_new_session=True)
     try:

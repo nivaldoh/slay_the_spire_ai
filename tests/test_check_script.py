@@ -322,6 +322,15 @@ def test_replayed_plants_are_caught_missed_stale_hung_or_lack_a_baseline(tmp_pat
     assert (tmp_path / "src/pkg/mod.py").read_text() == "def f():\n    return 1\n"
 
 
+def test_planted_tests_keep_their_scratch_in_runs(tmp_path):
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests/test_where.py").write_text(
+        "def test_where(tmp_path):\n    open('where.txt', 'w').write(str(tmp_path))\n")
+    check.plant_tests(tmp_path, ["tests/test_where.py"], tmp_path / "j.xml")
+    where = Path((tmp_path / "where.txt").read_text())
+    assert where.is_relative_to(tmp_path / "runs/test-scratch")  # not /tmp: a leak stays findable
+
+
 def test_an_interrupted_plant_run_leaves_no_tests_running(tmp_path, monkeypatch):
     (tmp_path / "tests").mkdir()
     # A bounded sleep: if the kill is ever wrong, the child still ends by itself.
