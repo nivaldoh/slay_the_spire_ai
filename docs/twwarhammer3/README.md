@@ -141,6 +141,8 @@ src/twwarhammer3/  Total War: WARHAMMER III custom battles
                    (PFH5), mailbox (bridge files; its docstring is the observation
                    reference), doctor, windows_capture.py (passive stills, Windows Python),
                    checkpoint_agent.js and checkpoint_frida.py (the checkpoint Frida agent)
+                   link.py and worker.py (native multiplayer: the coordinator's link and
+                   the per-client worker; runtime paths work in WSL or native Windows)
   mod/             Lua scripts packed into the game: battle, frontend menus, and in _lib/
                    UI steps, JSON and twwarhammer3_imagery.lua (the stills camera)
   assets/          The blank startup clip and its MIT license
@@ -163,7 +165,8 @@ src/twwarhammer3/  Total War: WARHAMMER III custom battles
                    export.py (offline model decisions, exchanges and provenance),
                    digest.py (trace summaries), watch.py (follow a job), stats.py
                    (results register), report.py (paired statistics), report_html.py,
-                   replay.py and report_assets/ (the offline HTML report and its replay)
+                   replay.py and report_assets/ (the offline HTML report and its replay),
+                   peers.py (native multiplayer: what two clients observed, compared)
 configs/twwarhammer3/
                    system_prompt.md (llm), rules_prompt.md (llm_rules),
                    commander_prompt.md, scenarios.json, custom_battle.json (random draws),
@@ -203,6 +206,10 @@ uv run python -m twwarhammer3 menu [--battle] --steps steps.json  # tails menu.l
 uv run python -m twwarhammer3 pack --list PACK            # --extract PACK NAME; bare: build
 uv run --locked pytest -ra tests/twwarhammer3              # Lua and image tests; show skip reasons
 uv run --locked python tests/twwarhammer3/check_wh3_checkpoint.py --output runs/twwarhammer3/checkpoint-check-NAME  # 4 launches
+# Native multiplayer (native-multiplayer.md#implementation-status): unverified, no live use yet
+uv run python -m twwarhammer3 coordinator --match M --attempt A1 --clients A,B  # stdin: {"client", "body"}
+python -m twwarhammer3 worker --coordinator URL --token-file F --match M --attempt A1 --client A --mode observe
+uv run python -m twwarhammer3 compare-peers runs/twwarhammer3/native-multiplayer/M/A1  # offline
 uv run --locked --extra llm python -m twwarhammer3 rl PHASE PLAN --output ...  # checkpoint RL (checkpoint-rl-plan.md)
 ```
 

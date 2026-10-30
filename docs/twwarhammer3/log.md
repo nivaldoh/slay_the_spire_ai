@@ -44,6 +44,31 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-30 (afternoon): native multiplayer built offline, up to accounts and billing
+
+The owner asked to implement the [plan](native-multiplayer.md) up to accounts and billing.
+Built on branch `wh3-native-mp` (not on main; [status](native-multiplayer.md#implementation-status)):
+- platform detection, so the same code runs in WSL or under native Windows Python;
+- the battle script's `multiplayer` session modes: `observe` (passive) and `control` (unqueued
+  moves for the local army only), plus an evaluator-only `native` identity section;
+- the coordinator/worker link, the worker, and the `coordinator`, `worker` and `compare-peers`
+  commands.
+Five parts. Each had an agent-written card (not agreed), an independent reviewer and a fix
+round. The reviews found 1 blocker (a lost status reply could not be retried once the next
+command was queued) and 10 should-fixes, all fixed; each code fix has a test that fails on the
+old code.
+
+Evidence, $0, no game, no account:
+- 3 opt-in tests on real Windows Python;
+- one native run: a Windows Python worker against a WSL coordinator over localhost on a fake
+  bridge (move submitted, attack rejected, exit within the 15 s lease);
+- a measurement: WSL `flock` and native `msvcrt` locks do not exclude each other.
+
+Research checked by a second agent: a list-price worksheet and a static lobby audit (no
+documented create/join binding). Mod pack sha256 changes on merge, so single-player card-board
+setups split from earlier launches. Unverified: everything live (local_army values, ui_id
+across peers, replication, the cloud, the link between machines).
+
 ## 2026-10-30 (night): the light factory's checks checked
 
 Claude Code, owner away ("light factory first ... more trust in these autonomous runs"); no game,
@@ -64,6 +89,24 @@ $0; merged at `c57098f` and after. Handoff, audit, reviews: `runs/overnight-2026
   that is a draft on branch `commit-guard-draft`, for the owner's yes.
 check.py at `92ab398`, main checkout: PASSED, 1931 passed, 41 skipped; not at HEAD (Codex's
 uncommitted docs). Not established: agreement on any check; the reviewer question beyond one run.
+
+## 2026-10-30: native multiplayer plan refinement
+
+Owner-requested documentation only: [plan](native-multiplayer.md) now specifies staged
+setup, Google Cloud/airgpu runbooks, proposed fixtures/checks, Windows workers and private
+transport, headless investigation, cost controls and later Tinker/Prime adapters.
+Independent code audit found startup controller acquisition and unproved cross-peer
+checksum/identity assumptions; the plan now requires passive observation and calibration.
+Read-only executable/preferences inspection matched the pin and found visual-setting and
+render-thread trace leads, not a working headless mode. Primary code reference: pinned PySC2
+environment/multiplayer test; AI Arena is secondary. Sources: [references](../references.md).
+Evidence/reviews: `runs/twwarhammer3/multiplayer-plan-20261030/`. Original 3 judgement markers
+preserved; 7 proposals added (10 total). No check adopted or benchmark meaning changed.
+Full gate at `75e9d09` with dirty documentation: Ruff clean, 1888 passed, 41 skipped
+(40 missing torch, 1 actual-Windows opt-in); later final local-link check recorded in handoff.
+Zero game launches, multiplayer battles, purchases, cloud resources or paid model calls.
+Cloud compatibility, replication, unattended operation and headless performance remain
+unverified. Plan awaits the owner's design/check direction before implementation.
 
 ## 2026-10-30: native multiplayer assessment
 

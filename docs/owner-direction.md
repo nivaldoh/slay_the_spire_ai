@@ -12,6 +12,8 @@ Both games:
   159910; record the 2026-10-26 Land checkpoint pass at `d3ba6aa` in agreed-checks.md; retire
   the 5 markers in Spire log history (`docs/spire/fullrun/log.md`); make state.md's 120-line
   rule a `check.py` warning.
+- 2026-10-30 (standing writing preference): keep all writing simple, concise, concrete and
+  nicely written, including status summaries and decisions presented to the owner.
 - 2026-10-29 (late evening, the four items left for the owner): "1. Now is fine. 2. We can
   leave a reminder for Codex to take care of its own hooks and Skills later. 3. I ran the
   command myself. 4. Seems fine." Applied: the b51 live battle ran in that window; state.md
@@ -388,6 +390,27 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
+- 2026-10-30 15:02 (native multiplayer, implement): "Implement
+  docs/twwarhammer3/native-multiplayer.md. Note that I haven't set up accounts, billing, etc,
+  so do as much as we reasonably can before that part becomes a blocker." Inline notes on the
+  plan's markers before that: Client layout "[seems ok]"; Session contract, Worker link, Probe
+  scope, Verification contract and the architecture paragraph "[seems fine]"; Capability
+  fixture "[fine]"; Worker platform: "not sure why we need a WSL coordinator. Can't we just do
+  some simple if/else to see what the env is running? I use WSL2 locally for dev, and the
+  hosted machines will likely use windows directly and we won't need to force WSL there just
+  because of that". Applied on branch `wh3-native-mp` ([status](twwarhammer3/native-multiplayer.md#implementation-status)).
+- 2026-10-30 (native multiplayer plan refinement): "Further investigate and refine
+  docs/twwarhammer3/native-multiplayer.md (without implementing it yet) until each step is
+  concrete and highly detailed." Identify the ideal approach, risks, cost reductions,
+  strong verification, approval decisions and a similar GitHub project. Overnight research
+  is authorized; implementation and spending are not. Inline notes in the original draft:
+  "we will not use money just yet. Let's set up everything we can before that, and get as
+  much certainty as possible"; "we need to start testing minimally as this will be complex
+  enough as it is, then increment from there". Investigate Google Cloud and airgpu setup,
+  headless viability more deeply, and keep the implementation simple. Benchmarking comes
+  first, with a later RL path: "maybe with a service like Tinker or Prime Intellect".
+  More licenses still need purchasing; multiplayer checkpoints may be considered if needed
+  but should probably be avoided because of their complexity. [Plan](twwarhammer3/native-multiplayer.md).
 - 2026-10-30 (native multiplayer exploration): assess actual team-versus-team LLM battles
   on multiple machines, keeping the cloud setup vague. Investigate Lua-only/unattended
   control and whether reverse engineering could fill missing features; draft a plan,

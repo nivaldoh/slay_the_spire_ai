@@ -31,8 +31,9 @@ arithmetic were independently checked. No live multiplayer or cloud performance 
 - [Steam matchmaking](https://partner.steamgames.com/doc/features/multiplayer/matchmaking):
   lobby discovery/join primitives, not evidence WH3 exposes them to Lua.
 - [Steam WH3 US store](https://store.steampowered.com/app/1142710/Total_War_WARHAMMER_III/?cc=us&l=english)
-  and [multiple-client guidance](https://help.steampowered.com/en/faqs/view/48C1-A297-4839-8BB8):
+  and [Steam Account Use](https://help.steampowered.com/en/faqs/view/71EA-CDCE-FB5C-82B3):
   base-game price, Windows storage and separate concurrent accounts/licenses.
+  Corrected on refinement: the prior 48C1 link described routers, not licensing.
 - AWS [Windows workstation cost example](https://docs.aws.amazon.com/solutions/latest/modular-cloud-studio-on-aws/cost.html),
   [G4 hardware](https://aws.amazon.com/ec2/instance-types/g4/),
   [graphics drivers](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nvidia-GRID-driver.html),
@@ -45,6 +46,70 @@ arithmetic were independently checked. No live multiplayer or cloud performance 
   [`pettingzoo/test/parallel_test.py`](https://github.com/Farama-Foundation/PettingZoo/blob/main/pettingzoo/test/parallel_test.py):
   per-agent identity and episode-lifecycle checks. Inspected, not run; its synchronous
   stepping contract does not establish real-time multiplayer synchronization.
+
+Refinement, 2026-10-30: independent cloud, reference/headless/RL and source reviews;
+evidence in `runs/twwarhammer3/multiplayer-plan-20261030/`. Sources inspected, no deployment
+or external project execution. Proposed checks remain unagreed.
+
+- Google Cloud [Windows GPU workstation](https://docs.cloud.google.com/compute/docs/virtual-workstation/windows-gpu),
+  [vWS drivers](https://docs.cloud.google.com/compute/docs/gpus/install-grid-drivers),
+  [G2 restrictions](https://docs.cloud.google.com/compute/docs/accelerator-optimized-machines),
+  [nested virtualization](https://docs.cloud.google.com/compute/docs/instances/nested-virtualization/overview),
+  [IAP access](https://docs.cloud.google.com/iap/docs/using-tcp-forwarding),
+  [runtime limits](https://docs.cloud.google.com/compute/docs/instances/limit-vm-runtime),
+  [budget limitations](https://docs.cloud.google.com/billing/docs/how-to/budgets-spend-caps):
+  candidate Windows Server/vWS setup and lifecycle constraints, not WH3 support or a quote.
+- airgpu [pricing](https://airgpu.com/),
+  [billing](https://help.airgpu.com/guides/how-billing-works/index.html),
+  [Windows licensing](https://help.airgpu.com/guides/windows-licensing/index.html),
+  [Moonlight setup](https://help.airgpu.com/getting-started/connect-to-your-machine/index.html),
+  [no WSL2](https://help.airgpu.com/common-issues/nested-virtualization/index.html):
+  public headline rates and setup; worker access/unattended automation not established.
+- Primary implementation reference: [PySC2](https://github.com/google-deepmind/pysc2),
+  `0df53d38c153972f1e368572ba65b1442a0fd41f`,
+  [`sc2_env.py`](https://github.com/google-deepmind/pysc2/blob/0df53d38c153972f1e368572ba65b1442a0fd41f/pysc2/env/sc2_env.py)
+  and [`multi_player_test.py`](https://github.com/google-deepmind/pysc2/blob/0df53d38c153972f1e368572ba65b1442a0fd41f/pysc2/tests/multi_player_test.py):
+  separate real client processes, create/join, identity and cleanup. README and open issues
+  368/369 inspected; no Windows/version compatibility result reproduced. SC2 API/headless
+  support and synchronous stepping do not transfer to WH3.
+- Secondary orchestration reference: [AI Arena match controller](https://github.com/aiarena/sc2-ai-match-controller),
+  `b5f6c9b36c2bc36b1914287f876a7da7b65d1ada`, component READMEs,
+  [`game_result.rs`](https://github.com/aiarena/sc2-ai-match-controller/blob/b5f6c9b36c2bc36b1914287f876a7da7b65d1ada/sc2_controller/src/game/game_result.rs)
+  and [issue 165](https://github.com/aiarena/sc2-ai-match-controller/issues/165):
+  preparation/finalization and result reconciliation; no adoption of its container stack,
+  future game-agnostic API or timeout-as-loss rules.
+- Tinker [Env](https://tinker-docs.thinkingmachines.ai/cookbook/api-reference/rl/env/)
+  and [EnvGroupBuilder](https://tinker-docs.thinkingmachines.ai/cookbook/api-reference/rl/envgroupbuilder/);
+  Prime Intellect [Verifiers v1](https://docs.primeintellect.ai/verifiers/v1/overview),
+  [Env](https://docs.primeintellect.ai/verifiers/v1/env),
+  [harnesses](https://docs.primeintellect.ai/verifiers/v1/harnesses): possible later RL adapters,
+  not established Windows game hosting, native reset or a training decision.
+- [Tailscale Serve](https://tailscale.com/docs/features/tailscale-serve) and
+  [Microsoft WSL networking](https://learn.microsoft.com/en-us/windows/wsl/networking):
+  proposed private HTTPS worker link and Windows-to-WSL localhost backend. Docs establish
+  those primitives, not compatibility with the selected cloud PC or an approved account.
+
+Implementation, 2026-10-30 (branch `wh3-native-mp`; [status](twwarhammer3/native-multiplayer.md#implementation-status)):
+
+- PySC2 [`run_configs/platforms.py`](https://github.com/google-deepmind/pysc2/blob/0df53d38c153972f1e368572ba65b1442a0fd41f/pysc2/run_configs/platforms.py)
+  at `0df53d38`: install paths chosen per platform; followed by `gameai/windows.py`. **read**
+- Python [`msvcrt.locking`](https://docs.python.org/3/library/msvcrt.html#msvcrt.locking) and
+  Microsoft [`LockFileEx`](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-lockfileex):
+  the native lock, unlocked before close because release on close is not timed. **read**
+- Kubernetes client-go [`tools/leaderelection/leaderelection.go`](https://github.com/kubernetes/client-go/blob/4563439f729012b84179286a88bc9d191bf3d35e/tools/leaderelection/leaderelection.go)
+  at `4563439f`: a holder acts only on its own clock and gives up through one callback;
+  `engine/link.py` times the worker lease from the send time instead. **read**
+- Public list prices for the quote worksheet (`runs/twwarhammer3/native-multiplayer/quote-worksheet.md`,
+  git-ignored; not a quote): Google Cloud
+  [GPU regions](https://docs.cloud.google.com/compute/docs/gpus/gpu-regions-zones),
+  [accelerator-optimized pricing](https://cloud.google.com/products/compute/pricing/accelerator-optimized),
+  [disk pricing](https://cloud.google.com/compute/disks-image-pricing),
+  [network pricing](https://cloud.google.com/vpc/network-pricing);
+  [airgpu](https://airgpu.com/); [Tailscale pricing](https://tailscale.com/pricing). **checked**
+- Steam [ISteamMatchmaking](https://partner.steamgames.com/doc/api/ISteamMatchmaking):
+  friends-only lobbies are not listed; Steam passes `+connect_lobby` on an accepted invite and
+  the game decides whether to honour it. Used by the static lobby audit
+  (`runs/twwarhammer3/native-multiplayer/lobby-static-audit.md`, git-ignored). **checked**
 
 ## Verification talks and Sonar
 
