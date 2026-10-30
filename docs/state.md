@@ -6,9 +6,9 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Claude Code (2026-10-30 02:55 to about 12:00, owner away): light factory work for more trust
-in unattended runs (owner, 2026-10-30), in worktree `../slay_the_spire_ai-light-factory`;
-no game, $0. Brief: `runs/overnight-20261030/brief.md`.
+Claude Code (2026-10-30 from 02:55, owner away until about 12:00): the light factory work is
+merged ([log](twwarhammer3/log.md)); two decisions wait in
+`runs/overnight-20261030/handoff.md`. No game, $0.
 
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
@@ -16,7 +16,7 @@ correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](aut
 Workflow: the light factory plan is [workflow.md](workflow.md), stages 1-4 built; stage 5 runs
 on the next planned experiment. After the owner's 2026-10-29 answers ([direction](owner-direction.md)):
 `check.py` records agreed-check passes, harness b51 measures 1x by the Windows clock (one live
-battle: 1.0000 over 413 s), CI runs `check.py` on each push (2 of 3 runs passed; the failure was a racy test, fixed), Codex gets Claude Code's hooks
+battle: 1.0000 over 413 s), CI runs `check.py` on each push (results: `gh run list`), Codex gets Claude Code's hooks
 (once you trust them with `/hooks`) and reviewer, Spire's end-turn allowance is narrowed
 ([log](twwarhammer3/log.md#2026-10-29-evening-the-owners-light-factory-answers-carried-out)); decision 12.
 Before each commit: `uv run --locked python scripts/check.py`; CI runs it on each push.
@@ -129,7 +129,7 @@ The broader RL environment remains a separate discussion, possibly connected to 
 10. **Thesis and RL environment.** Likely multi-agent systems, possibly multi-agent RL; no research question selected (owner, 2026-10-28). Tentative environment: each agent sees its available battle state, perhaps teammate information, controls its army share and learns from sparse win/loss near restored endings. Reset may use a battle start or checkpoint; details and correctness checks are for later. [Direction 6](thesis/directions.md#6-wh3-as-an-rl-environment-for-high-level-decisions); [research shortlist](thesis/directions.md#what-the-2026-10-28-checks-changed). Human-AI work stays a note; licensing is deferred.
 
 11. **Local LLM checkpoint RL — deferred.** Leave this post-training experiment paused (owner, 2026-10-28). No recovery choice is needed now; the existing results and choices remain for a future review. Merged on 2026-10-28. [Details](twwarhammer3/checkpoint-rl.md#open-owner-choices-decision-11).
-12. **Light factory follow-ups (2026-10-29).** All six answered, and the evening's four: the b51 battle ran in your window (in band, one battle), Codex checks its own hooks and skills (above), `runs/test-scratch/` is emptied (you), the two process ideas are built (`check.py --plants` replays `tests/plants.toml`).
+12. **Light factory follow-ups (2026-10-29).** All six answered, and the evening's four: the b51 battle ran in your window (in band, one battle), Codex checks its own hooks and skills (above), `runs/test-scratch/` is emptied (you), the two process ideas are built (`check.py --plants` replays `tests/plants.toml`). 2026-10-30 night: two more in `runs/overnight-20261030/handoff.md` (two test edits that need your yes; whether `check.py`'s own edits need it).
 ## Runtime and ownership
 
 - Slay the Spire ([runtime facts](spire/integration.md#runtime-and-source-pins)): the installed game and personal profile slot 0 are authorized, including stats, unlock progress, history and achievements (Ironclad unlock 3 of 5; runs record profile evidence).

@@ -44,6 +44,28 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-30 (night): the light factory's checks checked
+
+Claude Code, owner away ("light factory first ... more trust in these autonomous runs"); no game,
+$0; 20 commits in worktree branch `lf-20261030`, merged at `c57098f`. Handoff, audit and review
+folders: `runs/overnight-20261030/`.
+- The owner's quick items: pid 159910 killed; the Land checkpoint pass at `d3ba6aa` recorded;
+  5 Spire log-history markers retired; `check.py` warns when state.md is over 120 lines.
+- The gate itself: 10 wrong versions of `check.py` and the hooks passed every test at `aefcaab`
+  (exit codes, the HEAD-move list, the Stop hook's game commands and timeout, two
+  needs-your-yes branches). New tests catch all 10; `tests/plants.toml` gains 20 plants.
+- `check.py` names a linked worktree (its evidence tests skip: 64 skipped against 41) and a
+  marker in log history; plant runs keep their scratch in `runs/`; the Bash hook refuses pinned
+  uvx ruff formats (`@`, `==`, `>=`, extras, any case); the WH3 version review counts a judge
+  whose pick names no candidate as missing; a siege test makes each run's spell witness count.
+- The reviewer's long-run question (paths outside May touch, behaviour commits naming no
+  review): on the 10-29 run (n = 1) it listed 4 unreviewed commits and found the `ruff@` hole.
+- Land question 25: an evidence note; 25 saved logs read enemy morale and unrounded HP.
+- 9 reviews named in commits, one more with no findings, a 3-arm reviewer evaluation and a rerun
+  of every number; findings fixed, parked (more ruff spellings) or left to the owner.
+check.py at `c57098f`, main checkout: PASSED, 1929 passed, 41 skipped; not at HEAD (Codex's
+uncommitted docs). Not established: agreement on any of these checks; the evaluation beyond n = 1.
+
 ## 2026-10-30: native multiplayer assessment
 
 Owner-requested [feasibility draft](native-multiplayer.md): native LLM team battles with
