@@ -1,7 +1,8 @@
 """The native multiplayer worker and coordinator command (engine/worker.py): a real Coordinator on
 127.0.0.1, the worker on a thread, and a fake game thread that publishes observation.json into a
 temporary bridge and answers orders.json as the battle Lua does (it deletes the request, drops
-another job's or battle's, and acknowledges in the next observation's ``orders``). Followed:
+another job's or battle's, and acknowledges in the next observation's ``orders``, which later
+observations repeat). Followed:
 PySC2 0df53d38c153972f1e368572ba65b1442a0fd41f ``pysc2/tests/multi_player_test.py``: separate
 clients with explicit identities against one host, closed after each test."""
 
@@ -55,20 +56,22 @@ def status(coordinator, seq):
 
 
 class FakeGame:
-    """Publishes ``job``'s observations; answers each request for its battle like the Lua."""
+    """Publishes ``job``'s observations; answers each request for its battle like the Lua, whose
+    every later observation repeats the last acknowledgement (``orders = state.applied``)."""
 
-    def __init__(self, bridge, job, *, ack=True):
-        self.bridge, self.job, self.ack = bridge, job, ack
+    def __init__(self, bridge, job):
+        self.bridge, self.job, self.ack = bridge, job, True
         self.battle, self.seq, self.requests, self.written = "b1", 0, [], {}
+        self.applied = None
         self._stop = threading.Event()
         self._thread = threading.Thread(target=self._serve, daemon=True)
         self._thread.start()
 
-    def publish(self, seq, battle="b1", orders=None):
+    def publish(self, seq, battle="b1"):
         self.battle, self.seq = battle, seq
         path = self.bridge / "observation.json"
         observation = {**bridge_observation(seq, 1000 * seq, battle=battle), "job": self.job,
-                       "orders": orders, "evaluation": EVALUATION}
+                       "orders": self.applied, "evaluation": EVALUATION}
         path.with_suffix(".tmp").write_text(json.dumps(observation))
         os.replace(path.with_suffix(".tmp"), path)
         self.written.setdefault((battle, seq), path.stat().st_mtime_ns)
@@ -91,9 +94,9 @@ class FakeGame:
             if self.ack:
                 results = [{"index": index, "unit": order["unit"], "ok": True}
                            for index, order in enumerate(message["orders"], 1)]
-                self.publish(self.seq + 1, self.battle, {
-                    "request": message["request"], "based_on": message["based_on"],
-                    "applied_ms": 1000 * self.seq, "results": results})
+                self.applied = {"request": message["request"], "based_on": message["based_on"],
+                                "applied_ms": 1000 * self.seq, "results": results}
+            self.publish(self.seq + 1, self.battle)  # without an ack, the last one again
 
 
 @pytest.fixture
@@ -215,6 +218,18 @@ def test_a_refused_worker_reported_its_host_and_touched_neither_game_nor_bridge(
         **expected, "steam_build_id": "26000001",
         "exe_sha256": hashlib.sha256(b"an updated game").hexdigest()}
     assert not (install / "mnt").exists()  # no runtime folder, lock or bridge
+
+
+def test_a_worker_whose_hello_grants_no_actuation_touches_neither_game_nor_bridge(
+        tmp_path, install, monkeypatch):
+    refuse_to_launch(monkeypatch)
+    with serve(tmp_path) as coordinator:
+        WorkerLink(coordinator.url, TOKEN, match="m1", attempt="a1", client="A",  # an earlier
+                   manifest=worker.host_manifest(), stop=lambda: None).hello()  # worker of A
+        assert worker.run(coordinator.url, TOKEN, match="m1", attempt="a1", client="A",
+                          mode="control", attach=False, bridge=runtime.BRIDGE_DIR, max_s=30) == 1
+        assert [row["actuation"] for row in records(coordinator, "hello")] == [True, False]
+    assert not (install / "mnt").exists()
 
 
 @pytest.mark.parametrize("ending", ["lease", "game exit"])
@@ -341,14 +356,21 @@ def test_a_request_the_game_takes_but_never_acknowledges_is_unknown_and_stops_th
         tmp_path, install, monkeypatch):
     refuse_to_launch(monkeypatch)
     bridge = borrowed_bridge(tmp_path)
-    game = FakeGame(bridge, "live", ack=False)
+    game = FakeGame(bridge, "live")
     game.publish(1)
     with serve(tmp_path) as coordinator:
-        thread, result = start(coordinator, bridge, ack_s=0.3)
+        thread, result = start(coordinator, bridge, ack_s=1.0)
         events(coordinator, "observation", 1)
         coordinator.submit("A", {"based_on": 1, "orders": [MOVE]})
-        assert status(coordinator, 1) == "unknown"
+        assert status(coordinator, 1) == "submitted"
+        game.ack = False  # it takes the next request; its next observation repeats the first ack
+        coordinator.submit("A", {"based_on": 2, "orders": [MOVE]})
+        assert status(coordinator, 2) == "unknown"
         thread.join(5)
-        assert result == [1] and len(game.requests) == 1
-        assert [row["status"] for row in events(coordinator, "command", 1)] == ["written"]
+        assert result == [1] and len(game.requests) == 2
+        sent = events(coordinator, "observation", 3)
+        assert [row["observation"]["orders"]["request"] for row in sent[1:]] == [
+            game.requests[0]["request"]] * 2
+        assert [row["status"] for row in events(coordinator, "command", 3)] == [
+            "written", "submitted", "written"]
     game.close()
