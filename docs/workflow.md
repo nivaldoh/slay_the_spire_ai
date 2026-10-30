@@ -93,8 +93,8 @@ needs your yes (changes since HEAD):
 markers   3 problems listed in the log, for the owner
 ```
 
-- It runs `ruff check .` and the whole offline suite (about 27 s; 18 s before 2026-10-29's
-  evidence-replay tests), Lua and image tests
+- It runs `ruff check .` and the whole offline suite (about 40-45 s on 2026-10-30; 18 s before
+  2026-10-29's evidence-replay tests), Lua and image tests
   included, the repo rules ([test_repo_rules.py](../tests/test_repo_rules.py)) and the link
   test among them. It exits 1 if anything fails. It never launches a game, spends money or
   commits, and it removes `WH3_WRITE_PROMPTS` so it cannot rewrite prompt snapshots.
@@ -355,7 +355,9 @@ failure into 2); Claude Code overrides a `Stop` hook after eight blocks in a row
 `Stop` hook that exits 0 prints nothing or JSON, never plain text, and Codex loads project hooks
 only from a trusted `.codex/`, each trusted once with `/hooks` ([Claude Code](https://code.claude.com/docs/en/hooks), [Codex](https://learn.chatgpt.com/docs/hooks)).
 Hooks are "a useful guardrail, not a complete enforcement boundary" (OpenAI); games,
-spending and ledgers stay guarded by refusals in the CLI.
+spending and ledgers stay guarded by refusals in the CLI. The Stop hook checks only the
+checkout the session started in (`$CLAUDE_PROJECT_DIR`): commits made in a linked worktree
+get no Stop-hook check, so run `check.py` there before each one (seen 2026-10-30).
 
 Not building: Sonar's products, dashboards or coverage targets; repo-wide mutation testing;
 spec frameworks such as Kiro; an Inspect port, a type-checker migration or an orchestration
