@@ -229,6 +229,10 @@ def test_relay_waits_past_its_connect_timeout_for_a_slow_runner():
                     process.wait(timeout=0.5)
                 bridge.send("END")
                 bridge.close()
+                # The runner's disconnect alone ends the relay. communicate() closes stdin, so
+                # calling it first raced the relay's "CommunicationMod disconnected" (3 of 64
+                # runs under load, and one GitHub run, 2026-10-29).
+                process.wait(timeout=2)
                 stdout, stderr = process.communicate(timeout=2)
                 assert stdout == b"ready\nEND\n"
                 assert b"runner disconnected" in stderr
