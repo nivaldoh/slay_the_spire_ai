@@ -141,7 +141,7 @@ question. Layer names follow Sonar's
 | Structure | Repo rules: `gameai` imports no game; AGENTS.md at most 200 lines; links resolve |
 | Regression | The whole offline suite before every commit |
 | Environment | `doctor`, the build pin, the source-scope refusal, `RuntimeLock`, ledger caps |
-| Checks of checks | Planted wrong versions in a scratch copy, by hand or with the refusal sweep that removes each `raise`/`error()` in turn (`scripts/refusal_sweep.py`, the `refusal-sweep` skill; 2026-10-29 results in the WH3 log); proposed: [mutmut](https://mutmut.readthedocs.io/en/latest/) (not installed) on 2-3 files when an agreed check is made or changed |
+| Checks of checks | Planted wrong versions in a scratch copy, by hand, kept in `tests/plants.toml` and replayed by `check.py --plants` (decay), or with the refusal sweep that removes each `raise`/`error()` in turn (`scripts/refusal_sweep.py`, the `refusal-sweep` skill; 2026-10-29 results in the WH3 log); proposed: [mutmut](https://mutmut.readthedocs.io/en/latest/) (not installed) on 2-3 files when an agreed check is made or changed |
 
 A check counts only after it has failed on a planted wrong version (in a scratch copy) and
 passed on the real code: [mutation testing](https://sqlite.org/testing.html#mutation_testing)
@@ -283,6 +283,13 @@ The owner asked (2026-10-29) how to stop this workflow decaying and keep it easy
   The 200-line cap on AGENTS.md stops it regrowing.
 - **Every slip becomes a check, slowly.** A fix adds a test or a rule; a new process rule
   waits for the same failure twice and the owner's yes.
+- **Replay what the tests once caught.** `tests/plants.toml` keeps planted wrong versions,
+  each with the tests that must fail on it (owner, 2026-10-29: "Seems fine"). `uv run --locked
+  python scripts/check.py --plants` replays them at HEAD in about a minute: a MISSED line is a
+  test that decayed. Run it before an agreed check or a guarded file changes and after a model
+  upgrade. A plant whose text the code no longer has fails the normal suite until it is updated
+  to the same wrong version of the new code; removing or changing plants needs the owner's yes.
+  Add a plant when a review finds a wrong version the tests missed and a new test catches it.
 - **Count what each step catches.** Per change: reviewer findings (real or noise), questions
   asked, the owner's minutes if shared. In the log: bugs found after "done" ("if they rise,
   we haven't saved human time, we've only moved it", claude.dev). After about five changes,

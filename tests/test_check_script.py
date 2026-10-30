@@ -6,6 +6,7 @@ hand; see the docstring of scripts/check.py for what each warning means.
 """
 
 import importlib.util
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -209,3 +210,40 @@ def test_markers_in_the_private_thesis_notes_are_not_listed(repo):
         (repo / name).write_text(f"This {RESTS} `docs/gone.md` X.\n")
     assert check.marker_problems(repo) == [
         f"docs/thesis.md: {RESTS} docs/gone.md, which does not exist"]
+
+
+def test_replayed_plants_are_caught_missed_stale_hung_or_lack_a_baseline(tmp_path, monkeypatch):
+    (tmp_path / "src/pkg").mkdir(parents=True)
+    (tmp_path / "src/pkg/mod.py").write_text("def f():\n    return 1\n")
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests/test_m.py").write_text("from pkg.mod import f\n\n\ndef test_f():\n"
+                                              "    assert f() == 1\n")
+    (tmp_path / "tests/test_bad.py").write_text("def test_bad():\n    assert 1 == 2\n")
+    (tmp_path / "pytest.ini").write_text("[pytest]\n")
+
+    def plant(name, old, new, tests=("tests/test_m.py",)):
+        return (f'[[plant]]\nid = "{name}"\nguards = "g"\nfile = "src/pkg/mod.py"\n'
+                f"old = {json.dumps(old)}\nnew = {json.dumps(new)}\ntests = {json.dumps(tests)}\n")
+    (tmp_path / "tests/plants.toml").write_text("".join([
+        plant("caught", "return 1", "return 2"),
+        plant("missed", "def f():", "def f(x=0):"),
+        plant("stale", "return 3", "return 4"),
+        plant("hang", "    return 1", "    while True:\n        pass"),
+        plant("no-baseline", "return 1", "return 2", ("tests/test_bad.py",)),
+    ]))
+    monkeypatch.setattr(check, "PLANT_TIMEOUT_S", 3)
+    assert [verdict for verdict, _ in check.replay_plants(tmp_path)] == [
+        "caught", "MISSED", "stale", "HANG", "baseline"]
+    assert (tmp_path / "src/pkg/mod.py").read_text() == "def f():\n    return 1\n"
+
+
+def test_each_committed_plant_still_applies_and_names_real_tests():
+    root = Path(check.__file__).resolve().parents[1]
+    plants = check.plant_list(root)
+    ids = [plant["id"] for plant in plants]
+    assert plants and len(ids) == len(set(ids))
+    # A plant whose text is gone: update `old`/`new` to the same wrong version of the new code.
+    assert check.stale_plants(root) == []
+    assert all(plant["old"] != plant["new"] and plant["guards"] and plant["tests"]
+               and all((root / test.split("::")[0]).exists() for test in plant["tests"])
+               for plant in plants)

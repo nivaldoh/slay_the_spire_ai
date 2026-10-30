@@ -1,0 +1,441 @@
+# Planted wrong versions the named tests must catch (docs/workflow.md, "Checks of checks").
+# Each is a plausible wrong implementation of what `guards` names: `old` (exactly once in
+# `file`) becomes `new`, and some test in `tests` must then fail. `uv run --locked python
+# scripts/check.py --plants` replays them all in a scratch worktree at HEAD; a MISSED line means
+# the tests no longer catch what they once did (decay). Run it before an agreed check or a guarded
+# file changes, and after a model upgrade. tests/test_repo_rules.py fails when a plant's `old`
+# text is gone: update it to the same wrong version of the new code. Removing or weakening a plant
+# needs the owner's yes (check.py lists it).
+
+[[plant]]
+id = "ledger-ignores-must-exist"
+guards = "Play commands refuse a missing ledger file"
+file = "src/gameai/ledger.py"
+old = "        if must_exist and not self.path.is_file():"
+new = "        if False:"
+tests = ["tests/fullrun/test_spire_cli.py::test_play_refuses_a_missing_ledger_before_any_job", "tests/twwarhammer3/test_wh3_controllers.py::test_each_model_controller_gets_its_own_prompt_and_the_shared_budget"]
+source = "2026-10-29 night, agreed-check plants"
+
+[[plant]]
+id = "spire-play-opens-its-ledger-without-must-exist"
+guards = "Play commands refuse a missing ledger file"
+file = "src/spire/__main__.py"
+old = "Ledger(Path(config[\"ledger\"]), args.budget_usd, must_exist=True)"
+new = "Ledger(Path(config[\"ledger\"]), args.budget_usd)"
+tests = ["tests/fullrun/test_spire_cli.py::test_play_refuses_a_missing_ledger_before_any_job", "tests/twwarhammer3/test_wh3_controllers.py::test_each_model_controller_gets_its_own_prompt_and_the_shared_budget"]
+source = "2026-10-29 night, agreed-check plants"
+
+[[plant]]
+id = "wh3-controllers-open-the-ledger-without-must-exist"
+guards = "Play commands refuse a missing ledger file"
+file = "src/twwarhammer3/battle/controllers.py"
+old = "Ledger(Path(config[\"ledger\"]), config[\"budget_usd\"], must_exist=True)"
+new = "Ledger(Path(config[\"ledger\"]), config[\"budget_usd\"])"
+tests = ["tests/fullrun/test_spire_cli.py::test_play_refuses_a_missing_ledger_before_any_job", "tests/twwarhammer3/test_wh3_controllers.py::test_each_model_controller_gets_its_own_prompt_and_the_shared_budget"]
+source = "2026-10-29 night, agreed-check plants"
+
+[[plant]]
+id = "the-every-field-finite-check-dropped"
+guards = "WH3 non-finite order fields are rejected before transmission"
+file = "src/twwarhammer3/protocol.py"
+old = '''
+            if (isinstance(value, (int, float)) and not isinstance(value, bool)
+                    and not _finite(value)):'''
+new = "            if False:"
+tests = ["tests/twwarhammer3/test_wh3_protocol.py", "tests/twwarhammer3/test_wh3_play.py::test_illegal_scripted_orders_are_counted_and_not_sent"]
+source = "2026-10-29 night, agreed-check plants"
+
+[[plant]]
+id = "finite-accepts-infinity"
+guards = "WH3 non-finite order fields are rejected before transmission"
+file = "src/twwarhammer3/protocol.py"
+old = '''
+def _finite(value) -> bool:
+'''
+new = '''
+def _finite(value) -> bool:
+    if value in (float('inf'), float('-inf')):
+        return True
+'''
+tests = ["tests/twwarhammer3/test_wh3_protocol.py", "tests/twwarhammer3/test_wh3_play.py::test_illegal_scripted_orders_are_counted_and_not_sent"]
+source = "2026-10-29 night, agreed-check plants"
+
+[[plant]]
+id = "lua-accepts-a-duplicate-request"
+guards = "WH3 replacement mailbox requests reach Lua's pending state"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = "    if message.request == state.last_request then"
+new = "    if false then"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py::test_new_mailbox_requests_reach_lua_without_disabling_duplicate_rejection"]
+source = "2026-10-29 night, agreed-check plants"
+
+[[plant]]
+id = "every-mailbox-numbers-requests-from-the-same-prefix"
+guards = "WH3 replacement mailbox requests reach Lua's pending state"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = "        self.request_prefix = uuid4().hex"
+new = "        self.request_prefix = \"box\""
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py::test_new_mailbox_requests_reach_lua_without_disabling_duplicate_rejection"]
+source = "2026-10-29 night, agreed-check plants"
+
+[[plant]]
+id = "a-member-is-given-its-ally-s-units-as-its-own"
+guards = "WH3 scripted two-member team (pytest part)"
+file = "src/twwarhammer3/battle/team.py"
+old = "if row[\"id\"] in owned]"
+new = "]"
+tests = ["tests/twwarhammer3/team/test_wh3_team.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_controllers.py", "tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-29 night, agreed-check plants"
+
+[[plant]]
+id = "a-member-s-view-carries-the-evaluation-section"
+guards = "WH3 scripted two-member team (pytest part)"
+file = "src/twwarhammer3/battle/team.py"
+old = "\"remaining_ms\", \"enemy_roster\", \"magic\"))"
+new = "\"remaining_ms\", \"enemy_roster\", \"magic\", \"evaluation\"))"
+tests = ["tests/twwarhammer3/team/test_wh3_team.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_controllers.py", "tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-29 night, agreed-check plants"
+
+[[plant]]
+id = "the-mailbox-accepts-another-job-s-observation"
+guards = "WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = "if not isinstance(observation, dict) or observation.get(\"job\") != self.job:"
+new = "if not isinstance(observation, dict):"
+tests = ["tests/twwarhammer3"]
+source = "2026-10-29 night, agreed-check plants"
+
+[[plant]]
+id = "a-controller-s-view-keeps-the-evaluation-section"
+guards = "WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime"
+file = "src/twwarhammer3/battle/play.py"
+old = "if key not in (\"evaluation\", \"final\", \"setup\")}"
+new = "if key not in (\"final\", \"setup\")}"
+tests = ["tests/twwarhammer3"]
+source = "2026-10-29 night, agreed-check plants"
+
+[[plant]]
+id = "immediate-methods-replace-queued-moves"
+guards = "WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = "local method = order.queue and \"goto_location_q\" or \"goto_location\""
+new = "local method = \"goto_location\""
+tests = ["tests/twwarhammer3/test_wh3_battle_lua.py"]
+source = "2026-10-20 (b42), rebuilt 2026-10-29"
+
+[[plant]]
+id = "immediate-attack-replaces-queued-attack"
+guards = "WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = "local method = order.queue and \"attack_unit_q\" or \"attack_unit\""
+new = "local method = \"attack_unit\""
+tests = ["tests/twwarhammer3/test_wh3_battle_lua.py"]
+source = "2026-10-20 (b42), rebuilt 2026-10-29"
+
+[[plant]]
+id = "missile-melee-incorrectly-uses-primary-attack"
+guards = "WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = "local primary = mode ~= \"melee\" or get(unit, \"missile_range\", 0) == 0"
+new = "local primary = true"
+tests = ["tests/twwarhammer3/test_wh3_battle_lua.py"]
+source = "2026-10-20 (b42), rebuilt 2026-10-29"
+
+[[plant]]
+id = "attack-ignores-target-visibility"
+guards = "WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = '''
+            if not visible_to_player(target.unit) then error("target_not_visible") end
+'''
+new = ""
+tests = ["tests/twwarhammer3/test_wh3_battle_lua.py"]
+source = "2026-10-20 (b42), rebuilt 2026-10-29"
+
+[[plant]]
+id = "queued-successor-ignores-failed-predecessor"
+guards = "WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = "if order.queue and (failed[order.unit] or previous[order.unit] ~= \"move\""
+new = "if order.queue and (previous[order.unit] ~= \"move\""
+tests = ["tests/twwarhammer3/test_wh3_battle_lua.py"]
+source = "2026-10-20 (b42), rebuilt 2026-10-29"
+
+[[plant]]
+id = "permission-allowed-incorrectly-implies-affordability"
+guards = "WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime"
+file = "src/twwarhammer3/mod/script/_lib/mod/twwarhammer3_ui.lua"
+old = '''
+    assert(cost <= remaining, "insufficient funds for " .. step.recruit
+        .. ": cost " .. cost .. ", remaining " .. remaining)
+'''
+new = ""
+tests = ["tests/twwarhammer3/test_wh3_mod_scripts.py"]
+source = "2026-10-20 (b42), rebuilt 2026-10-29"
+
+[[plant]]
+id = "reserve-general-incorrectly-uses-reserve-funds"
+guards = "WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime"
+file = "src/twwarhammer3/mod/script/_lib/mod/twwarhammer3_ui.lua"
+old = "local main_funds = step.reinforcements ~= true or value(permission .. \".IsGeneralUnit\") == true"
+new = "local main_funds = step.reinforcements ~= true"
+tests = ["tests/twwarhammer3/test_wh3_mod_scripts.py"]
+source = "2026-10-20 (b42), rebuilt 2026-10-29"
+
+[[plant]]
+id = "recruit-command-omits-explicit-reserve-argument"
+guards = "WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime"
+file = "src/twwarhammer3/mod/script/_lib/mod/twwarhammer3_ui.lua"
+old = "command(slot .. \"RecruitUnit(\" .. permission .. \", \" .. reserve .. \")\")"
+new = "command(slot .. \"RecruitUnit(\" .. permission .. \")\")"
+tests = ["tests/twwarhammer3/test_wh3_mod_scripts.py"]
+source = "2026-10-20 (b42), rebuilt 2026-10-29"
+
+[[plant]]
+id = "mount-selects-recruitment-index-instead-of-unit-type"
+guards = "WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime"
+file = "src/twwarhammer3/mod/script/_lib/mod/twwarhammer3_ui.lua"
+old = "local selected = pool .. \".FirstContext(UnitRecordContext.Key == \" .. encode(step.recruit) .. \").\""
+new = "local selected = pool .. \".At(\" .. count .. \").\""
+tests = ["tests/twwarhammer3/test_wh3_mod_scripts.py"]
+source = "2026-10-20 (b42), rebuilt 2026-10-29"
+
+[[plant]]
+id = "mount-checks-original-count-but-ignores-requested-mounted-ty"
+guards = "WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime"
+file = "src/twwarhammer3/mod/script/_lib/mod/twwarhammer3_ui.lua"
+old = "assert(value(original) == before - 1 and value(mounted) == after + 1,"
+new = "assert(value(original) == before - 1,"
+tests = ["tests/twwarhammer3/test_wh3_mod_scripts.py"]
+source = "2026-10-20 (b42), rebuilt 2026-10-29"
+
+[[plant]]
+id = "check-a-missing-target-is-ignored"
+guards = "scripts/check.py agreed-pass record"
+file = "scripts/check.py"
+old = "every = every and bool(mine)"
+new = "every = True"
+tests = ["tests/test_check_script.py"]
+source = "2026-10-29 evening reviews"
+
+[[plant]]
+id = "check-an-interrupted-run-passes"
+guards = "scripts/check.py agreed-pass record"
+file = "scripts/check.py"
+old = "and not interrupted"
+new = ""
+tests = ["tests/test_check_script.py"]
+source = "2026-10-29 evening reviews"
+
+[[plant]]
+id = "check-a-nameless-case-crashes"
+guards = "scripts/check.py agreed-pass record"
+file = "scripts/check.py"
+old = "(case.get(\"name\") or \"\").split(\"[\")[0]"
+new = "case.get(\"name\").split(\"[\")[0]"
+tests = ["tests/test_check_script.py"]
+source = "2026-10-29 evening reviews"
+
+[[plant]]
+id = "check-race-only-the-after-read-review-2"
+guards = "scripts/check.py agreed-pass record"
+file = "scripts/check.py"
+old = "own = before[0] and after[0] and git(root, \"rev-parse\", \"HEAD\").strip() == revision"
+new = "own = after[0]"
+tests = ["tests/test_check_script.py"]
+source = "2026-10-29 evening reviews"
+
+[[plant]]
+id = "check-live-entries-unlabelled"
+guards = "scripts/check.py agreed-pass record"
+file = "scripts/check.py"
+old = "(\" (pytest part only)\" if OTHER_CALL.search(entry) else \"\")"
+new = "\"\""
+tests = ["tests/test_check_script.py"]
+source = "2026-10-29 evening reviews"
+
+[[plant]]
+id = "b51-read-time-not-file-time"
+guards = "WH3 1x by the Windows clock (harness b51)"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = "os.fstat(file.fileno()).st_mtime_ns"
+new = "time.time_ns()"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-29 evening, b51 and its reviews"
+
+[[plant]]
+id = "b51-foreign-file-sets-the-time"
+guards = "WH3 1x by the Windows clock (harness b51)"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = '''
+        if not isinstance(observation, dict) or observation.get("job") != self.job:
+            return None
+        self.written_ns = written_ns
+'''
+new = '''
+        self.written_ns = written_ns
+        if not isinstance(observation, dict) or observation.get("job") != self.job:
+            return None
+'''
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-29 evening, b51 and its reviews"
+
+[[plant]]
+id = "b51-stretch-never-restarts"
+guards = "WH3 1x by the Windows clock (harness b51)"
+file = "src/twwarhammer3/battle/play.py"
+old = '''
+        marks["stretch"] = (time_ms, written_ns)
+'''
+new = ""
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-29 evening, b51 and its reviews"
+
+[[plant]]
+id = "b51-wsl-clock-instead"
+guards = "WH3 1x by the Windows clock (harness b51)"
+file = "src/twwarhammer3/battle/play.py"
+old = "windows_clock(result, windows_marks, observation[\"time_ms\"], mailbox.written_ns)"
+new = "windows_clock(result, windows_marks, observation[\"time_ms\"], time.time_ns())"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-29 evening, b51 and its reviews"
+
+[[plant]]
+id = "b51-stretches-not-flagged"
+guards = "WH3 1x by the Windows clock (harness b51)"
+file = "src/twwarhammer3/battle/digest.py"
+old = "*(result.get(\"windows_clock_range\") or [])]"
+new = "]"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-29 evening, b51 and its reviews"
+
+[[plant]]
+id = "b51-no-job-warning"
+guards = "WH3 1x by the Windows clock (harness b51)"
+file = "src/twwarhammer3/battle/digest.py"
+old = "if \"windows_clock_ratio\" in result and not ran_at_1x(result):"
+new = "if False:"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-29 evening, b51 and its reviews"
+
+[[plant]]
+id = "b51-band-reversed"
+guards = "WH3 1x by the Windows clock (harness b51)"
+file = "src/twwarhammer3/battle/digest.py"
+old = "return all(ONE_X[0] <= value <= ONE_X[1] for value in values)"
+new = "return any(ONE_X[0] <= value <= ONE_X[1] for value in values)"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-29 evening, b51 and its reviews"
+
+[[plant]]
+id = "b51-stat-by-path-review"
+guards = "WH3 1x by the Windows clock (harness b51)"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = "os.fstat(file.fileno()).st_mtime_ns"
+new = "os.stat(self.directory / \"observation.json\").st_mtime_ns"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-29 evening, b51 and its reviews"
+
+[[plant]]
+id = "b51-band-edges-exclusive-review"
+guards = "WH3 1x by the Windows clock (harness b51)"
+file = "src/twwarhammer3/battle/digest.py"
+old = "return all(ONE_X[0] <= value <= ONE_X[1] for value in values)"
+new = "return all(ONE_X[0] < value < ONE_X[1] for value in values)"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-29 evening, b51 and its reviews"
+
+[[plant]]
+id = "b51-no-30-s-minimum-for-the-battle"
+guards = "WH3 1x by the Windows clock (harness b51)"
+file = "src/twwarhammer3/battle/play.py"
+old = "if written_ns - marks[\"first\"][1] >= WINDOWS_STRETCH_NS:"
+new = "if written_ns > marks[\"first\"][1]:"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-29 evening, b51 and its reviews"
+
+[[plant]]
+id = "b51-longest-stretch-not-kept"
+guards = "WH3 1x by the Windows clock (harness b51)"
+file = "src/twwarhammer3/battle/play.py"
+old = "max(result.get(\"windows_clock_longest_s\", 0),"
+new = "min(10**9,"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-29 evening, b51 and its reviews"
+
+[[plant]]
+id = "b51-unreadable-clears-the-time-review"
+guards = "WH3 1x by the Windows clock (harness b51)"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = '''
+        except (OSError, ValueError):
+            return None
+        if not isinstance(observation, dict)'''
+new = '''
+        except (OSError, ValueError):
+            self.written_ns = None
+            return None
+        if not isinstance(observation, dict)'''
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-29 evening, b51 and its reviews"
+
+[[plant]]
+id = "b51-stretch-closed-by-battle-time-review-2"
+guards = "WH3 1x by the Windows clock (harness b51)"
+file = "src/twwarhammer3/battle/play.py"
+old = "    if stretch >= WINDOWS_STRETCH_NS:"
+new = "    if (time_ms - marks[\"stretch\"][0]) * 10**6 >= WINDOWS_STRETCH_NS:"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py", "tests/twwarhammer3/test_wh3_play.py", "tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-29 evening, b51 and its reviews"
+
+[[plant]]
+id = "sync-codex-stop-timeout"
+guards = "Claude Code and Codex run the same hooks"
+file = ".codex/hooks.json"
+old = "\"timeout\": 660"
+new = "\"timeout\": 600"
+tests = ["tests/test_agent_sync.py"]
+source = "2026-10-29 evening"
+
+[[plant]]
+id = "sync-codex-uses-claude-project-dir"
+guards = "Claude Code and Codex run the same hooks"
+file = ".codex/hooks.json"
+old = "python3 \\\"$(git rev-parse --show-toplevel)/scripts/hooks/pre_bash.py\\\""
+new = "python3 \\\"$CLAUDE_PROJECT_DIR/scripts/hooks/pre_bash.py\\\""
+tests = ["tests/test_agent_sync.py"]
+source = "2026-10-29 evening, review 3"
+
+[[plant]]
+id = "sync-reviewer-edited-for-claude-only"
+guards = "Claude Code and Codex share the reviewer"
+file = ".claude/agents/reviewer.md"
+old = '''
+Never commit, push, stash or
+check out.'''
+new = '''
+Never commit, push or
+check out.'''
+tests = ["tests/test_agent_sync.py"]
+source = "2026-10-29 evening"
+
+[[plant]]
+id = "relay-exits-only-on-stdin-close"
+guards = "Spire relay: a runner disconnect ends the relay"
+file = "src/spire/engine/windows_relay.py"
+old = "    threading.Thread(target=forward_game_states, daemon=True).start()"
+new = '''
+    forwarder = threading.Thread(target=forward_game_states, daemon=True)
+    forwarder.start()
+    import atexit; atexit.register(forwarder.join)'''
+tests = ["tests/engine/test_bridge.py::test_relay_waits_past_its_connect_timeout_for_a_slow_runner"]
+source = "2026-10-29 evening, CI's racy test"
+
+[[plant]]
+id = "markers-thesis-listed"
+guards = "check.py's marker list skips docs/thesis/"
+file = "scripts/check.py"
+old = "if name in RULE_PAGES or name.startswith(PRIVATE):"
+new = "if name in RULE_PAGES:"
+tests = ["tests/test_check_script.py"]
+source = "2026-10-29 evening"
