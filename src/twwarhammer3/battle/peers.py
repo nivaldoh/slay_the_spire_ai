@@ -6,7 +6,10 @@ line of ``match.jsonl``, names the clients; ``events-<client>.jsonl`` holds that
 events, and an event of kind ``observation`` carries one battle observation. Its
 evaluator-only ``native`` section (engine/mailbox.py) lists every unit with ``alliance``,
 ``army``, ``index``, ``ui_id``, ``type`` and raw ``x`` and ``z``. A client without an events
-file has no observations. An identical observation sent twice counts once.
+file has no observations. An identical observation sent twice counts once. One client can
+have two different observations at one ``time_ms``: the battle Lua's finish() publishes the
+terminal one at the battle time its tick() just published (twwarhammer3_battle.lua); such a
+time is repeated and is not compared.
 
 For each pair of clients (A, B in manifest order), at each ``time_ms`` where both have an
 observation, units are joined by (alliance, army, index): never by ``type``, which
@@ -25,18 +28,21 @@ made an observation, not a completed engine tick. Two clients' observations at o
 at its own first tick, so common times may be few or none (unverified). A passive
 completed-tick collector is a later, separately reviewed step (plan step 4).
 
-Refusals (ValueError): a client's events holding more than one battle id (each client's Lua
-makes its own id, so ids never match across clients; one battle per attempt) and two
-different observations of one client at one ``time_ms``.
+Refusal (ValueError): a client's events holding more than one battle id (each client's Lua
+makes its own id, so ids never match across clients; one battle per attempt).
 
-Summary: ``match``, ``attempt``; ``clients``: per client ``battle``, ``observations``,
-``without_native`` (counted, not compared; the seq-0 ``Loading`` placeholder is one),
-``native_errors`` (observations whose ``native`` lists failed top-level reads) and
-``failed_rows`` (unit rows with ``error``); ``pairs``: per pair ``clients``, ``common_times``,
-``compared_times`` (common times where both have ``native``), ``only`` (client -> times only
-that client has), ``units_compared``, ``exact``, ``position_differences``,
-``type_mismatches``, ``ui_id_mismatches``, ``missing`` (client -> units absent from that
-client's observation at a compared time while the other lists them, a failed row excepted),
+Summary: ``match``, ``attempt``; ``clients``: per client ``battle``, ``observations``
+(distinct ones), ``repeated_times``, ``without_native`` (counted, not compared; the seq-0
+``Loading`` placeholder is one), ``native_errors`` (observations whose ``native`` lists
+failed top-level reads) and ``failed_rows`` (unit rows with ``error``); ``pairs``: per pair
+``clients``, ``common_times``, ``compared_times`` (common times where both have one
+observation with ``native``), ``only`` (client -> times only that client has), ``repeated``
+(client -> common times that are repeated for that client), ``units_compared``, ``exact``,
+``position_differences``, ``type_mismatches``, ``ui_id_mismatches``, ``missing`` (client ->
+units absent from that client's observation at a compared time while the other lists them,
+a failed row excepted: a reinforcement row that failed before its alliance was read has
+none, and as ``r<k>`` numbers reinforcement armies across alliances, its army and index
+still name the unit),
 ``failed_rows`` (client -> error rows at compared times), ``max_dx`` and ``max_dz``
 (``{"value", "time_ms", "unit"}``, or null when every value is equal),
 ``first_difference_ms`` and ``differences`` (every compared unit that is not exact:
@@ -57,7 +63,7 @@ def unit_key(row: dict) -> tuple:
 
 
 def observations(directory: Path, client: str) -> tuple[dict, dict]:
-    """One client's observations by ``time_ms`` and its counts."""
+    """One client's distinct observations listed by ``time_ms``, and its counts."""
     path = directory / f"events-{client}.jsonl"
     lines = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
     by_time, battle = {}, None
@@ -70,15 +76,14 @@ def observations(directory: Path, client: str) -> tuple[dict, dict]:
         if data["battle"] != battle:
             raise ValueError(f"client {client}'s events hold more than one battle id ({battle}, "
                              f"{data['battle']}): one battle per attempt")
-        # JUDGEMENT?: repeated time — Claude, 2026-10-30: two different observations of one
-        # client at one time_ms refuse the attempt; comparing either one would change the counts.
-        known = by_time.setdefault(data["time_ms"], data)
-        if known != data:
-            raise ValueError(f"client {client} has two different observations at time_ms "
-                             f"{data['time_ms']} (seq {known['seq']} and {data['seq']})")
-    natives = [data.get("native") for data in by_time.values()]
+        seen = by_time.setdefault(data["time_ms"], [])
+        if data not in seen:
+            seen.append(data)
+    natives = [data.get("native") for seen in by_time.values() for data in seen]
     return by_time, {
-        "battle": battle, "observations": len(by_time), "without_native": natives.count(None),
+        "battle": battle, "observations": len(natives),
+        "repeated_times": sum(len(seen) > 1 for seen in by_time.values()),
+        "without_native": natives.count(None),
         "native_errors": sum(bool(native and native.get("errors")) for native in natives),
         "failed_rows": sum("error" in row for native in natives if native
                            for row in native["units"]),
@@ -94,11 +99,18 @@ def compare_pair(a: str, seen_a: dict, b: str, seen_b: dict) -> dict:
     pair = {"clients": [a, b], "common_times": len(common), "compared_times": 0,
             "only": {a: sorted(seen_a.keys() - seen_b.keys()),
                      b: sorted(seen_b.keys() - seen_a.keys())},
+            "repeated": {a: [time_ms for time_ms in common if len(seen_a[time_ms]) > 1],
+                         b: [time_ms for time_ms in common if len(seen_b[time_ms]) > 1]},
             "units_compared": 0, "exact": 0, "position_differences": 0, "type_mismatches": 0,
             "ui_id_mismatches": 0, "missing": {a: [], b: []}, "failed_rows": {a: 0, b: 0},
             "max_dx": None, "max_dz": None, "first_difference_ms": None, "differences": []}
     for time_ms in common:
-        natives = {a: seen_a[time_ms].get("native"), b: seen_b[time_ms].get("native")}
+        # JUDGEMENT?: repeated time — Claude after review, 2026-10-30: a time where either
+        # client has two different observations is listed in `repeated` and not compared.
+        # Comparing the lower seq (the regular one before finish()'s) would add these times.
+        if len(seen_a[time_ms]) > 1 or len(seen_b[time_ms]) > 1:
+            continue
+        natives = {a: seen_a[time_ms][0].get("native"), b: seen_b[time_ms][0].get("native")}
         if None in natives.values():
             continue  # counted in that client's without_native
         pair["compared_times"] += 1
@@ -112,8 +124,9 @@ def compare_pair(a: str, seen_a: dict, b: str, seen_b: dict) -> dict:
                     units[client][unit_key(row)] = row
         for client, other in ((a, b), (b, a)):
             pair["missing"][client] += [{"time_ms": time_ms, "unit": list(key)}
-                                        for key in units[other]
-                                        if key not in units[client] and key not in failed[client]]
+                                        for key in units[other] if key not in units[client]
+                                        and key not in failed[client]
+                                        and (None, *key[1:]) not in failed[client]]
         for key, row_a in units[a].items():
             row_b = units[b].get(key)
             if row_b is None:

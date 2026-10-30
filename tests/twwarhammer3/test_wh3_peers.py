@@ -3,6 +3,8 @@ worker sends through the real coordinator over loopback (engine/link.py), so the
 files have the coordinator's own layout. Positions and identities are made up; nothing here
 says how real peers' observations line up."""
 
+import math
+
 import pytest
 
 from twwarhammer3.battle.peers import compare
@@ -75,26 +77,29 @@ def test_identical_peers_are_exact_at_every_common_time_for_every_pair(tmp_path)
         assert all(not times for times in pair["only"].values())
         assert all(not units for units in pair["missing"].values())
     assert summary["clients"]["B"] == {"battle": "battle-B", "observations": 3,
-                                       "without_native": 0, "native_errors": 0,
-                                       "failed_rows": 0}
+                                       "repeated_times": 0, "without_native": 0,
+                                       "native_errors": 0, "failed_rows": 0}
 
 
-def test_a_centimetre_off_is_a_difference_reported_raw_with_its_first_time_and_maximum(
+def test_a_centimetre_or_one_ulp_off_is_a_difference_reported_raw_with_its_first_time_and_max(
         tmp_path):
     near, far = army(2.0 * 2), army(2.0 * 3)
     near[1]["x"] += 0.01
+    near[2]["z"] = math.nextafter(near[2]["z"], math.inf)  # any tolerance would hide it
     far[3]["x"] += 1.5
     far[3]["z"] -= 2.5
     summary = attempt(tmp_path, {"A": run("A", [1000, 2000, 3000]),
                                  "B": run("B", [1000, 2000, 3000], {2000: near, 3000: far})})
     pair = summary["pairs"][0]
     dx = near[1]["x"] - army(2.0 * 2)[1]["x"]
-    assert dx != 0
+    dz = near[2]["z"] - army(2.0 * 2)[2]["z"]
+    assert dx != 0 and dz != 0
     assert pair["differences"] == [
         {"time_ms": 2000, "unit": [1, 1, 2], "dx": dx, "dz": 0.0},
+        {"time_ms": 2000, "unit": [1, 1, 3], "dx": 0.0, "dz": dz},
         {"time_ms": 3000, "unit": [2, 1, 1], "dx": 1.5, "dz": -2.5}]
     assert counts(pair, "units_compared", "exact", "position_differences") == {
-        "units_compared": 15, "exact": 13, "position_differences": 2}
+        "units_compared": 15, "exact": 12, "position_differences": 3}
     assert pair["first_difference_ms"] == 2000
     assert pair["max_dx"] == {"value": 1.5, "time_ms": 3000, "unit": [2, 1, 1]}
     assert pair["max_dz"] == {"value": 2.5, "time_ms": 3000, "unit": [2, 1, 1]}
@@ -154,14 +159,24 @@ def test_a_second_battle_id_in_one_clients_events_is_refused(tmp_path):
         attempt(tmp_path, {"A": restarted, "B": run("B", [1000, 2000])})
 
 
-def test_two_different_observations_of_one_client_at_one_time_are_refused(tmp_path):
-    repeated = run("A", [1000, 1000])
-    with pytest.raises(ValueError, match="client A has two different observations at time_ms "
-                                         "1000"):
-        attempt(tmp_path, {"A": repeated, "B": run("B", [1000])})
+def test_a_time_with_two_different_observations_of_one_client_is_repeated_not_compared(
+        tmp_path):
+    # As the Lua's finish() does: the terminal observation at the regular one's battle time.
+    sent_a = run("A", [1000, 2000, 3000])
+    sent_a.append({**observation("battle-A", 4, 3000, army(2.0 * 3)),
+                   "phase": "VictoryCountdown"})
+    summary = attempt(tmp_path, {"A": sent_a, "B": run("B", [1000, 2000, 3000])})
+    assert counts(summary["clients"]["A"], "observations", "repeated_times") == {
+        "observations": 4, "repeated_times": 1}
+    pair = summary["pairs"][0]
+    assert pair["repeated"] == {"A": [3000], "B": []}
+    assert pair["only"] == {"A": [], "B": []}
+    assert counts(pair, "common_times", "compared_times", "units_compared", "exact") == {
+        "common_times": 3, "compared_times": 2, "units_compared": 10, "exact": 10}
     resent = run("A", [1000])
     summary = attempt(tmp_path / "again", {"A": resent * 2, "B": run("B", [1000])})
-    assert summary["clients"]["A"]["observations"] == 1
+    assert counts(summary["clients"]["A"], "observations", "repeated_times") == {
+        "observations": 1, "repeated_times": 0}
     assert summary["pairs"][0]["exact"] == 5
 
 
@@ -176,8 +191,8 @@ def test_missing_native_failed_reads_and_an_absent_client_are_counted(tmp_path):
     sent_b = [observation("battle-B", 0, 0, army()), *run("B", [1000, 2000, 3000])]
     summary = attempt(tmp_path, {"A": [loading, *sent_a], "B": sent_b, "C": None})
     assert summary["clients"]["A"] == {"battle": "battle-A", "observations": 4,
-                                       "without_native": 1, "native_errors": 1,
-                                       "failed_rows": 1}
+                                       "repeated_times": 0, "without_native": 1,
+                                       "native_errors": 1, "failed_rows": 1}
     assert summary["clients"]["C"]["observations"] == 0
     pair = summary["pairs"][0]
     assert counts(pair, "common_times", "compared_times", "units_compared", "exact") == {
@@ -185,3 +200,18 @@ def test_missing_native_failed_reads_and_an_absent_client_are_counted(tmp_path):
     assert pair["failed_rows"] == {"A": 1, "B": 0}
     assert pair["missing"]["B"] == [] and len(pair["missing"]["A"]) == 5  # all of 3000's
     assert summary["pairs"][1]["only"] == {"A": [0, 1000, 2000, 3000], "C": []}
+
+
+def test_a_failed_reinforcement_row_without_alliance_is_not_also_missing(tmp_path):
+    # The Lua reads a reinforcement unit's alliance inside the guarded call, so its error row
+    # can lack one; "r1" names the reinforcement army across alliances.
+    failed = army(2.0)
+    failed[1] = {"alliance": 1, "army": 1, "index": 2, "error": "position: no unit"}
+    failed[4] = {"army": "r1", "index": 1, "error": "is_valid_target: no unit"}
+    extra = army(2.0) + [unit(2, 1, 2, 120.0, 240.0)]  # army 1 index 2, but of alliance 2
+    summary = attempt(tmp_path, {"A": run("A", [1000], {1000: failed}),
+                                 "B": run("B", [1000], {1000: extra})})
+    pair = summary["pairs"][0]
+    assert pair["failed_rows"] == {"A": 2, "B": 0}
+    assert pair["missing"] == {"A": [{"time_ms": 1000, "unit": [2, 1, 2]}], "B": []}
+    assert counts(pair, "units_compared", "exact") == {"units_compared": 3, "exact": 3}
