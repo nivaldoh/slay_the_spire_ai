@@ -13,12 +13,10 @@ decisions wait in `runs/overnight-20261030/handoff.md`. No game, $0.
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
-Workflow: the light factory plan is [workflow.md](workflow.md), stages 1-4 built; stage 5 runs on
-the next planned experiment. CI runs `check.py` on each push (results: `gh run list`).
-**For Codex** (owner, 2026-10-29: "leave a reminder for Codex to take care of its own hooks and
-Skills later"): in your next session, check that `.codex/hooks.json`, `.codex/agents/reviewer.toml`
-and `.agents/skills/` work in Codex (the owner trusts hooks with `/hooks`), fix what Codex needs,
-and keep `tests/test_agent_sync.py` passing ([table](workflow.md#claude-code-and-codex)).
+Factory: [workflow.md](workflow.md), stages 1-4 built; stage 5 awaits the next experiment.
+CI runs `check.py` on each push (results: `gh run list`).
+**Codex:** hooks active, reviewer available, skill discovered; sync tests pass. Stop-hook
+concurrent-edit fix reviewed; interruption cleanup next (`runs/light-factory-20261030/`).
 **Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; five
 draft branches are unmerged ([list](#branches)).
 Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)).

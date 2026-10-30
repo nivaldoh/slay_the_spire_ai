@@ -12,6 +12,8 @@ writing) costs one turn, not the session. A timed-out check is killed with its t
 retried on the same tree; a check that cannot run warns and lets the stop through. While a
 game job runs (a WH3 or Spire play, launch, menu, RL phase, rollout, training, evaluation or
 replay, or the queue), the check is skipped so its load stays off the game.
+If the tree changes during a passing check, its final state is unchecked: block once and
+remember no pass, so a fresh stop must check again.
 """
 import hashlib
 import json
@@ -111,7 +113,8 @@ def main(check=run_check, event: dict | None = None, jobs=None) -> int:
         session = str(event.get("session_id", ""))
         if event.get("stop_hook_active") and session in cache.get("blocked", []):
             remember(cache, session, **{k: v for k, v in cache.items() if k != "blocked"})
-            return say("scripts/check.py still failed at the last stop; stopping anyway "
+            return say("scripts/check.py still failed to establish a pass at the last stop; "
+                       "stopping anyway "
                        "(see runs/checks/)")
         if cache.get("timed_out") == identity:
             return say("scripts/check.py timed out on this tree before; not rerun")
@@ -122,14 +125,18 @@ def main(check=run_check, event: dict | None = None, jobs=None) -> int:
         except subprocess.TimeoutExpired:
             remember(cache, session, timed_out=identity)
             return say(f"scripts/check.py timed out after {TIMEOUT_S} s; not rerun on this tree")
+        if passed and tree_identity() != identity:
+            passed = False
+            report = ("The tree changed during scripts/check.py; the final tree is unchecked.\n"
+                      + report)
         remember(cache, session, block=not passed,
                  **({"passed": identity} if passed else {"failed": identity}))
         if passed:
             return 0
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         return say(f"stop hook could not run check.py: {error}")
-    print("scripts/check.py fails on the current tree. Fix it if the failure is yours; if it "
-          "comes from another session's change, say so and stop:\n" + report, file=sys.stderr)
+    print("scripts/check.py has no pass for the current tree. Fix failures that are yours; "
+          "if another session changed it, say so and stop:\n" + report, file=sys.stderr)
     return 2
 
 

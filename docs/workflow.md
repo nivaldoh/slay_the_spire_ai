@@ -337,6 +337,11 @@ never two blocks in a row, no check beside a game job, and a stop let through wh
 cannot run or timed out; a narrower list, more blocks or failing closed would block differently.
 How hard the exit gate is enforced rests on these.
 
+A passing Stop check must also leave the checkout unchanged. If its fingerprint changes
+during the run, the final tree is unchecked: no pass is cached, the hook blocks once and a
+fresh stop checks again. The existing escape after one block still reports no established
+pass. Fingerprints cannot detect an edit made and undone between their two reads.
+
 ### Claude Code and Codex
 
 The owner alternates between the two (2026-10-29), so each gets the same pieces;

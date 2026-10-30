@@ -315,3 +315,34 @@ def test_the_stop_check_gives_up_before_the_tools_stop_the_hook():
         timeouts = [h["timeout"] for group in stop for h in group["hooks"]
                     if "stop_check.py" in h["command"]]
         assert timeouts and all(stop_check.TIMEOUT_S < t for t in timeouts), name
+
+
+def test_stop_hook_does_not_accept_a_tree_changed_during_a_passing_check(repo, capsys):
+    repo, _ = repo
+    before = stop_check.tree_identity()
+    calls = []
+
+    def edited_during_check():
+        calls.append((repo / "a.py").read_text())
+        (repo / "a.py").write_text("a = (\n")  # a concurrent editor, after the test read
+        return True, "result    PASSED"
+
+    session = {"session_id": "editor"}
+    assert stop_check.main(edited_during_check, session) == 2
+    report = capsys.readouterr().err
+    assert "changed" in report and "unchecked" in report
+    cache = stop_check.read_cache()
+    assert "passed" not in cache
+    assert stop_check.tree_identity() != before
+
+    # Preserve the existing single-block escape, without claiming the check passed.
+    assert stop_check.main(edited_during_check, {**session, "stop_hook_active": True}) == 0
+    assert "pass" in json.loads(capsys.readouterr().out)["systemMessage"]
+    assert calls == ["a = 1\n"]
+
+    # A fresh stop must check the edited tree, even if the file has since been repaired.
+    (repo / "a.py").write_text("a = 2\n")
+    assert stop_check.main(recorder(calls, True), session) == 0
+    assert stop_check.read_cache()["passed"] == stop_check.tree_identity()
+    assert stop_check.main(recorder(calls, True), session) == 0
+    assert calls == ["a = 1\n", True]

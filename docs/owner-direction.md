@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-30 (light factory refinement): continue improving the factory so vague requests
+  become specified, implemented changes and repository changes go through it. Continue while
+  reasonable improvements remain, without bloat or overengineering; Claude Code is implementing
+  native multiplayer in parallel.
 - 2026-10-30 (01:55, planning the night run): "No spire. WH3 is our priority. We need to
   continue working on the light factory first though and make sure it's as good as possible
   so we can have more trust in these autonomous runs. About the quick items, yes to all."

@@ -44,6 +44,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-30: Codex hook audit and concurrent-edit fix
+
+Codex's live Bash hook refused one harmless `ruff format --help` probe. Its reviewer is
+available and the refusal-sweep skill appears in its loaded catalog; agent-sync tests pass.
+The Stop hook now rejects a passing run if the tree changed during it, caches no pass and
+reports the final tree as unchecked. Its existing escape after one block is preserved.
+Card: `runs/light-factory-20261030/card.md` (not separately agreed); reference: workflow's
+final-state pilot case. New regression failed before the fix; hook/sync tests: 87 passed.
+Independent reviewer: no findings; the new plant failed the regression (1 failure), real
+code passed (1 test). Existing plants: 65/65 caught at `9c8e157`; new plant checked separately.
+Offline suite: 1932 passed, 41 skipped (40 torch, 1 Windows opt-in). First exit gate failed
+two Ruff line lengths, fixed; final gate output: `runs/light-factory-20261030/check-final.log`.
+Raw evidence and review: `runs/light-factory-20261030/`. No game or paid API; $0.
+Proposed checks, not agreed verification. Edits made and undone between fingerprints remain
+undetected; this does not prove that every unchecked change is caught. Interruption cleanup
+is the next separate card: direct-signal probes left check children alive, then removed them.
+
 ## 2026-10-30 (night): the light factory's checks checked
 
 Claude Code, owner away ("light factory first ... more trust in these autonomous runs"); no game,
