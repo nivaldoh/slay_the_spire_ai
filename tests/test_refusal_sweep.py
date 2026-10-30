@@ -106,3 +106,19 @@ def test_a_failing_baseline_or_this_tree_is_refused(tmp_path):
                             text=True, timeout=300, env={**os.environ, "SWEEP_TIMEOUT": "3"})
     assert result.returncode and "never this tree" in result.stderr
     assert (tmp_path / "src/toy.py").read_text() == TOY
+
+
+WHERE = '''import toy
+
+
+def test_where(tmp_path):
+    open("where.txt", "w").write(str(tmp_path))
+    assert toy.a(1) == 1
+'''
+
+
+def test_the_sweeps_test_scratch_stays_in_the_scratch_checkout(tmp_path):
+    result = sweep(tmp_path, tests=WHERE)
+    assert result.returncode == 0, result.stderr
+    where = Path((tmp_path / "where.txt").read_text())
+    assert where.is_relative_to(tmp_path / "runs/test-scratch")  # not /tmp: a leak stays findable

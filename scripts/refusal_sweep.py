@@ -12,7 +12,8 @@ clause dropped, and a version that does not parse is reported, never scored. "ca
 tests exit nonzero (with -x); a run past SWEEP_TIMEOUT seconds (default 120) is HANG, counted
 caught; the unplanted baseline must pass first, and SCRATCH may not be this tree. Every run is
 without bytecode (planted copies share a size, and a cached .pyc of the previous plant once ran
-in a plant's place, 2026-10-29). SWEEP_PYTHON overrides the interpreter. Offline only: plant
+in a plant's place, 2026-10-29), and its test scratch goes to SCRATCH/runs/test-scratch/sweep.
+SWEEP_PYTHON overrides the interpreter. Offline only: plant
 near a launch only after stubbing its first step.
 """
 import ast
@@ -43,10 +44,12 @@ def run():
     # same mtime second, so a cached .pyc of the previous plant would run (found 2026-10-29).
     for cache in list(S.rglob("__pycache__")):
         shutil.rmtree(cache, ignore_errors=True)
+    tmp = S / "runs" / "test-scratch" / "sweep"  # test scratch in runs/, as AGENTS.md says
+    tmp.parent.mkdir(parents=True, exist_ok=True)  # pytest makes only the last folder
     try:
         r = subprocess.run([PY, "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "-x",
-                            *DESELECT, *TESTS], cwd=S, env=ENV, capture_output=True, text=True,
-                           timeout=TIMEOUT)
+                            f"--basetemp={tmp}", *DESELECT, *TESTS], cwd=S, env=ENV,
+                           capture_output=True, text=True, timeout=TIMEOUT)
     except subprocess.TimeoutExpired:  # a removed timeout can leave a test waiting forever
         return "hang", "", f"no result within {TIMEOUT:g} s"
     first = re.findall(r"^FAILED (.+?)(?: - |$)", r.stdout, re.M)
