@@ -77,6 +77,9 @@ NOTE = "cat > note.md <<'EOF'\nNever run ruff format here; git commit only after
     ("uvx ruff==0.6.9 format src", False, True),
     ("uvx 'ruff>=0.6' format src", False, True),
     ("uvx ruff-api format x.py", False, False),  # another package
+    ("uvx 'ruff >= 0.6' format src", False, True),
+    ("uvx 'ruff[all]==0.6.9' format src", False, True),
+    ("uvx Ruff format src", False, True),
     ("cat >runs/x.txt<<'EOF'\nruff format is banned\nEOF", False, False),  # heredoc after a word
     ("uv run --locked --extra llm ruff format src/x.py", False, True),
     ("uv run --locked -q ruff format x.py", False, True),

@@ -250,7 +250,7 @@ proposers each suggest one change (tactics prompt, state and memory, order inter
 with the version history and the baseline in view, and three judges score them against
 "No change" (collect more evidence first), which wins when a few battles cannot separate
 a flaw from noise. It returns the judges' pick as a proposal; a run where any step returned
-nothing is `incomplete`, not a result. While it
+nothing, or a judge picked a title no candidate has, is `incomplete`, not a result. While it
 runs, play more seeds with the same version and draft the next change in a git worktree:
 a job stops if its source scope changes. Note each job's start and stop in
 [Active work](../state.md#active-work). The WH3 ledger (`runs/twwarhammer3/llm-spend.jsonl`)

@@ -98,12 +98,13 @@ ${JSON.stringify(props, null, 1)}
 Score each candidate 1-10 on impact (expected improvement in battle outcomes), evidence (how directly the reviews support it), simplicity (small, lean, low risk), generality (helps across scenarios and armies). Judge ${i + 1} of 3: be independent and skeptical; check claims against the traces where cheap. Count how many battles show each mistake: one or two battles cannot separate a real flaw from noise, so prefer "No change" unless a change is supported by repeated evidence. Then pick the single best candidate by title.`,
   { label: `judge:${i + 1}`, phase: 'Judge', schema: SCORE })))
 // A judge whose pick names no candidate has not judged them; it counts as missing.
-const named = judge => judge && props.some(p => p.title === judge.pick)
+const same = (a, b) => String(a).trim() === String(b).trim()  // titles, spaces aside
+const named = judge => judge && props.some(p => same(p.title, judge.pick))
 const valid = judges.filter(named)
 const totals = props.map(p => {
-  const s = valid.flatMap(j => j.scores.filter(x => x.title === p.title))
+  const s = valid.flatMap(j => j.scores.filter(x => same(x.title, p.title)))
   const mean = s.length ? s.reduce((a, x) => a + x.impact + x.evidence + x.simplicity + x.generality, 0) / s.length : 0
-  return { title: p.title, mean, picks: valid.filter(j => j.pick === p.title).length }
+  return { title: p.title, mean, picks: valid.filter(j => same(j.pick, p.title)).length }
 })
 // The judges' picks decide; the mean only breaks ties ("No change" scores low on impact by
 // construction).

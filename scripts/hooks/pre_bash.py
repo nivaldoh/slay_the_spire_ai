@@ -30,8 +30,8 @@ RUFF_TEXT = re.compile(r"\bruff\s+format\b(?![^\n;&|]*--(?:check|diff)\b)")
 GIT_TEXT = re.compile(r"\bgit\b[^\n;&|]*\b(" + "|".join(sorted(MOVES_HEAD)) + r")\b")
 UNKNOWN = Path("/nonexistent-unknown-tree")
 # Programs under which a `ruff` word runs ruff; under any other (grep, echo, git) it is text.
-# `ruff`, or a pinned one as uvx takes it: ruff@0.6.9, ruff==0.6.9, "ruff>=0.6".
-RUFF_WORD = re.compile(r"ruff($|[@=<>!~])")
+# `ruff`, or a pinned one as uvx takes it: ruff@0.6.9, ruff==0.6.9, "ruff >= 0.6", ruff[all].
+RUFF_WORD = re.compile(r"ruff\s*($|[@=<>!~\[])", re.IGNORECASE)
 RUFF_HOSTS = {"ruff", "uv", "uvx", "pipx", "xargs", "find", "parallel", "env", "nice", "time",
               "timeout", "command", "exec", "sudo"}
 

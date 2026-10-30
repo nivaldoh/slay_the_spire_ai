@@ -23,7 +23,9 @@ const agent = async (prompt, { label }) => {
     return mode === 'no proposer' && label === 'propose:tactics' ? null
       : { title: label, change: 'c', evidence: 'e', expected_effect: 'x', risks: 'r' };
   if (mode === 'none') return null;
-  return { scores: [], pick: mode === 'no match' ? 'no change' : 'propose:information' };
+  const picks = { 'no match': 'no change', 'no change': 'No change',
+                  'spaced': ' propose:information ' };
+  return { scores: [], pick: picks[mode] || 'propose:information' };
 };
 body({ job: 'runs/j', episodes: ['episode-0000', 'episode-0001'] }, agent,
      fns => Promise.all(fns.map(f => f())), () => {}, () => {})
@@ -63,3 +65,11 @@ def test_judges_whose_pick_names_no_candidate_count_as_missing():
     # "no change" is not the candidate's title ("No change"): before, the first candidate won
     assert run("no match") == {"status": "incomplete", "proposal": None,
                                "missing": ["judge:1", "judge:2", "judge:3"]}
+
+
+@pytest.mark.parametrize("mode,proposal", [
+    ("no change", "No change"),  # the title the prompt steers judges to
+    ("spaced", "propose:information"),  # a pick with surrounding spaces still names its title
+])
+def test_a_pick_that_names_a_candidate_is_counted(mode, proposal):
+    assert run(mode) == {"status": "complete", "missing": [], "proposal": proposal}
