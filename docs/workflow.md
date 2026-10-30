@@ -110,9 +110,9 @@ markers   3 problems listed in the log, for the owner
   before and after the run, no tracked file changed and no untracked file outside `docs/` other
   than Markdown. An entry with a live command too is recorded as its "pytest part only".
 - "markers" counts format problems in JUDGEMENT markers (misspelt, in a file that cannot
-  carry one, no date, a "rests on" pointing nowhere), listed in the log; the untracked
-  `docs/thesis/` notes are skipped (owner, 2026-10-29). Only the owner
-  changes markers, so they never fail the run.
+  carry one, in log history, no date, a "rests on" pointing nowhere), listed in the log; the
+  untracked `docs/thesis/` notes are skipped (owner, 2026-10-29). Only the owner changes
+  markers, so they never fail the run.
 - Optional extras (`--extra train`, `--extra llm`), the browser check and live game checks
   run only when a change touches what they cover. The full offline suite always runs, since
   it takes well under a minute (owner, decision 3: "Yes", when it took 20 s).

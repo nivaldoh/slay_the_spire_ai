@@ -461,6 +461,8 @@ def marker_problems(root: Path) -> list[str]:
                 continue
             if any(fnmatch(name, pattern) for pattern in NO_MARKER):
                 problems.append(f"{name}:{number}: this file cannot carry a marker")
+            if name.endswith("log.md"):
+                problems.append(f"{name}:{number}: a marker in log history")
             if not DATED.search(" ".join([line[mark.end():], *lines[number:number + 2]])):
                 problems.append(f"{name}:{number}: no date or version in its first three lines")
         if name.endswith("log.md"):
