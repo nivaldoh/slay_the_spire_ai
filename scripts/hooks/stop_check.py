@@ -1,4 +1,4 @@
-"""Claude Code Stop hook (docs/workflow.md, stage 4): run scripts/check.py when the tree changed
+"""Shared Stop hook (docs/workflow.md, stage 4): run scripts/check.py when the tree changed
 since its last pass, and keep the turn going while it fails.
 
 The tree's identity is HEAD, the index, the diff against HEAD and the untracked files'
@@ -11,12 +11,14 @@ warning, so a failure Claude cannot fix (another session's change, a file a play
 writing) costs one turn, not the session. A timed-out check is killed with its tests and not
 retried on the same tree; a check that cannot run warns and lets the stop through. While a
 game job runs (a WH3 or Spire play, launch, menu, RL phase, rollout, training, evaluation or
-replay, or the queue), the check is skipped so its load stays off the game.
+replay, the queue or a known live-check script), the check is skipped to keep load off the game.
+Help and evidence recounts of live-check scripts stay offline.
 If the tree changes during a passing check, its final state is unchecked: block once and
 remember no pass, so a fresh stop must check again.
 Timeouts and interruptions kill and reap the check process group. SIGTERM uses the same
 cleanup as Ctrl-C; SIGKILL cannot run Python cleanup.
 """
+import getopt
 import hashlib
 import json
 import os
@@ -32,6 +34,9 @@ CHECK_COMMAND = ["uv", "run", "--locked", "python", "scripts/check.py"]
 # Commands that start or drive a game (`spire replay` is on the spire-restore-replay branch).
 GAME_COMMANDS = {"twwarhammer3": ("play", "launch", "menu", "rl"),
                  "spire": ("play", "rollout", "train", "evaluate", "replay")}
+LIVE_CHECKERS = {"check_wh3_army_setup.py", "check_wh3_checkpoint.py",
+                 "check_wh3_checkpoint_siege.py", "check_wh3_restored_episode.py",
+                 "check_wh3_team.py"}
 
 
 def git(*args: str) -> bytes:
@@ -49,7 +54,7 @@ def tree_identity() -> str:
 
 
 def game_job_running(proc: Path = Path("/proc")) -> bool:
-    """A Python process running a command of GAME_COMMANDS or the queue."""
+    """A Python game command, queue, or direct live checker (not help or recount)."""
     for cmdline in proc.glob("[0-9]*/cmdline"):
         try:
             argv = cmdline.read_bytes().decode(errors="replace").split("\0")
@@ -61,6 +66,24 @@ def game_job_running(proc: Path = Path("/proc")) -> bool:
             return True
         for i, arg in enumerate(argv[:-2]):
             if arg == "-m" and argv[i + 2] in GAME_COMMANDS.get(argv[i + 1], ()):
+                return True
+        # CPython 3.13 `python --help`; Lib/getopt.py stops at the first script argument.
+        try:
+            options, script = getopt.getopt(
+                argv[1:], "bBdEhiIOPqRsSuvVx?W:X:c:m:",
+                ["help", "version", "help-env", "help-xoptions", "help-all",
+                 "check-hash-based-pycs="])
+        except getopt.GetoptError:
+            continue
+        if any(option in ("-c", "-m", "-h", "-?", "-V", "--version")
+               or option.startswith("--help") for option, _ in options):
+            continue
+        if script and Path(script[0]).name in LIVE_CHECKERS:
+            # Lib/argparse.py accepts long-option prefixes; --resume still runs the game.
+            checker_options = [arg.split("=", 1)[0] for arg in script[1:]]
+            if not any(option.startswith("-h") or (option.startswith("--") and len(option) > 2
+                       and ("--help".startswith(option) or "--recount".startswith(option)))
+                       for option in checker_options):
                 return True
     return False
 

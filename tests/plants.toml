@@ -722,3 +722,48 @@ old = "            digest.update(name.encode() + b\"\\0symlink\\0\"\n"
 new = "            digest.update(name.encode() + b\"\\0\"\n"
 tests = ["tests/test_check_script.py::test_the_checked_tree_distinguishes_a_symlink_from_its_target_text"]
 source = "2026-10-30 guard adoption: keep symlink identity separate from regular-file bytes"
+
+[[plant]]
+id = "stop-hook-treats-a-reader-argument-as-a-live-check"
+guards = "Only a directly executed checker makes the Stop hook skip its suite"
+file = "scripts/hooks/stop_check.py"
+old = "        if script and Path(script[0]).name in LIVE_CHECKERS:\n"
+new = "        if any(Path(arg).name in LIVE_CHECKERS for arg in argv[1:]):\n"
+tests = ["tests/test_hooks.py::test_a_checker_path_in_python_reader_arguments_is_not_a_game_job"]
+source = "2026-10-30 live-check guard: matching a filename anywhere also matched readers"
+
+[[plant]]
+id = "stop-hook-misses-a-restored-episode-check"
+guards = "Every known direct live WH3 checker is a game job"
+file = "scripts/hooks/stop_check.py"
+old = ", \"check_wh3_restored_episode.py\""
+new = ""
+tests = ["tests/test_hooks.py::test_direct_live_checkers_are_game_jobs_except_help_and_recount"]
+source = "2026-10-30 live-check audit: all five direct scripts were missing"
+
+[[plant]]
+id = "stop-hook-does-not-consume-grouped-warning-arguments"
+guards = "CPython grouped options consume their argument before the live checker path"
+file = "scripts/hooks/stop_check.py"
+old = "bBdEhiIOPqRsSuvVx?W:X:c:m:"
+new = "bBdEhiIOPqRsSuvVx?WX:c:m:"
+tests = ["tests/test_hooks.py::test_live_checkers_follow_python_grouped_options_and_exits"]
+source = "2026-10-30 live-check review: -BuW ignore checker.py was missed"
+
+[[plant]]
+id = "stop-hook-ignores-offline-checker-abbreviations"
+guards = "Accepted help/recount prefixes are offline while resume stays live"
+file = "scripts/hooks/stop_check.py"
+old = "(\"--help\".startswith(option) or \"--recount\".startswith(option))"
+new = "(option in (\"--help\", \"--recount\"))"
+tests = ["tests/test_hooks.py::test_live_checker_argparse_prefixes_keep_resume_live"]
+source = "2026-10-30 live-check review: --rec and --he were treated as live"
+
+[[plant]]
+id = "stop-hook-ignores-grouped-checker-help"
+guards = "Argparse grouped short help is offline"
+file = "scripts/hooks/stop_check.py"
+old = 'option.startswith("-h")'
+new = 'option == "-h"'
+tests = ["tests/test_hooks.py::test_live_checker_argparse_prefixes_keep_resume_live"]
+source = "2026-10-30 live-check review: -hh printed help but was classified live"

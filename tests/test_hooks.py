@@ -477,3 +477,95 @@ def test_the_git_hook_refuses_a_commit_until_check_py_passed_on_this_tree(tmp_pa
     (linked / "runs/checks/last-pass.json").write_text(
         json.dumps({"tree": check.tree_content(linked)}))
     assert git("commit", "-qam", "there", cwd=linked).returncode == 0
+
+
+LIVE_CHECKER_SCRIPTS = [
+    "tests/twwarhammer3/check_wh3_army_setup.py",
+    "tests/twwarhammer3/check_wh3_checkpoint.py",
+    "tests/twwarhammer3/check_wh3_checkpoint_siege.py",
+    "tests/twwarhammer3/check_wh3_restored_episode.py",
+    "tests/twwarhammer3/team/check_wh3_team.py",
+]
+
+
+@pytest.mark.parametrize("script", LIVE_CHECKER_SCRIPTS)
+def test_direct_live_checkers_are_game_jobs_except_help_and_recount(tmp_path, script):
+    (tmp_path / "31").mkdir()
+    cmdline = tmp_path / "31/cmdline"
+    for arguments, running in [
+        ([script, "--help"], False),
+        ([script, "-h"], False),
+        ([script, "--recount", "runs/saved"], False),
+        ([script, "--recount=runs/saved"], False),
+        ([script, "--output", "runs/live-check"], True),
+        (["/repo/" + script, "--output", "runs/live-check"], True),
+    ]:
+        cmdline.write_bytes("\0".join(["/repo/.venv/bin/python", *arguments, ""]).encode())
+        assert stop_check.game_job_running(tmp_path) is running
+
+
+@pytest.mark.parametrize("flags", [
+    ["-u", "-B"], ["-W", "ignore"], ["-X", "dev"], ["-Wignore", "-Xdev"], ["--"],
+])
+def test_direct_live_checkers_allow_ordinary_python_flags(tmp_path, flags):
+    (tmp_path / "32").mkdir()
+    arguments = ["/repo/.venv/bin/python3", *flags,
+                 "tests/twwarhammer3/check_wh3_checkpoint.py", "--output", "runs/live-check", ""]
+    (tmp_path / "32/cmdline").write_bytes("\0".join(arguments).encode())
+    assert stop_check.game_job_running(tmp_path)
+
+
+@pytest.mark.parametrize("arguments", [
+    ["reader.py", "tests/twwarhammer3/check_wh3_checkpoint.py"],
+    ["-c", "print('tests/twwarhammer3/check_wh3_checkpoint.py')"],
+    ["-c", "pass", "tests/twwarhammer3/check_wh3_checkpoint.py"],
+    ["-cpass", "tests/twwarhammer3/check_wh3_checkpoint.py"],
+    ["-m", "json.tool", "tests/twwarhammer3/check_wh3_checkpoint.py"],
+    ["-mjson.tool", "tests/twwarhammer3/check_wh3_checkpoint.py"],
+    ["-W", "tests/twwarhammer3/check_wh3_checkpoint.py", "reader.py"],
+    ["-h", "tests/twwarhammer3/check_wh3_checkpoint.py"],
+    ["--help", "tests/twwarhammer3/check_wh3_checkpoint.py"],
+])
+def test_a_checker_path_in_python_reader_arguments_is_not_a_game_job(tmp_path, arguments):
+    (tmp_path / "33").mkdir()
+    (tmp_path / "33/cmdline").write_bytes(
+        "\0".join(["/repo/.venv/bin/python", *arguments, ""]).encode())
+    assert not stop_check.game_job_running(tmp_path)
+
+
+@pytest.mark.parametrize("flags,running", [
+    (["-BuW", "ignore"], True),
+    (["-BuX", "dev"], True),
+    (["-BuWignore", "-Xdev"], True),
+    (["-?"], False),
+    (["-Bh"], False),
+    (["--help-env"], False),
+    (["--help-xoptions"], False),
+    (["--help-all"], False),
+    (["-Bucpass"], False),
+    (["-Bumjson.tool"], False),
+    (["--unknown-python-flag"], False),
+])
+def test_live_checkers_follow_python_grouped_options_and_exits(tmp_path, flags, running):
+    (tmp_path / "34").mkdir()
+    arguments = ["/repo/.venv/bin/python", *flags,
+                 "tests/twwarhammer3/check_wh3_checkpoint.py", "--output", "runs/live-check", ""]
+    (tmp_path / "34/cmdline").write_bytes("\0".join(arguments).encode())
+    assert stop_check.game_job_running(tmp_path) is running
+
+
+@pytest.mark.parametrize("options,running", [
+    (["--rec", "runs/saved"], False),
+    (["--rec=runs/saved"], False),
+    (["--he"], False),
+    (["-hh"], False),
+    (["--re", "runs/saved"], False),  # ambiguous between recount and resume: argparse exits
+    (["--resume", "--output", "runs/live-check"], True),
+    (["--res", "--output", "runs/live-check"], True),
+])
+def test_live_checker_argparse_prefixes_keep_resume_live(tmp_path, options, running):
+    (tmp_path / "35").mkdir()
+    arguments = ["/repo/.venv/bin/python", "tests/twwarhammer3/check_wh3_restored_episode.py",
+                 *options, ""]
+    (tmp_path / "35/cmdline").write_bytes("\0".join(arguments).encode())
+    assert stop_check.game_job_running(tmp_path) is running

@@ -356,6 +356,9 @@ pass. Fingerprints cannot detect an edit made and undone between their two reads
 Timeout, Ctrl-C and SIGTERM clean up the check's process group before the hook exits;
 an interrupted run records no new pass. SIGKILL cannot run this cleanup. Direct-signal
 subprocess tests cover this; Codex's UI cancellation delivery has not been checked.
+The game-load guard also recognizes the five direct WH3 live-check scripts, including
+ordinary Python flags. Their help and evidence-recount commands stay offline. This is
+command-line recognition tested with fake processes; live timing effects remain unverified.
 
 ### Claude Code and Codex
 

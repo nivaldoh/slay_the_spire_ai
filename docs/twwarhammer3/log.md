@@ -44,6 +44,24 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-30: Stop-hook detection of live-check scripts
+
+The Stop hook now recognizes the five direct live-check scripts as game jobs; their help
+and evidence-recount commands stay offline. They directly own the game without a recognized
+`-m` controller child, so the old guard missed all five. Card/reference:
+`runs/light-factory-20261030/live-check-card.md`, agreed-check commands and their callers.
+Before: 10 missed-command cases failed, 7 passed. Review found valid grouped Python flags
+and abbreviated help/recount mismatches, then grouped `-hh`; added failing regressions and
+used Python's standard `getopt` parser. Integrated hook/sync tests: 131 passed; review raw
+outputs and five new plants are under `runs/light-factory-20261030/`.
+All 75 committed plants caught at `77c2c03`; new wrong variants checked separately.
+Final gate, with a fresh bytecode prefix: `runs/light-factory-20261030/live-check-final.log`.
+No game/Windows/paid calls, $0. Component checks proposed, not agreed; actual battle timing
+effects remain unverified. Arbitrary inline/wrapper launches remain outside recognition.
+One invalid Python spelling conservatively overmatches; a second parser was not added.
+Separate next card: stale bytecode can falsely pass the ordinary gate; reproduced on source
+and test edits. A fresh cache directory per pytest run will close that demonstrated gap.
+
 ## 2026-10-30: commit guard adopted at the owner's yes
 
 Owner: "Enable it (Recommended)". Adopted `commit-guard-draft` (`6958d6f`), configured
