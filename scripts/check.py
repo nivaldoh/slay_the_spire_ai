@@ -20,7 +20,8 @@ an agreed check names (docs/agreed-checks.md) or in that page; an edited or remo
 line; an assert removed or changed under tests/; a skip or xfail added there; a changed prompt
 snapshot; a package added or a version changed in uv.lock. A line moved verbatim elsewhere
 (indentation and comment marks aside) is neither removed nor added. "pages" names docs/state.md
-when it is over its 120 lines (AGENTS.md; a warning at the owner's yes, 2026-10-30). Last,
+when it is over its 120 lines (AGENTS.md; a warning at the owner's yes, 2026-10-30).
+"worktree" names the main checkout's evidence folders a linked worktree lacks. Last,
 "markers" counts the marker problems listed in the log (docs/judgement.md); only the owner
 changes markers, so they never fail.
 
@@ -58,6 +59,7 @@ AGREED = "docs/agreed-checks.md"
 PASSES = "runs/checks/agreed-passes.jsonl"
 PLANTS = "tests/plants.toml"
 STATE, STATE_LINES = "docs/state.md", 120
+EVIDENCE = ("runs/twwarhammer3", "runs/first-combat")  # the saved evidence that tests read
 PLANT_TIMEOUT_S = 300
 # The stale-plant rule fails whenever a plant is applied (its text is gone), so a replay leaves
 # it out; otherwise every plant listing tests/test_check_script.py would count as caught.
@@ -483,6 +485,15 @@ def long_pages(root: Path) -> list[str]:
     return [f"{STATE} has {lines} lines, over {STATE_LINES}"] if lines > STATE_LINES else []
 
 
+def worktree_gaps(root: Path) -> list[str]:
+    """In a linked worktree, the main checkout's evidence folders this tree lacks: the tests
+    that read them skip here, so this run tests less than the main checkout's would."""
+    main = Path(git(root, "rev-parse", "--path-format=absolute", "--git-common-dir").strip()).parent
+    missing = [d for d in EVIDENCE if (main / d).is_dir() and not (root / d).exists()]
+    return [f"{', '.join(missing)} missing in this linked worktree, so the tests that read "
+            f"them skip; link them from {main}"] if missing else []
+
+
 def skip_reasons(output: str) -> str:
     reasons: Counter[str] = Counter()
     for count, reason in SKIPPED.findall(output):
@@ -549,6 +560,7 @@ def main() -> int:
         shown.append(f"needs your yes (changes since {base[:9]}):")
         shown += [f"  - {line}" for line in yes]
     shown += [f"pages     {line} (AGENTS.md Working habits)" for line in long_pages(ROOT)]
+    shown += [f"worktree  {line}" for line in worktree_gaps(ROOT)]
     problems = marker_problems(ROOT)
     if problems:
         shown.append(f"markers   {len(problems)} problems listed in the log, for the owner")

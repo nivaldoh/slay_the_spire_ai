@@ -257,6 +257,19 @@ def test_state_md_over_120_lines_is_named(tmp_path):
     assert check.long_pages(tmp_path) == ["docs/state.md has 121 lines, over 120"]
 
 
+def test_a_linked_worktree_without_the_saved_evidence_is_named(repo, tmp_path):
+    (repo / "runs/twwarhammer3").mkdir(parents=True)
+    assert check.worktree_gaps(repo) == []  # the main checkout has its evidence
+    linked = tmp_path / "linked"
+    git(repo, "worktree", "add", "-q", str(linked))
+    assert check.worktree_gaps(linked) == [
+        "runs/twwarhammer3 missing in this linked worktree, so the tests that read them skip; "
+        f"link them from {repo.resolve()}"]
+    (linked / "runs").mkdir()
+    (linked / "runs/twwarhammer3").symlink_to(repo / "runs/twwarhammer3")
+    assert check.worktree_gaps(linked) == []
+
+
 def test_replayed_plants_are_caught_missed_stale_hung_or_lack_a_baseline(tmp_path, monkeypatch):
     (tmp_path / "src/pkg").mkdir(parents=True)
     (tmp_path / "src/pkg/mod.py").write_text("def f():\n    return 1\n")
