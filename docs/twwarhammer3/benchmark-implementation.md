@@ -128,6 +128,14 @@ Already decided: small mixed armies first; the engine picks the winner, timer wi
 
 21. **How much can a model act while a decision is pending?** One request at a time while existing orders keep running, or asynchronous planning with faster helpers? What happens to a stale reply: issue it, discard it, or check it against newer public state? What can cancel or replace queued orders? These rules decide whether a slow model can commit to actions that keep working through its next API call.
 
+   Evidence (2026-10-30, not an answer; a 2026-10-28 note, corrected after an independent review:
+   180 recorded episodes (179 `llm`/`llm_rules`, 1 `commander`), 8,614 decisions): in 12% something the
+   order did not cause changed during the call (an attack target went out of sight or broke, an ordered
+   unit broke, an ordered unit got into melee without having been ordered to attack), rising with the
+   decision's age (battle time from its observation to the order's application): 1.5% under 2 s, 5% at
+   2-4 s, 12% at 4-6 s, 16% at 6-10 s, 25% beyond 10 s. Observational: slow replies may come in busier
+   moments (`runs/overnight-20261028/direction3/`).
+
 22. **Which latency claim comes first?** Performance at each model's natural serving latency, sensitivity to added delay for a fixed controller, or both, reported separately? Natural latency answers the practical question but doesn't isolate reasoning quality. Older observations, longer waits between calls and slower inference are different interventions. No option pauses or slows the battle, and a delay sweep can't prove that faster serving would have saved a particular loss.
 
 23. **Which time measurements should explain performance?** API request and response time, the age of the observed state when an order is issued, gaps between decisions, and time to the observed effect answer different questions. Do you want typical and slowest behaviour, including retries, failed calls and calls still pending at the ending? Is issue time enough at first, with execution time marked unknown for queued orders, or is per-order effect timing needed before this battle can be a benchmark?
@@ -188,6 +196,20 @@ What the code records today and what is missing: [measurement gaps](#measurement
 30. **What should the report let you inspect?** Candidates: a result table, both armies' per-unit health and state timelines, knowledge judgements linked to decisions, latency, cost and failure summaries, and representative events. Which are essential for comparing models? Should different strengths stay visible instead of forcing one winner when the evidence or the tradeoffs don't support one?
 
 31. **Which repeatable checks would convince you the implementation is correct?** Candidates: lobby and start settings checked against the actual battle; unit HP and flags checked against timestamped UI or independent engine evidence through damage, rout and recovery; hand-classified endings and failures; changes to hidden data that must not alter public inputs; and clock and order-effect checks. Which cases, tolerances and independent references? Include plausible wrong implementations (a rout treated as a death, a failed read treated as zero, a queued order counted as executed). The [proposed checks](#correctness-checks-to-agree) are material to refine, not agreed methods.
+
+   Evidence (2026-10-30, not an answer; [agreed-checks.md](../agreed-checks.md)): of the five candidates,
+   only the start settings have an agreed live check made for them (saved armies and experience, on its
+   own two diagnostic scenarios: unit types, counts, ranks, mounts and reserves in the lobby and at battle
+   start, funds in the lobby and a funds refusal; passed with `e32b1b5` sources; its checker also compared
+   the lobby map and the battle-start role, but its entry names neither, and equipment is not in it).
+   Endings have one offline check (the engine ending kept after a late controller failure). Nothing agreed
+   checks unit HP and flags against the UI. Hidden data, the clock and order effects have only narrow
+   agreed versions, none for this battle: the scripted-team check keeps a member's inputs identical when
+   hidden fields change (offline), and live it sees the ordered unit move toward its waypoint after its
+   acknowledgement, with battle time against the WSL clock within 0.85-1.15 (rests on JUDGEMENT?
+   `check_wh3_team.py` team_clock_band); the checkpoint-RL step run sees an order injected into a restore
+   apply at its planned tick and its unit move. b51's Windows-clock 1x reading is built and read 1.0000 in
+   one scripted live battle, but is not agreed.
 
 32. **When is the definition complete enough to build?** One fixed battle with an agreed objective, score and diagnostics, inputs and orders, timing, failure rules and correctness checks? Which open items may be deferred explicitly? Once you have answered, we replace the affected proposals with your decisions and list only the work they need. This interview picks no roster, formula, threshold, sample count or new experiment.
 
