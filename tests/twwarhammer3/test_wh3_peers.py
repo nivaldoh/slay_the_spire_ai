@@ -1,20 +1,31 @@
 """The offline peer comparison (battle/peers.py) on synthetic observations that each client's
-worker sends through the real coordinator over loopback (engine/link.py), so the evidence
-files have the coordinator's own layout. Positions and identities are made up; nothing here
-says how real peers' observations line up."""
-
-import math
+worker sends through the real coordinator over loopback (engine/link.py): each one goes out
+through the worker's own ``Worker.watch`` (engine/worker.py), so the evidence files have the
+worker's event shape and the coordinator's layout. Positions and identities are made up;
+nothing here says how real peers' observations line up."""
 
 import pytest
 
 from twwarhammer3.battle.peers import compare
 from twwarhammer3.engine.link import Coordinator, WorkerLink, token_sha256
+from twwarhammer3.engine.worker import Worker
 
 HALBERDIERS, HANDGUNNERS = "wh_main_emp_inf_halberdiers", "wh_main_emp_inf_handgunners"
 
 
+class Mailbox:
+    """What ``Worker.watch`` reads: one observation and its file's write time."""
+
+    def __init__(self, observation, written_ns):
+        self.observation, self.written_ns = observation, written_ns
+
+    def read_observation(self):
+        return self.observation
+
+
 def attempt(tmp_path, sent: dict) -> dict:
-    """The summary of an attempt whose clients' workers sent these observation lists."""
+    """The summary of an attempt whose clients' workers sent these observation lists; each
+    observation is read by a worker that has not sent it yet, so a repeat is sent again."""
     manifest = {"match": "m1", "attempt": "a1", "expected": {},
                 "clients": {client: {"token_sha256": token_sha256(f"token-{client}")}
                             for client in sent}}
@@ -25,8 +36,8 @@ def attempt(tmp_path, sent: dict) -> dict:
             link = WorkerLink(coordinator.url, f"token-{client}", match="m1", attempt="a1",
                               client=client, manifest={}, stop=lambda: None, clock=lambda: 0.0)
             link.hello()
-            for data in observations:
-                link.event("observation", data)
+            for written_ns, data in enumerate(observations, 10**18):
+                Worker(link, Mailbox(data, written_ns), "observe").watch()
             link.beat()
     return compare(tmp_path / "a1")
 
@@ -81,11 +92,12 @@ def test_identical_peers_are_exact_at_every_common_time_for_every_pair(tmp_path)
                                        "native_errors": 0, "failed_rows": 0}
 
 
-def test_a_centimetre_or_one_ulp_off_is_a_difference_reported_raw_with_its_first_time_and_max(
+def test_a_centimetre_or_a_nanometre_off_is_a_difference_reported_raw_with_its_first_time_and_max(
         tmp_path):
     near, far = army(2.0 * 2), army(2.0 * 3)
     near[1]["x"] += 0.01
-    near[2]["z"] = math.nextafter(near[2]["z"], math.inf)  # any tolerance would hide it
+    # 1e-9 m survives the Lua's %.14g encoding (one ulp would not); a tolerance would hide it.
+    near[2]["z"] = float(f"{near[2]['z'] + 1e-9:.14g}")
     far[3]["x"] += 1.5
     far[3]["z"] -= 2.5
     summary = attempt(tmp_path, {"A": run("A", [1000, 2000, 3000]),
@@ -196,9 +208,11 @@ def test_missing_native_failed_reads_and_an_absent_client_are_counted(tmp_path):
     assert summary["clients"]["C"]["observations"] == 0
     pair = summary["pairs"][0]
     assert counts(pair, "common_times", "compared_times", "units_compared", "exact") == {
-        "common_times": 4, "compared_times": 3, "units_compared": 9, "exact": 9}
+        "common_times": 4, "compared_times": 2, "units_compared": 9, "exact": 9}
     assert pair["failed_rows"] == {"A": 1, "B": 0}
-    assert pair["missing"]["B"] == [] and len(pair["missing"]["A"]) == 5  # all of 3000's
+    # A's failed enumeration at 3000 is a read failure, not 5 units A did not see.
+    assert pair["native_error_times"] == {"A": [3000], "B": []}
+    assert pair["missing"] == {"A": [], "B": []}
     assert summary["pairs"][1]["only"] == {"A": [0, 1000, 2000, 3000], "C": []}
 
 

@@ -600,6 +600,23 @@ def test_attach_rejects_an_old_non_realtime_session(tmp_path, monkeypatch, harne
     assert (bridge / "session.json").exists()
 
 
+@pytest.mark.parametrize("mode", ["observe", "control"])
+def test_attach_refuses_a_native_multiplayer_workers_session(tmp_path, monkeypatch, harness,
+                                                             mode):
+    # The worker writes orders.json for that session; play would write its own beside it.
+    bridge = tmp_path / "bridge"
+    bridge.mkdir()
+    (bridge / "session.json").write_text(json.dumps({"job": "m1.a1.A", "multiplayer": mode}))
+    monkeypatch.setattr(play, "BRIDGE_DIR", bridge)
+    mailbox = FakeMailbox([bridge_observation(0, 0), bridge_observation(1, 1000, result="won")])
+    harness.append(mailbox)
+    with pytest.raises(ValueError, match="native multiplayer worker's"):
+        play.play(tmp_path / "job", {**CONFIG, "attach": True, "results": str(tmp_path / "r.csv")},
+                  makers={"attack_nearest": Hold})
+    manifest = json.loads((tmp_path / "job/manifest.json").read_text())
+    assert manifest["status"] == "infrastructure_failure" and manifest["episodes"] == []
+
+
 def test_attach_preserves_the_launch_owners_session(tmp_path, monkeypatch, harness):
     bridge = tmp_path / "bridge"
     bridge.mkdir()

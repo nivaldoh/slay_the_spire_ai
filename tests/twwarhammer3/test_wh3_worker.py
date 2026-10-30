@@ -6,6 +6,7 @@ observations repeat). Followed:
 PySC2 0df53d38c153972f1e368572ba65b1442a0fd41f ``pysc2/tests/multi_player_test.py``: separate
 clients with explicit identities against one host, closed after each test."""
 
+import contextlib
 import hashlib
 import json
 import os
@@ -109,11 +110,11 @@ def install(tmp_path, monkeypatch):
     return root
 
 
-def serve(tmp_path, **expected):
+def serve(tmp_path, ttl_s=0.5, **expected):
     manifest = {"match": "m1", "attempt": "a1",
                 "expected": {**worker.expected_manifest(), **expected},
                 "clients": {"A": {"token_sha256": token_sha256(TOKEN)}}}
-    return Coordinator(manifest, tmp_path / "a1", ttl_s=0.5, poll_s=0.3)
+    return Coordinator(manifest, tmp_path / "a1", ttl_s=ttl_s, poll_s=0.3)
 
 
 def start(coordinator, bridge, *, mode="control", attach=True, ack_s=2.0):
@@ -130,10 +131,12 @@ def start(coordinator, bridge, *, mode="control", attach=True, ack_s=2.0):
 
 
 def borrowed_bridge(tmp_path, mode="control"):
+    """A running game's bridge; mode None is a single-player session (no multiplayer)."""
     bridge = tmp_path / "bridge"
     bridge.mkdir()
-    (bridge / "session.json").write_text(json.dumps({"schema": 1, "job": "live",
-                                                     "enabled": True, "multiplayer": mode}))
+    session = {"schema": 1, "job": "live", "enabled": True,
+               **({"multiplayer": mode} if mode else {})}
+    (bridge / "session.json").write_text(json.dumps(session))
     (bridge / "mod.log").write_text("[0] earlier job\n")
     return bridge
 
@@ -187,6 +190,7 @@ def test_the_coordinator_command_prints_token_paths_only_and_submits_stdin_comma
     printed("")
     text = "".join(output)
     assert returned == [0]
+    assert not [path for path in paths.values() if path.exists()]  # revoked at close
     assert "queued command 1 for A" in text and "refused: client B holds no lease" in text
     assert text.count("refused: ") == 2 and text.endswith("closed\n")
     evidence = "".join(path.read_text() for path in (root / "m1/a1").iterdir())
@@ -200,10 +204,43 @@ def test_the_coordinator_command_prints_token_paths_only_and_submits_stdin_comma
     monkeypatch.setattr(sys, "argv", [*command[:5], "a2", *command[6:]])
     assert main() == 0  # Ctrl-C closes the attempt
     assert json.loads((root / "m1/a2/match.jsonl").read_text().splitlines()[-1])["kind"] == "closed"
+    assert not list((root / "tokens").iterdir())
 
 
+@pytest.mark.parametrize("match,attempt", [("..", "a1"), ("m1", "../../a1")])
+def test_a_match_or_attempt_name_that_leaves_the_runs_folder_is_refused(
+        tmp_path, install, monkeypatch, match, attempt):
+    # Both name folders under ROOT (runs/ here); ".." would put the record beside it.
+    monkeypatch.setattr(sys, "stdin", iter([]))
+    with pytest.raises(ValueError, match="match and attempt names are letters"):
+        worker.serve(match, attempt, ["A"])
+    assert not (tmp_path / "a1").exists() and not (tmp_path / "runs").exists()
+
+
+def test_a_worker_never_prints_or_records_its_token(tmp_path, install, monkeypatch, capfd):
+    bridge = borrowed_bridge(tmp_path)
+    game = FakeGame(bridge, "live")
+    game.publish(1)
+    token_file = tmp_path / "token"
+    token_file.write_text(TOKEN + "\n")
+    with serve(tmp_path, ttl_s=15) as coordinator:
+        monkeypatch.setattr(sys, "argv", [
+            "wh3", "worker", "--coordinator", coordinator.url, "--token-file", str(token_file),
+            "--match", "m1", "--attempt", "a1", "--client", "A", "--mode", "control",
+            "--attach", "--bridge", str(bridge), "--max-minutes", "0.01"])
+        assert main() == 0
+        assert events(coordinator, "observation", 1)  # it ran and sent evidence
+    game.close()
+    out, err = capfd.readouterr()
+    assert "worker: run bound reached" in err and TOKEN not in out + err
+    files = [path for path in tmp_path.rglob("*") if path.is_file() and path != token_file]
+    assert not [path for path in files if TOKEN.encode() in path.read_bytes()]
+
+
+@pytest.mark.parametrize("attach", [False, True])
 def test_a_refused_worker_reported_its_host_and_touched_neither_game_nor_bridge(
-        tmp_path, install, monkeypatch):
+        tmp_path, install, monkeypatch, attach):
+    # With --attach, a bridge that does not exist: reading its session.json would raise.
     refuse_to_launch(monkeypatch)
     expected = worker.expected_manifest()  # from the pins, as the coordinator command has it
     runtime.STEAM_MANIFEST.write_text('"buildid"\t\t"26000001"\n')  # Steam updated the game
@@ -211,7 +248,7 @@ def test_a_refused_worker_reported_its_host_and_touched_neither_game_nor_bridge(
     with serve(tmp_path) as coordinator:
         with pytest.raises(LinkRefused, match="manifest differs: steam_build_id, exe_sha256"):
             worker.run(coordinator.url, TOKEN, match="m1", attempt="a1", client="A",
-                       mode="control", attach=False, bridge=runtime.BRIDGE_DIR, max_s=30)
+                       mode="control", attach=attach, bridge=runtime.BRIDGE_DIR, max_s=30)
         reported = records(coordinator, "hello_refused")[0]["reported"]
     assert set(reported) == {*expected, "platform", "python", "native"}
     assert {field: reported[field] for field in expected} == {
@@ -220,16 +257,59 @@ def test_a_refused_worker_reported_its_host_and_touched_neither_game_nor_bridge(
     assert not (install / "mnt").exists()  # no runtime folder, lock or bridge
 
 
+@pytest.mark.parametrize("attach", [False, True])
 def test_a_worker_whose_hello_grants_no_actuation_touches_neither_game_nor_bridge(
-        tmp_path, install, monkeypatch):
+        tmp_path, install, monkeypatch, attach):
     refuse_to_launch(monkeypatch)
     with serve(tmp_path) as coordinator:
         WorkerLink(coordinator.url, TOKEN, match="m1", attempt="a1", client="A",  # an earlier
                    manifest=worker.host_manifest(), stop=lambda: None).hello()  # worker of A
         assert worker.run(coordinator.url, TOKEN, match="m1", attempt="a1", client="A",
-                          mode="control", attach=False, bridge=runtime.BRIDGE_DIR, max_s=30) == 1
+                          mode="control", attach=attach, bridge=runtime.BRIDGE_DIR,
+                          max_s=30) == 1
         assert [row["actuation"] for row in records(coordinator, "hello")] == [True, False]
     assert not (install / "mnt").exists()
+
+
+def test_run_refuses_a_mode_other_than_observe_or_control_before_hello(
+        tmp_path, install, monkeypatch):
+    # The command line's choices stop it there; past hello, an owned run would launch the game.
+    refuse_to_launch(monkeypatch)
+    with serve(tmp_path) as coordinator:
+        with pytest.raises(ValueError, match="mode is one of"):
+            worker.run(coordinator.url, TOKEN, match="m1", attempt="a1", client="A",
+                       mode="spectate", attach=False, bridge=runtime.BRIDGE_DIR, max_s=30)
+        assert records(coordinator, "hello") == []
+
+
+@pytest.mark.parametrize("live", [None, "observe"])
+def test_an_attached_worker_writes_no_orders_into_a_session_of_another_mode(
+        tmp_path, install, monkeypatch, live):
+    # None is a single-player play session: its Lua would apply the orders.
+    refuse_to_launch(monkeypatch)
+    bridge = borrowed_bridge(tmp_path, live)
+    game = FakeGame(bridge, "live")
+    game.publish(1)
+    errors = []
+
+    def attach():
+        try:
+            worker.run(coordinator.url, TOKEN, match="m1", attempt="a1", client="A",
+                       mode="control", attach=True, bridge=bridge, max_s=2, heartbeat_s=0.05,
+                       poll_s=1.0)
+        except RuntimeError as error:
+            errors.append(str(error))
+
+    with serve(tmp_path) as coordinator:
+        thread = threading.Thread(target=attach, daemon=True)
+        thread.start()
+        wait_for(lambda: not thread.is_alive() or events(coordinator, "observation"))
+        with contextlib.suppress(LinkRefused):
+            coordinator.submit("A", {"based_on": 1, "orders": [MOVE]})
+        thread.join(5)
+    game.close()
+    assert errors == [f"the running session's multiplayer is {live!r}, not 'control'"]
+    assert game.requests == []
 
 
 @pytest.mark.parametrize("ending", ["lease", "game exit"])

@@ -13,6 +13,7 @@ import pytest
 from wh3_lua import BATTLE, MOD, runtime
 
 from twwarhammer3.battle import play
+from twwarhammer3.engine import worker
 
 BRIDGE = "C:/wh3-agent/bridge/"
 
@@ -188,6 +189,17 @@ def test_without_multiplayer_army_one_is_ours_and_controlled_from_the_start():
         ["create"], ["add_units", 11], ["take_control"],
         ["create"], ["add_units", 12], ["take_control"], ["speed", 1, True]]
     assert len(g.trapped) == 0 and g.twwarhammer3_inject is not None
+
+
+@pytest.mark.parametrize("mode", ["observe", "control"])
+def test_the_session_an_owned_worker_writes_activates_the_battle_script(mode):
+    # engine/worker.py run() publishes {**SESSION, "multiplayer": mode} as session.json.
+    g = battle({**worker.SESSION, "multiplayer": mode})
+    [line] = logged(g)
+    assert line.startswith("loaded battle ") and not inactive(g)
+    g.phases["Deployed"]()
+    g.callbacks["twwarhammer3_tick"]()
+    assert observation(g)["native"]["mode"] == mode
 
 
 @pytest.mark.parametrize("value,shown", [("spectate", "spectate"), (True, "true")])

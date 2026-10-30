@@ -6,7 +6,8 @@ contract", "Proposed worker connection" and steps 4 and 5.
 The coordinator (``serve``) records the attempt under
 ``runs/twwarhammer3/native-multiplayer/<match>/<attempt>/`` and writes each client's token to
 ``runs/twwarhammer3/native-multiplayer/tokens/<match>-<attempt>-<client>.token`` (owner-only
-on Linux; on Windows the folder's access rules decide), printing only its path. Every worker
+on Linux; on Windows the folder's access rules decide), printing only its path, and removes
+those files when the attempt closes (the plan's teardown revokes task tokens). Every worker
 must report the same four fields (``expected_manifest``): the pinned Steam build and
 ``Warhammer3.exe`` sha256, the sha256 of the mod pack built in memory from this checkout's mod
 source, and ``source_sha256`` over the files of ``play.SOURCES`` (no git, so a VM needs none;
@@ -28,6 +29,10 @@ Without that acknowledgement within ``ACK_S`` its effect is unknown and the work
 the lease ends, the worker closes an owned game, removes its session, closes the link and exits
 1; a borrowed game keeps running. An owned game that exits ends the worker too (1); on that or
 another planned end (``--max-minutes``, Ctrl-C) it sends its spooled events once more.
+
+Clocks: a worker run under WSL stamps its events with WSL clocks, measured 6-8% slow and with
+steps (docs/twwarhammer3/integration.md, "Clocks"); the Windows time to use is each
+observation event's ``written_ns``, the file's NTFS write time.
 
 Followed: PySC2 0df53d38c153972f1e368572ba65b1442a0fd41f, ``pysc2/env/sc2_env.py`` and
 ``pysc2/tests/multi_player_test.py``: one process per player with an explicit identity, and
@@ -115,10 +120,13 @@ def serve(match: str, attempt: str, clients: list[str], *, port: int = 0) -> int
     manifest = {"match": match, "attempt": attempt, "expected": expected_manifest(),
                 "clients": {client: {"token_sha256": token_sha256(token)}
                             for client, token in tokens.items()}}
-    with Coordinator(manifest, ROOT / match / attempt, port=port) as coordinator:
+    with contextlib.ExitStack() as stack:
+        coordinator = stack.enter_context(Coordinator(manifest, ROOT / match / attempt,
+                                                      port=port))
         for client, token in tokens.items():
             path = ROOT / "tokens" / f"{match}-{attempt}-{client}.token"
             write_token(path, token)
+            stack.callback(path.unlink, missing_ok=True)  # removed when the attempt closes
             print(f"token for {client}: {path}", flush=True)
         print(f"serving {coordinator.url}", flush=True)
         with contextlib.suppress(KeyboardInterrupt):

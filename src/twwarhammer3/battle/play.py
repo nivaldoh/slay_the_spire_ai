@@ -174,6 +174,9 @@ def play(output: Path, config: dict, *, makers: dict) -> dict:
         if config["attach"]:
             # The running game keeps the session it was launched with.
             live = json.loads((BRIDGE_DIR / "session.json").read_text())
+            if "multiplayer" in live:
+                raise ValueError("the running session is a native multiplayer worker's: "
+                                 "play would write orders.json beside it")
             require_realtime(live)
             config.update({key: live[key] for key in SESSION_KEYS if key in live})
             config["record_replay"] = live.get("record_replay", False)

@@ -155,6 +155,36 @@ def test_events_are_kept_once_acknowledged_contiguously_and_a_conflict_fails_the
         coordinator.submit("A", {})
 
 
+@pytest.mark.parametrize("seq", [0, -3, "1", None, 1.5, True])
+def test_an_event_seq_that_is_not_a_positive_integer_is_refused_and_not_stored(coordinator,
+                                                                              seq):
+    # A stored seq other than 1, 2, ... breaks the contiguous ack (True would count as 1).
+    link = worker(coordinator)
+    link.hello()
+    status, reply = call(coordinator, "POST", "/events", generation=link.generation,
+                         heartbeat=1, events=[{"seq": seq, "kind": "observation", "data": {}}])
+    assert status == 400 and "an event seq is a positive integer" in reply["error"]
+    assert not (coordinator.directory / "events-A.jsonl").exists()
+
+
+def test_an_event_before_hello_is_refused(coordinator):
+    # Event numbers continue from the coordinator's ack, which only the hello reply gives.
+    link = worker(coordinator)
+    with pytest.raises(RuntimeError, match="hello first"):
+        link.event("observation", {})
+    link.hello()
+    assert link.event("observation", {})["seq"] == 1
+
+
+@pytest.mark.parametrize("client", ["A/B", ""])
+def test_a_client_name_that_cannot_name_its_events_file_is_refused(tmp_path, client):
+    # Each client's events go to events-<client>.jsonl in the attempt directory.
+    clients = {client: {"token_sha256": token_sha256("token-for-a-bad-name")}}
+    with pytest.raises(ValueError, match="client names are letters, digits, _ and -"):
+        Coordinator({**manifest(), "clients": clients}, tmp_path / "a1")
+    assert not (tmp_path / "a1").exists()
+
+
 def test_a_long_poll_returns_a_command_at_once_else_nothing_after_its_bound(tmp_path):
     with Coordinator(manifest(), tmp_path / "a1", poll_s=0.5) as coordinator:
         a, b = worker(coordinator, "A"), worker(coordinator, "B")
