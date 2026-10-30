@@ -180,6 +180,11 @@ def main() -> int:
     stats = commands.add_parser("stats", help="Summarise the results register")
     stats.add_argument("--results", type=Path, default=RESULTS_PATH)
 
+    peers = commands.add_parser(
+        "compare-peers", help="Compare what the clients of one native match attempt observed")
+    peers.add_argument("attempt", type=Path,
+                       help="the coordinator's attempt directory (match.jsonl, events-*.jsonl)")
+
     report = commands.add_parser(
         "report", help="Paired benchmark report of jobs: print it, save text, JSON and HTML")
     report.add_argument("jobs", nargs="*", type=Path, metavar="JOB", help="job directory")
@@ -397,6 +402,16 @@ def main() -> int:
         from twwarhammer3.battle.stats import summary
 
         print(summary(args.results))
+        return 0
+
+    if args.command == "compare-peers":
+        from twwarhammer3.battle.peers import compare
+
+        try:
+            summary = compare(args.attempt)
+        except (OSError, ValueError) as exc:
+            parser.error(str(exc))
+        print(json.dumps(summary, indent=1))
         return 0
 
     if args.command == "report":

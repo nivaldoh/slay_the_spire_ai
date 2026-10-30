@@ -204,3 +204,22 @@ def test_report_explicit_job_list_includes_failures_and_rejects_an_empty_selecti
     selection.write_text('{"jobs": []}')
     with pytest.raises(SystemExit):
         main()
+
+
+def test_compare_peers_prints_the_summary_and_reports_a_refusal_as_a_usage_error(
+        tmp_path, monkeypatch, capsys):
+    from twwarhammer3.battle import peers
+
+    monkeypatch.setattr(peers, "compare", lambda path: {"attempt": str(path)})
+    monkeypatch.setattr(sys, "argv", ["wh3", "compare-peers", str(tmp_path)])
+    assert main() == 0
+    assert json.loads(capsys.readouterr().out) == {"attempt": str(tmp_path)}
+
+    def refuse(path):
+        raise ValueError("client A's events hold more than one battle id")
+
+    monkeypatch.setattr(peers, "compare", refuse)
+    with pytest.raises(SystemExit) as stopped:
+        main()
+    assert stopped.value.code == 2
+    assert "more than one battle id" in capsys.readouterr().err
