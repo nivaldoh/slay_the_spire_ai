@@ -44,12 +44,13 @@ UNIT_READS = {"unique_ui_id", "type", "unit_class", "is_commanding_unit", "can_f
     "owned_non_passive_special_abilities", "can_perform_special_ability", "current_target",
     "ordered_position", "is_leaving_battle", "is_deployed", "is_deploying", "is_valid_target",
     "alliance_index", "can_reach_position", "is_visible_to_alliance"}
--- Every unit has the same type; x nil makes its position unreadable.
-function unit(id, x)
+-- Every unit has the same type; x nil makes its position unreadable. `alliance` is its
+-- alliance_index, which the script reads only for reinforcement army units.
+function unit(id, x, alliance)
     local values = {unique_ui_id = id, type = "wh_main_emp_inf_spearmen_0",
         unit_class = "inf_mel", number_of_men_alive = 60, initial_number_of_men = 60,
         is_deployed = true, is_valid_target = true, can_reach_position = true,
-        is_visible_to_alliance = true}
+        is_visible_to_alliance = true, alliance_index = alliance}
     local methods = {position = function()
         return x and position(x, 7.654321) or error("position unreadable")
     end}
@@ -85,6 +86,7 @@ alliances = list("alliances", {
     trap("alliance", {armies = function() return list("armies", {allies, own}) end}),
     trap("alliance", {armies = function() return list("armies", {enemy}) end}),
 })
+reinforcement_armies = {}  -- none unless a test sets some
 battle = trap("battle", {
     time_elapsed_ms = function() return now end,
     is_multiplayer = function() return is_multiplayer end,
@@ -93,7 +95,11 @@ battle = trap("battle", {
     battle_boundaries = function() return position(-64, -64), position(64, 64) end,
     get_terrain_height = const(0), is_area_clear = const(true),
     reinforcements = function()
-        return trap("reinforcements", {reinforcement_army_count = const(0)})
+        return trap("reinforcements", {
+            reinforcement_army_count = function() return #reinforcement_armies end,
+            reinforcement_army = function(_, k)
+                return trap("reinforcement", {army = const(reinforcement_armies[k])})
+            end})
     end,
     remaining_conflict_time = const(-1), battle_outcome_decided = function() return decided end,
     victorious_alliance = const(1), local_alliance = const(1), is_draw = const(false),
@@ -287,6 +293,55 @@ def test_control_takes_an_own_unit_only_at_its_accepted_move_and_refuses_the_res
     assert g.files[BRIDGE + "menu.json"] is None and "multiplayer: dropped menu.json" in logged(g)
     assert set(g.callbacks) == {"twwarhammer3_poll", "twwarhammer3_tick"}
     assert list(g.trapped.values()) == []  # no advice, speed change, phase end, restart or click
+
+
+def control_results(g, orders):
+    """The results of one control-mode request of `orders`, sent once the battle is deployed."""
+    g.phases["Deployed"]()
+    g.callbacks["twwarhammer3_tick"]()
+    seen = observation(g)
+    send(g, "orders.json", {"battle": seen["battle"], "request": "r1", "based_on": seen["seq"],
+                            "orders": orders})
+    g.callbacks["twwarhammer3_tick"]()
+    return [result.get("error") for result in observation(g)["orders"]["results"]]
+
+
+def test_control_takes_a_controller_only_after_a_move_passes_validation():
+    g = battle({"multiplayer": "control"}, """
+        grant(own)
+        own:units():item(2).number_of_men_alive = const(0)
+    """)
+    errors = control_results(g, [{"unit": "f1", "type": "move", "x": "north", "z": 20},
+                                 {"unit": "f2", "type": "move", "x": 10, "z": 20}])
+    assert errors == ["bad_position", "unit_dead"]
+    assert len(g.calls) == 0 and list(g.trapped.values()) == []
+
+
+def test_control_refuses_a_queued_order_as_unsupported_whatever_precedes_it():
+    # Single-player checks the queue's predecessor first (test_wh3_battle_lua.py).
+    g = battle({"multiplayer": "control"}, "grant(own)")
+    errors = control_results(g, [{"unit": "f1", "type": "move", "x": 1, "z": 2, "queue": True},
+                                 {"unit": "f2", "type": "move", "x": "north", "z": 2},
+                                 {"unit": "f2", "type": "move", "x": 1, "z": 2, "queue": True}])
+    assert errors == ["unsupported_in_multiplayer", "bad_position", "unsupported_in_multiplayer"]
+    assert len(g.calls) == 0
+
+
+def test_reinforcement_armies_of_the_local_alliance_are_allies_and_the_others_enemies():
+    # Rests on JUDGEMENT? engine/mailbox.py "Multiplayer allied reinforcements".
+    g = battle({"multiplayer": "observe"}, """
+        reinforcement_armies = {army("own_faction", 0, 504, {unit(41, 6, 1)}),
+                                army("enemy_faction", 0, 505, {unit(51, 8, 2)})}
+    """)
+    g.phases["Deployed"]()
+    g.callbacks["twwarhammer3_tick"]()
+    seen = observation(g)
+    assert [unit["id"] for unit in seen["friendly"]] == ["f1", "f2"]
+    assert [unit["id"] for unit in seen["enemy"]] == ["e1", "e2", "e3"]
+    rows = [row for row in seen["native"]["units"] if row.get("ui_id") in (41, 51)]
+    assert [(row["id"], row["alliance"], row.get("army"), row["index"], row["owner"])
+            for row in rows] == [("a3", 1, "r1", 1, "allied"), ("e3", 2, "r2", 1, "enemy")]
+    assert list(g.trapped.values()) == []
 
 
 def test_the_policy_view_drops_the_native_identities():

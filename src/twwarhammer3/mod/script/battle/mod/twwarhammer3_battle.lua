@@ -1100,8 +1100,10 @@ local function apply_pending(now)
     local results, failed, previous = {}, {}, {}
     for index, order in ipairs(message.orders or {}) do
         local result
+        -- Multiplayer control refuses every queued order in apply_order, whatever precedes it.
         if order.queue and (failed[order.unit] or previous[order.unit] ~= "move"
-                            or (order.type ~= "move" and order.type ~= "attack")) then
+                            or (order.type ~= "move" and order.type ~= "attack"))
+                and not state.multiplayer then
             result = {unit = order.unit, ok = false, error = "queue_predecessor_failed_or_missing"}
         else
             result = apply_order(order)
