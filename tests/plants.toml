@@ -640,3 +640,30 @@ old = "if passed and tree_identity() != identity:"
 new = "if False:"
 tests = ["tests/test_hooks.py::test_stop_hook_does_not_accept_a_tree_changed_during_a_passing_check"]
 source = "2026-10-30 Codex hook audit; regression failed before the fix"
+
+[[plant]]
+id = "stop-check-leaves-interrupted-child"
+guards = "An interrupted Stop hook cleans up its detached check"
+file = "scripts/hooks/stop_check.py"
+old = "except BaseException:  # timeout, Ctrl-C or SIGTERM: no detached check left running"
+new = "except subprocess.TimeoutExpired:"
+tests = ["tests/test_hooks.py::test_interrupted_stop_hook_kills_and_reaps_its_check"]
+source = "2026-10-30 Codex hook audit; both signal regressions failed before the fix"
+
+[[plant]]
+id = "stop-check-sigterm-skips-cleanup"
+guards = "SIGTERM runs the Stop hook's process cleanup"
+file = "scripts/hooks/stop_check.py"
+old = "    signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))\n"
+new = ""
+tests = ["tests/test_hooks.py::test_interrupted_stop_hook_kills_and_reaps_its_check"]
+source = "2026-10-30 Codex hook audit; direct SIGTERM left a sleeping check child alive"
+
+[[plant]]
+id = "stop-check-interrupted-before-handle-returned"
+guards = "An interruption during Popen construction does not orphan the check"
+file = "scripts/hooks/stop_check.py"
+old = "signal.signal(sig, defer) for sig in (signal.SIGINT, signal.SIGTERM)"
+new = "signal.getsignal(sig) for sig in (signal.SIGINT, signal.SIGTERM)"
+tests = ["tests/test_hooks.py::test_interrupted_stop_hook_kills_and_reaps_its_check"]
+source = "2026-10-30 independent review; constructor-return SIGINT and SIGTERM both leaked"

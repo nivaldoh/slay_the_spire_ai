@@ -341,6 +341,9 @@ A passing Stop check must also leave the checkout unchanged. If its fingerprint 
 during the run, the final tree is unchecked: no pass is cached, the hook blocks once and a
 fresh stop checks again. The existing escape after one block still reports no established
 pass. Fingerprints cannot detect an edit made and undone between their two reads.
+Timeout, Ctrl-C and SIGTERM clean up the check's process group before the hook exits;
+an interrupted run records no new pass. SIGKILL cannot run this cleanup. Direct-signal
+subprocess tests cover this; Codex's UI cancellation delivery has not been checked.
 
 ### Claude Code and Codex
 

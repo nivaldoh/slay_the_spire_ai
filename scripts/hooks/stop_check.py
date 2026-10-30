@@ -14,6 +14,8 @@ game job runs (a WH3 or Spire play, launch, menu, RL phase, rollout, training, e
 replay, or the queue), the check is skipped so its load stays off the game.
 If the tree changes during a passing check, its final state is unchecked: block once and
 remember no pass, so a fresh stop must check again.
+Timeouts and interruptions kill and reap the check process group. SIGTERM uses the same
+cleanup as Ctrl-C; SIGKILL cannot run Python cleanup.
 """
 import hashlib
 import json
@@ -64,14 +66,34 @@ def game_job_running(proc: Path = Path("/proc")) -> bool:
 
 
 def run_check() -> tuple[bool, str]:
-    process = subprocess.Popen(CHECK_COMMAND, cwd=ROOT,
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-                               start_new_session=True)
+    process = None
+    pending = []
+
+    def defer(signum, _frame):
+        pending.append(signum)
+
     try:
+        # Popen can start the child before returning its handle. Defer interruption just
+        # across construction, then deliver it with ownership established. Unlike blocking
+        # signals with pthread_sigmask, this leaves the child's signal mask unchanged.
+        handlers = {sig: signal.signal(sig, defer) for sig in (signal.SIGINT, signal.SIGTERM)}
+        try:
+            process = subprocess.Popen(CHECK_COMMAND, cwd=ROOT,
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                                       start_new_session=True)
+        finally:
+            for sig, handler in handlers.items():
+                signal.signal(sig, handler)
+        if pending:
+            signal.raise_signal(pending[0])
         out, err = process.communicate(timeout=TIMEOUT_S)
-    except subprocess.TimeoutExpired:
-        os.killpg(process.pid, signal.SIGKILL)  # uv, check.py and the tests they started
-        process.communicate()
+    except BaseException:  # timeout, Ctrl-C or SIGTERM: no detached check left running
+        if process is not None:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)  # uv, check.py and the tests they started
+            except ProcessLookupError:
+                pass
+            process.communicate()
         raise
     report = out.strip() or err.strip()[-2000:]
     return process.returncode == 0, report
@@ -141,6 +163,8 @@ def main(check=run_check, event: dict | None = None, jobs=None) -> int:
 
 
 if __name__ == "__main__":
+    # As in scripts/check.py's plants_main: termination must run the cleanup above.
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
     try:
         stdin_event = json.load(sys.stdin)
     except ValueError:

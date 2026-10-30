@@ -16,7 +16,8 @@ correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](aut
 Factory: [workflow.md](workflow.md), stages 1-4 built; stage 5 awaits the next experiment.
 CI runs `check.py` on each push (results: `gh run list`).
 **Codex:** hooks active, reviewer available, skill discovered; sync tests pass. Stop-hook
-concurrent-edit fix reviewed; interruption cleanup next (`runs/light-factory-20261030/`).
+concurrent-edit fix committed; interruption cleanup finishing, approved commit guard next
+(`runs/light-factory-20261030/`). No game window; owner away for a few hours.
 **Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; five
 draft branches are unmerged ([list](#branches)).
 Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)).

@@ -44,6 +44,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-30: Stop-hook interruption cleanup
+
+The Stop hook kills and reaps its check process group on SIGINT or SIGTERM. Interruptions
+are deferred only during process construction, until the child handle is available; the
+original handlers are then restored and any pending signal delivered. Timeout behavior stays.
+Card: `runs/light-factory-20261030/interrupt-card.md`; reference: check.py's plant-run cleanup.
+Before the fix, both direct-signal tests failed with live children. Review found two more
+startup windows and a leak in the regression's timeout cleanup; all were reproduced and fixed.
+Hook/sync tests: 93 passed; six signal cases cover running checks, assigned handles and
+constructor return. Independent review: real code 6 passed; no cleanup 6 failed; no SIGTERM
+handler 3 passed/3 failed; no deferral 4 passed/2 failed. Every probe child removed.
+Existing plants: 66/66 caught at `60f1eac`; three new plants exercised separately.
+Final exit-gate output: `runs/light-factory-20261030/interrupt-check-final-atomic.log`.
+Raw evidence/reviews in that folder; no game or paid API, $0. Proposed checks, not agreed.
+Codex UI cancellation delivery and SIGKILL cleanup are not established; SIGKILL cannot run
+Python cleanup. The approved commit guard is next; its review found a stale-record bug.
+
 ## 2026-10-30: Codex hook audit and concurrent-edit fix
 
 Codex's live Bash hook refused one harmless `ruff format --help` probe. Its reviewer is

@@ -7,6 +7,7 @@ blocks; `stop_hook_active` marks a stop that follows a block).
 import importlib.util
 import json
 import os
+import signal
 import subprocess
 import sys
 import time
@@ -346,3 +347,88 @@ def test_stop_hook_does_not_accept_a_tree_changed_during_a_passing_check(repo, c
     assert stop_check.read_cache()["passed"] == stop_check.tree_identity()
     assert stop_check.main(recorder(calls, True), session) == 0
     assert calls == ["a = 1\n", True]
+
+
+@pytest.mark.parametrize("interruption", [signal.SIGINT, signal.SIGTERM])
+@pytest.mark.parametrize("stage", ["running", "handle", "constructor"])
+def test_interrupted_stop_hook_kills_and_reaps_its_check(repo, interruption, stage):
+    repo, _ = repo
+    script = repo / "scripts/hooks/stop_check.py"
+    script.parent.mkdir(parents=True)
+    script.write_bytes((ROOT / "scripts/hooks/stop_check.py").read_bytes())
+    (repo / "runs").mkdir(exist_ok=True)
+    child_file = repo / "runs/check-child.pid"
+    uv = repo / "bin/uv"
+    uv.parent.mkdir()
+    # Substitute only uv, so the real hook's entry point, signal handling and process
+    # cleanup run without invoking the suite or depending on its duration.
+    uv.write_text(f"#!{sys.executable}\nimport os, time\nfrom pathlib import Path\n"
+                  f"ready = Path({str(child_file)!r})\npending = ready.with_suffix('.tmp')\n"
+                  "pending.write_text(str(os.getpid()))\npending.replace(ready)\ntime.sleep(60)\n")
+    uv.chmod(0o755)
+    event = repo / "event.json"
+    event.write_text("{}")
+    child = None
+    command = [sys.executable, str(script)]
+    if stage != "running":
+        # Pause after construction or signal at its return, before the handle is stored.
+        # Both are real interruption windows; the child must be owned before exit.
+        boundary = script.read_text().splitlines().index(
+            "        out, err = process.communicate(timeout=TIMEOUT_S)") + 1
+        condition = (f"event == 'line' and frame.f_code.co_filename == {str(script)!r} "
+                     f"and frame.f_lineno == {boundary}" if stage == "handle" else
+                     "event == 'return' and frame.f_code.co_name == '__init__' "
+                     "and isinstance(frame.f_locals.get('self'), subprocess.Popen) "
+                     "and frame.f_back.f_code.co_name == 'run_check'")
+        action = ("        while True: time.sleep(0.01)\n" if stage == "handle" else
+                  f"        while not Path({str(child_file)!r}).exists(): time.sleep(0.01)\n"
+                  f"        os.kill(os.getpid(), {int(interruption)})\n")
+        trace = ("import os, runpy, subprocess, sys, time\nfrom pathlib import Path\n"
+                 "def trace(frame, event, arg):\n"
+                 f"    if {condition}:\n" + action +
+                 "    return trace\n"
+                 f"sys.settrace(trace)\nrunpy.run_path({str(script)!r}, run_name='__main__')\n")
+        command = [sys.executable, "-c", trace]
+    with event.open() as stdin:
+        process = subprocess.Popen(command, stdin=stdin,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                   env={**os.environ, "PATH": f"{uv.parent}:{os.environ['PATH']}"})
+    try:
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            try:
+                child = int(child_file.read_text())
+                break
+            except (OSError, ValueError):
+                if process.poll() is not None:
+                    break
+                time.sleep(0.01)
+        assert child is not None, "hook did not start its stub check"
+        if stage != "constructor":
+            process.send_signal(interruption)
+        process.communicate(timeout=5)
+        assert process.returncode != 0
+        with pytest.raises(ProcessLookupError):
+            os.kill(child, 0)
+        assert not (repo / "runs/checks/stop-hook.json").exists()
+    finally:
+        # A broken implementation must fail the test without leaving its stub running.
+        # Find an unpublished child while the hook still owns it (Linux/WSL, like /proc
+        # in the production game-job guard); killing the hook first would orphan it.
+        children = Path(f"/proc/{process.pid}/task/{process.pid}/children")
+        try:
+            owned = [int(pid) for pid in children.read_text().split()]
+        except FileNotFoundError:
+            owned = []
+        if process.poll() is None:
+            process.terminate()
+        for pid in {*owned, *([child] if child is not None else [])}:
+            try:
+                os.killpg(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        try:
+            process.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.communicate(timeout=5)
