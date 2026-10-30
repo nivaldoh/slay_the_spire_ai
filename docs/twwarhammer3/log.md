@@ -53,8 +53,8 @@ Claude Code, after the owner answered the night's six decisions ([direction](../
   before and after the run.
 - CI (`bcb874c`): `.github/workflows/check.yml`; the link test skips only links into
   `docs/thesis/`. A fresh clone on WSL with no git identity: 1821 passed, 64 skipped; a
-  reviewer's runner-like clone (depth 1, empty HOME, no `/mnt/c`): 1833 passed, 64 skipped. Not
-  yet run on GitHub.
+  reviewer's runner-like clone (depth 1, empty HOME, no `/mnt/c`): 1833 passed, 64 skipped. On
+  GitHub, the first run (`da47cde`, run 40977306942): Ruff clean, 1835 passed, 64 skipped.
 - Codex (`ae05c38`): `.codex/hooks.json` and `.codex/agents/reviewer.toml` mirror Claude Code's;
   `tests/test_agent_sync.py` checks the pairs and that each command finds its script without
   `CLAUDE_PROJECT_DIR`. The hook test now passes in a linked worktree (it failed 16 cases there).
@@ -63,7 +63,7 @@ Claude Code, after the owner answered the night's six decisions ([direction](../
 - Reviews: 4 reviewer runs, 13 findings (4, 2, 4, 3), all fixed but one limit (b51, below);
   the planted wrong versions per area, all caught, are in `runs/light-factory-20261029-evening/`
   (`plant-*.txt`).
-Not established: CI on GitHub; Codex running the hooks (they wait for the owner's `/hooks`
+Not established: Codex running the hooks (they wait for the owner's `/hooks`
 trust); b51 in a battle. `runs/test-scratch/` was not deleted (the permission check refused it).
 
 ## 2026-10-29: 1x by the Windows clock (harness b51)
