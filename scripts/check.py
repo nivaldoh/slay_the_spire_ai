@@ -506,15 +506,23 @@ def marker_problems(root: Path) -> list[str]:
 
 
 def tree_content(root: Path) -> str:
-    """sha256 of the path and content of every file not ignored in the working tree, tracked or
-    not (a deleted tracked file counts by its absence). The index and HEAD are left out, so staging
-    or committing part of a checked tree keeps it; any edit, new file or deletion changes it."""
+    """sha256 of the path and content of every file on disk that git does not ignore, tracked or
+    not. The index and HEAD are left out, so staging (a deletion or rename included) or committing
+    part of a checked tree keeps it; any edit, new file or deletion changes it.
+
+    JUDGEMENT?: Checked tree — Claude, 2026-10-30, for the commit guard draft: untracked Markdown
+    and anything untracked under docs/ are left out, as in at_revision (the owner's thesis notes);
+    another session's tracked or code edits still count. Counting them all would block commits
+    while the owner edits a note; leaving more out would let untested code through."""
     digest = hashlib.sha256()
+    tracked = set(git(root, "ls-files", "-z", "--cached").split("\0"))
     names = git(root, "ls-files", "-z", "--cached", "--others", "--exclude-standard").split("\0")
     for name in sorted({n for n in names if n}):
         path = root / name
-        digest.update(name.encode() + b"\0")
-        digest.update(hashlib.sha256(path.read_bytes()).digest() if path.is_file() else b"-")
+        if not path.is_file() or (name not in tracked
+                                  and (name.startswith("docs/") or name.endswith(".md"))):
+            continue
+        digest.update(name.encode() + b"\0" + hashlib.sha256(path.read_bytes()).digest())
     return digest.hexdigest()
 
 
@@ -563,11 +571,11 @@ def main() -> int:
     env = {k: v for k, v in os.environ.items() if k != "WH3_WRITE_PROMPTS"}
     scratch = ROOT / "runs" / "test-scratch" / f"check-{os.getpid()}"
     scratch.parent.mkdir(parents=True, exist_ok=True)  # pytest makes only the last folder
+    content = tree_content(ROOT)
     ruff = subprocess.run([sys.executable, "-m", "ruff", "check", "."], cwd=ROOT, env=env,
                           capture_output=True, text=True)
     junit = scratch.with_name(scratch.name + ".xml")  # beside --basetemp, which pytest clears
     revision, before = git(ROOT, "rev-parse", "HEAD").strip(), at_revision(ROOT)
-    content = tree_content(ROOT)
     tests = subprocess.run([sys.executable, "-m", "pytest", "-q", "-ra", f"--basetemp={scratch}",
                             f"--junitxml={junit}"], cwd=ROOT, env=env, capture_output=True,
                            text=True)
@@ -603,6 +611,10 @@ def main() -> int:
         shown += [f"  - {line}" for line in yes]
     shown += [f"pages     {line} (AGENTS.md Working habits)" for line in long_pages(ROOT)]
     shown += [f"worktree  {line}" for line in linked_worktree(ROOT)]
+    unchanged = tree_content(ROOT) == content
+    if passed and not unchanged:
+        shown.append("record    none: files changed while it ran, so a commit stays refused; "
+                     "run it again")
     problems = marker_problems(ROOT)
     if problems:
         shown.append(f"markers   {len(problems)} problems listed in the log, for the owner")
@@ -620,7 +632,7 @@ def main() -> int:
                               "== ruff check .", ruff.stdout + ruff.stderr,
                               "== pytest -q -ra", output]), encoding="utf-8")
     record = ROOT / CHECKED
-    if passed and tree_content(ROOT) == content:  # the Bash hook lets a commit of this tree through
+    if passed and unchanged:  # the Bash hook lets a commit of this tree through
         record.write_text(json.dumps({"tree": content, "revision": revision,
                                       "log": str(log.relative_to(ROOT))}) + "\n")
     else:

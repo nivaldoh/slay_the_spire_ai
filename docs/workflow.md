@@ -80,8 +80,9 @@ spending or a change to what a benchmark measures.
 
 Before every commit, both agents run one command and quote its first five lines. In this
 checkout the Bash hook refuses `git commit` until a passing run has checked exactly the files now
-in the tree (`runs/checks/last-pass.json`), so run it in its own command first (owner's yes:
-pending; a commit before or after a failed run happened on 10-29 and 10-30):
+in the tree (`runs/checks/last-pass.json`; untracked Markdown and `docs/` left out), so run it in
+its own command first (owner's yes: pending; a commit before or after a failed run happened on
+10-29 and 10-30). Not covered: an edit earlier in the same command, worktrees, merges, cherry-picks:
 
 ```text
 $ uv run --locked python scripts/check.py

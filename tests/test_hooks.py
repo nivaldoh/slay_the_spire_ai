@@ -328,6 +328,7 @@ def test_a_commit_waits_for_a_check_of_this_exact_tree(tmp_path, monkeypatch):
     assert refused("git commit -m x", True) is None
     assert refused("git status", False) is None
     assert refused("git -C /tmp commit -m x", False) is None  # another tree
+    assert refused("git commit -m \"it's half quoted", False) == pre_bash.CHECK_REASON
 
 
 def test_the_check_record_must_match_the_files_now_in_the_tree(tmp_path):
@@ -346,5 +347,11 @@ def test_the_check_record_must_match_the_files_now_in_the_tree(tmp_path):
     (tmp_path / "runs/checks/last-pass.json").write_text(
         json.dumps({"tree": check.tree_content(tmp_path)}))
     assert pre_bash.tree_checked(tmp_path)
+    (tmp_path / "a.py").write_text("x = 1\n")
+    assert pre_bash.tree_checked(tmp_path)
+    with (tmp_path / "scripts/check.py").open("a") as script:
+        script.write("def broken(:\n")
+    assert not pre_bash.tree_checked(tmp_path)  # a broken check.py refuses the commit
+    (tmp_path / "scripts/check.py").write_bytes((ROOT / "scripts/check.py").read_bytes())
     (tmp_path / "a.py").write_text("x = 2\n")
     assert not pre_bash.tree_checked(tmp_path)

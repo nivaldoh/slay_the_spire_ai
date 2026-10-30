@@ -458,7 +458,7 @@ def test_the_checked_tree_ignores_staging_and_commits_but_not_edits(repo):
 
 
 
-def test_a_tree_that_changes_during_the_run_gets_no_record(repo, monkeypatch):
+def test_a_tree_that_changes_during_the_run_gets_no_record(repo, monkeypatch, capsys):
     (repo / "pytest.ini").write_text("[pytest]\n")
     (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
     (repo / ".gitignore").write_text("runs/\n__pycache__/\n.pytest_cache/\n.ruff_cache/\n")
@@ -467,3 +467,21 @@ def test_a_tree_that_changes_during_the_run_gets_no_record(repo, monkeypatch):
         "from pathlib import Path\n\n\ndef test_w():\n    Path('notes.txt').write_text('new')\n")
     assert run_main(repo, monkeypatch) == 0
     assert not (repo / "runs/checks/last-pass.json").exists()
+    assert "\nrecord    none: files changed while it ran" in capsys.readouterr().out
+
+
+def test_the_checked_tree_keeps_staged_deletions_and_skips_untracked_notes(repo):
+    (repo / "docs/page.md").unlink()
+    deleted = check.tree_content(repo)
+    git(repo, "rm", "-q", "--cached", "docs/page.md")
+    assert check.tree_content(repo) == deleted  # staging the deletion changes no file
+    (repo / "docs/notes.md").write_text("an untracked note\n")
+    (repo / "IDEAS.md").write_text("another\n")
+    assert check.tree_content(repo) == deleted  # untracked Markdown and docs/ are left out
+    (repo / "src/pkg/mod.py").rename(repo / "src/pkg/moved.py")
+    renamed = check.tree_content(repo)
+    git(repo, "add", "-A", "src")
+    assert check.tree_content(repo) == renamed != deleted
+    (repo / "docs/agreed-checks.md").write_text("- Edited.\n")
+    assert check.tree_content(repo) != renamed  # a tracked page still counts
+

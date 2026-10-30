@@ -9,7 +9,8 @@ lines at newlines outside quotes; comments and heredoc bodies are text, not comm
 quoted mention passes. A line whose quotes never close is read as plain text. Exit 2 blocks
 the call and shows the reason. A guardrail, not an enforcement boundary: aliases, variables
 and scripts (`bash -c` strings among them) are not followed, and games, spending and ledgers
-stay guarded in the CLI.
+stay guarded in the CLI. The commit check runs before the command: an edit earlier in the
+same command, a linked worktree, a merge or a cherry-pick is not covered.
 """
 import importlib.util
 import json
@@ -187,7 +188,7 @@ def tree_checked(root: Path = ROOT) -> bool:
         check = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(check)
         return record.get("tree") == check.tree_content(root)
-    except (OSError, ValueError, AttributeError):
+    except Exception:  # a broken check.py or record refuses the commit: only exit 2 blocks
         return False
 
 
@@ -198,8 +199,11 @@ def refusal(text: str, *, queue: bool, cwd: Path = ROOT, checked=lambda: True) -
         except ValueError:  # quotes that never close: judge the plain text
             if RUFF_TEXT.search(line):
                 return RUFF_REASON
-            if queue and (found := GIT_TEXT.search(line)) and is_this_tree(cwd):
+            found = GIT_TEXT.search(line)
+            if queue and found and is_this_tree(cwd):
                 return git_reason(found.group(1))
+            if found and found.group(1) == "commit" and is_this_tree(cwd) and not checked():
+                return CHECK_REASON
             continue
         outer = []
         for words in parsed:
