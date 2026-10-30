@@ -197,23 +197,26 @@ def test_missing_native_failed_reads_and_an_absent_client_are_counted(tmp_path):
                "time_ms": 0, "friendly": [], "enemy_roster": [], "enemy": []}
     failed = army(2.0 * 2)
     failed[1] = {"alliance": 1, "army": 1, "index": 2, "error": "unique_ui_id: no unit"}
-    sent_a = run("A", [1000, 2000, 3000], {2000: failed})
+    sent_a = run("A", [1000, 2000, 3000, 4000], {2000: failed})
     sent_a[2]["native"]["errors"] = ["units: alliances failed"]
     sent_a[2]["native"]["units"] = []
-    sent_b = [observation("battle-B", 0, 0, army()), *run("B", [1000, 2000, 3000])]
+    sent_b = [observation("battle-B", 0, 0, army()), *run("B", [1000, 2000, 3000, 4000])]
+    sent_b[4]["native"]["errors"] = ["units: alliances failed"]
+    sent_b[4]["native"]["units"] = []
     summary = attempt(tmp_path, {"A": [loading, *sent_a], "B": sent_b, "C": None})
-    assert summary["clients"]["A"] == {"battle": "battle-A", "observations": 4,
+    assert summary["clients"]["A"] == {"battle": "battle-A", "observations": 5,
                                        "repeated_times": 0, "without_native": 1,
                                        "native_errors": 1, "failed_rows": 1}
     assert summary["clients"]["C"]["observations"] == 0
     pair = summary["pairs"][0]
     assert counts(pair, "common_times", "compared_times", "units_compared", "exact") == {
-        "common_times": 4, "compared_times": 2, "units_compared": 9, "exact": 9}
+        "common_times": 5, "compared_times": 2, "units_compared": 9, "exact": 9}
     assert pair["failed_rows"] == {"A": 1, "B": 0}
-    # A's failed enumeration at 3000 is a read failure, not 5 units A did not see.
-    assert pair["native_error_times"] == {"A": [3000], "B": []}
+    # A's failed enumeration at 3000 and B's at 4000 (A clean) are read failures of that
+    # client, not 5 units it did not see.
+    assert pair["native_error_times"] == {"A": [3000], "B": [4000]}
     assert pair["missing"] == {"A": [], "B": []}
-    assert summary["pairs"][1]["only"] == {"A": [0, 1000, 2000, 3000], "C": []}
+    assert summary["pairs"][1]["only"] == {"A": [0, 1000, 2000, 3000, 4000], "C": []}
 
 
 def test_a_failed_reinforcement_row_without_alliance_is_not_also_missing(tmp_path):
