@@ -4,6 +4,7 @@ timeout (1 s here) must outlast the coordinator's poll bound. Followed: PySC2
 0df53d38c153972f1e368572ba65b1442a0fd41f ``pysc2/tests/multi_player_test.py``: separate
 clients with explicit identities against one host, closed after each test."""
 
+import contextlib
 import json
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -47,7 +48,7 @@ def clock():
 @pytest.fixture
 def coordinator(tmp_path, clock):
     with Coordinator(manifest(), tmp_path / "a1", ttl_s=15, poll_s=0.3, clock=clock) as served:
-        assert urlsplit(served.url).hostname == "127.0.0.1"
+        assert urlsplit(served.url).hostname == "127.0.0.1"  # the bound address
         yield served
 
 
@@ -142,7 +143,7 @@ def test_events_are_kept_once_acknowledged_contiguously_and_a_conflict_fails_the
         return call(coordinator, "POST", "/events", generation=link.generation,
                     heartbeat=heartbeat, events=sent)
 
-    assert post(1, 3, heartbeat=1)[1]["ack"] == 1
+    assert post(1, 1, 3, heartbeat=1)[1]["ack"] == 1
     assert post(2, heartbeat=2)[1]["ack"] == 3
     assert post(2, 3, heartbeat=3)[1]["ack"] == 3
     assert [row["event"]["seq"] for row in stored_events(coordinator)] == [1, 3, 2]
@@ -212,6 +213,7 @@ def test_a_lost_status_reply_is_resent_and_kept_once_and_applied_is_refused(coor
         reply = post(path, body, timeout)
         sent.append(body)
         if len(sent) == 1:
+            coordinator.submit("A", {"n": 2})  # the operator saw the status first
             raise ConnectionResetError("the reply was lost")
         return reply
 
@@ -220,6 +222,7 @@ def test_a_lost_status_reply_is_resent_and_kept_once_and_applied_is_refused(coor
     assert [(body["seq"], body["status"]) for body in sent] == [(1, "submitted")] * 2
     assert [row["status"] for row in records(coordinator, "status")] == ["submitted"]
     monkeypatch.undo()
+    assert link.next_command() == {"seq": 2, "body": {"n": 2}}
     with pytest.raises(LinkRefused, match="already submitted"):
         link.report(1, "rejected")
     status, _ = call(coordinator, "POST", "/command-status", generation=link.generation, seq=1,
@@ -242,15 +245,20 @@ def test_the_coordinator_ends_a_lease_without_a_new_heartbeat_and_fences_command
     b.beat()
     clock.t = 20
     b.beat()
-    coordinator.submit("B", {"n": 1})
+    # A's status report, poll and replayed heartbeat are no new heartbeat: none renews.
+    a.report(1, "submitted")
+    assert a.next_command() is None
     replay = {"generation": a.generation, "heartbeat": 1, "events": []}
     assert call(coordinator, "POST", "/events", **replay)[1]["lease"] == "stale"
+    coordinator.submit("A", {"n": 2})
+    coordinator.submit("B", {"n": 1})
+    b.next_command()
     clock.t = 24.9
     assert coordinator.failed is None
     clock.t = 25
     assert coordinator.failed == "no new heartbeat from client A in 15 s"
     assert {(row["client"], row["kind"]) for row in records(coordinator)
-            if row["kind"] in ("unknown", "fenced")} == {("A", "unknown"), ("B", "fenced")}
+            if row["kind"] in ("unknown", "fenced")} == {("A", "fenced"), ("B", "unknown")}
     with pytest.raises(LinkRefused, match="attempt failed"):
         coordinator.submit("B", {"n": 2})
     with pytest.raises(LinkRefused, match="no actuation"):
@@ -263,29 +271,55 @@ def test_the_worker_lease_runs_from_the_send_time_of_its_last_renewed_heartbeat(
         coordinator, clock, monkeypatch):
     stops, own = [], Clock()
     link = worker(coordinator, stops=stops, clock=own)
-    link.hello()
-    assert link.deadline == 15
     post = link._post
 
-    def reply_at_14(path, body, timeout):
-        reply = post(path, body, timeout)
-        own.t = 14
-        return reply
+    def reply_at(arrival):
+        def send(path, body, timeout):
+            reply = post(path, body, timeout)
+            own.t = arrival
+            return reply
+        return send
 
-    own.t = 1
-    monkeypatch.setattr(link, "_post", reply_at_14)
+    monkeypatch.setattr(link, "_post", reply_at(3))
+    link.hello()
+    assert link.deadline == 15
+    own.t = 4
+    monkeypatch.setattr(link, "_post", reply_at(14))
     link.beat()
-    assert link.deadline == 16
-    own.t = 15.9
+    assert link.deadline == 19
+    own.t = 18.9
     assert link.live() and stops == []
-    own.t = 16
+    own.t = 19
     assert not link.live() and stops == ["A"]
     coordinator.submit("A", {"n": 1})
     assert link.next_command() is None
     assert records(coordinator, "delivered") == []
-    clock.t = 20  # the coordinator ends the lease too
+    monkeypatch.undo()
+    clock.t = 10  # the stopped worker's beat carries evidence but renews nothing
+    link.beat()
+    clock.t = 15
+    assert coordinator.failed == "no new heartbeat from client A in 15 s"
     link.beat()
     assert not link.live() and stops == ["A"]
+
+
+def test_a_command_whose_poll_returns_after_the_worker_deadline_is_not_taken(
+        coordinator, clock, monkeypatch):
+    stops, own = [], Clock()
+    link = worker(coordinator, stops=stops, clock=own)
+    link.hello()
+    coordinator.submit("A", {"n": 1})
+
+    def reply_at_15(*args, **kwargs):
+        reply = request(*args, **kwargs)
+        own.t = 15
+        return reply
+
+    monkeypatch.setattr("twwarhammer3.engine.link.request", reply_at_15)
+    assert link.next_command() is None and stops == ["A"]
+    clock.t = 15
+    assert coordinator.failed
+    assert [row["seq"] for row in records(coordinator, "unknown")] == [1]
 
 
 def test_late_old_or_ended_replies_and_unanswered_heartbeats_do_not_renew(coordinator, clock,
@@ -332,7 +366,10 @@ def test_after_a_coordinator_restart_the_worker_finds_its_generation_unknown_and
     link = worker(first, stops=stops, clock=clock)
     link.hello()
     link.event("observation", {})
+    first.submit("A", {"n": 1})
+    link.next_command()
     first.close()
+    assert [row["kind"] for row in records(first)][-2:] == ["unknown", "closed"]
     port = urlsplit(first.url).port
     with Coordinator(manifest(), tmp_path / "restarted", port=port, clock=clock) as second:
         link.beat()
@@ -423,3 +460,9 @@ def test_events_too_large_to_send_or_keep_are_refused(coordinator):
     link.event("observation", {"blob": "x" * 6000})
     with pytest.raises(OverflowError):
         link.event("observation", {"blob": "x" * 6000})
+    # Another sender's: 413, unread, so the connection may be cut while it still sends.
+    big = [{"seq": 1, "kind": "observation", "data": {"blob": "x" * MAX_BODY}}]
+    with contextlib.suppress(ConnectionError):
+        assert call(coordinator, "POST", "/events", generation=link.generation, heartbeat=1,
+                    events=big)[0] == 413
+    assert not (coordinator.directory / "events-A.jsonl").exists()

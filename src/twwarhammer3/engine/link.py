@@ -19,26 +19,29 @@ holds each token's sha256 (``token_sha256``), never the token.
 - ``GET /next?after=<seq>``: the client's queued command at once, or ``"command": null``
   after the poll bound; one waiting poll per client.
 - ``POST /command-status``: ``rejected``, ``submitted`` or ``unknown`` for a delivered
-  command, final once set; the same report again is accepted (a retried lost reply).
-  ``applied`` waits for a calibrated native witness.
+  command, final once set; the same report again is accepted (a retried lost reply), also
+  after later commands. ``applied`` waits for a calibrated native witness.
 
 The operator calls ``Coordinator.submit``: a client has at most one command without a final
 status, and a delivered command is never delivered again. The attempt fails when a lease
 lapses (no new heartbeat within the TTL on the coordinator's clock), a client says hello
-again, or an event conflicts: every lease ends, queued commands become ``fenced`` and
-delivered ones without a status ``unknown``. A coordinator refuses a directory that holds an
-earlier coordinator's record, so a restart needs a new attempt.
+again, or an event conflicts. When it fails or ``close`` ends it, every lease ends, queued
+commands become ``fenced`` and delivered ones without a status ``unknown``. A coordinator
+refuses a directory that holds an earlier coordinator's record, so a restart needs a new
+attempt.
 
 The worker times its lease on its own monotonic clock: the send time of the last heartbeat
 whose reply renewed it, plus the TTL. When that passes, it calls ``stop`` once (stop the
-owned game) and takes no more commands; it keeps sending evidence until ``close``.
+owned game) and takes no more commands; it keeps sending evidence until ``close``, under its
+last heartbeat number, so the coordinator's lease lapses too and the attempt fails.
 
 Evidence: ``match.jsonl`` (the manifest, then hellos, commands, statuses and failures) and
 ``events-<client>.jsonl`` (each event as the worker sent it, with the ``time_ns`` and
 ``monotonic_ns`` it took on its own host). ``coordinator_ns`` is the coordinator's receipt
 clock, not a source time. Refusals: 400 malformed, 401 unknown token, 403 another client,
-match or attempt, 409 refused by state, 413 too large; their body is ``{"schema", "error"}``
-(a manifest refusal adds ``fields``).
+match or attempt, 409 refused by state, 413 too large (unread, so a sender still writing
+it may see the connection cut instead); their body is ``{"schema", "error"}`` (a manifest
+refusal adds ``fields``).
 
 Followed: PySC2 0df53d38c153972f1e368572ba65b1442a0fd41f, ``pysc2/env/sc2_env.py`` and
 ``pysc2/tests/multi_player_test.py``: one client per player with explicit identity, and every
@@ -134,12 +137,12 @@ class Coordinator:
         self._leases = {}  # generation -> {"client", "beat", "renewed", "actuation"}
         self._stored = {client: {} for client in self._tokens}  # seq -> canonical text
         self._acks = dict.fromkeys(self._tokens, 0)
-        self._commands = {}  # client -> its latest {"seq", "body", "state"}
+        self._commands = {client: [] for client in self._tokens}  # [{"seq", "body", "state"}]
         self._polling, self._helloed = set(), set()
         self._failed, self._closing = None, False
         self._server = ThreadingHTTPServer(("127.0.0.1", port), _Handler)
         self._server.coordinator = self
-        self.url = f"http://127.0.0.1:{self._server.server_address[1]}"
+        self.url = "http://{}:{}".format(*self._server.server_address[:2])
         self._record("manifest", manifest=manifest)
         threading.Thread(target=self._server.serve_forever, kwargs={"poll_interval": 0.05},
                          daemon=True).start()  # close() waits up to one poll interval
@@ -154,6 +157,7 @@ class Coordinator:
         with self._cond:
             self._expire()
             self._closing = True
+            self._fence()
             self._record("closed", failed=self._failed)
             self._cond.notify_all()
         self._server.shutdown()
@@ -175,11 +179,11 @@ class Coordinator:
             if not any(lease["client"] == client and lease["actuation"]
                        for lease in self._leases.values()):
                 raise LinkRefused(f"client {client} holds no lease")
-            previous = self._commands.get(client)
-            if previous and previous["state"] in ("queued", "delivered"):
-                raise LinkRefused(f"command {previous['seq']} of {client} has no final status")
-            seq = previous["seq"] + 1 if previous else 1
-            self._commands[client] = {"seq": seq, "body": body, "state": "queued"}
+            commands = self._commands[client]
+            if commands and commands[-1]["state"] in ("queued", "delivered"):
+                raise LinkRefused(f"command {len(commands)} of {client} has no final status")
+            seq = len(commands) + 1
+            commands.append({"seq": seq, "body": body, "state": "queued"})
             self._record("command", client=client, seq=seq, body=body)
             self._cond.notify_all()
             return seq
@@ -249,12 +253,12 @@ class Coordinator:
         lease = self._lease(client, generation)
         if lease is None:
             return 409, {"error": "unknown generation"}
-        stored, new = self._stored[client], {}
+        stored, new = self._stored[client], {}  # new: seq -> (text, event)
         for event in body["events"]:
             seq, text = event["seq"], json.dumps(event, sort_keys=True)
             if type(seq) is not int or seq < 1:
                 raise ValueError("an event seq is a positive integer")
-            if stored.get(seq, new.get(seq, text)) != text:
+            if stored.get(seq, new.get(seq, (text,))[0]) != text:
                 self._fail(f"event {seq} of client {client} was resent with other content")
                 return 409, {"error": f"event {seq} differs from the one stored"}
             if seq not in stored:
@@ -289,7 +293,7 @@ class Coordinator:
             while True:
                 if not lease["actuation"] or self._failed:
                     return 409, {"error": "no actuation: " + (self._failed or "evidence only")}
-                command = self._commands.get(client)
+                command = (self._commands[client] or [None])[-1]
                 if command and command["state"] == "queued" and command["seq"] > after:
                     command["state"] = "delivered"
                     self._record("delivered", client=client, seq=command["seq"],
@@ -309,8 +313,9 @@ class Coordinator:
         seq, status = body["seq"], body["status"]
         if status not in WORKER_STATUSES:
             return 400, {"error": f"a worker reports one of {', '.join(WORKER_STATUSES)}"}
-        command = self._commands.get(client)
-        if not command or command["seq"] != seq or command["state"] in ("queued", "fenced"):
+        commands = self._commands[client]
+        command = commands[seq - 1] if 0 < seq <= len(commands) else None
+        if not command or command["state"] in ("queued", "fenced"):
             return 409, {"error": f"command {seq} was not delivered"}
         if command["state"] == status:
             return 200, {"seq": seq, "status": status}
@@ -338,11 +343,15 @@ class Coordinator:
             return
         self._failed = reason
         self._record("failed", reason=reason)
-        for client, command in self._commands.items():
-            if command["state"] in ("queued", "delivered"):
+        self._fence()
+        self._cond.notify_all()
+
+    def _fence(self):
+        for client, commands in self._commands.items():
+            if commands and commands[-1]["state"] in ("queued", "delivered"):
+                command = commands[-1]
                 command["state"] = "fenced" if command["state"] == "queued" else "unknown"
                 self._record(command["state"], client=client, seq=command["seq"])
-        self._cond.notify_all()
 
     def _record(self, kind, **fields):
         with open(self.directory / "match.jsonl", "a", encoding="utf-8") as handle:
@@ -409,7 +418,8 @@ class WorkerLink:
     def beat(self) -> None:
         """One POST /events: the next heartbeat and as many spooled events as fit."""
         with self._lock:
-            self._heartbeat += 1
+            if not self._stopped:  # once stopped, evidence only: the lease must not renew
+                self._heartbeat += 1
             heartbeat, room, events = self._heartbeat, self._room, []
             for event, size in self._spool:
                 room -= size + 2
