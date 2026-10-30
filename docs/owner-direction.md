@@ -5,6 +5,12 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-29 (late evening, the four items left for the owner): "1. Now is fine. 2. We can
+  leave a reminder for Codex to take care of its own hooks and Skills later. 3. I ran the
+  command myself. 4. Seems fine." Applied: the b51 live battle ran in that window; state.md
+  carries the reminder for Codex; `runs/test-scratch/` was emptied by the owner; the two process
+  ideas (marker list without the thesis notes; planted versions replayed by
+  `check.py --plants`) were built.
 - 2026-10-29 (evening, light factory decisions in `runs/light-factory-20261029/handoff.md`):
   1 `check.py` records offline agreed-check passes: "(a)". 2 build the WH3 1x check by
   Windows file times, band 0.99-1.01 as suggested: "(a)". 3 keep the two hooks: "(a). Note: I

@@ -65,9 +65,8 @@ Claude Code, after the owner answered the night's six decisions ([direction](../
 - Reviews: 4 reviewer runs, 13 findings (4, 2, 4, 3), all fixed but one limit (b51, below);
   the planted wrong versions per area, all caught, are in `runs/light-factory-20261029-evening/`
   (`plant-*.txt`).
-Not established: Codex running the hooks (they wait for the owner's `/hooks`
-trust). `runs/test-scratch/` was emptied by the owner (the permission check
-refused it to the agent).
+- `runs/test-scratch/` was emptied by the owner (the permission check refused it to the agent).
+Not established: Codex running the hooks (they wait for the owner's `/hooks` trust).
 
 ## 2026-10-29: 1x by the Windows clock (harness b51)
 

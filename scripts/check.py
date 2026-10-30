@@ -57,6 +57,10 @@ AGREED = "docs/agreed-checks.md"
 PASSES = "runs/checks/agreed-passes.jsonl"
 PLANTS = "tests/plants.toml"
 PLANT_TIMEOUT_S = 300
+# The stale-plant rule fails whenever a plant is applied (its text is gone), so a replay leaves
+# it out; otherwise every plant listing tests/test_check_script.py would count as caught.
+STALE_RULE = ("tests/test_check_script.py::"
+              "test_each_committed_plant_still_applies_and_names_real_tests")
 PYTEST_CALL = re.compile(r"`[^`]*\bpytest\b([^`]*)`")
 OTHER_CALL = re.compile(r"`(?![^`]*\bpytest\b)[^`]*\b(?:python|twwarhammer3 \w+|spire \w+)\b[^`]*`")
 SNAPSHOTS = "tests/twwarhammer3/prompts/*.txt"
@@ -167,12 +171,16 @@ def junit_cases(junit: Path) -> list[tuple[str, str]]:
     return cases
 
 
-def outcomes(cases: list[tuple[str, str]], target: str) -> list[str]:
-    """The outcomes of the cases a pytest target (directory, file or node) selects."""
+def selected(cases: list[tuple[str, str]], target: str) -> list[tuple[str, str]]:
+    """The cases a pytest target (directory, file or node) selects."""
     parts = target.split("[")[0].split("::")
     dotted = ".".join([parts[0].rstrip("/").removesuffix(".py").replace("/", "."), *parts[1:]])
-    return [outcome for address, outcome in cases
+    return [(address, outcome) for address, outcome in cases
             if address == dotted or address.startswith(dotted + ".")]
+
+
+def outcomes(cases: list[tuple[str, str]], target: str) -> list[str]:
+    return [outcome for _, outcome in selected(cases, target)]
 
 
 def agreed_results(root: Path, junit: Path) -> dict[str, dict]:
@@ -237,61 +245,105 @@ def stale_plants(root: Path) -> list[str]:
     return stale
 
 
-def plant_tests(scratch: Path, targets: list[str], junit: Path) -> list[tuple[str, str]] | None:
-    """The cases of `targets` run in `scratch` (its src/ first, no bytecode), or None on a
-    timeout. A bare PATH keeps Windows programs out (as scripts/refusal_sweep.py)."""
+def plant_changes(root: Path, base: str) -> list[str]:
+    """Plants at `base` that are gone or differ now, by id; a new plant needs no yes."""
+    try:
+        before = tomllib.loads(git(root, "show", f"{base}:{PLANTS}")).get("plant", [])
+    except (subprocess.CalledProcessError, tomllib.TOMLDecodeError):
+        return []
+    try:
+        now = {plant.get("id"): plant for plant in plant_list(root)}
+    except tomllib.TOMLDecodeError:
+        return [f"{PLANTS} does not parse"]
+    found = []
+    for plant in before:
+        current = now.get(plant.get("id"))
+        if current is None:
+            found.append(f"{plant.get('id')} removed")
+        elif current != plant:
+            fields = sorted(k for k in {*plant, *current} if plant.get(k) != current.get(k))
+            found.append(f"{plant.get('id')} changed ({', '.join(fields)})")
+    return found
+
+
+def plant_tests(scratch: Path, targets: list[str], junit: Path) -> tuple[list | None, str]:
+    """(cases, output) of `targets` run in `scratch` (its src/ first, no bytecode): cases is
+    None on a timeout and [] when pytest wrote no report. A bare PATH keeps Windows programs out
+    (as scripts/refusal_sweep.py). An interrupt kills the tests before it goes on."""
     env = {"PYTHONPATH": "src", "PATH": "/usr/bin:/bin", "PYTHONDONTWRITEBYTECODE": "1",
            "HOME": os.environ.get("HOME", ""), "HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1"}
-    junit.unlink(missing_ok=True)
+    junit.unlink(missing_ok=True)  # a run that writes none must not read the last plant's
     process = subprocess.Popen([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
-                                f"--junitxml={junit}", *targets], cwd=scratch, env=env,
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                               start_new_session=True)
+                                f"--junitxml={junit}", f"--deselect={STALE_RULE}", *targets],
+                               cwd=scratch, env=env, stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT, text=True, start_new_session=True)
     try:
-        process.wait(timeout=PLANT_TIMEOUT_S)
+        output, _ = process.communicate(timeout=PLANT_TIMEOUT_S)
     except subprocess.TimeoutExpired:
         os.killpg(process.pid, signal.SIGKILL)
+        process.communicate()
+        return None, ""
+    except BaseException:  # Ctrl-C, or SIGTERM through plants_main: no tests left running
+        os.killpg(process.pid, signal.SIGKILL)
         process.wait()
-        return None
-    return junit_cases(junit)
+        raise
+    return (junit_cases(junit) if junit.exists() else []), output
 
 
-def replay_plants(scratch: Path) -> list[tuple[str, str]]:
-    """(verdict, line) per plant in the checkout `scratch`, each test set's baseline first."""
+def tail(output: str, lines: int = 1) -> str:
+    return " / ".join(output.strip().splitlines()[-lines:]) or "no output"
+
+
+def replay_plants(scratch: Path) -> list[tuple[str, str, str]]:
+    """(verdict, line, pytest output) per plant in the checkout `scratch`. Each test set first
+    runs unplanted and must pass, every target with at least one test passing."""
     plants, junit = plant_list(scratch), scratch.with_name(scratch.name + ".xml")
     baselines = {}
     for targets in dict.fromkeys(tuple(plant["tests"]) for plant in plants):
-        cases = plant_tests(scratch, list(targets), junit)
-        baselines[targets] = cases is not None and all(
-            (mine := outcomes(cases, target)) and "failed" not in mine for target in targets)
+        cases, output = plant_tests(scratch, list(targets), junit)
+        good = cases is not None and all("passed" in (mine := outcomes(cases, target))
+                                         and "failed" not in mine for target in targets)
+        baselines[targets] = (good, output)
     stale = {line.split(":")[0] for line in stale_plants(scratch)}
     report = []
     for plant in plants:
         name, targets = plant["id"], tuple(plant["tests"])
         if name in stale:
-            report.append(("stale", f"{name}: its text is no longer in {plant['file']}"))
+            report.append(("stale", f"{name}: its text is no longer in {plant['file']}", ""))
             continue
-        if not baselines[targets]:
-            report.append(("baseline", f"{name}: its tests fail or are missing unplanted"))
+        good, output = baselines[targets]
+        if not good:
+            report.append(("baseline", f"{name}: unplanted, its tests fail, skip or are missing:"
+                                       f" {tail(output)}", output))
             continue
         path = scratch / plant["file"]
         original = path.read_text(encoding="utf-8")
         path.write_text(original.replace(plant["old"], plant["new"]), encoding="utf-8")
         try:
-            cases = plant_tests(scratch, list(targets), junit)
+            cases, output = plant_tests(scratch, list(targets), junit)
         finally:
             path.write_text(original, encoding="utf-8")
+        failing = [address for target in targets
+                   for address, outcome in selected(cases or [], target) if outcome == "failed"]
         if cases is None:
-            report.append(("HANG", f"{name}: no result in {PLANT_TIMEOUT_S} s (counted caught)"))
-        elif any("failed" in outcomes(cases, target) for target in targets):
-            report.append(("caught", name))
+            report.append(("HANG", f"{name}: no result in {PLANT_TIMEOUT_S} s (counted caught)",
+                           ""))
+        elif not cases:
+            report.append(("NOREPORT", f"{name}: pytest wrote no report: {tail(output)}", output))
+        elif failing:
+            more = f" and {len(failing) - 1} more" if len(failing) > 1 else ""
+            report.append(("caught", f"{name}: {failing[0]}{more}", ""))
         else:
-            report.append(("MISSED", f"{name} ({plant['guards']}): {', '.join(targets)} pass"))
+            report.append(("MISSED", f"{name} ({plant['guards']}): no failure in"
+                                     f" {', '.join(targets)}: {tail(output)}", output))
     junit.unlink(missing_ok=True)
     return report
 
 
 def plants_main() -> int:
+    # SIGTERM (an agent's command timeout) runs the finally blocks: plant restored, tests
+    # killed, scratch worktree removed.
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
     head = git(ROOT, "rev-parse", "--short", "HEAD").strip()
     scratch = ROOT / "runs" / "test-scratch" / f"plants-{os.getpid()}"
     scratch.parent.mkdir(parents=True, exist_ok=True)
@@ -306,7 +358,7 @@ def plants_main() -> int:
         report = replay_plants(scratch)
     finally:
         git(ROOT, "worktree", "remove", "--force", str(scratch))
-    counts = Counter(verdict for verdict, _ in report)
+    counts = Counter(verdict for verdict, _, _ in report)
     dirty = len(git(ROOT, "status", "--porcelain", "--untracked-files=no").splitlines())
     log = ROOT / "runs" / "checks" / (f"plants-{datetime.now():%Y%m%d-%H%M%S}-{head}"
                                       f"-{os.getpid()}.log")
@@ -314,11 +366,12 @@ def plants_main() -> int:
                                                     if dirty else "") + ": "
              + ", ".join(f"{n} {verdict}" for verdict, n in counts.most_common()),
              f"log      {log.relative_to(ROOT)}",
-             *(f"  {verdict}: {line}" for verdict, line in report if verdict != "caught")]
+             *(f"  {verdict}: {line}" for verdict, line, _ in report if verdict != "caught")]
     print("\n".join(shown))
     log.parent.mkdir(parents=True, exist_ok=True)
-    log.write_text("\n".join([*shown, "", *(f"{v}: {line}" for v, line in report)]) + "\n",
-                   encoding="utf-8")
+    log.write_text("\n".join([*shown, "", *(f"{v}: {line}" for v, line, _ in report), "",
+                              *(f"== {line.split(':')[0]}\n{output}" for _, line, output in report
+                                if output)]) + "\n", encoding="utf-8")
     return 0 if set(counts) <= {"caught", "HANG"} else 1
 
 
@@ -352,10 +405,10 @@ def warnings(root: Path, base: str) -> list[str]:
     if gone or changed:
         files = sorted({p for p, _ in changed} | set(gone))
         out.append(f"an agreed check's files lose or change lines: {', '.join(files)}")
-    plants = net(lines(0, lambda p, line: p == PLANTS), lines(1, lambda p, line: p == PLANTS))
-    if plants or PLANTS in deleted:
-        out.append(f"planted versions removed or changed: {PLANTS}"
-                   f" ({len(plants)} line(s); a plant updated to new code counts too)")
+    plants = plant_changes(root, base)
+    if plants:
+        out.append(f"planted versions removed or changed ({PLANTS}; updating one to new code"
+                   f" counts too): {'; '.join(plants)}")
     marked = net(lines(0, lambda p, line: "JUDGEMENT" in line),
                  lines(1, lambda p, line: "JUDGEMENT" in line), marks=True)
     if marked:

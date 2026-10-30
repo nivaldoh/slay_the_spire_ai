@@ -33,6 +33,10 @@ BASE = {
     "docs/page.md": f"Intro.\n\n{MARK} Thing — Claude, 2026-10-29: X, not Y.\n",
     "src/pkg/mod.py": "def f():\n    return 1\n",
     "uv.lock": LOCK.format("a", "1.0"),
+    "tests/plants.toml": "".join(
+        f'[[plant]]\nid = "{name}"\nguards = "g"\nfile = "src/pkg/mod.py"\nold = "return 1"\n'
+        f'new = "return 2"\ntests = ["{test}"]\n\n'
+        for name, test in (("a", "tests/agreed/test_a.py"), ("b", "tests/other/test_b.py"))),
 }
 
 
@@ -54,6 +58,18 @@ def repo(tmp_path):
 def edit(root, name, old, new):
     path = root / name
     path.write_text(path.read_text().replace(old, new))
+
+
+def drop_plant_b(root):
+    text = (root / "tests/plants.toml").read_text()
+    (root / "tests/plants.toml").write_text(text[:text.index('[[plant]]\nid = "b"')])
+
+
+def swap_plant_tests(root):
+    # Each line moves verbatim to the other plant, so a line count would see no change.
+    edit(root, "tests/plants.toml", "tests/agreed/test_a.py", "@")
+    edit(root, "tests/plants.toml", "tests/other/test_b.py", "tests/agreed/test_a.py")
+    edit(root, "tests/plants.toml", "@", "tests/other/test_b.py")
 
 
 PLANTED = {
@@ -84,6 +100,16 @@ PLANTED = {
                  "prompt snapshots changed: tests/twwarhammer3/prompts/llm.txt"),
     "lock": (lambda r: (r / "uv.lock").write_text(LOCK.format("a", "1.1") + LOCK.format("b", "2")),
              "uv.lock adds or changes packages: a 1.0 -> 1.1, b new -> 2"),
+    "plant weakened": (lambda r: edit(r, "tests/plants.toml", 'new = "return 2"\ntests = ["tests/a',
+                                      'new = "return 2"\ntests = ["tests/o'),
+                       "planted versions removed or changed (tests/plants.toml; updating one to new"
+                       " code counts too): a changed (tests)"),
+    "plant removed": (lambda r: drop_plant_b(r),
+                      "planted versions removed or changed (tests/plants.toml; updating one to new"
+                      " code counts too): b removed"),
+    "plants swap tests": (lambda r: swap_plant_tests(r),
+        "planted versions removed or changed (tests/plants.toml; updating one to new code counts"
+        " too): a changed (tests); b changed (tests)"),
 }
 
 
@@ -104,6 +130,9 @@ def test_unrelated_edits_and_verbatim_moves_need_no_yes(repo):
     edit(repo, "src/pkg/mod.py", "def f", f"# {MARK} Thing — Claude, 2026-10-29: X, not Y.\ndef f")
     edit(repo, "tests/other/test_b.py", "    assert 2 == 2\n", "    pass\n")
     (repo / "tests/other/test_d.py").write_text("def test_d():\n    assert 2 == 2\n")
+    # A new plant needs no yes.
+    edit(repo, "tests/plants.toml", '[[plant]]\nid = "a"', '[[plant]]\nid = "c"\nguards = "g"\n'
+         'file = "src/pkg/mod.py"\nold = "1"\nnew = "3"\ntests = ["t"]\n\n[[plant]]\nid = "a"')
     assert check.warnings(repo, "HEAD") == []
 
 
@@ -219,22 +248,54 @@ def test_replayed_plants_are_caught_missed_stale_hung_or_lack_a_baseline(tmp_pat
     (tmp_path / "tests/test_m.py").write_text("from pkg.mod import f\n\n\ndef test_f():\n"
                                               "    assert f() == 1\n")
     (tmp_path / "tests/test_bad.py").write_text("def test_bad():\n    assert 1 == 2\n")
+    (tmp_path / "tests/test_skipped.py").write_text(f"import pytest\n\n\n{SKIP}\n"
+                                                    "def test_s():\n    assert 1 == 1\n")
     (tmp_path / "pytest.ini").write_text("[pytest]\n")
+    # A stand-in for the stale-plant rule, which fails whenever any plant is applied.
+    (tmp_path / "tests/test_check_script.py").write_text(
+        "from pathlib import Path\n\n\ndef test_other():\n    assert True\n\n\n"
+        f"def {check.STALE_RULE.split('::')[1]}():\n"
+        "    assert 'def f():' in Path('src/pkg/mod.py').read_text()\n")
 
     def plant(name, old, new, tests=("tests/test_m.py",)):
         return (f'[[plant]]\nid = "{name}"\nguards = "g"\nfile = "src/pkg/mod.py"\n'
                 f"old = {json.dumps(old)}\nnew = {json.dumps(new)}\ntests = {json.dumps(tests)}\n")
     (tmp_path / "tests/plants.toml").write_text("".join([
         plant("caught", "return 1", "return 2"),
+        # Ends pytest before it writes its report, right after "caught" wrote a failing one.
+        plant("no-report", "def f():", "import os\nos._exit(0)\n\n\ndef f():"),
         plant("missed", "def f():", "def f(x=0):"),
+        plant("only-the-stale-rule-fails", "def f():", "def f(y=0):",
+              ("tests/test_check_script.py",)),
         plant("stale", "return 3", "return 4"),
         plant("hang", "    return 1", "    while True:\n        pass"),
         plant("no-baseline", "return 1", "return 2", ("tests/test_bad.py",)),
+        plant("all-skipped", "return 1", "return 2", ("tests/test_skipped.py",)),
     ]))
-    monkeypatch.setattr(check, "PLANT_TIMEOUT_S", 3)
-    assert [verdict for verdict, _ in check.replay_plants(tmp_path)] == [
-        "caught", "MISSED", "stale", "HANG", "baseline"]
+    monkeypatch.setattr(check, "PLANT_TIMEOUT_S", 5)
+    report = check.replay_plants(tmp_path)
+    assert [verdict for verdict, _, _ in report] == [
+        "caught", "NOREPORT", "MISSED", "MISSED", "stale", "HANG", "baseline", "baseline"]
+    assert report[0][1] == "caught: tests.test_m.test_f"
     assert (tmp_path / "src/pkg/mod.py").read_text() == "def f():\n    return 1\n"
+
+
+def test_an_interrupted_plant_run_leaves_no_tests_running(tmp_path, monkeypatch):
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests/test_hang.py").write_text("def test_h():\n    while True:\n        pass\n")
+    started = []
+
+    class Interrupted(subprocess.Popen):
+        def communicate(self, *args, timeout=None, **kwargs):
+            started.append(self)
+            if timeout:  # Ctrl-C arrives while the tests run
+                raise KeyboardInterrupt
+            return super().communicate(*args, **kwargs)
+
+    monkeypatch.setattr(check.subprocess, "Popen", Interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        check.plant_tests(tmp_path, ["tests/test_hang.py"], tmp_path / "j.xml")
+    assert started[0].poll() is not None  # killed and reaped
 
 
 def test_each_committed_plant_still_applies_and_names_real_tests():

@@ -3,8 +3,8 @@
 # `file`) becomes `new`, and some test in `tests` must then fail. `uv run --locked python
 # scripts/check.py --plants` replays them all in a scratch worktree at HEAD; a MISSED line means
 # the tests no longer catch what they once did (decay). Run it before an agreed check or a guarded
-# file changes, and after a model upgrade. tests/test_repo_rules.py fails when a plant's `old`
-# text is gone: update it to the same wrong version of the new code. Removing or weakening a plant
+# file changes, and after a model upgrade. tests/test_check_script.py fails when a plant's
+# `old` text is gone: update it to the same wrong version of the new code. Removing or weakening a plant
 # needs the owner's yes (check.py lists it).
 
 [[plant]]

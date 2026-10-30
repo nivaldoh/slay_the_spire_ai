@@ -15,7 +15,7 @@ on the next planned experiment. After the owner's 2026-10-29 answers ([direction
 battle: 1.0000 over 413 s), CI runs `check.py` on each push (2 of 3 runs passed; the failure was a racy test, fixed), Codex gets Claude Code's hooks
 (once you trust them with `/hooks`) and reviewer, Spire's end-turn allowance is narrowed
 ([log](twwarhammer3/log.md#2026-10-29-evening-the-owners-light-factory-answers-carried-out)); decision 12.
-Before each commit: `uv run --locked python scripts/check.py`. Pushed; CI runs it too.
+Before each commit: `uv run --locked python scripts/check.py`; CI runs it on each push.
 **For Codex** (owner, 2026-10-29: "leave a reminder for Codex to take care of its own hooks and
 Skills later"): in your next session, check that `.codex/hooks.json`, `.codex/agents/reviewer.toml`
 and `.agents/skills/` work in Codex (the owner trusts hooks with `/hooks`), fix what Codex needs,
@@ -122,7 +122,7 @@ The broader RL environment remains a separate discussion, possibly connected to 
 10. **Thesis and RL environment.** Likely multi-agent systems, possibly multi-agent RL; no research question selected (owner, 2026-10-28). Tentative environment: each agent sees its available battle state, perhaps teammate information, controls its army share and learns from sparse win/loss near restored endings. Reset may use a battle start or checkpoint; details and correctness checks are for later. [Direction 6](thesis/directions.md#6-wh3-as-an-rl-environment-for-high-level-decisions); [research shortlist](thesis/directions.md#what-the-2026-10-28-checks-changed). Human-AI work stays a note; licensing is deferred.
 
 11. **Local LLM checkpoint RL — deferred.** Leave this post-training experiment paused (owner, 2026-10-28). No recovery choice is needed now; the existing results and choices remain for a future review. Merged on 2026-10-28. [Details](twwarhammer3/checkpoint-rl.md#open-owner-choices-decision-11).
-12. **Light factory follow-ups (2026-10-29).** All six answered, and the evening's four: the b51 battle ran in your window (in band, one battle), Codex checks its own hooks and skills (above), `runs/test-scratch/` is emptied (you), the two process ideas are being built.
+12. **Light factory follow-ups (2026-10-29).** All six answered, and the evening's four: the b51 battle ran in your window (in band, one battle), Codex checks its own hooks and skills (above), `runs/test-scratch/` is emptied (you), the two process ideas are built (`check.py --plants` replays `tests/plants.toml`).
 ## Runtime and ownership
 
 - Slay the Spire ([runtime facts](spire/integration.md#runtime-and-source-pins)): the installed game and personal profile slot 0 are authorized, including stats, unlock progress, history and achievements (Ironclad unlock 3 of 5; runs record profile evidence).

@@ -285,7 +285,7 @@ The owner asked (2026-10-29) how to stop this workflow decaying and keep it easy
   waits for the same failure twice and the owner's yes.
 - **Replay what the tests once caught.** `tests/plants.toml` keeps planted wrong versions,
   each with the tests that must fail on it (owner, 2026-10-29: "Seems fine"). `uv run --locked
-  python scripts/check.py --plants` replays them at HEAD in about a minute: a MISSED line is a
+  python scripts/check.py --plants` replays them at HEAD in one to two minutes: a MISSED line is a
   test that decayed. Run it before an agreed check or a guarded file changes and after a model
   upgrade. A plant whose text the code no longer has fails the normal suite until it is updated
   to the same wrong version of the new code; removing or changing plants needs the owner's yes.
