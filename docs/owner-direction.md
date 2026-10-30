@@ -5,6 +5,13 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-30 (01:55, planning the night run): "No spire. WH3 is our priority. We need to
+  continue working on the light factory first though and make sure it's as good as possible
+  so we can have more trust in these autonomous runs. About the quick items, yes to all."
+  The quick items (`runs/overnight-20261030/brief.md`): kill the leftover test process
+  159910; record the 2026-10-26 Land checkpoint pass at `d3ba6aa` in agreed-checks.md; retire
+  the 5 markers in Spire log history (`docs/spire/fullrun/log.md`); make state.md's 120-line
+  rule a `check.py` warning.
 - 2026-10-29 (late evening, the four items left for the owner): "1. Now is fine. 2. We can
   leave a reminder for Codex to take care of its own hooks and Skills later. 3. I ran the
   command myself. 4. Seems fine." Applied: the b51 live battle ran in that window; state.md

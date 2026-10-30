@@ -6,6 +6,10 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
+Claude Code (2026-10-30 02:55 to about 12:00, owner away): light factory work for more trust
+in unattended runs (owner, 2026-10-30), in worktree `../slay_the_spire_ai-light-factory`;
+no game, $0. Brief: `runs/overnight-20261030/brief.md`.
+
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
