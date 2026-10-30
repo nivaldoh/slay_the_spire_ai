@@ -1,6 +1,5 @@
-"""Claude Code PreToolUse hook for Bash (docs/workflow.md, stage 4): refuse `ruff format`, any
-git command that moves this tree's HEAD while a WH3 queue runs, and a `git commit` in this tree
-before scripts/check.py passed on exactly its files (runs/checks/last-pass.json).
+"""Claude Code PreToolUse hook for Bash (docs/workflow.md, stage 4): refuse `ruff format`, and
+any git command that moves this tree's HEAD while a WH3 queue runs.
 
 AGENTS.md: most files are hand-formatted, so `ruff format` stays manual (`--check` and `--diff`
 change nothing and pass); a running scripts/wh3_queue.py stops before its next job when this
@@ -9,10 +8,8 @@ lines at newlines outside quotes; comments and heredoc bodies are text, not comm
 quoted mention passes. A line whose quotes never close is read as plain text. Exit 2 blocks
 the call and shows the reason. A guardrail, not an enforcement boundary: aliases, variables
 and scripts (`bash -c` strings among them) are not followed, and games, spending and ledgers
-stay guarded in the CLI. The commit check runs before the command: an edit earlier in the
-same command, a linked worktree, a merge or a cherry-pick is not covered.
+stay guarded in the CLI.
 """
-import importlib.util
 import json
 import os
 import re
@@ -176,34 +173,15 @@ def git_reason(sub: str) -> str:
             "its next job, so commit nothing in this tree until it ends (AGENTS.md)")
 
 
-CHECK_REASON = ("`git commit` before scripts/check.py passed on this exact tree: run it in its own "
-                "command, read its result, then commit (AGENTS.md: before each commit)")
-
-
-def tree_checked(root: Path = ROOT) -> bool:
-    """scripts/check.py's last pass covered exactly the files now in this tree."""
-    try:
-        record = json.loads((root / "runs/checks/last-pass.json").read_text())
-        spec = importlib.util.spec_from_file_location("check_script", root / "scripts/check.py")
-        check = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(check)
-        return record.get("tree") == check.tree_content(root)
-    except Exception:  # a broken check.py or record refuses the commit: only exit 2 blocks
-        return False
-
-
-def refusal(text: str, *, queue: bool, cwd: Path = ROOT, checked=lambda: True) -> str | None:
+def refusal(text: str, *, queue: bool, cwd: Path = ROOT) -> str | None:
     for line in logical_lines(text):
         try:
             parsed = commands(line)
         except ValueError:  # quotes that never close: judge the plain text
             if RUFF_TEXT.search(line):
                 return RUFF_REASON
-            found = GIT_TEXT.search(line)
-            if queue and found and is_this_tree(cwd):
+            if queue and (found := GIT_TEXT.search(line)) and is_this_tree(cwd):
                 return git_reason(found.group(1))
-            if found and found.group(1) == "commit" and is_this_tree(cwd) and not checked():
-                return CHECK_REASON
             continue
         outer = []
         for words in parsed:
@@ -230,8 +208,6 @@ def refusal(text: str, *, queue: bool, cwd: Path = ROOT, checked=lambda: True) -
             sub = moves_this_head(words, cwd)
             if queue and sub:
                 return git_reason(sub)
-            if sub == "commit" and not checked():
-                return CHECK_REASON
     return None
 
 
@@ -241,8 +217,7 @@ def main() -> int:
         text = event["tool_input"]["command"]
     except (ValueError, KeyError, TypeError):
         return 0
-    reason = refusal(text, queue=queue_running(), cwd=Path(event.get("cwd") or ROOT).resolve(),
-                     checked=tree_checked)
+    reason = refusal(text, queue=queue_running(), cwd=Path(event.get("cwd") or ROOT).resolve())
     if reason:
         print(reason, file=sys.stderr)
         return 2

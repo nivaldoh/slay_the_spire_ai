@@ -9,7 +9,7 @@ suite runs without WH3_WRITE_PROMPTS, so it never rewrites prompt snapshots, and
 directory (runs/test-scratch/check-<pid>) is removed after a pass.
 
 A passing run whose files did not change while it ran writes runs/checks/last-pass.json with a hash
-of every file not ignored (tree_content); the Bash hook refuses a commit in this tree unless the
+of every file not ignored (tree_content); scripts/githooks/pre-commit refuses a commit unless the
 hash still matches, and a failing run deletes it.
 
 Each run also appends one line to runs/checks/agreed-passes.jsonl (owner, 2026-10-29: "(a)"):
@@ -510,19 +510,16 @@ def tree_content(root: Path) -> str:
     not. The index and HEAD are left out, so staging (a deletion or rename included) or committing
     part of a checked tree keeps it; any edit, new file or deletion changes it.
 
-    JUDGEMENT?: Checked tree — Claude, 2026-10-30, for the commit guard draft: untracked Markdown
-    and anything untracked under docs/ are left out, as in at_revision (the owner's thesis notes);
-    another session's tracked or code edits still count. Counting them all would block commits
-    while the owner edits a note; leaving more out would let untested code through."""
+    JUDGEMENT?: Checked tree — Claude, 2026-10-30, for the commit guard draft: only the owner's
+    untracked thesis notes (PRIVATE, docs/thesis/) are left out; everything else counts, prompts
+    and another session's edits included. Counting the notes would block commits whenever the owner
+    edits one; leaving out more (all Markdown) would let an unchecked prompt be committed."""
     digest = hashlib.sha256()
-    tracked = set(git(root, "ls-files", "-z", "--cached").split("\0"))
     names = git(root, "ls-files", "-z", "--cached", "--others", "--exclude-standard").split("\0")
     for name in sorted({n for n in names if n}):
         path = root / name
-        if not path.is_file() or (name not in tracked
-                                  and (name.startswith("docs/") or name.endswith(".md"))):
-            continue
-        digest.update(name.encode() + b"\0" + hashlib.sha256(path.read_bytes()).digest())
+        if path.is_file() and not name.startswith(PRIVATE):
+            digest.update(name.encode() + b"\0" + hashlib.sha256(path.read_bytes()).digest())
     return digest.hexdigest()
 
 
@@ -632,7 +629,7 @@ def main() -> int:
                               "== ruff check .", ruff.stdout + ruff.stderr,
                               "== pytest -q -ra", output]), encoding="utf-8")
     record = ROOT / CHECKED
-    if passed and unchanged:  # the Bash hook lets a commit of this tree through
+    if passed and unchanged:  # scripts/githooks/pre-commit lets a commit of this tree through
         record.write_text(json.dumps({"tree": content, "revision": revision,
                                       "log": str(log.relative_to(ROOT))}) + "\n")
     else:

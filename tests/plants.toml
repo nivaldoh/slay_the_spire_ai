@@ -634,18 +634,18 @@ source = "2026-10-29 night, agreed-check plants (MISSED until 973d738)"
 
 [[plant]]
 id = "commit-guard-never-asks"
-guards = "The Bash hook refuses a commit before check.py passed on this tree"
-file = "scripts/hooks/pre_bash.py"
-old = "            if sub == \"commit\" and not checked():\n                return CHECK_REASON\n"
-new = ""
-tests = ["tests/test_hooks.py::test_a_commit_waits_for_a_check_of_this_exact_tree"]
+guards = "The git pre-commit hook refuses a commit before check.py passed on this tree"
+file = "scripts/githooks/pre-commit"
+old = "    if not checked():\n"
+new = "    if False:\n"
+tests = ["tests/test_hooks.py::test_the_git_hook_refuses_a_commit_until_check_py_passed_on_this_tree"]
 source = "2026-10-30 commit-guard draft"
 
 [[plant]]
 id = "check-records-a-failed-run"
-guards = "The Bash hook refuses a commit before check.py passed on this tree"
+guards = "The git pre-commit hook refuses a commit before check.py passed on this tree"
 file = "scripts/check.py"
-old = "    if passed and unchanged:  # the Bash hook lets a commit of this tree through"
-new = "    if unchanged:  # the Bash hook lets a commit of this tree through"
+old = "    if passed and unchanged:  # scripts/githooks/pre-commit lets a commit of this tree through"
+new = "    if unchanged:  # scripts/githooks/pre-commit lets a commit of this tree through"
 tests = ["tests/test_check_script.py::test_a_pass_records_the_tree_it_checked_and_a_failure_clears_it"]
 source = "2026-10-30 commit-guard draft"

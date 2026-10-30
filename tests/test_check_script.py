@@ -470,18 +470,21 @@ def test_a_tree_that_changes_during_the_run_gets_no_record(repo, monkeypatch, ca
     assert "\nrecord    none: files changed while it ran" in capsys.readouterr().out
 
 
-def test_the_checked_tree_keeps_staged_deletions_and_skips_untracked_notes(repo):
+def test_the_checked_tree_keeps_staged_deletions_and_skips_only_the_thesis_notes(repo):
     (repo / "docs/page.md").unlink()
     deleted = check.tree_content(repo)
     git(repo, "rm", "-q", "--cached", "docs/page.md")
     assert check.tree_content(repo) == deleted  # staging the deletion changes no file
-    (repo / "docs/notes.md").write_text("an untracked note\n")
-    (repo / "IDEAS.md").write_text("another\n")
-    assert check.tree_content(repo) == deleted  # untracked Markdown and docs/ are left out
+    (repo / "docs/thesis").mkdir()
+    (repo / "docs/thesis/notes.md").write_text("the owner's untracked note\n")
+    assert check.tree_content(repo) == deleted  # left out
+    (repo / "configs").mkdir()
+    (repo / "configs/new_prompt.md").write_text("A new prompt.\n")
+    prompt = check.tree_content(repo)
+    assert prompt != deleted  # any other untracked file counts, Markdown included
+    git(repo, "add", "configs/new_prompt.md")
+    assert check.tree_content(repo) == prompt  # and staging it changes nothing
     (repo / "src/pkg/mod.py").rename(repo / "src/pkg/moved.py")
     renamed = check.tree_content(repo)
     git(repo, "add", "-A", "src")
-    assert check.tree_content(repo) == renamed != deleted
-    (repo / "docs/agreed-checks.md").write_text("- Edited.\n")
-    assert check.tree_content(repo) != renamed  # a tracked page still counts
-
+    assert check.tree_content(repo) == renamed != prompt

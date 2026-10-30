@@ -317,41 +317,36 @@ def test_the_stop_check_gives_up_before_the_tools_stop_the_hook():
         assert timeouts and all(stop_check.TIMEOUT_S < t for t in timeouts), name
 
 
-def test_a_commit_waits_for_a_check_of_this_exact_tree(tmp_path, monkeypatch):
-    monkeypatch.setattr(pre_bash, "ROOT", tmp_path)  # a main checkout of its own, as above
-    (tmp_path / ".git").mkdir()
-
-    def refused(command, checked):
-        return pre_bash.refusal(command, queue=False, cwd=tmp_path, checked=lambda: checked)
-    assert refused("git commit -m x", False) == pre_bash.CHECK_REASON
-    assert refused("git add a.py && git commit -m x", False) == pre_bash.CHECK_REASON
-    assert refused("git commit -m x", True) is None
-    assert refused("git status", False) is None
-    assert refused("git -C /tmp commit -m x", False) is None  # another tree
-    assert refused("git commit -m \"it's half quoted", False) == pre_bash.CHECK_REASON
-
-
-def test_the_check_record_must_match_the_files_now_in_the_tree(tmp_path):
-    (tmp_path / "scripts").mkdir()
-    (tmp_path / "scripts/check.py").write_bytes((ROOT / "scripts/check.py").read_bytes())
+def test_the_git_hook_refuses_a_commit_until_check_py_passed_on_this_tree(tmp_path):
+    (tmp_path / "scripts/githooks").mkdir(parents=True)
+    for name in ("scripts/check.py", "scripts/githooks/pre-commit"):
+        (tmp_path / name).write_bytes((ROOT / name).read_bytes())
+    (tmp_path / "scripts/githooks/pre-commit").chmod(0o755)
     (tmp_path / ".gitignore").write_text("runs/\n")  # as in the repository: the record is ignored
     (tmp_path / "a.py").write_text("x = 1\n")
-    for args in (["init", "-q"], ["add", "."],
-                 ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "base"]):
-        subprocess.run(["git", *args], cwd=tmp_path, check=True, capture_output=True)
-    assert not pre_bash.tree_checked(tmp_path)  # no record
+
+    def git(*args, cwd=tmp_path):
+        return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=cwd,
+                              capture_output=True, text=True)
+    git("init", "-q")
+    git("config", "core.hooksPath", "scripts/githooks")
+    git("add", ".")
+    refused = git("commit", "-qm", "base")
+    assert refused.returncode != 0 and "check.py" in refused.stderr  # no record yet
     spec = importlib.util.spec_from_file_location("check_copy", tmp_path / "scripts/check.py")
     check = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(check)
     (tmp_path / "runs/checks").mkdir(parents=True)
-    (tmp_path / "runs/checks/last-pass.json").write_text(
-        json.dumps({"tree": check.tree_content(tmp_path)}))
-    assert pre_bash.tree_checked(tmp_path)
-    (tmp_path / "a.py").write_text("x = 1\n")
-    assert pre_bash.tree_checked(tmp_path)
+    record = tmp_path / "runs/checks/last-pass.json"
+    record.write_text(json.dumps({"tree": check.tree_content(tmp_path)}))
+    assert git("commit", "-qm", "base").returncode == 0
+    (tmp_path / "a.py").write_text("x = 2\n")
+    # any spelling: from another directory, with -C and -am
+    assert git("-C", str(tmp_path), "commit", "-qam", "edit", cwd=ROOT).returncode != 0
+    record.write_text(json.dumps({"tree": check.tree_content(tmp_path)}))
+    assert git("commit", "-qam", "edit").returncode == 0
     with (tmp_path / "scripts/check.py").open("a") as script:
         script.write("def broken(:\n")
-    assert not pre_bash.tree_checked(tmp_path)  # a broken check.py refuses the commit
-    (tmp_path / "scripts/check.py").write_bytes((ROOT / "scripts/check.py").read_bytes())
-    (tmp_path / "a.py").write_text("x = 2\n")
-    assert not pre_bash.tree_checked(tmp_path)
+    record.write_text(json.dumps({"tree": check.tree_content(tmp_path)}))
+    assert git("commit", "-qam", "broken").returncode != 0  # a broken check.py refuses
+
