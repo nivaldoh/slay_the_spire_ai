@@ -113,6 +113,13 @@ Already decided: small mixed armies first; the engine picks the winner, timer wi
 
 18. **How should non-wins and failures count?** A draw as zero, a half point, or its own category? The controller-failure rule is agreed ([outcome table](benchmark.md#outcome-and-score)); decide the rest: provider outage, exhausted credits, wall-time or budget cap, unknown failure and voluntary surrender. Which count against the model as served, which get a replacement battle, and which stay unresolved? Can a failed battle keep partial health or morale credit? The engine timer and the controller's wall-time limit are different endings.
 
+   Evidence (2026-10-30, not an answer; 642 register episodes): 623 engine results, 195 won, 428 lost, no
+   draw; 12 of 472 with `ended_by` hit the timer, all scripts. The 19 others, 10-14 to 10-18: 6 decisions
+   with no valid reply (5 with a reply cut at the output cap), 1 failed provider response, 1 HTTP 402, 1
+   ledger cap, 1 wall cap (40 min; battle limit 60), 4 planned probe cutoffs, 2 operator stops, 1
+   unexplained stall, 1 mod bug, 1 setup check; 17 kept a last army reading. Since b35 a failed decision
+   skips its turn: 5 (HTTP 429) in 2 battles. No order surrenders (`runs/overnight-20261030/interview-evidence-2/`).
+
 ### E. Model inputs, permitted help and real-time execution
 
 19. **What knowledge do we give the model, and what must it bring?** Only the current structured state and the order rules; also unit stats and ability descriptions; or tactical guidance and worked examples too? Which facts visible in the game's UI should our interface expose? Today it gives unit type, class, range and visible state, but not every unit-card stat or a full terrain and line-of-fire map. Missing facts can make a battle test memorized game data or interface gaps instead of the intended skill, and added tactical advice changes what prior knowledge is tested.
@@ -131,6 +138,13 @@ Already decided: small mixed armies first; the engine picks the winner, timer wi
    ones about 0.3 s (`runs/interview-evidence-20261028/`).
 
 24. **What resources are equal, and does efficiency change the rank?** The same money cap, token cap, call limit or effort setting; each model's declared best setting; or several operating points reported separately? What happens at a cap? Should latency and cost lower the score, or be reported beside it? Delay already hurts live play, so an extra latency penalty would count speed twice. Which provider, model version, sampling settings and retry rules must be fixed or disclosed?
+
+   Evidence (2026-10-30, not an answer; 168 engine-result `llm_rules` battles, pooled over scenarios and
+   revisions): median price-table cost per battle Qwen3.6 none $0.021 (10), Luna low $0.039 (34), GLM-5.3
+   low $0.19 (54), Kimi K3 low $0.59 (6), Sol low $0.88 (31), Sol 6.1 $0.85 (20). Matched conditions:
+   Luna 0.04x Sol's cost (8) at 0.76x the calls, Kimi 2.3x GLM's (4) at 1.1x. No per-battle cap; per-call
+   output cap 4,000 tokens to b27 (nearly all OpenAI battles), then 16,000. Backends varied within 30 of
+   the 32 unpinned OpenRouter battles (`runs/overnight-20261030/interview-evidence-2/`).
 
 ### F. Information gaps and the minimum implementation
 
