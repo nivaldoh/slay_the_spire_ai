@@ -30,7 +30,7 @@ are detailed below so the next change can take one small step without inventing 
 
 ## Implementation status
 
-2026-10-30, branch `wh3-native-mp`, not merged to `main`. Everything below was built and
+2026-10-30, built on branch `wh3-native-mp`, merged to `main` at `5d10e2a`. Everything below was built and
 tested offline. Nothing has run against a real game or a second machine, and the agent wrote
 each part's card without the owner's agreement, so **nothing here is verified** under the
 [hard rule](../../AGENTS.md#verification-hard-rule). Each part had a review by a second agent

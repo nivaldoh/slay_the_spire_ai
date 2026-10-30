@@ -406,7 +406,7 @@ WH3:
   fixture "[fine]"; Worker platform: "not sure why we need a WSL coordinator. Can't we just do
   some simple if/else to see what the env is running? I use WSL2 locally for dev, and the
   hosted machines will likely use windows directly and we won't need to force WSL there just
-  because of that". Applied on branch `wh3-native-mp` ([status](twwarhammer3/native-multiplayer.md#implementation-status)).
+  because of that". Applied and merged at `5d10e2a` ([status](twwarhammer3/native-multiplayer.md#implementation-status)).
 - 2026-10-30 (native multiplayer plan refinement): "Further investigate and refine
   docs/twwarhammer3/native-multiplayer.md (without implementing it yet) until each step is
   concrete and highly detailed." Identify the ideal approach, risks, cost reductions,

@@ -89,7 +89,7 @@ or external project execution. Proposed checks remain unagreed.
   proposed private HTTPS worker link and Windows-to-WSL localhost backend. Docs establish
   those primitives, not compatibility with the selected cloud PC or an approved account.
 
-Implementation, 2026-10-30 (branch `wh3-native-mp`; [status](twwarhammer3/native-multiplayer.md#implementation-status)):
+Implementation, 2026-10-30 (merged at `5d10e2a`; [status](twwarhammer3/native-multiplayer.md#implementation-status)):
 
 - PySC2 [`run_configs/platforms.py`](https://github.com/google-deepmind/pysc2/blob/0df53d38c153972f1e368572ba65b1442a0fd41f/pysc2/run_configs/platforms.py)
   at `0df53d38`: install paths chosen per platform; followed by `gameai/windows.py`. **read**

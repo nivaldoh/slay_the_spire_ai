@@ -47,7 +47,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
 ## 2026-10-30 (afternoon): native multiplayer built offline, up to accounts and billing
 
 The owner asked to implement the [plan](native-multiplayer.md) up to accounts and billing.
-Built on branch `wh3-native-mp`, not on main ([status](native-multiplayer.md#implementation-status)):
+Built on branch `wh3-native-mp`, merged at `5d10e2a` ([status](native-multiplayer.md#implementation-status)):
 platform detection (one code base for WSL and native Windows Python); the battle script's
 `multiplayer` modes, `observe` (passive) and `control` (unqueued moves for the local army
 only), with an evaluator-only `native` section; the coordinator/worker link and the
