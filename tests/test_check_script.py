@@ -201,3 +201,11 @@ def test_a_run_counts_for_head_only_if_its_files_were_heads_before_and_after(rep
     edit(repo, "docs/page.md", "Intro.", "Intro, again.")
     git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qam", "meanwhile")
     assert not check.still_at_revision(repo, head, before)[0]
+
+
+def test_markers_in_the_private_thesis_notes_are_not_listed(repo):
+    for name in ("docs/thesis/notes.md", "docs/thesis.md"):
+        (repo / name).parent.mkdir(parents=True, exist_ok=True)
+        (repo / name).write_text(f"This {RESTS} `docs/gone.md` X.\n")
+    assert check.marker_problems(repo) == [
+        f"docs/thesis.md: {RESTS} docs/gone.md, which does not exist"]

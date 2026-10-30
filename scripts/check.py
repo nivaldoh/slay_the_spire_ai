@@ -56,6 +56,9 @@ NO_MARKER = ("*.json", "configs/*prompt*.md", "tests/twwarhammer3/prompts/*",
              *(f"src/twwarhammer3/battle/{name}.py"
                for name in ("scripted", "calibration", "llm", "commander", "team", "skills")))
 RULE_PAGES = ("AGENTS.md", "docs/judgement.md")  # state the rule; the listing skips them too
+# The owner's untracked thesis notes (the link test skips them too); their markers and links
+# are the owner's, and listing them in every run was only noise (owner, 2026-10-29).
+PRIVATE = "docs/thesis/"
 ASSERT = re.compile(r"^\s*(assert\b|with pytest\.raises\b|pytest\.raises\()")
 SKIP = re.compile(r"pytest\.(skip|xfail|importorskip)\(|pytest\.mark\.(skip|skipif|xfail)\b")
 MARKER = re.compile(r"(?<!`)JUDGEMENT\??:")
@@ -265,7 +268,7 @@ def marker_problems(root: Path) -> list[str]:
     every = git(root, "ls-files", "-z", "--cached", "--others", "--exclude-standard").split("\0")
     problems = []
     for name in listed.split():
-        if name in RULE_PAGES:
+        if name in RULE_PAGES or name.startswith(PRIVATE):
             continue
         lines = (root / name).read_text(encoding="utf-8", errors="replace").splitlines()
         for number, line in enumerate(lines, 1):
