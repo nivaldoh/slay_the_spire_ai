@@ -40,6 +40,9 @@ class BattleRestarted(RuntimeError):
         self.observation = observation
 
 
+# Observation keys a policy never reads: evaluator and private setup state, and the
+# multiplayer modes' native identities (engine/mailbox.py).
+HIDDEN_KEYS = ("evaluation", "final", "setup", "native")
 ORDER_TYPES = ("move", "attack", "halt", "behaviour", "ability", "flight")
 ATTACK_MODES = ("auto", "melee", "ranged")
 BEHAVIOURS = ("fire_at_will", "skirmish", "defend", "change_formation_spacing", "formed_attack")

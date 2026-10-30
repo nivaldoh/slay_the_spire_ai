@@ -110,9 +110,9 @@ source = "2026-10-29 night, agreed-check plants"
 [[plant]]
 id = "a-controller-s-view-keeps-the-evaluation-section"
 guards = "WH3 UI requests, failure reporting, scheduling, startup-query errors and session lifetime"
-file = "src/twwarhammer3/battle/play.py"
-old = "if key not in (\"evaluation\", \"final\", \"setup\")}"
-new = "if key not in (\"final\", \"setup\")}"
+file = "src/twwarhammer3/protocol.py"
+old = "HIDDEN_KEYS = (\"evaluation\", \"final\", \"setup\", \"native\")"
+new = "HIDDEN_KEYS = (\"final\", \"setup\", \"native\")"
 tests = ["tests/twwarhammer3"]
 source = "2026-10-29 night, agreed-check plants"
 

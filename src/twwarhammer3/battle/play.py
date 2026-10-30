@@ -65,6 +65,7 @@ from twwarhammer3.engine.doctor import collect_diagnostics
 from twwarhammer3.engine.mailbox import Mailbox, require_realtime
 from twwarhammer3.engine.runtime import BRIDGE_DIR, OwnedGame, RuntimeLock, prepare_runtime
 from twwarhammer3.protocol import (
+    HIDDEN_KEYS,
     BattleRestarted,
     IllegalActionError,
     MailboxTimeout,
@@ -515,8 +516,7 @@ def public(observation: dict, scenario: dict) -> dict:
     Evaluation contains hidden enemy totals. It never enters the controller or its delayed
     input queue, even on a non-gameplay ending.
     """
-    view = {key: value for key, value in observation.items()
-            if key not in ("evaluation", "final", "setup")}
+    view = {key: value for key, value in observation.items() if key not in HIDDEN_KEYS}
     if scenario.get("scoring") and view.get("mode"):
         # The scorer's rule is public: a contact-scored card says so to the controller.
         view["mode"] = {**view["mode"], "scoring": scenario["scoring"]}

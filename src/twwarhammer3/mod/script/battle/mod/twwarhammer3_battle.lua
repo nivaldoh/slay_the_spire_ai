@@ -5,6 +5,9 @@
 -- enables it. Then it publishes observation.json on model time, polls orders.json on UI
 -- time, applies orders through one unit controller per
 -- friendly unit, and reports the result. engine/mailbox.py documents the messages.
+-- session.multiplayer ("observe" or "control") turns on the experimental native multiplayer
+-- modes of docs/twwarhammer3/native-multiplayer.md (steps 4 and 5); without it, multiplayer
+-- battles stay inactive.
 
 local BRIDGE = "C:/wh3-agent/bridge/"
 local REMATCH = {"in_battle_results_popup", "button_rematch"}
@@ -633,6 +636,74 @@ local function terminal_countdown(now)
             deadline_ms = deadline, expired = now >= deadline, source = "countdown_deadline"}
 end
 
+-- The local player's army. bm:get_player_army() is army 1 of the local alliance, which in a
+-- multiplayer battle can be an ally's; local_army() is an index within the local alliance
+-- (CA's battle.html, and vanilla lib_generated_battle.lua generated_army:new uses it so).
+local function player_army()
+    if not state.multiplayer then return bm:get_player_army() end
+    local ok, army = pcall(function()
+        return bm:alliances():item(bm:local_alliance()):armies():item(bm:local_army())
+    end)
+    return ok and army or nil
+end
+
+-- Evaluator-only, in the multiplayer modes: every unit as the engine identifies it (its
+-- alliance, its army's index there or "r<k>" for reinforcement army k, its index in that
+-- army), our alias and its raw position, to map lobby slots to units across peers. A failed
+-- read is an explicit error, never a missing unit.
+local function native_identity()
+    local record, errors = {mode = state.multiplayer, units = {}}, {}
+    local function read(field, fn)
+        local ok, value = pcall(fn)
+        if ok then
+            record[field] = value
+        else
+            errors[#errors + 1] = field .. ": " .. clean_error(value)
+        end
+    end
+    read("is_multiplayer", function() return bm.battle:is_multiplayer() end)
+    read("is_spectator", function() return bm.battle:is_spectator() end)
+    read("local_alliance", function() return bm:local_alliance() end)
+    read("local_army", function() return bm:local_army() end)
+    read("army_unique_id", function() return player_army():unique_id() end)
+    local function add(unit, alliance, army, index)
+        local ok, value = pcall(function()
+            -- As in scan(), a reinforcement army's units count once they are on the field.
+            if not alliance and not unit:is_valid_target() then return false end
+            alliance = alliance or unit:alliance_index()
+            local key, position = unit:unique_ui_id(), unit:position()
+            local alias = state.known[key]
+            return {id = type(alias) == "string" and alias or nil, ui_id = key, type = unit:type(),
+                    alliance = alliance, army = army, index = index,
+                    owner = alliance ~= record.local_alliance and "enemy"
+                        or army == record.local_army and "own" or "allied",
+                    x = position:get_x(), z = position:get_z()}
+        end)
+        if not ok then
+            value = {alliance = alliance, army = army, index = index, error = clean_error(value)}
+        end
+        if value then record.units[#record.units + 1] = value end
+    end
+    local ok, err = pcall(function()
+        local alliances = bm:alliances()
+        for alliance = 1, alliances:count() do
+            local armies = alliances:item(alliance):armies()
+            for army = 1, armies:count() do
+                local units = armies:item(army):units()
+                for index = 1, units:count() do add(units:item(index), alliance, army, index) end
+            end
+        end
+        local reinforcements = bm.battle:reinforcements()
+        for k = 1, reinforcements:reinforcement_army_count() do
+            local units = reinforcements:reinforcement_army(k):army():units()
+            for index = 1, units:count() do add(units:item(index), nil, "r" .. k, index) end
+        end
+    end)
+    if not ok then errors[#errors + 1] = "units: " .. clean_error(err) end
+    if #errors > 0 then record.errors = errors end
+    return record
+end
+
 local function observation(now)
     state.seq = state.seq + 1
     local friendly, enemy, roster = {}, {}, {}
@@ -652,7 +723,7 @@ local function observation(now)
         army = ok and value or {error = clean_error(value)}
     end
     local remaining_ms = sample_countdown(now)
-    local player = bm:get_player_army()
+    local player = player_army()
     local ok, section = pcall(mode_section)
     if not ok then section = {error = clean_error(section)} end
     return {
@@ -660,7 +731,7 @@ local function observation(now)
         phase = bm:get_current_phase_name(), time_ms = now, speed = 1,
         awaiting_orders = false, remaining_ms = remaining_ms, timer = terminal_countdown(now),
         armies = {
-            player = {faction = get(bm:get_player_army(), "faction_key", "?")},
+            player = {faction = get(player, "faction_key", "?")},
             enemy = {faction = get(bm:get_first_non_player_army(), "faction_key", "?")},
         },
         friendly = friendly, enemy_roster = roster, enemy = enemy,
@@ -673,6 +744,7 @@ local function observation(now)
         evaluation = evaluation(),
         setup = not state.applied and state.setup or nil,
         terrain = state.terrain,
+        native = state.multiplayer and native_identity() or nil,
     }
 end
 
@@ -869,7 +941,22 @@ local function apply_flight(entry, order)
     common.call_context_command("CcoBattleUnit", entry.ui_id, "ToggleFlying")
 end
 
+-- A friendly unit's controller: taken at registration in single-player, and only at the
+-- unit's first accepted order in multiplayer control.
+local function control_unit(entry)
+    local controller = entry.army:create_unit_controller()
+    controller:add_units(entry.unit)
+    controller:take_control()
+    entry.controller = controller
+    return controller
+end
+
 local function apply_order(order)
+    -- Multiplayer control: a plain move of an own unit only (plan step 5). Everything else
+    -- stays unavailable rather than falling back to the single-player vocabulary.
+    if state.multiplayer and (order.unit == "army" or order.type ~= "move" or order.queue) then
+        return {unit = order.unit, ok = false, error = "unsupported_in_multiplayer"}
+    end
     if order.unit == "army" and order.type == "reinforce" then
         if not state.started then return {unit = order.unit, ok = false, error = "deployment"} end
         local ok, err = pcall(apply_reinforce, order)
@@ -919,6 +1006,7 @@ local function apply_order(order)
             entry.navigation = nil
             local facing, width = tonumber(order.facing), tonumber(order.width)
             if width and width <= 0 then error("bad_width") end
+            controller = controller or control_unit(entry)
             if facing or width then
                 facing = facing or get(unit, "bearing", 0)
                 width = width or get(unit, "ordered_width", 0)
@@ -1005,7 +1093,7 @@ end
 local function apply_pending(now)
     local message = state.pending
     state.pending = nil
-    if type(message.say) == "string" then
+    if type(message.say) == "string" and not state.multiplayer then
         local shown, err = pcall(function() common.advice(message.say) end)
         if not shown then log("advice failed: " .. clean_error(err)) end
     end
@@ -1104,18 +1192,21 @@ end
 -- Friendly units get a controller each; enemies come from every other alliance (several in
 -- a free-for-all). Units bought from a reinforcement pool join their alliance's army list;
 -- units of the reinforcement armies (the pools, survival waves) are registered once they
--- are on the field.
-local function register(unit, alliance, army)
+-- are on the field. In the multiplayer modes an allied unit (`allied`) only gets an alias
+-- for the evaluator-only native identities; `known` maps each unit to its alias.
+local function register(unit, alliance, army, allied)
     local key = get(unit, "unique_ui_id", nil)
     if not key or state.known[key] then return end
     state.known[key] = true
-    if alliance == bm:local_alliance() then
+    if allied then
+        state.allied = (state.allied or 0) + 1
+        state.known[key] = "a" .. state.allied
+    elseif alliance == bm:local_alliance() then
         local id = "f" .. (#state.friendly_ids + 1)
-        local controller = army:create_unit_controller()
-        controller:add_units(unit)
-        controller:take_control()
-        local entry = {unit = unit, controller = controller, class = unit_class(unit),
+        state.known[key] = id
+        local entry = {unit = unit, army = army, class = unit_class(unit),
                        ui_id = tostring(key), setup = {}}
+        if not state.multiplayer then control_unit(entry) end
         for _, row in ipairs(context_rows("CcoBattleUnit", entry.ui_id, ABILITY_SETUP)) do
             entry.setup[row[1]] = {target = plain(row[2]), mana = tonumber(row[3]),
                                    cooldown_s = tonumber(row[4]), cast_range = tonumber(row[5]),
@@ -1126,6 +1217,7 @@ local function register(unit, alliance, army)
         if state.started_ms then log("new friendly unit " .. id .. " " .. get(unit, "type", "?")) end
     else
         local id = "e" .. (#state.enemy_ids + 1)
+        state.known[key] = id
         state.enemy[id] = {unit = unit, army = army, class = unit_class(unit), alliance = alliance,
                            initial = not state.started_ms}
         state.enemy_ids[#state.enemy_ids + 1] = id
@@ -1136,14 +1228,20 @@ end
 
 local function scan()
     local alliances = bm:alliances()
+    -- Single-player: army 1 of the local alliance is ours. Multiplayer: local_army(), an index
+    -- within the local alliance (see player_army); the alliance's other armies are allies.
+    local own = state.multiplayer and bm:local_army() or 1
     for alliance = 1, alliances:count() do
         local armies = alliances:item(alliance):armies()
         for army_index = 1, armies:count() do
             local army = armies:item(army_index)
+            local allied = alliance == bm:local_alliance() and army_index ~= own
             -- Allied AI armies (none in our scenarios) are neither ours nor enemies.
-            if alliance ~= bm:local_alliance() or army_index == 1 then
+            if not allied or state.multiplayer then
                 local units = army:units()
-                for index = 1, units:count() do register(units:item(index), alliance, army) end
+                for index = 1, units:count() do
+                    register(units:item(index), alliance, army, allied)
+                end
             end
         end
     end
@@ -1156,7 +1254,9 @@ local function scan()
             local unit = units:item(unit_index)
             if get(unit, "is_valid_target", false) then
                 local alliance = get(unit, "alliance_index", nil)
-                if alliance then register(unit, alliance, army) end
+                -- Multiplayer: a reinforcement army is not local_army(), so ours count as allied.
+                local allied = state.multiplayer and alliance == bm:local_alliance()
+                if alliance then register(unit, alliance, army, allied) end
             end
         end
     end
@@ -1256,10 +1356,16 @@ local function run_menu()
 end
 
 local function poll()
-    run_menu()
+    -- Multiplayer: no UI steps, since a click can change the battle for every peer.
+    if state.multiplayer then
+        if os.remove(BRIDGE .. "menu.json") then log("multiplayer: dropped menu.json") end
+    else
+        run_menu()
+    end
     local text = read_file(BRIDGE .. "orders.json")
     if not text then return end
     os.remove(BRIDGE .. "orders.json")
+    if state.multiplayer == "observe" then log("observe: dropped orders.json"); return end
     local ok, message = pcall(json.decode, text)
     if not ok or type(message) ~= "table" then log("orders.json unreadable; dropped"); return end
     if message.job ~= session.job or message.battle ~= state.battle then
@@ -1271,7 +1377,10 @@ local function poll()
         return
     end
     state.last_request = message.request
-    if message.control == "restart" then
+    if message.control and state.multiplayer then
+        log("multiplayer: refused control " .. tostring(message.control))
+        return
+    elseif message.control == "restart" then
         log("restart requested by " .. tostring(message.request))
         restart()
         return
@@ -1356,7 +1465,7 @@ local function start()
             cost = fill and get_context("PlayerArmyContext.ArmyAbilityIndexCost(" .. (index - 1) .. ")") or nil,
         }
     end
-    bm:modify_battle_speed(1, true)
+    if not state.multiplayer then bm:modify_battle_speed(1, true) end
     state.force_observe = true
     bm:repeat_callback(tick, session.tick_ms or 250, "twwarhammer3_tick")
     log(string.format("started: %s, %d alliances, %d friendly, %d enemy units", tostring(state.info.type),
@@ -1388,13 +1497,28 @@ end
 local function load()
     session = read_json(BRIDGE .. "session.json")
     if not session or session.enabled == false then return end
-    local battle = bm.battle
+    local battle, mode = bm.battle, session.multiplayer
+    -- "observe" never acts; "control" moves own units only. Both refuse the session fields
+    -- that change the battle or the camera.
+    if mode ~= nil then
+        if mode ~= "observe" and mode ~= "control" then
+            log("inactive: multiplayer " .. tostring(mode))
+            return
+        end
+        for _, field in ipairs({"autostart", "custom", "stills"}) do
+            if session[field] then
+                log("inactive: multiplayer " .. mode .. " forbids " .. field)
+                return
+            end
+        end
+    end
     for _, check in ipairs({"is_multiplayer", "is_replay", "is_from_campaign", "is_quest_battle", "is_tutorial"}) do
-        if get(battle, check, false) then
+        if get(battle, check, false) and not (check == "is_multiplayer" and mode) then
             log("inactive: " .. check)
             return
         end
     end
+    state.multiplayer = mode
     state.battle = string.format("%d-%s", os.time(), tostring(os.clock()))
     log("loaded battle " .. state.battle .. " for job " .. tostring(session.job))
     bm:register_phase_change_callback("Deployed", guarded("start", start))
@@ -1416,7 +1540,8 @@ local function load()
         time_ms = 0, speed = 1, awaiting_orders = false, friendly = {},
         enemy_roster = {}, enemy = {},
     })
-    twwarhammer3_inject = inject
+    -- Checkpoint injection (exact-tick orders) is single-player only.
+    twwarhammer3_inject = not mode and inject or nil
 end
 
 local ok, err = pcall(load)
