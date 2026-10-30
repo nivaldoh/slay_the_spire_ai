@@ -44,6 +44,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-30: exit-gate bytecode isolation
+
+The ordinary exit gate could pass failing source or test edits when old `.pyc` files matched
+their size and timestamp, then record the edited contents as checked. Two independent tiny
+repositories reproduced the false passes; disabling bytecode writes alone still reused them.
+Normal pytest now uses a fresh disposable `PYTHONPYCACHEPREFIX`, leaves shared caches intact
+and removes its own prefix on return or a Python exception. No import hook or global deletion.
+Card/reference: `runs/light-factory-20261030/bytecode-card.md`, workflow's final-state case,
+CPython `Lib/importlib/_bootstrap_external.py` and local interpreter probes.
+Before: five new regression cases failed. After: 13 focused cases passed; independent review
+found no issues, three planted wrong versions failed their intended assertions (4/4/1).
+All 80 committed plants caught at `94b0b8e`; new plants checked separately.
+Final exit-gate output: `runs/light-factory-20261030/bytecode-check-final.log`; raw evidence
+and reviews alongside. No game, Windows or paid API calls; $0. Checks proposed, not agreed.
+Deliberate cache-setting overrides and plugin caches are outside these tests. Next: repeat
+the offline gate at the final clean revision with saved-evidence copies; no live check claim.
+
 ## 2026-10-30: Stop-hook detection of live-check scripts
 
 The Stop hook now recognizes the five direct live-check scripts as game jobs; their help

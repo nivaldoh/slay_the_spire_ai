@@ -51,6 +51,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import textwrap
 import tomllib
 import xml.etree.ElementTree as ElementTree
@@ -588,9 +589,13 @@ def main() -> int:
                           capture_output=True, text=True)
     junit = scratch.with_name(scratch.name + ".xml")  # beside --basetemp, which pytest clears
     revision, before = git(ROOT, "rev-parse", "HEAD").strip(), at_revision(ROOT)
-    tests = subprocess.run([sys.executable, "-m", "pytest", "-q", "-ra", f"--basetemp={scratch}",
-                            f"--junitxml={junit}"], cwd=ROOT, env=env, capture_output=True,
-                           text=True)
+    # CPython Lib/importlib/_bootstrap_external.py: an isolated prefix avoids stale timestamp
+    # bytecode after a same-size edit, without changing shared caches.
+    with tempfile.TemporaryDirectory(prefix="check-pycache-", dir=scratch.parent) as pycache:
+        tests = subprocess.run([sys.executable, "-m", "pytest", "-q", "-ra",
+                                f"--basetemp={scratch}", f"--junitxml={junit}"], cwd=ROOT,
+                               env={**env, "PYTHONPYCACHEPREFIX": pycache}, capture_output=True,
+                               text=True)
     output = tests.stdout + tests.stderr
     summary = next((line.strip("= ") for line in reversed(output.splitlines())
                     if SUMMARY.search(line)), f"no pytest summary (exit {tests.returncode})")

@@ -105,11 +105,13 @@ needs your yes (changes since HEAD):
 markers   3 problems listed in the log, for the owner
 ```
 
-- It runs `ruff check .` and the whole offline suite (about 40-45 s on 2026-10-30; 18 s before
-  2026-10-29's evidence-replay tests), Lua and image tests
+- It runs `ruff check .` and the whole offline suite, Lua and image tests
   included, the repo rules ([test_repo_rules.py](../tests/test_repo_rules.py)) and the link
   test among them. It exits 1 if anything fails. It never launches a game, spends money or
   commits, and it removes `WH3_WRITE_PROMPTS` so it cannot rewrite prompt snapshots.
+  Pytest gets a fresh disposable bytecode directory for each run, overriding an inherited
+  cache prefix. This catches same-size/same-timestamp source and test edits while preserving
+  shared caches. The directory is removed on return or a Python exception.
 - "needs your yes" lists edits only the owner approves, in everything not yet on
   `origin/main` (or since `--base REV`): lines removed or changed in a file an agreed check
   names or in [agreed-checks.md](agreed-checks.md); an edited or removed JUDGEMENT line; an
@@ -126,8 +128,8 @@ markers   3 problems listed in the log, for the owner
   untracked `docs/thesis/` notes are skipped (owner, 2026-10-29). Only the owner changes
   markers, so they never fail the run.
 - Optional extras (`--extra train`, `--extra llm`), the browser check and live game checks
-  run only when a change touches what they cover. The full offline suite always runs, since
-  it takes well under a minute (owner, decision 3: "Yes", when it took 20 s).
+  run only when a change touches what they cover. The full offline suite always runs
+  (owner, decision 3: "Yes", when it took 20 s); each log records its elapsed time.
 - In a linked worktree, tests that read the main checkout's `runs/` evidence skip (2026-10-30:
   64 skipped against 41), and the "worktree" line says so: run `check.py` in the main checkout,
   after merging, before counting a pass. Do not link `runs/` folders into a worktree: commands

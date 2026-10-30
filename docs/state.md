@@ -16,8 +16,8 @@ correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](aut
 Factory: [workflow.md](workflow.md), stages 1-4 built; stage 5 awaits the next experiment.
 CI runs `check.py` on each push (results: `gh run list`).
 **Codex:** hooks active, reviewer available, skill discovered; sync tests pass. Stop-hook
-concurrent-edit and interruption fixes committed; commit guard enabled. Live-check detection
-finishing; stale-bytecode false-pass fix next
+concurrent-edit, interruption and live-check detection fixes committed; commit guard enabled.
+Stale-bytecode false-pass fix finishing; exact-revision offline check next
 (`runs/light-factory-20261030/`). No game window; owner away for a few hours.
 **Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; four
 draft branches are unmerged ([list](#branches)).

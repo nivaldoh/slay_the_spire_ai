@@ -767,3 +767,30 @@ old = 'option.startswith("-h")'
 new = 'option == "-h"'
 tests = ["tests/test_hooks.py::test_live_checker_argparse_prefixes_keep_resume_live"]
 source = "2026-10-30 live-check review: -hh printed help but was classified live"
+
+[[plant]]
+id = "normal-check-reuses-stale-bytecode"
+guards = "The normal gate checks current source and rewritten tests despite cached timestamps"
+file = "scripts/check.py"
+old = "env={**env, \"PYTHONPYCACHEPREFIX\": pycache}"
+new = "env=env"
+tests = ["tests/test_check_script.py::test_normal_check_reads_same_size_same_timestamp_edits"]
+source = "2026-10-30 bytecode audit: same-size same-timestamp source/test edits falsely passed"
+
+[[plant]]
+id = "normal-check-only-disables-bytecode-writes"
+guards = "Disabling cache writes does not stop reads of old timestamp bytecode"
+file = "scripts/check.py"
+old = "env={**env, \"PYTHONPYCACHEPREFIX\": pycache}"
+new = "env={**env, \"PYTHONDONTWRITEBYTECODE\": \"1\"}"
+tests = ["tests/test_check_script.py::test_normal_check_reads_same_size_same_timestamp_edits"]
+source = "2026-10-30 bytecode audit: PYTHONDONTWRITEBYTECODE still reused stale source/test caches"
+
+[[plant]]
+id = "normal-check-leaves-disposable-bytecode-after-interruption"
+guards = "The normal gate removes its disposable bytecode prefix even on interruption"
+file = "scripts/check.py"
+old = "tempfile.TemporaryDirectory(prefix=\"check-pycache-\", dir=scratch.parent)"
+new = "tempfile.TemporaryDirectory(prefix=\"check-pycache-\", dir=scratch.parent, delete=False)"
+tests = ["tests/test_check_script.py::test_normal_check_cleans_its_bytecode_prefix_after_interruption"]
+source = "2026-10-30 bytecode repair: per-run temporary bytecode must not accumulate"

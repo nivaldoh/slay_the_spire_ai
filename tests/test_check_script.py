@@ -7,6 +7,7 @@ hand; see the docstring of scripts/check.py for what each warning means.
 
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -579,3 +580,69 @@ def test_the_checked_tree_distinguishes_a_symlink_from_its_target_text(repo):
     link.unlink()
     link.write_text("missing-target")
     assert check.tree_content(repo) != before
+
+
+@pytest.mark.parametrize("changed", ["source", "test"])
+@pytest.mark.parametrize("shared_prefix", [False, True])
+def test_normal_check_reads_same_size_same_timestamp_edits(
+        repo, monkeypatch, changed, shared_prefix):
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
+    (repo / ".gitignore").write_text("runs/\n__pycache__/\n.pytest_cache/\n.ruff_cache/\n")
+    (repo / "docs/state.md").write_text("# Project state\n")
+    (repo / "runs").mkdir()
+    (repo / "thing.py").write_text("VALUE = 1\n")
+    test = repo / "tests/test_bytecode.py"
+    test.write_text("import sys\nfrom pathlib import Path\n\nfrom thing import VALUE\n\n\n"
+                    "def test_value():\n"
+                    "    Path('runs/pytest-prefix.txt').write_text(sys.pycache_prefix or '')\n"
+                    "    assert VALUE == 1\n")
+    monkeypatch.delenv("PYTHONDONTWRITEBYTECODE", raising=False)
+    monkeypatch.delenv("PYTHONPYCACHEPREFIX", raising=False)
+    if shared_prefix:
+        monkeypatch.setenv("PYTHONPYCACHEPREFIX", str(repo / "runs/shared-bytecode"))
+    inherited = os.environ.get("PYTHONPYCACHEPREFIX")
+    seeded = subprocess.run([sys.executable, "-m", "pytest", "-q", str(test)], cwd=repo,
+                            capture_output=True, text=True)
+    assert seeded.returncode == 0, seeded.stdout + seeded.stderr
+    caches = {path: (path.stat().st_mtime_ns, path.read_bytes())
+              for path in repo.rglob("*.pyc")
+              if path.name.startswith(("thing.", "test_bytecode."))}
+    assert len(caches) == 2  # a normal module and pytest's rewritten test
+    target = repo / "thing.py" if changed == "source" else test
+    before = target.stat()
+    good = target.read_text()
+    bad = good.replace("= 1" if changed == "source" else "== 1",
+                       "= 2" if changed == "source" else "== 2")
+    assert good != bad and len(good.encode()) == len(bad.encode())
+    target.write_text(bad)
+    os.utime(target, ns=(before.st_atime_ns, before.st_mtime_ns))
+    assert target.stat().st_size == before.st_size
+    assert target.stat().st_mtime_ns == before.st_mtime_ns
+    assert run_main(repo, monkeypatch) == 1
+    assert not (repo / "runs/checks/last-pass.json").exists()
+    used = Path((repo / "runs/pytest-prefix.txt").read_text())
+    assert used.parent == repo / "runs/test-scratch"
+    assert not used.exists()  # failure also removes the disposable bytecode tree
+    assert os.environ.get("PYTHONPYCACHEPREFIX") == inherited
+    assert {path: (path.stat().st_mtime_ns, path.read_bytes()) for path in caches} == caches
+
+
+def test_normal_check_cleans_its_bytecode_prefix_after_interruption(repo, monkeypatch):
+    original, prefixes = check.subprocess.run, []
+
+    def interrupted(command, **kwargs):
+        if command[:3] == [sys.executable, "-m", "pytest"]:
+            prefix = kwargs["env"].get("PYTHONPYCACHEPREFIX")
+            if prefix:
+                prefixes.append(Path(prefix))
+            raise KeyboardInterrupt
+        return original(command, **kwargs)
+
+    monkeypatch.setattr(check.subprocess, "run", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        run_main(repo, monkeypatch)
+    assert len(prefixes) == 1
+    assert prefixes[0].parent == repo / "runs/test-scratch"
+    assert not prefixes[0].exists()
+    assert not (repo / "runs/checks/last-pass.json").exists()
