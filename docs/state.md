@@ -6,8 +6,8 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Claude Code (2026-10-30 from 02:55, owner away until about 12:00): the light factory work is
-merged ([log](twwarhammer3/log.md)); two decisions wait in
+Claude Code's night run (2026-10-30, 02:55-06:30) ended: light factory checks and Land
+interview evidence merged ([log](twwarhammer3/log.md)); two decisions wait in
 `runs/overnight-20261030/handoff.md`. No game, $0.
 
 WH3 first; Spire waits behind it; post-training is secondary.
