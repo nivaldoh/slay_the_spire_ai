@@ -44,6 +44,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-30: commit guard adopted at the owner's yes
+
+Owner: "Enable it (Recommended)". Adopted `commit-guard-draft` (`6958d6f`), configured
+`core.hooksPath=scripts/githooks`. Git now refuses `git commit` without a current matching
+`check.py` pass. Live no-record probe refused and left HEAD unchanged; raw `guard-live-refusal.log`.
+Card: `runs/light-factory-20261030/guard-card.md`. Review found an old pass survived crashed
+or interrupted runs; the repair clears it before normal work and after rejected arguments.
+Help and plant replay retain the normal-run record. Five new abort/argument cases failed
+before repair; final narrow repair tests: 10 passed; both new repair plants fail as intended.
+Integration: 150 focused tests passed. The first run caught a TOML header lost resolving an
+append conflict (1 failed, 145 passed); restored, retaining every original and added plant.
+Symlink targets now count, including directory/dangling links; three retarget regressions
+failed before repair, four symlink cases pass after. This covers shared skill directory links.
+Concurrent passes rest on JUDGEMENT? `scripts/check.py` Concurrent passes: a genuinely passed
+unchanged tree can retain that newer pass when another overlapping attempt aborts.
+Final exit gate: `runs/light-factory-20261030/guard-check-final-complete.log`; reviews and raw outputs
+are alongside. Checks proposed, not agreed verification; no game or paid API, $0.
+Limits: explicit bypasses and other commit-making Git commands remain uncovered. Older
+worktrees without the hook file need updating; the hash covers checkout contents, not an
+older version left in the index. Draft-check logs archived before removing its merged worktree.
+
 ## 2026-10-30: Stop-hook interruption cleanup
 
 The Stop hook kills and reaps its check process group on SIGINT or SIGTERM. Interruptions

@@ -5,6 +5,10 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-30 (away): "I'll be away for a few hours at least. Use your best judgement until then".
+- 2026-10-30 (commit guard): "Enable it (Recommended)" to adopting `commit-guard-draft`
+  (`6958d6f`) and configuring the git hook. The question stated that either session's edits
+  invalidate the pass and require another `check.py` run. Approval is not verification.
 - 2026-10-30 (light factory refinement): continue improving the factory so vague requests
   become specified, implemented changes and repository changes go through it. Continue while
   reasonable improvements remain, without bloat or overengineering; Claude Code is implementing

@@ -78,7 +78,19 @@ spending or a change to what a benchmark measures.
 
 ## The exit gate: `scripts/check.py`
 
-Before every commit, both agents run one command and quote its first five lines:
+Before every commit, both agents run one command and quote its first five lines. A passing run
+records a hash of the files it checked (`runs/checks/last-pass.json`); the git hook
+`scripts/githooks/pre-commit` refuses every `git commit`, however typed, until the files match
+it again (owner approved 2026-10-30; enable with `git config core.hooksPath scripts/githooks`
+in checkouts that contain the hook). Merges, cherry-picks, reverts, rebases and `am` run
+other hooks and are not covered; `--no-verify` skips it. Unchecked commits on 10-29 and 10-30
+prompted this guard. It hashes checkout contents and symlink targets (including directory
+and dangling links), not historical versions left in the index.
+
+A normal check invalidates the record it found at startup; rejected arguments clear it too.
+A successful overlapping run on unchanged files can establish a new pass even if this one
+aborts (rests on JUDGEMENT? `scripts/check.py` Concurrent passes). `--help` and `--plants`
+do not replace the normal-run record.
 
 ```text
 $ uv run --locked python scripts/check.py

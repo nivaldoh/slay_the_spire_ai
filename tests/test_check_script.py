@@ -425,3 +425,157 @@ def test_a_plant_replays_on_a_copy_of_the_saved_evidence_it_names(repo, monkeypa
     git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "evidence")
     assert run_main(repo, monkeypatch, "--plants") == 0  # caught on the copy
     assert (repo / "runs/ev/expected.txt").read_text() == "1\n"  # the original is untouched
+
+
+def test_a_pass_records_the_tree_it_checked_and_a_failure_clears_it(repo, monkeypatch):
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
+    # What a run leaves behind is ignored, as in the repository's own .gitignore
+    (repo / ".gitignore").write_text("runs/\n__pycache__/\n.pytest_cache/\n.ruff_cache/\n")
+    (repo / "docs/state.md").write_text("# Project state\n")
+    assert run_main(repo, monkeypatch) == 0
+    record = json.loads((repo / "runs/checks/last-pass.json").read_text())
+    assert record["tree"] == check.tree_content(repo)
+    # A new size: a same-size edit within the same second can rerun the cached bytecode
+    edit(repo, "tests/agreed/test_a.py", "1 == 1", "1 == 1 + 1")
+    assert run_main(repo, monkeypatch) == 1
+    assert not (repo / "runs/checks/last-pass.json").exists()
+
+
+def test_the_checked_tree_ignores_staging_and_commits_but_not_edits(repo):
+    base = check.tree_content(repo)
+    (repo / "new.txt").write_text("x\n")
+    added = check.tree_content(repo)
+    assert added != base  # a new untracked file counts
+    git(repo, "add", "new.txt")
+    assert check.tree_content(repo) == added  # staging changes no file
+    git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "new")
+    assert check.tree_content(repo) == added  # nor does a commit
+    edit(repo, "src/pkg/mod.py", "return 1", "return 3")
+    assert check.tree_content(repo) != added
+    (repo / "new.txt").unlink()
+    assert check.tree_content(repo) not in (base, added)
+
+
+
+def test_a_tree_that_changes_during_the_run_gets_no_record(repo, monkeypatch, capsys):
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
+    (repo / ".gitignore").write_text("runs/\n__pycache__/\n.pytest_cache/\n.ruff_cache/\n")
+    (repo / "docs/state.md").write_text("# Project state\n")
+    (repo / "tests/other/test_writes.py").write_text(  # another writer edits the tree meanwhile
+        "from pathlib import Path\n\n\ndef test_w():\n    Path('notes.txt').write_text('new')\n")
+    assert run_main(repo, monkeypatch) == 0
+    assert not (repo / "runs/checks/last-pass.json").exists()
+    assert "\nrecord    none: files changed while it ran" in capsys.readouterr().out
+
+
+def test_the_checked_tree_keeps_staged_deletions_and_skips_only_the_thesis_notes(repo):
+    (repo / "docs/page.md").unlink()
+    deleted = check.tree_content(repo)
+    git(repo, "rm", "-q", "--cached", "docs/page.md")
+    assert check.tree_content(repo) == deleted  # staging the deletion changes no file
+    (repo / "docs/thesis").mkdir()
+    (repo / "docs/thesis/notes.md").write_text("the owner's untracked note\n")
+    assert check.tree_content(repo) == deleted  # left out
+    (repo / "docs/new.md").write_text("A new page.\n")
+    assert check.tree_content(repo) != deleted  # other docs count, untracked or not
+    (repo / "docs/new.md").unlink()
+    (repo / "configs").mkdir()
+    (repo / "configs/new_prompt.md").write_text("A new prompt.\n")
+    prompt = check.tree_content(repo)
+    assert prompt != deleted  # any other untracked file counts, Markdown included
+    git(repo, "add", "configs/new_prompt.md")
+    assert check.tree_content(repo) == prompt  # and staging it changes nothing
+    (repo / "src/pkg/mod.py").rename(repo / "src/pkg/moved.py")
+    renamed = check.tree_content(repo)
+    git(repo, "add", "-A", "src")
+    assert check.tree_content(repo) == renamed != prompt
+
+
+@pytest.mark.parametrize("failure", ["early-git-error", "interrupted", "invalid-base"])
+def test_an_aborted_check_clears_the_previous_pass(repo, monkeypatch, failure):
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
+    (repo / ".gitignore").write_text("runs/\n__pycache__/\n.pytest_cache/\n.ruff_cache/\n")
+    (repo / "docs/state.md").write_text("# Project state\n")
+    record = repo / "runs/checks/last-pass.json"
+    record.parent.mkdir(parents=True)
+    content = check.tree_content(repo)
+    record.write_text(json.dumps({"tree": content}))
+    if failure != "invalid-base":
+        original = check.git
+
+        def abort(root, *args):
+            if args == ("rev-parse", "--short", "HEAD"):
+                if failure == "interrupted":
+                    raise KeyboardInterrupt
+                raise subprocess.CalledProcessError(128, ["git", *args])
+            return original(root, *args)
+
+        monkeypatch.setattr(check, "git", abort)
+    error = KeyboardInterrupt if failure == "interrupted" else subprocess.CalledProcessError
+    with pytest.raises(error):
+        run_main(repo, monkeypatch, "--base", "missing-abort-regression-revision")
+    assert check.tree_content(repo) == content  # the previous record would still match
+    assert not record.exists()
+
+
+@pytest.mark.parametrize("option", ["--help", "--plants"])
+def test_help_and_plants_leave_the_normal_check_record_alone(repo, monkeypatch, option):
+    record = repo / "runs/checks/last-pass.json"
+    record.parent.mkdir(parents=True)
+    previous = '{"tree": "previous normal check"}\n'
+    record.write_text(previous)
+    monkeypatch.setattr(check, "plants_main", lambda: 0)
+    if option == "--help":
+        with pytest.raises(SystemExit) as stopped:
+            run_main(repo, monkeypatch, option)
+        assert stopped.value.code == 0
+    else:
+        assert run_main(repo, monkeypatch, option) == 0
+    assert record.read_text() == previous
+
+
+@pytest.mark.parametrize("args", [("--base",), ("--unknown-check-option",)])
+def test_invalid_check_arguments_clear_the_previous_pass(repo, monkeypatch, args):
+    (repo / ".gitignore").write_text("runs/\n")
+    record = repo / "runs/checks/last-pass.json"
+    record.parent.mkdir(parents=True)
+    content = check.tree_content(repo)
+    record.write_text(json.dumps({"tree": content}))
+    with pytest.raises(SystemExit) as stopped:
+        run_main(repo, monkeypatch, *args)
+    assert stopped.value.code == 2
+    assert check.tree_content(repo) == content
+    assert not record.exists()
+
+
+@pytest.mark.parametrize("target_kind", ["directory", "dangling", "file"])
+def test_the_checked_tree_hashes_symlink_targets(repo, target_kind):
+    if target_kind == "directory":
+        (repo / "a").mkdir()
+        (repo / "b").mkdir()
+    elif target_kind == "file":
+        (repo / "a").write_text("same contents\n")
+        (repo / "b").write_text("same contents\n")
+    link = repo / "link"
+    link.symlink_to("a", target_is_directory=target_kind == "directory")
+    before = check.tree_content(repo)
+    link.unlink()
+    link.symlink_to("b", target_is_directory=target_kind == "directory")
+    after = check.tree_content(repo)
+    assert after != before
+    git(repo, "add", "link")
+    assert check.tree_content(repo) == after
+    link.unlink()
+    assert check.tree_content(repo) not in (before, after)
+
+
+def test_the_checked_tree_distinguishes_a_symlink_from_its_target_text(repo):
+    link = repo / "link"
+    link.symlink_to("missing-target")
+    before = check.tree_content(repo)
+    link.unlink()
+    link.write_text("missing-target")
+    assert check.tree_content(repo) != before

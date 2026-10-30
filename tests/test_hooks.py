@@ -432,3 +432,48 @@ def test_interrupted_stop_hook_kills_and_reaps_its_check(repo, interruption, sta
         except subprocess.TimeoutExpired:
             process.kill()
             process.communicate(timeout=5)
+
+
+def test_the_git_hook_refuses_a_commit_until_check_py_passed_on_this_tree(tmp_path):
+    (tmp_path / "scripts/githooks").mkdir(parents=True)
+    for name in ("scripts/check.py", "scripts/githooks/pre-commit"):
+        (tmp_path / name).write_bytes((ROOT / name).read_bytes())
+    (tmp_path / "scripts/githooks/pre-commit").chmod(0o755)
+    # as in the repository: the record and bytecode are ignored
+    (tmp_path / ".gitignore").write_text("runs/\n__pycache__/\n")
+    (tmp_path / "a.py").write_text("x = 1\n")
+
+    def git(*args, cwd=tmp_path):
+        return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=cwd,
+                              capture_output=True, text=True)
+    git("init", "-q")
+    git("config", "core.hooksPath", "scripts/githooks")
+    git("add", ".")
+    refused = git("commit", "-qm", "base")
+    assert refused.returncode != 0 and "check.py" in refused.stderr  # no record yet
+    spec = importlib.util.spec_from_file_location("check_copy", tmp_path / "scripts/check.py")
+    check = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(check)
+    (tmp_path / "runs/checks").mkdir(parents=True)
+    record = tmp_path / "runs/checks/last-pass.json"
+    record.write_text(json.dumps({"tree": check.tree_content(tmp_path)}))
+    assert git("commit", "-qm", "base").returncode == 0
+    (tmp_path / "a.py").write_text("x = 2\n")
+    # any spelling: from another directory, with -C and -am
+    assert git("-C", str(tmp_path), "commit", "-qam", "edit", cwd=ROOT).returncode != 0
+    record.write_text(json.dumps({"tree": check.tree_content(tmp_path)}))
+    assert git("commit", "-qam", "edit").returncode == 0
+    with (tmp_path / "scripts/check.py").open("a") as script:
+        script.write("def broken(:\n")
+    record.write_text(json.dumps({"tree": check.tree_content(tmp_path)}))
+    assert git("commit", "-qam", "broken").returncode != 0  # a broken check.py refuses
+    (tmp_path / "scripts/check.py").write_bytes((ROOT / "scripts/check.py").read_bytes())
+    linked = tmp_path.parent / "linked"
+    assert git("worktree", "add", "-q", str(linked)).returncode == 0
+    (linked / "a.py").write_text("x = 3\n")
+    # a linked worktree needs its own record: the main checkout's does not count there
+    assert git("commit", "-qam", "there", cwd=linked).returncode != 0
+    (linked / "runs/checks").mkdir(parents=True)
+    (linked / "runs/checks/last-pass.json").write_text(
+        json.dumps({"tree": check.tree_content(linked)}))
+    assert git("commit", "-qam", "there", cwd=linked).returncode == 0
