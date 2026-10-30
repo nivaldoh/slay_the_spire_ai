@@ -65,6 +65,11 @@ folders: `runs/overnight-20261030/`.
   scenarios); Q29, baseline scripts repeated their outcome in 92% of 235 pairs (`8eefc00`);
   Q18, how the 642 recorded episodes ended; Q24, cost per battle by model (`4d1d58c`); Q21,
   changes during a model call; Q31, which candidate checks are agreed today (`bfad258`).
+- After 06:30: the reviewer's saved eval rerun after its text changed (2 of 2 bugs found, no
+  false alarm, n = 3); `--plants` copies saved evidence a plant names, so the siege plant is
+  kept (65 caught); the refusal sweep's scratch moved into `runs/`; state.md trimmed to 117
+  lines. `bed53ec` was committed on a FAILED check.py (fixed in `607c431`); a commit guard for
+  that is a draft on branch `commit-guard-draft`, for the owner's yes.
 - 9 reviews named in commits, one more with no findings, a 3-arm reviewer evaluation and a rerun
   of every number; findings fixed, parked (more ruff spellings) or left to the owner.
 check.py at `c57098f`, main checkout: PASSED, 1929 passed, 41 skipped; not at HEAD (Codex's
