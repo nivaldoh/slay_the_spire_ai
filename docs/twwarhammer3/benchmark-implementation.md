@@ -59,6 +59,13 @@ Already decided: small mixed armies first; the engine picks the winner, timer wi
 
 8. **What would show that the battle really tests knowledge?** If holding, or attacking the nearest enemy, wins as often as a model does, is the battle still useful? Would one competent winning example plus contrasting bad decisions be enough to keep it for development? Can several different winning plans count equally? This decides what makes the battle informative; the engine outcome is already agreed.
 
+   Evidence (2026-10-30, not an answer; engine results where `hold`, walk- or run-nearest and a model
+   controller played one scenario definition, track and timing): at one bench revision (20 scenarios,
+   10-14 to 10-20; 71 of 90 arms played once) scripts won 3/68, models 23/92, 14 of these in two b12
+   scenarios (Sol 12/13; elsewhere 3/64 against 9/72); models alone won in 8 of 24 pairs (6 on one
+   win), scripts alone in 2. On 10-13's `kho5-dwf5` walk-nearest won 4/5, Luna 16/32. Seven models and
+   several prompts; 15 jobs rotated both in one launch (0/26, 2/21) (`runs/overnight-20261030/interview-evidence/`).
+
 ### C. Evidence of knowledge and its execution
 
 9. **What counts as showing knowledge?** Observed choices and their effects only; a short declared plan linked to the orders that follow; separate questions about recorded public situations; or a mix? Explanations cost tokens and time, and offline answers don't show live execution. A stated tactic that isn't carried out supports a different claim than one carried out successfully.
@@ -156,6 +163,13 @@ What the code records today and what is missing: [measurement gaps](#measurement
 28. **Which references make the scores meaningful?** Hold, walking or running at the nearest enemy, a stronger script, your own play, or a particular model? What difference would you care about: more wins, fewer own losses for the same outcomes, better use of a tactical opportunity, or lower cost? A human reference would need its different information and controls disclosed.
 
 29. **What repeatability and uncertainty are acceptable?** Fresh launches, rematches after an agreed reset check, or both during development? Which starting conditions must match, and what uncontrolled variation is acceptable? Should the first comparison be exploratory, or large enough to detect a stated gap? Set the game-time and money bound and the stopping and replacement rule before choosing a sample count. A seed or a matching start doesn't make the battle's randomness identical. May prompts and controllers be tuned on this battle, or must they be frozen before seeing it? The answer limits what we can claim beyond this matchup.
+
+   Evidence (2026-10-30, not an answer; engine results of one scenario definition, controller and
+   timing played 2+ times): the three baseline scripts, 94 battles (22 groups), 230 of 235 pairs across
+   launches: outcomes matched in 92%, but 15 groups always lost; with a win, 51% of 39 pairs; the 10-22
+   screen split 5 of 10 arms (3 launches each). Same-outcome battle times differed by a median 25 s (90th
+   pct. 66 s), enemy share left in lost pairs by 0.05 (0.16). Models (201 battles): 77% (rematches 76%),
+   60 s (about 280 s), 0.13 (0.37). Agreement tracks the win rate (`runs/overnight-20261030/interview-evidence/`).
 
 30. **What should the report let you inspect?** Candidates: a result table, both armies' per-unit health and state timelines, knowledge judgements linked to decisions, latency, cost and failure summaries, and representative events. Which are essential for comparing models? Should different strengths stay visible instead of forcing one winner when the evidence or the tradeoffs don't support one?
 
