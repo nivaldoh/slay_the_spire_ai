@@ -62,7 +62,8 @@ folders: `runs/overnight-20261030/`.
   review): on the 10-29 run (n = 1) it listed 4 unreviewed commits and found the `ruff@` hole.
 - Land interview evidence notes (not answers): Q25, 25 saved logs read enemy morale and
   unrounded HP; Q8, scripts won 3/68 and models 23/92 where both played (14 of those in two
-  scenarios); Q29, baseline scripts repeated their outcome in 92% of 235 pairs (`8eefc00`).
+  scenarios); Q29, baseline scripts repeated their outcome in 92% of 235 pairs (`8eefc00`);
+  Q18, how the 642 recorded episodes ended; Q24, cost per battle by model (`4d1d58c`).
 - 9 reviews named in commits, one more with no findings, a 3-arm reviewer evaluation and a rerun
   of every number; findings fixed, parked (more ruff spellings) or left to the owner.
 check.py at `c57098f`, main checkout: PASSED, 1929 passed, 41 skipped; not at HEAD (Codex's
