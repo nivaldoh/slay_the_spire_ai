@@ -306,7 +306,8 @@ def copy_evidence(scratch: Path) -> None:
     the only real copy, and removed with the worktree. A missing source is left missing, so that
     plant's tests skip and its baseline fails."""
     main = Path(git(ROOT, "rev-parse", "--path-format=absolute", "--git-common-dir").strip()).parent
-    for item in dict.fromkeys(i for plant in plant_list(scratch) for i in plant.get("evidence", [])):
+    named = (item for plant in plant_list(scratch) for item in plant.get("evidence", []))
+    for item in dict.fromkeys(named):
         source, copy = main / item, scratch / item
         if source.exists() and not copy.exists():
             copy.parent.mkdir(parents=True, exist_ok=True)
