@@ -242,6 +242,18 @@ def test_observe_shows_the_local_army_as_friendly_and_never_acts(multiplayer):
     assert list(g.trapped.values()) == [] and len(g.calls) == 0
 
 
+def test_the_replay_recorder_reads_magic_from_the_local_army():
+    # replay.py merges recorder and observation frames into one timeline: both must say 20.
+    g = battle({"multiplayer": "observe", "record_replay": True})
+    g.phases["Deployed"]()
+    g.callbacks["twwarhammer3_tick"]()
+    replay = g.files[BRIDGE + f"replay-{observation(g)['battle']}.jsonl"]
+    frame = json.loads(replay.splitlines()[-1])
+    assert [unit["id"] for unit in frame["friendly"]] == ["f1", "f2"]
+    assert frame["magic"]["current"] == observation(g)["magic"]["current"] == 20
+    assert list(g.trapped.values()) == []
+
+
 def test_control_takes_an_own_unit_only_at_its_accepted_move_and_refuses_the_rest():
     g = battle({"multiplayer": "control"}, "grant(own)")
     assert g.twwarhammer3_inject is None

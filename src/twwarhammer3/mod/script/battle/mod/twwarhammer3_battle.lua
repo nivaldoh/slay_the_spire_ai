@@ -792,7 +792,7 @@ local function record_replay(now, terminal)
             if roster then frame.enemy_roster[#frame.enemy_roster + 1] = roster end
             if record then frame.enemy[#frame.enemy + 1] = compact(record) end
         end
-        local player = bm:get_player_army()
+        local player = player_army()
         frame.magic = {current = get(player, "winds_of_magic_current", nil),
                        reserve = get(player, "winds_of_magic_reserve", nil)}
         if #state.army_abilities > 0 then frame.army = army_abilities() end
