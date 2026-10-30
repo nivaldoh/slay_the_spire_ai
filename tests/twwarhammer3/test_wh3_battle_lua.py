@@ -618,7 +618,7 @@ def test_lua_recorder_is_independent_public_throttled_and_failure_isolated():
                     close = function() end}
         end}
     """)
-    record = load_battle(lua, "record_replay")
+    _, record = load_battle(lua, "player_army", "record_replay")
     record(1000, False)
     g = lua.globals()
     assert g.writes == 1 and g.state.seq == 123

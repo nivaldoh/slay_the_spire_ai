@@ -11,7 +11,7 @@ capture points, an empty ``magic``).
 Files, by writer:
 - controller: ``session.json``, read at each script load (``job``, ``enabled``, ``menu``,
   ``autostart``, ``observe_ms``, ``tick_ms``, ``record_replay``, ``stills``, optional ``custom``
-  (versioned authored objective and private deployment); the mod
+  (versioned authored objective and private deployment), optional ``multiplayer`` (below); the mod
   ignores ``speed`` and ``pause``, which ``require_realtime`` checks); ``orders.json``, one
   outstanding request that the battle script deletes when read, ``{"schema", "job", "battle",
   "request", "based_on", "orders", "say"?}`` or ``{..., "control": "restart"}`` (replay the
@@ -64,7 +64,7 @@ Observation (``observation``, ``unit_record`` and ``mode_section`` in the battle
      "orders"?: {"request", "based_on", "applied_ms",
                  "results": [{"index", "unit", "ok", "queued"?, "error"?}...]},
      "result"?: "won" | "lost" | "draw",
-     "setup"?: {...}, "evaluation": {...}, "final"?: {...}}
+     "setup"?: {...}, "evaluation": {...}, "final"?: {...}, "native"?: {...}}
 
 A battle's first observation is a ``Loading`` placeholder with ``seq`` 0 and no units; then
 ``phase`` is the engine's from ``Deployed`` on (``Deployed``, ``VictoryCountdown``,
@@ -88,14 +88,15 @@ requested), ``navigation``? (an unreachable move's reachable alternatives), ``be
 ``cast_range``, ``radius``, ``duration_s``, ``last_issued_ms``?}), ``target``? and
 ``dest``?. A unit that failed to read is ``{"id", "error"}``.
 
-``evaluation``, ``final`` and ``setup`` hold hidden information, and the harness strips all
-three before a controller sees a snapshot. ``evaluation`` has both armies' true strength
-(``men``, ``men0``, ``active_men`` excluding routing and shattered units, and ``by_type``)
-and tick-integrated capture point ownership (``objectives``). ``final`` freezes it at the
-engine result; on other endings the harness keeps the last ``evaluation``. ``setup``, sent
-until the first request is applied, has the unit scale, realism mode and the armies' AI
-stat modifiers and unit stats. ``setup.unit_experience`` holds friendly/enemy lists of
-``{type, rank}`` at startup for scenario and rematch checks; hidden enemy ranks stay private.
+``evaluation``, ``final``, ``setup`` and ``native`` hold hidden information, and the harness
+strips them (``protocol.HIDDEN_KEYS``) before a controller sees a snapshot. ``evaluation``
+has both armies' true strength (``men``, ``men0``, ``active_men`` excluding routing and
+shattered units, and ``by_type``) and tick-integrated capture point ownership
+(``objectives``). ``final`` freezes it at the engine result; on other endings the harness
+keeps the last ``evaluation``. ``setup``, sent until the first request is applied, has the
+unit scale, realism mode and the armies' AI stat modifiers and unit stats.
+``setup.unit_experience`` holds friendly/enemy lists of ``{type, rank}`` at startup for
+scenario and rematch checks; hidden enemy ranks stay private.
 
 Evaluator ``version: 2`` adds ``units`` to each side: ``registered``, ``destroyed``
 (engine reports zero living entities), ``alive``, ``active`` (alive, deployed, not
@@ -105,6 +106,27 @@ query). Routed/leaving/absent are overlapping subsets of alive, not deaths. Regi
 deduplicates returning unit ids and includes summons, purchases and waves when registered;
 these are not original-army totals. The existing headcounts and ``active_men`` definition
 are unchanged. Older results have no whole-unit counts or explicit evaluator version.
+
+Experimental native multiplayer (``docs/twwarhammer3/native-multiplayer.md``, steps 4 and 5):
+session ``multiplayer`` is ``"observe"`` or ``"control"``. Without it a multiplayer battle
+stays inactive; another value, or either mode with ``autostart``, ``custom`` or ``stills``,
+leaves the script inactive with a ``mod.log`` line. Either mode also runs in a single-player
+battle. Ownership follows ``bm:local_alliance()`` and ``bm:local_army()`` (an army index
+within that alliance): ``friendly``, ``magic`` and ``armies.player`` are the local army's
+own; the alliance's other armies (and its reinforcement armies) are allies, in neither
+``friendly`` nor ``enemy``. Neither mode changes speed, takes controllers at startup, runs
+battle-time ``menu.json`` (deleted, logged), shows ``say`` or defines the checkpoint
+injection hook. ``observe`` deletes ``orders.json`` unread. ``control`` accepts only an
+unqueued ``move`` of a ``friendly`` unit, taking that unit's controller at its first
+accepted move; other orders fail with ``unsupported_in_multiplayer`` (allied and enemy ids
+with ``unknown_unit``) and ``control`` messages are refused with a log line. ``native``
+(both modes, evaluator-only) is ``{"mode", "is_multiplayer", "is_spectator",
+"local_alliance", "local_army", "army_unique_id", "errors"?, "units": [{"id"? (f/e/a
+alias), "ui_id", "type", "alliance", "army" (index in its alliance, or "r<k>" for
+reinforcement army k), "index" (in that army's units), "owner" ("own", "allied", "enemy"),
+"x", "z" (raw)}...]}``; a unit whose identity failed to read is ``{"alliance", "army",
+"index", "error"}``, and a failed top-level read is listed in ``errors``. These are stub-tested
+only: live ``local_army`` values, ``ui_id`` across peers and move replication are unverified.
 
 ``timer`` appears with the result and keeps the last finite countdown sampled on engine
 ticks, since ``remaining_ms`` can reset to -1 when the result arrives. ``expired`` compares
@@ -121,6 +143,12 @@ and later observations confirm the change.
 # JUDGEMENT: Evaluation counts — assistant, b1 (2026-10-14), evaluator v2 (2026-10-15): the Lua
 # strength() counts active men without routing and shattered units, dead at zero living entities.
 # Counting routers as alive changes margins and scores (also report_html.py's Broken share).
+# JUDGEMENT?: Multiplayer allied reinforcements — Claude, 2026-10-30, twwarhammer3_battle.lua scan:
+# local-alliance reinforcement armies are allies (never friendly or controlled); owning those that
+# reinforce local_army() would change what a multiplayer policy sees and may move.
+# JUDGEMENT?: Multiplayer action routes — Claude, 2026-10-30, twwarhammer3_battle.lua poll/load:
+# "control" also drops battle-time menu.json and leaves twwarhammer3_inject undefined (the card
+# said so for "observe"); allowing UI steps or injection adds action routes beyond one move.
 import json
 import os
 import time
