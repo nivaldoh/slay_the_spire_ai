@@ -25,7 +25,9 @@ SKIP, XFAIL = "@pytest.mark." + "skipif(True, reason='x')", "@pytest.mark." + "x
 IMPORTORSKIP = "pytest." + "importorskip"
 LOCK = '[[package]]\nname = "{0}"\nversion = "{1}"\n'
 BASE = {
-    "docs/agreed-checks.md": "- Thing: `uv run --locked pytest -ra tests/agreed/test_a.py`.\n",
+    "docs/agreed-checks.md": "- Thing: `uv run --locked pytest -ra tests/agreed/test_a.py`.\n"
+                             "- Folder: `pytest tests/agreed_dir`.\n",
+    "tests/agreed_dir/test_c.py": "def test_c():\n    x = 3\n    assert x == 3\n",
     "tests/agreed/test_a.py": "def test_a():\n    assert 1 == 1\n",
     "tests/other/test_b.py": "import pytest\n\n\ndef test_b():\n    assert 2 == 2\n"
                              "    with pytest.raises(ValueError):\n        int('x')\n",
@@ -96,6 +98,12 @@ PLANTED = {
     "untracked skip": (lambda r: (r / "tests/other/test_c.py").write_text(
         f"import pytest\n\n{IMPORTORSKIP}('torch')\n"),
         "1 skip or xfail added: tests/other/test_c.py"),
+    "agreed folder line": (lambda r: edit(r, "tests/agreed_dir/test_c.py", "x = 3", "x = 4"),
+                           "an agreed check's files lose or change lines: "
+                           "tests/agreed_dir/test_c.py"),
+    "skip call": (lambda r: edit(r, "tests/other/test_b.py", "def test_b():\n",
+                                 "def test_b():\n    pytest." + "skip('x')\n"),
+                  "1 skip or xfail added: tests/other/test_b.py"),
     "snapshot": (lambda r: edit(r, "tests/twwarhammer3/prompts/llm.txt", "army", "host"),
                  "prompt snapshots changed: tests/twwarhammer3/prompts/llm.txt"),
     "lock": (lambda r: (r / "uv.lock").write_text(LOCK.format("a", "1.1") + LOCK.format("b", "2")),
@@ -319,3 +327,42 @@ def test_each_committed_plant_still_applies_and_names_real_tests():
     assert all(plant["old"] != plant["new"] and plant["guards"] and plant["tests"]
                and all((root / test.split("::")[0]).exists() for test in plant["tests"])
                for plant in plants)
+
+
+def run_main(root, monkeypatch, *args):
+    monkeypatch.setattr(check, "ROOT", root)
+    monkeypatch.setattr(sys, "argv", ["check.py", *args])
+    monkeypatch.setattr(check.signal, "signal", lambda *a: None)  # plants_main's SIGTERM handler
+    return check.main()
+
+
+@pytest.mark.parametrize("change,code", [
+    (None, 0),
+    (("tests/agreed/test_a.py", "1 == 1", "1 == 2"), 1),
+    (("src/pkg/mod.py", "def f", "import os\n\n\ndef f"), 1),
+])
+def test_check_exits_1_when_ruff_or_a_test_fails(repo, monkeypatch, change, code):
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')  # not Ruff's defaults
+    (repo / ".gitignore").write_text("runs/\n")
+    (repo / "docs/state.md").write_text("# Project state\n")
+    (repo / "tests/other/test_env.py").write_text(
+        "import os\n\n\ndef test_env():\n    assert 'WH3_WRITE_PROMPTS' not in os.environ\n")
+    monkeypatch.setenv("WH3_WRITE_PROMPTS", "1")
+    if change:
+        edit(repo, *change)
+    assert run_main(repo, monkeypatch) == code
+
+
+def test_plants_exits_1_on_a_missed_plant(repo, monkeypatch):
+    (repo / "src/gameai").mkdir()
+    (repo / "src/gameai/__init__.py").write_text("")
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    (repo / ".gitignore").write_text("runs/\n")
+    git(repo, "add", ".")
+    git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "gameai")
+    assert run_main(repo, monkeypatch, "--plants") == 1  # neither test calls f
+    for name in ("tests/agreed/test_a.py", "tests/other/test_b.py"):
+        (repo / name).write_text("from pkg.mod import f\n\n\ndef test_f():\n    assert f() == 1\n")
+    git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qam", "caught")
+    assert run_main(repo, monkeypatch, "--plants") == 0

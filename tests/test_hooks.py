@@ -8,6 +8,7 @@ import importlib.util
 import json
 import os
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -77,6 +78,11 @@ NOTE = "cat > note.md <<'EOF'\nNever run ruff format here; git commit only after
     ("find src -name '*.py' -exec ruff format {} +", False, True),
     ("ls *.py | xargs -P 4 ruff format", False, True),
     ("echo $((x<<2))\ngit commit -m y", True, True),  # a shift inside (( )) hides nothing
+    ("git switch main", True, True),
+    ("git pull", True, True),
+    ("git cherry-pick abc", True, True),
+    ("git revert HEAD", True, True),
+    ("git am fix.patch", True, True),
 ])
 def test_bash_hook_refuses_ruff_format_and_head_moves_during_a_queue(command, queue, blocked,
                                                                     tmp_path, monkeypatch):
@@ -230,6 +236,31 @@ def test_a_game_job_is_a_python_process_running_one(tmp_path):
     assert not stop_check.game_job_running(tmp_path)
     proc("23", "/repo/.venv/bin/python3", "-m", "spire", "rollout", "--output", "x")
     assert stop_check.game_job_running(tmp_path)
+
+
+@pytest.mark.parametrize("sub", ["play", "launch", "menu", "rl"])
+def test_each_wh3_game_command_is_a_game_job(tmp_path, sub):
+    (tmp_path / "30").mkdir()
+    (tmp_path / "30/cmdline").write_bytes(f"/v/bin/python\0-m\0twwarhammer3\0{sub}\0".encode())
+    assert stop_check.game_job_running(tmp_path)
+
+
+@pytest.mark.parametrize("stdin,code", [
+    (json.dumps({"tool_input": {"command": "uv run ruff format x.py"}}), 2),
+    (json.dumps({"tool_input": {"command": "ls"}}), 0),
+    ("not json", 0),
+])
+def test_the_bash_hook_blocks_through_exit_2_only(stdin, code):
+    done = subprocess.run([sys.executable, str(ROOT / "scripts/hooks/pre_bash.py")], input=stdin,
+                          capture_output=True, text=True)
+    assert done.returncode == code and ("ruff format" in done.stderr) is (code == 2)
+
+
+def test_both_tools_register_the_stop_and_bash_hooks():
+    for name in (".claude/settings.json", ".codex/hooks.json"):
+        config = json.loads((ROOT / name).read_text())["hooks"]
+        assert "stop_check.py" in json.dumps(config.get("Stop"))
+        assert "pre_bash.py" in json.dumps(config.get("PreToolUse"))
 
 
 def test_an_unreadable_cache_means_check_again(repo):

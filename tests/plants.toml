@@ -439,3 +439,156 @@ old = "if name in RULE_PAGES or name.startswith(PRIVATE):"
 new = "if name in RULE_PAGES:"
 tests = ["tests/test_check_script.py"]
 source = "2026-10-29 evening"
+
+[[plant]]
+id = "check-passes-failing-tests"
+guards = "check.py exits 1 when Ruff or a test fails"
+file = "scripts/check.py"
+old = "passed = ruff.returncode == 0 and tests.returncode == 0"
+new = "passed = ruff.returncode == 0 and tests.returncode in (0, 1)"
+tests = ["tests/test_check_script.py::test_check_exits_1_when_ruff_or_a_test_fails"]
+source = "2026-10-30 night, light-factory assessors (MISSED at aefcaab)"
+
+[[plant]]
+id = "check-ignores-ruff"
+guards = "check.py exits 1 when Ruff or a test fails"
+file = "scripts/check.py"
+old = "passed = ruff.returncode == 0 and tests.returncode == 0"
+new = "passed = tests.returncode == 0"
+tests = ["tests/test_check_script.py::test_check_exits_1_when_ruff_or_a_test_fails"]
+source = "2026-10-30 night, light-factory assessors (MISSED at aefcaab)"
+
+[[plant]]
+id = "check-keeps-write-prompts"
+guards = "check.py hides WH3_WRITE_PROMPTS from the suite"
+file = "scripts/check.py"
+old = "if k != \"WH3_WRITE_PROMPTS\"}"
+new = "if k != \"WH3_WRITE_PROMPTS_\"}"
+tests = ["tests/test_check_script.py::test_check_exits_1_when_ruff_or_a_test_fails"]
+source = "2026-10-30 night, light-factory assessors (MISSED at aefcaab)"
+
+[[plant]]
+id = "plants-exit-0-on-miss"
+guards = "check.py --plants exits 1 on a missed plant"
+file = "scripts/check.py"
+old = "return 0 if set(counts) <= {\"caught\", \"HANG\"} else 1"
+new = "return 0 if set(counts) <= {\"caught\", \"HANG\", \"MISSED\"} else 1"
+tests = ["tests/test_check_script.py::test_plants_exits_1_on_a_missed_plant"]
+source = "2026-10-30 night, light-factory assessors (MISSED at aefcaab)"
+
+[[plant]]
+id = "pre-bash-exits-1"
+guards = "The Bash hook blocks through exit 2"
+file = "scripts/hooks/pre_bash.py"
+old = "print(reason, file=sys.stderr)\n        return 2"
+new = "print(reason, file=sys.stderr)\n        return 1"
+tests = ["tests/test_hooks.py::test_the_bash_hook_blocks_through_exit_2_only"]
+source = "2026-10-30 night, light-factory assessors (MISSED at aefcaab)"
+
+[[plant]]
+id = "pre-bash-narrow-head-list"
+guards = "The Bash hook refuses HEAD moves during a queue"
+file = "scripts/hooks/pre_bash.py"
+old = "MOVES_HEAD = {\"commit\", \"merge\", \"rebase\", \"reset\", \"checkout\", \"switch\", \"pull\", \"cherry-pick\",\n              \"revert\", \"am\"}"
+new = "MOVES_HEAD = {\"commit\", \"merge\", \"rebase\", \"reset\", \"checkout\"}"
+tests = ["tests/test_hooks.py::test_bash_hook_refuses_ruff_format_and_head_moves_during_a_queue"]
+source = "2026-10-30 night, light-factory assessors (MISSED at aefcaab)"
+
+[[plant]]
+id = "stop-hook-misses-wh3-launch"
+guards = "The Stop hook runs no check beside a WH3 game job"
+file = "scripts/hooks/stop_check.py"
+old = "\"twwarhammer3\": (\"play\", \"launch\", \"menu\", \"rl\")"
+new = "\"twwarhammer3\": (\"play\",)"
+tests = ["tests/test_hooks.py::test_each_wh3_game_command_is_a_game_job"]
+source = "2026-10-30 night, light-factory assessors (MISSED at aefcaab)"
+
+[[plant]]
+id = "agreed-folder-not-flagged"
+guards = "check.py's needs-your-yes list"
+file = "scripts/check.py"
+old = "return path == AGREED or any(path == a or path.startswith(a + \"/\") for a in agreed)"
+new = "return path == AGREED or any(path == a for a in agreed)"
+tests = ["tests/test_check_script.py::test_each_risky_edit_needs_a_yes"]
+source = "2026-10-30 night, light-factory assessors (MISSED at aefcaab)"
+
+[[plant]]
+id = "skip-call-not-flagged"
+guards = "check.py's needs-your-yes list"
+file = "scripts/check.py"
+old = "pytest\\.(skip|xfail|importorskip)\\("
+new = "pytest\\.(xfail|importorskip)\\("
+tests = ["tests/test_check_script.py::test_each_risky_edit_needs_a_yes"]
+source = "2026-10-30 night, light-factory assessors (MISSED at aefcaab)"
+
+[[plant]]
+id = "runner-an-old-report-is-read-again"
+guards = "check.py --plants replay"
+file = "scripts/check.py"
+old = "    junit.unlink(missing_ok=True)  # a run that writes none"
+new = "    pass  # a run that writes none"
+tests = ["tests/test_check_script.py::test_replayed_plants_are_caught_missed_stale_hung_or_lack_a_baseline"]
+source = "2026-10-29 evening reviews (faf0805), kept 2026-10-30"
+
+[[plant]]
+id = "runner-the-stale-rule-judges-plants"
+guards = "check.py --plants replay"
+file = "scripts/check.py"
+old = "f\"--deselect={STALE_RULE}\", "
+new = ""
+tests = ["tests/test_check_script.py::test_replayed_plants_are_caught_missed_stale_hung_or_lack_a_baseline"]
+source = "2026-10-29 evening reviews (faf0805), kept 2026-10-30"
+
+[[plant]]
+id = "runner-an-interrupt-leaves-the-tests-running"
+guards = "check.py --plants leaves no tests running after an interrupt"
+file = "scripts/check.py"
+old = "    except BaseException:  # Ctrl-C, or SIGTERM through plants_main: no tests left running\n        os.killpg(process.pid, signal.SIGKILL)\n        process.wait()\n        raise\n"
+new = ""
+tests = ["tests/test_check_script.py::test_an_interrupted_plant_run_leaves_no_tests_running"]
+source = "2026-10-29 evening reviews (faf0805), kept 2026-10-30"
+
+[[plant]]
+id = "runner-an-all-skipped-baseline-passes"
+guards = "check.py --plants replay"
+file = "scripts/check.py"
+old = "all(\"passed\" in (mine := outcomes(cases, target))"
+new = "all(bool(mine := outcomes(cases, target))"
+tests = ["tests/test_check_script.py::test_replayed_plants_are_caught_missed_stale_hung_or_lack_a_baseline"]
+source = "2026-10-29 evening reviews (faf0805), kept 2026-10-30"
+
+[[plant]]
+id = "runner-the-plant-warning-never-fires"
+guards = "check.py's needs-your-yes list"
+file = "scripts/check.py"
+old = "    if plants:\n        out.append(f\"planted versions"
+new = "    if False:\n        out.append(f\"planted versions"
+tests = ["tests/test_check_script.py::test_each_risky_edit_needs_a_yes"]
+source = "2026-10-29 evening reviews (faf0805), kept 2026-10-30"
+
+[[plant]]
+id = "runner-a-changed-plant-is-not-reported"
+guards = "check.py's needs-your-yes list"
+file = "scripts/check.py"
+old = "        elif current != plant:\n"
+new = "        elif False:\n"
+tests = ["tests/test_check_script.py::test_each_risky_edit_needs_a_yes"]
+source = "2026-10-29 evening reviews (faf0805), kept 2026-10-30"
+
+[[plant]]
+id = "runner-an-interrupt-waits-instead-of-killing"
+guards = "check.py --plants leaves no tests running after an interrupt"
+file = "scripts/check.py"
+old = "    except BaseException:  # Ctrl-C, or SIGTERM through plants_main: no tests left running\n        os.killpg(process.pid, signal.SIGKILL)\n"
+new = "    except BaseException:  # Ctrl-C, or SIGTERM through plants_main: no tests left running\n        process.wait()\n"
+tests = ["tests/test_check_script.py::test_an_interrupted_plant_run_leaves_no_tests_running"]
+source = "2026-10-30 night review (passed with the 20 s sleep alone)"
+
+[[plant]]
+id = "runner-an-interrupt-communicates-instead-of-killing"
+guards = "check.py --plants leaves no tests running after an interrupt"
+file = "scripts/check.py"
+old = "    except BaseException:  # Ctrl-C, or SIGTERM through plants_main: no tests left running\n        os.killpg(process.pid, signal.SIGKILL)\n"
+new = "    except BaseException:  # Ctrl-C, or SIGTERM through plants_main: no tests left running\n        process.communicate()\n"
+tests = ["tests/test_check_script.py::test_an_interrupted_plant_run_leaves_no_tests_running"]
+source = "2026-10-30 night review (passed with the 20 s sleep alone)"
