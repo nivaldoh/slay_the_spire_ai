@@ -93,12 +93,16 @@ Implementation, 2026-10-30 (branch `wh3-native-mp`; [status](twwarhammer3/native
 
 - PySC2 [`run_configs/platforms.py`](https://github.com/google-deepmind/pysc2/blob/0df53d38c153972f1e368572ba65b1442a0fd41f/pysc2/run_configs/platforms.py)
   at `0df53d38`: install paths chosen per platform; followed by `gameai/windows.py`. **read**
+  (2026-10-30, during the doc check)
 - Python [`msvcrt.locking`](https://docs.python.org/3/library/msvcrt.html#msvcrt.locking) and
   Microsoft [`LockFileEx`](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-lockfileex):
-  the native lock, unlocked before close because release on close is not timed. **read**
+  the native lock, unlocked before close because the time Windows takes to release a lock on
+  close depends on available system resources (LockFileEx remarks). **read** (2026-10-30,
+  during the doc check)
 - Kubernetes client-go [`tools/leaderelection/leaderelection.go`](https://github.com/kubernetes/client-go/blob/4563439f729012b84179286a88bc9d191bf3d35e/tools/leaderelection/leaderelection.go)
-  at `4563439f`: a holder acts only on its own clock and gives up through one callback;
-  `engine/link.py` times the worker lease from the send time instead. **read**
+  at `4563439f`: a client acts only on times from its own clock, and a holder that cannot renew
+  within RenewDeadline calls OnStoppedLeading once; client-go stamps its observed time after the
+  update returns, while `engine/link.py` times the worker lease from the send time. **read**
 - Public list prices for the quote worksheet (`runs/twwarhammer3/native-multiplayer/quote-worksheet.md`,
   git-ignored; not a quote): Google Cloud
   [GPU regions](https://docs.cloud.google.com/compute/docs/gpus/gpu-regions-zones),
@@ -107,9 +111,11 @@ Implementation, 2026-10-30 (branch `wh3-native-mp`; [status](twwarhammer3/native
   [network pricing](https://cloud.google.com/vpc/network-pricing);
   [airgpu](https://airgpu.com/); [Tailscale pricing](https://tailscale.com/pricing). **checked**
 - Steam [ISteamMatchmaking](https://partner.steamgames.com/doc/api/ISteamMatchmaking):
-  friends-only lobbies are not listed; Steam passes `+connect_lobby` on an accepted invite and
-  the game decides whether to honour it. Used by the static lobby audit
-  (`runs/twwarhammer3/native-multiplayer/lobby-static-audit.md`, git-ignored). **checked**
+  friends-only lobbies do not show up in the lobby list; on an accepted invite Steam posts
+  GameLobbyJoinRequested_t if the game is running, else launches it with `+connect_lobby <id>`.
+  Acting on either is the game's own code; whether WH3 does is unknown. Used by the static
+  lobby audit (`runs/twwarhammer3/native-multiplayer/lobby-static-audit.md`, git-ignored).
+  **checked**
 
 ## Verification talks and Sonar
 

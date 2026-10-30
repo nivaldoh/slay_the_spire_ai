@@ -134,7 +134,8 @@ Moved from AGENTS.md on 2026-10-29 (light factory docs cleanup).
 ```
 src/twwarhammer3/  Total War: WARHAMMER III custom battles
   __main__.py      CLI: doctor, pack, launch, menu (runtime and UI probes); play, digest,
-                   watch, card, stats, report, export, spend (jobs and offline evidence)
+                   watch, card, stats, report, export, spend (jobs and offline evidence);
+                   coordinator, worker, compare-peers (native multiplayer)
   protocol.py      Order types and validation, the error taxonomy; observations stay dicts;
                    it changes freely (Spire's protocol.py is byte-stable)
   engine/          runtime (pins, pack build, mod list, launch), startup (video skip), pack
@@ -142,7 +143,8 @@ src/twwarhammer3/  Total War: WARHAMMER III custom battles
                    reference), doctor, windows_capture.py (passive stills, Windows Python),
                    checkpoint_agent.js and checkpoint_frida.py (the checkpoint Frida agent)
                    link.py and worker.py (native multiplayer: the coordinator's link and
-                   the per-client worker; runtime paths work in WSL or native Windows)
+                   the per-client worker); runtime.py and gameai/windows.py pick WSL or
+                   native Windows paths at import
   mod/             Lua scripts packed into the game: battle, frontend menus, and in _lib/
                    UI steps, JSON and twwarhammer3_imagery.lua (the stills camera)
   assets/          The blank startup clip and its MIT license

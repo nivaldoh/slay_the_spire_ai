@@ -390,7 +390,7 @@ Both games:
   "wrap it up after the current battle ends". Done: [first end-to-end test](posttraining.md#first-end-to-end-test-2026-10-17).
 
 WH3:
-- 2026-10-30 15:02 (native multiplayer, implement): "Implement
+- 2026-10-30 15:01 (native multiplayer, implement): "Implement
   docs/twwarhammer3/native-multiplayer.md. Note that I haven't set up accounts, billing, etc,
   so do as much as we reasonably can before that part becomes a blocker." Inline notes on the
   plan's markers before that: Client layout "[seems ok]"; Session contract, Worker link, Probe

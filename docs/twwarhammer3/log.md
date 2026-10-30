@@ -47,27 +47,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 ## 2026-10-30 (afternoon): native multiplayer built offline, up to accounts and billing
 
 The owner asked to implement the [plan](native-multiplayer.md) up to accounts and billing.
-Built on branch `wh3-native-mp` (not on main; [status](native-multiplayer.md#implementation-status)):
-- platform detection, so the same code runs in WSL or under native Windows Python;
-- the battle script's `multiplayer` session modes: `observe` (passive) and `control` (unqueued
-  moves for the local army only), plus an evaluator-only `native` identity section;
-- the coordinator/worker link, the worker, and the `coordinator`, `worker` and `compare-peers`
-  commands.
-Five parts. Each had an agent-written card (not agreed), an independent reviewer and a fix
-round. The reviews found 1 blocker (a lost status reply could not be retried once the next
-command was queued) and 10 should-fixes, all fixed; each code fix has a test that fails on the
-old code.
+Built on branch `wh3-native-mp`, not on main ([status](native-multiplayer.md#implementation-status)):
+platform detection (one code base for WSL and native Windows Python); the battle script's
+`multiplayer` modes, `observe` (passive) and `control` (unqueued moves for the local army
+only), with an evaluator-only `native` section; the coordinator/worker link and the
+`coordinator`, `worker` and `compare-peers` commands. Five parts, each with an agent-written
+card (not agreed), a review by a second agent and a fix round: 1 blocker (a lost status reply
+could not be retried once the next command was queued) and 10 should-fixes, all fixed. Each
+bug fix has a test that fails on the old code (the native lock's only in the opt-in Windows
+run, which check.py skips); test-only findings got tests that fail on planted wrong versions.
+A final integration review and refusal sweep led to `047c96d` (counts in the status).
 
-Evidence, $0, no game, no account:
-- 3 opt-in tests on real Windows Python;
-- one native run: a Windows Python worker against a WSL coordinator over localhost on a fake
-  bridge (move submitted, attack rejected, exit within the 15 s lease);
-- a measurement: WSL `flock` and native `msvcrt` locks do not exclude each other.
-
-Research checked by a second agent: a list-price worksheet and a static lobby audit (no
-documented create/join binding). Mod pack sha256 changes on merge, so single-player card-board
-setups split from earlier launches. Unverified: everything live (local_army values, ui_id
-across peers, replication, the cloud, the link between machines).
+Evidence, $0, no game, no account: 2 new opt-in tests on real Windows Python 3.13.1 (35 of 35
+passed with the opt-in set); one native run at `b39a03d`, `--attach --mode control` on a fake
+bridge (move submitted, attack rejected, worker exit 13.8 s after the coordinator closed by the
+WSL clock, about 14.8 s by Windows time; no owned launch); WSL `flock` and native `msvcrt` locks
+on one file do not exclude each other, and nothing enforces one kind of controller per PC. Mod
+pack sha256 changes on merge, so single-player card-board setups split from earlier launches.
+check.py at `047c96d` with these docs, in the worktree: PASSED, Ruff clean, 1960 passed, 69
+skipped (40 need torch; the rest local runs/ evidence or the Windows opt-in); it lists 3
+changes for the owner's yes (an agreed check's test file, a plant, a new skip). Unverified:
+everything live (local_army values, ui_id across peers, replication, the cloud, the link).
 
 ## 2026-10-30 (night): the light factory's checks checked
 

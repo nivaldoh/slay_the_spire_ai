@@ -8,8 +8,9 @@ before models. Investigate lower rendering costs alongside this route, with a se
 proof before claiming a GPU-free client.
 
 **On 2026-10-30 the owner asked to implement this plan up to the point where accounts and
-billing block it ([status](#implementation-status)). Cloud accounts and resources, purchases,
-game launches and paid model calls are still not authorized.** The owner wants everything
+billing block it ([status](#implementation-status)). Cloud accounts and resources and
+purchases wait for the owner's accounts and billing; game launches wait for a game window
+(plan step 1) and paid model calls for the owner's go-ahead.** The owner wants everything
 possible prepared before spending. More concurrent game licenses are still needed. There
 have been **zero live multiplayer battles** in this investigation; native control,
 unattended operation, cloud compatibility and headless execution remain **unverified**.
@@ -32,37 +33,54 @@ are detailed below so the next change can take one small step without inventing 
 2026-10-30, branch `wh3-native-mp`, not merged to `main`. Everything below was built and
 tested offline. Nothing has run against a real game or a second machine, and the agent wrote
 each part's card without the owner's agreement, so **nothing here is verified** under the
-[hard rule](../../AGENTS.md#verification-hard-rule). Each part had an independent review and
-a fix round. Each test was shown to fail on a planted wrong version.
+[hard rule](../../AGENTS.md#verification-hard-rule). Each part had a review by a second agent
+and a fix round; the platform reviewer could not run the native tests, so only the author ran
+them. Authors and reviewers planted wrong versions in every part. Each plant a reviewer found
+uncaught now fails a new test, including the two worker plants first left as notes (a session
+read before hello in `--attach` mode, a worker that prints its token: tests added in
+`047c96d`, each seen failing on its plant). Open review notes: check.py never runs the native
+tests; in multiplayer `evaluation.friendly` counts only the local army; `first_difference_ms`
+ignores missing units.
 
 | Part | Where | What it does | Evidence so far |
 |---|---|---|---|
-| Platform (steps 0, 2) | `gameai/windows.py`, `engine/runtime.py` | Under WSL, behaves as before. Under native Windows Python: `C:/` paths, `sys.executable`, an `msvcrt` lock, a supervisor read without `select` | 3 opt-in tests on real Windows Python 3.13.1 (`GAMEAI_TEST_WINDOWS=1`), no game. Measured: a WSL `flock` and a native `msvcrt` lock on one file do not exclude each other, so one PC runs one kind of controller |
+| Platform (steps 0, 2) | `gameai/windows.py`, `engine/runtime.py` | Under WSL, behaves as before (offline suite and review). Under native Windows Python: `C:/` paths, `sys.executable`, an `msvcrt` lock, a supervisor read without `select` | 2 new opt-in tests run this code under real Windows Python 3.13.1, with no game (`GAMEAI_TEST_WINDOWS=1`: 35 of 35 passed, including one earlier opt-in test). Measured on the owner's PC, in both orders: a WSL `flock` and a native `msvcrt` lock on one file do not exclude each other, while two locks of the same kind do. Nothing enforces one kind of controller per PC; never run both kinds on one PC |
 | Battle modes (steps 4, 5) | battle Lua, `mailbox.py` docstring, `protocol.HIDDEN_KEYS` | Session field `multiplayer`. `observe` never takes control, changes speed, ends deployment, restarts, clicks or advises. `control` accepts only unqueued `move` orders and takes a unit's controller at its first valid move. Ownership comes from `local_alliance()`/`local_army()`. The evaluator-only `native` identity section never reaches a policy | Lua 5.1 stub tests with a trap on every mutator; plants include `take_control` at startup and army 1 treated as own |
-| Link | `engine/link.py` | Coordinator on 127.0.0.1 plus a standard-library worker client: tokens (only their sha256 in evidence), manifest comparison, numbered events, one command in flight, leases timed from the send time, fencing | Fake workers over loopback: wrong token, other client, duplicate/reordered/conflicting events, lost status reply, lapsed lease, restarts |
-| Worker | `engine/worker.py`, `twwarhammer3 coordinator`, `twwarhammer3 worker` | Joins one game's mailbox to the link: hello before touching the game; owned launch or `--attach`; observations sent as evidence; `submitted` only on the game's acknowledgement | Fake-game tests. One $0 native run: coordinator in WSL, worker under Windows Python on a fake bridge. Move submitted, attack rejected, worker exit 13.8 s after the coordinator closed (`runs/wh3-native-mp-20261030/native-local-run/`) |
-| Comparator (step 4) | `battle/peers.py`, `twwarhammer3 compare-peers` | Matches two clients' observations at equal `time_ms` by (alliance, army, index). Reports raw differences with no tolerance; ui_id disagreements are listed, never joined on | Synthetic evidence only. Observation times are weaker than completed engine ticks |
+| Link | `engine/link.py` | Coordinator on 127.0.0.1 plus a standard-library worker client: tokens (only their sha256 in evidence), manifest comparison, numbered events, one command in flight, the worker's lease timed from its heartbeat's send time, the coordinator's from receipt, fencing | Fake workers over loopback: wrong token, other client, bad client names and event seqs, duplicate/reordered/conflicting events, lost status reply, lapsed lease, restarts |
+| Worker | `engine/worker.py`, `twwarhammer3 coordinator`, `twwarhammer3 worker` | Joins one game's mailbox to the link: hello before touching the game; owned launch or `--attach`, which reads the session only after hello and refuses one of another mode; observations sent as evidence; `submitted` only on the game's acknowledgement. The coordinator removes its token files when the attempt closes; `play --attach` refuses a multiplayer session | Fake-game tests. One $0 native run at `b39a03d`: coordinator in WSL, worker under Windows Python 3.13.1 with `--attach --mode control` on a fake bridge served from WSL. Move submitted, attack rejected, worker exit 13.8 s after the coordinator closed by the WSL clock (about 14.8 s by Windows time, since WSL's clock runs 0.936×); no owned launch (`runs/wh3-native-mp-20261030/native-local-run/`) |
+| Comparator (step 4) | `battle/peers.py`, `twwarhammer3 compare-peers` | Matches two clients' observations at equal `time_ms` by (alliance, army, index). Reports raw differences with no tolerance; ui_id disagreements are listed, never joined on. A time where one client has two different observations (finish() republishes at the same battle time) is listed as repeated and not compared (JUDGEMENT? `battle/peers.py` repeated time). A time where either client's `native` lists errors is listed for that client and not compared (JUDGEMENT? `battle/peers.py` failed read) | Synthetic evidence only, sent through the worker's own event code; it reads the native run's evidence (5 observations, none with `native`: the fake bridge writes none). Observation times are weaker than completed engine ticks |
+
+Final checks after the five parts merged: an integration review found 1 blocker (compare-peers could
+not read real worker evidence: fixed) and 1 should-fix (a failed read reported as missing
+units: fixed), both in `047c96d`. A refusal sweep of link.py, worker.py and peers.py caught 12
+of 18 refusals before the fixes (link 10/13, worker 1/4, peers 1/1; 5 real gaps, 1
+equivalent); rerun: see handoff.
 
 Research, git-ignored, each checked by a second agent:
 `runs/twwarhammer3/native-multiplayer/quote-worksheet.md` gives public list prices, not a
-quote. It finds no G2 (L4) in São Paulo; that region is assumed from the owner's UTC-3 and
-marked `JUDGEMENT?`. For 10 hours of one us-east1 client with the disk deleted: $9.30, or
-$14.90 if the vWS row is billed on top. The worksheet's airgpu figure is about $7.08–7.67 at
-the T4 "from" rate. `lobby-static-audit.md` finds no documented create or join binding: the
-lobby screens need live UI dumps.
+quote. The worksheet anchors on São Paulo (from the owner's UTC-3 only; its
+`JUDGEMENT?: Region` is in the git-ignored worksheet) and finds no G2 (L4) there, so it prices
+us-east1. For 10 hours of one us-east1 client with the disk deleted (10 h and 250 GB rest on
+JUDGEMENT native-multiplayer.md Cost workload; before egress, tax and streaming licences):
+$9.30, or $14.90 if the L4 vWS row is billed on top. airgpu at its lowest published T4 rate (a
+weaker GPU; per-region rates not public): about $7.08–7.67 for the same 10 hours.
+`lobby-static-audit.md` finds no documented create or join binding: the lobby's component ids
+need owner-approved extraction of the shipped layouts or live UI dumps.
 
-Running a worker on a Windows host: install Windows Python 3.13 and copy this repository
-without line-ending conversion (`git clone -c core.autocrlf=false`). Otherwise the source
-and pack hashes will not match the coordinator's, and the worker is refused. Then run
-`python -m twwarhammer3 worker ...` with `PYTHONPATH=<repo>\src`; no other package is needed.
+Running a worker on a Windows host (untested; the native run read this checkout through its
+UNC path): install Windows Python 3.13 and clone the coordinator's exact revision without
+line-ending conversion (`git clone -c core.autocrlf=false`), adding no files under the source
+folders. Otherwise the source or pack hash differs and the coordinator refuses the hello. Then
+run `python -m twwarhammer3 worker ...` with `PYTHONPATH=<repo>\src`; no other package is
+needed.
 
 Blocked, and what unblocks each item:
 
 | Next item | Blocked on |
 |---|---|
-| Local passive-observer smoke (one single-player custom battle in `observe` mode, ~10 min, $0) | A game window on the owner's PC |
+| Local passive-observer smoke (one single-player custom battle in `observe` mode, started by hand or by `launch`/`menu` before `worker --attach`, with a one-line session edit after `launch`; about 10 min, an estimate; $0; proposed card, not agreed: `runs/wh3-native-mp-20261030/card-observer-smoke.md`) | A game window on the owner's PC; the owner's answer on the card |
 | Low-graphics (H1) comparison; native completed-tick collector | A game window; the collector also needs its own card |
-| Lobby automation (step 8) | Live UI dumps (game window); the owner's ruling on lobby privacy |
+| Lobby automation (step 8) | Live UI dumps (game window) or owner-approved layout extraction; the owner's ruling on lobby privacy |
 | Ordinary multiplayer, one-peer move, authority and visibility checks (steps 3, 5, 7) | A second concurrent licence and Steam account; agreed checks |
 | Hosted client (step 2) | A provider account, billing and a quote |
 | Link between machines | A Tailscale account, or the IAP alternative |
@@ -127,9 +145,10 @@ JUDGEMENT: Worker platform — Codex, 2026-10-30: proposes native Windows worker
 WSL coordinator; WSL1 or Linux/Proton changes portability work. Cloud implementation
 rests on this choice; it is not adopted. [not sure why we need a WSL coordinator. Can't we just do some simple if/else to see what the env is running? I use WSL2 locally for dev, and the hosted machines will likely use windows directly and we won't need to force WSL there just because of that]
 Applied 2026-10-30 as the owner asked: `gameai.windows` and `engine/runtime.py` check
-`sys.platform` at import. Under WSL nothing changed; under native Windows Python the same code
-uses `C:/` paths, `sys.executable` and an `msvcrt` lock. Workers on hosted machines run native
-Windows Python. The coordinator runs wherever the operator is (WSL on the owner's PC).
+`sys.platform` at import. Under WSL the behaviour is unchanged (offline suite and review);
+under native Windows Python the same code uses `C:/` paths, `sys.executable` and an `msvcrt`
+lock. Workers on hosted machines are to run native Windows Python. The coordinator has run
+only in WSL on the owner's PC.
 
 ```mermaid
 flowchart LR
