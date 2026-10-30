@@ -478,6 +478,9 @@ def test_the_checked_tree_keeps_staged_deletions_and_skips_only_the_thesis_notes
     (repo / "docs/thesis").mkdir()
     (repo / "docs/thesis/notes.md").write_text("the owner's untracked note\n")
     assert check.tree_content(repo) == deleted  # left out
+    (repo / "docs/new.md").write_text("A new page.\n")
+    assert check.tree_content(repo) != deleted  # other docs count, untracked or not
+    (repo / "docs/new.md").unlink()
     (repo / "configs").mkdir()
     (repo / "configs/new_prompt.md").write_text("A new prompt.\n")
     prompt = check.tree_content(repo)

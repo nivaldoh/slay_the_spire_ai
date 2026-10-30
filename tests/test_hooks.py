@@ -322,7 +322,8 @@ def test_the_git_hook_refuses_a_commit_until_check_py_passed_on_this_tree(tmp_pa
     for name in ("scripts/check.py", "scripts/githooks/pre-commit"):
         (tmp_path / name).write_bytes((ROOT / name).read_bytes())
     (tmp_path / "scripts/githooks/pre-commit").chmod(0o755)
-    (tmp_path / ".gitignore").write_text("runs/\n")  # as in the repository: the record is ignored
+    # as in the repository: the record and bytecode are ignored
+    (tmp_path / ".gitignore").write_text("runs/\n__pycache__/\n")
     (tmp_path / "a.py").write_text("x = 1\n")
 
     def git(*args, cwd=tmp_path):
@@ -349,4 +350,14 @@ def test_the_git_hook_refuses_a_commit_until_check_py_passed_on_this_tree(tmp_pa
         script.write("def broken(:\n")
     record.write_text(json.dumps({"tree": check.tree_content(tmp_path)}))
     assert git("commit", "-qam", "broken").returncode != 0  # a broken check.py refuses
+    (tmp_path / "scripts/check.py").write_bytes((ROOT / "scripts/check.py").read_bytes())
+    linked = tmp_path.parent / "linked"
+    assert git("worktree", "add", "-q", str(linked)).returncode == 0
+    (linked / "a.py").write_text("x = 3\n")
+    # a linked worktree needs its own record: the main checkout's does not count there
+    assert git("commit", "-qam", "there", cwd=linked).returncode != 0
+    (linked / "runs/checks").mkdir(parents=True)
+    (linked / "runs/checks/last-pass.json").write_text(
+        json.dumps({"tree": check.tree_content(linked)}))
+    assert git("commit", "-qam", "there", cwd=linked).returncode == 0
 

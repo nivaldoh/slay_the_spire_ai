@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """git pre-commit hook: refuse a commit until scripts/check.py has passed on exactly the files
 now in this tree (its record, runs/checks/last-pass.json, holds tree_content's hash). git runs it
-for every `git commit`, however the command is spelled; `--no-verify` skips it. Enable it once per
-clone with `git config core.hooksPath scripts/githooks` (the owner's choice, not yet made)."""
+for every `git commit`, however typed, but not for merges, cherry-picks, reverts, rebases or
+`am`; `--no-verify` skips it. Enable it with `git config core.hooksPath scripts/githooks` (the
+owner's choice, not yet made); a checkout without this file then runs no hook."""
 import importlib.util
 import json
 import subprocess

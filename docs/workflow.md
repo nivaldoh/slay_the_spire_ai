@@ -80,9 +80,11 @@ spending or a change to what a benchmark measures.
 
 Before every commit, both agents run one command and quote its first five lines. A passing run
 records a hash of the files it checked (`runs/checks/last-pass.json`); the git hook
-`scripts/githooks/pre-commit` refuses any commit, however spelled, until the files match it
-again (owner's yes pending: it works once `git config core.hooksPath scripts/githooks` is set;
-`--no-verify` skips it; a commit before or after a failed run happened on 10-29 and 10-30):
+`scripts/githooks/pre-commit` refuses every `git commit`, however typed, until the files match
+it again (owner's yes pending; it works once `git config core.hooksPath scripts/githooks` is
+set, in checkouts that contain the hook). Merges, cherry-picks, reverts, rebases and `am` run
+other hooks and are not covered; `--no-verify` skips it. A commit before or after a failed run
+happened on 10-29 and 10-30:
 
 ```text
 $ uv run --locked python scripts/check.py
