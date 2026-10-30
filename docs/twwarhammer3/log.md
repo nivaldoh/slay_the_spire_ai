@@ -47,33 +47,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 ## 2026-10-30 (night): the light factory's checks checked
 
 Claude Code, owner away ("light factory first ... more trust in these autonomous runs"); no game,
-$0; 20 commits in worktree branch `lf-20261030`, merged at `c57098f`. Handoff, audit and review
-folders: `runs/overnight-20261030/`.
-- The owner's quick items: pid 159910 killed; the Land checkpoint pass at `d3ba6aa` recorded;
-  5 Spire log-history markers retired; `check.py` warns when state.md is over 120 lines.
-- The gate itself: 10 wrong versions of `check.py` and the hooks passed every test at `aefcaab`
-  (exit codes, the HEAD-move list, the Stop hook's game commands and timeout, two
-  needs-your-yes branches). New tests catch all 10; `tests/plants.toml` gains 20 plants.
-- `check.py` names a linked worktree (its evidence tests skip: 64 skipped against 41) and a
-  marker in log history; plant runs keep their scratch in `runs/`; the Bash hook refuses pinned
-  uvx ruff formats (`@`, `==`, `>=`, extras, any case); the WH3 version review counts a judge
-  whose pick names no candidate as missing; a siege test makes each run's spell witness count.
-- The reviewer's long-run question (paths outside May touch, behaviour commits naming no
-  review): on the 10-29 run (n = 1) it listed 4 unreviewed commits and found the `ruff@` hole.
-- Land interview evidence notes (not answers): Q25, 25 saved logs read enemy morale and
-  unrounded HP; Q8, scripts won 3/68 and models 23/92 where both played (14 of those in two
-  scenarios); Q29, baseline scripts repeated their outcome in 92% of 235 pairs (`8eefc00`);
-  Q18, how the 642 recorded episodes ended; Q24, cost per battle by model (`4d1d58c`); Q21,
-  changes during a model call; Q31, which candidate checks are agreed today (`bfad258`).
-- After 06:30: the reviewer's saved eval rerun after its text changed (2 of 2 bugs found, no
-  false alarm, n = 3); `--plants` copies saved evidence a plant names, so the siege plant is
-  kept (65 caught); the refusal sweep's scratch moved into `runs/`; state.md trimmed to 117
-  lines. `bed53ec` was committed on a FAILED check.py (fixed in `607c431`); a commit guard for
+$0; merged at `c57098f` and after. Handoff, audit, reviews: `runs/overnight-20261030/`.
+- Quick items: pid 159910 killed; the `d3ba6aa` Land pass recorded; 5 Spire log markers retired;
+  `check.py` warns when state.md is over 120 lines (now 117, 120 with Codex's lines).
+- The gate: 10 wrong versions of `check.py` and the hooks passed every test at `aefcaab`; new
+  tests catch all 10. `tests/plants.toml` keeps 65 (65 caught at `607c431`); `--plants` copies
+  saved evidence a plant names, so the siege spell-witness plant is kept.
+- `check.py` names a linked worktree (64 skipped against 41) and a marker in log history; plant
+  runs and the refusal sweep keep scratch in `runs/`; the Bash hook refuses pinned ruff formats;
+  the version review counts a judge picking no candidate as missing.
+- The reviewer's long-run question found the `ruff@` hole and 4 unreviewed commits on the 10-29
+  run; its saved eval, rerun: 2 of 2 bugs found, no false alarm (3 cases).
+- Land interview evidence notes, not answers: Q8, Q18, Q21, Q24, Q25, Q29, Q31 (`8eefc00`,
+  `4d1d58c`, `bfad258`), each recounted by a second agent.
+- `bed53ec` was committed on a FAILED check.py (fixed in `607c431`); a git pre-commit hook against
   that is a draft on branch `commit-guard-draft`, for the owner's yes.
-- 9 reviews named in commits, one more with no findings, a 3-arm reviewer evaluation and a rerun
-  of every number; findings fixed, parked (more ruff spellings) or left to the owner.
-check.py at `c57098f`, main checkout: PASSED, 1929 passed, 41 skipped; not at HEAD (Codex's
-uncommitted docs). Not established: agreement on any of these checks; the evaluation beyond n = 1.
+check.py at `92ab398`, main checkout: PASSED, 1931 passed, 41 skipped; not at HEAD (Codex's
+uncommitted docs). Not established: agreement on any check; the reviewer question beyond one run.
 
 ## 2026-10-30: native multiplayer assessment
 

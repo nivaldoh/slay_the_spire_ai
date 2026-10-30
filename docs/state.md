@@ -19,11 +19,10 @@ the next planned experiment. CI runs `check.py` on each push (results: `gh run l
 Skills later"): in your next session, check that `.codex/hooks.json`, `.codex/agents/reviewer.toml`
 and `.agents/skills/` work in Codex (the owner trusts hooks with `/hooks`), fix what Codex needs,
 and keep `tests/test_agent_sync.py` passing ([table](workflow.md#claude-code-and-codex)).
-**Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; four
+**Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; five
 draft branches are unmerged ([list](#branches)).
 Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)).
-MARL references: [three papers plus ProgramLab](thesis/papers.md#marl-implementation-references-2026-10-28), inspected 2026-10-28; ProgramLab's training code is pending. No external tests or learning results reproduced.
-Testing reviews await you: [eval review](twwarhammer3/log.md#wh3-evaluations-and-tests-2026-10-23), [live-check comparison](twwarhammer3/log.md#wh3-live-check-comparison-2026-10-23).
+MARL references: [three papers plus ProgramLab](thesis/papers.md#marl-implementation-references-2026-10-28), inspected 2026-10-28; ProgramLab's training code is pending. No external tests or learning results reproduced. Testing reviews await you: [eval review](twwarhammer3/log.md#wh3-evaluations-and-tests-2026-10-23), [live-check comparison](twwarhammer3/log.md#wh3-live-check-comparison-2026-10-23).
 
 ## Total War: WARHAMMER III
 
@@ -93,7 +92,7 @@ synthetic tasks against a 0.90 gate; no general learning gain established
 9. **Spire's next step.** After WH3, run one meaningful comparison or freeze this track; the state-restore investigation comes first (owner, 2026-10-23). Also noted for later: the capture check (owner, 2026-10-23: "Not sure what this is"). Both, with the proposed comparison and the data-night choice: [Spire open decisions](spire/fullrun/README.md#open-owner-decisions).
 10. **Thesis and RL environment.** Likely multi-agent systems, possibly multi-agent RL; no research question selected (owner, 2026-10-28). Tentative environment: each agent sees its available battle state, perhaps teammate information, controls its army share and learns from sparse win/loss near restored endings. Reset may use a battle start or checkpoint; details and correctness checks are for later. [Direction 6](thesis/directions.md#6-wh3-as-an-rl-environment-for-high-level-decisions); [research shortlist](thesis/directions.md#what-the-2026-10-28-checks-changed). Human-AI work stays a note; licensing is deferred.
 11. **Local LLM checkpoint RL — deferred.** Leave this post-training experiment paused (owner, 2026-10-28). No recovery choice is needed now; the existing results and choices remain for a future review. Merged on 2026-10-28. [Details](twwarhammer3/checkpoint-rl.md#open-owner-choices-decision-11).
-12. **Light factory follow-ups (2026-10-29).** All six and the evening's four are answered and carried out ([log](twwarhammer3/log.md#2026-10-29-evening-the-owners-light-factory-answers-carried-out)); Codex checks its own hooks and skills (above). 2026-10-30 night: two more in `runs/overnight-20261030/handoff.md` (two test edits that need your yes; whether `check.py`'s own edits need it).
+12. **Light factory follow-ups (2026-10-29).** All six and the evening's four are answered and carried out ([log](twwarhammer3/log.md#2026-10-29-evening-the-owners-light-factory-answers-carried-out)); Codex checks its own hooks and skills (above). 2026-10-30 night: three more in `runs/overnight-20261030/handoff.md` (two test edits that need your yes; whether `check.py`'s own edits need it; a commit guard).
 
 ## Runtime and ownership
 
@@ -106,6 +105,7 @@ synthetic tasks against a 0.90 gate; no general learning gain established
 
 ## Branches
 
+- `commit-guard-draft` (`6958d6f`, worktree `../slay_the_spire_ai-commit-guard`): decision 12's commit guard; not merged.
 - `v11-keys` (`cd97667`): Spire v11 keys memory, on v10 (`54a5967`).
 - `wh3-rules-v21-attack-path` (`5baf28b`): WH3 `llm_rules` attack-route draft, labelled
   v21 before main's v21 (`18dabdd`); renumber before any merge.
