@@ -794,3 +794,21 @@ old = "tempfile.TemporaryDirectory(prefix=\"check-pycache-\", dir=scratch.parent
 new = "tempfile.TemporaryDirectory(prefix=\"check-pycache-\", dir=scratch.parent, delete=False)"
 tests = ["tests/test_check_script.py::test_normal_check_cleans_its_bytecode_prefix_after_interruption"]
 source = "2026-10-30 bytecode repair: per-run temporary bytecode must not accumulate"
+
+[[plant]]
+id = "normal-check-inherits-pytest-selection"
+guards = "The normal gate runs the whole suite despite caller PYTEST_ADDOPTS"
+file = "scripts/check.py"
+old = "    env.pop(\"PYTEST_ADDOPTS\", None)\n"
+new = ""
+tests = ["tests/test_check_script.py::test_normal_check_ignores_caller_selection_and_optimization"]
+source = "2026-10-30 environment audit: -k and an explicit passing file hid a failing test"
+
+[[plant]]
+id = "normal-check-inherits-python-optimization"
+guards = "The normal gate retains imported helper assertions despite caller PYTHONOPTIMIZE"
+file = "scripts/check.py"
+old = "    env.pop(\"PYTHONOPTIMIZE\", None)\n"
+new = ""
+tests = ["tests/test_check_script.py::test_normal_check_ignores_caller_selection_and_optimization"]
+source = "2026-10-30 environment audit: PYTHONOPTIMIZE erased the imported helper assertion"

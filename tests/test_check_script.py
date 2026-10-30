@@ -646,3 +646,38 @@ def test_normal_check_cleans_its_bytecode_prefix_after_interruption(repo, monkey
     assert prefixes[0].parent == repo / "runs/test-scratch"
     assert not prefixes[0].exists()
     assert not (repo / "runs/checks/last-pass.json").exists()
+
+
+@pytest.mark.parametrize("key,value", [
+    ("PYTEST_ADDOPTS", "-k test_pass"),
+    ("PYTEST_ADDOPTS", "tests/test_pass.py"),
+    ("PYTHONOPTIMIZE", "1"),
+])
+def test_normal_check_ignores_caller_selection_and_optimization(
+        repo, monkeypatch, capsys, key, value):
+    (repo / "pytest.ini").write_text("[pytest]\ntestpaths = tests\n")
+    (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
+    (repo / ".gitignore").write_text("runs/\n__pycache__/\n.pytest_cache/\n.ruff_cache/\n")
+    (repo / "docs/state.md").write_text("# Project state\n")
+    (repo / "docs/agreed-checks.md").write_text("- Whole suite: `pytest tests`.\n")
+    if key == "PYTEST_ADDOPTS":
+        (repo / "tests/test_pass.py").write_text("def test_pass():\n    assert 1 == 1\n")
+        (repo / "tests/test_fail.py").write_text("def test_fail():\n    assert 1 == 2\n")
+        failed = "test_fail"
+    else:
+        (repo / "helper.py").write_text("def reject():\n    assert False, 'must reject'\n")
+        (repo / "tests/test_helper.py").write_text(
+            "from helper import reject\n\n\ndef test_helper():\n    reject()\n")
+        failed = "test_helper"
+    monkeypatch.delenv("PYTEST_ADDOPTS", raising=False)
+    monkeypatch.delenv("PYTHONOPTIMIZE", raising=False)
+    monkeypatch.setenv(key, value)
+    monkeypatch.setenv("WH3_WRITE_PROMPTS", "1")
+    parent = {name: os.environ.get(name)
+              for name in ("PYTEST_ADDOPTS", "PYTHONOPTIMIZE", "WH3_WRITE_PROMPTS")}
+    assert run_main(repo, monkeypatch) == 1
+    assert f"FAILED tests/{failed}.py::{failed}" in capsys.readouterr().out
+    assert not (repo / "runs/checks/last-pass.json").exists()
+    result = json.loads((repo / "runs/checks/agreed-passes.jsonl").read_text().splitlines()[-1])
+    assert not result["checks"]["Whole suite"]["passed"]
+    assert {name: os.environ.get(name) for name in parent} == parent

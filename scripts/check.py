@@ -582,6 +582,8 @@ def main() -> int:
         base = "HEAD"
 
     env = {k: v for k, v in os.environ.items() if k != "WH3_WRITE_PROMPTS"}
+    env.pop("PYTEST_ADDOPTS", None)
+    env.pop("PYTHONOPTIMIZE", None)
     scratch = ROOT / "runs" / "test-scratch" / f"check-{os.getpid()}"
     scratch.parent.mkdir(parents=True, exist_ok=True)  # pytest makes only the last folder
     content = tree_content(ROOT)

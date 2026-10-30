@@ -112,6 +112,8 @@ markers   3 problems listed in the log, for the owner
   Pytest gets a fresh disposable bytecode directory for each run, overriding an inherited
   cache prefix. This catches same-size/same-timestamp source and test edits while preserving
   shared caches. The directory is removed on return or a Python exception.
+  It also removes caller `PYTEST_ADDOPTS` and `PYTHONOPTIMIZE` settings from subprocesses:
+  the gate runs the whole suite with assertions active. Focused pytest commands remain separate.
 - "needs your yes" lists edits only the owner approves, in everything not yet on
   `origin/main` (or since `--base REV`): lines removed or changed in a file an agreed check
   names or in [agreed-checks.md](agreed-checks.md); an edited or removed JUDGEMENT line; an

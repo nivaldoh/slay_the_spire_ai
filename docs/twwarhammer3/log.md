@@ -44,6 +44,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-30: exit-gate caller settings
+
+Inherited `PYTEST_ADDOPTS` could select a passing test or file while omitting a failing test;
+`PYTHONOPTIMIZE=1` could erase a failing assertion in an imported helper. Three actual CLI
+fixtures passed, falsely credited an agreed directory check, and wrote records matching the
+unchecked contents. The gate now removes those two settings from its subprocess environment.
+Parent settings remain intact; the existing prompt-write and bytecode protections remain.
+Card/reference: `runs/light-factory-20261030/env-card.md`, owner's full-suite rule, pytest
+`Config._preparse` and local CPython behavior. Before: 3 new regressions failed. After:
+16 focused cases passed; independent review found no issues and rejected both wrong variants
+(2/1 intended failures). Actual CLI probes rejected all 3 cases, with no pass record/credit.
+All 83 committed plants caught at `6955294`; the original prompt-protection plant is unchanged.
+Final exit gate: `runs/light-factory-20261030/env-check-final.log`; raw audits/reviews alongside.
+No game, Windows, paid API or benchmark changes; $0. Checks proposed, not agreed verification.
+Controls cover these reproduced caller settings; deliberate plugin/config overrides are outside
+this check. Next: final exact-revision offline check with saved evidence, then push/CI.
+
 ## 2026-10-30: exit-gate bytecode isolation
 
 The ordinary exit gate could pass failing source or test edits when old `.pyc` files matched
