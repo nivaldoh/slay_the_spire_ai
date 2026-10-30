@@ -48,3 +48,18 @@ def test_doctor_reports_missing_installed_and_changed_startup_without_writing(tm
     preferences.write_bytes(before)
     assert not doctor.collect_diagnostics()["startup"]["enabled"]
     assert preferences.read_bytes() == before
+
+
+def test_doctor_reports_a_missing_appdata_on_native_windows(tmp_path, monkeypatch):
+    user_dir = runtime.user_dir
+    fake_install(tmp_path, monkeypatch)
+    monkeypatch.setattr(runtime, "user_dir", user_dir)
+    monkeypatch.setattr(runtime.windows, "NATIVE", True)
+    monkeypatch.delenv("APPDATA", raising=False)
+    monkeypatch.setattr(doctor, "probe", lambda command: {"status": "ok", "output": "3.13"})
+    user_dir.cache_clear()
+    report = doctor.collect_diagnostics()
+    assert report["status"] == "blocked"
+    assert report["blockers"][0] == (
+        "Cannot read the game preferences: APPDATA is not set, so the game's user folder is "
+        "unknown")

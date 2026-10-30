@@ -54,6 +54,8 @@ def steam_build_id() -> str | None:
 def user_dir() -> Path:
     """The game's roaming user folder under %APPDATA%, read through Windows Python under WSL."""
     if windows.NATIVE:
+        if "APPDATA" not in os.environ:
+            raise OSError("APPDATA is not set, so the game's user folder is unknown")
         return Path(os.environ["APPDATA"]) / "The Creative Assembly/Warhammer3"
     output = subprocess.check_output(
         [str(windows.WINDOWS_PYTHON), "-c", "import os; print(os.environ['APPDATA'])"],

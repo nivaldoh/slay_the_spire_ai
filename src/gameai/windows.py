@@ -44,7 +44,10 @@ class RuntimeLock:
     """One controller at a time, held around runtime preparation and the owned game.
 
     The OS releases the lock (flock, or a byte lock through msvcrt natively) if the
-    controller dies; a file's existence is not a lock.
+    controller dies; a file's existence is not a lock. A WSL controller's flock and a
+    native controller's msvcrt lock on the same file do not exclude each other (measured
+    2026-10-30), so one PC runs one kind of controller: the owner's PC under WSL, cloud
+    VMs natively. The supervisor's check for a running game still refuses a second launch.
     """
 
     def __init__(self, directory: Path):
@@ -66,6 +69,10 @@ class RuntimeLock:
         return self
 
     def __exit__(self, *_):
+        if NATIVE:
+            # Closing the file need not release the lock at once (Microsoft's LockFileEx docs).
+            self._file.seek(0)
+            msvcrt.locking(self._file.fileno(), msvcrt.LK_UNLCK, 1)
         self._file.close()
 
 

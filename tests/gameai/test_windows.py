@@ -290,7 +290,7 @@ def test_windows_job_kills_owned_children_when_the_supervisor_dies(tmp_path):
 
 # Runs in native Windows Python (a cloud worker's controller) and prints what it saw.
 NATIVE_CONTROLLER = r"""
-import ctypes, json, shutil, subprocess, sys, tempfile, time
+import ctypes, json, os, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 from gameai import windows
 
@@ -309,8 +309,15 @@ with tempfile.TemporaryDirectory() as root:
                 report["second_lock"] = "acquired"
         except RuntimeError:
             report["second_lock"] = "refused"
-    with windows.RuntimeLock(root):
-        report["relocked"] = True
+    # Release, then re-acquire at once. A second handle to the file (os.dup, or one a child
+    # inherited) must not keep the lock after release.
+    report["relocked"] = 0
+    for _ in range(20):
+        with windows.RuntimeLock(root) as lock:
+            extra = os.dup(lock._file.fileno())
+        with windows.RuntimeLock(root):
+            report["relocked"] += 1
+        os.close(extra)
     shutil.copy2(Path(windows.__file__).with_name("windows_game.py"), root)
     game = windows.OwnedGame(
         root / "out/game.log", runtime_dir=root, game_dir=str(root),
@@ -353,7 +360,7 @@ def test_native_windows_controller_locks_and_owns_a_child_without_wsl_tools():
         "python": "C:\\Python313\\python.exe",
         "paths": ["C:/wh3-agent", "D:/Games/Total War"],
         "second_lock": "refused",
-        "relocked": True,
+        "relocked": 20,
         "child_stopped": True,
         "log_copied": True,
     }
