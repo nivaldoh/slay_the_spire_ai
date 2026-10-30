@@ -610,3 +610,12 @@ old = "passed = ruff.returncode == 0 and tests.returncode == 0"
 new = "passed = ruff.returncode == 0 and tests.returncode != 1"
 tests = ["tests/test_check_script.py::test_check_exits_1_when_ruff_or_a_test_fails"]
 source = "2026-10-30 night review of 1c5c3db (pytest exit 2 passed the new rows)"
+
+[[plant]]
+id = "stop-check-outlasts-its-hook-timeout"
+guards = "The Stop hook answers before the tools stop it"
+file = "scripts/hooks/stop_check.py"
+old = "TIMEOUT_S = 600"
+new = "TIMEOUT_S = 900"
+tests = ["tests/test_hooks.py::test_the_stop_check_gives_up_before_the_tools_stop_the_hook"]
+source = "2026-10-30 night assessors (MISSED at aefcaab; left out of 1c5c3db, found by the numbers rerun)"

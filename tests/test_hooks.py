@@ -306,3 +306,12 @@ def test_a_timed_out_check_is_killed_with_its_children_and_stderr_is_reported(re
     monkeypatch.setattr(stop_check, "CHECK_COMMAND",
                         ["bash", "-c", "echo 'lock out of date' >&2; exit 2"])
     assert stop_check.run_check() == (False, "lock out of date")
+
+
+def test_the_stop_check_gives_up_before_the_tools_stop_the_hook():
+    # Past the tool's own timeout the tool kills the hook, which then gives no answer
+    for name in (".claude/settings.json", ".codex/hooks.json"):
+        stop = json.loads((ROOT / name).read_text())["hooks"]["Stop"]
+        timeouts = [h["timeout"] for group in stop for h in group["hooks"]
+                    if "stop_check.py" in h["command"]]
+        assert timeouts and all(stop_check.TIMEOUT_S < t for t in timeouts), name
