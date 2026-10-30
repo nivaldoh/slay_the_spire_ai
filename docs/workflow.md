@@ -297,6 +297,8 @@ The owner asked (2026-10-29) how to stop this workflow decaying and keep it easy
   upgrade. A plant whose text the code no longer has fails the normal suite until it is updated
   to the same wrong version of the new code; removing or changing plants needs the owner's yes.
   Add a plant when a review finds a wrong version the tests missed and a new test catches it.
+  A plant whose tests read saved evidence names it (`evidence`); the replay copies it from the
+  main checkout into its scratch worktree, never linking it.
 - **Count what each step catches.** Per change: reviewer findings (real or noise), questions
   asked, the owner's minutes if shared. In the log: bugs found after "done" ("if they rise,
   we haven't saved human time, we've only moved it", claude.dev). After about five changes,

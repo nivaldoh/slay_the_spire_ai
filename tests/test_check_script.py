@@ -404,3 +404,24 @@ def test_plants_exits_1_on_a_missed_plant(repo, monkeypatch):
         (repo / name).write_text("from pkg.mod import f\n\n\ndef test_f():\n    assert f() == 1\n")
     git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qam", "caught")
     assert run_main(repo, monkeypatch, "--plants") == 0
+
+
+def test_a_plant_replays_on_a_copy_of_the_saved_evidence_it_names(repo, monkeypatch):
+    (repo / "src/gameai").mkdir()
+    (repo / "src/gameai/__init__.py").write_text("")
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    (repo / ".gitignore").write_text("runs/\n")
+    (repo / "runs/ev").mkdir(parents=True)  # ignored, as real evidence is
+    (repo / "runs/ev/expected.txt").write_text("1\n")
+    (repo / "tests/agreed/test_a.py").write_text(
+        "from pathlib import Path\n\nimport pytest\n\nfrom pkg.mod import f\n\n\ndef test_f():\n"
+        "    if not Path('runs/ev/expected.txt').exists():\n"
+        "        pytest." + "skip('needs the saved evidence')\n"
+        "    assert f() == int(Path('runs/ev/expected.txt').read_text())\n")
+    (repo / "tests/plants.toml").write_text(
+        '[[plant]]\nid = "a"\nguards = "g"\nfile = "src/pkg/mod.py"\nold = "return 1"\n'
+        'new = "return 2"\ntests = ["tests/agreed/test_a.py"]\nevidence = ["runs/ev"]\n')
+    git(repo, "add", ".")
+    git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "evidence")
+    assert run_main(repo, monkeypatch, "--plants") == 0  # caught on the copy
+    assert (repo / "runs/ev/expected.txt").read_text() == "1\n"  # the original is untouched

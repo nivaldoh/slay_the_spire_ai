@@ -300,6 +300,19 @@ def tail(output: str, lines: int = 1) -> str:
     return " / ".join(output.strip().splitlines()[-lines:]) or "no output"
 
 
+def copy_evidence(scratch: Path) -> None:
+    """Copy the saved evidence plants name (`evidence = [paths under runs/]`) from the main
+    checkout into the scratch worktree: copies, so a planted wrong version can never write into
+    the only real copy, and removed with the worktree. A missing source is left missing, so that
+    plant's tests skip and its baseline fails."""
+    main = Path(git(ROOT, "rev-parse", "--path-format=absolute", "--git-common-dir").strip()).parent
+    for item in dict.fromkeys(i for plant in plant_list(scratch) for i in plant.get("evidence", [])):
+        source, copy = main / item, scratch / item
+        if source.exists() and not copy.exists():
+            copy.parent.mkdir(parents=True, exist_ok=True)
+            (shutil.copytree if source.is_dir() else shutil.copy2)(source, copy)
+
+
 def replay_plants(scratch: Path) -> list[tuple[str, str, str]]:
     """(verdict, line, pytest output) per plant in the checkout `scratch`. Each test set first
     runs unplanted and must pass, every target with at least one test passing."""
@@ -361,6 +374,7 @@ def plants_main() -> int:
         if not probe.startswith(str(scratch)):
             print(f"plants   not run: the scratch checkout imports {probe or 'nothing'}")
             return 1
+        copy_evidence(scratch)
         report = replay_plants(scratch)
     finally:
         git(ROOT, "worktree", "remove", "--force", str(scratch))

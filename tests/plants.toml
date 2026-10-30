@@ -6,6 +6,8 @@
 # file changes, and after a model upgrade. tests/test_check_script.py fails when a plant's
 # `old` text is gone: update it to the same wrong version of the new code. Removing or weakening a plant
 # needs the owner's yes (check.py lists it).
+# A plant whose tests read saved evidence lists it as `evidence` (paths under runs/); --plants
+# copies those from the main checkout into its scratch worktree.
 
 [[plant]]
 id = "ledger-ignores-must-exist"
@@ -619,3 +621,13 @@ old = "TIMEOUT_S = 600"
 new = "TIMEOUT_S = 900"
 tests = ["tests/test_hooks.py::test_the_stop_check_gives_up_before_the_tools_stop_the_hook"]
 source = "2026-10-30 night assessors (MISSED at aefcaab; left out of 1c5c3db, found by the numbers rerun)"
+
+[[plant]]
+id = "siege-spell-witness-not-required"
+guards = "WH3 siege checkpoints"
+file = "tests/twwarhammer3/check_wh3_checkpoint_siege.py"
+old = "                           and run[\"spell_witness\"][\"pass\"]\n"
+new = ""
+tests = ["tests/twwarhammer3/checkpoint_siege/test_wh3_siege_saved_spell_witness.py"]
+evidence = ["runs/twwarhammer3/siege-final-20261025b/capital-attacker"]
+source = "2026-10-29 night, agreed-check plants (MISSED until 973d738)"
