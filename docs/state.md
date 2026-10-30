@@ -13,44 +13,28 @@ interview evidence merged ([log](twwarhammer3/log.md)); two decisions wait in
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
-Workflow: the light factory plan is [workflow.md](workflow.md), stages 1-4 built; stage 5 runs
-on the next planned experiment. After the owner's 2026-10-29 answers ([direction](owner-direction.md)):
-`check.py` records agreed-check passes, harness b51 measures 1x by the Windows clock (one live
-battle: 1.0000 over 413 s), CI runs `check.py` on each push (results: `gh run list`), Codex gets Claude Code's hooks
-(once you trust them with `/hooks`) and reviewer, Spire's end-turn allowance is narrowed
-([log](twwarhammer3/log.md#2026-10-29-evening-the-owners-light-factory-answers-carried-out)); decision 12.
-Before each commit: `uv run --locked python scripts/check.py`; CI runs it on each push.
+Workflow: the light factory plan is [workflow.md](workflow.md), stages 1-4 built; stage 5 runs on
+the next planned experiment. CI runs `check.py` on each push (results: `gh run list`).
 **For Codex** (owner, 2026-10-29: "leave a reminder for Codex to take care of its own hooks and
 Skills later"): in your next session, check that `.codex/hooks.json`, `.codex/agents/reviewer.toml`
 and `.agents/skills/` work in Codex (the owner trusts hooks with `/hooks`), fix what Codex needs,
 and keep `tests/test_agent_sync.py` passing ([table](workflow.md#claude-code-and-codex)).
-**Nothing runs**: all game controllers are stopped. The 2026-10-28 long autonomous runs
-and checkpoint-RL merge are finished ([log](twwarhammer3/log.md)); the owner's latest
-[direction](owner-direction.md) is recorded. Local LLM post-training stays paused.
-Thesis: likely multi-agent systems, possibly multi-agent RL linked to the WH3 environment;
-the research question is open. The [proposal](thesis/proposal.md) is one candidate
-([directions](thesis/directions.md), [papers](thesis/papers.md)). Testing reviews await you:
-[eval review](twwarhammer3/log.md#wh3-evaluations-and-tests-2026-10-23),
-[live-check comparison](twwarhammer3/log.md#wh3-live-check-comparison-2026-10-23).
-Four unmerged draft branches remain ([list](#branches)); checkpoint RL was merged on 2026-10-28.
+**Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; four
+draft branches are unmerged ([list](#branches)).
+Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)).
 MARL references: [three papers plus ProgramLab](thesis/papers.md#marl-implementation-references-2026-10-28), inspected 2026-10-28; ProgramLab's training code is pending. No external tests or learning results reproduced.
-[Traces must support RL](posttraining.md#beyond-supervised-fine-tuning).
+Testing reviews await you: [eval review](twwarhammer3/log.md#wh3-evaluations-and-tests-2026-10-23), [live-check comparison](twwarhammer3/log.md#wh3-live-check-comparison-2026-10-23).
 
 ## Total War: WARHAMMER III
 
-Benchmark definition remains open. The Land Battle draft uses small mixed armies; health
-and morale are the owner's tentative primary measures (2026-10-28). Planned scope also
-includes Siege, Survival, Ambush and Conquest, with other types to confirm. Engine victory
-includes timer endings; scoring, mode order and checks remain undecided.
-[Definition](twwarhammer3/benchmark.md), [plan](twwarhammer3/benchmark-implementation.md#phases),
+Benchmark definition remains open (decision 1): [definition](twwarhammer3/benchmark.md), [plan](twwarhammer3/benchmark-implementation.md#phases),
 [README](twwarhammer3/README.md), [log](twwarhammer3/log.md), [results](twwarhammer3/results.csv).
 
 - Runtime: `llm`/`llm_rules` v22, `commander` v8, `team_llm_rules` v22+t2, skills v1.2, harness b51,
   evaluator v2, track `obs-v4+terrain/act-v2/live-1x`. The new benchmark is not implemented or verified.
 - [Chariot](twwarhammer3/tactic-cards.md) and Empire screens retain their historical rules/results;
   chariot confirmation, P5 and recovery studies are not the new benchmark's prerequisites.
-- Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); the model
-  team is on `main`, but its members have not played live and it has no agreed check.
+- Scripted-team agreed checks passed at recorded revisions (live 4/4 at `3adbaa4`); the model team has not played live.
 - Spend: OpenAI $51.47 of $52; WH3 OpenRouter $21.33. A new paid cohort needs a bounded plan.
 - Battle checkpoints: Land check at `6fdb271` and `dcb8b5a`, declared siege cases at `2e2acbe`; build
   25961564 ([limits](twwarhammer3/checkpoints.md#limits)); public player tool v0.1.0.
@@ -58,62 +42,43 @@ includes timer endings; scoring, mode order and checks remain undecided.
   at the owner's request; unattended clients plausible, synchronization unverified. Next
   proposed evidence: two licensed clients, one-peer Lua order; no deployment or live run yet.
 
-Open discussions: the [RL environment and its possible thesis connection](thesis/directions.md#6-wh3-as-an-rl-environment-for-high-level-decisions)
-and remaining [benchmark definitions](twwarhammer3/benchmark-implementation.md#owner-interview-one-land-battle)
-when the owner is ready. Implementation, checks and new runs await those definitions.
-
 ## Slay the Spire
 
-Paused behind WH3. No full run has won; the furthest reached Act 4, floor 54. The 2026-10-23
-data night (Qwen3.6, harness v10.2) died in Act 1 in all 41 finished runs (median floor 8).
-Next, highest Spire priority (owner, 2026-10-23): the [state-restore investigation](spire/state-restore.md),
-restoring the game to a recorded state with the same RNG to try other choices. Step 1 ran
-offline on 2026-10-29 ([results](spire/state-restore.md#step-1-results-2026-10-29-offline);
-its end-turn allowance narrowed by you on 2026-10-29). Its first live step, a $0 replay check (driver drafted on
-branch `spire-restore-replay`, never run), needs a game window and your profile decision first.
-Then: a meaningful comparison of the current controller, or a freeze.
-
-[README](spire/fullrun/README.md), [log](spire/fullrun/log.md), [results.csv](spire/fullrun/results.csv). v10 on `main`; floor 54 was v8.
+Paused behind WH3. No full run has won; the furthest reached Act 4, floor 54 (v8; `main` has v10).
+Next, highest Spire priority (owner, 2026-10-23): the [state-restore investigation](spire/state-restore.md), restoring
+the game to a recorded state with the same RNG to try other choices. Step 1 ran offline on 2026-10-29
+([results](spire/state-restore.md#step-1-results-2026-10-29-offline)). Its first live step, a $0 replay check
+(driver on branch `spire-restore-replay`, never run), needs a game window and your profile decision first.
+[README](spire/fullrun/README.md), [log](spire/fullrun/log.md), [results.csv](spire/fullrun/results.csv).
 Version differences sit within run-to-run variation (about 11 floors on one seed; same-harness replays differed by 13–26), measured only on three tuning seeds. `HELDOUT01`–`HELDOUT10` unplayed.
-Spend: OpenAI $2.52 of $25, OpenRouter $3.46. The comparison and `v11-keys` wait; [open questions](spire/fullrun/README.md#open-owner-decisions). Paused: [first combat](spire/first-combat/README.md); planned: [open-weight](spire/open-weight/README.md).
+Spend: OpenAI $2.52 of $25, OpenRouter $3.46. The controller comparison (decision 9) and `v11-keys` wait; [open questions](spire/fullrun/README.md#open-owner-decisions). Paused: [first combat](spire/first-combat/README.md); planned: [open-weight](spire/open-weight/README.md).
 
 ## Post-training
 
-Secondary priority. Capture, export and dataset smoke checks passed; there is no learning
-claim. A training host, a way to play fine-tuned models, and useful targets are still missing.
-Spire capture for RL and other methods is in as harness v10.2 (2026-10-23): Qwen3.6 token
-logprobs and per-floor save snapshots ([what each method can use](posttraining.md#beyond-supervised-fine-tuning));
-restoring a snapshot is untested.
-
-[Plan and data-use choices](posttraining.md). The local Qwen3-0.6B checkpoint-RL experiment
-is merged, but stays paused (owner, 2026-10-28; decision 11). The revised learner reached
-0.76 on held-out synthetic tasks against a 0.90 gate; no general learning gain established
+Secondary priority. Capture, export and dataset smoke checks passed; there is no learning claim.
+A training host, a way to play fine-tuned models, and useful targets are still missing
+([plan and data-use choices](posttraining.md)). The local Qwen3-0.6B checkpoint-RL experiment
+stays paused (owner, 2026-10-28; decision 11). The revised learner reached 0.76 on held-out
+synthetic tasks against a 0.90 gate; no general learning gain established
 ([log](twwarhammer3/log.md#2026-10-26-checkpoint-rl-implemented-and-run-stage-3-fails-the-policy-collapses)).
-The broader RL environment remains a separate discussion, possibly connected to the thesis.
 
 ## Known issues
 
 - `runs/` has no backup (31 GB on 2026-10-28, 16 GB of it in `checkpoints/` folders); the owner said not now (2026-10-21).
-- Check OpenRouter credits before paid jobs: on 2026-10-21 the account showed $24.26 used of
-  $60, the ledgers $2.68 less. OpenAI caps and the shared OpenRouter allowance are kept by hand.
+- Check OpenRouter credits before paid jobs; OpenAI caps and the shared allowance are kept by hand.
 - Pinned OpenRouter backend outages count against the model; Step 5 preview is unpinned.
-- No test yet shows whether a game patch changes results (owner: later). A build warning
-  shows in `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
-- WH3 readers still differ on timer wins and failures; the new engine-outcome definition
-  needs a versioned scorer. Register/`stats` also have blank benchmark versions and commit
-  grouping.
+- No test yet shows whether a game patch changes results (owner: later). A build warning shows in
+  `doctor`, the job's stderr, `watch` and `digest`; `stats` would pool builds.
+- WH3 readers still differ on timer wins and failures; the new engine-outcome definition needs a
+  versioned scorer. Register/`stats` also have blank benchmark versions and commit grouping.
 - The mod sets 1x once, then reports constant `speed` 1 and `awaiting_orders` false: per-observation paused/slowed tests cannot fail. Since b51 `digest` reads battle time per Windows second from observation write times; one scripted battle so far (1.0000).
 - WSL clocks run about 6-8% slow against Windows and `time.time()` is stepped 2-3 s every ~35 s (measured 2026-10-28, [clocks](twwarhammer3/integration.md#clocks-measured-2026-10-28)): WSL-timed think times, delays and short-window clock ratios are off; the battle itself runs at 1x.
-- Spire runs often leave a profile preference file empty, likely when the game is killed at
-  run end (25 of 43 data runs on 2026-10-23); the game recovers it from `.backUp` at the next
-  start. `STSDataVagabond` is 0 bytes now and `STSUnlockProgress` has no `.backUp`
-  ([details](spire/state-restore.md#risks-found-on-the-way)). Ironclad unlock level 4 is 43
-  points away; decide the profile question before more Spire game time (owner's note: maybe
-  unlock things normally first, then enable restore).
+- Spire runs often leave a profile preference file empty (25 of 43 data runs on 2026-10-23;
+  [details](spire/state-restore.md#risks-found-on-the-way)). Decide the profile question before
+  more Spire game time (owner's note: maybe unlock things normally first, then enable restore).
 - Under parallel load `test_wh3_capture.py`'s passive-capture test (2 s wait) and once
   `test_wh3_checkpoint_rl.py`'s source-run test flaked: rerun before calling a regression.
-- The report browser check is separate from pytest. Spire's Workshop mod pins still block a
-  run when a mod updates.
+- Spire's Workshop mod pins still block a run when a mod updates.
 
 ## Owner decisions waiting
 
@@ -127,18 +92,17 @@ The broader RL environment remains a separate discussion, possibly connected to 
 8. **Training preparation.** Choose a host, serving route and teacher; decide when and how to build the Empire dataset. Secondary priority. [Data-use choices](posttraining.md#provider-terms): OpenAI outputs (25,503 rows excluded: Spire 11,099; WH3 14,404), GLM-5.3 or rejection-sampled Qwen3.6; Step 5 weights are public. An [Empire content screen and dataset timing](twwarhammer3/empire.md#for-the-owner-to-decide) are still needed. Smoke checks establish no learning gain.
 9. **Spire's next step.** After WH3, run one meaningful comparison or freeze this track; the state-restore investigation comes first (owner, 2026-10-23). Also noted for later: the capture check (owner, 2026-10-23: "Not sure what this is"). Both, with the proposed comparison and the data-night choice: [Spire open decisions](spire/fullrun/README.md#open-owner-decisions).
 10. **Thesis and RL environment.** Likely multi-agent systems, possibly multi-agent RL; no research question selected (owner, 2026-10-28). Tentative environment: each agent sees its available battle state, perhaps teammate information, controls its army share and learns from sparse win/loss near restored endings. Reset may use a battle start or checkpoint; details and correctness checks are for later. [Direction 6](thesis/directions.md#6-wh3-as-an-rl-environment-for-high-level-decisions); [research shortlist](thesis/directions.md#what-the-2026-10-28-checks-changed). Human-AI work stays a note; licensing is deferred.
-
 11. **Local LLM checkpoint RL — deferred.** Leave this post-training experiment paused (owner, 2026-10-28). No recovery choice is needed now; the existing results and choices remain for a future review. Merged on 2026-10-28. [Details](twwarhammer3/checkpoint-rl.md#open-owner-choices-decision-11).
-12. **Light factory follow-ups (2026-10-29).** All six answered, and the evening's four: the b51 battle ran in your window (in band, one battle), Codex checks its own hooks and skills (above), `runs/test-scratch/` is emptied (you), the two process ideas are built (`check.py --plants` replays `tests/plants.toml`). 2026-10-30 night: two more in `runs/overnight-20261030/handoff.md` (two test edits that need your yes; whether `check.py`'s own edits need it).
+12. **Light factory follow-ups (2026-10-29).** All six and the evening's four are answered and carried out ([log](twwarhammer3/log.md#2026-10-29-evening-the-owners-light-factory-answers-carried-out)); Codex checks its own hooks and skills (above). 2026-10-30 night: two more in `runs/overnight-20261030/handoff.md` (two test edits that need your yes; whether `check.py`'s own edits need it).
+
 ## Runtime and ownership
 
 - Slay the Spire ([runtime facts](spire/integration.md#runtime-and-source-pins)): the installed game and personal profile slot 0 are authorized, including stats, unlock progress, history and achievements (Ironclad unlock 3 of 5; runs record profile evidence).
-- WH3 ([engine facts](twwarhammer3/integration.md)): a launch's mod list and startup-video
-  skip persist for ordinary Steam launches ([how to reverse](twwarhammer3/README.md#commands)).
-  Steam auto-update stays on.
-- Also authorized: game windows, local GPU work, commits and pushes to public `main`, and
-  paid API use within each ledger's cap. One game controller at a time across both games
-  (each game's lock and process check cover only that game); one GPU job at a time.
+- WH3 ([engine facts](twwarhammer3/integration.md)): a launch's mod list and startup-video skip
+  persist for ordinary Steam launches ([how to reverse](twwarhammer3/README.md#commands)). Steam auto-update stays on.
+- Also authorized: game windows, local GPU work, commits and pushes to public `main`, and paid API
+  use within each ledger's cap. One game controller at a time across both games (each game's lock and process check cover only
+  that game); one GPU job at a time.
 
 ## Branches
 
@@ -149,6 +113,5 @@ The broader RL environment remains a separate discussion, possibly connected to 
   controllers command the AI's army so the owner can play against them. Parked by the owner
   (2026-10-22) to implement later, starting at step 1 of the [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps).
 - `spire-restore-replay` (`765ab2f`, worktree `../slay_the_spire_ai-spire-replay`): the Spire
-  state-restore step 2 replay driver (`spire replay`), tested with a fake game only, never run;
-  waits for step 2's window and your profile decision.
+  state-restore step 2 replay driver (`spire replay`), tested with a fake game only, never run.
 - Archived drafts are tags (`git tag --list 'archive/*'`).
