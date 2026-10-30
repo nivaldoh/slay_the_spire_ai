@@ -1,20 +1,39 @@
-"""Windows game processes owned from WSL: one controller lock, a supervised launch, probes."""
+"""Windows game processes owned from WSL or native Windows Python: one controller lock, a
+supervised launch, probes.
 
-import fcntl
+``NATIVE`` picks the side at import time (owner, 2026-10-30: WSL2 for local development;
+hosted machines will likely run Windows directly). Under WSL, Windows paths are spelled
+through ``/mnt/<drive>`` and Windows Python is a separate executable; natively they are the
+paths and interpreter themselves. PySC2 picks its install paths by platform the same way
+(``pysc2/run_configs/platforms.py`` at 0df53d38c153972f1e368572ba65b1442a0fd41f: ``Windows``
+spells the game folder ``C:/...``, ``Cygwin`` ``/cygdrive/c/...``).
+"""
+
 import json
 import os
-import select
 import shutil
 import subprocess
+import sys
+import threading
 import time
 import uuid
 from pathlib import Path
 
-WINDOWS_PYTHON = Path("/mnt/c/Python313/python.exe")
+NATIVE = sys.platform == "win32"
+if NATIVE:
+    import msvcrt
+else:
+    import fcntl
+    import select
+
+WINDOWS_PYTHON = Path(sys.executable) if NATIVE else Path("/mnt/c/Python313/python.exe")
 
 
 def windows_path(path: Path) -> str:
-    """The Windows spelling of a WSL path under /mnt/<drive>, for python.exe arguments."""
+    """The Windows spelling ("C:/...") of a drive path, for python.exe arguments; under WSL
+    the path lies under /mnt/<drive>."""
+    if NATIVE:
+        return path.as_posix()
     parts = path.parts
     if len(parts) < 3 or parts[:2] != ("/", "mnt") or len(parts[2]) != 1:
         raise ValueError(f"not a Windows drive path: {path}")
@@ -24,7 +43,11 @@ def windows_path(path: Path) -> str:
 class RuntimeLock:
     """One controller at a time, held around runtime preparation and the owned game.
 
-    The kernel releases the flock if the controller dies; a file's existence is not a lock.
+    The OS releases the lock (flock, or a byte lock through msvcrt natively) if the
+    controller dies; a file's existence is not a lock. A WSL controller's flock and a
+    native controller's msvcrt lock on the same file do not exclude each other (measured
+    2026-10-30), so one PC runs one kind of controller: the owner's PC under WSL, cloud
+    VMs natively. The supervisor's check for a running game still refuses a second launch.
     """
 
     def __init__(self, directory: Path):
@@ -34,13 +57,22 @@ class RuntimeLock:
         self.directory.mkdir(parents=True, exist_ok=True)
         self._file = (self.directory / "owner.lock").open("a+")
         try:
-            fcntl.flock(self._file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            if NATIVE:
+                # msvcrt.locking locks bytes from the current position (Python docs).
+                self._file.seek(0)
+                msvcrt.locking(self._file.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                fcntl.flock(self._file, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError as exc:
             self._file.close()
             raise RuntimeError("another controller owns the game runtime") from exc
         return self
 
     def __exit__(self, *_):
+        if NATIVE:
+            # Closing the file need not release the lock at once (Microsoft's LockFileEx docs).
+            self._file.seek(0)
+            msvcrt.locking(self._file.fileno(), msvcrt.LK_UNLCK, 1)
         self._file.close()
 
 
@@ -104,6 +136,19 @@ class OwnedGame:
 
     def _startup_message(self, timeout: float = 15) -> dict:
         """Read the supervisor's first line without blocking past the deadline."""
+        if NATIVE:
+            # select() takes only sockets on Windows: read the line in a thread instead.
+            lines = []
+            reader = threading.Thread(
+                target=lambda: lines.append(self.process.stdout.readline()), daemon=True
+            )
+            reader.start()
+            reader.join(timeout)
+            if reader.is_alive():
+                raise TimeoutError("Windows supervisor did not report startup before deadline")
+            if not lines[0].endswith("\n"):
+                raise RuntimeError("Windows supervisor closed stdout before reporting startup")
+            return json.loads(lines[0])
         deadline = time.monotonic() + timeout
         line = b""
         while b"\n" not in line:

@@ -1,6 +1,7 @@
 """Own one Windows game process and stop it on controller EOF or a hard time limit.
 
-Runs on Windows under python.exe; the WSL controller starts it through ``OwnedGame``.
+Runs on Windows under python.exe; the controller (in WSL or native) starts it through
+``OwnedGame``.
 """
 
 import argparse
@@ -133,7 +134,7 @@ def main() -> int:
     stop = threading.Event()
 
     def watch_controller() -> None:
-        # EOF also means the WSL controller disappeared. Never leave an orphan game.
+        # EOF also means the controller disappeared. Never leave an orphan game.
         os.read(sys.stdin.fileno(), 1)
         stop.set()
 

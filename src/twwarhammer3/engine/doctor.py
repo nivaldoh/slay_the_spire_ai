@@ -12,7 +12,7 @@ import subprocess
 from datetime import UTC, datetime
 
 from gameai.provenance import sha256
-from gameai.windows import WINDOWS_PYTHON, probe
+from gameai.windows import NATIVE, WINDOWS_PYTHON, probe
 from twwarhammer3.engine import runtime, startup
 
 
@@ -69,7 +69,9 @@ def collect_diagnostics() -> dict:
         "runtime": {"platform": platform.platform(), "python": platform.python_version(), **probes},
         "resources": {
             "cpu_threads": os.cpu_count(),
-            "memory_bytes": os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES"),
+            # Windows has no os.sysconf: a native worker records no memory size.
+            "memory_bytes": None if NATIVE else (
+                os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")),
             "gpu": probe([nvidia, "--query-gpu=name,driver_version,memory.total",
                           "--format=csv,noheader,nounits"]) if nvidia else None,
         },
