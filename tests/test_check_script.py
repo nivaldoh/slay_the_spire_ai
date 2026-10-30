@@ -169,6 +169,7 @@ def test_a_marker_in_log_history_is_listed(repo):
     (repo / "docs/wh3/log.md").write_text(
         f"## 2026-10-23\n\n{MARK} night cap $5 (assistant, 2026-10-23).\n"
         f"The `{MARK}` mention and a retired choice stay as history.\n")
+    (repo / "docs/backlog.md").write_text(f"{MARK} a plan, not history (Claude, 2026-10-30).\n")
     assert check.marker_problems(repo) == ["docs/wh3/log.md:3: a marker in log history"]
 
 

@@ -453,6 +453,7 @@ def marker_problems(root: Path) -> list[str]:
         if name in RULE_PAGES or name.startswith(PRIVATE):
             continue
         lines = (root / name).read_text(encoding="utf-8", errors="replace").splitlines()
+        history = Path(name).name == "log.md"
         for number, line in enumerate(lines, 1):
             if MISSPELT.search(line):
                 problems.append(f"{name}:{number}: spelled without the first E")
@@ -461,11 +462,11 @@ def marker_problems(root: Path) -> list[str]:
                 continue
             if any(fnmatch(name, pattern) for pattern in NO_MARKER):
                 problems.append(f"{name}:{number}: this file cannot carry a marker")
-            if name.endswith("log.md"):
+            if history:
                 problems.append(f"{name}:{number}: a marker in log history")
             if not DATED.search(" ".join([line[mark.end():], *lines[number:number + 2]])):
                 problems.append(f"{name}:{number}: no date or version in its first three lines")
-        if name.endswith("log.md"):
+        if history:
             continue  # history keeps the paths of its day
         for target in RESTS_ON.findall(" ".join(lines)):
             # From the root, or the tail of a path ("team/check_wh3_team.py", "proposal.md");
