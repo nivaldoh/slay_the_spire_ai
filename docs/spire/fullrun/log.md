@@ -722,13 +722,16 @@ asked again after 15 s up to 480 s (marked `JUDGEMENT?`). The chain restarted at
 DATA004 with `chain2.sh`, which also waits 5 minutes after a failed run and stops at three.
 After the fix, 6 rate-limited requests were asked again and no run ended on a 429.
 
-JUDGEMENT: player Qwen3.6, reasoning off (assistant, 2026-10-23): the student's own play, with
-logprobs. GLM-5.3 as teacher: stronger SFT targets, ~10x cost, no logprobs. All rows rest on it.
-JUDGEMENT: fresh seeds, one run each (assistant, 2026-10-23), for coverage. Several runs per seed
-would give same-state groups and natural branches. The night's state coverage rests on it.
-JUDGEMENT: night cap $5 on the Spire OpenRouter ledger (assistant, 2026-10-23); the owner named no
-cap. A larger cap allows a teacher or thinking runs. The night's size rests on it.
-JUDGEMENT: harness frozen at v10.2, no tuning between runs (assistant, 2026-10-23). Loop changes
-would mix prompt versions within the night. Comparability of the night's rows rests on it.
-JUDGEMENT: each run's limit is 3 h or the 13:45 UTC cutoff (assistant, 2026-10-23). Longer limits
-lose fewer late floors as truncations. Which deep runs end as truncated rests on it.
+The night's five choices (assistant, 2026-10-23) were markers until the owner retired them on
+2026-10-30 ("yes to all"; log history carries no markers). The player and teacher question
+stays open as state.md decision 8. The text stays as history:
+- Player Qwen3.6, reasoning off: the student's own play, with logprobs. GLM-5.3 as teacher:
+  stronger SFT targets, ~10x cost, no logprobs. All rows rest on it.
+- Fresh seeds, one run each, for coverage. Several runs per seed would give same-state groups
+  and natural branches. The night's state coverage rests on it.
+- Night cap $5 on the Spire OpenRouter ledger; the owner named no cap. A larger cap allows a
+  teacher or thinking runs. The night's size rests on it.
+- Harness frozen at v10.2, no tuning between runs. Loop changes would mix prompt versions
+  within the night. Comparability of the night's rows rests on it.
+- Each run's limit is 3 h or the 13:45 UTC cutoff. Longer limits lose fewer late floors as
+  truncations. Which deep runs end as truncated rests on it.

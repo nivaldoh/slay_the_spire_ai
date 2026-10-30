@@ -66,7 +66,11 @@ revisions written below are the earlier passes.
   was set aside and returned unchanged), and at `dcb8b5a` on main with the script as of
   `6cd5fbe`, which adds completeness checks (`runs/twwarhammer3/checkpoint-check-20261028/`,
   same counts; changed diverged at 1303; recorded 2026-10-28 under the owner's "use common
-  sense for now, I'll review later"). Custom land battle, build 25961564; no claim for
+  sense for now, I'll review later"), and at `d3ba6aa` on the checkpoint-RL branch, merged
+  into main on 2026-10-28, with the same script bytes as main on 2026-10-30
+  (`runs/twwarhammer3/checkpoint-check-20261026-rl/`, 4 launches: 0 mismatches and 9/9
+  readings per restore, changed diverged at 1303; recorded 2026-10-30 at the owner's yes,
+  "About the quick items, yes to all"). Custom land battle, build 25961564; no claim for
   real-time script timers, our bridge mod's state, the loading screen, other battle types
   or builds.
 - WH3 engine ending kept after a late controller failure (acknowledge or `close()`):
