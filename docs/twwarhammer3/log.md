@@ -62,9 +62,14 @@ Claude Code, after the owner answered the night's six decisions ([direction](../
   `CLAUDE_PROJECT_DIR`. The hook test now passes in a linked worktree (it failed 16 cases there).
 - Small items (`11a5d6b`): the test-order fix, `gameai.lm.sample_index` deleted, two markers
   retired. Spire's end-turn allowance narrowed; `digest` warnings do not stop a queue.
-- Reviews: 4 reviewer runs, 13 findings (4, 2, 4, 3), all fixed but one limit (b51, below);
-  the planted wrong versions per area, all caught, are in `runs/light-factory-20261029-evening/`
-  (`plant-*.txt`).
+- The owner's two process ideas ("Seems fine"): the marker list skips `docs/thesis/` (`a27c341`;
+  the tree listed 3 problems, now 0), and `tests/plants.toml` keeps 44 planted wrong versions
+  that `check.py --plants` replays at HEAD (`6c1273e`, fixed in `faf0805`): 44 of 44 caught at
+  `faf0805`, each by a named test (`runs/checks/plants-20261029-224845-faf0805-161834.log`).
+- Reviews: 5, with 21 findings (4, 2, 4, 3 and a three-angle workflow's 8, none refuted), all
+  fixed but one limit (b51, below). Among the 8: six `check.py` plants had always counted as
+  caught, because the stale-plant rule shared their test file. The planted wrong versions per
+  area, all caught, are in `runs/light-factory-20261029-evening/` and `runs/plants-20261029/`.
 - `runs/test-scratch/` was emptied by the owner (the permission check refused it to the agent).
 Not established: Codex running the hooks (they wait for the owner's `/hooks` trust).
 
