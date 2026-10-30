@@ -276,7 +276,8 @@ the checks would miss, ask for a real review rather than a quick approval" (clau
 The owner asked (2026-10-29) how to stop this workflow decaying and keep it easy to change.
 
 - **Rules a test can decide are tests.** Imports, committed files, AGENTS.md's length and
-  links fail `check.py`; marker problems are listed in every run. A written rule nothing
+  links fail `check.py`; marker problems are listed in every run, and so is `state.md` when it
+  is over 120 lines (owner, 2026-10-30: a warning, not a failure). A written rule nothing
   checks drifts first, so a repeated slip gets a test before more text.
 - **One home per rule.** AGENTS.md holds the hard rules and pointers; each process rule lives
   here once, test how-to in [testing.md](testing.md), away rules in [autonomy.md](autonomy.md).

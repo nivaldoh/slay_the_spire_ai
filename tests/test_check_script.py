@@ -241,6 +241,14 @@ def test_markers_in_the_private_thesis_notes_are_not_listed(repo):
         f"docs/thesis.md: {RESTS} docs/gone.md, which does not exist"]
 
 
+def test_state_md_over_120_lines_is_named(tmp_path):
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs/state.md").write_text("x\n" * 120)
+    assert check.long_pages(tmp_path) == []
+    (tmp_path / "docs/state.md").write_text("x\n" * 121)
+    assert check.long_pages(tmp_path) == ["docs/state.md has 121 lines, over 120"]
+
+
 def test_replayed_plants_are_caught_missed_stale_hung_or_lack_a_baseline(tmp_path, monkeypatch):
     (tmp_path / "src/pkg").mkdir(parents=True)
     (tmp_path / "src/pkg/mod.py").write_text("def f():\n    return 1\n")

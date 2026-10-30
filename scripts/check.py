@@ -19,9 +19,10 @@ unpushed commits, uncommitted and untracked files all count): lines removed or c
 an agreed check names (docs/agreed-checks.md) or in that page; an edited or removed JUDGEMENT
 line; an assert removed or changed under tests/; a skip or xfail added there; a changed prompt
 snapshot; a package added or a version changed in uv.lock. A line moved verbatim elsewhere
-(indentation and comment marks aside) is neither removed nor added. Last, "markers" counts the
-marker problems listed in the log (docs/judgement.md); only the owner changes markers, so they
-never fail.
+(indentation and comment marks aside) is neither removed nor added. "pages" names docs/state.md
+when it is over its 120 lines (AGENTS.md; a warning at the owner's yes, 2026-10-30). Last,
+"markers" counts the marker problems listed in the log (docs/judgement.md); only the owner
+changes markers, so they never fail.
 
 `--plants` instead replays tests/plants.toml, the planted wrong versions the named tests must
 catch, in a scratch worktree at HEAD, one at a time and without bytecode: each line says caught,
@@ -56,6 +57,7 @@ ROOT = Path(__file__).resolve().parents[1]
 AGREED = "docs/agreed-checks.md"
 PASSES = "runs/checks/agreed-passes.jsonl"
 PLANTS = "tests/plants.toml"
+STATE, STATE_LINES = "docs/state.md", 120
 PLANT_TIMEOUT_S = 300
 # The stale-plant rule fails whenever a plant is applied (its text is gone), so a replay leaves
 # it out; otherwise every plant listing tests/test_check_script.py would count as caught.
@@ -475,6 +477,12 @@ def marker_problems(root: Path) -> list[str]:
     return list(dict.fromkeys(problems))
 
 
+def long_pages(root: Path) -> list[str]:
+    """docs/state.md when it is over its line budget; a warning only."""
+    lines = len((root / STATE).read_text(encoding="utf-8").splitlines())
+    return [f"{STATE} has {lines} lines, over {STATE_LINES}"] if lines > STATE_LINES else []
+
+
 def skip_reasons(output: str) -> str:
     reasons: Counter[str] = Counter()
     for count, reason in SKIPPED.findall(output):
@@ -540,6 +548,7 @@ def main() -> int:
     if yes:
         shown.append(f"needs your yes (changes since {base[:9]}):")
         shown += [f"  - {line}" for line in yes]
+    shown += [f"pages     {line} (AGENTS.md Working habits)" for line in long_pages(ROOT)]
     problems = marker_problems(ROOT)
     if problems:
         shown.append(f"markers   {len(problems)} problems listed in the log, for the owner")
