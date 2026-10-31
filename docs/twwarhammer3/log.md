@@ -44,6 +44,19 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: shared language/PPO fixtures leave collected test modules
+
+The remaining five test-module import edges now point at four explicit support modules.
+Twenty-five helper/fixture definitions moved; all 190 definitions in the eight affected
+test files retain their ASTs, allowing only equivalent module-qualifier names.
+PPO's combat-builder substitution and its collector remain in the same module globals.
+CPU-train controls pass 622 tests with 22 skips before and after; recorded IDs/statuses
+and the full locked-language suite are compared separately in the task artifacts.
+Source, test assertions, skips and fixture scopes are unchanged. No blanket conftest or
+autouse fixture was added. Pattern: Hugging Face datasets `tests/utils.py`.
+Card/raw/review: `runs/test-quality-20261031/optional-helpers-*`, `review/optional-helpers/`.
+These are refactor/component checks; engine behavior and learning remain unverified.
+
 ## 2026-10-31: separate capture-thread completion from copier polling in tests
 
 The passive capture test copied evidence before joining its released screenshot worker.

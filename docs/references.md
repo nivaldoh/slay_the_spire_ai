@@ -473,7 +473,7 @@ For `.github/workflows/check.yml` (2026-10-29):
   expectations use independent input bytes, with size and timestamps held fixed. *Read.*
 - Hugging Face datasets [`tests/utils.py`](https://github.com/huggingface/datasets/blob/main/tests/utils.py)
   (read 2026-10-31): shared test helpers live outside collected test modules. Pattern for
-  `tests/combat/combat_support.py` and the evidence/catalog support modules, preserving
+  `tests/combat/combat_support.py` and the evidence/catalog and language/PPO support modules, preserving
   helper logic while imports and module qualifiers change.
   Its `offline()` context also illustrates isolating an external boundary while running
   real code, used for the hook cleanup test's child-interpreter process scan. *Read.*
