@@ -473,3 +473,28 @@ def test_a_team_refuses_an_interval_or_aged_track(tmp_path, track):
 def test_the_team_version_follows_the_rules_prompt():
     rules = controllers.VERSIONS["llm_rules"]
     assert controllers.VERSIONS["team_llm_rules"].startswith(rules + "+t")
+
+def test_a_member_whose_call_outlives_cleanup_says_so_in_its_record(tmp_path, monkeypatch):
+    # Its cost and call reach only the ledger, so the record's usd and calls are short of it.
+    monkeypatch.setattr(team, "CLOSE_WAIT_S", .2)
+    entered, release = Event(), Event()
+
+    def send(body):
+        if "Your units:\n- f1 " in body["input"][0]["content"]:
+            entered.set()
+            assert release.wait(5)
+        return {"id": "r", "usage": USAGE, "output": [
+            {"type": "message", "content": [{"type": "output_text", "text": reply()}]}]}
+
+    policy = model_team(tmp_path, send)
+    try:
+        policy.decide(battle(1, 10000))
+        assert entered.wait(5)
+        policy.members["line"].future.result(timeout=5)
+        policy.close()
+        members = policy.records()["members"]
+    finally:
+        release.set()
+    assert {name: row["running_at_close"] for name, row in members.items()} == {
+        "cavalry": True, "line": False}
+    assert (members["cavalry"]["calls"], members["line"]["calls"]) == (0, 1)

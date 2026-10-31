@@ -41,8 +41,16 @@ a new test, by the authors' reports (commit messages; not stored), including the
 plants first left as notes (a session read before hello in `--attach` mode, a worker that
 prints its token; tests added in `047c96d`). Open review notes: check.py never runs the
 native tests; in multiplayer `evaluation.friendly` counts only the local army while
-`evaluation.enemy` counts every enemy army; `first_difference_ms` ignores missing units; an
-events line without the expected keys gives compare-peers a traceback.
+`evaluation.enemy` counts every enemy army (marked below, not changed). Fixed 2026-10-31:
+`first_difference_ms` counts a missing unit; compare-peers names the line of an events entry
+lacking a field it reads (or with a non-object row or a non-number position), and reports
+any other unreadable shape as a usage error, never a traceback. A seam test now runs the
+comparator on evidence the battle Lua (under stubs) wrote through the real Mailbox, worker and
+coordinator: two clients owning different armies compare exact.
+
+JUDGEMENT?: Multiplayer friendly totals — orchestrator's card, `0c3ffcf` (2026-10-30): the
+battle Lua's scan() registers only the local army as friendly, so `evaluation.friendly` omits an
+ally's army. Summing the alliance would change any team measure read from it (none reads it yet).
 
 | Part | Where | What it does | Evidence so far |
 |---|---|---|---|

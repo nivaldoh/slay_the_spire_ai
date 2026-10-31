@@ -426,6 +426,10 @@ For `.github/workflows/check.yml` (2026-10-29):
 - [Inspect eval logs](https://inspect.aisi.org.uk/eval-logs.html) and
   [API reference](https://inspect.aisi.org.uk/reference/inspect_ai.log.html), UK AISI. Check a
   log's status before using its results; edits are appended with author and reason. *Checked.*
+- [SWE-bench run report](https://github.com/SWE-bench/SWE-bench/blob/02e7a74ffd0b/swebench/harness/reporting.py)
+  (`make_run_report`, `schema_version` 2). Each instance gets one label from its evidence:
+  resolved, unresolved, error, empty patch or incomplete; failure-cause tags are added without
+  changing the denominator. The model for `cards.engine_outcome` (2026-10-31). *Read.*
 - [NeurIPS paper checklist](https://neurips.cc/public/guides/PaperChecklist): claims match their
   scope; error bars say what varies and how they were computed; failed experiments count in
   compute. *Checked.*

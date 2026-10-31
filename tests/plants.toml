@@ -1044,3 +1044,363 @@ old = '''    if incomplete:
 new = ""
 tests = ["tests/test_check_script.py::test_normal_check_requires_a_completed_test_report[failed-report]"]
 source = "2026-10-31 review extension: the passing node cannot hide the failed node"
+
+# 2026-10-31 run, B1: each WH3 reader's outcome rule (historical: no number changes) and
+# the benchmark-outcome scorer v1 (cards.benchmark_outcome); runs/overnight-20261031/b1/.
+
+[[plant]]
+id = "cards-timer-win-counts-as-won"
+guards = "WH3 outcome readers keep their historical rules"
+file = "src/twwarhammer3/battle/cards.py"
+old = "    if status == \"won\" and episode.get(\"ended_by\") != \"time_limit\":"
+new = "    if status == \"won\":"
+tests = ["tests/twwarhammer3/test_wh3_cards.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "cards-truncation-not-forfeit"
+guards = "WH3 outcome readers keep their historical rules"
+file = "src/twwarhammer3/battle/cards.py"
+old = "    if (status in (\"policy_failure\", \"truncated\") and episode.get(\"battle\")"
+new = "    if (status == \"policy_failure\" and episode.get(\"battle\")"
+tests = ["tests/twwarhammer3/test_wh3_cards.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "cards-forfeit-without-a-battle"
+guards = "WH3 outcome readers keep their historical rules"
+file = "src/twwarhammer3/battle/cards.py"
+old = "    if (status in (\"policy_failure\", \"truncated\") and episode.get(\"battle\")\n            and \"APIError"
+new = "    if (status in (\"policy_failure\", \"truncated\")\n            and \"APIError"
+tests = ["tests/twwarhammer3/test_wh3_cards.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "report-label-ignores-the-timer"
+guards = "WH3 outcome readers keep their historical rules"
+file = "src/twwarhammer3/battle/report.py"
+old = "            outcome = \"time_limit\" if result.get(\"ended_by\") == \"time_limit\" else result[\"status\"]"
+new = "            outcome = result[\"status\"]"
+tests = ["tests/twwarhammer3/test_wh3_report.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "report-valid-includes-failures"
+guards = "WH3 outcome readers keep their historical rules"
+file = "src/twwarhammer3/battle/report.py"
+old = "                \"valid\": result[\"status\"] in OUTCOMES,"
+new = "                \"valid\": result[\"status\"] != \"interrupted\","
+tests = ["tests/twwarhammer3/test_wh3_report.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "report-engine-outcome-from-the-label"
+guards = "WH3 outcome readers keep their historical rules"
+file = "src/twwarhammer3/battle/report.py"
+old = "                \"engine_outcome\": result[\"status\"] if result[\"status\"] in OUTCOMES else None,"
+new = "                \"engine_outcome\": outcome if outcome in OUTCOMES else None,"
+tests = ["tests/twwarhammer3/test_wh3_report.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "report-win-rate-over-every-trial"
+guards = "WH3 outcome readers keep their historical rules"
+file = "src/twwarhammer3/battle/report.py"
+old = "\"win_rate\": outcomes[\"won\"] / valid if valid else None,"
+new = "\"win_rate\": outcomes[\"won\"] / len(items) if items else None,"
+tests = ["tests/twwarhammer3/test_wh3_report.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "html-keeps-failed-trials"
+guards = "WH3 outcome readers keep their historical rules"
+file = "src/twwarhammer3/battle/report_html.py"
+old = "        keys = [key for key in every if trials[key][\"valid\"]"
+new = "        keys = [key for key in every if True"
+tests = ["tests/twwarhammer3/test_wh3_report_html.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "stats-timer-ending-recorded-lost"
+guards = "WH3 outcome readers keep their historical rules"
+file = "src/twwarhammer3/battle/stats.py"
+old = "        \"outcome\": result[\"status\"],"
+new = "        \"outcome\": \"lost\" if result.get(\"ended_by\") == \"time_limit\" else result[\"status\"],"
+tests = ["tests/twwarhammer3/test_wh3_stats.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "stats-draws-counted-as-losses"
+guards = "WH3 outcome readers keep their historical rules"
+file = "src/twwarhammer3/battle/stats.py"
+old = "str(outcomes.count(\"won\")), str(outcomes.count(\"lost\")),\n            str(outcomes.count(\"draw\")),"
+new = "str(outcomes.count(\"won\")), str(outcomes.count(\"lost\") + outcomes.count(\"draw\")),\n            str(0),"
+tests = ["tests/twwarhammer3/test_wh3_stats.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "digest-episode-line-shows-the-card-rule"
+guards = "WH3 outcome readers keep their historical rules"
+file = "src/twwarhammer3/battle/digest.py"
+old = "f\"{episode.name}: {result['status']} at"
+new = "f\"{episode.name}: {'lost' if result.get('ended_by') == 'time_limit' else result['status']} at"
+tests = ["tests/twwarhammer3/test_wh3_digest.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "export-gameplay-outcome-keeps-failures"
+guards = "WH3 outcome readers keep their historical rules"
+file = "src/twwarhammer3/battle/export.py"
+old = "\"gameplay_outcome\": result.get(\"status\") if result.get(\"status\") in OUTCOMES"
+new = "\"gameplay_outcome\": result.get(\"status\") if result.get(\"status\")"
+tests = ["tests/twwarhammer3/test_wh3_export.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "benchmark-outcome-ignores-the-kept-ending"
+guards = "WH3 benchmark-outcome scorer, version 1"
+file = "src/twwarhammer3/battle/cards.py"
+old = "    if ending in (\"won\", \"lost\", \"draw\"):\n        return ending\n"
+new = ""
+tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "benchmark-outcome-timer-win-lost"
+guards = "WH3 benchmark-outcome scorer, version 1"
+file = "src/twwarhammer3/battle/cards.py"
+old = "    if status in (\"won\", \"lost\", \"draw\"):\n        return status\n"
+new = "    if status in (\"won\", \"lost\", \"draw\"):\n        return \"lost\" if result.get(\"ended_by\") == \"time_limit\" else status\n"
+tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "benchmark-outcome-construction-unresolved"
+guards = "WH3 benchmark-outcome scorer, version 1"
+file = "src/twwarhammer3/battle/cards.py"
+old = "    if status == \"policy_failure\" and error.startswith(\"controller construction:\"):"
+new = "    if False:"
+tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "benchmark-outcome-wall-cap-forfeit"
+guards = "WH3 benchmark-outcome scorer, version 1"
+file = "src/twwarhammer3/battle/cards.py"
+old = "    if status == \"interrupted\":\n        return \"operator_stop\""
+new = "    if status == \"truncated\" and result.get(\"battle\"):\n        return \"forfeit\"\n    if status == \"interrupted\":\n        return \"operator_stop\""
+tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "benchmark-outcome-silence-proven"
+guards = "WH3 benchmark-outcome scorer, version 1"
+file = "src/twwarhammer3/battle/cards.py"
+old = "    if status == \"unsupported_or_invalid\":"
+new = "    if status in (\"unsupported_or_invalid\", \"infrastructure_failure\"):"
+tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "benchmark-outcome-provider-failure-forfeit"
+guards = "WH3 benchmark-outcome scorer, version 1"
+file = "src/twwarhammer3/battle/cards.py"
+old = "    if (status == \"policy_failure\" and \"APIError\" not in error"
+new = "    if (status == \"policy_failure\""
+tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "benchmark-outcome-no-battle-unresolved"
+guards = "WH3 benchmark-outcome scorer, version 1"
+file = "src/twwarhammer3/battle/cards.py"
+old = "    if not result.get(\"battle\"):\n        return \"never_started\"\n"
+new = ""
+tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "benchmark-outcome-stop-before-the-ending"
+guards = "WH3 benchmark-outcome scorer, version 1"
+file = "src/twwarhammer3/battle/cards.py"
+old = "    ending = (result.get(\"engine_ending\") or {}).get(\"result\")\n"
+new = "    ending = (result.get(\"engine_ending\") or {}).get(\"result\")\n    if status == \"interrupted\":\n        return \"operator_stop\"\n"
+tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "benchmark-outcome-wall-cap-cleanup-forfeit"
+guards = "WH3 benchmark-outcome scorer, version 1"
+file = "src/twwarhammer3/battle/cards.py"
+old = "\n            and result.get(\"reason\") != \"episode_timeout\"):"
+new = "):"
+tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+[[plant]]
+id = "benchmark-outcome-team-fault-not-built"
+guards = "WH3 benchmark-outcome scorer, version 1"
+file = "src/twwarhammer3/battle/cards.py"
+old = "    if status == \"unsupported_or_invalid\":\n        return \"setup_or_game_failure\""
+new = "    if status == \"unsupported_or_invalid\":\n        return \"not_built\""
+tests = ["tests/twwarhammer3/test_wh3_benchmark_outcome.py"]
+source = "2026-10-31 run, B1 outcome readers"
+
+# 2026-10-31 run, B2: compare-peers seams (runs/overnight-20261031/b2/).
+
+[[plant]]
+id = "peers-first-difference-ignores-missing"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "            if gone and pair[\"first_difference_ms\"] is None:  # a missing unit differs too\n                pair[\"first_difference_ms\"] = time_ms\n"
+new = ""
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-reads-lines-unguarded"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "        problem = unreadable(event)"
+new = "        problem = None"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-row-type-unchecked"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "            if \"error\" not in row and any(field in row and not isinstance(row[field], int | float)\n                                          for field in \"xz\"):"
+new = "            if False:"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-joins-by-alias"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "    return row.get(\"alliance\"), row[\"army\"], row[\"index\"]"
+new = "    return row.get(\"id\") or row.get(\"alliance\"), row[\"army\"], row[\"index\"]"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-missing-ignores-failed-rows"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "                    and key not in failed[client] and (None, *key[1:]) not in failed[client]]"
+new = "                    ]"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-reads-every-event-as-an-observation"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "        if event[\"event\"][\"kind\"] != \"observation\":\n            continue\n        data = event[\"event\"][\"data\"][\"observation\"]"
+new = "        data = event[\"event\"][\"data\"][\"observation\"]"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-last-missing-time-wins"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "            if gone and pair[\"first_difference_ms\"] is None:  # a missing unit differs too"
+new = "            if gone:  # a missing unit differs too"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-first-difference-from-b-only"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "            if gone and pair[\"first_difference_ms\"] is None:  # a missing unit differs too"
+new = "            if gone and client == b and pair[\"first_difference_ms\"] is None:"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-kind-optional"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "        if event[\"event\"][\"kind\"] != \"observation\":\n            return None"
+new = "        if event[\"event\"].get(\"kind\") != \"observation\":\n            return None"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-battle-unchecked"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "        missing = [field for field in (\"battle\", \"time_ms\") if field not in data]"
+new = "        missing = [field for field in (\"time_ms\",) if field not in data]"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-error-rows-need-nothing"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "            needed = ROW_FIELDS[:2] if \"error\" in row else ROW_FIELDS"
+new = "            needed = () if \"error\" in row else ROW_FIELDS"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+[[plant]]
+id = "peers-z-unchecked"
+guards = "compare-peers reads worker evidence and names a malformed line"
+file = "src/twwarhammer3/battle/peers.py"
+old = "                                          for field in \"xz\"):"
+new = "                                          for field in \"x\"):"
+tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B2 multiplayer seams"
+
+# 2026-10-31 run, B3: team episodes off the card board; a call running at cleanup recorded.
+
+[[plant]]
+id = "board-takes-team-rows"
+guards = "team records: the card board and calls cut off at cleanup"
+file = "src/twwarhammer3/battle/cards.py"
+old = "            if \"members\" in (control.get(\"disclosure\") or {}):\n                if teams is not None:"
+new = "            if False:\n                if teams is not None:"
+tests = ["tests/twwarhammer3/test_wh3_cards.py"]
+source = "2026-10-31 run, B3 team records"
+
+[[plant]]
+id = "running-at-close-never-set"
+guards = "team records: the card board and calls cut off at cleanup"
+file = "src/twwarhammer3/battle/team.py"
+old = "            running = member.running_at_close = (member.future is not None\n                                                 and not member.future.done())"
+new = "            running = (member.future is not None and not member.future.done())"
+tests = ["tests/twwarhammer3/team/test_wh3_model_team.py"]
+source = "2026-10-31 run, B3 team records"
+
+# 2026-10-31 run, B4: the engine's game speed in each observation (runs/overnight-20261031/b4/).
+
+[[plant]]
+id = "speed-constant-again"
+guards = "WH3 observations carry the engine speed reading"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = "time_ms = now, speed = battle_speed(),"
+new = "time_ms = now, speed = 1,"
+tests = ["tests/twwarhammer3/test_wh3_native_lua.py"]
+source = "2026-10-31 run, B4 speed reading"
+
+[[plant]]
+id = "speed-failed-read-is-1x"
+guards = "WH3 observations carry the engine speed reading"
+file = "src/twwarhammer3/mod/script/battle/mod/twwarhammer3_battle.lua"
+old = "    return get(bm.battle, \"current_battle_speed\", \"unreadable\")"
+new = "    return get(bm.battle, \"current_battle_speed\", 1)"
+tests = ["tests/twwarhammer3/test_wh3_battle_lua.py"]
+source = "2026-10-31 run, B4 speed reading"
+
+[[plant]]
+id = "play-accepts-any-speed"
+guards = "WH3 observations carry the engine speed reading"
+file = "src/twwarhammer3/battle/play.py"
+old = "        if observation.get(\"awaiting_orders\") or observation.get(\"speed\", 1) != 1:"
+new = "        if observation.get(\"awaiting_orders\"):"
+tests = ["tests/twwarhammer3/test_wh3_play.py"]
+source = "2026-10-31 run, B4 speed reading"

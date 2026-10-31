@@ -115,6 +115,7 @@ class Member:
     count: int = 0
     decisions: int = 0
     local_refusals: int = 0
+    running_at_close: bool = False  # its call outlived cleanup: cost and count left the record
 
     @property
     def unit(self):
@@ -190,7 +191,8 @@ class TeamPolicy:
         for name, member in self.members.items():
             totals = self._totals(member)  # one snapshot, so usd and calls agree
             rows[name] = {"decisions": member.decisions, "local_refusals": member.local_refusals,
-                          "usd": totals["usd"], "calls": totals["calls"]}
+                          "usd": totals["usd"], "calls": totals["calls"],
+                          "running_at_close": member.running_at_close}
         return {"decisions": sum(row["decisions"] for row in rows.values()),
                 "delays_ms": list(self.delays_ms), "think_s": list(self.think_s),
                 "local_refusals": sum(row["local_refusals"] for row in rows.values()),
@@ -349,7 +351,8 @@ class TeamPolicy:
              timeout=CLOSE_WAIT_S)
         failures = []
         for name, member in self.members.items():
-            running = member.future is not None and not member.future.done()
+            running = member.running_at_close = (member.future is not None
+                                                 and not member.future.done())
             if member.future is not None and not running:
                 try:
                     self._collect(name, member)
@@ -424,7 +427,7 @@ class ModelTeam(TeamPolicy):
     sent may still retry its transport (up to ``TRANSPORT_ATTEMPTS`` times), and the job
     process, so the next queued job, waits for it at exit. A call abandoned at cleanup
     reaches only the ledger (its cost and response id): its exchange, cost and call count
-    reach no trace or result."""
+    reach no trace or result, whose member row says ``running_at_close``."""
 
     def __init__(self, model, effort, ledger, *, send, system_prompt, provider="openai",
                  **options):

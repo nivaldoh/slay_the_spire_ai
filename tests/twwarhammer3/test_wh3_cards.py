@@ -220,3 +220,16 @@ def test_the_rules_prompt_withholds_the_card_tactics():
     for stem in ("charg", "cycl", "pull out", "pulls out", "pull-out", "pull back", "withdr",
                  "disengag", "sacrific", "expendab", "tarpit", "flank", "kite", "kiting"):
         assert not re.search(rf"\b{stem}", text), stem  # word starts; "recharge" is ability state
+
+
+def test_a_team_episode_is_left_off_the_board_and_counted(tmp_path):
+    # Both members' decisions would pool into one information age (rests on JUDGEMENT
+    # src/twwarhammer3/battle/cards.py Team rows).
+    team_card = {"source_sha256": "t", "disclosure": {"members": {"cavalry": {}, "line": {}}}}
+    job = _job(tmp_path, "job-t1", [_episode(0, "attack_nearest", "lost"),
+                                    _episode(1, "team_llm_rules", "won", card=team_card)])
+    teams = []
+    rows, skipped = battles(CARDS["chariot"], [job], teams)
+    assert [row["controller"] for row in rows] == ["attack_nearest"] and skipped == 0
+    assert teams == ["job-t1/episode-0001"]
+    assert "1 team episodes left off" in board("chariot", [job])

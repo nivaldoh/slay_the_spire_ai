@@ -112,3 +112,17 @@ def test_the_summary_keeps_draws_providers_and_unrecorded_delays_apart(tmp_path)
     row = {name: table["m"][names.index(name)]
            for name in ("Episodes", "Won", "Lost", "Draw", "Mean delay s")}
     assert row == {"Episodes": "2", "Won": "1", "Lost": "0", "Draw": "1", "Mean delay s": "2.0"}
+
+
+def test_a_timer_ending_keeps_the_engine_status_and_says_how_it_ended(tmp_path):
+    # The register stores the engine's status; readers that score timer wins otherwise read
+    # ended_by (cards.outcome, report.collect).
+    job = tmp_path / "bench-b25-20261017"
+    (job / "episode-0000").mkdir(parents=True)
+    (job / "manifest.json").write_text(json.dumps({
+        "created_at": "2026-10-17T00:00:00", "source_revision": "abc1234def",
+        "config": {"policy": "hold"}}))
+    (job / "episode-0000/result.json").write_text(json.dumps({
+        "status": "won", "ended_by": "time_limit", "battle_ms": 1205200}))
+    row = stats.row(job, job / "episode-0000")
+    assert (row["outcome"], row["ended_by"], row["battle_s"]) == ("won", "time_limit", 1205)
