@@ -104,6 +104,48 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: multi-agent diagram page, Play loop tab (plan step 2)
+
+Claude Code, $0, no game. The Play loop tab of [`docs/multi-agent.html`](../multi-agent.html):
+23 boxes, 32 wires, four flows. "One decision, one model controller" replays r25 of
+`bench-b45-knights3-glm-low-l1-20261020` episode-0000 (GLM 5.3, low; one episode, not a
+measurement; it ran at `b7e2dd1`, and the page names the parts that differ at `21f6204`: the
+ledger hold and the hidden keys). The model call took 2.79 s; observation seq 71 was overwritten
+unread and seq 72 was read by the play loop but never shown to the model; r25 was applied at
+83.0 s and its 3300 ms delay went into the next prompt. Scripted, commander and the job and
+episode lifecycle are drawn from the code. Reviewer: round 1, 145 claims: 137 confirmed,
+7 wrong (seq 72 called unread, the old ledger drawn as holding, the menu-to-battle order,
+provider errors all called forfeits), 1 unsupported, plus missing markers; round 2, 36 changed
+items: 35 confirmed, 1 wrong; fixed after.
+
+## 2026-10-31: multi-agent diagram page, Multiplayer tab (plan step 3)
+
+Claude Code, $0, no game. The Multiplayer tab of [`docs/multi-agent.html`](../multi-agent.html):
+21 boxes, 39 wires and four flows drawn from the code (start-up in its real order, one operator
+command, close, compare-peers; illustrative, since no multiplayer battle has run). Its banner:
+built offline, zero live multiplayer battles, one dry run on 2026-10-31 that reached the menu
+and attached a worker. Reviewer: round 1, 170 items: 159 confirmed, 8 wrong (event order at
+start-up, a heartbeat claimed to fail while close() still answers it, threads said never to wait),
+3 unsupported, plus missing markers; round 2, 45 changed items: all confirmed.
+Found on the way, not fixed: `link.py` documents that close() ends every lease, but a heartbeat
+that arrives during close() is answered "renewed" and events can follow the "closed" record
+(a scratch script showed the reply); no test covers it.
+
+## 2026-10-31: multi-agent diagram page, Factory tab (plan step 4)
+
+Claude Code, $0, no game. The Factory tab of [`docs/multi-agent.html`](../multi-agent.html): 23
+boxes, 37 wires and two flows drawn from the code ("a normal change", "the WH3 experiment loop";
+illustrative). It shows the gaps the plan names: git runs no hook on a merge that completes by
+itself (the main session's Stop hook reruns check.py at the turn's end); main has no branch
+protection or required checks (read-only GitHub API, 404 "Branch not protected"); CI runs after
+a push and on each pull request; nothing makes a commit wait for the reviewer; version-review
+adoption is unsettled. The viewer also gained tab banners, failed requests drawn as hollow red
+dots, per-flow lane legends and markers, and a fixed tab order.
+Reviewer: round 1, 101 items: 93 confirmed, 8 wrong (rules stated as facts, a flow that put the
+commit before the review, a queue stop rule), plus missing markers; round 2, 49 changed items:
+48 confirmed, 1 wrong; that and one missing marker fixed. Found on the way: the version-review
+tie-break is untested (a planted mean-first sort passed all 7 tests).
+
 ## 2026-10-31: require nonempty evidence in collection assertions
 
 Four capture faults passed all 4 original tests: disabled filename/path/battle-prefix
