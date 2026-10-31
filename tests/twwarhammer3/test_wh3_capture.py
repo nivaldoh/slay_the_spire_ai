@@ -73,8 +73,42 @@ def test_passive_capture_runs_outside_caller_and_joins_evidence(tmp_path, monkey
         # The caller remains free to submit orders while the screenshot is blocked.
         assert not release.is_set()
         release.set()
-        result = capture.copy_presentation(bridge, episode, job="j", battle="b")
+    result = capture.copy_presentation(bridge, episode, job="j", battle="b")
     assert result["status"] == "copied"
     shot = json.loads((episode / "stills.json").read_text())[0]
     assert shot["time_ms"] == 1100 and shot["grab_wall_s"] == .04
     assert shot["status"] == "captured" and shot["policy_input"] is False
+
+
+def test_presentation_copy_waits_for_pending_passive_capture(tmp_path, monkeypatch):
+    bridge, episode = tmp_path / "bridge", tmp_path / "episode"
+    bridge.mkdir()
+    episode.mkdir()
+    (bridge / "imagery-b.json").write_text(json.dumps({
+        "job": "j", "battle": "b", "names": {}, "stills": [
+            {"trigger": "opening", "status": "capture_ready", "time_ms": 1000}],
+    }))
+    elapsed = 0.0
+
+    def now():
+        nonlocal elapsed
+        elapsed += .1  # Bounded polling even if the callback never gets read.
+        return elapsed
+
+    def finish_capture(_seconds):
+        (bridge / "still-b-opening.png").write_bytes(b"image")
+        (bridge / "capture-b-opening.json").write_text(json.dumps({
+            "job": "j", "battle": "b", "trigger": "opening", "status": "captured",
+            "file": "still-b-opening.png", "time_ms": 1100, "grab_wall_s": .04,
+        }))
+
+    # Model a callback arriving while the copier waits; no wall-clock race or worker.
+    monkeypatch.setattr(capture, "time", SimpleNamespace(monotonic=now, sleep=finish_capture))
+
+    result = capture.copy_presentation(bridge, episode, job="j", battle="b")
+
+    assert result["status"] == "copied"
+    shot = json.loads((episode / "stills.json").read_text())[0]
+    assert shot["status"] == "captured" and shot["policy_input"] is False
+    assert shot["time_ms"] == 1100 and shot["grab_wall_s"] == .04
+    assert (episode / shot["file"]).read_bytes() == b"image"

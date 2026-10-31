@@ -44,6 +44,18 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: separate capture-thread completion from copier polling in tests
+
+The passive capture test copied evidence before joining its released screenshot worker.
+A private replay delaying fake completion 2.2 seconds makes it hit the copier's real
+2-second deadline; copying after context exit passes the same assertions.
+A separate controlled-clock case publishes the sidecar during polling, preserving the
+pending-callback check without a wall-clock race. A no-poll copier must fail that case.
+Source, production deadlines and existing assertions stay unchanged. The worker's bounded
+2-second event waits remain; this does not establish that all scheduling flakes are fixed.
+Card/raw/review: `runs/test-quality-20261031/passive-capture-*`, `review/passive-capture/`.
+Component evidence only; live screenshot behavior remains unverified.
+
 ## 2026-10-31: check archived source against the requested revision
 
 The archive test covered only clean HEAD. A second real-Git case uses two commits
