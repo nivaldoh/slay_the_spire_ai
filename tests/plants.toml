@@ -1793,3 +1793,21 @@ old = "                    write_json(self.bridge / f\"capture-{battle}-{trigger
 new = "                    if captured.get(\"status\") == \"capture_failed\":\n                        self.stop.set()\n                    write_json(self.bridge / f\"capture-{battle}-{trigger}.json\","
 tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_records_backend_failure_and_keeps_later_requests"]
 source = "2026-10-31 passive backend failure and recovery regression"
+
+[[plant]]
+id = "transport-invalid-header-rethrows"
+guards = "An invalid optional processing header preserves the completed response without resending"
+file = "src/gameai/llm.py"
+old = "                    except ValueError:\n                        processing = None"
+new = "                    except ValueError:\n                        raise"
+tests = ["tests/gameai/test_model.py::test_optional_processing_header_error_keeps_completed_response_without_retry"]
+source = "2026-10-31 optional processing telemetry oracle"
+
+[[plant]]
+id = "transport-invalid-header-resends"
+guards = "An invalid optional processing header preserves the completed response without resending"
+file = "src/gameai/llm.py"
+old = "                    except ValueError:\n                        processing = None"
+new = "                    except ValueError:\n                        continue"
+tests = ["tests/gameai/test_model.py::test_optional_processing_header_error_keeps_completed_response_without_retry"]
+source = "2026-10-31 optional processing telemetry oracle"

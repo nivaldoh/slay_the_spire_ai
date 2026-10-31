@@ -277,6 +277,28 @@ def test_wh3_transport_opt_in_records_wall_time_header_and_actual_model(tmp_path
     assert attempt["provider_processing_ms"] == 1234.5
 
 
+def test_optional_processing_header_error_keeps_completed_response_without_retry(monkeypatch):
+    payload = {"id": "completed-r", "status": "completed", "model": "actual-snapshot",
+               "usage": USAGE, "output": [{"type": "message", "content": [
+                   {"type": "output_text", "text": "up"}]}]}
+    calls, sleeps = [], []
+
+    class Response(io.BytesIO):
+        headers = {"openai-processing-ms": "not-a-number"}
+
+    def urlopen(request, timeout):
+        calls.append(request)
+        return Response(json.dumps(payload).encode())
+
+    monkeypatch.setattr(api.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(api.time, "sleep", sleeps.append)
+    response = api.post("test-key", {}, record_transport=True)
+    assert len(calls) == 1 and sleeps == []
+    assert {key: value for key, value in response.items() if key != "_transport"} == payload
+    assert response["_transport"]["provider_processing_ms"] is None
+    assert response["_transport"]["transport_attempts"] == 1
+
+
 def test_exchange_capture_keeps_exact_retry_requests_and_returned_output(tmp_path):
     bodies = []
     output = [{"type": "reasoning", "summary": [{"type": "summary_text", "text": "summary"}],
