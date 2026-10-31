@@ -228,11 +228,13 @@ result. The live check passed at the rebased `3adbaa4`, so `wh3-model-team` merg
 2026-10-27). Before the first team battle:
 1. `report` and `export` read member records: order ages from each member's source time,
    calls and forfeits from team events, exchanges keyed by member (both members number theirs
-   `m1`, `m2`, ...). The card board uses `member_source_sha256` or skips team rows (today it
-   takes them, and counting both members' decisions roughly halves the decision-gap part of
-   their information age), and `result.json` counts calls abandoned at cleanup.
+   `m1`, `m2`, ...). 2026-10-31: `report` does so on branch `wh3-team-report` (it replaces one
+   agreed-test assertion: needs your yes); `export` still excludes teams. On `main` since
+   `56d3937`: the card board leaves team episodes off (JUDGEMENT Team rows in `cards.py`) and
+   each member's record in `result.json` says `running_at_close`.
 2. An agreed check for `team_llm_rules`: proposed, `team/test_wh3_model_team.py` plus a
-   written pass list for the first paid battle.
+   written pass list for the first paid battle (drafted 2026-10-31:
+   `runs/overnight-20261031/b3/team-check-card.md`).
 3. A check that the pinned backend serves two calls at once (it has only served one).
 
 Then, with the owner's go-ahead and budget, one paid `team_llm_rules` battle on the Land

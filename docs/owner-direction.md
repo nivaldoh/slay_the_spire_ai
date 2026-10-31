@@ -5,6 +5,13 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-31 (02:10, long autonomous run, the owner's words): "We don't have an actual
+  cutoff. We should have a lot of work ahead such that you can just keep running without a
+  time limit, until every reasonable task involves a pending decision from me. I can review
+  things as we go, but we should limit the situations where I'm a blocker. Things involving
+  money can be a blocker, but most other things we can just try, see what happens, and if
+  needed we can undo them later, branch out, etc. But for now we just need to plan ~10h of
+  work since by then I'll be back to discuss more things". Plan: `runs/overnight-20261031/brief.md`.
 - 2026-10-31 (factory assessment): "I won't have time to review it manually for now, but
   let's continue to assess it and look for potential improvements." "Remember that the
   factory's goal is to work more independently and reliably, with trustworthy automated
