@@ -11,15 +11,15 @@ Waiting decisions: Codex's factory assessment (`runs/factory-assessment-20261031
 (`runs/wh3-native-mp-20261030/handoff.md`; observer smoke steps 1-4 dry-run 2026-10-31).
 
 Claude Code's long run (2026-10-31): all four agreed live checks passed at `96bb137` (Land and
-team also failed in between, on a UI stat and on WSL clock jumps); b52, an unused outcome scorer
-and compare-peers fixes merged; branches and decisions in `runs/overnight-20261031/handoff.md` ([log](twwarhammer3/log.md)). $0.
+team also failed in between, on a UI stat and on WSL clock jumps); b52, an unused outcome scorer,
+compare-peers fixes and the 10-30 factory items merged; branches and decisions in `runs/overnight-20261031/handoff.md` ([log](twwarhammer3/log.md)). $0.
 
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
 Factory: [workflow.md](workflow.md), stages 1-4 built; stage 5 awaits the next experiment.
 CI runs `check.py` on each push (results: `gh run list`).
-**Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; ten
+**Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; nine
 draft branches are unmerged ([list](#branches)).
 Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)).
 MARL references: [three papers plus ProgramLab](thesis/papers.md#marl-implementation-references-2026-10-28), inspected 2026-10-28; ProgramLab's training code is still unreleased (rechecked 2026-10-31). No external tests or learning results reproduced. Testing reviews await you: [eval review](twwarhammer3/log.md#wh3-evaluations-and-tests-2026-10-23), [live-check comparison](twwarhammer3/log.md#wh3-live-check-comparison-2026-10-23).
@@ -110,8 +110,7 @@ synthetic tasks against a 0.90 gate; no general learning gain established
   (2026-10-22) to implement later, starting at step 1 of the [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps).
 - `spire-restore-replay` (`765ab2f`, worktree `../slay_the_spire_ai-spire-replay`): the Spire
   state-restore step 2 replay driver (`spire replay`), tested with a fake game only, never run.
-- `wh3-team-report` (`e5effd0`): `report` and `export` read team members' records (needs your yes);
-  `factory-20261031` (`52bb5e6`): yes items once, Stop-hook log, scratch pruning (needs your yes).
+- `wh3-team-report` (`e5effd0`): `report` and `export` read team members' records (needs your yes).
 - `team-check-battle-time` (`58a52ef`), `land-check-stats-apart` (`f3bcd97`): agreed-check drafts;
   `gate-xdist` (`668940e`): check.py on xdist workers; `test-quality-audit`: another session's.
 - Archived drafts are tags (`git tag --list 'archive/*'`).

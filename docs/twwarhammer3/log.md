@@ -65,7 +65,9 @@ passed every test until 4 new tests. compare-peers fixes and a Lua-to-comparator
 speed reading (`5067ba5`; probe 440/440 read 1). Plants 100 to 139, 139/139 caught at `1cc4582`.
 Then `96bb137` (`play.py` keeps result.json on Ctrl-C during cleanup): all four checks passed (Land
 0 mismatches and 9/9 readings; team 4/4; army; siege 8 identical restores, 194 readings).
-Waiting: `wh3-team-report`, `factory-20261031`, `team-check-battle-time`, `land-check-stats-apart`, `gate-xdist`.
+The 10-30 factory items merged (`cbe73ea`: yes items once, Stop-hook log, scratch pruning,
+one shared hook-test pass). Waiting: `wh3-team-report`, `team-check-battle-time`,
+`land-check-stats-apart`, `gate-xdist`.
 Unverified: the army stall's cause; a slowed battle's reading; any model team; real peers.
 
 ## 2026-10-31: factory checks require successful execution evidence
