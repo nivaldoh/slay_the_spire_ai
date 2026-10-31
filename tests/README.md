@@ -50,7 +50,8 @@ agreed verification method.
 
 | Behavior | Where to start | Real dependency and limit |
 |---|---|---|
-| Model requests, retries and spending | [test_model.py](gameai/test_model.py), [test_providers.py](gameai/test_providers.py) | Real request/accounting code and temporary ledgers; substituted API responses. No provider availability or real billing claim. |
+| Model requests, retries and spending | [test_model.py](gameai/test_model.py), [test_providers.py](gameai/test_providers.py), [test_ledger.py](gameai/test_ledger.py) | Real request/accounting code and temporary ledgers, including caps after reopen, invalid charges and malformed OpenAI usage; substituted API responses. No provider availability or real billing claim. |
+| Source attribution | [test_provenance.py](gameai/test_provenance.py) | Real temporary Git repositories: scoped edits, staged/deleted/renamed/untracked files refuse attribution; outside-scope edits pass. Byte changes affect fingerprints even with matching size/timestamps. No launch or Windows claim. |
 | Spire message framing and disconnects | [test_bridge.py](engine/test_bridge.py) | Real sockets and relay subprocess; no JVM or Windows game launch. |
 | Spire legal choices, target identity and public inputs | [test_decisions.py](spire/test_decisions.py), [test_protocol.py](spire/test_protocol.py), [engine regressions](combat/test_engine_regressions.py) | Synthetic messages and recorded transitions. Original-trace comparisons need local evidence; no current-game validation. |
 | Spire run lifecycle | [test_play.py](fullrun/test_play.py), [stopping](fullrun/test_play_stops.py) | Real loop; fake game and bridge. Includes disconnect, interruption and source-change cases. Action/time limits and actual Windows cleanup are not established by these tests. |
@@ -70,6 +71,13 @@ instructions and existing game-window permissions before running a live check.
 | File | Purpose and current use |
 |---|---|
 | [spire_messages.py](spire/spire_messages.py) | Builds synthetic card, combat and screen messages shared by Spire's decision and full-run tests. Expected results stay in the tests. |
+| [combat_support.py](combat/combat_support.py) | First-combat messages and an opt-in `harness` fixture shared by combat and language tests. It substitutes rollout processes, bridge I/O, clock and source/environment readings; it never launches a game. |
+| [combat_evidence.py](combat/combat_evidence.py) | Synthetic Spire traces and the `run` fixture used by combat and language tests. They exercise readers and auditors; these invented records do not establish game behavior. |
+| [catalog_support.py](combat/catalog_support.py) | Synthetic catalog declarations and an opt-in `run_setup` fixture with queued messages. Keeps setup shared by catalog, report and language tests outside collected test modules. |
+| [language_policy_support.py](language/language_policy_support.py) | CPU model/tokenizer doubles and opt-in declaration fixtures shared by frozen-policy, evaluation and catalog tests. No real model or GPU load. |
+| [demonstration_support.py](language/demonstration_support.py) | Synthetic source traces and the opt-in demonstration `run` fixture used by export and language-training tests. Their invented transitions do not establish game behavior. |
+| [language_training_support.py](language/language_training_support.py) | Causal toy model/tokenizer, tensor comparison and opt-in training setup; it substitutes model/data/source/export boundaries for CPU transaction checks. |
+| [ppo_training_support.py](ppo/ppo_training_support.py) | Synthetic PPO collector and opt-in training/catalog fixtures, including the shared combat-builder substitution. No game launches or policy-strength evidence. |
 | [fullrun_support.py](fullrun/fullrun_support.py), [conftest.py](fullrun/conftest.py) | Shared full-run messages and a simple policy; the `harness` fixture supplies queued game messages and records sent commands. It replaces game processes and bridge I/O only when a test requests it. |
 | [check_wh3_army_setup.py](twwarhammer3/check_wh3_army_setup.py) | Launches WH3 to save, change, restart and reload armies; compares roster, ranks and settings. `--integration` adds refusal/reserve checks and restores settings. Changed lobby settings surviving shutdown is only observed. [Orchestration tests](twwarhammer3/test_wh3_army_check.py) exercise startup guards and restoration without launching a game. |
 | [check_wh3_team.py](twwarhammer3/team/check_wh3_team.py) | Launches four scripted-team diagnostics, delaying each member in turn; checks movement, timing and cleanup. `--recount EXISTING_OUTPUT` reads only; `--recount-output NEW_CHECKS.json` saves a separate verdict with checker/input hashes and refuses overwrite. [Recount tests](twwarhammer3/team/test_wh3_team_recount.py) cover file preservation, not live movement. No model-team strength claim. |
@@ -79,6 +87,12 @@ instructions and existing game-window permissions before running a live check.
 | [make_wh3_report_demo.py](twwarhammer3/make_wh3_report_demo.py) | Builds invented report inputs for HTML tests and the browser check. Demonstrates display behavior; its battles are not experiment evidence. |
 | [prompts/](twwarhammer3/prompts/) | Expected controller-input text read by prompt tests. For an intended prompt version change, regenerate using the command in `test_wh3_prompts.py` and review the diff. |
 | [wh3_fixtures.py](twwarhammer3/wh3_fixtures.py), [wh3_lua.py](twwarhammer3/wh3_lua.py) | Reusable inputs, API/mailbox substitutes and a Lua 5.1 loader. `FakeMailbox` feeds a sequence without real file polling or sequence filtering. The loader executes selected production definitions, not the whole game environment. |
+
+The [CI workflow](../.github/workflows/check.yml) keeps the ordinary `check` job and adds
+separate CPU jobs for the locked `train` and `llm` extras. Each imports its dependencies
+before running the same gate, so missing packages fail instead of silently skipping tests.
+These jobs hide CUDA and disable network model loading and Windows opt-ins. They test
+CPU components; GPU, Windows and live-game checks still need their own procedures.
 
 Approval history stays in [docs/agreed-checks.md](../docs/agreed-checks.md) and logs. Commands and script descriptions explain
 what a check does; neither a filename nor a passing local run makes a feature verified.

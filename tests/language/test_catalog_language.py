@@ -8,8 +8,8 @@ import pytest
 
 pytest.importorskip("torch")
 
-import test_catalog as catalog_tests  # noqa: E402
-import test_language_policy as language_tests  # noqa: E402
+import catalog_support as catalog_fixtures  # noqa: E402
+import language_policy_support as language_fixtures  # noqa: E402
 
 from spire.combat import catalog  # noqa: E402
 from spire.combat.catalog_report import compare_catalogs, render_catalog_report  # noqa: E402
@@ -19,18 +19,18 @@ from spire.language import evaluation as language_evaluation  # noqa: E402
 from spire.language import policy as language_policy  # noqa: E402
 
 # These fixtures substitute only process/bridge boundaries and source/dependency pins.
-declaration = catalog_tests.declaration
-runtime_harness = catalog_tests.runtime_harness
-run_setup = catalog_tests.run_setup
+declaration = catalog_fixtures.declaration
+runtime_harness = catalog_fixtures.runtime_harness
+run_setup = catalog_fixtures.run_setup
 
 
 @pytest.fixture
 def language_setup(tmp_path, run_setup, monkeypatch):
-    declaration = language_tests.declaration.__wrapped__(tmp_path, monkeypatch)
-    declaration = language_tests.adapter_declaration.__wrapped__(tmp_path, declaration)
+    declaration = language_fixtures.declaration.__wrapped__(tmp_path, monkeypatch)
+    declaration = language_fixtures.adapter_declaration.__wrapped__(tmp_path, declaration)
     artifact = tmp_path / "language.json"
     artifact.write_text(json.dumps(declaration))
-    model, tokenizer = language_tests.TinyModel(), language_tests.TinyTokenizer()
+    model, tokenizer = language_fixtures.TinyModel(), language_fixtures.TinyTokenizer()
     monkeypatch.setattr(language_evaluation, "dependency_versions", lambda: {"test": "cpu"})
     monkeypatch.setattr(language_evaluation, "load_tokenizer", lambda _: tokenizer)
     loaded, closed = [], []

@@ -2,10 +2,12 @@ import json
 import os
 from contextlib import AbstractContextManager
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from wh3_lua import MOD, load_battle, runtime
 
+from twwarhammer3.engine import mailbox as mailbox_module
 from twwarhammer3.engine.mailbox import Mailbox
 from twwarhammer3.protocol import BattleRestarted, MailboxTimeout
 
@@ -230,3 +232,51 @@ def test_mailbox_refuses_non_realtime_sessions(tmp_path, session):
     with pytest.raises(ValueError, match="unpaused at 1x"):
         mailbox.write_session(session)
     assert not (tmp_path / "session.json").exists()
+
+
+def test_transient_publish_lock_keeps_prior_content_until_whole_session_is_replaced(
+    mailbox, monkeypatch
+):
+    path = mailbox.directory / "session.json"
+    prior = b'{"job":"previous","enabled":false}\n'
+    path.write_bytes(prior)
+    session = {"enabled": True, "observe_ms": 300}
+    expected = {"schema": 1, "job": "job-a", **session}
+    replace = os.replace
+    locked = True
+
+    def temporarily_locked(source, destination):
+        nonlocal locked
+        assert Path(destination) == path and path.read_bytes() == prior
+        assert json.loads(Path(source).read_text()) == expected
+        if locked:
+            locked = False
+            raise PermissionError("simulated file sharing lock")
+        return replace(source, destination)
+
+    monkeypatch.setattr(mailbox_module.os, "replace", temporarily_locked)
+    monkeypatch.setattr(mailbox_module, "time", SimpleNamespace(sleep=lambda _: None))
+
+    mailbox.write_session(session)
+
+    assert json.loads(path.read_text()) == expected
+
+
+def test_persistent_publish_lock_propagates_failure_and_preserves_prior_content(
+    mailbox, monkeypatch
+):
+    path = mailbox.directory / "session.json"
+    prior = b'{"job":"previous","enabled":false}\n'
+    path.write_bytes(prior)
+
+    def locked(source, destination):
+        assert Path(destination) == path and path.read_bytes() == prior
+        raise PermissionError("simulated file sharing lock")
+
+    monkeypatch.setattr(mailbox_module.os, "replace", locked)
+    monkeypatch.setattr(mailbox_module, "time", SimpleNamespace(sleep=lambda _: None))
+
+    with pytest.raises(PermissionError, match="sharing lock"):
+        mailbox.write_session({"enabled": True, "observe_ms": 300})
+
+    assert path.read_bytes() == prior

@@ -215,6 +215,18 @@ list keeps evolving across five kinds, plus scale:
 | timing | configured age and interval, achieved order ages and gaps; any claimed opportunity/deadline needs an observable reference |
 | frozen rule | card/scorer revision, success and failure treatment, foil/witness counts, stopping rule, evidence cohort and reserved variants |
 
+Disclosed withdrawal choices in [calibration.py](../../src/twwarhammer3/battle/calibration.py),
+flagged by Codex on 2026-10-31; source dates below are UTC. Commit f063730 lists Claude
+as a co-author; who selected either withdrawal rule is unrecorded:
+
+JUDGEMENT?: FeintFlank withdrawal — source 77726f1 (2026-10-17 UTC), agent unrecorded:
+`FeintFlank.card` withdraws both riders; keeping one engaged changes its scripted orders.
+Its identity tests preserve this rule; its suitability as a benchmark witness is unverified.
+
+JUDGEMENT?: PinThenRear withdrawal — source f063730 (2026-10-18 UTC), chooser unrecorded:
+`PinThenRear.card` withdraws both riders; keeping the pin engaged changes its scripted orders.
+Its identity tests preserve this rule; its suitability as a benchmark witness is unverified.
+
 Review every win for its signature. A win without the intended tactic stays a gameplay
 win and challenges the card: it may be a shortcut, a valid alternative or a weak signature.
 Preserve the old verdict and evidence; revise the interpretation or define a new card

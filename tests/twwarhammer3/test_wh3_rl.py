@@ -107,10 +107,13 @@ def test_no_signal_changes_neither_the_adapter_nor_the_optimizer(toy, name):
     adapter = rl.tensor_hash(scorer.adapter_state())
     moments = {i: {k: v.clone() for k, v in s.items() if torch.is_tensor(v)}
                for i, s in optimizer.state.items()}
+    assert moments  # The preceding signal update must have populated AdamW state.
     record = steps(method, scorer, optimizer, [toy_task(3, [1, 1, 1])], CYCLES[0], 1)[0]
     assert record["updated"] is False and record["adapter_after"] == adapter
     assert rl.tensor_hash(scorer.adapter_state()) == adapter
+    assert optimizer.state.keys() == moments.keys()
     for i, s in optimizer.state.items():
+        assert {k for k, v in s.items() if torch.is_tensor(v)} == moments[i].keys()
         assert all(torch.equal(moments[i][k], v) for k, v in s.items() if torch.is_tensor(v))
 
 

@@ -26,6 +26,66 @@ benchmark harness revision, G1 and G2 the calibration stages.
   ([benchmark.md](benchmark-implementation.md#what-the-current-code-reports)).
 - A new entry goes at the top, and "On main" is updated with it.
 
+
+
+
+## 2026-10-31: keep passive capture alive after malformed backend output
+
+- A JSON list or deeply nested JSON raised in the passive worker before failure metadata
+  and later capture requests. The worker now records unsupported result types and ordinary
+  backend/decode errors as failed callbacks. Metadata writes and capture limits are unchanged.
+- Review also found an empty reason for message-less OSError; exception classes now survive
+  in reasons. Final six-case regression: before fix 3 failed/3 controls passed; after fix,
+  capture/controller group 29 passed (23 before). No screenshots or Windows calls.
+- Five wrong variants caught: dropped metadata/reasons 5 failures each, missing type/depth
+  guards 1 each, stopping after one failure 6. Previous 187 registrations retained; 192 total,
+  no full-192 replay. Constructor-refusal sites remain 0, not mutation-strength evidence.
+- Cards/raw: `runs/test-quality-20261031/capture-backend-failures/`; independent review and
+  final gate recorded in the commit. Card unagreed; no new verification method, live capture
+  effect, game outcome or policy-strength claim. Existing adoption choices remain pending.
+
+
+## 2026-10-31: reject replay identity before touching episode evidence
+
+- Two wrong copiers passed all 15 capture/integration cases: copying before identity
+  rejection, or checking the job while ignoring the battle header. Source is correct.
+- Four added cases cover job/battle mismatch with absent or different existing destination
+  bytes; source and destination must remain unchanged. All prior test definitions retained.
+  Control: 19 passed; wrong copiers: 4 failed/15 passed and 2 failed/17 passed.
+- Related capture/play/team checks: 165 passed. The two replay faults plus six handler faults
+  bring registrations from 172 to 180; no full 180-entry replay is claimed.
+- Card/raw evidence: `runs/test-quality-20261031/replay-identity/`; independent review and
+  final gate recorded in the commit. Card unagreed; agreed-file adoption still pending.
+  File checks only: no live recording, policy-strength or new verification-method claim.
+
+## 2026-10-31: keep episode results when optional evidence copying fails
+
+- A malformed replay header (`[]`) or numeric still filename raised during cleanup and
+  discarded `result.json` after a fake engine win. Each optional copier now records an
+  ordinary exception as existing `status=error` metadata, then saves the engine result.
+- New integration tests: before fix 2 failed/1 valid control passed; final 7 passed,
+  including deep-JSON errors and interrupt propagation. Related suites: 161 passed.
+- Six wrong handlers caught: narrow IO catches fail 2/7 cases; consumed interrupts or
+  shape-only catches fail 1/7. Review found and closed the initial deep-JSON test gap.
+  Pre-change play-only sweep: 13/14 caught; the missed team guard already had a test in the
+  team suite. Expanded sweep: 14/14 caught before and after, no hangs; baselines 108/115.
+  Six new handler faults were replayed; all prior registrations are retained unchanged.
+- Card/raw traces and checks: `runs/test-quality-20261031/capture-schema/`; independent review
+  in `runs/test-quality-20261031/review/capture-schema/`, final gate in the commit.
+- Offline only: 3,611 files in the two agent directories retained modification times.
+  No live capture/gameplay effect established; card unagreed, feature unverified under the
+  hard rule. Existing adoption questions remain pending; no new agreed check or scoring rule.
+
+## 2026-10-31: test audit integrates factory changes through main 8076fc1
+
+- Merged main `8076fc1` into the isolated testing draft; retained the audit status and main's
+  stopped-controller status. All parent plant definitions retained exactly: 167 audit,
+  144 main, 172 distinct in the union; this is preservation, not a fresh full replay.
+- Gate/hook integration tests: 224 passed. Normal gate and independent review are recorded
+  in the merge commit and `runs/test-quality-20261031/main807-integration/`.
+- Existing test-edit and optional-CI adoption questions remain pending. Offline evidence;
+  no new agreed method, game run, benchmark meaning or policy-strength claim. Card unagreed.
+
 ## On main
 
 | Piece | Version | Defined in | Latest results |
@@ -113,6 +173,197 @@ commit before the review, a queue stop rule), plus missing markers; round 2, 49 
 48 confirmed, 1 wrong; that and one missing marker fixed. Found on the way: the version-review
 tie-break is untested (a planted mean-first sort passed all 7 tests).
 
+## 2026-10-31: require nonempty evidence in collection assertions
+
+Four capture faults passed all 4 original tests: disabled filename/path/battle-prefix
+checks and omitted failed rows. The expanded 8-case group rejects them (4/2/2/5 failures)
+using existing foreign files, separate parents and unchanged-destination bytes, plus
+record count/identity checks. Existing valid-copy behavior still passes.
+A never-update-follow-posts fault passed all 50 calibration cases; one added unit-set
+assertion now rejects it. A second independently shaped fault is rejected too.
+A ledger writer omitting successful check rows passed all 71 gate tests; explicit
+declared-name sets now reject it (1 failed, 70 passed), while all 71 controls pass.
+The saved Spire reference test now names its self-comparison as an acceptance control;
+its assertions are retained. Focused groups pass 80 and 71 cases. No production edits.
+Filtering long failure replies passed all 152 caller cases; an attempt/request-count
+assertion now rejects it (1 failed, 151 passed), while all 152 controls pass.
+Review caught a duplicated failure row that retained count; the trigger-sequence check
+now rejects it. Eight new registered faults join the prior 159 unchanged. Cards,
+before/after output and XML: `runs/test-quality-20261031/assertion-audit/`. These are
+component/file-record checks, not live movement or screenshot verification; unagreed.
+
+## 2026-10-31: run the old local-evidence cases from the audit worktree
+
+Fourteen existing offline cases pass at `4856a6c`: saved siege/step-run wrong-value
+controls, Land recount/classification, the old G1 replay, synthetic task regeneration
+and the Spire v1 inventory reference. Eight stopped input roots were copied; all
+328 files match SHA256/size before and after (656 original/copy checks). One embedded
+late-rung path still reads the hashed original record; no paths or expectations changed.
+Card, manifests, JUnit and raw output: `runs/test-quality-20261031/local-evidence-*`,
+`local-extra-evidence.*`. These are recorded-case checks, not live-game or learning
+verification. No game, model training, Windows call or paid request was started.
+
+## 2026-10-31: invalid billing values cannot weaken the ledger cap
+
+Private fake-response probes produced NaN spending and a negative cached-token charge;
+both allowed an above-total reservation, including after reopening the private ledger.
+Ledgers now reject invalid new/prior amounts without rewriting evidence; OpenAI usage
+checks reject malformed counts, excess cached tokens and arithmetic overflow. The existing
+invalid-cost path charges one reserved share, releases holds and stops before parsing or
+retrying. Raw usage stays in the failed attempt; malformed usage is not totaled as tokens.
+Added 32 cases; the first regression run failed 27 before the fix (69 passed), and the
+expanded focused set passes 100. Valid token totals survive missing dollar cost. Sequential refusal sweeps caught all 4/11 old ledger/model
+guards and all 5/16 after the change, with no hangs or misses. Five added registered faults
+join the prior 154; one prior-charge plant target follows the validated constructor line.
+Cards/output/review: `runs/test-quality-20261031/invalid-billing*`, `billing-*`,
+`review/invalid-billing/`. No real API call or owner ledger was read or written. These are
+component regressions, not live billing or price-estimate verification; the method is unagreed.
+
+## 2026-10-31: browser checks handle empty facts and controlled route/navigation cases
+
+The existing browser check timed out after correctly counting zero facts, then failed on
+a recorded move already within the viewer's arrival region, then on a hidden single-scenario
+index screenshot. It now reads facts only when present, runs the same pending-route assertions
+on the existing invented demo, and captures the navigation appropriate to the scenario count.
+All assertion expressions stay unchanged, as do app behavior, generator inputs and recorded jobs.
+Route coverage rests on JUDGEMENT? `replay.js` Recent routes/Waypoint cutoff and the checker's
+Route example: inherited display choices are marked, and demo selection awaits owner review.
+Raw attempts/cards/review: `runs/test-quality-20261031/browser-*`, `review/browser-check/`.
+The initial full-Chromium launch also failed on its long Unix socket path; the software
+headless-shell run uses short `runs/tq-b` temporary storage. Windows native probes separately
+passed 3 cases using private Python children (JobObject, locks, paths); no games launched.
+Read-only doctor: ready, build 25961564, matching the pin. These are component/DOM checks;
+collector semantics, real-game ownership and GPU rendering remain unverified.
+
+## 2026-10-31: proposed CI jobs exercise the existing optional extras on CPU
+
+The `check` job keeps its existing name and commands. A separate train/llm matrix installs
+the locked extras, imports the required libraries explicitly, then runs the same gate.
+Missing optional packages therefore fail a selected job before pytest can skip their tests.
+CUDA is hidden, model loading stays offline, and Windows opt-ins are off. No runtime source,
+dependency pin, assertion or benchmark definition changed. Pattern: PyTorch `lint.yml`.
+Selection of both profiles rests on JUDGEMENT? `.github/workflows/check.yml` Optional CI;
+it remains a draft for the owner's recurring-CI decision, not an agreed verification method.
+Card, local profile commands, syntax check, Actions output and review live under
+`runs/test-quality-20261031/optional-ci-*` and `review/optional-ci/`. No hardware or learning claim.
+
+## 2026-10-31: cover uncaptured transport errors and mailbox publication locks
+
+Fresh branch coverage identified two unexecuted error paths. Added cases require
+an uncaptured transport failure to remain APIError with no parsing, retained uncertain
+charges against the held reservation and released reservation; they also require whole-file
+publication after a transient
+replacement lock and visible failure with prior content intact after persistent locking.
+The old 39 model cases accepted a removed re-raise; the old 17 mailbox cases accepted
+immediate failure and suppressed final failure. Expanded model checks also cover the full uncertain-attempt limit.
+Review found a positive-only spend assertion accepted undercharge; it now requires each
+attempt's reserved share. Undercharge and ignored-count faults join the three initial faults
+in the plants manifest,
+with its previous 149 entries unchanged. No retry-count/delay constants are asserted.
+Card/raw/review: `runs/test-quality-20261031/error-paths-*`, `review/error-paths/`.
+Source, existing assertions and skips are unchanged. Simulated OS/transport faults provide
+component evidence; actual Windows sharing, API billing and live behavior remain unverified.
+
+## 2026-10-31: shared language/PPO fixtures leave collected test modules
+
+The remaining five test-module import edges now point at four explicit support modules.
+Twenty-five helper/fixture definitions moved; all 190 definitions in the eight affected
+test files retain their ASTs, allowing only equivalent module-qualifier names.
+PPO's combat-builder substitution and its collector remain in the same module globals.
+CPU-train controls pass 622 tests with 22 skips before and after; recorded IDs/statuses
+and the full locked-language suite are compared separately in the task artifacts.
+Source, test assertions, skips and fixture scopes are unchanged. No blanket conftest or
+autouse fixture was added. Pattern: Hugging Face datasets `tests/utils.py`.
+Card/raw/review: `runs/test-quality-20261031/optional-helpers-*`, `review/optional-helpers/`.
+These are refactor/component checks; engine behavior and learning remain unverified.
+
+## 2026-10-31: separate capture-thread completion from copier polling in tests
+
+The passive capture test copied evidence before joining its released screenshot worker.
+A private replay delaying fake completion 2.2 seconds makes it hit the copier's real
+2-second deadline; copying after context exit passes the same assertions.
+A separate controlled-clock case publishes the sidecar during polling, preserving the
+pending-callback check without a wall-clock race. A no-poll copier must fail that case.
+Source, production deadlines and existing assertions stay unchanged. The worker's bounded
+2-second event waits remain; this does not establish that all scheduling flakes are fixed.
+Card/raw/review: `runs/test-quality-20261031/passive-capture-*`, `review/passive-capture/`.
+Component evidence only; live screenshot behavior remains unverified.
+
+## 2026-10-31: check archived source against the requested revision
+
+The archive test covered only clean HEAD. A second real-Git case uses two commits
+with changed, added, deleted and binary files, followed by dirty/untracked files.
+Its expected paths and SHA-256 values come directly from known fixture bytes;
+it never calls the production fingerprint function for its expected result.
+The old case accepts three planted HEAD substitutions (path listing, bytes, both);
+the expanded two-case suite passes unchanged source and rejects each wrong reader.
+Raw/card/review: `runs/test-quality-20261031/archive-revision-*`, `review/archive-revision/`.
+Existing tests, source, skips and dependencies are unchanged. This is component evidence;
+archived live-training correctness remains unverified and the card was not owner-agreed.
+
+## 2026-10-31: check local-model lease ownership at the loading boundary
+
+Current source bypasses the lease for injected CPU loaders; a private-lock contention
+probe agrees, rejecting the initial fixture-coupling suspicion.
+All 37 existing policy cases accepted reversed selection, no default-loader lease,
+and early lease release.
+Two added private-lock cases require refusal before default weight loading, ownership
+during loading/use, release on close, and an injected CPU model working while it is held.
+Expanded policy run: 39 passed; the three wrong versions fail two, one and one cases.
+Focused CPU policy/evaluation/catalog cases: 80 passed; review prompted the retention check.
+Source, existing assertions and fixtures are unchanged; no actual GPU lease was held.
+Raw runs, card and review: `runs/test-quality-20261031/gpu-*` and `review/gpu-selection/`.
+The fault replay needs the CPU test environment; it is not in the default plants manifest,
+whose ordinary environment lacks Torch. Hardware/CUDA behavior remains unverified.
+
+## 2026-10-31: shared Spire evidence and catalog setup leaves collected tests
+
+Shared builders/fixtures moved from `test_evidence.py` and `test_catalog.py` into
+`combat_evidence.py` and `catalog_support.py`; seven consumers import support directly.
+464 definitions match before/after, allowing only the named module qualifier renames.
+Collected node IDs match in both environments: 422 default, 639 CPU train (import-time
+skips are separate). No test, assertion or expected output was added or removed.
+A dedicated environment installed the existing CPU train extra from the locked dependencies.
+Combat/language/PPO runs before and after: 619 passed, 22 skipped each. Skips cover saved
+engine evidence and missing optional language packages, not a Torch absence.
+Raw collections, AST comparison, both runs, card and review: `runs/test-quality-20261031/`.
+Full gate/main integration remain for the handoff. No source/game/prompt change, no learning
+or live verification claim; five imports of optional training test modules still need audit.
+
+## 2026-10-31: negative tests require the contract error type
+
+Wrong-type `KeyError` variants passed the named checkpoint-injection and sampling negative
+tests. They now require the parameter/protocol errors their callers handle, with separate
+sampling seed/rejection tests and named checkpoint cases. The valid checkpoint control stays.
+The export test's broad budget exception was already protected by a later exported-type
+assertion; narrowing its earlier expectation improves readability, not coverage.
+Focused run: 56 passed, two saved-checkpoint evidence cases skipped, including plant liveness.
+Both formerly accepted variants now fail; the budget-type variant still fails, earlier.
+Production source, error taxonomy and grid values are unchanged; two new plants preserve
+these gaps. Grid use rests on JUDGEMENT `battle/checkpoint.py` dispatch, not a new agreement.
+Card, before/after faults and review: `runs/test-quality-20261031/` in the isolated worktree.
+Full gate and main integration remain for the handoff; no live effect or full coverage claim.
+
+## 2026-10-31: testing audit finds attribution, budget and isolation gaps
+
+Drafted in isolated `test-quality-audit` at parent `150ef84` while Claude runs live checks;
+no production source, prompt, agreed method, game state or benchmark definition changed.
+Cards, raw output and focused reviews: `runs/test-quality-20261031/` in that worktree.
+Provenance: 20 cases pass. The old provenance test accepted six declared wrong versions;
+the new cases reject all six. Independent review found the second-scope-entry gap, now
+covered, and challenged a shortened default scope (five failures).
+Retained budgets: two new tests plus 64 existing shared model/provider cases pass. Those
+64 accepted both declared budget faults; additions reject both. Three more variants planted
+by the reviewer also fail. These comparisons concern the named tests, not the whole old suite.
+Spire helpers moved out of the lifecycle test: 275 test bodies and 87 helper definitions
+unchanged; 415 collected node IDs unchanged. Focused run: 166 passed, one missing Torch
+case and one missing original-engine-evidence case skipped.
+Initial full gate: Ruff clean, 6 failed, 2073 passed, 69 skipped. Hook cleanup tests saw
+Claude's live job and skipped their own stub. Isolating only the child's process scan
+gives six focused passes; removing its production SIGTERM handler still fails as required.
+Worktree gate: Ruff clean, 2079 passed, 69 skipped; main integration waits for live checks.
+The handoff holds the raw output and final review. No live verification or whole-repo coverage
+claim. Next: exception expectations (two wrong-type KeyError variants pass) and remaining helpers.
 ## 2026-10-31: multi-agent diagram page, step 1 (viewer, Overview, Team tab)
 
 Claude Code, $0, no game; plan and evidence `runs/multi-agent-diagram-20261031/` (the owner's

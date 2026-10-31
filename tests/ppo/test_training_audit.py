@@ -9,12 +9,12 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-import test_training  # noqa: E402
+import ppo_training_support as training_fixtures  # noqa: E402
 
 from gameai.provenance import REPO_ROOT  # noqa: E402
 from spire.ppo import training  # noqa: E402
 
-training_setup = test_training.setup
+training_setup = training_fixtures.setup
 
 SCRIPT = REPO_ROOT / "scripts/audit_ppo_training.py"
 SPEC = importlib.util.spec_from_file_location("audit_training_script", SCRIPT)
@@ -282,7 +282,7 @@ def test_pending_batch_cannot_include_consumed_episode(saved_run):
 @pytest.fixture
 def saved_catalog_run(tmp_path, training_setup, monkeypatch):
     config, _ = training_setup
-    config = test_training.make_catalog_config(config, monkeypatch)
+    config = training_fixtures.make_catalog_config(config, monkeypatch)
     output = tmp_path / "catalog-training"
     training.train(output, config)
     return output
@@ -359,12 +359,12 @@ def test_coherent_catalog_episode_with_wrong_actual_start_is_rejected(saved_cata
     )
     start["raw"]["game_state"]["current_hp"] = 79
     start["raw"]["game_state"]["combat_state"]["player"]["current_hp"] = 79
-    public = test_training.decision_from_message(
+    public = training_fixtures.decision_from_message(
         start["raw"], session_id=result["session_id"], sequence=2
     ).to_dict()
     next(event for event in events if event["kind"] == "decision")["decision"] = public
     result["starting_hp"] = 79
-    result["combat_start_sha256"] = test_training.normalized_observation_fingerprint(
+    result["combat_start_sha256"] = training_fixtures.normalized_observation_fingerprint(
         public["observation"]
     )
     events[-1]["result"] = result
