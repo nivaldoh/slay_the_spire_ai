@@ -22,6 +22,7 @@ BRIDGE = "C:/wh3-agent/bridge/"
 ENGINE = r"""
 trapped, calls, files, phases, callbacks = {}, {}, {}, {}, {}
 now, decided, is_multiplayer = 1000, false, true
+speed = 1  -- battle:current_battle_speed()
 function trap(kind, methods)
     return setmetatable(methods, {__index = function(_, name)
         return function()
@@ -90,6 +91,7 @@ alliances = list("alliances", {
 reinforcement_armies = {}  -- none unless a test sets some
 battle = trap("battle", {
     time_elapsed_ms = function() return now end,
+    current_battle_speed = function() return speed end,
     is_multiplayer = function() return is_multiplayer end,
     is_replay = const(false), is_from_campaign = const(false), is_quest_battle = const(false),
     is_tutorial = const(false), is_spectator = const(false),
@@ -403,3 +405,20 @@ def test_two_peers_owning_different_armies_compare_exact_through_the_real_seam(t
     assert pair["units_compared"] == pair["exact"] == 10
     assert pair["failed_rows"] == {"A": 2, "B": 2}
     assert pair["missing"] == {"A": [], "B": []} and pair["differences"] == []
+
+
+@pytest.mark.parametrize("multiplayer", [None, "observe", "control"])
+def test_each_observation_carries_the_engines_speed_reading(multiplayer):
+    # Single-player sets 1x itself (modify_battle_speed); the reading is the engine's after.
+    g = battle({"multiplayer": multiplayer} if multiplayer else {}, "" if multiplayer else """
+        is_multiplayer = false
+        grant(allies)
+        bm.modify_battle_speed = function(_, ...) calls[#calls + 1] = {"speed", ...} end
+    """)
+    g.phases["Deployed"]()
+    g.callbacks["twwarhammer3_tick"]()
+    assert observation(g)["speed"] == 1
+    g.speed, g.now = 0.5, 2000
+    g.callbacks["twwarhammer3_tick"]()
+    assert observation(g)["speed"] == 0.5
+    assert list(g.trapped.values()) == []

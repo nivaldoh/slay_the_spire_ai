@@ -950,3 +950,18 @@ def test_orders_for_unknown_units_or_before_deployment_ends_are_refused(
     result = apply(lua.table_from(order))
     assert dict(result) == {"unit": order["unit"], "ok": False, "error": error}
     assert len(lua.globals().calls) == 0
+
+
+def test_the_observed_speed_is_the_engines_reading_and_a_failed_read_is_not_1x():
+    # battle:current_battle_speed in the game's battle.html; play.py refuses any speed but 1.
+    lua = runtime()
+    lua.execute("bm = {battle = {}}")
+    _, speed = load_battle(lua, "get", "battle_speed")
+    battle = lua.globals().bm.battle
+    for value in (1, 0.5, 0, 3):
+        battle.current_battle_speed = lua.eval(f"function() return {value} end")
+        assert speed() == value
+    battle.current_battle_speed = lua.eval("function() error('not in a battle') end")
+    assert speed() == "unreadable"
+    battle.current_battle_speed = None
+    assert speed() == "unreadable"
