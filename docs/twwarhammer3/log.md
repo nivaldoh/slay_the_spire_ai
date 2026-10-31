@@ -46,7 +46,7 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 ## 2026-10-31 (night): agreed live checks after the multiplayer merge; outcome readers; b52
 
-Claude Code, 02:38-~07:00 (WSL clock), $0; brief, handoff, notes: `runs/overnight-20261031/`.
+Claude Code, 02:38-~09:50 (WSL clock), $0; brief, handoff, notes: `runs/overnight-20261031/`.
 At `150ef84`: Land checkpoints passed (0 mismatches over 2,000/2,001 ticks, 9/9 readings per
 restore, the changed restore diverged at 1303); scripted team 4/4; siege passed (4 states, 8
 identical restores with 0 mismatches over 2,402-2,403 ticks, 194 readings); army setup failed
@@ -63,7 +63,9 @@ maps result.json to benchmark.md's outcome rows; 3 of 12 reader plants and 1 sco
 passed every test until 4 new tests. compare-peers fixes and a Lua-to-comparator seam test
 (`b9e1cce`); b52: team episodes off the card board, `running_at_close` (`56d3937`), the engine
 speed reading (`5067ba5`; probe 440/440 read 1). Plants 100 to 139, 139/139 caught at `1cc4582`.
-Waiting: `wh3-team-report`, `factory-20261031`, `wh3-cleanup-interrupt`, `land-check-stats-apart`.
+Then `96bb137` (`play.py` keeps result.json on Ctrl-C during cleanup): all four checks passed (Land
+0 mismatches and 9/9 readings; team 4/4; army; siege 8 identical restores, 194 readings).
+Waiting: `wh3-team-report`, `factory-20261031`, `team-check-battle-time`, `land-check-stats-apart`, `gate-xdist`.
 Unverified: the army stall's cause; a slowed battle's reading; any model team; real peers.
 
 ## 2026-10-31: factory checks require successful execution evidence

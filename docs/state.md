@@ -10,9 +10,9 @@ Waiting decisions: Codex's factory assessment (`runs/factory-assessment-20261031
 [native multiplayer](twwarhammer3/native-multiplayer.md#implementation-status) build
 (`runs/wh3-native-mp-20261030/handoff.md`; observer smoke steps 1-4 dry-run 2026-10-31).
 
-Claude Code's long run (2026-10-31): agreed live checks at `150ef84` and `1cc4582`; Land and team now
-fail on a UI stat and on WSL clock jumps; b52, an unused outcome scorer and compare-peers fixes
-merged; five branches and decisions wait in `runs/overnight-20261031/handoff.md` ([log](twwarhammer3/log.md)). $0.
+Claude Code's long run (2026-10-31): all four agreed live checks passed at `96bb137` (Land and
+team also failed in between, on a UI stat and on WSL clock jumps); b52, an unused outcome scorer
+and compare-peers fixes merged; branches and decisions in `runs/overnight-20261031/handoff.md` ([log](twwarhammer3/log.md)). $0.
 
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
@@ -110,11 +110,8 @@ synthetic tasks against a 0.90 gate; no general learning gain established
   (2026-10-22) to implement later, starting at step 1 of the [plan](twwarhammer3/multi-agent-plan.md#d-single-client-steps).
 - `spire-restore-replay` (`765ab2f`, worktree `../slay_the_spire_ai-spire-replay`): the Spire
   state-restore step 2 replay driver (`spire replay`), tested with a fake game only, never run.
-- `wh3-team-report` (`b4a7080`, worktree `../slay_the_spire_ai-team`): `report` reads team members'
-  records; replaces one assertion in an agreed check's test (needs your yes).
-- `factory-20261031` (`e1fd1c7`, worktree `../slay_the_spire_ai-factory`): yes items once, Stop-hook
-  log, scratch pruning (needs your yes).
-- `wh3-cleanup-interrupt` (`b1b6281`): result.json kept on Ctrl-C during cleanup; `land-check-stats-apart`
-  (`dabb389`): Land compares card stats apart; `gate-xdist` (`859a454`): check.py on xdist
-  workers (~28 s); `test-quality-audit`: another session's.
+- `wh3-team-report` (`e5effd0`): `report` and `export` read team members' records (needs your yes);
+  `factory-20261031` (`52bb5e6`): yes items once, Stop-hook log, scratch pruning (needs your yes).
+- `team-check-battle-time` (`58a52ef`), `land-check-stats-apart` (`bf4f911`): agreed-check drafts;
+  `gate-xdist` (`668940e`): check.py on xdist workers; `test-quality-audit`: another session's.
 - Archived drafts are tags (`git tag --list 'archive/*'`).
