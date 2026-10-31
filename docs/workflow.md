@@ -2,6 +2,9 @@
 
 Agents do most of the work; the owner keeps the judgement: what to build, what "correct"
 means, what a result means. The owner reads short cards and short reports, not code.
+Owner, 2026-10-31: manual review is unavailable for now, and essentially the entire codebase
+has not been manually reviewed. The factory must work more independently and reliably;
+its own process and automated checks may contain errors too.
 This page is the light factory plan (2026-10-28/29; the full plan with the owner's notes is
 `git show a3abee9:docs/light-factory-plan.md`) as implemented on 2026-10-29 at the owner's word
 "Implement docs/light-factory-plan.md". The process is in use; every check it
@@ -109,6 +112,10 @@ markers   3 problems listed in the log, for the owner
   included, the repo rules ([test_repo_rules.py](../tests/test_repo_rules.py)) and the link
   test among them. It exits 1 if anything fails. It never launches a game, spends money or
   commits, and it removes `WH3_WRITE_PROMPTS` so it cannot rewrite prompt snapshots.
+  A zero pytest exit needs a fresh readable JUnit report with named cases, a passing test
+  and no errors/failures; missing, empty, all-skipped or contradictory reports are incomplete
+  and issue no pass record or agreed-check credit (rests on JUDGEMENT? `scripts/check.py`
+  Completion evidence). This does not establish full collection or correct test expectations.
   Pytest gets a fresh disposable bytecode directory for each run, overriding an inherited
   cache prefix. This catches same-size/same-timestamp source and test edits while preserving
   shared caches. The directory is removed on return or a Python exception.
@@ -140,6 +147,13 @@ markers   3 problems listed in the log, for the owner
   checkout's install (2026-10-29).
 
 ## Checks in layers
+
+Treat inherited implementations, tests, fixtures and graders as fallible. For consequential
+behaviour a change relies on, trace the assumption to a contract or an independently checked
+example, then challenge the relevant check with a plausible wrong result. Two readers of
+the same fixture can share its mistake. If a reference or a needed check is unavailable,
+state that limit and keep the dependent claim unverified. Scope this work to the current
+change; manual review of the entire repository is not a prerequisite for useful progress.
 
 Nothing counts as correct because of who made it: code, tests, agent summaries, a reviewer's
 "looks good", a `/goal` "met" or a green run of a check the owner never agreed. "The critical

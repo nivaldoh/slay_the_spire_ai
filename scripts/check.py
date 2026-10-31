@@ -4,8 +4,10 @@
 
 Run it before every commit and quote its first five lines in the report: the revision, whether
 the tree is clean, the counts, the skip reasons and the log path (the whole output is kept under
-runs/checks/). It exits 1 when Ruff or any test fails or pytest cannot run, otherwise 0. The
-suite runs without WH3_WRITE_PROMPTS, so it never rewrites prompt snapshots, and its scratch
+runs/checks/). It exits 1 when Ruff or any test fails or pytest cannot establish a completed run.
+Completion needs a fresh readable JUnit report with named cases, a passing test and no failures.
+A zero exit without that evidence is incomplete. The suite runs without WH3_WRITE_PROMPTS, so it
+never rewrites prompt snapshots, and its scratch
 directory (runs/test-scratch/check-<pid>) is removed after a pass.
 
 A passing run whose files did not change while it ran writes runs/checks/last-pass.json with a hash
@@ -590,6 +592,7 @@ def main() -> int:
     ruff = subprocess.run([sys.executable, "-m", "ruff", "check", "."], cwd=ROOT, env=env,
                           capture_output=True, text=True)
     junit = scratch.with_name(scratch.name + ".xml")  # beside --basetemp, which pytest clears
+    junit.unlink(missing_ok=True)  # a previous aborted run is not this run's evidence
     revision, before = git(ROOT, "rev-parse", "HEAD").strip(), at_revision(ROOT)
     # CPython Lib/importlib/_bootstrap_external.py: an isolated prefix avoids stale timestamp
     # bytecode after a same-size edit, without changing shared caches.
@@ -601,7 +604,16 @@ def main() -> int:
     output = tests.stdout + tests.stderr
     summary = next((line.strip("= ") for line in reversed(output.splitlines())
                     if SUMMARY.search(line)), f"no pytest summary (exit {tests.returncode})")
+    cases = junit_cases(junit)
+    # JUDGEMENT?: Completion evidence — Codex, 2026-10-31, owner's reliability direction:
+    # require a named passing test and no reported failures; accepting only skips/errors would
+    # credit no successful execution. Full collection/fabricated reports stay outside this check.
+    completed = (all(address.strip(".") and outcome != "failed" for address, outcome in cases)
+                 and any(outcome == "passed" for _, outcome in cases))
+    incomplete = tests.returncode == 0 and not completed
     passed = ruff.returncode == 0 and tests.returncode == 0
+    if incomplete:
+        passed = False
     found = [line for line in ruff.stdout.splitlines() if line.startswith("Found")]
     lint = "Ruff clean" if ruff.returncode == 0 else (
         f"Ruff FAILED ({(found or [f'exit {ruff.returncode}'])[-1]})")
@@ -618,7 +630,13 @@ def main() -> int:
         f"log       {log.relative_to(ROOT)}",
     ]
     shown += [f"          {line}" for line in first]
+    if incomplete:
+        shown.append("          pytest completion evidence missing: no successful named report "
+                     "with a passing test; check incomplete")
     agreed = agreed_results(ROOT, junit)
+    if incomplete:
+        for result in agreed.values():
+            result["passed"] = False  # an incomplete run supplies no pass evidence
     junit.unlink(missing_ok=True)
     own, changed, untracked = still_at_revision(ROOT, revision, before)
     shown.append(f"agreed    {sum(r['passed'] for r in agreed.values())} of {len(agreed)} "

@@ -681,3 +681,62 @@ def test_normal_check_ignores_caller_selection_and_optimization(
     result = json.loads((repo / "runs/checks/agreed-passes.jsonl").read_text().splitlines()[-1])
     assert not result["checks"]["Whole suite"]["passed"]
     assert {name: os.environ.get(name) for name in parent} == parent
+
+
+@pytest.mark.parametrize("mode", ["early-exit", "stale-report", "collect-only", "all-skipped",
+                                 "collection-error", "failed-report"])
+def test_normal_check_requires_a_completed_test_report(repo, monkeypatch, capsys, mode):
+    # pytest-dev/pytest src/_pytest/junitxml.py: the JUnit report is written at session finish.
+    # Exiting an imported module with status 0 never reaches that hook.
+    (repo / "pytest.ini").write_text("[pytest]\npython_files = test_completion.py\n")
+    (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
+    (repo / ".gitignore").write_text("runs/\n__pycache__/\n.pytest_cache/\n.ruff_cache/\n")
+    (repo / "docs/state.md").write_text("# Project state\n")
+    (repo / "docs/agreed-checks.md").write_text(
+        "- Completion: `pytest tests/test_completion.py::test_completion`.\n"
+        "- File: `pytest tests/test_completion.py`.\n")
+    target = repo / "tests/test_completion.py"
+    target.write_text("def test_completion():\n    assert True\n")
+    if mode == "stale-report":
+        # Same path as this process's normal gate: a prior interrupted run could leave it.
+        junit = repo / "runs/test-scratch" / f"check-{os.getpid()}.xml"
+        junit.parent.mkdir(parents=True)
+        seeded = subprocess.run([sys.executable, "-m", "pytest", "-q", f"--junitxml={junit}"],
+                                cwd=repo, capture_output=True, text=True)
+        assert seeded.returncode == 0, seeded.stdout + seeded.stderr
+        assert check.agreed_results(repo, junit)["Completion"]["passed"]
+    if mode in ("early-exit", "stale-report"):
+        target.write_text("import os\nos._exit(0)\n")
+    elif mode == "collect-only":
+        (repo / "pytest.ini").write_text(
+            "[pytest]\npython_files = test_completion.py\naddopts = --collect-only\n")
+    elif mode == "collection-error":
+        target.write_text("raise RuntimeError('collection failure')\n")
+        (repo / "conftest.py").write_text(
+            "import pytest\n\n\ndef pytest_collection_finish():\n"
+            "    pytest.exit('collection stopped', returncode=0)\n")
+    elif mode == "failed-report":
+        target.write_text("def test_completion():\n    assert True\n\n\n"
+                          "def test_failure():\n    assert False\n")
+        (repo / "conftest.py").write_text(
+            "def pytest_sessionfinish(session):\n    session.exitstatus = 0\n")
+    else:
+        target.write_text("import pytest\n\n\ndef test_completion():\n"
+                          "    pytest.skip('unavailable fixture')\n")
+    assert run_main(repo, monkeypatch) == 1
+    assert "pytest completion evidence missing" in capsys.readouterr().out
+    assert not (repo / check.CHECKED).exists()
+    result = json.loads((repo / check.PASSES).read_text().splitlines()[-1])
+    assert all(not row["passed"] for row in result["checks"].values())
+
+
+def test_normal_check_accepts_a_completed_test_report(repo, monkeypatch, capsys):
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
+    (repo / ".gitignore").write_text("runs/\n__pycache__/\n.pytest_cache/\n.ruff_cache/\n")
+    (repo / "docs/state.md").write_text("# Project state\n")
+    assert run_main(repo, monkeypatch) == 0
+    assert "pytest completion evidence missing" not in capsys.readouterr().out
+    assert json.loads((repo / check.CHECKED).read_text())["tree"] == check.tree_content(repo)
+    result = json.loads((repo / check.PASSES).read_text().splitlines()[-1])
+    assert all(row["passed"] for row in result["checks"].values())

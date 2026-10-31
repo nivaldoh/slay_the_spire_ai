@@ -44,6 +44,26 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: factory checks require successful execution evidence
+
+Owner: continue assessing the factory without manual review; essentially the whole codebase
+is unreviewed. Workflow and both reviewers now trace consequential inherited assumptions to
+a contract or independently checked example. Sync/text review cannot establish future compliance.
+The normal gate refuses a zero pytest exit without a fresh named report, a passing test and
+no reported errors/failures; incomplete runs issue no receipt or agreed-check credit.
+Cards, references and raw output: `runs/factory-assessment-20261031/`.
+Before: 4 regressions failed, control passed. First fix: 5 passed; integrated checks: 223 passed
+before the review extension. Review found a named collection error counted as execution;
+that and a contradictory failure report failed the first fix (2 cases). Revised cases: 7 passed.
+The original 96 plants were caught at `9bd93dd`; four new variants were independently caught.
+Final replay with source hashes: `plants-after.json`; final exit gate: `check-final.txt` there.
+The earlier post-change replay was interrupted after the review finding and is not a pass.
+No existing assertions, skips, agreed-check definitions or committed plants changed. The gate
+warns about `pytest.skip` inside a new deliberately incomplete scratch fixture; no new suite skip.
+Completion semantics rest on JUDGEMENT? `scripts/check.py` Completion evidence; checks proposed,
+not agreed. Unverified: full collection, correct test expectations, fabricated reports, future
+agent compliance and live effects. No game, Windows test process or paid API call.
+
 ## 2026-10-30 (afternoon): native multiplayer built offline, up to accounts and billing
 
 The owner asked to implement the [plan](native-multiplayer.md) up to accounts and billing.

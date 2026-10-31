@@ -911,3 +911,46 @@ old = "name + b\"\\0symlink\\0\" + os.fsencode(os.readlink(path))"
 new = "name + b\"\\0\" + os.fsencode(os.readlink(path))"
 tests = ["tests/test_hooks.py::test_stop_identity_tracks_link_targets_and_the_warm_cache"]
 source = "2026-10-30 identity-link card: link targets use a distinct tag"
+
+[[plant]]
+id = "normal-gate-trusts-zero-without-completion"
+guards = "A zero pytest exit without completed test evidence cannot establish a normal pass"
+file = "scripts/check.py"
+old = "    if incomplete:\n        passed = False\n"
+new = ""
+tests = ["tests/test_check_script.py::test_normal_check_requires_a_completed_test_report"]
+source = "2026-10-31 completion card: abrupt exit, collection only and skipped-only runs"
+
+[[plant]]
+id = "normal-gate-reuses-an-old-junit-report"
+guards = "A previous aborted run's report cannot supply normal completion evidence"
+file = "scripts/check.py"
+old = "    junit.unlink(missing_ok=True)  # a previous aborted run is not this run's evidence\n"
+new = ""
+tests = ["tests/test_check_script.py::test_normal_check_requires_a_completed_test_report[stale-report]"]
+source = "2026-10-31 completion card: a real prior report is seeded at the gate's JUnit path"
+
+[[plant]]
+id = "normal-gate-counts-a-collection-error-as-execution"
+guards = "A named collection error and a zero exit cannot establish successful test execution"
+file = "scripts/check.py"
+old = '''    completed = (all(address.strip(".") and outcome != "failed" for address, outcome in cases)
+                 and any(outcome == "passed" for _, outcome in cases))
+'''
+new = '''    completed = (all(address.strip(".") for address, _ in cases)
+                 and any(outcome != "skipped" for _, outcome in cases))
+'''
+tests = ["tests/test_check_script.py::test_normal_check_requires_a_completed_test_report[collection-error]"]
+source = "2026-10-31 independent review: genuine pytest reports can contradict a zero exit"
+
+[[plant]]
+id = "normal-gate-credits-passing-nodes-in-a-contradictory-report"
+guards = "An incomplete zero-exit run supplies no agreed-check credit"
+file = "scripts/check.py"
+old = '''    if incomplete:
+        for result in agreed.values():
+            result["passed"] = False  # an incomplete run supplies no pass evidence
+'''
+new = ""
+tests = ["tests/test_check_script.py::test_normal_check_requires_a_completed_test_report[failed-report]"]
+source = "2026-10-31 review extension: the passing node cannot hide the failed node"

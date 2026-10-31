@@ -1,10 +1,13 @@
 # Project state
 
-Updated 2026-10-30: what runs, where each game stands, what comes next. Status only:
+Updated 2026-10-31: what runs, where each game stands, what comes next. Status only:
 History: [WH3](twwarhammer3/log.md), [Spire full runs](spire/fullrun/log.md), [first combat](spire/first-combat/README.md); directions: [owner-direction.md](owner-direction.md).
 Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed checks are verified at their recorded revisions; gameplay findings below remain unverified.
 
 ## Active work
+
+Codex factory assessment: incomplete pytest runs cannot establish a pass; inherited code and
+checks remain fallible. Proposed checks, offline: `runs/factory-assessment-20261031/handoff.md`.
 
 Claude Code built the [native multiplayer plan](twwarhammer3/native-multiplayer.md#implementation-status)
 up to accounts/billing (owner, 2026-10-30 15:01), merged at `5d10e2a`; no game, $0. Decisions
@@ -19,9 +22,7 @@ Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and sm
 correctness/tests; code/repository upkeep; agent workflow efficiency. [Menu](autonomy.md#standing-work).
 Factory: [workflow.md](workflow.md), stages 1-4 built; stage 5 awaits the next experiment.
 CI runs `check.py` on each push (results: `gh run list`).
-**Codex factory work:** offline fixes and proposed checks are in the [log](twwarhammer3/log.md).
-Git guard enabled in updated checkouts; older worktrees need new main for it. Final checks
-and handoff: `runs/light-factory-20261030/handoff.md`. No game window; stage 5 awaits an experiment.
+Earlier factory audit: `runs/light-factory-20261030/handoff.md` ([log](twwarhammer3/log.md)).
 **Nothing runs**: all game controllers are stopped; local LLM post-training stays paused; four
 draft branches are unmerged ([list](#branches)).
 Thesis (decision 10): the research question is open; the [proposal](thesis/proposal.md) is one candidate ([directions](thesis/directions.md), [papers](thesis/papers.md)).

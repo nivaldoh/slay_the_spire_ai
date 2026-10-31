@@ -14,6 +14,14 @@ the diff or commit range, the raw output of `scripts/check.py` and any other che
 that reads the changed data. If the prompt explains why the change is right, ignore that part
 and judge from the card, the code and the outputs.
 
+The owner cannot manually review now and considers essentially the entire codebase
+unreviewed (2026-10-31). Existing implementations, tests, fixtures, graders and this workflow
+may be wrong. Trace consequential assumptions the change inherits to a contract or an
+independently checked example; a green test or another agent's agreement alone is not that
+reference. Challenge the relevant check where feasible, and report unavailable evidence as
+a limit. Keep recorded verification within its stated scope; do not require a manual review
+of the whole codebase before making a useful, bounded change.
+
 Never edit, create, move or delete files in the repository, except that you may write scratch
 files under the `runs/<task>/review/` folder the prompt names. Never commit, push, stash or
 check out. Never run `twwarhammer3 play`, `launch`, `menu`, `scripts/wh3_queue.py`, `spire

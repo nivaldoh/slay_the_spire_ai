@@ -450,6 +450,11 @@ For `.github/workflows/check.yml` (2026-10-29):
   (fetched 2026-10-29). One command reports what a change touched, measured against its base
   branch (`git diff --name-status <base>`, else `git status`); the model for `scripts/check.py`'s
   base and warnings. *Read.*
+- pytest-dev/pytest [`src/_pytest/junitxml.py`](https://github.com/pytest-dev/pytest/blob/9.1.1/src/_pytest/junitxml.py),
+  `LogXML.pytest_sessionfinish`: the session-finish hook writes the JUnit report. Read in
+  installed pytest 9.1.1 on 2026-10-31 for the normal gate's completion evidence; an abrupt
+  zero exit can leave no report. Local source and subprocess examples inspected; no claim
+  that XML alone proves full collection or correctness. *Read.*
 - [transformers `Makefile`](https://github.com/huggingface/transformers/blob/main/Makefile) and
   [`utils/check_repo.py`](https://github.com/huggingface/transformers/blob/main/utils/check_repo.py)
   (fetched 2026-10-29). `make check-repository-consistency` runs repository rules as plain checks

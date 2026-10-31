@@ -5,6 +5,13 @@ superseded ones are marked. New directions are added here; older memory notes an
 may repeat some. Status lives on [state.md](state.md).
 
 Both games:
+- 2026-10-31 (factory assessment): "I won't have time to review it manually for now, but
+  let's continue to assess it and look for potential improvements." "The factory's goal is
+  to work more independently and reliably, with trustworthy automated verification to
+  prevent errors." "The process needs to be aware that it can contain errors especially in
+  places that I haven't reviewed manually (which is essentially the entire codebase at
+  the moment)." Continue bounded offline assessment and repairs; existing code and checks
+  remain fallible, and new checks remain proposed until explicitly agreed.
 - 2026-10-30 (away): "I'll be away for a few hours at least. Use your best judgement until then".
 - 2026-10-30 (commit guard): "Enable it (Recommended)" to adopting `commit-guard-draft`
   (`6958d6f`) and configuring the git hook. The question stated that either session's edits
