@@ -178,3 +178,68 @@ def test_presentation_copy_waits_for_pending_passive_capture(tmp_path, monkeypat
     assert shot["status"] == "captured" and shot["policy_input"] is False
     assert shot["time_ms"] == 1100 and shot["grab_wall_s"] == .04
     assert (episode / shot["file"]).read_bytes() == b"image"
+
+
+@pytest.mark.parametrize("failure", [
+    "os-error", "empty-os-error", "timeout", "bad-json", "non-object", "deep-json",
+])
+def test_passive_capture_records_backend_failure_and_keeps_later_requests(
+    tmp_path, monkeypatch, failure
+):
+    bridge = tmp_path / "bridge"
+    bridge.mkdir()
+    (bridge / "observation.json").write_text(json.dumps({"job": "j", "battle": "b"}))
+    def publish(triggers):
+        (bridge / "imagery-b.json").write_text(json.dumps({
+            "job": "j", "battle": "b", "stills": [
+                {"trigger": trigger, "status": "capture_ready"} for trigger in triggers],
+        }))
+
+    worker = capture.PassiveCapture(bridge, job="j", pid=123, enabled=True)
+    # The ending request arrives on the next poll, after the opening failure. Honor real
+    # stop requests, but bound broken workers without a native process or thread timing.
+    polls = iter([("opening",), ("opening", "ending")])
+
+    def next_poll(_):
+        triggers = next(polls, None)
+        if worker.stop.is_set() or triggers is None:
+            worker.stop.set()
+            return True
+        publish(triggers)
+        return False
+
+    monkeypatch.setattr(worker.stop, "wait", next_poll)
+    monkeypatch.setattr(capture, "windows_path", str)
+    called = []
+
+    def screenshot(command, **kwargs):
+        opening = command[3].endswith("-opening.png")
+        called.append("opening" if opening else "ending")
+        if opening:
+            if failure == "os-error":
+                raise OSError("capture backend unavailable")
+            if failure == "empty-os-error":
+                raise OSError()
+            if failure == "timeout":
+                raise capture.subprocess.TimeoutExpired("capture", 1)
+            reply = {"bad-json": "not JSON", "non-object": "[]", "deep-json": "[" * 100_000}
+            return SimpleNamespace(stdout=reply[failure])
+        (bridge / "still-b-ending.png").write_bytes(b"image")
+        return SimpleNamespace(stdout=json.dumps({
+            "status": "captured", "file": "still-b-ending.png"}))
+
+    monkeypatch.setattr(capture.subprocess, "run", screenshot)
+    worker.run()
+
+    failed_path, success_path = bridge / "capture-b-opening.json", bridge / "capture-b-ending.json"
+    assert failed_path.is_file(), "backend failure must produce capture metadata"
+    assert success_path.is_file(), "one failed request must not prevent a later ready capture"
+    failed, success = json.loads(failed_path.read_text()), json.loads(success_path.read_text())
+    assert {key: failed.get(key) for key in ("job", "battle", "trigger", "status")} == {
+        "job": "j", "battle": "b", "trigger": "opening", "status": "capture_failed"}
+    assert failed.get("error")
+    assert {key: success.get(key) for key in ("job", "battle", "trigger", "status", "file")} == {
+        "job": "j", "battle": "b", "trigger": "ending", "status": "captured",
+        "file": "still-b-ending.png"}
+    assert (bridge / "still-b-ending.png").read_bytes() == b"image"
+    assert sorted(called) == ["ending", "opening"]

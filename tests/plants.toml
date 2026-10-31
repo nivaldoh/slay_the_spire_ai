@@ -1748,3 +1748,48 @@ old = "            except Exception as exc:\n                result[\"imagery\"]
 new = "            except Exception as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}\n                result[\"status\"] = \"won\""
 tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_capture_failures_preserve_losses_and_draws"]
 source = "2026-10-31 non-winning capture outcome oracle"
+
+[[plant]]
+id = "passive-capture-backend-error-reraised"
+guards = "Backend failures retain correlated failure metadata and later capture requests"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                        captured = {\"status\": \"capture_failed\",\n                                    \"error\": f\"{type(exc).__name__}: {exc}\"}"
+new = "                        raise exc"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_records_backend_failure_and_keeps_later_requests"]
+source = "2026-10-31 passive backend failure and recovery regression"
+
+[[plant]]
+id = "passive-capture-backend-error-reason-erased"
+guards = "Backend failures retain correlated failure metadata and later capture requests"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                        captured = {\"status\": \"capture_failed\",\n                                    \"error\": f\"{type(exc).__name__}: {exc}\"}"
+new = "                        captured = {\"status\": \"capture_failed\",\n                                    \"error\": str(exc)[:0]}"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_records_backend_failure_and_keeps_later_requests"]
+source = "2026-10-31 passive backend failure and recovery regression"
+
+[[plant]]
+id = "passive-capture-backend-nonobject-guard-removed"
+guards = "Backend failures retain correlated failure metadata and later capture requests"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                        if not isinstance(captured, dict):"
+new = "                        if False:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_records_backend_failure_and_keeps_later_requests"]
+source = "2026-10-31 passive backend failure and recovery regression"
+
+[[plant]]
+id = "passive-capture-backend-deep-json-not-caught"
+guards = "Backend failures retain correlated failure metadata and later capture requests"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                    except Exception as exc:"
+new = "                    except (OSError, ValueError, subprocess.TimeoutExpired) as exc:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_records_backend_failure_and_keeps_later_requests"]
+source = "2026-10-31 passive backend failure and recovery regression"
+
+[[plant]]
+id = "passive-capture-backend-one-failure-stops-later-captures"
+guards = "Backend failures retain correlated failure metadata and later capture requests"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                    write_json(self.bridge / f\"capture-{battle}-{trigger}.json\","
+new = "                    if captured.get(\"status\") == \"capture_failed\":\n                        self.stop.set()\n                    write_json(self.bridge / f\"capture-{battle}-{trigger}.json\","
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_records_backend_failure_and_keeps_later_requests"]
+source = "2026-10-31 passive backend failure and recovery regression"

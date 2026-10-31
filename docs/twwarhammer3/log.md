@@ -29,6 +29,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 
 
+## 2026-10-31: keep passive capture alive after malformed backend output
+
+- A JSON list or deeply nested JSON raised in the passive worker before failure metadata
+  and later capture requests. The worker now records unsupported result types and ordinary
+  backend/decode errors as failed callbacks. Metadata writes and capture limits are unchanged.
+- Review also found an empty reason for message-less OSError; exception classes now survive
+  in reasons. Final six-case regression: before fix 3 failed/3 controls passed; after fix,
+  capture/controller group 29 passed (23 before). No screenshots or Windows calls.
+- Five wrong variants caught: dropped metadata/reasons 5 failures each, missing type/depth
+  guards 1 each, stopping after one failure 6. Previous 187 registrations retained; 192 total,
+  no full-192 replay. Constructor-refusal sites remain 0, not mutation-strength evidence.
+- Cards/raw: `runs/test-quality-20261031/capture-backend-failures/`; independent review and
+  final gate recorded in the commit. Card unagreed; no new verification method, live capture
+  effect, game outcome or policy-strength claim. Existing adoption choices remain pending.
+
+
 ## 2026-10-31: reject replay identity before touching episode evidence
 
 - Two wrong copiers passed all 15 capture/integration cases: copying before identity
