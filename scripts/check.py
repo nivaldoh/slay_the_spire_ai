@@ -354,6 +354,9 @@ def replay_plants(scratch: Path) -> list[tuple[str, str, str]]:
             path.write_text(original, encoding="utf-8")
         failing = [address for target in targets
                    for address, outcome in selected(cases or [], target) if outcome == "failed"]
+        # JUDGEMENT?: Hang caught — Claude, 2026-10-29, as in refusal_sweep.py: a plant whose
+        # tests give no result in PLANT_TIMEOUT_S (300 s) is HANG, which does not fail the replay;
+        # counting it MISSED would make the replay exit 1 (its summary already lists HANG apart).
         if cases is None:
             report.append(("HANG", f"{name}: no result in {PLANT_TIMEOUT_S} s (counted caught)",
                            ""))

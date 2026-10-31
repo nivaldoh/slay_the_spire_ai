@@ -201,6 +201,9 @@ class Worker:
                 if not self._changed.wait(max(0.0, deadline - time.monotonic())):
                     raise TimeoutError(f"request {request} was not acknowledged in {self.ack_s} s")
             ack = self.latest["orders"]
+        # JUDGEMENT?: submitted — Claude, 2026-10-30: "submitted" once orders.request names it,
+        # whatever its results' ok say (an unreachable move too; the ack goes in the event).
+        # Calling such a move "rejected" changes the match.jsonl statuses (no code reads them yet).
         self.link.event("command", {"seq": seq, "status": "submitted", "request": request,
                                     "ack": ack})
         return "submitted"
