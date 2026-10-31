@@ -44,6 +44,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: browser checks handle empty facts and controlled route/navigation cases
+
+The existing browser check timed out after correctly counting zero facts, then failed on
+a recorded move already within the viewer's arrival region, then on a hidden single-scenario
+index screenshot. It now reads facts only when present, runs the same pending-route assertions
+on the existing invented demo, and captures the navigation appropriate to the scenario count.
+All assertion expressions stay unchanged, as do app behavior, generator inputs and recorded jobs.
+Route coverage rests on JUDGEMENT? `replay.js` Recent routes/Waypoint cutoff and the checker's
+Route example: inherited display choices are marked, and demo selection awaits owner review.
+Raw attempts/cards/review: `runs/test-quality-20261031/browser-*`, `review/browser-check/`.
+The initial full-Chromium launch also failed on its long Unix socket path; the software
+headless-shell run uses short `runs/tq-b` temporary storage. Windows native probes separately
+passed 3 cases using private Python children (JobObject, locks, paths); no games launched.
+Read-only doctor: ready, build 25961564, matching the pin. These are component/DOM checks;
+collector semantics, real-game ownership and GPU rendering remain unverified.
+
 ## 2026-10-31: proposed CI jobs exercise the existing optional extras on CPU
 
 The `check` job keeps its existing name and commands. A separate train/llm matrix installs

@@ -132,7 +132,13 @@ const Viewer = (() => {
   const ABILITY_MS = 5000; // how long its ring stays, fading
   const FEW_UNITS = 12; // up to this many markers every unit keeps its label
   const TRAIL_MS = 20000; // observed movement shown behind each unit
+  // JUDGEMENT?: Recent routes — 20 s in 57a074b (Claude co-author, 2026-10-15).
+  // Chooser/owner direction is unconfirmed; other windows change which faint routes appear.
+  // The viewer and browser-route example rest on this display choice.
   const ROUTE_MS = 20000; // how long a newly issued route stays drawn for unselected units
+  // JUDGEMENT?: Waypoint cutoff — 30 m in 57a074b (Claude co-author, 2026-10-15).
+  // Chooser is unconfirmed; other radii change when faint waypoints disappear.
+  // The viewer/browser example rests on this display rule, not verified game arrival.
   const ARRIVED_M = 30; // a waypoint this close to a recorded position counts as reached
   const ACCEPTED = ["acknowledged", "queued"];
   const STRIP_H = 104;
