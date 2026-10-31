@@ -337,12 +337,19 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
         result["monotonic_seconds"] = round(time.monotonic() - monotonic_started, 3)
         result["llm"] = dict(getattr(policy, "totals", {}))
         result["finished_at"] = datetime.now(UTC).isoformat()
+        # Optional evidence failures become metadata; still save the engine's result.
         if config.get("record_replay"):
-            result["recording"] = copy_recording(mailbox.directory, directory,
-                                                  job=mailbox.job, battle=result.get("battle"))
+            try:
+                result["recording"] = copy_recording(mailbox.directory, directory,
+                                                    job=mailbox.job, battle=result.get("battle"))
+            except Exception as exc:
+                result["recording"] = {"status": "error", "error": str(exc)}
         if config.get("stills"):
-            result["imagery"] = copy_presentation(mailbox.directory, directory,
-                                                 job=mailbox.job, battle=result.get("battle"))
+            try:
+                result["imagery"] = copy_presentation(mailbox.directory, directory,
+                                                     job=mailbox.job, battle=result.get("battle"))
+            except Exception as exc:
+                result["imagery"] = {"status": "error", "error": str(exc)}
         if result.get("start") and start_reference:
             result["start_comparison"] = compare_starts(start_reference, result["start"])
         delays = result["delays_ms"]

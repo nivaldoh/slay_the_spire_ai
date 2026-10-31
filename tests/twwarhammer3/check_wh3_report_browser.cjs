@@ -301,7 +301,9 @@ async function main() {
       await count("#moment .facts li"),
       first.next.length + (first.next_truncated ? 1 : 0),
     );
-    const facts = await page.locator("#moment .facts").textContent();
+    const facts = first.next.length
+      ? await page.locator("#moment .facts").textContent()
+      : "";
     for (const fact of first.next) assert.ok(facts.includes(fact.text));
     assert.doesNotMatch(panel, /[{[]\s*"|"\w+"\s*:/, "no JSON in the default panel");
     assert.equal(await count("#moment details[open]"), 0);
@@ -377,29 +379,37 @@ async function main() {
     assert.ok((await text("#moment .unit-card")).includes(lord.role));
     await page.locator("#moment .unit-card button").click();
 
-    // Unselected units' recent routes start at the unit, through the waypoints still ahead.
-    const mover = applied.find((d) =>
-      d.steps.some((step) => step.kind === "move" && step.status !== "rejected"),
-    );
-    const moving = mover && replay.frames.find((f) => f.time_ms > mover.applied_ms);
-    assert.ok(moving, "a recorded battle with an accepted move has a frame after it");
-    await seek(moving.time_ms);
-    const faint = await page.evaluate(() => {
-      const at = new Set(
-        [...document.querySelectorAll("#map-layer .unit")].map((node) =>
-          node
-            .getAttribute("transform")
-            .match(/translate\(([^)]+)\)/)[1]
-            .replace(" ", ","),
-        ),
+    // JUDGEMENT?: Route example — Codex, 2026-10-31: use the existing demo for this check.
+    // Recorded coverage would need a pending waypoint; only command display is checked.
+
+    // Rests on JUDGEMENT? src/twwarhammer3/battle/report_assets/replay.js Recent routes.
+    // Rests on JUDGEMENT? src/twwarhammer3/battle/report_assets/replay.js Waypoint cutoff.
+    async function checkPendingRoutes(replay) {
+      const applied = replay.decisions.filter((d) => d.applied_ms != null);
+      // Unselected units' recent routes start at the unit, through the waypoints still ahead.
+      const mover = applied.find((d) =>
+        d.steps.some((step) => step.kind === "move" && step.status !== "rejected"),
       );
-      const starts = [
-        ...document.querySelectorAll('#map-layer > g[opacity="0.3"] > polyline[stroke="#56b4e9"]'),
-      ].map((line) => line.getAttribute("points").split(" ")[0]);
-      return { drawn: starts.length, loose: starts.filter((p) => !at.has(p)) };
-    });
-    assert.ok(faint.drawn > 0, "faint routes are drawn for moving units");
-    assert.deepEqual(faint.loose, [], "every faint route starts at a unit");
+      const moving = mover && replay.frames.find((f) => f.time_ms > mover.applied_ms);
+      assert.ok(moving, "a recorded battle with an accepted move has a frame after it");
+      await seek(moving.time_ms);
+      const faint = await page.evaluate(() => {
+        const at = new Set(
+          [...document.querySelectorAll("#map-layer .unit")].map((node) =>
+            node
+              .getAttribute("transform")
+              .match(/translate\(([^)]+)\)/)[1]
+              .replace(" ", ","),
+          ),
+        );
+        const starts = [
+          ...document.querySelectorAll('#map-layer > g[opacity="0.3"] > polyline[stroke="#56b4e9"]'),
+        ].map((line) => line.getAttribute("points").split(" ")[0]);
+        return { drawn: starts.length, loose: starts.filter((p) => !at.has(p)) };
+      });
+      assert.ok(faint.drawn > 0, "faint routes are drawn for moving units");
+      assert.deepEqual(faint.loose, [], "every faint route starts at a unit");
+    }
 
     // An accepted ability order rings its unit on the map for a few seconds; its line in the
     // moment panel carries the same mark.
@@ -592,7 +602,8 @@ async function main() {
     await go(copied);
     await page.locator("#all").scrollIntoViewIfNeeded();
     await page.locator("#all").screenshot({ path: path.join(output, "suite.png") });
-    await page.locator("#index").screenshot({ path: path.join(output, "index.png") });
+    const navigation = data.scenarios.length > 1 ? "#index" : "#matrix";
+    await page.locator(navigation).screenshot({ path: path.join(output, "index.png") });
     for (const [index, item] of data.scenarios.entries()) {
       // Scenarios open from the index (and from Figure 3's names, below).
       const link =
@@ -687,6 +698,8 @@ async function main() {
     assert.match(demoReplay.suggested, /SYNTHETIC-DEMO/);
     assert.match(demoReplay.value.notice, /SYNTHETIC DEMO/);
     assert.equal(demoReplay.value.replay.evidence_kind, "synthetic");
+    await checkPendingRoutes(demoReplay.value.replay);
+    await seek(0);
     const demoReport = await downloaded("#download-report", "synthetic-report.json");
     assert.match(demoReport.suggested, /SYNTHETIC-DEMO/);
     assert.match(demoReport.value.notice, /SYNTHETIC DEMO/);

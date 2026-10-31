@@ -14,6 +14,7 @@ import pytest
 
 from gameai.provenance import REPO_ROOT, sha256
 from twwarhammer3.battle import checkpoint, play
+from twwarhammer3.protocol import IllegalActionError
 
 EVIDENCE = REPO_ROOT / "runs/twwarhammer3/checkpoint-check-20261025c"
 RESTORE = {"name": "cp", "tick": 1200, "checksum": 1, "lua_seed": 2, "seed_at_tick": 3}
@@ -340,17 +341,33 @@ def test_the_copy_leaves_and_bystanders_return_after_an_exception_or_interrupt(g
     assert not (replays / "checkpoint-aside").exists()
 
 
-def test_step_run_refusals_need_no_game(game, monkeypatch):
-    tmp_path, _, replays = game
+@pytest.fixture
+def step_plan():
+    # Existing step grid; rests on JUDGEMENT src/twwarhammer3/battle/checkpoint.py dispatch.
     context = observation(120100, 400)
-    plan = {"checkpoint": RESTORE, "mod_start_ms": 4900, "grid_ms": 300, "remaining_ms": 60000,
+    return {"checkpoint": RESTORE, "mod_start_ms": 4900, "grid_ms": 300, "remaining_ms": 60000,
             "limits": LIMITS, "injection": {"tick": T, "orders": ORDERS, "context": context,
                                             "context_ms": 120100, "applied_ms": 120400}}
+
+
+@pytest.mark.parametrize(("change", "error", "message"), [
+    pytest.param({"tick": 1201}, ValueError, "on the mod's grid", id="tick-on-grid"),
+    pytest.param({"applied_ms": 120700}, ValueError, "declared times", id="wrong-applied-time"),
+    pytest.param({"orders": [{"unit": "f9", "type": "halt"}]}, IllegalActionError,
+                 "unknown friendly unit 'f9'", id="unknown-friendly-unit"),
+])
+def test_step_run_injection_refusals_use_the_contract_error(
+        game, step_plan, change, error, message):
+    checkpoint.refuse(step_plan)
+
+    with pytest.raises(error, match=message):
+        checkpoint.refuse({**step_plan, "injection": {**step_plan["injection"], **change}})
+
+
+def test_step_run_refusals_need_no_game(game, monkeypatch, step_plan):
+    tmp_path, _, replays = game
+    plan = step_plan
     checkpoint.refuse(plan)
-    for change in ({"tick": 1201}, {"applied_ms": 120700},
-                   {"orders": [{"unit": "f9", "type": "halt"}]}):
-        with pytest.raises(Exception):
-            checkpoint.refuse({**plan, "injection": {**plan["injection"], **change}})
     with pytest.raises(FileExistsError):
         checkpoint.refuse({**plan, "save_at": [{"tick": 1500, "name": "bystander"}]})
     (replays / "checkpoint-aside").mkdir()

@@ -361,8 +361,8 @@ def test_interrupted_stop_hook_kills_and_reaps_its_check(repo, interruption, sta
     child_file = repo / "runs/check-child.pid"
     uv = repo / "bin/uv"
     uv.parent.mkdir()
-    # Substitute only uv, so the real hook's entry point, signal handling and process
-    # cleanup run without invoking the suite or depending on its duration.
+    # Substitute uv and the process listing below, so the real hook's entry point,
+    # signal handling and cleanup run without invoking the suite or seeing live jobs.
     uv.write_text(f"#!{sys.executable}\nimport os, time\nfrom pathlib import Path\n"
                   f"ready = Path({str(child_file)!r})\npending = ready.with_suffix('.tmp')\n"
                   "pending.write_text(str(os.getpid()))\npending.replace(ready)\ntime.sleep(60)\n")
@@ -370,7 +370,17 @@ def test_interrupted_stop_hook_kills_and_reaps_its_check(repo, interruption, sta
     event = repo / "event.json"
     event.write_text("{}")
     child = None
-    command = [sys.executable, str(script)]
+    # HF datasets tests/utils.py offline(): isolate the external boundary, not the code
+    # under test. This child needs an empty process table even while a real game runs.
+    isolated = (
+        "import runpy\nfrom pathlib import Path\nfrom unittest.mock import patch\n"
+        "original_glob = Path.glob\n"
+        "def isolated_glob(path, pattern):\n"
+        "    if path == Path('/proc') and pattern == '[0-9]*/cmdline':\n"
+        "        return iter(())\n"
+        "    return original_glob(path, pattern)\n"
+    )
+    trace = ""
     if stage != "running":
         # Pause after construction or signal at its return, before the handle is stored.
         # Both are real interruption windows; the child must be owned before exit.
@@ -388,8 +398,11 @@ def test_interrupted_stop_hook_kills_and_reaps_its_check(repo, interruption, sta
                  "def trace(frame, event, arg):\n"
                  f"    if {condition}:\n" + action +
                  "    return trace\n"
-                 f"sys.settrace(trace)\nrunpy.run_path({str(script)!r}, run_name='__main__')\n")
-        command = [sys.executable, "-c", trace]
+                 "sys.settrace(trace)\n")
+    invoke = ("with patch.object(Path, 'glob', isolated_glob):\n"
+              f"    runpy.run_path({str(script)!r}, run_name='__main__')\n")
+    # Each branch runs the unchanged hook's entry point, including its signal handlers.
+    command = [sys.executable, "-c", isolated + trace + invoke]
     with event.open() as stdin:
         process = subprocess.Popen(command, stdin=stdin,
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,

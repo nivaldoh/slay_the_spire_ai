@@ -4,7 +4,7 @@ import dataclasses
 import math
 
 import pytest
-from test_rollout_lifecycle import combat_message
+from combat_support import combat_message
 
 torch = pytest.importorskip("torch")
 transformers = pytest.importorskip("transformers")

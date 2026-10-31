@@ -114,6 +114,20 @@ def test_invalid_cost_is_charged_conservatively_and_stops(tmp_path, cost):
     assert agent.totals["usd"] == record["usd"]
 
 
+def test_missing_cost_preserves_valid_reported_token_totals(tmp_path):
+    agent = model(tmp_path, lambda body: reply(usage={
+        "input_tokens": 100, "output_tokens": 20, "cost": None,
+        "input_tokens_details": {"cached_tokens": 30},
+        "output_tokens_details": {"reasoning_tokens": 10},
+    }))
+    with pytest.raises(llm.APIError, match="charged reservation and stopped"):
+        agent.call("test", SCHEMA)
+
+    assert agent.totals["calls"] == 1
+    assert agent.totals["input_tokens"] == 100 and agent.totals["output_tokens"] == 20
+    assert agent.totals["cached_tokens"] == 30 and agent.totals["reasoning_tokens"] == 10
+
+
 @pytest.mark.parametrize("cost", [None, 1.0])
 def test_cost_failures_stop_without_retry_and_keep_the_billed_attempt(tmp_path, cost):
     # Even on a failed response, a missing or over-reservation cost is never resent.

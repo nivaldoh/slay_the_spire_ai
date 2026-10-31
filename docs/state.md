@@ -6,9 +6,9 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Waiting decisions: Codex's factory assessment (`runs/factory-assessment-20261031/handoff.md`), the
-[native multiplayer](twwarhammer3/native-multiplayer.md#implementation-status) build
-(`runs/wh3-native-mp-20261030/handoff.md`; observer smoke steps 1-4 dry-run 2026-10-31).
+Codex testing audit: `../slay_the_spire_ai-test-quality`, [draft PR](https://github.com/nivaldoh/slay_the_spire_ai/pull/1); oracle review continues; check-edit/CI decisions wait.
+Evidence: `runs/test-quality-20261031/`; factory assessment decisions: `runs/factory-assessment-20261031/handoff.md`.
+[Native multiplayer](twwarhammer3/native-multiplayer.md#implementation-status) build decisions: `runs/wh3-native-mp-20261030/handoff.md`; observer smoke steps 1-4 dry-run 2026-10-31.
 
 Claude Code's long run (2026-10-31): all four agreed live checks passed at `96bb137` (Land and
 team also failed in between, on a UI stat and on WSL clock jumps); b52, an unused outcome scorer,
