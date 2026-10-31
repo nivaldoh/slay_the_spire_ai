@@ -243,3 +243,55 @@ def test_passive_capture_records_backend_failure_and_keeps_later_requests(
         "file": "still-b-ending.png"}
     assert (bridge / "still-b-ending.png").read_bytes() == b"image"
     assert sorted(called) == ["ending", "opening"]
+
+
+@pytest.mark.parametrize("bad_request", [
+    "observation-job", "imagery-job", "imagery-battle", "pending",
+])
+def test_passive_capture_waits_for_matching_ready_request(tmp_path, monkeypatch, bad_request):
+    bridge = tmp_path / "bridge"
+    bridge.mkdir()
+    worker = capture.PassiveCapture(bridge, job="j", pid=123, enabled=True)
+    poll = 0
+
+    def next_poll(_):
+        nonlocal poll
+        if worker.stop.is_set() or poll == 2:
+            worker.stop.set()
+            return True
+        poll += 1
+        observation = {"job": "j", "battle": "b"}
+        record = {"job": "j", "battle": "b", "stills": [
+            {"trigger": "opening", "status": "capture_ready"}]}
+        if poll == 1:
+            if bad_request == "observation-job":
+                observation["job"] = "other-job"
+            elif bad_request == "imagery-job":
+                record["job"] = "other-job"
+            elif bad_request == "imagery-battle":
+                record["battle"] = "other-battle"
+            else:
+                record["stills"][0]["status"] = "pending"
+        (bridge / "observation.json").write_text(json.dumps(observation))
+        (bridge / "imagery-b.json").write_text(json.dumps(record))
+        return False
+
+    calls = []
+
+    def screenshot(command, **kwargs):
+        calls.append((poll, command[-2:]))
+        (bridge / "still-b-opening.png").write_bytes(b"ready image")
+        return SimpleNamespace(stdout=json.dumps({
+            "status": "captured", "file": "still-b-opening.png"}))
+
+    monkeypatch.setattr(worker.stop, "wait", next_poll)
+    monkeypatch.setattr(capture, "windows_path", str)
+    monkeypatch.setattr(capture.subprocess, "run", screenshot)
+    worker.run()
+
+    assert calls == [(2, ["j", "b"])], "only the later matching ready request may capture"
+    metadata = json.loads((bridge / "capture-b-opening.json").read_text())
+    assert {key: metadata.get(key) for key in ("job", "battle", "trigger", "status", "file")} == {
+        "job": "j", "battle": "b", "trigger": "opening", "status": "captured",
+        "file": "still-b-opening.png"}
+    assert (bridge / metadata["file"]).read_bytes() == b"ready image"

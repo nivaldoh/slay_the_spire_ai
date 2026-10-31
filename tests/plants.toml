@@ -1838,3 +1838,39 @@ old = "            return [order for unit in units\n                    for orde
 new = "            return [order for unit in units[:1]\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase == \"charge\":\n            return [order for unit in units for order in self.attack(unit, target)]\n        front ="
 tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_feint_flank_waits_for_rear_position_then_withdraws_after_contact"]
 source = "2026-10-31 FeintFlank withdrawal identity oracle"
+
+[[plant]]
+id = "passive-request-foreign-observation-job-accepted"
+guards = "Capture backend waits for matching job and battle identity and a ready shot"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                if observation.get(\"job\") != self.job or not NAME.fullmatch(battle):"
+new = "                if not NAME.fullmatch(battle):"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_waits_for_matching_ready_request"]
+source = "2026-10-31 passive request identity and readiness oracle"
+
+[[plant]]
+id = "passive-request-foreign-imagery-job-accepted"
+guards = "Capture backend waits for matching job and battle identity and a ready shot"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                if record.get(\"job\") != self.job or record.get(\"battle\") != battle:"
+new = "                if record.get(\"battle\") != battle:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_waits_for_matching_ready_request"]
+source = "2026-10-31 passive request identity and readiness oracle"
+
+[[plant]]
+id = "passive-request-foreign-imagery-battle-accepted"
+guards = "Capture backend waits for matching job and battle identity and a ready shot"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                if record.get(\"job\") != self.job or record.get(\"battle\") != battle:"
+new = "                if record.get(\"job\") != self.job:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_waits_for_matching_ready_request"]
+source = "2026-10-31 passive request identity and readiness oracle"
+
+[[plant]]
+id = "passive-request-pending-shot-captured"
+guards = "Capture backend waits for matching job and battle identity and a ready shot"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                    if (not NAME.fullmatch(trigger) or key in seen\n                            or shot.get(\"status\") != \"capture_ready\"):"
+new = "                    if not NAME.fullmatch(trigger) or key in seen:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_waits_for_matching_ready_request"]
+source = "2026-10-31 passive request identity and readiness oracle"
