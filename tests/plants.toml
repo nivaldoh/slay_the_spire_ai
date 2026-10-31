@@ -1811,3 +1811,12 @@ old = "                    except ValueError:\n                        processin
 new = "                    except ValueError:\n                        continue"
 tests = ["tests/gameai/test_model.py::test_optional_processing_header_error_keeps_completed_response_without_retry"]
 source = "2026-10-31 optional processing telemetry oracle"
+
+[[plant]]
+id = "worker-missing-observation-guard-removed"
+guards = "A move before the first observation is rejected without publishing orders"
+file = "src/twwarhammer3/engine/worker.py"
+old = "        if observation is None:\n            return \"no observation yet\""
+new = "        if False:\n            return \"no observation yet\""
+tests = ["tests/twwarhammer3/test_wh3_worker.py::test_a_move_before_the_first_observation_is_rejected_without_touching_the_bridge"]
+source = "2026-10-31 native worker observation prerequisite oracle"

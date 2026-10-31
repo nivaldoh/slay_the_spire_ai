@@ -391,6 +391,27 @@ def test_an_attached_worker_sends_each_new_observation_and_leaves_the_borrowed_g
             if path.name != "observation.json"} == before
 
 
+def test_a_move_before_the_first_observation_is_rejected_without_touching_the_bridge(tmp_path):
+    reports = []
+
+    class Link:
+        def event(self, kind, data):
+            reports.append((kind, data))
+
+    bridge = borrowed_bridge(tmp_path)
+    before = {path.name: path.read_bytes() for path in bridge.iterdir()}
+    mailbox = worker.Mailbox(bridge, job="live")
+    game = worker.Worker(Link(), mailbox, "control")
+    game.watch()
+    assert game.latest is None
+    assert game.on_command({"seq": 1, "body": {"based_on": 1, "orders": [MOVE]}}) == "rejected"
+    assert [(kind, data["seq"], data["status"]) for kind, data in reports] == [
+        ("command", 1, "rejected")]
+    assert reports[0][1]["reason"]
+    assert mailbox.requests == 0
+    assert {path.name: path.read_bytes() for path in bridge.iterdir()} == before
+
+
 @pytest.mark.parametrize("mode", ["control", "observe"])
 def test_only_valid_moves_are_written_and_reported_submitted_on_the_games_acknowledgement(
         tmp_path, install, monkeypatch, mode):
