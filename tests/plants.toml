@@ -1874,3 +1874,21 @@ old = "                    if (not NAME.fullmatch(trigger) or key in seen\n     
 new = "                    if not NAME.fullmatch(trigger) or key in seen:"
 tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_waits_for_matching_ready_request"]
 source = "2026-10-31 passive request identity and readiness oracle"
+
+[[plant]]
+id = "pin-withdrawal-all-orders-to-pin"
+guards = "PinThenRear withdrawal orders address both eligible riders"
+file = "src/twwarhammer3/battle/calibration.py"
+old = "            return [order for unit in units\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase in (\"pin\", \"charge\"):"
+new = "            return [order for unit in units\n                    for order in self.move(pin, self.retreats[unit[\"id\"]], target)]\n        if self.phase in (\"pin\", \"charge\"):"
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_pin_then_rear_charges_the_rear_only_after_the_front_is_pinned"]
+source = "2026-10-31 PinThenRear withdrawal identity oracle"
+
+[[plant]]
+id = "pin-withdrawal-all-orders-to-hammer"
+guards = "PinThenRear withdrawal orders address both eligible riders"
+file = "src/twwarhammer3/battle/calibration.py"
+old = "            return [order for unit in units\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase in (\"pin\", \"charge\"):"
+new = "            return [order for unit in units\n                    for order in self.move(hammer, self.retreats[unit[\"id\"]], target)]\n        if self.phase in (\"pin\", \"charge\"):"
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_pin_then_rear_charges_the_rear_only_after_the_front_is_pinned"]
+source = "2026-10-31 PinThenRear withdrawal identity oracle"

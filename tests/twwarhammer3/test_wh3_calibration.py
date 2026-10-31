@@ -59,6 +59,7 @@ def test_feint_flank_waits_for_rear_position_then_withdraws_after_contact():
     obs["time_ms"] = 18000
     retreat = policy.decide(obs)
     validate_orders(retreat, obs)
+    # Rests on JUDGEMENT docs/twwarhammer3/tactic-cards.md FeintFlank withdrawal.
     assert {order["unit"] for order in retreat} == {"f1", "f2"}
     assert policy.phase == "withdraw" and all(order["type"] == "move" for order in retreat)
 
@@ -865,6 +866,8 @@ def test_pin_then_rear_charges_the_rear_only_after_the_front_is_pinned():
     policy.decide(obs)
     obs["time_ms"] = 10000
     retreat = policy.decide(obs)
+    # Rests on JUDGEMENT docs/twwarhammer3/tactic-cards.md PinThenRear withdrawal.
+    assert {order["unit"] for order in retreat} == {"f1", "f2"}
     assert policy.phase == "withdraw" and len(retreat) == 2
 
 
