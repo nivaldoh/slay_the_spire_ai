@@ -50,7 +50,7 @@ agreed verification method.
 
 | Behavior | Where to start | Real dependency and limit |
 |---|---|---|
-| Model requests, retries and spending | [test_model.py](gameai/test_model.py), [test_providers.py](gameai/test_providers.py), [test_ledger.py](gameai/test_ledger.py) | Real request/accounting code and temporary ledgers, including caps after reopen; substituted API responses. No provider availability or real billing claim. |
+| Model requests, retries and spending | [test_model.py](gameai/test_model.py), [test_providers.py](gameai/test_providers.py), [test_ledger.py](gameai/test_ledger.py) | Real request/accounting code and temporary ledgers, including caps after reopen, invalid charges and malformed OpenAI usage; substituted API responses. No provider availability or real billing claim. |
 | Source attribution | [test_provenance.py](gameai/test_provenance.py) | Real temporary Git repositories: scoped edits, staged/deleted/renamed/untracked files refuse attribution; outside-scope edits pass. Byte changes affect fingerprints even with matching size/timestamps. No launch or Windows claim. |
 | Spire message framing and disconnects | [test_bridge.py](engine/test_bridge.py) | Real sockets and relay subprocess; no JVM or Windows game launch. |
 | Spire legal choices, target identity and public inputs | [test_decisions.py](spire/test_decisions.py), [test_protocol.py](spire/test_protocol.py), [engine regressions](combat/test_engine_regressions.py) | Synthetic messages and recorded transitions. Original-trace comparisons need local evidence; no current-game validation. |

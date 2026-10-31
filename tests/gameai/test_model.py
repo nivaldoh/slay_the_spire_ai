@@ -19,6 +19,10 @@ def test_usage_cost_prices_uncached_cached_and_output_tokens():
     assert api.usage_cost("gpt-6-astra", USAGE) == pytest.approx(expected)
 
 
+def test_zero_token_usage_needs_no_cache_metadata():
+    assert api.usage_cost("gpt-6-astra", {"input_tokens": 0, "output_tokens": 0}) == 0
+
+
 def test_api_key_file_and_transient_retry_without_leaking_the_key(tmp_path, monkeypatch):
     key_file = tmp_path / "key"
     key_file.write_text("sk-test-secret\n")
@@ -477,3 +481,62 @@ def test_uncaptured_transport_failure_propagates_without_parsing_or_losing_spend
     assert ledger.spent == record["usd"] == pytest.approx(expected)
     assert record["attempts"] == uncertain_attempts
     assert ledger.held == 0
+
+
+@pytest.mark.parametrize("usage", [
+    pytest.param(dict(USAGE, input_tokens=float("nan")), id="nan-input"),
+    pytest.param(dict(USAGE, output_tokens=float("inf")), id="infinite-output"),
+    pytest.param(dict(USAGE, input_tokens=-1), id="negative-input"),
+    pytest.param(dict(USAGE, output_tokens=-1), id="negative-output"),
+    pytest.param(dict(USAGE, input_tokens=True), id="boolean-input"),
+    pytest.param(dict(USAGE, output_tokens="200"), id="string-output"),
+    pytest.param(dict(USAGE, input_tokens=1000.5), id="fractional-input"),
+    pytest.param({"output_tokens": 1}, id="missing-input"),
+    pytest.param({"input_tokens": 1}, id="missing-output"),
+    pytest.param(dict(USAGE, input_tokens_details={"cached_tokens": -1}), id="negative-cache"),
+    pytest.param(dict(USAGE, input_tokens_details={"cached_tokens": float("nan")}),
+                 id="nan-cache"),
+    pytest.param(dict(USAGE, input_tokens=1,
+                      input_tokens_details={"cached_tokens": 1_000_000}),
+                 id="overcached-negative-cost"),
+    pytest.param(dict(USAGE, input_tokens_details={"cached_tokens": 1001}),
+                 id="overcached-positive-cost"),
+    pytest.param(dict(USAGE, input_tokens_details=[1]), id="malformed-details"),
+    pytest.param(dict(USAGE, input_tokens_details=[]), id="empty-malformed-details"),
+    pytest.param([1], id="malformed-usage"),
+    pytest.param(dict(USAGE, input_tokens=10**308), id="cost-overflow"),
+])
+def test_invalid_usage_charges_a_reserved_share_and_stops_before_parse_or_retry(tmp_path, usage):
+    # The hard budget and existing invalid-cost fallback are the reference; private fake
+    # responses do not establish that a provider ever returned these malformed values.
+    ledger = Ledger(tmp_path / "spend.jsonl", 1.0)
+    sent, held_at_send, parsed = [], [], []
+
+    def send(body):
+        sent.append(body)
+        held_at_send.append(ledger.held)
+        return {"id": "malformed", "status": "completed", "usage": usage,
+                "output": [{"type": "message", "content": [
+                    {"type": "output_text", "text": '{"ok":true}'}]}]}
+
+    model = api.Model("gpt-6-astra", "low", ledger, instructions="Return an object.",
+                      max_output_tokens=200, send=send)
+    with pytest.raises(api.APIError, match="charged reservation and stopped") as failure:
+        model.ask("test", {}, lambda text: parsed.append(text), retries=2)
+
+    assert len(sent) == 1 and parsed == []
+    attempt, = failure.value.attempts
+    assert failure.value.attempt is attempt and not failure.value.retryable
+    assert attempt["response_id"] == "malformed" and attempt["usage"] is usage
+    record, = [json.loads(line) for line in ledger.path.read_text().splitlines()]
+    held, = held_at_send
+    expected = held / api.TRANSPORT_ATTEMPTS
+    assert 0 < expected < ledger.budget
+    assert record["estimated"] is True
+    assert ledger.spent == record["usd"] == attempt["usd"] == pytest.approx(expected)
+    assert model.totals["calls"] == 1 and model.totals["usd"] == pytest.approx(expected)
+    assert ledger.held == 0
+    reopened = Ledger(ledger.path, ledger.budget, must_exist=True)
+    assert reopened.spent == pytest.approx(expected)
+    with pytest.raises(BudgetExhausted):
+        reopened.reserve(ledger.budget)

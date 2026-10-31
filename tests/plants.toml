@@ -67,7 +67,7 @@ source = "2026-10-31 source-attribution test audit"
 id = "ledger-ignores-earlier-job-charges"
 guards = "Earlier jobs' charges retain their share of the selected ledger's total cap"
 file = "src/gameai/ledger.py"
-old = 'self.spent = sum(json.loads(line)["usd"] for line in lines)'
+old = 'self.spent = sum(_charge_amount(json.loads(line)["usd"]) for line in lines)'
 new = 'self.spent = 0.0'
 tests = ["tests/gameai/test_ledger.py"]
 source = "2026-10-31 retained-budget test audit"
@@ -1449,3 +1449,48 @@ old = "usd = reservation * attempts"
 new = "usd = reservation"
 tests = ["tests/gameai/test_model.py::test_uncaptured_transport_failure_propagates_without_parsing_or_losing_spend"]
 source = "2026-10-31 independent uncertain-spend test review"
+
+[[plant]]
+id = "ledger-charge-skips-amount-validation"
+guards = "Invalid new charges cannot poison shared spending or append corrupt evidence"
+file = "src/gameai/ledger.py"
+old = "\n        _charge_amount(usd)\n"
+new = "\n        pass\n"
+tests = ["tests/gameai/test_ledger.py::test_invalid_charge_preserves_spend_holds_and_history"]
+source = "2026-10-31 malformed-billing regression audit"
+
+[[plant]]
+id = "ledger-reopen-skips-amount-validation"
+guards = "Malformed historical charges stop reopening instead of weakening the retained cap"
+file = "src/gameai/ledger.py"
+old = "self.spent = sum(_charge_amount(json.loads(line)[\"usd\"]) for line in lines)"
+new = "self.spent = sum(json.loads(line)[\"usd\"] for line in lines)"
+tests = ["tests/gameai/test_ledger.py::test_invalid_prior_charge_refuses_reopen_without_rewriting_evidence"]
+source = "2026-10-31 malformed-billing regression audit"
+
+[[plant]]
+id = "model-accepts-overcached-usage"
+guards = "Cached-token counts cannot exceed total input even when the calculated cost stays positive"
+file = "src/gameai/llm.py"
+old = "    if cached > input_tokens:\n"
+new = "    if False:\n"
+tests = ["tests/gameai/test_model.py::test_invalid_usage_charges_a_reserved_share_and_stops_before_parse_or_retry"]
+source = "2026-10-31 malformed-billing regression audit"
+
+[[plant]]
+id = "model-invalid-usage-charges-zero"
+guards = "Invalid billing data charges one held attempt share before stopping"
+file = "src/gameai/llm.py"
+old = "usd, cost_error = reservation, str(error)"
+new = "usd, cost_error = 0.0, str(error)"
+tests = ["tests/gameai/test_model.py::test_invalid_usage_charges_a_reserved_share_and_stops_before_parse_or_retry"]
+source = "2026-10-31 malformed-billing regression audit"
+
+[[plant]]
+id = "model-accepts-nonfinite-calculated-cost"
+guards = "Overflowing token-price arithmetic follows the conservative billing error path"
+file = "src/gameai/llm.py"
+old = "    if not math.isfinite(cost) or cost < 0:\n"
+new = "    if False:\n"
+tests = ["tests/gameai/test_model.py::test_invalid_usage_charges_a_reserved_share_and_stops_before_parse_or_retry"]
+source = "2026-10-31 malformed-billing regression audit"

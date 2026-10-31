@@ -44,6 +44,22 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: invalid billing values cannot weaken the ledger cap
+
+Private fake-response probes produced NaN spending and a negative cached-token charge;
+both allowed an above-total reservation, including after reopening the private ledger.
+Ledgers now reject invalid new/prior amounts without rewriting evidence; OpenAI usage
+checks reject malformed counts, excess cached tokens and arithmetic overflow. The existing
+invalid-cost path charges one reserved share, releases holds and stops before parsing or
+retrying. Raw usage stays in the failed attempt; malformed usage is not totaled as tokens.
+Added 32 cases; the first regression run failed 27 before the fix (69 passed), and the
+expanded focused set passes 100. Valid token totals survive missing dollar cost. Sequential refusal sweeps caught all 4/11 old ledger/model
+guards and all 5/16 after the change, with no hangs or misses. Five added registered faults
+join the prior 154; one prior-charge plant target follows the validated constructor line.
+Cards/output/review: `runs/test-quality-20261031/invalid-billing*`, `billing-*`,
+`review/invalid-billing/`. No real API call or owner ledger was read or written. These are
+component regressions, not live billing or price-estimate verification; the method is unagreed.
+
 ## 2026-10-31: browser checks handle empty facts and controlled route/navigation cases
 
 The existing browser check timed out after correctly counting zero facts, then failed on

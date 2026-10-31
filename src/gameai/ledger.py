@@ -19,6 +19,13 @@ class BudgetExhausted(RuntimeError):
     """The next call could exceed the declared spend budget; nothing was sent."""
 
 
+def _charge_amount(usd: float) -> float:
+    if (isinstance(usd, bool) or not isinstance(usd, (int, float))
+            or not math.isfinite(usd) or usd < 0):
+        raise ValueError("Ledger charge must be finite and nonnegative")
+    return usd
+
+
 class Ledger:
     """Append-only spend record; every job naming the same file shares one budget."""
 
@@ -32,7 +39,7 @@ class Ledger:
                                     " start a new ledger deliberately")
         self.budget = budget_usd
         lines = self.path.read_text().splitlines() if self.path.exists() else []
-        self.spent = sum(json.loads(line)["usd"] for line in lines)
+        self.spent = sum(_charge_amount(json.loads(line)["usd"]) for line in lines)
         self.held = 0.0
         self._lock = threading.Lock()
 
@@ -53,6 +60,7 @@ class Ledger:
             self.held -= usd
 
     def charge(self, usd: float, **fields) -> None:
+        _charge_amount(usd)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         record = {"time": datetime.now(UTC).isoformat(), "usd": usd, **fields}
         with self._lock:

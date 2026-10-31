@@ -76,20 +76,41 @@ def api_key(provider: str = "openai") -> str:
     return key
 
 
+def _usage_counts(usage: dict) -> tuple[int, int, int]:
+    if not isinstance(usage, dict):
+        raise ValueError("Reported usage must be an object")
+    details = usage.get("input_tokens_details")
+    if details is None:
+        details = {}
+    if not isinstance(details, dict):
+        raise ValueError("Reported input_tokens_details must be an object")
+    counts = (usage.get("input_tokens"), details.get("cached_tokens", 0),
+              usage.get("output_tokens"))
+    if any(not _is_json(count, "integer") or count < 0 for count in counts):
+        raise ValueError("Reported token counts must be finite nonnegative integers")
+    input_tokens, cached, output_tokens = counts
+    if cached > input_tokens:
+        raise ValueError("Reported cached tokens exceed input tokens")
+    return input_tokens, cached, output_tokens
+
+
 def usage_cost(model: str, usage: dict, provider: str = "openai") -> float:
     if provider == "openrouter":
-        cost = usage.get("cost")
+        cost = usage.get("cost") if isinstance(usage, dict) else None
         if (isinstance(cost, bool) or not isinstance(cost, (int, float))
                 or not math.isfinite(cost) or cost < 0):
             raise ValueError("OpenRouter did not report a finite nonnegative usage.cost")
         return cost
     price_in, price_cached, price_out = get_provider(provider).prices[model]
-    cached = (usage.get("input_tokens_details") or {}).get("cached_tokens", 0)
-    return (
-        (usage["input_tokens"] - cached) * price_in
+    input_tokens, cached, output_tokens = _usage_counts(usage)
+    cost = (
+        (input_tokens - cached) * price_in
         + cached * price_cached
-        + usage["output_tokens"] * price_out
+        + output_tokens * price_out
     ) / 1e6
+    if not math.isfinite(cost) or cost < 0:
+        raise ValueError("Calculated usage cost must be finite and nonnegative")
+    return cost
 
 
 def post(key: str, body: dict, attempts: int = TRANSPORT_ATTEMPTS, *,
@@ -295,13 +316,23 @@ class Model:
                 attempt.update(provider=self.provider, backend=transport.get("backend"),
                                backend_model=transport.get("backend_model"),
                                router_attempts=transport.get("router_attempts"))
-        self.totals.update(
-            calls=1, usd=usd, seconds=attempt["seconds"], input_tokens=usage["input_tokens"],
-            output_tokens=usage["output_tokens"],
-            reasoning_tokens=(usage.get("output_tokens_details") or {}).get(
-                "reasoning_tokens", 0),
-            cached_tokens=(usage.get("input_tokens_details") or {}).get("cached_tokens", 0),
-        )
+        totals = dict(calls=1, usd=usd, seconds=attempt["seconds"])
+        aggregate_tokens = True
+        if self.provider != "openrouter":
+            try:
+                _usage_counts(usage)
+            except ValueError:
+                # Raw malformed usage stays in the billed attempt, not token totals.
+                aggregate_tokens = False
+        if aggregate_tokens:
+            # OpenRouter reports cost separately; retain its existing token-reading errors.
+            totals.update(
+                input_tokens=usage["input_tokens"], output_tokens=usage["output_tokens"],
+                reasoning_tokens=(usage.get("output_tokens_details") or {}).get(
+                    "reasoning_tokens", 0),
+                cached_tokens=(usage.get("input_tokens_details") or {}).get("cached_tokens", 0),
+            )
+        self.totals.update(totals)
         if cost_error:
             error = APIError(f"{cost_error}; charged reservation and stopped")
         elif usd > reservation:
