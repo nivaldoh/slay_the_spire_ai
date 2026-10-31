@@ -1946,3 +1946,30 @@ old = "                    write_json(self.bridge / f\"capture-{battle}-{trigger
 new = "                    write_json(self.bridge / f\"capture-{battle}-{trigger}.json\",\n                               {**captured, \"job\": self.job, \"battle\": battle, \"trigger\": trigger})\n                    if captured.get(\"status\") == \"captured\":\n                        seen.discard(key)"
 tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_deduplicates_a_ready_request_but_not_a_new_battle"]
 source = "2026-10-31 successful capture deduplication and battle identity oracle"
+
+[[plant]]
+id = "capture-disabled-start"
+guards = "Disabled passive capture does not start its worker thread"
+file = "src/twwarhammer3/battle/capture.py"
+old = "        if self.enabled:\n            self.thread.start()"
+new = "        self.thread.start()"
+tests = ["tests/twwarhammer3/test_wh3_capture.py", "tests/twwarhammer3/test_wh3_play_capture.py"]
+source = "2026-10-31 disabled passive-capture lifecycle audit"
+
+[[plant]]
+id = "capture-disabled-join"
+guards = "Disabled passive capture does not join a thread it did not start"
+file = "src/twwarhammer3/battle/capture.py"
+old = "        if self.enabled:\n            self.thread.join(timeout=7)"
+new = "        self.thread.join(timeout=7)"
+tests = ["tests/twwarhammer3/test_wh3_capture.py", "tests/twwarhammer3/test_wh3_play_capture.py"]
+source = "2026-10-31 disabled passive-capture lifecycle audit"
+
+[[plant]]
+id = "capture-disabled-join-on-error"
+guards = "Disabled capture does not join an unstarted thread while a body error unwinds"
+file = "src/twwarhammer3/battle/capture.py"
+old = "        if self.enabled:\n            self.thread.join(timeout=7)"
+new = "        if self.enabled or _[0] is not None:\n            self.thread.join(timeout=7)"
+tests = ["tests/twwarhammer3/test_wh3_capture.py", "tests/twwarhammer3/test_wh3_play_capture.py"]
+source = "2026-10-31 independent disabled-capture exceptional-exit review"

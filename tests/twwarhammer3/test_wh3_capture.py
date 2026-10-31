@@ -463,3 +463,35 @@ def test_passive_capture_deduplicates_a_ready_request_but_not_a_new_battle(
                 "status": "captured", "file": f"still-{battle}-opening.png", "time_ms": index,
                 "job": "j", "battle": battle, "trigger": "opening"}
         assert (bridge / metadata["file"]).read_bytes() == f"capture-{index}".encode()
+
+
+@pytest.mark.parametrize("body_fails", [False, True], ids=["normal-exit", "body-error"])
+def test_disabled_capture_context_does_not_start_or_join_a_thread(
+    tmp_path, monkeypatch, body_fails
+):
+    calls = []
+
+    class CaptureThread:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def start(self):
+            calls.append("start")
+
+        def join(self, *args, **kwargs):
+            calls.append("join")
+
+    # Replace only this module's reference; global threading and lazy construction work.
+    monkeypatch.setattr(capture, "threading", SimpleNamespace(
+        Event=threading.Event, Thread=CaptureThread))
+    failure = ValueError("controlled body failure") if body_fails else None
+    try:
+        with capture.PassiveCapture(tmp_path, job="j", pid=123, enabled=False):
+            assert calls == []
+            if failure is not None:
+                raise failure
+    except ValueError as exc:
+        assert exc is failure
+    else:
+        assert not body_fails
+    assert calls == []
