@@ -73,7 +73,7 @@ synthetic tasks against a 0.90 gate; no general learning gain established
 - Spire runs often leave a profile preference file empty (25 of 43 data runs on 2026-10-23;
   [details](spire/state-restore.md#risks-found-on-the-way)). Decide the profile question before
   more Spire game time (owner's note: maybe unlock things normally first, then enable restore).
-- Under parallel load `test_wh3_capture.py`'s passive-capture test (2 s wait; 30 s on branch `factory-20261031`) and once `test_wh3_checkpoint_rl.py`'s source-run test flaked: rerun before calling a regression. Six `test_hooks.py` tests fail whenever a game job runs (the hook they start sees it), so `check.py` cannot pass during game time.
+- Under parallel load `test_wh3_capture.py`'s passive-capture test (2 s wait; another session's `test-quality-audit` branch changes it) and once `test_wh3_checkpoint_rl.py`'s source-run test flaked: rerun before calling a regression. Six `test_hooks.py` tests fail whenever a game job runs (the hook they start sees it), so `check.py` cannot pass during game time.
 - Spire's Workshop mod pins still block a run when a mod updates.
 
 ## Owner decisions waiting
@@ -112,6 +112,6 @@ synthetic tasks against a 0.90 gate; no general learning gain established
   state-restore step 2 replay driver (`spire replay`), tested with a fake game only, never run.
 - `wh3-team-report` (`e5effd0`): `report` and `export` read team members' records (needs your yes);
   `factory-20261031` (`52bb5e6`): yes items once, Stop-hook log, scratch pruning (needs your yes).
-- `team-check-battle-time` (`58a52ef`), `land-check-stats-apart` (`bf4f911`): agreed-check drafts;
+- `team-check-battle-time` (`58a52ef`), `land-check-stats-apart` (`f3bcd97`): agreed-check drafts;
   `gate-xdist` (`668940e`): check.py on xdist workers; `test-quality-audit`: another session's.
 - Archived drafts are tags (`git tag --list 'archive/*'`).
