@@ -44,6 +44,20 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: negative tests require the contract error type
+
+Wrong-type `KeyError` variants passed the named checkpoint-injection and sampling negative
+tests. They now require the parameter/protocol errors their callers handle, with separate
+sampling seed/rejection tests and named checkpoint cases. The valid checkpoint control stays.
+The export test's broad budget exception was already protected by a later exported-type
+assertion; narrowing its earlier expectation improves readability, not coverage.
+Focused run: 56 passed, two saved-checkpoint evidence cases skipped, including plant liveness.
+Both formerly accepted variants now fail; the budget-type variant still fails, earlier.
+Production source, error taxonomy and grid values are unchanged; two new plants preserve
+these gaps. Grid use rests on JUDGEMENT `battle/checkpoint.py` dispatch, not a new agreement.
+Card, before/after faults and review: `runs/test-quality-20261031/` in the isolated worktree.
+Full gate and main integration remain for the handoff; no live effect or full coverage claim.
+
 ## 2026-10-31: testing audit finds attribution, budget and isolation gaps
 
 Drafted in isolated `test-quality-audit` at parent `150ef84` while Claude runs live checks;

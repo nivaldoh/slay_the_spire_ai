@@ -82,6 +82,24 @@ tests = ["tests/gameai/test_ledger.py"]
 source = "2026-10-31 retained-budget test audit"
 
 [[plant]]
+id = "checkpoint-injection-timing-raises-wrong-error"
+guards = "Invalid declared injection timing is a parameter error, not a missing-key failure"
+file = "src/twwarhammer3/battle/checkpoint.py"
+old = '''raise ValueError("the injection's declared times do not follow the grid rule")'''
+new = '''raise KeyError("the injection's declared times do not follow the grid rule")'''
+tests = ["tests/twwarhammer3/test_wh3_checkpoint_rl.py::test_step_run_injection_refusals_use_the_contract_error"]
+source = "2026-10-31 negative-test exception audit"
+
+[[plant]]
+id = "sampling-score-mismatch-raises-wrong-error"
+guards = "A score/choice count mismatch is reported as a protocol failure"
+file = "src/spire/language/sampling.py"
+old = '''raise ProtocolError("Candidate scores differ from legal choices or are nonfinite")'''
+new = '''raise KeyError("Candidate scores differ from legal choices or are nonfinite")'''
+tests = ["tests/language/test_language_sampling.py::test_sampler_rejects_score_count_mismatch_as_a_protocol_error"]
+source = "2026-10-31 negative-test exception audit"
+
+[[plant]]
 id = "ledger-ignores-must-exist"
 guards = "Play commands refuse a missing ledger file"
 file = "src/gameai/ledger.py"

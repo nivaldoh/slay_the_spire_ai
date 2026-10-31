@@ -8,7 +8,7 @@ import test_evidence
 
 from spire.combat.evidence import audit_run
 from spire.language import sampling
-from spire.protocol import Action, Decision
+from spire.protocol import Action, Decision, ProtocolError
 
 run = test_evidence.run
 
@@ -107,7 +107,7 @@ def test_tampered_sampling_evidence_is_rejected(run, damage):
     assert not audit_run(run)["valid"]
 
 
-def test_sampler_seed_reproduces_draws_and_rejects_mismatched_scores(run):
+def test_sampler_seed_reproduces_draws(run):
     _, decision = first_decision(run / "episode-0000")
     width = len(decision.candidates)
     choices = []
@@ -118,8 +118,13 @@ def test_sampler_seed_reproduces_draws_and_rejects_mismatched_scores(run):
         sampler.choose(decision)
         choices.append(sampler.choice_metadata(decision.id))
     assert choices[0]["draw"] == choices[1]["draw"]
+
+
+def test_sampler_rejects_score_count_mismatch_as_a_protocol_error(run):
+    _, decision = first_decision(run / "episode-0000")
+    width = len(decision.candidates)
     broken = sampling.CandidateSampler(
         lambda _: ([0.0] * (width + 1), 700), seed=5, temperature=1.0, model_sha256="c" * 64
     )
-    with pytest.raises(Exception, match="Candidate scores differ"):
+    with pytest.raises(ProtocolError, match="Candidate scores differ"):
         broken.choose(decision)

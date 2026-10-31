@@ -6,8 +6,7 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Codex testing audit is isolated in `../slay_the_spire_ai-test-quality`: source attribution,
-retained budgets, Spire helpers and live-job-independent hook tests; main integration waits.
+Codex testing audit: `../slay_the_spire_ai-test-quality`, main integration waiting on live checks.
 Evidence there: `runs/test-quality-20261031/`; earlier factory audit: `runs/factory-assessment-20261031/`.
 
 Claude Code built the [native multiplayer plan](twwarhammer3/native-multiplayer.md#implementation-status)
