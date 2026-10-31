@@ -8354,7 +8354,7 @@ function renderPanel() {
       el(
         "span",
         flow.timing,
-        `badge ${flow.timing.split(":")[0].split(" ")[0]}`,
+        `badge ${["illustrative", "measured"].find((kind) => flow.timing.startsWith(kind)) || ""}`,
       ),
     );
     panel.append(el("p", `From: ${flow.source}.`, "meta"), el("p", flow.drawn, "meta"));

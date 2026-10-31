@@ -48,13 +48,16 @@ benchmark harness revision, G1 and G2 the calibration stages.
 
 Claude Code, $0, no game; built on a branch for the owner's yes, since the plan makes the replay
 mode a separate decision. `scripts/diagram_replay.py` turns one recorded team episode's
-trace.jsonl into a Team-tab flow in the page's step format, badged "measured":
-`docs/multi-agent-replay.js` replays `team-live-20261031e` probe 1 from 5.30 to 10.40 s (99 steps,
-29 lane items). Battle times are copied; WSL times are mapped by a fit over the window's 12
-input events (1109 battle ms per WSL second, largest miss 59 ms). Cross-check: all 29 lane items
-of the hand-written probe flow appear with equal recorded times; mapped completion times differ
-by at most 59 ms. A Chrome trace-event JSON of the same lanes was written for Perfetto but not
-opened (a website). One episode only; no model-team episode exists.
+trace.jsonl into a Team-tab flow in the page's step format, badged "measured", one step group
+per request round in the trace's row order: `docs/multi-agent-replay.js` replays
+`team-live-20261031e` probe 1 from 5.30 to 10.40 s (64 steps, 29 lane items). Battle times are
+copied; a call's think span is its WSL duration scaled by a fit over the window's 12 input events
+(1109 battle ms per WSL second). Reviewer round 1 found steps drawn before their cause, window
+edges, a crash on a window without a member's input, think bars made of fit error and counter
+labels; all fixed. Cross-check (scratch `compare_replay.js`, which reads the trace itself): all
+29 lane items of the hand-written probe flow match on recorded times (completions within 39 ms),
+and every round's steps match the trace on 5 windows of probes 1 and 2; it catches 4 planted
+generator bugs. A Chrome trace-event JSON of the lanes was written, not opened in Perfetto.
 
 ## 2026-10-31: multi-agent diagram page, Overview flow and links (plan step 5)
 

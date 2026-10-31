@@ -9,17 +9,27 @@ Usage:
     uv run --locked python scripts/diagram_replay.py <episode dir> --revision REV
         [--from-ms A] [--to-ms B] [--out docs/multi-agent-replay.js] [--perfetto FILE]
 
-Times. Battle times are copied: an observation's time_ms, a member view's source_ms, an ack's
-applied_ms. WSL wall times (a team event's delivered, started and completed, and a trace row's
-elapsed, all from time.time()) are mapped to battle ms by a least-squares line through the
-window's input events (delivered, source_ms), as the lanes.py prototype
-(runs/twwarhammer3/team-structures-20261021/visualization/lanes.py) does, but fitted on the window
-only, because WSL's clock steps. A row's elapsed becomes time.time() by adding the median of
-(delivered - elapsed) over the window's input rows. A mapped time is never drawn before the
-battle time it follows, and a span shorter than 20 ms is drawn 20 ms long.
+Rounds. play.py writes one round's rows in this order: the ack of the previous request, the
+team's feedback, the input and completed events of the decide, the observation the decide was
+based on, then the decision (play.py:637-718). So each decision row closes a round: the team
+events before it ran in that round's decide, and the round starts at the observation's time_ms.
+A round belongs to the window when that time is in [A, B).
 
---perfetto also writes the lanes as Chrome trace-event JSON, for a cross-check in another viewer
-(https://ui.perfetto.dev opens it locally in the browser).
+Times. Battle times are copied: an observation's time_ms, a member view's source_ms, an ack's
+applied_ms. The rest are WSL wall times (time.time()), placed on battle time two ways:
+- a member call's think span starts at its view's source_ms and lasts its WSL duration
+  (completed - delivered) scaled by the fitted rate, so an instant call stays at its view time;
+- a decide ends at its trace row's elapsed, mapped by a least-squares line through the window's
+  input events (delivered, source_ms), as the lanes.py prototype
+  (runs/twwarhammer3/team-structures-20261021/visualization/lanes.py) does, but fitted on the
+  window only, because WSL's clock steps; elapsed becomes time.time() by adding the median of
+  (delivered - elapsed) over the window's input rows.
+No step is drawn before the battle time it follows (its round's observation, or its call's
+start), and a span shorter than 20 ms is drawn 20 ms long.
+
+--perfetto also writes the lanes as Chrome trace-event JSON, to view them in another viewer
+(https://ui.perfetto.dev opens it locally in the browser). It is built from the flow, so it
+checks the drawing, not how the trace was read.
 """
 import argparse
 import json
@@ -48,21 +58,27 @@ def replay(episode: Path, revision: str, start: int, end: int):
     name = episode.as_posix()
     name = name[name.index("runs/"):] if "runs/" in name else name  # evidence is cited by runs/
     trace = f"{name}/trace.jsonl"
-    inputs = [r for r in rows if r.get("event") == "input" and start <= r["source_ms"] < end]
-    if len(inputs) < 2:
+    inputs = {r["decision"]: r for r in rows if r.get("event") == "input"}
+    window = [r for r in inputs.values() if start <= r["source_ms"] < end]
+    if len(window) < 2:
         raise SystemExit("fewer than two team input events in the window: nothing to fit")
-    battle, slope, worst = fit([(r["delivered"], r["source_ms"]) for r in inputs])
-    offsets = [r["delivered"] - r["elapsed"] for r in inputs]
+    battle, slope, worst = fit([(r["delivered"], r["source_ms"]) for r in window])
+    offsets = [r["delivered"] - r["elapsed"] for r in window]
     offset = statistics.median(offsets)
-    names = sorted({r["member"] for r in inputs}, key=lambda name: name != "cavalry")
-    who = {name: "AB"[i] for i, name in enumerate(names[:2])}
-    ack = {r["request"]: (i, r["ack"]) for i, r in enumerate(rows, 1) if r.get("kind") == "ack"}
-    sent = {}  # member decision -> battle time of the decision row that carried it
-    steps, items, applied_marks = [], [], []
-    read = None
+    names = sorted({r["member"] for r in inputs.values()}, key=lambda member: member != "cavalry")
+    who = {member: "AB"[i] for i, member in enumerate(names[:2])}
+    done = {r["decision"]: (i, r) for i, r in enumerate(rows, 1) if r.get("event") == "completed"}
+    acks = {r["request"]: (i, r["ack"]) for i, r in enumerate(rows, 1) if r.get("kind") == "ack"}
+    carried = {}  # member decision -> (battle time of the request that carried it, applied_ms)
+    for r in rows:
+        if r.get("kind") == "decision" and r["behavior"].get("member"):
+            applied = acks.get(r["request"], (None, {}))[1].get("applied_ms")
+            carried[r["behavior"]["decision"]] = (r["time_ms"], applied)
 
-    def at(elapsed):
-        return battle(elapsed + offset)
+    def scaled(call, wall):  # a worker time: the call's view time plus its WSL duration
+        return call["source_ms"] + (wall - call["delivered"]) * slope
+
+    steps, items, applied_marks = [], [], []
 
     def step(begin, until, caption, refs, **fields):
         begin, until = max(start, begin), min(end, max(until, begin + MIN_MS))
@@ -70,84 +86,97 @@ def replay(episode: Path, revision: str, start: int, end: int):
             steps.append({"at": round(begin), "until": round(until), **fields,
                           "caption": caption, "refs": refs})
 
-    request = 0
+    events, observation = [], None
     for i, r in enumerate(rows, 1):
-        kind, event = r.get("kind"), r.get("event")
-        ref = [f"{trace} row {i}"]
-        if kind == "observation" and start <= r["decision_time_ms"] < end:
-            t = r["decision_time_ms"]
-            read = max(t + MIN_MS, at(r["elapsed"]))
-            step(t, read, f"The observation at {t / 1000:.2f} s reaches the play loop.", ref,
-                 dots=[OBSERVE])
-        elif kind == "decision":
-            request += 1
-            t, member = r["time_ms"], r["behavior"].get("member")
-            if not start <= t < end:
+        kind = r.get("kind")
+        if kind == "team" and r.get("event") in ("input", "completed", "feedback"):
+            events.append((i, r))
+            continue
+        if kind == "observation":
+            observation = i
+            continue
+        if kind != "decision":
+            continue
+        round_events, events = events, []
+        t = r["time_ms"]
+        if not start <= t < end:
+            continue
+        label = r["request"].rsplit("-", 1)[-1]
+        decided = max(t + 2 * MIN_MS, battle(r["elapsed"] + offset))
+        read = decided - MIN_MS
+        step(t, read, f"The observation at {t / 1000:.2f} s reaches the play loop.",
+             [f"{trace} row {observation}"], dots=[OBSERVE])
+        dots, parts, refs = [["team.play>team"]], [], []
+        for j, e in round_events:
+            if e["member"] not in who:
                 continue
-            j, a = ack.get(r["request"], (None, {}))
-            decided = max(read or t, at(r["elapsed"]))
-            what = (f"{r['behavior']['decision']}'s batch ({orders(len(r['orders']))})" if member
-                    else "an idle poll (no member's batch)")
-            step(read or t, decided, f"decide returns {what}.", ref, dots=[["team.play>team"]])
-            if a.get("applied_ms") is not None:
-                step(decided, a["applied_ms"],
-                     f"Request r{request} is applied at {a['applied_ms'] / 1000:.2f} s.",
-                     ref + [f"{trace} row {j}"], dots=[REQUEST],
-                     **({"who": who[member]} if member else {}))
-                items.append({"row": "play", "label": f"r{request}", "from": t,
-                              "to": a["applied_ms"], **({"who": who[member]} if member else {})})
-                applied_marks.append(a["applied_ms"])
-            if member:
-                sent[r["behavior"]["decision"]] = (t, a.get("applied_ms"))
-        elif kind == "team" and event in ("input", "completed", "feedback") and r["member"] in who:
-            w, box = who[r["member"]], f"team.{who[r['member']]}"
-            if event == "input" and start <= r["source_ms"] < end:
-                m = max(r["source_ms"], battle(r["delivered"]))
-                step(m, m, f"{r['decision']} starts on its own view of"
-                     f" {r['source_ms'] / 1000:.2f} s.", ref,
-                     dots=[["team.team>pool", f"team.pool>{w}"]], who=w)
-            elif event == "completed":
-                begin, done = battle(r["started"]), battle(r["completed"])
-                if r["completed"] - r["started"] > 0.1:
-                    step(begin, done, f"{r['decision']} thinks for"
-                         f" {r['completed'] - r['started']:.2f} s of WSL time.", ref,
-                         box=box, who=w)
-                step(done, done, f"{r['decision']} returns {orders(len(r['orders']))}.", ref,
-                     dots=[[f"team.{w}>pool"]], who=w)
-                collected = max(done, at(r["elapsed"]))
-                step(collected, collected, f"decide collects {r['decision']}.", ref,
-                     dots=[["team.pool>team"]], who=w)
-            elif event == "feedback":
-                m = at(r["elapsed"])
-                age = r["latency"].get("delay_ms")
-                step(m, m, f"{r['decision']} gets its ack"
-                     + (f": order age {age} ms." if age else "."), ref,
-                     dots=[[f"team.team>{w}"]], who=w)
-    sources = {r["decision"]: r["source_ms"] for r in rows if r.get("event") == "input"}
-    for r in rows:
-        if r.get("event") == "completed" and r["member"] in who:
-            source = sources[r["decision"]]
-            if not start <= source < end:
+            w = who[e["member"]]
+            refs.append(f"{trace} row {j}")
+            if e["event"] == "feedback":
+                age = e["latency"].get("delay_ms")
+                dots.append({"who": w, "path": [f"team.team>{w}"]})
+                parts.append(f"the ack goes to {e['decision']}"
+                             + (f" (order age {age} ms)" if age is not None else ""))
+            elif e["event"] == "completed":
+                dots.append({"who": w, "path": ["team.pool>team"]})
+                parts.append(f"it collects {e['decision']}")
+            else:
+                dots.append({"who": w, "path": ["team.team>pool", f"team.pool>{w}"]})
+                parts.append(f"it starts {e['decision']}")
+        member = r["behavior"].get("member")
+        what = (f"{r['behavior']['decision']}'s batch ({orders(len(r['orders']))})" if member
+                else "an idle poll (no member's batch)")
+        step(read, decided, f"decide on the {t / 1000:.2f} s observation: "
+             + "".join(f"{part}; " for part in parts) + f"it returns {what}.",
+             refs + [f"{trace} row {i}"], dots=dots)
+        for j, e in round_events:  # each call started in this decide: its worker's think and return
+            if e["event"] != "input" or e["member"] not in who or e["decision"] not in done:
                 continue
-            carried, applied = sent.get(r["decision"], (None, None))
-            items.append({"row": who[r["member"]], "label": r["decision"], "input": source,
-                          "completed": round(max(source, battle(r["completed"]))),
-                          "sent": carried, "applied": applied})
+            w, (k, c) = who[e["member"]], done[e["decision"]]
+            begin, finish = scaled(e, c["started"]), scaled(e, c["completed"])
+            if finish - begin > 100:
+                step(max(begin, decided), finish, f"{e['decision']} thinks for"
+                     f" {c['completed'] - c['started']:.2f} s of WSL time.", [f"{trace} row {k}"],
+                     box=f"team.{w}", who=w)
+            back = max(finish, decided)
+            step(back, back, f"{e['decision']} returns {orders(len(c['orders']))}; it waits in"
+                 " the pool for the next decide.", [f"{trace} row {k}"],
+                 dots=[{"who": w, "path": [f"team.{w}>pool"]}])
+        j, a = acks.get(r["request"], (None, {}))
+        if a.get("applied_ms") is not None:
+            extra = {"who": who[member]} if member in who else {}
+            step(decided, a["applied_ms"],
+                 f"Request {label} is applied at {a['applied_ms'] / 1000:.2f} s.",
+                 [f"{trace} row {i}", f"{trace} row {j}"], dots=[REQUEST], **extra)
+            items.append({"row": "play", "label": label, "from": t, "to": a["applied_ms"],
+                          **extra})
+            applied_marks.append(a["applied_ms"])
+    for decision, call in inputs.items():
+        if call["member"] not in who:
+            continue
+        completed = done.get(decision, (None, None))[1]
+        finish = round(scaled(call, completed["completed"])) if completed else None
+        sent, applied = carried.get(decision, (None, None))
+        last = applied or sent or finish or end
+        if call["source_ms"] < end and last > start:
+            items.append({"row": who[call["member"]], "label": decision,
+                          "input": call["source_ms"], "completed": finish,
+                          "sent": sent, "applied": applied})
     steps.sort(key=lambda s: s["at"])
-    flow = {
+    return {
         "id": "measured",
         "title": f"Measured replay: {episode.parent.name}",
         "variant": "scripted",
         "clock": "battle time",
         "timing": "measured: one recorded episode",
-        "source": f"{name} (recorded at {revision}); generated by"
-                  " scripts/diagram_replay.py",
-        "drawn": (f"Every step comes from a trace row. WSL times are mapped to battle time by a"
-                  f" straight-line fit over this window's {len(inputs)} input events ({slope:.0f}"
-                  f" battle ms per WSL second, largest miss {worst:.0f} ms); a row's elapsed is"
-                  f" shifted by the median delivered-minus-elapsed ({1000 * offset % 1000:.0f} ms"
-                  f" past the second, spread {1000 * (max(offsets) - min(offsets)):.0f} ms). Spans"
-                  f" under {MIN_MS} ms are drawn {MIN_MS} ms long."),
+        "source": f"{name} (recorded at {revision}); generated by scripts/diagram_replay.py",
+        "drawn": (f"Every step comes from trace rows; observation, request and application times"
+                  f" are recorded. A call's think span starts at its view's recorded time and"
+                  f" lasts its WSL duration scaled by {slope:.0f} battle ms per WSL second, the"
+                  f" slope of a straight-line fit over this window's {len(window)} input events"
+                  f" (largest miss {worst:.0f} ms); a decide's end is its row's WSL time mapped"
+                  f" by that fit. Spans under {MIN_MS} ms are drawn {MIN_MS} ms long, and no step"
+                  f" is drawn before the battle time it follows."),
         "start": start,
         "end": end,
         "speed": 0.25,
@@ -155,12 +184,11 @@ def replay(episode: Path, revision: str, start: int, end: int):
         "lanes": {
             "rows": [{"id": "game", "label": "game: applied"},
                      {"id": "play", "label": "play loop: requests"},
-                     *({"id": w, "label": f"member {name}"} for name, w in who.items())],
+                     *({"id": w, "label": f"member {member}"} for member, w in who.items())],
             "items": items,
             "marks": [{"row": "game", "kind": "applied", "at": applied_marks}],
         },
     }
-    return flow
 
 
 def perfetto(flow):
