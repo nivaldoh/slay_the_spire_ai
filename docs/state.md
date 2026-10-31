@@ -15,7 +15,7 @@ team also failed in between, on a UI stat and on WSL clock jumps); b52, an unuse
 compare-peers fixes and the 10-30 factory items merged; branches and decisions in `runs/overnight-20261031/handoff.md` ([log](twwarhammer3/log.md)). $0.
 
 Built (Claude Code, 2026-10-31): [multi-agent.html](multi-agent.html), the animated diagram (claims checked
-at `21f6204`); waits for your look. Step 6, a measured replay, is merged too (yours to reverse).
+at `21f6204`); owner: "looks good", detailed review later (2026-10-31). Step 6 (measured replay) merged.
 
 WH3 first; Spire waits behind it; post-training is secondary.
 Standing work (owner, 2026-10-28): thesis frontier; decisions/`JUDGEMENT` and small interviews;
