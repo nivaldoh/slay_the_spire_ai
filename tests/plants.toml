@@ -2009,3 +2009,57 @@ old = "if attempt[\"status\"] in STOPS:"
 new = "if attempt[\"status\"] in STOPS or attempt[\"status\"] in {\"lost\", \"draw\"}:"
 tests = ["tests/twwarhammer3/test_wh3_audit.py"]
 source = "2026-10-31 independent scored-reference review and outcome classification challenge"
+
+[[plant]]
+id = "audit-skips-new-reference"
+guards = "A missing rung reference is restored before probe or candidate work"
+file = "src/twwarhammer3/battle/audit.py"
+old = "checkpoint.restore_episode(record_path, step_plan(plan), reference)"
+new = "None"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 audit reference creation and routing contract"
+
+[[plant]]
+id = "audit-reuses-reference-directory"
+guards = "Reference creation and every candidate restore receive fresh attempt directories"
+file = "src/twwarhammer3/battle/audit.py"
+old = "reference = next_directory()"
+new = "reference = output / \"attempt-0000\""
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 audit reference creation and routing contract"
+
+[[plant]]
+id = "audit-probe-wrong-reference"
+guards = "Each rung probe uses the reference belonging to its record"
+file = "src/twwarhammer3/battle/audit.py"
+old = "probe = checkpoint.injection_for(reference, record, [], \"probe\", rung.get(\"tick\"))"
+new = "probe = checkpoint.injection_for(output, record, [], \"probe\", rung.get(\"tick\"))"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 audit reference creation and routing contract"
+
+[[plant]]
+id = "audit-injection-wrong-reference"
+guards = "Each candidate injection uses its rung reference"
+file = "src/twwarhammer3/battle/audit.py"
+old = "injection = checkpoint.injection_for(reference, record, candidate[\"orders\"], request,"
+new = "injection = checkpoint.injection_for(output, record, candidate[\"orders\"], request,"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 audit reference creation and routing contract"
+
+[[plant]]
+id = "audit-attempt-wrong-reference"
+guards = "Candidate restore attribution names the reference used by its rung"
+file = "src/twwarhammer3/battle/audit.py"
+old = "\"reference\": str(reference), \"candidate\": candidate[\"id\"],"
+new = "\"reference\": str(output), \"candidate\": candidate[\"id\"],"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 audit reference creation and routing contract"
+
+[[plant]]
+id = "audit-validates-first-reference"
+guards = "Each later supplied reference is validated from its own attempt record"
+file = "src/twwarhammer3/battle/audit.py"
+old = "json.loads((reference / \"attempt.json\").read_text())[\"status\"]"
+new = "json.loads(((Path(plan[\"rungs\"][0][\"reference\"]) if plan[\"rungs\"][0].get(\"reference\") else reference) / \"attempt.json\").read_text())[\"status\"]"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 independent mixed-rung reference review"
