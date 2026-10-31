@@ -18,7 +18,8 @@ A round belongs to the window when that time is in [A, B).
 Times. Battle times are copied: an observation's time_ms, a member view's source_ms, an ack's
 applied_ms. The rest are WSL wall times (time.time()), placed on battle time two ways:
 - a member call's think span starts at its view's source_ms and lasts its WSL duration
-  (completed - delivered) scaled by the fitted rate, so an instant call stays at its view time;
+  (completed - delivered) scaled by the fitted rate, so an instant call stays at its view time,
+  and it ends no later than the start of the decide that collected its result;
 - a decide ends at its trace row's elapsed, mapped by a least-squares line through the window's
   input events (delivered, source_ms), as the lanes.py prototype
   (runs/twwarhammer3/team-structures-20261021/visualization/lanes.py) does, but fitted on the
@@ -86,27 +87,39 @@ def replay(episode: Path, revision: str, start: int, end: int):
             steps.append({"at": round(begin), "until": round(until), **fields,
                           "caption": caption, "refs": refs})
 
-    events, observation = [], None
+    def decide_span(r):  # a decide ends at its row's mapped WSL time, never before its basis
+        decided = max(r["time_ms"] + 2 * MIN_MS, battle(r["elapsed"] + offset))
+        return decided - MIN_MS, decided
+
+    rounds, events, observation = [], [], None
     for i, r in enumerate(rows, 1):
         kind = r.get("kind")
         if kind == "team" and r.get("event") in ("input", "completed", "feedback"):
             events.append((i, r))
-            continue
-        if kind == "observation":
+        elif kind == "observation":
             observation = i
-            continue
-        if kind != "decision":
-            continue
-        round_events, events = events, []
+        elif kind == "decision":
+            rounds.append((i, r, events, observation))
+            events = []
+    collected = {}  # member decision -> start of the decide that collected its result
+    for _, r, round_events, _ in rounds:
+        for _, e in round_events:
+            if e["event"] == "completed":
+                collected[e["decision"]] = decide_span(r)[0]
+
+    def finish_of(call, completed):  # its WSL duration from its view, before its collection
+        end_ms = scaled(call, completed["completed"])
+        return max(call["source_ms"], min(end_ms, collected.get(call["decision"], end_ms)))
+
+    for i, r, round_events, observation in rounds:
         t = r["time_ms"]
         if not start <= t < end:
             continue
         label = r["request"].rsplit("-", 1)[-1]
-        decided = max(t + 2 * MIN_MS, battle(r["elapsed"] + offset))
-        read = decided - MIN_MS
+        read, decided = decide_span(r)
         step(t, read, f"The observation at {t / 1000:.2f} s reaches the play loop.",
              [f"{trace} row {observation}"], dots=[OBSERVE])
-        dots, parts, refs = [["team.play>team"]], [], []
+        dots, acked, parts, refs = [["team.play>team"]], [], [], []
         for j, e in round_events:
             if e["member"] not in who:
                 continue
@@ -115,7 +128,7 @@ def replay(episode: Path, revision: str, start: int, end: int):
             if e["event"] == "feedback":
                 age = e["latency"].get("delay_ms")
                 dots.append({"who": w, "path": [f"team.team>{w}"]})
-                parts.append(f"the ack goes to {e['decision']}"
+                acked.append(f"{e['decision']} gets its ack"
                              + (f" (order age {age} ms)" if age is not None else ""))
             elif e["event"] == "completed":
                 dots.append({"who": w, "path": ["team.pool>team"]})
@@ -126,14 +139,16 @@ def replay(episode: Path, revision: str, start: int, end: int):
         member = r["behavior"].get("member")
         what = (f"{r['behavior']['decision']}'s batch ({orders(len(r['orders']))})" if member
                 else "an idle poll (no member's batch)")
-        step(read, decided, f"decide on the {t / 1000:.2f} s observation: "
-             + "".join(f"{part}; " for part in parts) + f"it returns {what}.",
+        caption = ("".join(f"{ack}; " for ack in acked) + ("then " if acked else "")
+                   + f"decide on the {t / 1000:.2f} s observation: "
+                   + "".join(f"{part}; " for part in parts) + f"it returns {what}.")
+        step(read, decided, caption[:1].upper() + caption[1:],
              refs + [f"{trace} row {i}"], dots=dots)
         for j, e in round_events:  # each call started in this decide: its worker's think and return
             if e["event"] != "input" or e["member"] not in who or e["decision"] not in done:
                 continue
             w, (k, c) = who[e["member"]], done[e["decision"]]
-            begin, finish = scaled(e, c["started"]), scaled(e, c["completed"])
+            begin, finish = scaled(e, c["started"]), finish_of(e, c)
             if finish - begin > 100:
                 step(max(begin, decided), finish, f"{e['decision']} thinks for"
                      f" {c['completed'] - c['started']:.2f} s of WSL time.", [f"{trace} row {k}"],
@@ -155,7 +170,7 @@ def replay(episode: Path, revision: str, start: int, end: int):
         if call["member"] not in who:
             continue
         completed = done.get(decision, (None, None))[1]
-        finish = round(scaled(call, completed["completed"])) if completed else None
+        finish = round(finish_of(call, completed)) if completed else None
         sent, applied = carried.get(decision, (None, None))
         last = applied or sent or finish or end
         if call["source_ms"] < end and last > start:
@@ -174,8 +189,9 @@ def replay(episode: Path, revision: str, start: int, end: int):
                   f" are recorded. A call's think span starts at its view's recorded time and"
                   f" lasts its WSL duration scaled by {slope:.0f} battle ms per WSL second, the"
                   f" slope of a straight-line fit over this window's {len(window)} input events"
-                  f" (largest miss {worst:.0f} ms); a decide's end is its row's WSL time mapped"
-                  f" by that fit. Spans under {MIN_MS} ms are drawn {MIN_MS} ms long, and no step"
+                  f" (largest miss {worst:.0f} ms), and ends no later than the decide that"
+                  f" collected it; a decide's end is its row's WSL time mapped by that fit."
+                  f" Spans under {MIN_MS} ms are drawn {MIN_MS} ms long, and no step"
                   f" is drawn before the battle time it follows."),
         "start": start,
         "end": end,
