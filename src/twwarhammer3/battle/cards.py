@@ -196,9 +196,11 @@ def jobs(paths: list[Path]) -> list[Path]:
     return list(dict.fromkeys(found))  # a replacement plan can name the same output
 
 
-def battles(card: dict, directories: list[Path]) -> tuple[list[dict], int]:
+def battles(card: dict, directories: list[Path], teams: list | None = None
+            ) -> tuple[list[dict], int]:
     """One row per launch, controller and added age, and how many rematch rows of a
-    controller at an added age already counted in its launch were skipped."""
+    controller at an added age already counted in its launch were skipped. Team episodes
+    are left out; ``teams``, when given, collects their job/episode names."""
     rows, seen, skipped = [], set(), 0
     seen_jobs = set()
     for job in directories:
@@ -220,6 +222,13 @@ def battles(card: dict, directories: list[Path]) -> tuple[list[dict], int]:
             "map", "player", "enemy", "expect", "attacker", "battle_type")], sort_keys=True)
         for episode in manifest.get("episodes", []):
             control = episode.get("card") or {}
+            # JUDGEMENT: Team rows — Claude, 2026-10-31 (multi-agent-implementation.md Next 1): a
+            # team episode is left off the board. Taking it pools both members' decisions into
+            # one information age and the team's source under one hash; any team row rests on it.
+            if "members" in (control.get("disclosure") or {}):
+                if teams is not None:
+                    teams.append(f"{job.name}/{episode.get('episode')}")
+                continue
             name = episode.get("policy") or control.get("name") or ""
             age_ms = episode.get("delay_ms") or 0
             # JUDGEMENT?: Sampling unit — assistant, 2026-10-18 (b33; the rematch skip 1b56ed5,
@@ -277,7 +286,8 @@ def board(name: str, paths: list[Path] | None = None) -> str:
     default = paths is None
     directories = sorted(JOBS_ROOT.iterdir()) if default else jobs(paths)
     unrun = [] if default else [d.name for d in directories if not (d / "manifest.json").exists()]
-    rows, skipped = battles(card, [d for d in directories if d.is_dir()])
+    teams = []
+    rows, skipped = battles(card, [d for d in directories if d.is_dir()], teams)
     cells = defaultdict(list)
     for row in rows:
         cells[(row["controller"], row["age_ms"], row["interval_ms"])].append(row)
@@ -287,6 +297,7 @@ def board(name: str, paths: list[Path] | None = None) -> str:
              f"launch{'es' if launches != 1 else ''}"
              + (f" ({skipped} rematch rows of an already counted controller skipped)"
                 if skipped else "")
+             + (f"; {len(teams)} team episodes left off (not on the board yet)" if teams else "")
              + "; a cell mixing setups or controller sources is marked *; added age and"
              " interval round up to the observation cadence; issue ages are measured",
              f"{'controller':36} age pace   n won forf excl  win [95%]        cycles  "

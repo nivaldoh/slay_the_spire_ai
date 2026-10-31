@@ -1265,3 +1265,23 @@ old = "                                          for field in \"xz\"):"
 new = "                                          for field in \"x\"):"
 tests = ["tests/twwarhammer3/test_wh3_peers.py", "tests/twwarhammer3/test_wh3_native_lua.py"]
 source = "2026-10-31 run, B2 multiplayer seams"
+
+# 2026-10-31 run, B3: team episodes off the card board; a call running at cleanup recorded.
+
+[[plant]]
+id = "board-takes-team-rows"
+guards = "team records: the card board and calls cut off at cleanup"
+file = "src/twwarhammer3/battle/cards.py"
+old = "            if \"members\" in (control.get(\"disclosure\") or {}):\n                if teams is not None:"
+new = "            if False:\n                if teams is not None:"
+tests = ["tests/twwarhammer3/test_wh3_cards.py"]
+source = "2026-10-31 run, B3 team records"
+
+[[plant]]
+id = "running-at-close-never-set"
+guards = "team records: the card board and calls cut off at cleanup"
+file = "src/twwarhammer3/battle/team.py"
+old = "            running = member.running_at_close = (member.future is not None\n                                                 and not member.future.done())"
+new = "            running = (member.future is not None and not member.future.done())"
+tests = ["tests/twwarhammer3/team/test_wh3_model_team.py"]
+source = "2026-10-31 run, B3 team records"
