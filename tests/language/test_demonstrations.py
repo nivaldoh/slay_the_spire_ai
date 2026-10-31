@@ -6,15 +6,15 @@ import json
 import shutil
 import subprocess
 
+import combat_evidence as evidence_fixtures
 import pytest
-import test_evidence
 
 from gameai.provenance import REPO_ROOT
 from spire.combat.evidence import EvidenceError, audit_run, normalized_observation_fingerprint
 from spire.language import demonstrations as demos
 from spire.protocol import Decision, decision_from_message
 
-evidence_run = test_evidence.run
+evidence_run = evidence_fixtures.run
 
 
 def read(path):
@@ -45,7 +45,7 @@ def run(evidence_run):
     )
     manifest["config"]["policy"] = "heuristic"
     write(evidence_run / "manifest.json", manifest)
-    test_evidence.set_result(evidence_run, policy="heuristic")
+    evidence_fixtures.set_result(evidence_run, policy="heuristic")
     assert audit_run(evidence_run)["valid"]
     return evidence_run
 
@@ -61,9 +61,9 @@ def renamed_copy(run, destination, *, seed="ABC", hp=80):
     manifest = read(destination / "manifest.json")
     manifest["config"]["game_seed"] = seed
     write(destination / "manifest.json", manifest)
-    test_evidence.set_result(destination, seed=seed, starting_hp=hp)
+    evidence_fixtures.set_result(destination, seed=seed, starting_hp=hp)
     episode = destination / "episode-0000"
-    events = test_evidence.events(episode)
+    events = evidence_fixtures.events(episode)
     events[2]["command"] = f"START IRONCLAD 0 {seed}"
     raw = events[3]["raw"]
     raw["game_state"]["current_hp"] = hp
@@ -73,7 +73,7 @@ def renamed_copy(run, destination, *, seed="ABC", hp=80):
     events[5]["decision"] = decision
     result["combat_start_sha256"] = normalized_observation_fingerprint(decision["observation"])
     events[-1]["result"] = result
-    test_evidence.write_events(episode, events)
+    evidence_fixtures.write_events(episode, events)
     write(episode / "result.json", result)
     write(episode / "combat_start.json", decision["observation"])
     manifest = read(destination / "manifest.json")
@@ -84,7 +84,7 @@ def renamed_copy(run, destination, *, seed="ABC", hp=80):
 
 
 def test_public_rendering_is_lossless_and_preserves_duplicate_card_and_target_slots():
-    raw = test_evidence.combat_message()
+    raw = evidence_fixtures.combat_message()
     combat = raw["game_state"]["combat_state"]
     combat["hand"] *= 2
     combat["monsters"] *= 2
@@ -199,13 +199,13 @@ def test_unverified_teacher_claims_are_rejected_before_writing(tmp_path, run, da
         declaration = source(run, role="search_oracle")
     elif damage == "action":
         # This is a legal, terminal-linked choice, but not this known heuristic's choice.
-        events = test_evidence.events(run / "episode-0000")
+        events = evidence_fixtures.events(run / "episode-0000")
         selected = events[5]["decision"]["candidates"][-1]
         events[5]["selected_action_id"] = selected["id"]
         events[6].update(action_id=selected["id"], command=selected["command"])
         events[7]["previous_action_id"] = selected["id"]
         events[8]["action_id"] = selected["id"]
-        test_evidence.write_events(run / "episode-0000", events)
+        evidence_fixtures.write_events(run / "episode-0000", events)
     else:
         manifest["purpose"] = "final_test"
     write(run / "manifest.json", manifest)
@@ -342,7 +342,7 @@ def test_random_teacher_is_replayed_with_recorded_episode_seed(tmp_path, run):
     manifest = read(run / "manifest.json")
     manifest["config"].update(policy="random", policy_seed=1)
     write(run / "manifest.json", manifest)
-    test_evidence.set_result(run, policy="random", policy_seed=1)
+    evidence_fixtures.set_result(run, policy="random", policy_seed=1)
     result = demos.export_demonstrations(
         tmp_path / "dataset", [source(run, role="random")], purpose="smoke"
     )
@@ -350,7 +350,7 @@ def test_random_teacher_is_replayed_with_recorded_episode_seed(tmp_path, run):
 
 
 def test_formatter_rejects_extra_hidden_fields_even_in_handmade_decision():
-    original = decision_from_message(test_evidence.combat_message(), session_id="x", sequence=1)
+    original = decision_from_message(evidence_fixtures.combat_message(), session_id="x", sequence=1)
     observation = original.to_dict()["observation"]
     observation["seed"] = "PRIVATE"
     forged = Decision(original.id, observation, original.candidates)
@@ -378,7 +378,7 @@ def test_formatter_rejects_extra_hidden_fields_even_in_handmade_decision():
 def test_completion_parser_rejects_repairable_or_ambiguous_answers(text):
     from spire.protocol import IllegalActionError
 
-    decision = decision_from_message(test_evidence.combat_message(), session_id="x", sequence=1)
+    decision = decision_from_message(evidence_fixtures.combat_message(), session_id="x", sequence=1)
     with pytest.raises(IllegalActionError):
         demos.parse_completion(decision, text)
 
@@ -386,7 +386,7 @@ def test_completion_parser_rejects_repairable_or_ambiguous_answers(text):
 def test_parser_returns_exact_bound_candidate_and_stale_send_is_still_rejected():
     from spire.protocol import StaleActionError, validate_action
 
-    raw = test_evidence.combat_message()
+    raw = evidence_fixtures.combat_message()
     old = decision_from_message(raw, session_id="x", sequence=1)
     current = decision_from_message(raw, session_id="x", sequence=2)
     action = demos.parse_completion(old, ' {"a":0}\n')
@@ -460,7 +460,7 @@ def test_only_exact_independent_policy_failure_class_is_compatible(
 
 def policy_failure_after_action(run):
     """Keep one acknowledged public action before an invalid model completion."""
-    test_evidence.make_policy_failure(run, after_action=True)
+    evidence_fixtures.make_policy_failure(run, after_action=True)
 
 
 @pytest.mark.parametrize("after_action", [False, True])
@@ -470,7 +470,7 @@ def test_policy_failure_origins_never_become_demonstrations(tmp_path, run, after
     if after_action:
         policy_failure_after_action(run)
     else:
-        test_evidence.make_policy_failure(run)
+        evidence_fixtures.make_policy_failure(run)
     assert audit_run(run)["valid"]
     assert len(load_transitions(run)) == int(after_action)
     with pytest.raises(EvidenceError, match="Only complete originating runs"):
@@ -482,14 +482,14 @@ def non_heuristic_behavior(run):
     manifest = read(run / "manifest.json")
     manifest["config"].update(policy="random", policy_seed=7)
     write(run / "manifest.json", manifest)
-    test_evidence.set_result(run, policy="random", policy_seed=7)
-    events = test_evidence.events(run / "episode-0000")
+    evidence_fixtures.set_result(run, policy="random", policy_seed=7)
+    events = evidence_fixtures.events(run / "episode-0000")
     selected = events[5]["decision"]["candidates"][-1]
     events[5]["selected_action_id"] = selected["id"]
     events[6].update(action_id=selected["id"], command=selected["command"])
     events[7]["previous_action_id"] = selected["id"]
     events[8]["action_id"] = selected["id"]
-    test_evidence.write_events(run / "episode-0000", events)
+    evidence_fixtures.write_events(run / "episode-0000", events)
     assert audit_run(run)["valid"]
     return selected
 

@@ -7,8 +7,8 @@ import signal
 import time
 from contextlib import nullcontext
 
+import combat_evidence as evidence_fixtures
 import pytest
-import test_evidence
 from combat_support import harness
 
 from gameai import provenance
@@ -32,7 +32,7 @@ def sha(value):
 
 
 def combat(seed):
-    value = test_evidence.combat_message()
+    value = evidence_fixtures.combat_message()
     state = value["game_state"]
     state.update(gold=199, deck=[
         {"id": name, "upgrades": 0, "cost": 1 if name != "Bash" else 2}

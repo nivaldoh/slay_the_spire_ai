@@ -44,6 +44,20 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: shared Spire evidence and catalog setup leaves collected tests
+
+Shared builders/fixtures moved from `test_evidence.py` and `test_catalog.py` into
+`combat_evidence.py` and `catalog_support.py`; seven consumers import support directly.
+464 definitions match before/after, allowing only the named module qualifier renames.
+Collected node IDs match in both environments: 422 default, 639 CPU train (import-time
+skips are separate). No test, assertion or expected output was added or removed.
+A dedicated environment installed the existing CPU train extra from the locked dependencies.
+Combat/language/PPO runs before and after: 619 passed, 22 skipped each. Skips cover saved
+engine evidence and missing optional language packages, not a Torch absence.
+Raw collections, AST comparison, both runs, card and review: `runs/test-quality-20261031/`.
+Full gate/main integration remain for the handoff. No source/game/prompt change, no learning
+or live verification claim; five imports of optional training test modules still need audit.
+
 ## 2026-10-31: negative tests require the contract error type
 
 Wrong-type `KeyError` variants passed the named checkpoint-injection and sampling negative

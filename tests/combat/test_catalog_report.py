@@ -3,16 +3,16 @@
 import json
 import shutil
 
+import catalog_support as catalog_fixtures
 import pytest
-import test_catalog
 
 from gameai import provenance
 from spire.combat import catalog, catalog_report
 from spire.engine.bridge import BridgeDisconnected
 
-declaration = test_catalog.declaration
-runtime_harness = test_catalog.runtime_harness
-run_setup = test_catalog.run_setup
+declaration = catalog_fixtures.declaration
+runtime_harness = catalog_fixtures.runtime_harness
+run_setup = catalog_fixtures.run_setup
 
 
 def read(path):
@@ -190,7 +190,7 @@ def test_changed_engine_pins_break_comparability(completed):
     other = output.with_name("other-engine")
     shutil.copytree(output, other)
     manifest = read(other / "catalog-manifest.json")
-    manifest["engine_pins"]["game"] = test_catalog.digest("different-game")
+    manifest["engine_pins"]["game"] = catalog_fixtures.digest("different-game")
     for child in manifest["children"]:
         path = other / child["directory"] / "environment.json"
         data = read(path)

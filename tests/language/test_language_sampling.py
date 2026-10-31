@@ -3,14 +3,14 @@
 import json
 import math
 
+import combat_evidence as evidence_fixtures
 import pytest
-import test_evidence
 
 from spire.combat.evidence import audit_run
 from spire.language import sampling
 from spire.protocol import Action, Decision, ProtocolError
 
-run = test_evidence.run
+run = evidence_fixtures.run
 
 
 def log(values):
@@ -39,7 +39,7 @@ def test_temperature_normalizes_and_flattens_scores():
 
 
 def first_decision(directory):
-    event = next(e for e in test_evidence.events(directory) if e["kind"] == "decision")
+    event = next(e for e in evidence_fixtures.events(directory) if e["kind"] == "decision")
     item = event["decision"]
     decision = Decision(
         item["id"], item["observation"], tuple(Action(**a) for a in item["candidates"])
@@ -56,21 +56,22 @@ def sampled_run(run, scores):
     )
     chosen = sampler.choose(decision)
     assert chosen.id == event["selected_action_id"], "fixture scores must select the recording"
-    trace = test_evidence.events(directory)
+    trace = evidence_fixtures.events(directory)
     for item in trace:
         if item["kind"] == "decision":
             item["behavior"] = sampler.choice_metadata(decision.id)
-    test_evidence.write_events(directory, trace)
+    evidence_fixtures.write_events(directory, trace)
     manifest = json.loads((run / "manifest.json").read_text())
     manifest["config"]["policy"] = "language_sample"
     (run / "manifest.json").write_text(json.dumps(manifest))
-    test_evidence.set_result(run, policy="language_sample")
+    evidence_fixtures.set_result(run, policy="language_sample")
     return directory
 
 
 def recorded_scores(run):
     _, decision = first_decision(run / "episode-0000")
-    event = next(e for e in test_evidence.events(run / "episode-0000") if e["kind"] == "decision")
+    event = next(e for e in evidence_fixtures.events(run / "episode-0000")
+                 if e["kind"] == "decision")
     index = [c.id for c in decision.candidates].index(event["selected_action_id"])
     return [0.0 if i == index else -50.0 for i in range(len(decision.candidates))]
 
@@ -85,7 +86,7 @@ def test_sampled_language_decisions_audit_from_recorded_draws(run):
 )
 def test_tampered_sampling_evidence_is_rejected(run, damage):
     directory = sampled_run(run, recorded_scores(run))
-    trace = test_evidence.events(directory)
+    trace = evidence_fixtures.events(directory)
     behavior = next(e for e in trace if e["kind"] == "decision")["behavior"]
     if damage == "draw":
         # Move the draw past all mass on the recorded choice.
@@ -103,7 +104,7 @@ def test_tampered_sampling_evidence_is_rejected(run, damage):
         del behavior["draw"]
     else:
         behavior["temperature"] = 0
-    test_evidence.write_events(directory, trace)
+    evidence_fixtures.write_events(directory, trace)
     assert not audit_run(run)["valid"]
 
 
