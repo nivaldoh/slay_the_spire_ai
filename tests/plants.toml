@@ -1494,3 +1494,75 @@ old = "    if not math.isfinite(cost) or cost < 0:\n"
 new = "    if False:\n"
 tests = ["tests/gameai/test_model.py::test_invalid_usage_charges_a_reserved_share_and_stops_before_parse_or_retry"]
 source = "2026-10-31 malformed-billing regression audit"
+
+[[plant]]
+id = "capture-skips-filename-validation"
+guards = "Existing foreign or escaping capture paths cannot overwrite episode destinations"
+file = "src/twwarhammer3/battle/capture.py"
+old = "if Path(filename).name != filename or not filename.startswith(f\"still-{battle}-\"):"
+new = "if False:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_capture_rejects_foreign_files_without_changing_the_destination"]
+source = "2026-10-31 nonvacuous-assertion test audit"
+
+[[plant]]
+id = "capture-skips-basename-validation"
+guards = "A matching battle prefix cannot make directory traversal a valid capture basename"
+file = "src/twwarhammer3/battle/capture.py"
+old = "if Path(filename).name != filename or not filename.startswith(f\"still-{battle}-\"):"
+new = "if not filename.startswith(f\"still-{battle}-\"):"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_capture_rejects_foreign_files_without_changing_the_destination"]
+source = "2026-10-31 nonvacuous-assertion test audit"
+
+[[plant]]
+id = "capture-skips-battle-prefix-validation"
+guards = "Existing captures from a different battle cannot enter this episode"
+file = "src/twwarhammer3/battle/capture.py"
+old = "if Path(filename).name != filename or not filename.startswith(f\"still-{battle}-\"):"
+new = "if Path(filename).name != filename:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_capture_rejects_foreign_files_without_changing_the_destination"]
+source = "2026-10-31 nonvacuous-assertion test audit"
+
+[[plant]]
+id = "capture-omits-failed-still-records"
+guards = "Persisted still records retain every attempted capture including failures"
+file = "src/twwarhammer3/battle/capture.py"
+old = "write_json(episode / \"stills.json\", shots)"
+new = "write_json(episode / \"stills.json\", [s for s in shots if s.get(\"status\") != \"capture_failed\"])"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_capture_copy_keeps_failures_and_checks_battle_identity"]
+source = "2026-10-31 nonvacuous-assertion test audit"
+
+[[plant]]
+id = "coordinated-rush-never-updates-follow-posts"
+guards = "Both waiting mobile units receive follow moves after observed screen progress"
+file = "src/twwarhammer3/battle/calibration.py"
+old = "        if waiting and enemies:\n"
+new = "        if waiting and enemies and not self.posts:\n"
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_mobile_units_follow_actual_screen_progress_then_release_on_contact"]
+source = "2026-10-31 nonvacuous-assertion test audit"
+
+[[plant]]
+id = "check-ledger-omits-successful-checks"
+guards = "The saved normal-gate result retains every declared successful check, not an empty map"
+file = "scripts/check.py"
+old = "\"checks\": agreed}"
+new = "\"checks\": {name: result for name, result in agreed.items() if not result[\"passed\"]}}"
+tests = ["tests/test_check_script.py::test_normal_check_accepts_a_completed_test_report"]
+source = "2026-10-31 nonvacuous-assertion test audit"
+
+[[plant]]
+id = "capture-duplicates-prior-failed-record"
+guards = "A rejected still retains its own identity rather than duplicating a previous failed attempt"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                    shot.update(status=\"capture_failed\", error=\"Invalid capture filename\")\n                    shot.pop(\"file\", None)"
+new = "                    shot.update(status=\"capture_failed\", error=\"Invalid capture filename\")\n                    shot.pop(\"file\", None)\n                    if shots:\n                        shot = dict(shots[-1])"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_capture_copy_keeps_failures_and_checks_battle_identity"]
+source = "2026-10-31 independent nonvacuous-assertion review"
+
+[[plant]]
+id = "policy-failure-omits-overlong-attempts"
+guards = "PolicyFailure retains every attempted reply even when invalid response text is long"
+file = "src/twwarhammer3/battle/llm.py"
+old = "\"attempts\": error.attempts}"
+new = "\"attempts\": [a for a in error.attempts if len(a.get(\"text\", \"\")) <= 10000]}"
+tests = ["tests/twwarhammer3/test_wh3_llm.py::test_a_reply_nested_too_deeply_to_parse_is_retried_then_a_policy_failure"]
+source = "2026-10-31 nonvacuous failure-attempt record audit"

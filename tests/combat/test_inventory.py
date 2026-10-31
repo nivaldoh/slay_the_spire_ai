@@ -312,11 +312,13 @@ def test_absolute_alarm_interrupts_blocking_collection_and_restores_handler():
     assert signal.getitimer(signal.ITIMER_REAL)[0] == 0
 
 
-def test_real_engine_v1_reference_is_eligible_and_exactly_replayable():
+def test_real_engine_v1_reference_is_eligible_and_equivalence_accepts_it():
     if not REAL_REFERENCE.exists():
         pytest.skip("Local original-engine evidence is not shipped in Git")
     reference, episode = inventory.load_reference(REAL_REFERENCE)
     assert reference["public_episode"]["combat_start_sha256"] == inventory.START_SHA256
+    # This is an acceptance control. Independent repeat trajectories are checked in
+    # test_inventory_engine_regressions.py, rather than by comparing a run to itself.
     assert inventory.equivalent(episode, episode)
     assert inventory.eligibility(episode, inventory.start_context(REAL_REFERENCE))["eligible"]
 

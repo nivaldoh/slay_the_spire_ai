@@ -121,6 +121,7 @@ def test_a_reply_nested_too_deeply_to_parse_is_retried_then_a_policy_failure(tmp
     with pytest.raises(PolicyFailure) as failure:
         agent.decide(observation())
     assert failure.value.failure["kind"] == "invalid_reply"
+    assert len(failure.value.failure["attempts"]) == len(agent.fake.bodies) > 0
     assert all("recursion" in a["error"] for a in failure.value.failure["attempts"])
 
 

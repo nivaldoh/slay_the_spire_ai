@@ -44,6 +44,25 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: require nonempty evidence in collection assertions
+
+Four capture faults passed all 4 original tests: disabled filename/path/battle-prefix
+checks and omitted failed rows. The expanded 8-case group rejects them (4/2/2/5 failures)
+using existing foreign files, separate parents and unchanged-destination bytes, plus
+record count/identity checks. Existing valid-copy behavior still passes.
+A never-update-follow-posts fault passed all 50 calibration cases; one added unit-set
+assertion now rejects it. A second independently shaped fault is rejected too.
+A ledger writer omitting successful check rows passed all 71 gate tests; explicit
+declared-name sets now reject it (1 failed, 70 passed), while all 71 controls pass.
+The saved Spire reference test now names its self-comparison as an acceptance control;
+its assertions are retained. Focused groups pass 80 and 71 cases. No production edits.
+Filtering long failure replies passed all 152 caller cases; an attempt/request-count
+assertion now rejects it (1 failed, 151 passed), while all 152 controls pass.
+Review caught a duplicated failure row that retained count; the trigger-sequence check
+now rejects it. Eight new registered faults join the prior 159 unchanged. Cards,
+before/after output and XML: `runs/test-quality-20261031/assertion-audit/`. These are
+component/file-record checks, not live movement or screenshot verification; unagreed.
+
 ## 2026-10-31: run the old local-evidence cases from the audit worktree
 
 Fourteen existing offline cases pass at `4856a6c`: saved siege/step-run wrong-value

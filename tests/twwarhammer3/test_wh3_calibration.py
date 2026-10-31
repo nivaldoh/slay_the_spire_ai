@@ -245,6 +245,7 @@ def test_mobile_units_follow_actual_screen_progress_then_release_on_contact():
     obs["friendly"][0].update(z=300)
     # The old speed estimate released here, but actual contact can still be far away.
     following = [o for o in policy.decide(obs) if o["unit"] in {"f2", "f3"}]
+    assert {o["unit"] for o in following} == {"f2", "f3"}
     assert all(o["type"] == "move" and o["z"] == 275 for o in following)
     assert policy.metadata()["released_s"] == {}
     obs["friendly"][0].update(state=["melee"])

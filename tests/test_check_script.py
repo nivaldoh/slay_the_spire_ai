@@ -727,6 +727,7 @@ def test_normal_check_requires_a_completed_test_report(repo, monkeypatch, capsys
     assert "pytest completion evidence missing" in capsys.readouterr().out
     assert not (repo / check.CHECKED).exists()
     result = json.loads((repo / check.PASSES).read_text().splitlines()[-1])
+    assert set(result["checks"]) == {"Completion", "File"}
     assert all(not row["passed"] for row in result["checks"].values())
 
 
@@ -739,4 +740,5 @@ def test_normal_check_accepts_a_completed_test_report(repo, monkeypatch, capsys)
     assert "pytest completion evidence missing" not in capsys.readouterr().out
     assert json.loads((repo / check.CHECKED).read_text())["tree"] == check.tree_content(repo)
     result = json.loads((repo / check.PASSES).read_text().splitlines()[-1])
+    assert set(result["checks"]) == {"Thing", "Folder"}
     assert all(row["passed"] for row in result["checks"].values())

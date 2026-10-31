@@ -4,6 +4,8 @@ import json
 import threading
 from types import SimpleNamespace
 
+import pytest
+
 from twwarhammer3.battle import capture
 
 
@@ -43,11 +45,50 @@ def test_capture_copy_keeps_failures_and_checks_battle_identity(tmp_path):
     result = capture.copy_presentation(bridge, episode, job="job", battle="b")
     assert result == {"status": "copied", "stills": 4, "names": 1}
     shots = json.loads((episode / "stills.json").read_text())
+    assert len(shots) == 4
     assert shots[0]["time_ms"] == 1000
     assert (episode / shots[0]["file"]).read_bytes() == b"captured"
     assert all(shot["status"] == "capture_failed" for shot in shots[1:])
     assert all("file" not in shot for shot in shots[1:])
+    assert [shot.get("trigger") for shot in shots] == ["opening", "first_contact", None, None]
+    assert shots[3]["error"] == "camera unavailable"
     assert json.loads((episode / "unit_names.json").read_text()) == {"f1": "Lord"}
+
+
+@pytest.mark.parametrize("filename", [
+    "still-b-nested/../../private.tga",
+    "still-other-opening.tga",
+], ids=["directory-escape", "foreign-battle"])
+@pytest.mark.parametrize("destination_exists", [False, True], ids=["missing", "existing"])
+def test_capture_rejects_foreign_files_without_changing_the_destination(
+    tmp_path, filename, destination_exists
+):
+    bridge, episode = tmp_path / "bridge", tmp_path / "output" / "episode"
+    bridge.mkdir()
+    episode.mkdir(parents=True)
+    # Separate parents keep a removed guard from being masked by SameFileError. Both
+    # intermediate directories exist, so the traversal path also resolves without error.
+    (bridge / "still-b-nested").mkdir()
+    (episode / "still-b-nested").mkdir()
+    source, destination = bridge / filename, episode / filename
+    source.write_bytes(b"foreign capture")
+    if destination_exists:
+        destination.write_bytes(b"unrelated destination")
+    before = destination.read_bytes() if destination.exists() else None
+    (bridge / "imagery-b.json").write_text(json.dumps({
+        "job": "job", "battle": "b", "stills": [
+            {"file": filename, "status": "captured", "trigger": "opening"}],
+    }))
+
+    result = capture.copy_presentation(bridge, episode, job="job", battle="b")
+
+    assert source.read_bytes() == b"foreign capture"
+    after = destination.read_bytes() if destination.exists() else None
+    assert after == before
+    assert result == {"status": "copied", "stills": 1, "names": 0}
+    shot, = json.loads((episode / "stills.json").read_text())
+    assert shot["status"] == "capture_failed" and "file" not in shot
+    assert shot["policy_input"] is False
 
 
 def test_passive_capture_runs_outside_caller_and_joins_evidence(tmp_path, monkeypatch):
