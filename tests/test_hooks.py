@@ -825,3 +825,19 @@ def test_stop_identity_tracks_link_targets_and_the_warm_cache(repo, target_kind)
     link.unlink()
     link.write_text("second")
     assert stop_check.tree_identity() not in (before, after)
+
+
+def test_each_stop_hook_decision_is_one_log_line(repo, capsys):
+    repo, _ = repo
+    runs = []
+    assert stop_check.main(recorder(runs, True), {"session_id": "A"}) == 0
+    assert stop_check.main(recorder(runs, True), {"session_id": "A"}) == 0
+    (repo / "a.py").write_text("a = 3\n")
+    assert stop_check.main(recorder(runs, False), {"session_id": "B"}) == 2
+    active = {"session_id": "B", "stop_hook_active": True}
+    assert stop_check.main(recorder(runs, False), active) == 0
+    assert stop_check.main(recorder(runs, False), {}, jobs=lambda: True) == 0
+    lines = (repo / "runs/checks/stop-hook.log").read_text().splitlines()
+    assert [(json.loads(line)["session"], json.loads(line)["decision"]) for line in lines] == [
+        ("A", "passed"), ("A", "pass remembered"), ("B", "failed, blocked"),
+        ("B", "failed again, let through"), ("", "game job, skipped")]

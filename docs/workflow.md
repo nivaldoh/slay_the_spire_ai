@@ -126,7 +126,8 @@ markers   3 problems listed in the log, for the owner
   names or in [agreed-checks.md](agreed-checks.md); an edited or removed JUDGEMENT line; an
   assert removed or changed under `tests/`; a skip or xfail added; a changed prompt snapshot;
   a package added or a version changed in `uv.lock`. A line moved verbatim is not flagged.
-  Warnings never fail the run: they go in the report for the owner.
+  Warnings never fail the run: they go in the report for the owner. Each item prints once
+  per base; later runs print a count, and each run's log lists every item.
 - "agreed" counts the [agreed checks](agreed-checks.md) with a pytest command whose tests
   passed in this run; each run appends them to `runs/checks/agreed-passes.jsonl` with its
   revision (owner, 2026-10-29). A line counts for its revision only when `at_revision` is true:
