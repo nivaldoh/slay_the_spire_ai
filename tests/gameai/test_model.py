@@ -438,3 +438,42 @@ def test_a_model_needs_a_key_and_a_positive_output_cap(tmp_path, monkeypatch):
     monkeypatch.delenv(spec.key_file_env, raising=False)
     with pytest.raises(api.APIError, match=f"Set {spec.key_env} or {spec.key_file_env}"):
         api.api_key("openai")
+
+
+@pytest.mark.parametrize("uncertain_attempts", [1, api.TRANSPORT_ATTEMPTS],
+                         ids=["one_uncertain", "all_uncertain"])
+def test_uncaptured_transport_failure_propagates_without_parsing_or_losing_spend(
+    tmp_path, uncertain_attempts
+):
+    failure = api.APIError("connection lost", uncertain_attempts=uncertain_attempts)
+    sent, parsed, held_at_send = [], [], []
+
+    def send(body):
+        sent.append(body)
+        held_at_send.append(ledger.held)
+        raise failure
+
+    def parse(text):
+        parsed.append(text)
+        return "unexpected reply"
+
+    ledger = Ledger(tmp_path / "ledger.jsonl", 1)
+    model = api.Model("gpt-6-luna", "low", ledger, instructions="system",
+                      max_output_tokens=200, send=send, record_exchanges=False)
+
+    with pytest.raises(api.APIError, match="connection lost") as error:
+        model.ask("user", {}, parse, retries=1)
+
+    assert error.value is failure
+    assert len(sent) == 1 and parsed == []
+    assert list(model.drain_exchanges()) == []
+    record, = [json.loads(line) for line in ledger.path.read_text().splitlines()]
+    assert record["estimated"] is True and record["reason"] == "uncertain_transport"
+    # The call holds every allowed attempt; uncertainty consumes one share per attempt.
+    # This checks charging against the reservation, not the accuracy of its price estimate.
+    held, = held_at_send
+    expected = held * uncertain_attempts / api.TRANSPORT_ATTEMPTS
+    assert 0 < expected <= ledger.budget
+    assert ledger.spent == record["usd"] == pytest.approx(expected)
+    assert record["attempts"] == uncertain_attempts
+    assert ledger.held == 0

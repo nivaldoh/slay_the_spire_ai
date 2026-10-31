@@ -44,6 +44,23 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: cover uncaptured transport errors and mailbox publication locks
+
+Fresh branch coverage identified two unexecuted error paths. Added cases require
+an uncaptured transport failure to remain APIError with no parsing, retained uncertain
+charges against the held reservation and released reservation; they also require whole-file
+publication after a transient
+replacement lock and visible failure with prior content intact after persistent locking.
+The old 39 model cases accepted a removed re-raise; the old 17 mailbox cases accepted
+immediate failure and suppressed final failure. Expanded model checks also cover the full uncertain-attempt limit.
+Review found a positive-only spend assertion accepted undercharge; it now requires each
+attempt's reserved share. Undercharge and ignored-count faults join the three initial faults
+in the plants manifest,
+with its previous 149 entries unchanged. No retry-count/delay constants are asserted.
+Card/raw/review: `runs/test-quality-20261031/error-paths-*`, `review/error-paths/`.
+Source, existing assertions and skips are unchanged. Simulated OS/transport faults provide
+component evidence; actual Windows sharing, API billing and live behavior remain unverified.
+
 ## 2026-10-31: shared language/PPO fixtures leave collected test modules
 
 The remaining five test-module import edges now point at four explicit support modules.

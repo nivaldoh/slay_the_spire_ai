@@ -1404,3 +1404,48 @@ old = "        if observation.get(\"awaiting_orders\") or observation.get(\"spee
 new = "        if observation.get(\"awaiting_orders\"):"
 tests = ["tests/twwarhammer3/test_wh3_play.py"]
 source = "2026-10-31 run, B4 speed reading"
+
+[[plant]]
+id = "model-ask-drops-uncaptured-transport-reraise"
+guards = "A transport error without response metadata stays an APIError and releases its reservation"
+file = "src/gameai/llm.py"
+old = "                    if not hasattr(error, \"attempt\"):\n                        raise\n"
+new = "                    if not hasattr(error, \"attempt\"):\n                        pass\n"
+tests = ["tests/gameai/test_model.py::test_uncaptured_transport_failure_propagates_without_parsing_or_losing_spend"]
+source = "2026-10-31 branch-coverage error-path test audit"
+
+[[plant]]
+id = "mailbox-gives-up-on-transient-publish-lock"
+guards = "Temporary replacement locks retain whole prior content until the new message is published"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = "            except PermissionError:\n                # The game holds the file open for a moment while reading it.\n                time.sleep(0.05 * (attempt + 1))\n"
+new = "            except PermissionError:\n                raise\n"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py::test_transient_publish_lock_keeps_prior_content_until_whole_session_is_replaced"]
+source = "2026-10-31 branch-coverage error-path test audit"
+
+[[plant]]
+id = "mailbox-hides-persistent-publish-lock"
+guards = "An unrecoverable replacement failure remains visible and never claims successful publication"
+file = "src/twwarhammer3/engine/mailbox.py"
+old = "\n        os.replace(temporary, path)\n"
+new = "\n        return\n"
+tests = ["tests/twwarhammer3/test_wh3_mailbox.py::test_persistent_publish_lock_propagates_failure_and_preserves_prior_content"]
+source = "2026-10-31 branch-coverage error-path test audit"
+
+[[plant]]
+id = "model-uncertain-charge-is-only-one-third"
+guards = "Every uncertain attempt consumes its reserved share"
+file = "src/gameai/llm.py"
+old = "usd = reservation * attempts"
+new = "usd = reservation * attempts / TRANSPORT_ATTEMPTS"
+tests = ["tests/gameai/test_model.py::test_uncaptured_transport_failure_propagates_without_parsing_or_losing_spend"]
+source = "2026-10-31 independent uncertain-spend test review"
+
+[[plant]]
+id = "model-uncertain-charge-ignores-attempt-count"
+guards = "All uncertain attempts are charged, not just the first"
+file = "src/gameai/llm.py"
+old = "usd = reservation * attempts"
+new = "usd = reservation"
+tests = ["tests/gameai/test_model.py::test_uncaptured_transport_failure_propagates_without_parsing_or_losing_spend"]
+source = "2026-10-31 independent uncertain-spend test review"
