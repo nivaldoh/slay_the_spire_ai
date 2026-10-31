@@ -1684,3 +1684,40 @@ old = "if header.get(\"job\") != job or header.get(\"battle\") != battle:"
 new = "if header.get(\"job\") != job:"
 tests = ["tests/twwarhammer3/test_wh3_capture.py::test_rejected_replay_identity_cannot_create_or_overwrite_evidence"]
 source = "2026-10-31 replay-identity oracle audit"
+# 2026-10-31 refusal sweep review: wrong versions that passed every test until new tests.
+
+[[plant]]
+id = "team-duplicate-ids-accepted"
+guards = "the team partition refuses rosters it cannot own"
+file = "src/twwarhammer3/battle/team.py"
+old = "            self._fault(\"team received duplicate friendly unit ids\")"
+new = "            pass"
+tests = ["tests/twwarhammer3/team/test_wh3_team.py"]
+source = "2026-10-31 run, refusal sweep review"
+
+[[plant]]
+id = "team-rest-member-subset-accepted"
+guards = "the team partition refuses rosters it cannot own"
+file = "src/twwarhammer3/battle/team.py"
+old = "                    self.battle is not None and not units >= member.units):"
+new = "                    self.battle is not None and not units & member.units):"
+tests = ["tests/twwarhammer3/team/test_wh3_team.py"]
+source = "2026-10-31 run, refusal sweep review"
+
+[[plant]]
+id = "worker-names-prefix-match"
+guards = "worker names stay inside the runs folder"
+file = "src/twwarhammer3/engine/worker.py"
+old = "    if not all(re.fullmatch(r\"[A-Za-z0-9_-]+\", name) for name in names):"
+new = "    if not all(re.match(r\"[A-Za-z0-9_-]+\", name) for name in names):"
+tests = ["tests/twwarhammer3/test_wh3_worker.py"]
+source = "2026-10-31 run, refusal sweep review"
+
+[[plant]]
+id = "worker-ack-deadline-restarts"
+guards = "a request the game never acknowledges becomes unknown after ack_s"
+file = "src/twwarhammer3/engine/worker.py"
+old = "                if not self._changed.wait(max(0.0, deadline - time.monotonic())):"
+new = "                if not self._changed.wait(self.ack_s):"
+tests = ["tests/twwarhammer3/test_wh3_worker.py"]
+source = "2026-10-31 run, refusal sweep review"
