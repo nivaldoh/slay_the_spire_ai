@@ -950,3 +950,16 @@ def test_the_band_includes_its_edges(ratio, stretches, inside):
     if stretches:
         result.update(windows_clock_range=stretches, windows_clock_longest_s=30)
     assert digest.ran_at_1x(result) is inside
+
+
+def test_an_interrupt_during_cleanup_still_writes_the_record_and_then_stops(tmp_path):
+    class StoppedInCleanup(Hold):
+        def close(self):
+            raise KeyboardInterrupt
+
+    mailbox = FakeMailbox([bridge_observation(0, 0), bridge_observation(1, 1000, result="won")])
+    with pytest.raises(KeyboardInterrupt):
+        play.play_episode(tmp_path / "e", CONFIG, StoppedInCleanup, mailbox, not_battle=None)
+    result = json.loads((tmp_path / "e/result.json").read_text())
+    assert result["status"] == "interrupted" and result["engine_ending"]["result"] == "won"
+    assert result["error"] == "controller close: interrupted"

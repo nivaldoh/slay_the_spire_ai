@@ -312,6 +312,7 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
         result.update(status="infrastructure_failure", error=str(exc),
                       error_type=type(exc).__name__)
     finally:
+        stopped = None  # Ctrl-C during cleanup: the record is still written, then it propagates
         if hasattr(policy, "close"):
             try:
                 policy_call(policy, "close")  # in-flight calls are waited for and charged
@@ -322,6 +323,10 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
                 if result["status"] in ENDED:
                     result.update(status="policy_failure", error=f"controller close: {exc}",
                                   failure=getattr(exc, "failure", {}))
+            except KeyboardInterrupt as exc:
+                stopped = exc
+                if result["status"] in ENDED:
+                    result.update(status="interrupted", error="controller close: interrupted")
         record_exchanges(policy, event)
         if hasattr(policy, "records"):  # a team: member batches, not dispatcher polls
             records = policy.records()
@@ -345,6 +350,8 @@ def play_episode(directory: Path, config: dict, make_policy, mailbox: Mailbox, *
         (directory / "mod.log").write_text(mailbox.log_since(log_offset))
         write_json(directory / "result.json", result)
         trace.close()
+        if stopped:
+            raise stopped
     return result
 
 
