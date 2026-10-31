@@ -421,8 +421,11 @@ def first_showing(root: Path, base: str, items: list[str]) -> tuple[list[str], i
         seen = set(record["items"]) if record["base"] == base else set()
     except (OSError, ValueError, KeyError, TypeError):
         seen = set()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps({"base": base, "items": sorted(seen | set(items))}) + "\n")
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"base": base, "items": sorted(seen | set(items))}) + "\n")
+    except OSError:
+        pass  # This cosmetic cache must not fail the checks or their report.
     return [item for item in items if item not in seen], sum(item in seen for item in items)
 
 

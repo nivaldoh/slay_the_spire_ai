@@ -1721,3 +1721,12 @@ old = "                if not self._changed.wait(max(0.0, deadline - time.monoto
 new = "                if not self._changed.wait(self.ack_s):"
 tests = ["tests/twwarhammer3/test_wh3_worker.py"]
 source = "2026-10-31 run, refusal sweep review"
+
+[[plant]]
+id = "check-warning-cache-error-blocks-gate"
+guards = "An optional warning-display cache failure cannot block the actual gate or its report"
+file = "scripts/check.py"
+old = "    except OSError:\n        pass  # This cosmetic cache must not fail the checks or their report."
+new = "    except PermissionError:\n        pass  # This cosmetic cache must not fail the checks or their report."
+tests = ["tests/test_check_script.py::test_warning_cache_write_failure_cannot_block_passing_checks"]
+source = "2026-10-31 warning-cache failure regression"

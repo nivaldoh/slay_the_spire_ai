@@ -775,3 +775,23 @@ def test_a_run_removes_the_scratch_of_ended_runs_and_keeps_a_running_ones(repo, 
     assert run_main(repo, monkeypatch) == 0
     assert not ended.exists() and not (scratch / "check-999999999.xml").exists()
     assert running.exists()
+
+
+def test_warning_cache_write_failure_cannot_block_passing_checks(repo, monkeypatch, capsys):
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
+    (repo / ".gitignore").write_text("runs/\n")
+    PLANTED["skip"][0](repo)
+    item = PLANTED["skip"][1]
+    # A directory is unreadable as JSON and cannot be overwritten as a cache file;
+    # the rest of runs/checks remains writable for the actual gate log and receipt.
+    (repo / check.YES_SHOWN).mkdir(parents=True)
+
+    assert run_main(repo, monkeypatch, "--base", "HEAD") == 0
+
+    out = capsys.readouterr().out
+    assert "result    PASSED: Ruff clean" in out and f"  - {item}" in out
+    log = next((repo / "runs/checks").glob("*.log")).read_text()
+    assert f"== needs your yes, every item\n{item}" in log
+    record = json.loads((repo / check.CHECKED).read_text())
+    assert record["tree"] == check.tree_content(repo)
