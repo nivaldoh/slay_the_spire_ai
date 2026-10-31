@@ -56,7 +56,9 @@ Before: 4 regressions failed, control passed. First fix: 5 passed; integrated ch
 before the review extension. Review found a named collection error counted as execution;
 that and a contradictory failure report failed the first fix (2 cases). Revised cases: 7 passed.
 The original 96 plants were caught at `9bd93dd`; four new variants were independently caught.
-Final replay with source hashes: `plants-after.json`; final exit gate: `check-final.txt` there.
+Final replay: 100/100 caught on copied working contents (`plants-after.json`, matching hashes).
+Final gate: Ruff clean, 2106 passed, 43 skipped (`check-final.txt`, working contents, not HEAD).
+Pushed `356e723`; CI passed clean there: 2058 passed, 69 skipped (no local evidence/Torch/Windows).
 The earlier post-change replay was interrupted after the review finding and is not a pass.
 No existing assertions, skips, agreed-check definitions or committed plants changed. The gate
 warns about `pytest.skip` inside a new deliberately incomplete scratch fixture; no new suite skip.
