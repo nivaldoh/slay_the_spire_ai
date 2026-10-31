@@ -44,6 +44,21 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: check local-model lease ownership at the loading boundary
+
+Current source bypasses the lease for injected CPU loaders; a private-lock contention
+probe agrees, rejecting the initial fixture-coupling suspicion.
+All 37 existing policy cases accepted reversed selection, no default-loader lease,
+and early lease release.
+Two added private-lock cases require refusal before default weight loading, ownership
+during loading/use, release on close, and an injected CPU model working while it is held.
+Expanded policy run: 39 passed; the three wrong versions fail two, one and one cases.
+Focused CPU policy/evaluation/catalog cases: 80 passed; review prompted the retention check.
+Source, existing assertions and fixtures are unchanged; no actual GPU lease was held.
+Raw runs, card and review: `runs/test-quality-20261031/gpu-*` and `review/gpu-selection/`.
+The fault replay needs the CPU test environment; it is not in the default plants manifest,
+whose ordinary environment lacks Torch. Hardware/CUDA behavior remains unverified.
+
 ## 2026-10-31: shared Spire evidence and catalog setup leaves collected tests
 
 Shared builders/fixtures moved from `test_evidence.py` and `test_catalog.py` into

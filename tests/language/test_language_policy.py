@@ -223,6 +223,50 @@ def test_gpu_lease_is_exclusive_released_on_exception_and_load_failure(
         pass
 
 
+def test_default_loader_claims_the_lease_before_loading_and_releases_it_after_close(
+    tmp_path, monkeypatch, declaration, decision
+):
+    # One GPU job at a time (AGENTS.md); this real lock is private to the test.
+    monkeypatch.setattr(language, "GPU_LOCK_PATH", tmp_path / "gpu.lock")
+    loaded = []
+
+    def load(_declaration):
+        with pytest.raises(RuntimeError, match="owns the GPU"):
+            with language.gpu_lease():
+                pass
+        loaded.append(True)
+        return TinyModel(), TinyTokenizer()
+
+    monkeypatch.setattr(language, "load_local_model", load)
+
+    with language.gpu_lease():
+        with pytest.raises(RuntimeError, match="owns the GPU"):
+            with language.LanguagePolicy(declaration):
+                pass
+        assert loaded == []
+
+    with language.LanguagePolicy(declaration) as policy:
+        assert policy.choose(decision) is decision.candidates[0]
+        with pytest.raises(RuntimeError, match="owns the GPU"):
+            with language.gpu_lease():
+                pass
+    assert loaded == [True]
+    with language.gpu_lease():
+        pass
+
+
+def test_injected_cpu_loader_works_while_the_gpu_lease_is_held(
+    tmp_path, monkeypatch, declaration, decision
+):
+    monkeypatch.setattr(language, "GPU_LOCK_PATH", tmp_path / "gpu.lock")
+
+    with language.gpu_lease():
+        with language.LanguagePolicy(
+            declaration, loader=lambda _: (TinyModel(), TinyTokenizer())
+        ) as policy:
+            assert policy.choose(decision) is decision.candidates[0]
+
+
 def test_decoder_preserves_embedded_special_tokens_and_removes_only_final_eos():
     class Tokenizer:
         def decode(self, ids, *, skip_special_tokens):
