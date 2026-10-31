@@ -1566,3 +1566,49 @@ old = "\"attempts\": error.attempts}"
 new = "\"attempts\": [a for a in error.attempts if len(a.get(\"text\", \"\")) <= 10000]}"
 tests = ["tests/twwarhammer3/test_wh3_llm.py::test_a_reply_nested_too_deeply_to_parse_is_retried_then_a_policy_failure"]
 source = "2026-10-31 nonvacuous failure-attempt record audit"
+# 2026-10-31 run, B5: check.py's yes list once per base, ended runs' scratch pruned, Stop-hook log.
+
+[[plant]]
+id = "yes-items-printed-every-run"
+guards = "check.py prints each needs-your-yes item once per base"
+file = "scripts/check.py"
+old = "    return [item for item in items if item not in seen], sum(item in seen for item in items)"
+new = "    return list(items), 0"
+tests = ["tests/test_check_script.py"]
+source = "2026-10-31 run, B5 factory"
+
+[[plant]]
+id = "yes-items-left-out-of-the-log"
+guards = "check.py prints each needs-your-yes item once per base"
+file = "scripts/check.py"
+old = "    log.write_text(\"\\n\".join([*shown, \"\", \"== needs your yes, every item\", *yes, \"\","
+new = "    log.write_text(\"\\n\".join([*shown, \"\", \"== needs your yes, every item\", \"\","
+tests = ["tests/test_check_script.py"]
+source = "2026-10-31 run, B5 factory"
+
+[[plant]]
+id = "prune-keeps-ended-runs"
+guards = "check.py removes ended runs' scratch"
+file = "scripts/check.py"
+old = "        if not Path(f\"/proc/{pid}\").exists():"
+new = "        if False:"
+tests = ["tests/test_check_script.py"]
+source = "2026-10-31 run, B5 factory"
+
+[[plant]]
+id = "prune-removes-running-runs"
+guards = "check.py removes ended runs' scratch"
+file = "scripts/check.py"
+old = "        if not Path(f\"/proc/{pid}\").exists():"
+new = "        if True:"
+tests = ["tests/test_check_script.py"]
+source = "2026-10-31 run, B5 factory"
+
+[[plant]]
+id = "stop-hook-logs-nothing"
+guards = "the Stop hook logs one line per decision"
+file = "scripts/hooks/stop_check.py"
+old = "        with CACHE.with_name(\"stop-hook.log\").open(\"a\", encoding=\"utf-8\") as log:"
+new = "        with open(os.devnull, \"a\", encoding=\"utf-8\") as log:"
+tests = ["tests/test_hooks.py"]
+source = "2026-10-31 run, B5 factory"

@@ -26,6 +26,17 @@ benchmark harness revision, G1 and G2 the calibration stages.
   ([benchmark.md](benchmark-implementation.md#what-the-current-code-reports)).
 - A new entry goes at the top, and "On main" is updated with it.
 
+
+## 2026-10-31: test audit integrates factory changes through main 8076fc1
+
+- Merged main `8076fc1` into the isolated testing draft; retained the audit status and main's
+  stopped-controller status. All parent plant definitions retained exactly: 167 audit,
+  144 main, 172 distinct in the union; this is preservation, not a fresh full replay.
+- Gate/hook integration tests: 224 passed. Normal gate and independent review are recorded
+  in the merge commit and `runs/test-quality-20261031/main807-integration/`.
+- Existing test-edit and optional-CI adoption questions remain pending. Offline evidence;
+  no new agreed method, game run, benchmark meaning or policy-strength claim. Card unagreed.
+
 ## On main
 
 | Piece | Version | Defined in | Latest results |
@@ -238,7 +249,7 @@ claim. Next: exception expectations (two wrong-type KeyError variants pass) and 
 
 ## 2026-10-31 (night): agreed live checks after the multiplayer merge; outcome readers; b52
 
-Claude Code, 02:38-~07:00 (WSL clock), $0; brief, handoff, notes: `runs/overnight-20261031/`.
+Claude Code, 02:38-~09:50 (WSL clock), $0; brief, handoff, notes: `runs/overnight-20261031/`.
 At `150ef84`: Land checkpoints passed (0 mismatches over 2,000/2,001 ticks, 9/9 readings per
 restore, the changed restore diverged at 1303); scripted team 4/4; siege passed (4 states, 8
 identical restores with 0 mismatches over 2,402-2,403 ticks, 194 readings); army setup failed
@@ -255,7 +266,11 @@ maps result.json to benchmark.md's outcome rows; 3 of 12 reader plants and 1 sco
 passed every test until 4 new tests. compare-peers fixes and a Lua-to-comparator seam test
 (`b9e1cce`); b52: team episodes off the card board, `running_at_close` (`56d3937`), the engine
 speed reading (`5067ba5`; probe 440/440 read 1). Plants 100 to 139, 139/139 caught at `1cc4582`.
-Waiting: `wh3-team-report`, `factory-20261031`, `wh3-cleanup-interrupt`, `land-check-stats-apart`.
+Then `96bb137` (`play.py` keeps result.json on Ctrl-C during cleanup): all four checks passed (Land
+0 mismatches and 9/9 readings; team 4/4; army; siege 8 identical restores, 194 readings).
+The 10-30 factory items merged (`cbe73ea`: yes items once, Stop-hook log, scratch pruning,
+one shared hook-test pass). Waiting: `wh3-team-report`, `team-check-battle-time`,
+`land-check-stats-apart`, `gate-xdist`.
 Unverified: the army stall's cause; a slowed battle's reading; any model team; real peers.
 
 ## 2026-10-31: factory checks require successful execution evidence

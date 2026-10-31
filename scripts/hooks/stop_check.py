@@ -15,6 +15,7 @@ replay, the queue or a known live-check script), the check is skipped to keep lo
 Help and evidence recounts of live-check scripts stay offline.
 If the tree changes during a passing check, its final state is unchecked: block once and
 remember no pass, so a fresh stop must check again.
+Each decision appends one JSON line (time, session, decision) to runs/checks/stop-hook.log.
 Timeouts and interruptions kill and reap the check process group. SIGTERM uses the same
 cleanup as Ctrl-C; SIGKILL cannot run Python cleanup.
 """
@@ -26,6 +27,7 @@ import runpy
 import signal
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -156,6 +158,17 @@ def say(message: str) -> int:
     return 0
 
 
+def note(session: str, decision: str) -> None:
+    """One line per decision in runs/checks/stop-hook.log, so the hook's catches can be
+    counted (the 10-30 factory audit). A log that cannot be written never blocks a stop."""
+    try:
+        with CACHE.with_name("stop-hook.log").open("a", encoding="utf-8") as log:
+            log.write(json.dumps({"time": datetime.now().isoformat(timespec="seconds"),
+                                  "session": session, "decision": decision}) + "\n")
+    except OSError:
+        pass
+
+
 def completed_check_pass() -> bool:
     """A completed pass on current contents; rests on JUDGEMENT? scripts/check.py Checked tree
     and Concurrent passes."""
@@ -174,30 +187,36 @@ def completed_check_pass() -> bool:
 def main(check=run_check, event: dict | None = None, jobs=None) -> int:
     event, jobs = event or {}, jobs or game_job_running
     try:
+        session = str(event.get("session_id", ""))
         identity = tree_identity()
         cache = read_cache()
         if cache.get("passed") == identity:
+            note(session, "pass remembered")
             return 0
-        session = str(event.get("session_id", ""))
         proven = completed_check_pass()
         current = tree_identity()
         if proven and current == identity:
             remember(cache, session, passed=identity)
+            note(session, "pass by an earlier check.py run")
             return 0
         identity = current
         if event.get("stop_hook_active") and session in cache.get("blocked", []):
             remember(cache, session, **{k: v for k, v in cache.items() if k != "blocked"})
+            note(session, "failed again, let through")
             return say("scripts/check.py still failed to establish a pass at the last stop; "
                        "stopping anyway "
                        "(see runs/checks/)")
         if cache.get("timed_out") == identity:
+            note(session, "timed out before, skipped")
             return say("scripts/check.py timed out on this tree before; not rerun")
         if jobs():
+            note(session, "game job, skipped")
             return say("a game job runs: scripts/check.py skipped to keep its load off the game")
         try:
             passed, report = check()
         except subprocess.TimeoutExpired:
             remember(cache, session, timed_out=identity)
+            note(session, "timed out")
             return say(f"scripts/check.py timed out after {TIMEOUT_S} s; not rerun on this tree")
         if passed and tree_identity() != identity:
             passed = False
@@ -205,9 +224,11 @@ def main(check=run_check, event: dict | None = None, jobs=None) -> int:
                       + report)
         remember(cache, session, block=not passed,
                  **({"passed": identity} if passed else {"failed": identity}))
+        note(session, "passed" if passed else "failed, blocked")
         if passed:
             return 0
     except (OSError, ValueError, subprocess.SubprocessError) as error:
+        note(str(event.get("session_id", "")), "could not run")
         return say(f"stop hook could not run check.py: {error}")
     print("scripts/check.py has no pass for the current tree. Fix failures that are yours; "
           "if another session changed it, say so and stop:\n" + report, file=sys.stderr)

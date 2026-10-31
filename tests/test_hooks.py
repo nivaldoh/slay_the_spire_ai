@@ -7,6 +7,7 @@ blocks; `stop_hook_active` marks a stop that follows a block).
 import importlib.util
 import json
 import os
+import shutil
 import signal
 import subprocess
 import sys
@@ -584,25 +585,43 @@ def test_live_checker_argparse_prefixes_keep_resume_live(tmp_path, options, runn
     assert stop_check.game_job_running(tmp_path) is running
 
 
-@pytest.fixture
-def completed_normal_pass(repo):
-    repo, git = repo
-    files = {
-        "scripts/check.py": (ROOT / "scripts/check.py").read_text(),
-        ".gitignore": "runs/\n__pycache__/\n.pytest_cache/\n.ruff_cache/\n",
-        "pytest.ini": "[pytest]\ntestpaths = tests\n",
-        "ruff.toml": '[lint]\nselect = ["F"]\n',
-        "docs/state.md": "# Project state\n",
-        "docs/agreed-checks.md": "- Fixture: `pytest tests`.\n",
-        "tests/test_pass.py": "def test_pass():\n    assert True\n",
-        "a.py": "a = 2\n",
-    }
-    for name, text in files.items():
+NORMAL_PASS_FILES = {
+    "scripts/check.py": (ROOT / "scripts/check.py").read_text(),
+    ".gitignore": "runs/\n__pycache__/\n.pytest_cache/\n.ruff_cache/\n",
+    "pytest.ini": "[pytest]\ntestpaths = tests\n",
+    "ruff.toml": '[lint]\nselect = ["F"]\n',
+    "docs/state.md": "# Project state\n",
+    "docs/agreed-checks.md": "- Fixture: `pytest tests`.\n",
+    "tests/test_pass.py": "def test_pass():\n    assert True\n",
+    "a.py": "a = 2\n",
+}
+
+
+@pytest.fixture(scope="module")
+def normal_pass_records(tmp_path_factory):
+    """runs/checks/ of one real check.py pass on NORMAL_PASS_FILES. The pass record hashes
+    relative paths and contents only (check.py tree_content), so it holds in any repository
+    with the same files: each test copies it instead of running check.py again (16 runs)."""
+    repo = tmp_path_factory.mktemp("normal-pass")
+    for args in (["init", "-q"], ["commit", "-q", "--allow-empty", "-m", "base"]):  # as `repo`
+        subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=repo,
+                       check=True, capture_output=True)
+    for name, text in NORMAL_PASS_FILES.items():
         (repo / name).parent.mkdir(parents=True, exist_ok=True)
         (repo / name).write_text(text)
     done = subprocess.run([sys.executable, "scripts/check.py"], cwd=repo,
                           capture_output=True, text=True)
     assert done.returncode == 0, done.stdout + done.stderr
+    return repo / "runs/checks"
+
+
+@pytest.fixture
+def completed_normal_pass(repo, normal_pass_records):
+    repo, git = repo
+    for name, text in NORMAL_PASS_FILES.items():
+        (repo / name).parent.mkdir(parents=True, exist_ok=True)
+        (repo / name).write_text(text)
+    shutil.copytree(normal_pass_records, repo / "runs/checks")
     assert (repo / "runs/checks/last-pass.json").exists()
     return repo, git
 
@@ -838,3 +857,19 @@ def test_stop_identity_tracks_link_targets_and_the_warm_cache(repo, target_kind)
     link.unlink()
     link.write_text("second")
     assert stop_check.tree_identity() not in (before, after)
+
+
+def test_each_stop_hook_decision_is_one_log_line(repo, capsys):
+    repo, _ = repo
+    runs = []
+    assert stop_check.main(recorder(runs, True), {"session_id": "A"}) == 0
+    assert stop_check.main(recorder(runs, True), {"session_id": "A"}) == 0
+    (repo / "a.py").write_text("a = 3\n")
+    assert stop_check.main(recorder(runs, False), {"session_id": "B"}) == 2
+    active = {"session_id": "B", "stop_hook_active": True}
+    assert stop_check.main(recorder(runs, False), active) == 0
+    assert stop_check.main(recorder(runs, False), {}, jobs=lambda: True) == 0
+    lines = (repo / "runs/checks/stop-hook.log").read_text().splitlines()
+    assert [(json.loads(line)["session"], json.loads(line)["decision"]) for line in lines] == [
+        ("A", "passed"), ("A", "pass remembered"), ("B", "failed, blocked"),
+        ("B", "failed again, let through"), ("", "game job, skipped")]

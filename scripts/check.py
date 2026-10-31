@@ -8,7 +8,8 @@ runs/checks/). It exits 1 when Ruff or any test fails or pytest cannot establish
 Completion needs a fresh readable JUnit report with named cases, a passing test and no failures.
 A zero exit without that evidence is incomplete. The suite runs without WH3_WRITE_PROMPTS, so it
 never rewrites prompt snapshots, and its scratch
-directory (runs/test-scratch/check-<pid>) is removed after a pass.
+directory (runs/test-scratch/check-<pid>) is removed after a pass; a failed run's stays for
+reading the failure until the next run starts, which removes every ended run's.
 
 A passing run whose files did not change while it ran writes runs/checks/last-pass.json with a hash
 of every file not ignored (tree_content); scripts/githooks/pre-commit refuses a commit unless the
@@ -25,7 +26,9 @@ unpushed commits, uncommitted and untracked files all count): lines removed or c
 an agreed check names (docs/agreed-checks.md) or in that page; an edited or removed JUDGEMENT
 line; an assert removed or changed under tests/; a skip or xfail added there; a changed prompt
 snapshot; a package added or a version changed in uv.lock. A line moved verbatim elsewhere
-(indentation and comment marks aside) is neither removed nor added. "pages" names docs/state.md
+(indentation and comment marks aside) is neither removed nor added. Each item is printed by
+the first run that finds it for that base; later runs print how many were printed before
+(runs/checks/yes-shown.json), and every run's log lists them all. "pages" names docs/state.md
 when it is over its 120 lines (AGENTS.md; a warning at the owner's yes, 2026-10-30).
 "worktree" says the run is in a linked worktree, where tests of saved evidence can skip.
 Last, "markers" counts the marker problems listed in the log (docs/judgement.md); only the
@@ -66,6 +69,7 @@ ROOT = Path(__file__).resolve().parents[1]
 AGREED = "docs/agreed-checks.md"
 PASSES = "runs/checks/agreed-passes.jsonl"
 CHECKED = "runs/checks/last-pass.json"  # the tree the last passing run checked
+YES_SHOWN = "runs/checks/yes-shown.json"  # the "needs your yes" items printed so far, by base
 PLANTS = "tests/plants.toml"
 STATE, STATE_LINES = "docs/state.md", 120
 PLANT_TIMEOUT_S = 300
@@ -408,6 +412,31 @@ def plants_main() -> int:
     return 0 if set(counts) <= {"caught", "HANG"} else 1
 
 
+def first_showing(root: Path, base: str, items: list[str]) -> tuple[list[str], int]:
+    """(the items no earlier run printed for this base, how many it did); remembers them all.
+    The full list still goes in every run's log."""
+    path = root / YES_SHOWN
+    try:
+        record = json.loads(path.read_text())
+        seen = set(record["items"]) if record["base"] == base else set()
+    except (OSError, ValueError, KeyError, TypeError):
+        seen = set()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"base": base, "items": sorted(seen | set(items))}) + "\n")
+    return [item for item in items if item not in seen], sum(item in seen for item in items)
+
+
+def prune_scratch(parent: Path, own: Path) -> None:
+    """Remove the test scratch of earlier normal runs whose process has ended. A failed run
+    keeps its own (pytest's --basetemp, for reading the failure) until the next run starts."""
+    for path in parent.glob("check-*"):
+        pid = path.name.removeprefix("check-").removesuffix(".xml")
+        if path.name in (own.name, own.name + ".xml") or not pid.isdigit():
+            continue  # this run's, or a check-pycache- folder of a running gate
+        if not Path(f"/proc/{pid}").exists():
+            shutil.rmtree(path) if path.is_dir() else path.unlink()
+
+
 def lock_versions(text: str) -> dict[str, str]:
     versions: dict[str, set[str]] = {}
     for package in tomllib.loads(text).get("package", []):
@@ -591,6 +620,7 @@ def main() -> int:
     env.pop("PYTHONOPTIMIZE", None)
     scratch = ROOT / "runs" / "test-scratch" / f"check-{os.getpid()}"
     scratch.parent.mkdir(parents=True, exist_ok=True)  # pytest makes only the last folder
+    prune_scratch(scratch.parent, scratch)
     content = tree_content(ROOT)
     ruff = subprocess.run([sys.executable, "-m", "ruff", "check", "."], cwd=ROOT, env=env,
                           capture_output=True, text=True)
@@ -647,8 +677,12 @@ def main() -> int:
                  f"{'' if own else ' (not at HEAD: tree changed)'}; {PASSES}")
     yes = warnings(ROOT, base)
     if yes:
+        new, before = first_showing(ROOT, base, yes)
         shown.append(f"needs your yes (changes since {base[:9]}):")
-        shown += [f"  - {line}" for line in yes]
+        shown += [f"  - {line}" for line in new]
+        if before:
+            shown.append(f"  - and {before} printed by an earlier run (the log and {YES_SHOWN}"
+                         " list every item)")
     shown += [f"pages     {line} (AGENTS.md Working habits)" for line in long_pages(ROOT)]
     shown += [f"worktree  {line}" for line in linked_worktree(ROOT)]
     unchanged = tree_content(ROOT) == content
@@ -667,7 +701,8 @@ def main() -> int:
             "revision": revision, "at_revision": own,
             "changed": changed, "untracked": untracked, "log": str(log.relative_to(ROOT)),
             "checks": agreed}) + "\n")
-    log.write_text("\n".join([*shown, "", "== marker problems", *problems, "",
+    log.write_text("\n".join([*shown, "", "== needs your yes, every item", *yes, "",
+                              "== marker problems", *problems, "",
                               "== git status --porcelain", *status, "",
                               "== ruff check .", ruff.stdout + ruff.stderr,
                               "== pytest -q -ra", output]), encoding="utf-8")

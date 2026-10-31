@@ -742,3 +742,36 @@ def test_normal_check_accepts_a_completed_test_report(repo, monkeypatch, capsys)
     result = json.loads((repo / check.PASSES).read_text().splitlines()[-1])
     assert set(result["checks"]) == {"Thing", "Folder"}
     assert all(row["passed"] for row in result["checks"].values())
+
+
+def test_a_needs_your_yes_item_is_printed_once_and_logged_every_run(repo, monkeypatch, capsys):
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
+    (repo / ".gitignore").write_text("runs/\n")
+    PLANTED["skip"][0](repo)
+    item = PLANTED["skip"][1]
+    assert run_main(repo, monkeypatch, "--base", "HEAD") == 0
+    assert f"  - {item}" in capsys.readouterr().out
+    assert run_main(repo, monkeypatch, "--base", "HEAD") == 0
+    out = capsys.readouterr().out
+    assert f"  - {item}" not in out and "  - and 1 printed by an earlier run" in out
+    log = sorted((repo / "runs/checks").glob("*.log"))[-1].read_text()
+    assert f"== needs your yes, every item\n{item}" in log
+    PLANTED["xfail"][0](repo)  # a new item is printed; the old one stays a count
+    assert run_main(repo, monkeypatch, "--base", "HEAD") == 0
+    out = capsys.readouterr().out
+    assert "  - 2 skip or xfail added" in out and "  - and" not in out
+
+
+def test_a_run_removes_the_scratch_of_ended_runs_and_keeps_a_running_ones(repo, monkeypatch):
+    (repo / "pytest.ini").write_text("[pytest]\n")
+    (repo / "ruff.toml").write_text('[lint]\nselect = ["F"]\n')
+    (repo / ".gitignore").write_text("runs/\n")
+    scratch = repo / "runs/test-scratch"
+    ended, running = scratch / "check-999999999", scratch / f"check-{os.getppid()}"
+    for folder in (ended, running):
+        (folder / "test_x0").mkdir(parents=True)
+    (scratch / "check-999999999.xml").write_text("<testsuites/>")
+    assert run_main(repo, monkeypatch) == 0
+    assert not ended.exists() and not (scratch / "check-999999999.xml").exists()
+    assert running.exists()
