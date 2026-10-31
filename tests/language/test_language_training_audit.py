@@ -118,6 +118,7 @@ def test_audit_links_real_data_checkpoints_exports_and_does_not_mutate(saved, mo
     monkeypatch.setattr(policy, "gpu_lease", lambda: pytest.fail("Auditor takes no GPU lease"))
     result = audit.audit_language_training(saved)
     assert result["valid"], result["errors"]
+    assert result["checks"]  # The public audit report promises named checks.
     assert all(result["checks"].values())
     assert result["updates"] == 3 and result["changed_adapter_elements"] > 0
     assert result["charged_tokens"] == result["committed_tokens"] == 192
