@@ -1892,3 +1892,21 @@ old = "            return [order for unit in units\n                    for orde
 new = "            return [order for unit in units\n                    for order in self.move(hammer, self.retreats[unit[\"id\"]], target)]\n        if self.phase in (\"pin\", \"charge\"):"
 tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_pin_then_rear_charges_the_rear_only_after_the_front_is_pinned"]
 source = "2026-10-31 PinThenRear withdrawal identity oracle"
+
+[[plant]]
+id = "passive-path-unsafe-battle-component-accepted"
+guards = "Unsafe battle and trigger components cannot write outside the bridge"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                if observation.get(\"job\") != self.job or not NAME.fullmatch(battle):"
+new = "                if observation.get(\"job\") != self.job:"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_cannot_write_through_a_path_component"]
+source = "2026-10-31 passive capture path component ownership oracle"
+
+[[plant]]
+id = "passive-path-unsafe-trigger-component-accepted"
+guards = "Unsafe battle and trigger components cannot write outside the bridge"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                    if (not NAME.fullmatch(trigger) or key in seen\n                            or shot.get(\"status\") != \"capture_ready\"):"
+new = "                    if (key in seen\n                            or shot.get(\"status\") != \"capture_ready\"):"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_cannot_write_through_a_path_component"]
+source = "2026-10-31 passive capture path component ownership oracle"

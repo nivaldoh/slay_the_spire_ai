@@ -2,6 +2,7 @@
 the stills out of the bridge, and the passive screenshot thread."""
 import json
 import threading
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -295,3 +296,66 @@ def test_passive_capture_waits_for_matching_ready_request(tmp_path, monkeypatch,
         "job": "j", "battle": "b", "trigger": "opening", "status": "captured",
         "file": "still-b-opening.png"}
     assert (bridge / metadata["file"]).read_bytes() == b"ready image"
+
+
+@pytest.mark.parametrize("component", ["battle", "trigger"])
+def test_passive_capture_cannot_write_through_a_path_component(tmp_path, monkeypatch, component):
+    bridge = tmp_path / "bridge"
+    bridge.mkdir()
+    bad_battle = "unsafe/../../outside" if component == "battle" else "b"
+    bad_trigger = "unsafe/../../outside" if component == "trigger" else "opening"
+    bad_record_path = bridge / f"imagery-{bad_battle}.json"
+    bad_image = bridge / f"still-{bad_battle}-{bad_trigger}.png"
+    bad_callback = bridge / f"capture-{bad_battle}-{bad_trigger}.json"
+    bad_paths = [bad_record_path, bad_image, bad_callback]
+    # Existing intermediates and outside destinations expose actual unwanted writes.
+    # Every possible write remains confined to this test's own temporary directory.
+    for path in bad_paths:
+        parts = path.relative_to(bridge).parts
+        if len(parts) > 1:
+            (bridge / parts[0]).mkdir(exist_ok=True)
+        assert path.resolve().is_relative_to(tmp_path)
+    bad_record = {"job": "j", "battle": bad_battle, "stills": [
+        {"trigger": bad_trigger, "status": "capture_ready"}]}
+    bad_record_path.write_text(json.dumps(bad_record))
+    bad_image.write_bytes(b"outside image")
+    bad_callback.write_bytes(b"outside callback")
+    outside = {path.resolve() for path in bad_paths if path.resolve().parent == tmp_path}
+    assert len(outside) == (3 if component == "battle" else 2)
+    before = {path: path.read_bytes() for path in outside}
+    worker = capture.PassiveCapture(bridge, job="j", pid=123, enabled=True)
+    poll = 0
+
+    def next_poll(_):
+        nonlocal poll
+        if worker.stop.is_set() or poll == 2:
+            worker.stop.set()
+            return True
+        poll += 1
+        battle = bad_battle if poll == 1 else "b"
+        record = bad_record if poll == 1 else {"job": "j", "battle": "b", "stills": [
+            {"trigger": "opening", "status": "capture_ready"}]}
+        (bridge / "observation.json").write_text(json.dumps({"job": "j", "battle": battle}))
+        (bridge / f"imagery-{battle}.json").write_text(json.dumps(record))
+        return False
+
+    calls = []
+
+    def screenshot(command, **kwargs):
+        output = Path(command[3])
+        assert output.resolve().is_relative_to(tmp_path)
+        calls.append(output.resolve())
+        output.write_bytes(b"capture")
+        return SimpleNamespace(stdout=json.dumps({"status": "captured", "file": output.name}))
+
+    monkeypatch.setattr(worker.stop, "wait", next_poll)
+    monkeypatch.setattr(capture, "windows_path", str)
+    monkeypatch.setattr(capture.subprocess, "run", screenshot)
+    worker.run()
+
+    assert {path: path.read_bytes() for path in outside} == before
+    expected = bridge / "still-b-opening.png"
+    assert calls == [expected.resolve()]
+    metadata = json.loads((bridge / "capture-b-opening.json").read_text())
+    assert metadata["status"] == "captured" and metadata["file"] == expected.name
+    assert expected.read_bytes() == b"capture"
