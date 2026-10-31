@@ -44,6 +44,18 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: check archived source against the requested revision
+
+The archive test covered only clean HEAD. A second real-Git case uses two commits
+with changed, added, deleted and binary files, followed by dirty/untracked files.
+Its expected paths and SHA-256 values come directly from known fixture bytes;
+it never calls the production fingerprint function for its expected result.
+The old case accepts three planted HEAD substitutions (path listing, bytes, both);
+the expanded two-case suite passes unchanged source and rejects each wrong reader.
+Raw/card/review: `runs/test-quality-20261031/archive-revision-*`, `review/archive-revision/`.
+Existing tests, source, skips and dependencies are unchanged. This is component evidence;
+archived live-training correctness remains unverified and the card was not owner-agreed.
+
 ## 2026-10-31: check local-model lease ownership at the loading boundary
 
 Current source bypasses the lease for injected CPU loaders; a private-lock contention
