@@ -6,8 +6,9 @@ Under the [hard rule](../AGENTS.md#verification-hard-rule), only listed agreed c
 
 ## Active work
 
-Codex factory assessment: incomplete pytest runs cannot establish a pass; inherited code and
-checks remain fallible. Proposed checks, offline: `runs/factory-assessment-20261031/handoff.md`.
+Codex testing audit is isolated in `../slay_the_spire_ai-test-quality`: source attribution,
+retained budgets, Spire helpers and live-job-independent hook tests; main integration waits.
+Evidence there: `runs/test-quality-20261031/`; earlier factory audit: `runs/factory-assessment-20261031/`.
 
 Claude Code built the [native multiplayer plan](twwarhammer3/native-multiplayer.md#implementation-status)
 up to accounts/billing (owner, 2026-10-30 15:01), merged at `5d10e2a`; no game, $0. Decisions

@@ -9,7 +9,7 @@ from contextlib import nullcontext
 
 import pytest
 import test_evidence
-import test_rollout_lifecycle
+from combat_support import harness
 
 from gameai import provenance
 from gameai.provenance import REPO_ROOT
@@ -23,7 +23,7 @@ SCRIPT = REPO_ROOT / "scripts/inventory_scenarios.py"
 spec = importlib.util.spec_from_file_location("inventory_scenarios", SCRIPT)
 inventory = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(inventory)
-runtime_harness = test_rollout_lifecycle.harness
+runtime_harness = harness
 REAL_REFERENCE = REPO_ROOT / "runs/first-combat/baseline-heuristic-settled-20261011"
 
 

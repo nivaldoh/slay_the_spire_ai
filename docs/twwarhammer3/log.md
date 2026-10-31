@@ -44,6 +44,27 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: testing audit finds attribution, budget and isolation gaps
+
+Drafted in isolated `test-quality-audit` at parent `150ef84` while Claude runs live checks;
+no production source, prompt, agreed method, game state or benchmark definition changed.
+Cards, raw output and focused reviews: `runs/test-quality-20261031/` in that worktree.
+Provenance: 20 cases pass. The old provenance test accepted six declared wrong versions;
+the new cases reject all six. Independent review found the second-scope-entry gap, now
+covered, and challenged a shortened default scope (five failures).
+Retained budgets: two new tests plus 64 existing shared model/provider cases pass. Those
+64 accepted both declared budget faults; additions reject both. Three more variants planted
+by the reviewer also fail. These comparisons concern the named tests, not the whole old suite.
+Spire helpers moved out of the lifecycle test: 275 test bodies and 87 helper definitions
+unchanged; 415 collected node IDs unchanged. Focused run: 166 passed, one missing Torch
+case and one missing original-engine-evidence case skipped.
+Initial full gate: Ruff clean, 6 failed, 2073 passed, 69 skipped. Hook cleanup tests saw
+Claude's live job and skipped their own stub. Isolating only the child's process scan
+gives six focused passes; removing its production SIGTERM handler still fails as required.
+Worktree gate: Ruff clean, 2079 passed, 69 skipped; main integration waits for live checks.
+The handoff holds the raw output and final review. No live verification or whole-repo coverage
+claim. Next: exception expectations (two wrong-type KeyError variants pass) and remaining helpers.
+
 ## 2026-10-31: factory checks require successful execution evidence
 
 Owner: continue assessing the factory without manual review; essentially the whole codebase

@@ -463,3 +463,12 @@ For `.github/workflows/check.yml` (2026-10-29):
 - [GitHub CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners):
   named files need a named reviewer; the idea behind `check.py`'s "needs your yes" for agreed
   checks' files. Cited from memory, page not fetched. *Unread.*
+- Hugging Face datasets [`tests/test_fingerprint.py`](https://github.com/huggingface/datasets/blob/main/tests/test_fingerprint.py),
+  `HashingTest.test_hash_simple` (read 2026-10-31): identical inputs repeat their identity,
+  changed inputs do not. Pattern for the source-provenance byte-change test; our SHA-256
+  expectations use independent input bytes, with size and timestamps held fixed. *Read.*
+- Hugging Face datasets [`tests/utils.py`](https://github.com/huggingface/datasets/blob/main/tests/utils.py)
+  (read 2026-10-31): shared test helpers live outside collected test modules. Pattern for
+  `tests/combat/combat_support.py`, preserving the original fixture and message bodies.
+  Its `offline()` context also illustrates isolating an external boundary while running
+  real code, used for the hook cleanup test's child-interpreter process scan. *Read.*

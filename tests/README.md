@@ -50,7 +50,8 @@ agreed verification method.
 
 | Behavior | Where to start | Real dependency and limit |
 |---|---|---|
-| Model requests, retries and spending | [test_model.py](gameai/test_model.py), [test_providers.py](gameai/test_providers.py) | Real request/accounting code and temporary ledgers; substituted API responses. No provider availability or real billing claim. |
+| Model requests, retries and spending | [test_model.py](gameai/test_model.py), [test_providers.py](gameai/test_providers.py), [test_ledger.py](gameai/test_ledger.py) | Real request/accounting code and temporary ledgers, including caps after reopen; substituted API responses. No provider availability or real billing claim. |
+| Source attribution | [test_provenance.py](gameai/test_provenance.py) | Real temporary Git repositories: scoped edits, staged/deleted/renamed/untracked files refuse attribution; outside-scope edits pass. Byte changes affect fingerprints even with matching size/timestamps. No launch or Windows claim. |
 | Spire message framing and disconnects | [test_bridge.py](engine/test_bridge.py) | Real sockets and relay subprocess; no JVM or Windows game launch. |
 | Spire legal choices, target identity and public inputs | [test_decisions.py](spire/test_decisions.py), [test_protocol.py](spire/test_protocol.py), [engine regressions](combat/test_engine_regressions.py) | Synthetic messages and recorded transitions. Original-trace comparisons need local evidence; no current-game validation. |
 | Spire run lifecycle | [test_play.py](fullrun/test_play.py), [stopping](fullrun/test_play_stops.py) | Real loop; fake game and bridge. Includes disconnect, interruption and source-change cases. Action/time limits and actual Windows cleanup are not established by these tests. |
@@ -70,6 +71,7 @@ instructions and existing game-window permissions before running a live check.
 | File | Purpose and current use |
 |---|---|
 | [spire_messages.py](spire/spire_messages.py) | Builds synthetic card, combat and screen messages shared by Spire's decision and full-run tests. Expected results stay in the tests. |
+| [combat_support.py](combat/combat_support.py) | First-combat messages and an opt-in `harness` fixture shared by combat and language tests. It substitutes rollout processes, bridge I/O, clock and source/environment readings; it never launches a game. |
 | [fullrun_support.py](fullrun/fullrun_support.py), [conftest.py](fullrun/conftest.py) | Shared full-run messages and a simple policy; the `harness` fixture supplies queued game messages and records sent commands. It replaces game processes and bridge I/O only when a test requests it. |
 | [check_wh3_army_setup.py](twwarhammer3/check_wh3_army_setup.py) | Launches WH3 to save, change, restart and reload armies; compares roster, ranks and settings. `--integration` adds refusal/reserve checks and restores settings. Changed lobby settings surviving shutdown is only observed. [Orchestration tests](twwarhammer3/test_wh3_army_check.py) exercise startup guards and restoration without launching a game. |
 | [check_wh3_team.py](twwarhammer3/team/check_wh3_team.py) | Launches four scripted-team diagnostics, delaying each member in turn; checks movement, timing and cleanup. `--recount EXISTING_OUTPUT` reads only; `--recount-output NEW_CHECKS.json` saves a separate verdict with checker/input hashes and refuses overwrite. [Recount tests](twwarhammer3/team/test_wh3_team_recount.py) cover file preservation, not live movement. No model-team strength claim. |

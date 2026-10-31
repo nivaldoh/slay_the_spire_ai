@@ -6,7 +6,7 @@ import json
 
 import pytest
 import test_evidence
-import test_rollout_lifecycle
+from combat_support import harness
 
 from gameai import provenance
 from spire.combat import catalog, evaluation, rollout
@@ -15,7 +15,7 @@ from spire.engine import doctor
 from spire.engine.bridge import BridgeDisconnected
 from spire.protocol import decision_from_message
 
-runtime_harness = test_rollout_lifecycle.harness
+runtime_harness = harness
 
 
 def digest(text):

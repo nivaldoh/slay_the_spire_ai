@@ -7,13 +7,13 @@ import pytest
 
 pytest.importorskip("torch")
 
+from combat_support import combat_message, harness, terminal_message  # noqa: E402
 from test_language_policy import (  # noqa: E402
     TinyModel,
     TinyTokenizer,
     adapter_declaration,
     declaration,
 )
-from test_rollout_lifecycle import combat_message, harness, terminal_message  # noqa: E402
 
 from gameai import provenance  # noqa: E402
 from spire.combat import rollout  # noqa: E402

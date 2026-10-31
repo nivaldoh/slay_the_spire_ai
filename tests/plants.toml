@@ -10,6 +10,78 @@
 # copies those from the main checkout into its scratch worktree.
 
 [[plant]]
+id = "provenance-allows-dirty-source"
+guards = "Uncommitted scoped source cannot be attributed to HEAD"
+file = "src/gameai/provenance.py"
+old = "    if status:\n        raise ValueError"
+new = "    if False:\n        raise ValueError"
+tests = ["tests/gameai/test_provenance.py"]
+source = "2026-10-31 source-attribution test audit"
+
+[[plant]]
+id = "provenance-ignores-untracked-source"
+guards = "New untracked source also prevents attribution to HEAD"
+file = "src/gameai/provenance.py"
+old = 'git("status", "--porcelain", "--", *paths)'
+new = 'git("status", "--porcelain", "--untracked-files=no", "--", *paths)'
+tests = ["tests/gameai/test_provenance.py"]
+source = "2026-10-31 source-attribution test audit"
+
+[[plant]]
+id = "provenance-checks-only-first-scope-entry"
+guards = "Standalone dependency files after source directories also prevent attribution"
+file = "src/gameai/provenance.py"
+old = 'git("status", "--porcelain", "--", *paths)'
+new = 'git("status", "--porcelain", "--", *paths[:1])'
+tests = ["tests/gameai/test_provenance.py"]
+source = "2026-10-31 independent source-attribution test review"
+
+[[plant]]
+id = "provenance-ignores-caller-scope"
+guards = "Other-game edits outside an explicit source scope do not block attribution"
+file = "src/gameai/provenance.py"
+old = 'git("status", "--porcelain", "--", *paths)'
+new = 'git("status", "--porcelain", "--", *SOURCE_PATHS)'
+tests = ["tests/gameai/test_provenance.py"]
+source = "2026-10-31 source-attribution test audit"
+
+[[plant]]
+id = "provenance-returns-wrong-revision"
+guards = "Clean source records the actual committed revision"
+file = "src/gameai/provenance.py"
+old = 'return git("rev-parse", "HEAD").strip()'
+new = 'return "0" * 40'
+tests = ["tests/gameai/test_provenance.py"]
+source = "2026-10-31 source-attribution test audit"
+
+[[plant]]
+id = "provenance-fixed-hash"
+guards = "Source fingerprints depend on file bytes"
+file = "src/gameai/provenance.py"
+old = 'return hashlib.file_digest(file, "sha256").hexdigest()'
+new = 'return "0" * 64'
+tests = ["tests/gameai/test_provenance.py"]
+source = "2026-10-31 source-attribution test audit"
+
+[[plant]]
+id = "ledger-ignores-earlier-job-charges"
+guards = "Earlier jobs' charges retain their share of the selected ledger's total cap"
+file = "src/gameai/ledger.py"
+old = 'self.spent = sum(json.loads(line)["usd"] for line in lines)'
+new = 'self.spent = 0.0'
+tests = ["tests/gameai/test_ledger.py"]
+source = "2026-10-31 retained-budget test audit"
+
+[[plant]]
+id = "ledger-reservations-ignore-spent"
+guards = "Reservations fit only in the allowance left after earlier charges"
+file = "src/gameai/ledger.py"
+old = "if self.spent + self.held + usd > self.budget:"
+new = "if self.held + usd > self.budget:"
+tests = ["tests/gameai/test_ledger.py"]
+source = "2026-10-31 retained-budget test audit"
+
+[[plant]]
 id = "ledger-ignores-must-exist"
 guards = "Play commands refuse a missing ledger file"
 file = "src/gameai/ledger.py"

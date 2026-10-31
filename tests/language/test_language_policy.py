@@ -10,7 +10,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from test_rollout_lifecycle import combat_message  # noqa: E402
+from combat_support import combat_message  # noqa: E402
 
 from spire.language import policy as language  # noqa: E402
 from spire.language.demonstrations import render_prompt  # noqa: E402
