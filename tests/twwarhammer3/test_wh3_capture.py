@@ -420,3 +420,46 @@ def test_passive_capture_retries_transient_mailbox_reads(
         "job": "j", "battle": "b", "trigger": "opening", "status": "captured",
         "file": "still-b-opening.png"}
     assert (bridge / metadata["file"]).read_bytes() == b"ready capture"
+
+
+def test_passive_capture_deduplicates_a_ready_request_but_not_a_new_battle(
+    tmp_path, monkeypatch
+):
+    bridge = tmp_path / "bridge"
+    bridge.mkdir()
+    worker = capture.PassiveCapture(bridge, job="j", pid=123, enabled=True)
+    battles = iter(["b", "b", "c"])
+
+    def next_poll(_):
+        battle = next(battles, None)
+        if worker.stop.is_set() or battle is None:
+            worker.stop.set()
+            return True
+        (bridge / "observation.json").write_text(json.dumps({"job": "j", "battle": battle}))
+        (bridge / f"imagery-{battle}.json").write_text(json.dumps({
+            "job": "j", "battle": battle, "stills": [
+                {"trigger": "opening", "status": "capture_ready"}]}))
+        return False
+
+    calls = []
+
+    def screenshot(command, **kwargs):
+        calls.append(command[-1])
+        output = Path(command[3])
+        output.write_bytes(f"capture-{len(calls)}".encode())
+        return SimpleNamespace(stdout=json.dumps({
+            "status": "captured", "file": output.name, "time_ms": len(calls)}))
+
+    monkeypatch.setattr(worker.stop, "wait", next_poll)
+    monkeypatch.setattr(capture, "windows_path", str)
+    monkeypatch.setattr(capture.subprocess, "run", screenshot)
+    worker.run()
+
+    assert calls == ["b", "c"], "one capture per request, including the new battle's opening"
+    for index, battle in enumerate(["b", "c"], 1):
+        metadata = json.loads((bridge / f"capture-{battle}-opening.json").read_text())
+        assert {key: metadata.get(key) for key in (
+            "status", "file", "time_ms", "job", "battle", "trigger")} == {
+                "status": "captured", "file": f"still-{battle}-opening.png", "time_ms": index,
+                "job": "j", "battle": battle, "trigger": "opening"}
+        assert (bridge / metadata["file"]).read_bytes() == f"capture-{index}".encode()

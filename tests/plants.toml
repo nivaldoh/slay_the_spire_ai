@@ -1928,3 +1928,21 @@ old = "            except (OSError, ValueError):\n                # The Lua writ
 new = "            except (FileNotFoundError, ValueError):\n                # The Lua writer removes then renames; retry incomplete mailbox reads.\n                continue"
 tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_retries_transient_mailbox_reads"]
 source = "2026-10-31 passive mailbox read recovery oracle"
+
+[[plant]]
+id = "passive-dedup-seen-key-loses-battle"
+guards = "Repeated successful still requests capture once and new battles remain independent"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                    key = (battle, trigger)"
+new = "                    key = trigger"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_deduplicates_a_ready_request_but_not_a_new_battle"]
+source = "2026-10-31 successful capture deduplication and battle identity oracle"
+
+[[plant]]
+id = "passive-dedup-successful-request-forgotten"
+guards = "Repeated successful still requests capture once and new battles remain independent"
+file = "src/twwarhammer3/battle/capture.py"
+old = "                    write_json(self.bridge / f\"capture-{battle}-{trigger}.json\",\n                               {**captured, \"job\": self.job, \"battle\": battle, \"trigger\": trigger})"
+new = "                    write_json(self.bridge / f\"capture-{battle}-{trigger}.json\",\n                               {**captured, \"job\": self.job, \"battle\": battle, \"trigger\": trigger})\n                    if captured.get(\"status\") == \"captured\":\n                        seen.discard(key)"
+tests = ["tests/twwarhammer3/test_wh3_capture.py::test_passive_capture_deduplicates_a_ready_request_but_not_a_new_battle"]
+source = "2026-10-31 successful capture deduplication and battle identity oracle"
