@@ -44,6 +44,18 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: multi-agent diagram page, measured replay (plan step 6, branch `diagram-replay`)
+
+Claude Code, $0, no game; built on a branch for the owner's yes, since the plan makes the replay
+mode a separate decision. `scripts/diagram_replay.py` turns one recorded team episode's
+trace.jsonl into a Team-tab flow in the page's step format, badged "measured":
+`docs/multi-agent-replay.js` replays `team-live-20261031e` probe 1 from 5.30 to 10.40 s (99 steps,
+29 lane items). Battle times are copied; WSL times are mapped by a fit over the window's 12
+input events (1109 battle ms per WSL second, largest miss 59 ms). Cross-check: all 29 lane items
+of the hand-written probe flow appear with equal recorded times; mapped completion times differ
+by at most 59 ms. A Chrome trace-event JSON of the same lanes was written for Perfetto but not
+opened (a website). One episode only; no model-team episode exists.
+
 ## 2026-10-31: multi-agent diagram page, Overview flow and links (plan step 5)
 
 Claude Code, $0, no game. The Overview of [`docs/multi-agent.html`](../multi-agent.html) now

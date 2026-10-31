@@ -7155,6 +7155,8 @@ const DIAGRAM = {
   ],
 };
 </script>
+<!-- A measured flow generated from a recorded episode by scripts/diagram_replay.py. -->
+<script src="multi-agent-replay.js"></script>
 <style>
 /* Light colours and type as the WH3 report has (report_assets/report.css). Member A is
    Okabe-Ito blue and member B vermillion everywhere on this page; dashes mean planned. */
@@ -7638,6 +7640,10 @@ svg {
   border-radius: 9px;
   background: #fff3d6;
   color: #6d4c00;
+}
+#panel .badge.measured {
+  background: #e3f1e8;
+  color: #1f5a37;
 }
 #panel .badge.illustrative {
   background: #eceff1;
@@ -8348,7 +8354,7 @@ function renderPanel() {
       el(
         "span",
         flow.timing,
-        `badge ${flow.timing.startsWith("illustrative") ? "illustrative" : ""}`,
+        `badge ${flow.timing.split(":")[0].split(" ")[0]}`,
       ),
     );
     panel.append(el("p", `From: ${flow.source}.`, "meta"), el("p", flow.drawn, "meta"));
