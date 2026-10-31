@@ -1973,3 +1973,39 @@ old = "        if self.enabled:\n            self.thread.join(timeout=7)"
 new = "        if self.enabled or _[0] is not None:\n            self.thread.join(timeout=7)"
 tests = ["tests/twwarhammer3/test_wh3_capture.py", "tests/twwarhammer3/test_wh3_play_capture.py"]
 source = "2026-10-31 independent disabled-capture exceptional-exit review"
+
+[[plant]]
+id = "audit-reference-refusal-removed"
+guards = "Unscored audit reference is refused before candidate attempts"
+file = "src/twwarhammer3/battle/audit.py"
+old = "raise RuntimeError(f\"the reference {reference} has no engine ending\")"
+new = "RuntimeError(f\"the reference {reference} has no engine ending\")"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 branch-audit launcher refusal sweep"
+
+[[plant]]
+id = "audit-restore-stop-removed"
+guards = "Audit stops after the first restore failure rather than launching more candidates"
+file = "src/twwarhammer3/battle/audit.py"
+old = "raise RuntimeError(f\"{directory}: {attempt['status']} ({attempt.get('reason')})\")"
+new = "RuntimeError(f\"{directory}: {attempt['status']} ({attempt.get('reason')})\")"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 branch-audit launcher refusal sweep"
+
+[[plant]]
+id = "audit-reference-must-win"
+guards = "Scored lost and drawn audit references are admitted"
+file = "src/twwarhammer3/battle/audit.py"
+old = "not in checkpoint.SCORED"
+new = "not in (\"won\",)"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 independent scored-reference review and outcome classification challenge"
+
+[[plant]]
+id = "audit-gameplay-endings-stop"
+guards = "Gameplay lost and draw outcomes do not trigger restore-failure stop"
+file = "src/twwarhammer3/battle/audit.py"
+old = "if attempt[\"status\"] in STOPS:"
+new = "if attempt[\"status\"] in STOPS or attempt[\"status\"] in {\"lost\", \"draw\"}:"
+tests = ["tests/twwarhammer3/test_wh3_audit.py"]
+source = "2026-10-31 independent scored-reference review and outcome classification challenge"

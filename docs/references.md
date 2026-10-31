@@ -484,3 +484,8 @@ For `.github/workflows/check.yml` (2026-10-29):
 - actionlint [`docs/install.md`](https://github.com/rhysd/actionlint/blob/v1.7.12/docs/install.md):
   Go installation command inspected on 2026-10-31; task-local v1.7.12 validates workflow
   syntax and action expressions. Shellcheck was unavailable; profile shell commands run directly.
+
+
+### Launcher failure contract tests (2026-10-31)
+
+Pattern: Farama-Foundation/Gymnasium [`tests/vector/test_async_vector_env.py`](https://github.com/Farama-Foundation/Gymnasium/blob/main/tests/vector/test_async_vector_env.py), `test_async_vector_subenv_error`: inject a controlled worker failure and check the caller-visible error and shutdown diagnostics. Read Git blob `8042a56332fd4b641b568ec864e79e84d919cb2b`; snapshot under `runs/test-quality-20261031/audit-stop-contract/`. This audit uses fake restore calls; Gymnasium's async-worker tests were not reproduced.

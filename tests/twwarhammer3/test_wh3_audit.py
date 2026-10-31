@@ -2,6 +2,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from twwarhammer3.battle import audit, checkpoint
 from twwarhammer3.battle.candidates import candidates
 
@@ -71,3 +73,93 @@ def test_a_flat_rung_a_repeat_that_differs_and_a_refusal_are_reported(tmp_path):
     rung = refused["rungs"][0]
     assert rung["refused"] == ["charge_f1"] and len(rung["candidates"]) == 4
     assert rung["verdict"]["applied_or_refused"] and refused["pass"]
+
+
+# Pattern: Gymnasium tests/vector/test_async_vector_env.py, test_async_vector_subenv_error:
+# inject a controlled failure and check the caller-visible error.
+def launcher_case(tmp_path, monkeypatch, *, reference_status="won", attempt_status="won"):
+    record, reference = tmp_path / "record.json", tmp_path / "reference"
+    record.write_text(json.dumps({"root": "root", "tick": 2100}))
+    reference.mkdir()
+    (reference / "attempt.json").write_text(json.dumps({
+        "status": reference_status,
+        "engine_ending": ({"result": reference_status}
+                          if reference_status in ("won", "lost", "draw") else None),
+    }))
+    plan = {"name": "a", "rungs": [{"record": str(record), "reference": str(reference)}],
+            "repeat": [], "limits": {}}
+    calls = []
+
+    def inject(reference, record, orders, request, tick):
+        calls.append(("inject", request))
+        return {"context": CONTEXT, "orders": orders}
+
+    def restore(record, settings, directory):
+        calls.append(("restore", settings, directory))
+        return {"status": attempt_status, "reason": "controlled restore result"}
+
+    def rebuild(output):
+        calls.append(("table", output))
+        return {"table": "opaque reconstruction result"}
+
+    def no_live_restore():
+        raise AssertionError("offline test reached the live restore lock")
+
+    monkeypatch.setattr(checkpoint.runtime, "RuntimeLock", no_live_restore)
+    monkeypatch.setattr(checkpoint, "injection_for", inject)
+    monkeypatch.setattr(checkpoint, "restore_episode", restore)
+    monkeypatch.setattr(audit, "table", rebuild)
+    return plan, tmp_path / "output", calls
+
+
+def test_launcher_refuses_an_unscored_reference_before_any_attempt(tmp_path, monkeypatch):
+    plan, output, calls = launcher_case(tmp_path, monkeypatch, reference_status="infrastructure")
+
+    with pytest.raises(RuntimeError, match="reference.*has no engine ending"):
+        audit.audit(plan, output)
+
+    assert calls == []
+    assert not (output / "table.json").exists()
+
+
+@pytest.mark.parametrize("status", ["restore_failure", "restore_fault", "infrastructure",
+                                    "interrupted"])
+def test_launcher_stops_after_its_first_restore_failure(tmp_path, monkeypatch, status):
+    plan, output, calls = launcher_case(tmp_path, monkeypatch, attempt_status=status)
+
+    with pytest.raises(RuntimeError, match=f"{status}.*controlled restore result") as error:
+        audit.audit(plan, output)
+
+    restores = [call for call in calls if call[0] == "restore"]
+    assert len(restores) == 1
+    assert str(restores[0][2]) in str(error.value)
+    assert calls[-1][0] == "restore"
+    assert not (output / "table.json").exists()
+
+
+# JUDGEMENT?: Scored-reference pairs — Codex, 2026-10-31: exercise every scored reference
+# against scored attempts and injection failure; selected pairs are the alternative.
+# Component evidence rests on this matrix; live restore and attribution remain unverified.
+@pytest.mark.parametrize("reference_status", ["won", "lost", "draw"])
+@pytest.mark.parametrize("status", ["won", "lost", "draw", "injection_failed"])
+def test_launcher_completes_allowed_attempts_and_the_declared_repeat(
+    tmp_path, monkeypatch, reference_status, status
+):
+    plan, output, calls = launcher_case(tmp_path, monkeypatch,
+                                       reference_status=reference_status, attempt_status=status)
+    listed = candidates(CONTEXT)["candidates"]
+    plan["repeat"] = [listed[1]["id"]]
+
+    result = audit.audit(plan, output)
+
+    settings = [call[1] for call in calls if call[0] == "restore"]
+    actual = [(s["candidate"], s["repeat"], json.dumps(s["injection"]["orders"], sort_keys=True))
+              for s in settings]
+    expected = [(c["id"], repeat, json.dumps(c["orders"], sort_keys=True))
+                for c, repeat in ([(c, 0) for c in listed] + [(listed[1], 1)])]
+    # Compare completeness, identity and multiplicity while permitting job reordering.
+    assert sorted(actual) == sorted(expected)
+    assert calls[-1] == ("table", output)
+    assert sum(call[0] == "table" for call in calls) == 1
+    assert result == {"table": "opaque reconstruction result"}
+    assert json.loads((output / "table.json").read_text()) == result
