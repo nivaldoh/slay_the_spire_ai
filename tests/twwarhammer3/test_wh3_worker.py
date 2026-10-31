@@ -454,3 +454,50 @@ def test_a_request_the_game_takes_but_never_acknowledges_is_unknown_and_stops_th
         assert [row["status"] for row in events(coordinator, "command", 3)] == [
             "written", "submitted", "written"]
     game.close()
+
+
+def test_a_name_with_a_path_after_valid_letters_is_refused():
+    # Refusal-sweep review 2026-10-31: a prefix match (re.match) passed every test, since both
+    # parameters above start with "."; this name would put the attempt outside ROOT/m1.
+    with pytest.raises(ValueError, match="match and attempt names are letters"):
+        worker.check_names("m1", "a1/../../outside")
+
+
+def test_the_acknowledgement_deadline_runs_from_the_write_not_from_each_new_observation():
+    # A game that keeps publishing observations without acknowledging the request must make
+    # it unknown after ack_s; a planted wait that restarted on every observation never did.
+    class Link:
+        def event(self, kind, data):
+            pass
+
+    class Bridge:
+        written_ns, seq = 0, 0
+
+        def read_observation(self):
+            self.seq += 1
+            return bridge_observation(self.seq, 200 * self.seq)
+
+        def write_orders(self, battle, based_on, orders, timeout):
+            return "never-acknowledged"
+
+    game = worker.Worker(Link(), Bridge(), "control", ack_s=0.5)
+    game.watch()
+    stop, outcome = threading.Event(), []
+
+    def publish():
+        while not stop.wait(0.1):
+            game.watch()
+
+    def command():
+        try:
+            game.on_command({"seq": 1, "body": {"based_on": 1, "orders": [MOVE]}})
+        except TimeoutError as error:
+            outcome.append(error)
+
+    threads = [threading.Thread(target=publish, daemon=True),
+               threading.Thread(target=command, daemon=True)]
+    for thread in threads:
+        thread.start()
+    threads[1].join(3)
+    stop.set()
+    assert not threads[1].is_alive() and "not acknowledged in 0.5 s" in str(outcome[0])

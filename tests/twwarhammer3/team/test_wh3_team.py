@@ -390,3 +390,27 @@ def test_a_team_without_two_distinct_members_is_refused_at_construction(members,
         team.TeamPolicy(members, army_owner=owner, executor=object())
     team.TeamPolicy({"a": (team.SWORD, None), "b": (None, None)}, army_owner="b",
                     executor=object())
+
+
+def test_duplicate_friendly_unit_ids_are_refused_before_any_member_call():
+    # Refusal-sweep review 2026-10-31: removing this refusal passed every team test.
+    policy, workers, _, _ = make_team()
+    observation = state()
+    observation["friendly"][1]["id"] = "f2"  # the knights reuse the swordsmen's id
+    with pytest.raises(team.TeamHarnessError, match="duplicate friendly unit ids"):
+        policy.decide(observation)
+    assert not workers.tasks
+
+
+def test_a_member_owning_the_rest_must_keep_every_unit_it_was_given():
+    # ModelTeam's partition shape (one member owns the rest); a subset check passed every test.
+    from wh3_team_fixtures import Workers
+    policy = team.TeamPolicy({"cavalry": ((team.KNIGHT,), Script()), "line": (None, Script())},
+                             executor=Workers())
+    first = state()
+    first["friendly"].append({**first["friendly"][0], "id": "f3"})
+    policy.decide(first)
+    later = state(seq=2, time_ms=11000)
+    later["friendly"].append({**later["friendly"][0], "id": "f9"})  # f3 gone, f9 new
+    with pytest.raises(team.TeamHarnessError, match="line: expected stable units of the rest"):
+        policy.decide(later)
