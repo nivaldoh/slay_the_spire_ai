@@ -59,6 +59,7 @@ def test_feint_flank_waits_for_rear_position_then_withdraws_after_contact():
     obs["time_ms"] = 18000
     retreat = policy.decide(obs)
     validate_orders(retreat, obs)
+    assert {order["unit"] for order in retreat} == {"f1", "f2"}
     assert policy.phase == "withdraw" and all(order["type"] == "move" for order in retreat)
 
 

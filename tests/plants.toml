@@ -1820,3 +1820,21 @@ old = "        if observation is None:\n            return \"no observation yet\
 new = "        if False:\n            return \"no observation yet\""
 tests = ["tests/twwarhammer3/test_wh3_worker.py::test_a_move_before_the_first_observation_is_rejected_without_touching_the_bridge"]
 source = "2026-10-31 native worker observation prerequisite oracle"
+
+[[plant]]
+id = "feint-withdrawal-dropped"
+guards = "Both eligible FeintFlank riders receive withdrawal move orders on entry"
+file = "src/twwarhammer3/battle/calibration.py"
+old = "            return [order for unit in units\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase == \"charge\":\n            return [order for unit in units for order in self.attack(unit, target)]\n        front ="
+new = "            return []\n        if self.phase == \"charge\":\n            return [order for unit in units for order in self.attack(unit, target)]\n        front ="
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_feint_flank_waits_for_rear_position_then_withdraws_after_contact"]
+source = "2026-10-31 FeintFlank withdrawal identity oracle"
+
+[[plant]]
+id = "feint-withdrawal-one-rider"
+guards = "Both eligible FeintFlank riders receive withdrawal move orders on entry"
+file = "src/twwarhammer3/battle/calibration.py"
+old = "            return [order for unit in units\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase == \"charge\":\n            return [order for unit in units for order in self.attack(unit, target)]\n        front ="
+new = "            return [order for unit in units[:1]\n                    for order in self.move(unit, self.retreats[unit[\"id\"]], target)]\n        if self.phase == \"charge\":\n            return [order for unit in units for order in self.attack(unit, target)]\n        front ="
+tests = ["tests/twwarhammer3/test_wh3_calibration.py::test_feint_flank_waits_for_rear_position_then_withdraws_after_contact"]
+source = "2026-10-31 FeintFlank withdrawal identity oracle"
