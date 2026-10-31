@@ -66,3 +66,24 @@ def test_optional_copying_does_not_consume_an_operator_interrupt(tmp_path, monke
     with pytest.raises(KeyboardInterrupt):
         play.play_episode(tmp_path / "episode", {**CONFIG, option: True}, Hold, mailbox,
                           not_battle=None)
+
+
+@pytest.mark.parametrize("ending", ["lost", "draw"])
+@pytest.mark.parametrize("metadata,option,filename", [
+    ("recording", "record_replay", "replay-b1.jsonl"),
+    ("imagery", "stills", "imagery-b1.json"),
+])
+def test_optional_capture_failures_preserve_losses_and_draws(tmp_path, ending,
+                                                           metadata, option, filename):
+    bridge, episode = tmp_path / "bridge", tmp_path / "episode"
+    bridge.mkdir()
+    (bridge / filename).write_text("[]\n")  # a real malformed sidecar, not a mocked copier
+    mailbox = FakeMailbox([bridge_observation(0, 0),
+                           bridge_observation(1, 1000, result=ending)])
+    mailbox.directory = bridge
+
+    result = play.play_episode(episode, {**CONFIG, option: True}, Hold, mailbox, not_battle=None)
+
+    assert json.loads((episode / "result.json").read_text()) == result
+    assert result["status"] == result["engine_ending"]["result"] == ending
+    assert result[metadata]["status"] == "error"

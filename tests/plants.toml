@@ -1730,3 +1730,21 @@ old = "    except OSError:\n        pass  # This cosmetic cache must not fail th
 new = "    except PermissionError:\n        pass  # This cosmetic cache must not fail the checks or their report."
 tests = ["tests/test_check_script.py::test_warning_cache_write_failure_cannot_block_passing_checks"]
 source = "2026-10-31 warning-cache failure regression"
+
+[[plant]]
+id = "capture-error-labels-recording-as-a-win"
+guards = "Capture errors preserve an engine-reported loss or draw in the saved outcome"
+file = "src/twwarhammer3/battle/play.py"
+old = "            except Exception as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "            except Exception as exc:\n                result[\"recording\"] = {\"status\": \"error\", \"error\": str(exc)}\n                result[\"status\"] = \"won\""
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_capture_failures_preserve_losses_and_draws"]
+source = "2026-10-31 non-winning capture outcome oracle"
+
+[[plant]]
+id = "capture-error-labels-imagery-as-a-win"
+guards = "Capture errors preserve an engine-reported loss or draw in the saved outcome"
+file = "src/twwarhammer3/battle/play.py"
+old = "            except Exception as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}"
+new = "            except Exception as exc:\n                result[\"imagery\"] = {\"status\": \"error\", \"error\": str(exc)}\n                result[\"status\"] = \"won\""
+tests = ["tests/twwarhammer3/test_wh3_play_capture.py::test_optional_capture_failures_preserve_losses_and_draws"]
+source = "2026-10-31 non-winning capture outcome oracle"
