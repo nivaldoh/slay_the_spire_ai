@@ -44,6 +44,19 @@ benchmark harness revision, G1 and G2 the calibration stages.
 | stills | imagery v3, opt-in (`--stills`) | `battle/capture.py`, `mod/script/_lib/mod/twwarhammer3_imagery.lua` | `visual-probes/close-imagery-r2-20261015` |
 | report | core scenario index and battle development (2026-10-16) | `battle/report_html.py`, `report_assets/`, `replay.py`, `configs/twwarhammer3/report_notes.json` | Last suite build 2026-10-17 from `benchmark_jobs.json`: 140 jobs, 231 trials, 220 valid ([overnight tranche](#2026-10-17-overnight-tranche-harness-b18-b23)); the page shows the core scenarios only, the JSON and text every one |
 
+## 2026-10-31: multi-agent diagram page, Multiplayer tab (plan step 3)
+
+Claude Code, $0, no game. The Multiplayer tab of [`docs/multi-agent.html`](../multi-agent.html):
+21 boxes, 39 wires and four flows drawn from the code (start-up in its real order, one operator
+command, close, compare-peers; illustrative, since no multiplayer battle has run). Its banner:
+built offline, zero live multiplayer battles, one dry run on 2026-10-31 that reached the menu
+and attached a worker. Reviewer: round 1, 170 items: 159 confirmed, 8 wrong (event order at
+start-up, a heartbeat claimed to fail while close() still answers it, threads said never to wait),
+3 unsupported, plus missing markers; round 2, 45 changed items: all confirmed.
+Found on the way, not fixed: `link.py` documents that close() ends every lease, but a heartbeat
+that arrives during close() is answered "renewed" and events can follow the "closed" record
+(a scratch script showed the reply); no test covers it.
+
 ## 2026-10-31: multi-agent diagram page, Factory tab (plan step 4)
 
 Claude Code, $0, no game. The Factory tab of [`docs/multi-agent.html`](../multi-agent.html): 23
