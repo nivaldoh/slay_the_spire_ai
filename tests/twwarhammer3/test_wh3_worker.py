@@ -517,8 +517,14 @@ def test_the_acknowledgement_deadline_runs_from_the_write_not_from_each_new_obse
 
     threads = [threading.Thread(target=publish, daemon=True),
                threading.Thread(target=command, daemon=True)]
-    for thread in threads:
-        thread.start()
-    threads[1].join(3)
-    stop.set()
-    assert not threads[1].is_alive() and "not acknowledged in 0.5 s" in str(outcome[0])
+    try:
+        for thread in threads:
+            thread.start()
+        threads[1].join(3)
+        assert not threads[1].is_alive() and "not acknowledged in 0.5 s" in str(outcome[0])
+    finally:
+        # PySC2 multi_player_test.py also closes owned resources when its check fails.
+        stop.set()
+        for thread in threads:
+            if thread.ident is not None:  # A failed start must not mask the original error.
+                thread.join(3)
