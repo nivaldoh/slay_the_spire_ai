@@ -259,3 +259,16 @@ def test_failed_trials_stay_out_of_means_and_pairs_and_cadence_splits_groups(tmp
     manifest["config"]["observe_ms"] = 2000
     (slower / "manifest.json").write_text(json.dumps(manifest))
     assert len(report.collect([a, slower])["groups"]) == 2
+
+
+def test_the_win_rate_counts_engine_endings_only_and_a_timer_win_is_not_one_of_its_wins(
+        tmp_path):
+    # The historical rule (rests on JUDGEMENT? battle/report.py Report denominator): a forfeit
+    # or a truncation is out of the denominator; a timer win is in it, as a non-win.
+    job = make_job(tmp_path, "rate", [("hold", .1, "won"), ("hold", -.1, "lost"),
+                                      ("hold", 0, "policy_failure"), ("hold", 0, "truncated"),
+                                      ("hold", .2, "won")])
+    path = job / "episode-0004/result.json"
+    path.write_text(json.dumps({**json.loads(path.read_text()), "ended_by": "time_limit"}))
+    [hold] = report.collect([job])["groups"][0]["controllers"]
+    assert (hold["trials"], hold["valid"], hold["win_rate"]) == (5, 3, pytest.approx(1 / 3))

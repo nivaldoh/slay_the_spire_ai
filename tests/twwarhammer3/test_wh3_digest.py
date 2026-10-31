@@ -132,3 +132,11 @@ def test_decision_at_prints_the_prompt_reply_orders_and_verdicts(tmp_path):
     assert "-- prompt (state at 5.0 s):\nState at 5 s\n-- reply" in text
     assert "-- plan (7.0 s old): f1 charge" in text
     assert text.endswith("-- engine: no acknowledgement in the trace")
+
+
+def test_an_episode_line_shows_the_engine_status_of_a_timer_win(tmp_path):
+    write_episode(tmp_path / "episode-0000", [
+        {"kind": "observation", "observation": observation(1000)}, decision(1)],
+        {"status": "won", "ended_by": "time_limit", "battle_s": 1205})
+    assert digest(tmp_path / "episode-0000").splitlines()[0].startswith(
+        "episode-0000: won at 1205 s battle time;")
